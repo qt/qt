@@ -1408,7 +1408,7 @@ bool QFSFileEngine::link(const QString &newName)
 /*!
     \internal
 */
-QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
+QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFileEngine::FileFlags type) const
 {
     QAbstractFileEngine::FileFlags ret = 0;
 
@@ -1429,7 +1429,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
             if(res == ERROR_SUCCESS) {
                 ACCESS_MASK access_mask;
                 TRUSTEE_W trustee;
-                { //user
+                if (type & 0x0700) { // user
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &currentUserTrusteeW, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
                     if(access_mask & ReadMask)
@@ -1439,7 +1439,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                     if(access_mask & ExecMask)
                         ret |= QAbstractFileEngine::ExeUserPerm;
                 }
-                { //owner
+                if (type & 0x7000) { // owner
                     ptrBuildTrusteeWithSidW(&trustee, pOwner);
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
@@ -1450,7 +1450,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                     if(access_mask & ExecMask)
                         ret |= QAbstractFileEngine::ExeOwnerPerm;
                 }
-                { //group
+                if (type & 0x0070) { // group
                     ptrBuildTrusteeWithSidW(&trustee, pGroup);
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
@@ -1461,7 +1461,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                     if(access_mask & ExecMask)
                         ret |= QAbstractFileEngine::ExeGroupPerm;
                 }
-                { //other (world)
+                if (type & 0x0007) { // other (world)
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &worldTrusteeW, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1; // ###
                     if(access_mask & ReadMask)
@@ -1498,12 +1498,18 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
         }
 
         // calculate user permissions
-        if (::_waccess((wchar_t*)longFileName(filePath).utf16(), R_OK) == 0)
-            ret |= QAbstractFileEngine::ReadUserPerm;
-        if (::_waccess((wchar_t*)longFileName(filePath).utf16(), W_OK) == 0)
-            ret |= QAbstractFileEngine::WriteUserPerm;
-        if (::_waccess((wchar_t*)longFileName(filePath).utf16(), X_OK) == 0)
-            ret |= QAbstractFileEngine::ExeUserPerm;
+        if (type & QAbstractFileEngine::ReadUserPerm) {
+            if (::_waccess((wchar_t*)longFileName(filePath).utf16(), R_OK) == 0)
+                ret |= QAbstractFileEngine::ReadUserPerm;
+        }
+        if (type & QAbstractFileEngine::WriteUserPerm) {
+            if (::_waccess((wchar_t*)longFileName(filePath).utf16(), W_OK) == 0)
+                ret |= QAbstractFileEngine::WriteUserPerm;
+        }
+        if (type & QAbstractFileEngine::ExeUserPerm) {
+            if (::_waccess((wchar_t*)longFileName(filePath).utf16(), X_OK) == 0)
+                ret |= QAbstractFileEngine::ExeUserPerm;
+        }
     }
     return ret;
 }
@@ -1561,7 +1567,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     if (type & PermsMask) {
         if (d->doStat()) {
             ret |= ExistsFlag;
-            ret |= d->getPermissions();
+            ret |= d->getPermissions(type);
         }
     }
     if (type & TypesMask) {

@@ -739,7 +739,7 @@ static bool _q_isMacHidden(const QString &path)
 /*!
     \internal
 */
-QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
+QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFileEngine::FileFlags type) const
 {
     QAbstractFileEngine::FileFlags ret = 0;
 
@@ -763,12 +763,18 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
         ret |= QAbstractFileEngine::ExeOtherPerm;
 
     // calculate user permissions
-    if (QT_ACCESS(nativeFilePath.constData(), R_OK) == 0)
-        ret |= QAbstractFileEngine::ReadUserPerm;
-    if (QT_ACCESS(nativeFilePath.constData(), W_OK) == 0)
-        ret |= QAbstractFileEngine::WriteUserPerm;
-    if (QT_ACCESS(nativeFilePath.constData(), X_OK) == 0)
-        ret |= QAbstractFileEngine::ExeUserPerm;
+    if (type & QAbstractFileEngine::ReadUserPerm) {
+        if (QT_ACCESS(nativeFilePath.constData(), R_OK) == 0)
+            ret |= QAbstractFileEngine::ReadUserPerm;
+    }
+    if (type & QAbstractFileEngine::WriteUserPerm) {
+        if (QT_ACCESS(nativeFilePath.constData(), W_OK) == 0)
+            ret |= QAbstractFileEngine::WriteUserPerm;
+    }
+    if (type & QAbstractFileEngine::ExeUserPerm) {
+        if (QT_ACCESS(nativeFilePath.constData(), X_OK) == 0)
+            ret |= QAbstractFileEngine::ExeUserPerm;
+    }
 
     return ret;
 }
@@ -793,7 +799,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
         return ret;
 
     if (exists && (type & PermsMask))
-        ret |= d->getPermissions();
+        ret |= d->getPermissions(type);
     if (type & TypesMask) {
 #if !defined(QWS) && defined(Q_OS_MAC)
         bool foundAlias = false;

@@ -156,7 +156,7 @@ protected:
 
     void init();
 
-    QAbstractFileEngine::FileFlags getPermissions() const;
+    QAbstractFileEngine::FileFlags getPermissions(QAbstractFileEngine::FileFlags type) const;
 };
 
 QT_END_NAMESPACE
