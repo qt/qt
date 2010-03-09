@@ -324,7 +324,9 @@ void* QVGPixmapData::toNativeType(NativeType type)
 
 QSymbianVGFontGlyphCache::QSymbianVGFontGlyphCache() : QVGFontGlyphCache()
 {
+#ifdef QT_SYMBIAN_HARDWARE_GLYPH_CACHE
     invertedGlyphs = true;
+#endif
 }
 
 void QSymbianVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
