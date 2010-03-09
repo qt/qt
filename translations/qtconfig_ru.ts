@@ -909,7 +909,7 @@ p, li { white-space: pre-wrap; }
 &lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
 &lt;/p&gt;</source>
         <translation>&lt;p&gt;
-&lt;a href=&quot;http://qtsoftware.com&quot;&gt;http://qtsoftware.com&lt;/a&gt;
+&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
 &lt;/p&gt;
 &lt;p&gt;
 &lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
