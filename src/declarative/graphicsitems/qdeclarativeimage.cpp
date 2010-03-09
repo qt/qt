@@ -386,7 +386,7 @@ void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWi
 void QDeclarativeImage::pixmapChange()
 {
     updatePaintedGeometry();
-    QDeclarativeImageBase::pixmapChange();
+    emit pixmapChanged();
 }
 
 QT_END_NAMESPACE
