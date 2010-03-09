@@ -42,10 +42,6 @@
 #ifndef HELPVIEWERQWV_H
 #define HELPVIEWERQWV_H
 
-#include <QtCore/qglobal.h>
-
-#if !defined(QT_NO_WEBKIT)
-
 #include "helpviewer.h"
 
 #include <QtGui/QAction>
@@ -119,7 +115,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif  // !QT_NO_WEBKIT
 
 #endif  // HELPVIEWERQWV_H

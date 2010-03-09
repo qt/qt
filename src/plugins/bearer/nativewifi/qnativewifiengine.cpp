@@ -83,8 +83,10 @@ QNativeWifiEngine::QNativeWifiEngine(QObject *parent)
 
     DWORD result = local_WlanOpenHandle(1, 0, &clientVersion, &handle);
     if (result != ERROR_SUCCESS) {
+#ifdef BEARER_MANAGEMENT_DEBUG
         if (result != ERROR_SERVICE_NOT_ACTIVE)
-            qWarning("%s: WlanOpenHandle failed with error %ld\n", __FUNCTION__, result);
+            qDebug("%s: WlanOpenHandle failed with error %ld\n", __FUNCTION__, result);
+#endif
 
         return;
     }
@@ -92,13 +94,11 @@ QNativeWifiEngine::QNativeWifiEngine(QObject *parent)
     result = local_WlanRegisterNotification(handle, WLAN_NOTIFICATION_SOURCE_ALL, true,
                                             WLAN_NOTIFICATION_CALLBACK(qNotificationCallback),
                                             this, 0, 0);
+#ifdef BEARER_MANAGEMENT_DEBUG
     if (result != ERROR_SUCCESS)
-        qWarning("%s: WlanRegisterNotification failed with error %ld\n", __FUNCTION__, result);
+        qDebug("%s: WlanRegisterNotification failed with error %ld\n", __FUNCTION__, result);
+#endif
 
-    // On Windows XP SP2 and SP3 only connection and disconnection notifications are available.
-    // We need to poll for changes in available wireless networks.
-    connect(&pollTimer, SIGNAL(timeout()), this, SLOT(scanComplete()));
-    pollTimer.setInterval(10000);
     scanComplete();
 }
 
@@ -117,7 +117,9 @@ void QNativeWifiEngine::scanComplete()
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
     if (result != ERROR_SUCCESS) {
-        qWarning("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
+#ifdef BEARER_MANAGEMENT_DEBUG
+        qDebug("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
+#endif
         return;
     }
 
@@ -128,8 +130,10 @@ void QNativeWifiEngine::scanComplete()
         result = local_WlanGetAvailableNetworkList(handle, &interface.InterfaceGuid,
                                                    3, 0, &networkList);
         if (result != ERROR_SUCCESS) {
-            qWarning("%s: WlanGetAvailableNetworkList failed with error %ld\n",
-                     __FUNCTION__, result);
+#ifdef BEARER_MANAGEMENT_DEBUG
+            qDebug("%s: WlanGetAvailableNetworkList failed with error %ld\n",
+                   __FUNCTION__, result);
+#endif
             continue;
         }
 
@@ -222,8 +226,6 @@ void QNativeWifiEngine::scanComplete()
         emit configurationRemoved(ptr);
     }
 
-    pollTimer.start();
-
     emit updateCompleted();
 }
 
@@ -235,7 +237,9 @@ QString QNativeWifiEngine::getInterfaceFromId(const QString &id)
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
     if (result != ERROR_SUCCESS) {
-        qWarning("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
+#ifdef BEARER_MANAGEMENT_DEBUG
+        qDebug("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
+#endif
         return QString();
     }
 
@@ -248,8 +252,10 @@ QString QNativeWifiEngine::getInterfaceFromId(const QString &id)
                                           wlan_intf_opcode_current_connection, 0, &dataSize,
                                           reinterpret_cast<PVOID *>(&connectionAttributes), 0);
         if (result != ERROR_SUCCESS) {
+#ifdef BEARER_MANAGEMENT_DEBUG
             if (result != ERROR_INVALID_STATE)
-                qWarning("%s: WlanQueryInterface failed with error %ld\n", __FUNCTION__, result);
+                qDebug("%s: WlanQueryInterface failed with error %ld\n", __FUNCTION__, result);
+#endif
 
             continue;
         }
@@ -286,7 +292,9 @@ bool QNativeWifiEngine::hasIdentifier(const QString &id)
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
     if (result != ERROR_SUCCESS) {
-        qWarning("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
+#ifdef BEARER_MANAGEMENT_DEBUG
+        qDebug("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
+#endif
         return false;
     }
 
@@ -297,8 +305,10 @@ bool QNativeWifiEngine::hasIdentifier(const QString &id)
         result = local_WlanGetAvailableNetworkList(handle, &interface.InterfaceGuid,
                                                    3, 0, &networkList);
         if (result != ERROR_SUCCESS) {
-            qWarning("%s: WlanGetAvailableNetworkList failed with error %ld\n",
-                     __FUNCTION__, result);
+#ifdef BEARER_MANAGEMENT_DEBUG
+            qDebug("%s: WlanGetAvailableNetworkList failed with error %ld\n",
+                   __FUNCTION__, result);
+#endif
             continue;
         }
 
@@ -341,7 +351,9 @@ void QNativeWifiEngine::connectToId(const QString &id)
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
     if (result != ERROR_SUCCESS) {
-        qWarning("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
+#ifdef BEARER_MANAGEMENT_DEBUG
+        qDebug("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
+#endif
         emit connectionError(id, InterfaceLookupError);
         return;
     }
@@ -355,8 +367,10 @@ void QNativeWifiEngine::connectToId(const QString &id)
         result = local_WlanGetAvailableNetworkList(handle, &interface.InterfaceGuid,
                                                    3, 0, &networkList);
         if (result != ERROR_SUCCESS) {
-            qWarning("%s: WlanGetAvailableNetworkList failed with error %ld\n",
-                     __FUNCTION__, result);
+#ifdef BEARER_MANAGEMENT_DEBUG
+            qDebug("%s: WlanGetAvailableNetworkList failed with error %ld\n",
+                   __FUNCTION__, result);
+#endif
             continue;
         }
 
@@ -384,7 +398,9 @@ void QNativeWifiEngine::connectToId(const QString &id)
 
             DWORD result = local_WlanConnect(handle, &interface.InterfaceGuid, &parameters, 0);
             if (result != ERROR_SUCCESS) {
-                qWarning("%s: WlanConnect failed with error %ld\n", __FUNCTION__, result);
+#ifdef BEARER_MANAGEMENT_DEBUG
+                qDebug("%s: WlanConnect failed with error %ld\n", __FUNCTION__, result);
+#endif
                 emit connectionError(id, ConnectError);
                 break;
             }
@@ -423,7 +439,9 @@ void QNativeWifiEngine::disconnectFromId(const QString &id)
 
     DWORD result = local_WlanDisconnect(handle, &guid, 0);
     if (result != ERROR_SUCCESS) {
-        qWarning("%s: WlanDisconnect failed with error %ld\n", __FUNCTION__, result);
+#ifdef BEARER_MANAGEMENT_DEBUG
+        qDebug("%s: WlanDisconnect failed with error %ld\n", __FUNCTION__, result);
+#endif
         emit connectionError(id, DisconnectionError);
         return;
     }
@@ -437,14 +455,18 @@ void QNativeWifiEngine::requestUpdate()
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
     if (result != ERROR_SUCCESS) {
-        qWarning("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
+#ifdef BEARER_MANAGEMENT_DEBUG
+        qDebug("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
+#endif
         return;
     }
 
     for (unsigned int i = 0; i < interfaceList->dwNumberOfItems; ++i) {
         result = local_WlanScan(handle, &interfaceList->InterfaceInfo[i].InterfaceGuid, 0, 0, 0);
+#ifdef BEARER_MANAGEMENT_DEBUG
         if (result != ERROR_SUCCESS)
-            qWarning("%s: WlanScan failed with error %ld\n", __FUNCTION__, result);
+            qDebug("%s: WlanScan failed with error %ld\n", __FUNCTION__, result);
+#endif
     }
 
     local_WlanFreeMemory(interfaceList);
@@ -490,6 +512,13 @@ QNetworkSessionPrivate *QNativeWifiEngine::createSessionBackend()
 QNetworkConfigurationPrivatePointer QNativeWifiEngine::defaultConfiguration()
 {
     return QNetworkConfigurationPrivatePointer();
+}
+
+bool QNativeWifiEngine::requiresPolling() const
+{
+    // On Windows XP SP2 and SP3 only connection and disconnection notifications are available.
+    // We need to poll for changes in available wireless networks.
+    return true;
 }
 
 QT_END_NAMESPACE

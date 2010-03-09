@@ -1059,6 +1059,9 @@ public:
         Key_Suspend = 0x0100010c,
         Key_ContrastAdjust = 0x0100010d,
 
+        Key_LaunchG  = 0x0100010e,
+        Key_LaunchH  = 0x0100010f,
+
         Key_MediaLast = 0x0100ffff,
 
         // Keypad navigation keys

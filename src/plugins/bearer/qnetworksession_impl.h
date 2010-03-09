@@ -69,7 +69,7 @@ class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
     Q_OBJECT
 public:
     QNetworkSessionPrivateImpl()
-    :   startTime(0)
+    :   startTime(0), sessionTimeout(-1)
     {
     }
 
@@ -108,13 +108,12 @@ private:
 
 private Q_SLOTS:
     void networkConfigurationsChanged();
-    void configurationChanged(const QNetworkConfiguration &config);
+    void configurationChanged(QNetworkConfigurationPrivatePointer config);
     void forcedSessionClose(const QNetworkConfiguration &config);
     void connectionError(const QString &id, QBearerEngineImpl::ConnectionError error);
+    void decrementTimeout();
 
 private:
-    QNetworkConfigurationManager manager;
-
     bool opened;
 
     QBearerEngineImpl *engine;
@@ -122,6 +121,8 @@ private:
     QNetworkSession::SessionError lastError;
 
     quint64 startTime;
+
+    int sessionTimeout;
 };
 
 QT_END_NAMESPACE
