@@ -1284,6 +1284,15 @@ QmlClassNode::~QmlClassNode()
 }
 
 /*!
+  Clear the multimap so that subsequent runs don't try to use
+  nodes from a previous run.
+ */
+void QmlClassNode::clear()
+{
+    inheritedBy.clear();
+}
+
+/*!
   The base file name for this kind of node has "qml_"
   prepended to it.
 
@@ -1305,8 +1314,8 @@ QString QmlClassNode::fileBase() const
  */
 void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
 {
-    //qDebug() << "QmlClassNode::addInheritedBy(): insert" << base << sub->name();
     inheritedBy.insert(base,sub);
+    qDebug() << "QmlClassNode::addInheritedBy(): insert" << base << sub->name() << inheritedBy.size();
 }
 
 /*!
@@ -1318,7 +1327,7 @@ void QmlClassNode::subclasses(const QString& base, NodeList& subs)
     if (inheritedBy.count(base) > 0) {
         subs = inheritedBy.values(base);
         qDebug() << "QmlClassNode::subclasses():" <<  inheritedBy.count(base) << base
-                 << "subs:" << subs.size();
+                 << "subs:" << subs.size() << "total size:" << inheritedBy.size();
     }
 }
 

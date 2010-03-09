@@ -52,6 +52,10 @@ QT_BEGIN_NAMESPACE
 
     \sa QDeclarativeEngine::addImageProvider()
 */
+
+/*!
+  The destructor is virtual.
+ */
 QDeclarativeImageProvider::~QDeclarativeImageProvider()
 {
 }

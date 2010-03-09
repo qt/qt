@@ -561,9 +561,6 @@ QString QDeclarativeStateChangeScript::typeName() const
     \qmlclass AnchorChanges QDeclarativeAnchorChanges
     \brief The AnchorChanges element allows you to change the anchors of an item in a state.
 
-    In the following example we change the top and bottom anchors of an item:
-    \snippet examples/declarative/anchors/anchor-changes.qml 0
-
     AnchorChanges will 'inject' \c x, \c y, \c width, and \c height changes into the transition,
     so you can animate them as you would normally changes to these properties:
     \qml

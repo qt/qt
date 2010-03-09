@@ -282,8 +282,10 @@ QString QStaticText::text() const
 }
 
 /*!
-  Sets the performance hint of the QStaticText. This hint can be used to customize how much
-  caching is done internally to improve performance.
+  Sets the performance hint of the QStaticText according to the \a
+  performanceHint provided. The \a performanceHint is used to
+  customize how much caching is done internally to improve
+  performance.
 
   The default is QStaticText::ModerateCaching.
 

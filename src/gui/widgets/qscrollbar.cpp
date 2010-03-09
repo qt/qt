@@ -523,6 +523,7 @@ bool QScrollBar::event(QEvent *event)
         break;
 #ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel: {
+        event->ignore();
         // override wheel event without adding virtual function override
         QWheelEvent *ev = static_cast<QWheelEvent *>(event);
         int delta = ev->delta();

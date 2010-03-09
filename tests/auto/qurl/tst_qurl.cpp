@@ -193,6 +193,7 @@ private slots:
     void fromUserInput();
     void task_199967();
     void task_240612();
+    void taskQTBUG_6962();
 
 #ifdef QT3_SUPPORT
     void dirPath();
@@ -3858,6 +3859,14 @@ void tst_QUrl::resolvedWithAbsoluteSchemes_data() const
         << QUrl::fromEncoded("http://www.foo.com:8080/")
         << QUrl::fromEncoded("newfile.html")
         << QUrl::fromEncoded("http://www.foo.com:8080/newfile.html");
+}
+
+void tst_QUrl::taskQTBUG_6962()
+{
+    //bug 6962: empty authority ignored by setAuthority
+    QUrl url("http://example.com/something");
+    url.setAuthority(QString());
+    QCOMPARE(url.authority(), QString());
 }
 
 QTEST_MAIN(tst_QUrl)

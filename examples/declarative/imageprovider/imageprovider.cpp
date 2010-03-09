@@ -104,4 +104,5 @@ public:
 #include "imageprovider.moc"
 
 Q_EXPORT_PLUGIN(ImageProviderExtensionPlugin);
+//![0]
 
