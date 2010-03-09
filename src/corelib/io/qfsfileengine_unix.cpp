@@ -749,12 +749,6 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
         ret |= QAbstractFileEngine::WriteOwnerPerm;
     if (st.st_mode & S_IXUSR)
         ret |= QAbstractFileEngine::ExeOwnerPerm;
-    if (st.st_mode & S_IRUSR)
-        ret |= QAbstractFileEngine::ReadUserPerm;
-    if (st.st_mode & S_IWUSR)
-        ret |= QAbstractFileEngine::WriteUserPerm;
-    if (st.st_mode & S_IXUSR)
-        ret |= QAbstractFileEngine::ExeUserPerm;
     if (st.st_mode & S_IRGRP)
         ret |= QAbstractFileEngine::ReadGroupPerm;
     if (st.st_mode & S_IWGRP)
@@ -767,6 +761,14 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
         ret |= QAbstractFileEngine::WriteOtherPerm;
     if (st.st_mode & S_IXOTH)
         ret |= QAbstractFileEngine::ExeOtherPerm;
+
+    // calculate user permissions
+    if (QT_ACCESS(nativeFilePath.constData(), R_OK) == 0)
+        ret |= QAbstractFileEngine::ReadUserPerm;
+    if (QT_ACCESS(nativeFilePath.constData(), W_OK) == 0)
+        ret |= QAbstractFileEngine::WriteUserPerm;
+    if (QT_ACCESS(nativeFilePath.constData(), X_OK) == 0)
+        ret |= QAbstractFileEngine::ExeUserPerm;
 
     return ret;
 }

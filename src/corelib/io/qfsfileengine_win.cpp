@@ -1480,12 +1480,12 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
         //### what to do with permissions if we don't use NTFS
         // for now just add all permissions and what about exe missions ??
         // also qt_ntfs_permission_lookup is now not set by default ... should it ?
-        ret |= QAbstractFileEngine::ReadOwnerPerm | QAbstractFileEngine::ReadUserPerm
-             | QAbstractFileEngine::ReadGroupPerm | QAbstractFileEngine::ReadOtherPerm;
+        ret |= QAbstractFileEngine::ReadOwnerPerm | QAbstractFileEngine::ReadGroupPerm
+             | QAbstractFileEngine::ReadOtherPerm;
 
         if (!(fileAttrib & FILE_ATTRIBUTE_READONLY)) {
-            ret |= QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteUserPerm
-                 | QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm;
+            ret |= QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteGroupPerm
+                 | QAbstractFileEngine::WriteOtherPerm;
         }
 
         QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
@@ -1493,9 +1493,17 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
         if ((fileAttrib & FILE_ATTRIBUTE_DIRECTORY) ||
             ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
             ext == QLatin1String(".pif") || ext == QLatin1String(".cmd")) {
-            ret |= QAbstractFileEngine::ExeOwnerPerm | QAbstractFileEngine::ExeGroupPerm |
-                   QAbstractFileEngine::ExeOtherPerm | QAbstractFileEngine::ExeUserPerm;
+            ret |= QAbstractFileEngine::ExeOwnerPerm | QAbstractFileEngine::ExeGroupPerm
+                 | QAbstractFileEngine::ExeOtherPerm;
         }
+
+        // calculate user permissions
+        if (::_waccess((wchar_t*)longFileName(filePath).utf16(), R_OK) == 0)
+            ret |= QAbstractFileEngine::ReadUserPerm;
+        if (::_waccess((wchar_t*)longFileName(filePath).utf16(), W_OK) == 0)
+            ret |= QAbstractFileEngine::WriteUserPerm;
+        if (::_waccess((wchar_t*)longFileName(filePath).utf16(), X_OK) == 0)
+            ret |= QAbstractFileEngine::ExeUserPerm;
     }
     return ret;
 }
