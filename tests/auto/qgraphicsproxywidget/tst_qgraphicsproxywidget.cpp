@@ -3513,6 +3513,18 @@ void tst_QGraphicsProxyWidget::clickFocus()
         QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
         QVERIFY(!proxy->hasFocus());
         QVERIFY(!proxy->widget()->hasFocus());
+
+        // Multiple clicks should only result in one FocusIn.
+        proxy->widget()->setFocusPolicy(Qt::StrongFocus);
+        scene.setFocusItem(0);
+        QVERIFY(!proxy->hasFocus());
+        QVERIFY(!proxy->widget()->hasFocus());
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
+        QVERIFY(proxy->hasFocus());
+        QVERIFY(proxy->widget()->hasFocus());
+        QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 1);
+        QCOMPARE(proxySpy.counts[QEvent::FocusIn], 1);
     }
 }
 
