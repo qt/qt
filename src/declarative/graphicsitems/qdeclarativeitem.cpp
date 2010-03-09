@@ -2577,6 +2577,8 @@ bool QDeclarativeItem::sceneEvent(QEvent *event)
             keyPressEvent(static_cast<QKeyEvent *>(event));
             if (!event->isAccepted())
                 return QGraphicsItem::sceneEvent(event);
+            else
+                return true;
         } else {
             return QGraphicsItem::sceneEvent(event);
         }
