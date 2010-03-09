@@ -77,6 +77,8 @@ protected:
     QGraphicsSceneEvent(QGraphicsSceneEventPrivate &dd, Type type = None);
     QScopedPointer<QGraphicsSceneEventPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QGraphicsSceneEvent)
+private:
+    Q_DISABLE_COPY(QGraphicsSceneEvent)
 };
 
 class QGraphicsSceneMouseEventPrivate;
@@ -124,6 +126,7 @@ public:
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsSceneMouseEvent)
+    Q_DISABLE_COPY(QGraphicsSceneMouseEvent)
 };
 
 class QGraphicsSceneWheelEventPrivate;
@@ -156,6 +159,7 @@ public:
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsSceneWheelEvent)
+    Q_DISABLE_COPY(QGraphicsSceneWheelEvent)
 };
 
 class QGraphicsSceneContextMenuEventPrivate;
@@ -184,6 +188,7 @@ public:
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsSceneContextMenuEvent)
+    Q_DISABLE_COPY(QGraphicsSceneContextMenuEvent)
 };
 
 class QGraphicsSceneHoverEventPrivate;
@@ -216,6 +221,7 @@ public:
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsSceneHoverEvent)
+    Q_DISABLE_COPY(QGraphicsSceneHoverEvent)
 };
 
 class QGraphicsSceneHelpEventPrivate;
@@ -233,6 +239,7 @@ public:
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsSceneHelpEvent)
+    Q_DISABLE_COPY(QGraphicsSceneHelpEvent)
 };
 
 class QGraphicsSceneDragDropEventPrivate;
@@ -275,12 +282,14 @@ public:
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsSceneDragDropEvent)
+    Q_DISABLE_COPY(QGraphicsSceneDragDropEvent)
 };
 
 class QGraphicsSceneResizeEventPrivate;
 class Q_GUI_EXPORT QGraphicsSceneResizeEvent : public QGraphicsSceneEvent
 {
     Q_DECLARE_PRIVATE(QGraphicsSceneResizeEvent)
+    Q_DISABLE_COPY(QGraphicsSceneResizeEvent)
 public:
     QGraphicsSceneResizeEvent();
     ~QGraphicsSceneResizeEvent();
@@ -296,6 +305,7 @@ class QGraphicsSceneMoveEventPrivate;
 class Q_GUI_EXPORT QGraphicsSceneMoveEvent : public QGraphicsSceneEvent
 {
     Q_DECLARE_PRIVATE(QGraphicsSceneMoveEvent)
+    Q_DISABLE_COPY(QGraphicsSceneMoveEvent)
 public:
     QGraphicsSceneMoveEvent();
     ~QGraphicsSceneMoveEvent();
