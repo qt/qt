@@ -1099,8 +1099,15 @@ extern "C" {
     }
     if (sendKeyEvents && !composing) {
         bool keyOK = qt_dispatchKeyEvent(theEvent, widgetToGetKey);
-        if (!keyOK && !sendToPopup)
-            [super keyDown:theEvent];
+        if (!keyOK && !sendToPopup) {
+            // find the first responder that is not created by Qt and forward
+            // the event to it (for example if Qt widget is embedded into native).
+            QWidget *toplevel = qwidget->window();
+            if (toplevel && qt_widget_private(toplevel)->topData()->embedded) {
+                if (NSResponder *w = [qt_mac_nativeview_for(toplevel) superview])
+                    [w keyDown:theEvent];
+            }
+        }
     }
 }
 
@@ -1109,8 +1116,13 @@ extern "C" {
 {
     if (sendKeyEvents) {
         bool keyOK = qt_dispatchKeyEvent(theEvent, qwidget);
-        if (!keyOK)
-            [super keyUp:theEvent];
+        if (!keyOK) {
+            QWidget *toplevel = qwidget->window();
+            if (toplevel && qt_widget_private(toplevel)->topData()->embedded) {
+                if (NSResponder *w = [qt_mac_nativeview_for(toplevel) superview])
+                    [w keyUp:theEvent];
+            }
+        }
     }
 }
 
