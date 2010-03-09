@@ -161,8 +161,8 @@ public:
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
 
-    Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, int x, int y) const;
-    Q_INVOKABLE QScriptValue mapToItem(const QScriptValue &item, int x, int y) const;
+    Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, qreal x, qreal y) const;
+    Q_INVOKABLE QScriptValue mapToItem(const QScriptValue &item, qreal x, qreal y) const;
 
     QDeclarativeAnchorLine left() const;
     QDeclarativeAnchorLine right() const;
@@ -211,8 +211,6 @@ protected:
     QDeclarativeItem(QDeclarativeItemPrivate &dd, QDeclarativeItem *parent = 0);
 
 private:
-    friend class QDeclarativeStatePrivate;
-    friend class QDeclarativeAnchors;
     Q_DISABLE_COPY(QDeclarativeItem)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeItem)
 };
