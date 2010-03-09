@@ -1081,7 +1081,7 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
     according to the \a margins structure.
 */
 
-typedef QVarLengthArray<QPainter::Fragment, 16> QPixmapFragmentsArray;
+typedef QVarLengthArray<QPainter::PixmapFragment, 16> QPixmapFragmentsArray;
 
 /*!
     \since 4.6
@@ -1102,7 +1102,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
                        const QPixmap &pixmap, const QRect &sourceRect,const QMargins &sourceMargins,
                        const QTileRules &rules, QDrawBorderPixmap::DrawingHints hints)
 {
-    QPainter::Fragment d;
+    QPainter::PixmapFragment d;
     d.opacity = 1.0;
     d.rotation = 0.0;
 

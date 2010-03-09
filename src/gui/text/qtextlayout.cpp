@@ -1875,6 +1875,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                     line.textWidth += lbh.softHyphenWidth;
                 }
 
+                line.textAdvance = line.textWidth;
                 line.textWidth += lbh.rightBearing;
 
                 goto found;
@@ -1885,6 +1886,7 @@ void QTextLine::layout_helper(int maxGlyphs)
     }
     LB_DEBUG("reached end of line");
     lbh.checkFullOtherwiseExtend(line);
+    line.textAdvance = line.textWidth;
     line.textWidth += lbh.rightBearing;
 
 found:       
