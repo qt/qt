@@ -2217,7 +2217,7 @@ void QDeclarativeItem::setKeepMouseGrab(bool keep)
     \qmlmethod object Item::mapFromItem(Item item, int x, int y)
 
     Maps the point (\a x, \a y), which is in \a item's coordinate system, to
-    this item's coordinate system, and returns an object with \c x and \c y 
+    this item's coordinate system, and returns an object with \c x and \c y
     properties matching the mapped cooordinate.
 
     If \a item is a \c null value, this maps the point from the coordinate
@@ -2576,9 +2576,9 @@ bool QDeclarativeItem::sceneEvent(QEvent *event)
             !(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {
             keyPressEvent(static_cast<QKeyEvent *>(event));
             if (!event->isAccepted())
-                QGraphicsItem::sceneEvent(event);
+                return QGraphicsItem::sceneEvent(event);
         } else {
-            QGraphicsItem::sceneEvent(event);
+            return QGraphicsItem::sceneEvent(event);
         }
     } else {
         bool rv = QGraphicsItem::sceneEvent(event);

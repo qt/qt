@@ -41,18 +41,19 @@
 
 #include <QtCore/qdebug.h>
 
-#include <private/qt_x11_p.h>
+#include <QtGui/private/qt_x11_p.h>
 #include <QtGui/qx11info_x11.h>
-#include <private/qpixmapdata_p.h>
-#include <private/qpixmap_x11_p.h>
+#include <QtGui/private/qpixmapdata_p.h>
+#include <QtGui/private/qpixmap_x11_p.h>
+#include <QtGui/private/qimagepixmapcleanuphooks_p.h>
 
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qwidget.h>
 #include <QtGui/qcolormap.h>
 
-#include "qegl_p.h"
-#include "qeglcontext_p.h"
+#include "QtGui/private/qegl_p.h"
+#include "QtGui/private/qeglcontext_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -408,6 +409,7 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEg
                                                  (EGLNativePixmapType) x11PixmapData->handle(),
                                                  surfaceAttribs.properties());
         x11PixmapData->gl_surface = (Qt::HANDLE)surf;
+        QImagePixmapCleanupHooks::enableCleanupHooks(x11PixmapData);
         return surf;
     }
 

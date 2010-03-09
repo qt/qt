@@ -329,7 +329,7 @@ void MainWindow::setupDockWidgets(const QMap<QString, QSize> &customSizeHints)
             BlueTitleBar *titlebar = new BlueTitleBar(swatch);
             swatch->setTitleBarWidget(titlebar);
             connect(swatch, SIGNAL(topLevelChanged(bool)), titlebar, SLOT(updateMask()));
-            connect(swatch, SIGNAL(featuresChanged(QDockWidget::DockWidgetFeatures)), titlebar, SLOT(updateMask()));
+            connect(swatch, SIGNAL(featuresChanged(QDockWidget::DockWidgetFeatures)), titlebar, SLOT(updateMask()), Qt::QueuedConnection);
 
 #ifdef Q_WS_QWS
             QPalette pal = palette();

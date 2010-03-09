@@ -1,5 +1,5 @@
 TARGET  = webkitqmlplugin
-TARGETPATH = $$[QT_INSTALL_IMPORTS]/org/webkit
+TARGETPATH = org/webkit
 include(../qimportbase.pri)
 
 QT += webkit declarative
@@ -14,6 +14,6 @@ QTDIR_build:DESTDIR = $$TARGETPATH
 target.path = $$TARGETPATH
 
 qmldir.files += $$QT_BUILD_TREE/imports/org/webkit/qmldir
-qmldir.path +=  $$TARGETPATH
+qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
 INSTALLS += target qmldir

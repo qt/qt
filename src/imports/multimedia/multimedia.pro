@@ -1,5 +1,5 @@
 TARGET  = multimedia
-TARGETPATH = $$[QT_INSTALL_IMPORTS]/Qt/multimedia
+TARGETPATH = Qt/multimedia
 include(../qimportbase.pri)
 
 QT += multimedia declarative
@@ -21,6 +21,6 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/imports/Qt/multimedia
 target.path = $$TARGETPATH
 
 qmldir.files += $$QT_BUILD_TREE/imports/Qt/multimedia/qmldir
-qmldir.path +=  $$TARGETPATH
+qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
 INSTALLS += target qmldir
