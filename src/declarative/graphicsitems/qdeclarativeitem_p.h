@@ -91,7 +91,7 @@ public Q_SLOTS:
     void calcWidth();
 
 Q_SIGNALS:
-    void rectChanged();
+    void rectChanged(QRectF);
 
 private:
     QDeclarativeItem *m_item;
@@ -240,7 +240,7 @@ public:
     // Reimplemented from QGraphicsItemPrivate
     virtual void subFocusItemChange()
     {
-        emit q_func()->wantsFocusChanged();
+        emit q_func()->wantsFocusChanged(subFocusItem != 0);
     }
 
     // Reimplemented from QGraphicsItemPrivate
@@ -254,6 +254,8 @@ public:
             }
         }
     }
+
+    virtual void focusChanged(bool);
 
     static int consistentTime;
     static QTime currentTime();
