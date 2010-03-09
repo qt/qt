@@ -127,6 +127,7 @@ private slots:
     void scriptConnect();
     void scriptDisconnect();
     void ownership();
+    void qlistqobjectMethods();
 
     void bug1();
 
@@ -1943,6 +1944,43 @@ void tst_qdeclarativeecmascript::ownership()
 
         delete object;
     }
+}
+
+class QListQObjectMethodsObject : public QObject
+{
+    Q_OBJECT
+public:
+    QListQObjectMethodsObject() {
+        m_objects.append(new MyQmlObject());
+        m_objects.append(new MyQmlObject());
+    }
+
+    ~QListQObjectMethodsObject() {
+        qDeleteAll(m_objects);
+    }
+
+public slots:
+    QList<QObject *> getObjects() { return m_objects; }
+
+private:
+    QList<QObject *> m_objects;
+};
+
+// Tests that returning a QList<QObject*> from a method works
+void tst_qdeclarativeecmascript::qlistqobjectMethods()
+{
+    QListQObjectMethodsObject obj;
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    context->addDefaultObject(&obj);
+
+    QDeclarativeComponent component(&engine, TEST_FILE("qlistqobjectMethods.qml"));
+
+    QObject *object = component.create(context);
+
+    QCOMPARE(object->property("test").toInt(), 2);
+    QCOMPARE(object->property("test2").toBool(), true);
+
+    delete object;
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)
