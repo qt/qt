@@ -161,8 +161,8 @@ public:
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
 
-    Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, int x, int y) const;
-    Q_INVOKABLE QScriptValue mapToItem(const QScriptValue &item, int x, int y) const;
+    Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, qreal x, qreal y) const;
+    Q_INVOKABLE QScriptValue mapToItem(const QScriptValue &item, qreal x, qreal y) const;
 
     QDeclarativeAnchorLine left() const;
     QDeclarativeAnchorLine right() const;

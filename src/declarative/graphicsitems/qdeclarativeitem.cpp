@@ -2214,7 +2214,7 @@ void QDeclarativeItem::setKeepMouseGrab(bool keep)
 }
 
 /*!
-    \qmlmethod object Item::mapFromItem(Item item, int x, int y)
+    \qmlmethod object Item::mapFromItem(Item item, real x, real y)
 
     Maps the point (\a x, \a y), which is in \a item's coordinate system, to
     this item's coordinate system, and returns an object with \c x and \c y
@@ -2223,7 +2223,7 @@ void QDeclarativeItem::setKeepMouseGrab(bool keep)
     If \a item is a \c null value, this maps the point from the coordinate
     system of the root QML view.
 */
-QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, int x, int y) const
+QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, qreal x, qreal y) const
 {
     QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
     QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
@@ -2234,13 +2234,13 @@ QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, int x, int 
 
     // If QGraphicsItem::mapFromItem() is called with 0, behaves the same as mapFromScene()
     QPointF p = qobject_cast<QGraphicsItem*>(this)->mapFromItem(itemObj, x, y);
-    sv.setProperty("x", p.x());
-    sv.setProperty("y", p.y());
+    sv.setProperty(QLatin1String("x"), p.x());
+    sv.setProperty(QLatin1String("y"), p.y());
     return sv;
 }
 
 /*!
-    \qmlmethod object Item::mapToItem(Item item, int x, int y)
+    \qmlmethod object Item::mapToItem(Item item, real x, real y)
 
     Maps the point (\a x, \a y), which is in this item's coordinate system, to
     \a item's coordinate system, and returns an object with \c x and \c y
@@ -2249,7 +2249,7 @@ QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, int x, int 
     If \a item is a \c null value, this maps \a x and \a y to the coordinate
     system of the root QML view.
 */
-QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, int x, int y) const
+QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qreal y) const
 {
     QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
     QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
@@ -2260,8 +2260,8 @@ QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, int x, int y)
 
     // If QGraphicsItem::mapToItem() is called with 0, behaves the same as mapToScene()
     QPointF p = qobject_cast<QGraphicsItem*>(this)->mapToItem(itemObj, x, y);
-    sv.setProperty("x", p.x());
-    sv.setProperty("y", p.y());
+    sv.setProperty(QLatin1String("x"), p.x());
+    sv.setProperty(QLatin1String("y"), p.y());
     return sv;
 }
 
