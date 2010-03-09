@@ -1480,25 +1480,21 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
         //### what to do with permissions if we don't use NTFS
         // for now just add all permissions and what about exe missions ??
         // also qt_ntfs_permission_lookup is now not set by default ... should it ?
-        ret |= QAbstractFileEngine::ReadOtherPerm | QAbstractFileEngine::ReadGroupPerm
-            | QAbstractFileEngine::ReadOwnerPerm | QAbstractFileEngine::ReadUserPerm
-            | QAbstractFileEngine::WriteUserPerm | QAbstractFileEngine::WriteOwnerPerm
-            | QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm;
+        ret |= QAbstractFileEngine::ReadOwnerPerm | QAbstractFileEngine::ReadUserPerm
+             | QAbstractFileEngine::ReadGroupPerm | QAbstractFileEngine::ReadOtherPerm;
 
-        if (doStat()) {
-            if (ret & (QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteUserPerm |
-                QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm)) {
-                if (fileAttrib & FILE_ATTRIBUTE_READONLY)
-                    ret &= ~(QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteUserPerm |
-                             QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm);
-            }
+        if (!(fileAttrib & FILE_ATTRIBUTE_READONLY)) {
+            ret |= QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteUserPerm
+                 | QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm;
+        }
 
-            QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
-            QString ext = fname.right(4).toLower();
-            if (ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
-                ext == QLatin1String(".pif") || ext == QLatin1String(".cmd") || (fileAttrib & FILE_ATTRIBUTE_DIRECTORY))
-                ret |= QAbstractFileEngine::ExeOwnerPerm | QAbstractFileEngine::ExeGroupPerm |
-                       QAbstractFileEngine::ExeOtherPerm | QAbstractFileEngine::ExeUserPerm;
+        QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
+        QString ext = fname.right(4).toLower();
+        if ((fileAttrib & FILE_ATTRIBUTE_DIRECTORY) ||
+            ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
+            ext == QLatin1String(".pif") || ext == QLatin1String(".cmd")) {
+            ret |= QAbstractFileEngine::ExeOwnerPerm | QAbstractFileEngine::ExeGroupPerm |
+                   QAbstractFileEngine::ExeOtherPerm | QAbstractFileEngine::ExeUserPerm;
         }
     }
     return ret;
@@ -1555,13 +1551,10 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     }
 
     if (type & PermsMask) {
-        ret |= d->getPermissions();
-        // ### Workaround pascals ### above. Since we always set all properties to true
-        // we need to disable read and exec access if the file does not exists
-        if (d->doStat())
+        if (d->doStat()) {
             ret |= ExistsFlag;
-        else
-            ret &= 0x2222;
+            ret |= d->getPermissions();
+        }
     }
     if (type & TypesMask) {
         if (d->filePath.endsWith(QLatin1String(".lnk"))) {
