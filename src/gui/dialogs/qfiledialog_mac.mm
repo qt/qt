@@ -729,6 +729,7 @@ Boolean QFileDialogPrivate::qt_mac_filedialog_filter_proc(AEDesc *theItem, void 
 
     NavFileOrFolderInfo *theInfo = static_cast<NavFileOrFolderInfo *>(info);
     QString file;
+    QString path;
     const QtMacFilterName &fn
            = fileDialogPrivate->filterInfo.filters.at(fileDialogPrivate->filterInfo.currentSelection);
     if (theItem->descriptorType == typeFSRef) {
@@ -736,10 +737,12 @@ Boolean QFileDialogPrivate::qt_mac_filedialog_filter_proc(AEDesc *theItem, void 
         AEGetDescData(theItem, &ref, sizeof(ref));
         UInt8 str_buffer[1024];
         FSRefMakePath(&ref, str_buffer, 1024);
-        file = QString::fromUtf8(reinterpret_cast<const char *>(str_buffer));
-        int slsh = file.lastIndexOf(QLatin1Char('/'));
+        path = QString::fromUtf8(reinterpret_cast<const char *>(str_buffer));
+        int slsh = path.lastIndexOf(QLatin1Char('/'));
         if (slsh != -1)
-            file = file.right(file.length() - slsh - 1);
+            file = path.right(path.length() - slsh - 1);
+        else
+            file = path;
     }
     QStringList reg = fn.regexp.split(QLatin1String(";"));
     for (QStringList::const_iterator it = reg.constBegin(); it != reg.constEnd(); ++it) {
@@ -751,7 +754,13 @@ Boolean QFileDialogPrivate::qt_mac_filedialog_filter_proc(AEDesc *theItem, void 
         if (rg.exactMatch(file))
             return true;
     }
-    return (theInfo->isFolder && !file.endsWith(QLatin1String(".app")));
+
+    if (theInfo->isFolder) {
+        if ([[NSWorkspace sharedWorkspace] isFilePackageAtPath:qt_mac_QStringToNSString(path)])
+            return false;
+        return true;
+    }
+    return false;
 }
 
 void QFileDialogPrivate::qt_mac_filedialog_event_proc(const NavEventCallbackMessage msg,
