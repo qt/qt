@@ -79,7 +79,7 @@ struct QDeclarativeGraphics_DerivedObject : public QObject
     neither \a parent nor the object's previous parent (if it had one) will
     receive ChildRemoved or ChildAdded events.
 */
-inline void QDeclarativeGraphics_setParent_noEvent(QObject *object, QObject *parent)
+inline void QDeclarative_setParent_noEvent(QObject *object, QObject *parent)
 {
     static_cast<QDeclarativeGraphics_DerivedObject *>(object)->setParent_noEvent(parent);
 }

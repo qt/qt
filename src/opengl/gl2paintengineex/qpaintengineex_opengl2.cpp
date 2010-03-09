@@ -1641,7 +1641,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         s->matrix = old;
 }
 
-void QGL2PaintEngineEx::drawPixmapFragments(const QPainter::Fragment *fragments, int fragmentCount, const QPixmap &pixmap, QPainter::FragmentHints hints)
+void QGL2PaintEngineEx::drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
+                                            QPainter::PixmapFragmentHints hints)
 {
     Q_D(QGL2PaintEngineEx);
     // Use fallback for extended composition modes.
@@ -1655,9 +1656,9 @@ void QGL2PaintEngineEx::drawPixmapFragments(const QPainter::Fragment *fragments,
 }
 
 
-void QGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::Fragment *fragments,
+void QGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFragment *fragments,
                                                    int fragmentCount, const QPixmap &pixmap,
-                                                   QPainter::FragmentHints hints)
+                                                   QPainter::PixmapFragmentHints hints)
 {
     GLfloat dx = 1.0f / pixmap.size().width();
     GLfloat dy = 1.0f / pixmap.size().height();
@@ -1867,6 +1868,7 @@ bool QGL2PaintEngineEx::end()
 
     delete d->shaderManager;
     d->shaderManager = 0;
+    d->currentBrush = QBrush();
 
 #ifdef QT_OPENGL_CACHE_AS_VBOS
     if (!d->unusedVBOSToClean.isEmpty()) {

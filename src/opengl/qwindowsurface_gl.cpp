@@ -83,7 +83,7 @@
 #endif
 
 #ifdef QT_OPENGL_ES
-#include <private/qegl_p.h>
+#include <private/qeglcontext_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -352,18 +352,6 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     QGLContext *ctx = new QGLContext(surfaceFormat, widget);
     ctx->create(qt_gl_share_widget()->context());
-
-#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
-    // Create the EGL surface to draw into.  QGLContext::chooseContext()
-    // does not do this for X11/EGL, but does do it for other platforms.
-    // This probably belongs in qgl_x11egl.cpp.
-    QGLContextPrivate *ctxpriv = ctx->d_func();
-    ctxpriv->eglSurface = ctxpriv->eglContext->createSurface(widget);
-    if (ctxpriv->eglSurface == EGL_NO_SURFACE) {
-        qWarning() << "hijackWindow() could not create EGL surface";
-    }
-    qDebug("QGLWindowSurface - using EGLConfig %d", reinterpret_cast<int>(ctxpriv->eglContext->config()));
-#endif
 
     widgetPrivate->extraData()->glContext = ctx;
 

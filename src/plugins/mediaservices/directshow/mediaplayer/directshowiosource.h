@@ -42,16 +42,16 @@
 #ifndef DIRECTSHOWIOSOURCE_H
 #define DIRECTSHOWIOSOURCE_H
 
+#include "directshowglobal.h"
 #include "directshowioreader.h"
 #include "directshowmediatype.h"
 #include "directshowmediatypelist.h"
 
+#include <QtCore/qfile.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-
-#include <QtCore/qfile.h>
 
 class DirectShowIOSource
     : public DirectShowMediaTypeList

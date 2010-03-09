@@ -75,12 +75,12 @@ Q_SIGNALS:
     void sourceChanged(const QUrl &);
     void statusChanged(Status);
     void progressChanged(qreal progress);
-    void pixmapChanged();
     void asynchronousChanged();
 
 protected:
     virtual void load();
     virtual void componentComplete();
+    virtual void pixmapChange();
     QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent);
 
 private Q_SLOTS:

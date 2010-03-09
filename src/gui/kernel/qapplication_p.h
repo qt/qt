@@ -514,7 +514,7 @@ public:
     int symbianResourceChange(const QSymbianEvent *symbianEvent);
 
 #endif
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC)
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
@@ -543,6 +543,7 @@ public:
                                        const QList<QTouchEvent::TouchPoint> &touchPoints);
 
 #if defined(Q_WS_WIN)
+    static bool HasTouchSupport;
     static PtrRegisterTouchWindow RegisterTouchWindow;
     static PtrGetTouchInputInfo GetTouchInputInfo;
     static PtrCloseTouchInputHandle CloseTouchInputHandle;

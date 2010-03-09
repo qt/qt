@@ -437,6 +437,13 @@ void QDeclarativeComponent::loadUrl(const QUrl &url)
     else
         d->url = url;
 
+    if (url.isEmpty()) {
+        QDeclarativeError error;
+        error.setDescription(tr("Invalid empty URL"));
+        d->state.errors << error;
+        return;
+    }
+
     QDeclarativeCompositeTypeData *data = 
         QDeclarativeEnginePrivate::get(d->engine)->typeManager.get(d->url);
 
@@ -618,7 +625,7 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContext *context, const QB
     QObject *rv = begin(ctxt, ep, cc, start, count, &state, bindings);
 
     if (rv) {
-        QDeclarativeGraphics_setParent_noEvent(ctxt, rv);
+        QDeclarative_setParent_noEvent(ctxt, rv);
     } else {
         delete ctxt;
     }

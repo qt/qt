@@ -238,10 +238,10 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
             if (property->flags & QDeclarativePropertyCache::Data::IsFunction) 
                 return; // Not an object property 
 
-            if (ii == (path.count() - 2) && property->propType < (int)QVariant::UserType) {
+            if (ii == (path.count() - 2) && QDeclarativeValueTypeFactory::isValueType(property->propType)) {
                 // We're now at a value type property.  We can use a global valuetypes array as we 
                 // never actually use the objects, just look up their properties.
-                QObject *typeObject = qmlValueTypes()->valueTypes[property->propType];
+                QObject *typeObject = (*qmlValueTypes())[property->propType];
                 if (!typeObject) return; // Not a value type
 
                 int idx = typeObject->metaObject()->indexOfProperty(path.last().toUtf8().constData());
@@ -346,7 +346,7 @@ QDeclarativePropertyPrivate::propertyTypeCategory() const
         int type = propertyType();
         if (type == QVariant::Invalid)
             return QDeclarativeProperty::InvalidCategory;
-        else if ((uint)type < QVariant::UserType)
+        else if (QDeclarativeValueTypeFactory::isValueType((uint)type))
             return QDeclarativeProperty::Normal;
         else if (core.flags & QDeclarativePropertyCache::Data::IsQObjectDerived)
             return QDeclarativeProperty::Object;
@@ -793,7 +793,7 @@ QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDecla
 
 QVariant QDeclarativePropertyPrivate::readValueProperty()
 {
-    if(isValueType()) {
+    if (isValueType()) {
 
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context);
         QDeclarativeValueType *valueType = 0;
@@ -809,12 +809,19 @@ QVariant QDeclarativePropertyPrivate::readValueProperty()
         if (!ep) delete valueType;
         return rv;
 
-    } else if(core.flags & QDeclarativePropertyCache::Data::IsQList) {
+    } else if (core.flags & QDeclarativePropertyCache::Data::IsQList) {
 
         QDeclarativeListProperty<QObject> prop;
         void *args[] = { &prop, 0 };
         QMetaObject::metacall(object, QMetaObject::ReadProperty, core.coreIndex, args);
         return QVariant::fromValue(QDeclarativeListReferencePrivate::init(prop, core.propType, engine)); 
+
+    } else if (core.flags & QDeclarativePropertyCache::Data::IsQObjectDerived) {
+
+        QObject *rv = 0;
+        void *args[] = { &rv, 0 };
+        QMetaObject::metacall(object, QMetaObject::ReadProperty, core.coreIndex, args);
+        return QVariant::fromValue(rv);
 
     } else {
 

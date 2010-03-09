@@ -81,7 +81,7 @@ UnixMakefileGenerator::writeMakefile(QTextStream &t)
 
     writeHeader(t);
     if(!project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty()) {
-        t << "QMAKE    = "        << (project->isEmpty("QMAKE_QMAKE") ? QString("qmake") : var("QMAKE_QMAKE")) << endl;
+        t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
         QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
         for(QStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
             t << *it << " ";
@@ -154,7 +154,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
     t << "AR            = " << var("QMAKE_AR") << endl;
     t << "RANLIB        = " << var("QMAKE_RANLIB") << endl;
-    t << "QMAKE         = " << (project->isEmpty("QMAKE_QMAKE") ? QString("qmake") : var("QMAKE_QMAKE")) << endl;
+    t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;
     t << "TAR           = " << var("QMAKE_TAR") << endl;
     t << "COMPRESS      = " << var("QMAKE_GZIP") << endl;
     if(project->isActiveConfig("compile_libtool"))

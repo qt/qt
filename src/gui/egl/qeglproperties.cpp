@@ -39,15 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qeglproperties_p.h"
-
-QT_BEGIN_NAMESPACE
-
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 
-#include "qegl_p.h"
+#include "qeglproperties_p.h"
+#include "qeglcontext_p.h"
 
+QT_BEGIN_NAMESPACE
 
 // Initialize a property block.
 QEglProperties::QEglProperties()
@@ -60,7 +58,7 @@ QEglProperties::QEglProperties(EGLConfig cfg)
     props.append(EGL_NONE);
     for (int name = 0x3020; name <= 0x304F; ++name) {
         EGLint value;
-        if (name != EGL_NONE && eglGetConfigAttrib(QEglContext::display(), cfg, name, &value))
+        if (name != EGL_NONE && eglGetConfigAttrib(QEgl::display(), cfg, name, &value))
             setValue(name, value);
     }
     eglGetError();  // Clear the error state.
@@ -166,6 +164,17 @@ bool QEglProperties::removeValue(int name)
     return false;
 }
 
+void QEglProperties::setDeviceType(int devType)
+{
+    if (devType == QInternal::Pixmap || devType == QInternal::Image)
+        setValue(EGL_SURFACE_TYPE, EGL_PIXMAP_BIT);
+    else if (devType == QInternal::Pbuffer)
+        setValue(EGL_SURFACE_TYPE, EGL_PBUFFER_BIT);
+    else
+        setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT);
+}
+
+
 // Sets the red, green, blue, and alpha sizes based on a pixel format.
 // Normally used to match a configuration request to the screen format.
 void QEglProperties::setPixelFormat(QImage::Format pixelFormat)
@@ -229,6 +238,16 @@ void QEglProperties::setRenderableType(QEgl::API api)
 // reductions in complexity are possible.
 bool QEglProperties::reduceConfiguration()
 {
+#ifdef EGL_VG_ALPHA_FORMAT_PRE_BIT
+    // For OpenVG, we sometimes try to create a surface using a pre-multiplied format. If we can't
+    // find a config which supports pre-multiplied formats, remove the flag on the surface type:
+    EGLint surfaceType = value(EGL_SURFACE_TYPE);
+    if (surfaceType & EGL_VG_ALPHA_FORMAT_PRE_BIT) {
+        surfaceType ^= EGL_VG_ALPHA_FORMAT_PRE_BIT;
+        setValue(EGL_SURFACE_TYPE, surfaceType);
+        return true;
+    }
+#endif
     // EGL chooses configs with the highest color depth over
     // those with smaller (but faster) lower color depths. One
     // way around this is to set EGL_BUFFER_SIZE to 16, which
@@ -273,12 +292,12 @@ static void addTag(QString& str, const QString& tag)
 void QEglProperties::dumpAllConfigs()
 {
     EGLint count = 0;
-    eglGetConfigs(QEglContext::display(), 0, 0, &count);
+    eglGetConfigs(QEgl::display(), 0, 0, &count);
     if (count < 1)
         return;
 
     EGLConfig *configs = new EGLConfig [count];
-    eglGetConfigs(QEglContext::display(), configs, count, &count);
+    eglGetConfigs(QEgl::display(), configs, count, &count);
     for (EGLint index = 0; index < count; ++index)
         qWarning() << QEglProperties(configs[index]).toString();
     delete [] configs;

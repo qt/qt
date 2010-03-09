@@ -147,6 +147,8 @@ void QNetworkSessionPrivateImpl::open()
         if ((activeConfig.state() & QNetworkConfiguration::Discovered) !=
             QNetworkConfiguration::Discovered) {
             lastError =QNetworkSession::InvalidConfigurationError;
+            state = QNetworkSession::Invalid;
+            emit stateChanged(state);
             emit QNetworkSessionPrivate::error(lastError);
             return;
         }
@@ -201,22 +203,22 @@ void QNetworkSessionPrivateImpl::stop()
 
 void QNetworkSessionPrivateImpl::migrate()
 {
-    qWarning("This platform does not support roaming (%s).", __FUNCTION__);
+    qWarning("This platform does not support roaming (%s).", Q_FUNC_INFO);
 }
 
 void QNetworkSessionPrivateImpl::accept()
 {
-    qWarning("This platform does not support roaming (%s).", __FUNCTION__);
+    qWarning("This platform does not support roaming (%s).", Q_FUNC_INFO);
 }
 
 void QNetworkSessionPrivateImpl::ignore()
 {
-    qWarning("This platform does not support roaming (%s).", __FUNCTION__);
+    qWarning("This platform does not support roaming (%s).", Q_FUNC_INFO);
 }
 
 void QNetworkSessionPrivateImpl::reject()
 {
-    qWarning("This platform does not support roaming (%s).", __FUNCTION__);
+    qWarning("This platform does not support roaming (%s).", Q_FUNC_INFO);
 }
 
 QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
@@ -400,7 +402,6 @@ void QNetworkSessionPrivateImpl::connectionError(const QString &id,
             lastError = QNetworkSession::UnknownSessionError;
         }
 
-        emit quitPendingWaitsForOpened();
         emit QNetworkSessionPrivate::error(lastError);
     }
 }

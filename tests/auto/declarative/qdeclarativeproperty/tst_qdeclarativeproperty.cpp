@@ -46,6 +46,14 @@
 #include <private/qguard_p.h>
 #include <private/qdeclarativebinding_p.h>
 #include <QtGui/QLineEdit>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qdir.h>
+
+inline QUrl TEST_FILE(const QString &filename)
+{
+    QFileInfo fileInfo(__FILE__);
+    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(QLatin1String("data/") + filename));
+}
 
 class MyQmlObject : public QObject
 {
@@ -181,6 +189,7 @@ class PropertyObject : public QObject
     Q_PROPERTY(QUrl url READ url WRITE setUrl);
     Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty);
     Q_PROPERTY(int propertyWithNotify READ propertyWithNotify WRITE setPropertyWithNotify NOTIFY oddlyNamedNotifySignal)
+    Q_PROPERTY(MyQmlObject *qmlObject READ qmlObject);
 
     Q_CLASSINFO("DefaultProperty", "defaultProperty");
 public:
@@ -202,6 +211,7 @@ public:
     int propertyWithNotify() const { return m_propertyWithNotify; }
     void setPropertyWithNotify(int i) { m_propertyWithNotify = i; emit oddlyNamedNotifySignal(); }
 
+    MyQmlObject *qmlObject() { return &m_qmlObject; }
 signals:
     void clicked();
     void oddlyNamedNotifySignal();
@@ -211,6 +221,7 @@ private:
     QRect m_rect;
     QUrl m_url;
     int m_propertyWithNotify;
+    MyQmlObject m_qmlObject;
 };
 
 QML_DECLARE_TYPE(PropertyObject);
@@ -951,6 +962,32 @@ void tst_qdeclarativeproperty::read()
         QCOMPARE(p.read(), QVariant(10));
         delete o;
         QCOMPARE(p.read(), QVariant());
+    }
+
+    // Object property
+    {
+        PropertyObject o;
+        QDeclarativeProperty p(&o, "qmlObject");
+        QCOMPARE(p.propertyTypeCategory(), QDeclarativeProperty::Object);
+        QCOMPARE(p.propertyType(), qMetaTypeId<MyQmlObject*>());
+        QVariant v = p.read();
+        QVERIFY(v.userType() == QMetaType::QObjectStar);
+        QVERIFY(qvariant_cast<QObject *>(v) == o.qmlObject());
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("readSynthesizedObject.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QDeclarativeProperty p(object, "test", &engine);
+
+        QCOMPARE(p.propertyTypeCategory(), QDeclarativeProperty::Object);
+        QVERIFY(p.propertyType() != QMetaType::QObjectStar);
+
+        QVariant v = p.read();
+        QVERIFY(v.userType() == QMetaType::QObjectStar);
+        QCOMPARE(qvariant_cast<QObject *>(v)->property("a").toInt(), 10);
+        QCOMPARE(qvariant_cast<QObject *>(v)->property("b").toInt(), 19);
     }
 
     // Attached property

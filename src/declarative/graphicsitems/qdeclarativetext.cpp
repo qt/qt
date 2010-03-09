@@ -110,8 +110,6 @@ QT_BEGIN_NAMESPACE
 QDeclarativeText::QDeclarativeText(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeTextPrivate), parent)
 {
-    setAcceptedMouseButtons(Qt::LeftButton);
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QDeclarativeText::~QDeclarativeText()

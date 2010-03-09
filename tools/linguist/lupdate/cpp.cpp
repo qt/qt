@@ -260,6 +260,8 @@ private:
     bool qualifyOneCallbackOwn(const Namespace *ns, void *context) const;
     bool qualifyOneCallbackUsing(const Namespace *ns, void *context) const;
     bool qualifyOne(const NamespaceList &namespaces, int nsCnt, const HashString &segment,
+                    NamespaceList *resolved, QSet<HashStringList> *visitedUsings) const;
+    bool qualifyOne(const NamespaceList &namespaces, int nsCnt, const HashString &segment,
                     NamespaceList *resolved) const;
     bool fullyQualify(const NamespaceList &namespaces, int nsCnt,
                       const QList<HashString> &segments, bool isDeclaration,
@@ -1036,15 +1038,16 @@ QStringList CppParser::stringListifySegments(const QList<HashString> &segments)
 }
 
 struct QualifyOneData {
-    QualifyOneData(const NamespaceList &ns, int nsc, const HashString &seg, NamespaceList *rslvd)
-        : namespaces(ns), nsCount(nsc), segment(seg), resolved(rslvd)
+    QualifyOneData(const NamespaceList &ns, int nsc, const HashString &seg, NamespaceList *rslvd,
+                   QSet<HashStringList> *visited)
+        : namespaces(ns), nsCount(nsc), segment(seg), resolved(rslvd), visitedUsings(visited)
     {}
 
     const NamespaceList &namespaces;
     int nsCount;
     const HashString &segment;
     NamespaceList *resolved;
-    QSet<HashStringList> visitedUsings;
+    QSet<HashStringList> *visitedUsings;
 };
 
 bool CppParser::qualifyOneCallbackOwn(const Namespace *ns, void *context) const
@@ -1078,23 +1081,32 @@ bool CppParser::qualifyOneCallbackUsing(const Namespace *ns, void *context) cons
 {
     QualifyOneData *data = (QualifyOneData *)context;
     foreach (const HashStringList &use, ns->usings)
-        if (!data->visitedUsings.contains(use)) {
-            data->visitedUsings.insert(use);
-            if (qualifyOne(use.value(), use.value().count(), data->segment, data->resolved))
+        if (!data->visitedUsings->contains(use)) {
+            data->visitedUsings->insert(use);
+            if (qualifyOne(use.value(), use.value().count(), data->segment, data->resolved,
+                           data->visitedUsings))
                 return true;
         }
     return false;
 }
 
 bool CppParser::qualifyOne(const NamespaceList &namespaces, int nsCnt, const HashString &segment,
-                           NamespaceList *resolved) const
+                           NamespaceList *resolved, QSet<HashStringList> *visitedUsings) const
 {
-    QualifyOneData data(namespaces, nsCnt, segment, resolved);
+    QualifyOneData data(namespaces, nsCnt, segment, resolved, visitedUsings);
 
     if (visitNamespace(namespaces, nsCnt, &CppParser::qualifyOneCallbackOwn, &data))
         return true;
 
     return visitNamespace(namespaces, nsCnt, &CppParser::qualifyOneCallbackUsing, &data);
+}
+
+bool CppParser::qualifyOne(const NamespaceList &namespaces, int nsCnt, const HashString &segment,
+                           NamespaceList *resolved) const
+{
+    QSet<HashStringList> visitedUsings;
+
+    return qualifyOne(namespaces, nsCnt, segment, resolved, &visitedUsings);
 }
 
 bool CppParser::fullyQualify(const NamespaceList &namespaces, int nsCnt,

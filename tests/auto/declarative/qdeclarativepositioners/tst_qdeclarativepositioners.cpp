@@ -365,7 +365,7 @@ void tst_QDeclarativePositioners::test_grid_animated()
 }
 void tst_QDeclarativePositioners::test_propertychanges()
 {
-    QDeclarativeView *canvas = createView("data/propertychanges.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/propertychanges.qml");
 
     QDeclarativeGrid *grid = qobject_cast<QDeclarativeGrid*>(canvas->rootObject());
     QDeclarativeTransition *rowTransition = canvas->rootObject()->findChild<QDeclarativeTransition*>("rowTransition");

@@ -79,12 +79,14 @@ public:
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 Q_SIGNALS:
+    void pixmapChanged();
     void fillModeChanged();
     void paintedGeometryChanged();
 
 protected:
     QDeclarativeImage(QDeclarativeImagePrivate &dd, QDeclarativeItem *parent);
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    void pixmapChange();
 
 protected Q_SLOTS:
     void updatePaintedGeometry();

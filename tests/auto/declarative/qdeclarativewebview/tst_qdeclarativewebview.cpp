@@ -43,15 +43,12 @@
 #include "../../../shared/util.h"
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
-#include <private/qdeclarativewebview_p.h>
-#include <private/qdeclarativewebview_p_p.h>
 #include <private/qdeclarativepositioners_p.h>
 #include <QtWebKit/qwebpage.h>
 #include <QtWebKit/qwebframe.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qfile.h>
 #include <QtGui/qpainter.h>
-#include "testtypes.h"
 
 class tst_qdeclarativewebview : public QObject
 {
@@ -70,7 +67,7 @@ private slots:
     void setHtml();
     void javaScript();
     void cleanupTestCase();
-    void pixelCache();
+    //void pixelCache();
     void newWindowParent();
     void newWindowComponent();
     void renderingEnabled();
@@ -89,7 +86,6 @@ private:
 
 void tst_qdeclarativewebview::initTestCase()
 {
-    registerTypes();
 }
 
 static QString strippedHtml(QString html)
@@ -148,81 +144,82 @@ void tst_qdeclarativewebview::basicProperties()
     checkNoErrors(component);
     QWebSettings::enablePersistentStorage(tmpDir());
 
-    QDeclarativeWebView *wv = qobject_cast<QDeclarativeWebView*>(component.create());
+    QObject *wv = component.create();
     QVERIFY(wv != 0);
-    QTRY_COMPARE(wv->progress(), 1.0);
-    QCOMPARE(wv->title(),QString("Basic"));
-    QTRY_COMPARE(wv->icon().width(), 48);
-    QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/basic.png"));
-    QCOMPARE(wv->statusText(),QString("status here"));
-    QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
-    QCOMPARE(wv->width(), 123.0);
-    QCOMPARE(wv->preferredWidth(), 0);
-    QCOMPARE(wv->preferredHeight(), 0);
-    QCOMPARE(wv->zoomFactor(), 1.0);
-    QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
-    QCOMPARE(wv->status(), QDeclarativeWebView::Ready);
-    QVERIFY(wv->reloadAction());
-    QVERIFY(wv->reloadAction()->isEnabled());
-    QVERIFY(wv->backAction());
-    QVERIFY(!wv->backAction()->isEnabled());
-    QVERIFY(wv->forwardAction());
-    QVERIFY(!wv->forwardAction()->isEnabled());
-    QVERIFY(wv->stopAction());
-    QVERIFY(!wv->stopAction()->isEnabled());
+    QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
+    QCOMPARE(wv->property("title").toString(),QString("Basic"));
+    QTRY_COMPARE(qvariant_cast<QPixmap>(wv->property("icon")).width(), 48);
+    QCOMPARE(qvariant_cast<QPixmap>(wv->property("icon")),QPixmap(SRCDIR "/data/basic.png"));
+    QCOMPARE(wv->property("statusText").toString(),QString("status here"));
+    QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->property("html").toString()));
+    QCOMPARE(wv->property("width").toDouble(), 123.0);
+    QCOMPARE(wv->property("preferredWidth").toInt(), 0);
+    QCOMPARE(wv->property("preferredHeight").toInt(), 0);
+    QCOMPARE(wv->property("zoomFactor").toDouble(), 1.0);
+    QCOMPARE(wv->property("url").toUrl(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
+    QCOMPARE(wv->property("status").toInt(), 1 /*QDeclarativeWebView::Ready*/);
+    QVERIFY(qvariant_cast<QAction*>(wv->property("reload")));
+    QVERIFY(qvariant_cast<QAction*>(wv->property("reload"))->isEnabled());
+    QVERIFY(qvariant_cast<QAction*>(wv->property("back")));
+    QVERIFY(!qvariant_cast<QAction*>(wv->property("back"))->isEnabled());
+    QVERIFY(qvariant_cast<QAction*>(wv->property("forward")));
+    QVERIFY(!qvariant_cast<QAction*>(wv->property("forward"))->isEnabled());
+    QVERIFY(qvariant_cast<QAction*>(wv->property("stop")));
+    QVERIFY(!qvariant_cast<QAction*>(wv->property("stop"))->isEnabled());
 
-    wv->setPixelCacheSize(0); // mainly testing that it doesn't crash or anything!
-    QCOMPARE(wv->pixelCacheSize(),0);
-    wv->reloadAction()->trigger();
-    QTRY_COMPARE(wv->progress(), 1.0);
+    wv->setProperty("pixelCacheSize", 0); // mainly testing that it doesn't crash or anything!
+    QCOMPARE(wv->property("pixelCacheSize").toInt(),0);
+    qvariant_cast<QAction*>(wv->property("reload"))->trigger();
+    QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
 }
 
 void tst_qdeclarativewebview::settings()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/basic.qml"));
     checkNoErrors(component);
-    QDeclarativeWebView *wv = qobject_cast<QDeclarativeWebView*>(component.create());
+    QObject *wv = component.create();
     QVERIFY(wv != 0);
-    QTRY_COMPARE(wv->progress(), 1.0);
+    QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
 
-    QDeclarativeWebSettings *s = wv->settingsObject();
+    QObject *s = QDeclarativeProperty(wv,"settings").object();
+    QVERIFY(s != 0);
 
     // merely tests that setting gets stored (in QWebSettings)
     // behavioural tests are in WebKit.
     for (int b=0; b<=1; ++b) {
         bool on = !!b;
 
-        s->setAutoLoadImages(on);
-        s->setDeveloperExtrasEnabled(on);
-        s->setJavaEnabled(on);
-        s->setJavascriptCanAccessClipboard(on);
-        s->setJavascriptCanOpenWindows(on);
-        s->setJavascriptEnabled(on);
-        s->setLinksIncludedInFocusChain(on);
-        s->setLocalContentCanAccessRemoteUrls(on);
-        s->setLocalStorageDatabaseEnabled(on);
-        s->setOfflineStorageDatabaseEnabled(on);
-        s->setOfflineWebApplicationCacheEnabled(on);
-        s->setPluginsEnabled(on);
-        s->setPrintElementBackgrounds(on);
-        s->setPrivateBrowsingEnabled(on);
-        s->setZoomTextOnly(on);
+        s->setProperty("autoLoadImages", on);
+        s->setProperty("developerExtrasEnabled", on);
+        s->setProperty("javaEnabled", on);
+        s->setProperty("javascriptCanAccessClipboard", on);
+        s->setProperty("javascriptCanOpenWindows", on);
+        s->setProperty("javascriptEnabled", on);
+        s->setProperty("linksIncludedInFocusChain", on);
+        s->setProperty("localContentCanAccessRemoteUrls", on);
+        s->setProperty("localStorageDatabaseEnabled", on);
+        s->setProperty("offlineStorageDatabaseEnabled", on);
+        s->setProperty("offlineWebApplicationCacheEnabled", on);
+        s->setProperty("pluginsEnabled", on);
+        s->setProperty("printElementBackgrounds", on);
+        s->setProperty("privateBrowsingEnabled", on);
+        s->setProperty("zoomTextOnly", on);
 
-        QVERIFY(s->autoLoadImages() == on);
-        QVERIFY(s->developerExtrasEnabled() == on);
-        QVERIFY(s->javaEnabled() == on);
-        QVERIFY(s->javascriptCanAccessClipboard() == on);
-        QVERIFY(s->javascriptCanOpenWindows() == on);
-        QVERIFY(s->javascriptEnabled() == on);
-        QVERIFY(s->linksIncludedInFocusChain() == on);
-        QVERIFY(s->localContentCanAccessRemoteUrls() == on);
-        QVERIFY(s->localStorageDatabaseEnabled() == on);
-        QVERIFY(s->offlineStorageDatabaseEnabled() == on);
-        QVERIFY(s->offlineWebApplicationCacheEnabled() == on);
-        QVERIFY(s->pluginsEnabled() == on);
-        QVERIFY(s->printElementBackgrounds() == on);
-        QVERIFY(s->privateBrowsingEnabled() == on);
-        QVERIFY(s->zoomTextOnly() == on);
+        QVERIFY(s->property("autoLoadImages") == on);
+        QVERIFY(s->property("developerExtrasEnabled") == on);
+        QVERIFY(s->property("javaEnabled") == on);
+        QVERIFY(s->property("javascriptCanAccessClipboard") == on);
+        QVERIFY(s->property("javascriptCanOpenWindows") == on);
+        QVERIFY(s->property("javascriptEnabled") == on);
+        QVERIFY(s->property("linksIncludedInFocusChain") == on);
+        QVERIFY(s->property("localContentCanAccessRemoteUrls") == on);
+        QVERIFY(s->property("localStorageDatabaseEnabled") == on);
+        QVERIFY(s->property("offlineStorageDatabaseEnabled") == on);
+        QVERIFY(s->property("offlineWebApplicationCacheEnabled") == on);
+        QVERIFY(s->property("pluginsEnabled") == on);
+        QVERIFY(s->property("printElementBackgrounds") == on);
+        QVERIFY(s->property("privateBrowsingEnabled") == on);
+        QVERIFY(s->property("zoomTextOnly") == on);
 
         QVERIFY(s->property("autoLoadImages") == on);
         QVERIFY(s->property("developerExtrasEnabled") == on);
@@ -248,65 +245,65 @@ void tst_qdeclarativewebview::historyNav()
     checkNoErrors(component);
     QWebSettings::enablePersistentStorage(tmpDir());
 
-    QDeclarativeWebView *wv = qobject_cast<QDeclarativeWebView*>(component.create());
+    QObject *wv = component.create();
     QVERIFY(wv != 0);
     for (int i=1; i<=2; ++i) {
-        QTRY_COMPARE(wv->progress(), 1.0);
-        QCOMPARE(wv->title(),QString("Basic"));
-        QTRY_COMPARE(wv->icon().width(), 48);
-        QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/basic.png"));
-        QCOMPARE(wv->statusText(),QString("status here"));
-        QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
-        QCOMPARE(wv->width(), 123.0);
-        QCOMPARE(wv->preferredWidth(), 0);
-        QCOMPARE(wv->zoomFactor(), 1.0);
-        QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
-        QCOMPARE(wv->status(), QDeclarativeWebView::Ready);
-        QVERIFY(wv->reloadAction());
-        QVERIFY(wv->reloadAction()->isEnabled());
-        QVERIFY(wv->backAction());
-        QVERIFY(!wv->backAction()->isEnabled());
-        QVERIFY(wv->forwardAction());
-        QVERIFY(!wv->forwardAction()->isEnabled());
-        QVERIFY(wv->stopAction());
-        QVERIFY(!wv->stopAction()->isEnabled());
+        QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
+        QCOMPARE(wv->property("title").toString(),QString("Basic"));
+        QTRY_COMPARE(qvariant_cast<QPixmap>(wv->property("icon")).width(), 48);
+        QCOMPARE(qvariant_cast<QPixmap>(wv->property("icon")),QPixmap(SRCDIR "/data/basic.png"));
+        QCOMPARE(wv->property("statusText").toString(),QString("status here"));
+        QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->property("html").toString()));
+        QCOMPARE(wv->property("width").toDouble(), 123.0);
+        QCOMPARE(wv->property("preferredWidth").toDouble(), 0.0);
+        QCOMPARE(wv->property("zoomFactor").toDouble(), 1.0);
+        QCOMPARE(wv->property("url").toUrl(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
+        QCOMPARE(wv->property("status").toInt(), 1 /*QDeclarativeWebView::Ready*/);
+        QVERIFY(qvariant_cast<QAction*>(wv->property("reload")));
+        QVERIFY(qvariant_cast<QAction*>(wv->property("reload"))->isEnabled());
+        QVERIFY(qvariant_cast<QAction*>(wv->property("back")));
+        QVERIFY(!qvariant_cast<QAction*>(wv->property("back"))->isEnabled());
+        QVERIFY(qvariant_cast<QAction*>(wv->property("forward")));
+        QVERIFY(!qvariant_cast<QAction*>(wv->property("forward"))->isEnabled());
+        QVERIFY(qvariant_cast<QAction*>(wv->property("stop")));
+        QVERIFY(!qvariant_cast<QAction*>(wv->property("stop"))->isEnabled());
 
-        wv->reloadAction()->trigger();
+        qvariant_cast<QAction*>(wv->property("reload"))->trigger();
     }
 
-    wv->setUrl(QUrl::fromLocalFile(SRCDIR "/data/forward.html"));
-    QTRY_COMPARE(wv->progress(), 1.0);
-    QCOMPARE(wv->title(),QString("Forward"));
-    QTRY_COMPARE(wv->icon().width(), 32);
-    QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/forward.png"));
-    QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/forward.html")), strippedHtml(wv->html()));
-    QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/forward.html"));
-    QCOMPARE(wv->status(), QDeclarativeWebView::Ready);
-    QCOMPARE(wv->statusText(),QString(""));
-    QVERIFY(wv->reloadAction());
-    QVERIFY(wv->reloadAction()->isEnabled());
-    QVERIFY(wv->backAction());
-    QVERIFY(wv->backAction()->isEnabled());
-    QVERIFY(wv->forwardAction());
-    QVERIFY(!wv->forwardAction()->isEnabled());
-    QVERIFY(wv->stopAction());
-    QVERIFY(!wv->stopAction()->isEnabled());
+    wv->setProperty("url", QUrl::fromLocalFile(SRCDIR "/data/forward.html"));
+    QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
+    QCOMPARE(wv->property("title").toString(),QString("Forward"));
+    QTRY_COMPARE(qvariant_cast<QPixmap>(wv->property("icon")).width(), 32);
+    QCOMPARE(qvariant_cast<QPixmap>(wv->property("icon")),QPixmap(SRCDIR "/data/forward.png"));
+    QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/forward.html")), strippedHtml(wv->property("html").toString()));
+    QCOMPARE(wv->property("url").toUrl(), QUrl::fromLocalFile(SRCDIR "/data/forward.html"));
+    QCOMPARE(wv->property("status").toInt(), 1 /*QDeclarativeWebView::Ready*/);
+    QCOMPARE(wv->property("statusText").toString(),QString(""));
+    QVERIFY(qvariant_cast<QAction*>(wv->property("reload")));
+    QVERIFY(qvariant_cast<QAction*>(wv->property("reload"))->isEnabled());
+    QVERIFY(qvariant_cast<QAction*>(wv->property("back")));
+    QVERIFY(qvariant_cast<QAction*>(wv->property("back"))->isEnabled());
+    QVERIFY(qvariant_cast<QAction*>(wv->property("forward")));
+    QVERIFY(!qvariant_cast<QAction*>(wv->property("forward"))->isEnabled());
+    QVERIFY(qvariant_cast<QAction*>(wv->property("stop")));
+    QVERIFY(!qvariant_cast<QAction*>(wv->property("stop"))->isEnabled());
 
-    wv->backAction()->trigger();
+    qvariant_cast<QAction*>(wv->property("back"))->trigger();
 
-    QTRY_COMPARE(wv->progress(), 1.0);
-    QCOMPARE(wv->title(),QString("Basic"));
-    QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
-    QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
-    QCOMPARE(wv->status(), QDeclarativeWebView::Ready);
-    QVERIFY(wv->reloadAction());
-    QVERIFY(wv->reloadAction()->isEnabled());
-    QVERIFY(wv->backAction());
-    QVERIFY(!wv->backAction()->isEnabled());
-    QVERIFY(wv->forwardAction());
-    QVERIFY(wv->forwardAction()->isEnabled());
-    QVERIFY(wv->stopAction());
-    QVERIFY(!wv->stopAction()->isEnabled());
+    QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
+    QCOMPARE(wv->property("title").toString(),QString("Basic"));
+    QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->property("html").toString()));
+    QCOMPARE(wv->property("url").toUrl(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
+    QCOMPARE(wv->property("status").toInt(), 1 /*QDeclarativeWebView::Ready*/);
+    QVERIFY(qvariant_cast<QAction*>(wv->property("reload")));
+    QVERIFY(qvariant_cast<QAction*>(wv->property("reload"))->isEnabled());
+    QVERIFY(qvariant_cast<QAction*>(wv->property("back")));
+    QVERIFY(!qvariant_cast<QAction*>(wv->property("back"))->isEnabled());
+    QVERIFY(qvariant_cast<QAction*>(wv->property("forward")));
+    QVERIFY(qvariant_cast<QAction*>(wv->property("forward"))->isEnabled());
+    QVERIFY(qvariant_cast<QAction*>(wv->property("stop")));
+    QVERIFY(!qvariant_cast<QAction*>(wv->property("stop"))->isEnabled());
 }
 
 void tst_qdeclarativewebview::multipleWindows()
@@ -328,16 +325,16 @@ void tst_qdeclarativewebview::loadError()
     checkNoErrors(component);
     QWebSettings::enablePersistentStorage(tmpDir());
 
-    QDeclarativeWebView *wv = qobject_cast<QDeclarativeWebView*>(component.create());
+    QObject *wv = component.create();
     QVERIFY(wv != 0);
     for (int i=1; i<=2; ++i) {
-        QTRY_COMPARE(wv->progress(), 1.0);
-        QCOMPARE(wv->title(),QString(""));
-        QCOMPARE(wv->statusText(),QString("")); // HTML 'status bar' text, not error message
-        QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/does-not-exist.html")); // Unlike QWebPage, which loses url
-        QCOMPARE(wv->status(), QDeclarativeWebView::Error);
+        QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
+        QCOMPARE(wv->property("title").toString(),QString(""));
+        QCOMPARE(wv->property("statusText").toString(),QString("")); // HTML 'status bar' text, not error message
+        QCOMPARE(wv->property("url").toUrl(), QUrl::fromLocalFile(SRCDIR "/data/does-not-exist.html")); // Unlike QWebPage, which loses url
+        QCOMPARE(wv->property("status").toInt(), 3 /*QDeclarativeWebView::Error*/);
 
-        wv->reloadAction()->trigger();
+        qvariant_cast<QAction*>(wv->property("reload"))->trigger();
     }
 }
 
@@ -345,12 +342,12 @@ void tst_qdeclarativewebview::setHtml()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/sethtml.qml"));
     checkNoErrors(component);
-    QDeclarativeWebView *wv = qobject_cast<QDeclarativeWebView*>(component.create());
+    QObject *wv = component.create();
     QVERIFY(wv != 0);
-    QCOMPARE(wv->html(),QString("<html><head></head><body><p>This is a <b>string</b> set on the WebView</p></body></html>"));
+    QCOMPARE(wv->property("html").toString(),QString("<html><head></head><body><p>This is a <b>string</b> set on the WebView</p></body></html>"));
 
     QSignalSpy spy(wv, SIGNAL(htmlChanged()));
-    wv->setHtml(QString("<html><head><title>Basic</title></head><body><p>text</p></body></html>"));
+    wv->setProperty("html", QString("<html><head><title>Basic</title></head><body><p>text</p></body></html>"));
     QCOMPARE(spy.count(),1);
 }
 
@@ -358,81 +355,91 @@ void tst_qdeclarativewebview::elementAreaAt()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/elements.qml"));
     checkNoErrors(component);
-    QDeclarativeWebView *wv = qobject_cast<QDeclarativeWebView*>(component.create());
+    QObject *wv = component.create();
     QVERIFY(wv != 0);
-    QTRY_COMPARE(wv->progress(), 1.0);
+    QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
 
+    /* not now it's a plugin...
     QCOMPARE(wv->elementAreaAt(40,30,100,100),QRect(1,1,75,54)); // Area A in data/elements.html
     QCOMPARE(wv->elementAreaAt(130,30,200,100),QRect(78,3,110,50)); // Area B
     QCOMPARE(wv->elementAreaAt(40,30,400,400),QRect(0,0,310,100)); // Whole view
     QCOMPARE(wv->elementAreaAt(130,30,280,280),QRect(76,1,223,54)); // Area BC
     QCOMPARE(wv->elementAreaAt(130,30,400,400),QRect(0,0,310,100)); // Whole view
+    */
 }
 
 void tst_qdeclarativewebview::javaScript()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/javaScript.qml"));
     checkNoErrors(component);
-    QDeclarativeWebView *wv = qobject_cast<QDeclarativeWebView*>(component.create());
+    QObject *wv = component.create();
     QVERIFY(wv != 0);
-    QTRY_COMPARE(wv->progress(), 1.0);
+    QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
+    /* not now it's a plugin...
     QCOMPARE(wv->evaluateJavaScript("123").toInt(), 123);
     QCOMPARE(wv->evaluateJavaScript("window.status").toString(), QString("status here"));
     QCOMPARE(wv->evaluateJavaScript("window.myjsname.qmlprop").toString(), QString("qmlvalue"));
+    */
 }
+
+/*
+Cannot be done now that webkit is a plugin
 
 void tst_qdeclarativewebview::pixelCache()
 {
+
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/pixelCache.qml"));
     checkNoErrors(component);
     MyWebView *wv = qobject_cast<MyWebView*>(component.create());
     QVERIFY(wv != 0);
-    QTRY_COMPARE(wv->progress(), 1.0);
+    QTRY_COMPARE(wv->property("progress"), 1.0);
     QPixmap pm(150,150);
     QPainter p(&pm);
     wv->paint(&p,0,0);
     const int expected = 120*(150+128); // 120 = width of HTML page, 150=pixmap height, 128=cache extra area
-    QCOMPARE(wv->pixelsPainted(), expected);
+    QCOMPARE(wv->property("pixelsPainted"), expected);
     wv->paint(&p,0,0);
-    QCOMPARE(wv->pixelsPainted(), expected); // nothing new needed to be painted
-    wv->setPixelCacheSize(0); // clears the cache
+    QCOMPARE(wv->property("pixelsPainted"), expected); // nothing new needed to be painted
+    wv->setProperty("pixelCacheSize", 0); // clears the cache
     wv->paint(&p,0,0);
-    QCOMPARE(wv->pixelsPainted(), expected*2); // everything needed to be painted
+    QCOMPARE(wv->property("pixelsPainted"), expected*2); // everything needed to be painted
     // Note that painted things always go into the cache (even if they don't "fit"),
     // just that they will be removed if anything else needs to be painted.
-    wv->setPixelCacheSize(expected); // won't clear the cache
+    wv->setProperty("pixelCacheSize", expected); // won't clear the cache
     wv->paint(&p,0,0);
-    QCOMPARE(wv->pixelsPainted(), expected*2); // still there
-    wv->setPixelCacheSize(expected-1); // too small - will clear the cache
+    QCOMPARE(wv->property("pixelsPainted"), expected*2); // still there
+    wv->setProperty("pixelCacheSize", expected-1); // too small - will clear the cache
     wv->paint(&p,0,0);
-    QCOMPARE(wv->pixelsPainted(), expected*3); // repainted
+    QCOMPARE(wv->property("pixelsPainted"), expected*3); // repainted
 }
+*/
 
 void tst_qdeclarativewebview::newWindowParent()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
     checkNoErrors(component);
     QDeclarativeItem *rootItem = qobject_cast<QDeclarativeItem*>(component.create());
-    QDeclarativeWebView *wv = rootItem->findChild<QDeclarativeWebView*>("webView");
+    QObject *wv = rootItem->findChild<QObject*>("webView");
     QVERIFY(rootItem != 0);
     QVERIFY(wv != 0);
-    QTRY_COMPARE(wv->progress(), 1.0);
+    QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
 
     QDeclarativeItem* oldWindowParent = rootItem->findChild<QDeclarativeItem*>("oldWindowParent");
-    QCOMPARE(wv->newWindowParent(), oldWindowParent);
+    QCOMPARE(qvariant_cast<QDeclarativeItem*>(wv->property("newWindowParent")), oldWindowParent);
     QSignalSpy newWindowParentSpy(wv, SIGNAL(newWindowParentChanged()));
 
     QDeclarativeItem* newWindowParent = rootItem->findChild<QDeclarativeItem*>("newWindowParent");
-    wv->setNewWindowParent(newWindowParent);
+    wv->setProperty("newWindowParent", QVariant::fromValue(newWindowParent));
+    QVERIFY(newWindowParent);
     QVERIFY(oldWindowParent);
     QVERIFY(oldWindowParent->childItems().count() == 0);
-    QCOMPARE(wv->newWindowParent(), newWindowParent);
+    QCOMPARE(wv->property("newWindowParent"), QVariant::fromValue(newWindowParent));
     QCOMPARE(newWindowParentSpy.count(),1);
 
-    wv->setNewWindowParent(newWindowParent);
+    wv->setProperty("newWindowParent", QVariant::fromValue(newWindowParent));
     QCOMPARE(newWindowParentSpy.count(),1);
 
-    wv->setNewWindowParent(0);
+    wv->setProperty("newWindowParent", QVariant::fromValue((QDeclarativeItem*)0));
     QCOMPARE(newWindowParentSpy.count(),2);
 }
 
@@ -441,23 +448,23 @@ void tst_qdeclarativewebview::newWindowComponent()
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
     checkNoErrors(component);
     QDeclarativeItem *rootItem = qobject_cast<QDeclarativeItem*>(component.create());
-    QDeclarativeWebView *wv = rootItem->findChild<QDeclarativeWebView*>("webView");
+    QObject *wv = rootItem->findChild<QObject*>("webView");
     QVERIFY(rootItem != 0);
     QVERIFY(wv != 0);
-    QTRY_COMPARE(wv->progress(), 1.0);
+    QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
 
     QDeclarativeComponent substituteComponent(&engine);
     substituteComponent.setData("import Qt 4.6; WebView { objectName: 'newWebView'; url: 'basic.html'; }", QUrl::fromLocalFile(""));
     QSignalSpy newWindowComponentSpy(wv, SIGNAL(newWindowComponentChanged()));
 
-    wv->setNewWindowComponent(&substituteComponent);
-    QCOMPARE(wv->newWindowComponent(), &substituteComponent);
+    wv->setProperty("newWindowComponent", QVariant::fromValue(&substituteComponent));
+    QCOMPARE(wv->property("newWindowComponent"), QVariant::fromValue(&substituteComponent));
     QCOMPARE(newWindowComponentSpy.count(),1);
 
-    wv->setNewWindowComponent(&substituteComponent);
+    wv->setProperty("newWindowComponent", QVariant::fromValue(&substituteComponent));
     QCOMPARE(newWindowComponentSpy.count(),1);
 
-    wv->setNewWindowComponent(0);
+    wv->setProperty("newWindowComponent", QVariant::fromValue((QDeclarativeComponent*)0));
     QCOMPARE(newWindowComponentSpy.count(),2);
 }
 
@@ -466,22 +473,22 @@ void tst_qdeclarativewebview::renderingEnabled()
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
     checkNoErrors(component);
     QDeclarativeItem *rootItem = qobject_cast<QDeclarativeItem*>(component.create());
-    QDeclarativeWebView *wv = rootItem->findChild<QDeclarativeWebView*>("webView");
+    QObject *wv = rootItem->findChild<QObject*>("webView");
     QVERIFY(rootItem != 0);
     QVERIFY(wv != 0);
-    QTRY_COMPARE(wv->progress(), 1.0);
+    QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
 
-    QVERIFY(wv->renderingEnabled());
+    QVERIFY(wv->property("renderingEnabled").toBool());
     QSignalSpy renderingEnabledSpy(wv, SIGNAL(renderingEnabledChanged()));
 
-    wv->setRenderingEnabled(false);
-    QVERIFY(!wv->renderingEnabled());
+    wv->setProperty("renderingEnabled", false);
+    QVERIFY(!wv->property("renderingEnabled").toBool());
     QCOMPARE(renderingEnabledSpy.count(),1);
 
-    wv->setRenderingEnabled(false);
+    wv->setProperty("renderingEnabled", false);
     QCOMPARE(renderingEnabledSpy.count(),1);
 
-    wv->setRenderingEnabled(true);
+    wv->setProperty("renderingEnabled", true);
     QCOMPARE(renderingEnabledSpy.count(),2);
 }
 
@@ -490,21 +497,21 @@ void tst_qdeclarativewebview::pressGrabTime()
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
     checkNoErrors(component);
     QDeclarativeItem *rootItem = qobject_cast<QDeclarativeItem*>(component.create());
-    QDeclarativeWebView *wv = rootItem->findChild<QDeclarativeWebView*>("webView");
+    QObject *wv = rootItem->findChild<QObject*>("webView");
     QVERIFY(rootItem != 0);
     QVERIFY(wv != 0);
-    QTRY_COMPARE(wv->progress(), 1.0);
-    QCOMPARE(wv->pressGrabTime(), 200);
+    QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
+    QCOMPARE(wv->property("pressGrabTime").toInt(), 200);
     QSignalSpy pressGrabTimeSpy(wv, SIGNAL(pressGrabTimeChanged()));
 
-    wv->setPressGrabTime(100);
-    QCOMPARE(wv->pressGrabTime(), 100);
+    wv->setProperty("pressGrabTime", 100);
+    QCOMPARE(wv->property("pressGrabTime").toInt(), 100);
     QCOMPARE(pressGrabTimeSpy.count(),1);
 
-    wv->setPressGrabTime(100);
+    wv->setProperty("pressGrabTime", 100);
     QCOMPARE(pressGrabTimeSpy.count(),1);
 
-    wv->setPressGrabTime(0);
+    wv->setProperty("pressGrabTime", 0);
     QCOMPARE(pressGrabTimeSpy.count(),2);
 }
 

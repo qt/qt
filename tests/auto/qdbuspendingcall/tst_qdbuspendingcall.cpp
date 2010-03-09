@@ -128,8 +128,6 @@ void tst_QDBusPendingCall::finished(QDBusPendingCallWatcher *call)
     watchArgument = call;
     if (QThread::currentThread() == thread())
         QTestEventLoop::instance().exitLoop();
-    else
-        QMetaObject::invokeMethod(&QTestEventLoop::instance(), "exitLoop", Qt::QueuedConnection);
 }
 
 void tst_QDBusPendingCall::callback(const QStringList &list)
@@ -427,7 +425,7 @@ void tst_QDBusPendingCall::watcher_waitForFinished_threaded()
     } thread(this);
     QTestEventLoop::instance().connect(&thread, SIGNAL(finished()), SLOT(exitLoop()));
     thread.start();
-    QTestEventLoop::instance().enterLoop(1000);
+    QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!thread.isRunning());
     QVERIFY(!QTestEventLoop::instance().timeout());
 }

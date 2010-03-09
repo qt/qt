@@ -70,17 +70,18 @@ public:
 
 /*!
     \qmlclass Behavior QDeclarativeBehavior
+    \since 4.7
     \brief The Behavior element allows you to specify a default animation for a property change.
 
     Behaviors provide one way to specify \l{qdeclarativeanimation.html}{animations} in QML.
 
-    In the example below, the rect will use a bounce easing curve over 200 millisecond for any changes to its y property:
+    In the example below, the rectangle will use a bounce easing curve over 200 millisecond for any changes to its y property:
     \code
     Rectangle {
         width: 20; height: 20
         color: "#00ff00"
-        y: 200  //initial value
-        y: Behavior {
+        y: 200  // initial value
+        Behavior on y {
             NumberAnimation {
                 easing: "easeOutBounce(amplitude:100)"
                 duration: 200
@@ -156,6 +157,7 @@ void QDeclarativeBehavior::setEnabled(bool enabled)
 void QDeclarativeBehavior::write(const QVariant &value)
 {
     Q_D(QDeclarativeBehavior);
+    qmlExecuteDeferred(this);
     if (!d->animation || !d->enabled) {
         QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
         return;

@@ -67,12 +67,12 @@ private slots:
     void darker();
     void tint();
     void closestAngle();
-    void playSound();
     void openUrlExternally();
     void md5();
     void createComponent();
     void createQmlObject();
     void consoleLog();
+    void formatting();
 
 private:
     QDeclarativeEngine engine;
@@ -254,8 +254,8 @@ void tst_qdeclarativeqt::tint()
 
     QCOMPARE(qvariant_cast<QColor>(object->property("test1")), QColor::fromRgbF(0, 0, 1));
     QCOMPARE(qvariant_cast<QColor>(object->property("test2")), QColor::fromRgbF(1, 0, 0));
-    QEXPECT_FAIL("", "QT-2424",Continue);
-    QCOMPARE(qvariant_cast<QColor>(object->property("test3")), QColor::fromRgbF(1, 0, 0)); 
+    QColor test3 = qvariant_cast<QColor>(object->property("test3"));
+    QCOMPARE(test3.rgba(), 0xFF7F0080);
     QCOMPARE(qvariant_cast<QColor>(object->property("test4")), QColor());
     QCOMPARE(qvariant_cast<QColor>(object->property("test5")), QColor());
 
@@ -277,12 +277,6 @@ void tst_qdeclarativeqt::closestAngle()
     QCOMPARE(qvariant_cast<qreal>(object->property("test7")), 1.11);
 
     delete object;
-}
-
-void tst_qdeclarativeqt::playSound()
-{
-    QEXPECT_FAIL("", "How do we test this?", Abort);
-    QVERIFY(false);
 }
 
 void tst_qdeclarativeqt::openUrlExternally()
@@ -361,6 +355,34 @@ void tst_qdeclarativeqt::consoleLog()
     QDeclarativeComponent component(&engine, TEST_FILE("consoleLog.qml"));
     QObject *object = component.create();
     QVERIFY(object != 0);
+    delete object;
+}
+
+void tst_qdeclarativeqt::formatting()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("formatting.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QDate date1(2008,12,24);
+    QCOMPARE(object->property("date1").toDate(), date1);
+    QCOMPARE(object->property("test1").toString(), date1.toString(Qt::DefaultLocaleShortDate));
+    QCOMPARE(object->property("test2").toString(), date1.toString(Qt::DefaultLocaleLongDate));
+    QCOMPARE(object->property("test3").toString(), date1.toString("ddd MMMM d yy"));
+
+    QTime time1(14,15,38,200);
+    QCOMPARE(object->property("time1").toTime(), time1);
+    QCOMPARE(object->property("test4").toString(), time1.toString(Qt::DefaultLocaleShortDate));
+    QCOMPARE(object->property("test5").toString(), time1.toString(Qt::DefaultLocaleLongDate));
+    QCOMPARE(object->property("test6").toString(), time1.toString("H:m:s a"));
+    QCOMPARE(object->property("test7").toString(), time1.toString("hh:mm:ss.zzz"));
+
+    QDateTime dateTime1(QDate(1978,03,04),QTime(9,13,54));
+    QCOMPARE(object->property("dateTime1").toDateTime(),dateTime1);
+    QCOMPARE(object->property("test8").toString(), dateTime1.toString(Qt::DefaultLocaleShortDate));
+    QCOMPARE(object->property("test9").toString(), dateTime1.toString(Qt::DefaultLocaleLongDate));
+    QCOMPARE(object->property("test10").toString(), dateTime1.toString("M/d/yy H:m:s a"));
+
     delete object;
 }
 

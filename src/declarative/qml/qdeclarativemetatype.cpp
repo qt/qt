@@ -286,6 +286,11 @@ QDeclarativeCustomParser *QDeclarativeType::customParser() const
     return d->m_customParser;
 }
 
+bool QDeclarativeType::isCreatable() const
+{
+    return d->m_newFunc != 0;
+}
+
 bool QDeclarativeType::isInterface() const
 {
     return d->m_isInterface;
@@ -402,7 +407,7 @@ int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &t
 
     data->types.append(dtype);
     data->idToType.insert(dtype->typeId(), dtype);
-    data->idToType.insert(dtype->qListTypeId(), dtype);
+    if (dtype->qListTypeId()) data->idToType.insert(dtype->qListTypeId(), dtype);
 
     if (!dtype->qmlTypeName().isEmpty())
         data->nameToType.insertMulti(dtype->qmlTypeName(), dtype);
@@ -414,7 +419,7 @@ int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &t
     if (data->lists.size() <= type.listId)
         data->lists.resize(type.listId + 16);
     data->objects.setBit(type.typeId, true);
-    data->lists.setBit(type.listId, true);
+    if (type.listId) data->lists.setBit(type.listId, true);
 
     return index;
 }

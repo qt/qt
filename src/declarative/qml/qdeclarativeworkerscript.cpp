@@ -365,6 +365,8 @@ void QDeclarativeWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
         workerEngine->evaluate(script);
 
         workerEngine->popContext();
+    } else {
+        qWarning().nospace() << "WorkerScript: Cannot find source file " << url.toString();
     }
 }
 
@@ -382,7 +384,7 @@ QVariant QDeclarativeWorkerScriptEnginePrivate::scriptValueToVariant(const QScri
         quint32 length = (quint32)value.property(QLatin1String("length")).toNumber();
 
         for (quint32 ii = 0; ii < length; ++ii) {
-            QVariant v = scriptValueToVariant(ii);
+            QVariant v = scriptValueToVariant(value.property(ii));
             list << v;
         }
 
@@ -561,6 +563,65 @@ void QDeclarativeWorkerScriptEngine::run()
     delete d->workerEngine; d->workerEngine = 0;
 }
 
+
+/*!
+    \qmlclass WorkerScript QDeclarativeWorkerScript
+    \brief The WorkerScript element enables the use of threads in QML.
+
+    Use WorkerScript to run operations in a new thread.
+    This is useful for running operations in the background so
+    that the main GUI thread is not blocked.
+
+    Messages can be passed between the new thread and the parent thread
+    using sendMessage() and the onMessage() handler.
+    
+    Here is an example:
+
+    \qml
+    import Qt 4.6
+
+    Rectangle {
+        width: 300
+        height: 300
+
+        Text {
+            id: myText
+            text: 'Click anywhere'
+        }
+
+        WorkerScript {
+            id: myWorker
+            source: "script.js"
+
+            onMessage: {
+                myText.text = messageObject.reply
+            }
+        }
+
+        MouseArea { 
+            anchors.fill: parent
+            onClicked: myWorker.sendMessage( {'x': mouse.x, 'y': mouse.y} );
+        }
+    }
+    \endqml
+
+    The above worker script specifies a javascript file, "script.js", that handles
+    the operations to be performed in the new thread:
+
+    \qml
+    WorkerScript.onMessage = function(message) {
+        // ... long-running operations and calculations are done here
+        WorkerScript.sendMessage( {'reply': 'Mouse is at ' + message.x + ',' + message.y} );
+    }
+    \endqml
+    
+    When the user clicks anywhere within the rectangle, \c sendMessage() is
+    called, triggering the \tt WorkerScript.onMessage() handler in
+    \tt source.js. This in turn sends a reply message that is then received
+    by the \tt onMessage() handler of \tt myWorker.
+
+    \sa WorkerListModel
+*/
 QDeclarativeWorkerScript::QDeclarativeWorkerScript(QObject *parent)
 : QObject(parent), m_engine(0), m_scriptId(-1)
 {
@@ -571,6 +632,12 @@ QDeclarativeWorkerScript::~QDeclarativeWorkerScript()
     if (m_scriptId != -1) m_engine->removeWorkerScript(m_scriptId);
 }
 
+/*!
+    \qmlproperty url WorkerScript::source
+
+    This holds the url of the javascript file that implements the
+    \tt WorkerScript.onMessage() handler for threaded operations.
+*/
 QUrl QDeclarativeWorkerScript::source() const
 {
     return m_source;
@@ -589,6 +656,13 @@ void QDeclarativeWorkerScript::setSource(const QUrl &source)
     emit sourceChanged();
 }
 
+/*
+    \qmlmethod WorkerScript::sendMessage(jsobject message)
+
+    Sends the given \a message to a worker script handler in another
+    thread. The other worker script handler can receive this message
+    through the onMessage() handler.
+*/
 void QDeclarativeWorkerScript::sendMessage(const QScriptValue &message)
 {
     if (!m_engine) {
@@ -615,6 +689,13 @@ void QDeclarativeWorkerScript::componentComplete()
             m_engine->executeUrl(m_scriptId, m_source);
     }
 }
+
+/*!
+    \qmlsignal WorkerScript::onMessage(jsobject msg)
+
+    This handler is called when a message \a msg is received from a worker
+    script in another thread through a call to sendMessage().
+*/
 
 bool QDeclarativeWorkerScript::event(QEvent *event)
 {
@@ -841,6 +922,41 @@ bool QDeclarativeWorkerListModelAgent::event(QEvent *e)
     return QObject::event(e);
 }
 
+/*!
+    \qmlclass WorkerListModel QDeclarativeWorkerListModel
+    \brief The WorkerListModel element provides a threaded list model.
+
+    Use WorkerListModel together with WorkerScript to define a list model 
+    that is controlled by a separate thread. This is useful if list modification 
+    operations are synchronous and take some time: using WorkerListModel
+    moves these operations to a different thread and avoids blocking of the
+    main GUI thread.
+
+    The thread that creates the WorkerListModel can modify the model for any
+    initial set-up requirements. However, once the model has been modified by
+    the associated WorkerScript, the model can only be modified by that worker
+    script and becomes read-only to all other threads.
+    
+    Here is an example application that uses WorkerScript to append the
+    current time to a WorkerListModel:
+
+    \snippet examples/declarative/workerlistmodel/timedisplay.qml 0
+
+    The included file, \tt dataloader.js, looks like this:
+
+    \snippet examples/declarative/workerlistmodel/dataloader.js 0
+
+    The application's \tt Timer object periodically sends a message to the
+    worker script by calling \tt WorkerScript::sendMessage(). When this message
+    is received, \tt WorkerScript.onMessage() is invoked in
+    \tt dataloader.js, which appends the current time to the worker list
+    model.
+
+    Note that unlike ListModel, WorkerListModel does not have \tt move() and
+    \tt setProperty() methods.
+
+    \sa WorkerScript, ListModel
+*/
 QDeclarativeWorkerListModel::QDeclarativeWorkerListModel(QObject *parent)
 : QListModelInterface(parent), m_agent(0)
 {
@@ -854,6 +970,14 @@ QDeclarativeWorkerListModel::~QDeclarativeWorkerListModel()
     }
 }
 
+/*!
+    \qmlmethod WorkerListModel::clear()
+
+    Deletes all content from the model. The properties are cleared such that
+    different properties may be set on subsequent additions.
+
+    \sa append() remove()
+*/
 void QDeclarativeWorkerListModel::clear()
 {
     if (m_agent) {
@@ -869,6 +993,13 @@ void QDeclarativeWorkerListModel::clear()
     }
 }
 
+/*!
+    \qmlmethod WorkerListModel::remove(int index)
+
+    Deletes the content at \a index from the model.
+
+    \sa clear()
+*/
 void QDeclarativeWorkerListModel::remove(int index)
 {
     if (m_agent) {
@@ -884,6 +1015,18 @@ void QDeclarativeWorkerListModel::remove(int index)
     emit countChanged();
 }
 
+/*!
+    \qmlmethod WorkerListModel::append(jsobject dict)
+
+    Adds a new item to the end of the list model, with the
+    values in \a dict.
+
+    \code
+        FruitModel.append({"cost": 5.95, "name":"Pizza"})
+    \endcode
+
+    \sa set() remove()
+*/
 void QDeclarativeWorkerListModel::append(const QScriptValue &value)
 {
     if (m_agent) {
@@ -914,6 +1057,21 @@ void QDeclarativeWorkerListModel::append(const QScriptValue &value)
     emit countChanged();
 }
 
+/*!
+    \qmlmethod WorkerListModel::insert(int index, jsobject dict)
+
+    Adds a new item to the list model at position \a index, with the
+    values in \a dict.
+
+    \code
+        FruitModel.insert(2, {"cost": 5.95, "name":"Pizza"})
+    \endcode
+
+    The \a index must be to an existing item in the list, or one past
+    the end of the list (equivalent to append).
+
+    \sa set() append()
+*/
 void QDeclarativeWorkerListModel::insert(int index, const QScriptValue &value)
 {
     if (m_agent) {
@@ -946,6 +1104,30 @@ void QDeclarativeWorkerListModel::insert(int index, const QScriptValue &value)
     emit countChanged();
 }
 
+/*!
+    \qmlmethod object ListModel::get(int index)
+
+    Returns the item at \a index in the list model.
+
+    \code
+        FruitModel.append({"cost": 5.95, "name":"Jackfruit"})
+        FruitModel.get(0).cost
+    \endcode
+
+    The \a index must be an element in the list.
+
+    Note that properties of the returned object that are themselves objects
+    will also be models, and this get() method is used to access elements:
+
+    \code
+        FruitModel.append(..., "attributes":
+            [{"name":"spikes","value":"7mm"},
+             {"name":"color","value":"green"}]);
+        FruitModel.get(0).attributes.get(1).value; // == "green"
+    \endcode
+
+    \sa append()
+*/
 QScriptValue QDeclarativeWorkerListModel::get(int index) const
 {
     QDeclarativeEngine *engine = qmlEngine(this);
@@ -962,6 +1144,21 @@ QScriptValue QDeclarativeWorkerListModel::get(int index) const
     return rv;
 }
 
+/*!
+    \qmlmethod WorkerListModel::set(int index, jsobject dict)
+
+    Changes the item at \a index in the list model with the
+    values in \a dict. Properties not appearing in \a valuemap
+    are left unchanged.
+
+    \code
+        FruitModel.set(3, {"cost": 5.95, "name":"Pizza"})
+    \endcode
+
+    The \a index must be an element in the list.
+
+    \sa append()
+*/
 void QDeclarativeWorkerListModel::set(int index, const QScriptValue &value)
 {
     if (m_agent) {
@@ -995,6 +1192,22 @@ void QDeclarativeWorkerListModel::set(int index, const QScriptValue &value)
     }
 }
 
+/*!
+    \qmlmethod WorkerListModel::sync()
+
+    Writes any unsaved changes to the list model. This must be called after
+    changes have been made to the list model in the worker script.
+
+    Note that this method can only be called from the associated worker script.
+*/
+void QDeclarativeWorkerListModel::sync()
+{
+    // This is really a dummy method to make it look like sync() exists in
+    // WorkerListModel (and not QDeclarativeWorkerListModelAgent) and to let
+    // us document sync().
+    qmlInfo(this) << "sync() can only be called from a WorkerScript";
+}
+
 QDeclarativeWorkerListModelAgent *QDeclarativeWorkerListModel::agent()
 {
     if (!m_agent) 
@@ -1013,6 +1226,10 @@ QString QDeclarativeWorkerListModel::toString(int role) const
     return m_roles.value(role);
 }
 
+/*!
+    \qmlproperty int ListModel::count
+    The number of data entries in the model.
+*/
 int QDeclarativeWorkerListModel::count() const
 {
     return m_values.count();
@@ -1037,5 +1254,4 @@ QVariant QDeclarativeWorkerListModel::data(int index, int role) const
 QT_END_NAMESPACE
 
 #include "qdeclarativeworkerscript.moc"
-
 

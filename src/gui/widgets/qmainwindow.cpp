@@ -119,6 +119,7 @@ void QMainWindowPrivate::init()
     q->setAttribute(Qt::WA_Hover);
 #ifdef QT_SOFTKEYS_ENABLED
     menuBarAction = QSoftKeyManager::createAction(QSoftKeyManager::MenuSoftKey, q);
+    menuBarAction->setVisible(false);
 #endif
 }
 
@@ -1478,7 +1479,8 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
         return;
 
     // ### Disable the unified toolbar when using anything but the native graphics system.
-    if (windowSurface())
+    // ### Disable when using alien widgets as well
+    if (windowSurface() || testAttribute(Qt::WA_NativeWindow) == false)
         return;
 
     d->useHIToolBar = set;

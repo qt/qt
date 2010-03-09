@@ -43,6 +43,7 @@
 #include "qdeclarativeitem.h"
 
 #include "qdeclarativeevents_p_p.h"
+#include <private/qdeclarativeengine_p.h>
 
 #include <qfxperf_p_p.h>
 #include <qdeclarativeengine.h>
@@ -51,6 +52,7 @@
 #include <qdeclarativeview.h>
 #include <qdeclarativestategroup_p.h>
 #include <qdeclarativecomponent.h>
+#include <qdeclarativeinfo.h>
 
 #include <QDebug>
 #include <QPen>
@@ -498,6 +500,32 @@ void QDeclarativeKeyNavigationAttached::setDown(QDeclarativeItem *i)
     emit changed();
 }
 
+QDeclarativeItem *QDeclarativeKeyNavigationAttached::tab() const
+{
+    Q_D(const QDeclarativeKeyNavigationAttached);
+    return d->tab;
+}
+
+void QDeclarativeKeyNavigationAttached::setTab(QDeclarativeItem *i)
+{
+    Q_D(QDeclarativeKeyNavigationAttached);
+    d->tab = i;
+    emit changed();
+}
+
+QDeclarativeItem *QDeclarativeKeyNavigationAttached::backtab() const
+{
+    Q_D(const QDeclarativeKeyNavigationAttached);
+    return d->backtab;
+}
+
+void QDeclarativeKeyNavigationAttached::setBacktab(QDeclarativeItem *i)
+{
+    Q_D(QDeclarativeKeyNavigationAttached);
+    d->backtab = i;
+    emit changed();
+}
+
 void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
@@ -526,6 +554,18 @@ void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event)
     case Qt::Key_Down:
         if (d->down) {
             d->down->setFocus(true);
+            event->accept();
+        }
+        break;
+    case Qt::Key_Tab:
+        if (d->tab) {
+            d->tab->setFocus(true);
+            event->accept();
+        }
+        break;
+    case Qt::Key_Backtab:
+        if (d->backtab) {
+            d->backtab->setFocus(true);
             event->accept();
         }
         break;
@@ -560,6 +600,16 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event)
         break;
     case Qt::Key_Down:
         if (d->down) {
+            event->accept();
+        }
+        break;
+    case Qt::Key_Tab:
+        if (d->tab) {
+            event->accept();
+        }
+        break;
+    case Qt::Key_Backtab:
+        if (d->backtab) {
             event->accept();
         }
         break;
@@ -902,6 +952,8 @@ const QDeclarativeKeysAttached::SigMap QDeclarativeKeysAttached::sigMap[] = {
     { Qt::Key_Right, "rightPressed" },
     { Qt::Key_Up, "upPressed" },
     { Qt::Key_Down, "downPressed" },
+    { Qt::Key_Tab, "tabPressed" },
+    { Qt::Key_Backtab, "backtabPressed" },
     { Qt::Key_Asterisk, "asteriskPressed" },
     { Qt::Key_NumberSign, "numberSignPressed" },
     { Qt::Key_Escape, "escapePressed" },
@@ -1172,7 +1224,7 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 
     See the \l {Keys}{Keys} attached property for detailed documentation.
 
-    \section 1 Property Change Signals
+    \section1 Property Change Signals
 
     Most properties on Item and Item derivatives have a signal
     emitted when they change. By convention, the signals are
@@ -1440,7 +1492,7 @@ QDeclarativeAnchors *QDeclarativeItem::anchors()
 void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
 {
     QDeclarativeItem *i = qobject_cast<QDeclarativeItem *>(o);
-    if (i) 
+    if (i)
         i->setParentItem(static_cast<QDeclarativeItem *>(prop->object));
     else
         o->setParent(static_cast<QDeclarativeItem *>(prop->object));
@@ -1568,7 +1620,7 @@ void QDeclarativeItemPrivate::transform_clear(QDeclarativeListProperty<QGraphics
 */
 
 /*! \internal */
-QDeclarativeListProperty<QObject> QDeclarativeItem::data() 
+QDeclarativeListProperty<QObject> QDeclarativeItem::data()
 {
     return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::data_append);
 }
@@ -1730,8 +1782,12 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
     if (d->_anchors)
         d->_anchors->d_func()->updateMe();
 
-    if (transformOrigin() != QDeclarativeItem::TopLeft)
-        setTransformOriginPoint(d->computeTransformOrigin());
+    if (transformOrigin() != QDeclarativeItem::TopLeft
+        && (newGeometry.width() != oldGeometry.width() || newGeometry.height() != oldGeometry.height())) {
+        QPointF origin = d->computeTransformOrigin();
+        if (transformOriginPoint() != origin)
+            setTransformOriginPoint(origin);
+    }
 
     if (newGeometry.x() != oldGeometry.x())
         emit xChanged();
@@ -2158,6 +2214,58 @@ void QDeclarativeItem::setKeepMouseGrab(bool keep)
 }
 
 /*!
+    \qmlmethod object Item::mapFromItem(Item item, int x, int y)
+
+    Maps the point (\a x, \a y), which is in \a item's coordinate system, to
+    this item's coordinate system, and returns an object with \c x and \c y
+    properties matching the mapped cooordinate.
+
+    If \a item is a \c null value, this maps the point from the coordinate
+    system of the root QML view.
+*/
+QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, int x, int y) const
+{
+    QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
+    QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
+    if (!itemObj && !item.isNull()) {
+        qWarning().nospace() << "mapFromItem() given argument " << item.toString() << " which is neither null nor an Item";
+        return 0;
+    }
+
+    // If QGraphicsItem::mapFromItem() is called with 0, behaves the same as mapFromScene()
+    QPointF p = qobject_cast<QGraphicsItem*>(this)->mapFromItem(itemObj, x, y);
+    sv.setProperty("x", p.x());
+    sv.setProperty("y", p.y());
+    return sv;
+}
+
+/*!
+    \qmlmethod object Item::mapToItem(Item item, int x, int y)
+
+    Maps the point (\a x, \a y), which is in this item's coordinate system, to
+    \a item's coordinate system, and returns an object with \c x and \c y
+    properties matching the mapped cooordinate.
+
+    If \a item is a \c null value, this maps \a x and \a y to the coordinate
+    system of the root QML view.
+*/
+QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, int x, int y) const
+{
+    QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
+    QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
+    if (!itemObj && !item.isNull()) {
+        qWarning().nospace() << "mapToItem() given argument " << item.toString() << " which is neither null nor an Item";
+        return 0;
+    }
+
+    // If QGraphicsItem::mapToItem() is called with 0, behaves the same as mapToScene()
+    QPointF p = qobject_cast<QGraphicsItem*>(this)->mapToItem(itemObj, x, y);
+    sv.setProperty("x", p.x());
+    sv.setProperty("y", p.y());
+    return sv;
+}
+
+/*!
   \internal
 
   This function emits the \e focusChanged signal.
@@ -2175,16 +2283,16 @@ void QDeclarativeItem::focusChanged(bool flag)
 QDeclarativeListProperty<QDeclarativeItem> QDeclarativeItem::fxChildren()
 {
     return QDeclarativeListProperty<QDeclarativeItem>(this, 0, QDeclarativeItemPrivate::children_append,
-                                                     QDeclarativeItemPrivate::children_count, 
-                                                     QDeclarativeItemPrivate::children_at); 
+                                                     QDeclarativeItemPrivate::children_count,
+                                                     QDeclarativeItemPrivate::children_at);
 }
 
 /*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItem::resources()
 {
-    return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::resources_append, 
-                                             QDeclarativeItemPrivate::resources_count, 
-                                             QDeclarativeItemPrivate::resources_at); 
+    return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::resources_append,
+                                             QDeclarativeItemPrivate::resources_count,
+                                             QDeclarativeItemPrivate::resources_at);
 }
 
 /*!
@@ -2461,14 +2569,26 @@ QPointF QDeclarativeItemPrivate::computeTransformOrigin() const
 /*! \internal */
 bool QDeclarativeItem::sceneEvent(QEvent *event)
 {
-    bool rv = QGraphicsItem::sceneEvent(event);
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *k = static_cast<QKeyEvent *>(event);
 
-    if (event->type() == QEvent::FocusIn ||
-        event->type() == QEvent::FocusOut) {
-        focusChanged(hasFocus());
+        if ((k->key() == Qt::Key_Tab || k->key() == Qt::Key_Backtab) &&
+            !(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {
+            keyPressEvent(static_cast<QKeyEvent *>(event));
+            if (!event->isAccepted())
+                return QGraphicsItem::sceneEvent(event);
+        } else {
+            return QGraphicsItem::sceneEvent(event);
+        }
+    } else {
+        bool rv = QGraphicsItem::sceneEvent(event);
+
+        if (event->type() == QEvent::FocusIn ||
+            event->type() == QEvent::FocusOut) {
+            focusChanged(hasFocus());
+        }
+        return rv;
     }
-
-    return rv;
 }
 
 /*! \internal */
@@ -2733,6 +2853,27 @@ bool QDeclarativeItem::heightValid() const
 {
     Q_D(const QDeclarativeItem);
     return d->heightValid;
+}
+
+/*! \internal */
+void QDeclarativeItem::setSize(const QSizeF &size)
+{
+    Q_D(QDeclarativeItem);
+    d->heightValid = true;
+    d->widthValid = true;
+
+    if (d->height == size.height() && d->width == size.width())
+        return;
+
+    qreal oldHeight = d->height;
+    qreal oldWidth = d->width;
+
+    prepareGeometryChange();
+    d->height = size.height();
+    d->width = size.width();
+
+    geometryChanged(QRectF(x(), y(), width(), height()),
+                    QRectF(x(), y(), oldWidth, oldHeight));
 }
 
 /*!

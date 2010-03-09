@@ -679,16 +679,20 @@ void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &botto
         d->defaultItemHeight = indexRowSizeHint(topLeft);
     bool sizeChanged = false;
     if (topViewIndex != -1) {
-        if (topLeft == bottomRight) {
+        if (topLeft.row() == bottomRight.row()) {
             int oldHeight = d->itemHeight(topViewIndex);
             d->invalidateHeightCache(topViewIndex);
             sizeChanged = (oldHeight != d->itemHeight(topViewIndex));
+            if (topLeft.column() == 0)
+                d->viewItems[topViewIndex].hasChildren = d->hasVisibleChildren(topLeft);
         } else {
             int bottomViewIndex = d->viewIndex(bottomRight);
             for (int i = topViewIndex; i <= bottomViewIndex; ++i) {
                 int oldHeight = d->itemHeight(i);
                 d->invalidateHeightCache(i);
                 sizeChanged |= (oldHeight != d->itemHeight(i));
+                if (topLeft.column() == 0)
+                    d->viewItems[i].hasChildren = d->hasVisibleChildren(d->viewItems.at(i).index);
             }
         }
     }
@@ -2524,8 +2528,7 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
             d->viewItems[parentItem].hasChildren = true;
         d->updateChildCount(parentItem, delta);
 
-        updateGeometries();
-        viewport()->update();
+        d->doDelayedItemsLayout();
     } else if ((parentItem != -1) && d->viewItems.at(parentItem).expanded) {
         d->doDelayedItemsLayout();
     } else if (parentItem != -1 && (d->model->rowCount(parent) == end - start + 1)) {
@@ -3780,8 +3783,7 @@ void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
             }
         }
         if (after) {
-            q->updateGeometries();
-            viewport->update();
+            doDelayedItemsLayout();
         } else {
             //we have removed items: we should at least update the scroll bar values.
             // They are used to determine the item geometry.

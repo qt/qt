@@ -47,7 +47,7 @@
 
 #include <QtCore/qurl.h>
 
-#include "../3rdparty/qlistmodelinterface_p.h"
+#include <private/qlistmodelinterface_p.h>
 
 QT_BEGIN_HEADER
 
@@ -68,10 +68,10 @@ class Q_DECLARATIVE_EXPORT QDeclarativeXmlListModel : public QListModelInterface
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
-    Q_PROPERTY(QUrl source READ source WRITE setSource)
-    Q_PROPERTY(QString xml READ xml WRITE setXml)
-    Q_PROPERTY(QString query READ query WRITE setQuery)
-    Q_PROPERTY(QString namespaceDeclarations READ namespaceDeclarations WRITE setNamespaceDeclarations)
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QString xml READ xml WRITE setXml NOTIFY xmlChanged)
+    Q_PROPERTY(QString query READ query WRITE setQuery NOTIFY queryChanged)
+    Q_PROPERTY(QString namespaceDeclarations READ namespaceDeclarations WRITE setNamespaceDeclarations NOTIFY namespaceDeclarationsChanged)
     Q_PROPERTY(QDeclarativeListProperty<QDeclarativeXmlListModelRole> roles READ roleObjects)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_CLASSINFO("DefaultProperty", "roles")
@@ -111,6 +111,10 @@ Q_SIGNALS:
     void statusChanged(Status);
     void progressChanged(qreal progress);
     void countChanged();
+    void sourceChanged();
+    void xmlChanged();
+    void queryChanged();
+    void namespaceDeclarationsChanged();
 
 public Q_SLOTS:
     // ### need to use/expose Expiry to guess when to call this?
@@ -132,16 +136,20 @@ private:
 class Q_DECLARATIVE_EXPORT QDeclarativeXmlListModelRole : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QString query READ query WRITE setQuery)
-    Q_PROPERTY(bool isKey READ isKey WRITE setIsKey)
-
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(QString query READ query WRITE setQuery NOTIFY queryChanged)
+    Q_PROPERTY(bool isKey READ isKey WRITE setIsKey NOTIFY isKeyChanged)
 public:
     QDeclarativeXmlListModelRole() : m_isKey(false) {}
     ~QDeclarativeXmlListModelRole() {}
 
     QString name() const { return m_name; }
-    void setName(const QString &name) { m_name = name; }
+    void setName(const QString &name) {
+        if (name == m_name)
+            return;
+        m_name = name;
+        emit nameChanged();
+    }
 
     QString query() const { return m_query; }
     void setQuery(const QString &query)
@@ -150,15 +158,28 @@ public:
             qmlInfo(this) << tr("An XmlRole query must not start with '/'");
             return;
         }
+        if (m_query == query)
+            return;
         m_query = query;
+        emit queryChanged();
     }
 
     bool isKey() const { return m_isKey; }
-    void setIsKey(bool b) { m_isKey = b; }
+    void setIsKey(bool b) {
+        if (m_isKey == b)
+            return;
+        m_isKey = b;
+        emit isKeyChanged();
+    }
 
     bool isValid() {
         return !m_name.isEmpty() && !m_query.isEmpty();
     }
+
+Q_SIGNALS:
+    void nameChanged();
+    void queryChanged();
+    void isKeyChanged();
 
 private:
     QString m_name;

@@ -50,7 +50,7 @@ HappyBirthday::HappyBirthday(QObject *parent)
     timer->start(1000);
 }
 
-void HappyBirthday::setTarget(const QDeclarativeMetaProperty &p)
+void HappyBirthday::setTarget(const QDeclarativeProperty &p)
 {
     m_target = p;
 }

@@ -47,9 +47,6 @@
 
 QT_BEGIN_HEADER
 
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Core)
 
 #if defined(QT_NO_MAC_XARCH) || (defined(Q_OS_DARWIN) && (defined(__ppc__) || defined(__ppc64__)))
 // Disable MMX and SSE on Mac/PPC builds, or if the compiler
@@ -61,7 +58,7 @@ QT_MODULE(Core)
 #endif
 
 // SSE intrinsics
-#if defined(__SSE2__)
+#if defined(__SSE2__) && defined(QT_HAVE_SSE2) && !defined(QT_BOOTSTRAPPED)
 #if defined(QT_LINUXBASE)
 /// this is an evil hack - the posix_memalign declaration in LSB
 /// is wrong - see http://bugs.linuxbase.org/show_bug.cgi?id=2431
@@ -103,6 +100,10 @@ QT_MODULE(Core)
 #include <mm3dnow.h>
 #endif
 
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Core)
+
 enum CPUFeatures {
     None        = 0,
     MMX         = 0x1,
@@ -116,11 +117,12 @@ enum CPUFeatures {
     NEON        = 0x100
 };
 
+Q_CORE_EXPORT uint qDetectCPUFeatures();
+
+Q_CORE_EXPORT uint qDetectCPUFeatures();
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
-
-Q_CORE_EXPORT uint qDetectCPUFeatures();
 
 #endif // QSIMD_P_H

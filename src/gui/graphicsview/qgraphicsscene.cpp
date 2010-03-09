@@ -228,6 +228,7 @@
 #include <QtCore/qstack.h>
 #include <QtCore/qtimer.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/QMetaMethod>
 #include <QtGui/qapplication.h>
 #include <QtGui/qdesktopwidget.h>
 #include <QtGui/qevent.h>
@@ -276,8 +277,6 @@ static void _q_hoverFromMouseEvent(QGraphicsSceneHoverEvent *hover, const QGraph
     hover->setModifiers(mouseEvent->modifiers());
     hover->setAccepted(mouseEvent->isAccepted());
 }
-
-int QGraphicsScenePrivate::changedSignalIndex;
 
 /*!
     \internal
@@ -329,9 +328,10 @@ void QGraphicsScenePrivate::init()
     index = new QGraphicsSceneBspTreeIndex(q);
 
     // Keep this index so we can check for connected slots later on.
-    if (!changedSignalIndex) {
-        changedSignalIndex = signalIndex("changed(QList<QRectF>)");
-    }
+    changedSignalIndex = signalIndex("changed(QList<QRectF>)");
+    processDirtyItemsIndex = q->metaObject()->indexOfSlot("_q_processDirtyItems()");
+    polishItemsIndex = q->metaObject()->indexOfSlot("_q_polishItems()");
+
     qApp->d_func()->scene_list.append(q);
     q->update();
 }
@@ -2537,8 +2537,10 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         return;
     }
 
-    if (d->unpolishedItems.isEmpty())
-        QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
+    if (d->unpolishedItems.isEmpty()) {
+        QMetaMethod method = metaObject()->method(d->polishItemsIndex);
+        method.invoke(this, Qt::QueuedConnection);
+    }
     d->unpolishedItems.append(item);
     item->d_ptr->pendingPolish = true;
 
@@ -4728,31 +4730,18 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         if (sourced->currentCachedSystem() != Qt::LogicalCoordinates
             && sourced->lastEffectTransform != painter->worldTransform())
         {
-            bool unclipped = false;
             if (sourced->lastEffectTransform.type() <= QTransform::TxTranslate
                 && painter->worldTransform().type() <= QTransform::TxTranslate)
             {
-                QRectF itemRect = item->boundingRect();
-                if (!item->d_ptr->children.isEmpty())
-                    itemRect |= item->childrenBoundingRect();
+                QRectF sourceRect = sourced->boundingRect(Qt::DeviceCoordinates);
+                QRect effectRect = sourced->paddedEffectRect(Qt::DeviceCoordinates, sourced->currentCachedMode(), sourceRect);
 
-                QRectF oldSourceRect = sourced->lastEffectTransform.mapRect(itemRect);
-                QRectF newSourceRect = painter->worldTransform().mapRect(itemRect);
-
-                QRect oldEffectRect = sourced->paddedEffectRect(sourced->currentCachedSystem(), sourced->currentCachedMode(), oldSourceRect);
-                QRect newEffectRect = sourced->paddedEffectRect(sourced->currentCachedSystem(), sourced->currentCachedMode(), newSourceRect);
-
-                QRect deviceRect(0, 0, painter->device()->width(), painter->device()->height());
-                if (deviceRect.contains(oldEffectRect) && deviceRect.contains(newEffectRect)) {
-                    sourced->setCachedOffset(newEffectRect.topLeft());
-                    unclipped = true;
-                }
+                sourced->setCachedOffset(effectRect.topLeft());
+            } else {
+                sourced->invalidateCache(QGraphicsEffectSourcePrivate::TransformChanged);
             }
 
             sourced->lastEffectTransform = painter->worldTransform();
-
-            if (!unclipped)
-                sourced->invalidateCache(QGraphicsEffectSourcePrivate::TransformChanged);
         }
 
         item->d_ptr->graphicsEffect->draw(painter);
@@ -4892,7 +4881,9 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         return;
 
     if (!processDirtyItemsEmitted) {
-        QMetaObject::invokeMethod(q_ptr, "_q_processDirtyItems", Qt::QueuedConnection);
+        QMetaMethod method = q_ptr->metaObject()->method(processDirtyItemsIndex);
+        method.invoke(q_ptr, Qt::QueuedConnection);
+//        QMetaObject::invokeMethod(q_ptr, "_q_processDirtyItems", Qt::QueuedConnection);
         processDirtyItemsEmitted = true;
     }
 
@@ -5972,12 +5963,12 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
 
     QList<QGesture *> allGestures = event->gestures();
     DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
-            << "Delivering gestures:" <<  allGestures;
+            << "Gestures:" <<  allGestures;
 
     QSet<QGesture *> startedGestures;
-    QPoint delta = graphicsView->mapFromGlobal(QPoint());
-    QTransform toScene =  QTransform::fromTranslate(delta.x(), delta.y())
-                          * graphicsView->viewportTransform().inverted();
+    QPoint delta = viewport->mapFromGlobal(QPoint());
+    QTransform toScene = QTransform::fromTranslate(delta.x(), delta.y())
+                         * graphicsView->viewportTransform().inverted();
     foreach (QGesture *gesture, allGestures) {
         // cache scene coordinates of the hot spot
         if (gesture->hasHotSpot()) {
@@ -6003,7 +5994,8 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         cachedTargetItems = cachedItemGestures.keys();
         qSort(cachedTargetItems.begin(), cachedTargetItems.end(), qt_closestItemFirst);
         DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
-                << "Conflicting gestures:" <<  conflictedGestures;
+                << "Normal gestures:" << normalGestures
+                << "Conflicting gestures:" << conflictedGestures;
 
         // deliver conflicted gestures as override events AND remember
         // initial gesture targets
@@ -6080,6 +6072,10 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
             const Qt::GestureFlags flags = d->gestureContext.value(gesture->gestureType());
             if (flags & Qt::IgnoredGesturesPropagateToParent)
                 parentPropagatedGestures.insert(gesture);
+        } else {
+            DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
+                    << "no target for" << gesture << "at"
+                    << gesture->hotSpot() << gesture->d_func()->sceneHotSpot;
         }
     }
     qSort(cachedTargetItems.begin(), cachedTargetItems.end(), qt_closestItemFirst);

@@ -53,13 +53,40 @@
 // We mean it.
 //
 
-#include <QtCore/qsize.h>
-#include <QtGui/qimage.h>
-
-#include <private/qeglproperties_p.h>
-
 QT_BEGIN_INCLUDE_NAMESPACE
 
+#if defined(QT_OPENGL_ES_2)
+#   include <GLES2/gl2.h>
+#endif
+
+#if defined(QT_GLES_EGL)
+#   include <GLES/egl.h>
+#else
+#   include <EGL/egl.h>
+#endif
+
+#if defined(Q_WS_X11)
+// If <EGL/egl.h> included <X11/Xlib.h>, then the global namespace
+// may have been polluted with X #define's.  The following makes sure
+// the X11 headers were included properly and then cleans things up.
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#undef Bool
+#undef Status
+#undef None
+#undef KeyPress
+#undef KeyRelease
+#undef FocusIn
+#undef FocusOut
+#undef Type
+#undef FontChange
+#undef CursorShape
+#undef Unsorted
+#undef GrayScale
+#endif
+
+// Internally we use the EGL-prefixed native types which are used in EGL >= 1.3.
+// For older versions of EGL, we have to define these types ourselves here:
 #if !defined(EGL_VERSION_1_3) && !defined(QEGL_NATIVE_TYPES_DEFINED)
 #undef EGLNativeWindowType
 #undef EGLNativePixmapType
@@ -69,74 +96,75 @@ typedef NativePixmapType EGLNativePixmapType;
 typedef NativeDisplayType EGLNativeDisplayType;
 #define QEGL_NATIVE_TYPES_DEFINED 1
 #endif
+
 QT_END_INCLUDE_NAMESPACE
+
+#include <QtGui/qpaintdevice.h>
+
+#include <QFlags>
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QEglContext
-{
-public:
-    QEglContext();
-    ~QEglContext();
+#define QEGL_NO_CONFIG ((EGLConfig)-1)
 
-    bool isValid() const;
-    bool isCurrent() const;
-    bool isSharing() const { return sharing; }
 
-    QEgl::API api() const { return apiType; }
-    void setApi(QEgl::API api) { apiType = api; }
 
-    bool chooseConfig(const QEglProperties& properties, QEgl::PixelFormatMatch match = QEgl::ExactPixelFormat);
-    bool createContext(QEglContext *shareContext = 0, const QEglProperties *properties = 0);
-    void destroyContext();
-    EGLSurface createSurface(QPaintDevice *device, const QEglProperties *properties = 0);
-    void destroySurface(EGLSurface surface);
+class QEglProperties;
 
-    bool makeCurrent(EGLSurface surface);
-    bool doneCurrent();
-    bool lazyDoneCurrent();
-    bool swapBuffers(EGLSurface surface);
+namespace QEgl {
+    enum API
+    {
+        OpenGL,
+        OpenVG
+    };
 
-    void waitNative();
-    void waitClient();
+    enum PixelFormatMatch
+    {
+        ExactPixelFormat,
+        BestPixelFormat
+    };
 
-    bool configAttrib(int name, EGLint *value) const;
+    enum ConfigOption
+    {
+        NoOptions   = 0,
+        Translucent = 0x01,
+        Renderable  = 0x02  // Config will be compatable with the paint engines (VG or GL)
+    };
+    Q_DECLARE_FLAGS(ConfigOptions, ConfigOption);
 
-    static void clearError() { eglGetError(); }
-    static EGLint error() { return eglGetError(); }
-    static QString errorString(EGLint code);
 
-    static EGLDisplay display();
+    // Most of the time we use the same config for things like widgets & pixmaps, so rather than
+    // go through the eglChooseConfig loop every time, we use defaultConfig, which will return
+    // the config for a particular device/api/option combo. This function assumes that once a
+    // config is chosen for a particular combo, it's safe to always use that combo.
+    Q_GUI_EXPORT EGLConfig  defaultConfig(int devType, API api, ConfigOptions options);
 
-    EGLContext context() const { return ctx; }
-    void setContext(EGLContext context) { ctx = context; ownsContext = false;}
+    Q_GUI_EXPORT EGLConfig  chooseConfig(const QEglProperties* configAttribs, QEgl::PixelFormatMatch match = QEgl::ExactPixelFormat);
+    Q_GUI_EXPORT EGLSurface createSurface(QPaintDevice *device, EGLConfig cfg, const QEglProperties *surfaceAttribs = 0);
 
-    EGLConfig config() const { return cfg; }
-    void setConfig(EGLConfig config) { cfg = config; }
+    Q_GUI_EXPORT void dumpAllConfigs();
 
-    QEglProperties configProperties(EGLConfig cfg = 0) const;
+    Q_GUI_EXPORT void clearError();
+    Q_GUI_EXPORT EGLint error();
+    Q_GUI_EXPORT QString errorString(EGLint code);
+    Q_GUI_EXPORT QString errorString();
 
-    void dumpAllConfigs();
+    Q_GUI_EXPORT QString extensions();
+    Q_GUI_EXPORT bool hasExtension(const char* extensionName);
 
-    static QString extensions();
-    static bool hasExtension(const char* extensionName);
+    Q_GUI_EXPORT EGLDisplay display();
 
-private:
-    QEgl::API apiType;
-    EGLContext ctx;
-    EGLConfig cfg;
-    EGLSurface currentSurface;
-    bool current;
-    bool ownsContext;
-    bool sharing;
+    Q_GUI_EXPORT EGLNativeDisplayType nativeDisplay();
+    Q_GUI_EXPORT EGLNativeWindowType  nativeWindow(QWidget*);
+    Q_GUI_EXPORT EGLNativePixmapType  nativePixmap(QPixmap*);
 
-    static EGLDisplay dpy;
-    static EGLNativeDisplayType nativeDisplay();
-
-    static QEglContext *currentContext(QEgl::API api);
-    static void setCurrentContext(QEgl::API api, QEglContext *context);
+#ifdef Q_WS_X11
+    Q_GUI_EXPORT VisualID getCompatibleVisualId(EGLConfig config);
+#endif
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QEgl::ConfigOptions);
 
 QT_END_NAMESPACE
 
-#endif // QEGL_P_H
+#endif //QEGL_P_H

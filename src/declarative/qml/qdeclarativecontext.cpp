@@ -47,6 +47,7 @@
 #include "qdeclarativeengine.h"
 #include "qdeclarativecompiledbindings_p.h"
 #include "qdeclarativeinfo.h"
+#include "qdeclarativeglobalscriptclass_p.h"
 
 #include <qscriptengine.h>
 #include <QtCore/qvarlengtharray.h>
@@ -74,10 +75,13 @@ void QDeclarativeContextPrivate::addScript(const QDeclarativeParser::Object::Scr
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
     QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
+
     scriptContext->pushScope(enginePriv->contextClass->newContext(q, scopeObject));
+    scriptContext->pushScope(enginePriv->globalClass->globalObject());
     
     QScriptValue scope = scriptEngine->newObject();
     scriptContext->setActivationObject(scope);
+    scriptContext->pushScope(scope);
 
     for (int ii = 0; ii < script.codes.count(); ++ii) {
         scriptEngine->evaluate(script.codes.at(ii), script.files.at(ii), script.lineNumbers.at(ii));
@@ -480,7 +484,10 @@ QVariant QDeclarativeContext::contextProperty(const QString &name) const
         if (!value.isValid() && parentContext())
             value = parentContext()->contextProperty(name);
     } else {
-        value = d->propertyValues[idx];
+        if (idx >= d->propertyValues.count())
+            value = QVariant::fromValue(d->idValues[idx - d->propertyValues.count()].data());
+        else
+            value = d->propertyValues[idx];
     }
 
     return value;

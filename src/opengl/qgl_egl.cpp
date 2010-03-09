@@ -40,48 +40,50 @@
 ****************************************************************************/
 
 #include <QtOpenGL/qgl.h>
+#include <QtOpenGL/qglpixelbuffer.h>
 #include "qgl_p.h"
 #include "qgl_egl_p.h"
+#include "qglpixelbuffer_p.h"
+
+#ifdef Q_WS_X11
+#include <QtGui/private/qpixmap_x11_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
-// Set device configuration attributes from a QGLFormat instance.
-void qt_egl_set_format(QEglProperties& props, int deviceType, const QGLFormat& f)
+void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLFormat& glFormat)
 {
-    if (deviceType == QInternal::Pixmap || deviceType == QInternal::Image)
-        props.setValue(EGL_SURFACE_TYPE, EGL_PIXMAP_BIT);
-    else if (deviceType == QInternal::Pbuffer)
-        props.setValue(EGL_SURFACE_TYPE, EGL_PBUFFER_BIT);
-    else
-        props.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT);
-
-    // Set the pixel format to that contained in the QGLFormat
-    // if the system hasn't already chosen a fixed format to
-    // match the pixmap, widget, etc.
-    if (props.value(EGL_RED_SIZE) == 0 || f.redBufferSize() != -1)
-        props.setValue(EGL_RED_SIZE, f.redBufferSize() == -1 ? 1 : f.redBufferSize());
-    if (props.value(EGL_GREEN_SIZE) == 0 || f.greenBufferSize() != -1)
-        props.setValue(EGL_GREEN_SIZE, f.greenBufferSize() == -1 ? 1 : f.greenBufferSize());
-    if (props.value(EGL_BLUE_SIZE) == 0 || f.blueBufferSize() != -1)
-        props.setValue(EGL_BLUE_SIZE, f.blueBufferSize() == -1 ? 1 : f.blueBufferSize());
-    if (f.alpha()) {
-        if (props.value(EGL_ALPHA_SIZE) == 0 || f.alphaBufferSize() != -1)
-            props.setValue(EGL_ALPHA_SIZE, f.alphaBufferSize() == -1 ? 1 : f.alphaBufferSize());
+    // NOTE: QGLFormat uses a magic value of -1 to indicate "don't care", even when a buffer of that
+    // type has been requested.
+    if (glFormat.depth()) {
+        int depthSize = glFormat.depthBufferSize();
+        eglProperties.setValue(EGL_DEPTH_SIZE,  depthSize == -1 ? 1 : depthSize);
+    }
+    if (glFormat.stencil()) {
+        int stencilSize = glFormat.stencilBufferSize();
+        eglProperties.setValue(EGL_STENCIL_SIZE, stencilSize == -1 ? 1 : stencilSize);
+    }
+    if (glFormat.sampleBuffers()) {
+        int sampleCount = glFormat.samples();
+        eglProperties.setValue(EGL_SAMPLES, sampleCount == -1 ? 1 : sampleCount);
+        eglProperties.setValue(EGL_SAMPLE_BUFFERS, 1);
+    }
+    if (glFormat.alpha()) {
+        int alphaSize = glFormat.alphaBufferSize();
+        eglProperties.setValue(EGL_ALPHA_SIZE, alphaSize == -1 ? 1 : alphaSize);
     }
 
-    if (f.depth())
-        props.setValue(EGL_DEPTH_SIZE, f.depthBufferSize() == -1 ? 1 : f.depthBufferSize());
-    if (f.stencil())
-        props.setValue(EGL_STENCIL_SIZE, f.stencilBufferSize() == -1 ? 1 : f.stencilBufferSize());
-    if (f.sampleBuffers()) {
-        props.setValue(EGL_SAMPLE_BUFFERS, 1);
-        props.setValue(EGL_SAMPLES, f.samples() == -1 ? 1 : f.samples());
-    } else {
-        props.setValue(EGL_SAMPLE_BUFFERS, 0);
-    }
-    if (deviceType == QInternal::Widget)
-        props.setValue(EGL_LEVEL, f.plane());
+    int redSize = glFormat.redBufferSize();
+    int greenSize = glFormat.greenBufferSize();
+    int blueSize = glFormat.blueBufferSize();
+    int alphaSize = glFormat.alphaBufferSize();
+
+    eglProperties.setValue(EGL_RED_SIZE,   redSize   > 0 ? redSize   : 1);
+    eglProperties.setValue(EGL_GREEN_SIZE, greenSize > 0 ? greenSize : 1);
+    eglProperties.setValue(EGL_BLUE_SIZE,  blueSize  > 0 ? blueSize  : 1);
+    eglProperties.setValue(EGL_ALPHA_SIZE, alphaSize > 0 ? alphaSize : 0);
 }
+
 
 // Updates "format" with the parameters of the selected configuration.
 void qt_egl_update_format(const QEglContext& context, QGLFormat& format)
@@ -126,7 +128,7 @@ void qt_egl_update_format(const QEglContext& context, QGLFormat& format)
     // Clear the EGL error state because some of the above may
     // have errored out because the attribute is not applicable
     // to the surface type.  Such errors don't matter.
-    context.clearError();
+    QEgl::clearError();
 }
 
 bool QGLFormat::hasOpenGL()
@@ -158,12 +160,12 @@ void QGLContext::reset()
 void QGLContext::makeCurrent()
 {
     Q_D(QGLContext);
-    if (!d->valid || !d->eglContext || d->eglSurface == EGL_NO_SURFACE) {
+    if (!d->valid || !d->eglContext || d->eglSurfaceForDevice() == EGL_NO_SURFACE) {
         qWarning("QGLContext::makeCurrent(): Cannot make invalid context current");
         return;
     }
 
-    if (d->eglContext->makeCurrent(d->eglSurface))
+    if (d->eglContext->makeCurrent(d->eglSurfaceForDevice()))
         QGLContextPrivate::setCurrentContext(this);
 }
 
@@ -183,7 +185,7 @@ void QGLContext::swapBuffers() const
     if (!d->valid || !d->eglContext)
         return;
 
-    d->eglContext->swapBuffers(d->eglSurface);
+    d->eglContext->swapBuffers(d->eglSurfaceForDevice());
 }
 
 void QGLContextPrivate::destroyEglSurfaceForDevice()
@@ -204,6 +206,30 @@ void QGLContextPrivate::destroyEglSurfaceForDevice()
             eglDestroySurface(eglContext->display(), eglSurface);
         eglSurface = EGL_NO_SURFACE;
     }
+}
+
+EGLSurface QGLContextPrivate::eglSurfaceForDevice() const
+{
+    // If a QPixmapData had to create the QGLContext, we don't have a paintDevice
+    if (!paintDevice)
+        return eglSurface;
+
+#ifdef Q_WS_X11
+    if (paintDevice->devType() == QInternal::Pixmap) {
+        QPixmapData *pmd = static_cast<QPixmap*>(paintDevice)->data_ptr().data();
+        if (pmd->classId() == QPixmapData::X11Class) {
+            QX11PixmapData* x11PixmapData = static_cast<QX11PixmapData*>(pmd);
+            return (EGLSurface)x11PixmapData->gl_surface;
+        }
+    }
+#endif
+
+    if (paintDevice->devType() == QInternal::Pbuffer) {
+        QGLPixelBuffer* pbuf = static_cast<QGLPixelBuffer*>(paintDevice);
+        return pbuf->d_func()->pbuf;
+    }
+
+    return eglSurface;
 }
 
 void QGLWidget::setMouseTracking(bool enable)

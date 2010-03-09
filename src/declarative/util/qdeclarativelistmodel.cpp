@@ -70,6 +70,7 @@ static void dump(ModelNode *node, int ind);
 
 /*!
     \qmlclass ListModel QDeclarativeListModel
+    \since 4.7
     \brief The ListModel element defines a free-form list data source.
 
     The ListModel is a simple hierarchy of elements containing data roles. The contents can
@@ -936,6 +937,7 @@ bool QDeclarativeListModelParser::definesEmptyList(const QString &s)
 
 /*!
     \qmlclass ListElement
+    \since 4.7
     \brief The ListElement element defines a data item in a ListModel.
 
     \sa ListModel

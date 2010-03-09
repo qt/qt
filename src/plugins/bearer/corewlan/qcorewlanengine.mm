@@ -105,12 +105,23 @@ static QString qGetInterfaceType(const QString &interfaceString)
     return networkInterfaces.value(interfaceString, QLatin1String("Unknown"));
 }
 
+void networkChangeCallback(SCDynamicStoreRef/* store*/, CFArrayRef changedKeys, void *info)
+{
+    for ( long i = 0; i < CFArrayGetCount(changedKeys); i++) {
+
+        CFStringRef changed = (CFStringRef)CFArrayGetValueAtIndex(changedKeys, i);
+        if( cfstringRefToQstring(changed).contains("/Network/Global/IPv4")) {
+            QCoreWlanEngine* wlanEngine = static_cast<QCoreWlanEngine*>(info);
+            wlanEngine->requestUpdate();
+        }
+    }
+    return;
+}
+
 QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
 :   QBearerEngineImpl(parent)
 {
-    connect(&pollTimer, SIGNAL(timeout()), this, SLOT(doRequestUpdate()));
-    pollTimer.setInterval(10000);
-    doRequestUpdate();
+    startNetworkChangeLoop();
 }
 
 QCoreWlanEngine::~QCoreWlanEngine()
@@ -150,17 +161,16 @@ void QCoreWlanEngine::connectToId(const QString &id)
         NSEnumerator *enumerator = [remNets objectEnumerator];
         CWWirelessProfile *wProfile;
         NSUInteger index=0;
-        CWNetwork *apNetwork;
         NSDictionary *parametersDict;
         NSArray* apArray;
 
- CW8021XProfile *user8021XProfile;
- NSError *err;
- NSMutableDictionary *params;
+        CW8021XProfile *user8021XProfile;
+        NSError *err;
+        NSMutableDictionary *params;
 
         while ((wProfile = [enumerator nextObject])) { //CWWirelessProfile
 
-            if(id == nsstringToQString([wProfile ssid])) {
+            if(id ==  QString::number(qHash(QLatin1String("corewlan:") + nsstringToQString([wProfile ssid])))) {
                 user8021XProfile = nil;
                 user8021XProfile = [ wProfile user8021XProfile];
 
@@ -179,16 +189,14 @@ void QCoreWlanEngine::connectToId(const QString &id)
                 if(!err) {
 
                     for(uint row=0; row < [apArray count]; row++ ) {
-                        apNetwork = [apArray objectAtIndex:row];
+                        CWNetwork *apNetwork = [apArray objectAtIndex:row];
                         if([[apNetwork ssid] compare:[wProfile ssid]] == NSOrderedSame) {
 
                             bool result = [wifiInterface associateToNetwork: apNetwork parameters:[NSDictionary dictionaryWithDictionary:params] error:&err];
 
                             if(!result) {
-                                qWarning() <<"ERROR"<< nsstringToQString([err localizedDescription ]);
                                 emit connectionError(id, ConnectError);
                             } else {
-                                [apNetwork release];
                                 [autoreleasepool release];
                                 return;
                             }
@@ -198,7 +206,6 @@ void QCoreWlanEngine::connectToId(const QString &id)
             }
             index++;
         }
-        [apNetwork release];
 
         emit connectionError(id, InterfaceLookupError);
 #endif
@@ -284,7 +291,7 @@ void QCoreWlanEngine::doRequestUpdate()
         if (!interface.addressEntries().isEmpty())
             state = QNetworkConfiguration::Active;
 
-        if (accessPointConfigurations.contains(id)) {
+        if (accessPointConfigurations.contains(id)) { //handle only scanned AP's
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
             bool changed = false;
@@ -311,20 +318,6 @@ void QCoreWlanEngine::doRequestUpdate()
 
             if (changed)
                 emit configurationChanged(ptr);
-        } else {
-            QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
-
-            ptr->name = name;
-            ptr->isValid = true;
-            ptr->id = id;
-            ptr->state = state;
-            ptr->type = QNetworkConfiguration::InternetAccessPoint;
-            ptr->bearer = qGetInterfaceType(interface.name());
-
-            accessPointConfigurations.insert(id, ptr);
-            configurationInterface.insert(id, interface.name());
-
-            emit configurationAdded(ptr);
         }
     }
 
@@ -350,83 +343,81 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
     NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
 
     CWInterface *currentInterface = [CWInterface interfaceWithName:qstringToNSString(interfaceName)];
-    NSError *err = nil;
-    NSDictionary *parametersDict = nil;
-    NSArray* apArray = [currentInterface scanForNetworksWithParameters:parametersDict error:&err];
+    if([currentInterface power]) {
+        NSError *err = nil;
+        NSDictionary *parametersDict = nil;
+        NSArray* apArray = [currentInterface scanForNetworksWithParameters:parametersDict error:&err];
 
-    CWNetwork *apNetwork;
-    if (!err) {
-        for(uint row=0; row < [apArray count]; row++ ) {
-            NSAutoreleasePool *looppool = [[NSAutoreleasePool alloc] init];
+        CWNetwork *apNetwork;
+        if (!err) {
+            for(uint row=0; row < [apArray count]; row++ ) {
+                NSAutoreleasePool *looppool = [[NSAutoreleasePool alloc] init];
 
-            apNetwork = [apArray objectAtIndex:row];
+                apNetwork = [apArray objectAtIndex:row];
 
-            const QString networkSsid = nsstringToQString([apNetwork ssid]);
+                const QString networkSsid = nsstringToQString([apNetwork ssid]);
 
-            const QString id = QString::number(qHash(QLatin1String("corewlan:") + networkSsid));
-            found.append(id);
+                const QString id = QString::number(qHash(QLatin1String("corewlan:") + networkSsid));
+                found.append(id);
 
-            QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Undefined;
+                QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Undefined;
 
-            if ([currentInterface.interfaceState intValue] == kCWInterfaceStateRunning) {
-                if (networkSsid == nsstringToQString([currentInterface ssid]))
-                    state = QNetworkConfiguration::Active;
-            } else {
-                if (isKnownSsid(interfaceName, networkSsid))
-                    state = QNetworkConfiguration::Discovered;
-                else
-                    state = QNetworkConfiguration::Defined;
-            }
-
-            if (accessPointConfigurations.contains(id)) {
-                QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
-
-                bool changed = false;
-
-                if (!ptr->isValid) {
-                    ptr->isValid = true;
-                    changed = true;
+                if ([currentInterface.interfaceState intValue] == kCWInterfaceStateRunning) {
+                    if (networkSsid == nsstringToQString([currentInterface ssid]))
+                        state = QNetworkConfiguration::Active;
+                } else {
+                    if (isKnownSsid(interfaceName, networkSsid))
+                        state = QNetworkConfiguration::Discovered;
+                    else
+                        state = QNetworkConfiguration::Defined;
                 }
 
-                if (ptr->name != networkSsid) {
+                if (accessPointConfigurations.contains(id)) {
+                    QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
+
+                    bool changed = false;
+
+                    if (!ptr->isValid) {
+                        ptr->isValid = true;
+                        changed = true;
+                    }
+
+                    if (ptr->name != networkSsid) {
+                        ptr->name = networkSsid;
+                        changed = true;
+                    }
+
+                    if (ptr->id != id) {
+                        ptr->id = id;
+                        changed = true;
+                    }
+
+                    if (ptr->state != state) {
+                        ptr->state = state;
+                        changed = true;
+                    }
+
+                    if (changed)
+                        emit configurationChanged(ptr);
+                } else {
+                    QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
+
                     ptr->name = networkSsid;
-                    changed = true;
-                }
-
-                if (ptr->id != id) {
+                    ptr->isValid = true;
                     ptr->id = id;
-                    changed = true;
-                }
-
-                if (ptr->state != state) {
                     ptr->state = state;
-                    changed = true;
+                    ptr->type = QNetworkConfiguration::InternetAccessPoint;
+                    ptr->bearer = QLatin1String("WLAN");
+
+                    accessPointConfigurations.insert(id, ptr);
+                    configurationInterface.insert(id, interfaceName);
+
+                    emit configurationAdded(ptr);
                 }
-
-                if (changed)
-                    emit configurationChanged(ptr);
-            } else {
-                QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
-
-                ptr->name = networkSsid;
-                ptr->isValid = true;
-                ptr->id = id;
-                ptr->state = state;
-                ptr->type = QNetworkConfiguration::InternetAccessPoint;
-                ptr->bearer = QLatin1String("WLAN");
-
-                accessPointConfigurations.insert(id, ptr);
-                configurationInterface.insert(id, interfaceName);
-
-                emit configurationAdded(ptr);
+                [looppool release];
             }
-            [looppool release];
         }
-    } else {
-        qWarning() << "ERROR scanning for ssids" << nsstringToQString([err localizedDescription])
-                <<nsstringToQString([err domain]);
     }
-
     [autoreleasepool drain];
 #else
     Q_UNUSED(interfaceName);
@@ -490,12 +481,6 @@ bool QCoreWlanEngine::getAllScInterfaces()
             CFStringRef type = SCNetworkInterfaceGetInterfaceType((SCNetworkInterfaceRef)thisInterface);
             if ( CFEqual(type, kSCNetworkInterfaceTypeIEEE80211)) {
                 typeStr = "WLAN";
-//            } else if (CFEqual(type, kSCNetworkInterfaceTypeBluetooth)) {
-//                typeStr = "Bluetooth";
-            } else if(CFEqual(type, kSCNetworkInterfaceTypeEthernet)) {
-                typeStr = "Ethernet";
-            } else if(CFEqual(type, kSCNetworkInterfaceTypeFireWire)) {
-                typeStr = "Ethernet"; //ok a bit fudged
             }
             if(!networkInterfaces.contains(interfaceName) && !typeStr.isEmpty()) {
                 networkInterfaces.insert(interfaceName,typeStr);
@@ -538,6 +523,60 @@ QNetworkSession::State QCoreWlanEngine::sessionStateForId(const QString &id)
 QNetworkConfigurationManager::Capabilities QCoreWlanEngine::capabilities() const
 {
     return QNetworkConfigurationManager::ForcedRoaming;
+}
+
+void QCoreWlanEngine::startNetworkChangeLoop()
+{
+    storeSession = NULL;
+
+    SCDynamicStoreContext dynStoreContext = { 0, this/*(void *)storeSession*/, NULL, NULL, NULL };
+    storeSession = SCDynamicStoreCreate(NULL,
+                                 CFSTR("networkChangeCallback"),
+                                 networkChangeCallback,
+                                 &dynStoreContext);
+    if (!storeSession ) {
+        qWarning() << "could not open dynamic store: error:" << SCErrorString(SCError());
+        return;
+    }
+
+    CFMutableArrayRef notificationKeys;
+    notificationKeys = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
+    CFMutableArrayRef patternsArray;
+    patternsArray = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
+
+    CFStringRef storeKey;
+    storeKey = SCDynamicStoreKeyCreateNetworkGlobalEntity(NULL,
+                                                     kSCDynamicStoreDomainState,
+                                                     kSCEntNetIPv4);
+    CFArrayAppendValue(notificationKeys, storeKey);
+    CFRelease(storeKey);
+
+    storeKey = SCDynamicStoreKeyCreateNetworkServiceEntity(NULL,
+                                                      kSCDynamicStoreDomainState,
+                                                      kSCCompAnyRegex,
+                                                      kSCEntNetIPv4);
+    CFArrayAppendValue(patternsArray, storeKey);
+    CFRelease(storeKey);
+
+    if (!SCDynamicStoreSetNotificationKeys(storeSession , notificationKeys, patternsArray)) {
+        qWarning() << "register notification error:"<< SCErrorString(SCError());
+        CFRelease(storeSession );
+        CFRelease(notificationKeys);
+        CFRelease(patternsArray);
+        return;
+    }
+    CFRelease(notificationKeys);
+    CFRelease(patternsArray);
+
+    runloopSource = SCDynamicStoreCreateRunLoopSource(NULL, storeSession , 0);
+    if (!runloopSource) {
+        qWarning() << "runloop source error:"<< SCErrorString(SCError());
+        CFRelease(storeSession );
+        return;
+    }
+
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), runloopSource, kCFRunLoopDefaultMode);
+    return;
 }
 
 QNetworkSessionPrivate *QCoreWlanEngine::createSessionBackend()

@@ -85,8 +85,8 @@ class ProcessAST: protected AST::Visitor
         {
             const State &state = top();
             if (state.property) {
-                State s(state.property->getValue(),
-                        state.property->getValue()->getProperty(name.toUtf8()));
+                State s(state.property->getValue(location),
+                        state.property->getValue(location)->getProperty(name.toUtf8()));
                 s.property->location = location;
                 push(s);
             } else {
@@ -106,12 +106,12 @@ public:
     void operator()(const QString &code, AST::Node *node);
 
 protected:
-    Object *defineObjectBinding(AST::UiQualifiedId *propertyName,
+    Object *defineObjectBinding(AST::UiQualifiedId *propertyName, bool onAssignment,
                                 AST::UiQualifiedId *objectTypeName,
                                 LocationSpan location,
                                 AST::UiObjectInitializer *initializer = 0);
 
-    Object *defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
+    Object *defineObjectBinding_helper(AST::UiQualifiedId *propertyName, bool onAssignment,
                                        const QString &objectType,
                                        AST::SourceLocation typeLocation,
                                        LocationSpan location,
@@ -243,6 +243,7 @@ QString ProcessAST::asString(AST::UiQualifiedId *node) const
 
 Object *
 ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
+                                       bool onAssignment,
                                        const QString &objectType,
                                        AST::SourceLocation typeLocation,
                                        LocationSpan location,
@@ -254,10 +255,19 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
                         (lastTypeDot >= 0 && objectType.at(lastTypeDot+1).isUpper()));
 
     int propertyCount = 0;
-    for (; propertyName; propertyName = propertyName->next){
+    for (AST::UiQualifiedId *name = propertyName; name; name = name->next){
         ++propertyCount;
-        _stateStack.pushProperty(propertyName->name->asString(),
-                                 this->location(propertyName));
+        _stateStack.pushProperty(name->name->asString(),
+                                 this->location(name));
+    }
+
+    if (!onAssignment && propertyCount && currentProperty() && currentProperty()->values.count()) {
+        QDeclarativeError error;
+        error.setDescription(QCoreApplication::translate("QDeclarativeParser","Property value set multiple times"));
+        error.setLine(this->location(propertyName).start.line);
+        error.setColumn(this->location(propertyName).start.column);
+        _parser->_errors << error;
+        return 0;
     }
 
     if (!isType) {
@@ -327,7 +337,10 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
             Value *v = new Value;
             v->object = obj;
             v->location = obj->location;
-            prop->addValue(v);
+            if (onAssignment)
+                prop->addOnValue(v);
+            else
+                prop->addValue(v);
 
             while (propertyCount--)
                 _stateStack.pop();
@@ -363,7 +376,7 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
     }
 }
 
-Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId,
+Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId, bool onAssignment,
                                         AST::UiQualifiedId *objectTypeName,
                                         LocationSpan location,
                                         AST::UiObjectInitializer *initializer)
@@ -395,7 +408,7 @@ Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId,
 
     }
 
-    return defineObjectBinding_helper(qualifiedId, objectType, typeLocation, location, initializer);
+    return defineObjectBinding_helper(qualifiedId, onAssignment, objectType, typeLocation, location, initializer);
 }
 
 LocationSpan ProcessAST::location(AST::UiQualifiedId *id)
@@ -623,7 +636,7 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
     LocationSpan l = location(node->firstSourceLocation(),
                               node->lastSourceLocation());
 
-    defineObjectBinding(/*propertyName = */ 0,
+    defineObjectBinding(/*propertyName = */ 0, false,
                         node->qualifiedTypeNameId,
                         l,
                         node->initializer);
@@ -638,7 +651,7 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
     LocationSpan l = location(node->qualifiedTypeNameId->identifierToken,
                               node->initializer->rbraceToken);
 
-    defineObjectBinding(node->qualifiedId,
+    defineObjectBinding(node->qualifiedId, node->hasOnToken,
                         node->qualifiedTypeNameId,
                         l,
                         node->initializer);
@@ -674,13 +687,22 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
 {
     int propertyCount = 0;
     AST::UiQualifiedId *propertyName = node->qualifiedId;
-    for (; propertyName; propertyName = propertyName->next){
+    for (AST::UiQualifiedId *name = propertyName; name; name = name->next){
         ++propertyCount;
-        _stateStack.pushProperty(propertyName->name->asString(),
-                                 location(propertyName));
+        _stateStack.pushProperty(name->name->asString(),
+                                 location(name));
     }
 
     Property *prop = currentProperty();
+
+    if (prop->values.count()) {
+        QDeclarativeError error;
+        error.setDescription(QCoreApplication::translate("QDeclarativeParser","Property value set multiple times"));
+        error.setLine(this->location(propertyName).start.line);
+        error.setColumn(this->location(propertyName).start.column);
+        _parser->_errors << error;
+        return 0;
+    }
 
     QDeclarativeParser::Variant primitive;
 
@@ -724,16 +746,26 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
 {
     int propertyCount = 0;
     AST::UiQualifiedId *propertyName = node->qualifiedId;
-    for (; propertyName; propertyName = propertyName->next){
+    for (AST::UiQualifiedId *name = propertyName; name; name = name->next){
         ++propertyCount;
-        _stateStack.pushProperty(propertyName->name->asString(),
-                                 location(propertyName));
+        _stateStack.pushProperty(name->name->asString(),
+                                 location(name));
+    }
+
+    Property* prop = currentProperty();
+
+    if (prop->values.count()) {
+        QDeclarativeError error;
+        error.setDescription(QCoreApplication::translate("QDeclarativeParser","Property value set multiple times"));
+        error.setLine(this->location(propertyName).start.line);
+        error.setColumn(this->location(propertyName).start.column);
+        _parser->_errors << error;
+        return 0;
     }
 
     accept(node->members);
 
     // For the DOM, store the position of the T_LBRACKET upto the T_RBRACKET as the range:
-    Property* prop = currentProperty();
     prop->listValueRange.offset = node->lbracketToken.offset;
     prop->listValueRange.length = node->rbracketToken.offset + node->rbracketToken.length - node->lbracketToken.offset;
 
