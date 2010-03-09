@@ -679,16 +679,20 @@ void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &botto
         d->defaultItemHeight = indexRowSizeHint(topLeft);
     bool sizeChanged = false;
     if (topViewIndex != -1) {
-        if (topLeft == bottomRight) {
+        if (topLeft.row() == bottomRight.row()) {
             int oldHeight = d->itemHeight(topViewIndex);
             d->invalidateHeightCache(topViewIndex);
             sizeChanged = (oldHeight != d->itemHeight(topViewIndex));
+            if (topLeft.column() == 0)
+                d->viewItems[topViewIndex].hasChildren = d->hasVisibleChildren(topLeft);
         } else {
             int bottomViewIndex = d->viewIndex(bottomRight);
             for (int i = topViewIndex; i <= bottomViewIndex; ++i) {
                 int oldHeight = d->itemHeight(i);
                 d->invalidateHeightCache(i);
                 sizeChanged |= (oldHeight != d->itemHeight(i));
+                if (topLeft.column() == 0)
+                    d->viewItems[i].hasChildren = d->hasVisibleChildren(d->viewItems.at(i).index);
             }
         }
     }
