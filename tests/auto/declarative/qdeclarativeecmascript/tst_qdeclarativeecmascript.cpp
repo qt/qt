@@ -126,6 +126,8 @@ private slots:
     void attachedPropertyScope();
     void scriptConnect();
     void scriptDisconnect();
+    void ownership();
+    void qlistqobjectMethods();
 
     void bug1();
 
@@ -889,6 +891,7 @@ void tst_qdeclarativeecmascript::dynamicDestruction()
     }
     QVERIFY(!createdQmlObject);
 
+    QDeclarativeEngine::setObjectOwnership(object, QDeclarativeEngine::JavaScriptOwnership);
     QMetaObject::invokeMethod(object, "killMe");
     QVERIFY(object);
     QTest::qWait(0);
@@ -1890,7 +1893,94 @@ void tst_qdeclarativeecmascript::scriptDisconnect()
 
         delete object;
     }
+}
 
+class OwnershipObject : public QObject
+{
+    Q_OBJECT
+public:
+    OwnershipObject() { object = new QObject; }
+
+    QPointer<QObject> object;
+
+public slots:
+    QObject *getObject() { return object; }
+};
+
+void tst_qdeclarativeecmascript::ownership()
+{
+    OwnershipObject own;
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    context->addDefaultObject(&own);
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("ownership.qml"));
+
+        QVERIFY(own.object != 0);
+
+        QObject *object = component.create(context);
+        QDeclarativeEnginePrivate::getScriptEngine(&engine)->collectGarbage();
+
+        QCoreApplication::processEvents(QEventLoop::DeferredDeletion);
+
+        QVERIFY(own.object == 0);
+
+        delete object;
+    }
+
+    own.object = new QObject(&own);
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("ownership.qml"));
+
+        QVERIFY(own.object != 0);
+
+        QObject *object = component.create(context);
+        QDeclarativeEnginePrivate::getScriptEngine(&engine)->collectGarbage();
+
+        QCoreApplication::processEvents(QEventLoop::DeferredDeletion);
+
+        QVERIFY(own.object != 0);
+
+        delete object;
+    }
+}
+
+class QListQObjectMethodsObject : public QObject
+{
+    Q_OBJECT
+public:
+    QListQObjectMethodsObject() {
+        m_objects.append(new MyQmlObject());
+        m_objects.append(new MyQmlObject());
+    }
+
+    ~QListQObjectMethodsObject() {
+        qDeleteAll(m_objects);
+    }
+
+public slots:
+    QList<QObject *> getObjects() { return m_objects; }
+
+private:
+    QList<QObject *> m_objects;
+};
+
+// Tests that returning a QList<QObject*> from a method works
+void tst_qdeclarativeecmascript::qlistqobjectMethods()
+{
+    QListQObjectMethodsObject obj;
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    context->addDefaultObject(&obj);
+
+    QDeclarativeComponent component(&engine, TEST_FILE("qlistqobjectMethods.qml"));
+
+    QObject *object = component.create(context);
+
+    QCOMPARE(object->property("test").toInt(), 2);
+    QCOMPARE(object->property("test2").toBool(), true);
+
+    delete object;
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

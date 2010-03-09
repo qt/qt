@@ -273,7 +273,7 @@ void QDeclarativeContents::calcHeight()
     m_height = qMax(bottom - top, qreal(0.0));
 
     if (m_height != oldheight || m_y != oldy)
-        emit rectChanged();
+        emit rectChanged(rectF());
 }
 
 //TODO: optimization: only check sender(), if there is one
@@ -301,7 +301,7 @@ void QDeclarativeContents::calcWidth()
     m_width = qMax(right - left, qreal(0.0));
 
     if (m_width != oldwidth || m_x != oldx)
-        emit rectChanged();
+        emit rectChanged(rectF());
 }
 
 void QDeclarativeContents::setItem(QDeclarativeItem *item)
@@ -313,11 +313,11 @@ void QDeclarativeContents::setItem(QDeclarativeItem *item)
         QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
         if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
             continue;
-        connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
+        connect(child, SIGNAL(heightChanged(qreal)), this, SLOT(calcHeight()));
         connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
-        connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
+        connect(child, SIGNAL(widthChanged(qreal)), this, SLOT(calcWidth()));
         connect(child, SIGNAL(xChanged()), this, SLOT(calcWidth()));
-        connect(this, SIGNAL(rectChanged()), m_item, SIGNAL(childrenRectChanged()));
+        connect(this, SIGNAL(rectChanged(QRectF)), m_item, SIGNAL(childrenRectChanged(QRectF)));
     }
 
     calcHeight();
@@ -1652,7 +1652,7 @@ void QDeclarativeItem::setClip(bool c)
     if (clip() == c)
         return;
     setFlag(ItemClipsChildrenToShape, c);
-    emit clipChanged();
+    emit clipChanged(c);
 }
 
 /*!
@@ -1792,11 +1792,11 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
     if (newGeometry.x() != oldGeometry.x())
         emit xChanged();
     if (newGeometry.width() != oldGeometry.width())
-        emit widthChanged();
+        emit widthChanged(newGeometry.width());
     if (newGeometry.y() != oldGeometry.y())
         emit yChanged();
     if (newGeometry.height() != oldGeometry.height())
-        emit heightChanged();
+        emit heightChanged(newGeometry.height());
 
     for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
         const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
@@ -2058,7 +2058,6 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
         return;
 
     d->_baselineOffset = offset;
-    emit baselineOffsetChanged();
 
     for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
         const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
@@ -2068,6 +2067,7 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
                 anchor->updateVerticalAnchors();
         }
     }
+    emit baselineOffsetChanged(offset);
 }
 
 /*!
@@ -2214,7 +2214,7 @@ void QDeclarativeItem::setKeepMouseGrab(bool keep)
 }
 
 /*!
-    \qmlmethod object Item::mapFromItem(Item item, int x, int y)
+    \qmlmethod object Item::mapFromItem(Item item, real x, real y)
 
     Maps the point (\a x, \a y), which is in \a item's coordinate system, to
     this item's coordinate system, and returns an object with \c x and \c y
@@ -2223,7 +2223,7 @@ void QDeclarativeItem::setKeepMouseGrab(bool keep)
     If \a item is a \c null value, this maps the point from the coordinate
     system of the root QML view.
 */
-QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, int x, int y) const
+QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, qreal x, qreal y) const
 {
     QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
     QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
@@ -2234,13 +2234,13 @@ QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, int x, int 
 
     // If QGraphicsItem::mapFromItem() is called with 0, behaves the same as mapFromScene()
     QPointF p = qobject_cast<QGraphicsItem*>(this)->mapFromItem(itemObj, x, y);
-    sv.setProperty("x", p.x());
-    sv.setProperty("y", p.y());
+    sv.setProperty(QLatin1String("x"), p.x());
+    sv.setProperty(QLatin1String("y"), p.y());
     return sv;
 }
 
 /*!
-    \qmlmethod object Item::mapToItem(Item item, int x, int y)
+    \qmlmethod object Item::mapToItem(Item item, real x, real y)
 
     Maps the point (\a x, \a y), which is in this item's coordinate system, to
     \a item's coordinate system, and returns an object with \c x and \c y
@@ -2249,7 +2249,7 @@ QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, int x, int 
     If \a item is a \c null value, this maps \a x and \a y to the coordinate
     system of the root QML view.
 */
-QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, int x, int y) const
+QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qreal y) const
 {
     QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
     QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
@@ -2260,23 +2260,15 @@ QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, int x, int y)
 
     // If QGraphicsItem::mapToItem() is called with 0, behaves the same as mapToScene()
     QPointF p = qobject_cast<QGraphicsItem*>(this)->mapToItem(itemObj, x, y);
-    sv.setProperty("x", p.x());
-    sv.setProperty("y", p.y());
+    sv.setProperty(QLatin1String("x"), p.x());
+    sv.setProperty(QLatin1String("y"), p.y());
     return sv;
 }
 
-/*!
-  \internal
-
-  This function emits the \e focusChanged signal.
-
-  Subclasses overriding this function should call up
-  to their base class.
-*/
-void QDeclarativeItem::focusChanged(bool flag)
+void QDeclarativeItemPrivate::focusChanged(bool flag)
 {
-    Q_UNUSED(flag);
-    emit focusChanged();
+    Q_Q(QDeclarativeItem);
+    emit q->focusChanged(flag);
 }
 
 /*! \internal */
@@ -2569,14 +2561,16 @@ QPointF QDeclarativeItemPrivate::computeTransformOrigin() const
 /*! \internal */
 bool QDeclarativeItem::sceneEvent(QEvent *event)
 {
+    Q_D(QDeclarativeItem);
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *k = static_cast<QKeyEvent *>(event);
-
         if ((k->key() == Qt::Key_Tab || k->key() == Qt::Key_Backtab) &&
             !(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {
             keyPressEvent(static_cast<QKeyEvent *>(event));
             if (!event->isAccepted())
                 return QGraphicsItem::sceneEvent(event);
+            else
+                return true;
         } else {
             return QGraphicsItem::sceneEvent(event);
         }
@@ -2585,7 +2579,7 @@ bool QDeclarativeItem::sceneEvent(QEvent *event)
 
         if (event->type() == QEvent::FocusIn ||
             event->type() == QEvent::FocusOut) {
-            focusChanged(hasFocus());
+            d->focusChanged(hasFocus());
         }
         return rv;
     }
@@ -2598,7 +2592,7 @@ QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
     Q_D(const QDeclarativeItem);
     switch (change) {
     case ItemParentHasChanged:
-        emit parentChanged();
+        emit parentChanged(parentItem());
         break;
     case ItemChildAddedChange:
     case ItemChildRemovedChange:
@@ -2711,7 +2705,7 @@ void QDeclarativeItem::setSmooth(bool smooth)
     if (d->smooth == smooth)
         return;
     d->smooth = smooth;
-    emit smoothChanged();
+    emit smoothChanged(smooth);
     update();
 }
 

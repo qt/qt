@@ -80,6 +80,7 @@ public:
             rendering(true)
     {
     }
+    void focusChanged(bool);
 
     QUrl url; // page url might be different if it has not loaded yet
     QWebPage *page;
@@ -378,11 +379,12 @@ QVariant QDeclarativeWebView::evaluateJavaScript(const QString &scriptSource)
     return this->page()->mainFrame()->evaluateJavaScript(scriptSource);
 }
 
-void QDeclarativeWebView::focusChanged(bool hasFocus)
+void QDeclarativeWebViewPrivate::focusChanged(bool hasFocus)
 {
+    Q_Q(QDeclarativeWebView);
     QFocusEvent e(hasFocus ? QEvent::FocusIn : QEvent::FocusOut);
-    page()->event(&e);
-    QDeclarativeItem::focusChanged(hasFocus);
+    q->page()->event(&e);
+    QDeclarativeItemPrivate::focusChanged(hasFocus);
 }
 
 void QDeclarativeWebView::initialLayout()

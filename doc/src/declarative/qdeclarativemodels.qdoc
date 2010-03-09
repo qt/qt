@@ -208,7 +208,7 @@ QStringList provides the contents of the list via the \e modelData role:
 QStringList dataList;
 dataList.append("Fred");
 dataList.append("Ginger");
-dataList.appenf("Skipper");
+dataList.append("Skipper");
 
 QDeclarativeContext *ctxt = view.rootContext();
 ctxt->setContextProperty("myModel", QVariant::fromValue(&dataList));

@@ -512,7 +512,6 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 {
 }
 
-
 /*!
     \internal
     A version of create which returns a scriptObject, for use in script
@@ -526,7 +525,9 @@ QScriptValue QDeclarativeComponent::createObject()
         return QScriptValue();
     }
     QObject* ret = create(ctxt);
-    return QDeclarativeEnginePrivate::qmlScriptObject(ret, d->engine);
+    QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
+    QDeclarativeDeclarativeData::get(ret, true)->setImplicitDestructible();
+    return priv->objectClass->newQObject(ret, QMetaType::QObjectStar);
 }
 
 /*!
@@ -541,7 +542,12 @@ QObject *QDeclarativeComponent::create(QDeclarativeContext *context)
 {
     Q_D(QDeclarativeComponent);
 
-    return d->create(context, QBitField());
+    if (!context)
+        context = d->engine->rootContext();
+
+    QObject *rv = beginCreate(context);
+    completeCreate();
+    return rv;
 }
 
 QObject *QDeclarativeComponentPrivate::create(QDeclarativeContext *context, 
@@ -586,7 +592,13 @@ QObject *QDeclarativeComponentPrivate::create(QDeclarativeContext *context,
 QObject *QDeclarativeComponent::beginCreate(QDeclarativeContext *context)
 {
     Q_D(QDeclarativeComponent);
-    return d->beginCreate(context, QBitField());
+    QObject *rv = d->beginCreate(context, QBitField());
+    if (rv) {
+        QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(rv);
+        Q_ASSERT(ddata);
+        ddata->indestructible = true;
+    }
+    return rv;
 }
 
 QObject *

@@ -557,7 +557,7 @@ void QDeclarativeListViewPrivate::releaseItem(FxListItem *item)
         return;
     if (trackedItem == item) {
         const char *notifier1 = orient == QDeclarativeListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
-        const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
+        const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged(qreal)) : SIGNAL(widthChanged(qreal));
         QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
         QObject::disconnect(trackedItem->item, notifier2, q, SLOT(trackedPositionChanged()));
         trackedItem = 0;
@@ -748,7 +748,7 @@ void QDeclarativeListViewPrivate::updateTrackedItem()
     FxListItem *oldTracked = trackedItem;
 
     const char *notifier1 = orient == QDeclarativeListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
-    const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
+    const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged(qreal)) : SIGNAL(widthChanged(qreal));
 
     if (trackedItem && item != trackedItem) {
         QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
@@ -1124,7 +1124,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             if (FxListItem *item = firstVisibleItem())
                 maxDistance = qAbs(item->position() + data.move.value());
         } else if (data.move.value() < minExtent) {
-            maxDistance = qAbs(minExtent - data.move.value() + (overShoot?overShootDistance(velocity, vSize):0));
+            maxDistance = qAbs(minExtent - data.move.value());
         }
         if (snapMode != QDeclarativeListView::SnapToItem && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
             data.flickTarget = minExtent;
@@ -1133,7 +1133,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             if (FxListItem *item = nextVisibleItem())
                 maxDistance = qAbs(item->position() + data.move.value());
         } else if (data.move.value() > maxExtent) {
-            maxDistance = qAbs(maxExtent - data.move.value()) + (overShoot?overShootDistance(velocity, vSize):0);
+            maxDistance = qAbs(maxExtent - data.move.value());
         }
         if (snapMode != QDeclarativeListView::SnapToItem && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
             data.flickTarget = maxExtent;
@@ -1156,7 +1156,8 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             qreal v2 = v * v;
             qreal maxAccel = v2 / (2.0f * maxDistance);
             if (maxAccel < accel) {
-                qreal dist = v2 / (accel * 2.0);
+                // + averageSize/4 to encourage moving at least one item in the flick direction
+                qreal dist = v2 / (accel * 2.0) + averageSize/4;
                 if (v > 0)
                     dist = -dist;
                 data.flickTarget = -snapPosAt(-(data.move.value() - highlightRangeStart) + dist) + highlightRangeStart;
@@ -1166,6 +1167,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             } else {
                 data.flickTarget = velocity > 0 ? minExtent : maxExtent;
                 overshootDist = overShoot ? overShootDistance(v, vSize) : 0;
+                qDebug() << "boundary" << overshootDist;
             }
             timeline.reset(data.move);
             timeline.accel(data.move, v, accel, maxDistance + overshootDist);
@@ -1956,10 +1958,11 @@ void QDeclarativeListView::viewportMoved()
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
             // reposition highlight
             qreal pos = d->highlight->position();
-            if (pos > d->position() + d->highlightRangeEnd - 1 - d->highlight->size())
-                pos = d->position() + d->highlightRangeEnd - 1 - d->highlight->size();
-            if (pos < d->position() + d->highlightRangeStart)
-                pos = d->position() + d->highlightRangeStart;
+            qreal viewPos = qRound(d->position());
+            if (pos > viewPos + d->highlightRangeEnd - 1 - d->highlight->size())
+                pos = viewPos + d->highlightRangeEnd - 1 - d->highlight->size();
+            if (pos < viewPos + d->highlightRangeStart)
+                pos = viewPos + d->highlightRangeStart;
             d->highlight->setPosition(pos);
 
             // update current index

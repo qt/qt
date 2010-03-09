@@ -98,6 +98,10 @@ public:
     static QDeclarativeContext *contextForObject(const QObject *);
     static void setContextForObject(QObject *, QDeclarativeContext *);
 
+    enum ObjectOwnership { CppOwnership, JavaScriptOwnership };
+    static void setObjectOwnership(QObject *, ObjectOwnership);
+    static ObjectOwnership objectOwnership(QObject *);
+
 Q_SIGNALS:
     void quit ();
 
