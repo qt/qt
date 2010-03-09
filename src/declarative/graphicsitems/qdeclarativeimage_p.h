@@ -79,6 +79,7 @@ public:
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 Q_SIGNALS:
+    void pixmapChanged();
     void fillModeChanged();
     void paintedGeometryChanged();
 
