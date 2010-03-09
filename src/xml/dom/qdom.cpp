@@ -3487,6 +3487,7 @@ QDomDocumentTypePrivate::QDomDocumentTypePrivate(QDomDocumentTypePrivate* n, boo
         if (p->isNotation())
             // Dont use normal insert function since we would create infinite recursion
             notations->map.insertMulti(p->nodeName(), p);
+        p = p->next;
     }
 }
 

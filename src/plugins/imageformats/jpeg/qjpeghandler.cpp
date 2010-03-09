@@ -562,11 +562,29 @@ inline my_jpeg_destination_mgr::my_jpeg_destination_mgr(QIODevice *device)
     free_in_buffer = max_buf;
 }
 
+static bool can_write_format(QImage::Format fmt)
+{
+    switch (fmt) {
+    case QImage::Format_Mono:
+    case QImage::Format_MonoLSB:
+    case QImage::Format_Indexed8:
+    case QImage::Format_RGB888:
+    case QImage::Format_RGB32:
+    case QImage::Format_ARGB32:
+    case QImage::Format_ARGB32_Premultiplied:
+        return true;
+        break;
+    default:
+        break;
+    }
+    return false;
+}
 
 static bool write_jpeg_image(const QImage &sourceImage, QIODevice *device, int sourceQuality)
 {
     bool success = false;
-    const QImage image = sourceImage;
+    const QImage image = can_write_format(sourceImage.format()) ?
+                         sourceImage : sourceImage.convertToFormat(QImage::Format_RGB888);
     const QVector<QRgb> cmap = image.colorTable();
 
     struct jpeg_compress_struct cinfo;

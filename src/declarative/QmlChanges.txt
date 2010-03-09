@@ -7,6 +7,8 @@ Flickable: renamed viewportX -> contentX
 Flickable: renamed viewportY -> contentY
 Removed Flickable.reportedVelocitySmoothing
 Removed Qt.playSound (replaced by SoundEffect element)
+Removed NumberFormatter
+Removed DateTimeFormatter (use Qt.formatDateTime() instead)
 Renamed MouseRegion -> MouseArea
 Connection: syntax and rename:
     Connection { sender: a; signal: foo(); script: xxx }

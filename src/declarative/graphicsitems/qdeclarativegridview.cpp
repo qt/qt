@@ -236,6 +236,19 @@ public:
         return -1; // Not in visibleList
     }
 
+    void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry) {
+        Q_Q(const QDeclarativeGridView);
+        QDeclarativeFlickablePrivate::itemGeometryChanged(item, newGeometry, oldGeometry);
+        if (item == q) {
+            if (newGeometry.height() != oldGeometry.height()
+                || newGeometry.width() != oldGeometry.width()) {
+                if (q->isComponentComplete()) {
+                    updateGrid();
+                    layout();
+                }
+            }
+        }
+    }
     // for debugging only
     void checkVisible() const {
         int skip = 0;
@@ -288,9 +301,8 @@ void QDeclarativeGridViewPrivate::init()
 {
     Q_Q(QDeclarativeGridView);
     q->setFlag(QGraphicsItem::ItemIsFocusScope);
-    QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(sizeChange()));
-    QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(sizeChange()));
     q->setFlickDirection(QDeclarativeFlickable::VerticalFlick);
+    addItemChangeListener(this, Geometry);
 }
 
 void QDeclarativeGridViewPrivate::clear()
@@ -1142,15 +1154,6 @@ void QDeclarativeGridView::setCellHeight(int cellHeight)
     }
 }
 
-void QDeclarativeGridView::sizeChange()
-{
-    Q_D(QDeclarativeGridView);
-    if (isComponentComplete()) {
-        d->updateGrid();
-        d->layout();
-    }
-}
-
 void QDeclarativeGridView::viewportMoved()
 {
     Q_D(QDeclarativeGridView);
@@ -1158,16 +1161,16 @@ void QDeclarativeGridView::viewportMoved()
     d->lazyRelease = true;
     if (d->flicked) {
         if (yflick()) {
-            if (d->velocityY > 0)
+            if (d->vData.velocity > 0)
                 d->bufferMode = QDeclarativeGridViewPrivate::BufferBefore;
-            else if (d->velocityY < 0)
+            else if (d->vData.velocity < 0)
                 d->bufferMode = QDeclarativeGridViewPrivate::BufferAfter;
         }
 
         if (xflick()) {
-            if (d->velocityX > 0)
+            if (d->hData.velocity > 0)
                 d->bufferMode = QDeclarativeGridViewPrivate::BufferBefore;
-            else if (d->velocityX < 0)
+            else if (d->hData.velocity < 0)
                 d->bufferMode = QDeclarativeGridViewPrivate::BufferAfter;
         }
     }

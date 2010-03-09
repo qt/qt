@@ -167,6 +167,7 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
         QDeclarativeItemModule::defineModule();
         QDeclarativeUtilModule::defineModule();
         QDeclarativeEnginePrivate::defineModule();
+        QDeclarativeValueTypeFactory::registerValueTypes();
     }
     globalClass = new QDeclarativeGlobalScriptClass(&scriptEngine);
 
@@ -1233,17 +1234,13 @@ QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine
     else if (a == 0x00)
         finalColor = color;
     else {
-        uint src = tintColor.rgba();
-        uint dest = color.rgba();
+        qreal a = tintColor.alphaF();
+        qreal inv_a = 1.0 - a;
 
-        uint res = (((a * (src & 0xFF00FF)) +
-                    ((0xFF - a) * (dest & 0xFF00FF))) >> 8) & 0xFF00FF;
-        res |= (((a * ((src >> 8) & 0xFF00FF)) +
-                ((0xFF - a) * ((dest >> 8) & 0xFF00FF)))) & 0xFF00FF00;
-        if ((src & 0xFF000000) == 0xFF000000)
-            res |= 0xFF000000;
-
-        finalColor = QColor::fromRgba(res);
+        finalColor.setRgbF(tintColor.redF() * a + color.redF() * inv_a,
+                           tintColor.greenF() * a + color.greenF() * inv_a,
+                           tintColor.blueF() * a + color.blueF() * inv_a,
+                           a + inv_a * color.alphaF());
     }
 
     return qScriptValueFromValue(engine, qVariantFromValue(finalColor));

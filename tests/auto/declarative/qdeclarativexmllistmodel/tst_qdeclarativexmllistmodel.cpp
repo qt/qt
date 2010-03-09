@@ -74,6 +74,7 @@ private slots:
     void useKeys_data();
     void noKeysValueChanges();
     void keysChanged();
+    void propertyChanges();
 
 private:
     QString makeItemXmlAndData(const QString &data, QDeclarativeXmlModelData *modelData = 0) const
@@ -266,6 +267,8 @@ void tst_qdeclarativexmllistmodel::reload()
 
     QCOMPARE(spyRemove[0][0].toInt(), 0);
     QCOMPARE(spyRemove[0][1].toInt(), 9);
+
+    delete model;
 }
 
 void tst_qdeclarativexmllistmodel::useKeys()
@@ -284,7 +287,7 @@ void tst_qdeclarativexmllistmodel::useKeys()
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/roleKeys.qml"));
     QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
     QVERIFY(model != 0);
-    
+
     model->setXml(oldXml);
     QTRY_COMPARE(model->count(), oldCount);
 
@@ -319,6 +322,8 @@ void tst_qdeclarativexmllistmodel::useKeys()
         QCOMPARE(spyRemove[i][0].toInt(), removeRanges[i].first);
         QCOMPARE(spyRemove[i][1].toInt(), removeRanges[i].second);
     }
+
+    delete model;
 }
 
 void tst_qdeclarativexmllistmodel::useKeys_data()
@@ -440,6 +445,8 @@ void tst_qdeclarativexmllistmodel::noKeysValueChanges()
     model->setXml(xml);
     QTRY_COMPARE(model->count(), 2);
 
+    model->setXml("");
+
     QSignalSpy spyInsert(model, SIGNAL(itemsInserted(int,int)));
     QSignalSpy spyRemove(model, SIGNAL(itemsRemoved(int,int)));
     QSignalSpy spyCount(model, SIGNAL(countChanged()));
@@ -448,18 +455,16 @@ void tst_qdeclarativexmllistmodel::noKeysValueChanges()
     model->setXml(xml);
 
     // wait for the new xml data to be set, and verify no signals were emitted
-    for (int i=0; i<50; i++) {
-        QTest::qWait(100);
-        if (model->data(0, model->roles()[2]).toString() != QLatin1String("AussieRules"))
-            break;
-    }
+    QTRY_VERIFY(model->data(0, model->roles()[2]).toString() != QLatin1String("Football"));
     QCOMPARE(model->data(0, model->roles()[2]).toString(), QLatin1String("AussieRules"));
 
     QVERIFY(spyInsert.count() == 0);
     QVERIFY(spyRemove.count() == 0);
     QVERIFY(spyCount.count() == 0);
-    
+
     QCOMPARE(model->count(), 2);
+
+    delete model;
 }
 
 void tst_qdeclarativexmllistmodel::keysChanged()
@@ -475,6 +480,8 @@ void tst_qdeclarativexmllistmodel::keysChanged()
     QString xml = makeItemXmlAndData("name=A,age=25,sport=Football;name=B,age=35,sport=Athletics");
     model->setXml(xml);
     QTRY_COMPARE(model->count(), 2);
+
+    model->setXml("");
 
     QSignalSpy spyInsert(model, SIGNAL(itemsInserted(int,int)));
     QSignalSpy spyRemove(model, SIGNAL(itemsRemoved(int,int)));
@@ -494,6 +501,73 @@ void tst_qdeclarativexmllistmodel::keysChanged()
     QCOMPARE(spyRemove[0][1].toInt(), 2);
 
     QCOMPARE(spyCount.count(), 0);
+
+    delete model;
+}
+
+void tst_qdeclarativexmllistmodel::propertyChanges()
+{
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
+    QVERIFY(model != 0);
+    QTRY_COMPARE(model->count(), 9);
+
+    QDeclarativeXmlListModelRole *role = model->findChild<QDeclarativeXmlListModelRole*>("role");
+    QVERIFY(role);
+
+    QSignalSpy nameSpy(role, SIGNAL(nameChanged()));
+    QSignalSpy querySpy(role, SIGNAL(queryChanged()));
+    QSignalSpy isKeySpy(role, SIGNAL(isKeyChanged()));
+
+    role->setName("size");
+    role->setQuery("size/string()");
+    role->setIsKey(true);
+
+    QCOMPARE(role->name(), QString("size"));
+    QCOMPARE(role->query(), QString("size/string()"));
+    QVERIFY(role->isKey());
+
+    QCOMPARE(nameSpy.count(),1);
+    QCOMPARE(querySpy.count(),1);
+    QCOMPARE(isKeySpy.count(),1);
+
+    role->setName("size");
+    role->setQuery("size/string()");
+    role->setIsKey(true);
+
+    QCOMPARE(nameSpy.count(),1);
+    QCOMPARE(querySpy.count(),1);
+    QCOMPARE(isKeySpy.count(),1);
+
+    QSignalSpy sourceSpy(model, SIGNAL(sourceChanged()));
+    QSignalSpy xmlSpy(model, SIGNAL(xmlChanged()));
+    QSignalSpy modelQuerySpy(model, SIGNAL(queryChanged()));
+    QSignalSpy namespaceDeclarationsSpy(model, SIGNAL(namespaceDeclarationsChanged()));
+
+    model->setSource(QUrl(""));
+    model->setXml("<Pets><Pet><name>Polly</name><type>Parrot</type><age>12</age><size>Small</size></Pet></Pets>");
+    model->setQuery("/Pets");
+    model->setNamespaceDeclarations("declare namespace media=\"http://search.yahoo.com/mrss/\";");
+
+    QCOMPARE(model->source(), QUrl(""));
+    QCOMPARE(model->xml(), QString("<Pets><Pet><name>Polly</name><type>Parrot</type><age>12</age><size>Small</size></Pet></Pets>"));
+    QCOMPARE(model->query(), QString("/Pets"));
+    QCOMPARE(model->namespaceDeclarations(), QString("declare namespace media=\"http://search.yahoo.com/mrss/\";"));
+
+    QCOMPARE(sourceSpy.count(),1);
+    QCOMPARE(xmlSpy.count(),1);
+    QCOMPARE(modelQuerySpy.count(),1);
+    QCOMPARE(namespaceDeclarationsSpy.count(),1);
+
+    model->setSource(QUrl(""));
+    model->setXml("<Pets><Pet><name>Polly</name><type>Parrot</type><age>12</age><size>Small</size></Pet></Pets>");
+    model->setQuery("/Pets");
+    model->setNamespaceDeclarations("declare namespace media=\"http://search.yahoo.com/mrss/\";");
+
+    QCOMPARE(sourceSpy.count(),1);
+    QCOMPARE(xmlSpy.count(),1);
+    QCOMPARE(modelQuerySpy.count(),1);
+    QCOMPARE(namespaceDeclarationsSpy.count(),1);
 }
 
 QTEST_MAIN(tst_qdeclarativexmllistmodel)

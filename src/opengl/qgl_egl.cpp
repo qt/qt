@@ -210,23 +210,26 @@ void QGLContextPrivate::destroyEglSurfaceForDevice()
 
 EGLSurface QGLContextPrivate::eglSurfaceForDevice() const
 {
-    if (paintDevice->devType() == QInternal::Widget)
+    // If a QPixmapData had to create the QGLContext, we don't have a paintDevice
+    if (!paintDevice)
         return eglSurface;
-    if (paintDevice->devType() == QInternal::Pixmap) {
+
 #ifdef Q_WS_X11
+    if (paintDevice->devType() == QInternal::Pixmap) {
         QPixmapData *pmd = static_cast<QPixmap*>(paintDevice)->data_ptr().data();
         if (pmd->classId() == QPixmapData::X11Class) {
             QX11PixmapData* x11PixmapData = static_cast<QX11PixmapData*>(pmd);
             return (EGLSurface)x11PixmapData->gl_surface;
-        } else
-#endif
-            return eglSurface;
+        }
     }
+#endif
+
     if (paintDevice->devType() == QInternal::Pbuffer) {
         QGLPixelBuffer* pbuf = static_cast<QGLPixelBuffer*>(paintDevice);
         return pbuf->d_func()->pbuf;
     }
-    return EGL_NO_SURFACE;
+
+    return eglSurface;
 }
 
 void QGLWidget::setMouseTracking(bool enable)

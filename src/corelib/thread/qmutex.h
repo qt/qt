@@ -95,7 +95,7 @@ class Q_CORE_EXPORT QMutexLocker
 {
 public:
     inline explicit QMutexLocker(QMutex *m)
-        : mtx(m)
+        : val(reinterpret_cast<quintptr>(m))
     {
         Q_ASSERT_X((val & quintptr(1u)) == quintptr(0),
                    "QMutexLocker", "QMutex pointer is misaligned");
@@ -105,19 +105,19 @@ public:
 
     inline void unlock()
     {
-        if (mtx) {
+        if (val) {
             if ((val & quintptr(1u)) == quintptr(1u)) {
                 val &= ~quintptr(1u);
-                mtx->unlock();
+                mutex()->unlock();
             }
         }
     }
 
     inline void relock()
     {
-        if (mtx) {
+        if (val) {
             if ((val & quintptr(1u)) == quintptr(0u)) {
-                mtx->lock();
+                mutex()->lock();
                 val |= quintptr(1u);
             }
         }
@@ -140,10 +140,7 @@ public:
 private:
     Q_DISABLE_COPY(QMutexLocker)
 
-    union {
-        QMutex *mtx;
-        quintptr val;
-    };
+    quintptr val;
 };
 
 #else // QT_NO_THREAD

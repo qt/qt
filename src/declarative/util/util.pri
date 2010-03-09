@@ -25,9 +25,6 @@ SOURCES += \
     $$PWD/qdeclarativebind.cpp \
     $$PWD/qdeclarativepropertymap.cpp \
     $$PWD/qdeclarativepixmapcache.cpp \
-    $$PWD/qnumberformat.cpp \
-    $$PWD/qdeclarativenumberformatter.cpp \
-    $$PWD/qdeclarativedatetimeformatter.cpp \
     $$PWD/qdeclarativebehavior.cpp \
     $$PWD/qdeclarativefontloader.cpp \
     $$PWD/qdeclarativestyledtext.cpp
@@ -60,9 +57,6 @@ HEADERS += \
     $$PWD/qdeclarativebind_p.h \
     $$PWD/qdeclarativepropertymap.h \
     $$PWD/qdeclarativepixmapcache_p.h \
-    $$PWD/qnumberformat_p.h \
-    $$PWD/qdeclarativenumberformatter_p.h \
-    $$PWD/qdeclarativedatetimeformatter_p.h \
     $$PWD/qdeclarativebehavior_p.h \
     $$PWD/qdeclarativefontloader_p.h \
     $$PWD/qdeclarativestyledtext_p.h

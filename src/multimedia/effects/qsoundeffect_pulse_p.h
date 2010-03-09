@@ -77,30 +77,23 @@ public:
     explicit QSoundEffectPrivate(QObject* parent);
     ~QSoundEffectPrivate();
 
-    qint64 duration() const;
+    QUrl source() const;
+    void setSource(const QUrl &url);
+    int loopCount() const;
+    void setLoopCount(int loopCount);
     int volume() const;
+    void setVolume(int volume);
     bool isMuted() const;
-    QMediaContent media() const;
-    QMediaPlayer::State state() const;
-    QMediaPlayer::MediaStatus mediaStatus() const;
+    void setMuted(bool muted);
 
 public Q_SLOTS:
     void play();
-    void stop();
-    void setVolume(int volume);
-    void setMuted(bool muted);
-    void setMedia(const QMediaContent &media);
 
 Q_SIGNALS:
-    void mediaChanged(const QMediaContent &media);
-    void mediaStatusChanged(QMediaPlayer::MediaStatus status);
-    void stateChanged(QMediaPlayer::State newState);
-    void durationChanged(qint64 duration);
-    void volumeChanged(int volume);
-    void mutedChanged(bool muted);
-    void error(QMediaPlayer::Error error);
+    void volumeChanged();
+    void mutedChanged();
 
-private slots:
+private Q_SLOTS:
     void decoderReady();
     void decoderError();
     void checkPlayTime();
@@ -108,6 +101,7 @@ private slots:
 private:
     void loadSample();
     void unloadSample();
+    void playSample();
 
     void timerEvent(QTimerEvent *event);
 
@@ -117,14 +111,15 @@ private:
 
     bool    m_muted;
     bool    m_playQueued;
-    int     m_vol;
+    bool    m_sampleLoaded;
+    int     m_volume;
     int     m_duration;
     int     m_dataUploaded;
+    int     m_loopCount;
+    int     m_runningCount;
+    QUrl    m_source;
     QTime  m_playbackTime;
-    QMediaPlayer::State m_state;
-    QMediaPlayer::MediaStatus m_status;
     QByteArray m_name;
-    QMediaContent   m_media;
     QNetworkReply *m_reply;
     WaveDecoder *m_waveDecoder;
     QIODevice *m_stream;

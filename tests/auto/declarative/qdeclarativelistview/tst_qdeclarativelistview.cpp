@@ -450,7 +450,7 @@ void tst_QDeclarativeListView::inserted()
     model.insertItem(1, "Will", "9876");
 
     // let transitions settle.
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
@@ -470,7 +470,7 @@ void tst_QDeclarativeListView::inserted()
     model.insertItem(0, "Foo", "1111"); // zero index, and current item
 
     // let transitions settle.
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
@@ -491,14 +491,14 @@ void tst_QDeclarativeListView::inserted()
 
     for (int i = model.count(); i < 30; ++i)
         model.insertItem(i, "Hello", QString::number(i));
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     listview->setContentY(80);
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     // Insert item outside visible area
     model.insertItem(1, "Hello", "1324");
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     QVERIFY(listview->contentY() == 80);
 
@@ -543,7 +543,7 @@ void tst_QDeclarativeListView::removed(bool animated)
     model.removeItem(1);
 
     // let transitions settle.
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "textName", 1);
     QVERIFY(name != 0);
@@ -565,7 +565,7 @@ void tst_QDeclarativeListView::removed(bool animated)
     model.removeItem(0);  // post: top item starts at 20
 
     // let transitions settle.
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     name = findItem<QDeclarativeText>(viewport, "textName", 0);
     QVERIFY(name != 0);
@@ -586,7 +586,7 @@ void tst_QDeclarativeListView::removed(bool animated)
     // Remove items not visible
     model.removeItem(18);
     // let transitions settle.
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
@@ -603,7 +603,7 @@ void tst_QDeclarativeListView::removed(bool animated)
 
     model.removeItem(1); // post: top item will be at 40
     // let transitions settle.
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     // Confirm items positioned correctly
     for (int i = 2; i < 18; ++i) {
@@ -617,14 +617,14 @@ void tst_QDeclarativeListView::removed(bool animated)
     QVERIFY(listview->currentIndex() == 9);
     QDeclarativeItem *oldCurrent = listview->currentItem();
     model.removeItem(9);
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     QCOMPARE(listview->currentIndex(), 9);
     QVERIFY(listview->currentItem() != oldCurrent);
 
     listview->setContentY(40); // That's the top now
     // let transitions settle.
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
@@ -637,20 +637,20 @@ void tst_QDeclarativeListView::removed(bool animated)
 
     // remove current item beyond visible items.
     listview->setCurrentIndex(20);
-    QTest::qWait(500);
+    QTest::qWait(300);
     listview->setContentY(40);
     model.removeItem(20);
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     QCOMPARE(listview->currentIndex(), 20);
     QVERIFY(listview->currentItem() != 0);
 
     // remove item before current, but visible
     listview->setCurrentIndex(8);
-    QTest::qWait(500);
+    QTest::qWait(300);
     oldCurrent = listview->currentItem();
     model.removeItem(6);
-    QTest::qWait(500);
+    QTest::qWait(300);
 
     QCOMPARE(listview->currentIndex(), 7);
     QVERIFY(listview->currentItem() == oldCurrent);
@@ -1029,21 +1029,19 @@ void tst_QDeclarativeListView::currentIndex()
 
     // Test keys
     canvas->show();
+    qApp->setActiveWindow(canvas);
+#ifdef Q_WS_X11
+    // to be safe and avoid failing setFocus with window managers
+    qt_x11_wait_for_window_manager(canvas);
+#endif
+    QVERIFY(canvas->hasFocus());
+    QVERIFY(canvas->scene()->hasFocus());
     qApp->processEvents();
 
-    QEvent wa(QEvent::WindowActivate);
-    QApplication::sendEvent(canvas, &wa);
-    QFocusEvent fe(QEvent::FocusIn);
-    QApplication::sendEvent(canvas, &fe);
-
-    QKeyEvent key(QEvent::KeyPress, Qt::Key_Down, Qt::NoModifier, "", false, 1);
-    QApplication::sendEvent(canvas, &key);
-    QVERIFY(key.isAccepted());
+    QTest::keyClick(canvas, Qt::Key_Down);
     QCOMPARE(listview->currentIndex(), 1);
 
-    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier, "", false, 1);
-    QApplication::sendEvent(canvas, &key);
-    QVERIFY(key.isAccepted());
+    QTest::keyClick(canvas, Qt::Key_Up);
     QCOMPARE(listview->currentIndex(), 0);
 
     // turn off auto highlight

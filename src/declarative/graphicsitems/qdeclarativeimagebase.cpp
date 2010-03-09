@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
 QDeclarativeImageBase::QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent)
   : QDeclarativeItem(dd, parent)
 {
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QDeclarativeImageBase::~QDeclarativeImageBase()
@@ -131,7 +130,7 @@ void QDeclarativeImageBase::load()
         setImplicitWidth(0);
         setImplicitHeight(0);
         emit statusChanged(d->status);
-        emit pixmapChanged();
+        pixmapChange();
         update();
     } else {
         d->status = Loading;
@@ -173,7 +172,7 @@ void QDeclarativeImageBase::load()
             d->progress = 1.0;
             emit statusChanged(d->status);
             emit progressChanged(d->progress);
-            emit pixmapChanged();
+            pixmapChange();
             update();
         }
     }
@@ -197,7 +196,7 @@ void QDeclarativeImageBase::requestFinished()
     d->progress = 1.0;
     emit statusChanged(d->status);
     emit progressChanged(1.0);
-    emit pixmapChanged();
+    pixmapChange();
     update();
 }
 
@@ -216,6 +215,11 @@ void QDeclarativeImageBase::componentComplete()
     QDeclarativeItem::componentComplete();
     if (d->url.isValid())
         load();
+}
+
+void QDeclarativeImageBase::pixmapChange()
+{
+    emit pixmapChanged();
 }
 
 QT_END_NAMESPACE
