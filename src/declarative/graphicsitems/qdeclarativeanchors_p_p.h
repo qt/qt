@@ -122,6 +122,7 @@ public:
     void setItemX(qreal);
     void setItemY(qreal);
     void setItemPos(const QPointF &);
+    void setItemSize(const QSizeF &);
 
     void updateOnComplete();
     void updateMe();

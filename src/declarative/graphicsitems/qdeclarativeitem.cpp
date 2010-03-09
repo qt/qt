@@ -2855,6 +2855,27 @@ bool QDeclarativeItem::heightValid() const
     return d->heightValid;
 }
 
+/*! \internal */
+void QDeclarativeItem::setSize(const QSizeF &size)
+{
+    Q_D(QDeclarativeItem);
+    d->heightValid = true;
+    d->widthValid = true;
+
+    if (d->height == size.height() && d->width == size.width())
+        return;
+
+    qreal oldHeight = d->height;
+    qreal oldWidth = d->width;
+
+    prepareGeometryChange();
+    d->height = size.height();
+    d->width = size.width();
+
+    geometryChanged(QRectF(x(), y(), width(), height()),
+                    QRectF(x(), y(), oldWidth, oldHeight));
+}
+
 /*!
   \qmlproperty bool Item::wantsFocus
 

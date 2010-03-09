@@ -143,6 +143,8 @@ public:
     void resetHeight();
     qreal implicitHeight() const;
 
+    void setSize(const QSizeF &size);
+
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
 
