@@ -3538,7 +3538,7 @@ cat << EOF
     -no-s60 ............ Do not compile in S60 support.
  +  -s60 ............... Compile with support for the S60 UI Framework.
     -no-usedeffiles .... Disable the usage of DEF files.
- +  -usedeffiles ....... Enable the usage of DEF files.
+ *  -usedeffiles ....... Enable the usage of DEF files.
 
     -no-mmx ............ Do not compile with use of MMX instructions.
     -no-3dnow .......... Do not compile with use of 3DNOW instructions.
