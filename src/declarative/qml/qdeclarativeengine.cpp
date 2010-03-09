@@ -542,9 +542,9 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
 
     This example creates a provider with id \e colors:
 
-    \snippet examples/declarative/imageprovider/main.cpp 0
+    \snippet examples/declarative/imageprovider/imageprovider.cpp 0
 
-    \snippet examples/declarative/imageprovider/view.qml 0
+    \snippet examples/declarative/imageprovider/imageprovider.qml 0
 
     \sa removeImageProvider()
 */

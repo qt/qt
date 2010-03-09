@@ -773,7 +773,8 @@ QVariant QDeclarativeProperty::read(QObject *object, const QString &name)
 }
 
 /*!
-  Return the \a name property value of \a object.  This method is
+  Return the \a name property value of \a object using the
+  \l{QDeclarativeContext} {context} \a ctxt.  This method is
   equivalent to:
 
   \code

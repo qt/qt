@@ -512,19 +512,20 @@ bool QDeclarativeExpression::notifyOnValueChanged() const
 }
 
 /*!
-Sets whether the valueChanged() signal is emitted when the expression's evaluated
-value changes.
+  Sets whether the valueChanged() signal is emitted when the
+  expression's evaluated value changes.
 
-If true, the QDeclarativeExpression will monitor properties involved in the expression's 
-evaluation, and emit QDeclarativeExpression::valueChanged() if they have changed.  This allows 
-an application to ensure that any value associated with the result of the expression 
-remains up to date.
+  If \a notifyOnChange is true, the QDeclarativeExpression will
+  monitor properties involved in the expression's evaluation, and emit
+  QDeclarativeExpression::valueChanged() if they have changed.  This
+  allows an application to ensure that any value associated with the
+  result of the expression remains up to date.
 
-If false, the QDeclarativeExpression will not montitor properties involved in the expression's 
-evaluation, and QDeclarativeExpression::valueChanged() will never be emitted.  This is more efficient 
-if an application wants a "one off" evaluation of the expression.
-
-By default, notifyOnChange is false.
+  If \a notifyOnChange is false (default), the QDeclarativeExpression
+  will not montitor properties involved in the expression's
+  evaluation, and QDeclarativeExpression::valueChanged() will never be
+  emitted.  This is more efficient if an application wants a "one off"
+  evaluation of the expression.
 */
 void QDeclarativeExpression::setNotifyOnValueChanged(bool notifyOnChange)
 {

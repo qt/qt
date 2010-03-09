@@ -71,8 +71,6 @@ QT_BEGIN_NAMESPACE
         }
     }
     \endqml
-
-    \sa SoundEffect
 */
 
 /*!

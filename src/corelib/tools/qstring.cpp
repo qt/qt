@@ -2135,7 +2135,7 @@ bool QString::operator==(const QLatin1String &other) const
 
     The \a other byte array is converted to a QString using the
     fromAscii() function. This function stops conversion at the
-    first NUL character found, or the end of the \a ba byte array.
+    first NUL character found, or the end of the byte array.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2197,7 +2197,7 @@ bool QString::operator<(const QLatin1String &other) const
 
     The \a other byte array is converted to a QString using the
     fromAscii() function. If any NUL characters ('\0') are embedded
-    in the \a ba byte array, they will be included in the transformation.
+    in the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2240,7 +2240,7 @@ bool QString::operator<(const QLatin1String &other) const
 
     The \a other byte array is converted to a QString using the
     fromAscii() function. If any NUL characters ('\0') are embedded
-    in the \a ba byte array, they will be included in the transformation.
+    in the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2299,7 +2299,7 @@ bool QString::operator>(const QLatin1String &other) const
 
     The \a other byte array is converted to a QString using the
     fromAscii() function. If any NUL characters ('\0') are embedded
-    in the \a ba byte array, they will be included in the transformation.
+    in the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2341,8 +2341,8 @@ bool QString::operator>(const QLatin1String &other) const
     \overload operator>=()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function. If any NUL characters ('\0') are embedded
-    in the \a ba byte array, they will be included in the transformation.
+    fromAscii() function. If any NUL characters ('\0') are embedded in
+    the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
@@ -2357,10 +2357,10 @@ bool QString::operator>(const QLatin1String &other) const
     The \a other const char pointer is converted to a QString using
     the fromAscii() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
-    can be useful if you want to ensure that all user-visible strings
-    go through QObject::tr(), for example.
+    You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
+    when you compile your applications. This can be useful if you want
+    to ensure that all user-visible strings go through QObject::tr(),
+    for example.
 */
 
 /*! \fn bool QString::operator!=(const QString &other) const
@@ -2385,7 +2385,7 @@ bool QString::operator>(const QLatin1String &other) const
 
     The \a other byte array is converted to a QString using the
     fromAscii() function. If any NUL characters ('\0') are embedded
-    in the \a ba byte array, they will be included in the transformation.
+    in the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want

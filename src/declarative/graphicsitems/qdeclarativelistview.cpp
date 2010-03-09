@@ -1650,11 +1650,6 @@ void QDeclarativeListView::setPreferredHighlightEnd(qreal end)
     emit preferredHighlightEndChanged();
 }
 
-/*!
-  \property QDeclarativeListView::highlightRangeMode
-
-  This property contains the highlight range mode for the listview.
- */
 QDeclarativeListView::HighlightRangeMode QDeclarativeListView::highlightRangeMode() const
 {
     Q_D(const QDeclarativeListView);
