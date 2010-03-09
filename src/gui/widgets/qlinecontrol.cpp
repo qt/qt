@@ -1761,7 +1761,6 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
                 }
                 break;
 #endif
-
             default:
                 if (!handled)
                     unknown = true;

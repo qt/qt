@@ -104,7 +104,8 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         horizontalScrollMode(QAbstractItemView::ScrollPerItem),
         currentIndexSet(false),
         wrapItemText(false),
-        delayedPendingLayout(false)
+        delayedPendingLayout(false),
+        moveCursorUpdatedView(false)
 {
 }
 
@@ -2213,6 +2214,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
 #endif
 
     QPersistentModelIndex newCurrent;
+    d->moveCursorUpdatedView = false;
     switch (event->key()) {
     case Qt::Key_Down:
         newCurrent = moveCursor(MoveDown, event->modifiers());
@@ -2269,6 +2271,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
                 QRect rect(d->pressedPosition - d->offset(), QSize(1, 1));
                 setSelection(rect, command);
             }
+            event->accept();
             return;
         }
     }
@@ -2366,6 +2369,8 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         }
         break; }
     }
+    if (d->moveCursorUpdatedView)
+        event->accept();
 }
 
 /*!

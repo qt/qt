@@ -419,6 +419,7 @@ public:
 
     bool wrapItemText;
     mutable bool delayedPendingLayout;
+    bool moveCursorUpdatedView;
 
 private:
     mutable QBasicTimer delayedLayout;
