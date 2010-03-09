@@ -216,12 +216,12 @@ static void initRasterFallbacksMasks(int *warningMask, int *disableMask)
             int idx = warning.indexOf(name);
             if (idx != -1) {
                 *warningMask |= operations[i].operation;
-                warning.remove(warning.begin() + idx);
+                warning.erase(warning.begin() + idx);
             }
             idx = disable.indexOf(name);
             if (idx != -1) {
                 *disableMask |= operations[i].operation;
-                disable.remove(disable.begin() + idx);
+                disable.erase(disable.begin() + idx);
             }
         }
     }
