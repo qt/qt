@@ -192,7 +192,7 @@ class QDeclarativeGridViewAttached : public QObject
     Q_OBJECT
 public:
     QDeclarativeGridViewAttached(QObject *parent)
-        : QObject(parent), m_isCurrent(false), m_delayRemove(false) {}
+        : QObject(parent), m_view(0), m_isCurrent(false), m_delayRemove(false) {}
     ~QDeclarativeGridViewAttached() {}
 
     Q_PROPERTY(QDeclarativeGridView *view READ view CONSTANT)
