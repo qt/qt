@@ -681,7 +681,11 @@ void QHttpNetworkConnectionChannel::requeueCurrentlyPipelinedRequests()
         connection->d_func()->requeueRequest(alreadyPipelinedRequests.at(i));
     alreadyPipelinedRequests.clear();
 
-    QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+    // only run when the QHttpNetworkConnection is not currently being destructed, e.g.
+    // this function is called from _q_disconnected which is called because
+    // of ~QHttpNetworkConnectionPrivate
+    if (qobject_cast<QHttpNetworkConnection*>(connection))
+        QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
 }
 
 void QHttpNetworkConnectionChannel::eatWhitespace()

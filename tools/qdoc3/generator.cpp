@@ -42,7 +42,6 @@
 /*
   generator.cpp
 */
-#include <QtCore>
 #include <qdir.h>
 #include <qdebug.h>
 #include "codemarker.h"
@@ -1191,19 +1190,15 @@ void Generator::appendSortedQmlNames(Text& text,
                                      const NodeList& subs,
                                      CodeMarker *marker)
 {
-    NodeList::ConstIterator r;
     QMap<QString,Text> classMap;
     int index = 0;
 
     qDebug() << "Generator::appendSortedQmlNames():" << base->name() << "is inherited by...";
-
-    r = subs.begin();
-    while (r != subs.end()) {
+    for (int i = 0; i < subs.size(); ++i) {
         Text t;
-        qDebug() << "    " << (*r)->name();
-        appendFullName(t, (*r), base, marker);
+        qDebug() << "    " << subs[i]->name();
+        appendFullName(t, subs[i], base, marker);
         classMap[t.toString().toLower()] = t;
-        ++r;
     }
 
     QStringList names = classMap.keys();

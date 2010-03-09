@@ -72,6 +72,7 @@ private slots:
     void modelChanges();
     void positionViewAtIndex();
     void resetModel();
+    void enforceRange();
     void QTBUG_8456();
 
 private:
@@ -659,9 +660,14 @@ void tst_QDeclarativeGridView::currentIndex()
     QCOMPARE(gridview->contentY(), 0.0);
 
     // Test keys
-    qApp->setActiveWindow(canvas);
     canvas->show();
-    canvas->setFocus();
+    qApp->setActiveWindow(canvas);
+#ifdef Q_WS_X11
+    // to be safe and avoid failing setFocus with window managers
+    qt_x11_wait_for_window_manager(canvas);
+#endif
+    QVERIFY(canvas->hasFocus());
+    QVERIFY(canvas->scene()->hasFocus());
     qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Down);
@@ -672,7 +678,6 @@ void tst_QDeclarativeGridView::currentIndex()
 
     gridview->setFlow(QDeclarativeGridView::TopToBottom);
 
-    QEXPECT_FAIL("", "QTBUG-8475", Abort);
     QTest::keyClick(canvas, Qt::Key_Right);
     QCOMPARE(gridview->currentIndex(), 5);
 
@@ -1036,6 +1041,53 @@ void tst_QDeclarativeGridView::resetModel()
         QVERIFY(display != 0);
         QCOMPARE(display->text(), strings.at(i));
     }
+}
+
+void tst_QDeclarativeGridView::enforceRange()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview-enforcerange.qml"));
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QVERIFY(gridview != 0);
+
+    QCOMPARE(gridview->preferredHighlightBegin(), 100.0);
+    QCOMPARE(gridview->preferredHighlightEnd(), 100.0);
+    QCOMPARE(gridview->highlightRangeMode(), QDeclarativeGridView::StrictlyEnforceRange);
+
+    QDeclarativeItem *viewport = gridview->viewport();
+    QVERIFY(viewport != 0);
+
+    // view should be positioned at the top of the range.
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", 0);
+    QVERIFY(item);
+    QCOMPARE(gridview->contentY(), -100.0);
+
+    QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "textName", 0);
+    QVERIFY(name != 0);
+    QCOMPARE(name->text(), model.name(0));
+    QDeclarativeText *number = findItem<QDeclarativeText>(viewport, "textNumber", 0);
+    QVERIFY(number != 0);
+    QCOMPARE(number->text(), model.number(0));
+
+    // Check currentIndex is updated when viewport moves
+    gridview->setContentY(0);
+    QCOMPARE(gridview->currentIndex(), 2);
+
+    gridview->setCurrentIndex(5);
+    QTest::qWait(500);
+    QCOMPARE(gridview->contentY(), 100.);
+
+    delete canvas;
 }
 
 void tst_QDeclarativeGridView::QTBUG_8456()

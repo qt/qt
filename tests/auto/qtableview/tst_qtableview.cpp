@@ -199,6 +199,8 @@ private slots:
     void taskQTBUG_5062_spansInconsistency();
     void taskQTBUG_4516_clickOnRichTextLabel();
     void taskQTBUG_5237_wheelEventOnHeader();
+    void taskQTBUG_8585_crashForNoGoodReason();
+    void taskQTBUG_7774_RtoLVisualRegionForSelection();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -3946,6 +3948,76 @@ void tst_QTableView::taskQTBUG_5237_wheelEventOnHeader()
     QApplication::sendEvent(header->viewport(), &wheelEvent);
     int sbValueAfter = view.verticalScrollBar()->value();
     QVERIFY(sbValueBefore != sbValueAfter);
+}
+
+class TestTableView : public QTableView {
+Q_OBJECT
+public:
+    TestTableView(QWidget *parent = 0) : QTableView(parent)
+    {
+        connect(this, SIGNAL(entered(const QModelIndex&)), this, SLOT(openEditor(const QModelIndex&)));
+    }
+    ~TestTableView(){}
+public slots:
+    void onDataChanged()
+    {
+        for (int i = 0; i < model()->rowCount(); i++) {
+            setRowHidden(i, model()->data(model()->index(i, 0)).toBool());
+        }
+    }
+
+    void openEditor(const QModelIndex& index)
+    { openPersistentEditor(index); }
+};
+
+
+void tst_QTableView::taskQTBUG_8585_crashForNoGoodReason()
+{
+    QStandardItemModel model;
+    model.insertColumn(0, QModelIndex());
+    for(int i = 0; i < 20; i++)
+    {
+        model.insertRow(i);
+    }
+
+    TestTableView w;
+    w.setMouseTracking(true);
+    w.setModel(&model);
+    connect(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), &w, SLOT(onDataChanged()));
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    for (int i = 0; i < 10; i++)
+    {
+        QTest::mouseMove(w.viewport(), QPoint(50, 20));
+        w.model()->setData(w.indexAt(QPoint(50, 20)), true);
+        QTest::mouseMove(w.viewport(), QPoint(50, 25));
+    }
+}
+
+
+class TableView7774 : public QTableView
+{
+public:
+    QRegion visualRegionForSelection(const QItemSelection &selection) const
+    {
+        return QTableView::visualRegionForSelection(selection);
+    }
+};
+
+void tst_QTableView::taskQTBUG_7774_RtoLVisualRegionForSelection()
+{
+    TableView7774 view;
+    QStandardItemModel model(5,5);
+    view.setModel(&model);
+    view.setLayoutDirection(Qt::RightToLeft);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QItemSelectionRange range(model.index(2, 0), model.index(2, model.columnCount() - 1));
+    QItemSelection selection;
+    selection << range;
+    QRegion region = view.visualRegionForSelection(selection);
+    QCOMPARE(region.rects().at(0), view.visualRect(range.topLeft()) | view.visualRect(range.bottomRight()));
 }
 
 QTEST_MAIN(tst_QTableView)

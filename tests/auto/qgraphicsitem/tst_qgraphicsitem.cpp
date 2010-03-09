@@ -438,6 +438,7 @@ private slots:
     void QTBUG_6738_missingUpdateWithSetParent();
     void QTBUG_7714_fullUpdateDiscardingOpacityUpdate2();
     void QT_2653_fullUpdateDiscardingOpacityUpdate();
+    void QT_2649_focusScope();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -10000,6 +10001,73 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
 
     QTRY_COMPARE(origView.repaints, 1);
     QTRY_COMPARE(view.repaints, 1);
+}
+
+void tst_QGraphicsItem::QT_2649_focusScope()
+{
+    QGraphicsScene *scene = new QGraphicsScene;
+
+    QGraphicsRectItem *subFocusItem = new QGraphicsRectItem;
+    subFocusItem->setFlags(QGraphicsItem::ItemIsFocusable);
+    subFocusItem->setFocus();
+    QCOMPARE(subFocusItem->focusItem(), (QGraphicsItem *)subFocusItem);
+
+    QGraphicsRectItem *scope = new QGraphicsRectItem;
+    scope->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    scope->setFocus();
+    subFocusItem->setParentItem(scope);
+    QCOMPARE(subFocusItem->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(subFocusItem->focusScopeItem(), (QGraphicsItem *)0);
+    QCOMPARE(scope->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(scope->focusScopeItem(), (QGraphicsItem *)subFocusItem);
+
+    QGraphicsRectItem *rootItem = new QGraphicsRectItem;
+    rootItem->setFlags(QGraphicsItem::ItemIsFocusable);
+    scope->setParentItem(rootItem);
+    QCOMPARE(rootItem->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(rootItem->focusScopeItem(), (QGraphicsItem *)0);
+    QCOMPARE(subFocusItem->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(subFocusItem->focusScopeItem(), (QGraphicsItem *)0);
+    QCOMPARE(scope->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(scope->focusScopeItem(), (QGraphicsItem *)subFocusItem);
+
+    scene->addItem(rootItem);
+
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(scene, &windowActivate);
+    scene->setFocus();
+
+    QCOMPARE(rootItem->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(scope->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(subFocusItem->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(rootItem->focusScopeItem(), (QGraphicsItem *)0);
+    QCOMPARE(scope->focusScopeItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(subFocusItem->focusScopeItem(), (QGraphicsItem *)0);
+    QVERIFY(subFocusItem->hasFocus());
+
+    scope->hide();
+
+    QCOMPARE(rootItem->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(scope->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(subFocusItem->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(rootItem->focusScopeItem(), (QGraphicsItem *)0);
+    QCOMPARE(scope->focusScopeItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(subFocusItem->focusScopeItem(), (QGraphicsItem *)0);
+    QVERIFY(!subFocusItem->hasFocus());
+
+    scope->show();
+
+    QCOMPARE(rootItem->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(scope->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(subFocusItem->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(rootItem->focusScopeItem(), (QGraphicsItem *)0);
+    QCOMPARE(scope->focusScopeItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(subFocusItem->focusScopeItem(), (QGraphicsItem *)0);
+    QVERIFY(subFocusItem->hasFocus());
+
+    // This should not crash
+    scope->hide();
+    delete scene;
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

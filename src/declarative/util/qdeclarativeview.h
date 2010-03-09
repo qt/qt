@@ -43,6 +43,7 @@
 #define QDECLARATIVEVIEW_H
 
 #include <QtCore/qdatetime.h>
+#include <QtCore/qurl.h>
 #include <QtGui/qgraphicssceneevent.h>
 #include <QtGui/qgraphicsview.h>
 #include <QtGui/qwidget.h>
@@ -64,7 +65,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeView : public QGraphicsView
     Q_OBJECT
     Q_PROPERTY(ResizeMode resizeMode READ resizeMode WRITE setResizeMode)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
-
+    Q_PROPERTY(QUrl source READ source WRITE setSource DESIGNABLE true)
+    Q_ENUMS(ResizeMode Status)
 public:
     explicit QDeclarativeView(QWidget *parent = 0);
     QDeclarativeView(const QUrl &source, QWidget *parent = 0);

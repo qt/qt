@@ -165,7 +165,7 @@ private slots:
 
         WIN32_FIND_DATA fd;
         HANDLE hSearch = FindFirstFileW(appendedPath, &fd);
-        QVERIFY(hSearch == INVALID_HANDLE_VALUE);
+        QVERIFY(hSearch != INVALID_HANDLE_VALUE);
 
         QBENCHMARK {
             do {

@@ -61,9 +61,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-
-
 typedef QPair<int, int> QDeclarativeXmlListRange;
 
 /*!
@@ -114,9 +111,6 @@ class QDeclarativeXmlQuery : public QThread
 {
     Q_OBJECT
 public:
-    QDeclarativeXmlQuery(QObject *parent=0)
-        : QThread(parent), m_quit(false), m_restart(false), m_abort(false), m_queryId(0) {
-    }
     ~QDeclarativeXmlQuery() {
         m_mutex.lock();
         m_quit = true;
@@ -124,6 +118,11 @@ public:
         m_mutex.unlock();
 
         wait();
+    }
+
+    static QDeclarativeXmlQuery *instance() {
+        static QDeclarativeXmlQuery *query = new QDeclarativeXmlQuery;
+        return query;
     }
 
     void abort() {
@@ -162,6 +161,11 @@ public:
     QList<QDeclarativeXmlListRange> removedItemRanges() {
         QMutexLocker locker(&m_mutex);
         return m_removedItemRanges;
+    }
+
+private:
+    QDeclarativeXmlQuery(QObject *parent=0)
+        : QThread(parent), m_quit(false), m_restart(false), m_abort(false), m_queryId(0) {
     }
 
 Q_SIGNALS:
@@ -212,6 +216,8 @@ private:
     QList<QDeclarativeXmlListRange> m_insertedItemRanges;
     QList<QDeclarativeXmlListRange> m_removedItemRanges;
 };
+
+//Q_GLOBAL_STATIC(QDeclarativeXmlQuery, QDeclarativeXmlQuery::instance());
 
 void QDeclarativeXmlQuery::doQueryJob()
 {
@@ -404,7 +410,6 @@ public:
     QNetworkReply *reply;
     QDeclarativeXmlListModel::Status status;
     qreal progress;
-    QDeclarativeXmlQuery qmlXmlQuery;
     int queryId;
     QList<QDeclarativeXmlListModelRole *> roleObjects;
     static void append_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, QDeclarativeXmlListModelRole *role);
@@ -488,8 +493,7 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
 QDeclarativeXmlListModel::QDeclarativeXmlListModel(QObject *parent)
     : QListModelInterface(*(new QDeclarativeXmlListModelPrivate), parent)
 {
-    Q_D(QDeclarativeXmlListModel);
-    connect(&d->qmlXmlQuery, SIGNAL(queryCompleted(int,int)),
+    connect(QDeclarativeXmlQuery::instance(), SIGNAL(queryCompleted(int,int)),
             this, SLOT(queryCompleted(int,int)));
 }
 
@@ -722,7 +726,7 @@ void QDeclarativeXmlListModel::reload()
     if (!d->isComponentComplete)
         return;
 
-    d->qmlXmlQuery.abort();
+    QDeclarativeXmlQuery::instance()->abort();
     d->queryId = -1;
 
     int count = d->size;
@@ -754,7 +758,7 @@ void QDeclarativeXmlListModel::reload()
     }
 
     if (!d->xml.isEmpty()) {
-        d->queryId = d->qmlXmlQuery.doQuery(d->query, d->namespaces, d->xml.toUtf8(), &d->roleObjects);
+        d->queryId = QDeclarativeXmlQuery::instance()->doQuery(d->query, d->namespaces, d->xml.toUtf8(), &d->roleObjects);
         d->progress = 1.0;
         d->status = Ready;
         emit progressChanged(d->progress);
@@ -785,7 +789,7 @@ void QDeclarativeXmlListModel::requestFinished()
     } else {
         d->status = Ready;
         QByteArray data = d->reply->readAll();
-        d->queryId = d->qmlXmlQuery.doQuery(d->query, d->namespaces, data, &d->roleObjects);
+        d->queryId = QDeclarativeXmlQuery::instance()->doQuery(d->query, d->namespaces, data, &d->roleObjects);
         disconnect(d->reply, 0, this, 0);
         d->reply->deleteLater();
         d->reply = 0;
@@ -811,10 +815,10 @@ void QDeclarativeXmlListModel::queryCompleted(int id, int size)
         return;
     bool sizeChanged = size != d->size;
     d->size = size;
-    d->data = d->qmlXmlQuery.modelData();
+    d->data = QDeclarativeXmlQuery::instance()->modelData();
 
-    QList<QDeclarativeXmlListRange> removed = d->qmlXmlQuery.removedItemRanges();
-    QList<QDeclarativeXmlListRange> inserted = d->qmlXmlQuery.insertedItemRanges();
+    QList<QDeclarativeXmlListRange> removed = QDeclarativeXmlQuery::instance()->removedItemRanges();
+    QList<QDeclarativeXmlListRange> inserted = QDeclarativeXmlQuery::instance()->insertedItemRanges();
 
     for (int i=0; i<removed.count(); i++)
         emit itemsRemoved(removed[i].first, removed[i].second);

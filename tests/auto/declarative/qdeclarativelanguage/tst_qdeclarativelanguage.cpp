@@ -269,12 +269,17 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("signal.1") << "signal.1.qml" << "signal.1.errors.txt" << false;
     QTest::newRow("signal.2") << "signal.2.qml" << "signal.2.errors.txt" << false;
     QTest::newRow("signal.3") << "signal.3.qml" << "signal.3.errors.txt" << false;
+    QTest::newRow("signal.4") << "signal.4.qml" << "signal.4.errors.txt" << false;
+
+    QTest::newRow("method.1") << "method.1.qml" << "method.1.errors.txt" << false;
 
     QTest::newRow("property.1") << "property.1.qml" << "property.1.errors.txt" << false;
     QTest::newRow("property.2") << "property.2.qml" << "property.2.errors.txt" << false;
     QTest::newRow("property.3") << "property.3.qml" << "property.3.errors.txt" << false;
     QTest::newRow("property.4") << "property.4.qml" << "property.4.errors.txt" << false;
     QTest::newRow("property.5") << "property.5.qml" << "property.5.errors.txt" << false;
+    QTest::newRow("property.6") << "property.6.qml" << "property.6.errors.txt" << false;
+    QTest::newRow("property.7") << "property.7.qml" << "property.7.errors.txt" << false;
 
     QTest::newRow("Script.1") << "script.1.qml" << "script.1.errors.txt" << false;
     QTest::newRow("Script.2") << "script.2.qml" << "script.2.errors.txt" << false;

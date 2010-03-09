@@ -640,14 +640,18 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
         } else if (getCf(formatetc) == CF_INETURL_W) {
             QList<QUrl> urls = mimeData->urls();
             QByteArray result;
-            QString url = urls.at(0).toString();
-            result = QByteArray((const char *)url.utf16(), url.length() * sizeof(ushort));
+            if (!urls.isEmpty()) {
+                QString url = urls.at(0).toString();
+                result = QByteArray((const char *)url.utf16(), url.length() * sizeof(ushort));
+            }
             result.append('\0');
             result.append('\0');
             return setData(result, pmedium);
         } else if (getCf(formatetc) == CF_INETURL) {
             QList<QUrl> urls = mimeData->urls();
-            QByteArray result = urls.at(0).toString().toLocal8Bit();
+            QByteArray result;
+            if (!urls.isEmpty())
+                result = urls.at(0).toString().toLocal8Bit();
             return setData(result, pmedium);
         }
     }
@@ -948,6 +952,8 @@ bool QWindowsMimeImage::convertFromMime(const FORMATETC &formatetc, const QMimeD
         QDataStream s(&ba, QIODevice::WriteOnly);
         s.setByteOrder(QDataStream::LittleEndian);// Intel byte order ####
         if (cf == CF_DIB) {
+            if (img.format() > QImage::Format_ARGB32)
+                img = img.convertToFormat(QImage::Format_RGB32);
             if (qt_write_dib(s, img))
                 return setData(ba, pmedium);
         } else {

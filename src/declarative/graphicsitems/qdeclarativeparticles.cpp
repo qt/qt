@@ -758,10 +758,12 @@ void QDeclarativeParticles::setSource(const QUrl &name)
 
     The particles element emits particles until it has count active
     particles. When this number is reached, new particles are not emitted until
-    some of the current particles reach theend of their lifespan.
+    some of the current particles reach the end of their lifespan.
 
     If count is -1 then there is no maximum number of active particles, and
     particles will be constantly emitted at the rate specified by emissionRate.
+
+    The default value for count is 1.
 
     If both count and emissionRate are set to -1, nothing will be emitted.
 
@@ -1219,7 +1221,7 @@ void QDeclarativeParticles::burst(int count, int emissionRate)
 
 void QDeclarativeParticlesPainter::updateSize()
 {
-    if (!isComponentComplete())
+    if (!d->_componentComplete)
         return;
 
     const int parentX = parentItem()->x();
@@ -1304,7 +1306,7 @@ void QDeclarativeParticles::componentComplete()
 {
     Q_D(QDeclarativeParticles);
     QDeclarativeItem::componentComplete();
-    if (d->count) {
+    if (d->count && d->emissionRate) {
         d->paintItem->updateSize();
         d->clock.start();
     }

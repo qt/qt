@@ -50,117 +50,84 @@
 // We mean it.
 //
 
+#include "qsoundeffect_qmedia_p.h"
+
 #include <QtCore/qcoreapplication.h>
 
-#include "qmediacontent.h"
-#include "qmediaplayer.h"
-
-#include "qsoundeffect_p.h"
-#include "qsoundeffect_qmedia_p.h"
+#include <QtMultimedia/qmediacontent.h>
+#include <QtMultimedia/qmediaplayer.h>
 
 
 QT_BEGIN_NAMESPACE
 
 QSoundEffectPrivate::QSoundEffectPrivate(QObject* parent):
     QObject(parent),
-    m_muted(false),
-    m_vol(100),
+    m_loopCount(1),
+    m_runningCount(0),
     m_player(0)
 {
+    m_player = new QMediaPlayer(this, QMediaPlayer::LowLatency);
+    connect(m_player, SIGNAL(volumeChanged(int)), SIGNAL(volumeChanged()));
+    connect(m_player, SIGNAL(mutedChanged(bool)), SIGNAL(mutedChanged()));
+    connect(m_player, SIGNAL(stateChanged(QMediaPlayer::State)), SLOT(stateChanged(QMediaPlayer::State)));
 }
 
 QSoundEffectPrivate::~QSoundEffectPrivate()
 {
-    if (m_player) delete m_player;
 }
 
-qint64 QSoundEffectPrivate::duration() const
+QUrl QSoundEffectPrivate::source() const
 {
-    if (m_player) return m_player->duration();
+    return m_player->media().canonicalUrl();
+}
 
-    return 0;
+void QSoundEffectPrivate::setSource(const QUrl &url)
+{
+    m_player->setMedia(url);
+}
+
+int QSoundEffectPrivate::loopCount() const
+{
+    return m_loopCount;
+}
+
+void QSoundEffectPrivate::setLoopCount(int loopCount)
+{
+    m_loopCount = loopCount;
 }
 
 int QSoundEffectPrivate::volume() const
 {
-    if (m_player) return m_player->volume();
-
-    return m_vol;
-}
-
-bool QSoundEffectPrivate::isMuted() const
-{
-    if (m_player) return m_player->isMuted();
-
-    return m_muted;
-}
-
-QMediaContent QSoundEffectPrivate::media() const
-{
-    if (m_player) return m_player->media();
-
-    return QMediaContent();
-}
-
-QMediaPlayer::State QSoundEffectPrivate::state() const
-{
-    if (m_player) return m_player->state();
-
-    return QMediaPlayer::StoppedState;
-}
-
-QMediaPlayer::MediaStatus QSoundEffectPrivate::mediaStatus() const
-{
-    if (m_player) return m_player->mediaStatus();
-
-    return QMediaPlayer::UnknownMediaStatus;
-}
-
-void QSoundEffectPrivate::play()
-{
-    if (m_player && !m_player->isMuted())
-        m_player->play();
-}
-
-void QSoundEffectPrivate::stop()
-{
-    if (m_player)
-        m_player->stop();
+    return m_player->volume();
 }
 
 void QSoundEffectPrivate::setVolume(int volume)
 {
-    m_vol = volume;
+    m_player->setVolume(volume);
+}
 
-    if (m_player)
-        m_player->setVolume(volume);
+bool QSoundEffectPrivate::isMuted() const
+{
+    return m_player->isMuted();
 }
 
 void QSoundEffectPrivate::setMuted(bool muted)
 {
-    m_muted = muted;
-
-    if (m_player)
-        m_player->setMuted(muted);
+    m_player->setMuted(muted);
 }
 
-void QSoundEffectPrivate::setMedia(const QMediaContent &media)
+void QSoundEffectPrivate::play()
 {
-    if (media.isNull())
-        return;
+    m_runningCount += m_loopCount;
+    m_player->play();
+}
 
-    if (m_player == 0) {
-        m_player = new QMediaPlayer(this, QMediaPlayer::LowLatency);
-        m_player->setVolume(m_vol);
-        m_player->setMuted(m_muted);
-
-        connect(m_player, SIGNAL(volumeChanged(int)), SIGNAL(volumeChanged(int)));
-        connect(m_player, SIGNAL(mutedChanged(bool)), SIGNAL(mutedChanged(bool)));
-        connect(m_player, SIGNAL(durationChanged(qint64)), SIGNAL(durationChanged(qint64)));
-        connect(m_player, SIGNAL(stateChanged(QMediaPlayer::State)), SIGNAL(stateChanged(QMediaPlayer::State)));
+void QSoundEffectPrivate::stateChanged(QMediaPlayer::State state)
+{
+    if (state == QMediaPlayer::StoppedState) {
+        if (--m_runningCount > 0)
+            m_player->play();
     }
-
-    m_player->setMedia(media.canonicalUrl());
 }
 
 QT_END_NAMESPACE

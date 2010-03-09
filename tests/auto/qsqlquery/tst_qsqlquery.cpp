@@ -205,6 +205,13 @@ private slots:
     void QTBUG_6618();
     void QTBUG_6852_data() { generic_data("QMYSQL"); }
     void QTBUG_6852();
+    void QTBUG_5765_data() { generic_data("QMYSQL"); }
+    void QTBUG_5765();
+
+#if 0
+    void benchmark_data() { generic_data(); }
+    void benchmark();
+#endif
 
 private:
     // returns all database connections
@@ -309,7 +316,14 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName( "blobstest" )
                << qTableName( "oraRowId" )
                << qTableName( "qtest_batch" )
-               << qTableName(QLatin1String("bug6421")).toUpper();
+               << qTableName("bug6421").toUpper()
+               << qTableName("bug5765")
+               << qTableName("bug6852")
+               << qTableName( "qtest_lockedtable" )
+               << qTableName( "Planet" )
+               << qTableName( "task_250026" )
+               << qTableName( "task_234422" )
+               << qTableName("test141895");
 
     if ( db.driverName().startsWith("QPSQL") )
         tablenames << qTableName("task_233829");
@@ -320,19 +334,11 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
     if ( tst_Databases::isSqlServer( db ) || db.driverName().startsWith( "QOCI" ) )
         tablenames << qTableName( "qtest_longstr" );
 
-    tablenames <<  qTableName( "qtest_lockedtable" );
+    if (tst_Databases::isSqlServer( db ))
+        db.exec("DROP PROCEDURE " + qTableName("test141895_proc"));
 
-    tablenames <<  qTableName( "Planet" );
-
-    tablenames << qTableName( "task_250026" );
-    tablenames << qTableName( "task_234422" );
-
-    if (tst_Databases::isSqlServer( db )) {
-        QSqlQuery q( db );
-        q.exec("DROP PROCEDURE " + qTableName("test141895_proc"));
-    }
-
-    tablenames << qTableName("test141895");
+    if (tst_Databases::isMySQL( db ))
+        db.exec("DROP PROCEDURE IF EXISTS "+qTableName("bug6852_proc"));
 
     tst_Databases::safeDropTables( db, tablenames );
 
@@ -2996,10 +3002,9 @@ void tst_QSqlQuery::QTBUG_6852()
         QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
 
     QSqlQuery q(db);
-    QString tableName(qTableName(QLatin1String("bug6421"))), procName(qTableName(QLatin1String("bug6421_proc")));
+    QString tableName(qTableName(QLatin1String("bug6852"))), procName(qTableName(QLatin1String("bug6852_proc")));
 
     QVERIFY_SQL(q, exec("DROP PROCEDURE IF EXISTS "+procName));
-    tst_Databases::safeDropTable(db, tableName);
     QVERIFY_SQL(q, exec("CREATE TABLE "+tableName+"(\n"
                         "MainKey INT NOT NULL,\n"
                         "OtherTextCol VARCHAR(45) NOT NULL,\n"
@@ -3022,6 +3027,72 @@ void tst_QSqlQuery::QTBUG_6852()
     QCOMPARE(q.value(1).toString(), QLatin1String("Disabled"));
 }
 
+void tst_QSqlQuery::QTBUG_5765()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    if ( tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 1 ).toFloat()<4.1 )
+        QSKIP( "Test requires MySQL >= 4.1", SkipSingle );
+
+    QSqlQuery q(db);
+    QString tableName(qTableName(QLatin1String("bug5765")));
+
+    QVERIFY_SQL(q, exec("CREATE TABLE "+tableName+"(testval TINYINT(1) DEFAULT 0)"));
+    q.prepare("INSERT INTO "+tableName+" SET testval = :VALUE");
+    q.bindValue(":VALUE", 1);
+    QVERIFY_SQL(q, exec());
+    q.bindValue(":VALUE", 12);
+    QVERIFY_SQL(q, exec());
+    q.bindValue(":VALUE", 123);
+    QVERIFY_SQL(q, exec());
+    QString sql="select testval from "+tableName;
+    QVERIFY_SQL(q, exec(sql));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 1);
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 12);
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 123);
+    QVERIFY_SQL(q, prepare(sql));
+    QVERIFY_SQL(q, exec());
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 1);
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 12);
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 123);
+}
+
+#if 0
+void tst_QSqlQuery::benchmark()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    if ( tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
+        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+
+    QSqlQuery q(db);
+    QString tableName(qTableName(QLatin1String("benchmark")));
+
+    tst_Databases::safeDropTable( db, tableName );
+
+    QVERIFY_SQL(q, exec("CREATE TABLE "+tableName+"(\n"
+                        "MainKey INT NOT NULL,\n"
+                        "OtherTextCol VARCHAR(45) NOT NULL,\n"
+                        "PRIMARY KEY(`MainKey`))"));
+
+    int i=1;
+
+    QBENCHMARK {
+        QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" VALUES("+QString::number(i)+", \"Value"+QString::number(i)+"\")"));
+        i++;
+    }
+
+    tst_Databases::safeDropTable( db, tableName );
+}
+#endif
 
 QTEST_MAIN( tst_QSqlQuery )
 #include "tst_qsqlquery.moc"

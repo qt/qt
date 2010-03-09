@@ -104,6 +104,7 @@ private slots:
     void responseXML_invalid();
     void invalidMethodUsage();
     void redirects();
+    void nonUtf8();
 
     // Attributes
     void document();
@@ -915,6 +916,30 @@ void tst_qdeclarativexmlhttprequest::responseText_data()
     QTest::newRow("OK") << TEST_FILE("status.200.reply") << TEST_FILE("testdocument.html") << "QML Rocks!\n";
     QTest::newRow("empty body") << TEST_FILE("status.200.reply") << QUrl() << "";
     QTest::newRow("Not Found") << TEST_FILE("status.404.reply") << TEST_FILE("testdocument.html") << "";
+}
+
+void tst_qdeclarativexmlhttprequest::nonUtf8()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("utf16.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QString uc;
+    uc.resize(3);
+    uc[0] = QChar(0x10e3);
+    uc[1] = QChar(' ');
+    uc[2] = QChar(0x03a3);
+    QString xml = "<?xml version=\"1.0\" encoding=\"UTF-16\" standalone='yes'?>\n<root>\n" + uc + "\n</root>\n";
+
+    TRY_WAIT(object->property("dataOK").toBool() == true);
+
+    QString responseText = object->property("responseText").toString();
+    QCOMPARE(responseText, xml);
+
+    QString responseXmlText = object->property("responseXmlRootNodeValue").toString();
+    QCOMPARE(responseXmlText, '\n' + uc + '\n');
+
+    delete object;
 }
 
 // Test that calling hte XMLHttpRequest methods on a non-XMLHttpRequest object

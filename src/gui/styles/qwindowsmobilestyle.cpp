@@ -4040,25 +4040,26 @@ enum QSliderDirection { SliderUp, SliderDown, SliderLeft, SliderRight };
 
 void QWindowsMobileStylePrivate::tintImagesButton(QColor color)
 {
-       if (currentTintButton == color)
+    if (currentTintButton == color)
         return;
+    currentTintButton = color;
 
-       imageTabEnd = QImage(tabend_xpm);
-       imageTabSelectedEnd = QImage(tabselectedend_xpm);
-       imageTabSelectedBegin = QImage(tabselectedbeginn_xpm);
-       imageTabMiddle = QImage(tabmiddle_xpm);
-       tintImage(&imageTabEnd, color, 0.0);
-       tintImage(&imageTabSelectedEnd, color, 0.0);
-       tintImage(&imageTabSelectedBegin, color, 0.0);
-       tintImage(&imageTabMiddle, color, 0.0);
+    imageTabEnd = QImage(tabend_xpm);
+    imageTabSelectedEnd = QImage(tabselectedend_xpm);
+    imageTabSelectedBegin = QImage(tabselectedbeginn_xpm);
+    imageTabMiddle = QImage(tabmiddle_xpm);
+    tintImage(&imageTabEnd, color, 0.0);
+    tintImage(&imageTabSelectedEnd, color, 0.0);
+    tintImage(&imageTabSelectedBegin, color, 0.0);
+    tintImage(&imageTabMiddle, color, 0.0);
 
-       if (!doubleControls) {
-           int height = imageTabMiddle.height() / 2 + 1;
-           imageTabEnd = imageTabEnd.scaledToHeight(height);
-           imageTabMiddle = imageTabMiddle.scaledToHeight(height);
-           imageTabSelectedEnd = imageTabSelectedEnd.scaledToHeight(height);
-           imageTabSelectedBegin = imageTabSelectedBegin.scaledToHeight(height);
-       }
+    if (!doubleControls) {
+        int height = imageTabMiddle.height() / 2 + 1;
+        imageTabEnd = imageTabEnd.scaledToHeight(height);
+        imageTabMiddle = imageTabMiddle.scaledToHeight(height);
+        imageTabSelectedEnd = imageTabSelectedEnd.scaledToHeight(height);
+        imageTabSelectedBegin = imageTabSelectedBegin.scaledToHeight(height);
+    }
 }
 
 void QWindowsMobileStylePrivate::tintImagesHigh(QColor color)

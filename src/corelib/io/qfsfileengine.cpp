@@ -147,6 +147,8 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
         return path;
 #endif
 #if defined(Q_OS_LINUX) || defined(Q_OS_SYMBIAN) || defined(Q_OS_MAC)
+    // ... but Linux with uClibc does not have it
+#if !defined(__UCLIBC__)
     char *ret = 0;
 #if defined(Q_OS_MAC)
     // Mac OS X 10.5.x doesn't support the realpath(X,0) extension we use here.
@@ -172,6 +174,7 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
         free(ret);
         return canonicalPath;
     }
+#endif
 #endif
 
     QFileInfo fi;

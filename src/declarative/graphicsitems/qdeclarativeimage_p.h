@@ -85,6 +85,7 @@ Q_SIGNALS:
 protected:
     QDeclarativeImage(QDeclarativeImagePrivate &dd, QDeclarativeItem *parent);
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    void pixmapChange();
 
 protected Q_SLOTS:
     void updatePaintedGeometry();

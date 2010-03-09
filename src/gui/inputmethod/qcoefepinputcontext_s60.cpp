@@ -551,6 +551,21 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
     m_formatRetriever = &aInlineTextFormatRetriever;
     m_pointerHandler = &aPointerEventHandlerDuringInlineEdit;
 
+    // With T9 aInitialInlineText is typically empty when StartFepInlineEditL is called,
+    // but FEP requires that selected text is always removed at StartFepInlineEditL.
+    // Let's remove the selected text if aInitialInlineText is empty and there is selected text
+    if (m_preeditString.isEmpty()) {
+        int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt();
+        int replacementLength = qAbs(m_cursorPos-anchor);
+        if (replacementLength > 0) {
+            int replacementStart = m_cursorPos < anchor ? 0 : -replacementLength;
+            QList<QInputMethodEvent::Attribute> clearSelectionAttributes;
+            QInputMethodEvent clearSelectionEvent(QLatin1String(""), clearSelectionAttributes);
+            clearSelectionEvent.setCommitString(QLatin1String(""), replacementStart, replacementLength);
+            sendEvent(clearSelectionEvent);
+        }
+    }
+
     applyFormat(&attributes);
 
     attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor,

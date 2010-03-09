@@ -174,8 +174,6 @@ protected Q_SLOTS:
     virtual void ticked();
     void movementStarting();
     void movementEnding();
-    void heightChange();
-    void widthChange();
 
 protected:
     virtual qreal minXExtent() const;
@@ -185,6 +183,8 @@ protected:
     qreal vWidth() const;
     qreal vHeight() const;
     virtual void viewportMoved();
+    virtual void geometryChanged(const QRectF &newGeometry,
+                                 const QRectF &oldGeometry);
     bool sendMouseEvent(QGraphicsSceneMouseEvent *event);
 
     bool xflick() const;

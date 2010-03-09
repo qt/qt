@@ -172,7 +172,7 @@
     \value NotSupported The feature is not supported.
     \value MaybeSupported The feature may be supported.
     \value ProbablySupported The feature is probably supported.
-    \value PreferedService The service is the preferred provider of a service.
+    \value PreferredService The service is the preferred provider of a service.
 */
 
 /*!

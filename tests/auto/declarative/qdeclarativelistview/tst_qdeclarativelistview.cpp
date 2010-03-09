@@ -1028,13 +1028,17 @@ void tst_QDeclarativeListView::currentIndex()
     QCOMPARE(listview->contentY(), 0.0);
 
     // Test keys
-    qApp->setActiveWindow(canvas);
     canvas->show();
-    canvas->setFocus();
+    qApp->setActiveWindow(canvas);
+#ifdef Q_WS_X11
+    // to be safe and avoid failing setFocus with window managers
+    qt_x11_wait_for_window_manager(canvas);
+#endif
+    QVERIFY(canvas->hasFocus());
+    QVERIFY(canvas->scene()->hasFocus());
     qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Down);
-    QEXPECT_FAIL("", "QTBUG-8475", Abort);
     QCOMPARE(listview->currentIndex(), 1);
 
     QTest::keyClick(canvas, Qt::Key_Up);
