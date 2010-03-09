@@ -1186,6 +1186,8 @@ static const unsigned int KeyTbl[] = {
     XF86XK_LaunchB,             Qt::Key_LaunchD,
     XF86XK_LaunchC,             Qt::Key_LaunchE,
     XF86XK_LaunchD,             Qt::Key_LaunchF,
+    XF86XK_LaunchE,             Qt::Key_LaunchG,
+    XF86XK_LaunchF,             Qt::Key_LaunchH,
 
     // Qtopia keys
     QTOPIAXK_Select,            Qt::Key_Select,

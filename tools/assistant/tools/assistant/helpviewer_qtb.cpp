@@ -40,8 +40,6 @@
 ****************************************************************************/
 #include "helpviewer_qtb.h"
 
-#if defined(QT_NO_WEBKIT)
-
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
 #include "tracer.h"
@@ -287,7 +285,3 @@ bool HelpViewer::eventFilter(QObject *obj, QEvent *event)
         return true;
     return QTextBrowser::eventFilter(obj, event);
 }
-
-QT_END_NAMESPACE
-
-#endif  // QT_NO_WEBKIT

@@ -341,7 +341,7 @@ void MainWindow::lookForNewQtDocumentation()
 
     m_qtDocInstaller = new QtDocInstaller(qtDocInfos);
     connect(m_qtDocInstaller, SIGNAL(docsInstalled(bool)), this,
-        SLOT(qtDocumentationInstalled(bool)));
+        SLOT(qtDocumentationInstalled()));
     connect(m_qtDocInstaller, SIGNAL(qchFileNotFound(QString)), this,
             SLOT(resetQtDocInfo(QString)));
     connect(m_qtDocInstaller, SIGNAL(registerDocumentation(QString, QString)),
@@ -351,7 +351,7 @@ void MainWindow::lookForNewQtDocumentation()
     m_qtDocInstaller->installDocs();
 }
 
-void MainWindow::qtDocumentationInstalled(bool newDocsInstalled)
+void MainWindow::qtDocumentationInstalled()
 {
     TRACE_OBJ
     statusBar()->clearMessage();

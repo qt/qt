@@ -2,6 +2,29 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="es">
 <context>
+    <name>MAC_APPLICATION_MENU</name>
+    <message>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="+2316"/>
+        <source>Services</source>
+        <translation>Servicios</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hide %1</source>
+        <translation>Ocultar %1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hide Others</source>
+        <translation>Ocultar otros</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show All</source>
+        <translation>Mostrar todo</translation>
+    </message>
+</context>
+<context>
     <name>AudioOutput</name>
     <message>
         <location filename="../src/3rdparty/phonon/phonon/audiooutput.cpp" line="+375"/>

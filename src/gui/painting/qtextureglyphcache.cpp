@@ -195,7 +195,7 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
         QFontEngineFT::QGlyphSet *gset = ft->loadTransformedGlyphSet(m_transform);
 
         if (gset && ft->loadGlyphs(gset, &g, 1, format)) {
-            QFontEngineFT::Glyph *glyph = gset->glyph_data.value(g);
+            QFontEngineFT::Glyph *glyph = gset->getGlyph(g);
             const int bytesPerLine = (format == QFontEngineFT::Format_Mono ? ((glyph->width + 31) & ~31) >> 3
                                : (glyph->width + 3) & ~3);
             return QImage(glyph->data, glyph->width, glyph->height, bytesPerLine, imageFormat);

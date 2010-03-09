@@ -2,6 +2,29 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="de">
 <context>
+    <name>MAC_APPLICATION_MENU</name>
+    <message>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="+2316"/>
+        <source>Services</source>
+        <translation>Dienste</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hide %1</source>
+        <translation>%1 ausblenden</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hide Others</source>
+        <translation>Andere ausblenden</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show All</source>
+        <translation>Alle anzeigen</translation>
+    </message>
+</context>
+<context>
     <name>CloseButton</name>
     <message>
         <location filename="../src/gui/widgets/qtabbar.cpp" line="+2266"/>

@@ -473,6 +473,8 @@
 
     \section1 Declarative UI development with Qt Quick
 
+    \image quick_screens.png
+
     Qt 4.7 introduces Quick, the Qt UI Creation Kit. that enables the creation
     of dynamic user interfaces, easier and more effective than possible
     with existing UI technologies. This UI Creation Kit consist of three

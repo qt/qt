@@ -90,12 +90,12 @@ public:
 
     inline bool available() const { return handle != 0; }
 
+    bool requiresPolling() const;
+
 public Q_SLOTS:
     void scanComplete();
 
 private:
-    QTimer pollTimer;
-
     Qt::HANDLE handle;
 };
 

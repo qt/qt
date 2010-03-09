@@ -793,15 +793,16 @@ bool QJpegHandler::supportsOption(ImageOption option) const
 
 QVariant QJpegHandler::option(ImageOption option) const
 {
-    if (option == Quality) {
+    switch(option) {
+    case Quality:
         return quality;
-    } else if  (option == ScaledSize) {
+    case ScaledSize:
         return scaledSize;
-    } else if  (option == ScaledClipRect) {
+    case ScaledClipRect:
         return scaledClipRect;
-    } else if  (option == ClipRect) {
+    case ClipRect:
         return clipRect;
-    } else if (option == Size) {
+    case Size:
         if (canRead() && !device()->isSequential()) {
             qint64 pos = device()->pos();
             int width = 0;
@@ -810,7 +811,8 @@ QVariant QJpegHandler::option(ImageOption option) const
             device()->seek(pos);
             return QSize(width, height);
         }
-    } else if (option == ImageFormat) {
+        return QVariant();
+    case ImageFormat:
         if (canRead() && !device()->isSequential()) {
             qint64 pos = device()->pos();
             QImage::Format format = QImage::Format_Invalid;
@@ -819,20 +821,29 @@ QVariant QJpegHandler::option(ImageOption option) const
             return format;
         }
         return QImage::Format_Invalid;
+    default:
+        return QVariant();
     }
-    return QVariant();
 }
 
 void QJpegHandler::setOption(ImageOption option, const QVariant &value)
 {
-    if (option == Quality)
+    switch(option) {
+    case Quality:
         quality = value.toInt();
-    else if ( option == ScaledSize )
+        break;
+    case ScaledSize:
         scaledSize = value.toSize();
-    else if ( option == ScaledClipRect )
+        break;
+    case ScaledClipRect:
         scaledClipRect = value.toRect();
-    else if ( option == ClipRect )
+        break;
+    case ClipRect:
         clipRect = value.toRect();
+        break;
+    default:
+        break;
+    }
 }
 
 QByteArray QJpegHandler::name() const
