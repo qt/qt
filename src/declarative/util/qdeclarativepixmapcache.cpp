@@ -137,7 +137,7 @@ class QDeclarativeImageRequestHandler : public QObject
     Q_OBJECT
 public:
     QDeclarativeImageRequestHandler(QDeclarativeImageReader *read, QDeclarativeEngine *eng)
-        : QObject(), accessManager(0), engine(eng), reader(read)
+        : QObject(), accessManager(0), engine(eng), reader(read), redirectCount(0)
     {
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
@@ -162,18 +162,24 @@ private:
     QNetworkAccessManager *accessManager;
     QDeclarativeEngine *engine;
     QDeclarativeImageReader *reader;
+    int redirectCount;
+
+    static int replyDownloadProgress;
+    static int replyFinished;
+    static int downloadProgress;
+    static int thisNetworkRequestDone;
 };
 
 //===========================================================================
 
+int QDeclarativeImageRequestHandler::replyDownloadProgress = -1;
+int QDeclarativeImageRequestHandler::replyFinished = -1;
+int QDeclarativeImageRequestHandler::downloadProgress = -1;
+int QDeclarativeImageRequestHandler::thisNetworkRequestDone = -1;
+
 bool QDeclarativeImageRequestHandler::event(QEvent *event)
 {
     if (event->type() == QEvent::User) {
-        static int replyDownloadProgress = -1;
-        static int replyFinished = -1;
-        static int downloadProgress = -1;
-        static int thisNetworkRequestDone = -1;
-
         if (replyDownloadProgress == -1) {
             replyDownloadProgress = QNetworkReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
             replyFinished = QNetworkReply::staticMetaObject.indexOfSignal("finished()");
@@ -264,10 +270,33 @@ bool QDeclarativeImageRequestHandler::event(QEvent *event)
     return QObject::event(event);
 }
 
+#define IMAGEREQUESTHANDLER_MAX_REDIRECT_RECURSION 16
+
 void QDeclarativeImageRequestHandler::networkRequestDone()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     QDeclarativePixmapReply *job = replies.take(reply);
+
+    redirectCount++;
+    if (redirectCount < IMAGEREQUESTHANDLER_MAX_REDIRECT_RECURSION) {
+        QVariant redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirect.isValid()) {
+            QUrl url = reply->url().resolved(redirect.toUrl());
+            QNetworkRequest req(url);
+            req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
+
+            reply->deleteLater();
+            reply = networkAccessManager()->get(req);
+
+            QMetaObject::connect(reply, replyDownloadProgress, job, downloadProgress);
+            QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
+
+            replies.insert(reply, job);
+            return;
+        }
+    }
+    redirectCount=0;
+
     if (job) {
         QImage image;
         QDeclarativeImageReaderEvent::ReadError error;
