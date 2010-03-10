@@ -97,6 +97,9 @@ void tst_QZip::basicUnpack()
                                                  | QFile::ReadUser  | QFile::WriteUser ));
 
     QCOMPARE(zip.fileData("test/test.txt"), QByteArray("content\n"));
+
+    fi = files.at(-1);
+    QVERIFY(!fi.isValid());
 }
 
 void tst_QZip::symlinks()

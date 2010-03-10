@@ -809,6 +809,7 @@ int QZipReader::count() const
 /*!
     Returns a FileInfo of an entry in the zipfile.
     The \a index is the index into the directoy listing of the zipfile.
+    Returns an invalid FileInfo if \a index is out of boundaries.
 
     \sa fileInfoList()
 */
@@ -816,7 +817,8 @@ QZipReader::FileInfo QZipReader::entryInfoAt(int index) const
 {
     d->scanFiles();
     QZipReader::FileInfo fi;
-    d->fillFileInfo(index, fi);
+    if (index >= 0 && index < d->fileHeaders.count())
+        d->fillFileInfo(index, fi);
     return fi;
 }
 
