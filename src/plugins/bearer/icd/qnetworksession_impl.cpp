@@ -140,7 +140,9 @@ static DBusHandlerResult signal_handler(DBusConnection *,
 				    DBUS_TYPE_STRING, &network_type,
 				    DBUS_TYPE_STRING, &state,
 				    DBUS_TYPE_INVALID) == FALSE) {
-	    qWarning() << QString("Failed to parse icd status signal: %1").arg(error.message);
+#ifdef BEARER_MANAGEMENT_DEBUG
+        qDebug() << QString("Failed to parse icd status signal: %1").arg(error.message);
+#endif
         } else {
 	    QString _iap_id(iap_id);
 	    QString _network_type(network_type);
@@ -166,7 +168,6 @@ void IcdListener::setup(QNetworkSessionPrivateImpl *d)
 
 	dbus_connection = get_dbus_conn(&error);
 	if (dbus_error_is_set(&error)) {
-	    qWarning() << "Cannot get dbus connection.";
 	    dbus_error_free(&error);
 	    return;
 	}
@@ -176,7 +177,6 @@ void IcdListener::setup(QNetworkSessionPrivateImpl *d)
 
 	dbus_bus_add_match(dbus_connection, ICD_DBUS_MATCH, &error);
 	if (dbus_error_is_set(&error)) {
-	    qWarning() << "Cannot add match" << ICD_DBUS_MATCH;
 	    dbus_error_free(&error);
 	    return;
 	}
@@ -185,7 +185,6 @@ void IcdListener::setup(QNetworkSessionPrivateImpl *d)
 						    ICD_DBUS_PATH,
 						    &icd_vtable,
 						    (void*)this) == FALSE) {
-	    qWarning() << "Cannot register dbus signal handler, interface"<< ICD_DBUS_INTERFACE << "path" << ICD_DBUS_PATH;
 	    dbus_error_free(&error);
 	    return;
 	}
@@ -340,8 +339,6 @@ void QNetworkSessionPrivateImpl::updateIdentifier(QString &newId)
     } else {
     toIcdConfig(privateConfiguration(publicConfig))->network_attrs |= ICD_NW_ATTR_IAPNAME;
     if (privateConfiguration(publicConfig)->id != newId) {
-        qWarning() << "Your config id changed from" << privateConfiguration(publicConfig)->id
-                   << "to" << newId;
         privateConfiguration(publicConfig)->id = newId;
 	}
     }
@@ -1015,25 +1012,21 @@ void QNetworkSessionPrivateImpl::stop()
 
 void QNetworkSessionPrivateImpl::migrate()
 {
-    qWarning("This platform does not support roaming (%s).", __FUNCTION__);
 }
 
 
 void QNetworkSessionPrivateImpl::accept()
 {
-    qWarning("This platform does not support roaming (%s).", __FUNCTION__);
 }
 
 
 void QNetworkSessionPrivateImpl::ignore()
 {
-    qWarning("This platform does not support roaming (%s).", __FUNCTION__);
 }
 
 
 void QNetworkSessionPrivateImpl::reject()
 {
-    qWarning("This platform does not support roaming (%s).", __FUNCTION__);
 }
 
 

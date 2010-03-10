@@ -542,9 +542,9 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
 
     This example creates a provider with id \e colors:
 
-    \snippet examples/declarative/imageprovider/main.cpp 0
+    \snippet examples/declarative/imageprovider/imageprovider.cpp 0
 
-    \snippet examples/declarative/imageprovider/view.qml 0
+    \snippet examples/declarative/imageprovider/imageprovider.qml 0
 
     \sa removeImageProvider()
 */
@@ -1656,10 +1656,8 @@ void QDeclarativeEngine::addImportPath(const QString& path)
 }
 
 /*!
-  Imports the given \a extension into this QDeclarativeEngine.  Returns
-  true if the extension was successfully imported.
-
-  \sa QDeclarativeExtensionInterface
+  Imports the extension named \a fileName from the \a uri provided.
+  Returns true if the extension was successfully imported.
 */
 bool QDeclarativeEngine::importExtension(const QString &fileName, const QString &uri)
 {

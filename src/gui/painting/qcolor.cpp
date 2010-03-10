@@ -543,7 +543,8 @@ void QColor::setNamedColor(const QString &name)
    be used to construct a valid QColor object, otherwise returns
    false.
 
-   The algorithm used is the same as with \a setNamedColor().
+   It uses the same algorithm used in setNamedColor().
+
    \sa setNamedColor()
 */
 bool QColor::isValidColor(const QString &name)
@@ -2714,14 +2715,6 @@ QDataStream &operator>>(QDataStream &stream, QColor &color)
     \l{QColor#Alpha-Blended Drawing}{Alpha-Blended Drawing} section.
 
     \sa QColor::rgb(), QColor::rgba()
-*/
-
-/*! \fn void QColormap::initialize()
-  \internal
-*/
-
-/*! \fn void QColormap::cleanup()
-  \internal
 */
 
 QT_END_NAMESPACE

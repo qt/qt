@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,66 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef QNATIVEWIFIENGINE_P_H
-#define QNATIVEWIFIENGINE_P_H
+#include <QtCore>
+#include <QtTest/QtTest>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#define INVOKE_COUNT 10000
 
-#include "../qbearerengine_impl.h"
-
-#include <QtCore/qtimer.h>
-
-QT_BEGIN_NAMESPACE
-
-class QNetworkConfigurationPrivate;
-struct WLAN_NOTIFICATION_DATA;
-
-class QNativeWifiEngine : public QBearerEngineImpl
+class qtimer_vs_qmetaobject : public QObject
 {
     Q_OBJECT
-
-public:
-    QNativeWifiEngine(QObject *parent = 0);
-    ~QNativeWifiEngine();
-
-    QString getInterfaceFromId(const QString &id);
-    bool hasIdentifier(const QString &id);
-
-    //QString bearerName(const QString &id);
-
-    void connectToId(const QString &id);
-    void disconnectFromId(const QString &id);
-
-    void requestUpdate();
-
-    QNetworkSession::State sessionStateForId(const QString &id);
-
-    QNetworkConfigurationManager::Capabilities capabilities() const;
-
-    QNetworkSessionPrivate *createSessionBackend();
-
-    QNetworkConfigurationPrivatePointer defaultConfiguration();
-
-    inline bool available() const { return handle != 0; }
-
-    bool requiresPolling() const;
-
-public Q_SLOTS:
-    void scanComplete();
-
-private:
-    Qt::HANDLE handle;
+private slots:
+    void testZeroTimerSingleShot();
+    void testQueuedInvokeMethod();
 };
 
-QT_END_NAMESPACE
+class InvokeCounter : public QObject {
+    Q_OBJECT
+public:
+    InvokeCounter() : count(0) { };
+public slots:
+    void invokeSlot() {
+        count++;
+        if (count == INVOKE_COUNT)
+            QTestEventLoop::instance().exitLoop();
+    }
+protected:
+    int count;
+};
 
-#endif
+void qtimer_vs_qmetaobject::testZeroTimerSingleShot()
+{
+    QBENCHMARK {
+        InvokeCounter invokeCounter;
+        for(int i = 0; i < INVOKE_COUNT; ++i) {
+            QTimer::singleShot(0, &invokeCounter, SLOT(invokeSlot()));
+        }
+        QTestEventLoop::instance().enterLoop(10);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+    }
+}
+
+void qtimer_vs_qmetaobject::testQueuedInvokeMethod()
+{
+    QBENCHMARK {
+        InvokeCounter invokeCounter;
+        for(int i = 0; i < INVOKE_COUNT; ++i) {
+            QMetaObject::invokeMethod(&invokeCounter, "invokeSlot", Qt::QueuedConnection);
+        }
+        QTestEventLoop::instance().enterLoop(10);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+    }
+}
+
+
+QTEST_MAIN(qtimer_vs_qmetaobject)
+
+#include "tst_qtimer_vs_qmetaobject.moc"
