@@ -335,9 +335,9 @@ void tst_QSqlThread::repopulateTestTables()
         QVERIFY_SQL(q, exec("insert into " + qtest + " values(2, 'trond', 2)"));
         QVERIFY_SQL(q, exec("insert into " + qtest + " values(3, 'vohi', 3)"));
 
-        QVERIFY_SQL(q, exec("delete from " + qTableName("test2", __FILE__)));
-        QVERIFY_SQL(q, exec("insert into " + qTableName("test2", __FILE__) + " values(1, 'herr')"));
-        QVERIFY_SQL(q, exec("insert into " + qTableName("test2", __FILE__) + " values(2, 'mister')"));
+        QVERIFY_SQL(q, exec("delete from " + qTableName("qtest2", __FILE__)));
+        QVERIFY_SQL(q, exec("insert into " + qTableName("qtest2", __FILE__) + " values(1, 'herr')"));
+        QVERIFY_SQL(q, exec("insert into " + qTableName("qtest2", __FILE__) + " values(2, 'mister')"));
     }
 }
 
