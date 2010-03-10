@@ -537,40 +537,43 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                 continue;
         }
 
+        QList<QByteArray> parameterTypeNames = method.parameterTypes();
+
         QVector<QScriptMetaType> types;
+        types.resize(1 + parameterTypeNames.size());
+        QScriptMetaType *typesData = types.data();
         // resolve return type
         QByteArray returnTypeName = method.typeName();
         int rtype = QMetaType::type(returnTypeName);
         if ((rtype == 0) && !returnTypeName.isEmpty()) {
             int enumIndex = indexOfMetaEnum(meta, returnTypeName);
             if (enumIndex != -1)
-                types.append(QScriptMetaType::metaEnum(enumIndex, returnTypeName));
+                typesData[0] = QScriptMetaType::metaEnum(enumIndex, returnTypeName);
             else
-                types.append(QScriptMetaType::unresolved(returnTypeName));
+                typesData[0] = QScriptMetaType::unresolved(returnTypeName);
         } else {
             if (callType == QMetaMethod::Constructor)
-                types.append(QScriptMetaType::metaType(QMetaType::QObjectStar, "QObject*"));
+                typesData[0] = QScriptMetaType::metaType(QMetaType::QObjectStar, "QObject*");
             else if (rtype == QMetaType::QVariant)
-                types.append(QScriptMetaType::variant());
+                typesData[0] = QScriptMetaType::variant();
             else
-                types.append(QScriptMetaType::metaType(rtype, returnTypeName));
+                typesData[0] = QScriptMetaType::metaType(rtype, returnTypeName);
         }
 
         // resolve argument types
-        QList<QByteArray> parameterTypeNames = method.parameterTypes();
         for (int i = 0; i < parameterTypeNames.count(); ++i) {
             QByteArray argTypeName = parameterTypeNames.at(i);
             int atype = QMetaType::type(argTypeName);
             if (atype == 0) {
                 int enumIndex = indexOfMetaEnum(meta, argTypeName);
                 if (enumIndex != -1)
-                    types.append(QScriptMetaType::metaEnum(enumIndex, argTypeName));
+                    typesData[1 + i] = QScriptMetaType::metaEnum(enumIndex, argTypeName);
                 else
-                    types.append(QScriptMetaType::unresolved(argTypeName));
+                    typesData[1 + i] = QScriptMetaType::unresolved(argTypeName);
             } else if (atype == QMetaType::QVariant) {
-                types.append(QScriptMetaType::variant());
+                typesData[1 + i] = QScriptMetaType::variant();
             } else {
-                types.append(QScriptMetaType::metaType(atype, argTypeName));
+                typesData[1 + i] = QScriptMetaType::metaType(atype, argTypeName);
             }
         }
 
