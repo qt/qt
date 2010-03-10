@@ -139,6 +139,7 @@ class tst_MediaObject : public QObject
         void pauseToPause();
         void pauseToPlay();
         void pauseToStop();
+        void playSDP();
 
         void testPrefinishMark();
         void testSeek();
@@ -160,6 +161,11 @@ class tst_MediaObject : public QObject
         Phonon::MediaObject *m_media;
         QSignalSpy *m_stateChangedSignalSpy;
         QString m_tmpFileName;
+
+        static void copyMediaFile(const QString &original,
+                                  const QString &name,
+                                  QString &resultFilePath,
+                                  QUrl *const asURL = 0);
 #endif //QT_NO_PHONON
         bool m_success;
 };
@@ -352,6 +358,24 @@ void tst_MediaObject::_pausePlayback()
     m_success = true;
 }
 
+/*!
+  Copies the file \a name to the testing area. The resulting file name path is
+  returned in resultFilePath, and also set as a URL in \a asURL.
+ */
+void tst_MediaObject::copyMediaFile(const QString &original,
+                                    const QString &name,
+                                    QString &resultFilePath,
+                                    QUrl *const asURL)
+{
+    resultFilePath = QDir::toNativeSeparators(QDir::tempPath() + name);
+    if (asURL)
+        *asURL = QUrl::fromLocalFile(resultFilePath);
+
+    QFile::remove(resultFilePath);
+    QVERIFY(QFile::copy(original, resultFilePath));
+    QFile::setPermissions(resultFilePath, QFile::permissions(resultFilePath) | QFile::WriteOther);
+}
+
 void tst_MediaObject::initTestCase()
 {
     QCoreApplication::setApplicationName("tst_MediaObject");
@@ -375,14 +399,8 @@ void tst_MediaObject::initTestCase()
     QVERIFY(m_stateChangedSignalSpy->isValid());
     m_stateChangedSignalSpy->clear();
 
-    if (m_url.isEmpty()) {
-        m_tmpFileName = QDir::toNativeSeparators(QDir::tempPath() + MEDIA_FILE);
-        QFile::remove(m_tmpFileName);
-        QVERIFY(QFile::copy(MEDIA_FILEPATH, m_tmpFileName));
-        QFile::Permissions p = QFile::permissions(m_tmpFileName);
-        QFile::setPermissions(m_tmpFileName, p | QFile::WriteOther);
-        m_url = QUrl::fromLocalFile(m_tmpFileName);
-    }
+    if (m_url.isEmpty())
+        copyMediaFile(MEDIA_FILEPATH, MEDIA_FILE, m_tmpFileName, &m_url);
     
     qDebug() << "Using url:" << m_url.toString();
 
@@ -531,6 +549,47 @@ void tst_MediaObject::pauseToStop()
     startPlayback();
     pausePlayback();
     stopPlayback(Phonon::PausedState);
+}
+
+/*!
+
+    We attempt to play a SDP file. An SDP file essentially describes different
+    media streams and is hence a layer in front of the actual media(s).
+    Sometimes the backend handles the SDP file, in other cases not.
+
+    Some Phonon backends doesn't support SDP at all, ifdef appropriately. Real
+    Player and Helix, the two backends for Symbian, are known to support SDP.
+ */
+void tst_MediaObject::playSDP()
+{
+#ifdef Q_OS_SYMBIAN
+    QString sdpFile;
+    copyMediaFile(QLatin1String(":/media/test.sdp"), QLatin1String("test.sdp"), sdpFile);
+
+    // Let's verify our test setup.
+    QVERIFY(QFileInfo(sdpFile).isReadable());
+
+    // We need a window in order to setup the video.
+    QWidget widget;
+    widget.show();
+
+    const MediaSource oldSource(m_media->currentSource());
+    const MediaSource sdpSource(sdpFile);
+    m_media->setCurrentSource(sdpSource);
+    if (m_media->state() != Phonon::StoppedState)
+        QTest::waitForSignal(m_media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 10000);
+
+    // At this point we're in error state due to absent media, but it has now loaded the SDP:
+    QCOMPARE(m_media->errorString(), QString::fromLatin1("Buffering clip failed: Unknown error (-39)"));
+
+    // We cannot play the SDP, we can neither attempt to play it, because we
+    // won't get a state change from ErrorState to ErrorState, and hence block
+    // on a never occuring signal.
+    m_media->setCurrentSource(oldSource);
+
+#else
+    QSKIP("Unsupported on this platform.", SkipAll);
+#endif
 }
 
 void tst_MediaObject::testPrefinishMark()
