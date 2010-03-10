@@ -62,9 +62,10 @@ QT_BEGIN_NAMESPACE
 
 struct QTreeViewItem
 {
-    QTreeViewItem() : expanded(false), spanning(false), hasChildren(false),
+    QTreeViewItem() : parentItem(-1), expanded(false), spanning(false), hasChildren(false),
                       hasMoreSiblings(false), total(0), level(0), height(0) {}
     QModelIndex index; // we remove items whenever the indexes are invalidated
+    int parentItem; // parent item index in viewItems
     uint expanded : 1;
     uint spanning : 1;
     uint hasChildren : 1; // if the item has visible children (even if collapsed)
@@ -135,6 +136,12 @@ public:
 
     int viewIndex(const QModelIndex &index) const;
     QModelIndex modelIndex(int i, int column = 0) const;
+
+    void insertViewItems(int pos, int count, const QTreeViewItem &viewItem);
+    void removeViewItems(int pos, int count);
+#if 0
+    bool checkViewItems() const;
+#endif
 
     int firstVisibleItem(int *offset = 0) const;
     int columnAt(int x) const;
