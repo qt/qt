@@ -1052,6 +1052,8 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         return;
 
     if (isWindow()) {
+        const bool wasResized = testAttribute(Qt::WA_Resized);
+        const bool wasMoved = testAttribute(Qt::WA_Moved);
 
         QSymbianControl *window = static_cast<QSymbianControl *>(effectiveWinId());
         if (window && newstate & Qt::WindowMinimized) {
@@ -1090,7 +1092,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         createWinId();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
         // Ensure the initial size is valid, since we store it as normalGeometry below.
-        if (!testAttribute(Qt::WA_Resized) && !isVisible())
+        if (!wasResized && !isVisible())
             adjustSize();
 
         QTLWExtra *top = d->topData();
@@ -1105,6 +1107,9 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 
         //restore normal geometry
         top->normalGeometry = normalGeometry;
+
+        setAttribute(Qt::WA_Resized, wasResized);
+        setAttribute(Qt::WA_Moved, wasMoved);
     }
 
     data->window_state = newstate;

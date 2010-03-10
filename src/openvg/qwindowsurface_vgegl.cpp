@@ -177,7 +177,8 @@ void qt_vg_unregister_pixmap(QVGPixmapData *pd)
         pd->prev->next = pd->next;
     } else {
         QVGSharedContext *shared = sharedContext();
-        shared->firstPixmap = pd->next;
+        if (shared)
+           shared->firstPixmap = pd->next;
     }
 }
 
