@@ -70,6 +70,8 @@ public:
     explicit QZipReader(QIODevice *device);
     ~QZipReader();
 
+    QIODevice* device() const;
+
     bool isReadable() const;
     bool exists() const;
 

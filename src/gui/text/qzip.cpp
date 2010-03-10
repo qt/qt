@@ -750,6 +750,14 @@ QZipReader::~QZipReader()
 }
 
 /*!
+    Returns device used for reading zip archive.
+*/
+QIODevice* QZipReader::device() const
+{
+    return d->device;
+}
+
+/*!
     Returns true if the user can read the file; otherwise returns false.
 */
 bool QZipReader::isReadable() const
@@ -1019,6 +1027,14 @@ QZipWriter::~QZipWriter()
 {
     close();
     delete d;
+}
+
+/*!
+    Returns device used for writing zip archive.
+*/
+QIODevice* QZipWriter::device() const
+{
+    return d->device;
 }
 
 /*!
