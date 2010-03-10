@@ -308,7 +308,7 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
             CTFontGetAdvancesForGlyphs(runFont, kCTFontHorizontalOrientation, tmpGlyphs + glyphCount - 1, &lastGlyphAdvance, 1);
 
             outGlyphs[rtl ? 0 : (glyphCount - 1)] = tmpGlyphs[glyphCount - 1] | fontIndex;
-            outAdvances_x[rtl ? 0 : (glyphCount - 1)] = QFixed::fromReal(lastGlyphAdvance.width).ceil();
+            outAdvances_x[rtl ? 0 : (glyphCount - 1)] = QFixed::fromReal(lastGlyphAdvance.width);
         }
         outGlyphs += glyphCount;
         outAttributes += glyphCount;
