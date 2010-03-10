@@ -1155,16 +1155,20 @@ void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
     // prepareForDraw() down below.
     updateMatrix();
 
+    QRectF clip = q->state()->matrix.inverted().mapRect(q->state()->clipEnabled
+                                                        ? q->state()->rectangleClip
+                                                        : QRectF(0, 0, width, height));
+
     if (penStyle == Qt::SolidLine) {
-        stroker.process(path, pen);
+        stroker.process(path, pen, clip);
 
     } else { // Some sort of dash
-        dasher.process(path, pen);
+        dasher.process(path, pen, clip);
 
         QVectorPath dashStroke(dasher.points(),
                                dasher.elementCount(),
                                dasher.elementTypes());
-        stroker.process(dashStroke, pen);
+        stroker.process(dashStroke, pen, clip);
     }
 
     if (opaque) {
