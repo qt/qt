@@ -7964,6 +7964,8 @@ void qInitDrawhelperAsm()
         }
 #endif
 
+#endif // QT_NO_DEBUG
+
     if (functionForModeSolidAsm) {
         const int destinationMode = QPainter::CompositionMode_Destination;
         functionForModeSolidAsm[destinationMode] = functionForModeSolid_C[destinationMode];

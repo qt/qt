@@ -156,9 +156,7 @@ protected:
 
     void init();
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    QAbstractFileEngine::FileFlags getPermissions() const;
-#endif
+    QAbstractFileEngine::FileFlags getPermissions(QAbstractFileEngine::FileFlags type) const;
 };
 
 QT_END_NAMESPACE

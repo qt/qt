@@ -37,7 +37,7 @@ static JSValue JSC_HOST_CALL functionProtoFuncToString(ExecState*, JSObject*, JS
 static JSValue JSC_HOST_CALL functionProtoFuncApply(ExecState*, JSObject*, JSValue, const ArgList&);
 static JSValue JSC_HOST_CALL functionProtoFuncCall(ExecState*, JSObject*, JSValue, const ArgList&);
 
-FunctionPrototype::FunctionPrototype(ExecState* exec, PassRefPtr<Structure> structure)
+FunctionPrototype::FunctionPrototype(ExecState* exec, NonNullPassRefPtr<Structure> structure)
     : InternalFunction(&exec->globalData(), structure, exec->propertyNames().nullIdentifier)
 {
     putDirectWithoutTransition(exec->propertyNames().length, jsNumber(exec, 0), DontDelete | ReadOnly | DontEnum);
@@ -76,7 +76,7 @@ static inline void insertSemicolonIfNeeded(UString& functionBody)
         UChar ch = functionBody[i];
         if (!Lexer::isWhiteSpace(ch) && !Lexer::isLineTerminator(ch)) {
             if (ch != ';' && ch != '}')
-                functionBody = functionBody.substr(0, i + 1) + ";" + functionBody.substr(i + 1, functionBody.size() - (i + 1));
+                functionBody = makeString(functionBody.substr(0, i + 1), ";", functionBody.substr(i + 1, functionBody.size() - (i + 1)));
             return;
         }
     }
@@ -90,13 +90,13 @@ JSValue JSC_HOST_CALL functionProtoFuncToString(ExecState* exec, JSObject*, JSVa
             FunctionExecutable* executable = function->jsExecutable();
             UString sourceString = executable->source().toString();
             insertSemicolonIfNeeded(sourceString);
-            return jsString(exec, "function " + function->name(&exec->globalData()) + "(" + executable->paramString() + ") " + sourceString);
+            return jsString(exec, makeString("function ", function->name(exec), "(", executable->paramString(), ") ", sourceString));
         }
     }
 
     if (thisValue.inherits(&InternalFunction::info)) {
         InternalFunction* function = asInternalFunction(thisValue);
-        return jsString(exec, "function " + function->name(&exec->globalData()) + "() {\n    [native code]\n}");
+        return jsString(exec, makeString("function ", function->name(exec), "() {\n    [native code]\n}"));
     }
 
 #ifdef QT_BUILD_SCRIPT_LIB  //same error message as in the old engine, and in mozilla
