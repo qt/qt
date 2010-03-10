@@ -55,15 +55,16 @@
 
 #include "qdeclarativerefcount_p.h"
 #include "qdeclarativecleanup_p.h"
+#include "qdeclarativenotifier_p.h"
 
 #include <QtCore/qvector.h>
 
 #include <QtScript/private/qscriptdeclarativeclass_p.h>
-
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeEngine;
 class QMetaProperty;
+
 class QDeclarativePropertyCache : public QDeclarativeRefCount, public QDeclarativeCleanup
 {
 public:
@@ -83,9 +84,9 @@ public:
                     IsResettable      = 0x00000004,
 
                     // These are mutualy exclusive
-                    IsFunction        = 0x00000008,
-                    IsQObjectDerived  = 0x00000010,
-                    IsEnumType        = 0x00000020,
+                    IsFunction        = 0x00000010,
+                    IsQObjectDerived  = 0x00000020,
+                    IsEnumType        = 0x00000040,
                     IsQList           = 0x00000080,
                     IsQmlBinding      = 0x00000100,
                     IsQScriptValue    = 0x00000200,
@@ -96,7 +97,7 @@ public:
 
         };
         Q_DECLARE_FLAGS(Flags, Flag)
-                        
+
         bool isValid() const { return coreIndex != -1; } 
 
         Flags flags;
@@ -136,6 +137,7 @@ public:
     inline QDeclarativeEngine *qmlEngine() const;
     static Data *property(QDeclarativeEngine *, QObject *, const QScriptDeclarativeClass::Identifier &, Data &);
     static Data *property(QDeclarativeEngine *, QObject *, const QString &, Data &);
+    static Data  property(const QMetaObject *, const char *);
 protected:
     virtual void clear();
 

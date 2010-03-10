@@ -12,7 +12,7 @@ HEADERS += \
     graphicswidgets_p.h \
     graphicslayouts_p.h
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/imports/Qt/widgets
+QTDIR_build:DESTDIR = $$QT_BUILD_TREE/imports/$$TARGETPATH
 target.path = $$TARGETPATH
 
 # install qmldir file
