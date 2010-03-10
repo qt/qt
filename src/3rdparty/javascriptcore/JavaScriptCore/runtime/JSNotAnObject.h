@@ -62,10 +62,13 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType));
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
         }
 
      private:
+        
+        static const unsigned StructureFlags = OverridesGetOwnPropertySlot | OverridesMarkChildren | OverridesGetPropertyNames | JSObject::StructureFlags;
+
         // JSValue methods
         virtual JSValue toPrimitive(ExecState*, PreferredPrimitiveType) const;
         virtual bool getPrimitiveNumber(ExecState*, double& number, JSValue&);
@@ -88,7 +91,7 @@ namespace JSC {
         virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
         virtual bool deleteProperty(ExecState*, unsigned propertyName);
 
-        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
+        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
 
         JSNotAnObjectErrorStub* m_exception;
     };

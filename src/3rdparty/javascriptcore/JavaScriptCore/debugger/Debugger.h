@@ -47,8 +47,7 @@ namespace JSC {
         {
             UNUSED_PARAM(id);
         };
-        virtual void scriptLoad(QT_PREPEND_NAMESPACE(qint64) id,
-                            const UString &program,
+        virtual void scriptLoad(QT_PREPEND_NAMESPACE(qint64) id, const UString &program,
                             const UString &fileName, int baseLineNumber)
         {
             UNUSED_PARAM(id);
@@ -90,14 +89,14 @@ namespace JSC {
 #endif
 
         virtual void sourceParsed(ExecState*, const SourceCode&, int errorLineNumber, const UString& errorMessage) = 0;
-        virtual void exception(const DebuggerCallFrame&, intptr_t sourceID, int lineNumber) = 0;
-        virtual void atStatement(const DebuggerCallFrame&, intptr_t sourceID, int lineNumber, int column) = 0;
+        virtual void exception(const DebuggerCallFrame&, intptr_t sourceID, int lineNumber, bool hasHandler) = 0;
+        virtual void atStatement(const DebuggerCallFrame&, intptr_t sourceID, int lineNumber) = 0;
         virtual void callEvent(const DebuggerCallFrame&, intptr_t sourceID, int lineNumber) = 0;
         virtual void returnEvent(const DebuggerCallFrame&, intptr_t sourceID, int lineNumber) = 0;
 
         virtual void willExecuteProgram(const DebuggerCallFrame&, intptr_t sourceID, int lineNumber) = 0;
         virtual void didExecuteProgram(const DebuggerCallFrame&, intptr_t sourceID, int lineNumber) = 0;
-        virtual void didReachBreakpoint(const DebuggerCallFrame&, intptr_t sourceID, int lineNumber, int column) = 0;
+        virtual void didReachBreakpoint(const DebuggerCallFrame&, intptr_t sourceID, int lineNumber) = 0;
 
         void recompileAllJSFunctions(JSGlobalData*);
 

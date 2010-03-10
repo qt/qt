@@ -88,11 +88,7 @@ public:
         return fe.caseSensitive();
     }
     QFile::Permissions permissions() const {
-        return mPermissions;
-    }
-
-    void setPermissions (QFile::Permissions permissions) {
-        mPermissions = permissions;
+        return mFileInfo.permissions();
     }
 
     Type type() const {
@@ -140,7 +136,6 @@ public:
 
 private :
     QFileInfo mFileInfo;
-    QFile::Permissions mPermissions;
 };
 
 class QFileIconProvider;
@@ -181,7 +176,6 @@ protected:
 private:
     void fetch(const QFileInfo &info, QTime &base, bool &firstTime, QList<QPair<QString, QFileInfo> > &updatedFiles, const QString &path);
     QString translateDriveName(const QFileInfo &drive) const;
-    QFile::Permissions translatePermissions(const QFileInfo &fileInfo) const;
 
     QMutex mutex;
     QWaitCondition condition;

@@ -31,27 +31,41 @@ namespace JSC {
 
     class DateInstance : public JSWrapperObject {
     public:
-        explicit DateInstance(PassRefPtr<Structure>);
-        virtual ~DateInstance();
+        DateInstance(ExecState*, double);
+        explicit DateInstance(ExecState*, NonNullPassRefPtr<Structure>);
 
         double internalNumber() const { return internalValue().uncheckedGetNumber(); }
 
-        bool getTime(WTF::GregorianDateTime&, int& offset) const;
-        bool getUTCTime(WTF::GregorianDateTime&) const;
-        bool getTime(double& milliseconds, int& offset) const;
-        bool getUTCTime(double& milliseconds) const;
+        static JS_EXPORTDATA const ClassInfo info;
 
-        static const ClassInfo info;
+        const GregorianDateTime* gregorianDateTime(ExecState* exec) const
+        {
+            if (m_data && m_data->m_gregorianDateTimeCachedForMS == internalNumber())
+                return &m_data->m_cachedGregorianDateTime;
+            return calculateGregorianDateTime(exec);
+        }
+        
+        const GregorianDateTime* gregorianDateTimeUTC(ExecState* exec) const
+        {
+            if (m_data && m_data->m_gregorianDateTimeUTCCachedForMS == internalNumber())
+                return &m_data->m_cachedGregorianDateTimeUTC;
+            return calculateGregorianDateTimeUTC(exec);
+        }
 
-        void msToGregorianDateTime(double, bool outputIsUTC, WTF::GregorianDateTime&) const;
+        static PassRefPtr<Structure> createStructure(JSValue prototype)
+        {
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
+        }
+
+    protected:
+        static const unsigned StructureFlags = OverridesMarkChildren | JSWrapperObject::StructureFlags;
 
     private:
+        const GregorianDateTime* calculateGregorianDateTime(ExecState*) const;
+        const GregorianDateTime* calculateGregorianDateTimeUTC(ExecState*) const;
         virtual const ClassInfo* classInfo() const { return &info; }
 
-        using JSWrapperObject::internalValue;
-
-        struct Cache;
-        mutable Cache* m_cache;
+        mutable RefPtr<DateInstanceData> m_data;
     };
 
     DateInstance* asDateInstance(JSValue);

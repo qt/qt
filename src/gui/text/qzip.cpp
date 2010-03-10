@@ -280,6 +280,21 @@ static QFile::Permissions modeToPermissions(quint32 mode)
     return ret;
 }
 
+static QDateTime readMSDosDate(const uchar *src)
+{
+    uint dosDate = readUInt(src);
+    quint64 uDate;
+    uDate = (quint64)(dosDate >> 16);
+    uint tm_mday = (uDate & 0x1f);
+    uint tm_mon =  ((uDate & 0x1E0) >> 5);
+    uint tm_year = (((uDate & 0x0FE00) >> 9) + 1980);
+    uint tm_hour = ((dosDate & 0xF800) >> 11);
+    uint tm_min =  ((dosDate & 0x7E0) >> 5);
+    uint tm_sec =  ((dosDate & 0x1f) << 1);
+
+    return QDateTime(QDate(tm_year, tm_mon, tm_mday), QTime(tm_hour, tm_min, tm_sec));
+}
+
 struct LocalFileHeader
 {
     uchar signature[4]; //  0x04034b50
@@ -343,7 +358,7 @@ struct FileHeader
 };
 
 QZipReader::FileInfo::FileInfo()
-    : isDir(false), isFile(true), isSymLink(false), crc32(0), size(0)
+    : isDir(false), isFile(false), isSymLink(false), crc32(0), size(0)
 {
 }
 
@@ -365,7 +380,13 @@ QZipReader::FileInfo& QZipReader::FileInfo::operator=(const FileInfo &other)
     permissions = other.permissions;
     crc32 = other.crc32;
     size = other.size;
+    lastModified = other.lastModified;
     return *this;
+}
+
+bool QZipReader::FileInfo::isValid() const
+{
+    return isDir || isFile || isSymLink;
 }
 
 class QZipPrivate
@@ -403,6 +424,7 @@ void QZipPrivate::fillFileInfo(int index, QZipReader::FileInfo &fileInfo) const
     fileInfo.permissions = modeToPermissions(mode);
     fileInfo.crc32 = readUInt(header.h.crc_32);
     fileInfo.size = readUInt(header.h.uncompressed_size);
+    fileInfo.lastModified = readMSDosDate(header.h.last_mod_file);
 }
 
 class QZipReaderPrivate : public QZipPrivate
@@ -750,6 +772,14 @@ QZipReader::~QZipReader()
 }
 
 /*!
+    Returns device used for reading zip archive.
+*/
+QIODevice* QZipReader::device() const
+{
+    return d->device;
+}
+
+/*!
     Returns true if the user can read the file; otherwise returns false.
 */
 bool QZipReader::isReadable() const
@@ -796,6 +826,7 @@ int QZipReader::count() const
 /*!
     Returns a FileInfo of an entry in the zipfile.
     The \a index is the index into the directoy listing of the zipfile.
+    Returns an invalid FileInfo if \a index is out of boundaries.
 
     \sa fileInfoList()
 */
@@ -803,7 +834,8 @@ QZipReader::FileInfo QZipReader::entryInfoAt(int index) const
 {
     d->scanFiles();
     QZipReader::FileInfo fi;
-    d->fillFileInfo(index, fi);
+    if (index >= 0 && index < d->fileHeaders.count())
+        d->fillFileInfo(index, fi);
     return fi;
 }
 
@@ -1019,6 +1051,14 @@ QZipWriter::~QZipWriter()
 {
     close();
     delete d;
+}
+
+/*!
+    Returns device used for writing zip archive.
+*/
+QIODevice* QZipWriter::device() const
+{
+    return d->device;
 }
 
 /*!

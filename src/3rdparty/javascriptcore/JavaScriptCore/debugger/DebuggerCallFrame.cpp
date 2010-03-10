@@ -44,7 +44,7 @@ const UString* DebuggerCallFrame::functionName() const
     JSFunction* function = asFunction(m_callFrame->callee());
     if (!function)
         return 0;
-    return &function->name(&m_callFrame->globalData());
+    return &function->name(m_callFrame);
 }
     
 UString DebuggerCallFrame::calculatedFunctionName() const
@@ -55,7 +55,7 @@ UString DebuggerCallFrame::calculatedFunctionName() const
     JSFunction* function = asFunction(m_callFrame->callee());
     if (!function)
         return 0;
-    return function->calculatedDisplayName(&m_callFrame->globalData());
+    return function->calculatedDisplayName(m_callFrame);
 }
 
 DebuggerCallFrame::Type DebuggerCallFrame::type() const
@@ -79,12 +79,12 @@ JSValue DebuggerCallFrame::evaluate(const UString& script, JSValue& exception) c
     if (!m_callFrame->codeBlock())
         return JSValue();
 
-    EvalExecutable eval(m_callFrame, makeSource(script));
-    JSObject* error = eval.compile(m_callFrame, m_callFrame->scopeChain());
+    RefPtr<EvalExecutable> eval = EvalExecutable::create(m_callFrame, makeSource(script));
+    JSObject* error = eval->compile(m_callFrame, m_callFrame->scopeChain());
     if (error)
         return error;
 
-    return m_callFrame->scopeChain()->globalData->interpreter->execute(&eval, m_callFrame, thisObject(), m_callFrame->scopeChain(), &exception);
+    return m_callFrame->scopeChain()->globalData->interpreter->execute(eval.get(), m_callFrame, thisObject(), m_callFrame->scopeChain(), &exception);
 }
 
 } // namespace JSC

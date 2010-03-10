@@ -86,14 +86,10 @@ public:
                      const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
     virtual bool deleteProperty(QScriptObject*, JSC::ExecState*,
-                                const JSC::Identifier& propertyName,
-                                bool checkDontDelete = true);
-    virtual bool getPropertyAttributes(const QScriptObject*, JSC::ExecState*,
-                                       const JSC::Identifier&,
-                                       unsigned&) const;
+                                const JSC::Identifier& propertyName);
     virtual void getOwnPropertyNames(QScriptObject*, JSC::ExecState*,
                                      JSC::PropertyNameArray&,
-                                     bool includeNonEnumerable = false);
+                                     JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties);
     virtual void markChildren(QScriptObject*, JSC::MarkStack& markStack);
     virtual bool compareToObject(QScriptObject*, JSC::ExecState*, JSC::JSObject*);
 
@@ -275,15 +271,15 @@ public:
     virtual bool getOwnPropertySlot(JSC::ExecState*,
                                     const JSC::Identifier& propertyName,
                                     JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*,
+                                          const JSC::Identifier& propertyName,
+                                          JSC::PropertyDescriptor&);
     virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
     virtual bool deleteProperty(JSC::ExecState*,
-                                const JSC::Identifier& propertyName,
-                                bool checkDontDelete = true);
-    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
-                                       unsigned&) const;
+                                const JSC::Identifier& propertyName);
     virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
-                                     bool includeNonEnumerable = false);
+                                     JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties);
     virtual void markChildren(JSC::MarkStack& markStack);
 
     virtual JSC::CallType getCallData(JSC::CallData&);
@@ -303,10 +299,12 @@ public:
 
     static WTF::PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
 protected:
+    static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | JSC::OverridesMarkChildren | JSC::OverridesGetPropertyNames | JSObject::StructureFlags;
+
     Data *data;
 };
 
