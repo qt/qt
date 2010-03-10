@@ -6,6 +6,7 @@ SUBDIRS=\
     qaudioformat \
     qaudioinput \
     qaudiooutput \
+    qsoundeffect \
     qdeclarativeaudio \
     qdeclarativevideo \
     qgraphicsvideoitem \

@@ -67,8 +67,6 @@ QSoundEffectPrivate::QSoundEffectPrivate(QObject* parent):
     m_player(0)
 {
     m_player = new QMediaPlayer(this, QMediaPlayer::LowLatency);
-    connect(m_player, SIGNAL(volumeChanged(int)), SIGNAL(volumeChanged()));
-    connect(m_player, SIGNAL(mutedChanged(bool)), SIGNAL(mutedChanged()));
     connect(m_player, SIGNAL(stateChanged(QMediaPlayer::State)), SLOT(stateChanged(QMediaPlayer::State)));
 }
 
