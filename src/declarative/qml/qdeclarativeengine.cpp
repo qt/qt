@@ -1844,6 +1844,9 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
 
     return resolvePlugin(dir, baseName,
                          QStringList()
+# ifdef QT_DEBUG
+                         << QLatin1String("_debug.dylib") // try a qmake-style debug build first
+# endif
                          << QLatin1String(".dylib")
                          << QLatin1String(".so")
                          << QLatin1String(".bundle"),
