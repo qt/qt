@@ -111,46 +111,40 @@ void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLForma
     eglProperties.setValue(EGL_SAMPLE_BUFFERS, sampleCount ? 1 : 0);
 }
 
-
 // Updates "format" with the parameters of the selected configuration.
-void qt_egl_update_format(const QEglContext& context, QGLFormat& format)
+void qt_glformat_from_eglconfig(QGLFormat& format, const EGLConfig config)
 {
-    EGLint value = 0;
+    EGLint redSize     = 0;
+    EGLint greenSize   = 0;
+    EGLint blueSize    = 0;
+    EGLint alphaSize   = 0;
+    EGLint depthSize   = 0;
+    EGLint stencilSize = 0;
+    EGLint sampleCount = 0;
+    EGLint level       = 0;
 
-    if (context.configAttrib(EGL_RED_SIZE, &value))
-        format.setRedBufferSize(value);
-    if (context.configAttrib(EGL_GREEN_SIZE, &value))
-        format.setGreenBufferSize(value);
-    if (context.configAttrib(EGL_BLUE_SIZE, &value))
-        format.setBlueBufferSize(value);
-    if (context.configAttrib(EGL_ALPHA_SIZE, &value)) {
-        format.setAlpha(value != 0);
-        if (format.alpha())
-            format.setAlphaBufferSize(value);
-    }
+    EGLDisplay display = QEgl::display();
+    eglGetConfigAttrib(display, config, EGL_RED_SIZE,     &redSize);
+    eglGetConfigAttrib(display, config, EGL_GREEN_SIZE,   &greenSize);
+    eglGetConfigAttrib(display, config, EGL_BLUE_SIZE,    &blueSize);
+    eglGetConfigAttrib(display, config, EGL_ALPHA_SIZE,   &alphaSize);
+    eglGetConfigAttrib(display, config, EGL_DEPTH_SIZE,   &depthSize);
+    eglGetConfigAttrib(display, config, EGL_STENCIL_SIZE, &stencilSize);
+    eglGetConfigAttrib(display, config, EGL_SAMPLES,      &sampleCount);
+    eglGetConfigAttrib(display, config, EGL_LEVEL,        &level);
 
-    if (context.configAttrib(EGL_DEPTH_SIZE, &value)) {
-        format.setDepth(value != 0);
-        if (format.depth())
-            format.setDepthBufferSize(value);
-    }
-
-    if (context.configAttrib(EGL_LEVEL, &value))
-        format.setPlane(value);
-
-    if (context.configAttrib(EGL_SAMPLE_BUFFERS, &value)) {
-        format.setSampleBuffers(value != 0);
-        if (format.sampleBuffers()) {
-            context.configAttrib(EGL_SAMPLES, &value);
-            format.setSamples(value);
-        }
-    }
-
-    if (context.configAttrib(EGL_STENCIL_SIZE, &value)) {
-        format.setStencil(value != 0);
-        if (format.stencil())
-            format.setStencilBufferSize(value);
-    }
+    format.setRedBufferSize(redSize);
+    format.setGreenBufferSize(greenSize);
+    format.setBlueBufferSize(blueSize);
+    format.setAlphaBufferSize(alphaSize);
+    format.setDepthBufferSize(depthSize);
+    format.setStencilBufferSize(stencilSize);
+    format.setSamples(sampleCount);
+    format.setPlane(level + 1);      // EGL calls level 0 "normal" whereas Qt calls 1 "normal"
+    format.setDirectRendering(true); // All EGL contexts are direct-rendered
+    format.setRgba(true);            // EGL doesn't support colour index rendering
+    format.setStereo(false);         // EGL doesn't support stereo buffers
+    format.setAccumBufferSize(0);    // EGL doesn't support accululation buffers
 
     // Clear the EGL error state because some of the above may
     // have errored out because the attribute is not applicable

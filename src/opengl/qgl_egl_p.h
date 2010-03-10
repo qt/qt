@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 class QGLFormat;
 
 void qt_eglproperties_set_glformat(QEglProperties& props, const QGLFormat& format);
-void qt_egl_update_format(const QEglContext& context, QGLFormat& format);
+void qt_glformat_from_eglconfig(QGLFormat& format, const EGLConfig config);
 
 QT_END_NAMESPACE
 
