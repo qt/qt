@@ -648,8 +648,9 @@ void QAudioOutputPrivate::userFeed()
 
 void QAudioOutputPrivate::feedback()
 {
-    QMetaObject::invokeMethod(this, "updateAvailable", Qt::QueuedConnection);
+    updateAvailable();
 }
+
 
 void QAudioOutputPrivate::updateAvailable()
 {
