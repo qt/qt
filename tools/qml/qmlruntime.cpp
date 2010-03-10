@@ -1460,7 +1460,7 @@ void QDeclarativeViewer::setUseNativeFileBrowser(bool use)
 
 void QDeclarativeViewer::registerTypes()
 {
-    QML_REGISTER_TYPE(QDeclarativeViewer, 1, 0, Screen, Screen);
+    qmlRegisterType<Screen>("QDeclarativeViewer", 1, 0, "Screen");
 }
 
 QT_END_NAMESPACE

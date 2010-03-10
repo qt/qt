@@ -146,12 +146,12 @@ static bool qt_QmlQtModule_registered = false;
 
 void QDeclarativeEnginePrivate::defineModule()
 {
-    QML_REGISTER_TYPE(Qt,4,6,Component,QDeclarativeComponent);
-    QML_REGISTER_TYPE(Qt,4,6,QtObject,QObject);
-    QML_REGISTER_TYPE(Qt,4,6,WorkerScript,QDeclarativeWorkerScript);
-    QML_REGISTER_TYPE(Qt,4,6,WorkerListModel,QDeclarativeWorkerListModel);
+    qmlRegisterType<QDeclarativeComponent>("Qt",4,6,"Component");
+    qmlRegisterType<QObject>("Qt",4,6,"QtObject");
+    qmlRegisterType<QDeclarativeWorkerScript>("Qt",4,6,"WorkerScript");
+    qmlRegisterType<QDeclarativeWorkerListModel>("Qt",4,6,"WorkerListModel");
 
-    QML_REGISTER_NOCREATE_TYPE(QDeclarativeBinding);
+    qmlRegisterType<QDeclarativeBinding>();
 }
 
 QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
