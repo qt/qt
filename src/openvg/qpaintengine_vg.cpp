@@ -516,14 +516,11 @@ void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
                         0.0f, -1.0f, 0.0f,
                         0.5f, devh + 0.5f, 1.0f);
 
-    // The image transform is always the full transformation,
-    // because it can be projective.
-    imageTransform = transform * viewport;
-
-    // Determine if the transformation is projective.
-    bool projective = (imageTransform.m13() != 0.0f ||
-                       imageTransform.m23() != 0.0f ||
-                       imageTransform.m33() != 1.0f);
+    // Compute the path transform and determine if it is projective.
+    pathTransform = transform * viewport;
+    bool projective = (pathTransform.m13() != 0.0f ||
+                       pathTransform.m23() != 0.0f ||
+                       pathTransform.m33() != 1.0f);
     if (projective) {
         // The engine cannot do projective path transforms for us,
         // so we will have to convert the co-ordinates ourselves.
@@ -531,10 +528,18 @@ void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
         pathTransform = viewport;
         simpleTransform = false;
     } else {
-        pathTransform = imageTransform;
         simpleTransform = true;
     }
     pathTransformSet = false;
+
+    // The image transform is always the full transformation,
+    // because it can be projective.  It also does not need the
+    // (0.5, -0.5) translation because vgDrawImage() implicitly
+    // adds 0.5 to each co-ordinate.
+    QTransform viewport2(1.0f, 0.0f, 0.0f,
+                         0.0f, -1.0f, 0.0f,
+                         0.0f, devh, 1.0f);
+    imageTransform = transform * viewport2;
 
     // Calculate the scaling factor to use for turning cosmetic pens
     // into ordinary non-cosmetic pens.
@@ -2062,6 +2067,7 @@ void QVGPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
 void QVGPaintEnginePrivate::ensureMask
         (QVGPaintEngine *engine, int width, int height)
 {
+    scissorMask = false;
     if (maskIsSet) {
         vgMask(VG_INVALID_HANDLE, VG_FILL_MASK, 0, 0, width, height);
         maskRect = QRect();

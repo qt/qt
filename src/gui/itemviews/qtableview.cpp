@@ -1908,6 +1908,7 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
                                                  width, rowHeight(r)));
         }
     } else { // nothing moved
+        const int gridAdjust = showGrid() ? 1 : 0;
         for (int i = 0; i < selection.count(); ++i) {
             QItemSelectionRange range = selection.at(i);
             if (range.parent() != d->root || !range.isValid())
@@ -1916,9 +1917,16 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
 
             const int rtop = rowViewportPosition(range.top());
             const int rbottom = rowViewportPosition(range.bottom()) + rowHeight(range.bottom());
-            const int rleft = columnViewportPosition(range.left());
-            const int rright = columnViewportPosition(range.right()) + columnWidth(range.right());
-            selectionRegion += QRect(QPoint(rleft, rtop), QPoint(rright, rbottom));
+            int rleft;
+            int rright;
+            if (isLeftToRight()) {
+                rleft = columnViewportPosition(range.left());
+                rright = columnViewportPosition(range.right()) + columnWidth(range.right());
+            } else {
+                rleft = columnViewportPosition(range.right());
+                rright = columnViewportPosition(range.left()) + columnWidth(range.left());
+            }
+            selectionRegion += QRect(QPoint(rleft, rtop), QPoint(rright - 1 - gridAdjust, rbottom - 1 - gridAdjust));
             if (d->hasSpans()) {
                 foreach (QSpanCollection::Span *s,
                          d->spans.spansInRect(range.left(), range.top(), range.width(), range.height())) {
@@ -2546,7 +2554,7 @@ void QTableView::scrollTo(const QModelIndex &index, ScrollHint hint)
     // check if we really need to do anything
     if (!d->isIndexValid(index)
         || (d->model->parent(index) != d->root)
-        || isIndexHidden(index))
+        || isRowHidden(index.row()) || isColumnHidden(index.column()))
         return;
 
     QSpanCollection::Span span;

@@ -807,11 +807,11 @@ void QDialog::setVisible(bool visible)
 void QDialog::showEvent(QShowEvent *event)
 {
     if (!event->spontaneous() && !testAttribute(Qt::WA_Moved)) {
-	Qt::WindowStates  state = windowState();
+        Qt::WindowStates  state = windowState();
         adjustPosition(parentWidget());
         setAttribute(Qt::WA_Moved, false); // not really an explicit position
-	if (state != windowState())
-	    setWindowState(state);
+        if (state != windowState())
+            setWindowState(state);
     }
 }
 

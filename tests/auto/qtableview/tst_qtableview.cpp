@@ -200,6 +200,8 @@ private slots:
     void taskQTBUG_4516_clickOnRichTextLabel();
     void taskQTBUG_5237_wheelEventOnHeader();
     void taskQTBUG_8585_crashForNoGoodReason();
+    void taskQTBUG_7774_RtoLVisualRegionForSelection();
+    void taskQTBUG_8777_scrollToSpans();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -3993,6 +3995,44 @@ void tst_QTableView::taskQTBUG_8585_crashForNoGoodReason()
     }
 }
 
+class TableView7774 : public QTableView
+{
+public:
+    QRegion visualRegionForSelection(const QItemSelection &selection) const
+    {
+        return QTableView::visualRegionForSelection(selection);
+    }
+};
+
+void tst_QTableView::taskQTBUG_7774_RtoLVisualRegionForSelection()
+{
+    TableView7774 view;
+    QStandardItemModel model(5,5);
+    view.setModel(&model);
+    view.setLayoutDirection(Qt::RightToLeft);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QItemSelectionRange range(model.index(2, 0), model.index(2, model.columnCount() - 1));
+    QItemSelection selection;
+    selection << range;
+    QRegion region = view.visualRegionForSelection(selection);
+    QCOMPARE(region.rects().at(0), view.visualRect(range.topLeft()) | view.visualRect(range.bottomRight()));
+}
+
+void tst_QTableView::taskQTBUG_8777_scrollToSpans()
+{
+    QTableWidget table(75,5);
+    for (int i=0; i<50; i++)
+        table.setSpan(2+i, 0, 1, 5);
+    table.setCurrentCell(0,2);
+    table.show();
+
+    for (int i = 0; i < 45; ++i)
+        QTest::keyClick(&table, Qt::Key_Down);
+
+    QVERIFY(table.verticalScrollBar()->value() > 10);
+}
 
 QTEST_MAIN(tst_QTableView)
 #include "tst_qtableview.moc"

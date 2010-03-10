@@ -101,7 +101,6 @@ struct qt_SHMENUBARINFO
     COLORREF  clrBk;
 };
 
-typedef int (WINAPI *superfunc)(int, int);
 typedef BOOL (WINAPI *AygCreateMenuBar)(qt_SHMENUBARINFO*);
 typedef HRESULT (WINAPI *AygEnableSoftKey)(HWND,UINT,BOOL,BOOL);
 

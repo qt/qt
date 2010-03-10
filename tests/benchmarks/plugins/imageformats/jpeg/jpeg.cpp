@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,34 +39,54 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_raster_p.h"
+#include <QDebug>
+#include <qtest.h>
+#include <QtTest/QtTest>
+#include <QFile>
+#include <QByteArray>
+#include <QBuffer>
+#include <QImageReader>
+#include <QSize>
 
-#ifdef Q_OS_SYMBIAN
-#include "private/qpixmap_s60_p.h"
-#include "private/qwindowsurface_s60_p.h"
-#else
-#include "private/qpixmap_raster_p.h"
-#include "private/qwindowsurface_raster_p.h"
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
 #endif
 
-QT_BEGIN_NAMESPACE
-
-QPixmapData *QRasterGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+class tst_jpeg : public QObject
 {
-#ifdef Q_OS_SYMBIAN
-    return new QS60PixmapData(type);
-#else
-    return new QRasterPixmapData(type);
-#endif
+    Q_OBJECT
+private slots:
+    void jpegDecodingQtWebkitStyle();
+};
+
+void tst_jpeg::jpegDecodingQtWebkitStyle()
+{
+    // QtWebkit currently calls size() to get the image size for layouting purposes.
+    // Then when it is in the viewport (we assume that here) it actually gets decoded.
+    QFile inputJpeg(SRCDIR "n900.jpeg");
+    QVERIFY(inputJpeg.exists());
+    inputJpeg.open(QIODevice::ReadOnly);
+    QByteArray imageData = inputJpeg.readAll();
+    QBuffer buffer;
+    buffer.setData(imageData);
+    buffer.open(QBuffer::ReadOnly);
+    QCOMPARE(buffer.size(), qint64(19016));
+
+
+    QBENCHMARK{
+        for (int i = 0; i < 50; i++) {
+            QImageReader reader(&buffer, "jpeg");
+            QSize size = reader.size();
+            QVERIFY(!size.isNull());
+            QByteArray format = reader.format();
+            QVERIFY(!format.isEmpty());
+            QImage img = reader.read();
+            QVERIFY(!img.isNull());
+            buffer.reset();
+        }
+    }
 }
 
-QWindowSurface *QRasterGraphicsSystem::createWindowSurface(QWidget *widget) const
-{
-#ifdef Q_OS_SYMBIAN
-    return new QS60WindowSurface(widget);
-#else
-    return new QRasterWindowSurface(widget);
-#endif
-}
+QTEST_MAIN(tst_jpeg)
 
-QT_END_NAMESPACE
+#include "jpeg.moc"
