@@ -6,7 +6,7 @@ symbian {
     TARGET.UID3 = 0xA000CF75
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     INCLUDEPATH += $$QT_SOURCE_TREE/examples/network/qftp/
-    LIBS += -lesock  -lconnmon -linsock
+    LIBS += -lesock -lcommdb -lconnmon -linsock
     TARGET.CAPABILITY = NetworkServices
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
 }
