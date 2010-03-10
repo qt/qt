@@ -197,7 +197,8 @@ public:
 
     virtual void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
 
-    virtual void drawPixmapFragments(const QPainter::Fragment *fragments, int fragmentCount, const QPixmap &pixmap, QFlags<QPainter::FragmentHint> hints);
+    virtual void drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
+                                     QFlags<QPainter::PixmapFragmentHint> hints);
 
     virtual void updateState(const QPaintEngineState &state);
 

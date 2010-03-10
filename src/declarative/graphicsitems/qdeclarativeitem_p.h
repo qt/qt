@@ -101,7 +101,7 @@ private:
     qreal m_height;
 };
 
-class QDeclarativeItemPrivate : public QGraphicsItemPrivate
+class Q_DECLARATIVE_EXPORT QDeclarativeItemPrivate : public QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeItem)
 
@@ -259,7 +259,7 @@ public:
 
     static int consistentTime;
     static QTime currentTime();
-    static void Q_DECLARATIVE_EXPORT setConsistentTime(int t);
+    static void setConsistentTime(int t);
     static void start(QTime &);
     static int elapsed(QTime &);
     static int restart(QTime &);

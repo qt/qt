@@ -74,6 +74,7 @@ private slots:
     void nestedQXmlStreamReader() const;
     void stylePropagation() const;
     void matrixForElement() const;
+    void boundsOnElement() const;
     void gradientStops() const;
     void gradientRefs();
     void fillRule();
@@ -468,6 +469,36 @@ void tst_QSvgRenderer::matrixForElement() const
     compareTransforms(QTransform(painter.worldMatrix()), QTransform(renderer.matrixForElement(QLatin1String("yon"))));
     painter.setWorldMatrix(QMatrix(1, 2, 3, 4, 5, 6), true);
     compareTransforms(QTransform(painter.worldMatrix()), QTransform(renderer.matrixForElement(QLatin1String("firkant"))));
+}
+
+void tst_QSvgRenderer::boundsOnElement() const
+{
+    QByteArray data("<svg>"
+                      "<g id=\"prim\" transform=\"translate(-3,1)\">"
+                        "<g id=\"sjokade\" stroke=\"none\" stroke-width=\"10\">"
+                          "<rect id=\"kaviar\" transform=\"rotate(45)\" x=\"-10\" y=\"-10\" width=\"20\" height=\"20\"/>"
+                        "</g>"
+                        "<g id=\"nugatti\" stroke=\"black\" stroke-width=\"2\">"
+                          "<use x=\"0\" y=\"0\" transform=\"rotate(45)\" xlink:href=\"#kaviar\"/>"
+                        "</g>"
+                        "<g id=\"nutella\" stroke=\"none\" stroke-width=\"10\">"
+                          "<path id=\"baconost\" transform=\"rotate(45)\" d=\"M-10 -10 L10 -10 L10 10 L-10 10 Z\"/>"
+                        "</g>"
+                        "<g id=\"hapaa\" transform=\"translate(-2,2)\" stroke=\"black\" stroke-width=\"2\">"
+                          "<use x=\"0\" y=\"0\" transform=\"rotate(45)\" xlink:href=\"#baconost\"/>"
+                        "</g>"
+                      "</g>"
+                    "</svg>");
+    
+    qreal sqrt2 = qSqrt(2);
+    QSvgRenderer renderer(data);
+    QCOMPARE(renderer.boundsOnElement(QLatin1String("sjokade")), QRectF(-10 * sqrt2, -10 * sqrt2, 20 * sqrt2, 20 * sqrt2));
+    QCOMPARE(renderer.boundsOnElement(QLatin1String("kaviar")), QRectF(-10 * sqrt2, -10 * sqrt2, 20 * sqrt2, 20 * sqrt2));
+    QCOMPARE(renderer.boundsOnElement(QLatin1String("nugatti")), QRectF(-11, -11, 22, 22));
+    QCOMPARE(renderer.boundsOnElement(QLatin1String("nutella")), QRectF(-10 * sqrt2, -10 * sqrt2, 20 * sqrt2, 20 * sqrt2));
+    QCOMPARE(renderer.boundsOnElement(QLatin1String("baconost")), QRectF(-10 * sqrt2, -10 * sqrt2, 20 * sqrt2, 20 * sqrt2));
+    QCOMPARE(renderer.boundsOnElement(QLatin1String("hapaa")), QRectF(-13, -9, 22, 22));
+    QCOMPARE(renderer.boundsOnElement(QLatin1String("prim")), QRectF(-10 * sqrt2 - 3, -10 * sqrt2 + 1, 20 * sqrt2, 20 * sqrt2));
 }
 
 void tst_QSvgRenderer::gradientStops() const
