@@ -703,6 +703,11 @@ void tst_QDeclarativeGridView::currentIndex()
     QCOMPARE(gridview->highlightItem()->x(), hlPosX);
     QCOMPARE(gridview->highlightItem()->y(), hlPosY);
 
+    // insert item before currentIndex
+    gridview->setCurrentIndex(28);
+    model.insertItem(0, "Foo", "1111");
+    QCOMPARE(canvas->rootObject()->property("current").toInt(), 29);
+
     delete canvas;
 }
 

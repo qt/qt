@@ -1,3 +1,3 @@
-BoomBlock 0.0 BoomBlock.qml
-Button 0.0 Button.qml
-Dialog 0.0 Dialog.qml
+BoomBlock BoomBlock.qml
+Button Button.qml
+Dialog Dialog.qml

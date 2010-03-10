@@ -314,8 +314,17 @@ void tst_qdeclarativevaluetypes::font()
         font.setLetterSpacing(QFont::AbsoluteSpacing, 9.7);
         font.setWordSpacing(11.2);
 
-        QEXPECT_FAIL("", "QT-2920", Continue);
-        QCOMPARE(object->font(), font);
+        QFont f = object->font();
+        QCOMPARE(f.family(), font.family());
+        QCOMPARE(f.bold(), font.bold());
+        QCOMPARE(f.weight(), font.weight());
+        QCOMPARE(f.italic(), font.italic());
+        QCOMPARE(f.underline(), font.underline());
+        QCOMPARE(f.strikeOut(), font.strikeOut());
+        QCOMPARE(f.pointSize(), font.pointSize());
+        QCOMPARE(f.capitalization(), font.capitalization());
+        QCOMPARE(f.letterSpacing(), font.letterSpacing());
+        QCOMPARE(f.wordSpacing(), font.wordSpacing());
 
         delete object;
     }

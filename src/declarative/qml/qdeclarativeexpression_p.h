@@ -129,24 +129,7 @@ public:
     QString url; // This is a QString for a reason.  QUrls are slooooooow...
     int line;
 
-    struct SignalGuard : public QDeclarativeGuard<QObject> {
-        SignalGuard() : isDuplicate(false), notifyIndex(-1) {}
-
-        SignalGuard &operator=(QObject *obj) {
-            QDeclarativeGuard<QObject>::operator=(obj);
-            return *this;
-        }
-        SignalGuard &operator=(const SignalGuard &o) {
-            QDeclarativeGuard<QObject>::operator=(o);
-            isDuplicate = o.isDuplicate;
-            notifyIndex = o.notifyIndex;
-            return *this;
-        }
-
-        bool isDuplicate:1;
-        int notifyIndex:31;
-    };
-    SignalGuard *guardList;
+    QDeclarativeNotifierEndpoint *guardList;
     int guardListLength;
 };
 

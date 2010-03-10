@@ -396,7 +396,7 @@ public:
     QDeclarativeXmlListModelPrivate()
         : isComponentComplete(true), size(-1), highestRole(Qt::UserRole)
         , reply(0), status(QDeclarativeXmlListModel::Null), progress(0.0)
-        , queryId(-1), roleObjects() {}
+        , queryId(-1), roleObjects(), redirectCount(0) {}
 
     bool isComponentComplete;
     QUrl src;
@@ -417,6 +417,7 @@ public:
     static void removeAt_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, int i);
     static void insert_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, int i, QDeclarativeXmlListModelRole *role);
     QList<QList<QVariant> > data;
+    int redirectCount;
 };
 
 
@@ -575,8 +576,8 @@ void QDeclarativeXmlListModel::setSource(const QUrl &src)
 {
     Q_D(QDeclarativeXmlListModel);
     if (d->src != src) {
-        reload();
         d->src = src;
+        reload();
         emit sourceChanged();
    }
 }
@@ -778,9 +779,25 @@ void QDeclarativeXmlListModel::reload()
                      this, SLOT(requestProgress(qint64,qint64)));
 }
 
+#define XMLLISTMODEL_MAX_REDIRECT 16
+
 void QDeclarativeXmlListModel::requestFinished()
 {
     Q_D(QDeclarativeXmlListModel);
+
+    d->redirectCount++;
+    if (d->redirectCount < XMLLISTMODEL_MAX_REDIRECT) {
+        QVariant redirect = d->reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirect.isValid()) {
+            QUrl url = d->reply->url().resolved(redirect.toUrl());
+            d->reply->deleteLater();
+            d->reply = 0;
+            setSource(url);
+            return;
+        }
+    }
+    d->redirectCount = 0;
+
     if (d->reply->error() != QNetworkReply::NoError) {
         disconnect(d->reply, 0, this, 0);
         d->reply->deleteLater();
