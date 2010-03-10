@@ -282,6 +282,24 @@ void QDeclarativeCompositeTypeManager::resourceReplyFinished()
     QDeclarativeCompositeTypeResource *resource = resources.value(reply->url());
     Q_ASSERT(resource);
 
+    redirectCount++;
+    if (redirectCount < TYPEMANAGER_MAXIMUM_REDIRECT_RECURSION) {
+        QVariant redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirect.isValid()) {
+            QUrl url = reply->url().resolved(redirect.toUrl());
+            redirects.insert(reply->url(),url);
+            resource->url = url.toString();
+            resources.remove(reply->url());
+            resources.insert(url, resource);
+            reply->deleteLater();
+            reply = engine->networkAccessManager()->get(QNetworkRequest(url));
+            QObject::connect(reply, SIGNAL(finished()),
+                             this, SLOT(resourceReplyFinished()));
+            return;
+        }
+    }
+    redirectCount = 0;
+
     if (reply->error() != QNetworkReply::NoError) {
 
         resource->status = QDeclarativeCompositeTypeResource::Error;
