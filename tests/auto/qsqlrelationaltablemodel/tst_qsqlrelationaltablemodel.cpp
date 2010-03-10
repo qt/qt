@@ -45,6 +45,11 @@
 
 #include "../qsqldatabase/tst_databases.h"
 
+const QString reltest1(qTableName("reltest1", __FILE__)),
+        reltest2(qTableName("reltest2", __FILE__)),
+        reltest3(qTableName("reltest3", __FILE__)),
+        reltest4(qTableName("reltest4", __FILE__)),
+        reltest5(qTableName("reltest5", __FILE__));
 
 
 //TESTED_CLASS=
@@ -107,37 +112,37 @@ void tst_QSqlRelationalTableModel::recreateTestTables(QSqlDatabase db)
     dropTestTables(db);
 
     QSqlQuery q(db);
-    QVERIFY_SQL( q, exec("create table " + qTableName("reltest1") +
+    QVERIFY_SQL( q, exec("create table " + reltest1 +
             " (id int not null primary key, name varchar(20), title_key int, another_title_key int)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("reltest1") + " values(1, 'harry', 1, 2)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("reltest1") + " values(2, 'trond', 2, 1)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("reltest1") + " values(3, 'vohi', 1, 2)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("reltest1") + " values(4, 'boris', 2, 2)"));
+    QVERIFY_SQL( q, exec("insert into " + reltest1 + " values(1, 'harry', 1, 2)"));
+    QVERIFY_SQL( q, exec("insert into " + reltest1 + " values(2, 'trond', 2, 1)"));
+    QVERIFY_SQL( q, exec("insert into " + reltest1 + " values(3, 'vohi', 1, 2)"));
+    QVERIFY_SQL( q, exec("insert into " + reltest1 + " values(4, 'boris', 2, 2)"));
 
-    QVERIFY_SQL( q, exec("create table " + qTableName("reltest2") + " (tid int not null primary key, title varchar(20))"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("reltest2") + " values(1, 'herr')"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("reltest2") + " values(2, 'mister')"));
+    QVERIFY_SQL( q, exec("create table " + reltest2 + " (tid int not null primary key, title varchar(20))"));
+    QVERIFY_SQL( q, exec("insert into " + reltest2 + " values(1, 'herr')"));
+    QVERIFY_SQL( q, exec("insert into " + reltest2 + " values(2, 'mister')"));
 
-    QVERIFY_SQL( q, exec("create table " + qTableName("reltest3") + " (id int not null primary key, name varchar(20), city_key int)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("reltest3") + " values(1, 'Gustav', 1)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("reltest3") + " values(2, 'Heidi', 2)"));
+    QVERIFY_SQL( q, exec("create table " + reltest3 + " (id int not null primary key, name varchar(20), city_key int)"));
+    QVERIFY_SQL( q, exec("insert into " + reltest3 + " values(1, 'Gustav', 1)"));
+    QVERIFY_SQL( q, exec("insert into " + reltest3 + " values(2, 'Heidi', 2)"));
 
-    QVERIFY_SQL( q, exec("create table " + qTableName("reltest4") + " (id int not null primary key, name varchar(20))"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("reltest4") + " values(1, 'Oslo')"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("reltest4") + " values(2, 'Trondheim')"));
+    QVERIFY_SQL( q, exec("create table " + reltest4 + " (id int not null primary key, name varchar(20))"));
+    QVERIFY_SQL( q, exec("insert into " + reltest4 + " values(1, 'Oslo')"));
+    QVERIFY_SQL( q, exec("insert into " + reltest4 + " values(2, 'Trondheim')"));
 
-    QVERIFY_SQL( q, exec("create table " + qTableName("reltest5") + " (title varchar(20) not null primary key, abbrev varchar(20))"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("reltest5") + " values('herr', 'Hr')"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("reltest5") + " values('mister', 'Mr')"));
+    QVERIFY_SQL( q, exec("create table " + reltest5 + " (title varchar(20) not null primary key, abbrev varchar(20))"));
+    QVERIFY_SQL( q, exec("insert into " + reltest5 + " values('herr', 'Hr')"));
+    QVERIFY_SQL( q, exec("insert into " + reltest5 + " values('mister', 'Mr')"));
 
     if (testWhiteSpaceNames(db.driverName())) {
-        QString reltest6 = db.driver()->escapeIdentifier(qTableName("rel test6"), QSqlDriver::TableName);
+        QString reltest6 = db.driver()->escapeIdentifier(qTableName("rel", __FILE__)+" test6", QSqlDriver::TableName);
         QVERIFY_SQL( q, exec("create table " + reltest6 + " (id int not null primary key, " + db.driver()->escapeIdentifier("city key", QSqlDriver::FieldName) +
                     " int, " + db.driver()->escapeIdentifier("extra field", QSqlDriver::FieldName) + " int)"));
         QVERIFY_SQL( q, exec("insert into " + reltest6 + " values(1, 1,9)"));
         QVERIFY_SQL( q, exec("insert into " + reltest6 + " values(2, 2,8)"));
 
-        QString reltest7 = db.driver()->escapeIdentifier(qTableName("rel test7"), QSqlDriver::TableName);
+        QString reltest7 = db.driver()->escapeIdentifier(qTableName("rel", __FILE__)+" test7", QSqlDriver::TableName);
         QVERIFY_SQL( q, exec("create table " + reltest7 + " (" + db.driver()->escapeIdentifier("city id", QSqlDriver::TableName) + " int not null primary key, " + db.driver()->escapeIdentifier("city name", QSqlDriver::FieldName) + " varchar(20))"));
         QVERIFY_SQL( q, exec("insert into " + reltest7 + " values(1, 'New York')"));
         QVERIFY_SQL( q, exec("insert into " + reltest7 + " values(2, 'Washington')"));
@@ -173,19 +178,19 @@ void tst_QSqlRelationalTableModel::cleanupTestCase()
 void tst_QSqlRelationalTableModel::dropTestTables( QSqlDatabase db )
 {
     QStringList tableNames;
-    tableNames << qTableName( "reltest1" )
-            << qTableName( "reltest2" )
-            << qTableName( "reltest3" )
-            << qTableName( "reltest4" )
-            << qTableName( "reltest5" )
-            << qTableName( "rel test6" )
-            << qTableName( "rel test7" )
-            << qTableName("CASETEST1" )
-            << qTableName("casetest1" );
+    tableNames << reltest1
+            << reltest2
+            << reltest3
+            << reltest4
+            << reltest5
+            << (qTableName( "rel", __FILE__)+" test6")
+            << (qTableName( "rel", __FILE__)+" test7")
+            << qTableName("CASETEST1", db.driver() )
+            << qTableName("casetest1", db.driver() );
     tst_Databases::safeDropTables( db, tableNames );
 
-    db.exec("DROP SCHEMA "+qTableName("QTBUG_5373")+" CASCADE");
-    db.exec("DROP SCHEMA "+qTableName("QTBUG_5373_s2")+" CASCADE");
+    db.exec("DROP SCHEMA "+qTableName("QTBUG_5373", __FILE__)+" CASCADE");
+    db.exec("DROP SCHEMA "+qTableName("QTBUG_5373_s2", __FILE__)+" CASCADE");
 }
 
 void tst_QSqlRelationalTableModel::init()
@@ -204,8 +209,8 @@ void tst_QSqlRelationalTableModel::data()
 
     QSqlRelationalTableModel model(0, db);
 
-    model.setTable(qTableName("reltest1"));
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     QVERIFY_SQL(model, select());
 
     QCOMPARE(model.columnCount(), 4);
@@ -219,8 +224,8 @@ void tst_QSqlRelationalTableModel::data()
     //check data retrieval when relational key is a non-integer type
     //in this case a string
     QSqlRelationalTableModel model2(0,db);
-    model2.setTable(qTableName("reltest2"));
-    model2.setRelation(1, QSqlRelation(qTableName("reltest5"),"title","abbrev"));
+    model2.setTable(reltest2);
+    model2.setRelation(1, QSqlRelation(reltest5,"title","abbrev"));
     QVERIFY_SQL(model2, select());
 
     QCOMPARE(model2.data(model2.index(0, 1)).toString(), QString("Hr"));
@@ -237,9 +242,9 @@ void tst_QSqlRelationalTableModel::setData()
     {
         QSqlRelationalTableModel model(0, db);
 
-        model.setTable(qTableName("reltest1"));
+        model.setTable(reltest1);
         model.setSort(0, Qt::AscendingOrder);
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+        model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
         QVERIFY_SQL(model, select());
 
         QVERIFY(model.setData(model.index(0, 1), QString("harry2")));
@@ -260,7 +265,7 @@ void tst_QSqlRelationalTableModel::setData()
     }
     { //verify values
         QSqlRelationalTableModel model(0, db);
-        model.setTable(qTableName("reltest1"));
+        model.setTable(reltest1);
         model.setSort(0, Qt::AscendingOrder);
         QVERIFY_SQL(model, select());
 
@@ -269,7 +274,7 @@ void tst_QSqlRelationalTableModel::setData()
         QCOMPARE(model.data(model.index(3, 1)).toString(), QString("boris2"));
         QCOMPARE(model.data(model.index(3, 2)).toInt(), 1);
 
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+        model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
         QVERIFY_SQL(model, select());
         QCOMPARE(model.data(model.index(0, 2)).toString(), QString("mister"));
         QCOMPARE(model.data(model.index(3,2)).toString(), QString("herr"));
@@ -279,10 +284,10 @@ void tst_QSqlRelationalTableModel::setData()
     //set the values using OnFieldChange strategy
     {
         QSqlRelationalTableModel model(0, db);
-        model.setTable(qTableName("reltest1"));
+        model.setTable(reltest1);
         model.setEditStrategy(QSqlTableModel::OnFieldChange);
         model.setSort(0, Qt::AscendingOrder);
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+        model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
         QVERIFY_SQL(model, select());
 
         QVERIFY(model.setData(model.index(1,1), QString("trond2")));
@@ -293,14 +298,14 @@ void tst_QSqlRelationalTableModel::setData()
     }
     { //verify values
         QSqlRelationalTableModel model(0, db);
-        model.setTable(qTableName("reltest1"));
+        model.setTable(reltest1);
         model.setSort(0, Qt::AscendingOrder);
         QVERIFY_SQL(model, select());
 
         QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond2"));
         QCOMPARE(model.data(model.index(2, 2)).toInt(), 2);
 
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+        model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
         QVERIFY_SQL(model, select());
         QCOMPARE(model.data(model.index(2, 2)).toString(), QString("mister"));
     }
@@ -309,13 +314,13 @@ void tst_QSqlRelationalTableModel::setData()
     {
         QSqlRelationalTableModel model(0, db);
 
-        model.setTable(qTableName("reltest1"));
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+        model.setTable(reltest1);
+        model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
 
         //sybase doesn't allow tables with the same alias used twice as col names
         //so don't set up an identical relation when using the tds driver
         if (!db.driverName().startsWith("QTDS"))
-            model.setRelation(3, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+            model.setRelation(3, QSqlRelation(reltest2, "tid", "title"));
 
         model.setEditStrategy(QSqlTableModel::OnManualSubmit);
         model.setSort(0, Qt::AscendingOrder);
@@ -336,7 +341,7 @@ void tst_QSqlRelationalTableModel::setData()
     }
     { //verify values
         QSqlRelationalTableModel model(0, db);
-        model.setTable(qTableName("reltest1"));
+        model.setTable(reltest1);
         model.setSort(0, Qt::AscendingOrder);
         QVERIFY_SQL(model, select());
 
@@ -344,9 +349,9 @@ void tst_QSqlRelationalTableModel::setData()
         QCOMPARE(model.data(model.index(3, 2)).toInt(), 1);
         QCOMPARE(model.data(model.index(0, 3)).toInt(), 1);
 
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+        model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
         if (!db.driverName().startsWith("QTDS"))
-            model.setRelation(3, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+            model.setRelation(3, QSqlRelation(reltest2, "tid", "title"));
         QVERIFY_SQL(model, select());
         QCOMPARE(model.data(model.index(3, 2)).toString(), QString("herr"));
 
@@ -361,8 +366,8 @@ void tst_QSqlRelationalTableModel::setData()
     {
         QSqlRelationalTableModel model(0, db);
 
-        model.setTable(qTableName("reltest2"));
-        model.setRelation(1, QSqlRelation(qTableName("reltest5"), "title", "abbrev"));
+        model.setTable(reltest2);
+        model.setRelation(1, QSqlRelation(reltest5, "title", "abbrev"));
         model.setEditStrategy(QSqlTableModel::OnManualSubmit);
         QVERIFY_SQL(model, select());
 
@@ -385,9 +390,9 @@ void tst_QSqlRelationalTableModel::multipleRelation()
 
     QSqlRelationalTableModel model(0, db);
 
-    model.setTable(qTableName("reltest1"));
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
-    model.setRelation(3, QSqlRelation(qTableName("reltest4"), "id", "name"));
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
+    model.setRelation(3, QSqlRelation(reltest4, "id", "name"));
     model.setSort(0, Qt::AscendingOrder);
     QVERIFY_SQL(model, select());
 
@@ -407,8 +412,8 @@ void tst_QSqlRelationalTableModel::insertRecord()
 
     QSqlRelationalTableModel model(0, db);
 
-    model.setTable(qTableName("reltest1"));
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     model.setSort(0, Qt::AscendingOrder);
     QVERIFY_SQL(model, select());
 
@@ -449,8 +454,8 @@ void tst_QSqlRelationalTableModel::setRecord()
 
     QSqlRelationalTableModel model(0, db);
 
-    model.setTable(qTableName("reltest1"));
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     model.setSort(0, Qt::AscendingOrder);
     QVERIFY_SQL(model, select());
 
@@ -502,12 +507,12 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
 
     QSqlRelationalTableModel model(0, db);
 
-    model.setTable(qTableName("reltest1"));
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     model.setSort(0, Qt::AscendingOrder);
 
     if (!db.driverName().startsWith("QTDS"))
-        model.setRelation(3, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+        model.setRelation(3, QSqlRelation(reltest2, "tid", "title"));
     QVERIFY_SQL(model, select());
 
     QCOMPARE(model.data(model.index(0,0)).toInt(), 1);
@@ -608,8 +613,8 @@ void tst_QSqlRelationalTableModel::removeColumn()
 
     QSqlRelationalTableModel model(0, db);
 
-    model.setTable(qTableName("reltest1"));
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     QVERIFY_SQL(model, select());
 
     QVERIFY_SQL(model, removeColumn(3));
@@ -639,8 +644,8 @@ void tst_QSqlRelationalTableModel::filter()
 
     QSqlRelationalTableModel model(0, db);
 
-    model.setTable(qTableName("reltest1"));
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     model.setFilter("title = 'herr'");
 
     QVERIFY_SQL(model, select());
@@ -657,10 +662,10 @@ void tst_QSqlRelationalTableModel::sort()
 
     QSqlRelationalTableModel model(0, db);
 
-    model.setTable(qTableName("reltest1"));
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     if (!db.driverName().startsWith("QTDS"))
-        model.setRelation(3, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+        model.setRelation(3, QSqlRelation(reltest2, "tid", "title"));
 
     model.setSort(2, Qt::DescendingOrder);
     QVERIFY_SQL(model, select());
@@ -755,9 +760,9 @@ void tst_QSqlRelationalTableModel::revert()
 
     QSqlRelationalTableModel model(0, db);
 
-    model.setTable(qTableName("reltest1"));
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
-    model.setRelation(3, QSqlRelation(qTableName("reltest4"), "id", "name"));
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
+    model.setRelation(3, QSqlRelation(reltest4, "id", "name"));
 
     model.setSort(0, Qt::AscendingOrder);
 
@@ -781,11 +786,11 @@ void tst_QSqlRelationalTableModel::clearDisplayValuesCache()
 
     QSqlRelationalTableModel model(0, db);
 
-    model.setTable(qTableName("reltest1"));
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
 
     if (!db.driverName().startsWith("QTDS"))
-        model.setRelation(3, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+        model.setRelation(3, QSqlRelation(reltest2, "tid", "title"));
     model.setSort(1, Qt::AscendingOrder);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
 
@@ -833,19 +838,19 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
     CHECK_DATABASE(db);
 
     QSqlRelationalTableModel model(0, db);
-    model.setTable(qTableName("reltest3"));
+    model.setTable(reltest3);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     model.setSort(0, Qt::AscendingOrder);
 
     // Duplication of "name", used in both reltest3 and reltest4.
-    model.setRelation(2, QSqlRelation(qTableName("reltest4"), "id", "name"));
+    model.setRelation(2, QSqlRelation(reltest4, "id", "name"));
     QVERIFY_SQL(model, select());
 
     if (db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2")) {
-        QCOMPARE(model.record(1).value(qTableName("reltest4").append(QLatin1String("_name_2")).toUpper()).toString(),
+        QCOMPARE(model.record(1).value((reltest4+QLatin1String("_name_2")).toUpper()).toString(),
             QString("Trondheim"));
     } else {
-        QCOMPARE(model.record(1).value(qTableName("reltest4").append(QLatin1String("_name_2"))).toString(),
+        QCOMPARE(model.record(1).value((reltest4+QLatin1String("_name_2"))).toString(),
             QString("Trondheim"));
     }
 
@@ -864,9 +869,9 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
 
     // The duplicate field names is aliased because it's comes from the relation's display column.
     if(db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2"))
-        QCOMPARE(rec.fieldName(2), (qTableName("reltest4").append(QLatin1String("_name_2"))).toUpper());
+        QCOMPARE(rec.fieldName(2), (reltest4+QLatin1String("_name_2")).toUpper());
     else
-        QCOMPARE(rec.fieldName(2), qTableName("reltest4").append(QLatin1String("_name_2")));
+        QCOMPARE(rec.fieldName(2), reltest4+QLatin1String("_name_2"));
 
     QVERIFY(model.insertRecord(-1, rec));
     QCOMPARE(model.data(model.index(2, 2)).toString(), QString("Oslo"));
@@ -881,8 +886,8 @@ void tst_QSqlRelationalTableModel::invalidData()
     CHECK_DATABASE(db);
 
     QSqlRelationalTableModel model(0, db);
-    model.setTable(qTableName("reltest1"));
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     QVERIFY_SQL(model, select());
 
     //try set a non-existent relational key
@@ -900,8 +905,8 @@ void tst_QSqlRelationalTableModel::relationModel()
     CHECK_DATABASE(db);
 
     QSqlRelationalTableModel model(0, db);
-    model.setTable(qTableName("reltest1"));
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     QVERIFY_SQL(model, select());
 
     QVERIFY(model.relationModel(0) == NULL);
@@ -910,7 +915,7 @@ void tst_QSqlRelationalTableModel::relationModel()
     QVERIFY(model.relationModel(3) == NULL);
     QVERIFY(model.relationModel(4) == NULL);
 
-    model.setRelation(3, QSqlRelation(qTableName("reltest4"), "id", "name"));
+    model.setRelation(3, QSqlRelation(reltest4, "id", "name"));
     QVERIFY_SQL(model, select());
 
     QVERIFY(model.relationModel(0) == NULL);
@@ -981,7 +986,7 @@ void tst_QSqlRelationalTableModel::casing()
 
     QSqlRelationalTableModel model(0, db);
     model.setTable(qTableName("CASETEST1", db.driver()).toUpper());
-    model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     QVERIFY_SQL(model, select());
 
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
@@ -997,15 +1002,15 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     recreateTestTables(db);
 
     QSqlRelationalTableModel model(0, db);
-    model.setTable(qTableName("reltest1"));
+    model.setTable(reltest1);
 
     //try with relation table name quoted
     if (db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2")) {
-        model.setRelation(2, QSqlRelation(db.driver()->escapeIdentifier(qTableName("reltest2").toUpper(),QSqlDriver::TableName),
+        model.setRelation(2, QSqlRelation(db.driver()->escapeIdentifier(reltest2.toUpper(),QSqlDriver::TableName),
                             "tid",
                             "title"));
     } else {
-        model.setRelation(2, QSqlRelation(db.driver()->escapeIdentifier(qTableName("reltest2"),QSqlDriver::TableName),
+        model.setRelation(2, QSqlRelation(db.driver()->escapeIdentifier(reltest2,QSqlDriver::TableName),
                             "tid",
                             "title"));
 
@@ -1018,11 +1023,11 @@ void tst_QSqlRelationalTableModel::escapedRelations()
 
     //try with index column quoted
     if (db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2")) {
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"),
+        model.setRelation(2, QSqlRelation(reltest2,
                             db.driver()->escapeIdentifier("tid", QSqlDriver::FieldName).toUpper(),
                             "title"));
     } else {
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"),
+        model.setRelation(2, QSqlRelation(reltest2,
                             db.driver()->escapeIdentifier("tid", QSqlDriver::FieldName),
                             "title"));
     }
@@ -1036,11 +1041,11 @@ void tst_QSqlRelationalTableModel::escapedRelations()
 
     if (db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2")) {
 
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"),
+        model.setRelation(2, QSqlRelation(reltest2,
                             "tid",
                             db.driver()->escapeIdentifier("title", QSqlDriver::FieldName).toUpper()));
     } else {
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"),
+        model.setRelation(2, QSqlRelation(reltest2,
                             "tid",
                             db.driver()->escapeIdentifier("title", QSqlDriver::FieldName)));
     }
@@ -1054,11 +1059,11 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     //try with tablename and index and display columns quoted in the relation
 
     if (db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2")) {
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"),
+        model.setRelation(2, QSqlRelation(reltest2,
                             "tid",
                             db.driver()->escapeIdentifier("title", QSqlDriver::FieldName).toUpper()));
     } else {
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"),
+        model.setRelation(2, QSqlRelation(reltest2,
                             "tid",
                             db.driver()->escapeIdentifier("title", QSqlDriver::FieldName)));
     }
@@ -1080,12 +1085,12 @@ void tst_QSqlRelationalTableModel::escapedTableName()
         QSqlRelationalTableModel model(0, db);
 
         if (db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2")) {
-            model.setTable(db.driver()->escapeIdentifier(qTableName("reltest1").toUpper(), QSqlDriver::TableName));
+            model.setTable(db.driver()->escapeIdentifier(reltest1.toUpper(), QSqlDriver::TableName));
         } else {
-            model.setTable(db.driver()->escapeIdentifier(qTableName("reltest1"), QSqlDriver::TableName));
+            model.setTable(db.driver()->escapeIdentifier(reltest1, QSqlDriver::TableName));
         }
         model.setSort(0, Qt::AscendingOrder);
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+        model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
         QVERIFY_SQL(model, select());
 
         QVERIFY(model.setData(model.index(0, 1), QString("harry2")));
@@ -1106,7 +1111,7 @@ void tst_QSqlRelationalTableModel::escapedTableName()
     }
     { //verify values
         QSqlRelationalTableModel model(0, db);
-        model.setTable(qTableName("reltest1"));
+        model.setTable(reltest1);
         model.setSort(0, Qt::AscendingOrder);
         QVERIFY_SQL(model, select());
 
@@ -1115,7 +1120,7 @@ void tst_QSqlRelationalTableModel::escapedTableName()
         QCOMPARE(model.data(model.index(3, 1)).toString(), QString("boris2"));
         QCOMPARE(model.data(model.index(3, 2)).toInt(), 1);
 
-        model.setRelation(2, QSqlRelation(qTableName("reltest2"), "tid", "title"));
+        model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
         QVERIFY_SQL(model, select());
         QCOMPARE(model.data(model.index(0, 2)).toString(), QString("mister"));
         QCOMPARE(model.data(model.index(3,2)).toString(), QString("herr"));
@@ -1132,9 +1137,9 @@ void tst_QSqlRelationalTableModel::whiteSpaceInIdentifiers()
     if (!testWhiteSpaceNames(db.driverName()))
         QSKIP("White space test irrelevant for driver", SkipAll);
     QSqlRelationalTableModel model(0, db);
-    model.setTable(db.driver()->escapeIdentifier(qTableName("rel test6"), QSqlDriver::TableName));
+    model.setTable(db.driver()->escapeIdentifier(qTableName("rel", __FILE__)+" test6", QSqlDriver::TableName));
     model.setSort(0, Qt::DescendingOrder);
-    model.setRelation(1, QSqlRelation(db.driver()->escapeIdentifier(qTableName("rel test7"), QSqlDriver::TableName),
+    model.setRelation(1, QSqlRelation(db.driver()->escapeIdentifier(qTableName("rel", __FILE__)+" test7", QSqlDriver::TableName),
                         db.driver()->escapeIdentifier("city id", QSqlDriver::FieldName),
                         db.driver()->escapeIdentifier("city name", QSqlDriver::FieldName)));
     QVERIFY_SQL(model, select());
@@ -1210,13 +1215,13 @@ void tst_QSqlRelationalTableModel::psqlSchemaTest()
     }
     QSqlRelationalTableModel model(0, db);
     QSqlQuery q(db);
-    QVERIFY_SQL(q, exec("create schema "+qTableName("QTBUG_5373")));
-    QVERIFY_SQL(q, exec("create schema "+qTableName("QTBUG_5373_s2")));
-    QVERIFY_SQL(q, exec("create table "+qTableName("QTBUG_5373")+"."+qTableName("document")+"(document_id int primary key, relatingid int, userid int)"));
-    QVERIFY_SQL(q, exec("create table "+qTableName("QTBUG_5373_s2")+"."+qTableName("user")+"(userid int primary key, username char(40))"));
-    model.setTable(qTableName("QTBUG_5373")+"."+qTableName("document"));
-    model.setRelation(1, QSqlRelation(qTableName("QTBUG_5373_s2")+"."+qTableName("user"), "userid", "username"));
-    model.setRelation(2, QSqlRelation(qTableName("QTBUG_5373_s2")+"."+qTableName("user"), "userid", "username"));
+    QVERIFY_SQL(q, exec("create schema "+qTableName("QTBUG_5373", __FILE__)));
+    QVERIFY_SQL(q, exec("create schema "+qTableName("QTBUG_5373_s2", __FILE__)));
+    QVERIFY_SQL(q, exec("create table "+qTableName("QTBUG_5373", __FILE__)+"."+qTableName("document", __FILE__)+"(document_id int primary key, relatingid int, userid int)"));
+    QVERIFY_SQL(q, exec("create table "+qTableName("QTBUG_5373_s2", __FILE__)+"."+qTableName("user", __FILE__)+"(userid int primary key, username char(40))"));
+    model.setTable(qTableName("QTBUG_5373", __FILE__)+"."+qTableName("document", __FILE__));
+    model.setRelation(1, QSqlRelation(qTableName("QTBUG_5373_s2", __FILE__)+"."+qTableName("user", __FILE__), "userid", "username"));
+    model.setRelation(2, QSqlRelation(qTableName("QTBUG_5373_s2", __FILE__)+"."+qTableName("user", __FILE__), "userid", "username"));
     QVERIFY_SQL(model, select());
 }
 
