@@ -279,6 +279,7 @@ public:
     inline void registerScriptString(QScriptStringPrivate *value);
     inline void unregisterScriptString(QScriptStringPrivate *value);
     void detachAllRegisteredScriptStrings();
+    QScriptString toStringHandle(const JSC::Identifier &name);
 
     static inline JSC::JSValue newArray(JSC::ExecState *, uint length);
     static inline JSC::JSValue newDate(JSC::ExecState *, qsreal value);

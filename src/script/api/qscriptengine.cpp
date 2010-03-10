@@ -1795,6 +1795,15 @@ QScriptValue::PropertyFlags QScriptEnginePrivate::propertyFlags(JSC::ExecState *
     return result;
 }
 
+QScriptString QScriptEnginePrivate::toStringHandle(const JSC::Identifier &name)
+{
+    QScriptString result;
+    QScriptStringPrivate *p = new QScriptStringPrivate(this, name, QScriptStringPrivate::HeapAllocated);
+    QScriptStringPrivate::init(result, p);
+    registerScriptString(p);
+    return result;
+}
+
 #ifdef QT_NO_QOBJECT
 
 QScriptEngine::QScriptEngine()
@@ -4054,11 +4063,7 @@ QScriptEngineAgent *QScriptEngine::agent() const
 QScriptString QScriptEngine::toStringHandle(const QString &str)
 {
     Q_D(QScriptEngine);
-    QScriptString result;
-    QScriptStringPrivate *p = new QScriptStringPrivate(d, JSC::Identifier(d->currentFrame, str), QScriptStringPrivate::HeapAllocated);
-    QScriptStringPrivate::init(result, p);
-    d->registerScriptString(p);
-    return result;
+    return d->toStringHandle(JSC::Identifier(d->currentFrame, str));
 }
 
 /*!
