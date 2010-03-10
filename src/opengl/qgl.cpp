@@ -766,6 +766,7 @@ void QGLFormat::setSamples(int numSamples)
         return;
     }
     d->numSamples = numSamples;
+    setSampleBuffers(numSamples > 0);
 }
 
 /*!
@@ -904,6 +905,7 @@ void QGLFormat::setDepthBufferSize(int size)
         return;
     }
     d->depthSize = size;
+    setDepth(size > 0);
 }
 
 /*!
@@ -1017,7 +1019,7 @@ void QGLFormat::setAlphaBufferSize(int size)
         return;
     }
     d->alphaSize = size;
-    setOption(QGL::AlphaChannel);
+    setAlpha(size > 0);
 }
 
 /*!
@@ -1044,6 +1046,7 @@ void QGLFormat::setAccumBufferSize(int size)
         return;
     }
     d->accumSize = size;
+    setAccum(size > 0);
 }
 
 /*!
@@ -1069,6 +1072,7 @@ void QGLFormat::setStencilBufferSize(int size)
         return;
     }
     d->stencilSize = size;
+    setStencil(size > 0);
 }
 
 /*!
