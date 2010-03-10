@@ -77,6 +77,7 @@ void tst_QZip::basicUnpack()
     QCOMPARE(files.count(), 2);
 
     QZipReader::FileInfo fi = files.at(0);
+    QVERIFY(fi.isValid());
     QCOMPARE(fi.filePath, QString("test/"));
     QCOMPARE(uint(fi.isDir), (uint) 1);
     QCOMPARE(uint(fi.isFile), (uint) 0);
@@ -86,6 +87,7 @@ void tst_QZip::basicUnpack()
                                                  | QFile::ReadUser  | QFile::WriteUser | QFile::ExeUser   ));
 
     fi = files.at(1);
+    QVERIFY(fi.isValid());
     QCOMPARE(fi.filePath, QString("test/test.txt"));
     QCOMPARE(uint(fi.isDir), (uint) 0);
     QCOMPARE(uint(fi.isFile), (uint) 1);
@@ -104,6 +106,7 @@ void tst_QZip::symlinks()
     QCOMPARE(files.count(), 2);
 
     QZipReader::FileInfo fi = files.at(0);
+    QVERIFY(fi.isValid());
     QCOMPARE(fi.filePath, QString("symlink"));
     QVERIFY(!fi.isDir);
     QVERIFY(!fi.isFile);
@@ -112,6 +115,7 @@ void tst_QZip::symlinks()
     QCOMPARE(zip.fileData("symlink"), QByteArray("destination"));
 
     fi = files.at(1);
+    QVERIFY(fi.isValid());
     QCOMPARE(fi.filePath, QString("destination"));
     QVERIFY(!fi.isDir);
     QVERIFY(fi.isFile);

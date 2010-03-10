@@ -81,6 +81,7 @@ public:
         FileInfo(const FileInfo &other);
         ~FileInfo();
         FileInfo &operator=(const FileInfo &other);
+        bool isValid() const;
         QString filePath;
         uint isDir : 1;
         uint isFile : 1;

@@ -343,7 +343,7 @@ struct FileHeader
 };
 
 QZipReader::FileInfo::FileInfo()
-    : isDir(false), isFile(true), isSymLink(false), crc32(0), size(0)
+    : isDir(false), isFile(false), isSymLink(false), crc32(0), size(0)
 {
 }
 
@@ -366,6 +366,11 @@ QZipReader::FileInfo& QZipReader::FileInfo::operator=(const FileInfo &other)
     crc32 = other.crc32;
     size = other.size;
     return *this;
+}
+
+bool QZipReader::FileInfo::isValid() const
+{
+    return isDir || isFile || isSymLink;
 }
 
 class QZipPrivate
