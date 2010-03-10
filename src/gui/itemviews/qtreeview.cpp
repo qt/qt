@@ -2480,6 +2480,7 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
         for (int i = 0; i < delta; ++i) {
             QTreeViewItem &item = insertedItems[i];
             item.index = d->model->index(i + start, 0, parent);
+            item.parentItem = parentItem;
             item.level = childLevel;
             item.hasChildren = d->hasVisibleChildren(item.index);
             item.hasMoreSiblings = !((i == delta - 1) && (parentRowCount == end +1));
@@ -2518,7 +2519,7 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
             }
         }
 
-        d->viewItems.insert(insertPos, delta, insertedItems.at(0));
+        d->insertViewItems(insertPos, delta, insertedItems.at(0));
         if (delta > 1) {
             qCopy(insertedItems.begin() + 1, insertedItems.end(),
                   d->viewItems.begin() + insertPos + 1);
@@ -2952,6 +2953,37 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
     }
 }
 
+void QTreeViewPrivate::insertViewItems(int pos, int count, const QTreeViewItem &viewItem)
+{
+    viewItems.insert(pos, count, viewItem);
+    for (int i = pos + count; i < viewItems.count(); i++)
+        if (viewItems[i].parentItem >= pos)
+            viewItems[i].parentItem += count;
+}
+
+void QTreeViewPrivate::removeViewItems(int pos, int count)
+{
+    viewItems.remove(pos, count);
+    for (int i = pos; i < viewItems.count(); i++)
+        if (viewItems[i].parentItem >= pos)
+            viewItems[i].parentItem -= count;
+}
+
+#if 0
+bool QTreeViewPrivate::checkViewItems() const
+{
+    for (int i = 0; i < viewItems.count(); ++i) {
+        const QTreeViewItem &vi = viewItems.at(i);
+        if (vi.parentItem == -1) {
+            Q_ASSERT(!vi.index.parent().isValid() || vi.index.parent() == root);
+        } else {
+            Q_ASSERT(vi.index.parent() == viewItems.at(vi.parentItem).index);
+        }
+    }
+    return true;
+}
+#endif
+
 void QTreeViewPrivate::collapse(int item, bool emitSignal)
 {
     Q_Q(QTreeView);
@@ -2980,14 +3012,11 @@ void QTreeViewPrivate::collapse(int item, bool emitSignal)
     expandedIndexes.erase(it);
     viewItems[item].expanded = false;
     int index = item;
-    QModelIndex parent = modelIndex;
-    while (parent.isValid() && parent != root) {
-        Q_ASSERT(index > -1);
+    while (index > -1) {
         viewItems[index].total -= total;
-        parent = parent.parent();
-        index = viewIndex(parent);
+        index = viewItems[index].parentItem;
     }
-    viewItems.remove(item + 1, total); // collapse
+    removeViewItems(item + 1, total); // collapse
     q->setState(oldState);
 
     if (emitSignal) {
@@ -3152,7 +3181,7 @@ void QTreeViewPrivate::layout(int i)
         }
         viewItems.resize(count);
     } else if (viewItems[i].total != (uint)count) {
-            viewItems.insert(i + 1, count, QTreeViewItem()); // expand
+            insertViewItems(i + 1, count, QTreeViewItem()); // expand
     } else {
         expanding = false;
     }
@@ -3174,6 +3203,7 @@ void QTreeViewPrivate::layout(int i)
                 item->hasMoreSiblings = true;
             item = &viewItems[last];
             item->index = current;
+            item->parentItem = i;
             item->level = level;
             item->height = 0;
             item->spanning = q->isFirstColumnSpanned(current.row(), parent);
@@ -3195,16 +3225,14 @@ void QTreeViewPrivate::layout(int i)
 
     // remove hidden items
     if (hidden > 0)
-        viewItems.remove(last + 1, hidden); // collapse
+        removeViewItems(last + 1, hidden); // collapse
 
     if (!expanding)
         return; // nothing changed
 
-    while (parent != root) {
-        Q_ASSERT(i > -1);
+    while (i > -1) {
         viewItems[i].total += count - hidden;
-        parent = parent.parent();
-        i = viewIndex(parent);
+        i = viewItems[i].parentItem;
     }
 }
 
@@ -3757,7 +3785,7 @@ void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
                 item += count;
             } else if (modelIndex.row() <= end) {
                 // removed
-                viewItems.remove(item, count);
+                removeViewItems(item, count);
                 removedCount += count;
                 lastChildItem -= count;
             } else {
@@ -3765,6 +3793,7 @@ void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
                     // moved; update the model index
                     viewItems[item].index = model->index(
                         modelIndex.row() - delta, modelIndex.column(), parent);
+//                    viewItems[item].parentItem = parentItem;
                 }
                 item += count;
             }
