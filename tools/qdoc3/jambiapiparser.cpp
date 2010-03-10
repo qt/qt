@@ -43,8 +43,6 @@
     jambiapiparser.cpp
 */
 
-#include <QtXml>
-
 #include "cppcodeparser.h"
 #include "jambiapiparser.h"
 #include "node.h"

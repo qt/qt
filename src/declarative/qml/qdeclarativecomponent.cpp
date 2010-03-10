@@ -437,6 +437,13 @@ void QDeclarativeComponent::loadUrl(const QUrl &url)
     else
         d->url = url;
 
+    if (url.isEmpty()) {
+        QDeclarativeError error;
+        error.setDescription(tr("Invalid empty URL"));
+        d->state.errors << error;
+        return;
+    }
+
     QDeclarativeCompositeTypeData *data = 
         QDeclarativeEnginePrivate::get(d->engine)->typeManager.get(d->url);
 

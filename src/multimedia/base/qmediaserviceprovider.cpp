@@ -350,7 +350,7 @@ public:
                             estimate = currentEstimate;
                             plugin = currentPlugin;
 
-                            if (currentEstimate == QtMultimedia::PreferedService)
+                            if (currentEstimate == QtMultimedia::PreferredService)
                                 break;
                         }
                     }
@@ -426,7 +426,7 @@ public:
                 allServicesProvideInterface = false;
         }
 
-        //don't return PreferedService
+        //don't return PreferredService
         supportEstimate = qMin(supportEstimate, QtMultimedia::ProbablySupported);
 
         //Return NotSupported only if no services are available of serviceType

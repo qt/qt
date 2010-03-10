@@ -68,7 +68,6 @@
 #  undef _MSC_VER
 #endif
 
-#include <sqlucode.h>
 #include <sqlext.h>
 
 QT_BEGIN_HEADER

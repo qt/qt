@@ -1753,7 +1753,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, con
         if (!glxPixmap)
             return 0;
 
-        pixmapData->gl_surface = (Qt::HANDLE)glxPixmap;
+        pixmapData->gl_surface = (void*)glxPixmap;
 
         // Make sure the cleanup hook gets called so we can delete the glx pixmap
         QImagePixmapCleanupHooks::enableCleanupHooks(pixmapData);

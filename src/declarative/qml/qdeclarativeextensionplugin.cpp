@@ -87,7 +87,7 @@ QDeclarativeExtensionPlugin::~QDeclarativeExtensionPlugin()
 /*!
     \fn void QDeclarativeExtensionPlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)
 
-    Initializes the extension specified in the given \a engine.
+    Initializes the extension from the \a uri using the \a engine.
 */
 
 void QDeclarativeExtensionPlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)

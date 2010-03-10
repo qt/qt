@@ -43,7 +43,6 @@
   codeparser.cpp
 */
 
-#include <QtCore>
 #include "codeparser.h"
 #include "node.h"
 #include "tree.h"

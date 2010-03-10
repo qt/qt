@@ -10,7 +10,7 @@ Item {
     signal released
     signal clicked
 
-    isPressed: SequentialAnimation {
+    SequentialAnimation on isPressed {
         running: false
         id: autoRepeat
         PropertyAction { target: page; property: "isPressed"; value: true }

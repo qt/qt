@@ -260,7 +260,7 @@ void tst_qdeclarativebehaviors::reassignedAnimation()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml"));
-    QTest::ignoreMessage(QtWarningMsg, QString("QML Behavior (" + QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml").toString() + ":9:12) Cannot change the animation assigned to a Behavior.").toUtf8().constData());
+    QTest::ignoreMessage(QtWarningMsg, QString("QML Behavior (" + QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml").toString() + ":9:9) Cannot change the animation assigned to a Behavior.").toUtf8().constData());
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
     QVERIFY(rect);
     QCOMPARE(qobject_cast<QDeclarativeNumberAnimation*>(

@@ -970,8 +970,8 @@ void QPaintEngineEx::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, con
     fill(path, brush);
 }
 
-void QPaintEngineEx::drawPixmapFragments(const QPainter::Fragment *fragments, int fragmentCount,
-                                         const QPixmap &pixmap, QPainter::FragmentHints /*hints*/)
+void QPaintEngineEx::drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount,
+                                         const QPixmap &pixmap, QPainter::PixmapFragmentHints /*hints*/)
 {
     qreal oldOpacity = state()->opacity;
     QTransform oldTransform = state()->matrix;

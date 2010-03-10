@@ -8,6 +8,7 @@ unix {
 	!contains( LIBS, .*odbc.* ) {
 	    LIBS 	*= $$QT_LFLAGS_ODBC
 	}
+        DEFINES += UNICODE
 }
 
 win32 {

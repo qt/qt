@@ -57,21 +57,30 @@ class Q_DECLARATIVE_EXPORT QDeclarativeGridView : public QDeclarativeFlickable
     Q_OBJECT
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeGridView)
 
-    Q_PROPERTY(QVariant model READ model WRITE setModel)
-    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate)
+    Q_PROPERTY(QVariant model READ model WRITE setModel NOTIFY modelChanged)
+    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(QDeclarativeItem *currentItem READ currentItem NOTIFY currentIndexChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
-    Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight)
-    Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightChanged)
+    Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight NOTIFY highlightChanged)
+    Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightItemChanged)
     Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
 
-    Q_PROPERTY(Flow flow READ flow WRITE setFlow)
-    Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled)
-    Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
+    Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin NOTIFY preferredHighlightBeginChanged)
+    Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd NOTIFY preferredHighlightEndChanged)
+    Q_PROPERTY(HighlightRangeMode highlightRangeMode READ highlightRangeMode WRITE setHighlightRangeMode NOTIFY highlightRangeModeChanged)
+
+    Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
+    Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled NOTIFY keyNavigationWrapsChanged)
+    Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer NOTIFY cacheBufferChanged)
     Q_PROPERTY(int cellWidth READ cellWidth WRITE setCellWidth NOTIFY cellWidthChanged)
     Q_PROPERTY(int cellHeight READ cellHeight WRITE setCellHeight NOTIFY cellHeightChanged)
+
+    Q_PROPERTY(SnapMode snapMode READ snapMode WRITE setSnapMode NOTIFY snapModeChanged)
+
+    Q_ENUMS(HighlightRangeMode)
+    Q_ENUMS(SnapMode)
     Q_CLASSINFO("DefaultProperty", "data")
 
 public:
@@ -97,6 +106,16 @@ public:
     bool highlightFollowsCurrentItem() const;
     void setHighlightFollowsCurrentItem(bool);
 
+    enum HighlightRangeMode { NoHighlightRange, ApplyRange, StrictlyEnforceRange };
+    HighlightRangeMode highlightRangeMode() const;
+    void setHighlightRangeMode(HighlightRangeMode mode);
+
+    qreal preferredHighlightBegin() const;
+    void setPreferredHighlightBegin(qreal);
+
+    qreal preferredHighlightEnd() const;
+    void setPreferredHighlightEnd(qreal);
+
     Q_ENUMS(Flow)
     enum Flow { LeftToRight, TopToBottom };
     Flow flow() const;
@@ -114,6 +133,10 @@ public:
     int cellHeight() const;
     void setCellHeight(int);
 
+    enum SnapMode { NoSnap, SnapToRow, SnapOneRow };
+    SnapMode snapMode() const;
+    void setSnapMode(SnapMode mode);
+
     static QDeclarativeGridViewAttached *qmlAttachedProperties(QObject *);
 
 public Q_SLOTS:
@@ -129,6 +152,16 @@ Q_SIGNALS:
     void cellWidthChanged();
     void cellHeightChanged();
     void highlightChanged();
+    void highlightItemChanged();
+    void preferredHighlightBeginChanged();
+    void preferredHighlightEndChanged();
+    void highlightRangeModeChanged();
+    void modelChanged();
+    void delegateChanged();
+    void flowChanged();
+    void keyNavigationWrapsChanged();
+    void cacheBufferChanged();
+    void snapModeChanged();
 
 protected:
     virtual void viewportMoved();
@@ -148,7 +181,6 @@ private Q_SLOTS:
     void destroyRemoved();
     void createdItem(int index, QDeclarativeItem *item);
     void destroyingItem(QDeclarativeItem *item);
-    void sizeChange();
     void layout();
 
 private:
@@ -161,9 +193,7 @@ class QDeclarativeGridViewAttached : public QObject
 public:
     QDeclarativeGridViewAttached(QObject *parent)
         : QObject(parent), m_isCurrent(false), m_delayRemove(false) {}
-    ~QDeclarativeGridViewAttached() {
-        attachedProperties.remove(parent());
-    }
+    ~QDeclarativeGridViewAttached() {}
 
     Q_PROPERTY(QDeclarativeGridView *view READ view CONSTANT)
     QDeclarativeGridView *view() { return m_view; }
@@ -186,15 +216,6 @@ public:
         }
     }
 
-    static QDeclarativeGridViewAttached *properties(QObject *obj) {
-        QDeclarativeGridViewAttached *rv = attachedProperties.value(obj);
-        if (!rv) {
-            rv = new QDeclarativeGridViewAttached(obj);
-            attachedProperties.insert(obj, rv);
-        }
-        return rv;
-    }
-
     void emitAdd() { emit add(); }
     void emitRemove() { emit remove(); }
 
@@ -206,10 +227,8 @@ Q_SIGNALS:
 
 public:
     QDeclarativeGridView *m_view;
-    bool m_isCurrent;
-    bool m_delayRemove;
-
-    static QHash<QObject*, QDeclarativeGridViewAttached*> attachedProperties;
+    bool m_isCurrent : 1;
+    bool m_delayRemove : 1;
 };
 
 

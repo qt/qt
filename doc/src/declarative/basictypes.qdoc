@@ -128,7 +128,7 @@
   \brief A URL is a resource locator, like a file name. 
 
   A URL is a resource locator, like a file name.  It can be either
-  absolute, e.g. "http://qtsoftware.com", or relative, e.g.
+  absolute, e.g. "http://qt.nokia.com", or relative, e.g.
   "pics/logo.png". A relative URL is resolved relative to the URL of
   the component where the URL is converted from a JavaScript string
   expression to a url property value.

@@ -53,8 +53,7 @@ QT_BEGIN_NAMESPACE
 
 EGLNativeDisplayType QEgl::nativeDisplay()
 {
-    HWND win = (static_cast<QWidget*>(device))->winId();
-    HDC myDc = GetDC(win);
+    HDC myDc = GetDC(0);
     if (!myDc) {
         qWarning("QEglContext::nativeDisplay(): WinCE display is not open");
         return EGL_DEFAULT_DISPLAY;

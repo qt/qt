@@ -1,6 +1,9 @@
 import Qt 4.6
 
 Rectangle {
+    id: root
+    property int currentA: -1
+    property int currentB: -1
     width: 240
     height: 320
     color: "#ffffff"
@@ -12,7 +15,7 @@ Rectangle {
                 objectName: "wrapper"
                 height: 20
                 width: 60
-                color: "white"
+                color: PathView.isCurrentItem ? "lightsteelblue" : "white"
                 border.color: "black"
                 Text {
                     text: index
@@ -29,6 +32,12 @@ Rectangle {
                     objectName: "textNumber"
                     text: number
                 }
+                PathView.onCurrentItemChanged: {
+                    if (PathView.isCurrentItem) {
+                        root.currentA = index;
+                        root.currentB = wrapper.PathView.view.currentIndex;
+                    }
+                }
             }
         }
     ]
@@ -39,7 +48,7 @@ Rectangle {
         height: 320
         model: testModel
         delegate: delegate
-        snapPosition: 0.01
+        snapPosition: 0.0001
         path: Path {
             startY: 120
             startX: 160

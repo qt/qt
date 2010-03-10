@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
 QDeclarativeImageBase::QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent)
   : QDeclarativeItem(dd, parent)
 {
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QDeclarativeImageBase::~QDeclarativeImageBase()
@@ -131,7 +130,7 @@ void QDeclarativeImageBase::load()
         setImplicitWidth(0);
         setImplicitHeight(0);
         emit statusChanged(d->status);
-        emit pixmapChanged();
+        pixmapChange();
         update();
     } else {
         d->status = Loading;
@@ -145,19 +144,19 @@ void QDeclarativeImageBase::load()
             static int thisRequestProgress = -1;
             static int thisRequestFinished = -1;
             if (replyDownloadProgress == -1) {
-                replyDownloadProgress = 
+                replyDownloadProgress =
                     QDeclarativePixmapReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
-                replyFinished = 
+                replyFinished =
                     QDeclarativePixmapReply::staticMetaObject.indexOfSignal("finished()");
-                thisRequestProgress = 
+                thisRequestProgress =
                     QDeclarativeImageBase::staticMetaObject.indexOfSlot("requestProgress(qint64,qint64)");
                 thisRequestFinished =
                     QDeclarativeImageBase::staticMetaObject.indexOfSlot("requestFinished()");
             }
 
-            QMetaObject::connect(reply, replyFinished, this, 
+            QMetaObject::connect(reply, replyFinished, this,
                                  thisRequestFinished, Qt::DirectConnection);
-            QMetaObject::connect(reply, replyDownloadProgress, this, 
+            QMetaObject::connect(reply, replyDownloadProgress, this,
                                  thisRequestProgress, Qt::DirectConnection);
         } else {
             //### should be unified with requestFinished
@@ -173,7 +172,7 @@ void QDeclarativeImageBase::load()
             d->progress = 1.0;
             emit statusChanged(d->status);
             emit progressChanged(d->progress);
-            emit pixmapChanged();
+            pixmapChange();
             update();
         }
     }
@@ -197,7 +196,7 @@ void QDeclarativeImageBase::requestFinished()
     d->progress = 1.0;
     emit statusChanged(d->status);
     emit progressChanged(1.0);
-    emit pixmapChanged();
+    pixmapChange();
     update();
 }
 
@@ -216,6 +215,10 @@ void QDeclarativeImageBase::componentComplete()
     QDeclarativeItem::componentComplete();
     if (d->url.isValid())
         load();
+}
+
+void QDeclarativeImageBase::pixmapChange()
+{
 }
 
 QT_END_NAMESPACE

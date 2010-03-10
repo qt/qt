@@ -176,6 +176,8 @@ public:
     QImage image() const { return img; }
     QPoint painterOffset() const;
 
+    void beginPaint(const QRegion &rgn);
+
     bool lock(int timeout = -1);
     void unlock();
 

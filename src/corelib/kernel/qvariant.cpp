@@ -484,8 +484,12 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
      * QMetaType::VoidStar, QMetaType::QObjectStar and so forth, is that it wouldn't include
      * user defined pointer types. */
     const char *const typeName = QMetaType::typeName(a->type);
-    if (typeName[qstrlen(typeName) - 1] == '*')
+    uint typeNameLen = qstrlen(typeName);
+    if (typeNameLen > 0 && typeName[typeNameLen - 1] == '*')
         return *static_cast<void *const *>(a_ptr) == *static_cast<void *const *>(b_ptr);
+
+    if (a->is_null && b->is_null)
+        return true;
 
     return a_ptr == b_ptr;
 }
@@ -1507,6 +1511,7 @@ QVariant::QVariant(const char *val)
 */
 
 /*!
+    \since 4.7
   \fn QVariant::QVariant(const QEasingCurve &val)
 
     Constructs a new variant with an easing curve value, \a val.
@@ -2200,6 +2205,7 @@ QDateTime QVariant::toDateTime() const
 }
 
 /*!
+    \since 4.7
     \fn QEasingCurve QVariant::toEasingCurve() const
 
     Returns the variant as a QEasingCurve if the variant has type() \l

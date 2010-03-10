@@ -41,7 +41,7 @@
 
 #include <QtTest/QtTest>
 
-#include "../../../src/plugins/qdeclarativemodules/multimedia/qdeclarativeaudio_p.h"
+#include "../../../src/imports/multimedia/qdeclarativeaudio_p.h"
 
 #include <QtGui/qapplication.h>
 #include <QtMultimedia/qmediaplayercontrol.h>

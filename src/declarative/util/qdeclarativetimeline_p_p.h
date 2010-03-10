@@ -160,7 +160,7 @@ public:
     QDeclarativeTimeLineObject *callbackObject() const;
 
 private:
-    friend class QDeclarativeTimeLinePrivate; 
+    friend struct QDeclarativeTimeLinePrivate;
     Callback d0;
     void *d1;
     QDeclarativeTimeLineObject *d2;

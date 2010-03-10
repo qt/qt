@@ -64,7 +64,7 @@
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
-#ifdef QT_OPENGL_ES
+#if defined(QT_OPENGL_ES) || defined(QT_OPENGL_ES_2)
 #include <QtGui/private/qegl_p.h>
 #endif
 

@@ -543,19 +543,20 @@ void QColor::setNamedColor(const QString &name)
    be used to construct a valid QColor object, otherwise returns
    false.
 
-   The algorithm used is the same as with \a setNamedColor().
+   It uses the same algorithm used in setNamedColor().
+
    \sa setNamedColor()
 */
 bool QColor::isValidColor(const QString &name)
 {
-    return QColor().setColorFromString(name);
+    return !name.isEmpty() && QColor().setColorFromString(name);
 }
 
 bool QColor::setColorFromString(const QString &name)
 {
     if (name.isEmpty()) {
         invalidate();
-        return false;
+        return true;
     }
 
     if (name.startsWith(QLatin1Char('#'))) {
@@ -2714,14 +2715,6 @@ QDataStream &operator>>(QDataStream &stream, QColor &color)
     \l{QColor#Alpha-Blended Drawing}{Alpha-Blended Drawing} section.
 
     \sa QColor::rgb(), QColor::rgba()
-*/
-
-/*! \fn void QColormap::initialize()
-  \internal
-*/
-
-/*! \fn void QColormap::cleanup()
-  \internal
 */
 
 QT_END_NAMESPACE

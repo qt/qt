@@ -48,7 +48,7 @@
 SvgalibPaintDevice::SvgalibPaintDevice(QWidget *w)
     : QCustomRasterPaintDevice(w)
 {
-    pengine = new SvgalibPaintEngine;
+    pengine = new SvgalibPaintEngine(this);
 }
 
 SvgalibPaintDevice::~SvgalibPaintDevice()

@@ -152,6 +152,7 @@ static bool qt_mac_raise_process = true;
 static OSWindowRef qt_root_win = 0;
 QWidget *mac_mouse_grabber = 0;
 QWidget *mac_keyboard_grabber = 0;
+extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
 #ifndef QT_MAC_USE_COCOA
 #ifdef QT_NAMESPACE
@@ -459,7 +460,13 @@ static bool qt_isGenuineQWidget(OSViewRef ref)
 
 bool qt_isGenuineQWidget(const QWidget *window)
 {
-    return window && qt_isGenuineQWidget(OSViewRef(window->winId()));
+    if (!window)
+        return false;
+
+    if (!window->internalWinId())
+        return true;  //alien
+
+    return qt_isGenuineQWidget(OSViewRef(window->internalWinId()));
 }
 
 Q_GUI_EXPORT OSWindowRef qt_mac_window_for(const QWidget *w)
@@ -866,7 +873,6 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
                                                            & ~Qt::WindowMaximized));
                 QApplication::sendSpontaneousEvent(widget, &e);
             }
-            extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
             qt_button_down = 0;
         } else if(ekind == kEventWindowCollapsed) {
             if (!widget->isMinimized()) {
@@ -894,7 +900,6 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             //we send a hide to be like X11/Windows
             QEvent e(QEvent::Hide);
             QApplication::sendSpontaneousEvent(widget, &e);
-            extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
             qt_button_down = 0;
         } else if(ekind == kEventWindowToolbarSwitchMode) {
             macSendToolbarChangeEvent(widget);
@@ -1268,6 +1273,11 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                 if (widget->isVisible() && widget->updatesEnabled()) { //process the actual paint event.
                     if(widget->testAttribute(Qt::WA_WState_InPaintEvent))
                         qWarning("QWidget::repaint: Recursive repaint detected");
+                    if (widget->isWindow() && !widget->d_func()->isOpaque
+                        && !widget->testAttribute(Qt::WA_MacBrushedMetal)) {
+                        QRect qrgnRect = qrgn.boundingRect();
+                        CGContextClearRect(cg, CGRectMake(qrgnRect.x(), qrgnRect.y(), qrgnRect.width(), qrgnRect.height()));
+                    }
 
                     QPoint redirectionOffset(0, 0);
                     QWidget *tl = widget->window();
@@ -1317,13 +1327,6 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                         if (!redirectionOffset.isNull())
                             widget->d_func()->restoreRedirected();
                     }
-
-                    if (widget->isWindow() && !widget->d_func()->isOpaque
-                           && !widget->testAttribute(Qt::WA_MacBrushedMetal)) {
-                        QRect qrgnRect = qrgn.boundingRect();
-                        CGContextClearRect(cg, CGRectMake(qrgnRect.x(), qrgnRect.y(), qrgnRect.width(), qrgnRect.height()));
-                    }
-
 
                     if(!HIObjectIsOfClass((HIObjectRef)hiview, kObjectQWidget))
                         CallNextEventHandler(er, event);
@@ -1521,7 +1524,6 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
             if (widget) {
                 qt_event_request_window_change(widget);
                 if (!HIViewIsVisible(HIViewRef(widget->winId()))) {
-                    extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
                     if (widget == qt_button_down)
                         qt_button_down = 0;
                 }
@@ -1530,7 +1532,6 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
         break; }
     case kEventClassMouse: {
         bool send_to_app = false;
-        extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
         if(qt_button_down)
             send_to_app = true;
         if(send_to_app) {
@@ -2608,7 +2609,16 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         }
     } else {
         data.fstrut_dirty = false; // non-toplevel widgets don't have a frame, so no need to update the strut
-        if(OSViewRef osview = qt_mac_create_widget(q, this, qt_mac_nativeview_for(parentWidget))) {
+
+#ifdef QT_MAC_USE_COCOA
+        if (q->testAttribute(Qt::WA_NativeWindow) == false ||
+            q->internalWinId() != 0) {
+#ifdef ALIEN_DEBUG
+            qDebug() << "Skipping native widget creation for" << this;
+#endif
+        } else
+#endif
+        if (OSViewRef osview = qt_mac_create_widget(q, this, qt_mac_nativeview_for(parentWidget))) {
 #ifndef QT_MAC_USE_COCOA
             HIRect bounds = CGRectMake(data.crect.x(), data.crect.y(), data.crect.width(), data.crect.height());
             HIViewSetFrame(osview, &bounds);
@@ -2869,9 +2879,12 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     q->setAttribute(Qt::WA_WState_Visible, false);
     q->setAttribute(Qt::WA_WState_Hidden, false);
     adjustFlags(data.window_flags, q);
-    // keep compatibility with previous versions, we need to preserve the created state
-    // (but we recreate the winId for the widget being reparented, again for compatibility)
-    if (wasCreated || (!q->isWindow() && parent->testAttribute(Qt::WA_WState_Created))) {
+    // keep compatibility with previous versions, we need to preserve the created state.
+    // (but we recreate the winId for the widget being reparented, again for compatibility,
+    // unless this is an alien widget. )
+    const bool nonWindowWithCreatedParent = !q->isWindow() && parent->testAttribute(Qt::WA_WState_Created);
+    const bool nativeWidget = q->internalWinId() != 0;
+    if (wasCreated || nativeWidget && nonWindowWithCreatedParent) {
         createWinId();
         if (q->isWindow()) {
 #ifndef QT_MAC_USE_COCOA
@@ -2955,7 +2968,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    if (!testAttribute(Qt::WA_WState_Created)) {
+    if (!testAttribute(Qt::WA_WState_Created) || !internalWinId()) {
         QPoint p = pos + data->crect.topLeft();
         return isWindow() ?  p : parentWidget()->mapToGlobal(p);
     }
@@ -2982,7 +2995,7 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    if (!testAttribute(Qt::WA_WState_Created)) {
+    if (!testAttribute(Qt::WA_WState_Created) || !internalWinId()) {
         QPoint p = isWindow() ?  pos : parentWidget()->mapFromGlobal(pos);
         return p - data->crect.topLeft();
     }
@@ -3320,10 +3333,20 @@ void QWidgetPrivate::update_sys(const QRegion &rgn)
     }
 #else
     // Cocoa doesn't do regions, it seems more efficient to just update the bounding rect instead of a potential number of message passes for each rect.
-    const QRect &boundingRect = rgn.boundingRect();
-    [qt_mac_nativeview_for(q) setNeedsDisplayInRect:NSMakeRect(boundingRect.x(),
-                                                            boundingRect.y(), boundingRect.width(),
-                                                            boundingRect.height())];
+    const QRect & boundingRect = rgn.boundingRect();
+
+    // Alien support: get the first native ancestor widget (will be q itself in the non-alien case),
+    // map the coordinates from q space to NSView space and invalidate the rect.
+    QWidget *nativeParent = q->internalWinId() ? q : q->nativeParentWidget();
+    if (nativeParent == 0)
+            return;
+    const QRect nativeBoundingRect = QRect(
+            QPoint(q->mapTo(nativeParent, boundingRect.topLeft())),
+            QSize(boundingRect.size()));
+
+    [qt_mac_nativeview_for(nativeParent) setNeedsDisplayInRect:NSMakeRect(nativeBoundingRect.x(),
+                                                            nativeBoundingRect.y(), nativeBoundingRect.width(),
+                                                            nativeBoundingRect.height())];
 #endif
 }
 
@@ -3405,8 +3428,10 @@ void QWidgetPrivate::show_sys()
                 // The window is modally shaddowed, so we need to make
                 // sure that we don't pop in front of the modal window:
                 [window orderFront:window];
-                if (NSWindow *modalWin = qt_mac_window_for(top))
-                    [modalWin orderFront:window];
+                if (!top->testAttribute(Qt::WA_DontShowOnScreen)) {
+                    if (NSWindow *modalWin = qt_mac_window_for(top))
+                        [modalWin orderFront:window];
+                }
             }
 #endif
             if (q->windowType() == Qt::Popup) {
@@ -3465,7 +3490,6 @@ void QWidgetPrivate::hide_sys()
     Q_Q(QWidget);
     if((q->windowType() == Qt::Desktop)) //you can't hide the desktop!
         return;
-
     QMacCocoaAutoReleasePool pool;
     if(q->isWindow()) {
 #ifdef QT_MAC_USE_COCOA

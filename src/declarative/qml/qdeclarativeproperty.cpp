@@ -115,8 +115,10 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj)
 }
 
 /*!
-    Creates a QDeclarativeProperty for the default property of \a obj. If there is no
-    default property, an invalid QDeclarativeProperty will be created.
+    Creates a QDeclarativeProperty for the default property of \a obj
+    using the \l{QDeclarativeContext} {context} \a ctxt. If there is
+    no default property, an invalid QDeclarativeProperty will be
+    created.
  */
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, QDeclarativeContext *ctxt)
 : d(new QDeclarativePropertyPrivate)
@@ -128,11 +130,13 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, QDeclarativeContext *ct
 }
 
 /*!
-    Creates a QDeclarativeProperty for the default property of \a obj. If there is no
-    default property, an invalid QDeclarativeProperty will be created.
+    Creates a QDeclarativeProperty for the default property of \a obj
+    using the environment for instantiating QML components that is
+    provided by \a engine.  If there is no default property, an
+    invalid QDeclarativeProperty will be created.
  */
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, QDeclarativeEngine *engine)
-: d(new QDeclarativePropertyPrivate)
+  : d(new QDeclarativePropertyPrivate)
 {
     d->q = this;
     d->context = 0;
@@ -166,8 +170,9 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name)
 }
 
 /*!
-    Creates a QDeclarativeProperty for the property \a name of \a obj.
- */
+    Creates a QDeclarativeProperty for the property \a name of \a obj
+    using the \l{QDeclarativeContext} {context} \a ctxt.
+*/
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QDeclarativeContext *ctxt)
 : d(new QDeclarativePropertyPrivate)
 {
@@ -179,7 +184,9 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QD
 }
 
 /*!
-    Creates a QDeclarativeProperty for the property \a name of \a obj.
+    Creates a QDeclarativeProperty for the property \a name of \a obj
+    using the environment for instantiating QML components that is
+    provided by \a engine.
  */
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QDeclarativeEngine *engine)
 : d(new QDeclarativePropertyPrivate)
@@ -238,10 +245,10 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
             if (property->flags & QDeclarativePropertyCache::Data::IsFunction) 
                 return; // Not an object property 
 
-            if (ii == (path.count() - 2) && property->propType < (int)QVariant::UserType) {
+            if (ii == (path.count() - 2) && QDeclarativeValueTypeFactory::isValueType(property->propType)) {
                 // We're now at a value type property.  We can use a global valuetypes array as we 
                 // never actually use the objects, just look up their properties.
-                QObject *typeObject = qmlValueTypes()->valueTypes[property->propType];
+                QObject *typeObject = (*qmlValueTypes())[property->propType];
                 if (!typeObject) return; // Not a value type
 
                 int idx = typeObject->metaObject()->indexOfProperty(path.last().toUtf8().constData());
@@ -346,7 +353,7 @@ QDeclarativePropertyPrivate::propertyTypeCategory() const
         int type = propertyType();
         if (type == QVariant::Invalid)
             return QDeclarativeProperty::InvalidCategory;
-        else if ((uint)type < QVariant::UserType)
+        else if (QDeclarativeValueTypeFactory::isValueType((uint)type))
             return QDeclarativeProperty::Normal;
         else if (core.flags & QDeclarativePropertyCache::Data::IsQObjectDerived)
             return QDeclarativeProperty::Object;
@@ -766,11 +773,14 @@ QVariant QDeclarativeProperty::read(QObject *object, const QString &name)
 }
 
 /*!
-Return the \a name property value of \a object.  This method is equivalent to:
-\code
+  Return the \a name property value of \a object using the
+  \l{QDeclarativeContext} {context} \a ctxt.  This method is
+  equivalent to:
+
+  \code
     QDeclarativeProperty p(object, name, context);
     p.read();
-\endcode
+  \endcode
 */
 QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDeclarativeContext *ctxt)
 {
@@ -779,11 +789,15 @@ QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDecla
 }
 
 /*!
-Return the \a name property value of \a object.  This method is equivalent to:
-\code
+  
+  Return the \a name property value of \a object using the environment
+  for instantiating QML components that is provided by \a engine. .
+  This method is equivalent to:
+
+  \code
     QDeclarativeProperty p(object, name, engine);
     p.read();
-\endcode
+  \endcode
 */
 QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDeclarativeEngine *engine)
 {
@@ -793,7 +807,7 @@ QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDecla
 
 QVariant QDeclarativePropertyPrivate::readValueProperty()
 {
-    if(isValueType()) {
+    if (isValueType()) {
 
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context);
         QDeclarativeValueType *valueType = 0;
@@ -809,12 +823,19 @@ QVariant QDeclarativePropertyPrivate::readValueProperty()
         if (!ep) delete valueType;
         return rv;
 
-    } else if(core.flags & QDeclarativePropertyCache::Data::IsQList) {
+    } else if (core.flags & QDeclarativePropertyCache::Data::IsQList) {
 
         QDeclarativeListProperty<QObject> prop;
         void *args[] = { &prop, 0 };
         QMetaObject::metacall(object, QMetaObject::ReadProperty, core.coreIndex, args);
         return QVariant::fromValue(QDeclarativeListReferencePrivate::init(prop, core.propType, engine)); 
+
+    } else if (core.flags & QDeclarativePropertyCache::Data::IsQObjectDerived) {
+
+        QObject *rv = 0;
+        void *args[] = { &rv, 0 };
+        QMetaObject::metacall(object, QMetaObject::ReadProperty, core.coreIndex, args);
+        return QVariant::fromValue(rv);
 
     } else {
 
@@ -1066,19 +1087,23 @@ const QMetaObject *QDeclarativePropertyPrivate::rawMetaObjectForType(QDeclarativ
 }
 
 /*!
-    Set the property value to \a value.
-*/
+    Sets the property value to \a value and returns true.
+    Returns false if the property can't be set because the
+    \a value is the wrong type, for example.
+ */
 bool QDeclarativeProperty::write(const QVariant &value) const
 {
     return QDeclarativePropertyPrivate::write(*this, value, 0);
 }
 
 /*!
-Writes \a value to the \a name property of \a object.  This method is equivalent to:
-\code
+  Writes \a value to the \a name property of \a object.  This method
+  is equivalent to:
+
+  \code
     QDeclarativeProperty p(object, name);
     p.write(value);
-\endcode
+  \endcode
 */
 bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVariant &value)
 {
@@ -1087,13 +1112,18 @@ bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVa
 }
 
 /*!
-Writes \a value to the \a name property of \a object.  This method is equivalent to:
-\code
+  Writes \a value to the \a name property of \a object using the
+  \l{QDeclarativeContext} {context} \a ctxt.  This method is
+  equivalent to:
+
+  \code
     QDeclarativeProperty p(object, name, ctxt);
     p.write(value);
-\endcode
+  \endcode
 */
-bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVariant &value, 
+bool QDeclarativeProperty::write(QObject *object,
+                                 const QString &name,
+                                 const QVariant &value, 
                                  QDeclarativeContext *ctxt)
 {
     QDeclarativeProperty p(object, name, ctxt);
@@ -1101,11 +1131,15 @@ bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVa
 }
 
 /*!
-Writes \a value to the \a name property of \a object.  This method is equivalent to:
-\code
+  
+  Writes \a value to the \a name property of \a object using the
+  environment for instantiating QML components that is provided by
+  \a engine.  This method is equivalent to:
+
+  \code
     QDeclarativeProperty p(object, name, engine);
     p.write(value);
-\endcode
+  \endcode
 */
 bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVariant &value, 
                                  QDeclarativeEngine *engine)
@@ -1115,7 +1149,9 @@ bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVa
 }
 
 /*!
-    Resets the property value.
+    Resets the property and returns true if the property is
+    resettable.  If the property is not resettable, nothing happens
+    and false is returned.
 */
 bool QDeclarativeProperty::reset() const
 {

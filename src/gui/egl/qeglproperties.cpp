@@ -39,16 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qeglproperties_p.h"
-
-QT_BEGIN_NAMESPACE
-
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 
 #include "qeglproperties_p.h"
 #include "qeglcontext_p.h"
 
+QT_BEGIN_NAMESPACE
 
 // Initialize a property block.
 QEglProperties::QEglProperties()

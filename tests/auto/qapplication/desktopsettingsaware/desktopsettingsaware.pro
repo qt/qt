@@ -13,8 +13,3 @@ wince*|symbian*:TARGET = ../desktopsettingsaware
 SOURCES += main.cpp
 CONFIG += qt warn_on create_prl link_prl
 CONFIG -= app_bundle
-
-!symbian*: {
-OBJECTS_DIR=.obj/debug-shared
-MOC_DIR=.moc/debug-shared
-}
