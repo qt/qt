@@ -45,7 +45,8 @@
 #include <vga.h>
 #include <vgagl.h>
 
-SvgalibPaintEngine::SvgalibPaintEngine()
+SvgalibPaintEngine::SvgalibPaintEngine(QPaintDevice *device)
+    : QRasterPaintEngine(device)
 {
 }
 
@@ -61,7 +62,7 @@ bool SvgalibPaintEngine::begin(QPaintDevice *dev)
     simplePen = true;
     brush = Qt::NoBrush;
     simpleBrush = true;
-    matrix = QMatrix();
+    matrix = QTransform();
     simpleMatrix = true;
     setClip(QRect(0, 0, device->width(), device->height()));
     opaque = true;
@@ -81,54 +82,52 @@ bool SvgalibPaintEngine::end()
 //! [1]
 
 //! [2]
-void SvgalibPaintEngine::updateState(const QPaintEngineState &state)
+void SvgalibPaintEngine::updateState()
 {
-    QPaintEngine::DirtyFlags flags = state.state();
+    QRasterPaintEngineState *s = state();
 
-    if (flags & DirtyTransform) {
-        matrix = state.matrix();
+    if (s->dirty & DirtyTransform) {
+        matrix = s->matrix;
         simpleMatrix = (matrix.m12() == 0 && matrix.m21() == 0);
     }
 
-    if (flags & DirtyPen) {
-        pen = state.pen();
+    if (s->dirty & DirtyPen) {
+        pen = s->pen;
         simplePen = (pen.width() == 0 || pen.widthF() <= 1)
                     && (pen.style() == Qt::NoPen || pen.style() == Qt::SolidLine)
                     && (pen.color().alpha() == 255);
     }
 
-    if (flags & DirtyBrush) {
-        brush = state.brush();
+    if (s->dirty & DirtyBrush) {
+        brush = s->brush;
         simpleBrush = (brush.style() == Qt::SolidPattern
                        || brush.style() == Qt::NoBrush)
                       && (brush.color().alpha() == 255);
     }
 
-    if (flags & DirtyClipRegion)
-        setClip(state.clipRegion());
+    if (s->dirty & DirtyClipRegion)
+        setClip(s->clipRegion);
 
-    if (flags & DirtyClipEnabled) {
-        clipEnabled = state.isClipEnabled();
+    if (s->dirty & DirtyClipEnabled) {
+        clipEnabled = s->isClipEnabled();
         updateClip();
     }
 
-    if (flags & DirtyClipPath) {
+    if (s->dirty & DirtyClipPath) {
         setClip(QRegion());
         simpleClip = false;
     }
 
-    if (flags & DirtyCompositionMode) {
-        const QPainter::CompositionMode m = state.compositionMode();
+    if (s->dirty & DirtyCompositionMode) {
+        const QPainter::CompositionMode m = s->composition_mode;
         sourceOver = (m == QPainter::CompositionMode_SourceOver);
     }
 
-    if (flags & DirtyOpacity)
-        opaque = (state.opacity() == 256);
+    if (s->dirty & DirtyOpacity)
+        opaque = (s->opacity == 256);
 
-    if (flags & DirtyHints)
-        aliased = !(state.renderHints() & QPainter::Antialiasing);
-
-    QRasterPaintEngine::updateState(state);
+    if (s->dirty & DirtyHints)
+        aliased = !(s->flags.antialiased);
 }
 //! [2]
 

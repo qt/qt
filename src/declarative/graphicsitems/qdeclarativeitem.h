@@ -143,6 +143,8 @@ public:
     void resetHeight();
     qreal implicitHeight() const;
 
+    void setSize(const QSizeF &size);
+
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
 
@@ -209,8 +211,6 @@ protected:
     QDeclarativeItem(QDeclarativeItemPrivate &dd, QDeclarativeItem *parent = 0);
 
 private:
-    friend class QDeclarativeStatePrivate;
-    friend class QDeclarativeAnchors;
     Q_DISABLE_COPY(QDeclarativeItem)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeItem)
 };
