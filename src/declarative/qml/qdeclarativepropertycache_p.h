@@ -82,7 +82,6 @@ public:
                     IsConstant        = 0x00000001,
                     IsWritable        = 0x00000002,
                     IsResettable      = 0x00000004,
-                    HasNotify         = 0x00000008,
 
                     // These are mutualy exclusive
                     IsFunction        = 0x00000010,
@@ -98,18 +97,12 @@ public:
 
         };
         Q_DECLARE_FLAGS(Flags, Flag)
-                        
-        enum Call { ReadProperty, WriteProperty, ConnectNotify, DisconnectNotify };
-        typedef void (*MetaCall)(QObject *, Call, void *);
 
         bool isValid() const { return coreIndex != -1; } 
 
         Flags flags;
         int propType;
-        union {
-            MetaCall call;
-            int coreIndex;
-        };
+        int coreIndex;
         int notifyIndex;
 
         static Flags flagsForProperty(const QMetaProperty &, QDeclarativeEngine *engine = 0);
