@@ -131,29 +131,33 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     contentDock->setWidget(m_contentWindow);
     addDockWidget(Qt::LeftDockWidgetArea, contentDock);
 
-    QDockWidget *bookmarkDock = 0;
-    if (BookmarkManager *manager = BookmarkManager::instance()) {
-        bookmarkDock = new QDockWidget(tr("Bookmarks"), this);
-        bookmarkDock->setObjectName(QLatin1String("BookmarkWindow"));
-        bookmarkDock->setWidget(m_bookmarkWidget = manager->bookmarkDockWidget());
-        addDockWidget(Qt::LeftDockWidgetArea, bookmarkDock);
+    m_searchWindow = new SearchWidget(helpEngineWrapper.searchEngine());
+    m_searchWindow->setFont(!helpEngineWrapper.usesBrowserFont() ? qApp->font()
+        : helpEngineWrapper.browserFont());
+    QDockWidget *searchDock = new QDockWidget(tr("Search"), this);
+    searchDock->setObjectName(QLatin1String("SearchWindow"));
+    searchDock->setWidget(m_searchWindow);
+    addDockWidget(Qt::LeftDockWidgetArea, searchDock);
 
-        connect(manager, SIGNAL(escapePressed()), this,
+    BookmarkManager *bookMarkManager = BookmarkManager::instance();
+    QDockWidget *bookmarkDock = new QDockWidget(tr("Bookmarks"), this);
+    bookmarkDock->setObjectName(QLatin1String("BookmarkWindow"));
+    bookmarkDock->setWidget(m_bookmarkWidget
+        = bookMarkManager->bookmarkDockWidget());
+    addDockWidget(Qt::LeftDockWidgetArea, bookmarkDock);
+
+    connect(bookMarkManager, SIGNAL(escapePressed()), this,
             SLOT(activateCurrentCentralWidgetTab()));
-        connect(manager, SIGNAL(setSource(QUrl)), m_centralWidget,
+    connect(bookMarkManager, SIGNAL(setSource(QUrl)), m_centralWidget,
             SLOT(setSource(QUrl)));
-        connect(manager, SIGNAL(setSourceInNewTab(QUrl)), m_centralWidget,
+    connect(bookMarkManager, SIGNAL(setSourceInNewTab(QUrl)), m_centralWidget,
             SLOT(setSourceInNewTab(QUrl)));
-        connect(m_centralWidget, SIGNAL(addBookmark(QString, QString)), manager,
-            SLOT(addBookmark(QString, QString)));
-    }
+    connect(m_centralWidget, SIGNAL(addBookmark(QString, QString)),
+        bookMarkManager, SLOT(addBookmark(QString, QString)));
 
     QHelpSearchEngine *searchEngine = helpEngineWrapper.searchEngine();
     connect(searchEngine, SIGNAL(indexingStarted()), this, SLOT(indexingStarted()));
     connect(searchEngine, SIGNAL(indexingFinished()), this, SLOT(indexingFinished()));
-
-    m_centralWidget->createSearchWidget(searchEngine);
-    m_centralWidget->activateSearchWidget();
 
     QString defWindowTitle = tr("Qt Assistant");
     setWindowTitle(defWindowTitle);
@@ -190,10 +194,10 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
             restoreGeometry(ba);
         } else {
             tabifyDockWidget(contentDock, indexDock);
-            if (bookmarkDock)
-                tabifyDockWidget(indexDock, bookmarkDock);
+            tabifyDockWidget(indexDock, bookmarkDock);
+            tabifyDockWidget(bookmarkDock, searchDock);
             contentDock->raise();
-            resize(QSize(800, 600));
+            resize(QSize(1024, 768));
         }
 
         if (!helpEngineWrapper.hasFontSettings()) {
@@ -490,7 +494,7 @@ void MainWindow::setupActions()
         QKeySequence(tr("ALT+I")));
     m_viewMenu->addAction(tr("Bookmarks"), this, SLOT(showBookmarksDockWidget()),
         QKeySequence(tr("ALT+O")));
-    m_viewMenu->addAction(tr("Search"), this, SLOT(showSearchWidget()),
+    m_viewMenu->addAction(tr("Search"), this, SLOT(showSearch()),
         QKeySequence(tr("ALT+S")));
 
     menu = menuBar()->addMenu(tr("&Go"));
@@ -524,8 +528,7 @@ void MainWindow::setupActions()
     tmp->setShortcuts(QList<QKeySequence>() << QKeySequence(tr("Ctrl+Alt+Left"))
         << QKeySequence(Qt::CTRL + Qt::Key_PageUp));
 
-    if (BookmarkManager *manager = BookmarkManager::instance())
-        manager->takeBookmarksMenu(menuBar()->addMenu(tr("&Bookmarks")));
+    BookmarkManager::instance()->takeBookmarksMenu(menuBar()->addMenu(tr("&Bookmarks")));
 
     menu = menuBar()->addMenu(tr("&Help"));
     m_aboutAction = menu->addAction(tr("About..."), this, SLOT(showAboutDialog()));
@@ -600,6 +603,12 @@ void MainWindow::setupActions()
         SLOT(setSource(QUrl)));
     connect(m_contentWindow, SIGNAL(escapePressed()), this,
         SLOT(activateCurrentCentralWidgetTab()));
+
+    // search window
+    connect(m_searchWindow, SIGNAL(requestShowLink(QUrl)),  m_centralWidget,
+            SLOT(setSourceFromSearch(QUrl)));
+    connect(m_searchWindow, SIGNAL(requestShowLinkInNewTab(QUrl)),
+        m_centralWidget, SLOT(setSourceFromSearchInNewTab(QUrl)));
 
 #if defined(QT_NO_PRINTER)
         m_pageSetupAction->setVisible(false);
@@ -727,15 +736,9 @@ void MainWindow::gotoAddress()
 void MainWindow::updateNavigationItems()
 {
     TRACE_OBJ
-    bool hasCurrentViewer = m_centralWidget->isHomeAvailable();
     m_copyAction->setEnabled(m_centralWidget->hasSelection());
-    m_homeAction->setEnabled(hasCurrentViewer);
-    m_syncAction->setEnabled(hasCurrentViewer);
-    m_printPreviewAction->setEnabled(hasCurrentViewer);
-    m_printAction->setEnabled(hasCurrentViewer);
     m_nextAction->setEnabled(m_centralWidget->isForwardAvailable());
     m_backAction->setEnabled(m_centralWidget->isBackwardAvailable());
-    m_newTabAction->setEnabled(hasCurrentViewer);
 }
 
 void MainWindow::updateTabCloseAction()
@@ -891,15 +894,13 @@ void MainWindow::setBookmarksVisible(bool visible)
 void MainWindow::showBookmarksDockWidget()
 {
     TRACE_OBJ
-    if (m_bookmarkWidget)
-        activateDockWidget(m_bookmarkWidget);
+    activateDockWidget(m_bookmarkWidget);
 }
 
 void MainWindow::hideBookmarksDockWidget()
 {
     TRACE_OBJ
-    if (m_bookmarkWidget)
-        m_bookmarkWidget->parentWidget()->hide();
+    m_bookmarkWidget->parentWidget()->hide();
 }
 
 void MainWindow::setSearchVisible(bool visible)
@@ -914,13 +915,13 @@ void MainWindow::setSearchVisible(bool visible)
 void MainWindow::showSearch()
 {
     TRACE_OBJ
-    m_centralWidget->activateSearchWidget();
+    activateDockWidget(m_searchWindow);
 }
 
 void MainWindow::hideSearch()
 {
     TRACE_OBJ
-    m_centralWidget->removeSearchWidget();
+    m_searchWindow->parentWidget()->hide();
 }
 
 void MainWindow::activateDockWidget(QWidget *w)
@@ -940,22 +941,13 @@ void MainWindow::setIndexString(const QString &str)
 void MainWindow::activateCurrentBrowser()
 {
     TRACE_OBJ
-    CentralWidget *cw = CentralWidget::instance();
-    if (cw) {
-        cw->activateTab(true);
-    }
+    CentralWidget::instance()->activateTab();
 }
 
 void MainWindow::activateCurrentCentralWidgetTab()
 {
     TRACE_OBJ
     m_centralWidget->activateTab();
-}
-
-void MainWindow::showSearchWidget()
-{
-    TRACE_OBJ
-    m_centralWidget->activateSearchWidget(true);
 }
 
 void MainWindow::updateApplicationFont()

@@ -53,13 +53,14 @@ class QLineEdit;
 class QComboBox;
 class QMenu;
 
+class CentralWidget;
+class CmdLineParser;
+class ContentWindow;
 class IndexWindow;
+class QtDocInstaller;
 class QHelpEngineCore;
 class QHelpEngine;
-class CentralWidget;
-class ContentWindow;
-class CmdLineParser;
-class QtDocInstaller;
+class SearchWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -87,7 +88,6 @@ public slots:
     void setIndexVisible(bool visible);
     void setBookmarksVisible(bool visible);
     void setSearchVisible(bool visible);
-    void showSearchWidget();
     void syncContents();
     void activateCurrentCentralWidgetTab();
     void currentFilterChanged(const QString &filter);
@@ -144,6 +144,7 @@ private:
     CentralWidget *m_centralWidget;
     IndexWindow *m_indexWindow;
     ContentWindow *m_contentWindow;
+    SearchWidget *m_searchWindow;
     QLineEdit *m_addressLineEdit;
     QComboBox *m_filterCombo;
 

@@ -51,7 +51,6 @@ class HelpViewer;
 class MainWindow;
 class QHelpSearchEngine;
 class QTabWidget;
-class SearchWidget;
 
 class CentralWidget : public QWidget
 {
@@ -65,7 +64,6 @@ public:
     bool hasSelection() const;
     QUrl currentSource() const;
     QString currentTitle() const;
-    bool isHomeAvailable() const;
     bool isForwardAvailable() const;
     bool isBackwardAvailable() const;
     QList<QAction*> globalActions() const;
@@ -73,11 +71,6 @@ public:
 
     HelpViewer *viewerAt(int index) const;
     HelpViewer *currentHelpViewer() const;
-
-    bool searchWidgetAttached() const;
-    void createSearchWidget(QHelpSearchEngine *searchEngine);
-    void activateSearchWidget(bool updateLastTabPage = false);
-    void removeSearchWidget();
 
     int availableHelpViewer() const;
     bool enableTabCloseAction() const;
@@ -107,11 +100,14 @@ public slots:
     void forward();
     void backward();
 
-    void activateTab(bool onlyHelpViewer = false);
+    void activateTab();
 
     void findNext();
     void findPrevious();
     void find(const QString &text, bool forward);
+
+    void setSourceFromSearch(const QUrl &url);
+    void setSourceFromSearchInNewTab(const QUrl &url);
 
 signals:
     void currentViewerChanged();
@@ -132,8 +128,6 @@ private slots:
     void currentPageChanged(int index);
     void showTabBarContextMenu(const QPoint &point);
     void printPreview(QPrinter *printer);
-    void setSourceFromSearch(const QUrl &url);
-    void setSourceFromSearchInNewTab(const QUrl &url);
     void highlightSearchTerms();
 
 private:
@@ -153,8 +147,6 @@ private:
     FindWidget *findWidget;
     QPrinter *printer;
     bool usesDefaultCollection;
-
-    SearchWidget *m_searchWidget;
 };
 
 QT_END_NAMESPACE
