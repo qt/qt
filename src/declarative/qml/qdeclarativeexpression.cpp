@@ -621,137 +621,74 @@ void QDeclarativeExpression::__q_notify()
 
 void QDeclarativeExpressionPrivate::clearGuards()
 {
-    Q_Q(QDeclarativeExpression);
-
-    static int notifyIdx = -1;
-    if (notifyIdx == -1) 
-        notifyIdx = 
-            QDeclarativeExpression::staticMetaObject.indexOfMethod("__q_notify()");
-
-    for (int ii = 0; ii < data->guardListLength; ++ii) {
-        if (data->guardList[ii].data()) {
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
-            QMetaObject::disconnectOne(data->guardList[ii].data(), 
-                                       data->guardList[ii].notifyIndex, 
-                                       q, notifyIdx);
-#else
-            // QTBUG-6781
-            QMetaObject::disconnect(data->guardList[ii].data(), 
-                                    data->guardList[ii].notifyIndex, 
-                                    q, notifyIdx);
-#endif
-        }
-    }
-
-    delete [] data->guardList; data->guardList = 0; 
+    delete [] data->guardList; 
+    data->guardList = 0; 
     data->guardListLength = 0;
 }
 
 void QDeclarativeExpressionPrivate::updateGuards(const QPODVector<QDeclarativeEnginePrivate::CapturedProperty> &properties)
 {
-    //clearGuards();
     Q_Q(QDeclarativeExpression);
 
     static int notifyIdx = -1;
     if (notifyIdx == -1) 
-        notifyIdx = 
-            QDeclarativeExpression::staticMetaObject.indexOfMethod("__q_notify()");
+        notifyIdx = QDeclarativeExpression::staticMetaObject.indexOfMethod("__q_notify()");
 
-    QDeclarativeExpressionData::SignalGuard *newGuardList = 0;
-    
-    if (properties.count() != data->guardListLength)
-        newGuardList = new QDeclarativeExpressionData::SignalGuard[properties.count()];
+    if (properties.count() != data->guardListLength) {
+        QDeclarativeNotifierEndpoint *newGuardList = 
+            new QDeclarativeNotifierEndpoint[properties.count()];
 
-    bool outputWarningHeader = false;
-    int hit = 0;
-    for (int ii = 0; ii < properties.count(); ++ii) {
-        const QDeclarativeEnginePrivate::CapturedProperty &property = properties.at(ii);
+        for (int ii = 0; ii < qMin(data->guardListLength, properties.count()); ++ii) 
+           data->guardList[ii].copyAndClear(newGuardList[ii]);
 
-        bool needGuard = true;
-        if (ii >= data->guardListLength) {
-            // New guard
-        } else if(data->guardList[ii].data() == property.object && 
-                  data->guardList[ii].notifyIndex == property.notifyIndex) {
-            // Cache hit
-            if (!data->guardList[ii].isDuplicate || 
-                (data->guardList[ii].isDuplicate && hit == ii)) {
-                needGuard = false;
-                ++hit;
-            }
-        } else if(data->guardList[ii].data() && !data->guardList[ii].isDuplicate) {
-            // Cache miss
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
-            QMetaObject::disconnectOne(data->guardList[ii].data(), 
-                                       data->guardList[ii].notifyIndex, 
-                                       q, notifyIdx);
-#else
-            // QTBUG-6781
-            QMetaObject::disconnect(data->guardList[ii].data(), 
-                                    data->guardList[ii].notifyIndex, 
-                                    q, notifyIdx);
-#endif
-        } 
-        /* else {
-            // Cache miss, but nothing to do
-        } */
-
-        if (needGuard) {
-            if (!newGuardList) {
-                newGuardList = new QDeclarativeExpressionData::SignalGuard[properties.count()];
-                for (int jj = 0; jj < ii; ++jj)
-                    newGuardList[jj] = data->guardList[jj];
-            }
-
-            if (property.notifyIndex != -1) {
-                bool existing = false;
-                for (int jj = 0; !existing && jj < ii; ++jj) 
-                    existing = newGuardList[jj].data() == property.object &&
-                        newGuardList[jj].notifyIndex == property.notifyIndex;
-
-                newGuardList[ii] = property.object;
-                newGuardList[ii].notifyIndex = property.notifyIndex;
-                if (existing)
-                    newGuardList[ii].isDuplicate = true;
-                else
-                    QMetaObject::connect(property.object, property.notifyIndex,
-                                         q, notifyIdx);
-            } else {
-                if (!outputWarningHeader) {
-                    outputWarningHeader = true;
-                    qWarning() << "QDeclarativeExpression: Expression" << q->expression()
-                               << "depends on non-NOTIFYable properties:";
-                }
-
-                const QMetaObject *metaObj = property.object->metaObject();
-                QMetaProperty metaProp = metaObj->property(property.coreIndex);
-
-                qWarning().nospace() << "    " << metaObj->className()
-                                     << "::" << metaProp.name();
-            }
-        } else if (newGuardList) {
-            newGuardList[ii] = data->guardList[ii];
-        }
-    }
-
-    for (int ii = properties.count(); ii < data->guardListLength; ++ii) {
-        if (data->guardList[ii].data() && !data->guardList[ii].isDuplicate) {
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
-            QMetaObject::disconnectOne(data->guardList[ii].data(), 
-                                       data->guardList[ii].notifyIndex, 
-                                       q, notifyIdx);
-#else
-            // QTBUG-6781
-            QMetaObject::disconnect(data->guardList[ii].data(), 
-                                    data->guardList[ii].notifyIndex, 
-                                    q, notifyIdx);
-#endif
-        }
-    }
-
-    if (newGuardList) {
-        if (data->guardList) delete [] data->guardList;
+        delete [] data->guardList;
         data->guardList = newGuardList;
         data->guardListLength = properties.count();
+    }
+
+    bool outputWarningHeader = false;
+    bool noChanges = true;
+    for (int ii = 0; ii < properties.count(); ++ii) {
+        QDeclarativeNotifierEndpoint &guard = data->guardList[ii];
+        const QDeclarativeEnginePrivate::CapturedProperty &property = properties.at(ii);
+
+        guard.target = q;
+        guard.targetMethod = notifyIdx;
+
+        if (property.notifyIndex != -1) {
+
+            if (!noChanges && guard.isConnected(property.object, property.notifyIndex)) {
+                // Nothing to do
+
+            } else {
+                noChanges = false;
+
+                bool existing = false;
+                for (int jj = 0; !existing && jj < ii; ++jj) 
+                    if (data->guardList[jj].isConnected(property.object, property.notifyIndex)) 
+                        existing = true;
+
+                if (existing) {
+                    // duplicate
+                    guard.disconnect();
+                } else {
+                    guard.connect(property.object, property.notifyIndex);
+                }
+            }
+
+        } else {
+            if (!outputWarningHeader) {
+                outputWarningHeader = true;
+                qWarning() << "QDeclarativeExpression: Expression" << q->expression()
+                    << "depends on non-NOTIFYable properties:";
+            }
+
+            const QMetaObject *metaObj = property.object->metaObject();
+            QMetaProperty metaProp = metaObj->property(property.coreIndex);
+
+            qWarning().nospace() << "    " << metaObj->className()
+                                 << "::" << metaProp.name();
+        }
     }
 }
 

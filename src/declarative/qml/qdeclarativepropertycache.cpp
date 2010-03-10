@@ -420,4 +420,8 @@ QDeclarativePropertyCache::Data *QDeclarativePropertyCache::property(QDeclarativ
     return rv;
 }
 
+QDeclarativePropertyCache::Data QDeclarativePropertyCache::property(const QMetaObject *, const char *)
+{
+}
+
 QT_END_NAMESPACE

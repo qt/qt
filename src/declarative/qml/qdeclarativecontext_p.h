@@ -59,6 +59,7 @@
 #include "qdeclarativeengine_p.h"
 #include "qdeclarativeintegercache_p.h"
 #include "qdeclarativetypenamecache_p.h"
+#include "qdeclarativenotifier_p.h"
 
 #include <QtCore/qhash.h>
 #include <QtScript/qscriptvalue.h>
@@ -133,7 +134,7 @@ public:
         inline virtual void objectDestroyed(QObject *);
 
         QDeclarativeContextPrivate *priv;
-        IdNotifier *bindings;
+        QDeclarativeNotifier bindings;
     };
     ContextGuard *idValues;
     int idValueCount;
@@ -176,7 +177,7 @@ void QDeclarativeContextPrivate::IdNotifier::clear()
 }
 
 QDeclarativeContextPrivate::ContextGuard::ContextGuard() 
-: priv(0), bindings(0) 
+: priv(0)
 {
 }
 
