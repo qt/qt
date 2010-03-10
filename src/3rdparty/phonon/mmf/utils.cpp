@@ -52,22 +52,24 @@ void MMF::Utils::panic(PanicCode code)
     User::Panic(PanicCategory, code);
 }
 
-
-static const TInt KMimePrefixLength = 6; // either "audio/" or "video/"
 _LIT(KMimePrefixAudio, "audio/");
 _LIT(KMimePrefixVideo, "video/");
+_LIT(KMimeSDP, "application/sdp");
+
+enum ConstantStringLengths {
+    KMimePrefixLength = 6, // either "audio/" or "video/",
+    KMimeSDPLength = 15 // "application/sdp"
+};
 
 MMF::MediaType MMF::Utils::mimeTypeToMediaType(const TDesC& mimeType)
 {
-    MediaType result = MediaTypeUnknown;
-
     if (mimeType.Left(KMimePrefixLength).Compare(KMimePrefixAudio) == 0) {
-        result = MediaTypeAudio;
-    } else if (mimeType.Left(KMimePrefixLength).Compare(KMimePrefixVideo) == 0) {
-        result = MediaTypeVideo;
-    }
-
-    return result;
+        return MediaTypeAudio;
+    } else if (mimeType.Left(KMimePrefixLength).Compare(KMimePrefixVideo) == 0 ||
+               mimeType.Left(KMimeSDPLength).Compare(KMimeSDP) == 0) {
+        return MediaTypeVideo;
+    } else
+        return MediaTypeUnknown;
 }
 
 QString MMF::Utils::symbianErrorToString(int errorCode)
