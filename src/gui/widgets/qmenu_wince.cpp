@@ -253,6 +253,12 @@ static void qt_wce_insert_action(HMENU menu, QWceMenuAction *action, bool create
     }
 }
 
+// Removes all items from the menu without destroying the handles.
+static void qt_wce_clear_menu(HMENU hMenu)
+{
+    while (RemoveMenu(hMenu, 0, MF_BYPOSITION));
+}
+
 /*!
     \internal 
     
@@ -403,7 +409,8 @@ QMenuPrivate::QWceMenuPrivate::QWceMenuPrivate() {
 
 QMenuPrivate::QWceMenuPrivate::~QWceMenuPrivate() {
     qt_wce_delete_action_list(&actionItems);
-    menuHandle = 0;
+    if (menuHandle)
+        DestroyMenu(menuHandle);
 }
 
 void QMenuPrivate::QWceMenuPrivate::addAction(QAction *a, QWceMenuAction *before) {
@@ -438,14 +445,17 @@ HMENU QMenuPrivate::wceMenu(bool create) {
     if (!wce_menu)
         wce_menu = new QWceMenuPrivate;
     if (!wce_menu->menuHandle || create) 
-        wce_menu->rebuild(create);
+        wce_menu->rebuild();
     return wce_menu->menuHandle;
 }
 
-void QMenuPrivate::QWceMenuPrivate::rebuild(bool reCreate) {
-    if (menuHandle && !reCreate)
-      DestroyMenu(menuHandle);
-    menuHandle = CreatePopupMenu();
+void QMenuPrivate::QWceMenuPrivate::rebuild()
+{
+    if (!menuHandle)
+        menuHandle = CreatePopupMenu();
+    else
+        qt_wce_clear_menu(menuHandle);
+
     for (int i = 0; i < actionItems.size(); ++i) {
         QWceMenuAction *action = actionItems.at(i);
         action->menuHandle = menuHandle;
@@ -521,6 +531,7 @@ void QMenuBarPrivate::QWceMenuBarPrivate::rebuild() {
           resourceHandle = IDR_MAIN_MENU5;
         }
         Q_ASSERT_X(menubarHandle, "rebuild !created", "menubar already deleted");
+        qt_wce_clear_menu(menuHandle);
         DestroyWindow(menubarHandle);
         menubarHandle = qt_wce_create_menubar(parentWindowHandle, qt_wce_get_module_handle(), resourceHandle);
         Q_ASSERT_X(menubarHandle, "rebuild classic menu", "cannot create menubar from resource");
@@ -562,6 +573,7 @@ void QMenuBarPrivate::QWceMenuBarPrivate::rebuild() {
 
         leftButtonIsMenu = (leftButtonAction && leftButtonAction->menu());
         Q_ASSERT_X(menubarHandle, "rebuild !created", "menubar already deleted");
+        qt_wce_clear_menu(menuHandle);
         DestroyWindow(menubarHandle);
         if (leftButtonIsMenu) {
             menubarHandle = qt_wce_create_menubar(parentWindowHandle, qt_wce_get_module_handle(), IDR_MAIN_MENU2);
