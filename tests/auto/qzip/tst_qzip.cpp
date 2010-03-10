@@ -86,6 +86,8 @@ void tst_QZip::basicUnpack()
     QCOMPARE(fi.permissions,QFile::Permissions(  QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner
                                                  | QFile::ReadUser  | QFile::WriteUser | QFile::ExeUser   ));
 
+    QCOMPARE(fi.lastModified, QDateTime::fromString("2005.11.11 13:08:02", "yyyy.MM.dd HH:mm:ss"));
+
     fi = files.at(1);
     QVERIFY(fi.isValid());
     QCOMPARE(fi.filePath, QString("test/test.txt"));
@@ -95,6 +97,8 @@ void tst_QZip::basicUnpack()
 
     QVERIFY(fi.permissions == QFile::Permissions(  QFile::ReadOwner | QFile::WriteOwner
                                                  | QFile::ReadUser  | QFile::WriteUser ));
+
+    QCOMPARE(fi.lastModified, QDateTime::fromString("2005.11.11 13:08:02", "yyyy.MM.dd HH:mm:ss"));
 
     QCOMPARE(zip.fileData("test/test.txt"), QByteArray("content\n"));
 

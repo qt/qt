@@ -280,6 +280,21 @@ static QFile::Permissions modeToPermissions(quint32 mode)
     return ret;
 }
 
+static QDateTime readMSDosDate(const uchar *src)
+{
+    uint dosDate = readUInt(src);
+    quint64 uDate;
+    uDate = (quint64)(dosDate >> 16);
+    uint tm_mday = (uDate & 0x1f);
+    uint tm_mon =  ((uDate & 0x1E0) >> 5);
+    uint tm_year = (((uDate & 0x0FE00) >> 9) + 1980);
+    uint tm_hour = ((dosDate & 0xF800) >> 11);
+    uint tm_min =  ((dosDate & 0x7E0) >> 5);
+    uint tm_sec =  ((dosDate & 0x1f) << 1);
+
+    return QDateTime(QDate(tm_year, tm_mon, tm_mday), QTime(tm_hour, tm_min, tm_sec));
+}
+
 struct LocalFileHeader
 {
     uchar signature[4]; //  0x04034b50
@@ -365,6 +380,7 @@ QZipReader::FileInfo& QZipReader::FileInfo::operator=(const FileInfo &other)
     permissions = other.permissions;
     crc32 = other.crc32;
     size = other.size;
+    lastModified = other.lastModified;
     return *this;
 }
 
@@ -408,6 +424,7 @@ void QZipPrivate::fillFileInfo(int index, QZipReader::FileInfo &fileInfo) const
     fileInfo.permissions = modeToPermissions(mode);
     fileInfo.crc32 = readUInt(header.h.crc_32);
     fileInfo.size = readUInt(header.h.uncompressed_size);
+    fileInfo.lastModified = readMSDosDate(header.h.last_mod_file);
 }
 
 class QZipReaderPrivate : public QZipPrivate

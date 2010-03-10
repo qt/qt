@@ -55,6 +55,7 @@
 // We mean it.
 //
 
+#include <QtCore/qdatetime.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qstring.h>
 
@@ -89,6 +90,7 @@ public:
         QFile::Permissions permissions;
         uint crc32;
         qint64 size;
+        QDateTime lastModified;
         void *d;
     };
 
