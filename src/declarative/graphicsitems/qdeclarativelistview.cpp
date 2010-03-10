@@ -2332,6 +2332,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
                 d->currentIndex += count;
                 if (d->currentItem)
                     d->currentItem->index = d->currentIndex;
+                emit currentIndexChanged();
             }
             d->scheduleLayout();
             emit countChanged();
@@ -2412,6 +2413,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
             d->currentItem->index = d->currentIndex;
             d->currentItem->setPosition(d->currentItem->position() + diff);
         }
+        emit currentIndexChanged();
     }
     // Update the indexes of the following visible items.
     for (; index < d->visibleItems.count(); ++index) {

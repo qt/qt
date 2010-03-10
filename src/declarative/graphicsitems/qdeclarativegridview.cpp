@@ -1807,6 +1807,7 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
                 d->currentIndex += count;
                 if (d->currentItem)
                     d->currentItem->index = d->currentIndex;
+                emit currentIndexChanged();
             }
             d->scheduleLayout();
             emit countChanged();
@@ -1889,6 +1890,7 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
             d->currentItem->index = d->currentIndex;
             d->currentItem->setPosition(d->colPosAt(d->currentIndex), d->rowPosAt(d->currentIndex));
         }
+        emit currentIndexChanged();
     }
 
     // everything is in order now - emit add() signal

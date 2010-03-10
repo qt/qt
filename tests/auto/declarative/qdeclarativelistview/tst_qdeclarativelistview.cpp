@@ -1059,6 +1059,11 @@ void tst_QDeclarativeListView::currentIndex()
     QTest::qWait(500);
     QCOMPARE(listview->highlightItem()->y(), hlPos);
 
+    // insert item before currentIndex
+    listview->setCurrentIndex(28);
+    model.insertItem(0, "Foo", "1111");
+    QCOMPARE(canvas->rootObject()->property("current").toInt(), 29);
+
     delete canvas;
 }
 
