@@ -709,6 +709,10 @@ static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
             extensionName = "XInputExtension";
         else if (err->request_code == X11->mitshm_major)
             extensionName = "MIT-SHM";
+#ifndef QT_NO_XKB
+        else if(err->request_code == X11->xkb_major)
+            extensionName = "XKEYBOARD";
+#endif
 
         char minor_str[256];
         if (extensionName) {
@@ -1635,6 +1639,11 @@ void qt_init(QApplicationPrivate *priv, int,
     X11->xinput_eventbase = 0;
     X11->xinput_errorbase = 0;
 
+    X11->use_xkb = false;
+    X11->xkb_major = 0;
+    X11->xkb_eventbase = 0;
+    X11->xkb_errorbase = 0;
+
     // MIT-SHM
     X11->use_mitshm = false;
     X11->use_mitshm_pixmaps = false;
@@ -2108,6 +2117,33 @@ void qt_init(QApplicationPrivate *priv, int,
         }
 #endif // QT_NO_XINPUT
 
+#ifndef QT_NO_XKB
+        int xkblibMajor = XkbMajorVersion;
+        int xkblibMinor = XkbMinorVersion;
+        X11->use_xkb = XkbQueryExtension(X11->display,
+                                         &X11->xkb_major,
+                                         &X11->xkb_eventbase,
+                                         &X11->xkb_errorbase,
+                                         &xkblibMajor,
+                                         &xkblibMinor);
+        if (X11->use_xkb) {
+            // If XKB is detected, set the GrabsUseXKBState option so input method
+            // compositions continue to work (ie. deadkeys)
+            unsigned int state = XkbPCF_GrabsUseXKBStateMask;
+            (void) XkbSetPerClientControls(X11->display, state, &state);
+
+            // select for group change events
+            XkbSelectEventDetails(X11->display,
+                                  XkbUseCoreKbd,
+                                  XkbStateNotify,
+                                  XkbAllStateComponentsMask,
+                                  XkbGroupStateMask);
+
+            // current group state is queried when creating the keymapper, no need to do it here
+        }
+#endif
+
+
 #if !defined(QT_NO_FONTCONFIG)
         int dpi = 0;
         getXDefault("Xft", FC_DPI, &dpi);
@@ -2185,15 +2221,6 @@ void qt_init(QApplicationPrivate *priv, int,
 
         // initialize key mapper
         QKeyMapper::changeKeyboard();
-
-#ifndef QT_NO_XKB
-        if (qt_keymapper_private()->useXKB) {
-            // If XKB is detected, set the GrabsUseXKBState option so input method
-            // compositions continue to work (ie. deadkeys)
-            unsigned int state = XkbPCF_GrabsUseXKBStateMask;
-            (void) XkbSetPerClientControls(X11->display, state, &state);
-        }
-#endif // QT_NO_XKB
 
         // Misc. initialization
 #if 0 //disabled for now..
@@ -3229,6 +3256,24 @@ int QApplication::x11ProcessEvent(XEvent* event)
         QKeyMapper::changeKeyboard();
         return 0;
     }
+#ifndef QT_NO_XKB
+    else if (X11->use_xkb && event->type == X11->xkb_eventbase) {
+        XkbAnyEvent *xkbevent = (XkbAnyEvent *) event;
+        switch (xkbevent->xkb_type) {
+        case XkbStateNotify:
+            {
+                XkbStateNotifyEvent *xkbstateevent = (XkbStateNotifyEvent *) xkbevent;
+                if ((xkbstateevent->changed & XkbGroupStateMask) != 0) {
+                    qt_keymapper_private()->xkb_currentGroup = xkbstateevent->group;
+                    QKeyMapper::changeKeyboard();
+                }
+                break;
+            }
+        default:
+            break;
+        }
+    }
+#endif
 
     if (!widget) {                                // don't know this windows
         QWidget* popup = QApplication::activePopupWidget();
