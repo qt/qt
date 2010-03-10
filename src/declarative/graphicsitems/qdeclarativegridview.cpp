@@ -755,14 +755,15 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
             vTime = timeline.time();
         }
     } else if (snapMode != QDeclarativeGridView::NoSnap) {
-        qreal pos = qMax(qMin(snapPosAt(position()) - highlightRangeStart, -maxExtent), -minExtent);
-        qreal dist = qAbs(data.move + pos);
+        qreal pos = -snapPosAt(-(data.move.value() - highlightRangeStart)) + highlightRangeStart;
+        pos = qMin(qMax(pos, maxExtent), minExtent);
+        qreal dist = qAbs(data.move.value() - pos);
         if (dist > 0) {
             timeline.reset(data.move);
             if (fixupDuration)
-                timeline.move(data.move, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
+                timeline.move(data.move, pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
             else
-                data.move.setValue(-pos);
+                data.move.setValue(pos);
             vTime = timeline.time();
         }
     } else {
@@ -788,7 +789,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             if (FxGridItem *item = firstVisibleItem())
                 maxDistance = qAbs(item->rowPos() + data.move.value());
         } else if (data.move.value() < minExtent) {
-            maxDistance = qAbs(minExtent - data.move.value() + (overShoot?overShootDistance(velocity, vSize):0));
+            maxDistance = qAbs(minExtent - data.move.value());
         }
         if (snapMode != QDeclarativeGridView::SnapToRow && highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
             data.flickTarget = minExtent;
@@ -797,7 +798,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             qreal pos = snapPosAt(-data.move.value()) + rowSize();
             maxDistance = qAbs(pos + data.move.value());
         } else if (data.move.value() > maxExtent) {
-            maxDistance = qAbs(maxExtent - data.move.value()) + (overShoot?overShootDistance(velocity, vSize):0);
+            maxDistance = qAbs(maxExtent - data.move.value());
         }
         if (snapMode != QDeclarativeGridView::SnapToRow && highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
             data.flickTarget = maxExtent;
@@ -816,7 +817,8 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         qreal maxAccel = v2 / (2.0f * maxDistance);
         qreal overshootDist = 0.0;
         if (maxAccel < accel) {
-            qreal dist = v2 / (accel * 2.0);
+            // + rowSize()/4 to encourage moving at least one item in the flick direction
+            qreal dist = v2 / (accel * 2.0) + rowSize()/4;
             if (v > 0)
                 dist = -dist;
             data.flickTarget = -snapPosAt(-(data.move.value() - highlightRangeStart) + dist) + highlightRangeStart;

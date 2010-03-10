@@ -197,6 +197,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
 
                 QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(o);
                 Q_ASSERT(ddata);
+                ddata->setImplicitDestructible();
                 ddata->outerContext = ctxt;
                 ddata->lineNumber = instr.line;
                 ddata->columnNumber = instr.create.column;
@@ -247,6 +248,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                 QDeclarativeEngine::setContextForObject(qcomp, ctxt);
                 QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(qcomp);
                 Q_ASSERT(ddata);
+                ddata->setImplicitDestructible();
                 ddata->outerContext = ctxt;
                 ddata->lineNumber = instr.line;
                 ddata->columnNumber = instr.create.column;

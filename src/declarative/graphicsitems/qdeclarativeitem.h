@@ -42,8 +42,8 @@
 #ifndef QDECLARATIVEITEM_H
 #define QDECLARATIVEITEM_H
 
-#include <qdeclarative.h>
-#include <qdeclarativecomponent.h>
+#include <QtDeclarative/qdeclarative.h>
+#include <QtDeclarative/qdeclarativecomponent.h>
 
 #include <QtCore/QObject>
 #include <QtCore/QList>
@@ -161,8 +161,8 @@ public:
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
 
-    Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, int x, int y) const;
-    Q_INVOKABLE QScriptValue mapToItem(const QScriptValue &item, int x, int y) const;
+    Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, qreal x, qreal y) const;
+    Q_INVOKABLE QScriptValue mapToItem(const QScriptValue &item, qreal x, qreal y) const;
 
     QDeclarativeAnchorLine left() const;
     QDeclarativeAnchorLine right() const;
@@ -173,18 +173,18 @@ public:
     QDeclarativeAnchorLine baseline() const;
 
 Q_SIGNALS:
-    void widthChanged();
-    void heightChanged();
+    void widthChanged(qreal);
+    void heightChanged(qreal);
     void childrenChanged();
-    void childrenRectChanged();
-    void baselineOffsetChanged();
+    void childrenRectChanged(const QRectF &);
+    void baselineOffsetChanged(qreal);
     void stateChanged(const QString &);
-    void focusChanged();
-    void wantsFocusChanged();
-    void parentChanged();
+    void focusChanged(bool);
+    void wantsFocusChanged(bool);
+    void parentChanged(QDeclarativeItem *);
     void transformOriginChanged(TransformOrigin);
-    void smoothChanged();
-    void clipChanged();
+    void smoothChanged(bool);
+    void clipChanged(bool);
 
 protected:
     bool isComponentComplete() const;
@@ -199,7 +199,6 @@ protected:
 
     virtual void classBegin();
     virtual void componentComplete();
-    virtual void focusChanged(bool);
     virtual void keyPressEvent(QKeyEvent *event);
     virtual void keyReleaseEvent(QKeyEvent *event);
     virtual void inputMethodEvent(QInputMethodEvent *);

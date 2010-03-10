@@ -211,8 +211,8 @@ QDeclarativePaintedItem::~QDeclarativePaintedItem()
 */
 void QDeclarativePaintedItem::init()
 {
-    connect(this,SIGNAL(widthChanged()),this,SLOT(clearCache()));
-    connect(this,SIGNAL(heightChanged()),this,SLOT(clearCache()));
+    connect(this,SIGNAL(widthChanged(qreal)),this,SLOT(clearCache()));
+    connect(this,SIGNAL(heightChanged(qreal)),this,SLOT(clearCache()));
     connect(this,SIGNAL(visibleChanged()),this,SLOT(clearCache()));
 }
 
