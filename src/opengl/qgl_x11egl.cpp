@@ -198,10 +198,6 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         configProps.setRenderableType(QEgl::OpenGL);
         qt_eglproperties_set_glformat(configProps, d->glFormat);
 
-        // Use EGL_BUFFER_SIZE to make sure we prefer a 16-bit config over a 32-bit config
-        if (device()->depth() == 16 && !d->glFormat.alpha())
-            configProps.setValue(EGL_BUFFER_SIZE, 16);
-
         if (!d->eglContext->chooseConfig(configProps, QEgl::BestPixelFormat)) {
             delete d->eglContext;
             d->eglContext = 0;
