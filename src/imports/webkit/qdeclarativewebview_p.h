@@ -239,7 +239,6 @@ protected:
     void keyReleaseEvent(QKeyEvent* event);
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
-    virtual void focusChanged(bool);
     virtual bool sceneEvent(QEvent *event);
     QDeclarativeWebView *createWindow(QWebPage::WebWindowType type);
 
