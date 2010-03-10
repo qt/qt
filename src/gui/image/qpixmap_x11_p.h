@@ -94,7 +94,7 @@ public:
 
     static Qt::HANDLE createBitmapFromImage(const QImage &image);
 
-    Qt::HANDLE gl_surface;
+    void* gl_surface;
 #ifndef QT_NO_XRENDER
     void convertToARGB32(bool preserveContents = true);
 #endif
