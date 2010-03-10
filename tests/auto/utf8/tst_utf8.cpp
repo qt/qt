@@ -73,6 +73,9 @@ private slots:
 
     void invalidUtf8_data();
     void invalidUtf8();
+
+    void nonCharacters_data();
+    void nonCharacters();
 };
 
 void tst_Utf8::initTestCase()
@@ -134,8 +137,8 @@ void tst_Utf8::roundTrip_data()
     static const uint utf32_5[] = { 0x010203 };
     QTest::newRow("utf8_5") << QByteArray(utf8_5) << QString::fromUcs4(utf32_5, 1);
 
-    static const char utf8_6[] = "\364\217\277\277"; // U+10FFFF
-    static const uint utf32_6[] = { 0x10FFFF };
+    static const char utf8_6[] = "\364\217\277\275"; // U+10FFFD
+    static const uint utf32_6[] = { 0x10FFFD };
     QTest::newRow("utf8_6") << QByteArray(utf8_6) << QString::fromUcs4(utf32_6, 1);
 
     static const char utf8_7[] = "abc\302\240\303\241\303\251\307\275 \342\202\254def";
@@ -144,10 +147,10 @@ void tst_Utf8::roundTrip_data()
                                       ' ', 0x20AC, 'd', 'e', 'f', 0 };
     QTest::newRow("utf8_7") << QByteArray(utf8_7) << QString::fromUtf16(utf16_7);
 
-    static const char utf8_8[] = "abc\302\240\303\241\303\251\307\275 \364\217\277\277 \342\202\254def";
+    static const char utf8_8[] = "abc\302\240\303\241\303\251\307\275 \364\217\277\275 \342\202\254def";
     static const uint utf32_8[] = { 'a', 'b', 'c', 0x00A0,
                                     0x00E1, 0x00E9, 0x01FD,
-                                    ' ', 0x10FFFF, ' ',
+                                    ' ', 0x10FFFD, ' ',
                                     0x20AC, 'd', 'e', 'f', 0 };
     QTest::newRow("utf8_8") << QByteArray(utf8_8) << QString::fromUcs4(utf32_8);
 }
@@ -213,14 +216,6 @@ void tst_Utf8::invalidUtf8_data()
     QTest::newRow("4chars-1") << QByteArray("\xF0\x90\x80\xC0");
     QTest::newRow("4chars-2") << QByteArray("\xF0\x90\xC0\x80");
     QTest::newRow("4chars-3") << QByteArray("\xF0\xC0\x80\x80");
-
-    // U+FFFE and U+FFFF are non-characters and must not be present
-    // U+FFFE:        1111   11 1111   11 1110
-    // encoding: xxxz:1111 xz11:1111 xz11:1110
-    QTest::newRow("fffe") << QByteArray("\xEF\xBF\xBE");
-    // U+FFFF:        1111   11 1111   11 1111
-    // encoding: xxxz:1111 xz11:1111 xz11:1111
-    QTest::newRow("ffff") << QByteArray("\xEF\xBF\xBF");
 
     // Surrogate pairs must now be present either
     // U+D800:        1101   10 0000   00 0000
@@ -302,7 +297,7 @@ void tst_Utf8::invalidUtf8()
     QFETCH_GLOBAL(bool, useLocale);
 
     QSharedPointer<QTextDecoder> decoder = QSharedPointer<QTextDecoder>(codec->makeDecoder());
-    QString decoded = decoder->toUnicode(utf8);
+    decoder->toUnicode(utf8);
 
     // Only enforce correctness on our UTF-8 decoder
     // The system's UTF-8 codec is sometimes buggy
@@ -311,6 +306,70 @@ void tst_Utf8::invalidUtf8()
     if (!useLocale)
         QVERIFY(decoder->hasFailure());
     else if (!decoder->hasFailure())
+        qWarning("System codec does not report failure when it should. Should report bug upstream.");
+}
+
+void tst_Utf8::nonCharacters_data()
+{
+    QTest::addColumn<QByteArray>("utf8");
+    QTest::addColumn<QString>("utf16");
+
+    // Unicode has a couple of "non-characters" that one can use internally,
+    // but are not allowed to be used for text interchange.
+    //
+    // Those are the last two entries each Unicode Plane (U+FFFE, U+FFFF,
+    // U+1FFFE, U+1FFFF, etc.) as well as the entries between U+FDD0 and
+    // U+FDEF (inclusive)
+
+    // U+FDD0 through U+FDEF
+    for (int i = 0; i < 16; ++i) {
+        char utf8[] = { 0357, 0267, 0220 + i, 0 };
+        QString utf16 = QChar(0xfdd0 + i);
+        QTest::newRow(qPrintable(QString::number(0xfdd0 + i, 16))) << QByteArray(utf8) << utf16;
+    }
+
+    // the last two in Planes 1 through 16
+    for (uint plane = 1; plane <= 16; ++plane) {
+        for (uint lower = 0xfffe; lower < 0x10000; ++lower) {
+            uint ucs4 = (plane << 16) | lower;
+            char utf8[] = { 0xf0 | uchar(ucs4 >> 18),
+                            0x80 | (uchar(ucs4 >> 12) & 0x3f),
+                            0x80 | (uchar(ucs4 >> 6) & 0x3f),
+                            0x80 | (uchar(ucs4) & 0x3f),
+                            0 };
+            ushort utf16[] = { QChar::highSurrogate(ucs4), QChar::lowSurrogate(ucs4), 0 };
+
+            QTest::newRow(qPrintable(QString::number(ucs4, 16))) << QByteArray(utf8) << QString::fromUtf16(utf16);
+        }
+    }
+
+    QTest::newRow("fffe") << QByteArray("\xEF\xBF\xBE") << QString(QChar(0xfffe));
+    QTest::newRow("ffff") << QByteArray("\xEF\xBF\xBF") << QString(QChar(0xffff));
+}
+
+void tst_Utf8::nonCharacters()
+{
+    QFETCH(QByteArray, utf8);
+    QFETCH(QString, utf16);
+    QFETCH_GLOBAL(bool, useLocale);
+
+    QSharedPointer<QTextDecoder> decoder = QSharedPointer<QTextDecoder>(codec->makeDecoder());
+    decoder->toUnicode(utf8);
+
+    // Only enforce correctness on our UTF-8 decoder
+    // The system's UTF-8 codec is sometimes buggy
+    //  GNU libc's iconv is known to accept U+FFFF and U+FFFE encoded as UTF-8
+    //  OS X's iconv is known to accept those, plus surrogates and codepoints above U+10FFFF
+    if (!useLocale)
+        QVERIFY(decoder->hasFailure());
+    else if (!decoder->hasFailure())
+        qWarning("System codec does not report failure when it should. Should report bug upstream.");
+
+    QSharedPointer<QTextEncoder> encoder(codec->makeEncoder());
+    encoder->fromUnicode(utf16);
+    if (!useLocale)
+        QVERIFY(encoder->hasFailure());
+    else if (!encoder->hasFailure())
         qWarning("System codec does not report failure when it should. Should report bug upstream.");
 }
 

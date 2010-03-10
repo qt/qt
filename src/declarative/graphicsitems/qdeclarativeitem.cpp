@@ -1293,6 +1293,16 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
     \internal
 */
 
+/*!
+    \fn void QDeclarativeItem::smoothChanged()
+    \internal
+*/
+
+/*!
+    \fn void QDeclarativeItem::clipChanged()
+    \internal
+*/
+
 /*! \fn void QDeclarativeItem::transformOriginChanged(TransformOrigin)
   \internal
 */

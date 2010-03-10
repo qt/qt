@@ -3390,7 +3390,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     };
 
     for(int i = 0; i < glyphs.size(); i++) {
-        QFontEngineFT::Glyph *glyph = gset->glyph_data.value(glyphs[i]);
+        QFontEngineFT::Glyph *glyph = gset->getGlyph(glyphs[i]);
 
         if (!glyph || glyph->format != neededFormat) {
             if (!lockedFace)
