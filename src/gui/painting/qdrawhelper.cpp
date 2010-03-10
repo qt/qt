@@ -7944,8 +7944,6 @@ void qInitDrawhelperAsm()
     }
 #endif // IWMMXT
 
-#endif // QT_NO_DEBUG
-
 #if defined(Q_CC_RVCT) && defined(QT_HAVE_ARMV6)
         functionForModeAsm = qt_functionForMode_ARMv6;
         functionForModeSolidAsm = qt_functionForModeSolid_ARMv6;
@@ -7966,6 +7964,8 @@ void qInitDrawhelperAsm()
             qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
         }
 #endif
+
+#endif // QT_NO_DEBUG
 
     if (functionForModeSolidAsm) {
         const int destinationMode = QPainter::CompositionMode_Destination;
