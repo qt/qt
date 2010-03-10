@@ -1263,7 +1263,7 @@ void QDeclarativeParticlesPainter::paint(QPainter *p, const QStyleOptionGraphics
     const int myY = y() + parentItem()->y();
 
 #if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
-    QVarLengthArray<QPainter::Fragment, 256> pixmapData;
+    QVarLengthArray<QPainter::PixmapFragment, 256> pixmapData;
 #else
     QVarLengthArray<QDrawPixmaps::Data, 256> pixmapData;
 #endif

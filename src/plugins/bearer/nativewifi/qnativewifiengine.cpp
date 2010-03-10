@@ -111,8 +111,6 @@ void QNativeWifiEngine::scanComplete()
 {
     QMutexLocker locker(&mutex);
 
-    QStringList previous = accessPointConfigurations.keys();
-
     // enumerate interfaces
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
@@ -120,8 +118,14 @@ void QNativeWifiEngine::scanComplete()
 #ifdef BEARER_MANAGEMENT_DEBUG
         qDebug("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
 #endif
+
+        locker.unlock();
+        emit updateCompleted();
+
         return;
     }
+
+    QStringList previous = accessPointConfigurations.keys();
 
     for (unsigned int i = 0; i < interfaceList->dwNumberOfItems; ++i) {
         const WLAN_INTERFACE_INFO &interface = interfaceList->InterfaceInfo[i];
@@ -458,18 +462,31 @@ void QNativeWifiEngine::requestUpdate()
 #ifdef BEARER_MANAGEMENT_DEBUG
         qDebug("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
 #endif
+
+        locker.unlock();
+        emit updateCompleted();
+
         return;
     }
 
+    bool requested = false;
     for (unsigned int i = 0; i < interfaceList->dwNumberOfItems; ++i) {
         result = local_WlanScan(handle, &interfaceList->InterfaceInfo[i].InterfaceGuid, 0, 0, 0);
+        if (result != ERROR_SUCCESS) {
 #ifdef BEARER_MANAGEMENT_DEBUG
-        if (result != ERROR_SUCCESS)
             qDebug("%s: WlanScan failed with error %ld\n", __FUNCTION__, result);
 #endif
+        } else {
+            requested = true;
+        }
     }
 
     local_WlanFreeMemory(interfaceList);
+
+    if (!requested) {
+        locker.unlock();
+        emit updateCompleted();
+    }
 }
 
 QNetworkSession::State QNativeWifiEngine::sessionStateForId(const QString &id)

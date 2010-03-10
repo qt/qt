@@ -3041,8 +3041,8 @@ void QVGPaintEngine::drawTiledPixmap
 // (i.e. no opacity), no rotation or scaling, and drawing the full
 // pixmap rather than parts of the pixmap.  Even having just one of
 // these conditions will improve performance.
-void QVGPaintEngine::drawPixmapFragments(const QPainter::Fragment *drawingData, int dataCount,
-                                         const QPixmap &pixmap, QFlags<QPainter::FragmentHint> hints)
+void QVGPaintEngine::drawPixmapFragments(const QPainter::PixmapFragment *drawingData, int dataCount,
+                                         const QPixmap &pixmap, QFlags<QPainter::PixmapFragmentHint> hints)
 {
 #if !defined(QT_SHIVAVG)
     Q_D(QVGPaintEngine);

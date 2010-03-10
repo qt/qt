@@ -97,6 +97,7 @@ private Q_SLOTS:
     void decoderReady();
     void decoderError();
     void checkPlayTime();
+    void uploadSample();
 
 private:
     void loadSample();
@@ -109,6 +110,9 @@ private:
     static void stream_state_callback(pa_stream *s, void *userdata);
     static void play_callback(pa_context *c, int success, void *userdata);
 
+    pa_stream *m_pulseStream;
+
+    bool    m_retry;
     bool    m_muted;
     bool    m_playQueued;
     bool    m_sampleLoaded;

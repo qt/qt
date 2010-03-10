@@ -132,7 +132,7 @@ QSoundEffect::QSoundEffect(QObject *parent) :
 
 QSoundEffect::~QSoundEffect()
 {
-    delete d;
+    d->deleteLater();
 }
 
 QUrl QSoundEffect::source() const
