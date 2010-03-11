@@ -207,6 +207,17 @@ void QDBusViewer::setProperty(const BusSignature &sig)
 
 }
 
+static QString getDbusSignature(const QMetaMethod& method)
+{
+    // create a D-Bus type signature from QMetaMethod's parameters
+    QString sig;
+    for (int i = 0; i < method.parameterTypes().count(); ++i) {
+        QVariant::Type type = QVariant::nameToType(method.parameterTypes().at(i));
+        sig.append(QString::fromLatin1(QDBusMetaType::typeToSignature(type)));
+    }
+    return sig;
+}
+
 void QDBusViewer::callMethod(const BusSignature &sig)
 {
     QDBusInterface iface(sig.mService, sig.mPath, sig.mInterface, c);
@@ -217,7 +228,8 @@ void QDBusViewer::callMethod(const BusSignature &sig)
     for (int i = 0; i < mo->methodCount(); ++i) {
         const QString signature = QString::fromLatin1(mo->method(i).signature());
         if (signature.startsWith(sig.mName) && signature.at(sig.mName.length()) == QLatin1Char('('))
-            method = mo->method(i);
+            if (getDbusSignature(mo->method(i)) == sig.mTypeSig)
+                method = mo->method(i);
     }
     if (!method.signature()) {
         QMessageBox::warning(this, tr("Unable to find method"),
@@ -277,6 +289,7 @@ void QDBusViewer::showContextMenu(const QPoint &point)
     sig.mPath = model->dBusPath(item);
     sig.mInterface = model->dBusInterface(item);
     sig.mName = model->dBusMethodName(item);
+    sig.mTypeSig = model->dBusTypeSignature(item);
 
     QMenu menu;
     menu.addAction(refreshAction);

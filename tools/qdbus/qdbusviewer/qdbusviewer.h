@@ -52,6 +52,7 @@ QT_FORWARD_DECLARE_CLASS(QDomElement);
 struct BusSignature
 {
     QString mService, mPath, mInterface, mName;
+    QString mTypeSig;
 };
 
 class QDBusViewer: public QWidget
