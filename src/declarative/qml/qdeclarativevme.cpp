@@ -237,7 +237,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
         case QDeclarativeInstruction::SetDefault:
             {
                 QObject *target = stack.top();
-                ctxt->addDefaultObject(target);
+                ctxt->setContextObject(target);
             }
             break;
 

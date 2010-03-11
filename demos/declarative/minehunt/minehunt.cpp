@@ -303,7 +303,7 @@ class MinehuntExtensionPlugin : public QDeclarativeExtensionPlugin
 
         MinehuntGame* game = new MinehuntGame();
 
-        engine->rootContext()->addDefaultObject(game);
+        engine->rootContext()->setContextObject(game);
     }
 };
 
