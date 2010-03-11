@@ -130,9 +130,9 @@ void QDeclarativeVME::runDeferred(QObject *object)
 }
 
 QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarativeContext *ctxt, 
-                     QDeclarativeCompiledData *comp, 
-                     int start, int count, 
-                     const QBitField &bindingSkipList)
+                              QDeclarativeCompiledData *comp, 
+                              int start, int count, 
+                              const QBitField &bindingSkipList)
 {
     Q_ASSERT(comp);
     Q_ASSERT(ctxt);
@@ -834,11 +834,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
     if (parserStatus.count)
         ep->parserStatus << parserStatus;
 
-    if (stack.isEmpty())
-        return 0;
-    else
-        return stack.top();
-    return 0;
+    Q_ASSERT(stack.count() == 1);
+    return stack.top();
 }
 
 bool QDeclarativeVME::isError() const
