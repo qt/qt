@@ -69,6 +69,12 @@
 #define RSS_RULES_BASE "RSS_RULES."
 #define RSS_TAG_NBROFICONS "number_of_icons"
 #define RSS_TAG_ICONFILE "icon_file"
+#define RSS_TAG_HEADER "header"
+#define RSS_TAG_SERVICE_LIST "service_list"
+#define RSS_TAG_FILE_OWNERSHIP_LIST "file_ownership_list"
+#define RSS_TAG_DATATYPE_LIST "datatype_list"
+#define RSS_TAG_FOOTER "footer"
+#define RSS_TAG_DEFAULT "default_rules" // Same as just giving rules without tag
 
 #define MMP_TARGET "TARGET"
 #define MMP_TARGETTYPE "TARGETTYPE"
@@ -200,7 +206,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 
     QString numberOfIcons;
     QString iconFile;
-    QStringList userRssRules;
+    QMap<QString, QStringList> userRssRules;
     readRssRules(numberOfIcons, iconFile, userRssRules);
 
     // Get the application translations and convert to symbian OS lang code, i.e. decical number
@@ -1426,7 +1432,7 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     }
 }
 
-void SymbianMakefileGenerator::writeRegRssFile(QStringList &userItems)
+void SymbianMakefileGenerator::writeRegRssFile(QMap<QString, QStringList> &userItems)
 {
     QString filename(fixedTarget);
     filename.append("_reg.rss");
@@ -1443,6 +1449,8 @@ void SymbianMakefileGenerator::writeRegRssFile(QStringList &userItems)
         t << endl;
         t << "#include <" << fixedTarget << ".rsg>" << endl;
         t << "#include <appinfo.rh>" << endl;
+        foreach(QString item, userItems[RSS_TAG_HEADER])
+            t << item << endl;
         t << endl;
         t << "UID2 KUidAppRegistrationResourceFile" << endl;
         t << "UID3 " << uid3 << endl << endl;
@@ -1450,13 +1458,48 @@ void SymbianMakefileGenerator::writeRegRssFile(QStringList &userItems)
         t << "\t{" << endl;
         t << "\tapp_file=\"" << fixedTarget << "\";" << endl;
         t << "\tlocalisable_resource_file=\"" RESOURCE_DIRECTORY_RESOURCE << fixedTarget << "\";" << endl;
+
+        writeRegRssList(t, userItems[RSS_TAG_SERVICE_LIST],
+                        QLatin1String(RSS_TAG_SERVICE_LIST),
+                        QLatin1String("SERVICE_INFO"));
+        writeRegRssList(t, userItems[RSS_TAG_FILE_OWNERSHIP_LIST],
+                        QLatin1String(RSS_TAG_FILE_OWNERSHIP_LIST),
+                        QLatin1String("FILE_OWNERSHIP_INFO"));
+        writeRegRssList(t, userItems[RSS_TAG_DATATYPE_LIST],
+                        QLatin1String(RSS_TAG_DATATYPE_LIST),
+                        QLatin1String("DATATYPE"));
         t << endl;
 
-        foreach(QString item, userItems)
-            t << "\t" << item << endl;
+        foreach(QString item, userItems[RSS_TAG_DEFAULT])
+            t << "\t" << item.replace("\n","\n\t") << endl;
         t << "\t}" << endl;
+
+        foreach(QString item, userItems[RSS_TAG_FOOTER])
+            t << item << endl;
     } else {
         PRINT_FILE_CREATE_ERROR(filename)
+    }
+}
+
+void SymbianMakefileGenerator::writeRegRssList(QTextStream &t,
+                                               QStringList &userList,
+                                               const QString &listTag,
+                                               const QString &listItem)
+{
+    int itemCount = userList.count();
+    if (itemCount) {
+        t << "\t" << listTag << " ="<< endl;
+        t << "\t\t{" << endl;
+        foreach(QString item, userList) {
+            t << "\t\t" << listItem << endl;
+            t << "\t\t\t{" << endl;
+            t << "\t\t\t" << item.replace("\n","\n\t\t\t") << endl;
+            t << "\t\t\t}";
+            if (--itemCount)
+                t << ",";
+            t << endl;
+        }
+        t << "\t\t}; "<< endl;
     }
 }
 
@@ -1538,7 +1581,9 @@ void SymbianMakefileGenerator::writeLocFile(QStringList &symbianLangCodes)
     }
 }
 
-void SymbianMakefileGenerator::readRssRules(QString &numberOfIcons, QString &iconFile, QStringList &userRssRules)
+void SymbianMakefileGenerator::readRssRules(QString &numberOfIcons,
+                                            QString &iconFile, QMap<QString,
+                                            QStringList> &userRssRules)
 {
     for (QMap<QString, QStringList>::iterator it = project->variables().begin(); it != project->variables().end(); ++it) {
         if (it.key().startsWith(RSS_RULES_BASE)) {
@@ -1550,14 +1595,16 @@ void SymbianMakefileGenerator::readRssRules(QString &numberOfIcons, QString &ico
             QStringList newValues;
             QStringList values = it.value();
             foreach(QString item, values) {
-                // If there is no stringlist defined for a rule, use rule name directly
+                // If there is no stringlist defined for a rule, use rule value directly
                 // This is convenience for defining single line statements
                 if (project->values(item).isEmpty()) {
                     newValues << item;
                 } else {
+                    QStringList itemList;
                     foreach(QString itemRow, project->values(item)) {
-                        newValues << itemRow;
+                        itemList << itemRow;
                     }
+                    newValues << itemList.join("\n");
                 }
             }
             // Verify thet there is exactly one value in RSS_TAG_NBROFICONS
@@ -1578,6 +1625,14 @@ void SymbianMakefileGenerator::readRssRules(QString &numberOfIcons, QString &ico
                             RSS_RULES_BASE, RSS_TAG_ICONFILE);
                     continue;
                 }
+            } else if (newKey == RSS_TAG_HEADER
+                       || newKey == RSS_TAG_SERVICE_LIST
+                       || newKey == RSS_TAG_FILE_OWNERSHIP_LIST
+                       || newKey == RSS_TAG_DATATYPE_LIST
+                       || newKey == RSS_TAG_FOOTER
+                       || newKey == RSS_TAG_DEFAULT) {
+                userRssRules[newKey] = newValues;
+                continue;
             } else {
                 fprintf(stderr, "Warning: Unsupported key:'%s%s'\n",
                         RSS_RULES_BASE, newKey.toLatin1().constData());
@@ -1586,15 +1641,17 @@ void SymbianMakefileGenerator::readRssRules(QString &numberOfIcons, QString &ico
         }
     }
 
+    QStringList newValues;
     foreach(QString item, project->values(RSS_RULES)) {
-        // If there is no stringlist defined for a rule, use rule name directly
-        // This is convenience for defining single line mmp statements
+        // If there is no stringlist defined for a rule, use rule value directly
+        // This is convenience for defining single line statements
         if (project->values(item).isEmpty()) {
-            userRssRules << item;
+            newValues << item;
         } else {
-            userRssRules << project->values(item);
+            newValues << project->values(item);
         }
     }
+    userRssRules[RSS_TAG_DEFAULT] << newValues;
 
     // Validate that either both RSS_TAG_NBROFICONS and RSS_TAG_ICONFILE keys exist
     // or neither of them exist

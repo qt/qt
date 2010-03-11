@@ -13,7 +13,7 @@ symbian {
     TARGET.UID3 = 0xA000CF71
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     HEADERS += $$QT_SOURCE_TREE/examples/network/qftp/sym_iap_util.h
-    LIBS += -lesock
+    LIBS += -lesock -lcommdb -linsock # For IAP selection
     TARGET.CAPABILITY = "All -TCB"
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
 }
