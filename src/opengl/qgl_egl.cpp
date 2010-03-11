@@ -63,10 +63,8 @@ void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLForma
 
     // QGLFormat uses a magic value of -1 to indicate "don't care", even when a buffer of that
     // type has been requested. So we must check QGLFormat's booleans too if size is -1:
-    if (glFormat.alpha() && alphaSize <= 0) {
-        qDebug("QGLFormat::alpha() returned true");
+    if (glFormat.alpha() && alphaSize <= 0)
         alphaSize = 1;
-    }
     if (glFormat.depth() && depthSize <= 0)
         depthSize = 1;
     if (glFormat.stencil() && stencilSize <= 0)
