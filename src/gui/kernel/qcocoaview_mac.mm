@@ -1032,11 +1032,16 @@ static int qCocoaViewCount = 0;
 {
     if (!qwidget)
         return NO;
+    // disabled widget shouldn't get focus even if it's a window.
+    // hence disabled windows will not get any key or mouse events.
+    if (!qwidget->isEnabled())
+        return NO;
     // Before accepting the focus for a window, we check that
     // the focusWidget (if any) is not contained in the same window.
-    if (qwidget->isWindow() && (!qApp->focusWidget()
-				|| qApp->focusWidget()->window() != qwidget))
+    if (qwidget->isWindow() && !qt_widget_private(qwidget)->topData()->embedded
+        && (!qApp->focusWidget() || qApp->focusWidget()->window() != qwidget)) {
         return YES;  // Always do it, so that windows can accept key press events.
+    }
     return qwidget->focusPolicy() != Qt::NoFocus;
 }
 
@@ -1047,7 +1052,16 @@ static int qCocoaViewCount = 0;
     // Seems like the following test only triggers if this
     // view is inside a QMacNativeWidget:
     if (qwidget == QApplication::focusWidget())
-        QApplicationPrivate::setFocusWidget(0, Qt::OtherFocusReason);
+        qwidget->clearFocus();
+    return YES;
+}
+
+- (BOOL)becomeFirstResponder
+{
+    // see the comment in the acceptsFirstResponder - if the window "stole" focus
+    // let it become the responder, but don't tell Qt
+    if (!QApplication::focusWidget() && qwidget->focusPolicy() != Qt::NoFocus)
+        qwidget->setFocus(Qt::OtherFocusReason);
     return YES;
 }
 
