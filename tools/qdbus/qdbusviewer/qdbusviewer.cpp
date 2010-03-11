@@ -154,6 +154,7 @@ void QDBusViewer::activate(const QModelIndex &item)
     sig.mPath = model->dBusPath(item);
     sig.mInterface = model->dBusInterface(item);
     sig.mName = model->dBusMethodName(item);
+    sig.mTypeSig = model->dBusTypeSignature(item);
 
     switch (model->itemType(item)) {
     case QDBusModel::SignalItem:
