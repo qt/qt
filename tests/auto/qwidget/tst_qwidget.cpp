@@ -10043,6 +10043,10 @@ void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
 
 void tst_QWidget::movedAndResizedAttributes()
 {
+#if defined (Q_OS_MAC) || defined(Q_WS_QWS)
+    QEXPECT_FAIL("", "FixMe, QTBUG-8941", Abort);
+    QVERIFY(false);
+#else
     QWidget w;
     w.show();
 
@@ -10090,7 +10094,7 @@ void tst_QWidget::movedAndResizedAttributes()
     w.resize(100, 100);
     QVERIFY(w.testAttribute(Qt::WA_Moved));
     QVERIFY(w.testAttribute(Qt::WA_Resized));
-
+#endif
 }
 
 QTEST_MAIN(tst_QWidget)
