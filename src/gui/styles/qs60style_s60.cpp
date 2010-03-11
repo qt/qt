@@ -63,7 +63,7 @@
 #include <aknutils.h>
 #include <aknnavi.h>
 #include <gulicon.h>
-#include <AknBitmapAnimation.h>
+#include <aknbitmapanimation.h>
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
