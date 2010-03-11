@@ -41,13 +41,12 @@
 
 #include "qdeclarativeparticles_p.h"
 
-#include "qdeclarativeitem_p.h"
+#include <private/qdeclarativeitem_p.h>
 
-#include <qdeclarativepixmapcache_p.h>
-#include <qfxperf_p_p.h>
-#include <qdeclarativeanimation_p_p.h>
+#include <private/qdeclarativepixmapcache_p.h>
+#include <private/qfxperf_p_p.h>
+#include <private/qdeclarativeanimation_p_p.h>
 
-#include <QNetworkReply>
 #include <QPainter>
 #include <QtGui/qdrawutil.h>
 #include <QVarLengthArray>
