@@ -36,6 +36,10 @@
 #include <wtf/Vector.h>
 #include <wtf/unicode/Unicode.h>
 
+#if PLATFORM(QT)
+#include <QtCore/qstring.h>
+#endif
+
 namespace JSC {
 
     using WTF::PlacementNewAdoptType;
