@@ -76,6 +76,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l ParallelAnimation
 \o \l PauseAnimation
 \o \l ParentAnimation
+\o \l AnchorAnimation
 \o \l PropertyAction
 \o \l ParentAction
 \o \l ScriptAction

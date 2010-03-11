@@ -75,6 +75,7 @@
 
 void QDeclarativeUtilModule::defineModule()
 {
+    qmlRegisterType<QDeclarativeAnchorAnimation>("Qt",4,6,"AnchorAnimation");
     qmlRegisterType<QDeclarativeAnchorChanges>("Qt",4,6,"AnchorChanges");
     qmlRegisterType<QDeclarativeBehavior>("Qt",4,6,"Behavior");
     qmlRegisterType<QDeclarativeBind>("Qt",4,6,"Binding");
