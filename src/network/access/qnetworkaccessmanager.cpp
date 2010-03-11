@@ -886,8 +886,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
             d->createSession(manager.defaultConfiguration());
         else
             d->createSession(manager.configurationFromIdentifier(d->networkConfiguration));
-
-        d->initializeSession = false;
     } else if (d->networkSession) {
         d->networkSession->setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), -1);
     }
@@ -1206,6 +1204,8 @@ QNetworkAccessManagerPrivate::~QNetworkAccessManagerPrivate()
 void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &config)
 {
     Q_Q(QNetworkAccessManager);
+
+    initializeSession = false;
 
     if (networkSession)
         delete networkSession;
