@@ -38,6 +38,7 @@ SOURCES += \
     $$PWD/qdeclarativescript.cpp \
     $$PWD/qdeclarativecleanup.cpp \
     $$PWD/qdeclarativepropertycache.cpp \
+    $$PWD/qdeclarativenotifier.cpp \
     $$PWD/qdeclarativeintegercache.cpp \
     $$PWD/qdeclarativetypenamecache.cpp \
     $$PWD/qdeclarativescriptstring.cpp \
@@ -108,6 +109,7 @@ HEADERS += \
     $$PWD/qdeclarativewatcher_p.h \
     $$PWD/qdeclarativecleanup_p.h \
     $$PWD/qdeclarativepropertycache_p.h \
+    $$PWD/qdeclarativenotifier_p.h \
     $$PWD/qdeclarativeintegercache_p.h \
     $$PWD/qdeclarativetypenamecache_p.h \
     $$PWD/qdeclarativescriptstring.h \

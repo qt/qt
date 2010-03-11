@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 QDeclarativeContextPrivate::QDeclarativeContextPrivate()
 : parent(0), engine(0), isInternal(false), propertyNames(0), 
-  notifyIndex(-1), highPriorityCount(0), imports(0), expressions(0), contextObjects(0),
+  notifyIndex(-1), contextObject(0), imports(0), expressions(0), contextObjects(0),
   idValues(0), idValueCount(0), optimizedBindings(0)
 {
 }
@@ -109,12 +109,7 @@ void QDeclarativeContextPrivate::destroyed(ContextGuard *guard)
     if (parent && QObjectPrivate::get(parent)->wasDeleted) 
         return;
 
-    while(guard->bindings) {
-        QObject *o = guard->bindings->target;
-        int mi = guard->bindings->methodIndex;
-        guard->bindings->clear();
-        if (o) o->qt_metacall(QMetaObject::InvokeMetaMethod, mi, 0);
-    }
+    guard->bindings.notify();
 
     for (int ii = 0; ii < idValueCount; ++ii) {
         if (&idValues[ii] == guard) {
@@ -177,7 +172,7 @@ void QDeclarativeContextPrivate::init()
     MyDataSet myDataSet;
     QDeclarativeEngine engine;
     QDeclarativeContext context(engine.rootContext());
-    context.addDefaultObject(&myDataSet);
+    context.setContextObject(&myDataSet);
 
     QDeclarativeComponent component(&engine, "ListView { model=myModel }");
     component.create(&context);
@@ -370,13 +365,21 @@ QDeclarativeContext *QDeclarativeContext::parentContext() const
 }
 
 /*!
-    Add \a defaultObject to this context.  The object will be added after
-    any existing default objects.
+    Return the context object, or 0 if there is no context object.
 */
-void QDeclarativeContext::addDefaultObject(QObject *defaultObject)
+QObject *QDeclarativeContext::contextObject() const
+{
+    Q_D(const QDeclarativeContext);
+    return d->contextObject;
+}
+
+/*!
+    Set the context \a object.
+*/
+void QDeclarativeContext::setContextObject(QObject *object)
 {
     Q_D(QDeclarativeContext);
-    d->defaultObjects.prepend(defaultObject);
+    d->contextObject = object;
 }
 
 /*!
@@ -471,15 +474,12 @@ QVariant QDeclarativeContext::contextProperty(const QString &name) const
 
     if (idx == -1) {
         QByteArray utf8Name = name.toUtf8();
-        for (int ii = d->defaultObjects.count() - 1; ii >= 0; --ii) {
-            QObject *obj = d->defaultObjects.at(ii);
+        if (d->contextObject) {
+            QObject *obj = d->contextObject;
             QDeclarativePropertyCache::Data local;
             QDeclarativePropertyCache::Data *property = QDeclarativePropertyCache::property(d->engine, obj, name, local);
 
-            if (property) {
-                value = obj->metaObject()->property(property->coreIndex).read(obj);
-                break;
-            }
+            if (property) value = obj->metaObject()->property(property->coreIndex).read(obj);
         }
         if (!value.isValid() && parentContext())
             value = parentContext()->contextProperty(name);

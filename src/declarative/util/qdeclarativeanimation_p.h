@@ -480,6 +480,26 @@ protected:
     virtual QAbstractAnimation *qtAnimation();
 };
 
+class QDeclarativeAnchorAnimationPrivate;
+class QDeclarativeAnchorAnimation : public QDeclarativeAbstractAnimation
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QDeclarativeAnchorAnimation)
+    Q_PROPERTY(QDeclarativeListProperty<QDeclarativeItem> targets READ targets)
+
+public:
+    QDeclarativeAnchorAnimation(QObject *parent=0);
+    virtual ~QDeclarativeAnchorAnimation();
+
+    QDeclarativeListProperty<QDeclarativeItem> targets();
+
+protected:
+    virtual void transition(QDeclarativeStateActions &actions,
+                            QDeclarativeProperties &modified,
+                            TransitionDirection direction);
+    virtual QAbstractAnimation *qtAnimation();
+};
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QDeclarativeAbstractAnimation)
@@ -495,6 +515,7 @@ QML_DECLARE_TYPE(QDeclarativeParallelAnimation)
 QML_DECLARE_TYPE(QDeclarativeVector3dAnimation)
 QML_DECLARE_TYPE(QDeclarativeRotationAnimation)
 QML_DECLARE_TYPE(QDeclarativeParentAnimation)
+QML_DECLARE_TYPE(QDeclarativeAnchorAnimation)
 
 QT_END_HEADER
 

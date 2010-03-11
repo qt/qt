@@ -275,6 +275,7 @@ int qmlRegisterCustomType(const char *uri, int versionMajor, int versionMinor,
     return QDeclarativePrivate::registerType(type);
 }
 
+#if 0
 #define QML_REGISTER_INTERFACE(INTERFACE) \
     qmlRegisterInterface<INTERFACE>(#INTERFACE)
 
@@ -286,6 +287,8 @@ int qmlRegisterCustomType(const char *uri, int versionMajor, int versionMinor,
 
 #define QML_REGISTER_NOCREATE_TYPE(CLASS) \
     qmlRegisterType<CLASS>()
+
+#endif
 
 class QDeclarativeContext;
 class QDeclarativeEngine;

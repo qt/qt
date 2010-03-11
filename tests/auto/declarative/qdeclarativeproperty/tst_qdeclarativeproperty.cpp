@@ -1348,9 +1348,9 @@ void tst_qdeclarativeproperty::copy()
 
 void tst_qdeclarativeproperty::initTestCase()
 {
-    QML_REGISTER_TYPE(Test,1,0,MyQmlObject,MyQmlObject);
-    QML_REGISTER_TYPE(Test,1,0,PropertyObject,PropertyObject);
-    QML_REGISTER_TYPE(Test,1,0,MyContainer,MyContainer);
+    qmlRegisterType<MyQmlObject>("Test",1,0,"MyQmlObject");
+    qmlRegisterType<PropertyObject>("Test",1,0,"PropertyObject");
+    qmlRegisterType<MyContainer>("Test",1,0,"MyContainer");
 }
 
 

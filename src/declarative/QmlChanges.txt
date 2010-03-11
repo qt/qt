@@ -1,6 +1,7 @@
 =============================================================================
 The changes below are pre Qt 4.7.0 alpha
 
+ListView, GridView::positionViewAtIndex() gained a 'mode' parameter
 Flickable: renamed viewportWidth -> contentWidth
 Flickable: renamed viewportHeight -> contentHeight
 Flickable: renamed viewportX -> contentX
@@ -49,6 +50,9 @@ QML_REGISTER_... registration macros, which must be called explicitly. C++ API u
 should also consider using the QmlExtensionPlugin (previously named QmlModulePlugin)
 as a cleaner mechanism for publishing libraries of QML types, or the upcoming 
 application plugin features of the qmlviewer / qmlruntime / qml.
+
+QDeclarativeContext::addDefaultObject() has been replaced with 
+QDeclarativeContext::setContextObject()
 
 PropertyAnimation
 ------------------
