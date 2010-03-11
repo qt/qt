@@ -276,7 +276,7 @@ public:
     QString resolvePlugin(const QDir &dir, const QString &baseName);
 
 
-    bool addToImport(Imports*, const QString& qmlDirContent,const QString& uri, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType) const;
+    bool addToImport(Imports*, const QString& uri, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType) const;
     bool resolveType(const Imports&, const QByteArray& type,
                      QDeclarativeType** type_return, QUrl* url_return,
                      int *version_major, int *version_minor,
