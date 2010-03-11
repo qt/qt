@@ -182,6 +182,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     // Only create the eglContext if we don't already have one:
     if (d->eglContext == 0) {
         d->eglContext = new QEglContext();
+        d->ownsEglContext = true;
         d->eglContext->setApi(QEgl::OpenGL);
 
         // If the device is a widget with WA_TranslucentBackground set, make sure the glFormat

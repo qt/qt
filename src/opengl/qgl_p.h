@@ -347,6 +347,7 @@ public:
     HDC hbitmap_hdc;
 #endif
 #if defined(QT_OPENGL_ES)
+    bool ownsEglContext;
     QEglContext *eglContext;
     EGLSurface eglSurface;
     void destroyEglSurfaceForDevice();
