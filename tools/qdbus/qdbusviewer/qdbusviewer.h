@@ -66,7 +66,7 @@ public slots:
     void about();
 
 private slots:
-    void serviceChanged(QTreeWidgetItem *item);
+    void serviceChanged(const QModelIndex &index);
     void showContextMenu(const QPoint &);
     void connectionRequested(const BusSignature &sig);
     void callMethod(const BusSignature &sig);
@@ -92,6 +92,10 @@ private:
     QTreeView *tree;
     QAction *refreshAction;
     QTreeWidget *services;
+    QStringListModel *servicesModel;
+    QSortFilterProxyModel *servicesFilterModel;
+    QLineEdit *serviceFilterLine;
+    QListView *servicesView;
     QTextBrowser *log;
     QRegExp objectPathRegExp;
 };
