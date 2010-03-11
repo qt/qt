@@ -4682,8 +4682,10 @@ void QWidgetPrivate::syncCocoaMask()
     if (!q->testAttribute(Qt::WA_WState_Created) || !extra)
         return;
 
-    if (extra->hasMask && extra->maskBits.size() != q->size()) {
-        extra->maskBits = QImage(q->size(), QImage::Format_Mono);
+    if (extra->hasMask) {
+        if(extra->maskBits.size() != q->size()) {
+            extra->maskBits = QImage(q->size(), QImage::Format_Mono);
+        }
         extra->maskBits.fill(QColor(Qt::color1).rgba());
         extra->maskBits.setNumColors(2);
         extra->maskBits.setColor(0, QColor(Qt::color0).rgba());
