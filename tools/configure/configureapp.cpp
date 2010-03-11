@@ -2276,7 +2276,7 @@ bool Configure::verifyConfiguration()
             if (!(l.contains(dictionary["ARM_FPU_TYPE"])))
                     cout << QString("WARNING: Using unsupported fpu flag: %1").arg(dictionary["ARM_FPU_TYPE"]) << endl;
     }
-    if (dictionary["DECLARATIVE"] == "yes" && dictionary["SCRIPT"] != "no") {
+    if (dictionary["DECLARATIVE"] == "yes" && dictionary["SCRIPT"] == "no") {
         cout << "WARNING: To be able to compile QtDeclarative we need to also compile the" << endl
              << "QtScript module. If you continue, we will turn on the QtScript module." << endl
              << "(Press any key to continue..)";
