@@ -441,7 +441,7 @@ extern QCursor *qt_grab_cursor();
 #define __export
 #endif
 
-extern "C" LRESULT CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
+extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
 
 class QETWidget : public QWidget                // event translator widget
 {
@@ -1400,8 +1400,7 @@ static bool qt_is_translatable_mouse_event(UINT message)
             ;
 }
 
-extern "C"
-LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     bool result = true;
     QEvent::Type evt_type = QEvent::None;
