@@ -74,6 +74,7 @@ QDBusViewer::QDBusViewer(const QDBusConnection &connection, QWidget *parent)  :
     servicesFilterModel->setSourceModel(servicesModel);
     servicesFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     serviceFilterLine = new QLineEdit(this);
+    serviceFilterLine->setPlaceholderText(tr("Search..."));
     servicesView = new QListView(this);
     servicesView->setModel(servicesFilterModel);
 
