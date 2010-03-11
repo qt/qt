@@ -3991,10 +3991,12 @@ QString HtmlGenerator::getLink(const Atom *atom,
         }
         else {
             *node = marker->resolveTarget(first, myTree, relative);
-            if (!*node)
+            if (!*node) {
                 *node = myTree->findFakeNodeByTitle(first);
-            if (!*node)
+            }
+            if (!*node) {
                 *node = myTree->findUnambiguousTarget(first, targetAtom);
+            }
         }
 
         if (*node) {

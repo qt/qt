@@ -54,6 +54,7 @@
 #include "tree.h"
 
 #include <limits.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -150,6 +151,7 @@ const Node *Tree::findNode(const QStringList &path,
 
             const Node *next =
                 static_cast<const InnerNode*>(node)->findNode(path.at(i));
+            
             if (!next && (findFlags & SearchEnumValues) && i == path.size()-1)
                 next = static_cast<const InnerNode*>(node)->findEnumNodeForValue(path.at(i));
 
