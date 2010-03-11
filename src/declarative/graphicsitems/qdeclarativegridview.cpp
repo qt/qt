@@ -1666,46 +1666,83 @@ void QDeclarativeGridView::moveCurrentIndexRight()
 }
 
 /*!
-    \qmlmethod GridView::positionViewAtIndex(int index)
+    \qmlmethod GridView::positionViewAtIndex(int index, PositionMode mode)
 
-    Positions the view such that the \a index is at the top (or left for horizontal orientation) of the view.
+    Positions the view such that the \a index is at the position specified by
+    \a mode:
+
+    \list
+    \o Beginning - position item at the top (or left for TopToBottom flow) of the view.
+    \o Center- position item in the center of the view.
+    \o End - position item at bottom (or right for horizontal orientation) of the view.
+    \o Visible - if any part of the item is visible then take no action, otherwise
+    bring the item into view.
+    \o Contain - ensure the entire item is visible.  If the item is larger than
+    the view the item is positioned at the top (or left for TopToBottom flow) of the view.
+    \endlist
+
     If positioning the view at the index would cause empty space to be displayed at
-    the end of the view, the view will be positioned at the end.
+    the beginning or end of the view, the view will be positioned at the boundary.
 
     It is not recommended to use contentX or contentY to position the view
     at a particular index.  This is unreliable since removing items from the start
-    of the list does not cause all other items to be repositioned.
+    of the view does not cause all other items to be repositioned.
     The correct way to bring an item into view is with positionViewAtIndex.
 */
-void QDeclarativeGridView::positionViewAtIndex(int index)
+void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
 {
     Q_D(QDeclarativeGridView);
     if (!d->isValid() || index < 0 || index >= d->model->count())
         return;
+    if (mode < Beginning || mode > Contain)
+        return;
 
-    qreal maxExtent = d->flow == QDeclarativeGridView::LeftToRight ? -maxYExtent() : -maxXExtent();
+    qreal pos = d->position();
     FxGridItem *item = d->visibleItem(index);
-    if (item) {
-        // Already created - just move to top of view
-        int pos = qMin(item->rowPos(), maxExtent);
-        d->setPosition(pos);
-    } else {
-        int pos = d->rowPosAt(index);
+    if (!item) {
+        int itemPos = d->rowPosAt(index);
         // save the currently visible items in case any of them end up visible again
         QList<FxGridItem*> oldVisible = d->visibleItems;
         d->visibleItems.clear();
         d->visibleIndex = index - index % d->columns;
-        d->setPosition(pos);
-        // setPosition() will cause refill.  Adjust if we have moved beyond range
-        if (d->position() > maxExtent)
-            d->setPosition(maxExtent);
+        d->setPosition(itemPos);
         // now release the reference to all the old visible items.
         for (int i = 0; i < oldVisible.count(); ++i)
             d->releaseItem(oldVisible.at(i));
+        item = d->visibleItem(index);
+    }
+    if (item) {
+        qreal itemPos = item->rowPos();
+        switch (mode) {
+        case Beginning:
+            pos = itemPos;
+            break;
+        case Center:
+            pos = itemPos - (d->size() - d->rowSize())/2;
+            break;
+        case End:
+            pos = itemPos - d->size() + d->rowSize();
+            break;
+        case Visible:
+            if (itemPos > pos + d->size())
+                pos = itemPos - d->size() + d->rowSize();
+            else if (item->endRowPos() < pos)
+                pos = itemPos;
+            break;
+        case Contain:
+            if (item->endRowPos() > pos + d->size())
+                pos = itemPos - d->size() + d->rowSize();
+            if (itemPos < pos)
+                pos = itemPos;
+        }
+        qreal maxExtent = d->flow == QDeclarativeGridView::LeftToRight ? -maxYExtent() : -maxXExtent();
+        pos = qMin(pos, maxExtent);
+        qreal minExtent = d->flow == QDeclarativeGridView::LeftToRight ? -minYExtent() : -minXExtent();
+        pos = qMax(pos, minExtent);
+        d->setPosition(pos);
     }
     d->fixupPosition();
 }
-
 
 void QDeclarativeGridView::componentComplete()
 {
