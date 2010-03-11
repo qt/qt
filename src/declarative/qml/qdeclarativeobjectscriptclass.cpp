@@ -351,7 +351,8 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         }
     }
 
-    QDeclarativeAbstractBinding *delBinding = QDeclarativePropertyPrivate::setBinding(obj, *lastData, 0);
+    QDeclarativeAbstractBinding *delBinding = 
+        QDeclarativePropertyPrivate::setBinding(obj, lastData->coreIndex, -1, 0);
     if (delBinding)
         delBinding->destroy();
 

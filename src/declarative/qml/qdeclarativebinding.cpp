@@ -223,7 +223,7 @@ void QDeclarativeBinding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteF
 int QDeclarativeBinding::propertyIndex()
 {
     Q_D(QDeclarativeBinding);
-    return d->bindingData()->property.index();
+    return QDeclarativePropertyPrivate::bindingIndex(d->bindingData()->property);
 }
 
 bool QDeclarativeBinding::enabled() const
@@ -259,23 +259,57 @@ void QDeclarativeAbstractBinding::addToObject(QObject *object)
 {
     Q_ASSERT(object);
 
+    if (m_object == object)
+        return;
+
+    int index = propertyIndex();
+
     removeFromObject();
 
     Q_ASSERT(!m_prevBinding);
 
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object, true);
-    m_nextBinding = data->bindings;
-    if (m_nextBinding) m_nextBinding->m_prevBinding = &m_nextBinding;
-    m_prevBinding = &data->bindings;
-    data->bindings = this;
     m_object = object;
+    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object, true);
 
-    data->setBindingBit(m_object, propertyIndex());
+    if (index & 0xFF000000) {
+        // Value type
+
+        int coreIndex = index & 0xFFFFFF;
+
+        // Find the value type proxy (if there is one)
+        QDeclarativeValueTypeProxyBinding *proxy = 0;
+        if (data->hasBindingBit(coreIndex)) {
+            QDeclarativeAbstractBinding *b = data->bindings;
+            while (b && b->propertyIndex() != coreIndex)
+                b = b->m_nextBinding;
+            Q_ASSERT(b && b->bindingType() == QDeclarativeAbstractBinding::ValueTypeProxy);
+            proxy = static_cast<QDeclarativeValueTypeProxyBinding *>(b);
+        }
+
+        if (!proxy) 
+            proxy = new QDeclarativeValueTypeProxyBinding(object, coreIndex);
+        proxy->addToObject(object);
+
+        m_nextBinding = proxy->m_bindings;
+        if (m_nextBinding) m_nextBinding->m_prevBinding = &m_nextBinding;
+        m_prevBinding = &proxy->m_bindings;
+        proxy->m_bindings = this;
+
+    } else {
+        m_nextBinding = data->bindings;
+        if (m_nextBinding) m_nextBinding->m_prevBinding = &m_nextBinding;
+        m_prevBinding = &data->bindings;
+        data->bindings = this;
+
+        data->setBindingBit(m_object, index);
+    }
 }
 
 void QDeclarativeAbstractBinding::removeFromObject()
 {
     if (m_prevBinding) {
+        int index = propertyIndex();
+
         Q_ASSERT(m_object);
 
         *m_prevBinding = m_nextBinding;
@@ -283,8 +317,14 @@ void QDeclarativeAbstractBinding::removeFromObject()
         m_prevBinding = 0;
         m_nextBinding = 0;
 
-        QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(m_object, false);
-        if (data) data->clearBindingBit(propertyIndex());
+        if (index & 0xFF000000) {
+            // Value type - we don't remove the proxy from the object.  It will sit their happily
+            // doing nothing for ever more.
+        } else {
+            QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(m_object, false);
+            if (data) data->clearBindingBit(index);
+        }
+
         m_object = 0;
     }
 }
@@ -303,6 +343,90 @@ QString QDeclarativeAbstractBinding::expression() const
 void QDeclarativeAbstractBinding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteFlags)
 {
     if (e) m_mePtr = 0;
+}
+
+QDeclarativeValueTypeProxyBinding::QDeclarativeValueTypeProxyBinding(QObject *o, int index)
+: m_object(o), m_index(index), m_bindings(0)
+{
+}
+
+QDeclarativeValueTypeProxyBinding::~QDeclarativeValueTypeProxyBinding()
+{
+    while (m_bindings) {
+        QDeclarativeAbstractBinding *binding = m_bindings;
+        binding->setEnabled(false, 0);
+        binding->destroy();
+    }
+}
+
+void QDeclarativeValueTypeProxyBinding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteFlags flags)
+{
+    if (e) {
+        addToObject(m_object);
+
+        QDeclarativeAbstractBinding *bindings = m_bindings;
+        m_bindings = 0;
+        recursiveEnable(bindings, flags);
+    } else {
+        removeFromObject();
+
+        QDeclarativeAbstractBinding *bindings = m_bindings;
+        m_bindings = 0;
+        recursiveDisable(bindings);
+    }
+}
+
+void QDeclarativeValueTypeProxyBinding::recursiveEnable(QDeclarativeAbstractBinding *b, QDeclarativePropertyPrivate::WriteFlags flags)
+{
+    if (!b)
+        return;
+
+    QDeclarativeAbstractBinding *next = b->m_nextBinding;
+    b->m_prevBinding = 0;
+    b->m_nextBinding = 0;
+    Q_ASSERT(b->m_mePtr == 0);
+    b->m_mePtr = &b;
+
+    recursiveEnable(next, flags);
+
+    if (b)
+        b->setEnabled(true, flags);
+}
+
+void QDeclarativeValueTypeProxyBinding::recursiveDisable(QDeclarativeAbstractBinding *b)
+{
+    if (!b)
+        return;
+
+    recursiveDisable(b->m_nextBinding);
+
+    b->setEnabled(false, 0);
+
+    Q_ASSERT(b->m_prevBinding == 0);
+    Q_ASSERT(b->m_nextBinding == 0);
+    b->m_nextBinding = m_bindings;
+    if (b->m_nextBinding) b->m_nextBinding->m_prevBinding = &b->m_nextBinding;
+    b->m_prevBinding = &m_bindings;
+    m_bindings = b;
+}
+
+int QDeclarativeValueTypeProxyBinding::propertyIndex()
+{
+    return m_index;
+}
+
+void QDeclarativeValueTypeProxyBinding::update(QDeclarativePropertyPrivate::WriteFlags)
+{
+}
+
+QDeclarativeAbstractBinding *QDeclarativeValueTypeProxyBinding::binding(int propertyIndex)
+{
+    QDeclarativeAbstractBinding *binding = m_bindings;
+    
+    while (binding && binding->propertyIndex() != propertyIndex) 
+        binding = binding->m_nextBinding;
+
+    return binding;
 }
 
 QT_END_NAMESPACE
