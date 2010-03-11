@@ -39,6 +39,11 @@ wince* {
     LIBS += -lmmtimer
 }
 
+mac {
+    DEFINES += ENABLE_JSC_MULTIPLE_THREADS=0
+    LIBS_PRIVATE += -framework AppKit
+}
+
 include($$WEBKITDIR/JavaScriptCore/JavaScriptCore.pri)
 
 INCLUDEPATH += $$WEBKITDIR/JavaScriptCore

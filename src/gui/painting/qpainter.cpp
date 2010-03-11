@@ -7994,10 +7994,11 @@ start_lengthVariant:
         for (int i = 0; i < textLayout.lineCount(); i++) {
             QTextLine line = textLayout.lineAt(i);
 
+            qreal advance = textLayout.engine()->lines[i].textAdvance.toReal();
             if (tf & Qt::AlignRight)
-                xoff = r.width() - line.naturalTextWidth();
+                xoff = r.width() - advance;
             else if (tf & Qt::AlignHCenter)
-                xoff = (r.width() - line.naturalTextWidth())/2;
+                xoff = (r.width() - advance)/2;
 
             line.draw(painter, QPointF(r.x() + xoff + line.x(), r.y() + yoff));
         }
@@ -8914,11 +8915,11 @@ QTransform QPainter::combinedTransform() const
     This function is potentially faster than multiple calls to drawPixmap(),
     since the backend can optimize state changes.
 
-    \sa QPainter::Fragment, QPainter::FragmentHint
+    \sa QPainter::PixmapFragment, QPainter::PixmapFragmentHint
 */
 
-void QPainter::drawPixmapFragments(const Fragment *fragments, int fragmentCount,
-                                   const QPixmap &pixmap, FragmentHints hints)
+void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragmentCount,
+                                   const QPixmap &pixmap, PixmapFragmentHints hints)
 {
     Q_D(QPainter);
 
@@ -8959,7 +8960,7 @@ void QPainter::drawPixmapFragments(const Fragment *fragments, int fragmentCount,
 
 /*!
     \since 4.7
-    \class QPainter::Fragment
+    \class QPainter::PixmapFragment
 
     \brief This class is used in conjunction with the
     QPainter::drawPixmapFragments() function to specify how a pixmap, or
@@ -8980,73 +8981,73 @@ void QPainter::drawPixmapFragments(const Fragment *fragments, int fragmentCount,
 /*!
     \since 4.7
 
-    This is a convenience function that returns a QPainter::Fragment that is
+    This is a convenience function that returns a QPainter::PixmapFragment that is
     initialized with the \a pos, \a sourceRect, \a scaleX, \a scaleY, \a
     rotation, \a opacity parameters.
 */
 
-QPainter::Fragment QPainter::Fragment::create(const QPointF &pos, const QRectF &sourceRect,
+QPainter::PixmapFragment QPainter::PixmapFragment::create(const QPointF &pos, const QRectF &sourceRect,
                                               qreal scaleX, qreal scaleY, qreal rotation,
                                               qreal opacity)
 {
-    Fragment fragment = {pos.x(), pos.y(), sourceRect.x(), sourceRect.y(), sourceRect.width(),
-                         sourceRect.height(), scaleX, scaleY, rotation, opacity};
+    PixmapFragment fragment = {pos.x(), pos.y(), sourceRect.x(), sourceRect.y(), sourceRect.width(),
+                               sourceRect.height(), scaleX, scaleY, rotation, opacity};
     return fragment;
 }
 
 /*!
-    \variable QPainter::Fragment::x
+    \variable QPainter::PixmapFragment::x
     \brief the x coordinate of center point in the target rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::y
+    \variable QPainter::PixmapFragment::y
     \brief the y coordinate of the center point in the target rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::sourceLeft
+    \variable QPainter::PixmapFragment::sourceLeft
     \brief the left coordinate of the source rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::sourceTop
+    \variable QPainter::PixmapFragment::sourceTop
     \brief the top coordinate of the source rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::width
+    \variable QPainter::PixmapFragment::width
 
     \brief the width of the source rectangle and is used to calculate the width
     of the target rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::height
+    \variable QPainter::PixmapFragment::height
 
     \brief the height of the source rectangle and is used to calculate the
     height of the target rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::scaleX
+    \variable QPainter::PixmapFragment::scaleX
     \brief the horizontal scale of the target rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::scaleY
+    \variable QPainter::PixmapFragment::scaleY
     \brief the vertical scale of the target rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::rotation
+    \variable QPainter::PixmapFragment::rotation
 
     \brief the rotation of the target rectangle in degrees. The target
     rectangle is rotated after it has been scaled.
 */
 
 /*!
-    \variable QPainter::Fragment::opacity
+    \variable QPainter::PixmapFragment::opacity
 
     \brief the opacity of the target rectangle, where 0.0 is fully transparent
     and 1.0 is fully opaque.
@@ -9055,12 +9056,12 @@ QPainter::Fragment QPainter::Fragment::create(const QPointF &pos, const QRectF &
 /*!
     \since 4.7
 
-    \enum QPainter::FragmentHint
+    \enum QPainter::PixmapFragmentHint
 
     \value OpaqueHint Indicates that the pixmap fragments to be drawn are
     opaque. Opaque fragments are potentially faster to draw.
 
-    \sa QPainter::drawPixmapFragments(), QPainter::Fragment
+    \sa QPainter::drawPixmapFragments(), QPainter::PixmapFragment
 */
 
 void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivate::DrawOperation operation)

@@ -1047,13 +1047,6 @@ static int qCocoaViewCount = 0;
     return YES;
 }
 
-- (BOOL)becomeFirstResponder
-{
-    if (QApplication::focusWidget() == 0)
-        QApplicationPrivate::setFocusWidget([self QT_MANGLE_NAMESPACE(qt_qwidget)], Qt::OtherFocusReason);
-    return YES;
-}
-
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
     Q_UNUSED(isLocal);

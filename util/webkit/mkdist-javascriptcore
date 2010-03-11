@@ -5,7 +5,7 @@ die() {
     exit 1
 }
 
-default_tag="javascriptcore-4.6-snapshot-29072009"
+default_tag="javascriptcore-snapshot-02022010"
 
 if [ $# -eq 0 ]; then
     tag="$default_tag"
@@ -35,6 +35,8 @@ excluded_directories="$excluded_directories JavaScriptCore/wtf/win"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/chromium"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/haiku"
 excluded_directories="$excluded_directories JavaScriptCore/icu"
+excluded_directories="$excluded_directories JavaScriptCore/qt"
+excluded_directories="$excluded_directories JavaScriptCore/JavaScriptCore.gyp"
 
 
 files_to_remove=""
@@ -42,6 +44,9 @@ files_to_remove="$files_to_remove JavaScriptCore/AllInOneFile.cpp"
 files_to_remove="$files_to_remove JavaScriptCore/JavaScriptCoreSources.bkl"
 files_to_remove="$files_to_remove JavaScriptCore/jscore.bkl"
 files_to_remove="$files_to_remove JavaScriptCore/jsc.pro"
+files_to_remove="$files_to_remove JavaScriptCore/JavaScriptCore.pro"
+files_to_remove="$files_to_remove JavaScriptCore/DerivedSources.pro"
+files_to_remove="$files_to_remove JavaScriptCore/create_rvct_stubs"
 
 require_clean_work_tree() {
     # test if working tree is dirty

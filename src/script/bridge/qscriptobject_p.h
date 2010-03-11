@@ -67,12 +67,9 @@ public:
     virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
     virtual bool deleteProperty(JSC::ExecState*,
-                                const JSC::Identifier& propertyName,
-                                bool checkDontDelete = true);
-    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
-                                       unsigned&) const;
+                                const JSC::Identifier& propertyName);
     virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
-                                     bool includeNonEnumerable = false);
+                                     JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties);
     virtual void markChildren(JSC::MarkStack& markStack);
     virtual JSC::CallType getCallData(JSC::CallData&);
     virtual JSC::ConstructType getConstructData(JSC::ConstructData&);
@@ -84,7 +81,7 @@ public:
 
     static WTF::PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::ImplementsHasInstance | JSC::OverridesHasInstance));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
     inline JSC::JSValue data() const;
@@ -94,6 +91,8 @@ public:
     inline void setDelegate(QScriptObjectDelegate *delegate);
 
 protected:
+    static const unsigned StructureFlags = JSC::ImplementsHasInstance | JSC::OverridesHasInstance | JSC::OverridesGetOwnPropertySlot | JSC::OverridesMarkChildren | JSC::OverridesGetPropertyNames | JSObject::StructureFlags;
+
     Data *d;
 };
 
@@ -128,12 +127,9 @@ public:
     virtual void put(QScriptObject*, JSC::ExecState* exec, const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
     virtual bool deleteProperty(QScriptObject*, JSC::ExecState*,
-                                const JSC::Identifier& propertyName,
-                                bool checkDontDelete = true);
-    virtual bool getPropertyAttributes(const QScriptObject*, JSC::ExecState*,
-                                       const JSC::Identifier&, unsigned&) const;
+                                const JSC::Identifier& propertyName);
     virtual void getOwnPropertyNames(QScriptObject*, JSC::ExecState*, JSC::PropertyNameArray&,
-                                     bool includeNonEnumerable = false);
+                                     JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties);
     virtual void markChildren(QScriptObject*, JSC::MarkStack& markStack);
     virtual JSC::CallType getCallData(QScriptObject*, JSC::CallData&);
     virtual JSC::ConstructType getConstructData(QScriptObject*, JSC::ConstructData&);

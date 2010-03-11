@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
+#include "qglgradientcache_p.h"
 #include <private/qdrawhelper_p.h>
 #include <private/qgl_p.h>
 
-#include "qglgradientcache_p.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -64,6 +64,7 @@
 #ifndef QT_NO_CODECS
 #  include "qtsciicodec_p.h"
 #  include "qisciicodec_p.h"
+#ifndef Q_OS_SYMBIAN
 #  if defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
 // no iconv(3) support, must build all codecs into the library
 #    include "../../plugins/codecs/cn/qgb18030codec.h"
@@ -77,6 +78,7 @@
 #    include "qfontlaocodec_p.h"
 #    include "../../plugins/codecs/jp/qfontjpcodec.h"
 #  endif
+#endif // QT_NO_SYMBIAN
 #endif // QT_NO_CODECS
 #include "qlocale.h"
 #include "qmutex.h"
@@ -92,6 +94,11 @@
 #if defined(Q_OS_WINCE)
 #  define QT_NO_SETLOCALE
 #endif
+
+#ifdef Q_OS_SYMBIAN
+#include "qtextcodec_symbian.cpp"
+#endif
+
 
 // enabling this is not exception safe!
 // #define Q_DEBUG_TEXTCODEC
@@ -537,6 +544,12 @@ static QTextCodec *checkForCodec(const QByteArray &name) {
 */
 static void setupLocaleMapper()
 {
+#ifdef Q_OS_SYMBIAN
+    localeMapper = QSymbianTextCodec::localeMapper;
+    if (localeMapper)
+        return;
+#endif
+
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     localeMapper = QTextCodec::codecForName("System");
 #else
@@ -680,6 +693,17 @@ static void setup()
     (void) createQTextCodecCleanup();
 
 #ifndef QT_NO_CODECS
+    (void)new QTsciiCodec;
+    for (int i = 0; i < 9; ++i)
+        (void)new QIsciiCodec(i);
+
+    for (int i = 0; i < QSimpleTextCodec::numSimpleCodecs; ++i)
+        (void)new QSimpleTextCodec(i);
+
+#ifdef Q_OS_SYMBIAN
+    localeMapper = QSymbianTextCodec::init();
+#endif
+
 #  if defined(Q_WS_X11) && !defined(QT_BOOTSTRAPPED)
     // no font codecs when bootstrapping
     (void)new QFontLaoCodec;
@@ -696,12 +720,8 @@ static void setup()
 #    endif // QT_NO_ICONV && !QT_BOOTSTRAPPED
 #  endif // Q_WS_X11
 
-    (void)new QTsciiCodec;
 
-    for (int i = 0; i < 9; ++i)
-        (void)new QIsciiCodec(i);
-
-
+#ifndef Q_OS_SYMBIAN
 #  if defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
     // no asian codecs when bootstrapping, sorry
     (void)new QGb18030Codec;
@@ -715,6 +735,7 @@ static void setup()
     (void)new QBig5Codec;
     (void)new QBig5hkscsCodec;
 #  endif // QT_NO_ICONV && !QT_BOOTSTRAPPED
+#endif //Q_OS_SYMBIAN
 #endif // QT_NO_CODECS
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
@@ -727,16 +748,17 @@ static void setup()
     (void)new QUtf32Codec;
     (void)new QUtf32BECodec;
     (void)new QUtf32LECodec;
+#ifndef Q_OS_SYMBIAN
     (void)new QLatin15Codec;
+#endif
     (void)new QLatin1Codec;
     (void)new QUtf8Codec;
 
-    for (int i = 0; i < QSimpleTextCodec::numSimpleCodecs; ++i)
-        (void)new QSimpleTextCodec(i);
-
+#ifndef Q_OS_SYMBIAN
 #if defined(Q_OS_UNIX) && !defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
     // QIconvCodec depends on the UTF-16 codec, so it needs to be created last
     (void) new QIconvCodec();
+#endif
 #endif
 
     if (!localeMapper)
@@ -1124,6 +1146,9 @@ QList<int> QTextCodec::availableMibs()
 */
 void QTextCodec::setCodecForLocale(QTextCodec *c)
 {
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(textCodecsMutex());
+#endif
     localeMapper = c;
     if (!localeMapper)
         setupLocaleMapper();

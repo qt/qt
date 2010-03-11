@@ -46,7 +46,6 @@ namespace JSC {
     inline StatementNode::StatementNode(JSGlobalData* globalData)
         : Node(globalData)
         , m_lastLine(-1)
-        , m_column(-1)
     {
     }
 

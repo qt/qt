@@ -43,7 +43,7 @@ namespace JSC {
     class JSActivation : public JSVariableObject {
         typedef JSVariableObject Base;
     public:
-        JSActivation(CallFrame*, PassRefPtr<FunctionExecutable>);
+        JSActivation(CallFrame*, NonNullPassRefPtr<FunctionExecutable>);
         virtual ~JSActivation();
 
         virtual void markChildren(MarkStack&);
@@ -57,7 +57,7 @@ namespace JSC {
         virtual void put(ExecState*, const Identifier&, JSValue, PutPropertySlot&);
 
         virtual void putWithAttributes(ExecState*, const Identifier&, JSValue, unsigned attributes);
-        virtual bool deleteProperty(ExecState*, const Identifier& propertyName, bool checkDontDelete = true);
+        virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
 
         virtual JSObject* toThisObject(ExecState*) const;
 
@@ -66,11 +66,14 @@ namespace JSC {
         virtual const ClassInfo* classInfo() const { return &info; }
         static const ClassInfo info;
 
-        static PassRefPtr<Structure> createStructure(JSValue proto) { return Structure::create(proto, TypeInfo(ObjectType, NeedsThisConversion)); }
+        static PassRefPtr<Structure> createStructure(JSValue proto) { return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); }
+
+    protected:
+        static const unsigned StructureFlags = OverridesGetOwnPropertySlot | NeedsThisConversion | OverridesMarkChildren | OverridesGetPropertyNames | JSVariableObject::StructureFlags;
 
     private:
         struct JSActivationData : public JSVariableObjectData {
-            JSActivationData(PassRefPtr<FunctionExecutable> _functionExecutable, Register* registers)
+            JSActivationData(NonNullPassRefPtr<FunctionExecutable> _functionExecutable, Register* registers)
                 : JSVariableObjectData(_functionExecutable->generatedBytecode().symbolTable(), registers)
                 , functionExecutable(_functionExecutable)
             {

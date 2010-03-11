@@ -200,7 +200,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     }
 
     // Inform the higher layers about the actual format properties.
-    qt_egl_update_format(*(d->eglContext), d->glFormat);
+    qt_glformat_from_eglconfig(d->glFormat, d->eglContext->config());
 
     // Create a new context for the configuration.
     if (!d->eglContext->createContext

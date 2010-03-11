@@ -24,49 +24,29 @@
  */
 
 #include "config.h"
-
-
 #include "MarkStack.h"
 
+#if OS(UNIX) && !OS(SYMBIAN)
+
 #include <unistd.h>
-#if defined (__SYMBIAN32__)
-#include "wtf/FastMalloc.h"
-#include <e32base.h>
-#include <e32std.h>
-#include <e32hal.h>
-#include <hal.h>
-#else
 #include <sys/mman.h>
-#endif
 
 namespace JSC {
 
 void MarkStack::initializePagesize()
 {
-#if defined (__SYMBIAN32__)
-    TInt page_size;
-    UserHal::PageSizeInBytes(page_size);
-    MarkStack::s_pageSize = page_size;
-#else
     MarkStack::s_pageSize = getpagesize();
-#endif
 }
 
 void* MarkStack::allocateStack(size_t size)
 {
-#if defined (__SYMBIAN32__)
-    return fastMalloc(size);
-#else
     return mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-#endif
 }
 void MarkStack::releaseStack(void* addr, size_t size)
 {
-#if defined (__SYMBIAN32__)
-    fastFree(addr);
-#else
     munmap(reinterpret_cast<char*>(addr), size);
-#endif
 }
 
 }
+
+#endif

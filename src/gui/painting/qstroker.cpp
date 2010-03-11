@@ -1043,6 +1043,47 @@ QVector<qfixed> QDashStroker::patternForStyle(Qt::PenStyle style)
     return pattern;
 }
 
+static inline bool lineRectIntersectsRect(qfixed2d p1, qfixed2d p2, const qfixed2d &tl, const qfixed2d &br)
+{
+    return ((p1.x > tl.x || p2.x > tl.x) && (p1.x < br.x || p2.x < br.x)
+        && (p1.y > tl.y || p2.y > tl.y) && (p1.y < br.y || p2.y < br.y));
+}
+
+// If the line intersects the rectangle, this function will return true.
+static bool lineIntersectsRect(qfixed2d p1, qfixed2d p2, const qfixed2d &tl, const qfixed2d &br)
+{
+    if (!lineRectIntersectsRect(p1, p2, tl, br))
+        return false;
+    if (p1.x == p2.x || p1.y == p2.y)
+        return true;
+
+    if (p1.y > p2.y)
+        qSwap(p1, p2); // make p1 above p2
+    qfixed2d u;
+    qfixed2d v;
+    qfixed2d w = {p2.x - p1.x, p2.y - p1.y};
+    if (p1.x < p2.x) {
+        // backslash
+        u.x = tl.x - p1.x; u.y = br.y - p1.y;
+        v.x = br.x - p1.x; v.y = tl.y - p1.y;
+    } else {
+        // slash
+        u.x = tl.x - p1.x; u.y = tl.y - p1.y;
+        v.x = br.x - p1.x; v.y = br.y - p1.y;
+    }
+#if defined(QFIXED_IS_26_6) || defined(QFIXED_IS_16_16)
+    qint64 val1 = qint64(u.x) * qint64(w.y) - qint64(u.y) * qint64(w.x);
+    qint64 val2 = qint64(v.x) * qint64(w.y) - qint64(v.y) * qint64(w.x);
+    return (val1 < 0 && val2 > 0) || (val1 > 0 && val2 < 0);
+#elif defined(QFIXED_IS_32_32)
+    // Cannot do proper test because it may overflow.
+    return true;
+#else
+    qreal val1 = u.x * w.y - u.y * w.x;
+    qreal val2 = v.x * w.y - v.y * w.x;
+    return (val1 < 0 && val2 > 0) || (val1 > 0 && val2 < 0);
+#endif
+}
 
 void QDashStroker::processCurrentSubpath()
 {
@@ -1067,9 +1108,11 @@ void QDashStroker::processCurrentSubpath()
     if (qFuzzyIsNull(sumLength))
         return;
 
+    qreal invSumLength = qreal(1) / sumLength;
+
     Q_ASSERT(dashCount > 0);
 
-    dashCount = (dashCount / 2) * 2; // Round down to even number
+    dashCount = dashCount & -2; // Round down to even number
 
     int idash = 0; // Index to current dash
     qreal pos = 0; // The position on the curve, 0 <= pos <= path.length
@@ -1077,11 +1120,12 @@ void QDashStroker::processCurrentSubpath()
     qreal doffset = m_dashOffset * m_stroke_width;
 
     // make sure doffset is in range [0..sumLength)
-    doffset -= qFloor(doffset / sumLength) * sumLength;
+    doffset -= qFloor(doffset * invSumLength) * sumLength;
 
     while (doffset >= dashes[idash]) {
         doffset -= dashes[idash];
-        idash = (idash + 1) % dashCount;
+        if (++idash >= dashCount)
+            idash = 0;
     }
 
     qreal estart = 0; // The elements starting position
@@ -1119,12 +1163,41 @@ void QDashStroker::processCurrentSubpath()
         estop = estart + elen;
 
         bool done = pos >= estop;
+
+        if (clipping) {
+            // Check if the entire line can be clipped away.
+            if (!lineIntersectsRect(prev, e, clip_tl, clip_br)) {
+                // Cut away full dash sequences.
+                elen -= qFloor(elen * invSumLength) * sumLength;
+                // Update dash offset.
+                while (!done) {
+                    qreal dpos = pos + dashes[idash] - doffset - estart;
+
+                    Q_ASSERT(dpos >= 0);
+
+                    if (dpos > elen) { // dash extends this line
+                        doffset = dashes[idash] - (dpos - elen); // subtract the part already used
+                        pos = estop; // move pos to next path element
+                        done = true;
+                    } else { // Dash is on this line
+                        pos = dpos + estart;
+                        done = pos >= estop;
+                        if (++idash >= dashCount)
+                            idash = 0;
+                        doffset = 0; // full segment so no offset on next.
+                    }
+                }
+                hasMoveTo = false;
+                move_to_pos = e;
+            }
+        }
+
         // Dash away...
         while (!done) {
             QPointF p2;
 
-            int idash_incr = 0;
             bool has_offset = doffset > 0;
+            bool evenDash = (idash & 1) == 0;
             qreal dpos = pos + dashes[idash] - doffset - estart;
 
             Q_ASSERT(dpos >= 0);
@@ -1138,39 +1211,36 @@ void QDashStroker::processCurrentSubpath()
                 p2 = cline.pointAt(dpos/elen);
                 pos = dpos + estart;
                 done = pos >= estop;
-                idash_incr = 1;
+                if (++idash >= dashCount)
+                    idash = 0;
                 doffset = 0; // full segment so no offset on next.
             }
 
-            if (idash % 2 == 0) {
+            if (evenDash) {
                 line_to_pos.x = qt_real_to_fixed(p2.x());
                 line_to_pos.y = qt_real_to_fixed(p2.y());
 
-                // If we have an offset, we're continuing a dash
-                // from a previous element and should only
-                // continue the current dash, without starting a
-                // new subpath.
-                if (!has_offset || !hasMoveTo) {
-                    emitMoveTo(move_to_pos.x, move_to_pos.y);
-                    hasMoveTo = true;
-                }
-
                 if (!clipping
-                    // if move_to is inside...
-                    || (move_to_pos.x > clip_tl.x && move_to_pos.x < clip_br.x
-                     && move_to_pos.y > clip_tl.y && move_to_pos.y < clip_br.y)
-                    // Or if line_to is inside...
-                    || (line_to_pos.x > clip_tl.x && line_to_pos.x < clip_br.x
-                     && line_to_pos.y > clip_tl.y && line_to_pos.y < clip_br.y))
+                    || lineRectIntersectsRect(move_to_pos, line_to_pos, clip_tl, clip_br))
                 {
+                    // If we have an offset, we're continuing a dash
+                    // from a previous element and should only
+                    // continue the current dash, without starting a
+                    // new subpath.
+                    if (!has_offset || !hasMoveTo) {
+                        emitMoveTo(move_to_pos.x, move_to_pos.y);
+                        hasMoveTo = true;
+                    }
+
                     emitLineTo(line_to_pos.x, line_to_pos.y);
+                } else {
+                    hasMoveTo = false;
                 }
+                move_to_pos = line_to_pos;
             } else {
                 move_to_pos.x = qt_real_to_fixed(p2.x());
                 move_to_pos.y = qt_real_to_fixed(p2.y());
             }
-
-            idash = (idash + idash_incr) % dashCount;
         }
 
         // Shuffle to the next cycle...

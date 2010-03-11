@@ -2976,7 +2976,7 @@ else
 fi
 
 QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_CXX[^_A-Z0-9]" | sed "s,.* *= *\(.*\)$,\1," | tail -1`
-TEST_COMPILER="$CC"
+TEST_COMPILER="$CXX"
 [ -z "$TEST_COMPILER" ] && TEST_COMPILER=$QMAKE_CONF_COMPILER
 if [ -z "$TEST_COMPILER" ]; then
     echo "ERROR: Cannot set the compiler for the configuration tests"
@@ -5962,19 +5962,6 @@ if [ "$CFG_NETWORKMANAGER" = "auto" ]; then
     fi
 fi
 
-if [ -f "$relpath/src/declarative/declarative.pro" ]; then
-    if [ "$CFG_DECLARATIVE" = "auto" ]; then
-        CFG_DECLARATIVE=yes
-    fi
-else
-    if [ "$CFG_DECLARATIVE" = "auto" ] || [ "$CFG_DECLARATIVE" = "no" ]; then
-        CFG_DECLARATIVE=no
-    else
-        echo "Error: Unable to locate the qt-declarative package. Refer to the documentation on how to build the package."
-        exit 1
-    fi
-fi
-
 if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then 
     if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/javascriptcore-jit "javascriptcore-jit" $L_FLAGS $I_FLAGS $l_FLAGS
@@ -6629,12 +6616,6 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SVG"
 fi
 
-if [ "$CFG_DECLARATIVE" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG declarative"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DECLARATIVE"
-fi
-
 if [ "$CFG_WEBKIT" = "auto" ]; then
     CFG_WEBKIT="$canBuildWebKit"
 fi
@@ -6672,6 +6653,27 @@ if [ "$CFG_SCRIPTTOOLS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG scripttools"
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPTTOOLS"
+fi
+
+
+if [ "$CFG_DECLARATIVE" = "yes" ]; then
+    if [ "$CFG_SCRIPT" = "no" ]; then
+        echo "Error: QtDeclarative was requested, but it can't be built due to QtScript being disabled."
+        exit 1
+    fi
+fi
+if [ "$CFG_DECLARATIVE" = "auto" ]; then
+    if [ "$CFG_SCRIPT" = "no" ]; then
+            CFG_DECLARATIVE=no
+    else
+            CFG_DECLARATIVE=yes
+    fi
+fi
+
+if [ "$CFG_DECLARATIVE" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG declarative"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DECLARATIVE"
 fi
 
 if [ "$CFG_EXCEPTIONS" = "no" ]; then

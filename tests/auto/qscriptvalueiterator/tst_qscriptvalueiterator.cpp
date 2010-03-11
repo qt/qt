@@ -255,8 +255,14 @@ void tst_QScriptValueIterator::iterateArray()
         QVERIFY(it.value().strictlyEquals(array.property(propertyNames.at(i))));
         QCOMPARE(it.value().toString(), propertyValues.at(i));
     }
-    QCOMPARE(it.hasNext(), false);
+    QVERIFY(it.hasNext());
+    it.next();
+    QCOMPARE(it.name(), QString::fromLatin1("length"));
+    QVERIFY(it.value().isNumber());
+    QCOMPARE(it.value().toInt32(), length);
+    QCOMPARE(it.flags(), QScriptValue::SkipInEnumeration | QScriptValue::Undeletable);
 
+    it.previous();
     QCOMPARE(it.hasPrevious(), length > 0);
     for (int i = length - 1; i >= 0; --i) {
         it.previous();
@@ -301,7 +307,9 @@ void tst_QScriptValueIterator::iterateArray()
             QVERIFY(it.value().strictlyEquals(array.property(propertyNames.at(i))));
             QCOMPARE(it.value().toString(), propertyValues.at(i));
         }
-        QCOMPARE(it.hasNext(), false);
+        QCOMPARE(it.hasNext(), true);
+        it.next();
+        QCOMPARE(it.name(), QString::fromLatin1("length"));
     }
 }
 
@@ -420,9 +428,15 @@ void tst_QScriptValueIterator::iterateString()
         QCOMPARE(it.flags(), obj.propertyFlags(indexStr));
         QCOMPARE(it.value().strictlyEquals(obj.property(indexStr)), true);
     }
-    QCOMPARE(it.hasNext(), false);
+    QVERIFY(it.hasNext());
+    it.next();
+    QCOMPARE(it.name(), QString::fromLatin1("length"));
+    QVERIFY(it.value().isNumber());
+    QCOMPARE(it.value().toInt32(), length);
+    QCOMPARE(it.flags(), QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration | QScriptValue::Undeletable);
 
-    QVERIFY(it.hasPrevious());
+    it.previous();
+    QCOMPARE(it.hasPrevious(), length > 0);
     for (int i = length - 1; i >= 0; --i) {
         it.previous();
         QString indexStr = QScriptValue(&engine, i).toString();

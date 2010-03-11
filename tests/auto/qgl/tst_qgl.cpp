@@ -227,12 +227,12 @@ void tst_QGL::getSetCheck()
     QCOMPARE(false, obj1.alpha());
     QVERIFY(!obj1.testOption(QGL::AlphaChannel));
     QVERIFY(obj1.testOption(QGL::NoAlphaChannel));
-    obj1.setAlphaBufferSize(0);
+    obj1.setAlphaBufferSize(1);
     QCOMPARE(true, obj1.alpha());   // setAlphaBufferSize() enables alpha.
-    QCOMPARE(0, obj1.alphaBufferSize());
+    QCOMPARE(1, obj1.alphaBufferSize());
     QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setAlphaBufferSize: Cannot set negative alpha buffer size -2147483648");
     obj1.setAlphaBufferSize(TEST_INT_MIN);
-    QCOMPARE(0, obj1.alphaBufferSize()); // Makes no sense with a negative buffer size
+    QCOMPARE(1, obj1.alphaBufferSize()); // Makes no sense with a negative buffer size
     obj1.setAlphaBufferSize(3);
     QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setAlphaBufferSize: Cannot set negative alpha buffer size -1");
     obj1.setAlphaBufferSize(-1);
@@ -243,11 +243,11 @@ void tst_QGL::getSetCheck()
     // int QGLFormat::stencilBufferSize()
     // void QGLFormat::setStencilBufferSize(int)
     QCOMPARE(-1, obj1.stencilBufferSize());
-    obj1.setStencilBufferSize(0);
-    QCOMPARE(0, obj1.stencilBufferSize());
+    obj1.setStencilBufferSize(1);
+    QCOMPARE(1, obj1.stencilBufferSize());
     QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setStencilBufferSize: Cannot set negative stencil buffer size -2147483648");
     obj1.setStencilBufferSize(TEST_INT_MIN);
-    QCOMPARE(0, obj1.stencilBufferSize()); // Makes no sense with a negative buffer size
+    QCOMPARE(1, obj1.stencilBufferSize()); // Makes no sense with a negative buffer size
     obj1.setStencilBufferSize(3);
     QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setStencilBufferSize: Cannot set negative stencil buffer size -1");
     obj1.setStencilBufferSize(-1);
@@ -352,6 +352,7 @@ void tst_QGL::getSetCheck()
 
     // bool QGLFormat::accum()
     // void QGLFormat::setAccum(bool)
+    obj1.setAccumBufferSize(0);
     QCOMPARE(false, obj1.accum());
     QVERIFY(!obj1.testOption(QGL::AccumBuffer));
     QVERIFY(obj1.testOption(QGL::NoAccumBuffer));
@@ -1401,8 +1402,8 @@ void tst_QGL::glWidgetRenderPixmap()
     QImage reference(fb.size(), QImage::Format_RGB32);
     reference.fill(0xffff0000);
 
-#ifdef QGL_EGL
-    QSKIP("renderPixmap() not yet supported under EGL", SkipAll);
+#if defined(QGL_EGL) && !defined(Q_WS_X11)
+    QSKIP("renderPixmap() not yet supported under EGL on your platform", SkipAll);
 #endif
 
     QFUZZY_COMPARE_IMAGES(fb, reference);

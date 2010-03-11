@@ -73,7 +73,7 @@ QSvgStyleProperty::~QSvgStyleProperty()
 {
 }
 
-void QSvgFillStyleProperty::apply(QPainter *, const QRectF &, QSvgNode *, QSvgExtraStates &)
+void QSvgFillStyleProperty::apply(QPainter *, const QSvgNode *, QSvgExtraStates &)
 {
     Q_ASSERT(!"This should not be called!");
 }
@@ -89,7 +89,7 @@ QSvgQualityStyle::QSvgQualityStyle(int color)
 {
 
 }
-void QSvgQualityStyle::apply(QPainter *, const QRectF &, QSvgNode *, QSvgExtraStates &)
+void QSvgQualityStyle::apply(QPainter *, const QSvgNode *, QSvgExtraStates &)
 {
 
 }
@@ -136,7 +136,7 @@ void QSvgFillStyle::setBrush(QBrush brush)
     m_fillSet = 1;
 }
 
-void QSvgFillStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &states)
+void QSvgFillStyle::apply(QPainter *p, const QSvgNode *, QSvgExtraStates &states)
 {
     m_oldFill = p->brush();
     m_oldFillRule = states.fillRule;
@@ -169,7 +169,7 @@ QSvgViewportFillStyle::QSvgViewportFillStyle(const QBrush &brush)
 {
 }
 
-void QSvgViewportFillStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &)
+void QSvgViewportFillStyle::apply(QPainter *p, const QSvgNode *, QSvgExtraStates &)
 {
     m_oldFill = p->brush();
     p->setBrush(m_viewportFill);
@@ -224,7 +224,7 @@ int QSvgFontStyle::SVGToQtWeight(int weight) {
     return QFont::Normal;
 }
 
-void QSvgFontStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &states)
+void QSvgFontStyle::apply(QPainter *p, const QSvgNode *, QSvgExtraStates &states)
 {
     m_oldQFont = p->font();
     m_oldSvgFont = states.svgFont;
@@ -292,7 +292,7 @@ QSvgStrokeStyle::QSvgStrokeStyle()
 {
 }
 
-void QSvgStrokeStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &states)
+void QSvgStrokeStyle::apply(QPainter *p, const QSvgNode *, QSvgExtraStates &states)
 {
     m_oldStroke = p->pen();
     m_oldStrokeOpacity = states.strokeOpacity;
@@ -443,7 +443,7 @@ QSvgTransformStyle::QSvgTransformStyle(const QTransform &trans)
 {
 }
 
-void QSvgTransformStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &)
+void QSvgTransformStyle::apply(QPainter *p, const QSvgNode *, QSvgExtraStates &)
 {
     m_oldWorldTransform = p->worldTransform();
     p->setWorldTransform(m_transform, true);
@@ -501,7 +501,7 @@ QSvgCompOpStyle::QSvgCompOpStyle(QPainter::CompositionMode mode)
 
 }
 
-void QSvgCompOpStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &)
+void QSvgCompOpStyle::apply(QPainter *p, const QSvgNode *, QSvgExtraStates &)
 {
     m_oldMode = p->compositionMode();
     p->setCompositionMode(m_mode);
@@ -521,34 +521,34 @@ QSvgStyle::~QSvgStyle()
 {
 }
 
-void QSvgStyle::apply(QPainter *p, const QRectF &rect, QSvgNode *node, QSvgExtraStates &states)
+void QSvgStyle::apply(QPainter *p, const QSvgNode *node, QSvgExtraStates &states)
 {
     if (quality) {
-        quality->apply(p, rect, node, states);
+        quality->apply(p, node, states);
     }
 
     if (fill) {
-        fill->apply(p, rect, node, states);
+        fill->apply(p, node, states);
     }
 
     if (viewportFill) {
-        viewportFill->apply(p, rect, node, states);
+        viewportFill->apply(p, node, states);
     }
 
     if (font) {
-        font->apply(p, rect, node, states);
+        font->apply(p, node, states);
     }
 
     if (stroke) {
-        stroke->apply(p, rect, node, states);
+        stroke->apply(p, node, states);
     }
 
     if (transform) {
-        transform->apply(p, rect, node, states);
+        transform->apply(p, node, states);
     }
 
     if (animateColor) {
-        animateColor->apply(p, rect, node, states);
+        animateColor->apply(p, node, states);
     }
 
     //animated transforms have to be applied
@@ -572,16 +572,16 @@ void QSvgStyle::apply(QPainter *p, const QRectF &rect, QSvgNode *node, QSvgExtra
         // Apply the animateTransforms after and including the last one with additive="replace".
         for (; itr != animateTransforms.constEnd(); ++itr) {
             if ((*itr)->animActive(totalTimeElapsed))
-                (*itr)->apply(p, rect, node, states);
+                (*itr)->apply(p, node, states);
         }
     }
 
     if (opacity) {
-        opacity->apply(p, rect, node, states);
+        opacity->apply(p, node, states);
     }
 
     if (compop) {
-        compop->apply(p, rect, node, states);
+        compop->apply(p, node, states);
     }
 }
 
@@ -655,7 +655,7 @@ void QSvgAnimateTransform::setArgs(TransformType type, Additive additive, const 
     m_count = args.count() / 3;
 }
 
-void QSvgAnimateTransform::apply(QPainter *p, const QRectF &, QSvgNode *node, QSvgExtraStates &)
+void QSvgAnimateTransform::apply(QPainter *p, const QSvgNode *node, QSvgExtraStates &)
 {
     m_oldWorldTransform = p->worldTransform();
     resolveMatrix(node);
@@ -669,7 +669,7 @@ void QSvgAnimateTransform::revert(QPainter *p, QSvgExtraStates &)
     m_transformApplied = false;
 }
 
-void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
+void QSvgAnimateTransform::resolveMatrix(const QSvgNode *node)
 {
     static const qreal deg2rad = qreal(0.017453292519943295769);
     qreal totalTimeElapsed = node->document()->currentElapsed();
@@ -834,7 +834,7 @@ void QSvgAnimateColor::setRepeatCount(qreal repeatCount)
     m_repeatCount = repeatCount;
 }
 
-void QSvgAnimateColor::apply(QPainter *p, const QRectF &, QSvgNode *node, QSvgExtraStates &)
+void QSvgAnimateColor::apply(QPainter *p, const QSvgNode *node, QSvgExtraStates &)
 {
     qreal totalTimeElapsed = node->document()->currentElapsed();
     if (totalTimeElapsed < m_from || m_finished)
@@ -912,7 +912,7 @@ QSvgOpacityStyle::QSvgOpacityStyle(qreal opacity)
 
 }
 
-void QSvgOpacityStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &)
+void QSvgOpacityStyle::apply(QPainter *p, const QSvgNode *, QSvgExtraStates &)
 {
     m_oldOpacity = p->opacity();
     p->setOpacity(m_opacity * m_oldOpacity);

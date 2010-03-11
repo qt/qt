@@ -234,6 +234,7 @@ Q_GLOBAL_STATIC(PulseDaemon, daemon)
 
 QSoundEffectPrivate::QSoundEffectPrivate(QObject* parent):
     QObject(parent),
+    m_retry(false),
     m_muted(false),
     m_playQueued(false),
     m_sampleLoaded(false),
@@ -250,7 +251,7 @@ QSoundEffectPrivate::QSoundEffectPrivate(QObject* parent):
 
 QSoundEffectPrivate::~QSoundEffectPrivate()
 {
-    delete m_reply;
+    m_reply->deleteLater();
     unloadSample();
 }
 
@@ -310,6 +311,12 @@ void QSoundEffectPrivate::setMuted(bool muted)
 
 void QSoundEffectPrivate::play()
 {
+    if (m_retry) {
+        m_retry = false;
+        setSource(m_source);
+        return;
+    }
+
     if (!m_sampleLoaded) {
         m_playQueued = true;
         return;
@@ -338,6 +345,7 @@ void QSoundEffectPrivate::decoderReady()
     pa_stream_set_state_callback(stream, stream_state_callback, this);
     pa_stream_set_write_callback(stream, stream_write_callback, this);
     pa_stream_connect_upload(stream, (size_t)m_waveDecoder->size());
+    m_pulseStream = stream;
     daemon()->unlock();
 }
 
@@ -377,6 +385,52 @@ void QSoundEffectPrivate::unloadSample()
     m_sampleLoaded = false;
 }
 
+void QSoundEffectPrivate::uploadSample()
+{
+    daemon()->lock();
+
+    size_t bufferSize = qMin(pa_stream_writable_size(m_pulseStream),
+            size_t(m_waveDecoder->bytesAvailable()));
+    char buffer[bufferSize];
+
+    size_t len = 0;
+    while (len < (m_waveDecoder->size())) {
+        qint64 read = m_waveDecoder->read(buffer, qMin((int)bufferSize,
+                      (int)(m_waveDecoder->size()-len)));
+        if (read > 0) {
+            if (pa_stream_write(m_pulseStream, buffer, size_t(read), 0, 0, PA_SEEK_RELATIVE) == 0)
+                len += size_t(read);
+            else
+                break;
+        }
+    }
+
+    m_dataUploaded += len;
+    pa_stream_set_write_callback(m_pulseStream, NULL, NULL);
+
+    if (m_waveDecoder->size() == m_dataUploaded) {
+        int err = pa_stream_finish_upload(m_pulseStream);
+        if(err != 0) {
+            qWarning("pa_stream_finish_upload() err=%d",err);
+            pa_stream_disconnect(m_pulseStream);
+            m_retry = true;
+            m_playQueued = false;
+            QMetaObject::invokeMethod(this, "play");
+            daemon()->unlock();
+            return;
+        }
+        m_duration = m_waveDecoder->duration();
+        m_waveDecoder->deleteLater();
+        m_stream->deleteLater();
+        m_sampleLoaded = true;
+        if (m_playQueued) {
+            m_playQueued = false;
+            QMetaObject::invokeMethod(this, "play");
+        }
+    }
+    daemon()->unlock();
+}
+
 void QSoundEffectPrivate::playSample()
 {
     pa_volume_t volume = PA_VOLUME_NORM;
@@ -412,36 +466,7 @@ void QSoundEffectPrivate::stream_write_callback(pa_stream *s, size_t length, voi
 
     QSoundEffectPrivate *self = reinterpret_cast<QSoundEffectPrivate*>(userdata);
 
-    size_t bufferSize = qMin(pa_stream_writable_size(s),
-            size_t(self->m_waveDecoder->bytesAvailable()));
-    char buffer[bufferSize];
-
-    size_t len = 0;
-    while (len < length) {
-        qint64 read = self->m_waveDecoder->read(buffer, qMin(bufferSize, length -len));
-        if (read > 0) {
-            if (pa_stream_write(s, buffer, size_t(read), 0, 0, PA_SEEK_RELATIVE) == 0)
-                len += size_t(read);
-            else
-                break;
-        }
-    }
-    self->m_dataUploaded += len;
-
-    if (self->m_waveDecoder->size() == self->m_dataUploaded) {
-        pa_stream_finish_upload(s);
-
-        self->m_duration = self->m_waveDecoder->duration();
-
-        self->m_waveDecoder->deleteLater();
-        self->m_stream->deleteLater();
-
-        self->m_sampleLoaded = true;
-        if (self->m_playQueued) {
-            self->m_playQueued = false;
-            QMetaObject::invokeMethod(self, "play");
-        }
-    }
+    QMetaObject::invokeMethod(self, "uploadSample", Qt::QueuedConnection);
 }
 
 void QSoundEffectPrivate::stream_state_callback(pa_stream *s, void *userdata)
