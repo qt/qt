@@ -16,7 +16,7 @@ Rectangle {
                 GridView {
                     id: gridView; model: visualModel.parts.grid; width: mainWindow.width; height: mainWindow.height
                     cellWidth: 160; cellHeight: 160; interactive: false
-                    onCurrentIndexChanged: listView.positionViewAtIndex(currentIndex)
+                    onCurrentIndexChanged: listView.positionViewAtIndex(currentIndex, ListView.Contain)
                 }
             }
 
@@ -25,7 +25,7 @@ Rectangle {
                 ListView {
                     id: listView; model: visualModel.parts.list; orientation: Qt.Horizontal
                     width: mainWindow.width; height: mainWindow.height; interactive: false
-                    onCurrentIndexChanged: gridView.positionViewAtIndex(currentIndex)
+                    onCurrentIndexChanged: gridView.positionViewAtIndex(currentIndex, GridView.Contain)
                     highlightRangeMode: ListView.StrictlyEnforceRange; snapMode: ListView.SnapOneItem
                 }
             }

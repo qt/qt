@@ -1193,7 +1193,7 @@ void tst_QDeclarativeListView::positionViewAtIndex()
     }
 
     // Position on a currently visible item
-    listview->positionViewAtIndex(3);
+    listview->positionViewAtIndex(3, QDeclarativeListView::Beginning);
     QCOMPARE(listview->contentY(), 60.);
 
     // Confirm items positioned correctly
@@ -1206,7 +1206,7 @@ void tst_QDeclarativeListView::positionViewAtIndex()
     }
 
     // Position on an item beyond the visible items
-    listview->positionViewAtIndex(22);
+    listview->positionViewAtIndex(22, QDeclarativeListView::Beginning);
     QCOMPARE(listview->contentY(), 440.);
 
     // Confirm items positioned correctly
@@ -1219,7 +1219,7 @@ void tst_QDeclarativeListView::positionViewAtIndex()
     }
 
     // Position on an item that would leave empty space if positioned at the top
-    listview->positionViewAtIndex(28);
+    listview->positionViewAtIndex(28, QDeclarativeListView::Beginning);
     QCOMPARE(listview->contentY(), 480.);
 
     // Confirm items positioned correctly
@@ -1232,7 +1232,7 @@ void tst_QDeclarativeListView::positionViewAtIndex()
     }
 
     // Position at the beginning again
-    listview->positionViewAtIndex(0);
+    listview->positionViewAtIndex(0, QDeclarativeListView::Beginning);
     QCOMPARE(listview->contentY(), 0.);
 
     // Confirm items positioned correctly
@@ -1243,6 +1243,47 @@ void tst_QDeclarativeListView::positionViewAtIndex()
         QVERIFY(item);
         QCOMPARE(item->y(), i*20.);
     }
+
+    // Position at End
+    listview->positionViewAtIndex(20, QDeclarativeListView::End);
+    QCOMPARE(listview->contentY(), 100.);
+
+    // Position in Center
+    listview->positionViewAtIndex(15, QDeclarativeListView::Center);
+    QCOMPARE(listview->contentY(), 150.);
+
+    // Ensure at least partially visible
+    listview->positionViewAtIndex(15, QDeclarativeListView::Visible);
+    QCOMPARE(listview->contentY(), 150.);
+
+    listview->setContentY(302);
+    listview->positionViewAtIndex(15, QDeclarativeListView::Visible);
+    QCOMPARE(listview->contentY(), 302.);
+
+    listview->setContentY(320);
+    listview->positionViewAtIndex(15, QDeclarativeListView::Visible);
+    QCOMPARE(listview->contentY(), 300.);
+
+    listview->setContentY(85);
+    listview->positionViewAtIndex(20, QDeclarativeListView::Visible);
+    QCOMPARE(listview->contentY(), 85.);
+
+    listview->setContentY(75);
+    listview->positionViewAtIndex(20, QDeclarativeListView::Visible);
+    QCOMPARE(listview->contentY(), 100.);
+
+    // Ensure completely visible
+    listview->setContentY(120);
+    listview->positionViewAtIndex(20, QDeclarativeListView::Contain);
+    QCOMPARE(listview->contentY(), 120.);
+
+    listview->setContentY(302);
+    listview->positionViewAtIndex(15, QDeclarativeListView::Contain);
+    QCOMPARE(listview->contentY(), 300.);
+
+    listview->setContentY(85);
+    listview->positionViewAtIndex(20, QDeclarativeListView::Contain);
+    QCOMPARE(listview->contentY(), 100.);
 
     delete canvas;
 }
