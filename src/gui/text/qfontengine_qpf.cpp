@@ -920,8 +920,18 @@ void QFontEngineQPF::loadGlyph(glyph_t glyph)
 
     if (!renderingFontEngine)
         return;
-
-    QImage img = renderingFontEngine->alphaMapForGlyph(glyph).convertToFormat(QImage::Format_Indexed8);
+    QImage img = renderingFontEngine->alphaMapForGlyph(glyph);
+    if (img.format() != QImage::Format_Indexed8) {
+        bool mono = img.depth() == 1;
+        img = img.convertToFormat(QImage::Format_Indexed8);
+        if (mono) {
+            //### we know that 1 is opaque and 0 is transparent
+            uchar *byte = img.bits();
+            int count = img.byteCount();
+            while (count--)
+                *byte++ *= 0xff;
+        }
+    }
     glyph_metrics_t metrics = renderingFontEngine->boundingBox(glyph);
     renderingFontEngine->removeGlyphFromCache(glyph);
 
