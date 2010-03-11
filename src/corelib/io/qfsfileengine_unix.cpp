@@ -736,9 +736,6 @@ static bool _q_isMacHidden(const QString &path)
 }
 #endif
 
-/*!
-    \internal
-*/
 QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFileEngine::FileFlags type) const
 {
     QAbstractFileEngine::FileFlags ret = 0;

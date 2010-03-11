@@ -1405,9 +1405,6 @@ bool QFSFileEngine::link(const QString &newName)
 #endif // Q_OS_WINCE
 }
 
-/*!
-    \internal
-*/
 QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFileEngine::FileFlags type) const
 {
     QAbstractFileEngine::FileFlags ret = 0;
