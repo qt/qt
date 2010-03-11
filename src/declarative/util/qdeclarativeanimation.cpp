@@ -838,10 +838,10 @@ void QDeclarativePropertyAction::setProperty(const QString &n)
 }
 
 /*!
+    \qmlproperty list<Object> PropertyAction::targets
     \qmlproperty string PropertyAction::property
     \qmlproperty string PropertyAction::properties
     \qmlproperty Object PropertyAction::target
-    \qmlproperty list<Object> PropertyAction::targets
 
     These properties are used as a set to determine which properties should be
     affected by this action.
@@ -876,6 +876,7 @@ QDeclarativeListProperty<QObject> QDeclarativePropertyAction::targets()
 /*!
     \qmlproperty list<Object> PropertyAction::exclude
     This property holds the objects not to be affected by this animation.
+
     \sa targets
 */
 QDeclarativeListProperty<QObject> QDeclarativePropertyAction::exclude()
@@ -2220,7 +2221,7 @@ QDeclarativeListProperty<QObject> QDeclarativePropertyAnimation::targets()
 /*!
     \qmlproperty list<Object> PropertyAnimation::exclude
     This property holds the items not to be affected by this animation.
-    \sa targets
+    \sa PropertyAnimation::targets
 */
 QDeclarativeListProperty<QObject> QDeclarativePropertyAnimation::exclude()
 {
@@ -2428,11 +2429,12 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
     be run in parallel (like those in a ParallelAnimation group).
 
     In some cases, such as reparenting between items with clipping, it's useful
-    to animate the parent change \i via another item with no clipping.
+    to animate the parent change via another item with no clipping.
 
     When used in a transition, ParentAnimation will by default animate
     all ParentChanges.
 */
+
 /*!
     \internal
     \class QDeclarativeParentAnimation

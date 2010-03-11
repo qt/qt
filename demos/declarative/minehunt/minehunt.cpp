@@ -292,9 +292,8 @@ class MinehuntExtensionPlugin : public QDeclarativeExtensionPlugin
 
     public:
     void registerTypes(const char *uri) {
-        Q_UNUSED(uri);
-        QML_REGISTER_TYPE(SameGameCore, 0, 1, Tile, Tile);
-        QML_REGISTER_TYPE(SameGameCore, 0, 1, Game, MinehuntGame);
+        qmlRegisterType<Tile>(uri, 0, 1, "Tile");
+        qmlRegisterType<MinehuntGame>(uri, 0, 1, "Game");
     }
 
     void initializeEngine(QDeclarativeEngine *engine, const char *uri) {

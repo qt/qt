@@ -408,7 +408,7 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEg
         EGLSurface surf = eglCreatePixmapSurface(QEgl::display(), config,
                                                  (EGLNativePixmapType) x11PixmapData->handle(),
                                                  surfaceAttribs.properties());
-        x11PixmapData->gl_surface = (Qt::HANDLE)surf;
+        x11PixmapData->gl_surface = (void*)surf;
         QImagePixmapCleanupHooks::enableCleanupHooks(x11PixmapData);
         return surf;
     }

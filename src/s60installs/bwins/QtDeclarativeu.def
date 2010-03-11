@@ -3437,4 +3437,63 @@ EXPORTS
 	?staticMetaObject@QDeclarativeDrag@@2UQMetaObject@@B @ 3436 NONAME ; struct QMetaObject const QDeclarativeDrag::staticMetaObject
 	?staticMetaObject@QDeclarativeDebugClient@@2UQMetaObject@@B @ 3437 NONAME ; struct QMetaObject const QDeclarativeDebugClient::staticMetaObject
 	?staticMetaObject@QDeclarativeComponent@@2UQMetaObject@@B @ 3438 NONAME ; struct QMetaObject const QDeclarativeComponent::staticMetaObject
+	??0QDeclarativeAbstractBinding@@QAE@XZ @ 3439 NONAME ; QDeclarativeAbstractBinding::QDeclarativeAbstractBinding(void)
+	??0QDeclarativeBinding@@QAE@ABVQString@@PAVQObject@@PAVQDeclarativeContext@@1@Z @ 3440 NONAME ; QDeclarativeBinding::QDeclarativeBinding(class QString const &, class QObject *, class QDeclarativeContext *, class QObject *)
+	??0QDeclarativeBinding@@QAE@PAXPAVQDeclarativeRefCount@@PAVQObject@@PAVQDeclarativeContext@@ABVQString@@H2@Z @ 3441 NONAME ; QDeclarativeBinding::QDeclarativeBinding(void *, class QDeclarativeRefCount *, class QObject *, class QDeclarativeContext *, class QString const &, int, class QObject *)
+	??0QDeclarativePropertyPrivate@@QAE@ABV0@@Z @ 3442 NONAME ; QDeclarativePropertyPrivate::QDeclarativePropertyPrivate(class QDeclarativePropertyPrivate const &)
+	??0QDeclarativePropertyPrivate@@QAE@XZ @ 3443 NONAME ; QDeclarativePropertyPrivate::QDeclarativePropertyPrivate(void)
+	??1QDeclarativeAbstractBinding@@UAE@XZ @ 3444 NONAME ; QDeclarativeAbstractBinding::~QDeclarativeAbstractBinding(void)
+	??1QDeclarativeBinding@@UAE@XZ @ 3445 NONAME ; QDeclarativeBinding::~QDeclarativeBinding(void)
+	??1QDeclarativePropertyPrivate@@QAE@XZ @ 3446 NONAME ; QDeclarativePropertyPrivate::~QDeclarativePropertyPrivate(void)
+	??_EQDeclarativeAbstractBinding@@UAE@I@Z @ 3447 NONAME ; QDeclarativeAbstractBinding::~QDeclarativeAbstractBinding(unsigned int)
+	??_EQDeclarativeBinding@@UAE@I@Z @ 3448 NONAME ; QDeclarativeBinding::~QDeclarativeBinding(unsigned int)
+	?addToObject@QDeclarativeAbstractBinding@@QAEXPAVQObject@@@Z @ 3449 NONAME ; void QDeclarativeAbstractBinding::addToObject(class QObject *)
+	?binding@QDeclarativePropertyPrivate@@SAPAVQDeclarativeAbstractBinding@@ABVQDeclarativeProperty@@@Z @ 3450 NONAME ; class QDeclarativeAbstractBinding * QDeclarativePropertyPrivate::binding(class QDeclarativeProperty const &)
+	?canConvert@QDeclarativePropertyPrivate@@SA_NPBUQMetaObject@@0@Z @ 3451 NONAME ; bool QDeclarativePropertyPrivate::canConvert(struct QMetaObject const *, struct QMetaObject const *)
+	?clear@QDeclarativeAbstractBinding@@IAEXXZ @ 3452 NONAME ; void QDeclarativeAbstractBinding::clear(void)
+	?d_func@QDeclarativeBinding@@AAEPAVQDeclarativeBindingPrivate@@XZ @ 3453 NONAME ; class QDeclarativeBindingPrivate * QDeclarativeBinding::d_func(void)
+	?d_func@QDeclarativeBinding@@ABEPBVQDeclarativeBindingPrivate@@XZ @ 3454 NONAME ; class QDeclarativeBindingPrivate const * QDeclarativeBinding::d_func(void) const
+	?destroy@QDeclarativeAbstractBinding@@UAEXXZ @ 3455 NONAME ; void QDeclarativeAbstractBinding::destroy(void)
+	?enabled@QDeclarativeBinding@@QBE_NXZ @ 3456 NONAME ; bool QDeclarativeBinding::enabled(void) const
+	?equal@QDeclarativePropertyPrivate@@SA_NPBUQMetaObject@@0@Z @ 3457 NONAME ; bool QDeclarativePropertyPrivate::equal(struct QMetaObject const *, struct QMetaObject const *)
+	?expression@QDeclarativeAbstractBinding@@UBE?AVQString@@XZ @ 3458 NONAME ; class QString QDeclarativeAbstractBinding::expression(void) const
+	?expression@QDeclarativeBinding@@UBE?AVQString@@XZ @ 3459 NONAME ; class QString QDeclarativeBinding::expression(void) const
+	?getStaticMetaObject@QDeclarativeBinding@@SAABUQMetaObject@@XZ @ 3460 NONAME ; struct QMetaObject const & QDeclarativeBinding::getStaticMetaObject(void)
+	?initDefault@QDeclarativePropertyPrivate@@QAEXPAVQObject@@@Z @ 3461 NONAME ; void QDeclarativePropertyPrivate::initDefault(class QObject *)
+	?initProperty@QDeclarativePropertyPrivate@@QAEXPAVQObject@@ABVQString@@@Z @ 3462 NONAME ; void QDeclarativePropertyPrivate::initProperty(class QObject *, class QString const &)
+	?isValueType@QDeclarativePropertyPrivate@@QBE_NXZ @ 3463 NONAME ; bool QDeclarativePropertyPrivate::isValueType(void) const
+	?metaObject@QDeclarativeBinding@@UBEPBUQMetaObject@@XZ @ 3464 NONAME ; struct QMetaObject const * QDeclarativeBinding::metaObject(void) const
+	?property@QDeclarativeBinding@@QBE?AVQDeclarativeProperty@@XZ @ 3465 NONAME ; class QDeclarativeProperty QDeclarativeBinding::property(void) const
+	?propertyIndex@QDeclarativeBinding@@UAEHXZ @ 3466 NONAME ; int QDeclarativeBinding::propertyIndex(void)
+	?propertyType@QDeclarativePropertyPrivate@@QBEHXZ @ 3467 NONAME ; int QDeclarativePropertyPrivate::propertyType(void) const
+	?propertyTypeCategory@QDeclarativePropertyPrivate@@QBE?AW4PropertyTypeCategory@QDeclarativeProperty@@XZ @ 3468 NONAME ; enum QDeclarativeProperty::PropertyTypeCategory QDeclarativePropertyPrivate::propertyTypeCategory(void) const
+	?qt_metacall@QDeclarativeBinding@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 3469 NONAME ; int QDeclarativeBinding::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacast@QDeclarativeBinding@@UAEPAXPBD@Z @ 3470 NONAME ; void * QDeclarativeBinding::qt_metacast(char const *)
+	?rawMetaObjectForType@QDeclarativePropertyPrivate@@SAPBUQMetaObject@@PAVQDeclarativeEnginePrivate@@H@Z @ 3471 NONAME ; struct QMetaObject const * QDeclarativePropertyPrivate::rawMetaObjectForType(class QDeclarativeEnginePrivate *, int)
+	?readValueProperty@QDeclarativePropertyPrivate@@QAE?AVQVariant@@XZ @ 3472 NONAME ; class QVariant QDeclarativePropertyPrivate::readValueProperty(void)
+	?removeFromObject@QDeclarativeAbstractBinding@@QAEXXZ @ 3473 NONAME ; void QDeclarativeAbstractBinding::removeFromObject(void)
+	?restore@QDeclarativePropertyPrivate@@SA?AVQDeclarativeProperty@@ABVQByteArray@@PAVQObject@@PAVQDeclarativeContext@@@Z @ 3474 NONAME ; class QDeclarativeProperty QDeclarativePropertyPrivate::restore(class QByteArray const &, class QObject *, class QDeclarativeContext *)
+	?saveProperty@QDeclarativePropertyPrivate@@SA?AVQByteArray@@PBUQMetaObject@@H@Z @ 3475 NONAME ; class QByteArray QDeclarativePropertyPrivate::saveProperty(struct QMetaObject const *, int)
+	?saveValueType@QDeclarativePropertyPrivate@@SA?AVQByteArray@@PBUQMetaObject@@H0H@Z @ 3476 NONAME ; class QByteArray QDeclarativePropertyPrivate::saveValueType(struct QMetaObject const *, int, struct QMetaObject const *, int)
+	?setBinding@QDeclarativePropertyPrivate@@SAPAVQDeclarativeAbstractBinding@@ABVQDeclarativeProperty@@PAV2@V?$QFlags@W4WriteFlag@QDeclarativePropertyPrivate@@@@@Z @ 3477 NONAME ; class QDeclarativeAbstractBinding * QDeclarativePropertyPrivate::setBinding(class QDeclarativeProperty const &, class QDeclarativeAbstractBinding *, class QFlags<enum QDeclarativePropertyPrivate::WriteFlag>)
+	?setBinding@QDeclarativePropertyPrivate@@SAPAVQDeclarativeAbstractBinding@@PAVQObject@@ABUData@QDeclarativePropertyCache@@PAV2@V?$QFlags@W4WriteFlag@QDeclarativePropertyPrivate@@@@@Z @ 3478 NONAME ; class QDeclarativeAbstractBinding * QDeclarativePropertyPrivate::setBinding(class QObject *, struct QDeclarativePropertyCache::Data const &, class QDeclarativeAbstractBinding *, class QFlags<enum QDeclarativePropertyPrivate::WriteFlag>)
+	?setEnabled@QDeclarativeAbstractBinding@@QAEX_N@Z @ 3479 NONAME ; void QDeclarativeAbstractBinding::setEnabled(bool)
+	?setEnabled@QDeclarativeAbstractBinding@@UAEX_NV?$QFlags@W4WriteFlag@QDeclarativePropertyPrivate@@@@@Z @ 3480 NONAME ; void QDeclarativeAbstractBinding::setEnabled(bool, class QFlags<enum QDeclarativePropertyPrivate::WriteFlag>)
+	?setEnabled@QDeclarativeBinding@@UAEX_NV?$QFlags@W4WriteFlag@QDeclarativePropertyPrivate@@@@@Z @ 3481 NONAME ; void QDeclarativeBinding::setEnabled(bool, class QFlags<enum QDeclarativePropertyPrivate::WriteFlag>)
+	?setSignalExpression@QDeclarativePropertyPrivate@@SAPAVQDeclarativeExpression@@ABVQDeclarativeProperty@@PAV2@@Z @ 3482 NONAME ; class QDeclarativeExpression * QDeclarativePropertyPrivate::setSignalExpression(class QDeclarativeProperty const &, class QDeclarativeExpression *)
+	?setTarget@QDeclarativeBinding@@QAEXABVQDeclarativeProperty@@@Z @ 3483 NONAME ; void QDeclarativeBinding::setTarget(class QDeclarativeProperty const &)
+	?signalExpression@QDeclarativePropertyPrivate@@SAPAVQDeclarativeExpression@@ABVQDeclarativeProperty@@@Z @ 3484 NONAME ; class QDeclarativeExpression * QDeclarativePropertyPrivate::signalExpression(class QDeclarativeProperty const &)
+	?tr@QDeclarativeBinding@@SA?AVQString@@PBD0@Z @ 3485 NONAME ; class QString QDeclarativeBinding::tr(char const *, char const *)
+	?tr@QDeclarativeBinding@@SA?AVQString@@PBD0H@Z @ 3486 NONAME ; class QString QDeclarativeBinding::tr(char const *, char const *, int)
+	?trUtf8@QDeclarativeBinding@@SA?AVQString@@PBD0@Z @ 3487 NONAME ; class QString QDeclarativeBinding::trUtf8(char const *, char const *)
+	?trUtf8@QDeclarativeBinding@@SA?AVQString@@PBD0H@Z @ 3488 NONAME ; class QString QDeclarativeBinding::trUtf8(char const *, char const *, int)
+	?update@QDeclarativeAbstractBinding@@QAEXXZ @ 3489 NONAME ; void QDeclarativeAbstractBinding::update(void)
+	?update@QDeclarativeBinding@@QAEXXZ @ 3490 NONAME ; void QDeclarativeBinding::update(void)
+	?update@QDeclarativeBinding@@UAEXV?$QFlags@W4WriteFlag@QDeclarativePropertyPrivate@@@@@Z @ 3491 NONAME ; void QDeclarativeBinding::update(class QFlags<enum QDeclarativePropertyPrivate::WriteFlag>)
+	?valueTypeCoreIndex@QDeclarativePropertyPrivate@@SAHABVQDeclarativeProperty@@@Z @ 3492 NONAME ; int QDeclarativePropertyPrivate::valueTypeCoreIndex(class QDeclarativeProperty const &)
+	?write@QDeclarativePropertyPrivate@@SA_NABVQDeclarativeProperty@@ABVQVariant@@V?$QFlags@W4WriteFlag@QDeclarativePropertyPrivate@@@@@Z @ 3493 NONAME ; bool QDeclarativePropertyPrivate::write(class QDeclarativeProperty const &, class QVariant const &, class QFlags<enum QDeclarativePropertyPrivate::WriteFlag>)
+	?write@QDeclarativePropertyPrivate@@SA_NPAVQObject@@ABUData@QDeclarativePropertyCache@@ABVQVariant@@PAVQDeclarativeContext@@V?$QFlags@W4WriteFlag@QDeclarativePropertyPrivate@@@@@Z @ 3494 NONAME ; bool QDeclarativePropertyPrivate::write(class QObject *, struct QDeclarativePropertyCache::Data const &, class QVariant const &, class QDeclarativeContext *, class QFlags<enum QDeclarativePropertyPrivate::WriteFlag>)
+	?writeEnumProperty@QDeclarativePropertyPrivate@@SA_NABVQMetaProperty@@HPAVQObject@@ABVQVariant@@H@Z @ 3495 NONAME ; bool QDeclarativePropertyPrivate::writeEnumProperty(class QMetaProperty const &, int, class QObject *, class QVariant const &, int)
+	?writeValueProperty@QDeclarativePropertyPrivate@@QAE_NABVQVariant@@V?$QFlags@W4WriteFlag@QDeclarativePropertyPrivate@@@@@Z @ 3496 NONAME ; bool QDeclarativePropertyPrivate::writeValueProperty(class QVariant const &, class QFlags<enum QDeclarativePropertyPrivate::WriteFlag>)
+	?staticMetaObject@QDeclarativeBinding@@2UQMetaObject@@B @ 3497 NONAME ; struct QMetaObject const QDeclarativeBinding::staticMetaObject
 

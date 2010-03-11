@@ -1511,6 +1511,7 @@ QVariant::QVariant(const char *val)
 */
 
 /*!
+    \since 4.7
   \fn QVariant::QVariant(const QEasingCurve &val)
 
     Constructs a new variant with an easing curve value, \a val.
@@ -2204,6 +2205,7 @@ QDateTime QVariant::toDateTime() const
 }
 
 /*!
+    \since 4.7
     \fn QEasingCurve QVariant::toEasingCurve() const
 
     Returns the variant as a QEasingCurve if the variant has type() \l

@@ -198,10 +198,6 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         configProps.setRenderableType(QEgl::OpenGL);
         qt_eglproperties_set_glformat(configProps, d->glFormat);
 
-        // Use EGL_BUFFER_SIZE to make sure we prefer a 16-bit config over a 32-bit config
-        if (device()->depth() == 16 && !d->glFormat.alpha())
-            configProps.setValue(EGL_BUFFER_SIZE, 16);
-
         if (!d->eglContext->chooseConfig(configProps, QEgl::BestPixelFormat)) {
             delete d->eglContext;
             d->eglContext = 0;
@@ -220,9 +216,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
             const_cast<QGLContext *>(shareContext)->d_func()->sharing = true;
     }
 
-    // Inform the higher layers about the actual format properties.
-    qt_egl_update_format(*(d->eglContext), d->glFormat);
-
+    // Inform the higher layers about the actual format properties
+    qt_glformat_from_eglconfig(d->glFormat, d->eglContext->config());
 
     // Do don't create the EGLSurface for everything.
     //    QWidget - yes, create the EGLSurface and store it in QGLContextPrivate::eglSurface
@@ -243,7 +238,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         if (x11PixmapData->gl_surface)
             eglDestroySurface(d->eglContext->display(), (EGLSurface)x11PixmapData->gl_surface);
 
-        x11PixmapData->gl_surface = (Qt::HANDLE)QEgl::createSurface(device(), d->eglContext->config());
+        x11PixmapData->gl_surface = (void*)QEgl::createSurface(device(), d->eglContext->config());
     }
 
     return true;
@@ -404,8 +399,8 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
                                                hasAlpha ? QEgl::Translucent : QEgl::NoOptions);
 
         QPixmap tmpPixmap(pixmapData); //###
-        pixmapData->gl_surface = (Qt::HANDLE)QEgl::createSurface(&tmpPixmap, config);
-        if (pixmapData->gl_surface == (Qt::HANDLE)EGL_NO_SURFACE) {
+        pixmapData->gl_surface = (void*)QEgl::createSurface(&tmpPixmap, config);
+        if (pixmapData->gl_surface == (void*)EGL_NO_SURFACE) {
             haveTFP = false;
             return 0;
         }
@@ -423,7 +418,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
     if (success == EGL_FALSE) {
         qWarning() << "eglBindTexImage() failed:" << QEgl::errorString();
         eglDestroySurface(eglContext->display(), (EGLSurface)pixmapData->gl_surface);
-        pixmapData->gl_surface = (Qt::HANDLE)EGL_NO_SURFACE;
+        pixmapData->gl_surface = (void*)EGL_NO_SURFACE;
         haveTFP = false;
         return 0;
     }

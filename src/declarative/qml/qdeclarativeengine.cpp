@@ -146,12 +146,12 @@ static bool qt_QmlQtModule_registered = false;
 
 void QDeclarativeEnginePrivate::defineModule()
 {
-    QML_REGISTER_TYPE(Qt,4,6,Component,QDeclarativeComponent);
-    QML_REGISTER_TYPE(Qt,4,6,QtObject,QObject);
-    QML_REGISTER_TYPE(Qt,4,6,WorkerScript,QDeclarativeWorkerScript);
-    QML_REGISTER_TYPE(Qt,4,6,WorkerListModel,QDeclarativeWorkerListModel);
+    qmlRegisterType<QDeclarativeComponent>("Qt",4,6,"Component");
+    qmlRegisterType<QObject>("Qt",4,6,"QtObject");
+    qmlRegisterType<QDeclarativeWorkerScript>("Qt",4,6,"WorkerScript");
+    qmlRegisterType<QDeclarativeWorkerListModel>("Qt",4,6,"WorkerListModel");
 
-    QML_REGISTER_NOCREATE_TYPE(QDeclarativeBinding);
+    qmlRegisterType<QDeclarativeBinding>();
 }
 
 QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
@@ -542,9 +542,9 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
 
     This example creates a provider with id \e colors:
 
-    \snippet examples/declarative/imageprovider/main.cpp 0
+    \snippet examples/declarative/imageprovider/imageprovider.cpp 0
 
-    \snippet examples/declarative/imageprovider/view.qml 0
+    \snippet examples/declarative/imageprovider/imageprovider.qml 0
 
     \sa removeImageProvider()
 */
@@ -1716,10 +1716,8 @@ void QDeclarativeEngine::addImportPath(const QString& path)
 }
 
 /*!
-  Imports the given \a extension into this QDeclarativeEngine.  Returns
-  true if the extension was successfully imported.
-
-  \sa QDeclarativeExtensionInterface
+  Imports the extension named \a fileName from the \a uri provided.
+  Returns true if the extension was successfully imported.
 */
 bool QDeclarativeEngine::importExtension(const QString &fileName, const QString &uri)
 {
@@ -1846,6 +1844,9 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
 
     return resolvePlugin(dir, baseName,
                          QStringList()
+# ifdef QT_DEBUG
+                         << QLatin1String("_debug.dylib") // try a qmake-style debug build first
+# endif
                          << QLatin1String(".dylib")
                          << QLatin1String(".so")
                          << QLatin1String(".bundle"),

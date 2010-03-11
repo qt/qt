@@ -64,6 +64,7 @@
 
 // #define QT_OPENGL_CACHE_AS_VBOS
 
+#include "qglgradientcache_p.h"
 #include "qpaintengineex_opengl2_p.h"
 
 #include <string.h> //for memcpy
@@ -80,7 +81,6 @@
 #include <private/qstatictext_p.h>
 #include <private/qtriangulator_p.h>
 
-#include "qglgradientcache_p.h"
 #include "qglengineshadermanager_p.h"
 #include "qgl2pexvertexarray_p.h"
 #include "qtriangulatingstroker_p.h"
@@ -1155,16 +1155,20 @@ void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
     // prepareForDraw() down below.
     updateMatrix();
 
+    QRectF clip = q->state()->matrix.inverted().mapRect(q->state()->clipEnabled
+                                                        ? q->state()->rectangleClip
+                                                        : QRectF(0, 0, width, height));
+
     if (penStyle == Qt::SolidLine) {
-        stroker.process(path, pen);
+        stroker.process(path, pen, clip);
 
     } else { // Some sort of dash
-        dasher.process(path, pen);
+        dasher.process(path, pen, clip);
 
         QVectorPath dashStroke(dasher.points(),
                                dasher.elementCount(),
                                dasher.elementTypes());
-        stroker.process(dashStroke, pen);
+        stroker.process(dashStroke, pen, clip);
     }
 
     if (opaque) {

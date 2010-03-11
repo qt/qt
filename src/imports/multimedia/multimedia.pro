@@ -17,7 +17,7 @@ SOURCES += \
         qdeclarativevideo.cpp \
         qmetadatacontrolmetaobject.cpp
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/imports/Qt/multimedia
+QTDIR_build:DESTDIR = $$QT_BUILD_TREE/imports/$$TARGETPATH
 target.path = $$TARGETPATH
 
 qmldir.files += $$QT_BUILD_TREE/imports/Qt/multimedia/qmldir

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,39 +38,59 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QCoreApplication>
-#include <QDeclarativeEngine>
-#include <QDeclarativeComponent>
-#include <QDebug>
-#include "birthdayparty.h"
-#include "person.h"
 
-int main(int argc, char ** argv)
+#include <QtCore>
+#include <QtTest/QtTest>
+
+#define INVOKE_COUNT 10000
+
+class qtimer_vs_qmetaobject : public QObject
 {
-    QCoreApplication app(argc, argv);
+    Q_OBJECT
+private slots:
+    void testZeroTimerSingleShot();
+    void testQueuedInvokeMethod();
+};
 
-    qmlRegisterType<BirthdayParty>("People", 1,0, "BirthdayParty");
-    qmlRegisterType<Person>();
-    qmlRegisterType<Boy>("People", 1,0, "Boy");
-    qmlRegisterType<Girl>("People", 1,0, "Girl");
-
-    QDeclarativeEngine engine;
-    QDeclarativeComponent component(&engine, ":example.qml");
-    BirthdayParty *party = qobject_cast<BirthdayParty *>(component.create());
-
-    if (party && party->celebrant()) {
-        qWarning() << party->celebrant()->name() << "is having a birthday!";
-
-        if (qobject_cast<Boy *>(party->celebrant()))
-            qWarning() << "He is inviting:";
-        else
-            qWarning() << "She is inviting:";
-
-        for (int ii = 0; ii < party->guestCount(); ++ii)
-            qWarning() << "   " << party->guest(ii)->name();
-    } else {
-        qWarning() << "An error occured";
+class InvokeCounter : public QObject {
+    Q_OBJECT
+public:
+    InvokeCounter() : count(0) { };
+public slots:
+    void invokeSlot() {
+        count++;
+        if (count == INVOKE_COUNT)
+            QTestEventLoop::instance().exitLoop();
     }
+protected:
+    int count;
+};
 
-    return 0;
+void qtimer_vs_qmetaobject::testZeroTimerSingleShot()
+{
+    QBENCHMARK {
+        InvokeCounter invokeCounter;
+        for(int i = 0; i < INVOKE_COUNT; ++i) {
+            QTimer::singleShot(0, &invokeCounter, SLOT(invokeSlot()));
+        }
+        QTestEventLoop::instance().enterLoop(10);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+    }
 }
+
+void qtimer_vs_qmetaobject::testQueuedInvokeMethod()
+{
+    QBENCHMARK {
+        InvokeCounter invokeCounter;
+        for(int i = 0; i < INVOKE_COUNT; ++i) {
+            QMetaObject::invokeMethod(&invokeCounter, "invokeSlot", Qt::QueuedConnection);
+        }
+        QTestEventLoop::instance().enterLoop(10);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+    }
+}
+
+
+QTEST_MAIN(qtimer_vs_qmetaobject)
+
+#include "tst_qtimer_vs_qmetaobject.moc"
