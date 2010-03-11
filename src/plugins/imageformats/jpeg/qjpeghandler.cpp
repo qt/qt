@@ -1188,7 +1188,11 @@ bool QJpegHandler::canRead(QIODevice *device)
         return false;
     }
 
-    return device->peek(2) == "\xFF\xD8";
+    char buffer[2];
+    if (device->peek(buffer, 2) != 2)
+        return false;
+
+    return uchar(buffer[0]) == 0xff && uchar(buffer[1]) == 0xd8;
 }
 
 bool QJpegHandler::read(QImage *image)
