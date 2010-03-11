@@ -46,6 +46,7 @@
 #include "qdeclarativecontext_p.h"
 #include "qdeclarativerewrite_p.h"
 #include "qdeclarativecompiler_p.h"
+#include "qdeclarativeglobalscriptclass_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtScript/qscriptprogram.h>
@@ -135,6 +136,7 @@ void QDeclarativeExpressionPrivate::init(QDeclarativeContext *ctxt, void *expr, 
         if (!dd->cachedClosures.at(progIdx)) {
             QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
             scriptContext->pushScope(ep->contextClass->newSharedContext());
+            scriptContext->pushScope(ep->globalClass->globalObject());
             dd->cachedClosures[progIdx] = new QScriptValue(scriptEngine->evaluate(data->expression, data->url, data->line));
             scriptEngine->popContext();
         }
@@ -151,9 +153,11 @@ void QDeclarativeExpressionPrivate::init(QDeclarativeContext *ctxt, void *expr, 
                 new QScriptProgram(data->expression, data->url, data->line);
         }
 
-        data->expressionFunction = evalInObjectScope(ctxt, me, *dd->cachedPrograms.at(progIdx));
+        data->expressionFunction = evalInObjectScope(ctxt, me, *dd->cachedPrograms.at(progIdx), 
+                                                     &data->expressionContext);
 #else
-        data->expressionFunction = evalInObjectScope(ctxt, me, data->expression);
+        data->expressionFunction = evalInObjectScope(ctxt, me, data->expression, 
+                                                     &data->expressionContext);
 #endif
 
         data->expressionFunctionValid = true;
@@ -164,22 +168,34 @@ void QDeclarativeExpressionPrivate::init(QDeclarativeContext *ctxt, void *expr, 
 }
 
 QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContext *context, QObject *object, 
-                                                     const QString &program)
+                                                              const QString &program, QScriptValue *contextObject)
 {
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine());
     QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(&ep->scriptEngine);
-    scriptContext->pushScope(ep->contextClass->newContext(context, object));
+    if (contextObject) {
+        *contextObject = ep->contextClass->newContext(context, object);
+        scriptContext->pushScope(*contextObject);
+    } else {
+        scriptContext->pushScope(ep->contextClass->newContext(context, object));
+    }
+    scriptContext->pushScope(ep->globalClass->globalObject());
     QScriptValue rv = ep->scriptEngine.evaluate(program);
     ep->scriptEngine.popContext();
     return rv;
 }
 
 QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContext *context, QObject *object, 
-                                                     const QScriptProgram &program)
+                                                     const QScriptProgram &program, QScriptValue *contextObject)
 {
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine());
     QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(&ep->scriptEngine);
-    scriptContext->pushScope(ep->contextClass->newContext(context, object));
+    if (contextObject) {
+        *contextObject = ep->contextClass->newContext(context, object);
+        scriptContext->pushScope(*contextObject);
+    } else {
+        scriptContext->pushScope(ep->contextClass->newContext(context, object));
+    }
+    scriptContext->pushScope(ep->globalClass->globalObject());
     QScriptValue rv = ep->scriptEngine.evaluate(program);
     ep->scriptEngine.popContext();
     return rv;
@@ -326,15 +342,14 @@ QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bo
     QDeclarativeEngine *engine = data->context()->engine();
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
 
-    if (secondaryScope)
-       ctxtPriv->defaultObjects.append(secondaryScope);
-
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
     if (!data->expressionFunctionValid) {
 
         QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
-        scriptContext->pushScope(ep->contextClass->newContext(data->context(), data->me));
+        data->expressionContext = ep->contextClass->newContext(data->context(), data->me);
+        scriptContext->pushScope(data->expressionContext);
+        scriptContext->pushScope(ep->globalClass->globalObject());
 
         if (data->expressionRewritten) {
             data->expressionFunction = scriptEngine->evaluate(data->expression, 
@@ -357,11 +372,14 @@ QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bo
 
     QDeclarativeContext *oldSharedContext = 0;
     QObject *oldSharedScope = 0;
+    QObject *oldOverride = 0;
     if (data->isShared) {
         oldSharedContext = ep->sharedContext;
         oldSharedScope = ep->sharedScope;
         ep->sharedContext = data->context();
         ep->sharedScope = data->me;
+    } else {
+        oldOverride = ep->contextClass->setOverrideObject(data->expressionContext, secondaryScope);
     }
 
     QScriptValue svalue = data->expressionFunction.call();
@@ -369,6 +387,8 @@ QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bo
     if (data->isShared) {
         ep->sharedContext = oldSharedContext;
         ep->sharedScope = oldSharedScope;
+    } else {
+        ep->contextClass->setOverrideObject(data->expressionContext, oldOverride);
     }
 
     if (isUndefined)
@@ -381,12 +401,6 @@ QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bo
        return QVariant();
     } else {
         data->error = QDeclarativeError();
-    }
-
-    if (secondaryScope) {
-        QObject *last = ctxtPriv->defaultObjects.takeLast();
-        Q_ASSERT(last == secondaryScope);
-        Q_UNUSED(last);
     }
 
     QVariant rv;
@@ -498,19 +512,20 @@ bool QDeclarativeExpression::notifyOnValueChanged() const
 }
 
 /*!
-Sets whether the valueChanged() signal is emitted when the expression's evaluated
-value changes.
+  Sets whether the valueChanged() signal is emitted when the
+  expression's evaluated value changes.
 
-If true, the QDeclarativeExpression will monitor properties involved in the expression's 
-evaluation, and emit QDeclarativeExpression::valueChanged() if they have changed.  This allows 
-an application to ensure that any value associated with the result of the expression 
-remains up to date.
+  If \a notifyOnChange is true, the QDeclarativeExpression will
+  monitor properties involved in the expression's evaluation, and emit
+  QDeclarativeExpression::valueChanged() if they have changed.  This
+  allows an application to ensure that any value associated with the
+  result of the expression remains up to date.
 
-If false, the QDeclarativeExpression will not montitor properties involved in the expression's 
-evaluation, and QDeclarativeExpression::valueChanged() will never be emitted.  This is more efficient 
-if an application wants a "one off" evaluation of the expression.
-
-By default, notifyOnChange is false.
+  If \a notifyOnChange is false (default), the QDeclarativeExpression
+  will not montitor properties involved in the expression's
+  evaluation, and QDeclarativeExpression::valueChanged() will never be
+  emitted.  This is more efficient if an application wants a "one off"
+  evaluation of the expression.
 */
 void QDeclarativeExpression::setNotifyOnValueChanged(bool notifyOnChange)
 {

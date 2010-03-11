@@ -70,7 +70,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     have reached the end of the data stream, with stdin. The reason for this is
     that as long as stdin doesn't give any input to the QTextStream, \c atEnd()
     will return true even if the stdin is open and waiting for more characters.
-    
+
     Besides using QTextStream's constructors, you can also set the
     device or string QTextStream operates on by calling setDevice() or
     setString(). You can seek to a position by calling seek(), and
@@ -1196,6 +1196,7 @@ bool QTextStream::seek(qint64 pos)
         resetCodecConverterStateHelper(&d->writeConverterState);
         delete d->readConverterSavedState;
         d->readConverterSavedState = 0;
+        d->writeConverterState.flags |= QTextCodec::IgnoreHeader;
 #endif
         return true;
     }

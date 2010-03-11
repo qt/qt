@@ -228,8 +228,11 @@ QNlaThread::~QNlaThread()
 
     if (handle) {
         /* cancel completion event */
-        if (WSALookupServiceEnd(handle) == SOCKET_ERROR)
-            qWarning("WSALookupServiceEnd error %d", WSAGetLastError());
+        if (WSALookupServiceEnd(handle) == SOCKET_ERROR) {
+#ifdef BEARER_MANAGEMENT_DEBUG
+            qDebug("WSALookupServiceEnd error %d", WSAGetLastError());
+#endif
+        }
     }
     mutex.unlock();
 
@@ -252,8 +255,11 @@ void QNlaThread::forceUpdate()
 
     if (handle) {
         /* cancel completion event */
-        if (WSALookupServiceEnd(handle) == SOCKET_ERROR)
-            qWarning("WSALookupServiceEnd error %d", WSAGetLastError());
+        if (WSALookupServiceEnd(handle) == SOCKET_ERROR) {
+#ifdef BEARER_MANAGEMENT_DEBUG
+            qDebug("WSALookupServiceEnd error %d", WSAGetLastError());
+#endif
+        }
         handle = 0;
     }
     mutex.unlock();
@@ -262,10 +268,8 @@ void QNlaThread::forceUpdate()
 void QNlaThread::run()
 {
     WSAEVENT changeEvent = WSACreateEvent();
-    if (changeEvent == WSA_INVALID_EVENT) {
-        qWarning("WSACreateEvent error %d", WSAGetLastError());
+    if (changeEvent == WSA_INVALID_EVENT)
         return;
-    }
 
     while (true) {
         fetchConfigurations();
@@ -284,10 +288,8 @@ void QNlaThread::run()
         int result = WSALookupServiceBegin(&qsRestrictions, LUP_RETURN_ALL, &handle);
         mutex.unlock();
 
-        if (result == SOCKET_ERROR) {
-            qWarning("%s: WSALookupServiceBegin error %d", __FUNCTION__, WSAGetLastError());
+        if (result == SOCKET_ERROR)
             break;
-        }
 
         WSACOMPLETION completion;
         WSAOVERLAPPED overlapped;
@@ -303,11 +305,8 @@ void QNlaThread::run()
         result = WSANSPIoctl(handle, SIO_NSP_NOTIFY_CHANGE, 0, 0, 0, 0,
                              &bytesReturned, &completion);
         if (result == SOCKET_ERROR) {
-            int error = WSAGetLastError();
-            if (error != WSA_IO_PENDING) {
-                qWarning("WSANSPIoctl error %d", error);
+            if (WSAGetLastError() != WSA_IO_PENDING)
                 break;
-            }
         }
 
 #ifndef Q_OS_WINCE
@@ -325,7 +324,6 @@ void QNlaThread::run()
         if (handle) {
             result = WSALookupServiceEnd(handle);
             if (result == SOCKET_ERROR) {
-                qWarning("WSALookupServiceEnd error %d", WSAGetLastError());
                 mutex.unlock();
                 break;
             }
@@ -360,7 +358,7 @@ DWORD QNlaThread::parseBlob(NLA_BLOB *blob, QNetworkConfigurationPrivate *cpPriv
     switch (blob->header.type) {
     case NLA_RAW_DATA:
 #ifdef BEARER_MANAGEMENT_DEBUG
-        qWarning("%s: unhandled header type NLA_RAW_DATA", __FUNCTION__);
+        qDebug("%s: unhandled header type NLA_RAW_DATA", __FUNCTION__);
 #endif
         break;
     case NLA_INTERFACE:
@@ -372,7 +370,7 @@ DWORD QNlaThread::parseBlob(NLA_BLOB *blob, QNetworkConfigurationPrivate *cpPriv
         break;
     case NLA_802_1X_LOCATION:
 #ifdef BEARER_MANAGEMENT_DEBUG
-        qWarning("%s: unhandled header type NLA_802_1X_LOCATION", __FUNCTION__);
+        qDebug("%s: unhandled header type NLA_802_1X_LOCATION", __FUNCTION__);
 #endif
         break;
     case NLA_CONNECTIVITY:
@@ -380,18 +378,15 @@ DWORD QNlaThread::parseBlob(NLA_BLOB *blob, QNetworkConfigurationPrivate *cpPriv
             cpPriv->internet = true;
         else
             cpPriv->internet = false;
-#ifdef BEARER_MANAGEMENT_DEBUG
-        qWarning("%s: unhandled header type NLA_CONNECTIVITY", __FUNCTION__);
-#endif
         break;
     case NLA_ICS:
 #ifdef BEARER_MANAGEMENT_DEBUG
-        qWarning("%s: unhandled header type NLA_ICS", __FUNCTION__);
+        qDebug("%s: unhandled header type NLA_ICS", __FUNCTION__);
 #endif
         break;
     default:
 #ifdef BEARER_MANAGEMENT_DEBUG
-        qWarning("%s: unhandled header type %d", __FUNCTION__, blob->header.type);
+        qDebug("%s: unhandled header type %d", __FUNCTION__, blob->header.type);
 #endif
         ;
     }
@@ -462,7 +457,6 @@ void QNlaThread::fetchConfigurations()
 
     int result = WSALookupServiceBegin(&qsRestrictions, LUP_RETURN_ALL | LUP_DEEP, &hLookup);
     if (result == SOCKET_ERROR) {
-        qWarning("%s: WSALookupServiceBegin error %d", __FUNCTION__, WSAGetLastError());
         mutex.lock();
         fetchedConfigurations.clear();
         mutex.unlock();
@@ -474,18 +468,8 @@ void QNlaThread::fetchConfigurations()
         result = WSALookupServiceNext(hLookup, LUP_RETURN_ALL,
                                       &bufferLength, reinterpret_cast<WSAQUERYSET *>(buffer));
 
-        if (result == SOCKET_ERROR) {
-            int error = WSAGetLastError();
-
-            if (error == WSA_E_NO_MORE)
-                break;
-
-            if (error == WSAEFAULT)
-                break;
-
-            qWarning("WSALookupServiceNext error %d", WSAGetLastError());
+        if (result == SOCKET_ERROR)
             break;
-        }
 
         QNetworkConfigurationPrivate *cpPriv =
             parseQuerySet(reinterpret_cast<WSAQUERYSET *>(buffer));
@@ -496,7 +480,9 @@ void QNlaThread::fetchConfigurations()
     if (hLookup) {
         result = WSALookupServiceEnd(hLookup);
         if (result == SOCKET_ERROR) {
-            qWarning("WSALookupServiceEnd error %d", WSAGetLastError());
+#ifdef BEARER_MANAGEMENT_DEBUG
+            qDebug("WSALookupServiceEnd error %d", WSAGetLastError());
+#endif
         }
     }
 

@@ -42,7 +42,6 @@
 /*
   generator.cpp
 */
-#include <QtCore>
 #include <qdir.h>
 #include <qdebug.h>
 #include "codemarker.h"
@@ -227,6 +226,7 @@ void Generator::terminate()
     imageFiles.clear();
     imageDirs.clear();
     outDir = "";
+    QmlClassNode::clear();
 }
 
 Generator *Generator::generatorForFormat(const QString& format)
@@ -1183,6 +1183,31 @@ void Generator::appendSortedNames(Text& text,
     foreach (const QString &className, classNames) {
         text << classMap[className];
         text << separator(index++, classNames.count());
+    }
+}
+
+void Generator::appendSortedQmlNames(Text& text,
+                                     const Node* base,
+                                     const NodeList& subs,
+                                     CodeMarker *marker)
+{
+    QMap<QString,Text> classMap;
+    int index = 0;
+
+    qDebug() << "Generator::appendSortedQmlNames():" << base->name() << "is inherited by...";
+    for (int i = 0; i < subs.size(); ++i) {
+        Text t;
+        qDebug() << "    " << subs[i]->name();
+        appendFullName(t, subs[i], base, marker);
+        classMap[t.toString().toLower()] = t;
+    }
+
+    QStringList names = classMap.keys();
+    names.sort();
+
+    foreach (const QString &name, names) {
+        text << classMap[name];
+        text << separator(index++, names.count());
     }
 }
 

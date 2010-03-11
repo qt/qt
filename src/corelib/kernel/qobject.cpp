@@ -132,7 +132,8 @@ QObjectPrivate::QObjectPrivate(int version)
     : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0)
 {
     if (version != QObjectPrivateVersion)
-        qFatal("Cannot mix incompatible Qt libraries");
+        qFatal("Cannot mix incompatible Qt library (version 0x%x) with this library (version 0x%x)",
+                version, QObjectPrivateVersion);
 
     // QObjectData initialization
     q_ptr = 0;
@@ -3278,12 +3279,14 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 
             const int method = c->method;
             QObjectPrivate::Sender currentSender;
-            currentSender.sender = sender;
-            currentSender.signal = signal_absolute_index;
-            currentSender.ref = 1;
+            const bool receiverInSameThread = currentThreadData == receiver->d_func()->threadData;
             QObjectPrivate::Sender *previousSender = 0;
-            if (currentThreadData == receiver->d_func()->threadData)
+            if (receiverInSameThread) {
+                currentSender.sender = sender;
+                currentSender.signal = signal_absolute_index;
+                currentSender.ref = 1;
                 previousSender = QObjectPrivate::setCurrentSender(receiver, &currentSender);
+            }
             locker.unlock();
 
             if (qt_signal_spy_callback_set.slot_begin_callback != 0) {
@@ -3299,8 +3302,8 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                 metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
             } QT_CATCH(...) {
                 locker.relock();
-
-                QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
+                if (receiverInSameThread)
+                    QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
 
                 --connectionLists->inUse;
                 Q_ASSERT(connectionLists->inUse >= 0);
@@ -3315,7 +3318,8 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 
             locker.relock();
 
-            QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
+            if (receiverInSameThread)
+                QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
 
             if (connectionLists->orphaned)
                 break;

@@ -243,6 +243,7 @@ QDataStream& operator>>(QDataStream& s, QList<T>& l)
     l.clear();
     quint32 c;
     s >> c;
+    l.reserve(c);
     for(quint32 i = 0; i < c; ++i)
     {
         T t;

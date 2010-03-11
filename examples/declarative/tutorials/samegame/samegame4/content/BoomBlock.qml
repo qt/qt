@@ -8,23 +8,23 @@ Item { id:block
     property int targetX: 0
     property int targetY: 0
 
-    x: SpringFollow { enabled: spawned; source: targetX; spring: 2; damping: 0.2 }
-    y: SpringFollow { source: targetY; spring: 2; damping: 0.2 }
+    SpringFollow on x { enabled: spawned; source: targetX; spring: 2; damping: 0.2 }
+    SpringFollow on y { source: targetY; spring: 2; damping: 0.2 }
     //![1]
 
     //![2]
     Image { id: img
         source: {
             if(type == 0){
-                "pics/redStone.png";
+                "../../shared/pics/redStone.png";
             } else if(type == 1) {
-                "pics/blueStone.png";
+                "../../shared/pics/blueStone.png";
             } else {
-                "pics/greenStone.png";
+                "../../shared/pics/greenStone.png";
             }
         }
         opacity: 0
-        opacity: Behavior { NumberAnimation { properties:"opacity"; duration: 200 } }
+        Behavior on opacity { NumberAnimation { properties:"opacity"; duration: 200 } }
         anchors.fill: parent
     }
     //![2]
@@ -38,11 +38,11 @@ Item { id:block
         velocity: 100; velocityDeviation:30;
         source: {
             if(type == 0){
-                "pics/redStar.png";
+                "../../shared/pics/redStar.png";
             } else if (type == 1) {
-                "pics/blueStar.png";
+                "../../shared/pics/blueStar.png";
             } else {
-                "pics/greenStar.png";
+                "../../shared/pics/greenStar.png";
             }
         }
     }

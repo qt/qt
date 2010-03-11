@@ -168,8 +168,7 @@ void QDeclarativeAnchorsPrivate::fillChanged()
         } else if (fill->parentItem() == item->parentItem()) {   //siblings
             setItemPos(QPointF(fill->x()+leftMargin, fill->y()+topMargin));
         }
-        setItemWidth(fill->width()-leftMargin-rightMargin);
-        setItemHeight(fill->height()-topMargin-bottomMargin);
+        setItemSize(QSizeF(fill->width()-leftMargin-rightMargin, fill->height()-topMargin-bottomMargin));
 
         --updatingFill;
     } else {
@@ -311,6 +310,13 @@ void QDeclarativeAnchorsPrivate::setItemPos(const QPointF &v)
 {
     updatingMe = true;
     item->setPos(v);
+    updatingMe = false;
+}
+
+void QDeclarativeAnchorsPrivate::setItemSize(const QSizeF &v)
+{
+    updatingMe = true;
+    item->setSize(v);
     updatingMe = false;
 }
 

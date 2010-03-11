@@ -1,0 +1,80 @@
+include(compat.qdocconf)
+include(macros.qdocconf)
+include(qt-cpp-ignore.qdocconf)
+include(qt-html-templates.qdocconf)
+include(qt-defines.qdocconf)
+
+project                 = Qml
+description             = Qml Reference Documentation
+url                     = http://qt.nokia.com/doc/4.6/
+qmlonly                 = true
+
+edition.Console.modules = QtCore QtDBus QtNetwork QtScript QtSql QtXml \
+                          QtXmlPatterns QtTest
+edition.Desktop.modules = QtCore QtDBus QtGui QtNetwork QtOpenGL QtScript QtSql QtSvg \
+                          QtWebKit QtXml QtXmlPatterns Qt3Support QtHelp \
+                          QtDesigner QtAssistant QAxContainer Phonon \
+                          QAxServer QtUiTools QtTest QtDBus
+edition.DesktopLight.modules = QtCore QtDBus QtGui Qt3SupportLight QtTest
+edition.DesktopLight.groups       = -graphicsview-api
+
+qhp.projects            = Qml
+
+qhp.Qml.file                = qml.qhp
+qhp.Qml.namespace           = com.trolltech.qml.460
+qhp.Qml.virtualFolder       = qdoc
+qhp.Qml.indexTitle          = Qml Reference
+
+# Files not referenced in any qdoc file
+# See also extraimages.HTML
+qhp.Qml.extraFiles          = classic.css \
+                             images/qt-logo.png
+
+qhp.Qml.filterAttributes    = qt 4.6.0 qtrefdoc
+qhp.Qml.customFilters.Qt.name = Qt 4.6.0
+qhp.Qml.customFilters.Qt.filterAttributes = qt 4.6.0
+qhp.Qml.subprojects         = classes
+qhp.Qml.subprojects.classes.title = Elements
+qhp.Qml.subprojects.classes.indexTitle = Qml Elements
+qhp.Qml.subprojects.classes.selectors = fake:qmlclass
+qhp.Qml.subprojects.classes.sortPages = true
+
+language                = Cpp
+
+headerdirs              = $QT_SOURCE_TREE/src/declarative
+sourcedirs              = $QT_SOURCE_TREE/src/declarative \
+                          $QT_SOURCE_TREE/doc/src/declarative
+
+sources += $QT_SOURCE_TREE/doc/src/tutorials/declarative.qdoc
+
+sources.fileextensions  = "*.cpp *.qdoc"
+examples.fileextensions = "*.cpp *.h *.js *.qml"
+
+exampledirs             = $QT_SOURCE_TREE/doc/src \
+                          $QT_SOURCE_TREE/examples \
+                          $QT_SOURCE_TREE/examples/tutorials \
+                          $QT_SOURCE_TREE \
+                          $QT_SOURCE_TREE/qmake/examples \
+                          $QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/docs
+imagedirs               = $QT_SOURCE_TREE/doc/src/images \
+                          $QT_SOURCE_TREE/examples \
+                          $QT_SOURCE_TREE/doc/src/declarative/pics
+outputdir               = $QT_BUILD_TREE/doc-build/html-qml
+tagfile                 = $QT_BUILD_TREE/doc-build/html-qml/qt.tags
+base                    = file:$QT_BUILD_TREE/doc/html-qml
+
+HTML.stylesheets        = classic.css
+
+HTML.postheader         = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n" \
+                          "<tr>\n" \
+                          "<td align=\"left\" valign=\"top\">" \
+                          "<img src=\"images/qt-logo.png\" align=\"left\" border=\"0\"/>" \
+                          "</td>\n" \
+                          "<td width=\"1\">&nbsp;&nbsp;</td>" \
+                          "<td class=\"postheader\" valign=\"center\" align=\"left\">" \
+                          "<a href=\"qmlreference.html\">" \
+                          "<font color=\"#004faf\">Home</font></a>&nbsp;&middot;" \
+                          " <a href=\"qmlelements.html\">" \
+                          "<font color=\"#004faf\">Elements</font></a>" \
+                          "</td>\n" \
+                          "</tr></table>"

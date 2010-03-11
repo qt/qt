@@ -74,14 +74,13 @@ public:
     ~QSvgStructureNode();
     QSvgNode *scopeNode(const QString &id) const;
     void addChild(QSvgNode *child, const QString &id);
-    virtual QRectF bounds() const;
+    virtual QRectF bounds(QPainter *p, QSvgExtraStates &states) const;
     QSvgNode *previousSiblingNode(QSvgNode *n) const;
     QList<QSvgNode*> renderers() const { return m_renderers; }
 protected:
     QList<QSvgNode*>          m_renderers;
     QHash<QString, QSvgNode*> m_scope;
     QList<QSvgStructureNode*> m_linkedScopes;
-    mutable QRectF m_bounds;
 };
 
 class QSvgG : public QSvgStructureNode

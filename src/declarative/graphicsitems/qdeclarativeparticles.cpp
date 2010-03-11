@@ -758,10 +758,12 @@ void QDeclarativeParticles::setSource(const QUrl &name)
 
     The particles element emits particles until it has count active
     particles. When this number is reached, new particles are not emitted until
-    some of the current particles reach theend of their lifespan.
+    some of the current particles reach the end of their lifespan.
 
     If count is -1 then there is no maximum number of active particles, and
     particles will be constantly emitted at the rate specified by emissionRate.
+
+    The default value for count is 1.
 
     If both count and emissionRate are set to -1, nothing will be emitted.
 
@@ -1219,7 +1221,7 @@ void QDeclarativeParticles::burst(int count, int emissionRate)
 
 void QDeclarativeParticlesPainter::updateSize()
 {
-    if (!isComponentComplete())
+    if (!d->_componentComplete)
         return;
 
     const int parentX = parentItem()->x();
@@ -1260,7 +1262,11 @@ void QDeclarativeParticlesPainter::paint(QPainter *p, const QStyleOptionGraphics
     const int myX = x() + parentItem()->x();
     const int myY = y() + parentItem()->y();
 
-    QVarLengthArray<QPainter::Fragment, 256> pixmapData;
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
+    QVarLengthArray<QPainter::PixmapFragment, 256> pixmapData;
+#else
+    QVarLengthArray<QDrawPixmaps::Data, 256> pixmapData;
+#endif
     pixmapData.resize(d->particles.count());
 
     const QRectF sourceRect = d->image.rect();
@@ -1268,27 +1274,39 @@ void QDeclarativeParticlesPainter::paint(QPainter *p, const QStyleOptionGraphics
     qreal halfPHeight = sourceRect.height()/2.;
     for (int i = 0; i < d->particles.count(); ++i) {
         const QDeclarativeParticle &particle = d->particles.at(i);
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
         pixmapData[i].x = particle.x - myX + halfPWidth;
         pixmapData[i].y = particle.y - myY + halfPHeight;
+#else
+         pixmapData[i].point = QPointF(particle.x - myX + halfPWidth, particle.y - myY + halfPHeight);
+#endif
         pixmapData[i].opacity = particle.opacity;
 
         //these never change
         pixmapData[i].rotation = 0;
         pixmapData[i].scaleX = 1;
         pixmapData[i].scaleY = 1;
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
         pixmapData[i].sourceLeft = sourceRect.left();
         pixmapData[i].sourceTop = sourceRect.top();
         pixmapData[i].width = sourceRect.width();
         pixmapData[i].height = sourceRect.height();
+#else
+        pixmapData[i].source = sourceRect;
+#endif
     }
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
     p->drawPixmapFragments(pixmapData.data(), d->particles.count(), d->image);
+#else
+    qDrawPixmaps(p, pixmapData.data(), d->particles.count(), d->image);
+#endif
 }
 
 void QDeclarativeParticles::componentComplete()
 {
     Q_D(QDeclarativeParticles);
     QDeclarativeItem::componentComplete();
-    if (d->count) {
+    if (d->count && d->emissionRate) {
         d->paintItem->updateSize();
         d->clock.start();
     }

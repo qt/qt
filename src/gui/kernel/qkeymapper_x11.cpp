@@ -1073,8 +1073,8 @@ static const unsigned int KeyTbl[] = {
     XF86XK_AudioNext,           Qt::Key_MediaNext,
     XF86XK_AudioRecord,         Qt::Key_MediaRecord,
     XF86XK_Mail,                Qt::Key_LaunchMail,
-    XF86XK_MyComputer,          Qt::Key_Launch0,
-    XF86XK_Calculator,          Qt::Key_Calculator,
+    XF86XK_MyComputer,          Qt::Key_Launch0,  // ### Qt 5: remap properly
+    XF86XK_Calculator,          Qt::Key_Launch1,
     XF86XK_Memo,                Qt::Key_Memo,
     XF86XK_ToDoList,            Qt::Key_ToDoList,
     XF86XK_Calendar,            Qt::Key_Calendar,
@@ -1172,7 +1172,7 @@ static const unsigned int KeyTbl[] = {
     XF86XK_Bluetooth,           Qt::Key_Bluetooth,
     XF86XK_Suspend,             Qt::Key_Suspend,
     XF86XK_Hibernate,           Qt::Key_Hibernate,
-    XF86XK_Launch0,             Qt::Key_Launch2,
+    XF86XK_Launch0,             Qt::Key_Launch2, // ### Qt 5: remap properly
     XF86XK_Launch1,             Qt::Key_Launch3,
     XF86XK_Launch2,             Qt::Key_Launch4,
     XF86XK_Launch3,             Qt::Key_Launch5,
@@ -1186,6 +1186,8 @@ static const unsigned int KeyTbl[] = {
     XF86XK_LaunchB,             Qt::Key_LaunchD,
     XF86XK_LaunchC,             Qt::Key_LaunchE,
     XF86XK_LaunchD,             Qt::Key_LaunchF,
+    XF86XK_LaunchE,             Qt::Key_LaunchG,
+    XF86XK_LaunchF,             Qt::Key_LaunchH,
 
     // Qtopia keys
     QTOPIAXK_Select,            Qt::Key_Select,

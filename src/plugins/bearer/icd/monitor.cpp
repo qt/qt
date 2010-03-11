@@ -47,32 +47,12 @@
 #include <maemo_icd.h>
 #include <iapconf.h>
 
-#define IAP "/system/osso/connectivity/IAP"
-
-static int iap_prefix_len;
-
-/* Notify func that is called when IAP is added or deleted */
-void notify_iap(GConfClient *, guint, GConfEntry *entry, gpointer user_data)
-{
-    const char *key = gconf_entry_get_key(entry);
-    if (key && g_str_has_prefix(key, IAP)) {
-    IapMonitor *ptr = (IapMonitor *)user_data;
-    if (gconf_entry_get_value(entry)) {
-        ptr->iapAdded(key, entry);
-    } else {
-        ptr->iapDeleted(key, entry);
-    }
-    }
-}
-
 
 void IapMonitor::setup(QIcdEngine *d_ptr)
 {
     if (first_call) {
-    d = d_ptr;
-    iap_prefix_len = strlen(IAP);
-    iap = new Maemo::IAPMonitor(notify_iap, (gpointer)this);
-    first_call = false;
+        d = d_ptr;
+        first_call = false;
     }
 }
 
@@ -80,37 +60,25 @@ void IapMonitor::setup(QIcdEngine *d_ptr)
 void IapMonitor::cleanup()
 {
     if (!first_call) {
-    delete iap;
-    timers.removeAll();
-    first_call = true;
+        timers.removeAll();
+        first_call = true;
     }
 }
 
 
-void IapMonitor::iapAdded(const char *key, GConfEntry * /*entry*/)
+void IapMonitor::iapAdded(const QString &iap_id)
 {
-    //qDebug("Notify called for added element: %s=%s",
-    //       gconf_entry_get_key(entry), gconf_value_to_string(gconf_entry_get_value(entry)));
-
-    /* We cannot know when the IAP is fully added to gconf, so a timer is
+    /* We cannot know when the IAP is fully added to db, so a timer is
      * installed instead. When the timer expires we hope that IAP is added ok.
      */
-    QString iap_id = QString(key + iap_prefix_len + 1).section('/',0,0);
-    timers.add(iap_id, d);
+    QString id = iap_id;
+    timers.add(id, d);
 }
 
 
-void IapMonitor::iapDeleted(const char *key, GConfEntry * /*entry*/)
+void IapMonitor::iapRemoved(const QString &iap_id)
 {
-    //qDebug("Notify called for deleted element: %s", gconf_entry_get_key(entry));
-
-    /* We are only interested in IAP deletions so we skip the config entries
-     */
-    if (strstr(key + iap_prefix_len + 1, "/")) {
-    //qDebug("Deleting IAP config %s", key+iap_prefix_len);
-    return;
-    }
-
-    QString iap_id = key + iap_prefix_len + 1;
-    d->deleteConfiguration(iap_id);
+    QString id = iap_id;
+    d->deleteConfiguration(id);
 }
+

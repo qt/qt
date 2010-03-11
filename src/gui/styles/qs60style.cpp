@@ -759,13 +759,29 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     QApplication::setPalette(widgetPalette, "QMenuBar");
     widgetPalette = *palette;
 
+    widgetPalette.setColor(QPalette::Text,
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 22, 0));
+    widgetPalette.setColor(QPalette::HighlightedText,
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 11, 0));
+    QApplication::setPalette(widgetPalette, "QMenu");
+    widgetPalette = *palette;
+
     widgetPalette.setColor(QPalette::WindowText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 4, 0));
+    widgetPalette.setColor(QPalette::HighlightedText,
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 3, 0));
     QApplication::setPalette(widgetPalette, "QTabBar");
+    widgetPalette = *palette;
+
+    widgetPalette.setColor(QPalette::HighlightedText,
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 10, 0));
+    QApplication::setPalette(widgetPalette, "QListView");
     widgetPalette = *palette;
 
     widgetPalette.setColor(QPalette::Text,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 22, 0));
+    widgetPalette.setColor(QPalette::HighlightedText,
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 11, 0));
     QApplication::setPalette(widgetPalette, "QTableView");
     widgetPalette = *palette;
 
@@ -789,6 +805,8 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     widgetPalette = *palette;
 
     widgetPalette.setColor(QPalette::WindowText, s60Color(QS60StyleEnums::CL_QsnTextColors, 7, 0));
+    widgetPalette.setColor(QPalette::HighlightedText,
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 11, 0));
     QApplication::setPalette(widgetPalette, "QRadioButton");
     QApplication::setPalette(widgetPalette, "QCheckBox");
     widgetPalette = *palette;
@@ -1241,6 +1259,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         case CE_RadioButton:
             if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
                 bool isRadio = (element == CE_RadioButton);
+                QStyleOptionButton subopt = *btn;
+
                 // Highlight needs to be drawn first, as it goes "underneath" the text and indicator.
                 if (btn->state & State_HasFocus) {
                     QStyleOptionFocusRect fropt;
@@ -1248,8 +1268,10 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     fropt.rect = subElementRect(isRadio ? SE_RadioButtonFocusRect
                                                         : SE_CheckBoxFocusRect, btn, widget);
                     drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+
+                    subopt.palette.setColor(QPalette::Active, QPalette::WindowText,
+                        subopt.palette.highlightedText().color());
                 }
-                QStyleOptionButton subopt = *btn;
 
                 subopt.rect = subElementRect(isRadio ? SE_RadioButtonIndicator
                                                      : SE_CheckBoxIndicator, btn, widget);
@@ -1408,7 +1430,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             } else { QCommonStyle::drawPrimitive(PE_PanelItemViewItem, &voptAdj, painter, widget);}
 
             // draw the focus rect
-            if (isSelected | hasFocus) {
+            if (isSelected || hasFocus ) {
                 QRect highlightRect = option->rect.adjusted(1,1,-1,-1);
                 QAbstractItemView::SelectionBehavior selectionBehavior =
                     itemView ? itemView->selectionBehavior() : QAbstractItemView::SelectItems;
@@ -1480,15 +1502,10 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
              // draw the text
             if (!voptAdj.text.isEmpty()) {
-                if (isSelected) {
-                    if (qobject_cast<const QTableView *>(widget))
-                        voptAdj.palette.setColor(
-                            QPalette::Text, QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 11, 0));
-                    else
-                        voptAdj.palette.setColor(
-                            QPalette::Text, QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 10, 0));
-                }
-                painter->setPen(voptAdj.palette.text().color());
+                if (isSelected || hasFocus )
+                    painter->setPen(voptAdj.palette.highlightedText().color());
+                else
+                    painter->setPen(voptAdj.palette.text().color());
                 d->viewItemDrawText(painter, &voptAdj, textRect);
             }
             painter->restore();
@@ -1590,7 +1607,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             const bool selected = optionTab.state & State_Selected;
             if (selected)
                 optionTab.palette.setColor(QPalette::Active, QPalette::WindowText,
-                    QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 3, option));
+                    optionTab.palette.highlightedText().color());
 
             const bool verticalTabs = optionTab.shape == QTabBar::RoundedEast
                                 || optionTab.shape == QTabBar::RoundedWest
@@ -1723,7 +1740,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             if (!styleHint(SH_UnderlineShortcut, menuItem, widget))
                 text_flags |= Qt::TextHideMnemonic;
 
-            if ((option->state & State_Selected) && (option->state & State_Enabled))
+            const bool selected = (option->state & State_Selected) && (option->state & State_Enabled);
+            if (selected)
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
 
             QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &optionMenuItem, widget);
@@ -1793,6 +1811,10 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 painter->save();
                 painter->setOpacity(0.5);
             }
+            if (selected)
+                optionMenuItem.palette.setColor(
+                    QPalette::Active, QPalette::Text, optionMenuItem.palette.highlightedText().color());
+
             QCommonStyle::drawItemText(painter, textRect, text_flags,
                     optionMenuItem.palette, enabled,
                     optionMenuItem.text, QPalette::Text);

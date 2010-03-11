@@ -76,6 +76,8 @@ AudioInfo::AudioInfo(const QAudioFormat &format, QObject *parent)
         case QAudioFormat::SignedInt:
             m_maxAmplitude = 127;
             break;
+        default:
+            break;
         }
         break;
     case 16:
@@ -86,7 +88,11 @@ AudioInfo::AudioInfo(const QAudioFormat &format, QObject *parent)
         case QAudioFormat::SignedInt:
             m_maxAmplitude = 32767;
             break;
+        default:
+            break;
         }
+        break;
+    default:
         break;
     }
 }

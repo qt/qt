@@ -299,7 +299,9 @@ public:
         MacWindowToolBarButtonHint = 0x10000000,
         BypassGraphicsProxyWidget = 0x20000000,
         WindowOkButtonHint = 0x00080000,
-        WindowCancelButtonHint = 0x00100000
+        WindowCancelButtonHint = 0x00100000,
+        WindowSoftkeysVisibleHint = 0x40000000,
+        WindowSoftkeysRespondHint = 0x80000000
 
 #ifdef QT3_SUPPORT
         ,
@@ -500,6 +502,14 @@ public:
         WA_MergeSoftkeys =  124,
         WA_MergeSoftkeysRecursively =  125,
 
+#if 0 // these values are reserved for Maemo5 - do not re-use them
+        WA_Maemo5NonComposited = 126,
+        WA_Maemo5StackedWindow = 127,
+        WA_Maemo5PortraitOrientation = 128,
+        WA_Maemo5LandscapeOrientation = 129,
+        WA_Maemo5AutoOrientation = 130,
+        WA_Maemo5ShowProgressIndicator = 131,
+#endif
         // Add new attributes before this line
         WA_AttributeCount
     };
@@ -1048,6 +1058,9 @@ public:
         Key_PowerDown = 0x0100010b,
         Key_Suspend = 0x0100010c,
         Key_ContrastAdjust = 0x0100010d,
+
+        Key_LaunchG  = 0x0100010e,
+        Key_LaunchH  = 0x0100010f,
 
         Key_MediaLast = 0x0100ffff,
 

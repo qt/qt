@@ -43,7 +43,7 @@
 
 #include "qnmdbushelper.h"
 
-#include <NetworkManager/NetworkManager.h>
+#include "qnetworkmanagerservice.h"
 
 #include <QDBusError>
 #include <QDBusInterface>
@@ -53,6 +53,15 @@
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
+
+QNmDBusHelper::QNmDBusHelper(QObject * parent)
+        : QObject(parent)
+{
+}
+
+QNmDBusHelper::~QNmDBusHelper()
+{
+}
 
 void QNmDBusHelper::deviceStateChanged(quint32 state)
  {

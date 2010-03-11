@@ -40,3 +40,5 @@
 ****************************************************************************/
 
 #include "../linux-g++/qplatformdefs.h"
+
+#define QT_GUI_DOUBLE_CLICK_RADIUS 20

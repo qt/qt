@@ -82,7 +82,8 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 #endif
     } else {
         QEglProperties configProps;
-        qt_egl_set_format(configProps, QInternal::Pbuffer, f);
+        qt_eglproperties_set_glformat(configProps, f);
+        configProps.setDeviceType(QInternal::Pbuffer);
         configProps.setRenderableType(ctx->api());
         bool ok = false;
 #if QGL_RENDER_TEXTURE
@@ -112,7 +113,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
     }
 
     // Retrieve the actual format properties.
-    qt_egl_update_format(*ctx, format);
+    qt_glformat_from_eglconfig(format, ctx->config());
 
     // Create the attributes needed for the pbuffer.
     QEglProperties attribs;
@@ -137,7 +138,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
     }
 #endif
     if (pbuf == EGL_NO_SURFACE) {
-        qWarning() << "QGLPixelBufferPrivate::init(): Unable to create EGL pbuffer surface:" << QEglContext::errorString(eglGetError());
+        qWarning() << "QGLPixelBufferPrivate::init(): Unable to create EGL pbuffer surface:" << QEgl::errorString();
         return false;
     }
 
@@ -204,11 +205,12 @@ GLuint QGLPixelBuffer::generateDynamicTexture() const
 bool QGLPixelBuffer::hasOpenGLPbuffers()
 {
     // See if we have at least 1 configuration that matches the default format.
-    EGLDisplay dpy = QEglContext::display();
+    EGLDisplay dpy = QEgl::display();
     if (dpy == EGL_NO_DISPLAY)
         return false;
     QEglProperties configProps;
-    qt_egl_set_format(configProps, QInternal::Pbuffer, QGLFormat::defaultFormat());
+    qt_eglproperties_set_glformat(configProps, QGLFormat::defaultFormat());
+    configProps.setDeviceType(QInternal::Pbuffer);
     configProps.setRenderableType(QEgl::OpenGL);
     do {
         EGLConfig cfg = 0;

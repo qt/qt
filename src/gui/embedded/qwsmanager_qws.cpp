@@ -267,8 +267,10 @@ void QWSManager::mouseMoveEvent(QMouseEvent *e)
 
 
 #ifndef QT_NO_CURSOR
-    QWSDisplay *qwsd = QApplication::desktop()->qwsDisplay();
-    qwsd->selectCursor(d->managed, regionToShape(d->cachedRegionAt()));
+    if (d->managed->minimumSize() != d->managed->maximumSize()) {
+        QWSDisplay *qwsd = QApplication::desktop()->qwsDisplay();
+        qwsd->selectCursor(d->managed, regionToShape(d->cachedRegionAt()));
+    }
 #endif //QT_NO_CURSOR
 
     if (d->activeRegion)

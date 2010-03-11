@@ -61,9 +61,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-
-
 typedef QPair<int, int> QDeclarativeXmlListRange;
 
 /*!
@@ -114,9 +111,6 @@ class QDeclarativeXmlQuery : public QThread
 {
     Q_OBJECT
 public:
-    QDeclarativeXmlQuery(QObject *parent=0)
-        : QThread(parent), m_quit(false), m_restart(false), m_abort(false), m_queryId(0) {
-    }
     ~QDeclarativeXmlQuery() {
         m_mutex.lock();
         m_quit = true;
@@ -124,6 +118,11 @@ public:
         m_mutex.unlock();
 
         wait();
+    }
+
+    static QDeclarativeXmlQuery *instance() {
+        static QDeclarativeXmlQuery *query = new QDeclarativeXmlQuery;
+        return query;
     }
 
     void abort() {
@@ -162,6 +161,11 @@ public:
     QList<QDeclarativeXmlListRange> removedItemRanges() {
         QMutexLocker locker(&m_mutex);
         return m_removedItemRanges;
+    }
+
+private:
+    QDeclarativeXmlQuery(QObject *parent=0)
+        : QThread(parent), m_quit(false), m_restart(false), m_abort(false), m_queryId(0) {
     }
 
 Q_SIGNALS:
@@ -212,6 +216,8 @@ private:
     QList<QDeclarativeXmlListRange> m_insertedItemRanges;
     QList<QDeclarativeXmlListRange> m_removedItemRanges;
 };
+
+//Q_GLOBAL_STATIC(QDeclarativeXmlQuery, QDeclarativeXmlQuery::instance());
 
 void QDeclarativeXmlQuery::doQueryJob()
 {
@@ -404,7 +410,6 @@ public:
     QNetworkReply *reply;
     QDeclarativeXmlListModel::Status status;
     qreal progress;
-    QDeclarativeXmlQuery qmlXmlQuery;
     int queryId;
     QList<QDeclarativeXmlListModelRole *> roleObjects;
     static void append_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, QDeclarativeXmlListModelRole *role);
@@ -488,8 +493,7 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
 QDeclarativeXmlListModel::QDeclarativeXmlListModel(QObject *parent)
     : QListModelInterface(*(new QDeclarativeXmlListModelPrivate), parent)
 {
-    Q_D(QDeclarativeXmlListModel);
-    connect(&d->qmlXmlQuery, SIGNAL(queryCompleted(int,int)),
+    connect(QDeclarativeXmlQuery::instance(), SIGNAL(queryCompleted(int,int)),
             this, SLOT(queryCompleted(int,int)));
 }
 
@@ -571,9 +575,10 @@ void QDeclarativeXmlListModel::setSource(const QUrl &src)
 {
     Q_D(QDeclarativeXmlListModel);
     if (d->src != src) {
-        d->src = src;
         reload();
-    }
+        d->src = src;
+        emit sourceChanged();
+   }
 }
 
 /*!
@@ -593,8 +598,11 @@ QString QDeclarativeXmlListModel::xml() const
 void QDeclarativeXmlListModel::setXml(const QString &xml)
 {
     Q_D(QDeclarativeXmlListModel);
-    d->xml = xml;
-    reload();
+    if (d->xml != xml) {
+        d->xml = xml;
+        reload();
+        emit xmlChanged();
+    }
 }
 
 /*!
@@ -619,6 +627,7 @@ void QDeclarativeXmlListModel::setQuery(const QString &query)
     if (d->query != query) {
         d->query = query;
         reload();
+        emit queryChanged();
     }
 }
 
@@ -638,6 +647,7 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
     if (d->namespaces != declarations) {
         d->namespaces = declarations;
         reload();
+        emit namespaceDeclarationsChanged();
     }
 }
 
@@ -647,9 +657,19 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
     This property holds the status of data source loading.  It can be one of:
     \list
     \o Null - no data source has been set
-    \o Ready - nthe data source has been loaded
+    \o Ready - the data source has been loaded
     \o Loading - the data source is currently being loaded
     \o Error - an error occurred while loading the data source
+    \endlist
+
+    Note that a change in the status property does not cause anything to happen
+    (although it reflects what has happened to the XmlListModel internally). If you wish
+    to react to the change in status you need to do it yourself, for example in one
+    of the following ways:
+    \list
+    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: xmlListModel.status = XmlListModel.Ready;}
+    \o Do something inside the onStatusChanged signal handler, e.g. XmlListModel{id: xmlListModel; onStatusChanged: if(xmlListModel.status == XmlListModel.Ready) console.log('Loaded');}
+    \o Bind to the status variable somewhere, e.g. Text{text: if(xmlListModel.status!=XmlListModel.Ready){'Not Loaded';}else{'Loaded';}}
     \endlist
 
     \sa progress
@@ -706,7 +726,7 @@ void QDeclarativeXmlListModel::reload()
     if (!d->isComponentComplete)
         return;
 
-    d->qmlXmlQuery.abort();
+    QDeclarativeXmlQuery::instance()->abort();
     d->queryId = -1;
 
     int count = d->size;
@@ -738,7 +758,7 @@ void QDeclarativeXmlListModel::reload()
     }
 
     if (!d->xml.isEmpty()) {
-        d->queryId = d->qmlXmlQuery.doQuery(d->query, d->namespaces, d->xml.toUtf8(), &d->roleObjects);
+        d->queryId = QDeclarativeXmlQuery::instance()->doQuery(d->query, d->namespaces, d->xml.toUtf8(), &d->roleObjects);
         d->progress = 1.0;
         d->status = Ready;
         emit progressChanged(d->progress);
@@ -769,7 +789,7 @@ void QDeclarativeXmlListModel::requestFinished()
     } else {
         d->status = Ready;
         QByteArray data = d->reply->readAll();
-        d->queryId = d->qmlXmlQuery.doQuery(d->query, d->namespaces, data, &d->roleObjects);
+        d->queryId = QDeclarativeXmlQuery::instance()->doQuery(d->query, d->namespaces, data, &d->roleObjects);
         disconnect(d->reply, 0, this, 0);
         d->reply->deleteLater();
         d->reply = 0;
@@ -795,10 +815,10 @@ void QDeclarativeXmlListModel::queryCompleted(int id, int size)
         return;
     bool sizeChanged = size != d->size;
     d->size = size;
-    d->data = d->qmlXmlQuery.modelData();
+    d->data = QDeclarativeXmlQuery::instance()->modelData();
 
-    QList<QDeclarativeXmlListRange> removed = d->qmlXmlQuery.removedItemRanges();
-    QList<QDeclarativeXmlListRange> inserted = d->qmlXmlQuery.insertedItemRanges();
+    QList<QDeclarativeXmlListRange> removed = QDeclarativeXmlQuery::instance()->removedItemRanges();
+    QList<QDeclarativeXmlListRange> inserted = QDeclarativeXmlQuery::instance()->insertedItemRanges();
 
     for (int i=0; i<removed.count(); i++)
         emit itemsRemoved(removed[i].first, removed[i].second);

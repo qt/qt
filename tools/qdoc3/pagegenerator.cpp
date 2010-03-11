@@ -43,7 +43,6 @@
   pagegenerator.cpp
 */
 
-#include <QtCore>
 #include <qfile.h>
 #include <qfileinfo.h>
 
@@ -212,7 +211,7 @@ void PageGenerator::generateInnerNode(const InnerNode *node,
 #endif            
         if (fakeNode->subType() == Node::Page) {
             if (node->count() > 0)
-                qDebug() << "PAGE" << fakeNode->title() << "HAS CHILDREN";
+                qDebug("PAGE %s HAS CHILDREN", qPrintable(fakeNode->title()));
         }
     }
 

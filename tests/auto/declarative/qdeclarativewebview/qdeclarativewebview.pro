@@ -3,8 +3,7 @@ contains(QT_CONFIG,declarative): QT += declarative
 contains(QT_CONFIG,webkit): QT += webkit
 macx:CONFIG -= app_bundle
 
-SOURCES += tst_qdeclarativewebview.cpp testtypes.cpp
-HEADERS += testtypes.h
+SOURCES += tst_qdeclarativewebview.cpp
 
 # Define SRCDIR equal to test's source directory
 DEFINES += SRCDIR=\\\"$$PWD\\\"

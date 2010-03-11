@@ -814,6 +814,7 @@ OPT_HELP=
 CFG_SILENT=no
 CFG_GRAPHICS_SYSTEM=default
 CFG_ALSA=auto
+CFG_PULSEAUDIO=auto
 CFG_NETWORKMANAGER=auto
 CFG_COREWLAN=auto
 
@@ -3034,7 +3035,7 @@ else
 fi
 
 QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_CXX[^_A-Z0-9]" | sed "s,.* *= *\(.*\)$,\1," | tail -1`
-TEST_COMPILER="$CC"
+TEST_COMPILER="$CXX"
 [ -z "$TEST_COMPILER" ] && TEST_COMPILER=$QMAKE_CONF_COMPILER
 if [ -z "$TEST_COMPILER" ]; then
     echo "ERROR: Cannot set the compiler for the configuration tests"
@@ -4385,7 +4386,7 @@ if [ -n "$PERL" ] && [ -x "$relpath/bin/syncqt" ]; then
     [ "$CFG_DEV" = "yes" ] && SYNCQT_OPTS="$SYNCQT_OPTS -check-includes"
     if [ "$OPT_SHADOW" = "yes" ]; then
         "$outpath/bin/syncqt" $SYNCQT_OPTS
-    elif [ "$CFG_DEV" = "yes" ] || [ ! -d $relpath/include ]; then
+    elif [ "$CFG_DEV" = "yes" ] || [ ! -d $relpath/include ] || [ -d $relpath/.git ]; then
         QTDIR="$relpath" perl "$outpath/bin/syncqt" $SYNCQT_OPTS
     fi
 fi
@@ -5548,7 +5549,7 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     fi
 
     if [ "$CFG_COREWLAN" = "auto" ]; then
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/corewlan "CoreWlan" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/corewlan "CoreWlan" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
             CFG_COREWLAN=yes
         else
             CFG_COREWLAN=no
@@ -6008,24 +6009,19 @@ if [ "$CFG_ALSA" = "auto" ]; then
     fi
 fi
 
+if [ "$CFG_PULSEAUDIO" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/pulseaudio "pulseaudio" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        CFG_PULSEAUDIO=yes
+    else
+        CFG_PULSEAUDIO=no
+    fi
+fi
+
 if [ "$CFG_NETWORKMANAGER" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/networkmanager "NetworkManager" $L_FLAGS $I_FLAGS $l_FLAGS; then
         CFG_NETWORKMANAGER=yes
     else
         CFG_NETWORKMANAGER=no
-    fi
-fi
-
-if [ -f "$relpath/src/declarative/declarative.pro" ]; then
-    if [ "$CFG_DECLARATIVE" = "auto" ]; then
-        CFG_DECLARATIVE=yes
-    fi
-else
-    if [ "$CFG_DECLARATIVE" = "auto" ] || [ "$CFG_DECLARATIVE" = "no" ]; then
-        CFG_DECLARATIVE=no
-    else
-        echo "Error: Unable to locate the qt-declarative package. Refer to the documentation on how to build the package."
-        exit 1
     fi
 fi
 
@@ -6137,6 +6133,15 @@ fi
 if [ "$PLATFORM_MAC" = "yes" ]; then
     VERSION=`uname -r | tr '.' ' ' | awk '{print $1}'`
     if [ "$VERSION" == 8 ]; then
+        CFG_MAC_COCOA="no";
+        CFG_MAC_CARBON="yes";
+    fi
+fi
+
+# select Carbon when using the 10.4u SDK
+if [ "$PLATFORM_MAC" = "yes" ]; then
+    if [ "TEST$CFG_SDK" = "TEST/Developer/SDKs/MacOSX10.4u.sdk/" ]; then
+        echo "Carbon on";
         CFG_MAC_COCOA="no";
         CFG_MAC_CARBON="yes";
     fi
@@ -6384,7 +6389,7 @@ else
     QT_CONFIG="$QT_CONFIG freetype"
 fi
 
-if [ "x$PLATFORM_MAC" = "xyes" ]; then
+if [ "x$PLATFORM_MAC" = "xyes" ] && [ "$XPLATFORM" != "win32-g++" ]; then
     #On Mac we implicitly link against libz, so we
     #never use the 3rdparty stuff.
     [ "$CFG_ZLIB" = "yes" ] && CFG_ZLIB="system"
@@ -6518,6 +6523,10 @@ fi
 
 if [ "$CFG_ALSA" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG alsa"
+fi
+
+if [ "$CFG_PULSEAUDIO" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG pulseaudio"
 fi
 
 if [ "$CFG_NETWORKMANAGER" = "yes" ]; then
@@ -6688,12 +6697,6 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SVG"
 fi
 
-if [ "$CFG_DECLARATIVE" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG declarative"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DECLARATIVE"
-fi
-
 if [ "$CFG_WEBKIT" = "auto" ]; then
     CFG_WEBKIT="$canBuildWebKit"
 fi
@@ -6731,6 +6734,27 @@ if [ "$CFG_SCRIPTTOOLS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG scripttools"
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPTTOOLS"
+fi
+
+
+if [ "$CFG_DECLARATIVE" = "yes" ]; then
+    if [ "$CFG_SCRIPT" = "no" ]; then
+        echo "Error: QtDeclarative was requested, but it can't be built due to QtScript being disabled."
+        exit 1
+    fi
+fi
+if [ "$CFG_DECLARATIVE" = "auto" ]; then
+    if [ "$CFG_SCRIPT" = "no" ]; then
+            CFG_DECLARATIVE=no
+    else
+            CFG_DECLARATIVE=yes
+    fi
+fi
+
+if [ "$CFG_DECLARATIVE" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG declarative"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DECLARATIVE"
 fi
 
 if [ "$CFG_EXCEPTIONS" = "no" ]; then
@@ -7240,6 +7264,7 @@ fi
 [ "$CFG_XRANDR" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XRANDR"
 [ "$CFG_XINPUT" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINPUT"
 [ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
+[ "$CFG_PULSEAUDIO" = "no" ]          && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_PULSEAUDIO"
 [ "$CFG_NETWORKMANAGER" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NETWORKMANAGER"
 [ "$CFG_COREWLAN" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_COREWLAN"
 
@@ -7743,6 +7768,7 @@ elif [ "$CFG_OPENSSL" = "linked" ]; then
 fi
 echo "OpenSSL support ........ $CFG_OPENSSL $OPENSSL_LINKAGE"
 echo "Alsa support ........... $CFG_ALSA"
+echo "Pulse Audio support .... $CFG_PULSEAUDIO"
 echo "NetworkManager support . $CFG_NETWORKMANAGER"
 if [ "$PLATFORM_MAC" = "yes" ]; then
     echo "CoreWlan support ....... $CFG_COREWLAN"

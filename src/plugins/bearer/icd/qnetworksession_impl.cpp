@@ -49,6 +49,7 @@
 
 #include <maemo_icd.h>
 #include <iapconf.h>
+#include <proxyconf.h>
 
 #include <sys/types.h>
 #include <ifaddrs.h>
@@ -139,7 +140,9 @@ static DBusHandlerResult signal_handler(DBusConnection *,
 				    DBUS_TYPE_STRING, &network_type,
 				    DBUS_TYPE_STRING, &state,
 				    DBUS_TYPE_INVALID) == FALSE) {
-	    qWarning() << QString("Failed to parse icd status signal: %1").arg(error.message);
+#ifdef BEARER_MANAGEMENT_DEBUG
+        qDebug() << QString("Failed to parse icd status signal: %1").arg(error.message);
+#endif
         } else {
 	    QString _iap_id(iap_id);
 	    QString _network_type(network_type);
@@ -165,7 +168,6 @@ void IcdListener::setup(QNetworkSessionPrivateImpl *d)
 
 	dbus_connection = get_dbus_conn(&error);
 	if (dbus_error_is_set(&error)) {
-	    qWarning() << "Cannot get dbus connection.";
 	    dbus_error_free(&error);
 	    return;
 	}
@@ -175,7 +177,6 @@ void IcdListener::setup(QNetworkSessionPrivateImpl *d)
 
 	dbus_bus_add_match(dbus_connection, ICD_DBUS_MATCH, &error);
 	if (dbus_error_is_set(&error)) {
-	    qWarning() << "Cannot add match" << ICD_DBUS_MATCH;
 	    dbus_error_free(&error);
 	    return;
 	}
@@ -184,7 +185,6 @@ void IcdListener::setup(QNetworkSessionPrivateImpl *d)
 						    ICD_DBUS_PATH,
 						    &icd_vtable,
 						    (void*)this) == FALSE) {
-	    qWarning() << "Cannot register dbus signal handler, interface"<< ICD_DBUS_INTERFACE << "path" << ICD_DBUS_PATH;
 	    dbus_error_free(&error);
 	    return;
 	}
@@ -299,6 +299,8 @@ void IcdListener::cleanupSession(QNetworkSessionPrivateImpl *ptr)
 void QNetworkSessionPrivateImpl::cleanupSession(void)
 {
     icdListener()->cleanupSession(this);
+
+    QObject::disconnect(q, SIGNAL(stateChanged(QNetworkSession::State)), this, SLOT(updateProxies(QNetworkSession::State)));
 }
 
 
@@ -337,8 +339,6 @@ void QNetworkSessionPrivateImpl::updateIdentifier(QString &newId)
     } else {
     toIcdConfig(privateConfiguration(publicConfig))->network_attrs |= ICD_NW_ATTR_IAPNAME;
     if (privateConfiguration(publicConfig)->id != newId) {
-        qWarning() << "Your config id changed from" << privateConfiguration(publicConfig)->id
-                   << "to" << newId;
         privateConfiguration(publicConfig)->id = newId;
 	}
     }
@@ -450,6 +450,8 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
 
     connect(&manager, SIGNAL(configurationChanged(QNetworkConfiguration)),
             this, SLOT(configurationChanged(QNetworkConfiguration)));
+
+    QObject::connect(q, SIGNAL(stateChanged(QNetworkSession::State)), this, SLOT(updateProxies(QNetworkSession::State)));
 
     state = QNetworkSession::Invalid;
     lastError = QNetworkSession::UnknownSessionError;
@@ -867,7 +869,6 @@ void QNetworkSessionPrivateImpl::do_open()
 	    qDebug() << "connect to"<< iap << "failed, result is empty";
 #endif
 	    updateState(QNetworkSession::Disconnected);
-	    emit quitPendingWaitsForOpened();
         emit QNetworkSessionPrivate::error(QNetworkSession::InvalidConfigurationError);
 	    if (publicConfig.type() == QNetworkConfiguration::UserChoice)
 		cleanupAnyConfiguration();
@@ -882,7 +883,6 @@ void QNetworkSessionPrivateImpl::do_open()
 	if ((publicConfig.type() != QNetworkConfiguration::UserChoice) &&
 	    (connected_iap != config.identifier())) {
 	    updateState(QNetworkSession::Disconnected);
-	    emit quitPendingWaitsForOpened();
         emit QNetworkSessionPrivate::error(QNetworkSession::InvalidConfigurationError);
 	    return;
 	}
@@ -946,7 +946,6 @@ void QNetworkSessionPrivateImpl::do_open()
 	updateState(QNetworkSession::Disconnected);
 	if (publicConfig.type() == QNetworkConfiguration::UserChoice)
 	    cleanupAnyConfiguration();
-	emit quitPendingWaitsForOpened();
     emit QNetworkSessionPrivate::error(QNetworkSession::UnknownSessionError);
     }
 }
@@ -1013,25 +1012,21 @@ void QNetworkSessionPrivateImpl::stop()
 
 void QNetworkSessionPrivateImpl::migrate()
 {
-    qWarning("This platform does not support roaming (%s).", __FUNCTION__);
 }
 
 
 void QNetworkSessionPrivateImpl::accept()
 {
-    qWarning("This platform does not support roaming (%s).", __FUNCTION__);
 }
 
 
 void QNetworkSessionPrivateImpl::ignore()
 {
-    qWarning("This platform does not support roaming (%s).", __FUNCTION__);
 }
 
 
 void QNetworkSessionPrivateImpl::reject()
 {
-    qWarning("This platform does not support roaming (%s).", __FUNCTION__);
 }
 
 
@@ -1097,6 +1092,30 @@ QString QNetworkSessionPrivateImpl::errorString() const
 QNetworkSession::SessionError QNetworkSessionPrivateImpl::error() const
 {
     return QNetworkSession::UnknownSessionError;
+}
+
+void QNetworkSessionPrivateImpl::updateProxies(QNetworkSession::State newState)
+{
+    if ((newState == QNetworkSession::Connected) &&
+	(newState != currentState))
+	updateProxyInformation();
+    else if ((newState == QNetworkSession::Disconnected) &&
+	    (currentState == QNetworkSession::Closing))
+	clearProxyInformation();
+
+    currentState = newState;
+}
+
+
+void QNetworkSessionPrivateImpl::updateProxyInformation()
+{
+    Maemo::ProxyConf::update();
+}
+
+
+void QNetworkSessionPrivateImpl::clearProxyInformation()
+{
+    Maemo::ProxyConf::clear();
 }
 
 #include "qnetworksession_impl.moc"

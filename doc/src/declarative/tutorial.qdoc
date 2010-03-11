@@ -173,10 +173,10 @@ In this case the rectangle will have the same size as its parent (see \l{anchor-
 
 \snippet examples/declarative/tutorials/helloworld/Cell.qml 3
 
-In order to change the color of the text when clicking on a cell, we create a \l MouseRegion element with
+In order to change the color of the text when clicking on a cell, we create a \l MouseArea element with
 the same size as its parent.
 
-A \l MouseRegion defines a signal called \e clicked.
+A \l MouseArea defines a signal called \e clicked.
 When this signal is triggered we want to emit our own \e clicked signal with the color as parameter.
 
 \section2 The main QML file
@@ -214,7 +214,7 @@ Here is the QML code:
 \snippet examples/declarative/tutorials/helloworld/tutorial3.qml 2
 
 First, we create a new \e down state for our text element.
-This state will be activated when the \l MouseRegion is pressed, and deactivated when it is released.
+This state will be activated when the \l MouseArea is pressed, and deactivated when it is released.
 
 The \e down state includes a set of property changes from our implicit \e {default state}
 (the items as they were initially defined in the QML).

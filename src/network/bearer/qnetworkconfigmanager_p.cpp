@@ -55,7 +55,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QBearerEngineFactoryInterface_iid, QLatin1String("/bearer")))
 
 QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
-:   capFlags(0), mutex(QMutex::Recursive), firstUpdate(true)
+:   capFlags(0), mutex(QMutex::Recursive), pollTimer(0), forcedPolling(0), firstUpdate(true)
 {
     updateConfigurations();
 
@@ -82,7 +82,7 @@ void QNetworkConfigurationManagerPrivate::configurationAdded(QNetworkConfigurati
     }
 
     if (ptr->state == QNetworkConfiguration::Active) {
-        onlineConfigurations.insert(ptr);
+        onlineConfigurations.insert(ptr->id);
         if (!firstUpdate && onlineConfigurations.count() == 1)
             emit onlineStateChanged(true);
     }
@@ -100,7 +100,7 @@ void QNetworkConfigurationManagerPrivate::configurationRemoved(QNetworkConfigura
         emit configurationRemoved(item);
     }
 
-    onlineConfigurations.remove(ptr);
+    onlineConfigurations.remove(ptr->id);
     if (!firstUpdate && onlineConfigurations.isEmpty())
         emit onlineStateChanged(false);
 }
@@ -118,9 +118,9 @@ void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigura
     bool previous = !onlineConfigurations.isEmpty();
 
     if (ptr->state == QNetworkConfiguration::Active)
-        onlineConfigurations.insert(ptr);
+        onlineConfigurations.insert(ptr->id);
     else
-        onlineConfigurations.remove(ptr);
+        onlineConfigurations.remove(ptr->id);
 
     bool online = !onlineConfigurations.isEmpty();
 
@@ -133,6 +133,9 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
     QMutexLocker locker(&mutex);
 
     if (firstUpdate) {
+        if (sender())
+            return;
+
         updating = false;
 
         QFactoryLoader *l = loader();
@@ -161,6 +164,8 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                         this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
 
                 capFlags |= engine->capabilities();
+
+                engine->requestUpdate();
             }
         }
 
@@ -178,6 +183,15 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
     if (updating && updatingEngines.isEmpty()) {
         updating = false;
         emit configurationUpdateComplete();
+    }
+
+    if (engine && !pollingEngines.isEmpty()) {
+        int index = sessionEngines.indexOf(engine);
+        if (index >= 0)
+            pollingEngines.remove(index);
+
+        if (pollingEngines.isEmpty())
+            startPolling();
     }
 
     if (firstUpdate)
@@ -206,6 +220,72 @@ QList<QBearerEngine *> QNetworkConfigurationManagerPrivate::engines()
     QMutexLocker locker(&mutex);
 
     return sessionEngines;
+}
+
+void QNetworkConfigurationManagerPrivate::startPolling()
+{
+    QMutexLocker locker(&mutex);
+
+    bool pollingRequired = false;
+
+    if (forcedPolling > 0) {
+        foreach (QBearerEngine *engine, sessionEngines) {
+            if (engine->requiresPolling()) {
+                pollingRequired = true;
+                break;
+            }
+        }
+    }
+
+    if (!pollingRequired) {
+        foreach (QBearerEngine *engine, sessionEngines) {
+            if (engine->configurationsInUse()) {
+                pollingRequired = true;
+                break;
+            }
+        }
+    }
+
+    if (pollingRequired) {
+        if (!pollTimer) {
+            pollTimer = new QTimer(this);
+            pollTimer->setInterval(10000);
+            pollTimer->setSingleShot(true);
+            connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollEngines()));
+        }
+
+        pollTimer->start();
+    }
+}
+
+void QNetworkConfigurationManagerPrivate::pollEngines()
+{
+    QMutexLocker locker(&mutex);
+
+    for (int i = 0; i < sessionEngines.count(); ++i) {
+        if ((forcedPolling && sessionEngines.at(i)->requiresPolling()) ||
+            sessionEngines.at(i)->configurationsInUse()) {
+            pollingEngines.insert(i);
+            sessionEngines.at(i)->requestUpdate();
+        }
+    }
+}
+
+void QNetworkConfigurationManagerPrivate::enablePolling()
+{
+    QMutexLocker locker(&mutex);
+
+    ++forcedPolling;
+
+    if (forcedPolling == 1)
+        startPolling();
+}
+
+void QNetworkConfigurationManagerPrivate::disablePolling()
+{
+    QMutexLocker locker(&mutex);
+
+    --forcedPolling;
 }
 
 QT_END_NAMESPACE

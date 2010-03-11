@@ -169,6 +169,7 @@ public:
     QT_DEPRECATED int numColors() const;
 #endif
     int colorCount() const;
+    int bitPlaneCount() const;
 
     QRgb color(int i) const;
     void setColor(int i, QRgb c);

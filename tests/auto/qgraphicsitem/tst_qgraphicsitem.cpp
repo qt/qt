@@ -10045,7 +10045,6 @@ void tst_QGraphicsItem::QT_2649_focusScope()
     QCOMPARE(subFocusItem->focusScopeItem(), (QGraphicsItem *)0);
     QVERIFY(subFocusItem->hasFocus());
 
-    //If we hide the focusScope, the entire subFocus chain should be cleared
     scope->hide();
 
     QCOMPARE(rootItem->focusItem(), (QGraphicsItem *)0);
@@ -10056,6 +10055,18 @@ void tst_QGraphicsItem::QT_2649_focusScope()
     QCOMPARE(subFocusItem->focusScopeItem(), (QGraphicsItem *)0);
     QVERIFY(!subFocusItem->hasFocus());
 
+    scope->show();
+
+    QCOMPARE(rootItem->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(scope->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(subFocusItem->focusItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(rootItem->focusScopeItem(), (QGraphicsItem *)0);
+    QCOMPARE(scope->focusScopeItem(), (QGraphicsItem *)subFocusItem);
+    QCOMPARE(subFocusItem->focusScopeItem(), (QGraphicsItem *)0);
+    QVERIFY(subFocusItem->hasFocus());
+
+    // This should not crash
+    scope->hide();
     delete scene;
 }
 

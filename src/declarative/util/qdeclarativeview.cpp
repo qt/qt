@@ -51,6 +51,7 @@
 #include <qdeclarativedebug_p.h>
 #include <qdeclarativedebugservice_p.h>
 #include <qdeclarativeglobal_p.h>
+#include <qdeclarativeguard_p.h>
 
 #include <qscriptvalueiterator.h>
 #include <qdebug.h>
@@ -136,8 +137,8 @@ public:
 
     QDeclarativeView *q;
 
-    QGuard<QGraphicsObject> root;
-    QGuard<QDeclarativeItem> qmlRoot;
+    QDeclarativeGuard<QGraphicsObject> root;
+    QDeclarativeGuard<QDeclarativeItem> qmlRoot;
 
     QUrl source;
 
@@ -193,6 +194,7 @@ void QDeclarativeViewPrivate::execute()
     \o Initializes QGraphicsView for QML key handling:
         \list
         \o QGraphicsView::viewport()->setFocusPolicy(Qt::NoFocus);
+        \o QGraphicsView::setFocusPolicy(Qt::StrongFocus);
         \o QGraphicsScene::setStickyFocus(true);
         \endlist
     \endlist
@@ -219,7 +221,7 @@ void QDeclarativeViewPrivate::execute()
 */
 
 /*! \fn void QDeclarativeView::statusChanged(QDeclarativeView::Status status)
-    This signal is emitted when the component's current \l{QDeclarativeView::Status} {status} changes.
+    This signal is emitted when the component's current \a status changes.
 */
 
 /*!
@@ -267,6 +269,7 @@ void QDeclarativeViewPrivate::init()
     q->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     q->viewport()->setFocusPolicy(Qt::NoFocus);
+    q->setFocusPolicy(Qt::StrongFocus);
 
     scene.setStickyFocus(true);  //### needed for correct focus handling
 }
@@ -280,15 +283,22 @@ QDeclarativeView::~QDeclarativeView()
     delete d->root;
 }
 
+/*! \property QDeclarativeView::source
+  \brief The URL of the source of the QML component.
+
+  Changing this property causes the QML component to be reloaded.
+ */
+
 /*!
     Sets the source to the \a url, loads the QML component and instantiates it.
+
+    Calling this methods multiple times with the same url will result
+    in the QML being reloaded.
  */
 void QDeclarativeView::setSource(const QUrl& url)
 {
-    if (url != d->source) {
-        d->source = url;
-        d->execute();
-    }
+    d->source = url;
+    d->execute();
 }
 
 /*!
@@ -322,7 +332,6 @@ QDeclarativeContext* QDeclarativeView::rootContext()
     return d->engine.rootContext();
 }
 
-
 /*!
   \enum QDeclarativeView::Status
 
@@ -332,6 +341,14 @@ QDeclarativeContext* QDeclarativeView::rootContext()
     \value Ready This QDeclarativeView has loaded and created the QML component.
     \value Loading This QDeclarativeView is loading network data.
     \value Error An error has occured.  Calling errorDescription() to retrieve a description.
+*/
+
+/*! \enum QDeclarativeView::ResizeMode
+
+  This enum specifies how to resize the view.
+
+  \value SizeViewToRootObject
+  \value SizeRootObjectToView
 */
 
 /*!
@@ -372,8 +389,6 @@ QList<QDeclarativeError> QDeclarativeView::errors() const
     Regardless of this property, the sizeHint of the view
     is the initial size of the root item. Note though that
     since QML may load dynamically, that size may change.
-
-    \sa initialSize()
 */
 
 void QDeclarativeView::setResizeMode(ResizeMode mode)

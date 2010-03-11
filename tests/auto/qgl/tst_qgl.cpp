@@ -227,12 +227,12 @@ void tst_QGL::getSetCheck()
     QCOMPARE(false, obj1.alpha());
     QVERIFY(!obj1.testOption(QGL::AlphaChannel));
     QVERIFY(obj1.testOption(QGL::NoAlphaChannel));
-    obj1.setAlphaBufferSize(0);
+    obj1.setAlphaBufferSize(1);
     QCOMPARE(true, obj1.alpha());   // setAlphaBufferSize() enables alpha.
-    QCOMPARE(0, obj1.alphaBufferSize());
+    QCOMPARE(1, obj1.alphaBufferSize());
     QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setAlphaBufferSize: Cannot set negative alpha buffer size -2147483648");
     obj1.setAlphaBufferSize(TEST_INT_MIN);
-    QCOMPARE(0, obj1.alphaBufferSize()); // Makes no sense with a negative buffer size
+    QCOMPARE(1, obj1.alphaBufferSize()); // Makes no sense with a negative buffer size
     obj1.setAlphaBufferSize(3);
     QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setAlphaBufferSize: Cannot set negative alpha buffer size -1");
     obj1.setAlphaBufferSize(-1);
@@ -243,11 +243,11 @@ void tst_QGL::getSetCheck()
     // int QGLFormat::stencilBufferSize()
     // void QGLFormat::setStencilBufferSize(int)
     QCOMPARE(-1, obj1.stencilBufferSize());
-    obj1.setStencilBufferSize(0);
-    QCOMPARE(0, obj1.stencilBufferSize());
+    obj1.setStencilBufferSize(1);
+    QCOMPARE(1, obj1.stencilBufferSize());
     QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setStencilBufferSize: Cannot set negative stencil buffer size -2147483648");
     obj1.setStencilBufferSize(TEST_INT_MIN);
-    QCOMPARE(0, obj1.stencilBufferSize()); // Makes no sense with a negative buffer size
+    QCOMPARE(1, obj1.stencilBufferSize()); // Makes no sense with a negative buffer size
     obj1.setStencilBufferSize(3);
     QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setStencilBufferSize: Cannot set negative stencil buffer size -1");
     obj1.setStencilBufferSize(-1);
@@ -352,6 +352,7 @@ void tst_QGL::getSetCheck()
 
     // bool QGLFormat::accum()
     // void QGLFormat::setAccum(bool)
+    obj1.setAccumBufferSize(0);
     QCOMPARE(false, obj1.accum());
     QVERIFY(!obj1.testOption(QGL::AccumBuffer));
     QVERIFY(obj1.testOption(QGL::NoAccumBuffer));
@@ -1073,8 +1074,7 @@ void tst_QGL::glFBOSimpleRendering()
     QGLFramebufferObjectFormat fboFormat;
     fboFormat.setAttachment(QGLFramebufferObject::NoAttachment);
 
-    // Don't complicate things by using NPOT:
-    QGLFramebufferObject *fbo = new QGLFramebufferObject(256, 128, fboFormat);
+    QGLFramebufferObject *fbo = new QGLFramebufferObject(200, 100, fboFormat);
 
     fbo->bind();
 
@@ -1266,7 +1266,7 @@ protected:
         widgetPainterBeginOk = widgetPainter.begin(this);
         QGLFramebufferObjectFormat fboFormat;
         fboFormat.setAttachment(QGLFramebufferObject::NoAttachment);
-        QGLFramebufferObject *fbo = new QGLFramebufferObject(128, 128, fboFormat);
+        QGLFramebufferObject *fbo = new QGLFramebufferObject(100, 100, fboFormat);
 
         QPainter fboPainter;
         fboPainterBeginOk = fboPainter.begin(fbo);
@@ -1290,7 +1290,7 @@ void tst_QGL::glFBOUseInGLWidget()
 #ifdef Q_WS_QWS
     w.setWindowFlags(Qt::FramelessWindowHint);
 #endif
-    w.resize(128, 128);
+    w.resize(100, 100);
     w.show();
 
 #ifdef Q_WS_X11
@@ -1401,6 +1401,10 @@ void tst_QGL::glWidgetRenderPixmap()
     QImage fb = pm.toImage().convertToFormat(QImage::Format_RGB32);
     QImage reference(fb.size(), QImage::Format_RGB32);
     reference.fill(0xffff0000);
+
+#if defined(QGL_EGL) && !defined(Q_WS_X11)
+    QSKIP("renderPixmap() not yet supported under EGL on your platform", SkipAll);
+#endif
 
     QFUZZY_COMPARE_IMAGES(fb, reference);
 }

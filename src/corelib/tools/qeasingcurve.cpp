@@ -877,8 +877,8 @@ QDataStream &operator<<(QDataStream &stream, const QEasingCurve &easing)
     \fn QDataStream &operator>>(QDataStream &stream, QEasingCurve &easing)
     \relates QQuaternion
 
-    Reads an easing curve from the given \a stream into the given \a quaternion
-    and returns a reference to the stream.
+    Reads an easing curve from the given \a stream into the given \a
+    easing curve and returns a reference to the stream.
 
     \sa {Format of the QDataStream Operators}
 */
