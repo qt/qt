@@ -25,7 +25,6 @@
 
 #include "config.h"
 #include "StructureChain.h"
-#include "Structure.h"
 
 #include "JSObject.h"
 #include "Structure.h"
@@ -47,23 +46,11 @@ StructureChain::StructureChain(Structure* head)
     m_vector[i] = 0;
 }
 
+#if OS(HPUX)
 PassRefPtr<StructureChain> StructureChain::create(Structure* head)
 {
     return adoptRef(new StructureChain(head));
 }
-
-bool StructureChain::isCacheable() const
-{
-    uint32_t i = 0;
-    
-    while (m_vector[i]) {
-        // Both classes of dictionary structure may change arbitrarily so we can't cache them
-        if (m_vector[i]->isDictionary())
-            return false;
-        if (!m_vector[i++]->typeInfo().hasDefaultGetPropertyNames())
-            return false;
-    }
-    return true;
-}
+#endif
 
 } // namespace JSC

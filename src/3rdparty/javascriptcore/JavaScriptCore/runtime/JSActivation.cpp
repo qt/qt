@@ -39,7 +39,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSActivation);
 
 const ClassInfo JSActivation::info = { "JSActivation", 0, 0, 0 };
 
-JSActivation::JSActivation(CallFrame* callFrame, PassRefPtr<FunctionExecutable> functionExecutable)
+JSActivation::JSActivation(CallFrame* callFrame, NonNullPassRefPtr<FunctionExecutable> functionExecutable)
     : Base(callFrame->globalData().activationStructure, new JSActivationData(functionExecutable, callFrame->registers()))
 {
 }
@@ -121,12 +121,12 @@ void JSActivation::putWithAttributes(ExecState* exec, const Identifier& property
     JSObject::putWithAttributes(exec, propertyName, value, attributes, true, slot);
 }
 
-bool JSActivation::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
+bool JSActivation::deleteProperty(ExecState* exec, const Identifier& propertyName)
 {
     if (propertyName == exec->propertyNames().arguments)
         return false;
 
-    return Base::deleteProperty(exec, propertyName, checkDontDelete);
+    return Base::deleteProperty(exec, propertyName);
 }
 
 JSObject* JSActivation::toThisObject(ExecState* exec) const

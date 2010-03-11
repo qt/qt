@@ -249,10 +249,10 @@ void JIT::compileOpCall(OpcodeID opcodeID, Instruction* instruction, unsigned)
         stubCall.addArgument(JIT::Imm32(registerOffset));
         stubCall.addArgument(JIT::Imm32(argCount));
         stubCall.call();
-        wasEval = branch32(Equal, regT1, Imm32(JSValue::EmptyValueTag));
+        wasEval = branch32(NotEqual, regT1, Imm32(JSValue::EmptyValueTag));
     }
 
-    emitLoad(callee, regT1, regT2);
+    emitLoad(callee, regT1, regT0);
 
     if (opcodeID == op_call)
         compileOpCallSetupArgs(instruction);
@@ -260,12 +260,12 @@ void JIT::compileOpCall(OpcodeID opcodeID, Instruction* instruction, unsigned)
         compileOpConstructSetupArgs(instruction);
 
     emitJumpSlowCaseIfNotJSCell(callee, regT1);
-    addSlowCase(branchPtr(NotEqual, Address(regT2), ImmPtr(m_globalData->jsFunctionVPtr)));
+    addSlowCase(branchPtr(NotEqual, Address(regT0), ImmPtr(m_globalData->jsFunctionVPtr)));
 
     // First, in the case of a construct, allocate the new object.
     if (opcodeID == op_construct) {
         JITStubCall(this, cti_op_construct_JSConstruct).call(registerOffset - RegisterFile::CallFrameHeaderSize - argCount);
-        emitLoad(callee, regT1, regT2);
+        emitLoad(callee, regT1, regT0);
     }
 
     // Speculatively roll the callframe, assuming argCount will match the arity.
@@ -278,7 +278,7 @@ void JIT::compileOpCall(OpcodeID opcodeID, Instruction* instruction, unsigned)
     if (opcodeID == op_call_eval)
         wasEval.link(this);
 
-    emitStore(dst, regT1, regT0);;
+    emitStore(dst, regT1, regT0);
 
     sampleCodeBlock(m_codeBlock);
 }
@@ -321,7 +321,13 @@ void JIT::compileOpCall(OpcodeID opcodeID, Instruction* instruction, unsigned ca
     emitLoad(callee, regT1, regT0);
 
     DataLabelPtr addressOfLinkedFunctionCheck;
+
+    BEGIN_UNINTERRUPTED_SEQUENCE(sequenceOpCall);
+
     Jump jumpToSlow = branchPtrWithPatch(NotEqual, regT0, addressOfLinkedFunctionCheck, ImmPtr(0));
+
+    END_UNINTERRUPTED_SEQUENCE(sequenceOpCall);
+
     addSlowCase(jumpToSlow);
     ASSERT(differenceBetween(addressOfLinkedFunctionCheck, jumpToSlow) == patchOffsetOpCallCompareToJump);
     m_callStructureStubCompilationInfo[callLinkInfoIndex].hotPathBegin = addressOfLinkedFunctionCheck;
@@ -620,7 +626,7 @@ void JIT::compileOpCall(OpcodeID opcodeID, Instruction* instruction, unsigned ca
     END_UNINTERRUPTED_SEQUENCE(sequenceOpCall);
 
     addSlowCase(jumpToSlow);
-    ASSERT(differenceBetween(addressOfLinkedFunctionCheck, jumpToSlow) == patchOffsetOpCallCompareToJump);
+    ASSERT_JIT_OFFSET(differenceBetween(addressOfLinkedFunctionCheck, jumpToSlow), patchOffsetOpCallCompareToJump);
     m_callStructureStubCompilationInfo[callLinkInfoIndex].hotPathBegin = addressOfLinkedFunctionCheck;
 
     // The following is the fast case, only used whan a callee can be linked.
