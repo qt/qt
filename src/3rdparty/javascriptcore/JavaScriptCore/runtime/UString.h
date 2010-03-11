@@ -83,12 +83,12 @@ namespace JSC {
 
     public:
 #if PLATFORM(QT)
-        operator QString() const
+        operator QT_PREPEND_NAMESPACE(QString)() const
         {
-            return QString(reinterpret_cast<const QChar*>(this->data()), this->size());
+            return QT_PREPEND_NAMESPACE(QString)(reinterpret_cast<const QT_PREPEND_NAMESPACE(QChar)*>(this->data()), this->size());
         }
 
-        UString(const QString& str)
+        UString(const QT_PREPEND_NAMESPACE(QString)& str)
         {
             *this = JSC::UString(reinterpret_cast<const UChar*>(str.constData()), str.length());
         }
