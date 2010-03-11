@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_opengl
+TARGET = tst_bench_opengl
 DEPENDPATH += .
 INCLUDEPATH += .
 

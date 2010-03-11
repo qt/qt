@@ -1034,7 +1034,7 @@ void QSymbianControl::HandleResourceChange(int resourceType)
                 qwidget->adjustSize();
                 qwidget->setAttribute(Qt::WA_Resized, false); //not a user resize
             }
-            if (!qwidget->testAttribute(Qt::WA_Moved)) {
+            if (!qwidget->testAttribute(Qt::WA_Moved) && qwidget->windowType() != Qt::Dialog) {
                 TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
                 SetPosition(r.iTl);
                 qwidget->setAttribute(Qt::WA_Moved, false); // not really an explicit position
