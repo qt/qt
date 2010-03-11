@@ -598,7 +598,6 @@ QMetaMethod QDeclarativeProperty::method() const
         return QMetaMethod();
 }
 
-
 /*!
     Returns the binding associated with this property, or 0 if no binding 
     exists.
@@ -617,13 +616,18 @@ QDeclarativePropertyPrivate::binding(const QDeclarativeProperty &that)
         return 0;
 
     QDeclarativeAbstractBinding *binding = data->bindings;
-    while (binding) {
-        // ### This wont work for value types
-        if (binding->propertyIndex() == that.d->core.coreIndex)
-            return binding; 
+    while (binding && binding->propertyIndex() != that.d->core.coreIndex) 
         binding = binding->m_nextBinding;
+
+    if (binding && that.d->valueType.valueTypeCoreIdx != -1) {
+        if (binding->bindingType() == QDeclarativeAbstractBinding::ValueTypeProxy) {
+            QDeclarativeValueTypeProxyBinding *proxy = static_cast<QDeclarativeValueTypeProxyBinding *>(binding);
+
+            binding = proxy->binding(bindingIndex(that));
+        }
     }
-    return 0;
+
+    return binding;
 }
 
 /*!
@@ -650,36 +654,36 @@ QDeclarativePropertyPrivate::setBinding(const QDeclarativeProperty &that,
         return 0;
     }
 
-    return that.d->setBinding(that.d->object, that.d->core, newBinding, flags);
+    return that.d->setBinding(that.d->object, that.d->core.coreIndex, 
+                              that.d->valueType.valueTypeCoreIdx, newBinding, flags);
 }
 
 QDeclarativeAbstractBinding *
-QDeclarativePropertyPrivate::setBinding(QObject *object, const QDeclarativePropertyCache::Data &core, 
-                                   QDeclarativeAbstractBinding *newBinding, WriteFlags flags)
+QDeclarativePropertyPrivate::setBinding(QObject *object, int coreIndex, int valueTypeIndex,
+                                        QDeclarativeAbstractBinding *newBinding, WriteFlags flags)
 {
     QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object, 0 != newBinding);
+    QDeclarativeAbstractBinding *binding = 0;
 
-    if (data && data->hasBindingBit(core.coreIndex)) {
-        QDeclarativeAbstractBinding *binding = data->bindings;
-        while (binding) {
-            // ### This wont work for value types
-            if (binding->propertyIndex() == core.coreIndex) {
-                binding->setEnabled(false);
+    if (data && data->hasBindingBit(coreIndex)) {
+        binding = data->bindings;
 
-                if (newBinding) 
-                    newBinding->setEnabled(true, flags);
-
-                return binding; // ### QDeclarativeAbstractBinding;
-            }
-
+        while (binding && binding->propertyIndex() != coreIndex) 
             binding = binding->m_nextBinding;
-        }
-    } 
+    }
 
-    if (newBinding)
+    if (binding && valueTypeIndex != -1 && binding->bindingType() == QDeclarativeAbstractBinding::ValueTypeProxy) {
+        int index = coreIndex | (valueTypeIndex << 24);
+        binding = static_cast<QDeclarativeValueTypeProxyBinding *>(binding)->binding(index);
+    }
+
+    if (binding) 
+        binding->setEnabled(false);
+
+    if (newBinding) 
         newBinding->setEnabled(true, flags);
 
-    return 0;
+    return binding;
 }
 
 /*!
@@ -1251,6 +1255,18 @@ int QDeclarativeProperty::index() const
 int QDeclarativePropertyPrivate::valueTypeCoreIndex(const QDeclarativeProperty &that)
 {
     return that.d->valueType.valueTypeCoreIdx;
+}
+
+/*!
+    Returns the "property index" for use in bindings.  The top 8 bits are the value type
+    offset, and 0 otherwise.  The bottom 24-bits are the regular property index.
+*/
+int QDeclarativePropertyPrivate::bindingIndex(const QDeclarativeProperty &that)
+{
+    int rv = that.d->core.coreIndex;
+    if (rv != -1 && that.d->valueType.valueTypeCoreIdx != -1)
+        rv = rv | (that.d->valueType.valueTypeCoreIdx << 24);
+    return rv;
 }
 
 struct SerializedData {

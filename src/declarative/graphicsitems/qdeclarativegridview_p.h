@@ -137,6 +137,9 @@ public:
     SnapMode snapMode() const;
     void setSnapMode(SnapMode mode);
 
+    enum PositionMode { Beginning, Center, End, Visible, Contain };
+    Q_ENUMS(PositionMode)
+
     static QDeclarativeGridViewAttached *qmlAttachedProperties(QObject *);
 
 public Q_SLOTS:
@@ -144,7 +147,7 @@ public Q_SLOTS:
     void moveCurrentIndexDown();
     void moveCurrentIndexLeft();
     void moveCurrentIndexRight();
-    void positionViewAtIndex(int index);
+    void positionViewAtIndex(int index, int mode);
 
 Q_SIGNALS:
     void countChanged();

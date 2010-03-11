@@ -52,7 +52,7 @@ Rectangle {
     }]
 
     transitions: Transition {
-        NumberAnimation { properties: "x,y,width,height" }
+        AnchorAnimation { }
     }
 
     MouseArea {

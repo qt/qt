@@ -65,7 +65,6 @@
 #include "qdeclarativelistview_p.h"
 #include "qdeclarativeloader_p.h"
 #include "qdeclarativemousearea_p.h"
-#include "qdeclarativeparticles_p.h"
 #include "qdeclarativepath_p.h"
 #include "qdeclarativepathview_p.h"
 #include "qdeclarativerectangle_p.h"
@@ -108,11 +107,6 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeLoader>("Qt",4,6,"Loader");
     qmlRegisterType<QDeclarativeMouseArea>("Qt",4,6,"MouseArea");
     qmlRegisterType<QGraphicsOpacityEffect>("Qt",4,6,"Opacity");
-    qmlRegisterType<QDeclarativeParticleMotion>("Qt",4,6,"ParticleMotion");
-    qmlRegisterType<QDeclarativeParticleMotionGravity>("Qt",4,6,"ParticleMotionGravity");
-    qmlRegisterType<QDeclarativeParticleMotionLinear>("Qt",4,6,"ParticleMotionLinear");
-    qmlRegisterType<QDeclarativeParticleMotionWander>("Qt",4,6,"ParticleMotionWander");
-    qmlRegisterType<QDeclarativeParticles>("Qt",4,6,"Particles");
     qmlRegisterType<QDeclarativePath>("Qt",4,6,"Path");
     qmlRegisterType<QDeclarativePathAttribute>("Qt",4,6,"PathAttribute");
     qmlRegisterType<QDeclarativePathCubic>("Qt",4,6,"PathCubic");

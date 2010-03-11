@@ -1,6 +1,7 @@
 =============================================================================
 The changes below are pre Qt 4.7.0 alpha
 
+ListView, GridView::positionViewAtIndex() gained a 'mode' parameter
 Flickable: renamed viewportWidth -> contentWidth
 Flickable: renamed viewportHeight -> contentHeight
 Flickable: renamed viewportX -> contentX
