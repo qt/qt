@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 //#define DEBUG_KEYMAPPER
 
 // Implemented elsewhere
-extern "C" LRESULT CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
+extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
 
 extern Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id);
 #ifndef LANG_PASHTO

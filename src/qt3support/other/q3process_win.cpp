@@ -384,7 +384,7 @@ bool Q3Process::start( QStringList *env )
     return true;
 }
 
-static BOOL CALLBACK qt_terminateApp( HWND hwnd, LPARAM procId )
+static BOOL QT_WIN_CALLBACK qt_terminateApp( HWND hwnd, LPARAM procId )
 {
     DWORD procId_win;
     GetWindowThreadProcessId( hwnd, &procId_win );
