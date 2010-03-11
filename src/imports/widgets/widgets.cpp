@@ -118,15 +118,15 @@ public:
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.widgets"));
 
-        QML_REGISTER_INTERFACE(QGraphicsLayoutItem);
-        QML_REGISTER_INTERFACE(QGraphicsLayout);
+        qmlRegisterInterface<QGraphicsLayoutItem>("QGraphicsLayoutItem");
+        qmlRegisterInterface<QGraphicsLayout>("QGraphicsLayout");
         qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>(uri,4,6,"QGraphicsLinearLayoutStretchItem");
         qmlRegisterType<QGraphicsLinearLayoutObject>(uri,4,6,"QGraphicsLinearLayout");
         qmlRegisterType<QGraphicsGridLayoutObject>(uri,4,6,"QGraphicsGridLayout");
         qmlRegisterExtendedType<QGraphicsView, QGraphicsViewDeclarativeUI>(uri,4,6,"QGraphicsView");
         qmlRegisterExtendedType<QGraphicsScene,QGraphicsSceneDeclarativeUI>(uri,4,6,"QGraphicsScene");
         qmlRegisterExtendedType<QGraphicsWidget,QGraphicsWidgetDeclarativeUI>(uri,4,6,"QGraphicsWidget");
-        QML_REGISTER_INTERFACE(QGraphicsItem);
+        qmlRegisterInterface<QGraphicsItem>("QGraphicsItem");
     }
 };
 

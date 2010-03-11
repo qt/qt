@@ -636,12 +636,12 @@ int QDeclarativeTextInput::xToPos(int x)
     return d->control->xToPos(x - d->hscroll);
 }
 
-void QDeclarativeTextInput::focusChanged(bool hasFocus)
+void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
 {
-    Q_D(QDeclarativeTextInput);
-    d->focused = hasFocus;
-    setCursorVisible(hasFocus);
-    QDeclarativeItem::focusChanged(hasFocus);
+    Q_Q(QDeclarativeTextInput);
+    focused = hasFocus;
+    q->setCursorVisible(hasFocus);
+    QDeclarativeItemPrivate::focusChanged(hasFocus);
 }
 
 void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)

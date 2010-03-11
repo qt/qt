@@ -10,7 +10,7 @@ HEADERS += qdeclarativewebview_p.h \
     qdeclarativewebview_p_p.h \
 	webkitqmlplugin_export.h
 
-QTDIR_build:DESTDIR = $$TARGETPATH
+QTDIR_build:DESTDIR = $$QT_BUILD_TREE/imports/$$TARGETPATH
 target.path = $$TARGETPATH
 
 qmldir.files += $$QT_BUILD_TREE/imports/org/webkit/qmldir

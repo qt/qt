@@ -146,12 +146,12 @@ static bool qt_QmlQtModule_registered = false;
 
 void QDeclarativeEnginePrivate::defineModule()
 {
-    QML_REGISTER_TYPE(Qt,4,6,Component,QDeclarativeComponent);
-    QML_REGISTER_TYPE(Qt,4,6,QtObject,QObject);
-    QML_REGISTER_TYPE(Qt,4,6,WorkerScript,QDeclarativeWorkerScript);
-    QML_REGISTER_TYPE(Qt,4,6,WorkerListModel,QDeclarativeWorkerListModel);
+    qmlRegisterType<QDeclarativeComponent>("Qt",4,6,"Component");
+    qmlRegisterType<QObject>("Qt",4,6,"QtObject");
+    qmlRegisterType<QDeclarativeWorkerScript>("Qt",4,6,"WorkerScript");
+    qmlRegisterType<QDeclarativeWorkerListModel>("Qt",4,6,"WorkerListModel");
 
-    QML_REGISTER_NOCREATE_TYPE(QDeclarativeBinding);
+    qmlRegisterType<QDeclarativeBinding>();
 }
 
 QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
@@ -668,6 +668,59 @@ void QDeclarativeEngine::setContextForObject(QObject *object, QDeclarativeContex
     context->d_func()->contextObjects = data;
 }
 
+/*!
+\enum QDeclarativeEngine::ObjectOwnership
+
+Ownership controls whether or not QML automatically destroys the QObject when the object 
+is garbage collected by the JavaScript engine.  The two ownership options are:
+
+\o CppOwnership The object is owned by C++ code, and will never be deleted by QML.  The
+JavaScript destroy() method cannot be used on objects with CppOwnership.  This option
+is similar to QScriptEngine::QtOwnership.
+
+\o JavaScriptOwnership The object is owned by JavaScript.  When the object is returned to QML 
+as the return value of a method call or property access, QML will delete the object if there
+are no remaining JavaScript references to it and it has no QObject::parent().  This option
+is similar to QScriptEngine::ScriptOwnership.
+
+Generally an application doesn't need to set an object's ownership explicitly.  QML uses
+a heuristic to set the default object ownership.  By default, an object that is created by
+QML has JavaScriptOwnership.  The exception to this are the root objects created by calling
+QDeclarativeCompnent::create() or QDeclarativeComponent::beginCreate() which have 
+CppOwnership by default.  The ownership of these root-level objects is considered to have
+been transfered to the C++ caller.
+
+Objects not-created by QML have CppOwnership by default.  The exception to this is objects
+returned from a C++ method call.  The ownership of these objects is passed to JavaScript.
+
+Calling setObjectOwnership() overrides the default ownership heuristic used by QML.
+*/
+
+/*!
+Sets the \a ownership of \a object.
+*/
+void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership ownership)
+{
+    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object, true);
+    if (!ddata)
+        return;
+
+    ddata->indestructible = (ownership == CppOwnership)?true:false;
+    ddata->explicitIndestructibleSet = true;
+}
+
+/*!
+Returns the ownership of \a object.
+*/
+QDeclarativeEngine::ObjectOwnership QDeclarativeEngine::objectOwnership(QObject *object)
+{
+    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object, false);
+    if (!ddata) 
+        return CppOwnership;
+    else
+        return ddata->indestructible?CppOwnership:JavaScriptOwnership;
+}
+
 void qmlExecuteDeferred(QObject *object)
 {
     QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object);
@@ -778,6 +831,11 @@ void QDeclarativeDeclarativeData::destroyed(QObject *object)
     delete this;
 }
 
+void QDeclarativeDeclarativeData::parentChanged(QObject *, QObject *parent)
+{
+    if (!parent && scriptValue.isValid()) scriptValue = QScriptValue();
+}
+
 bool QDeclarativeDeclarativeData::hasBindingBit(int bit) const
 {
     if (bindingBitsSize > bit) 
@@ -858,6 +916,7 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt,
         QUrl url = QUrl(context->resolvedUrl(QUrl(arg)));
         QDeclarativeComponent *c = new QDeclarativeComponent(activeEngine, url, activeEngine);
         c->setCreationContext(context);
+        QDeclarativeDeclarativeData::get(c, true)->setImplicitDestructible();
         return activeEnginePriv->objectClass->newQObject(c, qMetaTypeId<QDeclarativeComponent*>());
     }
 }
@@ -928,7 +987,8 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
     if(gobj && gparent)
         gobj->setParentItem(gparent);
 
-    return qmlScriptObject(obj, activeEngine);
+    QDeclarativeDeclarativeData::get(obj, true)->setImplicitDestructible();
+    return activeEnginePriv->objectClass->newQObject(obj, QMetaType::QObjectStar);
 }
 
 QScriptValue QDeclarativeEnginePrivate::vector(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1784,6 +1844,9 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
 
     return resolvePlugin(dir, baseName,
                          QStringList()
+# ifdef QT_DEBUG
+                         << QLatin1String("_debug.dylib") // try a qmake-style debug build first
+# endif
                          << QLatin1String(".dylib")
                          << QLatin1String(".so")
                          << QLatin1String(".bundle"),

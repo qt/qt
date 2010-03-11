@@ -154,7 +154,7 @@ QDeclarativeCompositeTypeData::TypeReference::TypeReference()
 }
 
 QDeclarativeCompositeTypeManager::QDeclarativeCompositeTypeManager(QDeclarativeEngine *e)
-: engine(e)
+: engine(e), redirectCount(0)
 {
 }
 
@@ -172,6 +172,10 @@ QDeclarativeCompositeTypeManager::~QDeclarativeCompositeTypeManager()
 
 QDeclarativeCompositeTypeData *QDeclarativeCompositeTypeManager::get(const QUrl &url)
 {
+    Redirects::Iterator redir = redirects.find(url);
+    if (redir != redirects.end())
+        return get(*redir);
+
     QDeclarativeCompositeTypeData *unit = components.value(url);
 
     if (!unit) {
@@ -219,12 +223,34 @@ void QDeclarativeCompositeTypeManager::clearCache()
     }
 }
 
+#define TYPEMANAGER_MAXIMUM_REDIRECT_RECURSION 16
+
 void QDeclarativeCompositeTypeManager::replyFinished()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
 
     QDeclarativeCompositeTypeData *unit = components.value(reply->url());
     Q_ASSERT(unit);
+
+    redirectCount++;
+    if (redirectCount < TYPEMANAGER_MAXIMUM_REDIRECT_RECURSION) {
+        QVariant redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirect.isValid()) {
+            QUrl url = reply->url().resolved(redirect.toUrl());
+            redirects.insert(reply->url(),url);
+            unit->imports.setBaseUrl(url);
+            components.remove(reply->url());
+            components.insert(url, unit);
+            reply->deleteLater();
+            reply = engine->networkAccessManager()->get(QNetworkRequest(url));
+            QObject::connect(reply, SIGNAL(finished()),
+                             this, SLOT(replyFinished()));
+            QObject::connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+                             this, SLOT(requestProgress(qint64,qint64)));
+            return;
+        }
+    }
+    redirectCount = 0;
 
     if (reply->error() != QNetworkReply::NoError) {
         QString errorDescription;
@@ -255,6 +281,24 @@ void QDeclarativeCompositeTypeManager::resourceReplyFinished()
 
     QDeclarativeCompositeTypeResource *resource = resources.value(reply->url());
     Q_ASSERT(resource);
+
+    redirectCount++;
+    if (redirectCount < TYPEMANAGER_MAXIMUM_REDIRECT_RECURSION) {
+        QVariant redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirect.isValid()) {
+            QUrl url = reply->url().resolved(redirect.toUrl());
+            redirects.insert(reply->url(),url);
+            resource->url = url.toString();
+            resources.remove(reply->url());
+            resources.insert(url, resource);
+            reply->deleteLater();
+            reply = engine->networkAccessManager()->get(QNetworkRequest(url));
+            QObject::connect(reply, SIGNAL(finished()),
+                             this, SLOT(resourceReplyFinished()));
+            return;
+        }
+    }
+    redirectCount = 0;
 
     if (reply->error() != QNetworkReply::NoError) {
 
@@ -545,6 +589,10 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             unit->types << ref;
             continue;
         }
+
+        Redirects::Iterator redir = redirects.find(url);
+        if (redir != redirects.end())
+            url = *redir;
 
         QDeclarativeCompositeTypeData *urlUnit = components.value(url);
 

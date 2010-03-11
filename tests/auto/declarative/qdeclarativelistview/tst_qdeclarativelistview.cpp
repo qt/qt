@@ -925,6 +925,7 @@ void tst_QDeclarativeListView::sections()
 
     // Remove section boundary
     model.removeItem(5);
+    QTest::qWait(100);
 
     // New section header created
     QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", 5);
@@ -932,6 +933,7 @@ void tst_QDeclarativeListView::sections()
     QCOMPARE(item->height(), 40.0);
 
     model.insertItem(3, "New Item", "0");
+    QTest::qWait(100);
 
     // Section header moved
     item = findItem<QDeclarativeItem>(viewport, "wrapper", 5);
@@ -944,6 +946,7 @@ void tst_QDeclarativeListView::sections()
 
     // insert item which will become a section header
     model.insertItem(6, "Replace header", "1");
+    QTest::qWait(100);
 
     item = findItem<QDeclarativeItem>(viewport, "wrapper", 6);
     QVERIFY(item);
@@ -1055,6 +1058,11 @@ void tst_QDeclarativeListView::currentIndex()
     listview->setCurrentIndex(4);
     QTest::qWait(500);
     QCOMPARE(listview->highlightItem()->y(), hlPos);
+
+    // insert item before currentIndex
+    listview->setCurrentIndex(28);
+    model.insertItem(0, "Foo", "1111");
+    QCOMPARE(canvas->rootObject()->property("current").toInt(), 29);
 
     delete canvas;
 }
