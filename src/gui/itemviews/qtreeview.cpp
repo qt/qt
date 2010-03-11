@@ -3793,7 +3793,6 @@ void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
                     // moved; update the model index
                     viewItems[item].index = model->index(
                         modelIndex.row() - delta, modelIndex.column(), parent);
-//                    viewItems[item].parentItem = parentItem;
                 }
                 item += count;
             }
