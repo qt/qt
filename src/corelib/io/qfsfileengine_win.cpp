@@ -1491,7 +1491,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFil
             ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
             ext == QLatin1String(".pif") || ext == QLatin1String(".cmd")) {
             ret |= QAbstractFileEngine::ExeOwnerPerm | QAbstractFileEngine::ExeGroupPerm
-                 | QAbstractFileEngine::ExeOtherPerm;
+                 | QAbstractFileEngine::ExeOtherPerm | QAbstractFileEngine::ExeUserPerm;
         }
 
         // calculate user permissions
@@ -1502,10 +1502,6 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFil
         if (type & QAbstractFileEngine::WriteUserPerm) {
             if (::_waccess((wchar_t*)longFileName(filePath).utf16(), W_OK) == 0)
                 ret |= QAbstractFileEngine::WriteUserPerm;
-        }
-        if (type & QAbstractFileEngine::ExeUserPerm) {
-            if (::_waccess((wchar_t*)longFileName(filePath).utf16(), X_OK) == 0)
-                ret |= QAbstractFileEngine::ExeUserPerm;
         }
     }
     return ret;
