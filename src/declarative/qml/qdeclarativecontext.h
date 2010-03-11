@@ -72,11 +72,12 @@ public:
     QDeclarativeEngine *engine() const;
     QDeclarativeContext *parentContext() const;
 
-    void addDefaultObject(QObject *);
-    void setContextProperty(const QString &, QObject *);
-    void setContextProperty(const QString &, const QVariant &);
+    QObject *contextObject() const;
+    void setContextObject(QObject *);
 
     QVariant contextProperty(const QString &) const;
+    void setContextProperty(const QString &, QObject *);
+    void setContextProperty(const QString &, const QVariant &);
 
     QUrl resolvedUrl(const QUrl &);
 

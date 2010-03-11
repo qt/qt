@@ -2447,12 +2447,15 @@ QDeclarativeParentAnimation::QDeclarativeParentAnimation(QObject *parent)
     QDeclarative_setParent_noEvent(d->topLevelGroup, this);
 
     d->startAction = new QActionAnimation;
+    QDeclarative_setParent_noEvent(d->startAction, d->topLevelGroup);
     d->topLevelGroup->addAnimation(d->startAction);
 
     d->ag = new QParallelAnimationGroup;
+    QDeclarative_setParent_noEvent(d->ag, d->topLevelGroup);
     d->topLevelGroup->addAnimation(d->ag);
 
     d->endAction = new QActionAnimation;
+    QDeclarative_setParent_noEvent(d->endAction, d->topLevelGroup);
     d->topLevelGroup->addAnimation(d->endAction);
 }
 

@@ -94,8 +94,7 @@ public:
     QList<QVariant> propertyValues;
     int notifyIndex;
 
-    QObjectList defaultObjects;
-    int highPriorityCount;
+    QObject *contextObject;
 
     QList<QScriptValue> scripts;
     void addScript(const QDeclarativeParser::Object::ScriptBlock &, QObject *);

@@ -273,7 +273,7 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
 
     if (component) {
         QDeclarativeContext *ctxt = new QDeclarativeContext(qmlContext(q));
-        ctxt->addDefaultObject(q);
+        ctxt->setContextObject(q);
 
         if (!component->errors().isEmpty()) {
             qWarning() << component->errors();

@@ -77,6 +77,7 @@ private slots:
     void scriptVariantCopy();
     void cppClasses();
     void enums();
+    void conflictingBindings();
 
 private:
     QDeclarativeEngine engine;
@@ -431,12 +432,13 @@ void tst_qdeclarativevaluetypes::autoBindingRemoval()
 
         object->setProperty("value", QVariant(92));
 
-        QEXPECT_FAIL("", "QT-2920", Continue);
+        //QEXPECT_FAIL("", "QT-2920", Continue);
         QCOMPARE(object->rect().x(), 42);
 
         delete object;
     }
 
+    /*
     {
         QDeclarativeComponent component(&engine, TEST_FILE("autoBindingRemoval.2.qml"));
         MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -474,12 +476,11 @@ void tst_qdeclarativevaluetypes::autoBindingRemoval()
 
         object->setProperty("value", QVariant(QRect(19, 3, 4, 8)));
 
-        QEXPECT_FAIL("", "QT-2920", Continue);
         QCOMPARE(object->rect(), QRect(44, 22, 33, 44));
 
         delete object;
     }
-
+*/
 }
 
 // Test that property value sources assign to value types
@@ -631,6 +632,65 @@ void tst_qdeclarativevaluetypes::enums()
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
     QVERIFY(object != 0);
     QVERIFY(object->font().capitalization() == QFont::AllUppercase);
+    delete object;
+    }
+}
+
+// Tests switching between "conflicting" bindings (eg. a binding on the core
+// property, to a binding on the value-type sub-property)
+void tst_qdeclarativevaluetypes::conflictingBindings()
+{
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("conflicting.1.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 12);
+
+    QMetaObject::invokeMethod(object, "toggle");
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 6);
+
+    QMetaObject::invokeMethod(object, "toggle");
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 12);
+
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("conflicting.2.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 6);
+
+    QMetaObject::invokeMethod(object, "toggle");
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 12);
+
+    QMetaObject::invokeMethod(object, "toggle");
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 6);
+
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("conflicting.3.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 12);
+
+    QMetaObject::invokeMethod(object, "toggle");
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 24);
+
+    QMetaObject::invokeMethod(object, "toggle");
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 12);
+
     delete object;
     }
 }

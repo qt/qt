@@ -51,6 +51,9 @@ should also consider using the QmlExtensionPlugin (previously named QmlModulePlu
 as a cleaner mechanism for publishing libraries of QML types, or the upcoming 
 application plugin features of the qmlviewer / qmlruntime / qml.
 
+QDeclarativeContext::addDefaultObject() has been replaced with 
+QDeclarativeContext::setContextObject()
+
 PropertyAnimation
 ------------------
 matchProperties and matchTargets have been renamed back to properties and targets.
