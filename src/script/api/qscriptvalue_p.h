@@ -86,17 +86,18 @@ public:
         return q.d_ptr->engine;
     }
 
-    inline JSC::JSValue property(const JSC::Identifier &id, int resolveMode) const;
-    inline JSC::JSValue property(quint32 index, int resolveMode) const;
-    inline JSC::JSValue property(const JSC::UString &, int resolveMode) const;
+    inline JSC::JSValue property(const JSC::Identifier &id,
+                                 const QScriptValue::ResolveFlags &mode = QScriptValue::ResolvePrototype) const;
+    inline JSC::JSValue property(quint32 index, const QScriptValue::ResolveFlags &mode = QScriptValue::ResolvePrototype) const;
+    inline JSC::JSValue property(const JSC::UString &, const QScriptValue::ResolveFlags &mode = QScriptValue::ResolvePrototype) const;
     inline void setProperty(const JSC::UString &name, const JSC::JSValue &value,
-                            const QScriptValue::PropertyFlags &flags);
+                            const QScriptValue::PropertyFlags &flags = QScriptValue::KeepExistingFlags);
     inline void setProperty(const JSC::Identifier &id, const JSC::JSValue &value,
-                            const QScriptValue::PropertyFlags &flags);
+                            const QScriptValue::PropertyFlags &flags = QScriptValue::KeepExistingFlags);
     inline void setProperty(quint32 index, const JSC::JSValue &value,
-                            const QScriptValue::PropertyFlags &flags);
+                            const QScriptValue::PropertyFlags &flags = QScriptValue::KeepExistingFlags);
     inline QScriptValue::PropertyFlags propertyFlags(
-        const JSC::Identifier &id, const QScriptValue::ResolveFlags &mode) const;
+        const JSC::Identifier &id, const QScriptValue::ResolveFlags &mode = QScriptValue::ResolvePrototype) const;
 
     void detachFromEngine();
 

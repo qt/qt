@@ -47,6 +47,7 @@
 #include "node.h"
 #include "tree.h"
 #include "config.h"
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -139,6 +140,7 @@ void CodeParser::initialize(const Config& config)
  */
 void CodeParser::terminate()
 {
+    qDebug() << "void CodeParser::terminate()";
     QList<CodeParser *>::ConstIterator p = parsers.begin();
     while (p != parsers.end()) {
 	(*p)->terminateParser();

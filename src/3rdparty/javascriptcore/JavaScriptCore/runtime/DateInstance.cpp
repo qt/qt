@@ -22,6 +22,8 @@
 #include "config.h"
 #include "DateInstance.h"
 
+#include "JSGlobalObject.h"
+
 #include <math.h>
 #include <wtf/DateMath.h>
 #include <wtf/MathExtras.h>
@@ -30,89 +32,50 @@ using namespace WTF;
 
 namespace JSC {
 
-struct DateInstance::Cache {
-    double m_gregorianDateTimeCachedForMS;
-    GregorianDateTime m_cachedGregorianDateTime;
-    double m_gregorianDateTimeUTCCachedForMS;
-    GregorianDateTime m_cachedGregorianDateTimeUTC;
-};
-
 const ClassInfo DateInstance::info = {"Date", 0, 0, 0};
 
-DateInstance::DateInstance(PassRefPtr<Structure> structure)
+DateInstance::DateInstance(ExecState* exec, NonNullPassRefPtr<Structure> structure)
     : JSWrapperObject(structure)
-    , m_cache(0)
 {
+    setInternalValue(jsNaN(exec));
 }
 
-DateInstance::~DateInstance()
+DateInstance::DateInstance(ExecState* exec, double time)
+    : JSWrapperObject(exec->lexicalGlobalObject()->dateStructure())
 {
-    delete m_cache;
+    setInternalValue(jsNumber(exec, timeClip(time)));
 }
 
-void DateInstance::msToGregorianDateTime(double milli, bool outputIsUTC, GregorianDateTime& t) const
-{
-    if (!m_cache) {
-        m_cache = new Cache;
-        m_cache->m_gregorianDateTimeCachedForMS = NaN;
-        m_cache->m_gregorianDateTimeUTCCachedForMS = NaN;
-    }
-
-    if (outputIsUTC) {
-        if (m_cache->m_gregorianDateTimeUTCCachedForMS != milli) {
-            WTF::msToGregorianDateTime(milli, true, m_cache->m_cachedGregorianDateTimeUTC);
-            m_cache->m_gregorianDateTimeUTCCachedForMS = milli;
-        }
-        t.copyFrom(m_cache->m_cachedGregorianDateTimeUTC);
-    } else {
-        if (m_cache->m_gregorianDateTimeCachedForMS != milli) {
-            WTF::msToGregorianDateTime(milli, false, m_cache->m_cachedGregorianDateTime);
-            m_cache->m_gregorianDateTimeCachedForMS = milli;
-        }
-        t.copyFrom(m_cache->m_cachedGregorianDateTime);
-    }
-}
-
-bool DateInstance::getTime(GregorianDateTime& t, int& offset) const
+const GregorianDateTime* DateInstance::calculateGregorianDateTime(ExecState* exec) const
 {
     double milli = internalNumber();
     if (isnan(milli))
-        return false;
-    
-    msToGregorianDateTime(milli, false, t);
-    offset = gmtoffset(t);
-    return true;
+        return 0;
+
+    if (!m_data)
+        m_data = exec->globalData().dateInstanceCache.add(milli);
+
+    if (m_data->m_gregorianDateTimeCachedForMS != milli) {
+        msToGregorianDateTime(exec, milli, false, m_data->m_cachedGregorianDateTime);
+        m_data->m_gregorianDateTimeCachedForMS = milli;
+    }
+    return &m_data->m_cachedGregorianDateTime;
 }
 
-bool DateInstance::getUTCTime(GregorianDateTime& t) const
+const GregorianDateTime* DateInstance::calculateGregorianDateTimeUTC(ExecState* exec) const
 {
     double milli = internalNumber();
     if (isnan(milli))
-        return false;
-    
-    msToGregorianDateTime(milli, true, t);
-    return true;
-}
+        return 0;
 
-bool DateInstance::getTime(double& milli, int& offset) const
-{
-    milli = internalNumber();
-    if (isnan(milli))
-        return false;
-    
-    GregorianDateTime t;
-    msToGregorianDateTime(milli, false, t);
-    offset = gmtoffset(t);
-    return true;
-}
+    if (!m_data)
+        m_data = exec->globalData().dateInstanceCache.add(milli);
 
-bool DateInstance::getUTCTime(double& milli) const
-{
-    milli = internalNumber();
-    if (isnan(milli))
-        return false;
-    
-    return true;
+    if (m_data->m_gregorianDateTimeUTCCachedForMS != milli) {
+        msToGregorianDateTime(exec, milli, true, m_data->m_cachedGregorianDateTimeUTC);
+        m_data->m_gregorianDateTimeUTCCachedForMS = milli;
+    }
+    return &m_data->m_cachedGregorianDateTimeUTC;
 }
 
 } // namespace JSC

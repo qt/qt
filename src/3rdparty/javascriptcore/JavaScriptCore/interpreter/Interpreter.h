@@ -105,13 +105,15 @@ namespace JSC {
         
         void getArgumentsData(CallFrame*, JSFunction*&, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc);
         
-        void setSampler(SamplingTool* sampler) { m_sampler = sampler; }
-        SamplingTool* sampler() { return m_sampler; }
+        SamplingTool* sampler() { return m_sampler.get(); }
 
         NEVER_INLINE JSValue callEval(CallFrame*, RegisterFile*, Register* argv, int argc, int registerOffset, JSValue& exceptionValue);
         NEVER_INLINE HandlerInfo* throwException(CallFrame*&, JSValue&, unsigned bytecodeOffset, bool);
-        NEVER_INLINE void debug(CallFrame*, DebugHookID, int firstLine, int lastLine, int column);
+        NEVER_INLINE void debug(CallFrame*, DebugHookID, int firstLine, int lastLine);
 
+        void dumpSampleData(ExecState* exec);
+        void startSampling();
+        void stopSampling();
     private:
         enum ExecutionFlag { Normal, InitializeAndReturn };
 
@@ -127,7 +129,6 @@ namespace JSC {
         NEVER_INLINE bool resolveGlobal(CallFrame*, Instruction*, JSValue& exceptionValue);
         NEVER_INLINE void resolveBase(CallFrame*, Instruction* vPC);
         NEVER_INLINE bool resolveBaseAndProperty(CallFrame*, Instruction*, JSValue& exceptionValue);
-        NEVER_INLINE bool resolveBaseAndFunc(CallFrame*, Instruction*, JSValue& exceptionValue);
         NEVER_INLINE ScopeChainNode* createExceptionScope(CallFrame*, const Instruction* vPC);
 
         void tryCacheGetByID(CallFrame*, CodeBlock*, Instruction*, JSValue baseValue, const Identifier& propertyName, const PropertySlot&);
@@ -149,7 +150,9 @@ namespace JSC {
         
         bool isCallBytecode(Opcode opcode) { return opcode == getOpcode(op_call) || opcode == getOpcode(op_construct) || opcode == getOpcode(op_call_eval); }
 
-        SamplingTool* m_sampler;
+        void enableSampler();
+        int m_sampleEntryDepth;
+        OwnPtr<SamplingTool> m_sampler;
 
         int m_reentryDepth;
 

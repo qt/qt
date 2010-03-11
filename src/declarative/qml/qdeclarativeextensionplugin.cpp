@@ -80,6 +80,9 @@ QDeclarativeExtensionPlugin::QDeclarativeExtensionPlugin(QObject *parent)
 {
 }
 
+/*!
+  Destructor.
+ */
 QDeclarativeExtensionPlugin::~QDeclarativeExtensionPlugin()
 {
 }

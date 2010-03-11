@@ -1405,10 +1405,7 @@ bool QFSFileEngine::link(const QString &newName)
 #endif // Q_OS_WINCE
 }
 
-/*!
-    \internal
-*/
-QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
+QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFileEngine::FileFlags type) const
 {
     QAbstractFileEngine::FileFlags ret = 0;
 
@@ -1429,7 +1426,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
             if(res == ERROR_SUCCESS) {
                 ACCESS_MASK access_mask;
                 TRUSTEE_W trustee;
-                { //user
+                if (type & 0x0700) { // user
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &currentUserTrusteeW, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
                     if(access_mask & ReadMask)
@@ -1439,7 +1436,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                     if(access_mask & ExecMask)
                         ret |= QAbstractFileEngine::ExeUserPerm;
                 }
-                { //owner
+                if (type & 0x7000) { // owner
                     ptrBuildTrusteeWithSidW(&trustee, pOwner);
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
@@ -1450,7 +1447,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                     if(access_mask & ExecMask)
                         ret |= QAbstractFileEngine::ExeOwnerPerm;
                 }
-                { //group
+                if (type & 0x0070) { // group
                     ptrBuildTrusteeWithSidW(&trustee, pGroup);
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
@@ -1461,7 +1458,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                     if(access_mask & ExecMask)
                         ret |= QAbstractFileEngine::ExeGroupPerm;
                 }
-                { //other (world)
+                if (type & 0x0007) { // other (world)
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &worldTrusteeW, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1; // ###
                     if(access_mask & ReadMask)
@@ -1480,25 +1477,35 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
         //### what to do with permissions if we don't use NTFS
         // for now just add all permissions and what about exe missions ??
         // also qt_ntfs_permission_lookup is now not set by default ... should it ?
-        ret |= QAbstractFileEngine::ReadOtherPerm | QAbstractFileEngine::ReadGroupPerm
-            | QAbstractFileEngine::ReadOwnerPerm | QAbstractFileEngine::ReadUserPerm
-            | QAbstractFileEngine::WriteUserPerm | QAbstractFileEngine::WriteOwnerPerm
-            | QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm;
+        ret |= QAbstractFileEngine::ReadOwnerPerm | QAbstractFileEngine::ReadGroupPerm
+             | QAbstractFileEngine::ReadOtherPerm;
 
-        if (doStat()) {
-            if (ret & (QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteUserPerm |
-                QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm)) {
-                if (fileAttrib & FILE_ATTRIBUTE_READONLY)
-                    ret &= ~(QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteUserPerm |
-                             QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm);
-            }
+        if (!(fileAttrib & FILE_ATTRIBUTE_READONLY)) {
+            ret |= QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteGroupPerm
+                 | QAbstractFileEngine::WriteOtherPerm;
+        }
 
-            QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
-            QString ext = fname.right(4).toLower();
-            if (ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
-                ext == QLatin1String(".pif") || ext == QLatin1String(".cmd") || (fileAttrib & FILE_ATTRIBUTE_DIRECTORY))
-                ret |= QAbstractFileEngine::ExeOwnerPerm | QAbstractFileEngine::ExeGroupPerm |
-                       QAbstractFileEngine::ExeOtherPerm | QAbstractFileEngine::ExeUserPerm;
+        QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
+        QString ext = fname.right(4).toLower();
+        if ((fileAttrib & FILE_ATTRIBUTE_DIRECTORY) ||
+            ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
+            ext == QLatin1String(".pif") || ext == QLatin1String(".cmd")) {
+            ret |= QAbstractFileEngine::ExeOwnerPerm | QAbstractFileEngine::ExeGroupPerm
+                 | QAbstractFileEngine::ExeOtherPerm;
+        }
+
+        // calculate user permissions
+        if (type & QAbstractFileEngine::ReadUserPerm) {
+            if (::_waccess((wchar_t*)longFileName(filePath).utf16(), R_OK) == 0)
+                ret |= QAbstractFileEngine::ReadUserPerm;
+        }
+        if (type & QAbstractFileEngine::WriteUserPerm) {
+            if (::_waccess((wchar_t*)longFileName(filePath).utf16(), W_OK) == 0)
+                ret |= QAbstractFileEngine::WriteUserPerm;
+        }
+        if (type & QAbstractFileEngine::ExeUserPerm) {
+            if (::_waccess((wchar_t*)longFileName(filePath).utf16(), X_OK) == 0)
+                ret |= QAbstractFileEngine::ExeUserPerm;
         }
     }
     return ret;
@@ -1555,13 +1562,10 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     }
 
     if (type & PermsMask) {
-        ret |= d->getPermissions();
-        // ### Workaround pascals ### above. Since we always set all properties to true
-        // we need to disable read and exec access if the file does not exists
-        if (d->doStat())
+        if (d->doStat()) {
             ret |= ExistsFlag;
-        else
-            ret &= 0x2222;
+            ret |= d->getPermissions(type);
+        }
     }
     if (type & TypesMask) {
         if (d->filePath.endsWith(QLatin1String(".lnk"))) {
