@@ -221,7 +221,7 @@ Node *InnerNode::findNode(const QString& name)
         for (int i=0; i<children.size(); ++i) {
             Node* n = children.at(i);
             if (n->subType() == QmlPropertyGroup) {
-                node = static_cast<const InnerNode*>(n)->findNode(name);
+                node = static_cast<InnerNode*>(n)->findNode(name);
                 if (node)
                     return node;
             }
