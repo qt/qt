@@ -3,12 +3,10 @@ TARGETPATH = org/webkit
 include(../qimportbase.pri)
 
 QT += webkit declarative
-DEFINES += WEBKITQMLPLUGIN_EXPORTS
 
 SOURCES += qdeclarativewebview.cpp plugin.cpp
 HEADERS += qdeclarativewebview_p.h \
-    qdeclarativewebview_p_p.h \
-	webkitqmlplugin_export.h
+    qdeclarativewebview_p_p.h
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/imports/$$TARGETPATH
 target.path = $$TARGETPATH
