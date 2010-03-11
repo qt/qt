@@ -2084,7 +2084,7 @@ void SymbianMakefileGenerator::generateExecutionTargets(QTextStream& t, const QS
             t << "\t-call " << epocRoot() << "epoc32/release/winscw/udeb/" << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
         }
         t << "runonphone: sis" << endl;
-        t << "\trunonphone $(QT_RUN_ON_PHONE_OPTIONS) --sis " << fixedTarget << "_$(QT_SIS_TARGET).sis " << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
+        t << "\trunonphone $(QT_RUN_ON_PHONE_OPTIONS) --sis " << fixedTarget << ".sis " << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
         t << endl;
     }
 }
