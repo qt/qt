@@ -139,8 +139,8 @@ void tst_qdeclarativefontloader::webFont()
 
 void tst_qdeclarativefontloader::failWebFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://wrong.address.com/Starburst.ttf\" }";
-    QTest::ignoreMessage(QtWarningMsg, "Cannot load font:  QUrl( \"http://wrong.address.com/Starburst.ttf\" )  ");
+    QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://wrong.address.nokia.com/Starburst.ttf\" }";
+    QTest::ignoreMessage(QtWarningMsg, "Cannot load font:  QUrl( \"http://wrong.address.nokia.com/Starburst.ttf\" )  ");
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeFontLoader *fontObject = qobject_cast<QDeclarativeFontLoader*>(component.create());
