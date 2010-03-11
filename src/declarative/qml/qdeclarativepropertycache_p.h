@@ -115,9 +115,9 @@ public:
     struct ValueTypeData {
         inline ValueTypeData();
         inline bool operator==(const ValueTypeData &);
-        Data::Flags flags;     // flags on the value type wrapper
-        int valueTypeCoreIdx;  // The prop index of the access property on the value type wrapper
-        int valueTypePropType; // The QVariant::Type of access property on the value type wrapper
+        Data::Flags flags;     // flags of the access property on the value type proxy object
+        int valueTypeCoreIdx;  // The prop index of the access property on the value type proxy object
+        int valueTypePropType; // The QVariant::Type of access property on the value type proxy object
     };
 
     void update(QDeclarativeEngine *, const QMetaObject *);
@@ -137,7 +137,6 @@ public:
     inline QDeclarativeEngine *qmlEngine() const;
     static Data *property(QDeclarativeEngine *, QObject *, const QScriptDeclarativeClass::Identifier &, Data &);
     static Data *property(QDeclarativeEngine *, QObject *, const QString &, Data &);
-//    static Data  property(const QMetaObject *, const char *);
 protected:
     virtual void clear();
 
