@@ -107,7 +107,10 @@ protected:
                                    QString &checkString);
 
     void writeHeader(QTextStream &t);
-    void writeBldInfContent(QTextStream& t, bool addDeploymentExtension, const QString &iconFile, DeploymentList &depList);
+    void writeBldInfContent(QTextStream& t,
+                            bool addDeploymentExtension,
+                            const QString &iconFile,
+                            DeploymentList &depList);
 
     static bool removeDuplicatedStrings(QStringList& stringList);
 
@@ -127,10 +130,15 @@ protected:
 
     void writeCustomDefFile();
 
-    void writeRegRssFile(QStringList &useritems);
+    void writeRegRssFile(QMap<QString, QStringList> &useritems);
+    void writeRegRssList(QTextStream &t, QStringList &userList,
+                         const QString &listTag,
+                         const QString &listItem);
     void writeRssFile(QString &numberOfIcons, QString &iconfile);
     void writeLocFile(QStringList &symbianLangCodes);
-    void readRssRules(QString &numberOfIcons, QString &iconFile, QStringList &userRssRules);
+    void readRssRules(QString &numberOfIcons,
+                      QString &iconFile,
+                      QMap<QString, QStringList> &userRssRules);
 
     QStringList symbianLangCodesFromTsFiles();
     void fillQt2S60LangMapTable();
