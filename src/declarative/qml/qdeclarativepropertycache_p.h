@@ -137,7 +137,6 @@ public:
     inline QDeclarativeEngine *qmlEngine() const;
     static Data *property(QDeclarativeEngine *, QObject *, const QScriptDeclarativeClass::Identifier &, Data &);
     static Data *property(QDeclarativeEngine *, QObject *, const QString &, Data &);
-    static Data  property(const QMetaObject *, const char *);
 protected:
     virtual void clear();
 
