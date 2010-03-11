@@ -14,4 +14,6 @@ SOURCES		= smain.cpp \
     QMAKE_CXXFLAGS *= $$QT_CFLAGS_SQLITE
 }
 
+wince*: DEFINES += HAVE_LOCALTIME_S=0
+
 include(../qsqldriverbase.pri)
