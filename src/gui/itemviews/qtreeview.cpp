@@ -2662,17 +2662,8 @@ void QTreeView::expandAll()
 {
     Q_D(QTreeView);
     d->viewItems.clear();
-    d->expandedIndexes.clear();
     d->interruptDelayedItemsLayout();
-    d->layout(-1);
-    for (int i = 0; i < d->viewItems.count(); ++i) {
-        if (d->viewItems[i].expanded)
-            continue;
-        d->viewItems[i].expanded = true;
-        d->layout(i);
-        QModelIndex idx = d->viewItems.at(i).index;
-        d->expandedIndexes.insert(idx);
-    }
+    d->layout(-1, true);
     updateGeometries();
     d->viewport->update();
 }
@@ -3155,7 +3146,14 @@ void QTreeViewPrivate::_q_columnsRemoved(const QModelIndex &parent, int start, i
     QAbstractItemViewPrivate::_q_columnsRemoved(parent, start, end);
 }
 
-void QTreeViewPrivate::layout(int i)
+/** \internal
+    creates and initialize the viewItem structure of the children of the element \i
+
+    set \a recursiveExpanding if the function has to expand all the children (called from expandAll)
+    \a afterIsUninitialized is when we recurse from layout(-1), it means all the items after 'i' are
+    not yet initialized and need not to be moved
+ */
+void QTreeViewPrivate::layout(int i, bool recursiveExpanding, bool afterIsUninitialized)
 {
     Q_Q(QTreeView);
     QModelIndex current;
@@ -3182,8 +3180,12 @@ void QTreeViewPrivate::layout(int i)
             defaultItemHeight = q->indexRowSizeHint(index);
         }
         viewItems.resize(count);
+        afterIsUninitialized = true;
     } else if (viewItems[i].total != (uint)count) {
+        if (!afterIsUninitialized)
             insertViewItems(i + 1, count, QTreeViewItem()); // expand
+        else if (count > 0)
+            viewItems.resize(viewItems.count() + count);
     } else {
         expanding = false;
     }
@@ -3212,9 +3214,11 @@ void QTreeViewPrivate::layout(int i)
             item->expanded = false;
             item->total = 0;
             item->hasMoreSiblings = false;
-            if (isIndexExpanded(current)) {
+            if (recursiveExpanding || isIndexExpanded(current)) {
+                if (recursiveExpanding)
+                    expandedIndexes.insert(current);
                 item->expanded = true;
-                layout(last);
+                layout(last, recursiveExpanding, afterIsUninitialized);
                 item = &viewItems[last];
                 children += item->total;
                 item->hasChildren = item->total > 0;
@@ -3226,8 +3230,12 @@ void QTreeViewPrivate::layout(int i)
     }
 
     // remove hidden items
-    if (hidden > 0)
-        removeViewItems(last + 1, hidden); // collapse
+    if (hidden > 0) {
+        if (!afterIsUninitialized)
+            removeViewItems(last + 1, hidden);
+        else
+            viewItems.resize(viewItems.size() - hidden);
+    }
 
     if (!expanding)
         return; // nothing changed
