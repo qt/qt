@@ -588,7 +588,11 @@ int QAudioInputPrivate::notifyInterval() const
 
 qint64 QAudioInputPrivate::processedUSecs() const
 {
-    return qint64(1000000) * totalTimeValue / settings.frequency();
+    qint64 result = qint64(1000000) * totalTimeValue /
+        (settings.channels()*(settings.sampleSize()/8)) /
+        settings.frequency();
+
+    return result;
 }
 
 void QAudioInputPrivate::suspend()
