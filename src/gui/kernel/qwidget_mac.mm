@@ -3294,7 +3294,7 @@ void QWidgetPrivate::update_sys(const QRect &r)
 #ifndef QT_MAC_USE_COCOA
             HIViewSetNeedsDisplay(qt_mac_nativeview_for(q), true);
 #else
-            [qt_mac_nativeview_for(q) setNeedsDisplay:YES];
+	    qt_mac_set_needs_display(q, QRegion());
 #endif
         return;
     }
@@ -3332,21 +3332,7 @@ void QWidgetPrivate::update_sys(const QRegion &rgn)
         HIViewSetNeedsDisplay(qt_mac_nativeview_for(q), true); // do a complete repaint on overflow.
     }
 #else
-    // Cocoa doesn't do regions, it seems more efficient to just update the bounding rect instead of a potential number of message passes for each rect.
-    const QRect & boundingRect = rgn.boundingRect();
-
-    // Alien support: get the first native ancestor widget (will be q itself in the non-alien case),
-    // map the coordinates from q space to NSView space and invalidate the rect.
-    QWidget *nativeParent = q->internalWinId() ? q : q->nativeParentWidget();
-    if (nativeParent == 0)
-            return;
-    const QRect nativeBoundingRect = QRect(
-            QPoint(q->mapTo(nativeParent, boundingRect.topLeft())),
-            QSize(boundingRect.size()));
-
-    [qt_mac_nativeview_for(nativeParent) setNeedsDisplayInRect:NSMakeRect(nativeBoundingRect.x(),
-                                                            nativeBoundingRect.y(), nativeBoundingRect.width(),
-                                                            nativeBoundingRect.height())];
+    qt_mac_set_needs_display(q, rgn);
 #endif
 }
 
@@ -4025,10 +4011,17 @@ static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newR
     const HIRect horizontalSlice = CGRectMake(0, starty, startx, stopy);
     HIViewSetNeedsDisplayInRect(view, &horizontalSlice, true);
 #else
-    Q_UNUSED(oldRect);
-    NSRect bounds = NSMakeRect(newRect.x(), newRect.y(),
-                               newRect.width(), newRect.height());
-    [qt_mac_nativeview_for(q) setFrame:bounds];
+    const bool isResize = (oldRect.size() != newRect.size());
+
+    qDebug() << "update widget";
+    // Perform a normal (complete repaint) update in some cases:
+    if (isResize && q->testAttribute(Qt::WA_StaticContents) == false) {
+	NSRect bounds = NSMakeRect(newRect.x(), newRect.y(),
+		newRect.width(), newRect.height());
+	[qt_mac_nativeview_for(q) setFrame:bounds];
+	return;
+    }
+
 #endif
 }
 
@@ -4576,14 +4569,15 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
 	const QRect rect = *it;
 	const NSRect dirtyRect = NSMakeRect(rect.x() + dx, rect.y() + dy,
 		rect.width(), rect.height());
-	[view setNeedsDisplayInRect:dirtyRect];
+	//[view setNeedsDisplayInRect:dirtyRect];
 	++it;
     }
 
     NSSize deltaSize = NSMakeSize(dx, dy);
+    //[view translateRectsNeedingDisplayInRect:scrollRect by:deltaSize];
     [view scrollRect:scrollRect by:deltaSize];
-    [view setNeedsDisplayInRect:deltaXRect];
-    [view setNeedsDisplayInRect:deltaYRect];
+    //[view setNeedsDisplayInRect:deltaXRect];
+    //[view setNeedsDisplayInRect:deltaYRect];
 #endif // QT_MAC_USE_COCOA
 }
 
@@ -4828,7 +4822,7 @@ void QWidgetPrivate::finishCocoaMaskSetup()
         [window setOpaque:(extra->imageMask == 0)];
         [window invalidateShadow];
     }
-    [qt_mac_nativeview_for(q) setNeedsDisplay:YES];
+    qt_mac_set_needs_display(q, QRegion());
 }
 #endif
 
