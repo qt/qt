@@ -3362,7 +3362,6 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-no-javascript-jit] [-javascript-jit]
         [-no-script] [-script] [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
-        [-no-s60] [-s60] [-no-usedeffiles] [-usedeffiles]
 
         [additional platform specific options (see below)]
 
@@ -3545,11 +3544,6 @@ cat << EOF
 EOF
 fi
 cat << EOF
-
-    -no-s60 ............ Do not compile in S60 support.
- +  -s60 ............... Compile with support for the S60 UI Framework.
-    -no-usedeffiles .... Disable the usage of DEF files.
- *  -usedeffiles ....... Enable the usage of DEF files.
 
     -no-mmx ............ Do not compile with use of MMX instructions.
     -no-3dnow .......... Do not compile with use of 3DNOW instructions.
@@ -4005,8 +3999,13 @@ if echo "$XQMAKESPEC" | grep symbian > /dev/null ; then
     cat << EOF
 
 Qt for Symbian only:
+    -no-s60 ............ Do not compile in S60 support.
+ +  -s60 ............... Compile with support for the S60 UI Framework.
     -no-style-s60....... Disable s60 style
  +  -qt-style-s60....... Enable s60 style in the Qt Library
+
+    -no-usedeffiles .... Disable the usage of DEF files.
+ *  -usedeffiles ....... Enable the usage of DEF files.
 EOF
 fi
 
