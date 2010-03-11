@@ -725,6 +725,7 @@ CFG_DBUS=auto
 CFG_GLIB=auto
 CFG_GSTREAMER=auto
 CFG_QGTKSTYLE=auto
+CFG_QS60STYLE=auto
 CFG_LARGEFILE=yes
 CFG_OPENSSL=auto
 CFG_PTMALLOC=no
@@ -1795,6 +1796,13 @@ while [ "$#" -gt 0 ]; do
     gtkstyle)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_QGTKSTYLE="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    style-s60)
+        if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ]; then
+            CFG_QS60STYLE="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3993,6 +4001,15 @@ if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_X11" = "yes" ]; then
 EOF
 fi
 
+if echo "$XQMAKESPEC" | grep symbian > /dev/null ; then
+    cat << EOF
+
+Qt for Symbian only:
+    -no-style-s60....... Disable s60 style
+ +  -qt-style-s60....... Enable s60 style in the Qt Library
+EOF
+fi
+
    [ "x$ERROR" = "xyes" ] && exit 1
    exit 0
 fi # Help
@@ -4635,6 +4652,14 @@ if [ "$CFG_S60" = "auto" ]; then
         CFG_S60=yes
     else
         CFG_S60=no
+    fi
+fi
+
+if [ "$CFG_QS60STYLE" = "auto" ]; then
+    if echo "$XQMAKESPEC" | grep symbian > /dev/null; then
+        CFG_QS60STYLE=qt
+    else
+        CFG_QS60STYLE=no
     fi
 fi
 
@@ -6192,6 +6217,12 @@ else
         QT_CONFIG="$QT_CONFIG shivavg"
         QCONFIG_FLAGS="$QCONFIG_FLAGS QT_SHIVAVG"
     fi
+fi
+
+if [ "$CFG_QS60STYLE" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_S60"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_STYLE_S60"
 fi
 
 # Disable OpenGL on Symbian.
