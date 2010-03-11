@@ -402,6 +402,7 @@ private slots:
     void scrollWithoutBackingStore();
 
     void taskQTBUG_7532_tabOrderWithFocusProxy();
+    void movedAndResizedAttributes();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -10038,6 +10039,58 @@ void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
     QWidget::setTabOrder(&w, fp);
 
     // No Q_ASSERT, then it's allright.
+}
+
+void tst_QWidget::movedAndResizedAttributes()
+{
+    QWidget w;
+    w.show();
+
+    QVERIFY(!w.testAttribute(Qt::WA_Moved));
+    QVERIFY(!w.testAttribute(Qt::WA_Resized));
+
+    w.setWindowState(Qt::WindowFullScreen);
+
+    QVERIFY(!w.testAttribute(Qt::WA_Moved));
+    QVERIFY(!w.testAttribute(Qt::WA_Resized));
+
+    w.setWindowState(Qt::WindowMaximized);
+
+    QVERIFY(!w.testAttribute(Qt::WA_Moved));
+    QVERIFY(!w.testAttribute(Qt::WA_Resized));
+
+    w.setWindowState(Qt::WindowMinimized);
+
+    QVERIFY(!w.testAttribute(Qt::WA_Moved));
+    QVERIFY(!w.testAttribute(Qt::WA_Resized));
+
+    w.showNormal();
+
+    QVERIFY(!w.testAttribute(Qt::WA_Moved));
+    QVERIFY(!w.testAttribute(Qt::WA_Resized));
+
+    w.showMaximized();
+
+    QVERIFY(!w.testAttribute(Qt::WA_Moved));
+    QVERIFY(!w.testAttribute(Qt::WA_Resized));
+
+    w.showFullScreen();
+
+    QVERIFY(!w.testAttribute(Qt::WA_Moved));
+    QVERIFY(!w.testAttribute(Qt::WA_Resized));
+
+    w.showNormal();
+    w.move(10,10);
+    QVERIFY(w.testAttribute(Qt::WA_Moved));
+#if defined(Q_OS_WIN)
+    QEXPECT_FAIL("", "FixMe, QTBUG-8911", Abort);
+#endif
+    QVERIFY(!w.testAttribute(Qt::WA_Resized));
+
+    w.resize(100, 100);
+    QVERIFY(w.testAttribute(Qt::WA_Moved));
+    QVERIFY(w.testAttribute(Qt::WA_Resized));
+
 }
 
 QTEST_MAIN(tst_QWidget)

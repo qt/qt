@@ -36,6 +36,8 @@ symbian: SUBDIRS = \
                 mainwindows \
                 sql \
                 uitools \
+                animation \
+                gestures \
                 xml
 
 contains(QT_CONFIG, multimedia) {
