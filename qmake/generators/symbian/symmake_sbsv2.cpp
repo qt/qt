@@ -144,7 +144,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     t << "# ==============================================================================" << "\n" << endl;
     t << endl;
     t << "MAKEFILE          = " << wrapperFile.fileName() << endl;
-    t << "QMAKE             = " << Option::fixPathToTargetOS(var("QMAKE_QMAKE")) << endl;
+    t << "QMAKE             = " << var("QMAKE_QMAKE") << endl;
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
     t << "MOVE              = " << var("QMAKE_MOVE") << endl;

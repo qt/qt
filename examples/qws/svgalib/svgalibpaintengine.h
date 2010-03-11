@@ -48,12 +48,12 @@
 class SvgalibPaintEngine : public QRasterPaintEngine
 {
 public:
-    SvgalibPaintEngine();
+    SvgalibPaintEngine(QPaintDevice *device);
     ~SvgalibPaintEngine();
 
     bool begin(QPaintDevice *device);
     bool end();
-    void updateState(const QPaintEngineState &state);
+    void updateState();
     void drawRects(const QRect *rects, int rectCount);
 
 private:
@@ -64,7 +64,7 @@ private:
     bool simplePen;
     QBrush brush;
     bool simpleBrush;
-    QMatrix matrix;
+    QTransform matrix;
     bool simpleMatrix;
     QRegion clip;
     bool clipEnabled;

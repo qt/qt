@@ -221,6 +221,7 @@ private slots:
     void nanInf();
     void utf8IncompleteAtBufferBoundary_data();
     void utf8IncompleteAtBufferBoundary();
+    void writeSeekWriteNoBOM();
 
     // status
     void status_real_read_data();
@@ -1845,6 +1846,63 @@ void tst_QTextStream::utf8IncompleteAtBufferBoundary()
         QVERIFY2(line.endsWith(lineContents), QString("Line %1: %2").arg(i).arg(line).toLocal8Bit());
     } while (!in.atEnd());
 }
+
+// ------------------------------------------------------------------------------
+
+// Make sure we don't write a BOM after seek()ing
+
+void tst_QTextStream::writeSeekWriteNoBOM()
+{
+
+    //First with the default codec (normally either latin-1 or UTF-8)
+
+    QBuffer out;
+    out.open(QIODevice::WriteOnly);
+    QTextStream stream(&out);
+
+    int number = 0;
+    QString sizeStr = QLatin1String("Size=")
+        + QString::number(number).rightJustified(10, QLatin1Char('0'));
+    stream << sizeStr << endl;
+    stream << "Version=" << QString::number(14) << endl;
+    stream << "blah blah blah" << endl;
+    stream.flush();
+
+    QCOMPARE(out.buffer().constData(), "Size=0000000000\nVersion=14\nblah blah blah\n");
+
+    // Now overwrite the size header item
+    number = 42;
+    stream.seek(0);
+    sizeStr = QLatin1String("Size=")
+        + QString::number(number).rightJustified(10, QLatin1Char('0'));
+    stream << sizeStr << endl;
+    stream.flush();
+
+    // Check buffer is still OK
+    QCOMPARE(out.buffer().constData(), "Size=0000000042\nVersion=14\nblah blah blah\n");
+
+
+    //Then UTF-16
+
+    QBuffer out16;
+    out16.open(QIODevice::WriteOnly);
+    QTextStream stream16(&out16);
+    stream16.setCodec("UTF-16");
+
+    stream16 << "one" << "two" << QLatin1String("three");
+    stream16.flush();
+
+    // save that output
+    QByteArray first = out16.buffer();
+
+    stream16.seek(0);
+    stream16 << "one";
+    stream16.flush();
+
+    QCOMPARE(out16.buffer(), first);
+}
+
+
 
 // ------------------------------------------------------------------------------
 void tst_QTextStream::generateOperatorCharData(bool for_QString)

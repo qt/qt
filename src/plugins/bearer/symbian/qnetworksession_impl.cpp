@@ -141,7 +141,10 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
 
     if (state != QNetworkSession::Connected) {
         // There were no open connections to used IAP or SNAP
-        if ((privateConfiguration(publicConfig)->state & QNetworkConfiguration::Discovered) ==
+        if (iError == QNetworkSession::InvalidConfigurationError) {
+            newState(QNetworkSession::Invalid);
+        }
+        else if ((privateConfiguration(publicConfig)->state & QNetworkConfiguration::Discovered) ==
             QNetworkConfiguration::Discovered) {
             newState(QNetworkSession::Disconnected);
         } else {
@@ -231,13 +234,23 @@ QNetworkSession::SessionError QNetworkSessionPrivateImpl::error() const
 
 void QNetworkSessionPrivateImpl::open()
 {
-    if (isOpen || !privateConfiguration(publicConfig) || (state == QNetworkSession::Connecting)) {
+    if (isOpen || (state == QNetworkSession::Connecting)) {
         return;
     }
 
     // Cancel notifications from RConnectionMonitor
     // => RConnection::ProgressNotification will be used for IAP/SNAP monitoring
     iConnectionMonitor.CancelNotifications();
+
+    // Configuration must be at least in Discovered - state for connecting purposes.
+    if ((publicConfig.state() & QNetworkConfiguration::Discovered) !=
+                QNetworkConfiguration::Discovered) {
+        newState(QNetworkSession::Invalid);
+        iError = QNetworkSession::InvalidConfigurationError;
+        emit QNetworkSessionPrivate::error(iError);
+        syncStateWithInterface();
+        return;
+    }
     
     TInt error = iSocketServ.Connect();
     if (error != KErrNone) {

@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QObject;
-class QMetaObject;
+struct QMetaObject;
 template<typename T>
 struct QDeclarativeListProperty {
     typedef void (*AppendFunction)(QDeclarativeListProperty<T> *, T*);

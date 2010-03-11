@@ -2972,6 +2972,34 @@ For example:
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 51
 
+    It is possible to modify this default behavior of \c SUBDIRS by giving
+    additional modifiers to \c SUBDIRS elements. Supported modifiers are:
+
+    \table
+    \header \o Modifier \o Effect
+    \row \o .subdir     \o Use the specified subdirectory instead of \c SUBDIRS value.
+    \row \o .file       \o Specify the subproject \c pro file explicitly. Cannot be
+                        used in conjunction with \c .subdir modifier.
+    \row \o .condition  \o Specifies a \c bld.inf define that must be true for
+                        subproject to be built. Available only on Symbian platform.
+    \row \o .depends    \o This subproject depends on specified subproject.
+                        Available only on platforms that use makefiles.
+    \row \o .makefile   \o The makefile of subproject.
+                        Available only on platforms that use makefiles.
+    \row \o .target     \o Base string used for makefile targets related to this
+                        subproject.
+                        Available only on platforms that use makefiles.
+    \endtable
+
+    For example, define two subdirectories, both of which reside in a different directory
+    than the \c SUBDIRS value, and one of the subdirectories must be built before the other:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 149
+
+    For example, define a subdirectory that is only build for emulator builds in Qt for Symbian:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 150
+
     \target TARGET
     \section1 TARGET
 

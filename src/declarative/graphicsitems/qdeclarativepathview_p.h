@@ -52,19 +52,20 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativePathViewPrivate;
+class QDeclarativePathViewAttached;
 class Q_DECLARATIVE_EXPORT QDeclarativePathView : public QDeclarativeItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QVariant model READ model WRITE setModel)
-    Q_PROPERTY(QDeclarativePath *path READ path WRITE setPath)
+    Q_PROPERTY(QVariant model READ model WRITE setModel NOTIFY modelChanged)
+    Q_PROPERTY(QDeclarativePath *path READ path WRITE setPath NOTIFY pathChanged)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(qreal offset READ offset WRITE setOffset NOTIFY offsetChanged)
-    Q_PROPERTY(qreal snapPosition READ snapPosition WRITE setSnapPosition)
-    Q_PROPERTY(qreal dragMargin READ dragMargin WRITE setDragMargin)
+    Q_PROPERTY(qreal snapPosition READ snapPosition WRITE setSnapPosition NOTIFY snapPositionChanged)
+    Q_PROPERTY(qreal dragMargin READ dragMargin WRITE setDragMargin NOTIFY dragMarginChanged)
     Q_PROPERTY(int count READ count)
-    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate)
-    Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount)
+    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
+    Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount NOTIFY pathItemCountChanged)
 
 public:
     QDeclarativePathView(QDeclarativeItem *parent=0);
@@ -96,11 +97,17 @@ public:
     int pathItemCount() const;
     void setPathItemCount(int);
 
-    static QObject *qmlAttachedProperties(QObject *);
+    static QDeclarativePathViewAttached *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
     void currentIndexChanged();
     void offsetChanged();
+    void modelChanged();
+    void pathChanged();
+    void dragMarginChanged();
+    void snapPositionChanged();
+    void delegateChanged();
+    void pathItemCountChanged();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -121,10 +128,56 @@ private Q_SLOTS:
 
 private:
     friend class QDeclarativePathViewAttached;
-    static QHash<QObject*, QObject*> attachedProperties;
     Q_DISABLE_COPY(QDeclarativePathView)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativePathView)
 };
+
+class QDeclarativeOpenMetaObject;
+class QDeclarativePathViewAttached : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QDeclarativePathView *view READ view CONSTANT)
+    Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
+    Q_PROPERTY(bool onPath READ isOnPath NOTIFY pathChanged)
+
+public:
+    QDeclarativePathViewAttached(QObject *parent);
+    ~QDeclarativePathViewAttached();
+
+    QDeclarativePathView *view() { return m_view; }
+
+    bool isCurrentItem() const { return m_isCurrent; }
+    void setIsCurrentItem(bool c) {
+        if (m_isCurrent != c) {
+            m_isCurrent = c;
+            emit currentItemChanged();
+        }
+    }
+
+    QVariant value(const QByteArray &name) const;
+    void setValue(const QByteArray &name, const QVariant &val);
+
+    bool isOnPath() const { return m_onPath; }
+    void setOnPath(bool on) {
+        if (on != m_onPath) {
+            m_onPath = on;
+            emit pathChanged();
+        }
+    }
+
+Q_SIGNALS:
+    void currentItemChanged();
+    void pathChanged();
+
+private:
+    friend class QDeclarativePathViewPrivate;
+    QDeclarativePathView *m_view;
+    QDeclarativeOpenMetaObject *m_metaobject;
+    bool m_onPath : 1;
+    bool m_isCurrent : 1;
+};
+
 
 QT_END_NAMESPACE
 

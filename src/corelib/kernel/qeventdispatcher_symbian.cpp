@@ -733,7 +733,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
             }
 
             TInt error;
-            handledSymbianEvent = CActiveScheduler::RunIfReady(error, CActive::EPriorityIdle);
+            handledSymbianEvent = CActiveScheduler::RunIfReady(error, KMinTInt);
             if (error) {
                 qWarning("CActiveScheduler::RunIfReady() returned error: %i\n", error);
                 CActiveScheduler::Current()->Error(error);

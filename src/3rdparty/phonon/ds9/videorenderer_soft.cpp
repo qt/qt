@@ -45,7 +45,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #ifndef QT_NO_OPENGL
-#include <gl/gl.h>
+#include <GL/gl.h>
 #ifndef GL_FRAGMENT_PROGRAM_ARB
 #define GL_FRAGMENT_PROGRAM_ARB           0x8804
 #define GL_PROGRAM_FORMAT_ASCII_ARB       0x8875

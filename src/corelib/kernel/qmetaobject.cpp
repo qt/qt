@@ -974,7 +974,7 @@ QByteArray QMetaObject::normalizedType(const char *type)
     if (!type || !*type)
         return result;
 
-    QVarLengthArray<char> stackbuf(int(strlen(type)) + 1);
+    QVarLengthArray<char> stackbuf(qstrlen(type) + 1);
     qRemoveWhitespace(type, stackbuf.data());
     int templdepth = 0;
     qNormalizeType(stackbuf.data(), templdepth, result);
@@ -1137,8 +1137,11 @@ bool QMetaObject::invokeMethod(QObject *obj,
         idx = obj->metaObject()->indexOfMethod(norm.constData());
     }
 
-    if (idx < 0 || idx >= obj->metaObject()->methodCount())
+    if (idx < 0 || idx >= obj->metaObject()->methodCount()) {
+        qWarning("QMetaObject::invokeMethod: No such method %s::%s",
+                 obj->metaObject()->className(), sig.constData());
         return false;
+    }
     QMetaMethod method = obj->metaObject()->method(idx);
     return method.invoke(obj, type, ret,
                          val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);

@@ -320,6 +320,15 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
     \o Error - an error occurred while loading the QML source
     \endlist
 
+    Note that a change in the status property does not cause anything to happen
+    (although it reflects what has happened to the loader internally). If you wish
+    to react to the change in status you need to do it yourself, for example in one
+    of the following ways:
+    \list
+    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: loader.status = Loader.Ready;}
+    \o Do something inside the onStatusChanged signal handler, e.g. Loader{id: loader; onStatusChanged: if(loader.status == Loader.Ready) console.log('Loaded');}
+    \o Bind to the status variable somewhere, e.g. Text{text: if(loader.status!=Loader.Ready){'Not Loaded';}else{'Loaded';}}
+    \endlist
     \sa progress
 */
 

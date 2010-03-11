@@ -247,7 +247,8 @@ public:
     virtual bool supportsMergedBuilds() { return false; }
     virtual bool mergeBuildProject(MakefileGenerator * /*other*/) { return false; }
     virtual bool openOutput(QFile &, const QString &build) const;
-    virtual bool isWindowsShell() const { return Option::target_mode == Option::TARG_WIN_MODE; }
+    virtual bool isWindowsShell() const { return Option::host_mode == Option::HOST_WIN_MODE; }
+    virtual bool isForSymbianSbsv2() const { return false; } // FIXME: killme - i'm ugly!
 
     /* The next one is to avoid having SymbianCommonGenerator as a virtually
        inherited class of this class. Instead it is without a base class

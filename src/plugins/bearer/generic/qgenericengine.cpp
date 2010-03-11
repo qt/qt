@@ -63,6 +63,7 @@
 #include <unistd.h>
 #endif
 
+QT_BEGIN_NAMESPACE
 
 static QString qGetInterfaceType(const QString &interface)
 {
@@ -141,9 +142,6 @@ static QString qGetInterfaceType(const QString &interface)
 QGenericEngine::QGenericEngine(QObject *parent)
 :   QBearerEngineImpl(parent)
 {
-    connect(&pollTimer, SIGNAL(timeout()), this, SLOT(doRequestUpdate()));
-    pollTimer.setInterval(10000);
-    doRequestUpdate();
 }
 
 QGenericEngine::~QGenericEngine()
@@ -178,8 +176,7 @@ void QGenericEngine::requestUpdate()
 {
     QMutexLocker locker(&mutex);
 
-    pollTimer.stop();
-    QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
+    doRequestUpdate();
 }
 
 void QGenericEngine::doRequestUpdate()
@@ -281,8 +278,6 @@ void QGenericEngine::doRequestUpdate()
         emit configurationRemoved(ptr);
     }
 
-    pollTimer.start();
-
     emit updateCompleted();
 }
 
@@ -325,6 +320,12 @@ QNetworkSessionPrivate *QGenericEngine::createSessionBackend()
 QNetworkConfigurationPrivatePointer QGenericEngine::defaultConfiguration()
 {
     return QNetworkConfigurationPrivatePointer();
+}
+
+
+bool QGenericEngine::requiresPolling() const
+{
+    return true;
 }
 
 QT_END_NAMESPACE

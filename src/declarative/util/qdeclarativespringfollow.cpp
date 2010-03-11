@@ -213,6 +213,7 @@ void QDeclarativeSpringFollowPrivate::stop()
 
 /*!
     \qmlclass SpringFollow QDeclarativeSpringFollow
+    \since 4.7
     \brief The SpringFollow element allows a property to track a value.
 
     In example below, \e rect2 will follow \e rect1 moving with a velocity of up to 200:
@@ -221,8 +222,8 @@ void QDeclarativeSpringFollowPrivate::stop()
         id: rect1
         width: 20; height: 20
         color: "#00ff00"
-        y: 200  //initial value
-        y: SequentialAnimation {
+        y: 200  // initial value
+        SequentialAnimation on y {
             running: true
             repeat: true
             NumberAnimation {
@@ -238,7 +239,7 @@ void QDeclarativeSpringFollowPrivate::stop()
         x: rect1.width
         width: 20; height: 20
         color: "#ff0000"
-        y: SpringFollow { source: rect1.y; velocity: 200 }
+        SpringFollow on y { source: rect1.y; velocity: 200 }
     }
     \endcode
 

@@ -199,7 +199,7 @@ class QDisabledNetworkReply : public QNetworkReply
 
 public:
     QDisabledNetworkReply(QObject *parent, const QNetworkRequest &req,
-                          const QNetworkAccessManager::Operation op);
+                          QNetworkAccessManager::Operation op);
     ~QDisabledNetworkReply();
 
     void abort() { }

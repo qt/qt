@@ -73,10 +73,21 @@ public:
     ~QDeclarativeObjectMethodScriptClass();
 
     QScriptValue newMethod(QObject *, const QDeclarativePropertyCache::Data *);
+
 protected:
     virtual Value call(Object *, QScriptContext *);
+    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, QScriptClass::QueryFlags flags);
+    virtual Value property(Object *, const Identifier &);
 
 private:
+    PersistentIdentifier m_connectId;
+    PersistentIdentifier m_disconnectId;
+    QScriptValue m_connect;
+    QScriptValue m_disconnect;
+
+    static QScriptValue connect(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue disconnect(QScriptContext *context, QScriptEngine *engine);
+
     QDeclarativeEngine *engine;
 };
 #endif
@@ -119,6 +130,7 @@ protected:
 
 private:
 #if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
+    friend class QDeclarativeObjectMethodScriptClass;
     QDeclarativeObjectMethodScriptClass methods;
 #endif
 

@@ -806,9 +806,8 @@ MakefileGenerator::init()
     }
 
     // escape qmake command
-    if (!project->isEmpty("QMAKE_QMAKE")) {
-        project->values("QMAKE_QMAKE") = escapeFilePaths(project->values("QMAKE_QMAKE"));
-    }
+    QStringList &qmk = project->values("QMAKE_QMAKE");
+    qmk = escapeFilePaths(qmk);
 }
 
 bool
@@ -2097,7 +2096,7 @@ MakefileGenerator::writeExtraVariables(QTextStream &t)
 bool
 MakefileGenerator::writeStubMakefile(QTextStream &t)
 {
-    t << "QMAKE    = "        << (project->isEmpty("QMAKE_QMAKE") ? QString("qmake") : var("QMAKE_QMAKE")) << endl;
+    t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
     QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
     for(QStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
         t << *it << " ";
@@ -2152,12 +2151,14 @@ QString MakefileGenerator::buildArgs(const QString &outdir)
         ret += " -nodependheuristics";
     if(!Option::mkfile::qmakespec_commandline.isEmpty())
         ret += " -spec " + specdir(outdir);
-    if(Option::target_mode == Option::TARG_MACX_MODE)
-        ret += " -macx";
-    else if(Option::target_mode == Option::TARG_UNIX_MODE)
-        ret += " -unix";
-    else if(Option::target_mode == Option::TARG_WIN_MODE)
-        ret += " -win32";
+    if (Option::target_mode_overridden) {
+        if (Option::target_mode == Option::TARG_MACX_MODE)
+            ret += " -macx";
+        else if (Option::target_mode == Option::TARG_UNIX_MODE)
+            ret += " -unix";
+        else if (Option::target_mode == Option::TARG_WIN_MODE)
+            ret += " -win32";
+    }
 
     //configs
     for(QStringList::Iterator it = Option::user_configs.begin();
@@ -2210,8 +2211,7 @@ MakefileGenerator::writeHeader(QTextStream &t)
     t << "# Project:  " << fileFixify(project->projectFile()) << endl;
     t << "# Template: " << var("TEMPLATE") << endl;
     if(!project->isActiveConfig("build_pass"))
-        t << "# Command: " << build_args().replace("$(QMAKE)",
-                      (project->isEmpty("QMAKE_QMAKE") ? QString("qmake") : var("QMAKE_QMAKE"))) << endl;
+        t << "# Command: " << build_args().replace("$(QMAKE)", var("QMAKE_QMAKE")) << endl;
     t << "#############################################################################" << endl;
     t << endl;
 }
@@ -2344,7 +2344,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         t << "MAKEFILE      = " << ofile << endl;
         /* Calling Option::fixPathToTargetOS() is necessary for MinGW/MSYS, which requires
          * back-slashes to be turned into slashes. */
-        t << "QMAKE         = " << Option::fixPathToTargetOS(var("QMAKE_QMAKE")) << endl;
+        t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;
         t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
         t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << endl;
         t << "MKDIR         = " << var("QMAKE_MKDIR") << endl;

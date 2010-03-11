@@ -43,7 +43,6 @@
   tree.cpp
 */
 
-#include <QtCore>
 #include <QDomDocument>
 
 #include "atom.h"
@@ -53,6 +52,8 @@
 #include "node.h"
 #include "text.h"
 #include "tree.h"
+
+#include <limits.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -44,7 +44,6 @@
 
 #include <qdeclarativestate_p.h>
 #include <qdeclarativeopenmetaobject_p.h>
-
 #include <QDebug>
 #include <QEvent>
 #include <qlistmodelinterface_p.h>
@@ -64,57 +63,52 @@ inline qreal qmlMod(qreal x, qreal y)
         return fmod(x, y);
 }
 
+static QDeclarativeOpenMetaObjectType *qPathViewAttachedType = 0;
 
-class QDeclarativePathViewAttached : public QObject
+QDeclarativePathViewAttached::QDeclarativePathViewAttached(QObject *parent)
+: QObject(parent), m_view(0), m_onPath(false), m_isCurrent(false)
 {
-    Q_OBJECT
-
-    Q_PROPERTY(bool onPath READ isOnPath NOTIFY onPathChanged)
-public:
-    QDeclarativePathViewAttached(QObject *parent)
-    : QObject(parent), mo(new QDeclarativeOpenMetaObject(this)), onPath(false)
-    {
+    if (qPathViewAttachedType) {
+        m_metaobject = new QDeclarativeOpenMetaObject(this, qPathViewAttachedType);
+        m_metaobject->setCached(true);
+    } else {
+        m_metaobject = new QDeclarativeOpenMetaObject(this);
     }
+}
 
-    ~QDeclarativePathViewAttached()
-    {
-        QDeclarativePathView::attachedProperties.remove(parent());
-    }
+QDeclarativePathViewAttached::~QDeclarativePathViewAttached()
+{
+}
 
-    QVariant value(const QByteArray &name) const
-    {
-        return mo->value(name);
-    }
-    void setValue(const QByteArray &name, const QVariant &val)
-    {
-        mo->setValue(name, val);
-    }
-
-    bool isOnPath() const { return onPath; }
-    void setOnPath(bool on) {
-        if (on != onPath) {
-            onPath = on;
-            emit onPathChanged();
-        }
-    }
-
-Q_SIGNALS:
-    void onPathChanged();
-
-private:
-    QDeclarativeOpenMetaObject *mo;
-    bool onPath;
-};
-
+QVariant QDeclarativePathViewAttached::value(const QByteArray &name) const
+{
+    return m_metaobject->value(name);
+}
+void QDeclarativePathViewAttached::setValue(const QByteArray &name, const QVariant &val)
+{
+    m_metaobject->setValue(name, val);
+}
 
 QDeclarativeItem *QDeclarativePathViewPrivate::getItem(int modelIndex)
 {
     Q_Q(QDeclarativePathView);
     requestedIndex = modelIndex;
-    QDeclarativeItem *item = model->item(modelIndex);
+    QDeclarativeItem *item = model->item(modelIndex, false);
     if (item) {
-        if (QObject *obj = QDeclarativePathView::qmlAttachedProperties(item))
-            static_cast<QDeclarativePathViewAttached *>(obj)->setOnPath(true);
+        if (!attType) {
+            // pre-create one metatype to share with all attached objects
+            attType = new QDeclarativeOpenMetaObjectType(&QDeclarativePathViewAttached::staticMetaObject, qmlEngine(q));
+            foreach(const QString &attr, path->attributes()) {
+                attType->createProperty(attr.toUtf8());
+            }
+        }
+        qPathViewAttachedType = attType;
+        QDeclarativePathViewAttached *att = static_cast<QDeclarativePathViewAttached *>(qmlAttachedPropertiesObject<QDeclarativePathView>(item));
+        qPathViewAttachedType = 0;
+        if (att) {
+            att->m_view = q;
+            att->setOnPath(true);
+        }
         item->setParentItem(q);
     }
     requestedIndex = -1;
@@ -125,13 +119,25 @@ void QDeclarativePathViewPrivate::releaseItem(QDeclarativeItem *item)
 {
     if (!item || !model)
         return;
-    if (QObject *obj = QDeclarativePathView::qmlAttachedProperties(item))
-        static_cast<QDeclarativePathViewAttached *>(obj)->setOnPath(false);
-    if (model->release(item) == 0) {
-        if (QObject *obj = QDeclarativePathView::qmlAttachedProperties(item))
-            static_cast<QDeclarativePathViewAttached *>(obj)->setOnPath(false);
-    }
+    if (QDeclarativePathViewAttached *att = attached(item))
+        att->setOnPath(false);
+    model->release(item);
 }
+
+QDeclarativePathViewAttached *QDeclarativePathViewPrivate::attached(QDeclarativeItem *item)
+{
+    return static_cast<QDeclarativePathViewAttached *>(qmlAttachedPropertiesObject<QDeclarativePathView>(item, false));
+}
+
+void QDeclarativePathViewPrivate::clear()
+{
+    for (int i=0; i<items.count(); i++){
+        QDeclarativeItem *p = items[i];
+        releaseItem(p);
+    }
+    items.clear();
+}
+
 
 /*!
     \qmlclass PathView QDeclarativePathView
@@ -147,6 +153,11 @@ void QDeclarativePathViewPrivate::releaseItem(QDeclarativeItem *item)
 
     \image pathview.gif
 
+    Note that views do not enable \e clip automatically.  If the view
+    is not clipped by another item or the screen, it will be necessary
+    to set \e {clip: true} in order to have the out of view items clipped
+    nicely.
+
     \sa Path
 */
 
@@ -160,6 +171,9 @@ QDeclarativePathView::QDeclarativePathView(QDeclarativeItem *parent)
 QDeclarativePathView::~QDeclarativePathView()
 {
     Q_D(QDeclarativePathView);
+    d->clear();
+    if (d->attType)
+        d->attType->release();
     if (d->ownModel)
         delete d->model;
 }
@@ -185,6 +199,15 @@ QDeclarativePathView::~QDeclarativePathView()
 */
 
 /*!
+    \qmlattachedproperty bool PathView::isCurrentItem
+    This attached property is true if this delegate is the current item; otherwise false.
+
+    It is attached to each instance of the delegate.
+
+    This property may be used to adjust the appearance of the current item.
+*/
+
+/*!
     \qmlproperty model PathView::model
     This property holds the model providing data for the view.
 
@@ -203,6 +226,9 @@ QVariant QDeclarativePathView::model() const
 void QDeclarativePathView::setModel(const QVariant &model)
 {
     Q_D(QDeclarativePathView);
+    if (d->modelVariant == model)
+        return;
+
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
@@ -242,6 +268,7 @@ void QDeclarativePathView::setModel(const QVariant &model)
     d->pathOffset = 0;
     d->regenerate();
     d->fixOffset();
+    emit modelChanged();
 }
 
 /*!
@@ -269,9 +296,19 @@ QDeclarativePath *QDeclarativePathView::path() const
 void QDeclarativePathView::setPath(QDeclarativePath *path)
 {
     Q_D(QDeclarativePathView);
+    if (d->path == path)
+        return;
+    if (d->path)
+        disconnect(d->path, SIGNAL(changed()), this, SLOT(refill()));
     d->path = path;
     connect(d->path, SIGNAL(changed()), this, SLOT(refill()));
+    d->clear();
+    if (d->attType) {
+        d->attType->release();
+        d->attType = 0;
+    }
     d->regenerate();
+    emit pathChanged();
 }
 
 /*!
@@ -290,12 +327,25 @@ void QDeclarativePathView::setCurrentIndex(int idx)
     if (d->model && d->model->count())
         idx = qAbs(idx % d->model->count());
     if (d->model && idx != d->currentIndex) {
+        if (d->model->count()) {
+            int itemIndex = (d->currentIndex - d->firstIndex + d->model->count()) % d->model->count();
+            if (itemIndex < d->items.count()) {
+                if (QDeclarativeItem *item = d->items.at(d->currentIndex)) {
+                    if (QDeclarativePathViewAttached *att = d->attached(item))
+                        att->setIsCurrentItem(false);
+                }
+            }
+        }
         d->currentIndex = idx;
         if (d->model->count()) {
             d->snapToCurrent();
             int itemIndex = (idx - d->firstIndex + d->model->count()) % d->model->count();
-            if (itemIndex < d->items.count())
-                d->items.at(itemIndex)->setFocus(true);
+            if (itemIndex < d->items.count()) {
+                QDeclarativeItem *item = d->items.at(itemIndex);
+                item->setFocus(true);
+                if (QDeclarativePathViewAttached *att = d->attached(item))
+                    att->setIsCurrentItem(true);
+            }
         }
         emit currentIndexChanged();
     }
@@ -333,7 +383,7 @@ void QDeclarativePathViewPrivate::setOffset(qreal o)
 /*!
     \qmlproperty real PathView::snapPosition
 
-    This property determines the position (0-100) the nearest item will snap to.
+    This property determines the position (0.0-1.0) the nearest item will snap to.
 */
 qreal QDeclarativePathView::snapPosition() const
 {
@@ -344,8 +394,12 @@ qreal QDeclarativePathView::snapPosition() const
 void QDeclarativePathView::setSnapPosition(qreal pos)
 {
     Q_D(QDeclarativePathView);
-    d->snapPos = pos/100;
+    qreal normalizedPos = pos - int(pos);
+    if (qFuzzyCompare(normalizedPos, d->snapPos))
+        return;
+    d->snapPos = normalizedPos;
     d->fixOffset();
+    emit snapPositionChanged();
 }
 
 /*!
@@ -365,7 +419,10 @@ qreal QDeclarativePathView::dragMargin() const
 void QDeclarativePathView::setDragMargin(qreal dragMargin)
 {
     Q_D(QDeclarativePathView);
+    if (d->dragMargin == dragMargin)
+        return;
     d->dragMargin = dragMargin;
+    emit dragMarginChanged();
 }
 
 /*!
@@ -392,16 +449,19 @@ QDeclarativeComponent *QDeclarativePathView::delegate() const
     return 0;
 }
 
-void QDeclarativePathView::setDelegate(QDeclarativeComponent *c)
+void QDeclarativePathView::setDelegate(QDeclarativeComponent *delegate)
 {
     Q_D(QDeclarativePathView);
+    if (delegate == this->delegate())
+        return;
     if (!d->ownModel) {
         d->model = new QDeclarativeVisualDataModel(qmlContext(this));
         d->ownModel = true;
     }
     if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model)) {
-        dataModel->setDelegate(c);
+        dataModel->setDelegate(delegate);
         d->regenerate();
+        emit delegateChanged();
     }
 }
 
@@ -422,6 +482,7 @@ void QDeclarativePathView::setPathItemCount(int i)
         return;
     d->pathItems = i;
     d->regenerate();
+    pathItemCountChanged();
 }
 
 QPointF QDeclarativePathViewPrivate::pointNear(const QPointF &point, qreal *nearPercent) const
@@ -631,11 +692,7 @@ void QDeclarativePathViewPrivate::regenerate()
     if (!q->isComponentComplete())
         return;
 
-    for (int i=0; i<items.count(); i++){
-        QDeclarativeItem *p = items[i];
-        releaseItem(p);
-    }
-    items.clear();
+    clear();
 
     if (!isValid())
         return;
@@ -655,17 +712,25 @@ void QDeclarativePathViewPrivate::regenerate()
         }
         items.append(item);
         item->setZValue(i);
-        if (currentIndex == index)
+        qreal percent = i * (100. / numItems) + _offset;
+        percent = qAbs(qmlMod(percent, qreal(100.0))/100.0);
+        updateItem(item, percent);
+        model->completeItem();
+        if (currentIndex == index) {
             item->setFocus(true);
+            if (QDeclarativePathViewAttached *att = attached(item))
+                att->setIsCurrentItem(true);
+        }
     }
-    q->refill();
+    if (pathItems != -1)
+        q->refill();
 }
 
 void QDeclarativePathViewPrivate::updateItem(QDeclarativeItem *item, qreal percent)
 {
-    if (QObject *obj = QDeclarativePathView::qmlAttachedProperties(item)) {
+    if (QDeclarativePathViewAttached *att = attached(item)) {
         foreach(const QString &attr, path->attributes())
-            static_cast<QDeclarativePathViewAttached *>(obj)->setValue(attr.toUtf8(), path->attributeAt(attr, percent));
+            att->setValue(attr.toUtf8(), path->attributeAt(attr, percent));
     }
     QPointF pf = path->pointAt(percent);
     item->setX(pf.x() - item->width()*item->scale()/2);
@@ -715,8 +780,12 @@ void QDeclarativePathView::refill()
                 int index = (d->firstIndex + d->items.count())%d->model->count();
                 QDeclarativeItem *item = d->getItem(index);
                 item->setZValue(wrapIndex);
-                if (d->currentIndex == index)
+                d->model->completeItem();
+                if (d->currentIndex == index) {
                     item->setFocus(true);
+                    if (QDeclarativePathViewAttached *att = d->attached(item))
+                        att->setIsCurrentItem(true);
+                }
                 d->items << item;
                 d->pathOffset++;
                 d->pathOffset=d->pathOffset % d->items.count();
@@ -731,8 +800,12 @@ void QDeclarativePathView::refill()
                     d->firstIndex = d->model->count() - 1;
                 QDeclarativeItem *item = d->getItem(d->firstIndex);
                 item->setZValue(d->firstIndex);
-                if (d->currentIndex == d->firstIndex)
+                d->model->completeItem();
+                if (d->currentIndex == d->firstIndex) {
                     item->setFocus(true);
+                    if (QDeclarativePathViewAttached *att = d->attached(item))
+                        att->setIsCurrentItem(true);
+                }
                 d->items.prepend(item);
                 d->pathOffset--;
                 if (d->pathOffset < 0)
@@ -757,6 +830,7 @@ void QDeclarativePathView::itemsInserted(int modelIndex, int count)
         for (int i = 0; i < count; ++i) {
             QDeclarativeItem *item = d->getItem(modelIndex + i);
             item->setZValue(modelIndex + i);
+            d->model->completeItem();
             d->items.insert(modelIndex + i, item);
         }
         refill();
@@ -887,10 +961,21 @@ void QDeclarativePathViewPrivate::updateCurrent()
         return;
     int idx = calcCurrentIndex();
     if (model && idx != currentIndex) {
+        int itemIndex = (currentIndex - firstIndex + model->count()) % model->count();
+        if (itemIndex < items.count()) {
+            if (QDeclarativeItem *item = items.at(itemIndex)) {
+                if (QDeclarativePathViewAttached *att = attached(item))
+                    att->setIsCurrentItem(false);
+            }
+        }
         currentIndex = idx;
-        int itemIndex = (idx - firstIndex + model->count()) % model->count();
-        if (itemIndex < items.count())
-            items.at(itemIndex)->setFocus(true);
+        itemIndex = (idx - firstIndex + model->count()) % model->count();
+        if (itemIndex < items.count()) {
+            QDeclarativeItem *item = items.at(itemIndex);
+            item->setFocus(true);
+            if (QDeclarativePathViewAttached *att = attached(item))
+                att->setIsCurrentItem(true);
+        }
         emit q->currentIndexChanged();
     }
 }
@@ -971,17 +1056,10 @@ void QDeclarativePathViewPrivate::snapToCurrent()
     }
 }
 
-QHash<QObject*, QObject*> QDeclarativePathView::attachedProperties;
-QObject *QDeclarativePathView::qmlAttachedProperties(QObject *obj)
+QDeclarativePathViewAttached *QDeclarativePathView::qmlAttachedProperties(QObject *obj)
 {
-    QObject *rv = attachedProperties.value(obj);
-    if (!rv) {
-        rv = new QDeclarativePathViewAttached(obj);
-        attachedProperties.insert(obj, rv);
-    }
-    return rv;
+    return new QDeclarativePathViewAttached(obj);
 }
 
 QT_END_NAMESPACE
 
-#include <qdeclarativepathview.moc>

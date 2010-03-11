@@ -150,6 +150,10 @@ Win32MakefileGenerator::findLibraries(const QString &where)
                     if(QMakeMetaInfo::libExists((*it).local() + Option::dir_sep + lib) ||
                        exists((*it).local() + Option::dir_sep + lib + extension)) {
                         out = (*it).real() + Option::dir_sep + lib + extension;
+                        if (out.contains(QLatin1Char(' '))) {
+                            out.prepend(QLatin1Char('\"'));
+                            out.append(QLatin1Char('\"'));
+                        }
                         break;
                     }
                 }
@@ -591,8 +595,7 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     writeIncPart(t);
     writeLibsPart(t);
 
-    t << "QMAKE         = " << (project->isEmpty("QMAKE_QMAKE") ? QString("qmake") :
-                              Option::fixPathToTargetOS(var("QMAKE_QMAKE"), false)) << endl;
+    t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;
     t << "IDC           = " << (project->isEmpty("QMAKE_IDC") ? QString("idc") :
                               Option::fixPathToTargetOS(var("QMAKE_IDC"), false)) << endl;
     t << "IDL           = " << (project->isEmpty("QMAKE_IDL") ? QString("midl") :
@@ -764,6 +767,11 @@ QString Win32MakefileGenerator::getLibTarget()
     return QString(project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".lib");
 }
 
+QString Win32MakefileGenerator::getPdbTarget()
+{
+    return QString(project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".pdb");
+}
+
 QString Win32MakefileGenerator::defaultInstall(const QString &t)
 {
     if((t != "target" && t != "dlltarget") ||
@@ -797,6 +805,18 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
             lib_target.remove('"');
             QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + lib_target;
             QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + lib_target, FileFixifyAbsolute));
+            if(!ret.isEmpty())
+                ret += "\n\t";
+            ret += QString("-$(INSTALL_FILE)") + " \"" + src_targ + "\" \"" + dst_targ + "\"";
+            if(!uninst.isEmpty())
+                uninst.append("\n\t");
+            uninst.append("-$(DEL_FILE) \"" + dst_targ + "\"");
+        }
+        if(project->isActiveConfig("shared") && project->isActiveConfig("debug")) {
+            QString pdb_target = getPdbTarget();
+            pdb_target.remove('"');
+            QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + pdb_target;
+            QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + pdb_target, FileFixifyAbsolute));
             if(!ret.isEmpty())
                 ret += "\n\t";
             ret += QString("-$(INSTALL_FILE)") + " \"" + src_targ + "\" \"" + dst_targ + "\"";

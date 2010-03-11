@@ -53,7 +53,7 @@ class AbstractHelpViewer
 {
 public:
     AbstractHelpViewer();
-    ~AbstractHelpViewer();
+    virtual ~AbstractHelpViewer();
 
     virtual QFont viewerFont() const = 0;
     virtual void setViewerFont(const QFont &font) = 0;

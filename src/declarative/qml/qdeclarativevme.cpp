@@ -217,7 +217,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                             // TODO: parent might be a layout 
                         } 
                     } else { 
-			    QDeclarativeGraphics_setParent_noEvent(o, parent);
+			    QDeclarative_setParent_noEvent(o, parent);
        //                 o->setParent(parent); 
                     } 
                 }
@@ -538,13 +538,13 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
         case QDeclarativeInstruction::StoreSignal:
             {
                 QObject *target = stack.top();
-                // XXX scope
-                QMetaMethod signal = 
-                    target->metaObject()->method(instr.storeSignal.signalIndex);
+                QObject *context = stack.at(stack.count() - 1 - instr.assignBinding.context);
+                
+                QMetaMethod signal = target->metaObject()->method(instr.storeSignal.signalIndex);
 
                 QDeclarativeBoundSignal *bs = new QDeclarativeBoundSignal(target, signal, target);
                 QDeclarativeExpression *expr = 
-                    new QDeclarativeExpression(ctxt, primitives.at(instr.storeSignal.value), target);
+                    new QDeclarativeExpression(ctxt, primitives.at(instr.storeSignal.value), context);
                 expr->setSourceLocation(comp->name, instr.line);
                 bs->setExpression(expr);
             }

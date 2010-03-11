@@ -189,13 +189,8 @@ void QIcdEngine::doRequestUpdate()
     QList<QString> all_iaps;
     Maemo::IAPConf::getAll(all_iaps);
 
-    foreach (QString escaped_iap_id, all_iaps) {
+    foreach (QString iap_id, all_iaps) {
         QByteArray ssid;
-
-        /* The key that is returned by getAll() needs to be unescaped */
-        gchar *unescaped_id = gconf_unescape_key(escaped_iap_id.toUtf8().data(), -1);
-        QString iap_id = QString((char *)unescaped_id);
-        g_free(unescaped_id);
 
         previous.removeAll(iap_id);
 
@@ -211,14 +206,11 @@ void QIcdEngine::doRequestUpdate()
         QString iap_type = saved_ap.value("type").toString();
         if (iap_type.startsWith("WLAN")) {
             ssid = saved_ap.value("wlan_ssid").toByteArray();
-            if (ssid.isEmpty()) {
-                qWarning() << "Cannot get ssid for" << iap_id;
+            if (ssid.isEmpty())
                 continue;
-            }
 
             QString security_method = saved_ap.value("wlan_security").toString();
         } else if (iap_type.isEmpty()) {
-            qWarning() << "IAP" << iap_id << "network type is not set! Skipping it";
             continue;
         } else {
 #ifdef BEARER_MANAGEMENT_DEBUG
@@ -231,11 +223,12 @@ void QIcdEngine::doRequestUpdate()
             IcdNetworkConfigurationPrivate *cpPriv = new IcdNetworkConfigurationPrivate;
 
             cpPriv->name = saved_ap.value("name").toString();
-            if (cpPriv->name.isEmpty())
-                if (!ssid.isEmpty() && ssid.size() > 0)
-                    cpPriv->name = ssid.data();
-            else
-                cpPriv->name = iap_id;
+            if (cpPriv->name.isEmpty()) {
+                    if (!ssid.isEmpty() && ssid.size() > 0)
+                        cpPriv->name = ssid.data();
+                    else
+                        cpPriv->name = iap_id;
+            }
             cpPriv->isValid = true;
             cpPriv->id = iap_id;
             cpPriv->network_id = ssid;
@@ -274,7 +267,9 @@ void QIcdEngine::doRequestUpdate()
                                        scanned,
                                        error);
         if (!error.isEmpty()) {
-            qWarning() << "Network scanning failed" << error;
+#ifdef BEARER_MANAGEMENT_DEBUG
+            qDebug() << "Network scanning failed" << error;
+#endif
         } else {
 #ifdef BEARER_MANAGEMENT_DEBUG
             if (!scanned.isEmpty())
@@ -379,23 +374,17 @@ void QIcdEngine::deleteConfiguration(const QString &iap_id)
 {
     QMutexLocker locker(&mutex);
 
-    /* Called when IAPs are deleted in gconf, in this case we do not scan
-     * or read all the IAPs from gconf because it might take too much power
-     * (multiple applications would need to scan and read all IAPs from gconf)
+    /* Called when IAPs are deleted in db, in this case we do not scan
+     * or read all the IAPs from db because it might take too much power
+     * (multiple applications would need to scan and read all IAPs from db)
      */
-    if (accessPointConfigurations.contains(iap_id)) {
-        QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(iap_id);
-
-        if (ptr) {
-            ptr->isValid = false;
+    QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(iap_id);
+    if (ptr) {
 #ifdef BEARER_MANAGEMENT_DEBUG
-            qDebug() << "IAP" << iap_id << "was removed from storage.";
+        qDebug() << "IAP" << iap_id << "was removed from storage.";
 #endif
 
-            emit configurationRemoved(ptr);
-        } else {
-            qWarning("Configuration not found for IAP %s", iap_id.toAscii().data());
-        }
+        emit configurationRemoved(ptr);
     } else {
 #ifdef BEARER_MANAGEMENT_DEBUG
         qDebug("IAP: %s, already missing from the known list", iap_id.toAscii().data());

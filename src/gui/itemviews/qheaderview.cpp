@@ -2037,7 +2037,7 @@ bool QHeaderView::event(QEvent *e)
                 updateSection(d->hover);
         }
         break; }
-    case QEvent::Timer: { // ### reimplement timerEvent() instead ?
+    case QEvent::Timer: {
         QTimerEvent *te = static_cast<QTimerEvent*>(e);
         if (te->timerId() == d->delayedResize.timerId()) {
             d->delayedResize.stop();
@@ -2610,7 +2610,7 @@ void QHeaderView::updateGeometries()
     Q_D(QHeaderView);
     d->layoutChildren();
     if (d->hasAutoResizeSections())
-        resizeSections();
+        d->doDelayedResizeSections();
 }
 
 /*!

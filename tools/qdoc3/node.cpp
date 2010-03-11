@@ -43,8 +43,8 @@
   node.cpp
 */
 
-#include <QtCore>
 #include "node.h"
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1161,7 +1161,8 @@ QString FunctionNode::signature(bool values) const
  */
 void FunctionNode::debug() const
 {
-    qDebug() << "QML METHOD" << name() << "rt" << rt << "pp" << pp;
+    qDebug("QML METHOD %s rt %s pp %s",
+            qPrintable(name()), qPrintable(rt), qPrintable(pp.join(" ")));
 }
 
 /*!
@@ -1257,7 +1258,7 @@ bool TargetNode::isInnerNode() const
 
 #ifdef QDOC_QML
 bool QmlClassNode::qmlOnly = false;
-QMultiMap<QString,QString> QmlClassNode::inheritedBy;
+QMultiMap<QString,Node*> QmlClassNode::inheritedBy;
 
 /*!
   Constructs a Qml class node (i.e. a Fake node with the
@@ -1272,6 +1273,23 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
     : FakeNode(parent, name, QmlClass), cnode(cn)
 {
     setTitle((qmlOnly ? "" : "QML ") + name + " Element Reference");
+}
+
+/*!
+  I made this so I could print a debug message here.
+ */
+QmlClassNode::~QmlClassNode()
+{
+    qDebug() << "Deleting QmlClassNode:" << name();
+}
+
+/*!
+  Clear the multimap so that subsequent runs don't try to use
+  nodes from a previous run.
+ */
+void QmlClassNode::clear()
+{
+    inheritedBy.clear();
 }
 
 /*!
@@ -1294,19 +1312,23 @@ QString QmlClassNode::fileBase() const
   Record the fact that QML class \a base is inherited by
   QML class \a sub.
  */
-void QmlClassNode::addInheritedBy(const QString& base, const QString& sub)
+void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
 {
     inheritedBy.insert(base,sub);
+    qDebug() << "QmlClassNode::addInheritedBy(): insert" << base << sub->name() << inheritedBy.size();
 }
 
 /*!
-  Loads the list \a subs with the names of all the subclasses of \a base.
+  Loads the list \a subs with the nodes of all the subclasses of \a base.
  */
-void QmlClassNode::subclasses(const QString& base, QStringList& subs)
+void QmlClassNode::subclasses(const QString& base, NodeList& subs)
 {
     subs.clear();
-    if (inheritedBy.contains(base))
+    if (inheritedBy.count(base) > 0) {
         subs = inheritedBy.values(base);
+        qDebug() << "QmlClassNode::subclasses():" <<  inheritedBy.count(base) << base
+                 << "subs:" << subs.size() << "total size:" << inheritedBy.size();
+    }
 }
 
 /*!

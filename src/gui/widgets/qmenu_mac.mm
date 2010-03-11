@@ -924,14 +924,27 @@ static QString qt_mac_menu_merge_text(QMacMenuAction *action)
     else if (action->command == kHICommandQuit)
         ret = QMenuBar::tr("Quit %1").arg(qAppName());
 #else
-    else if (action->menuItem == [loader aboutMenuItem])
-        ret = QMenuBar::tr("About %1").arg(qAppName());
-    else if (action->menuItem == [loader aboutQtMenuItem])
-        ret = QMenuBar::tr("About Qt");
-    else if (action->menuItem == [loader preferencesMenuItem])
-        ret = QMenuBar::tr("Preferences");
-    else if (action->menuItem == [loader quitMenuItem])
-        ret = QMenuBar::tr("Quit %1").arg(qAppName());
+    else if (action->menuItem == [loader aboutMenuItem]) {
+        if (action->action->text() == QString("About %1").arg(qAppName()))
+            ret = QMenuBar::tr("About %1").arg(qAppName());
+        else
+            ret = action->action->text();
+    } else if (action->menuItem == [loader aboutQtMenuItem]) {
+        if (action->action->text() == QString("About Qt"))
+            ret = QMenuBar::tr("About Qt");
+        else
+            ret = action->action->text();
+    } else if (action->menuItem == [loader preferencesMenuItem]) {
+        if (action->action->text() == QString("Preferences"))
+            ret = QMenuBar::tr("Preferences");
+        else
+            ret = action->action->text();
+    } else if (action->menuItem == [loader quitMenuItem]) {
+        if (action->action->text() == QString("Quit %1").arg(qAppName()))
+            ret = QMenuBar::tr("About %1").arg(qAppName());
+        else
+            ret = action->action->text();
+    }
 #endif
     return ret;
 }
@@ -1922,7 +1935,7 @@ static bool qt_mac_should_disable_menu(QMenuBar *menuBar)
         if (w->isVisible() && w->windowModality() == Qt::ApplicationModal) {
             for (int i=0; i<topLevelWidgets.size(); ++i) {
                 QWidget *top = topLevelWidgets.at(i);
-                if (w != top && [qt_mac_window_for(top) isVisible]) {
+                if (w != top && top->isVisible()) {
                     // INVARIANT: we found another visible window
                     // on screen other than our modalWidget. We therefore
                     // disable the menu bar to follow normal modality logic:
@@ -2180,3 +2193,4 @@ static OSMenuRef qt_mac_create_menu(QWidget *w)
 
 
 QT_END_NAMESPACE
+

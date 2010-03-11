@@ -311,8 +311,11 @@ int main(int argc, char ** argv)
         usage();
     }
 
+    viewer.addLibraryPath(QCoreApplication::applicationDirPath());
+
     foreach (QString lib, libraries)
         viewer.addLibraryPath(lib);
+
     viewer.setNetworkCacheSize(cache);
     viewer.setRecordFile(recordfile);
     if (resizeview)
@@ -324,7 +327,7 @@ int main(int argc, char ** argv)
     if (!skin.isEmpty()) {
         if (skin == "list") {
             foreach (QString s, viewer.builtinSkins())
-                qWarning(s.toUtf8());
+                qWarning() << qPrintable(s);
             exit(0);
         } else {
             viewer.setSkin(skin);

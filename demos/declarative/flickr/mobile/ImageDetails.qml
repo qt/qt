@@ -45,7 +45,7 @@ Flipable {
             Text { color: "white"; elide: Text.ElideRight; text: "<b>Author:</b> " + container.photoAuthor }
             Text { color: "white"; elide: Text.ElideRight; text: "<b>Published:</b> " + container.photoDate }
             Text { color: "white"; elide: Text.ElideRight; text: container.photoTags == "" ? "" : "<b>Tags:</b> " }
-            Text { color: "white"; elide: Text.ElideRight; elide: Text.ElideRight; text: container.photoTags }
+            Text { color: "white"; elide: Text.ElideRight; text: container.photoTags }
         }
     }
 
@@ -66,10 +66,7 @@ Flipable {
 
                 Image {
                     id: bigImage; source: container.photoUrl; scale: slider.value
-                    // Center image if it is smaller than the flickable area.
-                    x: imageContainer.width > width*scale ? (imageContainer.width - width*scale) / 2 : 0
-                    y: imageContainer.height > height*scale ? (imageContainer.height - height*scale) / 2 : 0
-                    smooth: !flickable.moving
+                    anchors.centerIn: parent; smooth: !flickable.moving
                     onStatusChanged : {
                         // Default scale shows the entire image.
                         if (status == 1 && width != 0) {

@@ -30,7 +30,7 @@ Rectangle {
                 }
             ]
             transitions: [
-                Transition { NumberAnimation { matchProperties: "x"; duration: 200 } }
+                Transition { NumberAnimation { properties: "x"; duration: 200 } }
             ]
         }
     }
@@ -44,7 +44,7 @@ Rectangle {
         Rectangle {
             width: 180; height: 40
             color: "lightsteelblue"; radius: 5
-            y: SpringFollow {
+            SpringFollow on y {
                 source: list.currentItem.y
                 spring: 3
                 damping: 0.2

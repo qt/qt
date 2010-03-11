@@ -221,12 +221,14 @@ QDeclarativeParser::Property::~Property()
 { 
     foreach(Value *value, values)
         value->release();
+    foreach(Value *value, onValues)
+        value->release();
     if (value) value->release(); 
 }
 
-Object *QDeclarativeParser::Property::getValue()
+Object *QDeclarativeParser::Property::getValue(const LocationSpan &l)
 {
-    if (!value) value = new Object;
+    if (!value) { value = new Object; value->location = l; }
     return value;
 }
 
@@ -235,9 +237,14 @@ void QDeclarativeParser::Property::addValue(Value *v)
     values << v;
 }
 
+void QDeclarativeParser::Property::addOnValue(Value *v)
+{
+    onValues << v;
+}
+
 bool QDeclarativeParser::Property::isEmpty() const
 {
-    return !value && values.isEmpty();
+    return !value && values.isEmpty() && onValues.isEmpty();
 }
 
 QDeclarativeParser::Value::Value()

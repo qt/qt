@@ -64,7 +64,8 @@ public:
 
     enum Feature {
         LowLatencyPlayback = 0x01,
-        RecordingSupport = 0x02
+        RecordingSupport = 0x02,
+        StreamPlayback = 0x04
     };
     Q_DECLARE_FLAGS(Features, Feature)
 

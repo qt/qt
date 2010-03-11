@@ -167,6 +167,7 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
         QDeclarativeItemModule::defineModule();
         QDeclarativeUtilModule::defineModule();
         QDeclarativeEnginePrivate::defineModule();
+        QDeclarativeValueTypeFactory::registerValueTypes();
     }
     globalClass = new QDeclarativeGlobalScriptClass(&scriptEngine);
 
@@ -236,9 +237,13 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
         qtObject.setProperty(QLatin1String("tint"), newFunction(QDeclarativeEnginePrivate::tint, 2));
     }
 
+    //date/time formatting
+    qtObject.setProperty(QLatin1String("formatDate"),newFunction(QDeclarativeEnginePrivate::formatDate, 2));
+    qtObject.setProperty(QLatin1String("formatTime"),newFunction(QDeclarativeEnginePrivate::formatTime, 2));
+    qtObject.setProperty(QLatin1String("formatDateTime"),newFunction(QDeclarativeEnginePrivate::formatDateTime, 2));
+
     //misc methods
     qtObject.setProperty(QLatin1String("closestAngle"), newFunction(QDeclarativeEnginePrivate::closestAngle, 2));
-    qtObject.setProperty(QLatin1String("playSound"), newFunction(QDeclarativeEnginePrivate::playSound, 1));
     qtObject.setProperty(QLatin1String("openUrlExternally"),newFunction(QDeclarativeEnginePrivate::desktopOpenUrl, 1));
     qtObject.setProperty(QLatin1String("md5"),newFunction(QDeclarativeEnginePrivate::md5, 1));
     qtObject.setProperty(QLatin1String("btoa"),newFunction(QDeclarativeEnginePrivate::btoa, 1));
@@ -537,9 +542,9 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
 
     This example creates a provider with id \e colors:
 
-    \snippet examples/declarative/imageprovider/main.cpp 0
+    \snippet examples/declarative/imageprovider/imageprovider.cpp 0
 
-    \snippet examples/declarative/imageprovider/view.qml 0
+    \snippet examples/declarative/imageprovider/imageprovider.qml 0
 
     \sa removeImageProvider()
 */
@@ -936,6 +941,66 @@ QScriptValue QDeclarativeEnginePrivate::vector(QScriptContext *ctxt, QScriptEngi
     return engine->newVariant(qVariantFromValue(QVector3D(x, y, z)));
 }
 
+QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptEngine*engine)
+{
+    int argCount = ctxt->argumentCount();
+    if(argCount == 0 || argCount > 2)
+        return engine->nullValue();
+
+    QDate date = ctxt->argument(0).toDateTime().date();
+    Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
+    if (argCount == 2) {
+        if (ctxt->argument(1).isString()) {
+            QString format = ctxt->argument(1).toString();
+            return engine->newVariant(qVariantFromValue(date.toString(format)));
+        } else if (ctxt->argument(1).isNumber()) {
+            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
+        } else
+           return engine->nullValue();
+    }
+    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+}
+
+QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptEngine*engine)
+{
+    int argCount = ctxt->argumentCount();
+    if(argCount == 0 || argCount > 2)
+        return engine->nullValue();
+
+    QTime date = ctxt->argument(0).toDateTime().time();
+    Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
+    if (argCount == 2) {
+        if (ctxt->argument(1).isString()) {
+            QString format = ctxt->argument(1).toString();
+            return engine->newVariant(qVariantFromValue(date.toString(format)));
+        } else if (ctxt->argument(1).isNumber()) {
+            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
+        } else
+           return engine->nullValue();
+    }
+    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+}
+
+QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScriptEngine*engine)
+{
+    int argCount = ctxt->argumentCount();
+    if(argCount == 0 || argCount > 2)
+        return engine->nullValue();
+
+    QDateTime date = ctxt->argument(0).toDateTime();
+    Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
+    if (argCount == 2) {
+        if (ctxt->argument(1).isString()) {
+            QString format = ctxt->argument(1).toString();
+            return engine->newVariant(qVariantFromValue(date.toString(format)));
+        } else if (ctxt->argument(1).isNumber()) {
+            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
+        } else
+           return engine->nullValue();
+    }
+    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+}
+
 QScriptValue QDeclarativeEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine *engine)
 {
     int argCount = ctxt->argumentCount();
@@ -1038,30 +1103,6 @@ QScriptValue QDeclarativeEnginePrivate::darker(QScriptContext *ctxt, QScriptEngi
         return engine->nullValue();
     color = color.darker();
     return qScriptValueFromValue(engine, qVariantFromValue(color));
-}
-
-QScriptValue QDeclarativeEnginePrivate::playSound(QScriptContext *ctxt, QScriptEngine *engine)
-{
-    if (ctxt->argumentCount() != 1)
-        return engine->undefinedValue();
-
-    QUrl url(ctxt->argument(0).toString());
-
-    QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
-    if (url.isRelative()) {
-        QDeclarativeContext *context = enginePriv->getContext(ctxt);
-        if (!context)
-            return engine->undefinedValue();
-
-        url = context->resolvedUrl(url);
-    }
-
-    if (url.scheme() == QLatin1String("file")) {
-
-        QSound::play(url.toLocalFile());
-
-    }
-    return engine->undefinedValue();
 }
 
 QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
@@ -1193,17 +1234,13 @@ QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine
     else if (a == 0x00)
         finalColor = color;
     else {
-        uint src = tintColor.rgba();
-        uint dest = color.rgba();
+        qreal a = tintColor.alphaF();
+        qreal inv_a = 1.0 - a;
 
-        uint res = (((a * (src & 0xFF00FF)) +
-                    ((0xFF - a) * (dest & 0xFF00FF))) >> 8) & 0xFF00FF;
-        res |= (((a * ((src >> 8) & 0xFF00FF)) +
-                ((0xFF - a) * ((dest >> 8) & 0xFF00FF)))) & 0xFF00FF00;
-        if ((src & 0xFF000000) == 0xFF000000)
-            res |= 0xFF000000;
-
-        finalColor = QColor::fromRgba(res);
+        finalColor.setRgbF(tintColor.redF() * a + color.redF() * inv_a,
+                           tintColor.greenF() * a + color.greenF() * inv_a,
+                           tintColor.blueF() * a + color.blueF() * inv_a,
+                           a + inv_a * color.alphaF());
     }
 
     return qScriptValueFromValue(engine, qVariantFromValue(finalColor));
@@ -1383,7 +1420,11 @@ public:
             paths += QFileInfo(base.toLocalFile()).path();
             paths += importPath;
             paths += QDeclarativeEnginePrivate::get(engine)->environmentImportPath;
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
             QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
+#else
+            QString builtinPath;
+#endif
             if (!builtinPath.isEmpty())
                 paths += builtinPath;
 
@@ -1615,10 +1656,8 @@ void QDeclarativeEngine::addImportPath(const QString& path)
 }
 
 /*!
-  Imports the given \a extension into this QDeclarativeEngine.  Returns
-  true if the extension was successfully imported.
-
-  \sa QDeclarativeExtensionInterface
+  Imports the extension named \a fileName from the \a uri provided.
+  Returns true if the extension was successfully imported.
 */
 bool QDeclarativeEngine::importExtension(const QString &fileName, const QString &uri)
 {
@@ -1687,6 +1726,7 @@ QString QDeclarativeEngine::offlineStoragePath() const
   \internal
 
   Returns the result of the merge of \a baseName with \a dir, \a suffixes, and \a prefix.
+  The \a prefix must contain the dot.
  */
 QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString &baseName,
                                         const QStringList &suffixes,
@@ -1696,7 +1736,6 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
         QString pluginFileName = prefix;
 
         pluginFileName += baseName;
-        pluginFileName += QLatin1Char('.');
         pluginFileName += suffix;
 
         QFileInfo fileInfo(dir, pluginFileName);
@@ -1728,14 +1767,26 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
 QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString &baseName)
 {
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    return resolvePlugin(dir, baseName, QStringList(QLatin1String("dll")));
+    return resolvePlugin(dir, baseName,
+                         QStringList()
+# ifdef QT_DEBUG
+                         << QLatin1String("d.dll") // try a qmake-style debug build first
+# endif
+                         << QLatin1String(".dll"));
 #elif defined(Q_OS_SYMBIAN)
-    return resolvePlugin(dir, baseName, QStringList() << QLatin1String("dll") << QLatin1String("qtplugin"));
+    return resolvePlugin(dir, baseName,
+                         QStringList()
+                         << QLatin1String(".dll")
+                         << QLatin1String(".qtplugin"));
 #else
 
 # if defined(Q_OS_DARWIN)
 
-    return resolvePlugin(dir, baseName, QStringList() << QLatin1String("dylib") << QLatin1String("so") << QLatin1String("bundle"),
+    return resolvePlugin(dir, baseName,
+                         QStringList()
+                         << QLatin1String(".dylib")
+                         << QLatin1String(".so")
+                         << QLatin1String(".bundle"),
                          QLatin1String("lib"));
 # else  // Generic Unix
     QStringList validSuffixList;
@@ -1746,14 +1797,14 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
     "In PA-RISC (PA-32 and PA-64) shared libraries are suffixed with .sl. In IPF (32-bit and 64-bit),
     the shared libraries are suffixed with .so. For compatibility, the IPF linker also supports the .sl suffix."
  */
-    validSuffixList << QLatin1String("sl");
+    validSuffixList << QLatin1String(".sl");
 #   if defined __ia64
-    validSuffixList << QLatin1String("so");
+    validSuffixList << QLatin1String(".so");
 #   endif
 #  elif defined(Q_OS_AIX)
-    validSuffixList << QLatin1String("a") << QLatin1String("so");
+    validSuffixList << QLatin1String(".a") << QLatin1String(".so");
 #  elif defined(Q_OS_UNIX)
-    validSuffixList << QLatin1String("so");
+    validSuffixList << QLatin1String(".so");
 #  endif
 
     // Examples of valid library names:

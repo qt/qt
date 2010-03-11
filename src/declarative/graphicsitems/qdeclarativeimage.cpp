@@ -127,7 +127,6 @@ QT_BEGIN_NAMESPACE
 QDeclarativeImage::QDeclarativeImage(QDeclarativeItem *parent)
     : QDeclarativeImageBase(*(new QDeclarativeImagePrivate), parent)
 {
-    connect(this, SIGNAL(pixmapChanged()), this, SLOT(updatePaintedGeometry()));
 }
 
 QDeclarativeImage::QDeclarativeImage(QDeclarativeImagePrivate &dd, QDeclarativeItem *parent)
@@ -172,7 +171,7 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
     status = pix.isNull() ? QDeclarativeImageBase::Null : QDeclarativeImageBase::Ready;
 
     q->update();
-    emit q->pixmapChanged();
+    q->pixmapChange();
 }
 
 /*!
@@ -230,6 +229,16 @@ qreal QDeclarativeImage::paintedHeight() const
     \o Ready - the image has been loaded
     \o Loading - the image is currently being loaded
     \o Error - an error occurred while loading the image
+    \endlist
+
+    Note that a change in the status property does not cause anything to happen
+    (although it reflects what has happened with the image internally). If you wish
+    to react to the change in status you need to do it yourself, for example in one
+    of the following ways:
+    \list
+    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: image.status = Image.Ready;}
+    \o Do something inside the onStatusChanged signal handler, e.g. Image{id: image; onStatusChanged: if(image.status == Image.Ready) console.log('Loaded');}
+    \o Bind to the status variable somewhere, e.g. Text{text: if(image.status!=Image.Ready){'Not Loaded';}else{'Loaded';}}
     \endlist
 
     \sa progress
@@ -372,6 +381,12 @@ void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWi
         p->setRenderHint(QPainter::Antialiasing, oldAA);
         p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
     }
+}
+
+void QDeclarativeImage::pixmapChange()
+{
+    updatePaintedGeometry();
+    emit pixmapChanged();
 }
 
 QT_END_NAMESPACE

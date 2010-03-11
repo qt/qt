@@ -72,10 +72,10 @@
     Carbon Qt can be developed on and deployed to 10.4, but there is no 64-bit
     support.
 
-    With Qt 4.7 we now reccommend using the Cocoa version of Qt for developement,
+    With Qt 4.7 we now recommend using the Cocoa version of Qt for development,
     unless you want to target the 10.4 platform. Qt now uses Cocoa by default,
     both for the binary package and when configuring from source. Download the 
-    Carbon binarypackages or configure with "-carbon" to use that version.
+    Carbon binary packages or configure with "-carbon" to use that version.
 
     There are two versions of the Qt binary, one with x86 and x86_64
     Cocoa and another with x86 and ppc Carbon. If you want a different setup

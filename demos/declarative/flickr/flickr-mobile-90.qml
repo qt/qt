@@ -5,6 +5,7 @@ Item {
 
     Loader {
         y: 320; rotation: -90
+        transformOrigin: Item.TopLeft
         source: "flickr-mobile.qml"
     }
 }

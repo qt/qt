@@ -32,6 +32,8 @@ contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
 contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_declarative
 contains(QT_CONFIG, multimedia): SRC_SUBDIRS += src_multimedia
 SRC_SUBDIRS += src_plugins
+contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_imports
+
 # s60installs need to be at the end, because projects.pro does an ordered build,
 # and s60installs depends on all the others.
 symbian:SRC_SUBDIRS += src_s60installs
@@ -76,6 +78,8 @@ src_activeqt.subdir = $$QT_SOURCE_TREE/src/activeqt
 src_activeqt.target = sub-activeqt
 src_plugins.subdir = $$QT_SOURCE_TREE/src/plugins
 src_plugins.target = sub-plugins
+src_imports.subdir = $$QT_SOURCE_TREE/src/imports
+src_imports.target = sub-imports
 src_testlib.subdir = $$QT_SOURCE_TREE/src/testlib
 src_testlib.target = sub-testlib
 src_javascriptcore.subdir = $$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore
@@ -110,11 +114,13 @@ src_declarative.target = sub-declarative
    src_declarative.depends = src_xml src_gui src_script src_network src_svg
    src_plugins.depends = src_gui src_sql src_svg src_multimedia
    src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
+   src_imports.depends = src_gui src_declarative
    contains(QT_CONFIG, webkit)  {
       src_webkit.depends = src_gui src_sql src_network src_xml 
       contains(QT_CONFIG, phonon):src_webkit.depends += src_phonon
       contains(QT_CONFIG, xmlpatterns): src_webkit.depends += src_xmlpatterns
       contains(QT_CONFIG, declarative):src_declarative.depends += src_webkit
+      src_imports.depends += src_webkit
       #exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): src_webkit.depends += src_javascriptcore
    }
    contains(QT_CONFIG, qt3support): src_plugins.depends += src_qt3support
@@ -123,7 +129,6 @@ src_declarative.target = sub-declarative
       src_phonon.depends +=  src_dbus
    }
    contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): src_plugins.depends += src_opengl
-   contains(QT_CONFIG, declarative): src_multimedia.depends += src_declarative
 }
 
 

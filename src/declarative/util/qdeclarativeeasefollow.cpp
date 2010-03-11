@@ -59,10 +59,10 @@ class QDeclarativeEaseFollowPrivate : public QObjectPrivate
 public:
     QDeclarativeEaseFollowPrivate()
         : source(0), velocity(200), duration(-1), maximumEasingTime(-1),
-          reversingMode(QDeclarativeEaseFollow::Eased), initialVelocity(0), 
+          reversingMode(QDeclarativeEaseFollow::Eased), initialVelocity(0),
           initialValue(0), invert(false), enabled(true), trackVelocity(0), clockOffset(0),
           lastTick(0), clock(this)
-    {} 
+    {}
 
     qreal source;
     qreal velocity;
@@ -173,7 +173,7 @@ bool QDeclarativeEaseFollowPrivate::recalc()
     }
 
     /*
-    qWarning() << "a:" << a << "tf:" << tf << "tp:" << tp << "vp:" 
+    qWarning() << "a:" << a << "tf:" << tf << "tp:" << tp << "vp:"
                << vp << "sp:" << sp << "vi:" << vi << "invert:" << invert;
     */
     return true;
@@ -251,21 +251,22 @@ void QDeclarativeEaseFollowPrivate::tick(int t)
 
 /*!
     \qmlclass EaseFollow QDeclarativeEaseFollow
+    \since 4.7
     \brief The EaseFollow element allows a property to smoothly track a value.
 
-    The EaseFollow smoothly animates a property's value to a set target value 
+    The EaseFollow smoothly animates a property's value to a set target value
     using an ease in/out quad easing curve.  If the target value changes while
-    the animation is in progress, the easing curves used to animate to the old 
+    the animation is in progress, the easing curves used to animate to the old
     and the new target values are spliced together to avoid any obvious visual
     glitches.
 
     The property animation is configured by setting the velocity at which the
-    animation should occur, or the duration that the animation should take.  
+    animation should occur, or the duration that the animation should take.
     If both a velocity and a duration are specified, the one that results in
     the quickest animation is chosen for each change in the target value.
 
     For example, animating from 0 to 800 will take 4 seconds if a velocity
-    of 200 is set, will take 8 seconds with a duration of 8000 set, and will 
+    of 200 is set, will take 8 seconds with a duration of 8000 set, and will
     take 4 seconds with both a velocity of 200 and a duration of 8000 set.
     Animating from 0 to 20000 will take 10 seconds if a velocity of 200 is set,
     will take 8 seconds with a duration of 8000 set, and will take 8 seconds
@@ -282,8 +283,8 @@ Rectangle {
         color: "green"
         width: 60; height: 60;
         x: -5; y: -5;
-        x: EaseFollow { source: rect1.x - 5; velocity: 200 }
-        y: EaseFollow { source: rect1.y - 5; velocity: 200 }
+        EaseFollow on x { source: rect1.x - 5; velocity: 200 }
+        EaseFollow on y { source: rect1.y - 5; velocity: 200 }
     }
 
     Rectangle {
@@ -337,8 +338,8 @@ qreal QDeclarativeEaseFollow::sourceValue() const
     Sets how the EaseFollow behaves if an animation direction is reversed.
 
     If reversing mode is \c Eased, the animation will smoothly decelerate, and
-    then reverse direction.  If the reversing mode is \c Immediate, the 
-    animation will immediately begin accelerating in the reverse direction, 
+    then reverse direction.  If the reversing mode is \c Immediate, the
+    animation will immediately begin accelerating in the reverse direction,
     begining with a velocity of 0.  If the reversing mode is \c Sync, the
     property is immediately set to the target value.
 */
@@ -372,7 +373,7 @@ void QDeclarativeEaseFollowPrivate::restart()
         return;
     }
 
-    bool hasReversed = trackVelocity != 0. && 
+    bool hasReversed = trackVelocity != 0. &&
                       ((trackVelocity > 0) == ((initialValue - source) > 0));
 
     if (hasReversed) {
@@ -439,7 +440,7 @@ void QDeclarativeEaseFollow::setDuration(qreal v)
     d->duration = v;
     d->trackVelocity = 0;
 
-    if (d->clock.state() == QAbstractAnimation::Running) 
+    if (d->clock.state() == QAbstractAnimation::Running)
         d->restart();
 
     emit durationChanged();
@@ -469,7 +470,7 @@ void QDeclarativeEaseFollow::setVelocity(qreal v)
     d->velocity = v;
     d->trackVelocity = 0;
 
-    if (d->clock.state() == QAbstractAnimation::Running) 
+    if (d->clock.state() == QAbstractAnimation::Running)
         d->restart();
 
     emit velocityChanged();
@@ -510,8 +511,8 @@ void QDeclarativeEaseFollow::setTarget(const QDeclarativeProperty &t)
 \qmlproperty qreal EaseFollow::maximumEasingTime
 
 This property specifies the maximum time an "eases" during the follow should take.
-Setting this property causes the velocity to "level out" after at a time.  Setting 
-a negative value reverts to the normal mode of easing over the entire animation 
+Setting this property causes the velocity to "level out" after at a time.  Setting
+a negative value reverts to the normal mode of easing over the entire animation
 duration.
 
 The default value is -1.
@@ -527,7 +528,7 @@ void QDeclarativeEaseFollow::setMaximumEasingTime(qreal v)
     Q_D(QDeclarativeEaseFollow);
     d->maximumEasingTime = v;
 
-    if (d->clock.state() == QAbstractAnimation::Running) 
+    if (d->clock.state() == QAbstractAnimation::Running)
         d->restart();
 
     emit maximumEasingTimeChanged();

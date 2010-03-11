@@ -41,59 +41,24 @@
 
 #include <QtCore/qdebug.h>
 
-#include <private/qt_x11_p.h>
+#include <QtGui/private/qt_x11_p.h>
 #include <QtGui/qx11info_x11.h>
-#include <private/qpixmapdata_p.h>
-#include <private/qpixmap_x11_p.h>
+#include <QtGui/private/qpixmapdata_p.h>
+#include <QtGui/private/qpixmap_x11_p.h>
+#include <QtGui/private/qimagepixmapcleanuphooks_p.h>
 
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qwidget.h>
-#include "qegl_p.h"
+#include <QtGui/qcolormap.h>
 
+#include "QtGui/private/qegl_p.h"
+#include "QtGui/private/qeglcontext_p.h"
 
 QT_BEGIN_NAMESPACE
 
-EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
-{
-    // Create the native drawable for the paint device.
-    int devType = device->devType();
-    EGLNativePixmapType pixmapDrawable = 0;
-    EGLNativeWindowType windowDrawable = 0;
-    bool ok;
-    if (devType == QInternal::Pixmap) {
-        pixmapDrawable = (EGLNativePixmapType)(static_cast<QPixmap *>(device))->handle();
-        ok = (pixmapDrawable != 0);
-    } else if (devType == QInternal::Widget) {
-        windowDrawable = (EGLNativeWindowType)(static_cast<QWidget *>(device))->winId();
-        ok = (windowDrawable != 0);
-    } else {
-        ok = false;
-    }
-    if (!ok) {
-        qWarning("QEglContext::createSurface(): Cannot create the native EGL drawable");
-        return EGL_NO_SURFACE;
-    }
 
-    // Create the EGL surface to draw into, based on the native drawable.
-    const int *props;
-    if (properties)
-        props = properties->properties();
-    else
-        props = 0;
-    EGLSurface surf;
-    if (devType == QInternal::Widget)
-        surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, props);
-    else
-        surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, props);
-    if (surf == EGL_NO_SURFACE) {
-        qWarning() << "QEglContext::createSurface(): Unable to create EGL surface:"
-                   << errorString(eglGetError());
-    }
-    return surf;
-}
-
-EGLNativeDisplayType QEglContext::nativeDisplay()
+EGLNativeDisplayType QEgl::nativeDisplay()
 {
     Display *xdpy = QX11Info::display();
     if (!xdpy) {
@@ -101,6 +66,16 @@ EGLNativeDisplayType QEglContext::nativeDisplay()
         return EGLNativeDisplayType(EGL_DEFAULT_DISPLAY);
     }
     return EGLNativeDisplayType(xdpy);
+}
+
+EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)
+{
+    return (EGLNativeWindowType)(widget->winId());
+}
+
+EGLNativePixmapType QEgl::nativePixmap(QPixmap* pixmap)
+{
+    return (EGLNativePixmapType)(pixmap->handle());
 }
 
 static int countBits(unsigned long mask)
@@ -151,6 +126,294 @@ void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
         setPixelFormat(static_cast<QImage *>(dev)->format());
     else
         setVisualFormat(qt_x11Info(dev));
+}
+
+//#define QT_DEBUG_X11_VISUAL_SELECTION 1
+
+VisualID QEgl::getCompatibleVisualId(EGLConfig config)
+{
+    VisualID    visualId = 0;
+    EGLint      eglValue = 0;
+
+    EGLint configRedSize = 0;
+    eglGetConfigAttrib(display(), config, EGL_RED_SIZE, &configRedSize);
+
+    EGLint configGreenSize = 0;
+    eglGetConfigAttrib(display(), config, EGL_GREEN_SIZE, &configGreenSize);
+
+    EGLint configBlueSize = 0;
+    eglGetConfigAttrib(display(), config, EGL_BLUE_SIZE, &configBlueSize);
+
+    EGLint configAlphaSize = 0;
+    eglGetConfigAttrib(display(), config, EGL_ALPHA_SIZE, &configAlphaSize);
+
+    eglGetConfigAttrib(display(), config, EGL_BUFFER_SIZE, &eglValue);
+    int configBitDepth = eglValue;
+
+    eglGetConfigAttrib(display(), config, EGL_CONFIG_ID, &eglValue);
+    int configId = eglValue;
+
+    // See if EGL provided a valid VisualID:
+    eglGetConfigAttrib(display(), config, EGL_NATIVE_VISUAL_ID, &eglValue);
+    visualId = (VisualID)eglValue;
+    if (visualId) {
+        // EGL has suggested a visual id, so get the rest of the visual info for that id:
+        XVisualInfo visualInfoTemplate;
+        memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
+        visualInfoTemplate.visualid = visualId;
+
+        XVisualInfo *chosenVisualInfo;
+        int matchingCount = 0;
+        chosenVisualInfo = XGetVisualInfo(X11->display, VisualIDMask, &visualInfoTemplate, &matchingCount);
+        if (chosenVisualInfo) {
+            if (configBitDepth == chosenVisualInfo->depth) {
+#if !defined(QT_NO_XRENDER)
+                // If we have XRender, actually check the visual supplied by EGL is ARGB
+                if (configAlphaSize > 0) {
+                    XRenderPictFormat *format;
+                    format = XRenderFindVisualFormat(X11->display, chosenVisualInfo->visual);
+                    if (!format || (format->type != PictTypeDirect) || (!format->direct.alphaMask)) {
+                        qWarning("Warning: EGL suggested using X visual ID %d for config %d, but this is not ARGB",
+                                 (int)visualId, configId);
+                        visualId = 0;
+                    }
+                }
+#endif
+            } else {
+                qWarning("Warning: EGL suggested using X visual ID %d (%d bpp) for config %d (%d bpp), but the depths do not match!",
+                         (int)visualId, chosenVisualInfo->depth, configId, configBitDepth);
+                visualId = 0;
+            }
+        }
+        XFree(chosenVisualInfo);
+    }
+
+    if (visualId) {
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+        if (configAlphaSize > 0)
+            qDebug("Using ARGB Visual ID %d provided by EGL for config %d", (int)visualId, configId);
+        else
+            qDebug("Using Opaque Visual ID %d provided by EGL for config %d", (int)visualId, configId);
+#endif
+        return visualId;
+    }
+
+
+    // If EGL didn't give us a valid visual ID, try XRender
+#if !defined(QT_NO_XRENDER)
+    if (!visualId) {
+        XVisualInfo visualInfoTemplate;
+        memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
+
+        visualInfoTemplate.depth = configBitDepth;
+        visualInfoTemplate.c_class = TrueColor;
+
+        XVisualInfo *matchingVisuals;
+        int matchingCount = 0;
+        matchingVisuals = XGetVisualInfo(X11->display,
+                                         VisualDepthMask|VisualClassMask,
+                                         &visualInfoTemplate,
+                                         &matchingCount);
+
+        for (int i = 0; i < matchingCount; ++i) {
+            XRenderPictFormat *format;
+            format = XRenderFindVisualFormat(X11->display, matchingVisuals[i].visual);
+
+            // Check the format for the visual matches the EGL config
+            if ( (countBits(format->direct.redMask) == configRedSize) &&
+                 (countBits(format->direct.greenMask) == configGreenSize) &&
+                 (countBits(format->direct.blueMask) == configBlueSize) &&
+                 (countBits(format->direct.alphaMask) == configAlphaSize) )
+            {
+                visualId = matchingVisuals[i].visualid;
+                break;
+            }
+        }
+        if (matchingVisuals)
+            XFree(matchingVisuals);
+
+    }
+    if (visualId) {
+# ifdef QT_DEBUG_X11_VISUAL_SELECTION
+        if (configAlphaSize > 0)
+            qDebug("Using ARGB Visual ID %d provided by XRender for EGL config %d", (int)visualId, configId);
+        else
+            qDebug("Using Opaque Visual ID %d provided by XRender for EGL config %d", (int)visualId, configId);
+# endif // QT_DEBUG_X11_VISUAL_SELECTION
+        return visualId;
+    }
+#endif //!defined(QT_NO_XRENDER)
+
+
+    // Finally, if XRender also failed to find a visual (or isn't present), try to
+    // use XGetVisualInfo and only use the bit depth to match on:
+    if (!visualId) {
+        XVisualInfo visualInfoTemplate;
+        memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
+
+        visualInfoTemplate.depth = configBitDepth;
+
+        XVisualInfo *matchingVisuals;
+        int matchingCount = 0;
+        matchingVisuals = XGetVisualInfo(X11->display,
+                                         VisualDepthMask,
+                                         &visualInfoTemplate,
+                                         &matchingCount);
+        if (matchingVisuals) {
+            visualId = matchingVisuals[0].visualid;
+            XFree(matchingVisuals);
+        }
+    }
+
+    if (visualId) {
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+        qDebug("Using Visual ID %d provided by XGetVisualInfo for EGL config %d", (int)visualId, configId);
+#endif
+        return visualId;
+    }
+
+    qWarning("Unable to find an X11 visual which matches EGL config %d", configId);
+    return (VisualID)0;
+}
+
+void qt_set_winid_on_widget(QWidget* w, Qt::HANDLE id)
+{
+    w->create(id);
+}
+
+
+// NOTE: The X11 version of createSurface will re-create the native drawable if it's visual doesn't
+// match the one for the passed in EGLConfig
+EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEglProperties *unusedProperties)
+{
+    Q_UNUSED(unusedProperties);
+
+    int devType = device->devType();
+
+    if (devType == QInternal::Pbuffer) {
+        // TODO
+        return EGL_NO_SURFACE;
+    }
+
+    QX11PixmapData *x11PixmapData = 0;
+    if (devType == QInternal::Pixmap) {
+        QPixmapData *pmd = static_cast<QPixmap*>(device)->data_ptr().data();
+        if (pmd->classId() == QPixmapData::X11Class)
+            x11PixmapData = static_cast<QX11PixmapData*>(pmd);
+        else {
+            // TODO: Replace the pixmap's data with a new QX11PixmapData
+            qWarning("WARNING: Creating an EGL surface on a QPixmap is only supported for QX11PixmapData");
+            return EGL_NO_SURFACE;
+        }
+    } else if ((devType != QInternal::Widget) && (devType != QInternal::Pbuffer)) {
+        qWarning("WARNING: Creating an EGLSurface for device type %d isn't supported", devType);
+        return EGL_NO_SURFACE;
+    }
+
+    VisualID visualId = QEgl::getCompatibleVisualId(config);
+    EGLint alphaSize;
+    eglGetConfigAttrib(QEgl::display(), config, EGL_ALPHA_SIZE, &alphaSize);
+
+    if (devType == QInternal::Widget) {
+        QWidget *widget = static_cast<QWidget*>(device);
+
+        VisualID currentVisualId = 0;
+        if (widget->testAttribute(Qt::WA_WState_Created))
+            currentVisualId = XVisualIDFromVisual((Visual*)widget->x11Info().visual());
+
+        if (currentVisualId != visualId) {
+            // The window is either not created or has the wrong visual. Either way, we need
+            // to create a window with the correct visual and call create() on the widget:
+
+            bool visible = widget->isVisible();
+            if (visible)
+                widget->hide();
+
+            XVisualInfo visualInfo;
+            visualInfo.visualid = visualId;
+            {
+                XVisualInfo *visualInfoPtr;
+                int matchingCount = 0;
+                visualInfoPtr = XGetVisualInfo(widget->x11Info().display(), VisualIDMask,
+                                               &visualInfo, &matchingCount);
+                Q_ASSERT(visualInfoPtr); // visualId really should be valid!
+                visualInfo = *visualInfoPtr;
+                XFree(visualInfoPtr);
+            }
+
+            Window parentWindow = RootWindow(widget->x11Info().display(), widget->x11Info().screen());
+            if (widget->parentWidget())
+                parentWindow = widget->parentWidget()->winId();
+
+            XSetWindowAttributes windowAttribs;
+            QColormap colmap = QColormap::instance(widget->x11Info().screen());
+            windowAttribs.background_pixel = colmap.pixel(widget->palette().color(widget->backgroundRole()));
+            windowAttribs.border_pixel = colmap.pixel(Qt::black);
+
+            unsigned int valueMask = CWBackPixel|CWBorderPixel;
+            if (alphaSize > 0) {
+                windowAttribs.colormap = XCreateColormap(widget->x11Info().display(), parentWindow,
+                                                         visualInfo.visual, AllocNone);
+                valueMask |= CWColormap;
+            }
+
+            Window window = XCreateWindow(widget->x11Info().display(), parentWindow,
+                                          widget->x(), widget->y(), widget->width(), widget->height(),
+                                          0, visualInfo.depth, InputOutput, visualInfo.visual,
+                                          valueMask, &windowAttribs);
+
+            // This is a nasty hack to get round the fact that we can't be a friend of QWidget:
+            qt_set_winid_on_widget(widget, window);
+
+            if (visible)
+                widget->show();
+        }
+
+        // At this point, the widget's window should be created and have the correct visual. Now we
+        // just need to create the EGL surface for it:
+        return eglCreateWindowSurface(QEgl::display(), config, (EGLNativeWindowType)widget->winId(), 0);
+    }
+
+    if (x11PixmapData) {
+        // X11 Pixmaps are only created with a depth, so that's all we need to check
+        EGLint configDepth;
+        eglGetConfigAttrib(QEgl::display(), config, EGL_BUFFER_SIZE , &configDepth);
+        if (x11PixmapData->depth() != configDepth) {
+            // The bit depths are wrong which means the EGLConfig isn't compatable with
+            // this pixmap. So we need to replace the pixmap's existing data with a new
+            // one which is created with the correct depth:
+
+#ifndef QT_NO_XRENDER
+            if (configDepth == 32) {
+                qWarning("Warning: EGLConfig's depth (32) != pixmap's depth (%d), converting to ARGB32",
+                         x11PixmapData->depth());
+                x11PixmapData->convertToARGB32(true);
+            } else
+#endif
+            {
+                qWarning("Warning: EGLConfig's depth (%d) != pixmap's depth (%d)",
+                         configDepth, x11PixmapData->depth());
+            }
+        }
+
+        QEglProperties surfaceAttribs;
+
+        // If the pixmap can't be bound to a texture, it's pretty useless
+        surfaceAttribs.setValue(EGL_TEXTURE_TARGET, EGL_TEXTURE_2D);
+        if (alphaSize > 0)
+            surfaceAttribs.setValue(EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGBA);
+        else
+            surfaceAttribs.setValue(EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGB);
+
+        EGLSurface surf = eglCreatePixmapSurface(QEgl::display(), config,
+                                                 (EGLNativePixmapType) x11PixmapData->handle(),
+                                                 surfaceAttribs.properties());
+        x11PixmapData->gl_surface = (void*)surf;
+        QImagePixmapCleanupHooks::enableCleanupHooks(x11PixmapData);
+        return surf;
+    }
+
+    return EGL_NO_SURFACE;
 }
 
 QT_END_NAMESPACE

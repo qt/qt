@@ -93,8 +93,9 @@ void StarWidget::paintEvent(QPaintEvent *)
     // and prepare to perform raw OpenVG calls.
     painter.beginNativePainting();
 
-    // Cache the path if we haven't already.
-    if (path == VG_INVALID_HANDLE) {
+    // Cache the path if we haven't already or if the path has
+    // become invalid because the window's context has changed.
+    if (path == VG_INVALID_HANDLE || !vgGetPathCapabilities(path)) {
         path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
                             VG_PATH_DATATYPE_F,
                             1.0f, // scale

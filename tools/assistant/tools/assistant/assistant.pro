@@ -30,8 +30,6 @@ HEADERS += aboutdialog.h \
     filternamedialog.h \
     helpenginewrapper.h \
     helpviewer.h \
-    helpviewer_qtb.h \
-    helpviewer_qwv.h \
     indexwindow.h \
     installdialog.h \
     mainwindow.h \
@@ -43,6 +41,11 @@ HEADERS += aboutdialog.h \
     tracer.h \
     xbelsupport.h \
     ../shared/collectionconfiguration.h
+contains(QT_CONFIG, webkit) {
+    HEADERS += helpviewer_qwv.h
+} else {
+   HEADERS += helpviewer_qtb.h
+ }
 win32:HEADERS += remotecontrol_win.h
 
 SOURCES += aboutdialog.cpp \
@@ -59,8 +62,6 @@ SOURCES += aboutdialog.cpp \
     filternamedialog.cpp \
     helpenginewrapper.cpp \
     helpviewer.cpp \
-    helpviewer_qtb.cpp \
-    helpviewer_qwv.cpp \
     indexwindow.cpp \
     installdialog.cpp \
     main.cpp \
@@ -71,7 +72,12 @@ SOURCES += aboutdialog.cpp \
     searchwidget.cpp \
     topicchooser.cpp \
     xbelsupport.cpp \
-    ../shared/collectionconfiguration.cpp \
+    ../shared/collectionconfiguration.cpp
+ contains(QT_CONFIG, webkit) {
+    SOURCES += helpviewer_qwv.cpp
+} else {
+    SOURCES += helpviewer_qtb.cpp
+}
 
 FORMS += bookmarkdialog.ui \
     bookmarkmanagerwidget.ui \

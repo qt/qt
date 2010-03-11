@@ -174,7 +174,8 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
     : QObject(parent)
 {
-    QNetworkConfigurationManagerPrivate* priv = connManager();
+    QNetworkConfigurationManagerPrivate *priv = connManager();
+
     connect(priv, SIGNAL(configurationAdded(QNetworkConfiguration)),
             this, SIGNAL(configurationAdded(QNetworkConfiguration)));
     connect(priv, SIGNAL(configurationRemoved(QNetworkConfiguration)),
@@ -185,6 +186,8 @@ QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
             this, SIGNAL(onlineStateChanged(bool)));
     connect(priv, SIGNAL(configurationChanged(QNetworkConfiguration)),
             this, SIGNAL(configurationChanged(QNetworkConfiguration)));
+
+    priv->enablePolling();
 }
 
 /*!
@@ -192,6 +195,9 @@ QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
 */
 QNetworkConfigurationManager::~QNetworkConfigurationManager()
 {
+    QNetworkConfigurationManagerPrivate *priv = connManager();
+
+    priv->disablePolling();
 }
 
 
@@ -221,7 +227,7 @@ QNetworkConfiguration QNetworkConfigurationManager::defaultConfiguration() const
     // Engines don't have a default configuration.
 
     // Return first active snap
-    QNetworkConfigurationPrivatePointer firstDiscovered;
+    QNetworkConfigurationPrivatePointer defaultConfiguration;
 
     foreach (QBearerEngine *engine, conPriv->engines()) {
         QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
@@ -236,22 +242,35 @@ QNetworkConfiguration QNetworkConfigurationManager::defaultConfiguration() const
                 QNetworkConfiguration config;
                 config.d = it.value();
                 return config;
-            } else if ((it.value()->state & QNetworkConfiguration::Discovered) ==
-                       QNetworkConfiguration::Discovered) {
-                firstDiscovered = it.value();
+            } else if (!defaultConfiguration) {
+                if ((it.value()->state & QNetworkConfiguration::Discovered) ==
+                    QNetworkConfiguration::Discovered) {
+                    defaultConfiguration = it.value();
+                }
             }
         }
     }
 
     // No Active SNAPs return first Discovered SNAP.
-    if (firstDiscovered) {
+    if (defaultConfiguration) {
         QNetworkConfiguration config;
-        config.d = firstDiscovered;
+        config.d = defaultConfiguration;
         return config;
     }
 
-    // No Active or Discovered SNAPs, do same for InternetAccessPoints.
-    firstDiscovered.reset();
+    /*
+        No Active or Discovered SNAPs, find the perferred access point.
+        The following priority order is used:
+
+            1. Active Ethernet
+            2. Active WLAN
+            3. Active Other
+            4. Discovered Ethernet
+            5. Discovered WLAN
+            6. Discovered Other
+    */
+
+    defaultConfiguration.reset();
 
     foreach (QBearerEngine *engine, conPriv->engines()) {
         QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
@@ -261,22 +280,42 @@ QNetworkConfiguration QNetworkConfigurationManager::defaultConfiguration() const
 
         for (it = engine->accessPointConfigurations.begin(),
              end = engine->accessPointConfigurations.end(); it != end; ++it) {
-            if ((it.value()->state & QNetworkConfiguration::Active) ==
-                QNetworkConfiguration::Active) {
-                QNetworkConfiguration config;
-                config.d = it.value();
-                return config;
-            } else if ((it.value()->state & QNetworkConfiguration::Discovered) ==
-                       QNetworkConfiguration::Discovered) {
-                firstDiscovered = it.value();
+
+            if ((it.value()->state & QNetworkConfiguration::Discovered) ==
+                QNetworkConfiguration::Discovered) {
+                if (!defaultConfiguration) {
+                    defaultConfiguration = it.value();
+                } else {
+                    if (defaultConfiguration->state == it.value()->state) {
+                        if (defaultConfiguration->bearerName() == QLatin1String("Ethernet")) {
+                            // do nothing
+                        } else if (defaultConfiguration->bearerName() == QLatin1String("WLAN")) {
+                            // ethernet beats wlan
+                            if (it.value()->bearerName() == QLatin1String("Ethernet"))
+                                defaultConfiguration = it.value();
+                        } else {
+                            // ethernet and wlan beats other
+                            if (it.value()->bearerName() == QLatin1String("Ethernet") ||
+                                it.value()->bearerName() == QLatin1String("WLAN")) {
+                                defaultConfiguration = it.value();
+                            }
+                        }
+                    } else {
+                        // active beats discovered
+                        if ((defaultConfiguration->state & QNetworkConfiguration::Active) !=
+                            QNetworkConfiguration::Active) {
+                            defaultConfiguration = it.value();
+                        }
+                    }
+                }
             }
         }
     }
 
     // No Active InternetAccessPoint return first Discovered InternetAccessPoint.
-    if (firstDiscovered) {
+    if (defaultConfiguration) {
         QNetworkConfiguration config;
-        config.d = firstDiscovered;
+        config.d = defaultConfiguration;
         return config;
     }
 
@@ -302,6 +341,11 @@ QNetworkConfiguration QNetworkConfigurationManager::defaultConfiguration() const
     be used to update each configuration's state. Note that such an update may require
     some time. It's completion is signalled by updateCompleted(). In the absence of a
     configuration update this function returns the best estimate at the time of the call.
+    Therefore, if WLAN configurations are of interest, it is recommended that
+    updateConfigurations() is called once after QNetworkConfigurationManager
+    instantiation (WLAN scans are too time consuming to perform in constructor).
+    After this the data is kept automatically up-to-date as the system reports
+    any changes.
 */
 QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNetworkConfiguration::StateFlags filter) const
 {

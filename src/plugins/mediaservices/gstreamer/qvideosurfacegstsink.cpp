@@ -52,7 +52,10 @@
 #include "qgstxvimagebuffer.h"
 
 
+
 Q_DECLARE_METATYPE(QVideoSurfaceFormat)
+
+QT_BEGIN_NAMESPACE
 
 QVideoSurfaceGstDelegate::QVideoSurfaceGstDelegate(QAbstractVideoSurface *surface)
     : m_surface(surface)
@@ -690,4 +693,7 @@ GstFlowReturn QVideoSurfaceGstSink::render(GstBaseSink *base, GstBuffer *buffer)
     VO_SINK(base);
     return sink->delegate->render(buffer);
 }
+
+QT_END_NAMESPACE
+
 

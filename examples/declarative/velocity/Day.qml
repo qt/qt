@@ -24,7 +24,7 @@ Rectangle {
             id: stickyPage
             x: Math.random() * 200 + 100
             y: Math.random() * 300 + 50
-            rotation: SpringFollow {
+            SpringFollow on rotation {
                 source: -flickable.horizontalVelocity / 100
                 spring: 2.0; damping: 0.1
             }
@@ -33,7 +33,7 @@ Rectangle {
                 id: sticky
                 scale: 0.5
                 Image {
-                    id: stickyImage; source: "sticky.png"
+                    id: stickyImage; source: "sticky.png"; transformOrigin: Item.TopLeft
                     smooth: true; y: -20; x: 8 + -width * 0.6 / 2; scale: 0.6
                 }
 
@@ -52,14 +52,14 @@ Rectangle {
                         id: mouse
                         onClicked: { myText.focus = true }
                         anchors.fill: parent
-                        drag.target: stickyPage; drag.axis: "XandYAxis"; drag.minimumY: 0; drag.maximumY: 500
+                        drag.target: stickyPage; drag.axis: MouseArea.XandYAxis; drag.minimumY: 0; drag.maximumY: 500
                         drag.minimumX: 0; drag.maximumX: 400
                     }
                 }
             }
 
             Image {
-                source: "tack.png"
+                source: "tack.png"; transformOrigin: Item.TopLeft
                 x: -width / 2; y: -height * 0.7 / 2; scale: 0.7
             }
 

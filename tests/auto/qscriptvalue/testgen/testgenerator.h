@@ -49,13 +49,10 @@
 class TestGenerator {
 public:
     TestGenerator(QString& outputpath)
-        : m_ofile(outputpath)
+        : m_opath(outputpath)
     {
-        // Open output file
-        if (!m_ofile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            qWarning() << "Can't open output file: " << outputpath;
-            exit(2);
-        }
+        if (!m_opath.endsWith('/'))
+            m_opath.append('/');
         m_tempFile.open();
     }
 
@@ -67,10 +64,10 @@ public:
     }
 
     void prepareData();
-    QString generateTest();
-    void save(const QString& data);
+    QHash<QString, QString> generateTest();
+    void save(const QHash<QString, QString>& data);
 private:
-    QFile m_ofile;
+    QString m_opath;
     QTemporaryFile m_tempFile;
 };
 

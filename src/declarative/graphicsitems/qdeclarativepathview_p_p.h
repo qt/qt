@@ -60,6 +60,7 @@
 
 #include <qdeclarative.h>
 #include <qdeclarativeanimation_p_p.h>
+#include <qdeclarativeguard_p.h>
 
 #include <qdatetime.h>
 
@@ -70,6 +71,8 @@ typedef struct PathViewItem{
     QDeclarativeItem* item;
 }PathViewItem;
 
+class QDeclarativeOpenMetaObjectType;
+class QDeclarativePathViewAttached;
 class QDeclarativePathViewPrivate : public QDeclarativeItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativePathView)
@@ -80,7 +83,7 @@ public:
         , lastElapsed(0), stealMouse(false), ownModel(false), activeItem(0)
         , snapPos(0), dragMargin(0), moveOffset(this, &QDeclarativePathViewPrivate::setOffset)
         , firstIndex(0), pathItems(-1), pathOffset(0), requestedIndex(-1)
-        , moveReason(Other)
+        , moveReason(Other), attType(0)
     {
     }
 
@@ -96,6 +99,8 @@ public:
 
     QDeclarativeItem *getItem(int modelIndex);
     void releaseItem(QDeclarativeItem *item);
+    QDeclarativePathViewAttached *attached(QDeclarativeItem *item);
+    void clear();
 
     bool isValid() const {
         return model && model->count() > 0 && model->isValid() && path;
@@ -132,10 +137,11 @@ public:
     int pathOffset;
     int requestedIndex;
     QList<QDeclarativeItem *> items;
-    QGuard<QDeclarativeVisualModel> model;
+    QDeclarativeGuard<QDeclarativeVisualModel> model;
     QVariant modelVariant;
     enum MovementReason { Other, Key, Mouse };
     MovementReason moveReason;
+    QDeclarativeOpenMetaObjectType *attType;
 };
 
 QT_END_NAMESPACE

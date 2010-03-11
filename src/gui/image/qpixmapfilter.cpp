@@ -726,7 +726,7 @@ void expblur(QImage &img, qreal radius, bool improvedQuality = false, int transp
 
     int img_height = img.height();
     for (int row = 0; row < img_height; ++row) {
-        for (int i = 0; i <= improvedQuality; ++i)
+        for (int i = 0; i <= int(improvedQuality); ++i)
             qt_blurrow<aprec, zprec, alphaOnly>(img, row, alpha);
     }
 
@@ -759,7 +759,7 @@ void expblur(QImage &img, qreal radius, bool improvedQuality = false, int transp
 
     img_height = temp.height();
     for (int row = 0; row < img_height; ++row) {
-        for (int i = 0; i <= improvedQuality; ++i)
+        for (int i = 0; i <= int(improvedQuality); ++i)
             qt_blurrow<aprec, zprec, alphaOnly>(temp, row, alpha);
     }
 
@@ -777,6 +777,9 @@ void expblur(QImage &img, qreal radius, bool improvedQuality = false, int transp
 
 Q_GUI_EXPORT QImage qt_halfScaled(const QImage &source)
 {
+    if (source.width() < 2 || source.height() < 2)
+        return QImage();
+
     QImage srcImage = source;
 
     if (source.format() == QImage::Format_Indexed8) {
@@ -869,7 +872,7 @@ Q_GUI_EXPORT void qt_blurImage(QPainter *p, QImage &blurImage, qreal radius, boo
     }
 
     qreal scale = 1;
-    if (radius >= 4) {
+    if (radius >= 4 && blurImage.width() >= 2 && blurImage.height() >= 2) {
         blurImage = qt_halfScaled(blurImage);
         scale = 2;
         radius *= qreal(0.5);

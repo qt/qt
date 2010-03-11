@@ -167,6 +167,13 @@
     regardless of the Qt::FormattingOptions used.
 */
 
+/*!
+ \fn uint qHash(const QUrl &url)
+ \since 4.7
+ \relates QUrl
+
+ Computes a hash key from the normalized version of \a url.
+ */
 #include "qplatformdefs.h"
 #include "qurl.h"
 #include "private/qunicodetables_p.h"
@@ -3472,8 +3479,12 @@ QString QUrlPrivate::authority(QUrl::FormattingOptions options) const
 
 void QUrlPrivate::setAuthority(const QString &auth)
 {
-    if (auth.isEmpty())
+    if (auth.isEmpty()) {
+        setUserInfo(QString());
+        host.clear();
+        port = -1;
         return;
+    }
 
     // find the port section of the authority by searching from the
     // end towards the beginning for numbers until a ':' is reached.

@@ -61,6 +61,7 @@
 QT_BEGIN_NAMESPACE
 
 class QBearerEngine;
+class QTimer;
 
 class Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate : public QObject
 {
@@ -77,6 +78,11 @@ public:
 
     QList<QBearerEngine *> engines();
 
+    void startPolling();
+
+    void enablePolling();
+    void disablePolling();
+
 public slots:
     void updateConfigurations();
 
@@ -92,12 +98,17 @@ Q_SIGNALS:
 private:
     QMutex mutex;
 
+    QTimer *pollTimer;
+
     QList<QBearerEngine *> sessionEngines;
 
-    QSet<QNetworkConfigurationPrivatePointer> onlineConfigurations;
+    QSet<QString> onlineConfigurations;
 
     QSet<int> updatingEngines;
     bool updating;
+
+    QSet<int> pollingEngines;
+    int forcedPolling;
 
     bool firstUpdate;
 
@@ -105,6 +116,8 @@ private Q_SLOTS:
     void configurationAdded(QNetworkConfigurationPrivatePointer ptr);
     void configurationRemoved(QNetworkConfigurationPrivatePointer ptr);
     void configurationChanged(QNetworkConfigurationPrivatePointer ptr);
+
+    void pollEngines();
 };
 
 Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate();
