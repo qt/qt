@@ -45,6 +45,9 @@
 
 #include "private/qpaintengine_raster_p.h"
 
+#include "private/qapplication_p.h"
+#include "private/qgraphicssystem_p.h"
+
 #if defined(Q_WS_X11) && !defined(QT_NO_MITSHM)
 #include <qx11info_x11.h>
 #include <sys/ipc.h>
@@ -284,7 +287,11 @@ QNativeImage::~QNativeImage()
 
 QImage::Format QNativeImage::systemFormat()
 {
+#ifdef Q_WS_LITE
+    return QApplicationPrivate::graphicsSystem()->screens().at(0)->format();
+#else
     return QImage::Format_RGB32;
+#endif
 }
 
 #endif // platforms
