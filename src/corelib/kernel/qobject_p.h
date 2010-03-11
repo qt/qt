@@ -90,6 +90,7 @@ class Q_CORE_EXPORT QDeclarativeData
 public:
     virtual ~QDeclarativeData();
     virtual void destroyed(QObject *) = 0;
+    virtual void parentChanged(QObject *, QObject *) = 0;
 };
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData

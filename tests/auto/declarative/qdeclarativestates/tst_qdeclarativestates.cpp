@@ -110,7 +110,7 @@ private slots:
 
 void tst_qdeclarativestates::initTestCase()
 {
-    QML_REGISTER_TYPE(Qt.test, 1, 0, MyRectangle,MyRect);
+    qmlRegisterType<MyRect>("Qt.test", 1, 0, "MyRectangle");
 }
 
 QByteArray tst_qdeclarativestates::fullDataPath(const QString &path)

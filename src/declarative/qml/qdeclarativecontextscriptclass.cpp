@@ -80,7 +80,7 @@ struct ContextData : public QScriptDeclarativeClass::Object {
  */
 QDeclarativeContextScriptClass::QDeclarativeContextScriptClass(QDeclarativeEngine *bindEngine)
 : QDeclarativeScriptClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine),
-  lastScopeObject(0), lastContext(0), lastData(0), lastPropertyIndex(-1), lastDefaultObject(-1)
+  lastScopeObject(0), lastContext(0), lastData(0), lastPropertyIndex(-1)
 {
 }
 
@@ -132,7 +132,6 @@ QDeclarativeContextScriptClass::queryProperty(Object *object, const Identifier &
     lastContext = 0;
     lastData = 0;
     lastPropertyIndex = -1;
-    lastDefaultObject = -1;
 
     QDeclarativeContext *bindContext = ((ContextData *)object)->getContext(engine);
     QObject *scopeObject = ((ContextData *)object)->getScope(engine);
@@ -210,13 +209,13 @@ QDeclarativeContextScriptClass::queryProperty(QDeclarativeContext *bindContext, 
         }
     }
 
-    for (int ii = cp->defaultObjects.count() - 1; ii >= 0; --ii) {
+    if (cp->contextObject) {
         QScriptClass::QueryFlags rv = 
-            ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags, bindContext, 
+            ep->objectClass->queryProperty(cp->contextObject, name, flags, bindContext, 
                                            QDeclarativeObjectScriptClass::ImplicitObject | QDeclarativeObjectScriptClass::SkipAttachedProperties);
 
         if (rv) {
-            lastDefaultObject = ii;
+            lastScopeObject = cp->contextObject;
             lastContext = bindContext;
             return rv;
         }
@@ -244,9 +243,9 @@ QDeclarativeContextScriptClass::property(Object *object, const Identifier &name)
     } else if (lastData) {
 
         if (lastData->type)
-            return Value(scriptEngine, ep->typeNameClass->newObject(cp->defaultObjects.at(0), lastData->type));
+            return Value(scriptEngine, ep->typeNameClass->newObject(cp->contextObject, lastData->type));
         else
-            return Value(scriptEngine, ep->typeNameClass->newObject(cp->defaultObjects.at(0), lastData->typeNamespace));
+            return Value(scriptEngine, ep->typeNameClass->newObject(cp->contextObject, lastData->typeNamespace));
 
     } else if (lastPropertyIndex != -1) {
 
@@ -267,10 +266,6 @@ QDeclarativeContextScriptClass::property(Object *object, const Identifier &name)
 
 
         return Value(scriptEngine, rv);
-    } else if(lastDefaultObject != -1) {
-
-        // Default object property
-        return ep->objectClass->property(cp->defaultObjects.at(lastDefaultObject), name);
 
     } else {
 
@@ -283,7 +278,7 @@ void QDeclarativeContextScriptClass::setProperty(Object *object, const Identifie
                                         const QScriptValue &value)
 {
     Q_UNUSED(object);
-    Q_ASSERT(lastScopeObject || lastDefaultObject != -1);
+    Q_ASSERT(lastScopeObject);
 
     QDeclarativeContext *bindContext = lastContext;
     Q_ASSERT(bindContext);
@@ -291,12 +286,7 @@ void QDeclarativeContextScriptClass::setProperty(Object *object, const Identifie
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
     QDeclarativeContextPrivate *cp = QDeclarativeContextPrivate::get(bindContext);
 
-    if (lastScopeObject) {
-        ep->objectClass->setProperty(lastScopeObject, name, value, bindContext);
-    } else {
-        ep->objectClass->setProperty(cp->defaultObjects.at(lastDefaultObject), name, value,
-                                     bindContext);
-    }
+    ep->objectClass->setProperty(lastScopeObject, name, value, bindContext);
 }
 
 QT_END_NAMESPACE

@@ -124,24 +124,7 @@ public:
         QDeclarativeCompiledBindingsPrivate *parent;
     };
 
-    struct Subscription {
-        struct Signal {
-            QDeclarativeGuard<QObject> source;
-            int notifyIndex;
-        };
-
-        enum { InvalidType, SignalType, IdType } type;
-        inline Subscription();
-        inline ~Subscription();
-        bool isSignal() const { return type == SignalType; }
-        bool isId() const { return type == IdType; }
-        inline Signal *signal();
-        inline QDeclarativeContextPrivate::IdNotifier *id();
-        union {
-            char signalData[sizeof(Signal)];
-            char idData[sizeof(QDeclarativeContextPrivate::IdNotifier)];
-        };
-    };
+    typedef QDeclarativeNotifierEndpoint Subscription;
     Subscription *subscriptions;
     QScriptDeclarativeClass::PersistentIdentifier *identifiers;
 
@@ -189,18 +172,6 @@ QDeclarativeCompiledBindingsPrivate::~QDeclarativeCompiledBindingsPrivate()
     delete [] subscriptions; subscriptions = 0;
     delete [] identifiers; identifiers = 0;
 }
-
-QDeclarativeCompiledBindingsPrivate::Subscription::Subscription()
-: type(InvalidType)
-{
-}
-
-QDeclarativeCompiledBindingsPrivate::Subscription::~Subscription()
-{
-    if (type == SignalType) ((Signal *)signalData)->~Signal();
-    else if (type == IdType) ((QDeclarativeContextPrivate::IdNotifier *)idData)->~IdNotifier();
-}
-
 
 int QDeclarativeCompiledBindingsPrivate::methodCount = -1;
 
@@ -328,22 +299,6 @@ void QDeclarativeCompiledBindingsPrivate::run(Binding *binding)
     } else {
         run(binding->index, cp, binding, binding->scope, binding->target);
     }
-}
-
-QDeclarativeCompiledBindingsPrivate::Subscription::Signal *QDeclarativeCompiledBindingsPrivate::Subscription::signal() 
-{
-    if (type == IdType) ((QDeclarativeContextPrivate::IdNotifier *)idData)->~IdNotifier();
-    if (type != SignalType) new (signalData) Signal;
-    type = SignalType;
-    return (Signal *)signalData;
-}
-
-QDeclarativeContextPrivate::IdNotifier *QDeclarativeCompiledBindingsPrivate::Subscription::id()
-{
-    if (type == SignalType) ((Signal *)signalData)->~Signal();
-    if (type != IdType) new (idData) QDeclarativeContextPrivate::IdNotifier;
-    type = IdType;
-    return (QDeclarativeContextPrivate::IdNotifier *)idData;
 }
 
 namespace {
@@ -656,20 +611,7 @@ void QDeclarativeCompiledBindingsPrivate::unsubscribe(int subIndex)
     Q_Q(QDeclarativeCompiledBindings);
 
     QDeclarativeCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
-    if (sub->isSignal()) {
-        QDeclarativeCompiledBindingsPrivate::Subscription::Signal *s = sub->signal();
-        if (s->source)
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
-            QMetaObject::disconnectOne(s->source, s->notifyIndex, 
-                                       q, methodCount + subIndex);
-#else
-            // QTBUG-6781
-            QMetaObject::disconnect(s->source, s->notifyIndex, 
-                                    q, methodCount + subIndex);
-#endif
-    } else if (sub->isId()) {
-        sub->id()->clear();
-    }
+    sub->disconnect();
 }
 
 void QDeclarativeCompiledBindingsPrivate::subscribeId(QDeclarativeContextPrivate *p, int idIndex, int subIndex)
@@ -680,15 +622,8 @@ void QDeclarativeCompiledBindingsPrivate::subscribeId(QDeclarativeContextPrivate
 
     if (p->idValues[idIndex]) {
         QDeclarativeCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
-        QDeclarativeContextPrivate::IdNotifier *i = sub->id();
-
-        i->next = p->idValues[idIndex].bindings;
-        i->prev = &p->idValues[idIndex].bindings;
-        p->idValues[idIndex].bindings = i;
-        if (i->next) i->next->prev = &i->next;
-
-        i->target = q;
-        i->methodIndex = methodCount + subIndex;
+        sub->target = q;
+        sub->targetMethod = methodCount + subIndex;
     }
 }
  
@@ -697,27 +632,9 @@ void QDeclarativeCompiledBindingsPrivate::subscribe(QObject *o, int notifyIndex,
     Q_Q(QDeclarativeCompiledBindings);
 
     QDeclarativeCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
-    
-    if (sub->isId())
-        unsubscribe(subIndex);
-
-    QDeclarativeCompiledBindingsPrivate::Subscription::Signal *s = sub->signal();
-    if (o != s->source || notifyIndex != s->notifyIndex)  {
-        if (s->source)
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
-            QMetaObject::disconnectOne(s->source, s->notifyIndex, 
-                                       q, methodCount + subIndex);
-#else
-            // QTBUG-6781
-            QMetaObject::disconnect(s->source, s->notifyIndex, 
-                                    q, methodCount + subIndex);
-#endif
-        s->source = o;
-        s->notifyIndex = notifyIndex;
-        if (s->source && s->notifyIndex != -1) 
-            QMetaObject::connect(s->source, s->notifyIndex, q,
-                                 methodCount + subIndex, Qt::DirectConnection);
-    } 
+    sub->target = q;
+    sub->targetMethod = methodCount + subIndex; 
+    sub->connect(o, notifyIndex);
 }
 
 // Conversion functions - these MUST match the QtScript expression path
@@ -928,7 +845,7 @@ void QDeclarativeCompiledBindingsPrivate::findgeneric(Register *output,
             }
         }
 
-        if (QObject *root = context->defaultObjects.isEmpty()?0:context->defaultObjects.first()) {
+        if (QObject *root = context->contextObject) {
 
             if (findproperty(root, output, enginePriv, subIdx, name, isTerminal))
                 return;
@@ -1169,7 +1086,7 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         break;
 
     case Instr::LoadRoot:
-        registers[instr->load.reg].setQObject(context->defaultObjects.at(0));
+        registers[instr->load.reg].setQObject(context->contextObject);
         break;
 
     case Instr::LoadAttached:

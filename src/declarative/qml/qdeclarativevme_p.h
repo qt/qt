@@ -71,7 +71,7 @@ template<typename T, int N = 128>
 class QDeclarativeVMEStack {
 public:
     QDeclarativeVMEStack() : index(-1), maxSize(N), data(fixedData) {}
-    ~QDeclarativeVMEStack() { if (data != fixedData) qFree(fixedData); }
+    ~QDeclarativeVMEStack() { if (data != fixedData) qFree(data); }
 
     bool isEmpty() const { return index == -1; }
     const T &top() const { return data[index]; }

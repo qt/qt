@@ -54,7 +54,7 @@ public:
     virtual void registerTypes(const char *uri)
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("org.webkit"));
-        QML_REGISTER_NOCREATE_TYPE(QDeclarativeWebSettings);
+        qmlRegisterType<QDeclarativeWebSettings>();
         qmlRegisterType<QDeclarativeWebView>(uri,1,0,"WebView");
     }
 };
