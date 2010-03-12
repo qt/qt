@@ -8,6 +8,7 @@ Flickable: renamed viewportX -> contentX
 Flickable: renamed viewportY -> contentY
 Removed Flickable.reportedVelocitySmoothing
 Removed Qt.playSound (replaced by SoundEffect element)
+Removed Qt.closestAngle (use RotationAnimation instead)
 Removed NumberFormatter
 Removed DateTimeFormatter (use Qt.formatDateTime() instead)
 Renamed MouseRegion -> MouseArea
@@ -17,6 +18,7 @@ Connection: syntax and rename:
   becomes:
     Connections { target: a; onFoo: xxx; onBar: yyy }
 Using WebView now requires "import org.webkit 1.0"
+AnchorAnimation must now be used to animate anchor changes (and not NumberAnimation)
 
 QmlView
 -------

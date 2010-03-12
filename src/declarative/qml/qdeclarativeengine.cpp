@@ -243,7 +243,6 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
     qtObject.setProperty(QLatin1String("formatDateTime"),newFunction(QDeclarativeEnginePrivate::formatDateTime, 2));
 
     //misc methods
-    qtObject.setProperty(QLatin1String("closestAngle"), newFunction(QDeclarativeEnginePrivate::closestAngle, 2));
     qtObject.setProperty(QLatin1String("openUrlExternally"),newFunction(QDeclarativeEnginePrivate::desktopOpenUrl, 1));
     qtObject.setProperty(QLatin1String("md5"),newFunction(QDeclarativeEnginePrivate::md5, 1));
     qtObject.setProperty(QLatin1String("btoa"),newFunction(QDeclarativeEnginePrivate::btoa, 1));
@@ -1235,25 +1234,6 @@ QScriptValue QDeclarativeEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptE
     QDeclarativeEnginePrivate *qe = get (e);
     qe->sendQuit ();
     return QScriptValue();
-}
-
-QScriptValue QDeclarativeEnginePrivate::closestAngle(QScriptContext *ctxt, QScriptEngine *e)
-{
-    if(ctxt->argumentCount() < 2)
-        return e->newVariant(QVariant(0.0));
-    qreal a = ctxt->argument(0).toNumber();
-    qreal b = ctxt->argument(1).toNumber();
-    qreal ret = b;
-    qreal diff = b-a;
-    while(diff > 180.0){
-        ret -= 360.0;
-        diff -= 360.0;
-    }
-    while(diff < -180.0){
-        ret += 360.0;
-        diff += 360.0;
-    }
-    return e->newVariant(QVariant(ret));
 }
 
 QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine *engine)

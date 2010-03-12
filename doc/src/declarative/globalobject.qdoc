@@ -182,18 +182,6 @@ This function returns a color 50% darker than \c baseColor. See QColor::darker()
     \image declarative-rect_tint.png
 
     Tint is most useful when a subtle change is intended to be conveyed due to some event; you can then use tinting to more effectively tune the visible color.
-\section3 Qt.closestAngle(number fromAngle, number toAngle)
-This function returns an equivalent angle to toAngle, such that the difference between fromAngle and toAngle is never more than 180 degrees. This is useful when animating angles using a NumberAnimation, which does not know about equivalent angles, when you always want to take the shortest path. 
-
-For example, the following would rotate myItem counterclockwise from 350 degrees to 10 degrees, for a total of 340 degrees of rotation.
-\qml
-NumberAnimation { target: myItem; property: "rotation"; from: 350; to: 10 }
-\endqml
-
-while the following would rotate myItem clockwise from 350 degrees to 370 degrees (which is visually equivilant to 10 degrees), for a total of 20 degrees of rotation.
-\qml
-NumberAnimation { target: myItem; property: "rotation"; from: 350; to: Qt.closetAngle(350, 10) }
-\endqml
 
 \section3 Qt.openUrlExternally(url target)
 This function attempts to open the specified \c target url in an external application, based on the user's desktop preferences. It will return true if it succeeds, and false otherwise.
