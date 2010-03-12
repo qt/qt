@@ -1,6 +1,7 @@
 =============================================================================
 The changes below are pre Qt 4.7.0 alpha
 
+PathView: offset property now uses range 0-1.0 rather than 0-100
 ListView, GridView::positionViewAtIndex() gained a 'mode' parameter
 Flickable: renamed viewportWidth -> contentWidth
 Flickable: renamed viewportHeight -> contentHeight
