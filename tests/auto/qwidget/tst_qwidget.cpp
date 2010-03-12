@@ -10043,8 +10043,8 @@ void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
 
 void tst_QWidget::movedAndResizedAttributes()
 {
-#if defined (Q_OS_MAC) || defined(Q_WS_QWS)
-    QEXPECT_FAIL("", "FixMe, QTBUG-8941", Abort);
+#if defined (Q_OS_MAC) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+    QEXPECT_FAIL("", "FixMe, QTBUG-8941 and QTBUG-8977", Abort);
     QVERIFY(false);
 #else
     QWidget w;
