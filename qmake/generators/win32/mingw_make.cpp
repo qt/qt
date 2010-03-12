@@ -415,7 +415,7 @@ void MingwMakefileGenerator::writeRcFilePart(QTextStream &t)
     if (!rc_file.isEmpty()) {
         t << escapeDependencyPath(var("RES_FILE")) << ": " << rc_file << "\n\t"
           << var("QMAKE_RC") << " -i " << rc_file << " -o " << var("RES_FILE") 
-          << " --include-dir=" << incPathStr << endl << endl;
+          << " --include-dir=" << incPathStr << " $(DEFINES)" << endl << endl;
     }
 }
 
