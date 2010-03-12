@@ -59,6 +59,7 @@
 #include "qdeclarativeengine_p.h"
 #include "qdeclarativeintegercache_p.h"
 #include "qdeclarativetypenamecache_p.h"
+#include "qdeclarativenotifier_p.h"
 
 #include <QtCore/qhash.h>
 #include <QtScript/qscriptvalue.h>
@@ -93,8 +94,7 @@ public:
     QList<QVariant> propertyValues;
     int notifyIndex;
 
-    QObjectList defaultObjects;
-    int highPriorityCount;
+    QObject *contextObject;
 
     QList<QScriptValue> scripts;
     void addScript(const QDeclarativeParser::Object::ScriptBlock &, QObject *);
@@ -107,24 +107,15 @@ public:
 
     void invalidateEngines();
     void refreshExpressions();
-    QSet<QDeclarativeContext *> childContexts;
+
+    QDeclarativeContext *childContexts;
+
+    QDeclarativeContext  *nextChild;
+    QDeclarativeContext **prevChild;
 
     QDeclarativeAbstractExpression *expressions;
 
     QDeclarativeDeclarativeData *contextObjects;
-
-    struct IdNotifier 
-    {
-        inline IdNotifier();
-        inline ~IdNotifier();
-        
-        inline void clear();
-
-        IdNotifier *next;
-        IdNotifier**prev;
-        QObject *target;
-        int methodIndex;
-    };
 
     struct ContextGuard : public QDeclarativeGuard<QObject>
     {
@@ -133,7 +124,7 @@ public:
         inline virtual void objectDestroyed(QObject *);
 
         QDeclarativeContextPrivate *priv;
-        IdNotifier *bindings;
+        QDeclarativeNotifier bindings;
     };
     ContextGuard *idValues;
     int idValueCount;
@@ -157,26 +148,8 @@ public:
     static QObject *context_at(QDeclarativeListProperty<QObject> *, int);
 };
 
-QDeclarativeContextPrivate::IdNotifier::IdNotifier()
-: next(0), prev(0), target(0), methodIndex(-1)
-{
-}
-
-QDeclarativeContextPrivate::IdNotifier::~IdNotifier()
-{
-    clear();
-}
-
-void QDeclarativeContextPrivate::IdNotifier::clear()
-{
-    if (next) next->prev = prev;
-    if (prev) *prev = next;
-    next = 0; prev = 0; target = 0;
-    methodIndex = -1;
-}
-
 QDeclarativeContextPrivate::ContextGuard::ContextGuard() 
-: priv(0), bindings(0) 
+: priv(0)
 {
 }
 

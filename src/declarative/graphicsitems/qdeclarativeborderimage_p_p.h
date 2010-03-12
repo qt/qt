@@ -68,7 +68,8 @@ public:
       : border(0), sciReply(0),
         sciPendingPixmapCache(false),
         horizontalTileMode(QDeclarativeBorderImage::Stretch),
-        verticalTileMode(QDeclarativeBorderImage::Stretch)
+        verticalTileMode(QDeclarativeBorderImage::Stretch),
+        redirectCount(0)
     {
     }
 
@@ -90,6 +91,7 @@ public:
     bool sciPendingPixmapCache;
     QDeclarativeBorderImage::TileMode horizontalTileMode;
     QDeclarativeBorderImage::TileMode verticalTileMode;
+    int redirectCount;
 };
 
 QT_END_NAMESPACE

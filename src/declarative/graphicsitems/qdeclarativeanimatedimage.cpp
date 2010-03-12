@@ -247,9 +247,25 @@ void QDeclarativeAnimatedImage::setSource(const QUrl &url)
     emit statusChanged(d->status);
 }
 
+#define ANIMATEDIMAGE_MAXIMUM_REDIRECT_RECURSION 16
+
 void QDeclarativeAnimatedImage::movieRequestFinished()
 {
     Q_D(QDeclarativeAnimatedImage);
+
+    d->redirectCount++;
+    if (d->redirectCount < ANIMATEDIMAGE_MAXIMUM_REDIRECT_RECURSION) {
+        QVariant redirect = d->reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirect.isValid()) {
+            QUrl url = d->reply->url().resolved(redirect.toUrl());
+            d->reply->deleteLater();
+            d->reply = 0;
+            setSource(url);
+            return;
+        }
+    }
+    d->redirectCount=0;
+
     d->_movie = new QMovie(d->reply);
     if (!d->_movie->isValid()){
         qWarning() << "Error Reading Animated Image File " << d->url;

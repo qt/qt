@@ -61,7 +61,7 @@ int qmlRegisterValueTypeEnums(const char *qmlName)
     QDeclarativePrivate::RegisterType type = {
         0, 
 
-        qRegisterMetaType<T *>(pointerName.constData()), 0, 0,
+        qRegisterMetaType<T *>(pointerName.constData()), 0, 0, 0,
 
         "Qt", 4, 6, qmlName, &T::staticMetaObject,
 

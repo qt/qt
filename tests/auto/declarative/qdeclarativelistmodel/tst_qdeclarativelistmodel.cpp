@@ -214,7 +214,7 @@ void tst_QDeclarativeListModel::dynamic()
     QDeclarativeEngine engine;
     QDeclarativeListModel model;
     QDeclarativeEngine::setContextForObject(&model,engine.rootContext());
-    engine.rootContext()->addDefaultObject(&model);
+    engine.rootContext()->setContextObject(&model);
     QDeclarativeExpression e(engine.rootContext(), script, &model);
     if (!warning.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());

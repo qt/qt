@@ -96,21 +96,12 @@ void QDeclarativeActionEvent::reverse()
 {
 }
 
-QList<QDeclarativeAction> QDeclarativeActionEvent::extraActions()
-{
-    return QList<QDeclarativeAction>();
-}
-
 bool QDeclarativeActionEvent::changesBindings()
 {
     return false;
 }
 
-void QDeclarativeActionEvent::clearForwardBindings()
-{
-}
-
-void QDeclarativeActionEvent::clearReverseBindings()
+void QDeclarativeActionEvent::clearBindings()
 {
 }
 
@@ -368,47 +359,60 @@ void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransit
     for (int ii = 0; ii < applyList.count(); ++ii) {
         QDeclarativeAction &action = applyList[ii];
 
-        bool found = false;
-
-        int jj;
         if (action.event) {
             if (!action.event->isReversable())
                 continue;
-            for (jj = 0; jj < d->revertList.count(); ++jj) {
+            bool found = false;
+            for (int jj = 0; jj < d->revertList.count(); ++jj) {
                 QDeclarativeActionEvent *event = d->revertList.at(jj).event;
                 if (event && event->typeName() == action.event->typeName()) {
                     if (action.event->override(event)) {
                         found = true;
+
+                        if (action.event != d->revertList.at(jj).event) {
+                            action.event->copyOriginals(d->revertList.at(jj).event);
+
+                            QDeclarativeSimpleAction r(action);
+                            additionalReverts << r;
+                            d->revertList.removeAt(jj);
+                        } else if (action.event->isRewindable())    //###why needed?
+                            action.event->saveCurrentValues();
+
                         break;
                     }
                 }
             }
-            if (!found || action.event != d->revertList.at(jj).event)
+            if (!found) {
                 action.event->saveOriginals();
-            else if (action.event->isRewindable())
-                action.event->saveCurrentValues();
-        } else {
-            action.fromBinding = QDeclarativePropertyPrivate::binding(action.property);
-
-            for (jj = 0; jj < d->revertList.count(); ++jj) {
-                if (d->revertList.at(jj).property == action.property) {
-                    found = true;
-                    break;
-                }
-            }
-        }
-
-        if (!found) {
-            if (!action.restore) {
-                action.deleteFromBinding();
-            } else {
                 // Only need to revert the applyList action if the previous
                 // state doesn't have a higher priority revert already
                 QDeclarativeSimpleAction r(action);
                 additionalReverts << r;
             }
-        } else if (d->revertList.at(jj).binding != action.fromBinding) {
-            action.deleteFromBinding();
+        } else {
+            bool found = false;
+            action.fromBinding = QDeclarativePropertyPrivate::binding(action.property);
+
+            for (int jj = 0; jj < d->revertList.count(); ++jj) {
+                if (d->revertList.at(jj).property == action.property) {
+                    found = true;
+                    if (d->revertList.at(jj).binding != action.fromBinding) {
+                        action.deleteFromBinding();
+                    }
+                    break;
+                }
+            }
+
+            if (!found) {
+                if (!action.restore) {
+                    action.deleteFromBinding();
+                } else {
+                    // Only need to revert the applyList action if the previous
+                    // state doesn't have a higher priority revert already
+                    QDeclarativeSimpleAction r(action);
+                    additionalReverts << r;
+                }
+            }
         }
     }
 
