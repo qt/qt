@@ -1583,6 +1583,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     vi = 0;
 #endif
 #if defined(QT_OPENGL_ES)
+    ownsEglContext = false;
     eglContext = 0;
     eglSurface = EGL_NO_SURFACE;
 #endif
@@ -1688,14 +1689,12 @@ typedef void (*_qt_image_cleanup_hook_64)(qint64);
 extern Q_GUI_EXPORT _qt_pixmap_cleanup_hook_64 qt_pixmap_cleanup_hook_64;
 extern Q_GUI_EXPORT _qt_image_cleanup_hook_64 qt_image_cleanup_hook_64;
 
-static QGLTextureCache *qt_gl_texture_cache = 0;
+
+Q_GLOBAL_STATIC(QGLTextureCache, qt_gl_texture_cache)
 
 QGLTextureCache::QGLTextureCache()
     : m_cache(64*1024) // cache ~64 MB worth of textures - this is not accurate though
 {
-    Q_ASSERT(qt_gl_texture_cache == 0);
-    qt_gl_texture_cache = this;
-
     QImagePixmapCleanupHooks::instance()->addPixmapDataModificationHook(cleanupTexturesForPixampData);
     QImagePixmapCleanupHooks::instance()->addPixmapDataDestructionHook(cleanupBeforePixmapDestruction);
     QImagePixmapCleanupHooks::instance()->addImageHook(cleanupTexturesForCacheKey);
@@ -1703,8 +1702,7 @@ QGLTextureCache::QGLTextureCache()
 
 QGLTextureCache::~QGLTextureCache()
 {
-    qt_gl_texture_cache = 0;
-
+    Q_ASSERT(size() == 0);
     QImagePixmapCleanupHooks::instance()->removePixmapDataModificationHook(cleanupTexturesForPixampData);
     QImagePixmapCleanupHooks::instance()->removePixmapDataDestructionHook(cleanupBeforePixmapDestruction);
     QImagePixmapCleanupHooks::instance()->removeImageHook(cleanupTexturesForCacheKey);
@@ -1754,22 +1752,14 @@ void QGLTextureCache::removeContextTextures(QGLContext* ctx)
     }
 }
 
-QGLTextureCache* QGLTextureCache::instance()
-{
-    if (!qt_gl_texture_cache)
-        qt_gl_texture_cache = new QGLTextureCache;
-
-    return qt_gl_texture_cache;
-}
-
 /*
   a hook that removes textures from the cache when a pixmap/image
   is deref'ed
 */
 void QGLTextureCache::cleanupTexturesForCacheKey(qint64 cacheKey)
 {
-    instance()->remove(cacheKey);
-    Q_ASSERT(instance()->getTexture(cacheKey) == 0);
+    qt_gl_texture_cache()->remove(cacheKey);
+    Q_ASSERT(qt_gl_texture_cache()->getTexture(cacheKey) == 0);
 }
 
 
@@ -1791,10 +1781,9 @@ void QGLTextureCache::cleanupBeforePixmapDestruction(QPixmapData* pmd)
 #endif
 }
 
-void QGLTextureCache::deleteIfEmpty()
+QGLTextureCache *QGLTextureCache::instance()
 {
-    if (instance()->size() == 0)
-        delete instance();
+    return qt_gl_texture_cache();
 }
 
 // DDS format structure
@@ -1960,7 +1949,6 @@ QGLContext::~QGLContext()
 {
     // remove any textures cached in this context
     QGLTextureCache::instance()->removeContextTextures(this);
-    QGLTextureCache::deleteIfEmpty(); // ### thread safety
 
     d_ptr->group->cleanupResources(this);
 
