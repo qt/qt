@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QObject;
-class QMetaObject;
+struct QMetaObject;
 template<typename T>
 struct QDeclarativeListProperty {
     typedef void (*AppendFunction)(QDeclarativeListProperty<T> *, T*);
@@ -61,12 +61,12 @@ struct QDeclarativeListProperty {
     typedef T *(*AtFunction)(QDeclarativeListProperty<T> *, int);
     typedef void (*ClearFunction)(QDeclarativeListProperty<T> *);
 
-    QDeclarativeListProperty() 
+    QDeclarativeListProperty()
         : object(0), data(0), append(0), count(0), at(0), clear(0), dummy1(0), dummy2(0) {}
     QDeclarativeListProperty(QObject *o, QList<T *> &list)
         : object(o), data(&list), append(qlist_append), count(qlist_count), at(qlist_at),
           clear(qlist_clear), dummy1(0), dummy2(0) {}
-    QDeclarativeListProperty(QObject *o, void *d, AppendFunction a, CountFunction c = 0, AtFunction t = 0, 
+    QDeclarativeListProperty(QObject *o, void *d, AppendFunction a, CountFunction c = 0, AtFunction t = 0,
                     ClearFunction r = 0)
         : object(o), data(d), append(a), count(c), at(t), clear(r), dummy1(0), dummy2(0) {}
 
@@ -81,7 +81,7 @@ struct QDeclarativeListProperty {
 
     QObject *object;
     void *data;
-    
+
     AppendFunction append;
 
     CountFunction count;
@@ -94,7 +94,7 @@ struct QDeclarativeListProperty {
 
 private:
     static void qlist_append(QDeclarativeListProperty *p, T *v) {
-        ((QList<T *> *)p->data)->append(v); 
+        ((QList<T *> *)p->data)->append(v);
     }
     static int qlist_count(QDeclarativeListProperty *p) {
         return ((QList<T *> *)p->data)->count();
