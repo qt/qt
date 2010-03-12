@@ -5060,6 +5060,20 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
     return glExtensions;
 }
 
+
+class QGLDefaultExtensions
+{
+public:
+    QGLDefaultExtensions() {
+        QGLTemporaryContext tempContext;
+        extensions = QGLExtensions::currentContextExtensions();
+    }
+
+    QGLExtensions::Extensions extensions;
+};
+
+Q_GLOBAL_STATIC(QGLDefaultExtensions, qtDefaultExtensions)
+
 /*
     Returns the GL extensions for the current QGLContext. If there is no
     current QGLContext, a default context will be created and the extensions
@@ -5067,34 +5081,19 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
 */
 QGLExtensions::Extensions QGLExtensions::glExtensions()
 {
-    QGLTemporaryContext *tmpContext = 0;
-    static bool cachedDefault = false;
-    static Extensions defaultExtensions = 0;
+    Extensions extensionFlags = 0;
     QGLContext *currentCtx = const_cast<QGLContext *>(QGLContext::currentContext());
 
     if (currentCtx && currentCtx->d_func()->extension_flags_cached)
         return currentCtx->d_func()->extension_flags;
 
     if (!currentCtx) {
-        if (cachedDefault) {
-            return defaultExtensions;
-        } else {
-            tmpContext = new QGLTemporaryContext;
-            cachedDefault = true;
-        }
-    }
-
-    Extensions extensionFlags = currentContextExtensions();
-    if (currentCtx) {
+        extensionFlags = qtDefaultExtensions()->extensions;
+    } else {
+        extensionFlags = currentContextExtensions();
         currentCtx->d_func()->extension_flags_cached = true;
         currentCtx->d_func()->extension_flags = extensionFlags;
-    } else {
-        defaultExtensions = extensionFlags;
     }
-
-    if (tmpContext)
-        delete tmpContext;
-
     return extensionFlags;
 }
 

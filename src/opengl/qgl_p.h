@@ -278,8 +278,6 @@ public:
     Q_DECLARE_FLAGS(Extensions, Extension)
 
     static Extensions glExtensions();
-
-private:
     static Extensions currentContextExtensions();
 };
 
