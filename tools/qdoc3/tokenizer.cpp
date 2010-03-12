@@ -525,6 +525,7 @@ void Tokenizer::initialize(const Config &config)
 
 void Tokenizer::terminate()
 {
+    qDebug() << "void Tokenize::terminate()";
     delete comment;
     comment = 0;
     delete versionX;

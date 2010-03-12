@@ -29,6 +29,7 @@
 #include "JSArray.h"
 #include "JSFunction.h"
 #include "JSLock.h"
+#include "JSString.h"
 #include "PrototypeFunction.h"
 #include "SamplingTool.h"
 #include <math.h>
@@ -36,7 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !PLATFORM(WIN_OS)
+#if !OS(WINDOWS)
 #include <unistd.h>
 #endif
 
@@ -53,10 +54,10 @@
 #include <signal.h>
 #endif
 
-#if COMPILER(MSVC) && !PLATFORM(WINCE)
+#if COMPILER(MSVC) && !OS(WINCE)
 #include <crtdbg.h>
-#include <windows.h>
 #include <mmsystem.h>
+#include <windows.h>
 #endif
 
 #if PLATFORM(QT)
@@ -87,8 +88,8 @@ static JSValue JSC_HOST_CALL functionClearSamplingFlags(ExecState*, JSObject*, J
 
 struct Script {
     bool isFile;
-    char *argument;
-    
+    char* argument;
+
     Script(bool isFile, char *argument)
         : isFile(isFile)
         , argument(argument)
@@ -173,12 +174,12 @@ GlobalObject::GlobalObject(const Vector<UString>& arguments)
 JSValue JSC_HOST_CALL functionPrint(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
     for (unsigned i = 0; i < args.size(); ++i) {
-        if (i != 0)
+        if (i)
             putchar(' ');
-        
+
         printf("%s", args.at(i).toString(exec).UTF8String().c_str());
     }
-    
+
     putchar('\n');
     fflush(stdout);
     return jsUndefined();
@@ -193,7 +194,7 @@ JSValue JSC_HOST_CALL functionDebug(ExecState* exec, JSObject*, JSValue, const A
 JSValue JSC_HOST_CALL functionGC(ExecState* exec, JSObject*, JSValue, const ArgList&)
 {
     JSLock lock(SilenceAssertionsOnly);
-    exec->heap()->collect();
+    exec->heap()->collectAllGarbage();
     return jsUndefined();
 }
 
@@ -291,8 +292,18 @@ JSValue JSC_HOST_CALL functionReadline(ExecState* exec, JSObject*, JSValue, cons
 
 JSValue JSC_HOST_CALL functionQuit(ExecState* exec, JSObject*, JSValue, const ArgList&)
 {
+    // Technically, destroying the heap in the middle of JS execution is a no-no,
+    // but we want to maintain compatibility with the Mozilla test suite, so
+    // we pretend that execution has terminated to avoid ASSERTs, then tear down the heap.
+    exec->globalData().dynamicGlobalObject = 0;
+
     cleanupGlobalData(&exec->globalData());
     exit(EXIT_SUCCESS);
+
+#if COMPILER(MSVC) && OS(WINCE)
+    // Without this, Visual Studio will complain that this method does not return a value.
+    return jsUndefined();
+#endif
 }
 
 // Use SEH for Release builds only to get rid of the crash report dialog
@@ -312,7 +323,7 @@ int jscmain(int argc, char** argv, JSGlobalData*);
 
 int main(int argc, char** argv)
 {
-#if defined(_DEBUG) && PLATFORM(WIN_OS)
+#if defined(_DEBUG) && OS(WINDOWS)
     _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
     _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
@@ -321,7 +332,7 @@ int main(int argc, char** argv)
     _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
 #endif
 
-#if COMPILER(MSVC) && !PLATFORM(WINCE)
+#if COMPILER(MSVC) && !OS(WINCE)
     timeBeginPeriod(1);
 #endif
 
@@ -360,11 +371,8 @@ static bool runWithScripts(GlobalObject* globalObject, const Vector<Script>& scr
     if (dump)
         BytecodeGenerator::setDumpsGeneratedCode(true);
 
-#if ENABLE(OPCODE_SAMPLING)
-    Interpreter* interpreter = globalObject->globalData()->interpreter;
-    interpreter->setSampler(new SamplingTool(interpreter));
-    interpreter->sampler()->setup();
-#endif
+    JSGlobalData* globalData = globalObject->globalData();
+
 #if ENABLE(SAMPLING_FLAGS)
     SamplingFlags::start();
 #endif
@@ -381,9 +389,7 @@ static bool runWithScripts(GlobalObject* globalObject, const Vector<Script>& scr
             fileName = "[Command Line]";
         }
 
-#if ENABLE(SAMPLING_THREAD)
-        SamplingThread::start();
-#endif
+        globalData->startSampling();
 
         Completion completion = evaluate(globalObject->globalExec(), globalObject->globalScopeChain(), makeSource(script, fileName));
         success = success && completion.complType() != Throw;
@@ -394,20 +400,14 @@ static bool runWithScripts(GlobalObject* globalObject, const Vector<Script>& scr
                 printf("End: %s\n", completion.value().toString(globalObject->globalExec()).ascii());
         }
 
-#if ENABLE(SAMPLING_THREAD)
-        SamplingThread::stop();
-#endif
-
+        globalData->stopSampling();
         globalObject->globalExec()->clearException();
     }
 
 #if ENABLE(SAMPLING_FLAGS)
     SamplingFlags::stop();
 #endif
-#if ENABLE(OPCODE_SAMPLING)
-    interpreter->sampler()->dump(globalObject->globalExec());
-    delete interpreter->sampler();
-#endif
+    globalData->dumpSampleData(globalObject->globalExec());
 #if ENABLE(SAMPLING_COUNTERS)
     AbstractSamplingCounter::dump();
 #endif
@@ -473,30 +473,27 @@ static void parseArguments(int argc, char** argv, Options& options, JSGlobalData
     int i = 1;
     for (; i < argc; ++i) {
         const char* arg = argv[i];
-        if (strcmp(arg, "-f") == 0) {
+        if (!strcmp(arg, "-f")) {
             if (++i == argc)
                 printUsageStatement(globalData);
             options.scripts.append(Script(true, argv[i]));
             continue;
         }
-        if (strcmp(arg, "-e") == 0) {
+        if (!strcmp(arg, "-e")) {
             if (++i == argc)
                 printUsageStatement(globalData);
             options.scripts.append(Script(false, argv[i]));
             continue;
         }
-        if (strcmp(arg, "-h") == 0 || strcmp(arg, "--help") == 0) {
-            printUsageStatement(globalData, true);
-        }
-        if (strcmp(arg, "-i") == 0) {
+        if (!strcmp(arg, "-i")) {
             options.interactive = true;
             continue;
         }
-        if (strcmp(arg, "-d") == 0) {
+        if (!strcmp(arg, "-d")) {
             options.dump = true;
             continue;
         }
-        if (strcmp(arg, "-s") == 0) {
+        if (!strcmp(arg, "-s")) {
 #if HAVE(SIGNAL_H)
             signal(SIGILL, _exit);
             signal(SIGFPE, _exit);
@@ -505,16 +502,18 @@ static void parseArguments(int argc, char** argv, Options& options, JSGlobalData
 #endif
             continue;
         }
-        if (strcmp(arg, "--") == 0) {
+        if (!strcmp(arg, "--")) {
             ++i;
             break;
         }
+        if (!strcmp(arg, "-h") || !strcmp(arg, "--help"))
+            printUsageStatement(globalData, true);
         options.scripts.append(Script(true, argv[i]));
     }
-    
+
     if (options.scripts.isEmpty())
         options.interactive = true;
-    
+
     for (; i < argc; ++i)
         options.arguments.append(argv[i]);
 }
@@ -542,20 +541,20 @@ static bool fillBufferWithContentsOfFile(const UString& fileName, Vector<char>& 
         return false;
     }
 
-    size_t buffer_size = 0;
-    size_t buffer_capacity = 1024;
+    size_t bufferSize = 0;
+    size_t bufferCapacity = 1024;
 
-    buffer.resize(buffer_capacity);
+    buffer.resize(bufferCapacity);
 
     while (!feof(f) && !ferror(f)) {
-        buffer_size += fread(buffer.data() + buffer_size, 1, buffer_capacity - buffer_size, f);
-        if (buffer_size == buffer_capacity) { // guarantees space for trailing '\0'
-            buffer_capacity *= 2;
-            buffer.resize(buffer_capacity);
+        bufferSize += fread(buffer.data() + bufferSize, 1, bufferCapacity - bufferSize, f);
+        if (bufferSize == bufferCapacity) { // guarantees space for trailing '\0'
+            bufferCapacity *= 2;
+            buffer.resize(bufferCapacity);
         }
     }
     fclose(f);
-    buffer[buffer_size] = '\0';
+    buffer[bufferSize] = '\0';
 
     return true;
 }

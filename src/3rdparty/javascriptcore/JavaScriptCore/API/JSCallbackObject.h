@@ -36,7 +36,7 @@ namespace JSC {
 template <class Base>
 class JSCallbackObject : public Base {
 public:
-    JSCallbackObject(ExecState*, PassRefPtr<Structure>, JSClassRef, void* data);
+    JSCallbackObject(ExecState*, NonNullPassRefPtr<Structure>, JSClassRef, void* data);
     JSCallbackObject(JSClassRef);
     virtual ~JSCallbackObject();
 
@@ -50,23 +50,27 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance | OverridesHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | OverridesHasInstance | OverridesMarkChildren | OverridesGetPropertyNames | Base::StructureFlags;
 
 private:
     virtual UString className() const;
 
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual bool getOwnPropertySlot(ExecState*, unsigned, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     
     virtual void put(ExecState*, const Identifier&, JSValue, PutPropertySlot&);
 
-    virtual bool deleteProperty(ExecState*, const Identifier&, bool checkDontDelete = true);
-    virtual bool deleteProperty(ExecState*, unsigned, bool checkDontDelete = true);
+    virtual bool deleteProperty(ExecState*, const Identifier&);
+    virtual bool deleteProperty(ExecState*, unsigned);
 
     virtual bool hasInstance(ExecState* exec, JSValue value, JSValue proto);
 
-    virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
+    virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
 
     virtual double toNumber(ExecState*) const;
     virtual UString toString(ExecState*) const;

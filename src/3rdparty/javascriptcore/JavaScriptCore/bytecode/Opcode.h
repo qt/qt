@@ -113,6 +113,7 @@ namespace JSC {
         macro(op_put_by_id_generic, 8) \
         macro(op_del_by_id, 4) \
         macro(op_get_by_val, 4) \
+        macro(op_get_by_pname, 7) \
         macro(op_put_by_val, 4) \
         macro(op_del_by_val, 4) \
         macro(op_put_by_index, 4) \
@@ -127,9 +128,11 @@ namespace JSC {
         macro(op_jneq_ptr, 4) \
         macro(op_jnless, 4) \
         macro(op_jnlesseq, 4) \
+        macro(op_jless, 4) \
         macro(op_jmp_scopes, 3) \
         macro(op_loop, 2) \
         macro(op_loop_if_true, 3) \
+        macro(op_loop_if_false, 3) \
         macro(op_loop_if_less, 4) \
         macro(op_loop_if_lesseq, 4) \
         macro(op_switch_imm, 4) \
@@ -152,8 +155,8 @@ namespace JSC {
         macro(op_strcat, 4) \
         macro(op_to_primitive, 3) \
         \
-        macro(op_get_pnames, 3) \
-        macro(op_next_pname, 4) \
+        macro(op_get_pnames, 6) \
+        macro(op_next_pname, 7) \
         \
         macro(op_push_scope, 2) \
         macro(op_pop_scope, 1) \
@@ -166,7 +169,7 @@ namespace JSC {
         macro(op_jsr, 3) \
         macro(op_sret, 2) \
         \
-        macro(op_debug, 5) \
+        macro(op_debug, 4) \
         macro(op_profile_will_call, 2) \
         macro(op_profile_did_call, 2) \
         \
@@ -193,7 +196,11 @@ namespace JSC {
     #undef VERIFY_OPCODE_ID
 
 #if HAVE(COMPUTED_GOTO)
+#if COMPILER(RVCT)
     typedef void* Opcode;
+#else
+    typedef const void* Opcode;
+#endif
 #else
     typedef OpcodeID Opcode;
 #endif

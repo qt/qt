@@ -246,7 +246,11 @@ bool QNetworkConfiguration::operator==(const QNetworkConfiguration& other) const
 */
 QString QNetworkConfiguration::name() const
 {
-    return d ? d->name : QString();
+    if (!d)
+        return QString();
+
+    QMutexLocker locker(&d->mutex);
+    return d->name;
 }
 
 /*!
@@ -255,7 +259,11 @@ QString QNetworkConfiguration::name() const
 */
 QString QNetworkConfiguration::identifier() const
 {
-    return d ? d->id : QString();
+    if (!d)
+        return QString();
+
+    QMutexLocker locker(&d->mutex);
+    return d->id;
 }
 
 /*!
@@ -268,7 +276,11 @@ QString QNetworkConfiguration::identifier() const
 */
 QNetworkConfiguration::Type QNetworkConfiguration::type() const
 {
-    return d ? d->type : QNetworkConfiguration::Invalid;
+    if (!d)
+        return QNetworkConfiguration::Invalid;
+
+    QMutexLocker locker(&d->mutex);
+    return d->type;
 }
 
 /*!
@@ -283,7 +295,11 @@ QNetworkConfiguration::Type QNetworkConfiguration::type() const
 */
 bool QNetworkConfiguration::isValid() const
 {
-    return d ? d->isValid : false;
+    if (!d)
+        return false;
+
+    QMutexLocker locker(&d->mutex);
+    return d->isValid;
 }
 
 /*!
@@ -291,7 +307,11 @@ bool QNetworkConfiguration::isValid() const
 */
 QNetworkConfiguration::StateFlags QNetworkConfiguration::state() const
 {
-    return d ? d->state : QNetworkConfiguration::Undefined;
+    if (!d)
+        return QNetworkConfiguration::Undefined;
+
+    QMutexLocker locker(&d->mutex);
+    return d->state;
 }
 
 /*!
@@ -303,7 +323,11 @@ QNetworkConfiguration::StateFlags QNetworkConfiguration::state() const
 */
 QNetworkConfiguration::Purpose QNetworkConfiguration::purpose() const
 {
-    return d ? d->purpose : QNetworkConfiguration::UnknownPurpose;
+    if (!d)
+        return QNetworkConfiguration::UnknownPurpose;
+
+    QMutexLocker locker(&d->mutex);
+    return d->purpose;
 }
 
 /*!
@@ -311,7 +335,11 @@ QNetworkConfiguration::Purpose QNetworkConfiguration::purpose() const
 */
 bool QNetworkConfiguration::isRoamingAvailable() const
 {
-    return d ? d->roamingSupported : false;
+    if (!d)
+        return false;
+
+    QMutexLocker locker(&d->mutex);
+    return d->roamingSupported;
 }
 
 /*!
@@ -322,15 +350,25 @@ bool QNetworkConfiguration::isRoamingAvailable() const
 QList<QNetworkConfiguration> QNetworkConfiguration::children() const
 {
     QList<QNetworkConfiguration> results;
-    if (type() != QNetworkConfiguration::ServiceNetwork || !isValid() )
+
+    if (type() != QNetworkConfiguration::ServiceNetwork || !isValid())
         return results;
 
+    QMutexLocker locker(&d->mutex);
+
     QMutableListIterator<QNetworkConfigurationPrivatePointer> iter(d->serviceNetworkMembers);
-    while(iter.hasNext()) {
+    while (iter.hasNext()) {
         QNetworkConfigurationPrivatePointer p = iter.next();
+
         //if we have an invalid member get rid of it -> was deleted earlier on
-        if (!p->isValid)
-            iter.remove();
+        {
+            QMutexLocker childLocker(&p->mutex);
+
+            if (!p->isValid) {
+                iter.remove();
+                continue;
+            }
+        }
 
         QNetworkConfiguration item;
         item.d = p;

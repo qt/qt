@@ -213,6 +213,7 @@ void Generator::initialize(const Config &config)
 
 void Generator::terminate()
 {
+    qDebug() << "void Generator::terminate()";
     QList<Generator *>::ConstIterator g = generators.begin();
     while (g != generators.end()) {
         if (outputFormats.contains((*g)->format()))

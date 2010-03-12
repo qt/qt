@@ -93,13 +93,21 @@ public:
         Zero = ARMv7Assembler::ConditionEQ,
         NonZero = ARMv7Assembler::ConditionNE
     };
-
     enum DoubleCondition {
+        // These conditions will only evaluate to true if the comparison is ordered - i.e. neither operand is NaN.
         DoubleEqual = ARMv7Assembler::ConditionEQ,
+        DoubleNotEqual = ARMv7Assembler::ConditionVC, // Not the right flag! check for this & handle differently.
         DoubleGreaterThan = ARMv7Assembler::ConditionGT,
         DoubleGreaterThanOrEqual = ARMv7Assembler::ConditionGE,
         DoubleLessThan = ARMv7Assembler::ConditionLO,
         DoubleLessThanOrEqual = ARMv7Assembler::ConditionLS,
+        // If either operand is NaN, these conditions always evaluate to true.
+        DoubleEqualOrUnordered = ARMv7Assembler::ConditionVS, // Not the right flag! check for this & handle differently.
+        DoubleNotEqualOrUnordered = ARMv7Assembler::ConditionNE,
+        DoubleGreaterThanOrUnordered = ARMv7Assembler::ConditionHI,
+        DoubleGreaterThanOrEqualOrUnordered = ARMv7Assembler::ConditionHS,
+        DoubleLessThanOrUnordered = ARMv7Assembler::ConditionLT,
+        DoubleLessThanOrEqualOrUnordered = ARMv7Assembler::ConditionLE,
     };
 
     static const RegisterID stackPointerRegister = ARMRegisters::sp;
@@ -189,14 +197,19 @@ public:
         }
     }
 
-    void lshift32(Imm32 imm, RegisterID dest)
-    {
-        m_assembler.lsl(dest, dest, imm.m_value);
-    }
-
     void lshift32(RegisterID shift_amount, RegisterID dest)
     {
-        m_assembler.lsl(dest, dest, shift_amount);
+        // Clamp the shift to the range 0..31
+        ARMThumbImmediate armImm = ARMThumbImmediate::makeEncodedImm(0x1f);
+        ASSERT(armImm.isValid());
+        m_assembler.ARM_and(dataTempRegister, shift_amount, armImm);
+
+        m_assembler.lsl(dest, dest, dataTempRegister);
+    }
+
+    void lshift32(Imm32 imm, RegisterID dest)
+    {
+        m_assembler.lsl(dest, dest, imm.m_value & 0x1f);
     }
 
     void mul32(RegisterID src, RegisterID dest)
@@ -233,12 +246,17 @@ public:
 
     void rshift32(RegisterID shift_amount, RegisterID dest)
     {
-        m_assembler.asr(dest, dest, shift_amount);
+        // Clamp the shift to the range 0..31
+        ARMThumbImmediate armImm = ARMThumbImmediate::makeEncodedImm(0x1f);
+        ASSERT(armImm.isValid());
+        m_assembler.ARM_and(dataTempRegister, shift_amount, armImm);
+
+        m_assembler.asr(dest, dest, dataTempRegister);
     }
 
     void rshift32(Imm32 imm, RegisterID dest)
     {
-        m_assembler.asr(dest, dest, imm.m_value);
+        m_assembler.asr(dest, dest, imm.m_value & 0x1f);
     }
 
     void sub32(RegisterID src, RegisterID dest)
@@ -531,6 +549,23 @@ public:
     {
         m_assembler.vcmp_F64(left, right);
         m_assembler.vmrs_APSR_nzcv_FPSCR();
+
+        if (cond == DoubleNotEqual) {
+            // ConditionNE jumps if NotEqual *or* unordered - force the unordered cases not to jump.
+            Jump unordered = makeBranch(ARMv7Assembler::ConditionVS);
+            Jump result = makeBranch(ARMv7Assembler::ConditionNE);
+            unordered.link(this);
+            return result;
+        }
+        if (cond == DoubleEqualOrUnordered) {
+            Jump unordered = makeBranch(ARMv7Assembler::ConditionVS);
+            Jump notEqual = makeBranch(ARMv7Assembler::ConditionNE);
+            unordered.link(this);
+            // We get here if either unordered, or equal.
+            Jump result = makeJump();
+            notEqual.link(this);
+            return result;
+        }
         return makeBranch(cond);
     }
 
@@ -990,13 +1025,15 @@ public:
 protected:
     ARMv7Assembler::JmpSrc makeJump()
     {
-        return m_assembler.b();
+        moveFixedWidthEncoding(Imm32(0), dataTempRegister);
+        return m_assembler.bx(dataTempRegister);
     }
 
     ARMv7Assembler::JmpSrc makeBranch(ARMv7Assembler::Condition cond)
     {
-        m_assembler.it(cond);
-        return m_assembler.b();
+        m_assembler.it(cond, true, true);
+        moveFixedWidthEncoding(Imm32(0), dataTempRegister);
+        return m_assembler.bx(dataTempRegister);
     }
     ARMv7Assembler::JmpSrc makeBranch(Condition cond) { return makeBranch(armV7Condition(cond)); }
     ARMv7Assembler::JmpSrc makeBranch(DoubleCondition cond) { return makeBranch(armV7Condition(cond)); }

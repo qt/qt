@@ -297,6 +297,7 @@ void Location::initialize(const Config& config)
  */
 void Location::terminate()
 {
+    qDebug() << "void Location::terminate()";
     delete spuriousRegExp;
     spuriousRegExp = 0;
 }

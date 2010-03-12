@@ -1759,14 +1759,19 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             // (actually two events; one for horizontal and one for vertical).
             // As a results of this, and to make sure we dont't receive duplicate events,
             // we try to detect when this happend by checking the 'compatibilityEvent'.
+            // Since delta is delivered as pixels rather than degrees, we need to
+            // convert from pixels to degrees in a sensible manner.
+            // It looks like 1/4 degrees per pixel behaves most native.
+            // (NB: Qt expects the unit for delta to be 8 per degree):
+            const int pixelsToDegrees = 2;
             SInt32 mdelt = 0;
             GetEventParameter(event, kEventParamMouseWheelSmoothHorizontalDelta, typeSInt32, 0,
                               sizeof(mdelt), 0, &mdelt);
-            wheel_deltaX = mdelt;
+            wheel_deltaX = mdelt * pixelsToDegrees;
             mdelt = 0;
             GetEventParameter(event, kEventParamMouseWheelSmoothVerticalDelta, typeSInt32, 0,
                               sizeof(mdelt), 0, &mdelt);
-            wheel_deltaY = mdelt;
+            wheel_deltaY = mdelt * pixelsToDegrees;
             GetEventParameter(event, kEventParamEventRef, typeEventRef, 0,
                               sizeof(compatibilityEvent), 0, &compatibilityEvent);
         } else if (ekind == kEventMouseWheelMoved) {

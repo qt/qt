@@ -112,7 +112,6 @@ private:
     QFileSystemWatcher * const m_qchWatcher;
     typedef QPair<QDateTime, QSharedPointer<TimeoutForwarder> > RecentSignal;
     QMap<QString, RecentSignal> m_recentQchUpdates;
-    bool m_initialReindexingNeeded;
 };
 
 const QString HelpEngineWrapper::TrUnfiltered = tr("Unfiltered");
@@ -182,8 +181,7 @@ void HelpEngineWrapper::initialDocSetupDone()
     TRACE_OBJ
     connect(d->m_helpEngine, SIGNAL(setupFinished()),
             searchEngine(), SLOT(indexDocumentation()));
-    if (d->m_initialReindexingNeeded)
-        setupData();
+    setupData();
 }
 
 QHelpSearchEngine *HelpEngineWrapper::searchEngine() const
@@ -236,7 +234,6 @@ bool HelpEngineWrapper::registerDocumentation(const QString &docFile)
         return false;
     d->m_qchWatcher->addPath(docFile);
     d->checkDocFilesWatched();
-    d->m_initialReindexingNeeded = true;
     return true;
 }
 
@@ -249,7 +246,6 @@ bool HelpEngineWrapper::unregisterDocumentation(const QString &namespaceName)
         return false;
     d->m_qchWatcher->removePath(file);
     d->checkDocFilesWatched();
-    d->m_initialReindexingNeeded = true;
     return true;
 }
 
@@ -729,8 +725,7 @@ void TimeoutForwarder::forward()
 
 HelpEngineWrapperPrivate::HelpEngineWrapperPrivate(const QString &collectionFile)
     : m_helpEngine(new QHelpEngine(collectionFile, this)),
-      m_qchWatcher(new QFileSystemWatcher(this)),
-      m_initialReindexingNeeded(false)
+      m_qchWatcher(new QFileSystemWatcher(this))
 {
     TRACE_OBJ
     if (!m_helpEngine->customFilters().contains(Unfiltered))
@@ -829,7 +824,6 @@ void HelpEngineWrapperPrivate::qchFileChanged(const QString &fileName,
         } else {
             emit documentationUpdated(ns);
         }
-        m_initialReindexingNeeded = true;
         m_helpEngine->setupData();
     }
     m_recentQchUpdates.erase(it);

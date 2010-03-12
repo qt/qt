@@ -63,20 +63,20 @@ bool QScriptActivationObject::getOwnPropertySlot(JSC::ExecState* exec, const JSC
     return JSC::JSVariableObject::getOwnPropertySlot(exec, propertyName, slot);
 }
 
-bool QScriptActivationObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName, unsigned& attributes) const
+bool QScriptActivationObject::getOwnPropertyDescriptor(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::PropertyDescriptor& descriptor)
 {
     if (d_ptr()->delegate != 0)
-        return d_ptr()->delegate->getPropertyAttributes(exec, propertyName, attributes);
-    return JSC::JSVariableObject::getPropertyAttributes(exec, propertyName, attributes);
+        return d_ptr()->delegate->getOwnPropertyDescriptor(exec, propertyName, descriptor);
+    return JSC::JSVariableObject::getOwnPropertyDescriptor(exec, propertyName, descriptor);
 }
 
-void QScriptActivationObject::getOwnPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void QScriptActivationObject::getOwnPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, JSC::EnumerationMode mode)
 {
     if (d_ptr()->delegate != 0) {
-        d_ptr()->delegate->getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
+        d_ptr()->delegate->getOwnPropertyNames(exec, propertyNames, mode);
         return;
     }
-    return JSC::JSVariableObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
+    return JSC::JSVariableObject::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 void QScriptActivationObject::putWithAttributes(JSC::ExecState *exec, const JSC::Identifier &propertyName, JSC::JSValue value, unsigned attributes)
@@ -111,11 +111,11 @@ void QScriptActivationObject::put(JSC::ExecState* exec, unsigned propertyName, J
     JSC::JSVariableObject::put(exec, propertyName, value);
 }
 
-bool QScriptActivationObject::deleteProperty(JSC::ExecState* exec, const JSC::Identifier& propertyName, bool checkDontDelete)
+bool QScriptActivationObject::deleteProperty(JSC::ExecState* exec, const JSC::Identifier& propertyName)
 {
     if (d_ptr()->delegate != 0)
-        return d_ptr()->delegate->deleteProperty(exec, propertyName, checkDontDelete);
-    return JSC::JSVariableObject::deleteProperty(exec, propertyName, checkDontDelete);
+        return d_ptr()->delegate->deleteProperty(exec, propertyName);
+    return JSC::JSVariableObject::deleteProperty(exec, propertyName);
 }
 
 void QScriptActivationObject::defineGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction)

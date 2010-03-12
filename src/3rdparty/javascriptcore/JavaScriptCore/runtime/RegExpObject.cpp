@@ -57,7 +57,7 @@ const ClassInfo RegExpObject::info = { "RegExp", 0, 0, ExecState::regExpTable };
 @end
 */
 
-RegExpObject::RegExpObject(PassRefPtr<Structure> structure, PassRefPtr<RegExp> regExp)
+RegExpObject::RegExpObject(NonNullPassRefPtr<Structure> structure, NonNullPassRefPtr<RegExp> regExp)
     : JSObject(structure)
     , d(new RegExpObjectData(regExp, 0))
 {
@@ -142,7 +142,7 @@ bool RegExpObject::match(ExecState* exec, const ArgList& args)
 
     UString input = args.isEmpty() ? regExpConstructor->input() : args.at(0).toString(exec);
     if (input.isNull()) {
-        throwError(exec, GeneralError, "No input to " + toString(exec) + ".");
+        throwError(exec, GeneralError, makeString("No input to ", toString(exec), "."));
         return false;
     }
 
@@ -159,7 +159,7 @@ bool RegExpObject::match(ExecState* exec, const ArgList& args)
     }
 
     int position;
-    int length;
+    int length = 0;
     regExpConstructor->performMatch(d->regExp.get(), input, static_cast<int>(d->lastIndex), position, length);
     if (position < 0) {
         d->lastIndex = 0;
