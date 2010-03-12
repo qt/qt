@@ -69,9 +69,16 @@ QDBusViewer::QDBusViewer(const QDBusConnection &connection, QWidget *parent)  :
     c(connection),
     objectPathRegExp(QLatin1String("\\[ObjectPath: (.*)\\]"))
 {
-    services = new QTreeWidget;
-    services->setRootIsDecorated(false);
-    services->setHeaderLabels(QStringList(QLatin1String("Services")));
+    servicesModel = new QStringListModel(this);
+    servicesFilterModel = new QSortFilterProxyModel(this);
+    servicesFilterModel->setSourceModel(servicesModel);
+    servicesFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    serviceFilterLine = new QLineEdit(this);
+    serviceFilterLine->setPlaceholderText(tr("Search..."));
+    servicesView = new QListView(this);
+    servicesView->setModel(servicesFilterModel);
+
+    connect(serviceFilterLine, SIGNAL(textChanged(QString)), servicesFilterModel, SLOT(setFilterFixedString(QString)));
 
     tree = new QTreeView;
     tree->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -86,19 +93,28 @@ QDBusViewer::QDBusViewer(const QDBusConnection &connection, QWidget *parent)  :
     QShortcut *refreshShortcut = new QShortcut(QKeySequence::Refresh, tree);
     connect(refreshShortcut, SIGNAL(activated()), this, SLOT(refreshChildren()));
 
-    QVBoxLayout *topLayout = new QVBoxLayout(this);
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    QSplitter *topSplitter = new QSplitter(Qt::Vertical, this);
+    layout->addWidget(topSplitter);
+
     log = new QTextBrowser;
     connect(log, SIGNAL(anchorClicked(QUrl)), this, SLOT(anchorClicked(QUrl)));
 
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->addWidget(services, 1);
-    layout->addWidget(tree, 2);
+    QSplitter *splitter = new QSplitter(topSplitter);
+    splitter->addWidget(servicesView);
 
-    topLayout->addLayout(layout);
-    topLayout->addWidget(log);
+    QWidget *servicesWidget = new QWidget;
+    QVBoxLayout *servicesLayout = new QVBoxLayout(servicesWidget);
+    servicesLayout->addWidget(serviceFilterLine);
+    servicesLayout->addWidget(servicesView);
+    splitter->addWidget(servicesWidget);
+    splitter->addWidget(tree);
 
-    connect(services, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
-            this, SLOT(serviceChanged(QTreeWidgetItem*)));
+    topSplitter->addWidget(splitter);
+    topSplitter->addWidget(log);
+
+    connect(servicesView->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+            this, SLOT(serviceChanged(QModelIndex)));
     connect(tree, SIGNAL(customContextMenuRequested(QPoint)),
             this, SLOT(showContextMenu(QPoint)));
 
@@ -133,12 +149,11 @@ void QDBusViewer::logError(const QString &msg)
 
 void QDBusViewer::refresh()
 {
-    services->clear();
+    servicesModel->removeRows(0, servicesModel->rowCount());
 
     if (c.isConnected()) {
         const QStringList serviceNames = c.interface()->registeredServiceNames();
-        foreach (QString service, serviceNames)
-            new QTreeWidgetItem(services, QStringList(service));
+        servicesModel->setStringList(serviceNames);
     }
 }
 
@@ -154,6 +169,7 @@ void QDBusViewer::activate(const QModelIndex &item)
     sig.mPath = model->dBusPath(item);
     sig.mInterface = model->dBusInterface(item);
     sig.mName = model->dBusMethodName(item);
+    sig.mTypeSig = model->dBusTypeSignature(item);
 
     switch (model->itemType(item)) {
     case QDBusModel::SignalItem:
@@ -207,6 +223,17 @@ void QDBusViewer::setProperty(const BusSignature &sig)
 
 }
 
+static QString getDbusSignature(const QMetaMethod& method)
+{
+    // create a D-Bus type signature from QMetaMethod's parameters
+    QString sig;
+    for (int i = 0; i < method.parameterTypes().count(); ++i) {
+        QVariant::Type type = QVariant::nameToType(method.parameterTypes().at(i));
+        sig.append(QString::fromLatin1(QDBusMetaType::typeToSignature(type)));
+    }
+    return sig;
+}
+
 void QDBusViewer::callMethod(const BusSignature &sig)
 {
     QDBusInterface iface(sig.mService, sig.mPath, sig.mInterface, c);
@@ -217,7 +244,8 @@ void QDBusViewer::callMethod(const BusSignature &sig)
     for (int i = 0; i < mo->methodCount(); ++i) {
         const QString signature = QString::fromLatin1(mo->method(i).signature());
         if (signature.startsWith(sig.mName) && signature.at(sig.mName.length()) == QLatin1Char('('))
-            method = mo->method(i);
+            if (getDbusSignature(mo->method(i)) == sig.mTypeSig)
+                method = mo->method(i);
     }
     if (!method.signature()) {
         QMessageBox::warning(this, tr("Unable to find method"),
@@ -277,6 +305,7 @@ void QDBusViewer::showContextMenu(const QPoint &point)
     sig.mPath = model->dBusPath(item);
     sig.mInterface = model->dBusInterface(item);
     sig.mName = model->dBusMethodName(item);
+    sig.mTypeSig = model->dBusTypeSignature(item);
 
     QMenu menu;
     menu.addAction(refreshAction);
@@ -379,14 +408,14 @@ void QDBusViewer::dumpMessage(const QDBusMessage &message)
     log->append(out);
 }
 
-void QDBusViewer::serviceChanged(QTreeWidgetItem *item)
+void QDBusViewer::serviceChanged(const QModelIndex &index)
 {
     delete tree->model();
 
     currentService.clear();
-    if (!item)
+    if (!index.isValid())
         return;
-    currentService = item->text(0);
+    currentService = index.data().toString();
 
     tree->setModel(new QDBusViewModel(currentService, c));
     connect(tree->model(), SIGNAL(busError(QString)), this, SLOT(logError(QString)));
@@ -397,34 +426,38 @@ void QDBusViewer::serviceRegistered(const QString &service)
     if (service == c.baseService())
         return;
 
-    new QTreeWidgetItem(services, QStringList(service));
+    servicesModel->insertRows(0, 1);
+    servicesModel->setData(servicesModel->index(0, 0), service);
 }
 
-static QTreeWidgetItem *findItem(const QTreeWidget *services, const QString &name)
+static QModelIndex findItem(QStringListModel *servicesModel, const QString &name)
 {
-    for (int i = 0; i < services->topLevelItemCount(); ++i) {
-        if (services->topLevelItem(i)->text(0) == name)
-            return services->topLevelItem(i);
-    }
-    return 0;
+    QModelIndexList hits = servicesModel->match(servicesModel->index(0, 0), Qt::DisplayRole, name);
+    if (hits.isEmpty())
+        return QModelIndex();
+
+    return hits.first();
 }
 
 void QDBusViewer::serviceUnregistered(const QString &name)
 {
-    delete findItem(services, name);
+    QModelIndex hit = findItem(servicesModel, name);
+    if (!hit.isValid())
+        return;
+    servicesModel->removeRows(hit.row(), 1);
 }
 
 void QDBusViewer::serviceOwnerChanged(const QString &name, const QString &oldOwner,
                                       const QString &newOwner)
 {
-    QTreeWidgetItem *item = findItem(services, name);
+    QModelIndex hit = findItem(servicesModel, name);
 
-    if (!item && oldOwner.isEmpty() && !newOwner.isEmpty())
+    if (!hit.isValid() && oldOwner.isEmpty() && !newOwner.isEmpty())
         serviceRegistered(name);
-    else if (item && !oldOwner.isEmpty() && newOwner.isEmpty())
-        delete item;
-    else if (item && !oldOwner.isEmpty() && !newOwner.isEmpty()) {
-        delete item;
+    else if (hit.isValid() && !oldOwner.isEmpty() && newOwner.isEmpty())
+        servicesModel->removeRows(hit.row(), 1);
+    else if (hit.isValid() && !oldOwner.isEmpty() && !newOwner.isEmpty()) {
+        servicesModel->removeRows(hit.row(), 1);
         serviceRegistered(name);
     }
 }
