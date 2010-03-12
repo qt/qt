@@ -39,54 +39,63 @@
 **
 ****************************************************************************/
 
-#ifndef SYMBIANAUDIOINPUT_H
-#define SYMBIANAUDIOINPUT_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#ifndef QAUDIOOUTPUT_SYMBIAN_P_H
+#define QAUDIOOUTPUT_SYMBIAN_P_H
 
 #include <QtMultimedia/qaudioengine.h>
 #include <QTime>
 #include <QTimer>
 #include <sounddevice.h>
-#include "symbianaudio.h"
+#include "qaudio_symbian_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class SymbianAudioInput;
+class QAudioOutputPrivate;
 
-class SymbianAudioInputPrivate : public QIODevice
+class SymbianAudioOutputPrivate : public QIODevice
 {
-    friend class SymbianAudioInput;
+    friend class QAudioOutputPrivate;
     Q_OBJECT
 public:
-    SymbianAudioInputPrivate(SymbianAudioInput *audio);
-    ~SymbianAudioInputPrivate();
+    SymbianAudioOutputPrivate(QAudioOutputPrivate *audio);
+    ~SymbianAudioOutputPrivate();
 
     qint64 readData(char *data, qint64 len);
     qint64 writeData(const char *data, qint64 len);
 
-    void dataReady();
-
 private:
-    SymbianAudioInput *const m_audioDevice;
+    QAudioOutputPrivate *const m_audioDevice;
 };
 
-class SymbianAudioInput
-    :   public QAbstractAudioInput
+class QAudioOutputPrivate
+    :   public QAbstractAudioOutput
     ,   public MDevSoundObserver
 {
-    friend class SymbianAudioInputPrivate;
+    friend class SymbianAudioOutputPrivate;
     Q_OBJECT
 public:
-    SymbianAudioInput(const QByteArray &device,
-                      const QAudioFormat &audioFormat);
-    ~SymbianAudioInput();
+    QAudioOutputPrivate(const QByteArray &device,
+                       const QAudioFormat &audioFormat);
+    ~QAudioOutputPrivate();
 
-    // QAbstractAudioInput
+    // QAbstractAudioOutput
     QIODevice* start(QIODevice *device = 0);
     void stop();
     void reset();
     void suspend();
     void resume();
-    int bytesReady() const;
+    int bytesFree() const;
     int periodSize() const;
     void setBufferSize(int value);
     int bufferSize() const;
@@ -109,24 +118,26 @@ public:
     void DeviceMessage(TUid aMessageType, const TDesC8 &aMsg);
 
 private slots:
-    void pullData();
+    void dataReady();
+    void underflowTimerExpired();
 
 private:
    void open();
-   void startRecording();
+   void startPlayback();
    void startDevSoundL();
-   void startDataTransfer();
-   CMMFDataBuffer* currentBuffer() const;
-   void pushData();
-   qint64 read(char *data, qint64 len);
-   void bufferEmptied();
+   void writePaddingData();
+   qint64 pushData(const char *data, qint64 len);
+   void pullData();
+   void bufferFilled();
+   void lastBufferFilled();
    Q_INVOKABLE void close();
 
-   qint64 getSamplesRecorded() const;
+   qint64 getSamplesPlayed() const;
 
    void setError(QAudio::Error error);
    void setState(SymbianAudio::State state);
 
+   bool isDataReady() const;
    QAudio::State initializingState() const;
 
 private:
@@ -143,32 +154,54 @@ private:
     QAudio::State m_externalState;
 
     bool m_pullMode;
-    QIODevice *m_sink;
-
-    QScopedPointer<QTimer> m_pullTimer;
+    QIODevice *m_source;
 
     QScopedPointer<CMMFDevSound> m_devSound;
     TUint32 m_nativeFourCC;
     TMMFCapabilities m_nativeFormat;
 
-    // Latest buffer provided by DevSound, to be empied of data.
+    // Buffer provided by DevSound, to be filled with data.
     CMMFDataBuffer *m_devSoundBuffer;
 
     int m_devSoundBufferSize;
 
-    // Total amount of data in buffers provided by DevSound
-    int m_totalBytesReady;
+    // Number of bytes transferred from QIODevice to QAudioOutput.  It is
+    // necessary to count this because data is dropped when suspend() is
+    // called.  The difference between the position reported by DevSound and
+    // this value allows us to calculate m_bytesPadding;
+    quint32 m_bytesWritten;
 
-    // Queue of buffers returned after call to CMMFDevSound::Pause().
-    QList<CMMFDataBuffer *> m_devSoundBufferQ;
+    // True if client has provided data while the audio subsystem was not
+    // ready to consume it.
+    bool m_pushDataReady;
 
-    // Current read position within m_devSoundBuffer
-    qint64 m_devSoundBufferPos;
+    // Number of zero bytes which will be written when client calls resume().
+    quint32 m_bytesPadding;
 
-    // Samples recorded up to the last call to suspend().  It is necessary
+    // True if PlayError(KErrUnderflow) has been called.
+    bool m_underflow;
+
+    // True if a buffer marked with the "last buffer" flag has been provided
+    // to DevSound.
+    bool m_lastBuffer;
+
+    // Some DevSound implementations ignore all underflow errors raised by the
+    // audio driver, unless the last buffer flag has been set by the client.
+    // In push-mode playback, this flag will never be set, so the underflow
+    // error will never be reported.  In order to work around this, a timer
+    // is used, which gets reset every time the client provides more data.  If
+    // the timer expires, an underflow error is raised by this object.
+    QScopedPointer<QTimer> m_underflowTimer;
+
+    // Result of previous call to CMMFDevSound::SamplesPlayed().  This value is
+    // used to determine whether, when m_underflowTimer expires, an
+    // underflow error has actually occurred.
+    quint32 m_samplesPlayed;
+
+    // Samples played up to the last call to suspend().  It is necessary
     // to cache this because suspend() is implemented using
-    // CMMFDevSound::Stop(), which resets DevSound's SamplesRecorded() counter.
-    quint32 m_totalSamplesRecorded;
+    // CMMFDevSound::Stop(), which resets DevSound's SamplesPlayed() counter.
+    quint32 m_totalSamplesPlayed;
 
 };
 

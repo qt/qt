@@ -78,12 +78,6 @@ symbian: {
         DEPLOYMENT += phonon_backend_plugins
     }
 
-    contains(QT_CONFIG, audio-backend) {
-        qaudio_backend_plugins.sources += qaudio.dll
-        qaudio_backend_plugins.path = c:$$QT_PLUGINS_BASE_DIR/audio
-        DEPLOYMENT += qaudio_backend_plugins
-    }
-
     # Support backup & restore for Qt libraries
     qtbackup.sources = backup_registration.xml
     qtbackup.path = c:/private/10202D56/import/packages/$$replace(TARGET.UID3, 0x,)
