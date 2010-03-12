@@ -39,18 +39,49 @@
 **
 ****************************************************************************/
 
-#ifndef SYMBIANAUDIOUTILS_H
-#define SYMBIANAUDIOUTILS_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#ifndef QAUDIO_SYMBIAN_P_H
+#define QAUDIO_SYMBIAN_P_H
 
 #include <QtCore/qnamespace.h>
 #include <QtMultimedia/qaudioformat.h>
 #include <QtMultimedia/qaudio.h>
 #include <sounddevice.h>
-#include "symbianaudio.h"
 
 QT_BEGIN_NAMESPACE
 
 namespace SymbianAudio {
+
+/**
+ * Default values used by audio input and output classes, when underlying
+ * DevSound instance has not yet been created.
+ */
+
+const int DefaultBufferSize = 4096; // bytes
+const int DefaultNotifyInterval = 1000; // ms
+
+/**
+ * Enumeration used to track state of internal DevSound instances.
+ * Values are translated to the corresponding QAudio::State values by
+ * SymbianAudio::Utils::stateNativeToQt.
+ */
+enum State {
+        ClosedState
+    ,   InitializingState
+    ,   ActiveState
+    ,   IdleState
+    ,   SuspendedState
+};
 
 /*
  * Helper class for querying DevSound codec / format support
