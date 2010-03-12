@@ -1037,6 +1037,17 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
     return widgetPos;
 }
 
+static Qt::WindowStates effectiveState(Qt::WindowStates state)
+{
+    if (state & Qt::WindowMinimized)
+        return Qt::WindowMinimized;
+    else if (state & Qt::WindowFullScreen)
+        return Qt::WindowFullScreen;
+    else if (state & Qt::WindowMaximized)
+        return Qt::WindowMaximized;
+    return Qt::WindowNoState;
+}
+
 void QWidget::setWindowState(Qt::WindowStates newstate)
 {
     Q_D(QWidget);
@@ -1108,8 +1119,14 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         //restore normal geometry
         top->normalGeometry = normalGeometry;
 
-        setAttribute(Qt::WA_Resized, wasResized);
-        setAttribute(Qt::WA_Moved, wasMoved);
+        // FixMe QTBUG-8977
+        // In some platforms, WA_Resized and WA_Moved are also not set when application window state is
+        // anything else than normal. In Symbian we can restore them only for normal window state since
+        // restoring for other modes, will make fluidlauncher to be launched in wrong size (200x100)
+        if (effectiveState(newstate) == Qt::WindowNoState) {
+            setAttribute(Qt::WA_Resized, wasResized);
+            setAttribute(Qt::WA_Moved, wasMoved);
+        }
     }
 
     data->window_state = newstate;
