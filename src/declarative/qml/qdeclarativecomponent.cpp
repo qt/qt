@@ -405,11 +405,8 @@ QDeclarativeContext *QDeclarativeComponent::creationContext() const
     Q_D(const QDeclarativeComponent);
     if(d->creationContext)
         return d->creationContext;
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(this);
-    if (ddata)
-        return ddata->context;
-    else
-        return 0;
+
+    return qmlContext(this);
 }
 
 /*!
