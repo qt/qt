@@ -55,6 +55,7 @@
 
 #include "private/qabstractitemview_p.h"
 #include <QtCore/qvariantanimation.h>
+#include <QtCore/qabstractitemmodel.h>
 
 #ifndef QT_NO_TREEVIEW
 
@@ -74,6 +75,8 @@ struct QTreeViewItem
     uint level : 16; // indentation
     int height : 16; // row height
 };
+
+Q_DECLARE_TYPEINFO(QTreeViewItem, Q_MOVABLE_TYPE);
 
 class QTreeViewPrivate : public QAbstractItemViewPrivate
 {
@@ -124,7 +127,7 @@ public:
     void _q_sortIndicatorChanged(int column, Qt::SortOrder order);
     void _q_modelDestroyed();
 
-    void layout(int item);
+    void layout(int item, bool recusiveExpanding = false, bool afterIsUninitialized = false);
 
     int pageUp(int item) const;
     int pageDown(int item) const;
