@@ -880,15 +880,18 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         return new QDisabledNetworkReply(this, req, op);
     }
 
+#ifdef QT_QNAM_DEFAULT_NETWORK_SESSION
     if (!d->networkSession && (d->initializeSession || !d->networkConfiguration.isEmpty())) {
         QNetworkConfigurationManager manager;
         if (d->networkConfiguration.isEmpty())
             d->createSession(manager.defaultConfiguration());
         else
             d->createSession(manager.configurationFromIdentifier(d->networkConfiguration));
-    } else if (d->networkSession) {
-        d->networkSession->setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), -1);
     }
+#endif
+
+    if (d->networkSession)
+        d->networkSession->setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), -1);
 
     QNetworkRequest request = req;
     if (!request.header(QNetworkRequest::ContentLengthHeader).isValid() &&
@@ -1205,7 +1208,9 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 {
     Q_Q(QNetworkAccessManager);
 
+#ifdef QT_QNAM_DEFAULT_NETWORK_SESSION
     initializeSession = false;
+#endif
 
     if (networkSession)
         delete networkSession;
@@ -1229,24 +1234,29 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 
 void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
 {
-    networkConfiguration = networkSession->configuration().identifier();
+    if (networkSession) {
+        networkConfiguration = networkSession->configuration().identifier();
 
-    delete networkSession;
-    networkSession = 0;
+        networkSession->deleteLater();
+        networkSession = 0;
+    }
 }
 
 void QNetworkAccessManagerPrivate::_q_networkSessionNewConfigurationActivated()
 {
     Q_Q(QNetworkAccessManager);
 
-    networkSession->accept();
+    if (networkSession) {
+        networkSession->accept();
 
-    emit q->networkSessionOnline();
+        emit q->networkSessionOnline();
+    }
 }
 
 void QNetworkAccessManagerPrivate::_q_networkSessionPreferredConfigurationChanged(const QNetworkConfiguration &, bool)
 {
-    networkSession->migrate();
+    if (networkSession)
+        networkSession->migrate();
 }
 
 QT_END_NAMESPACE
