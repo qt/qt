@@ -50,7 +50,7 @@
 #include "qendian.h"
 #include <private/qcore_symbian_p.h>
 #if defined(QT_NO_FREETYPE)
-#include <OPENFONT.H>
+#include <openfont.h>
 #ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
 #include <graphics/openfontrasterizer.h> // COpenFontRasterizer has moved to a new header file
 #endif // SYMBIAN_ENABLE_SPLIT_HEADERS

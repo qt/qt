@@ -41,5 +41,5 @@ embedded {
 
 symbian {
     LIBS += -lsendas2 -letext -lapmime
-    contains(QT_CONFIG, s60): LIBS += -lplatformenv -lcommonui
+    contains(QT_CONFIG, s60): LIBS += -lplatformenv -lCommonUI
 }
