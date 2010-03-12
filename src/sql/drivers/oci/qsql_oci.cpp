@@ -517,7 +517,7 @@ QVariant::Type qDecodeOCIType(const QString& ocitype, QSql::NumericalPrecisionPo
     }
     else if (ocitype == QLatin1String("LONG") || ocitype == QLatin1String("NCLOB")
              || ocitype == QLatin1String("CLOB"))
-        type = QVariant::String;
+        type = QVariant::ByteArray;
     else if (ocitype == QLatin1String("RAW") || ocitype == QLatin1String("LONG RAW")
              || ocitype == QLatin1String("ROWID") || ocitype == QLatin1String("BLOB")
              || ocitype == QLatin1String("CFILE") || ocitype == QLatin1String("BFILE"))
@@ -543,7 +543,6 @@ QVariant::Type qDecodeOCIType(int ocitype, QSql::NumericalPrecisionPolicy precis
     case SQLT_AVC:
     case SQLT_RDD:
     case SQLT_LNG:
-    case SQLT_CLOB:
 #ifdef SQLT_INTERVAL_YM
     case SQLT_INTERVAL_YM:
 #endif
@@ -581,6 +580,7 @@ QVariant::Type qDecodeOCIType(int ocitype, QSql::NumericalPrecisionPolicy precis
     case SQLT_LVC:
     case SQLT_LVB:
     case SQLT_BLOB:
+    case SQLT_CLOB:
     case SQLT_FILE:
     case SQLT_NTY:
     case SQLT_REF:
