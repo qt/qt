@@ -59,12 +59,14 @@ QT_BEGIN_NAMESPACE
 
 QDeclarativeContextPrivate::QDeclarativeContextPrivate()
 : parent(0), engine(0), isInternal(false), propertyNames(0), 
-  notifyIndex(-1), contextObject(0), imports(0), expressions(0), contextObjects(0),
+  notifyIndex(-1), contextObject(0), imports(0), childContexts(0), 
+  nextChild(0), prevChild(0), expressions(0), contextObjects(0),
   idValues(0), idValueCount(0), optimizedBindings(0)
 {
 }
 
-void QDeclarativeContextPrivate::addScript(const QDeclarativeParser::Object::ScriptBlock &script, QObject *scopeObject)
+void QDeclarativeContextPrivate::addScript(const QDeclarativeParser::Object::ScriptBlock &script, 
+                                           QObject *scopeObject)
 {
     Q_Q(QDeclarativeContext);
 
@@ -123,8 +125,13 @@ void QDeclarativeContextPrivate::init()
 {
     Q_Q(QDeclarativeContext);
 
-    if (parent) 
-        parent->d_func()->childContexts.insert(q);
+    if (parent) {
+        QDeclarativeContextPrivate *ppriv = parent->d_func();
+        nextChild = ppriv->childContexts;
+        if (nextChild) nextChild->d_func()->prevChild = &nextChild;
+        prevChild = &ppriv->childContexts;
+        ppriv->childContexts = q;
+    }
 }
 
 /*!
@@ -270,15 +277,24 @@ QDeclarativeContext::QDeclarativeContext(QDeclarativeContext *parentContext, QOb
 QDeclarativeContext::~QDeclarativeContext()
 {
     Q_D(QDeclarativeContext);
-    if (d->parent) 
-        d->parent->d_func()->childContexts.remove(this);
 
-    for (QSet<QDeclarativeContext *>::ConstIterator iter = d->childContexts.begin();
-            iter != d->childContexts.end();
-            ++iter) {
-        (*iter)->d_func()->invalidateEngines();
-        (*iter)->d_func()->parent = 0;
+    if (d->prevChild) {
+        *d->prevChild = d->nextChild;
+        if (d->nextChild) d->nextChild->d_func()->prevChild = d->prevChild;
+        d->nextChild = 0;
+        d->prevChild = 0;
     }
+    
+    QDeclarativeContext *child = d->childContexts;
+    while (child) {
+        QDeclarativeContextPrivate *childpriv = child->d_func();
+        childpriv->invalidateEngines();
+        childpriv->parent = 0;
+        child = childpriv->nextChild;
+        childpriv->nextChild = 0;
+        childpriv->prevChild = 0;
+    }
+    d->childContexts = 0;
 
     QDeclarativeAbstractExpression *expression = d->expressions;
     while (expression) {
@@ -317,10 +333,12 @@ void QDeclarativeContextPrivate::invalidateEngines()
     if (!engine)
         return;
     engine = 0;
-    for (QSet<QDeclarativeContext *>::ConstIterator iter = childContexts.begin();
-            iter != childContexts.end();
-            ++iter) {
-        (*iter)->d_func()->invalidateEngines();
+
+    QDeclarativeContext *child = childContexts;
+    while (child) {
+        QDeclarativeContextPrivate *childpriv = child->d_func();
+        childpriv->invalidateEngines();
+        child = childpriv->nextChild;
     }
 }
 
@@ -331,10 +349,11 @@ time the context tree *structure* (not values) changes.
 */
 void QDeclarativeContextPrivate::refreshExpressions()
 {
-    for (QSet<QDeclarativeContext *>::ConstIterator iter = childContexts.begin();
-            iter != childContexts.end();
-            ++iter) {
-        (*iter)->d_func()->refreshExpressions();
+    QDeclarativeContext *child = childContexts;
+    while (child) {
+        QDeclarativeContextPrivate *childpriv = child->d_func();
+        childpriv->refreshExpressions();
+        child = childpriv->nextChild;
     }
 
     QDeclarativeAbstractExpression *expression = expressions;

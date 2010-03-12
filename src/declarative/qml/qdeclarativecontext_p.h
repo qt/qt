@@ -107,7 +107,11 @@ public:
 
     void invalidateEngines();
     void refreshExpressions();
-    QSet<QDeclarativeContext *> childContexts;
+
+    QDeclarativeContext *childContexts;
+
+    QDeclarativeContext  *nextChild;
+    QDeclarativeContext **prevChild;
 
     QDeclarativeAbstractExpression *expressions;
 
