@@ -203,9 +203,15 @@ void QDeclarativeCompiledData::clear()
 QObject *QDeclarativeCompiledData::TypeReference::createInstance(QDeclarativeContext *ctxt, const QBitField &bindings) const
 {
     if (type) {
-        QObject *rv = type->create();
-        if (rv)
-            QDeclarativeEngine::setContextForObject(rv, ctxt);
+        QObject *rv = 0;
+        void *memory = 0;
+
+        type->create(&rv, &memory, sizeof(QDeclarativeDeclarativeData));
+        QDeclarativeDeclarativeData *ddata = new (memory) QDeclarativeDeclarativeData;
+        ddata->ownMemory = false;
+        QObjectPrivate::get(rv)->declarativeData = ddata;
+        QDeclarativeEngine::setContextForObject(rv, ctxt);
+
         return rv;
     } else {
         Q_ASSERT(component);

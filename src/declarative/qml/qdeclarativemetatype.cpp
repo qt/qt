@@ -287,6 +287,20 @@ QObject *QDeclarativeType::create() const
     return rv;
 }
 
+void QDeclarativeType::create(QObject **out, void **memory, size_t additionalMemory) const
+{
+    d->init();
+
+    QObject *rv = (QObject *)operator new(d->m_allocationSize + additionalMemory);
+    d->m_newFunc(rv);
+
+    if (rv && !d->m_metaObjects.isEmpty())
+        (void *)new QDeclarativeProxyMetaObject(rv, &d->m_metaObjects);
+
+    *out = rv;
+    *memory = ((char *)rv) + d->m_allocationSize;
+}
+
 QDeclarativeCustomParser *QDeclarativeType::customParser() const
 {
     return d->m_customParser;

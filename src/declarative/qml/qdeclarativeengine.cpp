@@ -828,7 +828,10 @@ void QDeclarativeDeclarativeData::destroyed(QObject *object)
         g->objectDestroyed(object);
     }
 
-    delete this;
+    if (ownMemory)
+        delete this;
+    else 
+        this->~QDeclarativeDeclarativeData();
 }
 
 void QDeclarativeDeclarativeData::parentChanged(QObject *, QObject *parent)
