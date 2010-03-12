@@ -243,6 +243,7 @@ public:
 #ifdef Q_WS_S60
     void symbianCreateMenuBar(QWidget *);
     void symbianDestroyMenuBar();
+    void reparentMenuBar(QWidget *oldParent, QWidget *newParent);
     struct QSymbianMenuBarPrivate {
         QList<QSymbianMenuAction*> actionItems;
         QMenuBarPrivate *d;
@@ -267,7 +268,9 @@ public:
 
     } *symbian_menubar;
     static int symbianCommands(int command);
-
+#ifdef QT_SOFTKEYS_ENABLED
+    QAction *menuBarAction;
+#endif
 #endif
 };
 #endif

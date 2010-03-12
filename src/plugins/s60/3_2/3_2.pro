@@ -10,7 +10,7 @@ contains(S60_VERSION, 3.1) {
     SOURCES += ../src/qlocale_3_2.cpp \
         ../src/qdesktopservices_3_2.cpp \
         ../src/qcoreapplication_3_2.cpp
-    LIBS += -ldirectorylocalizer -lefsrv
+    LIBS += -lDirectoryLocalizer -lefsrv
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 }
 

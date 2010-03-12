@@ -65,9 +65,6 @@ QT_BEGIN_NAMESPACE
 extern OSWindowRef qt_mac_window_for(const QWidget *); // qwidget_mac.cpp
 QT_END_NAMESPACE
 #endif
-#ifdef QT_SOFTKEYS_ENABLED
-#include <private/qsoftkeymanager_p.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -80,9 +77,6 @@ public:
 #ifdef Q_WS_MAC
             , useHIToolBar(false)
 #endif
-#ifdef QT_SOFTKEYS_ENABLED
-            , menuBarAction(0)
-#endif
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
             , hasOldCursor(false) , cursorAdjusted(false)
 #endif
@@ -93,9 +87,6 @@ public:
     Qt::ToolButtonStyle toolButtonStyle;
 #ifdef Q_WS_MAC
     bool useHIToolBar;
-#endif
-#ifdef QT_SOFTKEYS_ENABLED
-    QAction *menuBarAction;
 #endif
     void init();
     QList<int> hoverSeparator;
@@ -117,10 +108,6 @@ void QMainWindowPrivate::init()
     const int metric = q->style()->pixelMetric(QStyle::PM_ToolBarIconSize, 0, q);
     iconSize = QSize(metric, metric);
     q->setAttribute(Qt::WA_Hover);
-#ifdef QT_SOFTKEYS_ENABLED
-    menuBarAction = QSoftKeyManager::createAction(QSoftKeyManager::MenuSoftKey, q);
-    menuBarAction->setVisible(false);
-#endif
 }
 
 /*
@@ -492,13 +479,6 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
         oldMenuBar->deleteLater();
     }
     d->layout->setMenuBar(menuBar);
-
-#ifdef QT_SOFTKEYS_ENABLED
-    if (menuBar)
-        addAction(d->menuBarAction);
-    else
-        removeAction(d->menuBarAction);
-#endif
 }
 
 /*!
@@ -1426,11 +1406,6 @@ bool QMainWindow::event(QEvent *event)
                d->hasOldCursor = testAttribute(Qt::WA_SetCursor);
            }
            break;
-#endif
-#ifdef QT_SOFTKEYS_ENABLED
-    case QEvent::LanguageChange:
-        d->menuBarAction->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::MenuSoftKey));
-        break;
 #endif
         default:
             break;
