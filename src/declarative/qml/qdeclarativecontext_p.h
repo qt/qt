@@ -113,19 +113,6 @@ public:
 
     QDeclarativeDeclarativeData *contextObjects;
 
-    struct IdNotifier 
-    {
-        inline IdNotifier();
-        inline ~IdNotifier();
-        
-        inline void clear();
-
-        IdNotifier *next;
-        IdNotifier**prev;
-        QObject *target;
-        int methodIndex;
-    };
-
     struct ContextGuard : public QDeclarativeGuard<QObject>
     {
         inline ContextGuard();
@@ -156,24 +143,6 @@ public:
     static int context_count(QDeclarativeListProperty<QObject> *);
     static QObject *context_at(QDeclarativeListProperty<QObject> *, int);
 };
-
-QDeclarativeContextPrivate::IdNotifier::IdNotifier()
-: next(0), prev(0), target(0), methodIndex(-1)
-{
-}
-
-QDeclarativeContextPrivate::IdNotifier::~IdNotifier()
-{
-    clear();
-}
-
-void QDeclarativeContextPrivate::IdNotifier::clear()
-{
-    if (next) next->prev = prev;
-    if (prev) *prev = next;
-    next = 0; prev = 0; target = 0;
-    methodIndex = -1;
-}
 
 QDeclarativeContextPrivate::ContextGuard::ContextGuard() 
 : priv(0)
