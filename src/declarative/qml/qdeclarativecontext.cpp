@@ -312,6 +312,7 @@ QDeclarativeContext::~QDeclarativeContext()
         d->contextObjects = d->contextObjects->nextContextObject;
 
         co->context = 0;
+        co->outerContext = 0;
         co->nextContextObject = 0;
         co->prevContextObject = 0;
     }
