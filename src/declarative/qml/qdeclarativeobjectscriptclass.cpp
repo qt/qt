@@ -588,7 +588,7 @@ private:
     
     inline void cleanup();
 
-    char data[2 * sizeof(void *)];
+    void *data[4];
     int type;
 };
 }
