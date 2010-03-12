@@ -158,9 +158,12 @@ QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
     startNetworkChangeLoop();
 
 #if defined(MAC_SDK_10_6)
-    if(!listener) {
+    if([[CWInterface supportedInterfaces] count] > 0 && !listener) {
         listener = [[QNSListener alloc] init];
         listener.engine = this;
+        hasWifi = true;
+    } else {
+        hasWifi = false;
     }
 #endif
 }
@@ -401,7 +404,11 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
     QStringList found;
 
 #if defined(MAC_SDK_10_6)
-   QMacCocoaAutoReleasePool pool;
+    if(!hasWifi) {
+        return found;
+    }
+
+    QMacCocoaAutoReleasePool pool;
 
     CWInterface *currentInterface = [CWInterface interfaceWithName:qt_mac_QStringToNSString(interfaceName)];
     if([currentInterface power]) {
@@ -497,9 +504,11 @@ bool QCoreWlanEngine::isWifiReady(const QString &wifiDeviceName)
     QMutexLocker locker(&mutex);
 
 #if defined(MAC_SDK_10_6)
-    CWInterface *defaultInterface = [CWInterface interfaceWithName: qt_mac_QStringToNSString(wifiDeviceName)];
-    if([defaultInterface power])
-        return true;
+    if(hasWifi) {
+        CWInterface *defaultInterface = [CWInterface interfaceWithName: qt_mac_QStringToNSString(wifiDeviceName)];
+        if([defaultInterface power])
+            return true;
+    }
 #else
     Q_UNUSED(wifiDeviceName);
 #endif
@@ -511,6 +520,7 @@ bool QCoreWlanEngine::isKnownSsid(const QString &interfaceName, const QString &s
     QMutexLocker locker(&mutex);
 
 #if defined(MAC_SDK_10_6)
+    if(!hasWifi) { return false; }
     CWInterface *wifiInterface = [CWInterface interfaceWithName: qt_mac_QStringToNSString(interfaceName)];
     CWConfiguration *userConfig = [wifiInterface configuration];
     NSSet *remNets = [userConfig rememberedNetworks];

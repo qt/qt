@@ -97,6 +97,7 @@ private:
     CFRunLoopSourceRef runloopSource;
 
     void startNetworkChangeLoop();
+    bool hasWifi;
 
 };
 
