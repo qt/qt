@@ -104,7 +104,8 @@ void tst_creation::qobject_cpp()
 
 void tst_creation::qobject_qml()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("qobject.qml"));
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt 4.6\nQtObject {}", QUrl());
     QObject *obj = component.create();
     delete obj;
 
