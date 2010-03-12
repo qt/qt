@@ -9,6 +9,7 @@ Flickable: renamed viewportX -> contentX
 Flickable: renamed viewportY -> contentY
 Removed Flickable.reportedVelocitySmoothing
 Removed Qt.playSound (replaced by SoundEffect element)
+Removed Qt.closestAngle (use RotationAnimation instead)
 Removed NumberFormatter
 Removed DateTimeFormatter (use Qt.formatDateTime() instead)
 Renamed MouseRegion -> MouseArea
@@ -18,6 +19,8 @@ Connection: syntax and rename:
   becomes:
     Connections { target: a; onFoo: xxx; onBar: yyy }
 Using WebView now requires "import org.webkit 1.0"
+Using Particles now requires "import Qt.labs.particles 1.0"
+AnchorAnimation must now be used to animate anchor changes (and not NumberAnimation)
 
 QmlView
 -------
@@ -49,8 +52,11 @@ C++ API
 QML_DEFINE_... definition macros, previously global macros, are replaced by
 QML_REGISTER_... registration macros, which must be called explicitly. C++ API users
 should also consider using the QmlExtensionPlugin (previously named QmlModulePlugin)
-as a cleaner mechanism for publishing libraries of QML types, or the upcoming 
+as a cleaner mechanism for publishing libraries of QML types, or the upcoming
 application plugin features of the qmlviewer / qmlruntime / qml.
+
+QDeclarativeContext::addDefaultObject() has been replaced with
+QDeclarativeContext::setContextObject()
 
 PropertyAnimation
 ------------------

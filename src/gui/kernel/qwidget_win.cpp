@@ -243,7 +243,7 @@ static QCursor *mouseGrbCur = 0;
 static QWidget *keyboardGrb = 0;
 static HHOOK   journalRec  = 0;
 
-extern "C" LRESULT CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
+extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
 
 #define XCOORD_MAX 16383
 #define WRECT_MAX 16383
@@ -825,7 +825,7 @@ QCursor *qt_grab_cursor()
 
 // The procedure does nothing, but is required for mousegrabbing to work
 #ifndef Q_WS_WINCE
-LRESULT CALLBACK qJournalRecordProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT QT_WIN_CALLBACK qJournalRecordProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     return CallNextHookEx(journalRec, nCode, wParam, lParam);
 }

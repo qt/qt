@@ -350,7 +350,6 @@ void tst_qdeclarativeecmascript::basicExpressions()
     MyQmlObject object2;
     MyQmlObject object3;
     MyDefaultObject1 default1;
-    MyDefaultObject2 default2;
     MyDefaultObject3 default3;
     object1.setStringProperty("Object1");
     object2.setStringProperty("Object2");
@@ -359,13 +358,12 @@ void tst_qdeclarativeecmascript::basicExpressions()
     QDeclarativeContext context(engine.rootContext());
     QDeclarativeContext nestedContext(&context);
 
-    context.addDefaultObject(&default1);
-    context.addDefaultObject(&default2);
+    context.setContextObject(&default1);
     context.setContextProperty("a", QVariant(1944));
     context.setContextProperty("b", QVariant("Milk"));
     context.setContextProperty("object", &object1);
     context.setContextProperty("objectOverride", &object2);
-    nestedContext.addDefaultObject(&default3);
+    nestedContext.setContextObject(&default3);
     nestedContext.setContextProperty("b", QVariant("Cow"));
     nestedContext.setContextProperty("objectOverride", &object3);
     nestedContext.setContextProperty("millipedeLegs", QVariant(100));
@@ -1639,7 +1637,7 @@ void tst_qdeclarativeecmascript::listToVariant()
     MyQmlContainer container;
 
     QDeclarativeContext context(engine.rootContext());
-    context.addDefaultObject(&container);
+    context.setContextObject(&container);
 
     QObject *object = component.create(&context);
     QVERIFY(object != 0);
@@ -1911,7 +1909,7 @@ void tst_qdeclarativeecmascript::ownership()
 {
     OwnershipObject own;
     QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
-    context->addDefaultObject(&own);
+    context->setContextObject(&own);
 
     {
         QDeclarativeComponent component(&engine, TEST_FILE("ownership.qml"));
@@ -1971,7 +1969,7 @@ void tst_qdeclarativeecmascript::qlistqobjectMethods()
 {
     QListQObjectMethodsObject obj;
     QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
-    context->addDefaultObject(&obj);
+    context->setContextObject(&obj);
 
     QDeclarativeComponent component(&engine, TEST_FILE("qlistqobjectMethods.qml"));
 

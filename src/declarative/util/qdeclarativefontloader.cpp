@@ -231,6 +231,7 @@ void QDeclarativeFontLoader::replyFinished()
             d->addFontToDatabase(ba);
         } else {
             d->status = Error;
+            qWarning() << "Cannot load font:" << d->reply->url();
             emit statusChanged();
         }
         d->reply->deleteLater();

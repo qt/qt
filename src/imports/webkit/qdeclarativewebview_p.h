@@ -42,8 +42,6 @@
 #ifndef QDECLARATIVEWEBVIEW_H
 #define QDECLARATIVEWEBVIEW_H
 
-#include "webkitqmlplugin_export.h"
-
 #include <private/qdeclarativepainteditem_p.h>
 
 #include <QtGui/QAction>
@@ -64,7 +62,7 @@ class QDeclarativeWebViewPrivate;
 class QNetworkRequest;
 class QDeclarativeWebView;
 
-class WEBKITQMLPLUGIN_EXPORT QDeclarativeWebPage : public QWebPage
+class QDeclarativeWebPage : public QWebPage
 {
     Q_OBJECT
 public:
@@ -88,7 +86,7 @@ class QDeclarativeWebViewAttached;
 
 //### TODO: browser plugins
 
-class WEBKITQMLPLUGIN_EXPORT QDeclarativeWebView : public QDeclarativePaintedItem
+class QDeclarativeWebView : public QDeclarativePaintedItem
 {
     Q_OBJECT
 

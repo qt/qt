@@ -59,7 +59,8 @@ void QDeclarativeNotifier::emitNotify(QDeclarativeNotifierEndpoint *endpoint)
         QMetaObject::metacall(endpoint->target, QMetaObject::InvokeMetaMethod, 
                               endpoint->targetMethod, args);
 
-        n->disconnected = oldDisconnected;
+        if (n)
+            n->disconnected = oldDisconnected;
     } 
 
     if (oldDisconnected) *oldDisconnected = n;

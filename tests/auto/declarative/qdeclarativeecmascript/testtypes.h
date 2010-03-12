@@ -207,18 +207,10 @@ class MyDefaultObject1 : public QObject
     Q_OBJECT
     Q_PROPERTY(int horseLegs READ horseLegs CONSTANT);
     Q_PROPERTY(int antLegs READ antLegs CONSTANT);
+    Q_PROPERTY(int emuLegs READ emuLegs CONSTANT);
 public:
     int horseLegs() const { return 4; }
     int antLegs() const { return 6; }
-};
-
-class MyDefaultObject2 : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int antLegs READ antLegs CONSTANT);
-    Q_PROPERTY(int emuLegs READ emuLegs CONSTANT);
-public:
-    int antLegs() const { return 5; } // Had an accident
     int emuLegs() const { return 2; }
 };
 

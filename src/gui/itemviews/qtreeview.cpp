@@ -2956,17 +2956,19 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
 void QTreeViewPrivate::insertViewItems(int pos, int count, const QTreeViewItem &viewItem)
 {
     viewItems.insert(pos, count, viewItem);
+    QTreeViewItem *items = viewItems.data();
     for (int i = pos + count; i < viewItems.count(); i++)
-        if (viewItems[i].parentItem >= pos)
-            viewItems[i].parentItem += count;
+        if (items[i].parentItem >= pos)
+            items[i].parentItem += count;
 }
 
 void QTreeViewPrivate::removeViewItems(int pos, int count)
 {
     viewItems.remove(pos, count);
+    QTreeViewItem *items = viewItems.data();
     for (int i = pos; i < viewItems.count(); i++)
-        if (viewItems[i].parentItem >= pos)
-            viewItems[i].parentItem -= count;
+        if (items[i].parentItem >= pos)
+            items[i].parentItem -= count;
 }
 
 #if 0
@@ -3793,7 +3795,6 @@ void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
                     // moved; update the model index
                     viewItems[item].index = model->index(
                         modelIndex.row() - delta, modelIndex.column(), parent);
-//                    viewItems[item].parentItem = parentItem;
                 }
                 item += count;
             }

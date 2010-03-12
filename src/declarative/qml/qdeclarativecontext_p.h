@@ -94,8 +94,7 @@ public:
     QList<QVariant> propertyValues;
     int notifyIndex;
 
-    QObjectList defaultObjects;
-    int highPriorityCount;
+    QObject *contextObject;
 
     QList<QScriptValue> scripts;
     void addScript(const QDeclarativeParser::Object::ScriptBlock &, QObject *);
@@ -108,24 +107,15 @@ public:
 
     void invalidateEngines();
     void refreshExpressions();
-    QSet<QDeclarativeContext *> childContexts;
+
+    QDeclarativeContext *childContexts;
+
+    QDeclarativeContext  *nextChild;
+    QDeclarativeContext **prevChild;
 
     QDeclarativeAbstractExpression *expressions;
 
     QDeclarativeDeclarativeData *contextObjects;
-
-    struct IdNotifier 
-    {
-        inline IdNotifier();
-        inline ~IdNotifier();
-        
-        inline void clear();
-
-        IdNotifier *next;
-        IdNotifier**prev;
-        QObject *target;
-        int methodIndex;
-    };
 
     struct ContextGuard : public QDeclarativeGuard<QObject>
     {
@@ -157,24 +147,6 @@ public:
     static int context_count(QDeclarativeListProperty<QObject> *);
     static QObject *context_at(QDeclarativeListProperty<QObject> *, int);
 };
-
-QDeclarativeContextPrivate::IdNotifier::IdNotifier()
-: next(0), prev(0), target(0), methodIndex(-1)
-{
-}
-
-QDeclarativeContextPrivate::IdNotifier::~IdNotifier()
-{
-    clear();
-}
-
-void QDeclarativeContextPrivate::IdNotifier::clear()
-{
-    if (next) next->prev = prev;
-    if (prev) *prev = next;
-    next = 0; prev = 0; target = 0;
-    methodIndex = -1;
-}
 
 QDeclarativeContextPrivate::ContextGuard::ContextGuard() 
 : priv(0)
