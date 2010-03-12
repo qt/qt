@@ -1473,7 +1473,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFil
         }
     } else
 #endif
-           {
+    {
         //### what to do with permissions if we don't use NTFS
         // for now just add all permissions and what about exe missions ??
         // also qt_ntfs_permission_lookup is now not set by default ... should it ?
@@ -1496,11 +1496,11 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFil
 
         // calculate user permissions
         if (type & QAbstractFileEngine::ReadUserPerm) {
-            if (::_waccess((wchar_t*)longFileName(filePath).utf16(), R_OK) == 0)
+            if (::_waccess((wchar_t*)longFileName(fname).utf16(), R_OK) == 0)
                 ret |= QAbstractFileEngine::ReadUserPerm;
         }
         if (type & QAbstractFileEngine::WriteUserPerm) {
-            if (::_waccess((wchar_t*)longFileName(filePath).utf16(), W_OK) == 0)
+            if (::_waccess((wchar_t*)longFileName(fname).utf16(), W_OK) == 0)
                 ret |= QAbstractFileEngine::WriteUserPerm;
         }
     }
