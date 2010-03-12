@@ -434,6 +434,9 @@ void QVideoSurfaceGLPainter::initRgbTextureInfo(
 
 void QVideoSurfaceGLPainter::initYuv420PTextureInfo(const QSize &size)
 {
+    int w = (size.width() + 3) & ~3;
+    int w2 = (size.width()/2 + 3) & ~3;
+
     m_yuv = true;
     m_textureInternalFormat = GL_LUMINANCE;
     m_textureFormat = GL_LUMINANCE;
@@ -444,14 +447,17 @@ void QVideoSurfaceGLPainter::initYuv420PTextureInfo(const QSize &size)
     m_textureOffsets[0] = 0;
     m_textureWidths[1] = size.width() / 2;
     m_textureHeights[1] = size.height() / 2;
-    m_textureOffsets[1] = size.width() * size.height();
+    m_textureOffsets[1] = w * size.height();
     m_textureWidths[2] = size.width() / 2;
     m_textureHeights[2] = size.height() / 2;
-    m_textureOffsets[2] = size.width() * size.height() * 5 / 4;
+    m_textureOffsets[2] = w * size.height() + w2 * (size.height() / 2);
 }
 
 void QVideoSurfaceGLPainter::initYv12TextureInfo(const QSize &size)
 {
+    int w = (size.width() + 3) & ~3;
+    int w2 = (size.width()/2 + 3) & ~3;
+
     m_yuv = true;
     m_textureInternalFormat = GL_LUMINANCE;
     m_textureFormat = GL_LUMINANCE;
@@ -462,10 +468,10 @@ void QVideoSurfaceGLPainter::initYv12TextureInfo(const QSize &size)
     m_textureOffsets[0] = 0;
     m_textureWidths[1] = size.width() / 2;
     m_textureHeights[1] = size.height() / 2;
-    m_textureOffsets[1] = size.width() * size.height() * 5 / 4;
+    m_textureOffsets[1] = w * size.height() + w2 * (size.height() / 2);
     m_textureWidths[2] = size.width() / 2;
     m_textureHeights[2] = size.height() / 2;
-    m_textureOffsets[2] = size.width() * size.height();
+    m_textureOffsets[2] = w * size.height();
 }
 
 #ifndef QT_OPENGL_ES
