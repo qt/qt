@@ -656,7 +656,29 @@ void QDeclarativeExpressionPrivate::updateGuards(const QPODVector<QDeclarativeEn
         guard.target = q;
         guard.targetMethod = notifyIdx;
 
-        if (property.notifyIndex != -1) {
+        if (property.notifier != 0) {
+
+            if (!noChanges && guard.isConnected(property.notifier)) {
+                // Nothing to do
+
+            } else {
+                noChanges = false;
+
+                bool existing = false;
+                for (int jj = 0; !existing && jj < ii; ++jj) 
+                    if (data->guardList[jj].isConnected(property.notifier)) 
+                        existing = true;
+
+                if (existing) {
+                    // duplicate
+                    guard.disconnect();
+                } else {
+                    guard.connect(property.notifier);
+                }
+            }
+
+
+        } else if (property.notifyIndex != -1) {
 
             if (!noChanges && guard.isConnected(property.object, property.notifyIndex)) {
                 // Nothing to do

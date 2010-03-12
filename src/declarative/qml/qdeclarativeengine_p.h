@@ -144,10 +144,13 @@ public:
 
     struct CapturedProperty {
         CapturedProperty(QObject *o, int c, int n)
-            : object(o), coreIndex(c), notifyIndex(n) {}
+            : object(o), coreIndex(c), notifier(0), notifyIndex(n) {}
+        CapturedProperty(QDeclarativeNotifier *n)
+            : object(0), coreIndex(-1), notifier(n), notifyIndex(-1) {}
 
         QObject *object;
         int coreIndex;
+        QDeclarativeNotifier *notifier;
         int notifyIndex;
     };
     bool captureProperties;

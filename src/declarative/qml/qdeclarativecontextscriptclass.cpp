@@ -252,6 +252,9 @@ QDeclarativeContextScriptClass::property(Object *object, const Identifier &name)
         QScriptValue rv;
         if (lastPropertyIndex < cp->idValueCount) {
             rv =  ep->objectClass->newQObject(cp->idValues[lastPropertyIndex].data());
+
+            if (ep->captureProperties) 
+                ep->capturedProperties << QDeclarativeEnginePrivate::CapturedProperty(&cp->idValues[lastPropertyIndex].bindings);
         } else {
             const QVariant &value = cp->propertyValues.at(lastPropertyIndex);
             if (value.userType() == qMetaTypeId<QList<QObject*> >()) {
@@ -259,10 +262,10 @@ QDeclarativeContextScriptClass::property(Object *object, const Identifier &name)
             } else {
                 rv = ep->scriptValueFromVariant(value);
             }
-        }
 
-        if (ep->captureProperties) 
-            ep->capturedProperties << QDeclarativeEnginePrivate::CapturedProperty(bindContext, -1, lastPropertyIndex + cp->notifyIndex);
+            if (ep->captureProperties) 
+                ep->capturedProperties << QDeclarativeEnginePrivate::CapturedProperty(bindContext, -1, lastPropertyIndex + cp->notifyIndex);
+        }
 
 
         return Value(scriptEngine, rv);
