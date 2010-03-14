@@ -227,6 +227,8 @@ char *q_ERR_error_string(unsigned long a, char *b);
 unsigned long q_ERR_get_error();
 const EVP_CIPHER *q_EVP_des_ede3_cbc();
 int q_EVP_PKEY_assign(EVP_PKEY *a, int b, char *c);
+int q_EVP_PKEY_set1_RSA(EVP_PKEY *a, RSA *b);
+int q_EVP_PKEY_set1_DSA(EVP_PKEY *a, DSA *b);
 void q_EVP_PKEY_free(EVP_PKEY *a);
 RSA *q_EVP_PKEY_get1_RSA(EVP_PKEY *a);
 DSA *q_EVP_PKEY_get1_DSA(EVP_PKEY *a);
