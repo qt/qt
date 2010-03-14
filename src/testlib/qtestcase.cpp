@@ -964,7 +964,7 @@ static void qParseArgs(int argc, char *argv[])
          " -xunitxml  : Outputs results as XML XUnit document\n"
          " -xml       : Outputs results as XML document\n"
          " -lightxml  : Outputs results as stream of XML tags\n"
-         " -flush     : Flushes the resutls\n"
+         " -flush     : Flushes the results\n"
          " -o filename: Writes all output into a file\n"
          " -silent    : Only outputs warnings and failures\n"
          " -v1        : Print enter messages for each testfunction\n"
