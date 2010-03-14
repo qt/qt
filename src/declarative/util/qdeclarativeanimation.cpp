@@ -1883,7 +1883,7 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
     For the easing you can specify the following parameters: type, amplitude, period and overshoot.
 
     \qml
-    PropertyAnimation { properties: "y"; easing.type: "InOutElastc"; easing.amplitude: 2.0; easing.period: 1.5 }
+    PropertyAnimation { properties: "y"; easing.type: "InOutElastic"; easing.amplitude: 2.0; easing.period: 1.5 }
     \endqml
 
     Available types are:
