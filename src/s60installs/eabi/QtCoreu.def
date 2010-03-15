@@ -3634,4 +3634,22 @@ EXPORTS
 	_ZTVN13QStateMachine11SignalEventE @ 3633 NONAME
 	_ZTVN13QStateMachine12WrappedEventE @ 3634 NONAME
 	_ZN11QMetaObject13disconnectOneEPK7QObjectiS2_i @ 3635 NONAME
+	_Z33QBasicAtomicInt_testAndSetAcquirePViii @ 3636 NONAME
+	_Z33QBasicAtomicInt_testAndSetRelaxedPViii @ 3637 NONAME
+	_Z33QBasicAtomicInt_testAndSetReleasePViii @ 3638 NONAME
+	_Z34QBasicAtomicInt_fetchAndAddAcquirePVii @ 3639 NONAME
+	_Z34QBasicAtomicInt_fetchAndAddRelaxedPVii @ 3640 NONAME
+	_Z34QBasicAtomicInt_fetchAndAddReleasePVii @ 3641 NONAME
+	_Z36QBasicAtomicInt_fetchAndStoreAcquirePVii @ 3642 NONAME
+	_Z36QBasicAtomicInt_fetchAndStoreRelaxedPVii @ 3643 NONAME
+	_Z36QBasicAtomicInt_fetchAndStoreReleasePVii @ 3644 NONAME
+	_Z37QBasicAtomicPointer_testAndSetAcquirePVPvS_S_ @ 3645 NONAME
+	_Z37QBasicAtomicPointer_testAndSetRelaxedPVPvS_S_ @ 3646 NONAME
+	_Z37QBasicAtomicPointer_testAndSetReleasePVPvS_S_ @ 3647 NONAME
+	_Z38QBasicAtomicPointer_fetchAndAddAcquirePVPvi @ 3648 NONAME
+	_Z38QBasicAtomicPointer_fetchAndAddRelaxedPVPvi @ 3649 NONAME
+	_Z38QBasicAtomicPointer_fetchAndAddReleasePVPvi @ 3650 NONAME
+	_Z40QBasicAtomicPointer_fetchAndStoreAcquirePVPvS_ @ 3651 NONAME
+	_Z40QBasicAtomicPointer_fetchAndStoreRelaxedPVPvS_ @ 3652 NONAME
+	_Z40QBasicAtomicPointer_fetchAndStoreReleasePVPvS_ @ 3653 NONAME
 
