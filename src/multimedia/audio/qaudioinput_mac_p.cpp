@@ -807,6 +807,12 @@ int QAudioInputPrivate::bufferSize() const
 
 void QAudioInputPrivate::setNotifyInterval(int milliSeconds)
 {
+    if (intervalTimer->interval() == milliSeconds)
+        return;
+
+    if (milliSeconds <= 0)
+        milliSeconds = 0;
+
     intervalTimer->setInterval(milliSeconds);
 }
 
@@ -886,7 +892,8 @@ void QAudioInputPrivate::audioDeviceError()
 void QAudioInputPrivate::startTimers()
 {
     audioBuffer->startFlushTimer();
-    intervalTimer->start();
+    if (intervalTimer->interval() > 0)
+        intervalTimer->start();
 }
 
 void QAudioInputPrivate::stopTimers()
