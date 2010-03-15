@@ -60,12 +60,12 @@ namespace JSC {
         }
         inline operator NativeFunction() const {return ptr;}
         inline operator bool() const {return ptr;}
-       
+
         JSValue operator()(ExecState* exec, JSObject* jsobj, JSValue thisValue, const ArgList& argList) const;
     };
 #endif
 
-#if defined(QT_BUILD_SCRIPT_LIB) && PLATFORM(SOLARIS)
+#if defined(QT_BUILD_SCRIPT_LIB) && OS(SOLARIS)
     struct
 #else
     union

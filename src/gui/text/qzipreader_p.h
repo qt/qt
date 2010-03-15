@@ -55,6 +55,7 @@
 // We mean it.
 //
 
+#include <QtCore/qdatetime.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qstring.h>
 
@@ -70,6 +71,8 @@ public:
     explicit QZipReader(QIODevice *device);
     ~QZipReader();
 
+    QIODevice* device() const;
+
     bool isReadable() const;
     bool exists() const;
 
@@ -79,6 +82,7 @@ public:
         FileInfo(const FileInfo &other);
         ~FileInfo();
         FileInfo &operator=(const FileInfo &other);
+        bool isValid() const;
         QString filePath;
         uint isDir : 1;
         uint isFile : 1;
@@ -86,6 +90,7 @@ public:
         QFile::Permissions permissions;
         uint crc32;
         qint64 size;
+        QDateTime lastModified;
         void *d;
     };
 

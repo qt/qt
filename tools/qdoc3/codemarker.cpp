@@ -112,6 +112,7 @@ void CodeMarker::initialize(const Config& config)
  */
 void CodeMarker::terminate()
 {
+    qDebug() << "void CodeMarker::terminate()";
     QList<CodeMarker *>::ConstIterator m = markers.begin();
     while (m != markers.end()) {
 	(*m)->terminateMarker();

@@ -72,6 +72,23 @@ bool GlobalObject::getOwnPropertySlot(JSC::ExecState* exec,
     return JSC::JSGlobalObject::getOwnPropertySlot(exec, propertyName, slot);
 }
 
+bool GlobalObject::getOwnPropertyDescriptor(JSC::ExecState* exec,
+                                            const JSC::Identifier& propertyName,
+                                            JSC::PropertyDescriptor& descriptor)
+{
+    // Must match the logic of getOwnPropertySlot().
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    if (propertyName == exec->propertyNames().arguments && engine->currentFrame->argumentCount() > 0) {
+        // ### Can we get rid of this special handling of the arguments property?
+        JSC::JSValue args = engine->scriptValueToJSCValue(engine->contextForFrame(engine->currentFrame)->argumentsObject());
+        descriptor.setValue(args);
+        return true;
+    }
+    if (customGlobalObject)
+        return customGlobalObject->getOwnPropertyDescriptor(exec, propertyName, descriptor);
+    return JSC::JSGlobalObject::getOwnPropertyDescriptor(exec, propertyName, descriptor);
+}
+
 void GlobalObject::put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                        JSC::JSValue value, JSC::PutPropertySlot& slot)
 {
@@ -90,29 +107,20 @@ void GlobalObject::putWithAttributes(JSC::ExecState* exec, const JSC::Identifier
         JSC::JSGlobalObject::putWithAttributes(exec, propertyName, value, attributes);
 }
 
-bool GlobalObject::deleteProperty(JSC::ExecState* exec,
-                                  const JSC::Identifier& propertyName, bool checkDontDelete)
+bool GlobalObject::deleteProperty(JSC::ExecState* exec, const JSC::Identifier& propertyName)
 {
     if (customGlobalObject)
-        return customGlobalObject->deleteProperty(exec, propertyName, checkDontDelete);
-    return JSC::JSGlobalObject::deleteProperty(exec, propertyName, checkDontDelete);
-}
-
-bool GlobalObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
-                                         unsigned& attributes) const
-{
-    if (customGlobalObject)
-        return customGlobalObject->getPropertyAttributes(exec, propertyName, attributes);
-    return JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes);
+        return customGlobalObject->deleteProperty(exec, propertyName);
+    return JSC::JSGlobalObject::deleteProperty(exec, propertyName);
 }
 
 void GlobalObject::getOwnPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames,
-                                       bool includeNonEnumerable)
+                                       JSC::EnumerationMode mode)
 {
     if (customGlobalObject)
-        customGlobalObject->getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
+        customGlobalObject->getOwnPropertyNames(exec, propertyNames, mode);
     else
-        JSC::JSGlobalObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
+        JSC::JSGlobalObject::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 void GlobalObject::defineGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction, unsigned attributes)

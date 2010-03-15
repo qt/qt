@@ -39,7 +39,11 @@ namespace JSC  {
     public:
         JSObject* callee() const { return this[RegisterFile::Callee].object(); }
         CodeBlock* codeBlock() const { return this[RegisterFile::CodeBlock].Register::codeBlock(); }
-        ScopeChainNode* scopeChain() const { return this[RegisterFile::ScopeChain].Register::scopeChain(); }
+        ScopeChainNode* scopeChain() const
+        {
+            ASSERT(this[RegisterFile::ScopeChain].Register::scopeChain());
+            return this[RegisterFile::ScopeChain].Register::scopeChain();
+        }
         int argumentCount() const { return this[RegisterFile::ArgumentCount].i(); }
 
         JSValue thisValue();
@@ -51,14 +55,14 @@ namespace JSC  {
         // Differs from dynamicGlobalObject() during function calls across web browser frames.
         JSGlobalObject* lexicalGlobalObject() const
         {
-            return scopeChain()->globalObject();
+            return scopeChain()->globalObject;
         }
 
         // Differs from lexicalGlobalObject because this will have DOM window shell rather than
         // the actual DOM window, which can't be "this" for security reasons.
         JSObject* globalThisValue() const
         {
-            return scopeChain()->globalThisObject();
+            return scopeChain()->globalThis;
         }
 
         // FIXME: Elsewhere, we use JSGlobalData* rather than JSGlobalData&.
@@ -66,6 +70,7 @@ namespace JSC  {
         // or a pointer everywhere.
         JSGlobalData& globalData() const
         {
+            ASSERT(scopeChain()->globalData);
             return *scopeChain()->globalData;
         }
 
@@ -105,9 +110,9 @@ namespace JSC  {
         Arguments* optionalCalleeArguments() const { return this[RegisterFile::OptionalCalleeArguments].arguments(); }
         Instruction* returnPC() const { return this[RegisterFile::ReturnPC].vPC(); }
 
-        void setCalleeArguments(JSValue arguments) { this[RegisterFile::OptionalCalleeArguments] = arguments; }
-        void setCallerFrame(CallFrame* callerFrame) { this[RegisterFile::CallerFrame] = callerFrame; }
-        void setScopeChain(ScopeChainNode* scopeChain) { this[RegisterFile::ScopeChain] = scopeChain; }
+        void setCalleeArguments(JSValue arguments) { static_cast<Register*>(this)[RegisterFile::OptionalCalleeArguments] = arguments; }
+        void setCallerFrame(CallFrame* callerFrame) { static_cast<Register*>(this)[RegisterFile::CallerFrame] = callerFrame; }
+        void setScopeChain(ScopeChainNode* scopeChain) { static_cast<Register*>(this)[RegisterFile::ScopeChain] = scopeChain; }
 
         ALWAYS_INLINE void init(CodeBlock* codeBlock, Instruction* vPC, ScopeChainNode* scopeChain,
             CallFrame* callerFrame, int returnValueRegister, int argc, JSObject* callee)
@@ -117,8 +122,8 @@ namespace JSC  {
             setCodeBlock(codeBlock);
             setScopeChain(scopeChain);
             setCallerFrame(callerFrame);
-            this[RegisterFile::ReturnPC] = vPC; // This is either an Instruction* or a pointer into JIT generated code stored as an Instruction*.
-            this[RegisterFile::ReturnValueRegister] = Register::withInt(returnValueRegister);
+            static_cast<Register*>(this)[RegisterFile::ReturnPC] = vPC; // This is either an Instruction* or a pointer into JIT generated code stored as an Instruction*.
+            static_cast<Register*>(this)[RegisterFile::ReturnValueRegister] = Register::withInt(returnValueRegister);
             setArgumentCount(argc); // original argument count (for the sake of the "arguments" object)
             setCallee(callee);
             setCalleeArguments(JSValue());
@@ -135,9 +140,9 @@ namespace JSC  {
         CallFrame* removeHostCallFrameFlag() { return reinterpret_cast<CallFrame*>(reinterpret_cast<intptr_t>(this) & ~HostCallFrameFlag); }
 
     private:
-        void setArgumentCount(int count) { this[RegisterFile::ArgumentCount] = Register::withInt(count); }
-        void setCallee(JSObject* callee) { this[RegisterFile::Callee] = callee; }
-        void setCodeBlock(CodeBlock* codeBlock) { this[RegisterFile::CodeBlock] = codeBlock; }
+        void setArgumentCount(int count) { static_cast<Register*>(this)[RegisterFile::ArgumentCount] = Register::withInt(count); }
+        void setCallee(JSObject* callee) { static_cast<Register*>(this)[RegisterFile::Callee] = callee; }
+        void setCodeBlock(CodeBlock* codeBlock) { static_cast<Register*>(this)[RegisterFile::CodeBlock] = codeBlock; }
 
         static const intptr_t HostCallFrameFlag = 1;
 
