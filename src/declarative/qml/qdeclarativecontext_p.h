@@ -56,10 +56,11 @@
 #include "qdeclarativecontext.h"
 
 #include "qdeclarativedeclarativedata_p.h"
-#include "qdeclarativeengine_p.h"
 #include "qdeclarativeintegercache_p.h"
 #include "qdeclarativetypenamecache_p.h"
 #include "qdeclarativenotifier_p.h"
+#include "qdeclarativelist.h"
+#include "qdeclarativeparser_p.h"
 
 #include <QtCore/qhash.h>
 #include <QtScript/qscriptvalue.h>
@@ -78,6 +79,7 @@ class QDeclarativeExpressionPrivate;
 class QDeclarativeAbstractExpression;
 class QDeclarativeBinding_Id;
 class QDeclarativeCompiledBindings;
+class QDeclarativeContextData;
 
 class Q_DECLARATIVE_EXPORT QDeclarativeContextPrivate : public QObjectPrivate
 {
@@ -85,52 +87,10 @@ class Q_DECLARATIVE_EXPORT QDeclarativeContextPrivate : public QObjectPrivate
 public:
     QDeclarativeContextPrivate();
 
-    QDeclarativeContext *parent;
-    QDeclarativeEngine *engine;
+    QDeclarativeContextData *data;
 
-    bool isInternal;
-
-    QDeclarativeIntegerCache *propertyNames;
     QList<QVariant> propertyValues;
     int notifyIndex;
-
-    QObject *contextObject;
-
-    QList<QScriptValue> scripts;
-    void addScript(const QDeclarativeParser::Object::ScriptBlock &, QObject *);
-
-    QUrl url;
-
-    QDeclarativeTypeNameCache *imports;
-
-    void init();
-
-    void invalidateEngines();
-    void refreshExpressions();
-
-    QDeclarativeContext *childContexts;
-
-    QDeclarativeContext  *nextChild;
-    QDeclarativeContext **prevChild;
-
-    QDeclarativeAbstractExpression *expressions;
-
-    QDeclarativeDeclarativeData *contextObjects;
-
-    struct ContextGuard : public QDeclarativeGuard<QObject>
-    {
-        inline ContextGuard();
-        inline ContextGuard &operator=(QObject *obj);
-        inline virtual void objectDestroyed(QObject *);
-
-        QDeclarativeContextPrivate *priv;
-        QDeclarativeNotifier bindings;
-    };
-    ContextGuard *idValues;
-    int idValueCount;
-    void setIdProperty(int, QObject *);
-    void setIdPropertyData(QDeclarativeIntegerCache *);
-    void destroyed(ContextGuard *);
 
     static QDeclarativeContextPrivate *get(QDeclarativeContext *context) {
         return static_cast<QDeclarativeContextPrivate *>(QObjectPrivate::get(context));
@@ -139,8 +99,6 @@ public:
         return static_cast<QDeclarativeContext *>(context->q_func());
     }
 
-    QDeclarativeCompiledBindings *optimizedBindings;
-
     // Only used for debugging
     QList<QPointer<QObject> > instances;
 
@@ -148,19 +106,159 @@ public:
     static QObject *context_at(QDeclarativeListProperty<QObject> *, int);
 };
 
-QDeclarativeContextPrivate::ContextGuard::ContextGuard() 
-: priv(0)
+class QDeclarativeGuardedContextData;
+class QDeclarativeContextData
+{
+public:
+    QDeclarativeContextData();
+    QDeclarativeContextData(QDeclarativeContext *);
+    void destroy();
+
+    // My parent context and engine
+    QDeclarativeContextData *parent;
+    QDeclarativeEngine *engine;
+
+    void setParent(QDeclarativeContextData *);
+    void invalidateEngines();
+    void refreshExpressions();
+
+    void addObject(QObject *);
+
+    QUrl resolvedUrl(const QUrl &);
+
+    // My containing QDeclarativeContext.  If isInternal is true this owns publicContext.  
+    // If internal is false publicContext owns this.
+    QDeclarativeContext *asQDeclarativeContext();
+    QDeclarativeContextPrivate *asQDeclarativeContextPrivate();
+    bool isInternal;
+    QDeclarativeContext *publicContext;
+
+    // Property name cache
+    QDeclarativeIntegerCache *propertyNames;
+
+    // Context object
+    QObject *contextObject;
+
+    // Any script blocks that exist on this context
+    QList<QScriptValue> scripts;
+    void addScript(const QDeclarativeParser::Object::ScriptBlock &script, QObject *scopeObject);
+
+    // Context base url
+    QUrl url;
+
+    // List of imports that apply to this context
+    QDeclarativeTypeNameCache *imports;
+
+    // My children
+    QDeclarativeContextData *childContexts;
+
+    // My peers in parent's childContexts list
+    QDeclarativeContextData  *nextChild;
+    QDeclarativeContextData **prevChild;
+
+    // Expressions that use this context
+    QDeclarativeAbstractExpression *expressions;
+
+    // Doubly-linked list of objects that are owned by this context
+    QDeclarativeDeclarativeData *contextObjects;
+
+    // Doubly-linked list of context guards (XXX merge with contextObjects)
+    QDeclarativeGuardedContextData *contextGuards;
+
+    // id guards
+    struct ContextGuard : public QDeclarativeGuard<QObject>
+    {
+        inline ContextGuard &operator=(QObject *obj)
+        { QDeclarativeGuard<QObject>::operator=(obj); return *this; }
+        virtual void objectDestroyed(QObject *) { bindings.notify(); }
+        QDeclarativeNotifier bindings;
+    };
+    ContextGuard *idValues;
+    int idValueCount;
+    void setIdProperty(int, QObject *);
+    void setIdPropertyData(QDeclarativeIntegerCache *);
+
+    // Optimized binding pointer
+    QDeclarativeCompiledBindings *optimizedBindings;
+
+    // Linked contexts. this owns linkedContext.
+    QDeclarativeContextData *linkedContext;
+
+    static QDeclarativeContextData *get(QDeclarativeContext *context) {
+        return QDeclarativeContextPrivate::get(context)->data;
+    }
+
+private:
+    ~QDeclarativeContextData() {}
+};
+
+class QDeclarativeGuardedContextData
+{
+public:
+    inline QDeclarativeGuardedContextData();
+    inline QDeclarativeGuardedContextData(QDeclarativeContextData *);
+    inline ~QDeclarativeGuardedContextData();
+
+    inline void setContextData(QDeclarativeContextData *);
+
+    inline QDeclarativeContextData *contextData();
+
+    inline operator QDeclarativeContextData*() const { return m_contextData; }
+    inline QDeclarativeContextData* operator->() const { return m_contextData; }
+
+private:
+    friend class QDeclarativeContextData;
+
+    inline void clear();
+
+    QDeclarativeContextData *m_contextData;
+    QDeclarativeGuardedContextData  *m_next;
+    QDeclarativeGuardedContextData **m_prev;
+};
+
+QDeclarativeGuardedContextData::QDeclarativeGuardedContextData()
+: m_contextData(0), m_next(0), m_prev(0)
 {
 }
 
-QDeclarativeContextPrivate::ContextGuard &QDeclarativeContextPrivate::ContextGuard::operator=(QObject *obj) 
+QDeclarativeGuardedContextData::QDeclarativeGuardedContextData(QDeclarativeContextData *data)
+: m_contextData(0), m_next(0), m_prev(0)
 {
-    (QDeclarativeGuard<QObject>&)*this = obj; return *this;
+    setContextData(data);
 }
 
-void QDeclarativeContextPrivate::ContextGuard::objectDestroyed(QObject *) 
-{ 
-    priv->destroyed(this); 
+QDeclarativeGuardedContextData::~QDeclarativeGuardedContextData()
+{
+    clear();
+}
+
+void QDeclarativeGuardedContextData::setContextData(QDeclarativeContextData *contextData)
+{
+    clear();
+
+    if (contextData) {
+        m_contextData = contextData;
+        m_next = contextData->contextGuards;
+        if (m_next) m_next->m_prev = &m_next;
+        m_prev = &contextData->contextGuards;
+        contextData->contextGuards = this;
+    }
+}
+
+QDeclarativeContextData *QDeclarativeGuardedContextData::contextData()
+{
+    return m_contextData;
+}
+
+void QDeclarativeGuardedContextData::clear()
+{
+    if (m_prev) {
+        *m_prev = m_next;
+        if (m_next) m_next->m_prev = m_prev;
+        m_contextData = 0;
+        m_next = 0;
+        m_prev = 0;
+    }
 }
 
 QT_END_NAMESPACE

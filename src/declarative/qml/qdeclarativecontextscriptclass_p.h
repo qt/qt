@@ -60,16 +60,17 @@ QT_BEGIN_NAMESPACE
 
 class QDeclarativeEngine;
 class QDeclarativeContext;
+class QDeclarativeContextData;
 class QDeclarativeContextScriptClass : public QDeclarativeScriptClass
 {
 public:
     QDeclarativeContextScriptClass(QDeclarativeEngine *);
     ~QDeclarativeContextScriptClass();
 
-    QScriptValue newContext(QDeclarativeContext *, QObject * = 0);
+    QScriptValue newContext(QDeclarativeContextData *, QObject * = 0);
     QScriptValue newSharedContext();
 
-    QDeclarativeContext *contextFromValue(const QScriptValue &);
+    QDeclarativeContextData *contextFromValue(const QScriptValue &);
     QObject *setOverrideObject(QScriptValue &, QObject *);
 
 protected:
@@ -79,7 +80,7 @@ protected:
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
 
 private:
-    QScriptClass::QueryFlags queryProperty(QDeclarativeContext *, QObject *scopeObject, 
+    QScriptClass::QueryFlags queryProperty(QDeclarativeContextData *, QObject *scopeObject, 
                                            const Identifier &,
                                            QScriptClass::QueryFlags flags,
                                            bool includeTypes);
@@ -87,7 +88,7 @@ private:
     QDeclarativeEngine *engine;
 
     QObject *lastScopeObject;
-    QDeclarativeContext *lastContext;
+    QDeclarativeContextData *lastContext;
     QDeclarativeTypeNameCache::Data *lastData;
     int lastPropertyIndex;
     QScriptValue lastFunction;

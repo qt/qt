@@ -404,20 +404,9 @@ QDeclarativeContext *QDeclarativeComponent::creationContext() const
 {
     Q_D(const QDeclarativeComponent);
     if(d->creationContext)
-        return d->creationContext;
+        return d->creationContext->asQDeclarativeContext();
 
     return qmlContext(this);
-}
-
-/*!
-  \internal
-  Sets the QDeclarativeContext the component was created in. This is only
-  desirable for components created in QML script.
-*/
-void QDeclarativeComponent::setCreationContext(QDeclarativeContext* c)
-{
-    Q_D(QDeclarativeComponent);
-    d->creationContext = c;
 }
 
 /*!
@@ -547,16 +536,11 @@ QObject *QDeclarativeComponent::create(QDeclarativeContext *context)
     return rv;
 }
 
-QObject *QDeclarativeComponentPrivate::create(QDeclarativeContext *context, 
-                                     const QBitField &bindings)
+QObject *QDeclarativeComponentPrivate::create(QDeclarativeContextData *context, 
+                                              const QBitField &bindings)
 {
     if (!context)
-        context = engine->rootContext();
-
-    if (context->engine() != engine) {
-        qWarning("QDeclarativeComponent::create(): Must create component in context from the same QDeclarativeEngine");
-        return 0;
-    }
+        context = QDeclarativeContextData::get(engine->rootContext());
 
     QObject *rv = beginCreate(context, bindings);
     completeCreate();
@@ -589,7 +573,7 @@ QObject *QDeclarativeComponentPrivate::create(QDeclarativeContext *context,
 QObject *QDeclarativeComponent::beginCreate(QDeclarativeContext *context)
 {
     Q_D(QDeclarativeComponent);
-    QObject *rv = d->beginCreate(context, QBitField());
+    QObject *rv = d->beginCreate(context?QDeclarativeContextData::get(context):0, QBitField());
     if (rv) {
         QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(rv);
         Q_ASSERT(ddata);
@@ -599,7 +583,7 @@ QObject *QDeclarativeComponent::beginCreate(QDeclarativeContext *context)
 }
 
 QObject *
-QDeclarativeComponentPrivate::beginCreate(QDeclarativeContext *context, const QBitField &bindings)
+QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, const QBitField &bindings)
 {
     Q_Q(QDeclarativeComponent);
     if (!context) {
@@ -607,7 +591,7 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContext *context, const QB
         return 0;
     }
 
-    if (context->engine() != engine) {
+    if (context->engine != engine) {
         qWarning("QDeclarativeComponent::beginCreate(): Must create component in context from the same QDeclarativeEngine");
         return 0;
     }
@@ -624,29 +608,26 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContext *context, const QB
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
 
-    QDeclarativeContextPrivate *contextPriv = 
-        static_cast<QDeclarativeContextPrivate *>(QObjectPrivate::get(context));
-    QDeclarativeContext *ctxt = new QDeclarativeContext(context, 0, true);
-    static_cast<QDeclarativeContextPrivate*>(ctxt->d_func())->url = cc->url;
-    static_cast<QDeclarativeContextPrivate*>(ctxt->d_func())->imports = cc->importCache;
+    QDeclarativeContextData *ctxt = new QDeclarativeContextData;
+    ctxt->isInternal = true;
+    ctxt->url = cc->url;
+    ctxt->imports = cc->importCache;
     cc->importCache->addref();
+    ctxt->setParent(context);
 
     QObject *rv = begin(ctxt, ep, cc, start, count, &state, bindings);
 
-    if (rv) {
-        QDeclarative_setParent_noEvent(ctxt, rv);
-    } else {
-        delete ctxt;
-    }
+    if (!rv) ctxt->destroy();
 
-    if (rv && !contextPriv->isInternal && ep->isDebugging)
-        contextPriv->instances.append(rv);
+    if (rv && !context->isInternal && ep->isDebugging)
+        context->asQDeclarativeContextPrivate()->instances.append(rv);
+
     return rv;
 }
 
-QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContext *ctxt, QDeclarativeEnginePrivate *enginePriv,
-                                     QDeclarativeCompiledData *component, int start, int count,
-                                     ConstructionState *state, const QBitField &bindings)
+QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *ctxt, QDeclarativeEnginePrivate *enginePriv,
+                                              QDeclarativeCompiledData *component, int start, int count,
+                                              ConstructionState *state, const QBitField &bindings)
 {
     bool isRoot = !enginePriv->inBeginCreate;
     enginePriv->inBeginCreate = true;
@@ -676,8 +657,8 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContext *ctxt, QDeclar
     return rv;
 }
 
-void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeContext *, QDeclarativeEnginePrivate *enginePriv,
-                                        QObject *object, ConstructionState *state)
+void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeContextData *, QDeclarativeEnginePrivate *enginePriv,
+                                                 QObject *object, ConstructionState *state)
 {
     bool isRoot = !enginePriv->inBeginCreate;
     enginePriv->inBeginCreate = true;

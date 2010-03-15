@@ -124,7 +124,7 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, QDeclarativeContext *ct
 : d(new QDeclarativePropertyPrivate)
 {
     d->q = this;
-    d->context = ctxt;
+    d->context = ctxt?QDeclarativeContextData::get(ctxt):0;
     d->engine = ctxt?ctxt->engine():0;
     d->initDefault(obj);
 }
@@ -177,7 +177,7 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QD
 : d(new QDeclarativePropertyPrivate)
 {
     d->q = this;
-    d->context = ctxt;
+    d->context = ctxt?QDeclarativeContextData::get(ctxt):0;
     d->engine = ctxt?ctxt->engine():0;
     d->initProperty(obj, name);
     if (!isValid()) { d->object = 0; d->context = 0; d->engine = 0; }
@@ -204,7 +204,7 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
 {
     if (!obj) return;
 
-    QDeclarativeTypeNameCache *typeNameCache = context?QDeclarativeContextPrivate::get(context)->imports:0;
+    QDeclarativeTypeNameCache *typeNameCache = context?context->imports:0;
 
     QStringList path = name.split(QLatin1Char('.'));
     if (path.isEmpty()) return;
@@ -924,7 +924,7 @@ bool QDeclarativePropertyPrivate::writeValueProperty(const QVariant &value, Writ
 }
 
 bool QDeclarativePropertyPrivate::write(QObject *object, const QDeclarativePropertyCache::Data &property, 
-                                            const QVariant &value, QDeclarativeContext *context, 
+                                            const QVariant &value, QDeclarativeContextData *context, 
                                             WriteFlags flags)
 {
     int coreIdx = property.coreIndex;
@@ -1305,7 +1305,7 @@ QByteArray QDeclarativePropertyPrivate::saveProperty(const QMetaObject *metaObje
 }
 
 QDeclarativeProperty 
-QDeclarativePropertyPrivate::restore(const QByteArray &data, QObject *object, QDeclarativeContext *ctxt)
+QDeclarativePropertyPrivate::restore(const QByteArray &data, QObject *object, QDeclarativeContextData *ctxt)
 {
     QDeclarativeProperty prop;
 
@@ -1314,7 +1314,7 @@ QDeclarativePropertyPrivate::restore(const QByteArray &data, QObject *object, QD
 
     prop.d->object = object;
     prop.d->context = ctxt;
-    prop.d->engine = ctxt?ctxt->engine():0;
+    prop.d->engine = ctxt->engine;
 
     const SerializedData *sd = (const SerializedData *)data.constData();
     if (sd->isValueType) {

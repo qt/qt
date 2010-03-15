@@ -61,6 +61,7 @@
 #include "qdeclarative.h"
 #include "qdeclarativevaluetype_p.h"
 #include "qdeclarativecontext.h"
+#include "qdeclarativecontext_p.h"
 #include "qdeclarativeexpression.h"
 #include "qdeclarativeproperty_p.h"
 #include "qdeclarativepropertycache_p.h"
@@ -162,7 +163,7 @@ public:
 
     struct ImportedNamespace;
     QDeclarativeContextScriptClass *contextClass;
-    QDeclarativeContext *sharedContext;
+    QDeclarativeContextData *sharedContext;
     QObject *sharedScope;
     QDeclarativeObjectScriptClass *objectClass;
     QDeclarativeValueTypeScriptClass *valueTypeClass;
@@ -336,9 +337,10 @@ public:
     static QDeclarativeEngine *getEngine(QScriptEngine *e) { return static_cast<QDeclarativeScriptEngine*>(e)->p->q_func(); }
     static QDeclarativeEnginePrivate *get(QDeclarativeEngine *e) { return e->d_func(); }
     static QDeclarativeEnginePrivate *get(QDeclarativeContext *c) { return (c && c->engine()) ? QDeclarativeEnginePrivate::get(c->engine()) : 0; }
+    static QDeclarativeEnginePrivate *get(QDeclarativeContextData *c) { return (c && c->engine) ? QDeclarativeEnginePrivate::get(c->engine) : 0; }
     static QDeclarativeEnginePrivate *get(QScriptEngine *e) { return static_cast<QDeclarativeScriptEngine*>(e)->p; }
     static QDeclarativeEngine *get(QDeclarativeEnginePrivate *p) { return p->q_func(); }
-    QDeclarativeContext *getContext(QScriptContext *);
+    QDeclarativeContextData *getContext(QScriptContext *);
 
     static void defineModule();
 };

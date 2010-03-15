@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeEngine;
 class QScriptContext;
 class QScriptEngine;
-class QDeclarativeContext;
+class QDeclarativeContextData;
 
 #if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
 class Q_AUTOTEST_EXPORT QDeclarativeObjectMethodScriptClass : public QScriptDeclarativeClass
@@ -112,13 +112,13 @@ public:
 
     QScriptClass::QueryFlags queryProperty(QObject *, const Identifier &, 
                                            QScriptClass::QueryFlags flags, 
-                                           QDeclarativeContext *evalContext,
+                                           QDeclarativeContextData *evalContext,
                                            QueryHints hints = 0);
 
     ScriptValue property(QObject *, const Identifier &);
 
     void setProperty(QObject *, const Identifier &name, const QScriptValue &,
-                     QDeclarativeContext *evalContext = 0);
+                     QDeclarativeContextData *evalContext = 0);
     virtual QStringList propertyNames(Object *);
     virtual bool compare(Object *, Object *);
 

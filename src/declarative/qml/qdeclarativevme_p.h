@@ -65,7 +65,7 @@ class QObject;
 class QDeclarativeInstruction;
 class QDeclarativeCompiledData;
 class QDeclarativeCompiledData;
-class QDeclarativeContext;
+class QDeclarativeContextData;
 
 template<typename T, int N = 128>
 class QDeclarativeVMEStack {
@@ -100,7 +100,7 @@ class QDeclarativeVME
 public:
     QDeclarativeVME();
 
-    QObject *run(QDeclarativeContext *, QDeclarativeCompiledData *, 
+    QObject *run(QDeclarativeContextData *, QDeclarativeCompiledData *, 
                  int start = -1, int count = -1, 
                  const QBitField & = QBitField());
     void runDeferred(QObject *);
@@ -109,8 +109,10 @@ public:
     QList<QDeclarativeError> errors() const;
 
 private:
-    QObject *run(QDeclarativeVMEStack<QObject *> &, QDeclarativeContext *, QDeclarativeCompiledData *, 
-                 int start, int count, const QBitField &);
+    QObject *run(QDeclarativeVMEStack<QObject *> &, 
+                 QDeclarativeContextData *, QDeclarativeCompiledData *, 
+                 int start, int count, 
+                 const QBitField &);
     QList<QDeclarativeError> vmeErrors;
 };
 
