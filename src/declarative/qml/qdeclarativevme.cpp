@@ -130,9 +130,9 @@ void QDeclarativeVME::runDeferred(QObject *object)
 }
 
 QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarativeContext *ctxt, 
-                     QDeclarativeCompiledData *comp, 
-                     int start, int count, 
-                     const QBitField &bindingSkipList)
+                              QDeclarativeCompiledData *comp, 
+                              int start, int count, 
+                              const QBitField &bindingSkipList)
 {
     Q_ASSERT(comp);
     Q_ASSERT(ctxt);
@@ -197,6 +197,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
 
                 QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(o);
                 Q_ASSERT(ddata);
+                ddata->setImplicitDestructible();
                 ddata->outerContext = ctxt;
                 ddata->lineNumber = instr.line;
                 ddata->columnNumber = instr.create.column;
@@ -236,7 +237,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
         case QDeclarativeInstruction::SetDefault:
             {
                 QObject *target = stack.top();
-                ctxt->addDefaultObject(target);
+                ctxt->setContextObject(target);
             }
             break;
 
@@ -247,6 +248,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                 QDeclarativeEngine::setContextForObject(qcomp, ctxt);
                 QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(qcomp);
                 Q_ASSERT(ddata);
+                ddata->setImplicitDestructible();
                 ddata->outerContext = ctxt;
                 ddata->lineNumber = instr.line;
                 ddata->columnNumber = instr.create.column;
@@ -832,11 +834,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
     if (parserStatus.count)
         ep->parserStatus << parserStatus;
 
-    if (stack.isEmpty())
-        return 0;
-    else
-        return stack.top();
-    return 0;
+    Q_ASSERT(stack.count() == 1);
+    return stack.top();
 }
 
 bool QDeclarativeVME::isError() const
