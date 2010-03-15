@@ -70,8 +70,8 @@ class QDeclarativeContextData;
 template<typename T, int N = 128>
 class QDeclarativeVMEStack {
 public:
-    QDeclarativeVMEStack() : index(-1), maxSize(N), data(fixedData) {}
-    ~QDeclarativeVMEStack() { if (data != fixedData) qFree(data); }
+    QDeclarativeVMEStack() : index(-1), maxSize(N), data((T *)fixedData) {}
+    ~QDeclarativeVMEStack() { if (data != (T *)fixedData) qFree(data); }
 
     bool isEmpty() const { return index == -1; }
     const T &top() const { return data[index]; }
@@ -83,7 +83,7 @@ public:
 private:
     void realloc() {
         maxSize += N;
-        if (data != fixedData) {
+        if (data != (T *)fixedData) {
             data = (T*)qRealloc(data, maxSize * sizeof(T));
         } else {
             data = (T*)qMalloc(maxSize * sizeof(T));
@@ -92,7 +92,7 @@ private:
     int index;
     int maxSize;
     T *data;
-    T fixedData[N];
+    char fixedData[N * sizeof(T)];
 };
 
 class QDeclarativeVME
