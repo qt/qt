@@ -6,7 +6,10 @@ win32:SRC_SUBDIRS += src_winmain
 wince*:{
   SRC_SUBDIRS += src_corelib src_xml src_gui src_sql src_network src_testlib
 } else:symbian {
-  SRC_SUBDIRS += src_s60main src_corelib src_xml src_gui src_network src_sql src_testlib src_s60installs
+  SRC_SUBDIRS += src_s60main src_corelib src_xml src_gui src_network src_sql src_testlib
+  !symbian-abld:!symbian-sbsv2 {
+    include(tools/tools.pro)
+  }
 } else {
     SRC_SUBDIRS += src_corelib src_xml src_network src_gui src_sql src_testlib
     !vxworks:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
@@ -30,6 +33,10 @@ contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_declarative
 contains(QT_CONFIG, multimedia): SRC_SUBDIRS += src_multimedia
 SRC_SUBDIRS += src_plugins
 contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_imports
+
+# s60installs need to be at the end, because projects.pro does an ordered build,
+# and s60installs depends on all the others.
+symbian:SRC_SUBDIRS += src_s60installs
 
 src_s60main.subdir = $$QT_SOURCE_TREE/src/s60main
 src_s60main.target = sub-s60main
@@ -83,7 +90,7 @@ src_declarative.subdir = $$QT_SOURCE_TREE/src/declarative
 src_declarative.target = sub-declarative
 
 #CONFIG += ordered
-!wince*:!symbian:!ordered {
+!wince*:!ordered {
    src_corelib.depends = src_tools_moc src_tools_rcc
    src_gui.depends = src_corelib src_tools_uic
    embedded: src_gui.depends += src_network
@@ -106,6 +113,7 @@ src_declarative.target = sub-declarative
    src_tools_activeqt.depends = src_tools_idc src_gui
    src_declarative.depends = src_xml src_gui src_script src_network src_svg
    src_plugins.depends = src_gui src_sql src_svg src_multimedia
+   src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
    src_imports.depends = src_gui src_declarative
    contains(QT_CONFIG, webkit)  {
       src_webkit.depends = src_gui src_sql src_network src_xml 
@@ -123,7 +131,7 @@ src_declarative.target = sub-declarative
    contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): src_plugins.depends += src_opengl
 }
 
-!symbian {
+
 # This creates a sub-src rule
 sub_src_target.CONFIG = recursive
 sub_src_target.recurse = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
@@ -170,6 +178,5 @@ for(subname, SRC_SUBDIRS) {
 debug.depends = $$EXTRA_DEBUG_TARGETS
 release.depends = $$EXTRA_RELEASE_TARGETS
 QMAKE_EXTRA_TARGETS += debug release
-}
 
 SUBDIRS += $$SRC_SUBDIRS

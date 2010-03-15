@@ -29,3 +29,5 @@ contains(TEMPLATE, lib): {
 contains(TEMPLATE, ".*app"):contains(QT, gui):contains(CONFIG,qt) {
     load(application_icon.prf)
 }
+
+isEmpty(TARGET.UID3):TARGET.UID3 = $$generate_uid("$${OUT_PWD}/$${TARGET}")

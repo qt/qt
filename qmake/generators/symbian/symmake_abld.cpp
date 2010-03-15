@@ -71,7 +71,7 @@ SymbianAbldMakefileGenerator::~SymbianAbldMakefileGenerator() { }
 void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, bool deploymentOnly)
 {
     QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
-    removeSpecialCharacters(gnuMakefileName);
+    removeEpocSpecialCharacters(gnuMakefileName);
     gnuMakefileName.append(".mk");
 
     QFile ft(gnuMakefileName);
@@ -430,7 +430,7 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t, bool i
         + privateDirUid;
     DeploymentList depList;
 
-    initProjectDeploySymbian(project, depList, remoteTestPath, false,
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
         QLatin1String(isRom ? ROM_DEPLOYMENT_PLATFORM : EMULATOR_DEPLOYMENT_PLATFORM),
         QString(), generatedDirs, generatedFiles);
 
@@ -472,7 +472,7 @@ void SymbianAbldMakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool ad
     // do not get that, special deployment only makefile is generated for them if needed.
     if (targetType != TypeSubdirs || addDeploymentExtension) {
         QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
-        removeSpecialCharacters(gnuMakefileName);
+        removeEpocSpecialCharacters(gnuMakefileName);
         gnuMakefileName.append(".mk");
         t << "gnumakefile " << gnuMakefileName << endl;
     }

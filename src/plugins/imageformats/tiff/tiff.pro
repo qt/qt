@@ -58,7 +58,7 @@ contains(QT_CONFIG, system-tiff) {
                           ../../../3rdparty/libtiff/libtiff/tif_wince.c \
 			  ../../../3rdparty/libtiff/libtiff/tif_win32.c
             }
-            symbian*: {
+            symbian: {
                SOURCES += ../../../3rdparty/libtiff/port/lfind.c
             }
 }
