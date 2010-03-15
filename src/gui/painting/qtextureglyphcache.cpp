@@ -73,7 +73,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
                                   const QFixedPoint *)
 {
 #ifdef CACHE_DEBUG
-    printf("Populating with '%s'\n", QString::fromRawData(ti.chars, ti.num_chars).toLatin1().data());
+    printf("Populating with %d glyphs\n", numGlyphs);
     qDebug() << " -> current transformation: " << m_transform;
 #endif
 
@@ -93,17 +93,14 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         glyph_metrics_t metrics = fontEngine->boundingBox(glyph, m_transform);
 
 #ifdef CACHE_DEBUG
-        printf("'%c' (%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f, ti.ascent=%.2f, ti.descent=%.2f\n",
-               ti.chars[i].toLatin1(),
+        printf("(%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f\n",
                glyph,
                metrics.width.toReal(),
                metrics.height.toReal(),
                metrics.xoff.toReal(),
                metrics.yoff.toReal(),
                metrics.x.toReal(),
-               metrics.y.toReal(),
-               ti.ascent.toReal(),
-               ti.descent.toReal());
+               metrics.y.toReal());
 #endif
         int glyph_width = metrics.width.ceil().toInt();
         int glyph_height = metrics.height.ceil().toInt();
@@ -139,7 +136,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         if (m_cx + c.w > m_w) {
             // no room on the current line, start new glyph strip
             m_cx = 0;
-            m_cy = m_h;
+            m_cy += rowHeight;
         }
         if (m_cy + c.h > m_h) {
             int new_height = m_h*2;
@@ -333,10 +330,7 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g)
     QPoint base(c.x + glyphMargin(), c.y + glyphMargin() + c.baseLineY-1);
     if (m_image.rect().contains(base))
         m_image.setPixel(base, 255);
-    m_image.save(QString::fromLatin1("cache-%1-%2-%3.png")
-                 .arg(m_current_textitem->font().family())
-                 .arg(m_current_textitem->font().pointSize())
-                 .arg(m_transform.type()));
+    m_image.save(QString::fromLatin1("cache-%1.png").arg(int(this)));
 #endif
 }
 

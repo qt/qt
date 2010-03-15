@@ -668,7 +668,7 @@ void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &botto
     Q_D(QTreeView);
 
     // if we are going to do a complete relayout anyway, there is no need to update
-    if (d->delayedPendingLayout)
+    if (d->delayedPendingLayout())
         return;
 
     // refresh the height cache here; we don't really lose anything by getting the size hint,
@@ -742,7 +742,7 @@ void QTreeView::expand(const QModelIndex &index)
     Q_D(QTreeView);
     if (!d->isIndexValid(index))
         return;
-    if (d->delayedPendingLayout) {
+    if (d->delayedPendingLayout()) {
         //A complete relayout is going to be performed, just store the expanded index, no need to layout.
         if (d->storeExpanded(index))
             emit expanded(index);
@@ -776,7 +776,7 @@ void QTreeView::collapse(const QModelIndex &index)
     //if the current item is now invisible, the autoscroll will expand the tree to see it, so disable the autoscroll
     d->delayedAutoScroll.stop();
 
-    if (d->delayedPendingLayout) {
+    if (d->delayedPendingLayout()) {
         //A complete relayout is going to be performed, just un-store the expanded index, no need to layout.
         if (d->isPersistent(index) && d->expandedIndexes.remove(index))
             emit collapsed(index);
@@ -2431,7 +2431,7 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
 {
     Q_D(QTreeView);
     // if we are going to do a complete relayout anyway, there is no need to update
-    if (d->delayedPendingLayout) {
+    if (d->delayedPendingLayout()) {
         QAbstractItemView::rowsInserted(parent, start, end);
         return;
     }
@@ -3755,7 +3755,7 @@ void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
                                    int start, int end, bool after)
 {
     // if we are going to do a complete relayout anyway, there is no need to update
-    if (delayedPendingLayout) {
+    if (delayedPendingLayout()) {
         _q_rowsRemoved(parent, start, end);
         return;
     }
