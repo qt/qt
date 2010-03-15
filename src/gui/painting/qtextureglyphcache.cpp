@@ -136,7 +136,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         if (m_cx + c.w > m_w) {
             // no room on the current line, start new glyph strip
             m_cx = 0;
-            m_cy = m_h;
+            m_cy += rowHeight;
         }
         if (m_cy + c.h > m_h) {
             int new_height = m_h*2;
