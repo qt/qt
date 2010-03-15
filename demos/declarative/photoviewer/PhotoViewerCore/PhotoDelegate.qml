@@ -32,7 +32,7 @@ Package {
                 property int h: getHeight(content)
                 property double s: calculateScale(w, h, photoWrapper.width)
 
-                color: '#898989'; anchors.centerIn: parent; smooth: true; border.color: 'white'; border.width: 3
+                color: '#878787'; anchors.centerIn: parent; smooth: true; border.color: 'white'; border.width: 3
                 width:  w * s; height: h * s; visible: originalImage.status != Image.Ready
             }
             Rectangle {
@@ -40,6 +40,7 @@ Package {
                 width: originalImage.paintedWidth + 6; height: originalImage.paintedHeight + 6
                 visible: !placeHolder.visible
             }
+            BusyIndicator { anchors.centerIn: parent; on: originalImage.status != Image.Ready }
             Image {
                 id: originalImage; smooth: true; source: "http://" + getImagePath(content)
                 fillMode: Image.PreserveAspectFit; width: photoWrapper.width; height: photoWrapper.height

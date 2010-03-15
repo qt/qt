@@ -1,0 +1,9 @@
+import Qt 4.6
+
+Image {
+    id: container
+    property bool on: false
+
+    source: "images/busy.png"; visible: container.on
+    NumberAnimation on rotation { running: container.on; from: 0; to: 360; repeat: true; duration: 1200 }
+}
