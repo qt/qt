@@ -75,6 +75,7 @@ my @modules_to_sync ;
 $force_relative = 1 if ( -d "/System/Library/Frameworks" );
 my $out_basedir = $basedir;
 $out_basedir =~ s=\\=/=g;
+my $quoted_basedir = "\Q$basedir";
 
 # functions ----------------------------------------------------------
 
@@ -349,11 +350,9 @@ sub syncHeader {
 ######################################################################
 sub fixPaths {
     my ($file, $dir) = @_;
-    $dir =~ s=^$basedir/=$out_basedir/= if(!($basedir eq $out_basedir));
+    $dir =~ s=^$quoted_basedir/=$out_basedir/= if(!($basedir eq $out_basedir));
     $file =~ s=\\=/=g;
-    $file =~ s/\+/\\+/g;
     $dir =~ s=\\=/=g;
-    $dir =~ s/\+/\\+/g;
 
     #setup
     my $ret = $file;
@@ -377,7 +376,7 @@ sub fixPaths {
         my $slash = index($file_dir, "/", $i);
         last if($slash == -1);
         my $tmp = substr($file_dir, 0, $slash);
-        last unless($dir =~ m,^$tmp/,);
+        last unless($dir =~ m,^\Q$tmp\E/,);
         $match_dir = $tmp;
         $i = $slash;
     }
@@ -388,7 +387,7 @@ sub fixPaths {
         for(my $i = 0; $i < $count; $i++) {
             $dots .= "../";
         }
-        $ret =~ s,^$match_dir,$dots,;
+        $ret =~ s,^\Q$match_dir\E,$dots,;
     }
     $ret =~ s,/+,/,g;
     return $ret;
@@ -504,13 +503,13 @@ sub symlinkFile
 
     if ($isunix) {
         print "symlink created for $file " unless $quiet;
-        if ( $force_relative && ($ifile =~ /^$basedir/)) {
+        if ( $force_relative && ($ifile =~ /^$quoted_basedir/)) {
             my $t = getcwd();
             my $c = -1;
             my $p = "../";
-            $t =~ s-^$basedir/--;
+            $t =~ s-^$quoted_basedir/--;
             $p .= "../" while( ($c = index( $t, "/", $c + 1)) != -1 );
-            $file =~ s-^$basedir/-$p-;
+            $file =~ s-^$quoted_basedir/-$p-;
             print " ($file)\n" unless $quiet;
         }
         print "\n" unless $quiet;
@@ -830,7 +829,7 @@ foreach (@modules_to_sync) {
 			if ($public_header) {
 			    @headers = ( "$out_basedir/include/$lib/$header" );
 			    push @headers, "$out_basedir/include/Qt/$header"
-			      if ("$lib" ne "phonon" && "$subdir" =~ /^$basedir\/src/);
+			      if ("$lib" ne "phonon" && "$subdir" =~ /^$quoted_basedir\/src/);
 
 			    foreach(@classes) {
 				my $header_base = basename($header);
