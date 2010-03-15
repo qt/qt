@@ -2061,7 +2061,7 @@ qreal QDeclarativeListView::maxYExtent() const
         return height();
     if (d->maxExtentDirty) {
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
-            d->maxExtent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
+            d->maxExtent = -(d->endPosition() - d->highlightRangeEnd);
         else
             d->maxExtent = -(d->endPosition() - height() + 1);
         if (d->footer)
@@ -2098,7 +2098,7 @@ qreal QDeclarativeListView::maxXExtent() const
         return width();
     if (d->maxExtentDirty) {
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
-            d->maxExtent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
+            d->maxExtent = -(d->endPosition() - d->highlightRangeEnd);
         else
             d->maxExtent = -(d->endPosition() - width() + 1);
         if (d->footer)
