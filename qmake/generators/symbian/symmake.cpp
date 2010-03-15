@@ -315,23 +315,7 @@ void SymbianMakefileGenerator::init()
     // .mmp
     initMmpVariables();
 
-    if (0 != project->values("TARGET.UID2").size()) {
-        uid2 = project->first("TARGET.UID2");
-    } else if (project->isActiveConfig("stdbinary")) {
-        uid2 = "0x20004C45";
-    } else {
-        if (targetType == TypeExe) {
-            if (project->values("QT").contains("gui", Qt::CaseInsensitive)) {
-                // exe and gui -> uid2 needed
-                uid2 = "0x100039CE";
-            } else {
-                // exe but not gui: uid2 is ignored anyway -> set it to 0
-                uid2 = "0";
-            }
-        } else if (targetType == TypeDll || targetType == TypeLib || targetType == TypePlugin) {
-            uid2 = "0x1000008d";
-        }
-    }
+    uid2 = project->first("TARGET.UID2");
 
     uid2 = uid2.trimmed();
 }
