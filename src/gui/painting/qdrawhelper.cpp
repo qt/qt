@@ -7174,9 +7174,9 @@ static inline void rgbBlendPixel(quint32 *dst, int coverage, int sr, int sg, int
         ) {
 
         int a = qGray(coverage);
-        sr = qt_div_255(sr * a);
-        sg = qt_div_255(sg * a);
-        sb = qt_div_255(sb * a);
+        sr = qt_div_255(qt_pow_rgb_invgamma[sr] * a);
+        sg = qt_div_255(qt_pow_rgb_invgamma[sg] * a);
+        sb = qt_div_255(qt_pow_rgb_invgamma[sb] * a);
 
         int ia = 255 - a;
         dr = qt_div_255(dr * ia);
