@@ -1444,10 +1444,15 @@ void QDeclarativeViewer::setUseGL(bool useGL)
 #ifdef GL_SUPPORTED
     if (useGL) {
         QGLFormat format = QGLFormat::defaultFormat();
+#ifdef Q_WS_MAC
+        format.setSampleBuffers(true);
+#else
         format.setSampleBuffers(false);
+#endif
 
         QGLWidget *glWidget = new QGLWidget(format);
         glWidget->setAutoFillBackground(false);
+
         canvas->setViewport(glWidget);
     }
 #endif
@@ -1460,7 +1465,7 @@ void QDeclarativeViewer::setUseNativeFileBrowser(bool use)
 
 void QDeclarativeViewer::registerTypes()
 {
-    QML_REGISTER_TYPE(QDeclarativeViewer, 1, 0, Screen, Screen);
+    qmlRegisterType<Screen>("QDeclarativeViewer", 1, 0, "Screen");
 }
 
 QT_END_NAMESPACE

@@ -58,7 +58,7 @@ private slots:
     void engineMethod();
     void parentContext();
     void setContextProperty();
-    void addDefaultObject();
+    void setContextObject();
     void destruction();
     void idAsContextProperty();
 
@@ -224,24 +224,6 @@ private:
     int _c;
 };
 
-class TestObject2 : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int b READ b NOTIFY bChanged)
-
-public:
-    TestObject2() : _b(10) {}
-
-    int b() const { return _b; }
-    void setB(int b) { _b = b; emit bChanged(); }
-
-signals:
-    void bChanged();
-
-private:
-    int _b;
-};
-
 #define TEST_CONTEXT_PROPERTY(ctxt, name, value) \
 { \
     QDeclarativeComponent component(&engine); \
@@ -367,35 +349,31 @@ void tst_qdeclarativecontext::setContextProperty()
     }
 }
 
-void tst_qdeclarativecontext::addDefaultObject()
+void tst_qdeclarativecontext::setContextObject()
 {
     QDeclarativeContext ctxt(&engine);
 
     TestObject to;
-    TestObject2 to2;
 
     to.setA(2);
     to.setB(192);
     to.setC(18);
-    to2.setB(111999);
 
-    ctxt.addDefaultObject(&to2);
-    ctxt.addDefaultObject(&to);
+    ctxt.setContextObject(&to);
     ctxt.setContextProperty("c", QVariant(9));
 
     // Static context properties
     TEST_CONTEXT_PROPERTY(&ctxt, a, QVariant(2));
-    TEST_CONTEXT_PROPERTY(&ctxt, b, QVariant(111999));
+    TEST_CONTEXT_PROPERTY(&ctxt, b, QVariant(192));
     TEST_CONTEXT_PROPERTY(&ctxt, c, QVariant(9));
 
     to.setA(12);
     to.setB(100);
     to.setC(7);
-    to2.setB(1612);
     ctxt.setContextProperty("c", QVariant(3));
 
     TEST_CONTEXT_PROPERTY(&ctxt, a, QVariant(12));
-    TEST_CONTEXT_PROPERTY(&ctxt, b, QVariant(1612));
+    TEST_CONTEXT_PROPERTY(&ctxt, b, QVariant(100));
     TEST_CONTEXT_PROPERTY(&ctxt, c, QVariant(3));
 
     // Changes in context properties

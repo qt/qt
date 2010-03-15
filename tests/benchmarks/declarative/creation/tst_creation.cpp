@@ -47,6 +47,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsItem>
 #include <QDeclarativeItem>
+#include <QDeclarativeContext>
 #include <private/qobject_p.h>
 
 #ifdef Q_OS_SYMBIAN
@@ -66,6 +67,8 @@ private slots:
     void qobject_qml();
     void qobject_qmltype();
     void qobject_alloc();
+
+    void qdeclarativecontext();
 
     void objects_qmltype_data();
     void objects_qmltype();
@@ -101,7 +104,8 @@ void tst_creation::qobject_cpp()
 
 void tst_creation::qobject_qml()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("qobject.qml"));
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt 4.6\nQtObject {}", QUrl());
     QObject *obj = component.create();
     delete obj;
 
@@ -147,6 +151,14 @@ void tst_creation::qobject_alloc()
     QBENCHMARK {
         QObjectFake *obj = new QObjectFake;
         delete obj;
+    }
+}
+
+void tst_creation::qdeclarativecontext()
+{
+    QBENCHMARK {
+        QDeclarativeContext *ctxt = new QDeclarativeContext(&engine);
+        delete ctxt;
     }
 }
 

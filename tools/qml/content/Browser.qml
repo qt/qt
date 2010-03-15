@@ -137,12 +137,12 @@ Rectangle {
             Transition {
                 to: "current"
                 SequentialAnimation {
-                    NumberAnimation { matchProperties: "x"; duration: 250 }
+                    NumberAnimation { properties: "x"; duration: 250 }
                 }
             },
             Transition {
-                NumberAnimation { matchProperties: "x"; duration: 250 }
-                NumberAnimation { matchProperties: "x"; duration: 250 }
+                NumberAnimation { properties: "x"; duration: 250 }
+                NumberAnimation { properties: "x"; duration: 250 }
             }
         ]
         Keys.onPressed: { root.keyPressed = true; }
@@ -177,11 +177,11 @@ Rectangle {
             Transition {
                 to: "current"
                 SequentialAnimation {
-                    NumberAnimation { matchProperties: "x"; duration: 250 }
+                    NumberAnimation { properties: "x"; duration: 250 }
                 }
             },
             Transition {
-                NumberAnimation { matchProperties: "x"; duration: 250 }
+                NumberAnimation { properties: "x"; duration: 250 }
             }
         ]
         Keys.onPressed: { root.keyPressed = true; }

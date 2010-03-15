@@ -54,6 +54,7 @@ QT_MODULE(Declarative)
 class Q_DECLARATIVE_EXPORT QDeclarativeFocusScope : public QDeclarativeItem
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeItem)
 public:
     QDeclarativeFocusScope(QDeclarativeItem *parent=0);
     virtual ~QDeclarativeFocusScope();

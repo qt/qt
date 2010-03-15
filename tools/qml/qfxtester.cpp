@@ -372,10 +372,10 @@ void QDeclarativeTester::updateCurrentTime(int msec)
 
 void QDeclarativeTester::registerTypes()
 {
-    QML_REGISTER_TYPE(Qt.VisualTest, 4,6, VisualTest, QDeclarativeVisualTest);
-    QML_REGISTER_TYPE(Qt.VisualTest, 4,6, Frame, QDeclarativeVisualTestFrame);
-    QML_REGISTER_TYPE(Qt.VisualTest, 4,6, Mouse, QDeclarativeVisualTestMouse);
-    QML_REGISTER_TYPE(Qt.VisualTest, 4,6, Key, QDeclarativeVisualTestKey);
+    qmlRegisterType<QDeclarativeVisualTest>("Qt.VisualTest", 4,6, "VisualTest");
+    qmlRegisterType<QDeclarativeVisualTestFrame>("Qt.VisualTest", 4,6, "Frame");
+    qmlRegisterType<QDeclarativeVisualTestMouse>("Qt.VisualTest", 4,6, "Mouse");
+    qmlRegisterType<QDeclarativeVisualTestKey>("Qt.VisualTest", 4,6, "Key");
 }
 
 QT_END_NAMESPACE

@@ -101,7 +101,6 @@ public:
     bool dragY : 1;
     bool dragged : 1;
     QDeclarativeDrag *drag;
-    QPointF start;
     QPointF startScene;
     qreal startX;
     qreal startY;

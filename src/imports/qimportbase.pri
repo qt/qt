@@ -22,7 +22,7 @@ QMAKE_EXTRA_COMPILERS += copy2build
 TARGET = $$qtLibraryTarget($$TARGET)
 contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 
-include(../../qt_targets.pri)
+include(../qt_targets.pri)
 
 wince*:LIBS += $$QMAKE_LIBS_GUI
 
