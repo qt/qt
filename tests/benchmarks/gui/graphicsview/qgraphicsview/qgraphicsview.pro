@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_qgraphicsview
+TARGET = tst_bench_qgraphicsview
 
 SOURCES += tst_qgraphicsview.cpp
 RESOURCES += qgraphicsview.qrc

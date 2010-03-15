@@ -2884,9 +2884,9 @@ For example:
     
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 144
     
-    This will add the specified statement to the end of the generated 
-    registration resource file. As an impact of this statement, the application
-    will not be visible in application shell.
+    This will add the specified statement to the end of the \c APP_REGISTRATION_INFO
+    resource struct in the generated registration resource file.
+    As an impact of this statement, the application will not be visible in application shell.
     
     It is also possible to add multiple rows in a single block. Each double
     quoted string will be placed on a new row in the registration resource file.
@@ -2899,16 +2899,36 @@ For example:
     platform application shell. In addition it will make the application to
     be launched in background.
 
-    For detailed list of possible RSS statements, please refer to the
-    Symbian platform help.    
+    For detailed list of possible \c APP_REGISTRATION_INFO statements, please refer to the
+    Symbian platform help.
 
     \note You should not use \c RSS_RULES variable to set the following RSS statements:
-    
-    app_file
-    localisable_resource_file
-    localisable_resource_id
+    \c app_file, \c localisable_resource_file, and \c localisable_resource_id.
 
-    These statements are internally handled by qmake.     
+    These statements are internally handled by qmake.
+
+    There is a number of special modifiers you can attach to \c RSS_RULES to specify where
+    in the application registration file the rule will be written:
+
+    \table
+    \header \o Modifier \o Location of the rule
+    \row \o <no modifier>        \o Inside \c APP_REGISTRATION_INFO resource struct.
+    \row \o .header              \o Before \c APP_REGISTRATION_INFO resource struct.
+    \row \o .footer              \o After \c APP_REGISTRATION_INFO resource struct.
+    \row \o .service_list        \o Inside a \c SERVICE_INFO item in the \c service_list
+                                 of \c APP_REGISTRATION_INFO
+    \row \o .file_ownership_list \o Inside a \c FILE_OWNERSHIP_INFO item in the
+                                 \c file_ownership_list of \c APP_REGISTRATION_INFO
+    \row \o .datatype_list       \o Inside a \c DATATYPE item in the \c datatype_list of
+                                 \c APP_REGISTRATION_INFO
+    \endtable
+
+    For example:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 151
+
+    This example will define service information for a fictional service that requires
+    an icon to be supplied via the \c opaque_data of the service information.
 
     \target S60_VERSION
     \section1 S60_VERSION

@@ -17,3 +17,8 @@ target.path = $$[QT_INSTALL_EXAMPLES]/animation/stickman
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS stickman.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/animation/stickman
 INSTALLS += target sources
+
+symbian {
+    TARGET.UID3 = 0xA000E3F9
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+}

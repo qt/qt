@@ -639,7 +639,7 @@ void qt_qhostinfo_clear_cache()
     }
 }
 
-void Q_NETWORK_EXPORT qt_qhostinfo_enable_cache(bool e)
+void Q_AUTOTEST_EXPORT qt_qhostinfo_enable_cache(bool e)
 {
     QHostInfoLookupManager* manager = theHostInfoLookupManager();
     if (manager) {

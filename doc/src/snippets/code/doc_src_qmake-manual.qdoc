@@ -996,3 +996,8 @@ symbian {
     emulator_dll.condition = WINSCW
 }
 //! [150]
+
+//! [151]
+RSS_RULES.service_list += "uid = 0x12345678; datatype_list = \{\}; opaque_data = r_my_icon;"
+RSS_RULES.footer +="RESOURCE CAPTION_AND_ICON_INFO r_my_icon \{ icon_file =\"$$PWD/my_icon.svg\"; \}"
+//! [151]

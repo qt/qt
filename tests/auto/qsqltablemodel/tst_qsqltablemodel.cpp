@@ -44,6 +44,10 @@
 #include "../qsqldatabase/tst_databases.h"
 #include <QtSql>
 
+const QString test(qTableName("test", __FILE__)),
+                   test2(qTableName("test2", __FILE__)),
+                   test3(qTableName("test3", __FILE__));
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -147,20 +151,20 @@ void tst_QSqlTableModel::dropTestTables()
             QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
         QStringList tableNames;
-        tableNames << qTableName("test")
-                   << qTableName("test2")
-                   << qTableName("test3")
-                   << qTableName("test4")
-                   << qTableName("emptytable")
-                   << qTableName("bigtable")
-                   << qTableName("foo");
+        tableNames << test
+                   << test2
+                   << test3
+                   << qTableName("test4", __FILE__)
+                   << qTableName("emptytable", __FILE__)
+                   << qTableName("bigtable", __FILE__)
+                   << qTableName("foo", __FILE__);
         if (testWhiteSpaceNames(db.driverName()))
             tableNames << qTableName("qtestw hitespace", db.driver());
 
         tst_Databases::safeDropTables(db, tableNames);
 
         if (db.driverName().startsWith("QPSQL")) {
-            q.exec("DROP SCHEMA " + qTableName("testschema") + " CASCADE");
+            q.exec("DROP SCHEMA " + qTableName("testschema", __FILE__) + " CASCADE");
         }
     }
 }
@@ -171,15 +175,15 @@ void tst_QSqlTableModel::createTestTables()
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
 
-        QVERIFY_SQL( q, exec("create table " + qTableName("test") + "(id int, name varchar(20), title int)"));
+        QVERIFY_SQL( q, exec("create table " + test + "(id int, name varchar(20), title int)"));
 
-        QVERIFY_SQL( q, exec("create table " + qTableName("test2") + "(id int, title varchar(20))"));
+        QVERIFY_SQL( q, exec("create table " + test2 + "(id int, title varchar(20))"));
 
-        QVERIFY_SQL( q, exec("create table " + qTableName("test3") + "(id int, random varchar(20), randomtwo varchar(20))"));
+        QVERIFY_SQL( q, exec("create table " + test3 + "(id int, random varchar(20), randomtwo varchar(20))"));
 
-        QVERIFY_SQL( q, exec("create table " + qTableName("test4") + "(column1 varchar(50), column2 varchar(50), column3 varchar(50))"));
+        QVERIFY_SQL( q, exec("create table " + qTableName("test4", __FILE__) + "(column1 varchar(50), column2 varchar(50), column3 varchar(50))"));
 
-        QVERIFY_SQL( q, exec("create table " + qTableName("emptytable") + "(id int)"));
+        QVERIFY_SQL( q, exec("create table " + qTableName("emptytable", __FILE__) + "(id int)"));
 
         if (testWhiteSpaceNames(db.driverName())) {
             QString qry = "create table " + qTableName("qtestw hitespace", db.driver()) + " ("+ db.driver()->escapeIdentifier("a field", QSqlDriver::FieldName) + " int)";
@@ -194,18 +198,18 @@ void tst_QSqlTableModel::repopulateTestTables()
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
 
-        q.exec("delete from " + qTableName("test"));
-        QVERIFY_SQL( q, exec("insert into " + qTableName("test") + " values(1, 'harry', 1)"));
-        QVERIFY_SQL( q, exec("insert into " + qTableName("test") + " values(2, 'trond', 2)"));
-        QVERIFY_SQL( q, exec("insert into " + qTableName("test") + " values(3, 'vohi', 3)"));
+        q.exec("delete from " + test);
+        QVERIFY_SQL( q, exec("insert into " + test + " values(1, 'harry', 1)"));
+        QVERIFY_SQL( q, exec("insert into " + test + " values(2, 'trond', 2)"));
+        QVERIFY_SQL( q, exec("insert into " + test + " values(3, 'vohi', 3)"));
 
-        q.exec("delete from " + qTableName("test2"));
-        QVERIFY_SQL( q, exec("insert into " + qTableName("test2") + " values(1, 'herr')"));
-        QVERIFY_SQL( q, exec("insert into " + qTableName("test2") + " values(2, 'mister')"));
+        q.exec("delete from " + test2);
+        QVERIFY_SQL( q, exec("insert into " + test2 + " values(1, 'herr')"));
+        QVERIFY_SQL( q, exec("insert into " + test2 + " values(2, 'mister')"));
 
-        q.exec("delete from " + qTableName("test3"));
-        QVERIFY_SQL( q, exec("insert into " + qTableName("test3") + " values(1, 'foo', 'bar')"));
-        QVERIFY_SQL( q, exec("insert into " + qTableName("test3") + " values(2, 'baz', 'joe')"));
+        q.exec("delete from " + test3);
+        QVERIFY_SQL( q, exec("insert into " + test3 + " values(1, 'foo', 'bar')"));
+        QVERIFY_SQL( q, exec("insert into " + test3 + " values(2, 'baz', 'joe')"));
     }
 }
 
@@ -253,7 +257,7 @@ void tst_QSqlTableModel::select()
     CHECK_DATABASE(db);
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setSort(0, Qt::AscendingOrder);
     QVERIFY_SQL(model, select());
 
@@ -294,7 +298,7 @@ void tst_QSqlTableModel::setRecord()
 
         QSqlTableModel model(0, db);
         model.setEditStrategy((QSqlTableModel::EditStrategy)submitpolicy);
-        model.setTable(qTableName("test3"));
+        model.setTable(test3);
         model.setSort(0, Qt::AscendingOrder);
         QVERIFY_SQL(model, select());
 
@@ -336,7 +340,7 @@ void tst_QSqlTableModel::insertRow()
 
     QSqlTableModel model(0, db);
     model.setEditStrategy(QSqlTableModel::OnRowChange);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setSort(0, Qt::AscendingOrder);
     QVERIFY_SQL(model, select());
 
@@ -361,7 +365,7 @@ void tst_QSqlTableModel::insertRecord()
 
     QSqlTableModel model(0, db);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setSort(0, Qt::AscendingOrder);
     QVERIFY_SQL(model, select());
 
@@ -394,7 +398,7 @@ void tst_QSqlTableModel::insertMultiRecords()
 
     QSqlTableModel model(0, db);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setSort(0, Qt::AscendingOrder);
     QVERIFY_SQL(model, select());
 
@@ -421,7 +425,7 @@ void tst_QSqlTableModel::insertMultiRecords()
 
     QVERIFY(model.submitAll());
     model.clear();
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setSort(0, Qt::AscendingOrder);
     QVERIFY_SQL(model, select());
 
@@ -442,7 +446,7 @@ void tst_QSqlTableModel::submitAll()
     CHECK_DATABASE(db);
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setSort(0, Qt::AscendingOrder);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     QVERIFY_SQL(model, select());
@@ -477,7 +481,7 @@ void tst_QSqlTableModel::removeRow()
     CHECK_DATABASE(db);
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setSort(0, Qt::AscendingOrder);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     QVERIFY_SQL(model, select());
@@ -502,7 +506,7 @@ void tst_QSqlTableModel::removeRow()
 
     recreateTestTables();
 
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setEditStrategy(QSqlTableModel::OnRowChange);
     QVERIFY_SQL(model, select());
     QCOMPARE(model.rowCount(), 3);
@@ -523,7 +527,7 @@ void tst_QSqlTableModel::removeRows()
     CHECK_DATABASE(db);
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setSort(0, Qt::AscendingOrder);
     model.setEditStrategy(QSqlTableModel::OnFieldChange);
     QVERIFY_SQL(model, select());
@@ -539,7 +543,7 @@ void tst_QSqlTableModel::removeRows()
     model.clear();
 
     recreateTestTables();
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     QVERIFY_SQL(model, select());
     QCOMPARE(model.rowCount(), 3);
@@ -574,7 +578,7 @@ void tst_QSqlTableModel::removeInsertedRow()
     for (int i = 0; i <= 1; ++i) {
 
         QSqlTableModel model(0, db);
-        model.setTable(qTableName("test"));
+        model.setTable(test);
         model.setSort(0, Qt::AscendingOrder);
 
         model.setEditStrategy(i == 0
@@ -607,7 +611,7 @@ void tst_QSqlTableModel::emptyTable()
     QCOMPARE(model.rowCount(), 0);
     QCOMPARE(model.columnCount(), 0);
 
-    model.setTable(qTableName("emptytable"));
+    model.setTable(qTableName("emptytable", __FILE__));
     QCOMPARE(model.rowCount(), 0);
     QCOMPARE(model.columnCount(), 1);
 
@@ -623,9 +627,9 @@ void tst_QSqlTableModel::tablesAndSchemas()
     CHECK_DATABASE(db);
 
     QSqlQuery q(db);
-    q.exec("DROP SCHEMA " + qTableName("testschema") + " CASCADE");
-    QVERIFY_SQL( q, exec("create schema " + qTableName("testschema")));
-    QString tableName = qTableName("testschema") + '.' + qTableName("testtable");
+    q.exec("DROP SCHEMA " + qTableName("testschema", __FILE__) + " CASCADE");
+    QVERIFY_SQL( q, exec("create schema " + qTableName("testschema", __FILE__)));
+    QString tableName = qTableName("testschema", __FILE__) + '.' + qTableName("testtable", __FILE__);
     QVERIFY_SQL( q, exec("create table " + tableName + "(id int)"));
     QVERIFY_SQL( q, exec("insert into " + tableName + " values(1)"));
     QVERIFY_SQL( q, exec("insert into " + tableName + " values(2)"));
@@ -664,10 +668,10 @@ void tst_QSqlTableModel::primaryKeyOrder()
     if(tst_Databases::isPostgreSQL(db))
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
-    QVERIFY_SQL( q, exec("create table "+qTableName("foo")+"(a varchar(20), id int not null primary key, b varchar(20))"));
+    QVERIFY_SQL( q, exec("create table "+qTableName("foo", __FILE__)+"(a varchar(20), id int not null primary key, b varchar(20))"));
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("foo"));
+    model.setTable(qTableName("foo", __FILE__));
 
     QSqlIndex pk = model.primaryKey();
     QCOMPARE(pk.count(), 1);
@@ -693,7 +697,7 @@ void tst_QSqlTableModel::setInvalidFilter()
 
     // set an invalid filter, make sure it fails
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setFilter("blahfahsel");
 
     QCOMPARE(model.filter(), QString("blahfahsel"));
@@ -711,7 +715,7 @@ void tst_QSqlTableModel::setFilter()
     CHECK_DATABASE(db);
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setFilter("id = 1");
     QCOMPARE(model.filter(), QString("id = 1"));
     QVERIFY_SQL(model, select());
@@ -762,12 +766,13 @@ void tst_QSqlTableModel::sqlite_bigTable()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const QString bigtable(qTableName("bigtable", __FILE__));
 
     bool hasTransactions = db.driver()->hasFeature(QSqlDriver::Transactions);
     if (hasTransactions) QVERIFY(db.transaction());
     QSqlQuery q(db);
-    QVERIFY_SQL( q, exec("create table "+qTableName("bigtable")+"(id int primary key, name varchar)"));
-    QVERIFY_SQL( q, prepare("insert into "+qTableName("bigtable")+"(id, name) values (?, ?)"));
+    QVERIFY_SQL( q, exec("create table "+bigtable+"(id int primary key, name varchar)"));
+    QVERIFY_SQL( q, prepare("insert into "+bigtable+"(id, name) values (?, ?)"));
     QTime startTime;
     startTime.start();
     for (int i = 0; i < 10000; ++i) {
@@ -781,7 +786,7 @@ void tst_QSqlTableModel::sqlite_bigTable()
     if (hasTransactions) QVERIFY(db.commit());
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("bigtable"));
+    model.setTable(bigtable);
     QVERIFY_SQL(model, select());
 
     QSqlRecord rec = model.record();
@@ -801,7 +806,7 @@ void tst_QSqlTableModel::insertRecordBeforeSelect()
     CHECK_DATABASE(db);
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     QCOMPARE(model.lastError().type(), QSqlError::NoError);
 
     QSqlRecord buffer = model.record();
@@ -820,7 +825,7 @@ void tst_QSqlTableModel::insertRecordBeforeSelect()
     QCOMPARE(model.rowCount(), 0);
 
     QSqlTableModel model2(0, db);
-    model2.setTable(qTableName("test"));
+    model2.setTable(test);
     QVERIFY_SQL(model2, select());
     QCOMPARE(model2.rowCount(), rowCount);
 }
@@ -838,7 +843,7 @@ void tst_QSqlTableModel::submitAllOnInvalidTable()
 
     // setTable returns a void, so the error can only be caught by
     // manually checking lastError(). ### Qt5: This should be changed!
-    model.setTable(qTableName("invalidTable"));
+    model.setTable(qTableName("invalidTable", __FILE__));
     QCOMPARE(model.lastError().type(), QSqlError::StatementError);
 
     // This will give us an empty record which is expected behavior
@@ -866,7 +871,7 @@ void tst_QSqlTableModel::insertRecordsInLoop()
     CHECK_DATABASE(db);
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     model.select();
 
@@ -952,7 +957,7 @@ void tst_QSqlTableModel::tableModifyWithBlank()
     CHECK_DATABASE(db);
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("test4"));
+    model.setTable(qTableName("test4", __FILE__));
     model.select();
 
     //generate a time stamp for the test. Add one second to the current time to make sure
@@ -1008,7 +1013,7 @@ void tst_QSqlTableModel::removeColumnAndRow()
     CHECK_DATABASE(db);
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     QVERIFY_SQL(model, select());
     QCOMPARE(model.rowCount(), 3);
@@ -1023,7 +1028,7 @@ void tst_QSqlTableModel::removeColumnAndRow()
     // check with another table because the model has been modified
     // but not the sql table
     QSqlTableModel model2(0, db);
-    model2.setTable(qTableName("test"));
+    model2.setTable(test);
     QVERIFY_SQL(model2, select());
     QCOMPARE(model2.rowCount(), 2);
     QCOMPARE(model2.columnCount(), 3);
@@ -1036,11 +1041,11 @@ void tst_QSqlTableModel::insertBeforeDelete()
     CHECK_DATABASE(db);
 
     QSqlQuery q(db);
-    QVERIFY_SQL( q, exec("insert into " + qTableName("test") + " values(9, 'andrew', 9)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("test") + " values(10, 'justin', 10)"));
+    QVERIFY_SQL( q, exec("insert into " + test + " values(9, 'andrew', 9)"));
+    QVERIFY_SQL( q, exec("insert into " + test + " values(10, 'justin', 10)"));
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("test"));
+    model.setTable(test);
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     QVERIFY_SQL(model, select());
 

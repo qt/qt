@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_qbytearray
+TARGET = tst_bench_qbytearray
 DEPENDPATH += .
 INCLUDEPATH += .
 
