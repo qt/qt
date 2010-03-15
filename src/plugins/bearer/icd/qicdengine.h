@@ -86,7 +86,7 @@ public:
 
     bool hasIdentifier(const QString &id);
 
-    void requestUpdate();
+    Q_INVOKABLE void requestUpdate();
 
     QNetworkConfigurationManager::Capabilities capabilities() const;
 

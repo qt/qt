@@ -736,6 +736,46 @@ static bool _q_isMacHidden(const QString &path)
 }
 #endif
 
+QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFileEngine::FileFlags type) const
+{
+    QAbstractFileEngine::FileFlags ret = 0;
+
+    if (st.st_mode & S_IRUSR)
+        ret |= QAbstractFileEngine::ReadOwnerPerm;
+    if (st.st_mode & S_IWUSR)
+        ret |= QAbstractFileEngine::WriteOwnerPerm;
+    if (st.st_mode & S_IXUSR)
+        ret |= QAbstractFileEngine::ExeOwnerPerm;
+    if (st.st_mode & S_IRGRP)
+        ret |= QAbstractFileEngine::ReadGroupPerm;
+    if (st.st_mode & S_IWGRP)
+        ret |= QAbstractFileEngine::WriteGroupPerm;
+    if (st.st_mode & S_IXGRP)
+        ret |= QAbstractFileEngine::ExeGroupPerm;
+    if (st.st_mode & S_IROTH)
+        ret |= QAbstractFileEngine::ReadOtherPerm;
+    if (st.st_mode & S_IWOTH)
+        ret |= QAbstractFileEngine::WriteOtherPerm;
+    if (st.st_mode & S_IXOTH)
+        ret |= QAbstractFileEngine::ExeOtherPerm;
+
+    // calculate user permissions
+    if (type & QAbstractFileEngine::ReadUserPerm) {
+        if (QT_ACCESS(nativeFilePath.constData(), R_OK) == 0)
+            ret |= QAbstractFileEngine::ReadUserPerm;
+    }
+    if (type & QAbstractFileEngine::WriteUserPerm) {
+        if (QT_ACCESS(nativeFilePath.constData(), W_OK) == 0)
+            ret |= QAbstractFileEngine::WriteUserPerm;
+    }
+    if (type & QAbstractFileEngine::ExeUserPerm) {
+        if (QT_ACCESS(nativeFilePath.constData(), X_OK) == 0)
+            ret |= QAbstractFileEngine::ExeUserPerm;
+    }
+
+    return ret;
+}
+
 /*!
     \reimp
 */
@@ -755,32 +795,8 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
     if (!exists && !d->isSymlink())
         return ret;
 
-    if (exists && (type & PermsMask)) {
-        if (d->st.st_mode & S_IRUSR)
-            ret |= ReadOwnerPerm;
-        if (d->st.st_mode & S_IWUSR)
-            ret |= WriteOwnerPerm;
-        if (d->st.st_mode & S_IXUSR)
-            ret |= ExeOwnerPerm;
-        if (d->st.st_mode & S_IRUSR)
-            ret |= ReadUserPerm;
-        if (d->st.st_mode & S_IWUSR)
-            ret |= WriteUserPerm;
-        if (d->st.st_mode & S_IXUSR)
-            ret |= ExeUserPerm;
-        if (d->st.st_mode & S_IRGRP)
-            ret |= ReadGroupPerm;
-        if (d->st.st_mode & S_IWGRP)
-            ret |= WriteGroupPerm;
-        if (d->st.st_mode & S_IXGRP)
-            ret |= ExeGroupPerm;
-        if (d->st.st_mode & S_IROTH)
-            ret |= ReadOtherPerm;
-        if (d->st.st_mode & S_IWOTH)
-            ret |= WriteOtherPerm;
-        if (d->st.st_mode & S_IXOTH)
-            ret |= ExeOtherPerm;
-    }
+    if (exists && (type & PermsMask))
+        ret |= d->getPermissions(type);
     if (type & TypesMask) {
 #if !defined(QWS) && defined(Q_OS_MAC)
         bool foundAlias = false;

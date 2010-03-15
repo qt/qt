@@ -98,25 +98,6 @@ struct Q_CORE_EXPORT QListData {
     inline void **end() const { return d->array + d->end; }
 };
 
-//////////////////////////////////////////////////////////////////////////////////
-//
-// QtPodForSize and QtPodForType are internal and may change or go away any time.
-// We mean it.
-//
-//////////////////////////////////////////////////////////////////////////////////
-template <int N> struct QtPodForSize {
-    // This base type is rather obviously broken and cannot be made
-    // working due to alignment constraints.
-    // This doesn't matter as far as QList is concerned, as we are
-    // using this type only for QTypeInfo<T>::isLarge == false.
-    typedef struct { } Type;
-};
-template <> struct QtPodForSize<1> { typedef quint8  Type; };
-template <> struct QtPodForSize<2> { typedef quint16 Type; };
-template <> struct QtPodForSize<4> { typedef quint32 Type; };
-template <> struct QtPodForSize<8> { typedef quint64 Type; };
-template <class T> struct QtPodForType : QtPodForSize<sizeof(T)> { };
-
 template <typename T>
 class QList
 {
@@ -377,7 +358,15 @@ Q_INLINE_TEMPLATE void QList<T>::node_construct(Node *n, const T &t)
 {
     if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) n->v = new T(t);
     else if (QTypeInfo<T>::isComplex) new (n) T(t);
+#if (defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__IBMCPP__)) && !defined(__OPTIMIZE__)
+    // This violates pointer aliasing rules, but it is known to be safe (and silent)
+    // in unoptimized GCC builds (-fno-strict-aliasing). The other compilers which
+    // set the same define are assumed to be safe.
     else *reinterpret_cast<T*>(n) = t;
+#else
+    // This is always safe, but penaltizes unoptimized builds a lot.
+    else ::memcpy(n, &t, sizeof(T));
+#endif
 }
 
 template <typename T>
@@ -521,16 +510,15 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::append(const T &t)
                 QT_RETHROW;
             }
         } else {
-            typedef typename QtPodForType<T>::Type PodNode;
-            PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
-            Node *n = reinterpret_cast<Node *>(p.append());
+            Node *n, copy;
+            node_construct(&copy, t); // t might be a reference to an object in the array
             QT_TRY {
-                void *ptr = &cpy;
-                node_construct(n, *reinterpret_cast<T *>(ptr));
+                n = reinterpret_cast<Node *>(p.append());;
             } QT_CATCH(...) {
-                --d->end;
+                node_destruct(&copy);
                 QT_RETHROW;
             }
+            *n = copy;
         }
     }
 }
@@ -556,16 +544,15 @@ inline void QList<T>::prepend(const T &t)
                 QT_RETHROW;
             }
         } else {
-            typedef typename QtPodForType<T>::Type PodNode;
-            PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
-            Node *n = reinterpret_cast<Node *>(p.prepend());
+            Node *n, copy;
+            node_construct(&copy, t); // t might be a reference to an object in the array
             QT_TRY {
-                void *ptr = &cpy;
-                node_construct(n, *reinterpret_cast<T *>(ptr));
+                n = reinterpret_cast<Node *>(p.prepend());;
             } QT_CATCH(...) {
-                ++d->begin;
+                node_destruct(&copy);
                 QT_RETHROW;
             }
+            *n = copy;
         }
     }
 }
@@ -591,16 +578,15 @@ inline void QList<T>::insert(int i, const T &t)
                 QT_RETHROW;
             }
         } else {
-            typedef typename QtPodForType<T>::Type PodNode;
-            PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
-            Node *n = reinterpret_cast<Node *>(p.insert(i));
+            Node *n, copy;
+            node_construct(&copy, t); // t might be a reference to an object in the array
             QT_TRY {
-                void *ptr = &cpy;
-                node_construct(n, *reinterpret_cast<T *>(ptr));
+                n = reinterpret_cast<Node *>(p.insert(i));;
             } QT_CATCH(...) {
-                p.remove(i);
+                node_destruct(&copy);
                 QT_RETHROW;
             }
+            *n = copy;
         }
     }
 }
@@ -636,12 +622,10 @@ inline void QList<T>::move(int from, int to)
 template<typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> QList<T>::mid(int pos, int alength) const
 {
-    if (alength < 0)
+    if (alength < 0 || pos + alength > size())
         alength = size() - pos;
     if (pos == 0 && alength == size())
         return *this;
-    if (pos + alength > size())
-        alength = size() - pos;
     QList<T> cpy;
     cpy.reserve(alength);
     cpy.d->end = alength;

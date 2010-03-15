@@ -207,16 +207,33 @@ InnerNode::~InnerNode()
 }
 
 /*!
+  Find the node in this node's children that has the
+  given \a name. If this node is a QML class node, be
+  sure to also look in the children of its property
+  group nodes. Return the matching node or 0.
  */
 Node *InnerNode::findNode(const QString& name)
 {
     Node *node = childMap.value(name);
     if (node)
         return node;
+    if ((type() == Fake) && (subType() == QmlClass)) {
+        for (int i=0; i<children.size(); ++i) {
+            Node* n = children.at(i);
+            if (n->subType() == QmlPropertyGroup) {
+                node = static_cast<InnerNode*>(n)->findNode(name);
+                if (node)
+                    return node;
+            }
+        }
+    }
     return primaryFunctionMap.value(name);
 }
 
 /*!
+  Same as the other findNode(), but if the node with the
+  specified \a name is not of the specified \a type, return
+  0.
  */
 Node *InnerNode::findNode(const QString& name, Type type)
 {
@@ -1280,7 +1297,9 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
  */
 QmlClassNode::~QmlClassNode()
 {
+#ifdef DEBUG_MULTIPLE QDOCCONF_FILES
     qDebug() << "Deleting QmlClassNode:" << name();
+#endif    
 }
 
 /*!
@@ -1315,7 +1334,9 @@ QString QmlClassNode::fileBase() const
 void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
 {
     inheritedBy.insert(base,sub);
+#ifdef DEBUG_MULTIPLE QDOCCONF_FILES
     qDebug() << "QmlClassNode::addInheritedBy(): insert" << base << sub->name() << inheritedBy.size();
+#endif    
 }
 
 /*!
@@ -1326,8 +1347,10 @@ void QmlClassNode::subclasses(const QString& base, NodeList& subs)
     subs.clear();
     if (inheritedBy.count(base) > 0) {
         subs = inheritedBy.values(base);
+#ifdef DEBUG_MULTIPLE QDOCCONF_FILES
         qDebug() << "QmlClassNode::subclasses():" <<  inheritedBy.count(base) << base
                  << "subs:" << subs.size() << "total size:" << inheritedBy.size();
+#endif        
     }
 }
 

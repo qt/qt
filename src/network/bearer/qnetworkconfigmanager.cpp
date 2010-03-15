@@ -212,114 +212,7 @@ QNetworkConfigurationManager::~QNetworkConfigurationManager()
 */
 QNetworkConfiguration QNetworkConfigurationManager::defaultConfiguration() const
 {
-    QNetworkConfigurationManagerPrivate *conPriv = connManager();
-
-    foreach (QBearerEngine *engine, conPriv->engines()) {
-        QNetworkConfigurationPrivatePointer ptr = engine->defaultConfiguration();
-
-        if (ptr) {
-            QNetworkConfiguration config;
-            config.d = ptr;
-            return config;
-        }
-    }
-
-    // Engines don't have a default configuration.
-
-    // Return first active snap
-    QNetworkConfigurationPrivatePointer defaultConfiguration;
-
-    foreach (QBearerEngine *engine, conPriv->engines()) {
-        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
-        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
-
-        QMutexLocker locker(&engine->mutex);
-
-        for (it = engine->snapConfigurations.begin(), end = engine->snapConfigurations.end();
-             it != end; ++it) {
-            if ((it.value()->state & QNetworkConfiguration::Active) ==
-                QNetworkConfiguration::Active) {
-                QNetworkConfiguration config;
-                config.d = it.value();
-                return config;
-            } else if (!defaultConfiguration) {
-                if ((it.value()->state & QNetworkConfiguration::Discovered) ==
-                    QNetworkConfiguration::Discovered) {
-                    defaultConfiguration = it.value();
-                }
-            }
-        }
-    }
-
-    // No Active SNAPs return first Discovered SNAP.
-    if (defaultConfiguration) {
-        QNetworkConfiguration config;
-        config.d = defaultConfiguration;
-        return config;
-    }
-
-    /*
-        No Active or Discovered SNAPs, find the perferred access point.
-        The following priority order is used:
-
-            1. Active Ethernet
-            2. Active WLAN
-            3. Active Other
-            4. Discovered Ethernet
-            5. Discovered WLAN
-            6. Discovered Other
-    */
-
-    defaultConfiguration.reset();
-
-    foreach (QBearerEngine *engine, conPriv->engines()) {
-        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
-        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
-
-        QMutexLocker locker(&engine->mutex);
-
-        for (it = engine->accessPointConfigurations.begin(),
-             end = engine->accessPointConfigurations.end(); it != end; ++it) {
-
-            if ((it.value()->state & QNetworkConfiguration::Discovered) ==
-                QNetworkConfiguration::Discovered) {
-                if (!defaultConfiguration) {
-                    defaultConfiguration = it.value();
-                } else {
-                    if (defaultConfiguration->state == it.value()->state) {
-                        if (defaultConfiguration->bearerName() == QLatin1String("Ethernet")) {
-                            // do nothing
-                        } else if (defaultConfiguration->bearerName() == QLatin1String("WLAN")) {
-                            // ethernet beats wlan
-                            if (it.value()->bearerName() == QLatin1String("Ethernet"))
-                                defaultConfiguration = it.value();
-                        } else {
-                            // ethernet and wlan beats other
-                            if (it.value()->bearerName() == QLatin1String("Ethernet") ||
-                                it.value()->bearerName() == QLatin1String("WLAN")) {
-                                defaultConfiguration = it.value();
-                            }
-                        }
-                    } else {
-                        // active beats discovered
-                        if ((defaultConfiguration->state & QNetworkConfiguration::Active) !=
-                            QNetworkConfiguration::Active) {
-                            defaultConfiguration = it.value();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // No Active InternetAccessPoint return first Discovered InternetAccessPoint.
-    if (defaultConfiguration) {
-        QNetworkConfiguration config;
-        config.d = defaultConfiguration;
-        return config;
-    }
-
-    return QNetworkConfiguration();
+    return connManager()->defaultConfiguration();
 }
 
 /*!
@@ -349,37 +242,7 @@ QNetworkConfiguration QNetworkConfigurationManager::defaultConfiguration() const
 */
 QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNetworkConfiguration::StateFlags filter) const
 {
-    QList<QNetworkConfiguration> result;
-    QNetworkConfigurationManagerPrivate* conPriv = connManager();
-
-    foreach (QBearerEngine *engine, conPriv->engines()) {
-        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
-        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
-
-        QMutexLocker locker(&engine->mutex);
-
-        //find all InternetAccessPoints
-        for (it = engine->accessPointConfigurations.begin(),
-             end = engine->accessPointConfigurations.end(); it != end; ++it) {
-            if ((it.value()->state & filter) == filter) {
-                QNetworkConfiguration pt;
-                pt.d = it.value();
-                result << pt;
-            }
-        }
-
-        //find all service networks
-        for (it = engine->snapConfigurations.begin(),
-             end = engine->snapConfigurations.end(); it != end; ++it) {
-            if ((it.value()->state & filter) == filter) {
-                QNetworkConfiguration pt;
-                pt.d = it.value();
-                result << pt;
-            }
-        }
-    }
-
-    return result;
+    return connManager()->allConfigurations(filter);
 }
 
 /*!
@@ -388,28 +251,9 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
 
     \sa QNetworkConfiguration::identifier()
 */
-QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(const QString& identifier) const
+QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(const QString &identifier) const
 {
-    QNetworkConfigurationManagerPrivate* conPriv = connManager();
-
-    QNetworkConfiguration item;
-
-    foreach (QBearerEngine *engine, conPriv->engines()) {
-        QMutexLocker locker(&engine->mutex);
-
-        if (engine->accessPointConfigurations.contains(identifier))
-            item.d = engine->accessPointConfigurations.value(identifier);
-        else if (engine->snapConfigurations.contains(identifier))
-            item.d = engine->snapConfigurations.value(identifier);
-        else if (engine->userChoiceConfigurations.contains(identifier))
-            item.d = engine->userChoiceConfigurations.value(identifier);
-        else
-            continue;
-
-        return item;
-    }
-
-    return item;
+    return connManager()->configurationFromIdentifier(identifier);
 }
 
 /*!
@@ -424,10 +268,7 @@ QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(
 */
 bool QNetworkConfigurationManager::isOnline() const
 {
-    QNetworkConfigurationManagerPrivate* conPriv = connManager();
-    Q_UNUSED(conPriv);
-    QList<QNetworkConfiguration> activeConfigs = allConfigurations(QNetworkConfiguration::Active);
-    return activeConfigs.count() > 0;
+    return connManager()->isOnline();
 }
 
 /*!

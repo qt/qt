@@ -40,6 +40,7 @@ namespace JSC {
     class ArgumentListNode;
     class BytecodeGenerator;
     class FunctionBodyNode;
+    class Label;
     class PropertyListNode;
     class ReadModifyResolveNode;
     class RegisterID;
@@ -151,6 +152,9 @@ namespace JSC {
         virtual bool isCommaNode() const { return false; }
         virtual bool isSimpleArray() const { return false; }
         virtual bool isAdd() const { return false; }
+        virtual bool hasConditionContextCodegen() const { return false; }
+
+        virtual void emitBytecodeInConditionContext(BytecodeGenerator&, Label*, Label*, bool) { ASSERT_NOT_REACHED(); }
 
         virtual ExpressionNode* stripUnaryPlus() { return this; }
 
@@ -165,10 +169,9 @@ namespace JSC {
         StatementNode(JSGlobalData*);
 
     public:
-        void setLoc(int firstLine, int lastLine, int column);
+        void setLoc(int firstLine, int lastLine);
         int firstLine() const { return lineNo(); }
         int lastLine() const { return m_lastLine; }
-        int column() const { return m_column; }
 
         virtual bool isEmptyStatement() const { return false; }
         virtual bool isReturnNode() const { return false; }
@@ -178,7 +181,6 @@ namespace JSC {
 
     private:
         int m_lastLine;
-        int m_column;
     };
 
     class NullNode : public ExpressionNode {
@@ -759,6 +761,7 @@ namespace JSC {
 
     protected:
         ExpressionNode* expr() { return m_expr; }
+        const ExpressionNode* expr() const { return m_expr; }
 
     private:
         virtual RegisterID* emitBytecode(BytecodeGenerator&, RegisterID* = 0);
@@ -790,6 +793,9 @@ namespace JSC {
     class LogicalNotNode : public UnaryOpNode {
     public:
         LogicalNotNode(JSGlobalData*, ExpressionNode*);
+    private:
+        void emitBytecodeInConditionContext(BytecodeGenerator&, Label* trueTarget, Label* falseTarget, bool fallThroughMeansTrue);
+        virtual bool hasConditionContextCodegen() const { return expr()->hasConditionContextCodegen(); }
     };
 
     class BinaryOpNode : public ExpressionNode {
@@ -954,6 +960,8 @@ namespace JSC {
 
     private:
         virtual RegisterID* emitBytecode(BytecodeGenerator&, RegisterID* = 0);
+        void emitBytecodeInConditionContext(BytecodeGenerator&, Label* trueTarget, Label* falseTarget, bool fallThroughMeansTrue);
+        virtual bool hasConditionContextCodegen() const { return true; }
 
         ExpressionNode* m_expr1;
         ExpressionNode* m_expr2;
@@ -1459,8 +1467,6 @@ namespace JSC {
     public:
         static FunctionBodyNode* create(JSGlobalData*);
         static PassRefPtr<FunctionBodyNode> create(JSGlobalData*, SourceElements*, VarStack*, FunctionStack*, const SourceCode&, CodeFeatures, int numConstants);
-
-        virtual ~FunctionBodyNode();
 
         FunctionParameters* parameters() const { return m_parameters.get(); }
         size_t parameterCount() const { return m_parameters->size(); }

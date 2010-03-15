@@ -279,6 +279,7 @@ public:
     inline void registerScriptString(QScriptStringPrivate *value);
     inline void unregisterScriptString(QScriptStringPrivate *value);
     void detachAllRegisteredScriptStrings();
+    QScriptString toStringHandle(const JSC::Identifier &name);
 
     static inline JSC::JSValue newArray(JSC::ExecState *, uint length);
     static inline JSC::JSValue newDate(JSC::ExecState *, qsreal value);
@@ -382,6 +383,23 @@ public:
 
 namespace QScript
 {
+
+class APIShim
+{
+public:
+    APIShim(QScriptEnginePrivate *engine)
+        : m_engine(engine), m_oldTable(JSC::setCurrentIdentifierTable(engine->globalData->identifierTable))
+    {
+    }
+    ~APIShim()
+    {
+        JSC::setCurrentIdentifierTable(m_oldTable);
+    }
+
+private:
+    QScriptEnginePrivate *m_engine;
+    JSC::IdentifierTable *m_oldTable;
+};
 
 /*Helper class. Main purpose is to give debugger feedback about unloading and loading scripts.
   It keeps pointer to JSGlobalObject assuming that it is always the same - there is no way to update
@@ -685,17 +703,17 @@ inline void QScriptEnginePrivate::setProperty(JSC::ExecState *exec, JSC::JSValue
     setProperty(exec, objectValue, JSC::Identifier(exec, name), value, flags);
 }
 
-inline JSC::JSValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolveMode) const
+inline JSC::JSValue QScriptValuePrivate::property(const JSC::Identifier &id, const QScriptValue::ResolveFlags &resolveMode) const
 {
     return QScriptEnginePrivate::property(engine->currentFrame, jscValue, id, resolveMode);
 }
 
-inline JSC::JSValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
+inline JSC::JSValue QScriptValuePrivate::property(quint32 index, const QScriptValue::ResolveFlags &resolveMode) const
 {
     return QScriptEnginePrivate::property(engine->currentFrame, jscValue, index, resolveMode);
 }
 
-inline JSC::JSValue QScriptValuePrivate::property(const JSC::UString &name, int resolveMode) const
+inline JSC::JSValue QScriptValuePrivate::property(const JSC::UString &name, const QScriptValue::ResolveFlags &resolveMode) const
 {
     JSC::ExecState *exec = engine->currentFrame;
     return QScriptEnginePrivate::property(exec, jscValue, JSC::Identifier(exec, name), resolveMode);
@@ -779,6 +797,7 @@ inline void QScriptEnginePrivate::unregisterScriptString(QScriptStringPrivate *v
         registeredScriptStrings = value->next;
     value->prev = 0;
     value->next = 0;
+    JSC::setCurrentIdentifierTable(globalData->identifierTable);
 }
 
 inline QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)

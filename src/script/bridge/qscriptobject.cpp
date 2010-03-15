@@ -81,30 +81,21 @@ void QScriptObject::put(JSC::ExecState* exec, const JSC::Identifier& propertyNam
 }
 
 bool QScriptObject::deleteProperty(JSC::ExecState* exec,
-                                   const JSC::Identifier& propertyName,
-                                   bool checkDontDelete)
+                                   const JSC::Identifier& propertyName)
 {
     if (!d || !d->delegate)
-        return JSC::JSObject::deleteProperty(exec, propertyName, checkDontDelete);
-    return d->delegate->deleteProperty(this, exec, propertyName, checkDontDelete);
-}
-
-bool QScriptObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
-                                          unsigned& attributes) const
-{
-    if (!d || !d->delegate)
-        return JSC::JSObject::getPropertyAttributes(exec, propertyName, attributes);
-    return d->delegate->getPropertyAttributes(this, exec, propertyName, attributes);
+        return JSC::JSObject::deleteProperty(exec, propertyName);
+    return d->delegate->deleteProperty(this, exec, propertyName);
 }
 
 void QScriptObject::getOwnPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames,
-                                        bool includeNonEnumerable)
+                                        JSC::EnumerationMode mode)
 {
     if (!d || !d->delegate) {
-        JSC::JSObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
+        JSC::JSObject::getOwnPropertyNames(exec, propertyNames, mode);
         return;
     }
-    d->delegate->getOwnPropertyNames(this, exec, propertyNames, includeNonEnumerable);
+    d->delegate->getOwnPropertyNames(this, exec, propertyNames, mode);
 }
 
 bool QScriptObject::compareToObject(JSC::ExecState* exec, JSC::JSObject *other)
@@ -189,25 +180,16 @@ void QScriptObjectDelegate::put(QScriptObject* object, JSC::ExecState* exec,
 }
 
 bool QScriptObjectDelegate::deleteProperty(QScriptObject* object, JSC::ExecState* exec,
-                                           const JSC::Identifier& propertyName,
-                                           bool checkDontDelete)
+                                           const JSC::Identifier& propertyName)
 {
-    return object->JSC::JSObject::deleteProperty(exec, propertyName, checkDontDelete);
-}
-
-bool QScriptObjectDelegate::getPropertyAttributes(const QScriptObject* object,
-                                                  JSC::ExecState* exec,
-                                                  const JSC::Identifier& propertyName,
-                                                  unsigned& attributes) const
-{
-    return object->JSC::JSObject::getPropertyAttributes(exec, propertyName, attributes);
+    return object->JSC::JSObject::deleteProperty(exec, propertyName);
 }
 
 void QScriptObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::ExecState* exec,
                                                 JSC::PropertyNameArray& propertyNames,
-                                                bool includeNonEnumerable)
+                                                JSC::EnumerationMode mode)
 {
-    object->JSC::JSObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
+    object->JSC::JSObject::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 void QScriptObjectDelegate::markChildren(QScriptObject* object, JSC::MarkStack& markStack)

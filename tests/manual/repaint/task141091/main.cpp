@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,13 +39,25 @@
 **
 ****************************************************************************/
 
-#if defined(QT_NO_DBUS)
-#error Qt is not configured with DBus support.
-#endif
+#include <QtGui>
+#include <QDebug>
 
-#include <NetworkManager/NetworkManager.h>
-
-int main(int argc, char** argv)
+class MyWidget : public QWidget
 {
-    return 0;
+public:
+    MyWidget() : QWidget() { 
+        
+        
+        setAttribute(Qt::WA_OpaquePaintEvent);
+        setAttribute(Qt::WA_StaticContents); }
+protected:
+    void paintEvent(QPaintEvent *e) { qDebug() << e->rect(); }
+};
+
+int main(int argc, char **argv)
+{
+    QApplication a(argc, argv);
+    MyWidget w;
+    w.show();
+    return a.exec();
 }

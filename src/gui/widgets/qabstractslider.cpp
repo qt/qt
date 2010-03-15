@@ -712,7 +712,15 @@ bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::Keyb
             offset_accumulated = 0;
 
         offset_accumulated += stepsToScrollF;
+#ifndef Q_WS_MAC
+        // Dont't scroll more than one page in any case:
         stepsToScroll = qBound(-pageStep, int(offset_accumulated), pageStep);
+#else
+        // Native UI-elements on Mac can scroll hundreds of lines at a time as
+        // a result of acceleration. So keep the same behaviour in Qt, and
+        // dont restrict stepsToScroll to certain maximum (pageStep): 
+        stepsToScroll = int(offset_accumulated);
+#endif
         offset_accumulated -= int(offset_accumulated);
         if (stepsToScroll == 0)
             return false;

@@ -3294,7 +3294,7 @@ void QWidgetPrivate::update_sys(const QRect &r)
 #ifndef QT_MAC_USE_COCOA
             HIViewSetNeedsDisplay(qt_mac_nativeview_for(q), true);
 #else
-            [qt_mac_nativeview_for(q) setNeedsDisplay:YES];
+	    qt_mac_set_needs_display(q, QRegion());
 #endif
         return;
     }
@@ -3339,14 +3339,14 @@ void QWidgetPrivate::update_sys(const QRegion &rgn)
     // map the coordinates from q space to NSView space and invalidate the rect.
     QWidget *nativeParent = q->internalWinId() ? q : q->nativeParentWidget();
     if (nativeParent == 0)
-            return;
+	return;
     const QRect nativeBoundingRect = QRect(
-            QPoint(q->mapTo(nativeParent, boundingRect.topLeft())),
-            QSize(boundingRect.size()));
+	    QPoint(q->mapTo(nativeParent, boundingRect.topLeft())),
+	    QSize(boundingRect.size()));
 
     [qt_mac_nativeview_for(nativeParent) setNeedsDisplayInRect:NSMakeRect(nativeBoundingRect.x(),
-                                                            nativeBoundingRect.y(), nativeBoundingRect.width(),
-                                                            nativeBoundingRect.height())];
+	    nativeBoundingRect.y(), nativeBoundingRect.width(),
+	    nativeBoundingRect.height())];
 #endif
 }
 
@@ -4027,7 +4027,7 @@ static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newR
 #else
     Q_UNUSED(oldRect);
     NSRect bounds = NSMakeRect(newRect.x(), newRect.y(),
-                               newRect.width(), newRect.height());
+	    newRect.width(), newRect.height());
     [qt_mac_nativeview_for(q) setFrame:bounds];
 #endif
 }
@@ -4830,7 +4830,7 @@ void QWidgetPrivate::finishCocoaMaskSetup()
         [window setOpaque:(extra->imageMask == 0)];
         [window invalidateShadow];
     }
-    [qt_mac_nativeview_for(q) setNeedsDisplay:YES];
+    qt_mac_set_needs_display(q, QRegion());
 }
 #endif
 
