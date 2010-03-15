@@ -266,7 +266,7 @@ QDeclarativeEngineDebugServer::objectData(QObject *object)
 {
     QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object);
     QDeclarativeObjectData rv;
-    if (ddata) {
+    if (ddata && ddata->outerContext) {
         rv.url = ddata->outerContext->url;
         rv.lineNumber = ddata->lineNumber;
         rv.columnNumber = ddata->columnNumber;

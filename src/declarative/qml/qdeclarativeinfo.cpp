@@ -103,7 +103,7 @@ QDeclarativeInfo::QDeclarativeInfo(const QObject *object)
     QDeclarativeDeclarativeData *ddata = object?QDeclarativeDeclarativeData::get(object):0;
     pos += QLatin1String(" (");
     if (ddata) {
-        if (ddata->outerContext) {
+        if (ddata->outerContext && !ddata->outerContext->url.isEmpty()) {
             pos += ddata->outerContext->url.toString();
             pos += QLatin1Char(':');
             pos += QString::number(ddata->lineNumber);

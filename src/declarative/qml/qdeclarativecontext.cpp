@@ -624,6 +624,7 @@ void QDeclarativeContextData::addScript(const QDeclarativeParser::Object::Script
 void QDeclarativeContextData::setIdProperty(int idx, QObject *obj)
 {
     idValues[idx] = obj;
+    idValues[idx].context = this;
 }
 
 void QDeclarativeContextData::setIdPropertyData(QDeclarativeIntegerCache *data)

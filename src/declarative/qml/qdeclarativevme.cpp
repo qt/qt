@@ -844,7 +844,9 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
     if (isError()) {
         if (!stack.isEmpty()) {
-            delete stack.at(0);
+            delete stack.at(0); // ### What about failures in deferred creation?
+        } else {
+            ctxt->destroy();
         }
 
         QDeclarativeEnginePrivate::clear(bindValues);

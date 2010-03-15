@@ -617,8 +617,6 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
 
     QObject *rv = begin(ctxt, ep, cc, start, count, &state, bindings);
 
-    if (!rv) ctxt->destroy();
-
     if (rv && !context->isInternal && ep->isDebugging)
         context->asQDeclarativeContextPrivate()->instances.append(rv);
 

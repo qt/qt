@@ -168,9 +168,13 @@ public:
     // id guards
     struct ContextGuard : public QDeclarativeGuard<QObject>
     {
+        ContextGuard() : context(0) {}
         inline ContextGuard &operator=(QObject *obj)
         { QDeclarativeGuard<QObject>::operator=(obj); return *this; }
-        virtual void objectDestroyed(QObject *) { bindings.notify(); }
+        virtual void objectDestroyed(QObject *) { 
+            if (!QObjectPrivate::get(context->contextObject)->wasDeleted) bindings.notify(); 
+        }
+        QDeclarativeContextData *context;
         QDeclarativeNotifier bindings;
     };
     ContextGuard *idValues;
