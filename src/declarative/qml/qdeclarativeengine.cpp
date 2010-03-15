@@ -1615,7 +1615,8 @@ public:
         if (s) {
             if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return))
                 return true;
-            if (s->urls.count() == 1 && !s->isLibrary[0] && url_return) {
+            if (s->urls.count() == 1 && !s->isLibrary[0] && url_return && s != &unqualifiedset) {
+                // qualified, and only 1 url
                 *url_return = QUrl(s->urls[0]+QLatin1Char('/')).resolved(QUrl(QString::fromUtf8(unqualifiedtype) + QLatin1String(".qml")));
                 return true;
             }
