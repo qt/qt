@@ -222,7 +222,6 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
                 }
             } else {
                 qMemCopy(ptr, oldPtr, qMin(asize, osize) * sizeof(T));
-                s = asize;
             }
         } else {
             ptr = oldPtr;
@@ -233,7 +232,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
     if (QTypeInfo<T>::isComplex) {
         while (osize > asize)
             (oldPtr+(--osize))->~T();
-        if( oldPtr == ptr )
+        if (!QTypeInfo<T>::isStatic)
             s = osize;
     }
 

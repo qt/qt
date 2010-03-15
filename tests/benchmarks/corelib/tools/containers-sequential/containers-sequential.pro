@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_containers-sequential
+TARGET = tst_bench_containers-sequential
 DEPENDPATH += .
 INCLUDEPATH += .
 

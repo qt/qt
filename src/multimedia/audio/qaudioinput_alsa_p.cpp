@@ -121,6 +121,11 @@ int QAudioInputPrivate::xrun_recovery(int err)
         err = snd_pcm_prepare(handle);
         if(err < 0)
             reset = true;
+        else {
+            bytesAvailable = bytesReady();
+            if (bytesAvailable <= 0)
+                reset = true;
+        }
 
     } else if((err == -ESTRPIPE)||(err == -EIO)) {
         errorState = QAudio::IOError;
@@ -443,6 +448,7 @@ int QAudioInputPrivate::bytesReady() const
     if(deviceState != QAudio::ActiveState && deviceState != QAudio::IdleState)
         return 0;
     int frames = snd_pcm_avail_update(handle);
+    if (frames < 0) return frames;
     if((int)frames > (int)buffer_frames)
         frames = buffer_frames;
 
@@ -458,6 +464,20 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
         return 0;
 
     bytesAvailable = bytesReady();
+
+    if (bytesAvailable < 0) {
+        // bytesAvailable as negative is error code, try to recover from it.
+        xrun_recovery(bytesAvailable);
+        bytesAvailable = bytesReady();
+        if (bytesAvailable < 0) {
+            // recovery failed must stop and set error.
+            close();
+            errorState = QAudio::IOError;
+            deviceState = QAudio::StoppedState;
+            emit stateChanged(deviceState);
+            return 0;
+        }
+    }
 
     int count=0, err = 0;
     while(count < 5) {
@@ -588,7 +608,11 @@ int QAudioInputPrivate::notifyInterval() const
 
 qint64 QAudioInputPrivate::processedUSecs() const
 {
-    return qint64(1000000) * totalTimeValue / settings.frequency();
+    qint64 result = qint64(1000000) * totalTimeValue /
+        (settings.channels()*(settings.sampleSize()/8)) /
+        settings.frequency();
+
+    return result;
 }
 
 void QAudioInputPrivate::suspend()

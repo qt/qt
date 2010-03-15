@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "symbianaudioutils.h"
+#include "qaudio_symbian_p.h"
 #include <mmffourcc.h>
 
 QT_BEGIN_NAMESPACE

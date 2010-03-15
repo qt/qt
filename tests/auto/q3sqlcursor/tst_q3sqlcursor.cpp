@@ -48,6 +48,7 @@
 
 #include "../qsqldatabase/tst_databases.h"
 
+const QString qtest(qTableName( "qtest", __FILE__ ));
 
 //TESTED_FILES=
 
@@ -142,26 +143,26 @@ void tst_Q3SqlCursor::createTestTables( QSqlDatabase db )
 
     // please never ever change this table; otherwise fix all tests ;)
     if ( tst_Databases::isMSAccess( db ) ) {
-	QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest" ) + " ( id int not null, t_varchar varchar(40) not null,"
+	QVERIFY_SQL(q, exec( "create table " + qtest + " ( id int not null, t_varchar varchar(40) not null,"
 			 "t_char char(40), t_numeric number, primary key (id, t_varchar) )" ));
     } else {
-	QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest" ) + " ( id int not null, t_varchar varchar(40) not null,"
+	QVERIFY_SQL(q, exec( "create table " + qtest + " ( id int not null, t_varchar varchar(40) not null,"
 			 "t_char char(40), t_numeric numeric(6, 3), primary key (id, t_varchar) )" ));
     }
 
     if ( tst_Databases::isSqlServer( db ) ) {
 	//workaround for SQL SERVER since he can store unicode only in nvarchar fields
-	QVERIFY_SQL(q, exec("create table " + qTableName("qtest_unicode") + " (id int not null, "
+	QVERIFY_SQL(q, exec("create table " + qTableName("qtest_unicode", __FILE__) + " (id int not null, "
 		       "t_varchar nvarchar(80) not null, t_char nchar(80) )" ));
     } else {
-	QVERIFY_SQL(q, exec("create table " + qTableName("qtest_unicode") + " (id int not null, "
+	QVERIFY_SQL(q, exec("create table " + qTableName("qtest_unicode", __FILE__) + " (id int not null, "
 		       "t_varchar varchar(100) not null," "t_char char(100))" ));
     }
 
     if (tst_Databases::isMSAccess(db)) {
-        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision") + " (col1 number)"));
+        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision", __FILE__) + " (col1 number)"));
     } else {
-        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision") + " (col1 numeric(15, 14))"));
+        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_precision", __FILE__) + " (col1 numeric(15, 14))"));
     }
 }
 
@@ -170,12 +171,12 @@ void tst_Q3SqlCursor::dropTestTables( QSqlDatabase db )
     if ( !db.isValid() )
 	return;
     QStringList tableNames;
-    tableNames << qTableName( "qtest" )
-            << qTableName( "qtest_unicode" )
-            << qTableName( "qtest_precision" )
-            << qTableName( "qtest_ovchar" )
-            << qTableName( "qtest_onvchar" )
-            << qTableName( "qtestPK" );
+    tableNames << qtest
+            << qTableName( "qtest_unicode", __FILE__ )
+            << qTableName( "qtest_precision", __FILE__ )
+            << qTableName( "qtest_ovchar", __FILE__ )
+            << qTableName( "qtest_onvchar", __FILE__ )
+            << qTableName( "qtestPK", __FILE__ );
     tst_Databases::safeDropTables( db, tableNames );
 }
 
@@ -185,8 +186,8 @@ void tst_Q3SqlCursor::populateTestTables( QSqlDatabase db )
 	return;
     QSqlQuery q( db );
 
-    q.exec( "delete from " + qTableName( "qtest" ) ); //not fatal
-    QVERIFY_SQL(q, prepare("insert into " + qTableName( "qtest" ) + " (id, t_varchar, t_char, t_numeric) values (?, ?, ?, ?)"));
+    q.exec( "delete from " + qtest ); //not fatal
+    QVERIFY_SQL(q, prepare("insert into " + qtest + " (id, t_varchar, t_char, t_numeric) values (?, ?, ?, ?)"));
     q.addBindValue(QVariantList() << 0 << 1 << 2 << 3);
     q.addBindValue(QVariantList() << "VarChar0" << "VarChar1" << "VarChar2" << "VarChar3");
     q.addBindValue(QVariantList() << "Char0" << "Char1" << "Char2" << "Char3");
@@ -243,7 +244,7 @@ void tst_Q3SqlCursor::copyConstructor()
 
     Q3SqlCursor cur2;
     {
-	Q3SqlCursor cur( qTableName( "qtest" ), true, db );
+	Q3SqlCursor cur( qtest, true, db );
 	QVERIFY_SQL(cur, select( cur.index( QString("id") ) ));
 	cur2 = Q3SqlCursor( cur );
 	// let "cur" run out of scope...
@@ -266,7 +267,7 @@ void tst_Q3SqlCursor::value()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    Q3SqlCursor cur( qTableName( "qtest" ), true, db );
+    Q3SqlCursor cur( qtest, true, db );
     QVERIFY_SQL(cur, select( cur.index( QString("id") ) ));
     int i = 0;
     while ( cur.next() ) {
@@ -281,7 +282,7 @@ void tst_Q3SqlCursor::primaryIndex()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    Q3SqlCursor cur( qTableName( "qtest" ), true, db );
+    Q3SqlCursor cur( qtest, true, db );
     QSqlIndex index = cur.primaryIndex();
     if ( tst_Databases::isMSAccess( db ) ) {
 	QCOMPARE( index.fieldName(1).upper(), QString( "ID" ) );
@@ -300,7 +301,7 @@ void tst_Q3SqlCursor::insert()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    Q3SqlCursor cur( qTableName( "qtest" ), true, db );
+    Q3SqlCursor cur( qtest, true, db );
     QSqlRecord* irec = cur.primeInsert();
     QVERIFY( irec != 0 );
 
@@ -338,7 +339,7 @@ void tst_Q3SqlCursor::insertSpecial()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    Q3SqlCursor cur( qTableName( "qtest" ), true, db );
+    Q3SqlCursor cur( qtest, true, db );
     QSqlRecord* irec = cur.primeInsert();
     QVERIFY( irec != 0 );
 
@@ -386,9 +387,9 @@ void tst_Q3SqlCursor::batchInsert()
     CHECK_DATABASE( db );
 
     QSqlQuery q( db );
-    q.exec( "delete from " + qTableName( "qtest" ) );
+    q.exec( "delete from " + qtest );
 
-    Q3SqlCursor cur( qTableName( "qtest" ), true, db );
+    Q3SqlCursor cur( qtest, true, db );
 
     int i = 0;
     for ( ; i < 100; ++i ) {
@@ -420,7 +421,7 @@ void tst_Q3SqlCursor::batchInsert()
     }
 
     i = 0;
-    QVERIFY_SQL(q, exec( "select * from " + qTableName( "qtest" ) + " order by id" ));
+    QVERIFY_SQL(q, exec( "select * from " + qtest + " order by id" ));
     while ( q.next() ) {
 	QCOMPARE( q.value( 0 ).toInt(), i );
 	i++;
@@ -452,11 +453,11 @@ void tst_Q3SqlCursor::insertORA()
     /****** CHARSET TEST ******/
 
     QSqlQuery q( db );
-    QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest_ovchar" ) + " ( id int primary key, t_char varchar(40) )" ));
+    QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest_ovchar", __FILE__ ) + " ( id int primary key, t_char varchar(40) )" ));
 
     static const QString val1( "blah1" );
 
-    Q3SqlCursor cur ( qTableName( "qtest_ovchar" ), true, db );
+    Q3SqlCursor cur ( qTableName( "qtest_ovchar", __FILE__ ), true, db );
     QSqlRecord* irec = cur.primeInsert();
     irec->setValue( "id", 1 );
     irec->setValue( "t_char", val1 );
@@ -486,9 +487,9 @@ void tst_Q3SqlCursor::insertORA()
 
     /****** NCHARSET TEST ********/
 
-    QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest_onvchar" ) + " ( id int primary key, t_nchar nvarchar2(40) )" ));
+    QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest_onvchar", __FILE__ ) + " ( id int primary key, t_nchar nvarchar2(40) )" ));
 
-    Q3SqlCursor cur2 ( qTableName( "qtest_onvchar" ), true, db );
+    Q3SqlCursor cur2 ( qTableName( "qtest_onvchar", __FILE__ ), true, db );
     irec = cur2.primeInsert();
     irec->setValue( "id", 1 );
     irec->setValue( "t_nchar", val1 );
@@ -529,7 +530,7 @@ void tst_Q3SqlCursor::unicode()
     if(db.driverName().startsWith("QIBASE") && (db.databaseName() == "silence.nokia.troll.no:c:\\ibase\\testdb_ascii" || db.databaseName() == "/opt/interbase/qttest.gdb"))
         QSKIP("Can't transliterate extended unicode to ascii", SkipSingle);
 
-    Q3SqlCursor cur( qTableName( "qtest_unicode" ), true, db );
+    Q3SqlCursor cur( qTableName( "qtest_unicode", __FILE__ ), true, db );
     QSqlRecord* irec = cur.primeInsert();
     irec->setValue( 0, 500 );
     irec->setValue( 1, utf8str );
@@ -566,7 +567,7 @@ void tst_Q3SqlCursor::precision()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    Q3SqlCursor cur( qTableName( "qtest_precision" ), true, db );
+    Q3SqlCursor cur( qTableName( "qtest_precision", __FILE__ ), true, db );
     cur.setTrimmed( "col1", true );
     QSqlRecord* irec = cur.primeInsert();
     irec->setValue( 0, precStr );
@@ -589,7 +590,7 @@ void tst_Q3SqlCursor::setFilter()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    Q3SqlCursor cur( qTableName( "qtest" ), true, db );
+    Q3SqlCursor cur( qtest, true, db );
     cur.setFilter( "id = 2" );
 
     QVERIFY_SQL(cur, select());
@@ -619,23 +620,23 @@ void tst_Q3SqlCursor::select()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    Q3SqlCursor cur( qTableName( "qtest" ), true, db );
+    Q3SqlCursor cur( qtest, true, db );
     QVERIFY_SQL(cur, select());
     QVERIFY( cur.next() );
     QVERIFY( cur.next() );
 
-    Q3SqlCursor cur2( qTableName( "qtest" ), true, db );
+    Q3SqlCursor cur2( qtest, true, db );
     QVERIFY_SQL(cur2, select( "id = 1" ));
     QVERIFY( cur2.next() );
     QCOMPARE( cur2.value( 0 ).toInt(), 1 );
 
-    Q3SqlCursor cur3( qTableName( "qtest" ), true, db );
+    Q3SqlCursor cur3( qtest, true, db );
     QVERIFY_SQL(cur3, select( cur3.primaryIndex( false ) ));
     QVERIFY( cur3.next() );
     QVERIFY( cur3.next() );
     QCOMPARE( cur3.value( 0 ).toInt(), 1 );
 
-    Q3SqlCursor cur4( qTableName( "qtest" ), true, db );
+    Q3SqlCursor cur4( qtest, true, db );
     QSqlIndex idx = cur4.primaryIndex( false );
     QCOMPARE( (int)idx.count(), 2 );
     if ( tst_Databases::isMSAccess( db ) ) {
@@ -667,17 +668,17 @@ void tst_Q3SqlCursor::setName()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    Q3SqlCursor c2( qTableName( "qtest" ), true, db );
-    QCOMPARE( c2.name(), qTableName( "qtest" ) );
+    Q3SqlCursor c2( qtest, true, db );
+    QCOMPARE( c2.name(), qtest );
     QCOMPARE( c2.fieldName( 0 ).lower(), QString( "id" ) );
 
     Q3SqlCursor c( QString(), true, db );
-    c.setName( qTableName( "qtest" ) );
-    QCOMPARE( c.name(), qTableName( "qtest" ) );
+    c.setName( qtest );
+    QCOMPARE( c.name(), qtest );
     QCOMPARE( c.fieldName( 0 ).lower(), QString( "id" ) );
 
-    c.setName( qTableName( "qtest_precision" ) );
-    QCOMPARE( c.name(), qTableName( "qtest_precision" ) );
+    c.setName( qTableName( "qtest_precision", __FILE__ ) );
+    QCOMPARE( c.name(), qTableName( "qtest_precision", __FILE__ ) );
     QCOMPARE( c.fieldName( 0 ).lower(), QString( "col1" ) );
 }
 
@@ -689,9 +690,9 @@ void tst_Q3SqlCursor::updateNoPK()
     CHECK_DATABASE( db );
     
     QSqlQuery q(db);
-    QVERIFY_SQL(q, exec("create table " + qTableName( "qtestPK" ) + " (id int, name varchar(20), num numeric)"));
+    QVERIFY_SQL(q, exec("create table " + qTableName( "qtestPK", __FILE__ ) + " (id int, name varchar(20), num numeric)"));
     
-    Q3SqlCursor cur(qTableName("qtestPK"), true, db);
+    Q3SqlCursor cur(qTableName("qtestPK", __FILE__), true, db);
     QSqlRecord* rec = cur.primeInsert();
     Q_ASSERT(rec);
     rec->setNull(0);
@@ -705,14 +706,14 @@ void tst_Q3SqlCursor::updateNoPK()
                 db.driverName().startsWith("QMYSQL") ||
                 db.driverName().startsWith("QODBC") ||  
                 db.driverName().startsWith("QOCI")) {
-            QString query = QString::fromLatin1("insert into " + qTableName("qtestPK") +
+            QString query = QString::fromLatin1("insert into " + qTableName("qtestPK", __FILE__) +
                                                 " (" + db.driver()->escapeIdentifier("id", QSqlDriver::FieldName) + ','
                                                 + db.driver()->escapeIdentifier("name", QSqlDriver::FieldName) + ','
                                                 + db.driver()->escapeIdentifier("num", QSqlDriver::FieldName) + ')'
                                                 + " values (NULL,NULL,NULL)");
             QCOMPARE(cur.lastQuery(), query);
         } else {
-	    QCOMPARE(cur.lastQuery(), QString::fromLatin1("insert into " + qTableName("qtestPK") +
+	    QCOMPARE(cur.lastQuery(), QString::fromLatin1("insert into " + qTableName("qtestPK", __FILE__) +
 						         " (\"id\",\"name\",\"num\") values (NULL,NULL,NULL)"));
         }
     }
@@ -724,12 +725,12 @@ void tst_Q3SqlCursor::updateNoPK()
     rec->setNull(2);
     // Sqlite returns 2, don't ask why.
     QVERIFY(cur.update() != 0);
-    QString expect = "update " + qTableName("qtestPK") +
+    QString expect = "update " + qTableName("qtestPK", __FILE__) +
             " set "+db.driver()->escapeIdentifier("id", QSqlDriver::FieldName)+" = 1 , "
             +db.driver()->escapeIdentifier("name", QSqlDriver::FieldName)+" = NULL , "
-            +db.driver()->escapeIdentifier("num", QSqlDriver::FieldName)+" = NULL  where " + qTableName("qtestPK") + ".id"
-            " IS NULL and " + qTableName("qtestPK") + ".name IS NULL and " +
-            qTableName("qtestPK") + ".num IS NULL";
+            +db.driver()->escapeIdentifier("num", QSqlDriver::FieldName)+" = NULL  where " + qTableName("qtestPK", __FILE__) + ".id"
+            " IS NULL and " + qTableName("qtestPK", __FILE__) + ".name IS NULL and " +
+            qTableName("qtestPK", __FILE__) + ".num IS NULL";
     if (!db.driver()->hasFeature(QSqlDriver::PreparedQueries)) {
         if (!db.driverName().startsWith("QSQLITE")) {
 	    QCOMPARE(cur.lastQuery(), expect);
@@ -760,7 +761,7 @@ void tst_Q3SqlCursor::insertFieldNameContainsWS() {
        return;
     }
 
-    QString tableName = qTableName("qtestws");
+    QString tableName = qTableName("qtestws", __FILE__);
 
     QSqlQuery q(db);
     tst_Databases::safeDropTable(db, tableName);

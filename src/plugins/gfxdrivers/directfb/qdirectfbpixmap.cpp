@@ -174,6 +174,8 @@ bool QDirectFBPixmapData::hasAlphaChannel(const QImage &img)
 bool QDirectFBPixmapData::fromFile(const QString &filename, const char *format,
                                    Qt::ImageConversionFlags flags)
 {
+    if (!QFile::exists(filename))
+        return false;
     if (flags == Qt::AutoColor) {
         if (filename.startsWith(QLatin1Char(':'))) { // resource
             QFile file(filename);

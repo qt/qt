@@ -2549,7 +2549,7 @@ void QTableView::scrollTo(const QModelIndex &index, ScrollHint hint)
     // check if we really need to do anything
     if (!d->isIndexValid(index)
         || (d->model->parent(index) != d->root)
-        || isIndexHidden(index))
+        || isRowHidden(index.row()) || isColumnHidden(index.column()))
         return;
 
     QSpanCollection::Span span;
