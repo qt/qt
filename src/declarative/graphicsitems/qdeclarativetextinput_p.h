@@ -199,8 +199,6 @@ protected:
     void keyPressEvent(QKeyEvent* ev);
     bool event(QEvent *e);
 
-    void focusChanged(bool hasFocus);
-
 public Q_SLOTS:
     void selectAll();
 

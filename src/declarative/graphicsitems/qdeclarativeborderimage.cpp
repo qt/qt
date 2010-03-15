@@ -191,7 +191,7 @@ void QDeclarativeBorderImage::load()
         update();
     } else {
         d->status = Loading;
-        if (d->url.path().endsWith(QLatin1String(".sci"))) {
+        if (d->url.path().endsWith(QLatin1String("sci"))) {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
             QString lf = toLocalFileOrQrc(d->url);
             if (!lf.isEmpty()) {
@@ -400,9 +400,23 @@ void QDeclarativeBorderImage::requestFinished()
     update();
 }
 
+#define BORDERIMAGE_MAX_REDIRECT 16
+
 void QDeclarativeBorderImage::sciRequestFinished()
 {
     Q_D(QDeclarativeBorderImage);
+
+    d->redirectCount++;
+    if (d->redirectCount < BORDERIMAGE_MAX_REDIRECT) {
+        QVariant redirect = d->sciReply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirect.isValid()) {
+            QUrl url = d->sciReply->url().resolved(redirect.toUrl());
+            setSource(url);
+            return;
+        }
+    }
+    d->redirectCount=0;
+
     if (d->sciReply->error() != QNetworkReply::NoError) {
         d->status = Error;
         d->sciReply->deleteLater();

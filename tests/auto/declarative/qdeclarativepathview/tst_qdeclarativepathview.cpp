@@ -262,7 +262,7 @@ void tst_QDeclarativePathView::pathview3()
     QVERIFY(obj->delegate() != 0);
     QVERIFY(obj->model() != QVariant());
     QCOMPARE(obj->currentIndex(), 0);
-    QCOMPARE(obj->offset(), 50.); // ???
+    QCOMPARE(obj->offset(), 0.5); // ???
     QCOMPARE(obj->snapPosition(), 0.5); // ???
     QCOMPARE(obj->dragMargin(), 24.);
     QCOMPARE(obj->count(), 8);
@@ -422,14 +422,14 @@ void tst_QDeclarativePathView::pathMoved()
     offset.setX(firstItem->width()/2);
     offset.setY(firstItem->height()/2);
     QCOMPARE(firstItem->pos() + offset, start);
-    pathview->setOffset(10);
+    pathview->setOffset(0.1);
 
     for(int i=0; i<model.count(); i++){
         QDeclarativeRectangle *curItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", i);
         QCOMPARE(curItem->pos() + offset, path->pointAt(0.1 + i*0.25));
     }
 
-    pathview->setOffset(100);
+    pathview->setOffset(1.0);
     QCOMPARE(firstItem->pos() + offset, start);
 
     delete canvas;
