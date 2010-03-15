@@ -41,18 +41,20 @@
 
 #include <QDebug>
 
-#include <private/qgl_p.h>
-#include <private/qegl_p.h>
-#include <private/qeglproperties_p.h>
-#include <private/qeglcontext_p.h>
+#include <QtGui/private/qt_x11_p.h>
+#include <QtGui/private/qegl_p.h>
+#include <QtGui/private/qeglproperties_p.h>
+#include <QtGui/private/qeglcontext_p.h>
 
 #if !defined(QT_OPENGL_ES_1)
-#include <private/qpaintengineex_opengl2_p.h>
+#include <QtOpenGL/private/qpaintengineex_opengl2_p.h>
 #endif
 
 #ifndef QT_OPENGL_ES_2
-#include <private/qpaintengine_opengl_p.h>
+#include <QtOpenGL/private/qpaintengine_opengl_p.h>
 #endif
+
+#include <QtOpenGL/private/qgl_p.h>
 
 #include "qpixmapdata_x11gl_p.h"
 
@@ -183,6 +185,58 @@ QX11GLPixmapData::~QX11GLPixmapData()
 {
     if (ctx)
         delete ctx;
+}
+
+
+void QX11GLPixmapData::fill(const QColor &color)
+{
+    if (ctx) {
+        ctx->makeCurrent();
+        glFinish();
+        eglWaitClient();
+    }
+
+    QX11PixmapData::fill(color);
+    XSync(X11->display, False);
+
+    if (ctx) {
+        ctx->makeCurrent();
+        eglWaitNative(EGL_CORE_NATIVE_ENGINE);
+    }
+}
+
+void QX11GLPixmapData::copy(const QPixmapData *data, const QRect &rect)
+{
+    if (ctx) {
+        ctx->makeCurrent();
+        glFinish();
+        eglWaitClient();
+    }
+
+    QX11PixmapData::copy(data, rect);
+    XSync(X11->display, False);
+
+    if (ctx) {
+        ctx->makeCurrent();
+        eglWaitNative(EGL_CORE_NATIVE_ENGINE);
+    }
+}
+
+bool QX11GLPixmapData::scroll(int dx, int dy, const QRect &rect)
+{
+    if (ctx) {
+        ctx->makeCurrent();
+        glFinish();
+        eglWaitClient();
+    }
+
+    QX11PixmapData::scroll(dx, dy, rect);
+    XSync(X11->display, False);
+
+    if (ctx) {
+        ctx->makeCurrent();
+        eglWaitNative(EGL_CORE_NATIVE_ENGINE);
+    }
 }
 
 #if !defined(QT_OPENGL_ES_1)
