@@ -673,14 +673,16 @@ void QDeclarativeEngine::setContextForObject(QObject *object, QDeclarativeContex
 Ownership controls whether or not QML automatically destroys the QObject when the object 
 is garbage collected by the JavaScript engine.  The two ownership options are:
 
-\o CppOwnership The object is owned by C++ code, and will never be deleted by QML.  The
+\list
+\o CppOwnership - The object is owned by C++ code, and will never be deleted by QML.  The
 JavaScript destroy() method cannot be used on objects with CppOwnership.  This option
 is similar to QScriptEngine::QtOwnership.
 
-\o JavaScriptOwnership The object is owned by JavaScript.  When the object is returned to QML 
+\o JavaScriptOwnership - The object is owned by JavaScript.  When the object is returned to QML
 as the return value of a method call or property access, QML will delete the object if there
 are no remaining JavaScript references to it and it has no QObject::parent().  This option
 is similar to QScriptEngine::ScriptOwnership.
+\endlist
 
 Generally an application doesn't need to set an object's ownership explicitly.  QML uses
 a heuristic to set the default object ownership.  By default, an object that is created by
