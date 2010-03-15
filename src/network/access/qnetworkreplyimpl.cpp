@@ -723,6 +723,13 @@ void QNetworkReplyImpl::close()
     d->finished();
 }
 
+bool QNetworkReplyImpl::canReadLine () const
+{
+    Q_D(const QNetworkReplyImpl);
+    return QNetworkReply::canReadLine() || d->readBuffer.canReadLine();
+}
+
+
 /*!
     Returns the number of bytes available for reading with
     QIODevice::read(). The number of bytes available may grow until
