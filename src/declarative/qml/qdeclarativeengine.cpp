@@ -1380,7 +1380,8 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
 
             QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
             QString qmldircontent = qmlDirContent.at(i);
-            if (vmaj>=0 && !qmldircontent.isEmpty()) {
+
+            if (!qmldircontent.isEmpty()) {
 
                 const QString typeName = QString::fromUtf8(type);
 
@@ -1427,9 +1428,9 @@ public:
 
     QSet<QString> qmlDirFilesForWhichPluginsHaveBeenLoaded;
 
-    bool add(const QUrl& base, const QString& uri, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType, const QStringList& importPath, QDeclarativeEngine *engine)
+    bool add(const QUrl& base, const QString &qmldircontentnetwork, const QString& uri, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType, const QStringList& importPath, QDeclarativeEngine *engine)
     {
-        QString qmldircontent;
+        QString qmldircontent = qmldircontentnetwork;
         QDeclarativeEnginePrivate::ImportedNamespace *s;
         if (prefix.isEmpty()) {
             s = &unqualifiedset;
@@ -1884,12 +1885,12 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
 
   The base URL must already have been set with Import::setBaseUrl().
 */
-bool QDeclarativeEnginePrivate::addToImport(Imports* imports, const QString& uri, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType) const
+bool QDeclarativeEnginePrivate::addToImport(Imports* imports, const QString &qmldircontentnetwork, const QString& uri, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType) const
 {
     QDeclarativeEngine *engine = QDeclarativeEnginePrivate::get(const_cast<QDeclarativeEnginePrivate *>(this));
     if (qmlImportTrace())
         qDebug() << "QDeclarativeEngine::addToImport(" << imports << uri << prefix << vmaj << '.' << vmin << (importType==QDeclarativeScriptParser::Import::Library? "Library" : "File");
-    bool ok = imports->d->add(imports->d->base,uri,prefix,vmaj,vmin,importType,fileImportPath, engine);
+    bool ok = imports->d->add(imports->d->base,qmldircontentnetwork, uri,prefix,vmaj,vmin,importType,fileImportPath, engine);
     return ok;
 }
 

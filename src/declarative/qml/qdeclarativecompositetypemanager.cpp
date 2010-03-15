@@ -506,6 +506,18 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
     int waiting = 0;
 
     foreach (QDeclarativeScriptParser::Import imp, unit->data.imports()) {
+        QString qmldircontentnetwork;
+        if (imp.type == QDeclarativeScriptParser::Import::File && imp.qualifier.isEmpty()) {
+            QString importUrl = unit->imports.baseUrl().resolved(QUrl(imp.uri + QLatin1String("/qmldir"))).toString();
+            for (int ii = 0; ii < unit->resources.count(); ++ii) {
+                if (unit->resources.at(ii)->url == importUrl) {
+                    qmldircontentnetwork = QString::fromUtf8(unit->resources.at(ii)->data);
+                    break;
+                }
+            }
+        }
+
+
         int vmaj = -1;
         int vmin = -1;
         if (!imp.version.isEmpty()) {
@@ -520,7 +532,7 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
         }
 
         if (!QDeclarativeEnginePrivate::get(engine)->
-                addToImport(&unit->imports, imp.uri, imp.qualifier, vmaj, vmin, imp.type))
+                addToImport(&unit->imports, qmldircontentnetwork, imp.uri, imp.qualifier, vmaj, vmin, imp.type))
         {
             QDeclarativeError error;
             error.setUrl(unit->imports.baseUrl());
