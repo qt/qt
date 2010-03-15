@@ -90,7 +90,6 @@ private:
     QDeclarativeContext *lastContext;
     QDeclarativeTypeNameCache::Data *lastData;
     int lastPropertyIndex;
-    int lastDefaultObject;
     QScriptValue lastFunction;
 
     uint m_id;

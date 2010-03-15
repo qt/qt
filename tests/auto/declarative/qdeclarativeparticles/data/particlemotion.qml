@@ -1,10 +1,12 @@
 import Qt 4.6
+import Qt.labs.particles 1.0
+
 Rectangle {
     width: 240
     height: 320
     color: "black"
     Particles {
-        objectName: "particles"    
+        objectName: "particles"
         anchors.fill: parent
         width: 1
         height: 1

@@ -107,6 +107,7 @@ public:
     virtual ActionList actions();
 
     virtual void saveOriginals();
+    virtual void copyOriginals(QDeclarativeActionEvent*);
     virtual void execute();
     virtual bool isReversable();
     virtual void reverse();
@@ -196,13 +197,15 @@ public:
     virtual void reverse();
     virtual QString typeName() const;
     virtual bool override(QDeclarativeActionEvent*other);
-    virtual QList<QDeclarativeAction> extraActions();
     virtual bool changesBindings();
     virtual void saveOriginals();
-    virtual void clearForwardBindings();
-    virtual void clearReverseBindings();
+    virtual void copyOriginals(QDeclarativeActionEvent*);
+    virtual void clearBindings();
     virtual void rewind();
     virtual void saveCurrentValues();
+
+    QList<QDeclarativeAction> additionalActions();
+    virtual void saveTargetValues();
 };
 
 QT_END_NAMESPACE

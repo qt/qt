@@ -212,19 +212,22 @@ void QDeclarativeBasePositioner::prePositioning()
     QList<QGraphicsItem *> children = d->QGraphicsItemPrivate::children;
     qSort(children.begin(), children.end(), d->insertionOrder);
 
+    QPODVector<PositionedItem,8> oldItems;
+    positionedItems.copyAndClear(oldItems);
     for (int ii = 0; ii < children.count(); ++ii) {
         QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(ii));
         if (!child)
             continue;
         PositionedItem *item = 0;
         PositionedItem posItem(child);
-        int wIdx = positionedItems.find(posItem);
+        int wIdx = oldItems.find(posItem);
         if (wIdx < 0) {
             d->watchChanges(child);
             positionedItems.append(posItem);
             item = &positionedItems[positionedItems.count()-1];
         } else {
-            item = &positionedItems[wIdx];
+            item = &oldItems[wIdx];
+            positionedItems.append(*item);
         }
         if (child->opacity() <= 0.0 || !child->isVisible()) {
             item->isVisible = false;

@@ -93,7 +93,7 @@ void tst_qdeclarativeinstruction::dump()
         QDeclarativeInstruction i;
         i.line = 2;
         i.type = QDeclarativeInstruction::SetId;
-        i.setId.value = 0;
+        i.setId.value = data->primitives.count() - 1;
         i.setId.index = 0;
         data->bytecode << i;
     }
@@ -171,17 +171,17 @@ void tst_qdeclarativeinstruction::dump()
         i.line = 10;
         i.type = QDeclarativeInstruction::StoreString;
         i.storeString.propertyIndex = 7;
-        i.storeString.value = 1;
+        i.storeString.value = data->primitives.count() - 1;
         data->bytecode << i;
     }
 
     {
-        data->primitives << "http://www.nokia.com";
+        data->urls << QUrl("http://www.nokia.com");
         QDeclarativeInstruction i;
         i.line = 11;
         i.type = QDeclarativeInstruction::StoreUrl;
         i.storeUrl.propertyIndex = 8;
-        i.storeUrl.value = 2;
+        i.storeUrl.value = data->urls.count() - 1;
         data->bytecode << i;
     }
 
@@ -290,7 +290,7 @@ void tst_qdeclarativeinstruction::dump()
         i.line = 23;
         i.type = QDeclarativeInstruction::StoreVariant;
         i.storeString.propertyIndex = 20;
-        i.storeString.value = 3;
+        i.storeString.value = data->primitives.count() - 1;
 
         data->bytecode << i;
     }
@@ -326,7 +326,7 @@ void tst_qdeclarativeinstruction::dump()
         i.line = 27;
         i.type = QDeclarativeInstruction::StoreSignal;
         i.storeSignal.signalIndex = 2;
-        i.storeSignal.value = 4;
+        i.storeSignal.value = data->primitives.count() - 1;
         data->bytecode << i;
     }
 
@@ -527,7 +527,7 @@ void tst_qdeclarativeinstruction::dump()
         << "8\t\t8\tSTORE_INTEGER\t\t5\t9"
         << "9\t\t9\tSTORE_BOOL\t\t6\ttrue"
         << "10\t\t10\tSTORE_STRING\t\t7\t1\t\t\"Test String\""
-        << "11\t\t11\tSTORE_URL\t\t8\t2\t\t\"http://www.nokia.com\""
+        << "11\t\t11\tSTORE_URL\t\t8\t0\t\tQUrl(\"http://www.nokia.com\") "
         << "12\t\t12\tSTORE_COLOR\t\t9\t\t\t\"ff00ff00\""
         << "13\t\t13\tSTORE_DATE\t\t10\t9"
         << "14\t\t14\tSTORE_TIME\t\t11\t33"
@@ -539,11 +539,11 @@ void tst_qdeclarativeinstruction::dump()
         << "20\t\t20\tSTORE_RECT\t\t17\t2"
         << "21\t\t21\tSTORE_RECTF\t\t18\t19"
         << "22\t\t22\tSTORE_VECTOR3D\t\t19\t9"
-        << "23\t\t23\tSTORE_VARIANT\t\t20\t3\t\t\"color(1, 1, 1, 1)\""
+        << "23\t\t23\tSTORE_VARIANT\t\t20\t2\t\t\"color(1, 1, 1, 1)\""
         << "24\t\t24\tSTORE_OBJECT\t\t21"
         << "25\t\t25\tSTORE_VARIANT_OBJECT\t22"
         << "26\t\t26\tSTORE_INTERFACE\t\t23"
-        << "27\t\t27\tSTORE_SIGNAL\t\t2\t4\t\t\"console.log(1921)\""
+        << "27\t\t27\tSTORE_SIGNAL\t\t2\t3\t\t\"console.log(1921)\""
         << "28\t\t28\tSTORE_SCRIPT\t\t2"
         << "29\t\t29\tSTORE_SCRIPT_STRING\t24\t3\t1"
         << "30\t\t30\tASSIGN_SIGNAL_OBJECT\t0\t\t\t\"mySignal\""

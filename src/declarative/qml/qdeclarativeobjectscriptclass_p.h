@@ -57,6 +57,7 @@
 #include "qdeclarativetypenamecache_p.h"
 
 #include <private/qdeclarativescriptclass_p.h>
+#include <QtScript/qscriptengine.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -99,6 +100,7 @@ public:
     ~QDeclarativeObjectScriptClass();
 
     QScriptValue newQObject(QObject *, int type = QMetaType::QObjectStar);
+
     QObject *toQObject(const QScriptValue &) const;
     int objectType(const QScriptValue &) const;
 
@@ -118,6 +120,7 @@ public:
     void setProperty(QObject *, const Identifier &name, const QScriptValue &,
                      QDeclarativeContext *evalContext = 0);
     virtual QStringList propertyNames(Object *);
+    virtual bool compare(Object *, Object *);
 
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 

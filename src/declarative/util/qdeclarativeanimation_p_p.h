@@ -393,6 +393,19 @@ public:
     QPointF computeTransformOrigin(QDeclarativeItem::TransformOrigin origin, qreal width, qreal height) const;
 };
 
+class QDeclarativeAnchorAnimationPrivate : public QDeclarativeAbstractAnimationPrivate
+{
+    Q_DECLARE_PUBLIC(QDeclarativeAnchorAnimation)
+public:
+    QDeclarativeAnchorAnimationPrivate() : rangeIsSet(false), va(0),
+        interpolator(QVariantAnimationPrivate::getInterpolator(QMetaType::QReal)) {}
+
+    bool rangeIsSet;
+    QDeclarativeBulkValueAnimator *va;
+    QVariantAnimation::Interpolator interpolator;
+    QList<QDeclarativeItem*> targets;
+};
+
 QT_END_NAMESPACE
 
 #endif // QDECLARATIVEANIMATION_P_H
