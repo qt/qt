@@ -180,7 +180,10 @@ void QIcdEngine::doRequestUpdate()
         ptr->roamingSupported = false;
 
         userChoiceConfigurations.insert(ptr->id, ptr);
+
+        locker.unlock();
         emit configurationAdded(ptr);
+        locker.relock();
     }
 
     /* We return currently configured IAPs in the first run and do the WLAN
@@ -241,7 +244,10 @@ void QIcdEngine::doRequestUpdate()
 
             QNetworkConfigurationPrivatePointer ptr(cpPriv);
             accessPointConfigurations.insert(iap_id, ptr);
+
+            locker.unlock();
             emit configurationAdded(ptr);
+            locker.relock();
 
 #ifdef BEARER_MANAGEMENT_DEBUG
             qDebug("IAP: %s, name: %s, ssid: %s, added to known list",
@@ -299,6 +305,8 @@ void QIcdEngine::doRequestUpdate()
 
                     bool changed = false;
 
+                    ptr->mutex.lock();
+
                     if (!ptr->isValid) {
                         ptr->isValid = true;
                         changed = true;
@@ -319,8 +327,13 @@ void QIcdEngine::doRequestUpdate()
                            iapid.toAscii().data(), scanned_ssid.data());
 #endif
 
-                    if (changed)
+                    ptr->mutex.unlock();
+
+                    if (changed) {
+                        locker.unlock();
                         emit configurationChanged(ptr);
+                        locker.relock();
+                    }
 
                     if (!ap.scan.network_type.startsWith("WLAN"))
                         continue; // not a wlan AP
@@ -354,7 +367,10 @@ void QIcdEngine::doRequestUpdate()
 
                 QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ptr->id, ptr);
+
+                locker.unlock();
                 emit configurationAdded(ptr);
+                locker.relock();
             }
         }
     }
@@ -363,11 +379,15 @@ void QIcdEngine::doRequestUpdate()
         QNetworkConfigurationPrivatePointer ptr =
             accessPointConfigurations.take(previous.takeFirst());
 
+        locker.unlock();
         emit configurationRemoved(ptr);
+        locker.relock();
     }
 
-    if (sender())
+    if (sender()) {
+        locker.unlock();
         emit updateCompleted();
+    }
 }
 
 void QIcdEngine::deleteConfiguration(const QString &iap_id)
@@ -384,6 +404,7 @@ void QIcdEngine::deleteConfiguration(const QString &iap_id)
         qDebug() << "IAP" << iap_id << "was removed from storage.";
 #endif
 
+        locker.unlock();
         emit configurationRemoved(ptr);
     } else {
 #ifdef BEARER_MANAGEMENT_DEBUG

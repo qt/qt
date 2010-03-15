@@ -55,6 +55,6 @@ symbian {
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
     HEADERS += $$QT_SOURCE_TREE/examples/network/qftp/sym_iap_util.h
-    LIBS += -lesock  -lconnmon -linsock
+    LIBS += -lesock -lcommdb -lconnmon -linsock
     TARGET.CAPABILITY = "All -TCB"
 }

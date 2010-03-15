@@ -75,6 +75,7 @@ struct QDBusItem
     bool isPrefetched;
     QString name;
     QString caption;
+    QString typeSignature;
 };
 
 QDomDocument QDBusModel::introspect(const QString &path)
@@ -118,6 +119,13 @@ void QDBusModel::addMethods(QDBusItem *parent, const QDomElement &iface)
             item = new QDBusItem(QDBusModel::MethodItem,
                     child.attribute(QLatin1String("name")), parent);
             item->caption = QLatin1String("Method: ") + item->name;
+            //get "type" from <arg> where "direction" is "in"
+            QDomElement n = child.firstChildElement();
+            while (!n.isNull()) {
+                if (n.attribute(QLatin1String("direction")) == QLatin1String("in"))
+                    item->typeSignature += n.attribute(QLatin1String("type"));
+                n = n.nextSiblingElement();
+            }
         } else if (child.tagName() == QLatin1String("signal")) {
             item = new QDBusItem(QDBusModel::SignalItem,
                     child.attribute(QLatin1String("name")), parent);
@@ -296,6 +304,12 @@ QString QDBusModel::dBusMethodName(const QModelIndex &index) const
 {
     QDBusItem *item = static_cast<QDBusItem *>(index.internalPointer());
     return item ? item->name : QString();
+}
+
+QString QDBusModel::dBusTypeSignature(const QModelIndex &index) const
+{
+    QDBusItem *item = static_cast<QDBusItem *>(index.internalPointer());
+    return item ? item->typeSignature : QString();
 }
 
 QModelIndex QDBusModel::findObject(const QDBusObjectPath &objectPath)

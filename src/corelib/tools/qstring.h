@@ -1096,12 +1096,6 @@ Q_DECLARE_TYPEINFO(QString, Q_MOVABLE_TYPE);
 Q_DECLARE_SHARED(QString)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QString::SectionFlags)
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-extern Q_CORE_EXPORT QByteArray qt_winQString2MB(const QString& s, int len=-1);
-extern Q_CORE_EXPORT QByteArray qt_winQString2MB(const QChar *ch, int len);
-extern Q_CORE_EXPORT QString qt_winMB2QString(const char* mb, int len=-1);
-#endif
-
 
 class Q_CORE_EXPORT QStringRef {
     const QString *m_string;

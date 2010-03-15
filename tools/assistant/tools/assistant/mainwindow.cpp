@@ -361,6 +361,7 @@ void MainWindow::qtDocumentationInstalled()
 void MainWindow::checkInitState()
 {
     TRACE_OBJ
+    HelpEngineWrapper::instance().initialDocSetupDone();
     if (!m_cmdLine->enableRemoteControl())
         return;
 
@@ -381,7 +382,6 @@ void MainWindow::checkInitState()
         }
         emit initDone();
     }
-    HelpEngineWrapper::instance().initialDocSetupDone();
 }
 
 void MainWindow::insertLastPages()
