@@ -710,7 +710,7 @@ QIODevice* QAudioInputPrivate::start(QIODevice* device)
 {
     QIODevice*  op = device;
 
-    if (!open()) {
+    if (!audioFormat.isValid() || !open()) {
         stateCode = QAudio::StoppedState;
         errorCode = QAudio::OpenError;
         return audioIO;
