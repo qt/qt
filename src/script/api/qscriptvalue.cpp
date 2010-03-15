@@ -1304,6 +1304,7 @@ void QScriptValue::setProperty(const QString &name, const QScriptValue &value,
     Q_D(QScriptValue);
     if (!d || !d->isObject())
         return;
+    QScript::APIShim shim(d->engine);
     QScriptEnginePrivate *valueEngine = QScriptValuePrivate::getEngine(value);
     if (valueEngine && (valueEngine != d->engine)) {
         qWarning("QScriptValue::setProperty(%s) failed: "
@@ -1336,6 +1337,7 @@ QScriptValue QScriptValue::property(const QString &name,
     Q_D(const QScriptValue);
     if (!d || !d->isObject())
         return QScriptValue();
+    QScript::APIShim shim(d->engine);
     return d->engine->scriptValueFromJSCValue(d->property(name, mode));
 }
 
@@ -1453,6 +1455,7 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString &name,
     Q_D(const QScriptValue);
     if (!d || !d->isObject())
         return 0;
+    QScript::APIShim shim(d->engine);
     JSC::ExecState *exec = d->engine->currentFrame;
     return d->propertyFlags(JSC::Identifier(exec, name), mode);
 

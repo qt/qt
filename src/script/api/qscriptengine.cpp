@@ -4063,6 +4063,7 @@ QScriptEngineAgent *QScriptEngine::agent() const
 QScriptString QScriptEngine::toStringHandle(const QString &str)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->toStringHandle(JSC::Identifier(d->currentFrame, str));
 }
 
