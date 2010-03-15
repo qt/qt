@@ -494,15 +494,13 @@ QDeclarativeProperty &QDeclarativeProperty::operator=(const QDeclarativeProperty
 */
 bool QDeclarativeProperty::isWritable() const
 {
-    QDeclarativeProperty::PropertyTypeCategory category = propertyTypeCategory();
-
     if (!d->object)
         return false;
-    if (category == List)
+    if (d->core.flags & QDeclarativePropertyCache::Data::IsQList)           //list
         return true;
-    else if (type() & SignalProperty)
+    else if (d->core.flags & QDeclarativePropertyCache::Data::IsFunction)   //signal handler
         return false;
-    else if (d->core.isValid() && d->object)
+    else if (d->core.isValid())                                             //normal property
         return d->core.flags & QDeclarativePropertyCache::Data::IsWritable;
     else
         return false;
