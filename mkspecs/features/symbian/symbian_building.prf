@@ -134,7 +134,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
         #QMAKE_LIBS += -l:edllstub.lib -l:edll.lib
     }
 
-    QMAKE_LFLAGS += --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll -u _E32Dll --entry=_E32Dll
+    QMAKE_LFLAGS += --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll
     DEFINES += __DLL__
 }
 
