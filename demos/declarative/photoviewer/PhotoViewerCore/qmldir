@@ -3,3 +3,4 @@ PhotoDelegate PhotoDelegate.qml
 ProgressBar ProgressBar.qml
 RssModel RssModel.qml
 Tag Tag.qml
+BusyIndicator BusyIndicator.qml

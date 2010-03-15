@@ -30,7 +30,12 @@ Component {
 
             VisualDataModel {
                 id: visualModel; delegate: PhotoDelegate { }
-                model: RssModel { tags: tag }
+                model: RssModel { id: rssModel; tags: tag }
+            }
+
+            BusyIndicator {
+                anchors { centerIn: parent; verticalCenterOffset: -20 }
+                on: rssModel.status != XmlListModel.Ready
             }
 
             PathView {
