@@ -1877,13 +1877,17 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
 }
 
 /*!
-    \qmlproperty QEasingCurve PropertyAnimation::easing
-    \brief the easing curve used for the transition.
+    \qmlproperty enum PropertyAnimation::easing.type
+    \qmlproperty real PropertyAnimation::easing.amplitude
+    \qmlproperty real PropertyAnimation::easing.overshoot
+    \qmlproperty real PropertyAnimation::easing.period
+    \brief the easing curve used for the animation.
 
-    For the easing you can specify the following parameters: type, amplitude, period and overshoot.
+    To specify an easing curve you need to specify at least the type. For some curves you can also specify
+    amplitude, period and/or overshoot (more details provided after the table).
 
     \qml
-    PropertyAnimation { properties: "y"; easing.type: "InOutElastc"; easing.amplitude: 2.0; easing.period: 1.5 }
+    PropertyAnimation { properties: "y"; easing.type: "InOutElastic"; easing.amplitude: 2.0; easing.period: 1.5 }
     \endqml
 
     Available types are:

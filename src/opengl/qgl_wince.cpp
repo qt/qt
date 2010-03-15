@@ -145,6 +145,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
     // Get the display and initialize it.
     d->eglContext = new QEglContext();
+    d->ownsEglContext = true;
     d->eglContext->setApi(QEgl::OpenGL);
 
     // Construct the configuration we need for this surface.

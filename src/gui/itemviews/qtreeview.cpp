@@ -2407,9 +2407,9 @@ void QTreeView::reexpand()
 
 /*!
   \internal
+  This function assume that left is a (grand-)child of the parent of left.
 */
-static bool treeViewItemLessThan(const QTreeViewItem &left,
-                                 const QTreeViewItem &right)
+static bool treeViewItemLessThanInInsert(const QTreeViewItem &left, const QTreeViewItem &right)
 {
     if (left.level != right.level) {
         Q_ASSERT(left.level > right.level);
@@ -2496,7 +2496,7 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
             QVector<QTreeViewItem>::iterator it;
             it = qLowerBound(d->viewItems.begin() + firstChildItem,
                              d->viewItems.begin() + lastChildItem + 1,
-                             insertedItems.at(0), treeViewItemLessThan);
+                             insertedItems.at(0), treeViewItemLessThanInInsert);
             insertPos = it - d->viewItems.begin();
 
             // update stale model indexes of siblings
@@ -2662,17 +2662,8 @@ void QTreeView::expandAll()
 {
     Q_D(QTreeView);
     d->viewItems.clear();
-    d->expandedIndexes.clear();
     d->interruptDelayedItemsLayout();
-    d->layout(-1);
-    for (int i = 0; i < d->viewItems.count(); ++i) {
-        if (d->viewItems[i].expanded)
-            continue;
-        d->viewItems[i].expanded = true;
-        d->layout(i);
-        QModelIndex idx = d->viewItems.at(i).index;
-        d->expandedIndexes.insert(idx);
-    }
+    d->layout(-1, true);
     updateGeometries();
     d->viewport->update();
 }
@@ -3155,7 +3146,14 @@ void QTreeViewPrivate::_q_columnsRemoved(const QModelIndex &parent, int start, i
     QAbstractItemViewPrivate::_q_columnsRemoved(parent, start, end);
 }
 
-void QTreeViewPrivate::layout(int i)
+/** \internal
+    creates and initialize the viewItem structure of the children of the element \i
+
+    set \a recursiveExpanding if the function has to expand all the children (called from expandAll)
+    \a afterIsUninitialized is when we recurse from layout(-1), it means all the items after 'i' are
+    not yet initialized and need not to be moved
+ */
+void QTreeViewPrivate::layout(int i, bool recursiveExpanding, bool afterIsUninitialized)
 {
     Q_Q(QTreeView);
     QModelIndex current;
@@ -3182,8 +3180,12 @@ void QTreeViewPrivate::layout(int i)
             defaultItemHeight = q->indexRowSizeHint(index);
         }
         viewItems.resize(count);
+        afterIsUninitialized = true;
     } else if (viewItems[i].total != (uint)count) {
+        if (!afterIsUninitialized)
             insertViewItems(i + 1, count, QTreeViewItem()); // expand
+        else if (count > 0)
+            viewItems.resize(viewItems.count() + count);
     } else {
         expanding = false;
     }
@@ -3212,9 +3214,11 @@ void QTreeViewPrivate::layout(int i)
             item->expanded = false;
             item->total = 0;
             item->hasMoreSiblings = false;
-            if (isIndexExpanded(current)) {
+            if (recursiveExpanding || isIndexExpanded(current)) {
+                if (recursiveExpanding)
+                    expandedIndexes.insert(current);
                 item->expanded = true;
-                layout(last);
+                layout(last, recursiveExpanding, afterIsUninitialized);
                 item = &viewItems[last];
                 children += item->total;
                 item->hasChildren = item->total > 0;
@@ -3226,8 +3230,12 @@ void QTreeViewPrivate::layout(int i)
     }
 
     // remove hidden items
-    if (hidden > 0)
-        removeViewItems(last + 1, hidden); // collapse
+    if (hidden > 0) {
+        if (!afterIsUninitialized)
+            removeViewItems(last + 1, hidden);
+        else
+            viewItems.resize(viewItems.size() - hidden);
+    }
 
     if (!expanding)
         return; // nothing changed
@@ -3389,46 +3397,39 @@ int QTreeViewPrivate::viewIndex(const QModelIndex &_index) const
 
     const int totalCount = viewItems.count();
     const QModelIndex index = _index.sibling(_index.row(), 0);
+    const int row = index.row();
+    const quint64 internalId = index.internalId();
 
-
-    // A quick check near the last item to see if we are just incrementing
-    const int start = lastViewedItem > 2 ? lastViewedItem - 2 : 0;
-    const int end = lastViewedItem < totalCount - 2 ? lastViewedItem + 2 : totalCount;
-    int row = index.row();
-    for (int i = start; i < end; ++i) {
-        const QModelIndex &idx = viewItems.at(i).index;
-        if (idx.row() == row) {
-            if (idx.internalId() == index.internalId()) {
-                lastViewedItem = i;
-                return i;
-            }
+    // We start nearest to the lastViewedItem
+    int localCount = qMin(lastViewedItem - 1, totalCount - lastViewedItem);
+    for (int i = 0; i < localCount; ++i) {
+        const QModelIndex &idx1 = viewItems.at(lastViewedItem + i).index;
+        if (idx1.row() == row && idx1.internalId() == internalId) {
+            lastViewedItem = lastViewedItem + i;
+            return lastViewedItem;
+        }
+        const QModelIndex &idx2 = viewItems.at(lastViewedItem - i - 1).index;
+        if (idx2.row() == row && idx2.internalId() == internalId) {
+            lastViewedItem = lastViewedItem - i - 1;
+            return lastViewedItem;
         }
     }
 
-    // NOTE: this function is slow if the item is outside the visible area
-    // search in visible items first and below
-    int t = firstVisibleItem();
-    t = t > 100 ? t - 100 : 0; // start 100 items above the visible area
-
-    for (int i = t; i < totalCount; ++i) {
-        const QModelIndex &idx = viewItems.at(i).index;
-        if (idx.row() == row) {
-            if (idx.internalId() == index.internalId()) {
-                lastViewedItem = i;
-                return i;
-            }
-        }
-    }
-    // search from top to first visible
-    for (int j = 0; j < t; ++j) {
+    for (int j = qMax(0, lastViewedItem + localCount); j < totalCount; ++j) {
         const QModelIndex &idx = viewItems.at(j).index;
-        if (idx.row() == row) {
-            if (idx.internalId() == index.internalId()) {
-                lastViewedItem = j;
-                return j;
-            }
+        if (idx.row() == row && idx.internalId() == internalId) {
+            lastViewedItem = j;
+            return j;
         }
     }
+    for (int j = qMin(totalCount, lastViewedItem - localCount) - 1; j >= 0; --j) {
+        const QModelIndex &idx = viewItems.at(j).index;
+        if (idx.row() == row && idx.internalId() == internalId) {
+            lastViewedItem = j;
+            return j;
+        }
+    }
+
     // nothing found
     return -1;
 }
@@ -3753,7 +3754,6 @@ bool QTreeViewPrivate::hasVisibleChildren(const QModelIndex& parent) const
 void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
                                    int start, int end, bool after)
 {
-    Q_Q(QTreeView);
     // if we are going to do a complete relayout anyway, there is no need to update
     if (delayedPendingLayout) {
         _q_rowsRemoved(parent, start, end);

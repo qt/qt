@@ -278,8 +278,6 @@ public:
     Q_DECLARE_FLAGS(Extensions, Extension)
 
     static Extensions glExtensions();
-
-private:
     static Extensions currentContextExtensions();
 };
 
@@ -347,6 +345,7 @@ public:
     HDC hbitmap_hdc;
 #endif
 #if defined(QT_OPENGL_ES)
+    bool ownsEglContext;
     QEglContext *eglContext;
     EGLSurface eglSurface;
     void destroyEglSurfaceForDevice();
@@ -532,7 +531,6 @@ public:
     bool remove(QGLContext *ctx, GLuint textureId);
     void removeContextTextures(QGLContext *ctx);
     static QGLTextureCache *instance();
-    static void deleteIfEmpty();
     static void cleanupTexturesForCacheKey(qint64 cacheKey);
     static void cleanupTexturesForPixampData(QPixmapData* pixmap);
     static void cleanupBeforePixmapDestruction(QPixmapData* pixmap);
