@@ -2929,7 +2929,6 @@ void Doc::initialize(const Config& config)
 
 void Doc::terminate()
 {
-    qDebug() << "void Doc::terminate()";
     DocParser::exampleFiles.clear();
     DocParser::exampleDirs.clear();
     DocParser::sourceFiles.clear();

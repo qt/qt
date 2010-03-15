@@ -140,7 +140,6 @@ void CodeParser::initialize(const Config& config)
  */
 void CodeParser::terminate()
 {
-    qDebug() << "void CodeParser::terminate()";
     QList<CodeParser *>::ConstIterator p = parsers.begin();
     while (p != parsers.end()) {
 	(*p)->terminateParser();

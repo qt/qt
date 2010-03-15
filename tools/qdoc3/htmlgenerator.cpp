@@ -703,8 +703,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                       case Node::Fake:
                           if (node->subType() == Node::QmlClass) {
                               sections[QmlClass].appendMember((Node*)node);
-                              //qDebug() << "HtmlGenerator::generateAtom(): Atom::SinceList, append"
-                              //         << node->name();
                           }
                           break;
                       case Node::Namespace:
@@ -3769,7 +3767,6 @@ void HtmlGenerator::findAllSince(const InnerNode *node)
                         className = (*child)->parent()->name()+"::"+className;
                     nsmap.value().insert(className,(*child));
                     nqcmap.value().insert(className,(*child));
-                    //qDebug() << "findAllSince(): insert" << className << sinceVersion;
                 }
             }
             else {
