@@ -55,6 +55,7 @@
 
 #include "private/qabstractitemview_p.h"
 #include <QtCore/qvariantanimation.h>
+#include <QtCore/qabstractitemmodel.h>
 
 #ifndef QT_NO_TREEVIEW
 
@@ -62,9 +63,10 @@ QT_BEGIN_NAMESPACE
 
 struct QTreeViewItem
 {
-    QTreeViewItem() : expanded(false), spanning(false), hasChildren(false),
+    QTreeViewItem() : parentItem(-1), expanded(false), spanning(false), hasChildren(false),
                       hasMoreSiblings(false), total(0), level(0), height(0) {}
     QModelIndex index; // we remove items whenever the indexes are invalidated
+    int parentItem; // parent item index in viewItems
     uint expanded : 1;
     uint spanning : 1;
     uint hasChildren : 1; // if the item has visible children (even if collapsed)
@@ -73,6 +75,8 @@ struct QTreeViewItem
     uint level : 16; // indentation
     int height : 16; // row height
 };
+
+Q_DECLARE_TYPEINFO(QTreeViewItem, Q_MOVABLE_TYPE);
 
 class QTreeViewPrivate : public QAbstractItemViewPrivate
 {
@@ -123,7 +127,7 @@ public:
     void _q_sortIndicatorChanged(int column, Qt::SortOrder order);
     void _q_modelDestroyed();
 
-    void layout(int item);
+    void layout(int item, bool recusiveExpanding = false, bool afterIsUninitialized = false);
 
     int pageUp(int item) const;
     int pageDown(int item) const;
@@ -135,6 +139,12 @@ public:
 
     int viewIndex(const QModelIndex &index) const;
     QModelIndex modelIndex(int i, int column = 0) const;
+
+    void insertViewItems(int pos, int count, const QTreeViewItem &viewItem);
+    void removeViewItems(int pos, int count);
+#if 0
+    bool checkViewItems() const;
+#endif
 
     int firstVisibleItem(int *offset = 0) const;
     int columnAt(int x) const;

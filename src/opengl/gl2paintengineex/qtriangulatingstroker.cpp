@@ -73,7 +73,7 @@ void QTriangulatingStroker::endCapOrJoinClosed(const qreal *start, const qreal *
 }
 
 
-void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen)
+void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, const QRectF &)
 {
     const qreal *pts = path.points();
     const QPainterPath::ElementType *types = path.elements();
@@ -480,7 +480,7 @@ QDashedStrokeProcessor::QDashedStrokeProcessor()
     m_dash_stroker.setCubicToHook(qdashprocessor_cubicTo);
 }
 
-void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen)
+void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, const QRectF &clip)
 {
 
     const qreal *pts = path.points();
@@ -497,6 +497,7 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen)
     m_dash_stroker.setDashPattern(pen.dashPattern());
     m_dash_stroker.setStrokeWidth(pen.isCosmetic() ? width * m_inv_scale : width);
     m_dash_stroker.setMiterLimit(pen.miterLimit());
+    m_dash_stroker.setClipRect(clip);
     qreal curvyness = sqrt(width) * m_inv_scale / 8;
 
     if (count < 2)

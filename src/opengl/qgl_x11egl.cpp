@@ -182,6 +182,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     // Only create the eglContext if we don't already have one:
     if (d->eglContext == 0) {
         d->eglContext = new QEglContext();
+        d->ownsEglContext = true;
         d->eglContext->setApi(QEgl::OpenGL);
 
         // If the device is a widget with WA_TranslucentBackground set, make sure the glFormat
@@ -216,9 +217,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
             const_cast<QGLContext *>(shareContext)->d_func()->sharing = true;
     }
 
-    // Inform the higher layers about the actual format properties.
-    qt_egl_update_format(*(d->eglContext), d->glFormat);
-
+    // Inform the higher layers about the actual format properties
+    qt_glformat_from_eglconfig(d->glFormat, d->eglContext->config());
 
     // Do don't create the EGLSurface for everything.
     //    QWidget - yes, create the EGLSurface and store it in QGLContextPrivate::eglSurface

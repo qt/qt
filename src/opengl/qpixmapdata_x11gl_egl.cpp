@@ -181,6 +181,8 @@ QX11GLPixmapData::QX11GLPixmapData()
 
 QX11GLPixmapData::~QX11GLPixmapData()
 {
+    if (ctx)
+        delete ctx;
 }
 
 #if !defined(QT_OPENGL_ES_1)
@@ -245,6 +247,7 @@ void QX11GLPixmapData::beginPaint()
     if ((EGLSurface)gl_surface == EGL_NO_SURFACE) {
         QPixmap tmpPixmap(this);
         EGLConfig cfg = ctx->d_func()->eglContext->config();
+        Q_ASSERT(cfg != QEGL_NO_CONFIG);
 
         EGLSurface surface = QEgl::createSurface(&tmpPixmap, cfg);
         if (surface == EGL_NO_SURFACE) {
