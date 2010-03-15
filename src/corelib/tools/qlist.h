@@ -636,12 +636,10 @@ inline void QList<T>::move(int from, int to)
 template<typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> QList<T>::mid(int pos, int alength) const
 {
-    if (alength < 0)
+    if (alength < 0 || pos + alength > size())
         alength = size() - pos;
     if (pos == 0 && alength == size())
         return *this;
-    if (pos + alength > size())
-        alength = size() - pos;
     QList<T> cpy;
     cpy.reserve(alength);
     cpy.d->end = alength;
