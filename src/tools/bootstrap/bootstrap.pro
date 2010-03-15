@@ -95,7 +95,7 @@ macx: {
    LIBS += -framework CoreServices
 }
 
-contains(QT_CONFIG, zlib) {
+contains(QT_CONFIG, zlib)|cross_compile {
    INCLUDEPATH += ../../3rdparty/zlib
    SOURCES+= \
         ../3rdparty/zlib/adler32.c \
