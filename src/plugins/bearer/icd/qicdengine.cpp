@@ -206,14 +206,11 @@ void QIcdEngine::doRequestUpdate()
         QString iap_type = saved_ap.value("type").toString();
         if (iap_type.startsWith("WLAN")) {
             ssid = saved_ap.value("wlan_ssid").toByteArray();
-            if (ssid.isEmpty()) {
-                qWarning() << "Cannot get ssid for" << iap_id;
+            if (ssid.isEmpty())
                 continue;
-            }
 
             QString security_method = saved_ap.value("wlan_security").toString();
         } else if (iap_type.isEmpty()) {
-            qWarning() << "IAP" << iap_id << "network type is not set! Skipping it";
             continue;
         } else {
 #ifdef BEARER_MANAGEMENT_DEBUG
@@ -270,7 +267,9 @@ void QIcdEngine::doRequestUpdate()
                                        scanned,
                                        error);
         if (!error.isEmpty()) {
-            qWarning() << "Network scanning failed" << error;
+#ifdef BEARER_MANAGEMENT_DEBUG
+            qDebug() << "Network scanning failed" << error;
+#endif
         } else {
 #ifdef BEARER_MANAGEMENT_DEBUG
             if (!scanned.isEmpty())
@@ -379,19 +378,13 @@ void QIcdEngine::deleteConfiguration(const QString &iap_id)
      * or read all the IAPs from db because it might take too much power
      * (multiple applications would need to scan and read all IAPs from db)
      */
-    if (accessPointConfigurations.contains(iap_id)) {
-        QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(iap_id);
-
-        if (ptr) {
-            ptr->isValid = false;
+    QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(iap_id);
+    if (ptr) {
 #ifdef BEARER_MANAGEMENT_DEBUG
-            qDebug() << "IAP" << iap_id << "was removed from storage.";
+        qDebug() << "IAP" << iap_id << "was removed from storage.";
 #endif
 
-            emit configurationRemoved(ptr);
-        } else {
-            qWarning("Configuration not found for IAP %s", iap_id.toAscii().data());
-        }
+        emit configurationRemoved(ptr);
     } else {
 #ifdef BEARER_MANAGEMENT_DEBUG
         qDebug("IAP: %s, already missing from the known list", iap_id.toAscii().data());

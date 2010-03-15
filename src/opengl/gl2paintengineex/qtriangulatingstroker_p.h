@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 class QTriangulatingStroker
 {
 public:
-    void process(const QVectorPath &path, const QPen &pen);
+    void process(const QVectorPath &path, const QPen &pen, const QRectF &clip);
 
     inline int vertexCount() const { return m_vertices.size(); }
     inline const float *vertices() const { return m_vertices.data(); }
@@ -96,7 +96,7 @@ class QDashedStrokeProcessor
 public:
     QDashedStrokeProcessor();
 
-    void process(const QVectorPath &path, const QPen &pen);
+    void process(const QVectorPath &path, const QPen &pen, const QRectF &clip);
 
     inline void addElement(QPainterPath::ElementType type, qreal x, qreal y) {
         m_points.add(x);

@@ -1324,8 +1324,15 @@ void Q3ListViewItem::sortChildItems(int column, bool ascending)
     const int nColumns = (listView() ? listView()->columns() : 0);
 
     // and don't sort if we already have the right sorting order
-    if (column > nColumns || childItem == 0 || childItem->siblingItem == 0)
+    if (column > nColumns || childItem == 0)
         return;
+    
+    // If there is just one child, just sort its children
+    if (childItem->siblingItem == 0) {
+        if (childItem->isOpen())
+            childItem->sortChildItems(column, ascending);
+        return;
+    }
 
     // make an array for qHeapSort()
     Q3ListViewPrivate::SortableItem * siblings

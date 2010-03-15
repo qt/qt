@@ -5758,18 +5758,18 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, const QPointF *posit
 /*!
 
     \fn void QPainter::drawStaticText(const QPoint &position, const QStaticText &staticText)
-
     \since 4.7
-
     \overload
+
+    Draws the \a staticText at the \a position.
 */
 
 /*!
     \fn void QPainter::drawStaticText(int x, int y, const QStaticText &staticText)
-
     \since 4.7
-
     \overload
+
+    Draws the \a staticText at coordinates \a x and \a y.
 */
 
 /*!

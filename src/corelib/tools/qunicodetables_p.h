@@ -59,33 +59,37 @@
 
 QT_BEGIN_NAMESPACE
 
+#define UNICODE_DATA_VERSION QChar::Unicode_5_0
+
+#define UNICODE_LAST_CODEPOINT 0x10ffff
+
 namespace QUnicodeTables {
+
     struct Properties {
-        ushort category : 8;
-        ushort line_break_class : 8;
-        ushort direction : 8;
-        ushort combiningClass :8;
-        ushort joining : 2;
+        ushort category         : 8; /* 5 needed */
+        ushort line_break_class : 8; /* 6 needed */
+        ushort direction        : 8; /* 5 needed */
+        ushort combiningClass   : 8;
+        ushort joining          : 2;
         signed short digitValue : 6; /* 5 needed */
-        ushort unicodeVersion : 4;
+        ushort unicodeVersion   : 4;
         ushort lowerCaseSpecial : 1;
         ushort upperCaseSpecial : 1;
         ushort titleCaseSpecial : 1;
-        ushort caseFoldSpecial : 1; /* currently unused */
-        signed short mirrorDiff : 16;
+        ushort caseFoldSpecial  : 1; /* currently unused */
+        signed short mirrorDiff    : 16;
         signed short lowerCaseDiff : 16;
         signed short upperCaseDiff : 16;
         signed short titleCaseDiff : 16;
-        signed short caseFoldDiff : 16;
-        ushort graphemeBreak : 8;
-        ushort wordBreak : 8;
-        ushort sentenceBreak : 8;
+        signed short caseFoldDiff  : 16;
+        ushort graphemeBreak    : 8; /* 4 needed */
+        ushort wordBreak        : 8; /* 4 needed */
+        ushort sentenceBreak    : 8; /* 4 needed */
     };
     Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4);
     Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2);
 
     // See http://www.unicode.org/reports/tr24/tr24-5.html
-
     enum Script {
         Common,
         Greek,
@@ -172,19 +176,8 @@ namespace QUnicodeTables {
     };
 
 
-    Q_CORE_EXPORT QUnicodeTables::LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);
-    inline int lineBreakClass(const QChar &ch) {
-        return QUnicodeTables::lineBreakClass(ch.unicode());
-    }
-
-    Q_CORE_EXPORT int QT_FASTCALL script(uint ucs4);
-    inline int script(const QChar &ch) {
-        return script(ch.unicode());
-    }
-
-
     enum GraphemeBreak {
-        GraphemeBreakOther, 
+        GraphemeBreakOther,
         GraphemeBreakCR,
         GraphemeBreakLF,
         GraphemeBreakControl,
@@ -224,8 +217,16 @@ namespace QUnicodeTables {
     };
 
 
-}
+    Q_CORE_EXPORT QUnicodeTables::LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);
+    inline int lineBreakClass(const QChar &ch)
+    { return lineBreakClass(ch.unicode()); }
+
+    Q_CORE_EXPORT int QT_FASTCALL script(uint ucs4);
+    inline int script(const QChar &ch)
+    { return script(ch.unicode()); }
+
+} // namespace QUnicodeTables
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QUNICODETABLES_P_H

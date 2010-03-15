@@ -43,11 +43,15 @@
 #include "centralwidget.h"
 #include "findwidget.h"
 #include "helpenginewrapper.h"
-#include "helpviewer_qtb.h"
-#include "helpviewer_qwv.h"
 #include "searchwidget.h"
 #include "mainwindow.h"
 #include "../shared/collectionconfiguration.h"
+
+#if defined(QT_NO_WEBKIT)
+#include "helpviewer_qtb.h"
+#else
+#include "helpviewer_qwv.h"
+#endif // QT_NO_WEBKIT
 
 #include <QtCore/QTimer>
 

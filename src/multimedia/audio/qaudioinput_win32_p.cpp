@@ -88,7 +88,7 @@ QAudioInputPrivate::~QAudioInputPrivate()
     DeleteCriticalSection(&waveInCriticalSection);
 }
 
-void CALLBACK QAudioInputPrivate::waveInProc( HWAVEIN hWaveIn, UINT uMsg,
+void QT_WIN_CALLBACK QAudioInputPrivate::waveInProc( HWAVEIN hWaveIn, UINT uMsg,
         DWORD dwInstance, DWORD dwParam1, DWORD dwParam2 )
 {
     Q_UNUSED(dwParam1)

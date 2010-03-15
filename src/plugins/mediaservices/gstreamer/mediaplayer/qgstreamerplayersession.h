@@ -99,7 +99,7 @@ public:
 //    int activeStream(QMediaStreamsControl::StreamType streamType) const;
 //    void setActiveStream(QMediaStreamsControl::StreamType streamType, int streamNumber);
 
-    bool processSyncMessage(const QGstreamerMessage &message);
+    bool processSyncMessage(const QGstreamerMessage &message);    
 
 public slots:
     void load(const QUrl &url);
@@ -133,13 +133,22 @@ private slots:
     void busMessage(const QGstreamerMessage &message);
     void getStreamsInfo();
     void setSeekable(bool);
+    void finishVideoOutputChange();
 
 private:
     QUrl m_url;
     QMediaPlayer::State m_state;
     QGstreamerBusHelper* m_busHelper;
     GstElement* m_playbin;
-    GstElement* m_nullVideoOutput;
+
+    GstElement* m_videoOutputBin;
+    GstElement* m_videoIdentity;
+    GstElement* m_colorSpace;
+    GstElement* m_videoScale;
+    GstElement* m_videoSink;
+    GstElement* m_pendingVideoSink;
+    GstElement* m_nullVideoSink;
+
     GstBus* m_bus;
     QGstreamerVideoRendererInterface *m_renderer;
 

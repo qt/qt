@@ -766,6 +766,7 @@ void QGLFormat::setSamples(int numSamples)
         return;
     }
     d->numSamples = numSamples;
+    setSampleBuffers(numSamples > 0);
 }
 
 /*!
@@ -904,6 +905,7 @@ void QGLFormat::setDepthBufferSize(int size)
         return;
     }
     d->depthSize = size;
+    setDepth(size > 0);
 }
 
 /*!
@@ -1017,7 +1019,7 @@ void QGLFormat::setAlphaBufferSize(int size)
         return;
     }
     d->alphaSize = size;
-    setOption(QGL::AlphaChannel);
+    setAlpha(size > 0);
 }
 
 /*!
@@ -1044,6 +1046,7 @@ void QGLFormat::setAccumBufferSize(int size)
         return;
     }
     d->accumSize = size;
+    setAccum(size > 0);
 }
 
 /*!
@@ -1069,6 +1072,7 @@ void QGLFormat::setStencilBufferSize(int size)
         return;
     }
     d->stencilSize = size;
+    setStencil(size > 0);
 }
 
 /*!
@@ -1579,6 +1583,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     vi = 0;
 #endif
 #if defined(QT_OPENGL_ES)
+    ownsEglContext = false;
     eglContext = 0;
     eglSurface = EGL_NO_SURFACE;
 #endif
@@ -1684,14 +1689,12 @@ typedef void (*_qt_image_cleanup_hook_64)(qint64);
 extern Q_GUI_EXPORT _qt_pixmap_cleanup_hook_64 qt_pixmap_cleanup_hook_64;
 extern Q_GUI_EXPORT _qt_image_cleanup_hook_64 qt_image_cleanup_hook_64;
 
-static QGLTextureCache *qt_gl_texture_cache = 0;
+
+Q_GLOBAL_STATIC(QGLTextureCache, qt_gl_texture_cache)
 
 QGLTextureCache::QGLTextureCache()
     : m_cache(64*1024) // cache ~64 MB worth of textures - this is not accurate though
 {
-    Q_ASSERT(qt_gl_texture_cache == 0);
-    qt_gl_texture_cache = this;
-
     QImagePixmapCleanupHooks::instance()->addPixmapDataModificationHook(cleanupTexturesForPixampData);
     QImagePixmapCleanupHooks::instance()->addPixmapDataDestructionHook(cleanupBeforePixmapDestruction);
     QImagePixmapCleanupHooks::instance()->addImageHook(cleanupTexturesForCacheKey);
@@ -1699,8 +1702,7 @@ QGLTextureCache::QGLTextureCache()
 
 QGLTextureCache::~QGLTextureCache()
 {
-    qt_gl_texture_cache = 0;
-
+    Q_ASSERT(size() == 0);
     QImagePixmapCleanupHooks::instance()->removePixmapDataModificationHook(cleanupTexturesForPixampData);
     QImagePixmapCleanupHooks::instance()->removePixmapDataDestructionHook(cleanupBeforePixmapDestruction);
     QImagePixmapCleanupHooks::instance()->removeImageHook(cleanupTexturesForCacheKey);
@@ -1750,22 +1752,14 @@ void QGLTextureCache::removeContextTextures(QGLContext* ctx)
     }
 }
 
-QGLTextureCache* QGLTextureCache::instance()
-{
-    if (!qt_gl_texture_cache)
-        qt_gl_texture_cache = new QGLTextureCache;
-
-    return qt_gl_texture_cache;
-}
-
 /*
   a hook that removes textures from the cache when a pixmap/image
   is deref'ed
 */
 void QGLTextureCache::cleanupTexturesForCacheKey(qint64 cacheKey)
 {
-    instance()->remove(cacheKey);
-    Q_ASSERT(instance()->getTexture(cacheKey) == 0);
+    qt_gl_texture_cache()->remove(cacheKey);
+    Q_ASSERT(qt_gl_texture_cache()->getTexture(cacheKey) == 0);
 }
 
 
@@ -1787,10 +1781,9 @@ void QGLTextureCache::cleanupBeforePixmapDestruction(QPixmapData* pmd)
 #endif
 }
 
-void QGLTextureCache::deleteIfEmpty()
+QGLTextureCache *QGLTextureCache::instance()
 {
-    if (instance()->size() == 0)
-        delete instance();
+    return qt_gl_texture_cache();
 }
 
 // DDS format structure
@@ -1956,7 +1949,6 @@ QGLContext::~QGLContext()
 {
     // remove any textures cached in this context
     QGLTextureCache::instance()->removeContextTextures(this);
-    QGLTextureCache::deleteIfEmpty(); // ### thread safety
 
     d_ptr->group->cleanupResources(this);
 
@@ -5068,6 +5060,20 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
     return glExtensions;
 }
 
+
+class QGLDefaultExtensions
+{
+public:
+    QGLDefaultExtensions() {
+        QGLTemporaryContext tempContext;
+        extensions = QGLExtensions::currentContextExtensions();
+    }
+
+    QGLExtensions::Extensions extensions;
+};
+
+Q_GLOBAL_STATIC(QGLDefaultExtensions, qtDefaultExtensions)
+
 /*
     Returns the GL extensions for the current QGLContext. If there is no
     current QGLContext, a default context will be created and the extensions
@@ -5075,34 +5081,19 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
 */
 QGLExtensions::Extensions QGLExtensions::glExtensions()
 {
-    QGLTemporaryContext *tmpContext = 0;
-    static bool cachedDefault = false;
-    static Extensions defaultExtensions = 0;
+    Extensions extensionFlags = 0;
     QGLContext *currentCtx = const_cast<QGLContext *>(QGLContext::currentContext());
 
     if (currentCtx && currentCtx->d_func()->extension_flags_cached)
         return currentCtx->d_func()->extension_flags;
 
     if (!currentCtx) {
-        if (cachedDefault) {
-            return defaultExtensions;
-        } else {
-            tmpContext = new QGLTemporaryContext;
-            cachedDefault = true;
-        }
-    }
-
-    Extensions extensionFlags = currentContextExtensions();
-    if (currentCtx) {
+        extensionFlags = qtDefaultExtensions()->extensions;
+    } else {
+        extensionFlags = currentContextExtensions();
         currentCtx->d_func()->extension_flags_cached = true;
         currentCtx->d_func()->extension_flags = extensionFlags;
-    } else {
-        defaultExtensions = extensionFlags;
     }
-
-    if (tmpContext)
-        delete tmpContext;
-
     return extensionFlags;
 }
 

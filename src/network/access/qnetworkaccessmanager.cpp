@@ -880,11 +880,16 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         return new QDisabledNetworkReply(this, req, op);
     }
 
-    if (d->initializeSession && !d->networkSession) {
+    if (!d->networkSession && (d->initializeSession || !d->networkConfiguration.isEmpty())) {
         QNetworkConfigurationManager manager;
-        d->createSession(manager.defaultConfiguration());
+        if (d->networkConfiguration.isEmpty())
+            d->createSession(manager.defaultConfiguration());
+        else
+            d->createSession(manager.configurationFromIdentifier(d->networkConfiguration));
 
         d->initializeSession = false;
+    } else if (d->networkSession) {
+        d->networkSession->setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), -1);
     }
 
     QNetworkRequest request = req;
@@ -943,6 +948,9 @@ void QNetworkAccessManagerPrivate::_q_replyFinished()
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
     if (reply)
         emit q->finished(reply);
+
+    if (networkSession && q->findChildren<QNetworkReply *>().count() == 1)
+        networkSession->setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), 120000);
 }
 
 void QNetworkAccessManagerPrivate::_q_replySslErrors(const QList<QSslError> &errors)
@@ -1210,12 +1218,21 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
     networkSession = new QNetworkSession(config, q);
 
     QObject::connect(networkSession, SIGNAL(opened()), q, SIGNAL(networkSessionOnline()));
+    QObject::connect(networkSession, SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
     QObject::connect(networkSession, SIGNAL(newConfigurationActivated()),
                      q, SLOT(_q_networkSessionNewConfigurationActivated()));
     QObject::connect(networkSession,
                      SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)),
                      q,
                      SLOT(_q_networkSessionPreferredConfigurationChanged(QNetworkConfiguration,bool)));
+}
+
+void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
+{
+    networkConfiguration = networkSession->configuration().identifier();
+
+    delete networkSession;
+    networkSession = 0;
 }
 
 void QNetworkAccessManagerPrivate::_q_networkSessionNewConfigurationActivated()

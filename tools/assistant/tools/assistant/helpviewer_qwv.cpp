@@ -41,8 +41,6 @@
 
 #include "helpviewer_qwv.h"
 
-#if !defined(QT_NO_WEBKIT)
-
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
 #include "tracer.h"
@@ -223,7 +221,7 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
     if (type == QWebPage::NavigationTypeLinkClicked
         && (m_keyboardModifiers & Qt::ControlModifier
         || m_pressedButtons == Qt::MidButton)) {
-            if (HelpViewer* viewer = centralWidget->newEmptyTab())
+            if (centralWidget->newEmptyTab())
                 centralWidget->setSource(url);
             m_pressedButtons = Qt::NoButton;
             m_keyboardModifiers = Qt::NoModifier;
@@ -385,5 +383,3 @@ void HelpViewer::setLoadFinished(bool ok)
 }
 
 QT_END_NAMESPACE
-
-#endif  // !QT_NO_WEBKIT
