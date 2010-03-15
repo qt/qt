@@ -206,6 +206,13 @@ public:
     {
         return buffers[i];
     }
+
+    inline bool canReadLine() const {
+        for (int i = 0; i < buffers.length(); i++)
+            if (buffers.at(i).contains('\n'))
+                return true;
+        return false;
+    }
 };
 
 QT_END_NAMESPACE

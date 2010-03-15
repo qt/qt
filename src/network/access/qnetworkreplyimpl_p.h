@@ -77,10 +77,11 @@ public:
     ~QNetworkReplyImpl();
     virtual void abort();
 
-    // reimplemented from QNetworkReply
+    // reimplemented from QNetworkReply / QIODevice
     virtual void close();
     virtual qint64 bytesAvailable() const;
     virtual void setReadBufferSize(qint64 size);
+    virtual bool canReadLine () const;
 
     virtual qint64 readData(char *data, qint64 maxlen);
     virtual bool event(QEvent *);
