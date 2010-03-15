@@ -3332,21 +3332,24 @@ void QWidgetPrivate::update_sys(const QRegion &rgn)
         HIViewSetNeedsDisplay(qt_mac_nativeview_for(q), true); // do a complete repaint on overflow.
     }
 #else
-    // Cocoa doesn't do regions, it seems more efficient to just update the bounding rect instead of a potential number of message passes for each rect.
-    const QRect & boundingRect = rgn.boundingRect();
-
     // Alien support: get the first native ancestor widget (will be q itself in the non-alien case),
     // map the coordinates from q space to NSView space and invalidate the rect.
     QWidget *nativeParent = q->internalWinId() ? q : q->nativeParentWidget();
     if (nativeParent == 0)
 	return;
-    const QRect nativeBoundingRect = QRect(
-	    QPoint(q->mapTo(nativeParent, boundingRect.topLeft())),
-	    QSize(boundingRect.size()));
 
-    [qt_mac_nativeview_for(nativeParent) setNeedsDisplayInRect:NSMakeRect(nativeBoundingRect.x(),
-	    nativeBoundingRect.y(), nativeBoundingRect.width(),
-	    nativeBoundingRect.height())];
+    QVector<QRect> rects = rgn.rects();
+    for (int i = 0; i < rects.count(); ++i) {
+        const QRect &rect = rects.at(i);
+
+	const QRect nativeBoundingRect = QRect(
+		QPoint(q->mapTo(nativeParent, rect.topLeft())),
+		QSize(rect.size()));
+
+	[qt_mac_nativeview_for(nativeParent) setNeedsDisplayInRect:NSMakeRect(nativeBoundingRect.x(),
+		nativeBoundingRect.y(), nativeBoundingRect.width(),
+		nativeBoundingRect.height())];
+    }
 #endif
 }
 
