@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_events
+TARGET = tst_bench_events
 DEPENDPATH += .
 INCLUDEPATH += .
 # Input

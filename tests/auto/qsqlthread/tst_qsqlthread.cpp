@@ -53,6 +53,7 @@
 #include <pthread.h>
 #endif
 
+const QString qtest(qTableName("qtest", __FILE__));
 // set this define if Oracle is built with threading support
 //#define QOCI_THREADED
 
@@ -115,7 +116,7 @@ public:
         QVERIFY_SQL(db, open());
 
         int sum = 0;
-        QSqlQuery q("select id from " + qTableName("test"), db);
+        QSqlQuery q("select id from " + qtest, db);
         QVERIFY_SQL(q, isActive());
         while (q.next())
             sum += q.value(0).toInt();
@@ -150,7 +151,7 @@ public:
         QSqlDatabase db = QSqlDatabase::cloneDatabase(sourceDb, dbName);
         QVERIFY_SQL(db, open());
         QSqlQuery q(db);
-        QVERIFY_SQL(q, prepare("insert into " + qTableName("test") + " values (?, ?, ?)"));
+        QVERIFY_SQL(q, prepare("insert into " + qtest + " values (?, ?, ?)"));
         int id = 10;
         for (int i = 0; i < ProdConIterations; ++i) {
             q.bindValue(0, ++id);
@@ -187,10 +188,10 @@ public:
         QSqlDatabase db = QSqlDatabase::cloneDatabase(sourceDb, dbName);
         QVERIFY_SQL(db, open());
         QSqlQuery q1(db), q2(db);
-        QVERIFY_SQL(q2, prepare("delete from " + qTableName("test") + " where id = :id"));
+        QVERIFY_SQL(q2, prepare("delete from " + qtest + " where id = :id"));
 
         for (int i = 0; i < ProdConIterations; ++i) {
-            QVERIFY_SQL(q1, exec("select max(id) from " + qTableName("test")));
+            QVERIFY_SQL(q1, exec("select max(id) from " + qtest));
             q1.first();
             q2.bindValue("id", q1.value(0));
             q1.clear();
@@ -231,7 +232,7 @@ public:
             // Executes a Query for reading, iterates over the first 4 results
             QSqlQuery q(sourceDb);
             for (int j = 0; j < ProdConIterations; ++j) {
-                QVERIFY_SQL(q, exec("select id,name from " + qTableName("test") + " order by id"));
+                QVERIFY_SQL(q, exec("select id,name from " + qtest + " order by id"));
                 for (int i = 1; i < 4; ++i) {
                     QVERIFY_SQL(q, next());
                     QCOMPARE(q.value(0).toInt(), i);
@@ -242,7 +243,7 @@ public:
             // Executes a query for writing (appends a new row)
             QSqlQuery q(sourceDb);
             for (int j = 0; j < ProdConIterations; ++j) {
-                QVERIFY_SQL(q, exec(QString("insert into " + qTableName("test")
+                QVERIFY_SQL(q, exec(QString("insert into " + qtest
                                 + " (id, name) values(%1, '%2')")
                                       .arg(counter.fetchAndAddRelaxed(1)).arg("Robert")));
             }
@@ -250,7 +251,7 @@ public:
         case PreparedReading: {
             // Prepares a query for reading and iterates over the results
             QSqlQuery q(sourceDb);
-            QVERIFY_SQL(q, prepare("select id, name from " + qTableName("test") + " where id = ?"));
+            QVERIFY_SQL(q, prepare("select id, name from " + qtest + " where id = ?"));
             for (int j = 0; j < ProdConIterations; ++j) {
                 q.addBindValue(j % 3 + 1);
                 QVERIFY_SQL(q, exec());
@@ -260,7 +261,7 @@ public:
             break; }
         case PreparedWriting: {
             QSqlQuery q(sourceDb);
-            QVERIFY_SQL(q, prepare("insert into " + qTableName("test") + " (id, name) "
+            QVERIFY_SQL(q, prepare("insert into " + qtest + " (id, name) "
                                      "values(?, ?)"));
             for (int i = 0; i < ProdConIterations; ++i) {
                 q.addBindValue(counter.fetchAndAddRelaxed(1));
@@ -302,7 +303,7 @@ void tst_QSqlThread::dropTestTables()
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
 
-        tst_Databases::safeDropTables(db, QStringList() << qTableName("test") << qTableName("test2") << qTableName("emptytable"));
+        tst_Databases::safeDropTables(db, QStringList() << qtest << qTableName("qtest2", __FILE__) << qTableName("emptytable", __FILE__));
     }
 }
 
@@ -312,13 +313,13 @@ void tst_QSqlThread::createTestTables()
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
 
-        QVERIFY_SQL(q, exec("create table " + qTableName("test")
+        QVERIFY_SQL(q, exec("create table " + qtest
                        + "(id int NOT NULL primary key, name varchar(20), title int)"));
 
-        QVERIFY_SQL(q, exec("create table " + qTableName("test2")
+        QVERIFY_SQL(q, exec("create table " + qTableName("qtest2", __FILE__)
                        + "(id int NOT NULL primary key, title varchar(20))"));
 
-        QVERIFY_SQL(q, exec("create table " + qTableName("emptytable")
+        QVERIFY_SQL(q, exec("create table " + qTableName("emptytable", __FILE__)
                        + "(id int NOT NULL primary key)"));
     }
 }
@@ -329,14 +330,14 @@ void tst_QSqlThread::repopulateTestTables()
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
 
-        QVERIFY_SQL(q, exec("delete from " + qTableName("test")));
-        QVERIFY_SQL(q, exec("insert into " + qTableName("test") + " values(1, 'harry', 1)"));
-        QVERIFY_SQL(q, exec("insert into " + qTableName("test") + " values(2, 'trond', 2)"));
-        QVERIFY_SQL(q, exec("insert into " + qTableName("test") + " values(3, 'vohi', 3)"));
+        QVERIFY_SQL(q, exec("delete from " + qtest));
+        QVERIFY_SQL(q, exec("insert into " + qtest + " values(1, 'harry', 1)"));
+        QVERIFY_SQL(q, exec("insert into " + qtest + " values(2, 'trond', 2)"));
+        QVERIFY_SQL(q, exec("insert into " + qtest + " values(3, 'vohi', 3)"));
 
-        QVERIFY_SQL(q, exec("delete from " + qTableName("test2")));
-        QVERIFY_SQL(q, exec("insert into " + qTableName("test2") + " values(1, 'herr')"));
-        QVERIFY_SQL(q, exec("insert into " + qTableName("test2") + " values(2, 'mister')"));
+        QVERIFY_SQL(q, exec("delete from " + qTableName("qtest2", __FILE__)));
+        QVERIFY_SQL(q, exec("insert into " + qTableName("qtest2", __FILE__) + " values(1, 'herr')"));
+        QVERIFY_SQL(q, exec("insert into " + qTableName("qtest2", __FILE__) + " values(2, 'mister')"));
     }
 }
 

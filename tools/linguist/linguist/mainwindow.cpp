@@ -2370,7 +2370,7 @@ static bool haveMnemonic(const QString &str)
             // because we get a lot of false positives.
             if (c != '&' && c != ' ' && QChar(c).isPrint()) {
                 const ushort *pp = p;
-                for (; ::isalpha(*p); p++) ;
+                for (; *p < 256 && ::isalpha(*p); p++) ;
                 if (pp == p || *p != ';')
                     return true;
                 // This looks like a HTML &entity;, so ignore it. As a HTML string

@@ -95,12 +95,14 @@ static QString qGetHostName()
 // to prevent nameclashes on our database server, each machine
 // will use its own set of table names. Call this function to get
 // "tablename_hostname"
-inline static QString qTableName( const QString& prefix, QSqlDriver* driver = 0 )
+inline static QString qTableName( const QString& prefix, const char *sourceFileName )
 {
-    if ( !driver )
-        return prefix + "_" + qGetHostName().replace( "-", "_" );
-    else
-        return driver->escapeIdentifier( prefix + "_" + qGetHostName(), QSqlDriver::TableName );
+    return QLatin1String("dbtst")+QString::number(qHash(QLatin1String(sourceFileName) + "_" + qGetHostName().replace( "-", "_" )), 16)+"_"+prefix;
+}
+
+inline static QString qTableName( const QString& prefix, QSqlDriver* driver )
+{
+    return driver->escapeIdentifier( prefix + "_" + qGetHostName(), QSqlDriver::TableName );
 }
 
 inline static bool testWhiteSpaceNames( const QString &name )
@@ -250,8 +252,8 @@ public:
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=iceblink.nokia.troll.no\\ICEBLINK", "troll", "trond", "" );
 //         addDb( "QODBC3", "DRIVER={SQL Native Client};SERVER=silence.nokia.troll.no\\SQLEXPRESS", "troll", "trond", "" );
 
-//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=mysql5-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
-//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=mysql4-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=bq-mysql50.apac.nokia.com;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=bq-mysql51.apac.nokia.com;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=horsehead.nokia.troll.no;DATABASE=testdb;PORT=4101;UID=troll;PWD=trondk", "troll", "trondk", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=silence.nokia.troll.no;DATABASE=testdb;PORT=2392;UID=troll;PWD=trond", "troll", "trond", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2003-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "", "", "" );
@@ -261,7 +263,7 @@ public:
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2003-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2008-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC", "DRIVER={Microsoft Access Driver (*.mdb)};DBQ=c:\\dbs\\access\\testdb.mdb", "", "", "" );
-//         addDb( "QODBC", "DRIVER={Postgresql};SERVER=postgres81-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC", "DRIVER={Postgresql};SERVER=bq-pgsql84.apac.nokia.com;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
     }
 
     void open()
@@ -338,7 +340,7 @@ public:
                 foreach(const QString &table2, dbtables.filter(table, Qt::CaseInsensitive)) {
                     if(table2.compare(table.section('.', -1, -1), Qt::CaseInsensitive) == 0) {
                         table=db.driver()->escapeIdentifier(table2, QSqlDriver::TableName);
-                        if(db.driverName().startsWith( "QPSQL" ))
+                        if(isPostgreSQL(db))
                             wasDropped = q.exec( "drop table " + table + " cascade");
                         else
                             wasDropped = q.exec( "drop table " + table);
@@ -483,16 +485,16 @@ public:
 
     static bool isPostgreSQL( QSqlDatabase db )
     {
-        return db.driverName().startsWith("QPSQL") || (db.driverName().startsWith("QODBC") && db.databaseName().contains("PostgreSQL") );
+        return db.driverName().startsWith("QPSQL") || (db.driverName().startsWith("QODBC") && ( db.databaseName().contains("PostgreSQL", Qt::CaseInsensitive) || db.databaseName().contains("pgsql", Qt::CaseInsensitive) ) );
     }
 
     static bool isMySQL( QSqlDatabase db )
     {
-        return db.driverName().startsWith("QMYSQL") || (db.driverName().startsWith("QODBC") && db.databaseName().contains("MySQL") );
+        return db.driverName().startsWith("QMYSQL") || (db.driverName().startsWith("QODBC") && db.databaseName().contains("MySQL", Qt::CaseInsensitive) );
     }
     static bool isDB2( QSqlDatabase db )
     {
-        return db.driverName().startsWith("QDB2") || (db.driverName().startsWith("QODBC") && db.databaseName().contains("db2") );
+        return db.driverName().startsWith("QDB2") || (db.driverName().startsWith("QODBC") && db.databaseName().contains("db2", Qt::CaseInsensitive) );
     }
 
     // -1 on fail, else Oracle version

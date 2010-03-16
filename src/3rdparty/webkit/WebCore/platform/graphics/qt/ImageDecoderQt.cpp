@@ -79,7 +79,7 @@ void ImageDecoderQt::setData(SharedBuffer* data, bool allDataReceived)
     QByteArray imageData = QByteArray::fromRawData(m_data->data(), m_data->size());
     m_buffer = new QBuffer;
     m_buffer->setData(imageData);
-    m_buffer->open(QBuffer::ReadOnly);
+    m_buffer->open(QBuffer::ReadOnly | QIODevice::Unbuffered);
     m_reader = new QImageReader(m_buffer, m_format);
 }
 

@@ -68,12 +68,12 @@
 #include <eikappui.h>
 
 #ifdef Q_WS_S60
-#include <aknutils.h>               // AknLayoutUtils
+#include <AknUtils.h>               // AknLayoutUtils
 #include <avkon.hrh>                // EEikStatusPaneUidTitle
 #include <akntitle.h>               // CAknTitlePane
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
-#include <aknpopupfader.h>          // MAknFadedComponent and TAknPopupFader
+#include <AknPopupFader.h>          // MAknFadedComponent and TAknPopupFader
 #endif
 
 QT_BEGIN_NAMESPACE

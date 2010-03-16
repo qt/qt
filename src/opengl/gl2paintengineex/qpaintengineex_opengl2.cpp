@@ -1696,23 +1696,23 @@ void QGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFragmen
         QGLPoint bottomRight(right * c - bottom * s, right * s + bottom * c);
         QGLPoint bottomLeft(-right * c - bottom * s, -right * s + bottom * c);
 
-        vertexCoordinateArray.lineToArray(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(-bottomLeft.x + fragments[i].x, -bottomLeft.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(bottomLeft.x + fragments[i].x, bottomLeft.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(-bottomLeft.x + fragments[i].x, -bottomLeft.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(bottomLeft.x + fragments[i].x, bottomLeft.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
 
         QGLRect src(fragments[i].sourceLeft * dx, fragments[i].sourceTop * dy,
                     (fragments[i].sourceLeft + fragments[i].width) * dx,
                     (fragments[i].sourceTop + fragments[i].height) * dy);
 
-        textureCoordinateArray.lineToArray(src.right, src.bottom);
-        textureCoordinateArray.lineToArray(src.right, src.top);
-        textureCoordinateArray.lineToArray(src.left, src.top);
-        textureCoordinateArray.lineToArray(src.left, src.top);
-        textureCoordinateArray.lineToArray(src.left, src.bottom);
-        textureCoordinateArray.lineToArray(src.right, src.bottom);
+        textureCoordinateArray.addVertex(src.right, src.bottom);
+        textureCoordinateArray.addVertex(src.right, src.top);
+        textureCoordinateArray.addVertex(src.left, src.top);
+        textureCoordinateArray.addVertex(src.left, src.top);
+        textureCoordinateArray.addVertex(src.left, src.bottom);
+        textureCoordinateArray.addVertex(src.right, src.bottom);
 
         qreal opacity = fragments[i].opacity * q->state()->opacity;
         opacityArray << opacity << opacity << opacity << opacity << opacity << opacity;

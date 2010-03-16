@@ -282,8 +282,7 @@ QIODevicePrivate::~QIODevicePrivate()
     Certain flags, such as \c Unbuffered and \c Truncate, are
     meaningless when used with some subclasses. Some of these
     restrictions are implied by the type of device that is represented
-    by a subclass; for example, access to a QBuffer is always
-    unbuffered. In other cases, the restriction may be due to the
+    by a subclass. In other cases, the restriction may be due to the
     implementation, or may be imposed by the underlying platform; for
     example, QTcpSocket does not support \c Unbuffered mode, and
     limitations in the native API prevent QFile from supporting \c

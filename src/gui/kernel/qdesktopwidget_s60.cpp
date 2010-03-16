@@ -88,6 +88,7 @@ QDesktopWidgetPrivate::~QDesktopWidgetPrivate()
 
 void QDesktopWidgetPrivate::init(QDesktopWidget *that)
 {
+    Q_UNUSED(that);
 //    int screenCount=0;
 
     // ### TODO: Implement proper multi-display support
