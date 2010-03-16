@@ -96,6 +96,7 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
 
         code[UntransformedPositionVertexShader] = qglslUntransformedPositionVertexShader;
         code[PositionOnlyVertexShader] = qglslPositionOnlyVertexShader;
+        code[ComplexGeometryPositionOnlyVertexShader] = qglslComplexGeometryPositionOnlyVertexShader;
         code[PositionWithPatternBrushVertexShader] = qglslPositionWithPatternBrushVertexShader;
         code[PositionWithLinearGradientBrushVertexShader] = qglslPositionWithLinearGradientBrushVertexShader;
         code[PositionWithConicalGradientBrushVertexShader] = qglslPositionWithConicalGradientBrushVertexShader;
@@ -401,6 +402,7 @@ void QGLEngineSharedShaders::cleanupCustomStage(QGLCustomShaderStage* stage)
 QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
     : ctx(context),
       shaderProgNeedsChanging(true),
+      complexGeometry(false),
       srcPixelType(Qt::NoBrush),
       opacityMode(NoOpacity),
       maskType(NoMask),
@@ -442,7 +444,8 @@ GLuint QGLEngineShaderManager::getUniformLocation(Uniform id)
         "inverse_2_fmp2_m_radius2",
         "invertedTextureSize",
         "brushTransform",
-        "brushTexture"
+        "brushTexture",
+        "matrix"
     };
 
     if (uniformLocations.at(id) == GLuint(-1))
@@ -751,6 +754,8 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     requiredProgram.useTextureCoords = texCoords;
     requiredProgram.useOpacityAttribute = (opacityMode == AttributeOpacity);
     requiredProgram.usePmvMatrix = true;
+    if (complexGeometry)
+        requiredProgram.positionVertexShader = QGLEngineSharedShaders::ComplexGeometryPositionOnlyVertexShader;
 
     // At this point, requiredProgram is fully populated so try to find the program in the cache
     currentShaderProg = sharedShaders->findProgramInCache(requiredProgram);
