@@ -50,6 +50,7 @@ HEADERS += \
     $$PWD/qdeclarativestategroup_p.h \
     $$PWD/qdeclarativetransition_p.h \
     $$PWD/qdeclarativelistmodel_p.h\
+    $$PWD/qdeclarativelistmodel_p_p.h\
     $$PWD/qdeclarativelistaccessor_p.h \
     $$PWD/qdeclarativeopenmetaobject_p.h \
     $$PWD/qdeclarativenullablevalue_p_p.h \

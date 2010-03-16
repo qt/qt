@@ -1335,5 +1335,3 @@ void ModelObject::setValue(const QByteArray &name, const QVariant &val)
 
 
 QT_END_NAMESPACE
-
-#include <qdeclarativelistmodel.moc>
