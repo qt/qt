@@ -73,7 +73,7 @@ solaris-g++:isEqual(QT_ARCH,sparc) {
 }
 
 # Avoid JSC C API functions being exported.
-DEFINES += JS_EXPORT="" JS_EXPORTDATA=""
+DEFINES += JS_NO_EXPORT JS_EXPORTDATA=""
 
 INCLUDEPATH += $$PWD
 
