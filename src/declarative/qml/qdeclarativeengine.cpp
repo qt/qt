@@ -149,7 +149,6 @@ void QDeclarativeEnginePrivate::defineModule()
     qmlRegisterType<QDeclarativeComponent>("Qt",4,6,"Component");
     qmlRegisterType<QObject>("Qt",4,6,"QtObject");
     qmlRegisterType<QDeclarativeWorkerScript>("Qt",4,6,"WorkerScript");
-    qmlRegisterType<QDeclarativeWorkerListModel>("Qt",4,6,"WorkerListModel");
 
     qmlRegisterType<QDeclarativeBinding>();
 }

@@ -94,7 +94,6 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l VisualDataModel
 \o \l Package
 \o \l XmlListModel and XmlRole
-\o \l WorkerListModel
 \endlist
 
 \o
