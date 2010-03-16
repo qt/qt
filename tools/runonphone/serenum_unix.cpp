@@ -51,7 +51,7 @@ QList<SerialPortId> enumerateSerialPorts()
     QList<SerialPortId> list;
     QDir dir("/dev/serial/by-id/");
     QFileInfoList ports(dir.entryInfoList());
-    foreach(QFileInfo info, ports) {
+    foreach (const QFileInfo &info, ports) {
         if (!info.isDir()) {
             SerialPortId id;
             id.friendlyName = info.fileName();
