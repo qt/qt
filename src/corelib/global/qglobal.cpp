@@ -58,6 +58,11 @@
 #include <stdarg.h>
 #include <string.h>
 
+#ifndef QT_NO_EXCEPTIONS
+#  include <string>
+#  include <exception>
+#endif
+
 #if !defined(Q_OS_WINCE)
 #  include <errno.h>
 #  if defined(Q_CC_MSVC)

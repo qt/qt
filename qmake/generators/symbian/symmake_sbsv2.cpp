@@ -386,7 +386,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
 
     //write emulator deployment
     t << "#if defined(WINSCW)" << endl;
-    initProjectDeploySymbian(project, depList, remoteTestPath, false,
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
         QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM), QString(), generatedDirs, generatedFiles);
     writeSbsDeploymentList(depList, t);
     t << "#endif" << endl;
@@ -394,7 +394,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     //write ROM deployment
     remoteTestPath = epocRoot() + QLatin1String("epoc32/data/z/private/") + privateDirUid;
     depList.clear();
-    initProjectDeploySymbian(project, depList, remoteTestPath, false,
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
         QLatin1String(ROM_DEPLOYMENT_PLATFORM), QString(), generatedDirs, generatedFiles);
     writeSbsDeploymentList(depList, t);
     t << endl;

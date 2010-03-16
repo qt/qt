@@ -65,6 +65,10 @@ UnixMakefileGenerator::init()
         }
     }
 
+    if (project->isEmpty("QMAKE_PREFIX_SHLIB"))
+        // Prevent crash when using the empty variable.
+        project->values("QMAKE_PREFIX_SHLIB").append("");
+
     if(!project->isEmpty("QMAKE_FAILED_REQUIREMENTS")) /* no point */
         return;
 
@@ -449,7 +453,9 @@ UnixMakefileGenerator::findLibraries()
                     if(!libdirs.contains(f))
                         libdirs.append(f);
                 } else if(opt.startsWith("-l")) {
-                    if (project->isActiveConfig("rvct_linker")) {
+                    if (!project->isEmpty("QMAKE_RVCT_LINKSTYLE")) {
+                        (*it) = opt.mid(2);
+                    } else if (project->isActiveConfig("rvct_linker")) {
                         (*it) = "lib" + opt.mid(2) + ".so";
                     } else {
                         stub = opt.mid(2);
@@ -489,26 +495,29 @@ UnixMakefileGenerator::findLibraries()
                 QStringList extens;
                 if(!extn.isNull())
                     extens << extn;
+                else if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB"))
+                    // In Symbian you link to the stub .lib file, but run with the .dll file.
+                    extens << "lib";
                 else
                     extens << project->values("QMAKE_EXTENSION_SHLIB").first() << "a";
                 for(QStringList::Iterator extit = extens.begin(); extit != extens.end(); ++extit) {
                     if(dir.isNull()) {
-                        QString lib_stub;
                         for(QList<QMakeLocalFileName>::Iterator dep_it = libdirs.begin(); dep_it != libdirs.end(); ++dep_it) {
-                            if(exists((*dep_it).local() + Option::dir_sep + "lib" + stub +
-                                      "." + (*extit))) {
-                                lib_stub = stub;
+                            QString pathToLib = ((*dep_it).local() + Option::dir_sep
+                                    + project->values("QMAKE_PREFIX_SHLIB").first()
+                                    + stub + "." + (*extit));
+                            if(exists(pathToLib)) {
+                                if (!project->isEmpty("QMAKE_RVCT_LINKSTYLE"))
+                                    (*it) = pathToLib;
+                                else
+                                    (*it) = "-l" + stub;
+                                found = true;
                                 break;
                             }
                         }
-                        if(!lib_stub.isNull()) {
-                            (*it) = "-l" + lib_stub;
-                            found = true;
-                            break;
-                        }
                     } else {
-                        if(exists("lib" + stub + "." + (*extit))) {
-                            (*it) = "lib" + stub + "." + (*extit);
+                        if(exists(project->values("QMAKE_PREFIX_SHLIB").first() + stub + "." + (*extit))) {
+                            (*it) = project->values("QMAKE_PREFIX_SHLIB").first() + stub + "." + (*extit);
                             found = true;
                             break;
                         }
@@ -516,8 +525,8 @@ UnixMakefileGenerator::findLibraries()
                 }
                 if(!found && project->isActiveConfig("compile_libtool")) {
                     for(int dep_i = 0; dep_i < libdirs.size(); ++dep_i) {
-                        if(exists(libdirs[dep_i].local() + Option::dir_sep + "lib" + stub + Option::libtool_ext)) {
-                            (*it) = libdirs[dep_i].real() + Option::dir_sep + "lib" + stub + Option::libtool_ext;
+                        if(exists(libdirs[dep_i].local() + Option::dir_sep + project->values("QMAKE_PREFIX_SHLIB").first() + stub + Option::libtool_ext)) {
+                            (*it) = libdirs[dep_i].real() + Option::dir_sep + project->values("QMAKE_PREFIX_SHLIB").first() + stub + Option::libtool_ext;
                             found = true;
                             break;
                         }
@@ -557,7 +566,7 @@ UnixMakefileGenerator::processPrlFiles()
                     for(int dep_i = 0; dep_i < libdirs.size(); ++dep_i) {
                         const QMakeLocalFileName &lfn = libdirs[dep_i];
                         if(!project->isActiveConfig("compile_libtool")) { //give them the .libs..
-                            QString la = lfn.local() + Option::dir_sep + "lib" + lib + Option::libtool_ext;
+                            QString la = lfn.local() + Option::dir_sep + project->values("QMAKE_PREFIX_SHLIB").first() + lib + Option::libtool_ext;
                             if(exists(la) && QFile::exists(lfn.local() + Option::dir_sep + ".libs")) {
                                 QString dot_libs = lfn.real() + Option::dir_sep + ".libs";
                                 l.append("-L" + dot_libs);
@@ -565,7 +574,7 @@ UnixMakefileGenerator::processPrlFiles()
                             }
                         }
 
-                        QString prl = lfn.local() + Option::dir_sep + "lib" + lib;
+                        QString prl = lfn.local() + Option::dir_sep + project->values("QMAKE_PREFIX_SHLIB").first() + lib;
                         if(!project->isEmpty("QMAKE_" + lib.toUpper() + "_SUFFIX"))
                             prl += project->first("QMAKE_" + lib.toUpper() + "_SUFFIX");
                         if(processPrlFile(prl)) {

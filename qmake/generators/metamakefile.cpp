@@ -443,6 +443,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "msvc_vcproj.h"
 #include "symmake_abld.h"
 #include "symmake_sbsv2.h"
+#include "symbian_makefile.h"
 QT_END_INCLUDE_NAMESPACE
 
 MakefileGenerator *
@@ -476,6 +477,8 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
         mkfile = new SymbianAbldMakefileGenerator;
     } else if(gen == "SYMBIAN_SBSV2") {
         mkfile = new SymbianSbsv2MakefileGenerator;
+    } else if(gen == "SYMBIAN_UNIX") {
+        mkfile = new SymbianMakefileTemplate<UnixMakefileGenerator>;
     } else {
         fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
     }
@@ -504,7 +507,7 @@ MetaMakefileGenerator::modesForGenerator(const QString &gen,
     } else if (gen == "PROJECTBUILDER" || gen == "XCODE") {
         *host_mode = Option::HOST_MACX_MODE;
         *target_mode = Option::TARG_MACX_MODE;
-    } else if (gen == "SYMBIAN_ABLD" || gen == "SYMBIAN_SBSV2") {
+    } else if (gen == "SYMBIAN_ABLD" || gen == "SYMBIAN_SBSV2" || gen == "SYMBIAN_UNIX") {
 #if defined(Q_OS_MAC)
         *host_mode = Option::HOST_MACX_MODE;
 #elif defined(Q_OS_UNIX)
