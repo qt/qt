@@ -125,9 +125,7 @@ symbian: {
     }
 
     contains(QT_CONFIG, declarative): {
-        # TODO FIXME For some reason QtDeclarative cannot install on symbian/linux-armcc.
-        # Revert this patch and investigate later.
-        symbian-abld|symbian-sbsv2:qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtDeclarative.dll
+        qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtDeclarative.dll
     }
 
     graphicssystems_plugins.path = c:$$QT_PLUGINS_BASE_DIR/graphicssystems
