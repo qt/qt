@@ -3147,7 +3147,7 @@ QString QLocale::toString(double i, char f, int prec) const
     On Windows and Mac, this locale will use the decimal/grouping characters and date/time
     formats specified in the system configuration panel.
 
-    \sa QTextCodec::locale() c()
+    \sa c()
 */
 
 QLocale QLocale::system()

@@ -181,7 +181,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     // Get the others informations:
     JSC::JSObject *callee = frame->callee();
     if (callee && callee->inherits(&JSC::InternalFunction::info))
-        functionName = JSC::asInternalFunction(callee)->name(&frame->globalData());
+        functionName = JSC::asInternalFunction(callee)->name(frame);
     if (callee && callee->inherits(&JSC::JSFunction::info)) {
         functionType = QScriptContextInfo::ScriptFunction;
         JSC::FunctionExecutable *body = JSC::asFunction(callee)->jsExecutable();

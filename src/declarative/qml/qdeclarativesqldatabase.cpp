@@ -217,9 +217,15 @@ static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEn
         if (context->argumentCount() > 1) {
             QScriptValue values = context->argument(1);
             if (values.isObject()) {
-                for (QScriptValueIterator it(values); it.hasNext();) {
-                    it.next();
-                    query.bindValue(it.name(),it.value().toVariant());
+                if (values.isArray()) {
+                    int size = values.property(QLatin1String("length")).toInt32();
+                    for (int i = 0; i < size; ++i)
+                        query.bindValue(i, values.property(i).toVariant());
+                } else {
+                    for (QScriptValueIterator it(values); it.hasNext();) {
+                        it.next();
+                        query.bindValue(it.name(),it.value().toVariant());
+                    }
                 }
             } else {
                 query.bindValue(0,values.toVariant());

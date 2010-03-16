@@ -41,7 +41,6 @@
 
 #include "qplatformdefs.h"
 #include "qfileinfo.h"
-#include "qfsfileengine_p.h"
 #include "qglobal.h"
 #include "qdir.h"
 #include "qfileinfo_p.h"
@@ -73,50 +72,6 @@ void QFileInfoPrivate::initFileEngine(const QString &file)
     data->clear();
     data->fileEngine = QAbstractFileEngine::create(file);
     data->fileName = file;
-}
-
-bool QFileInfoPrivate::hasAccess(Access access) const
-{
-    if (!(getFileFlags(QAbstractFileEngine::PermsMask
-                       | QAbstractFileEngine::LocalDiskFlag) & QAbstractFileEngine::LocalDiskFlag)) {
-        switch (access) {
-        case ReadAccess:
-            return getFileFlags(QAbstractFileEngine::ReadUserPerm);
-        case WriteAccess:
-            return getFileFlags(QAbstractFileEngine::WriteUserPerm);
-        case ExecuteAccess:
-            return getFileFlags(QAbstractFileEngine::ExeUserPerm);
-        default:
-            return false;
-        }
-    }
-
-    int mode = 0;
-    switch (access) {
-    case ReadAccess:
-        mode = R_OK;
-        break;
-    case WriteAccess:
-        mode = W_OK;
-        break;
-    case ExecuteAccess:
-        mode = X_OK;
-        break;
-    };
-#ifdef Q_OS_UNIX
-    return QT_ACCESS(QFile::encodeName(data->fileName).data(), mode) == 0;
-#endif
-#ifdef Q_OS_WIN
-    if ((access == ReadAccess && !getFileFlags(QAbstractFileEngine::ReadUserPerm))
-        || (access == WriteAccess && !getFileFlags(QAbstractFileEngine::WriteUserPerm))) {
-        return false;
-    }
-    if (access == ExecuteAccess)
-        return getFileFlags(QAbstractFileEngine::ExeUserPerm);
-
-    return ::_waccess((wchar_t*)QFSFileEnginePrivate::longFileName(data->fileName).utf16(), mode) == 0;
-#endif
-    return false;
 }
 
 void QFileInfoPrivate::detach()
@@ -893,7 +848,7 @@ bool QFileInfo::isReadable() const
     Q_D(const QFileInfo);
     if (!d->data->fileEngine)
         return false;
-    return d->hasAccess(QFileInfoPrivate::ReadAccess);
+    return d->getFileFlags(QAbstractFileEngine::ReadUserPerm);
 }
 
 /*!
@@ -906,7 +861,7 @@ bool QFileInfo::isWritable() const
     Q_D(const QFileInfo);
     if (!d->data->fileEngine)
         return false;
-    return d->hasAccess(QFileInfoPrivate::WriteAccess);
+    return d->getFileFlags(QAbstractFileEngine::WriteUserPerm);
 }
 
 /*!
@@ -919,7 +874,7 @@ bool QFileInfo::isExecutable() const
     Q_D(const QFileInfo);
     if (!d->data->fileEngine)
         return false;
-    return d->hasAccess(QFileInfoPrivate::ExecuteAccess);
+    return d->getFileFlags(QAbstractFileEngine::ExeUserPerm);
 }
 
 /*!

@@ -522,6 +522,8 @@ void QNlaEngine::networksChanged()
 
             bool changed = false;
 
+            ptr->mutex.lock();
+
             if (ptr->isValid != cpPriv->isValid) {
                 ptr->isValid = cpPriv->isValid;
                 changed = true;
@@ -537,8 +539,13 @@ void QNlaEngine::networksChanged()
                 changed = true;
             }
 
-            if (changed)
+            ptr->mutex.unlock();
+
+            if (changed) {
+                locker.unlock();
                 emit configurationChanged(ptr);
+                locker.relock();
+            }
 
             delete cpPriv;
         } else {
@@ -546,7 +553,9 @@ void QNlaEngine::networksChanged()
 
             accessPointConfigurations.insert(ptr->id, ptr);
 
+            locker.unlock();
             emit configurationAdded(ptr);
+            locker.relock();
         }
     }
 
@@ -554,9 +563,12 @@ void QNlaEngine::networksChanged()
         QNetworkConfigurationPrivatePointer ptr =
             accessPointConfigurations.take(previous.takeFirst());
 
+        locker.unlock();
         emit configurationRemoved(ptr);
+        locker.relock();
     }
 
+    locker.unlock();
     emit updateCompleted();
 }
 
