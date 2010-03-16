@@ -74,6 +74,7 @@ QT_BEGIN_NAMESPACE
 
 class QTimer;
 class QIODevice;
+class QAbstractAudioDeviceInfo;
 
 namespace QtMultimediaInternal
 {
@@ -104,6 +105,7 @@ public:
     QTimer*         intervalTimer;
     AudioStreamBasicDescription streamFormat;
     AudioStreamBasicDescription deviceFormat;
+    QAbstractAudioDeviceInfo *audioDeviceInfo;
 
     QAudioInputPrivate(const QByteArray& device, QAudioFormat const& format);
     ~QAudioInputPrivate();
