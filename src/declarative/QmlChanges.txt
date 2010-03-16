@@ -57,6 +57,14 @@ matchProperties and matchTargets have been renamed back to properties and target
 The semantics are explained in the PropertyAnimation::properties documentation
 and the animation overview documentation.
 
+Easing curves and their parameters are now specified via dot properties:
+* easing.type : enum
+* easing.amplitude : real
+* easing.overshoot : real
+* easing.period : real
+For example:
+PropertyAnimation { properties: "y"; easing.type: "InOutElastic"; easing.amplitude: 2.0; easing.period: 1.5 }
+
 C++ API
 -------
 QML_DEFINE_... definition macros, previously global macros, are replaced by
