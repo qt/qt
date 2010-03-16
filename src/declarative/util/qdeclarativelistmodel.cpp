@@ -194,14 +194,34 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
     \section2 Using threaded list models with WorkerScript
 
-    ListModel can be used together with WorkerScript to define a list model
-    that is accessible from multiple threads. This is useful if list
-    modifications are synchronous and take some time: the list operations can
-    be moved to a different thread to avoid blocking of the main GUI thread.
+    ListModel can be used together with WorkerScript access a list model
+    from multiple threads. This is useful if list modifications are
+    synchronous and take some time: the list operations can be moved to a
+    different thread to avoid blocking of the main GUI thread.
 
-    Note that a list model is to be accessed from a WorkerScript, it \bold cannot
-    contain nested list data. So, this model cannot be used from a WorkerScript
-    because of the "attributes" value which contains a list:
+    Here is an example that uses WorkerScript to periodically append the
+    current time to a list model:
+
+    \snippet examples/declarative/listmodel-threaded/timedisplay.qml 0
+
+    The included file, \tt dataloader.js, looks like this:
+
+    \snippet examples/declarative/listmodel-threaded/dataloader.js 0
+
+    The application's \tt Timer object periodically sends a message to the
+    worker script by calling \tt WorkerScript::sendMessage(). When this message
+    is received, \tt WorkerScript.onMessage() is invoked in
+    \tt dataloader.js, which appends the current time to the list model.
+
+    Note the call to sync() from the \c WorkerScript.onMessage() handler.
+    Without this call, the changes made to the list are not reflected in the
+    list model in the main thread.
+
+    \section3 Limitations
+
+    If a list model is to be accessed from a WorkerScript, it \bold cannot
+    contain nested list data. So, the following model cannot be used from a WorkerScript
+    because of the list contained in the "attributes" property:
 
     \code
     ListModel {
@@ -218,26 +238,6 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     \endcode
 
     In addition, the WorkerScript cannot add any nested list data to the model.
-
-    \section3 Example
-
-    To use a list model from a worker script, pass the model to the script
-    through the onMessage() handler, make the list modifications, and call
-    sync() to save the changes to the model data.
-
-    Here is an example application that uses WorkerScript to append the
-    current time to a ListModel:
-
-    \snippet examples/declarative/listmodel-threaded/timedisplay.qml 0
-
-    The included file, \tt dataloader.js, looks like this:
-
-    \snippet examples/declarative/listmodel-threaded/dataloader.js 0
-
-    The application's \tt Timer object periodically sends a message to the
-    worker script by calling \tt WorkerScript::sendMessage(). When this message
-    is received, \tt WorkerScript.onMessage() is invoked in
-    \tt dataloader.js, which appends the current time to the list model.
 
     \sa {qmlmodels}{Data Models}, WorkerScript
 */
