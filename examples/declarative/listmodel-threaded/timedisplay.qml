@@ -10,7 +10,7 @@ ListView {
         Text { text: time }
     }
 
-    WorkerListModel { id: listModel }
+    ListModel { id: listModel }
 
     WorkerScript {
         id: worker

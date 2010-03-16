@@ -67,12 +67,21 @@ class Q_AUTOTEST_EXPORT QDeclarativeDeclarativeData : public QDeclarativeData
 {
 public:
     QDeclarativeDeclarativeData(QDeclarativeContext *ctxt = 0)
-        : context(ctxt), bindings(0), nextContextObject(0), prevContextObject(0),
-          bindingBitsSize(0), bindingBits(0), outerContext(0), lineNumber(0), 
-          columnNumber(0), deferredComponent(0), deferredIdx(0), attachedProperties(0), 
-          propertyCache(0), guards(0) {}
+        : indestructible(true), explicitIndestructibleSet(false), context(ctxt), 
+          bindings(0), nextContextObject(0), prevContextObject(0), bindingBitsSize(0), bindingBits(0), 
+          outerContext(0), lineNumber(0), columnNumber(0), deferredComponent(0), deferredIdx(0), 
+          attachedProperties(0), propertyCache(0), guards(0) {}
 
     virtual void destroyed(QObject *);
+    virtual void parentChanged(QObject *, QObject *);
+
+    void setImplicitDestructible() {
+        if (!explicitIndestructibleSet) indestructible = false;
+    }
+
+    quint32 indestructible:1;
+    quint32 explicitIndestructibleSet:1;
+    quint32 dummy:29;
 
     QDeclarativeContext *context;
     QDeclarativeAbstractBinding *bindings;

@@ -137,6 +137,9 @@ public:
     SnapMode snapMode() const;
     void setSnapMode(SnapMode mode);
 
+    enum PositionMode { Beginning, Center, End, Visible, Contain };
+    Q_ENUMS(PositionMode)
+
     static QDeclarativeGridViewAttached *qmlAttachedProperties(QObject *);
 
 public Q_SLOTS:
@@ -144,7 +147,7 @@ public Q_SLOTS:
     void moveCurrentIndexDown();
     void moveCurrentIndexLeft();
     void moveCurrentIndexRight();
-    void positionViewAtIndex(int index);
+    void positionViewAtIndex(int index, int mode);
 
 Q_SIGNALS:
     void countChanged();
@@ -164,6 +167,7 @@ Q_SIGNALS:
     void snapModeChanged();
 
 protected:
+    virtual bool event(QEvent *event);
     virtual void viewportMoved();
     virtual qreal minYExtent() const;
     virtual qreal maxYExtent() const;
@@ -181,7 +185,6 @@ private Q_SLOTS:
     void destroyRemoved();
     void createdItem(int index, QDeclarativeItem *item);
     void destroyingItem(QDeclarativeItem *item);
-    void layout();
 
 private:
     void refill();
@@ -192,7 +195,7 @@ class QDeclarativeGridViewAttached : public QObject
     Q_OBJECT
 public:
     QDeclarativeGridViewAttached(QObject *parent)
-        : QObject(parent), m_isCurrent(false), m_delayRemove(false) {}
+        : QObject(parent), m_view(0), m_isCurrent(false), m_delayRemove(false) {}
     ~QDeclarativeGridViewAttached() {}
 
     Q_PROPERTY(QDeclarativeGridView *view READ view CONSTANT)
