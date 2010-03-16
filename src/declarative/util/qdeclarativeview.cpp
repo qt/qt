@@ -298,6 +298,7 @@ QDeclarativeView::~QDeclarativeView()
 void QDeclarativeView::setSource(const QUrl& url)
 {
     d->source = url;
+    d->engine.setBaseUrl(url);
     d->execute();
 }
 

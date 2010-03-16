@@ -1429,9 +1429,89 @@ public:
 
     QSet<QString> qmlDirFilesForWhichPluginsHaveBeenLoaded;
 
-    bool add(const QUrl& base, const QString &qmldircontentnetwork, const QString& uri, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType, const QStringList& importPath, QDeclarativeEngine *engine)
+    QString importExtension(const QString &absoluteFilePath, const QString &uri, QDeclarativeEngine *engine) {
+        QFile file(absoluteFilePath);
+        QString dir = QFileInfo(file).path();
+        QString qmldircontent;
+        if (file.open(QFile::ReadOnly)) {
+            qmldircontent = QString::fromUtf8(file.readAll());
+            if (qmlImportTrace())
+                qDebug() << "QDeclarativeEngine::add: loaded" << absoluteFilePath;
+        }
+
+        if (! qmlDirFilesForWhichPluginsHaveBeenLoaded.contains(absoluteFilePath)) {
+            qmlDirFilesForWhichPluginsHaveBeenLoaded.insert(absoluteFilePath);
+
+            QDeclarativeDirParser qmldirParser;
+            qmldirParser.setSource(qmldircontent);
+            qmldirParser.parse();
+
+            foreach (const QDeclarativeDirParser::Plugin &plugin, qmldirParser.plugins()) {
+                QDir pluginDir(dir + QDir::separator() + plugin.path);
+                if (dir.startsWith(QLatin1Char(':')))
+                    pluginDir = QDir(QCoreApplication::applicationDirPath());
+                QString resolvedFilePath =
+                        QDeclarativeEnginePrivate::get(engine)
+                        ->resolvePlugin(pluginDir,
+                                        plugin.name);
+
+                if (!resolvedFilePath.isEmpty()) {
+                    engine->importExtension(resolvedFilePath, uri);
+                }
+            }
+        }
+        return qmldircontent;
+    }
+
+    QString resolvedUri(const QString &dir_arg, QDeclarativeEngine *engine)
+    {
+        QString dir = dir_arg;
+        if (dir.endsWith(QLatin1Char('/')) || dir.endsWith(QLatin1Char('\\')))
+            dir.chop(1);
+
+        QStringList paths;
+
+        QUrl baseUrl = QDeclarativeEnginePrivate::get(engine)->baseUrl;
+        if (!baseUrl.isEmpty()) {
+            QString baseDir = QFileInfo(toLocalFileOrQrc(baseUrl)).path();
+            paths += baseDir;
+        }
+
+        QString applicationDirPath = QCoreApplication::applicationDirPath();
+        if (!applicationDirPath.isEmpty())
+            paths += applicationDirPath;
+
+        paths += QDeclarativeEnginePrivate::get(engine)->environmentImportPath;
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
+        QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
+#else
+        QString builtinPath;
+#endif
+        if (!builtinPath.isEmpty())
+            paths += builtinPath;
+
+        // add fileImportPath last, this is *not* search order.
+        paths += QDeclarativeEnginePrivate::get(engine)->fileImportPath;
+
+        QString stableRelativePath = dir;
+        foreach( QString path, paths) {
+            if (dir.startsWith(path)) {
+                stableRelativePath = dir.mid(path.length()+1);
+                break;
+            }
+        }
+        stableRelativePath.replace(QLatin1Char('/'), QLatin1Char('.'));
+        stableRelativePath.replace(QLatin1Char('\\'), QLatin1Char('.'));
+        return stableRelativePath;
+    }
+
+
+
+
+    bool add(const QUrl& base, const QString &qmldircontentnetwork, const QString& uri_arg, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType, QDeclarativeEngine *engine)
     {
         QString qmldircontent = qmldircontentnetwork;
+        QString uri = uri_arg;
         QDeclarativeEnginePrivate::ImportedNamespace *s;
         if (prefix.isEmpty()) {
             s = &unqualifiedset;
@@ -1440,31 +1520,34 @@ public:
             if (!s)
                 set.insert(prefix,(s=new QDeclarativeEnginePrivate::ImportedNamespace));
         }
+
+
+
         QString url = uri;
         if (importType == QDeclarativeScriptParser::Import::Library) {
             url.replace(QLatin1Char('.'), QLatin1Char('/'));
             bool found = false;
             QString dir;            
 
+
             // user import paths
             QStringList paths;
-
             // base..
             QString localFileOrQrc = toLocalFileOrQrc(base);
             QString localFileOrQrcPath = QFileInfo(localFileOrQrc).path();
             paths += localFileOrQrcPath;
-            paths += importPath;
+            paths += QDeclarativeEnginePrivate::get(engine)->fileImportPath;
 
             QString applicationDirPath = QCoreApplication::applicationDirPath();
             if (!applicationDirPath.isEmpty())
                 paths += applicationDirPath;
 
             paths += QDeclarativeEnginePrivate::get(engine)->environmentImportPath;
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
+    #if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
             QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
-#else
+    #else
             QString builtinPath;
-#endif
+    #endif
             if (!builtinPath.isEmpty())
                 paths += builtinPath;
 
@@ -1478,41 +1561,28 @@ public:
                     found = true;
 
                     url = QUrl::fromLocalFile(fi.absolutePath()).toString();
-
-                    QFile file(absoluteFilePath);
-                    if (file.open(QFile::ReadOnly)) {
-                        qmldircontent = QString::fromUtf8(file.readAll());
-                        if (qmlImportTrace())
-                            qDebug() << "QDeclarativeEngine::add: loaded" << absoluteFilePath;
-                    }
-
-                    if (! qmlDirFilesForWhichPluginsHaveBeenLoaded.contains(absoluteFilePath)) {
-                        qmlDirFilesForWhichPluginsHaveBeenLoaded.insert(absoluteFilePath);
-
-                        QDeclarativeDirParser qmldirParser;
-                        qmldirParser.setSource(qmldircontent);
-                        qmldirParser.parse();
-
-                        foreach (const QDeclarativeDirParser::Plugin &plugin, qmldirParser.plugins()) {
-                            QDir pluginDir(dir + QDir::separator() + plugin.path);
-                            if (p.startsWith(QLatin1Char(':')))
-                                pluginDir = QDir(QCoreApplication::applicationDirPath());
-                            QString resolvedFilePath =
-                                    QDeclarativeEnginePrivate::get(engine)
-                                    ->resolvePlugin(pluginDir,
-                                                    plugin.name);
-
-                            if (!resolvedFilePath.isEmpty()) {
-                                engine->importExtension(resolvedFilePath, uri);
-                            }
-                        }
-                    }
-
+                    uri = resolvedUri(dir, engine);
+                    qmldircontent = importExtension(absoluteFilePath, uri, engine);
                     break;
                 }
             }
 
         } else {
+
+            if (importType == QDeclarativeScriptParser::Import::File && qmldircontent.isEmpty()) {
+                QUrl importUrl = base.resolved(QUrl(uri + QLatin1String("/qmldir")));
+                QString localFileOrQrc = toLocalFileOrQrc(importUrl);
+                if (!localFileOrQrc.isEmpty()) {
+                    uri = resolvedUri(toLocalFileOrQrc(base.resolved(QUrl(uri))), engine);
+                    qmldircontent = importExtension(localFileOrQrc,
+                                                    uri,
+                                                    engine);
+
+                    if (uri.endsWith(QLatin1Char('/')))
+                        uri.chop(1);
+                }
+            }
+
             url = base.resolved(QUrl(url)).toString();
         }
 
@@ -1797,6 +1867,8 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
             return fileInfo.absoluteFilePath();
     }
 
+    if (qmlImportTrace())
+        qDebug() << "QDeclarativeEngine::resolvePlugin: Could not resolve plugin" << baseName << "in" << dir.absolutePath();
     return QString();
 }
 
@@ -1890,8 +1962,8 @@ bool QDeclarativeEnginePrivate::addToImport(Imports* imports, const QString &qml
 {
     QDeclarativeEngine *engine = QDeclarativeEnginePrivate::get(const_cast<QDeclarativeEnginePrivate *>(this));
     if (qmlImportTrace())
-        qDebug() << "QDeclarativeEngine::addToImport(" << imports << uri << prefix << vmaj << '.' << vmin << (importType==QDeclarativeScriptParser::Import::Library? "Library" : "File");
-    bool ok = imports->d->add(imports->d->base,qmldircontentnetwork, uri,prefix,vmaj,vmin,importType,fileImportPath, engine);
+        qDebug().nospace() << "QDeclarativeEngine::addToImport " << imports << " " << uri << " " << vmaj << '.' << vmin << " " << (importType==QDeclarativeScriptParser::Import::Library? "Library" : "File") << " as " << prefix;
+    bool ok = imports->d->add(imports->d->base,qmldircontentnetwork, uri,prefix,vmaj,vmin,importType, engine);
     return ok;
 }
 
