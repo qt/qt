@@ -149,7 +149,6 @@ void QDeclarativeEnginePrivate::defineModule()
     QML_REGISTER_TYPE(Qt,4,6,Component,QDeclarativeComponent);
     QML_REGISTER_TYPE(Qt,4,6,QtObject,QObject);
     QML_REGISTER_TYPE(Qt,4,6,WorkerScript,QDeclarativeWorkerScript);
-    QML_REGISTER_TYPE(Qt,4,6,WorkerListModel,QDeclarativeWorkerListModel);
 
     QML_REGISTER_NOCREATE_TYPE(QDeclarativeBinding);
 }
