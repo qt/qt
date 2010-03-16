@@ -212,28 +212,53 @@ contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
     # If you change this, also see application_icon.prf
     baseTarget = $$replace(baseTarget, " ",_)
 
-    # Make our own extra compiler target in order to get dependencies for generated
+    # Make our own extra target in order to get dependencies for generated
     # files right. This also avoids the warning about files not found.
-    symbianGenResource.inputFile = $${baseTarget}.rss
-    symbianGenResource.input = symbianGenResource.inputFile
-    # Reuse the command from earlier.
-    symbianGenResource.commands = $$symbianresources.commands
-    symbianGenResource.output = $$symbianresources.output
-    symbianGenResource.CONFIG = no_link target_predeps
+    symbianGenResource.target = $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
+    symbianGenResource.commands = cpp -nostdinc -undef \
+                                  $$symbian_resources_INCLUDES \
+                                  $$symbian_resources_DEFINES \
+                                  $${baseTarget}.rss \
+                                  -o $${symbian_resources_RCC_DIR}/$${baseTarget}.rpp \
+                                  && rcomp -u -m045,046,047 \
+                                  -s$${symbian_resources_RCC_DIR}/$${baseTarget}.rpp \
+                                  -o$${symbianDestdir}/$${baseTarget}.rsc \
+                                  -h$${symbian_resources_RCC_DIR}/$${baseTarget}.rsg \
+                                  -i$${baseTarget}.rss
+    symbianGenResource.depends = $${baseTarget}.rss
+    PRE_TARGETDEPS += $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
+    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
+    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseTarget}.rpp
+    QMAKE_DISTCLEAN += $${baseTarget}.rss
+    QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}.rsc
 
-    symbianGenRegResource.inputFile = $${baseTarget}_reg.rss
-    symbianGenRegResource.input = symbianGenRegResource.inputFile
-    symbianGenRegResource.commands = $$symbianresources.commands
-    symbianGenRegResource.output = $$symbianresources.output
-    symbianGenRegResource.CONFIG = no_link target_predeps
-    symbianGenRegResource.depends = $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
-
-    QMAKE_EXTRA_COMPILERS += symbianGenResource symbianGenRegResource
-
-    QMAKE_DISTCLEAN += $${TARGET}.rss
-    QMAKE_DISTCLEAN += $${TARGET}.rsc
+    symbianGenRegResource.target = $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg
+    symbianGenRegResource.commands = cpp -nostdinc -undef \
+                                     $$symbian_resources_INCLUDES \
+                                     $$symbian_resources_DEFINES \
+                                     $${baseTarget}_reg.rss \
+                                     -o $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp \
+                                     && rcomp -u -m045,046,047 \
+                                     -s$${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp \
+                                     -o$${symbianDestdir}/$${baseTarget}_reg.rsc \
+                                     -h$${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg \
+                                     -i$${baseTarget}_reg.rss
+    symbianGenRegResource.depends = $${baseTarget}_reg.rss $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
+    PRE_TARGETDEPS += $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg
+    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg
+    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp
     QMAKE_DISTCLEAN += $${TARGET}_reg.rss
-    QMAKE_DISTCLEAN += $${TARGET}_reg.rsc
+    QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}_reg.rsc
+
+    # Trick to get qmake to create the RCC_DIR for us.
+    symbianRccDirCreation.input = SOURCES
+    symbianRccDirCreation.commands =
+    symbianRccDirCreation.output = $${symbian_resources_RCC_DIR}/symbian_resource_dummy
+    symbianRccDirCreation.CONFIG = no_link combine
+
+    QMAKE_EXTRA_TARGETS += symbianGenResource symbianGenRegResource
+    QMAKE_EXTRA_COMPILERS += symbianRccDirCreation
+
     QMAKE_DISTCLEAN += $${TARGET}.loc
 }
 
