@@ -144,19 +144,19 @@ void QDeclarativeImageBase::load()
             static int thisRequestProgress = -1;
             static int thisRequestFinished = -1;
             if (replyDownloadProgress == -1) {
-                replyDownloadProgress = 
+                replyDownloadProgress =
                     QDeclarativePixmapReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
-                replyFinished = 
+                replyFinished =
                     QDeclarativePixmapReply::staticMetaObject.indexOfSignal("finished()");
-                thisRequestProgress = 
+                thisRequestProgress =
                     QDeclarativeImageBase::staticMetaObject.indexOfSlot("requestProgress(qint64,qint64)");
                 thisRequestFinished =
                     QDeclarativeImageBase::staticMetaObject.indexOfSlot("requestFinished()");
             }
 
-            QMetaObject::connect(reply, replyFinished, this, 
+            QMetaObject::connect(reply, replyFinished, this,
                                  thisRequestFinished, Qt::DirectConnection);
-            QMetaObject::connect(reply, replyDownloadProgress, this, 
+            QMetaObject::connect(reply, replyDownloadProgress, this,
                                  thisRequestProgress, Qt::DirectConnection);
         } else {
             //### should be unified with requestFinished
@@ -219,7 +219,6 @@ void QDeclarativeImageBase::componentComplete()
 
 void QDeclarativeImageBase::pixmapChange()
 {
-    emit pixmapChanged();
 }
 
 QT_END_NAMESPACE

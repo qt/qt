@@ -3,4 +3,5 @@ SUBDIRS = \
         qpainter \
         qregion \
         qtransform \
-        qtracebench
+        qtracebench \
+        qtbench

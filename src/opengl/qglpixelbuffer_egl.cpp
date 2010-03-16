@@ -113,7 +113,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
     }
 
     // Retrieve the actual format properties.
-    qt_egl_update_format(*ctx, format);
+    qt_glformat_from_eglconfig(format, ctx->config());
 
     // Create the attributes needed for the pbuffer.
     QEglProperties attribs;

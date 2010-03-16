@@ -99,9 +99,26 @@ protected:
 QGstreamerVideoWidgetControl::QGstreamerVideoWidgetControl(QObject *parent)
     : QVideoWidgetControl(parent)
     , m_videoSink(0)
-    , m_widget(new QGstreamerVideoWidget)
+    , m_widget(0)
     , m_fullScreen(false)
+{    
+}
+
+QGstreamerVideoWidgetControl::~QGstreamerVideoWidgetControl()
 {
+    if (m_videoSink)
+        gst_object_unref(GST_OBJECT(m_videoSink));
+
+    delete m_widget;
+}
+
+void QGstreamerVideoWidgetControl::createVideoWidget()
+{
+    if (m_widget)
+        return;
+
+    m_widget = new QGstreamerVideoWidget;
+
     m_widget->installEventFilter(this);
     m_windowId = m_widget->winId();
 
@@ -125,22 +142,15 @@ QGstreamerVideoWidgetControl::QGstreamerVideoWidgetControl(QObject *parent)
     gst_object_sink (GST_OBJECT (m_videoSink));
 }
 
-QGstreamerVideoWidgetControl::~QGstreamerVideoWidgetControl()
-{
-    if (m_videoSink)
-        gst_object_unref(GST_OBJECT(m_videoSink));
-
-    delete m_widget;
-}
-
 GstElement *QGstreamerVideoWidgetControl::videoSink()
 {
+    createVideoWidget();
     return m_videoSink;
 }
 
 bool QGstreamerVideoWidgetControl::eventFilter(QObject *object, QEvent *e)
 {
-    if (object == m_widget) {
+    if (m_widget && object == m_widget) {
         if (e->type() == QEvent::ParentChange || e->type() == QEvent::Show) {
             WId newWId = m_widget->winId();
             if (newWId != m_windowId) {
@@ -205,7 +215,8 @@ void QGstreamerVideoWidgetControl::updateNativeVideoSize()
             gst_caps_unref(caps);
         }
     } else {
-        m_widget->setNativeSize(QSize());
+        if (m_widget)
+            m_widget->setNativeSize(QSize());
     }
 }
 
@@ -218,6 +229,7 @@ void QGstreamerVideoWidgetControl::windowExposed()
 
 QWidget *QGstreamerVideoWidgetControl::videoWidget()
 {
+    createVideoWidget();
     return m_widget;
 }
 
@@ -252,7 +264,7 @@ int QGstreamerVideoWidgetControl::brightness() const
 {
     int brightness = 0;
 
-    if (g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "brightness"))
+    if (m_videoSink && g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "brightness"))
         g_object_get(G_OBJECT(m_videoSink), "brightness", &brightness, NULL);
 
     return brightness / 10;
@@ -260,7 +272,7 @@ int QGstreamerVideoWidgetControl::brightness() const
 
 void QGstreamerVideoWidgetControl::setBrightness(int brightness)
 {
-    if (g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "brightness")) {
+    if (m_videoSink && g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "brightness")) {
         g_object_set(G_OBJECT(m_videoSink), "brightness", brightness * 10, NULL);
 
         emit brightnessChanged(brightness);
@@ -271,15 +283,15 @@ int QGstreamerVideoWidgetControl::contrast() const
 {
     int contrast = 0;
 
-    if (g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "contrast"))
-    g_object_get(G_OBJECT(m_videoSink), "contrast", &contrast, NULL);
+    if (m_videoSink && g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "contrast"))
+        g_object_get(G_OBJECT(m_videoSink), "contrast", &contrast, NULL);
 
     return contrast / 10;
 }
 
 void QGstreamerVideoWidgetControl::setContrast(int contrast)
 {
-    if (g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "contrast")) {
+    if (m_videoSink && g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "contrast")) {
         g_object_set(G_OBJECT(m_videoSink), "contrast", contrast * 10, NULL);
 
         emit contrastChanged(contrast);
@@ -290,7 +302,7 @@ int QGstreamerVideoWidgetControl::hue() const
 {
     int hue = 0;
 
-    if (g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "hue"))
+    if (m_videoSink && g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "hue"))
         g_object_get(G_OBJECT(m_videoSink), "hue", &hue, NULL);
 
     return hue / 10;
@@ -298,7 +310,7 @@ int QGstreamerVideoWidgetControl::hue() const
 
 void QGstreamerVideoWidgetControl::setHue(int hue)
 {
-    if (g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "hue")) {
+    if (m_videoSink && g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "hue")) {
         g_object_set(G_OBJECT(m_videoSink), "hue", hue * 10, NULL);
 
         emit hueChanged(hue);
@@ -309,7 +321,7 @@ int QGstreamerVideoWidgetControl::saturation() const
 {
     int saturation = 0;
 
-    if (g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "saturation"))
+    if (m_videoSink && g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "saturation"))
         g_object_get(G_OBJECT(m_videoSink), "saturation", &saturation, NULL);
 
     return saturation / 10;
@@ -317,7 +329,7 @@ int QGstreamerVideoWidgetControl::saturation() const
 
 void QGstreamerVideoWidgetControl::setSaturation(int saturation)
 {
-    if (g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "saturation")) {
+    if (m_videoSink && g_object_class_find_property(G_OBJECT_GET_CLASS(m_videoSink), "saturation")) {
         g_object_set(G_OBJECT(m_videoSink), "saturation", saturation * 10, NULL);
 
         emit saturationChanged(saturation);

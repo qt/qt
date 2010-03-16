@@ -3428,8 +3428,10 @@ void QWidgetPrivate::show_sys()
                 // The window is modally shaddowed, so we need to make
                 // sure that we don't pop in front of the modal window:
                 [window orderFront:window];
-                if (NSWindow *modalWin = qt_mac_window_for(top))
-                    [modalWin orderFront:window];
+                if (!top->testAttribute(Qt::WA_DontShowOnScreen)) {
+                    if (NSWindow *modalWin = qt_mac_window_for(top))
+                        [modalWin orderFront:window];
+                }
             }
 #endif
             if (q->windowType() == Qt::Popup) {
@@ -4781,8 +4783,10 @@ void QWidgetPrivate::syncCocoaMask()
     if (!q->testAttribute(Qt::WA_WState_Created) || !extra)
         return;
 
-    if (extra->hasMask && extra->maskBits.size() != q->size()) {
-        extra->maskBits = QImage(q->size(), QImage::Format_Mono);
+    if (extra->hasMask) {
+        if(extra->maskBits.size() != q->size()) {
+            extra->maskBits = QImage(q->size(), QImage::Format_Mono);
+        }
         extra->maskBits.fill(QColor(Qt::color1).rgba());
         extra->maskBits.setNumColors(2);
         extra->maskBits.setColor(0, QColor(Qt::color0).rgba());

@@ -71,8 +71,6 @@ QT_BEGIN_NAMESPACE
         }
     }
     \endqml
-
-    \sa SoundEffect
 */
 
 /*!
@@ -134,7 +132,7 @@ QSoundEffect::QSoundEffect(QObject *parent) :
 
 QSoundEffect::~QSoundEffect()
 {
-    delete d;
+    d->deleteLater();
 }
 
 QUrl QSoundEffect::source() const

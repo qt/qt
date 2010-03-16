@@ -221,7 +221,7 @@ void QDeclarativeViewPrivate::execute()
 */
 
 /*! \fn void QDeclarativeView::statusChanged(QDeclarativeView::Status status)
-    This signal is emitted when the component's current \l{QDeclarativeView::Status} {status} changes.
+    This signal is emitted when the component's current \a status changes.
 */
 
 /*!
@@ -283,6 +283,12 @@ QDeclarativeView::~QDeclarativeView()
     delete d->root;
 }
 
+/*! \property QDeclarativeView::source
+  \brief The URL of the source of the QML component.
+
+  Changing this property causes the QML component to be reloaded.
+ */
+
 /*!
     Sets the source to the \a url, loads the QML component and instantiates it.
 
@@ -326,7 +332,6 @@ QDeclarativeContext* QDeclarativeView::rootContext()
     return d->engine.rootContext();
 }
 
-
 /*!
   \enum QDeclarativeView::Status
 
@@ -336,6 +341,14 @@ QDeclarativeContext* QDeclarativeView::rootContext()
     \value Ready This QDeclarativeView has loaded and created the QML component.
     \value Loading This QDeclarativeView is loading network data.
     \value Error An error has occured.  Calling errorDescription() to retrieve a description.
+*/
+
+/*! \enum QDeclarativeView::ResizeMode
+
+  This enum specifies how to resize the view.
+
+  \value SizeViewToRootObject
+  \value SizeRootObjectToView
 */
 
 /*!
@@ -376,8 +389,6 @@ QList<QDeclarativeError> QDeclarativeView::errors() const
     Regardless of this property, the sizeHint of the view
     is the initial size of the root item. Note though that
     since QML may load dynamically, that size may change.
-
-    \sa initialSize()
 */
 
 void QDeclarativeView::setResizeMode(ResizeMode mode)
@@ -447,8 +458,8 @@ void QDeclarativeView::setRootObject(QObject *obj)
         QPerformanceLog::clear();
         d->root = item;
         d->qmlRoot = item;
-        connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
-        connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
+        connect(item, SIGNAL(widthChanged(qreal)), this, SLOT(sizeChanged()));
+        connect(item, SIGNAL(heightChanged(qreal)), this, SLOT(sizeChanged()));
         if (d->initialSize.height() <= 0 && d->qmlRoot->width() > 0)
             d->initialSize.setWidth(d->qmlRoot->width());
         if (d->initialSize.height() <= 0 && d->qmlRoot->height() > 0)

@@ -8995,7 +8995,7 @@ EXPORTS
 	?setFocus@QTextControl@@QAEX_NW4FocusReason@Qt@@@Z @ 8994 NONAME ; void QTextControl::setFocus(bool, enum Qt::FocusReason)
 	?setFocus@QWidget@@QAEXW4FocusReason@Qt@@@Z @ 8995 NONAME ; void QWidget::setFocus(enum Qt::FocusReason)
 	?setFocus@QWidget@@QAEXXZ @ 8996 NONAME ; void QWidget::setFocus(void)
-	?setFocusHelper@QGraphicsItemPrivate@@QAEXW4FocusReason@Qt@@_N@Z @ 8997 NONAME ; void QGraphicsItemPrivate::setFocusHelper(enum Qt::FocusReason, bool)
+	?setFocusHelper@QGraphicsItemPrivate@@QAEXW4FocusReason@Qt@@_N@Z @ 8997 NONAME ABSENT ; void QGraphicsItemPrivate::setFocusHelper(enum Qt::FocusReason, bool)
 	?setFocusItem@QGraphicsScene@@QAEXPAVQGraphicsItem@@W4FocusReason@Qt@@@Z @ 8998 NONAME ; void QGraphicsScene::setFocusItem(class QGraphicsItem *, enum Qt::FocusReason)
 	?setFocusPolicy@QGraphicsWidget@@QAEXW4FocusPolicy@Qt@@@Z @ 8999 NONAME ; void QGraphicsWidget::setFocusPolicy(enum Qt::FocusPolicy)
 	?setFocusPolicy@QWidget@@QAEXW4FocusPolicy@Qt@@@Z @ 9000 NONAME ; void QWidget::setFocusPolicy(enum Qt::FocusPolicy)

@@ -351,6 +351,8 @@ namespace QDeclarativeParser
         // True if the setting of this property will be deferred.  Set by the
         // QDeclarativeCompiler
         bool isDeferred;
+        // True if this property is a value-type psuedo-property
+        bool isValueTypeSubProperty;
 
         LocationSpan location;
         LocationRange listValueRange;

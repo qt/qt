@@ -347,7 +347,7 @@ public:
         void syncAction(QWceMenuAction *);
         inline void syncAction(QAction *a) { syncAction(findAction(a)); }
         void removeAction(QWceMenuAction *);
-        void rebuild(bool reCreate = false);
+        void rebuild();
         inline void removeAction(QAction *a) { removeAction(findAction(a)); }
         inline QWceMenuAction *findAction(QAction *a) {
             for(int i = 0; i < actionItems.size(); i++) {

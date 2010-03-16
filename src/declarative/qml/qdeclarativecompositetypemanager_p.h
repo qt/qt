@@ -109,6 +109,9 @@ private:
     Components components;
     typedef QHash<QUrl, QDeclarativeCompositeTypeResource *> Resources;
     Resources resources;
+    typedef QHash<QUrl, QUrl> Redirects;
+    Redirects redirects;
+    int redirectCount;
 };
 
 QT_END_NAMESPACE

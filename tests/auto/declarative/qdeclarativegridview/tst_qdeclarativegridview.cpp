@@ -72,6 +72,7 @@ private slots:
     void modelChanges();
     void positionViewAtIndex();
     void resetModel();
+    void enforceRange();
     void QTBUG_8456();
 
 private:
@@ -702,6 +703,11 @@ void tst_QDeclarativeGridView::currentIndex()
     QCOMPARE(gridview->highlightItem()->x(), hlPosX);
     QCOMPARE(gridview->highlightItem()->y(), hlPosY);
 
+    // insert item before currentIndex
+    gridview->setCurrentIndex(28);
+    model.insertItem(0, "Foo", "1111");
+    QCOMPARE(canvas->rootObject()->property("current").toInt(), 29);
+
     delete canvas;
 }
 
@@ -943,7 +949,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     }
 
     // Position on a currently visible item
-    gridview->positionViewAtIndex(4);
+    gridview->positionViewAtIndex(4, QDeclarativeGridView::Beginning);
     QCOMPARE(gridview->contentY(), 60.);
 
     // Confirm items positioned correctly
@@ -957,7 +963,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     }
 
     // Position on an item beyond the visible items
-    gridview->positionViewAtIndex(21);
+    gridview->positionViewAtIndex(21, QDeclarativeGridView::Beginning);
     QCOMPARE(gridview->contentY(), 420.);
 
     // Confirm items positioned correctly
@@ -971,7 +977,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     }
 
     // Position on an item that would leave empty space if positioned at the top
-    gridview->positionViewAtIndex(31);
+    gridview->positionViewAtIndex(31, QDeclarativeGridView::Beginning);
     QCOMPARE(gridview->contentY(), 520.);
 
     // Confirm items positioned correctly
@@ -985,7 +991,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     }
 
     // Position at the beginning again
-    gridview->positionViewAtIndex(0);
+    gridview->positionViewAtIndex(0, QDeclarativeGridView::Beginning);
     QCOMPARE(gridview->contentY(), 0.);
 
     // Confirm items positioned correctly
@@ -997,6 +1003,47 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
         QCOMPARE(item->x(), (i%3)*80.);
         QCOMPARE(item->y(), (i/3)*60.);
     }
+
+    // Position at End
+    gridview->positionViewAtIndex(30, QDeclarativeGridView::End);
+    QCOMPARE(gridview->contentY(), 340.);
+
+    // Position in Center
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Center);
+    QCOMPARE(gridview->contentY(), 170.);
+
+    // Ensure at least partially visible
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Visible);
+    QCOMPARE(gridview->contentY(), 170.);
+
+    gridview->setContentY(302);
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Visible);
+    QCOMPARE(gridview->contentY(), 302.);
+
+    gridview->setContentY(360);
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Visible);
+    QCOMPARE(gridview->contentY(), 300.);
+
+    gridview->setContentY(60);
+    gridview->positionViewAtIndex(20, QDeclarativeGridView::Visible);
+    QCOMPARE(gridview->contentY(), 60.);
+
+    gridview->setContentY(20);
+    gridview->positionViewAtIndex(20, QDeclarativeGridView::Visible);
+    QCOMPARE(gridview->contentY(), 100.);
+
+    // Ensure completely visible
+    gridview->setContentY(120);
+    gridview->positionViewAtIndex(20, QDeclarativeGridView::Contain);
+    QCOMPARE(gridview->contentY(), 120.);
+
+    gridview->setContentY(302);
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Contain);
+    QCOMPARE(gridview->contentY(), 300.);
+
+    gridview->setContentY(60);
+    gridview->positionViewAtIndex(20, QDeclarativeGridView::Contain);
+    QCOMPARE(gridview->contentY(), 100.);
 
     delete canvas;
 }
@@ -1040,6 +1087,53 @@ void tst_QDeclarativeGridView::resetModel()
         QVERIFY(display != 0);
         QCOMPARE(display->text(), strings.at(i));
     }
+}
+
+void tst_QDeclarativeGridView::enforceRange()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview-enforcerange.qml"));
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QVERIFY(gridview != 0);
+
+    QCOMPARE(gridview->preferredHighlightBegin(), 100.0);
+    QCOMPARE(gridview->preferredHighlightEnd(), 100.0);
+    QCOMPARE(gridview->highlightRangeMode(), QDeclarativeGridView::StrictlyEnforceRange);
+
+    QDeclarativeItem *viewport = gridview->viewport();
+    QVERIFY(viewport != 0);
+
+    // view should be positioned at the top of the range.
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", 0);
+    QVERIFY(item);
+    QCOMPARE(gridview->contentY(), -100.0);
+
+    QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "textName", 0);
+    QVERIFY(name != 0);
+    QCOMPARE(name->text(), model.name(0));
+    QDeclarativeText *number = findItem<QDeclarativeText>(viewport, "textNumber", 0);
+    QVERIFY(number != 0);
+    QCOMPARE(number->text(), model.number(0));
+
+    // Check currentIndex is updated when viewport moves
+    gridview->setContentY(0);
+    QCOMPARE(gridview->currentIndex(), 2);
+
+    gridview->setCurrentIndex(5);
+    QTest::qWait(500);
+    QCOMPARE(gridview->contentY(), 100.);
+
+    delete canvas;
 }
 
 void tst_QDeclarativeGridView::QTBUG_8456()

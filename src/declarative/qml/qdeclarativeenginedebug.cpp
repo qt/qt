@@ -230,22 +230,22 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message,
 
     int count = 0;
 
-    for (QSet<QDeclarativeContext *>::ConstIterator iter = p->childContexts.begin();
-            iter != p->childContexts.end(); ++iter) {
-        QDeclarativeContextPrivate *p = (QDeclarativeContextPrivate *)QObjectPrivate::get(*iter);
-        if (p->isInternal)
-            continue;
-        ++count;
+    QDeclarativeContext *child = p->childContexts;
+    while (child) {
+        QDeclarativeContextPrivate *p = QDeclarativeContextPrivate::get(child);
+        if (!p->isInternal)
+            ++count;
+        child = p->nextChild;
     }
 
     message << count;
 
-    for (QSet<QDeclarativeContext *>::ConstIterator iter = p->childContexts.begin();
-            iter != p->childContexts.end(); ++iter) {
-        QDeclarativeContextPrivate *p = (QDeclarativeContextPrivate *)QObjectPrivate::get(*iter);
-        if (p->isInternal)
-            continue;
-        buildObjectList(message, *iter);
+    child = p->childContexts;
+    while (child) {
+        QDeclarativeContextPrivate *p = QDeclarativeContextPrivate::get(child);
+        if (!p->isInternal) 
+            buildObjectList(message, child);
+        child = p->nextChild;
     }
 
     // Clean deleted objects

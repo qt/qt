@@ -229,6 +229,7 @@ public:
                         QObject* parent):
         QObject(parent),
         m_deviceError(false),
+        m_audioConverter(0),
         m_inputFormat(inputFormat),
         m_outputFormat(outputFormat)
     {

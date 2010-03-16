@@ -3041,8 +3041,8 @@ void QVGPaintEngine::drawTiledPixmap
 // (i.e. no opacity), no rotation or scaling, and drawing the full
 // pixmap rather than parts of the pixmap.  Even having just one of
 // these conditions will improve performance.
-void QVGPaintEngine::drawPixmapFragments(const QPainter::Fragment *drawingData, int dataCount,
-                                         const QPixmap &pixmap, QFlags<QPainter::FragmentHint> hints)
+void QVGPaintEngine::drawPixmapFragments(const QPainter::PixmapFragment *drawingData, int dataCount,
+                                         const QPixmap &pixmap, QFlags<QPainter::PixmapFragmentHint> hints)
 {
 #if !defined(QT_SHIVAVG)
     Q_D(QVGPaintEngine);
@@ -3307,6 +3307,7 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
  bool QVGPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
                                        QFontEngine *fontEngine, const QPointF &p)
  {
+#if !defined(QVG_NO_DRAW_GLYPHS)
     Q_D(QVGPaintEngine);
 
     // Find the glyph cache for this font.
@@ -3361,6 +3362,14 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
                  NULL, NULL, VG_FILL_PATH, VG_TRUE);
 
     return true;
+#else
+    Q_UNUSED(numGlyphs);
+    Q_UNUSED(glyphs);
+    Q_UNUSED(font);
+    Q_UNUSED(fontEngine);
+    Q_UNUSED(p);
+    return false;
+#endif
 }
 
 void QVGPaintEngine::setState(QPainterState *s)

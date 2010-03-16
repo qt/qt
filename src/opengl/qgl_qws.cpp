@@ -182,6 +182,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
     // Get the display and initialize it.
     d->eglContext = new QEglContext();
+    d->ownsEglContext = true;
     d->eglContext->setApi(QEgl::OpenGL);
 
     // Construct the configuration we need for this surface.
@@ -200,7 +201,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     }
 
     // Inform the higher layers about the actual format properties.
-    qt_egl_update_format(*(d->eglContext), d->glFormat);
+    qt_glformat_from_eglconfig(d->glFormat, d->eglContext->config());
 
     // Create a new context for the configuration.
     if (!d->eglContext->createContext

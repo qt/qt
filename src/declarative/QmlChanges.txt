@@ -1,4 +1,32 @@
 =============================================================================
+The changes below are pre Qt 4.7.0 beta
+
+PathView: offset property now uses range 0-1.0 rather than 0-100
+ListView, GridView::positionViewAtIndex() gained a 'mode' parameter
+Removed Qt.playSound (replaced by SoundEffect element)
+Removed Qt.closestAngle (use RotationAnimation instead)
+Removed NumberFormatter
+Removed DateTimeFormatter (use Qt.formatDateTime() instead)
+Using WebView now requires "import org.webkit 1.0"
+Using Particles now requires "import Qt.labs.particles 1.0"
+AnchorAnimation must now be used to animate anchor changes (and not NumberAnimation)
+
+C++ API
+-------
+QDeclarativeContext::addDefaultObject() has been replaced with
+QDeclarativeContext::setContextObject()
+
+Behavior and Animation syntax
+-----------------------------
+Previously animations and behaviors could be "assigned" to properties like this:
+    Item { x: Behavior {}; y: NumberAnimation {} }
+To make it more obvious that these are not regular value assignments a new "on"
+syntax has been introduced:
+    Item { Behavior on x {}; NumberAnimation on y {} }
+Only the syntax has changed, the behavior is identical.
+
+
+=============================================================================
 The changes below are pre Qt 4.7.0 alpha
 
 Flickable: renamed viewportWidth -> contentWidth
@@ -6,16 +34,12 @@ Flickable: renamed viewportHeight -> contentHeight
 Flickable: renamed viewportX -> contentX
 Flickable: renamed viewportY -> contentY
 Removed Flickable.reportedVelocitySmoothing
-Removed Qt.playSound (replaced by SoundEffect element)
-Removed NumberFormatter
-Removed DateTimeFormatter (use Qt.formatDateTime() instead)
 Renamed MouseRegion -> MouseArea
 Connection: syntax and rename:
     Connection { sender: a; signal: foo(); script: xxx }
     Connection { sender: a; signal: bar(); script: yyy }
   becomes:
     Connections { target: a; onFoo: xxx; onBar: yyy }
-Using WebView now requires "import org.webkit 1.0"
 
 QmlView
 -------
@@ -47,7 +71,7 @@ C++ API
 QML_DEFINE_... definition macros, previously global macros, are replaced by
 QML_REGISTER_... registration macros, which must be called explicitly. C++ API users
 should also consider using the QmlExtensionPlugin (previously named QmlModulePlugin)
-as a cleaner mechanism for publishing libraries of QML types, or the upcoming 
+as a cleaner mechanism for publishing libraries of QML types, or the upcoming
 application plugin features of the qmlviewer / qmlruntime / qml.
 
 PropertyAnimation
@@ -55,16 +79,6 @@ PropertyAnimation
 matchProperties and matchTargets have been renamed back to properties and targets.
 The semantics are explained in the PropertyAnimation::properties documentation
 and the animation overview documentation.
-
-Behavior and Animation syntax
------------------------------
-
-Previously animations and behaviors could be "assigned" to properties like this:
-    Item { x: Behavior {}; y: NumberAnimation {} }
-To make it more obvious that these are not regular value assignments a new "on"
-syntax has been introduced:
-    Item { Behavior on x {}; NumberAnimation on y {} }
-Only the syntax has changed, the behavior is identical.
 
 =============================================================================
 The changes below are pre-4.6.0 release.

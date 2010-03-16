@@ -41,6 +41,8 @@
 
 #include "qdeclarativefocuspanel_p.h"
 
+#include "qdeclarativeitem_p.h"
+
 #include <QtGui/qgraphicsscene.h>
 #include <QEvent>
 
@@ -65,7 +67,8 @@ QT_BEGIN_NAMESPACE
 QDeclarativeFocusPanel::QDeclarativeFocusPanel(QDeclarativeItem *parent) :
     QDeclarativeItem(parent)
 {
-    setFlag(ItemIsPanel);
+    Q_D(QDeclarativeItem);
+    d->flags |= QGraphicsItem::ItemIsPanel;
 }
 
 QDeclarativeFocusPanel::~QDeclarativeFocusPanel()

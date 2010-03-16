@@ -53,77 +53,96 @@ QT_BEGIN_NAMESPACE
 
 void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLFormat& glFormat)
 {
-    // NOTE: QGLFormat uses a magic value of -1 to indicate "don't care", even when a buffer of that
-    // type has been requested.
-    if (glFormat.depth()) {
-        int depthSize = glFormat.depthBufferSize();
-        eglProperties.setValue(EGL_DEPTH_SIZE,  depthSize == -1 ? 1 : depthSize);
-    }
-    if (glFormat.stencil()) {
-        int stencilSize = glFormat.stencilBufferSize();
-        eglProperties.setValue(EGL_STENCIL_SIZE, stencilSize == -1 ? 1 : stencilSize);
-    }
-    if (glFormat.sampleBuffers()) {
-        int sampleCount = glFormat.samples();
-        eglProperties.setValue(EGL_SAMPLES, sampleCount == -1 ? 1 : sampleCount);
-        eglProperties.setValue(EGL_SAMPLE_BUFFERS, 1);
-    }
-    if (glFormat.alpha()) {
-        int alphaSize = glFormat.alphaBufferSize();
-        eglProperties.setValue(EGL_ALPHA_SIZE, alphaSize == -1 ? 1 : alphaSize);
-    }
+    int redSize     = glFormat.redBufferSize();
+    int greenSize   = glFormat.greenBufferSize();
+    int blueSize    = glFormat.blueBufferSize();
+    int alphaSize   = glFormat.alphaBufferSize();
+    int depthSize   = glFormat.depthBufferSize();
+    int stencilSize = glFormat.stencilBufferSize();
+    int sampleCount = glFormat.samples();
 
-    int redSize = glFormat.redBufferSize();
-    int greenSize = glFormat.greenBufferSize();
-    int blueSize = glFormat.blueBufferSize();
-    int alphaSize = glFormat.alphaBufferSize();
+    // QGLFormat uses a magic value of -1 to indicate "don't care", even when a buffer of that
+    // type has been requested. So we must check QGLFormat's booleans too if size is -1:
+    if (glFormat.alpha() && alphaSize <= 0)
+        alphaSize = 1;
+    if (glFormat.depth() && depthSize <= 0)
+        depthSize = 1;
+    if (glFormat.stencil() && stencilSize <= 0)
+        stencilSize = 1;
+    if (glFormat.sampleBuffers() && sampleCount <= 0)
+        sampleCount = 1;
 
-    eglProperties.setValue(EGL_RED_SIZE,   redSize   > 0 ? redSize   : 1);
-    eglProperties.setValue(EGL_GREEN_SIZE, greenSize > 0 ? greenSize : 1);
-    eglProperties.setValue(EGL_BLUE_SIZE,  blueSize  > 0 ? blueSize  : 1);
-    eglProperties.setValue(EGL_ALPHA_SIZE, alphaSize > 0 ? alphaSize : 0);
+    // We want to make sure 16-bit configs are chosen over 32-bit configs as they will provide
+    // the best performance. The EGL config selection algorithm is a bit stange in this regard:
+    // The selection criteria for EGL_BUFFER_SIZE is "AtLeast", so we can't use it to discard
+    // 32-bit configs completely from the selection. So it then comes to the sorting algorithm.
+    // The red/green/blue sizes have a sort priority of 3, so they are sorted by first. The sort
+    // order is special and described as "by larger _total_ number of color bits.". So EGL will
+    // put 32-bit configs in the list before the 16-bit configs. However, the spec also goes on
+    // to say "If the requested number of bits in attrib_list for a particular component is 0,
+    // then the number of bits for that component is not considered". This part of the spec also
+    // seems to imply that setting the red/green/blue bits to zero means none of the components
+    // are considered and EGL disregards the entire sorting rule. It then looks to the next
+    // highest priority rule, which is EGL_BUFFER_SIZE. Despite the selection criteria being
+    // "AtLeast" for EGL_BUFFER_SIZE, it's sort order is "smaller" meaning 16-bit configs are
+    // put in the list before 32-bit configs. So, to make sure 16-bit is preffered over 32-bit,
+    // we must set the red/green/blue sizes to zero. This has an unfortunate consequence that
+    // if the application sets the red/green/blue size to 5/6/5 on the QGLFormat, they will
+    // probably get a 32-bit config, even when there's an RGB565 config avaliable. Oh well.
+
+    // Now normalize the values so -1 becomes 0
+    redSize   = redSize   > 0 ? redSize   : 0;
+    greenSize = greenSize > 0 ? greenSize : 0;
+    blueSize  = blueSize  > 0 ? blueSize  : 0;
+    alphaSize = alphaSize > 0 ? alphaSize : 0;
+    depthSize = depthSize > 0 ? depthSize : 0;
+    stencilSize = stencilSize > 0 ? stencilSize : 0;
+    sampleCount = sampleCount > 0 ? sampleCount : 0;
+
+    eglProperties.setValue(EGL_RED_SIZE,   redSize);
+    eglProperties.setValue(EGL_GREEN_SIZE, greenSize);
+    eglProperties.setValue(EGL_BLUE_SIZE,  blueSize);
+    eglProperties.setValue(EGL_ALPHA_SIZE, alphaSize);
+    eglProperties.setValue(EGL_DEPTH_SIZE, depthSize);
+    eglProperties.setValue(EGL_STENCIL_SIZE, stencilSize);
+    eglProperties.setValue(EGL_SAMPLES, sampleCount);
+    eglProperties.setValue(EGL_SAMPLE_BUFFERS, sampleCount ? 1 : 0);
 }
 
-
 // Updates "format" with the parameters of the selected configuration.
-void qt_egl_update_format(const QEglContext& context, QGLFormat& format)
+void qt_glformat_from_eglconfig(QGLFormat& format, const EGLConfig config)
 {
-    EGLint value = 0;
+    EGLint redSize     = 0;
+    EGLint greenSize   = 0;
+    EGLint blueSize    = 0;
+    EGLint alphaSize   = 0;
+    EGLint depthSize   = 0;
+    EGLint stencilSize = 0;
+    EGLint sampleCount = 0;
+    EGLint level       = 0;
 
-    if (context.configAttrib(EGL_RED_SIZE, &value))
-        format.setRedBufferSize(value);
-    if (context.configAttrib(EGL_GREEN_SIZE, &value))
-        format.setGreenBufferSize(value);
-    if (context.configAttrib(EGL_BLUE_SIZE, &value))
-        format.setBlueBufferSize(value);
-    if (context.configAttrib(EGL_ALPHA_SIZE, &value)) {
-        format.setAlpha(value != 0);
-        if (format.alpha())
-            format.setAlphaBufferSize(value);
-    }
+    EGLDisplay display = QEgl::display();
+    eglGetConfigAttrib(display, config, EGL_RED_SIZE,     &redSize);
+    eglGetConfigAttrib(display, config, EGL_GREEN_SIZE,   &greenSize);
+    eglGetConfigAttrib(display, config, EGL_BLUE_SIZE,    &blueSize);
+    eglGetConfigAttrib(display, config, EGL_ALPHA_SIZE,   &alphaSize);
+    eglGetConfigAttrib(display, config, EGL_DEPTH_SIZE,   &depthSize);
+    eglGetConfigAttrib(display, config, EGL_STENCIL_SIZE, &stencilSize);
+    eglGetConfigAttrib(display, config, EGL_SAMPLES,      &sampleCount);
+    eglGetConfigAttrib(display, config, EGL_LEVEL,        &level);
 
-    if (context.configAttrib(EGL_DEPTH_SIZE, &value)) {
-        format.setDepth(value != 0);
-        if (format.depth())
-            format.setDepthBufferSize(value);
-    }
-
-    if (context.configAttrib(EGL_LEVEL, &value))
-        format.setPlane(value);
-
-    if (context.configAttrib(EGL_SAMPLE_BUFFERS, &value)) {
-        format.setSampleBuffers(value != 0);
-        if (format.sampleBuffers()) {
-            context.configAttrib(EGL_SAMPLES, &value);
-            format.setSamples(value);
-        }
-    }
-
-    if (context.configAttrib(EGL_STENCIL_SIZE, &value)) {
-        format.setStencil(value != 0);
-        if (format.stencil())
-            format.setStencilBufferSize(value);
-    }
+    format.setRedBufferSize(redSize);
+    format.setGreenBufferSize(greenSize);
+    format.setBlueBufferSize(blueSize);
+    format.setAlphaBufferSize(alphaSize);
+    format.setDepthBufferSize(depthSize);
+    format.setStencilBufferSize(stencilSize);
+    format.setSamples(sampleCount);
+    format.setPlane(level + 1);      // EGL calls level 0 "normal" whereas Qt calls 1 "normal"
+    format.setDirectRendering(true); // All EGL contexts are direct-rendered
+    format.setRgba(true);            // EGL doesn't support colour index rendering
+    format.setStereo(false);         // EGL doesn't support stereo buffers
+    format.setAccumBufferSize(0);    // EGL doesn't support accululation buffers
 
     // Clear the EGL error state because some of the above may
     // have errored out because the attribute is not applicable
@@ -143,10 +162,11 @@ void QGLContext::reset()
         return;
     d->cleanup();
     doneCurrent();
-    if (d->eglContext) {
+    if (d->eglContext && d->ownsEglContext) {
         d->destroyEglSurfaceForDevice();
         delete d->eglContext;
     }
+    d->ownsEglContext = false;
     d->eglContext = 0;
     d->eglSurface = EGL_NO_SURFACE;
     d->crWin = false;
@@ -194,7 +214,7 @@ void QGLContextPrivate::destroyEglSurfaceForDevice()
 #ifdef Q_WS_X11
         // Make sure we don't call eglDestroySurface on a surface which
         // was created for a different winId:
-        if (paintDevice->devType() == QInternal::Widget) {
+        if (paintDevice && paintDevice->devType() == QInternal::Widget) {
             QGLWidget* w = static_cast<QGLWidget*>(paintDevice);
 
             if (w->d_func()->eglSurfaceWindowId == w->winId())

@@ -76,7 +76,7 @@ public:
     };
 
     typedef BOOL (WINAPI *InfoFunc)(HMONITOR, MONITORINFO*);
-    typedef BOOL (CALLBACK *EnumProc)(HMONITOR, HDC, LPRECT, LPARAM);
+    typedef BOOL (QT_WIN_CALLBACK *EnumProc)(HMONITOR, HDC, LPRECT, LPARAM);
     typedef BOOL (WINAPI *EnumFunc)(HDC, LPCRECT, EnumProc, LPARAM);
 
     static EnumFunc enumDisplayMonitors;
@@ -107,7 +107,7 @@ static inline void qt_get_sip_info(QRect &rect)
 #endif
 
 
-BOOL CALLBACK enumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM)
+BOOL QT_WIN_CALLBACK enumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM)
 {
     QDesktopWidgetPrivate::screenCount++;
     QDesktopWidgetPrivate::rects->resize(QDesktopWidgetPrivate::screenCount);

@@ -78,12 +78,13 @@ public:
 
     QNetworkConfigurationPrivatePointer defaultConfiguration();
 
+    bool requiresPolling() const;
+
 private Q_SLOTS:
     void doRequestUpdate();
 
 private:
     QMap<QString, QString> configurationInterface;
-    QTimer pollTimer;
 };
 
 QT_END_NAMESPACE
