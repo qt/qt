@@ -132,7 +132,7 @@ QDeclarativeAbstractAnimation::QDeclarativeAbstractAnimation(QDeclarativeAbstrac
     using the \c start() and \c stop() methods.
 
     By default, animations are not running. Though, when the animations are assigned to properties,
-    as property value sources, they are set to running by default.
+    as property value sources using the \e on syntax, they are set to running by default.
 */
 bool QDeclarativeAbstractAnimation::isRunning() const
 {
