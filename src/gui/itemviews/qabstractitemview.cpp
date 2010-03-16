@@ -2296,6 +2296,8 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Escape:
     case Qt::Key_Shift:
     case Qt::Key_Control:
+    case Qt::Key_Delete:
+    case Qt::Key_BackSpace:
         event->ignore();
         break;
     case Qt::Key_Space:
