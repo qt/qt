@@ -99,6 +99,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingData())
     Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingDataFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionOnline())
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionFailed())
 };
 
 class QNetworkReplyImplPrivate: public QNetworkReplyPrivate
@@ -132,6 +133,7 @@ public:
     void _q_bufferOutgoingData();
     void _q_bufferOutgoingDataFinished();
     void _q_networkSessionOnline();
+    void _q_networkSessionFailed();
 
     void setup(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                QIODevice *outgoingData);
