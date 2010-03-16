@@ -154,8 +154,8 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
                       --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged $$capability \
                       $$QMAKE_ELF2E32_FLAGS \
                       | tee elf2e32.log && test `grep -c 'Error:' elf2e32.log` = 0 && rm elf2e32.log \
+                      && ln "$${symbianDestdir}/$${TARGET}.exe" "$${symbianDestdir}/$$TARGET" \
                       $$QMAKE_POST_LINK
-    QMAKE_POST_LINK += && ln "$${TARGET}.exe" "$$TARGET"
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.sym
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.exe
     QMAKE_CLEAN += $${symbianDestdir}/$${TARGET}
