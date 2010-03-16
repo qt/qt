@@ -103,7 +103,8 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         verticalScrollMode(QAbstractItemView::ScrollPerItem),
         horizontalScrollMode(QAbstractItemView::ScrollPerItem),
         currentIndexSet(false),
-        wrapItemText(false)
+        wrapItemText(false),
+        delayedPendingLayout(false)
 {
 }
 
@@ -2397,8 +2398,9 @@ void QAbstractItemView::timerEvent(QTimerEvent *event)
         d->delayedEditing.stop();
         edit(currentIndex());
     } else if (event->timerId() == d->delayedLayout.timerId()) {
-        d->interruptDelayedItemsLayout();
+        d->delayedLayout.stop();
         if (isVisible()) {
+            d->interruptDelayedItemsLayout();
             doItemsLayout();
             const QModelIndex current = currentIndex();
             if (current.isValid() && d->state == QAbstractItemView::EditingState)
@@ -3060,7 +3062,7 @@ void QAbstractItemView::setIndexWidget(const QModelIndex &index, QWidget *widget
         d->addEditor(index, widget, true);
         widget->show();
         dataChanged(index, index); // update the geometry
-        if (!d->delayedPendingLayout())
+        if (!d->delayedPendingLayout)
             widget->setGeometry(visualRect(index));
     }
 }
@@ -3100,7 +3102,7 @@ void QAbstractItemView::scrollToTop()
 void QAbstractItemView::scrollToBottom()
 {
     Q_D(QAbstractItemView);
-    if (d->delayedPendingLayout()) {
+    if (d->delayedPendingLayout) {
         d->executePostedLayout();
         updateGeometries();
     }
@@ -3145,14 +3147,14 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
                 delegate->setEditorData(editorInfo.editor, topLeft);
             }
         }
-        if (isVisible() && !d->delayedPendingLayout()) {
+        if (isVisible() && !d->delayedPendingLayout) {
             // otherwise the items will be update later anyway
             update(topLeft);
         }
         return;
     }
     d->updateEditorData(topLeft, bottomRight);
-    if (!isVisible() || d->delayedPendingLayout())
+    if (!isVisible() || d->delayedPendingLayout)
         return; // no need to update
     d->viewport->update();
 }
@@ -3875,6 +3877,22 @@ bool QAbstractItemViewPrivate::shouldAutoScroll(const QPoint &pos) const
         || (pos.x() - area.left() < autoScrollMargin)
         || (area.right() - pos.x() < autoScrollMargin);
 }
+
+void QAbstractItemViewPrivate::doDelayedItemsLayout(int delay)
+{
+    if (!delayedPendingLayout) {
+        delayedPendingLayout = true;
+        delayedLayout.start(delay, q_func());
+    }
+}
+
+void QAbstractItemViewPrivate::interruptDelayedItemsLayout() const
+{
+    delayedLayout.stop();
+    delayedPendingLayout = false;
+}
+
+
 
 QWidget *QAbstractItemViewPrivate::editor(const QModelIndex &index,
                                           const QStyleOptionViewItem &options)

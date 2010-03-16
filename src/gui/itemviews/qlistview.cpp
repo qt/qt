@@ -823,7 +823,7 @@ void QListView::timerEvent(QTimerEvent *e)
 void QListView::resizeEvent(QResizeEvent *e)
 {
     Q_D(QListView);
-    if (d->delayedPendingLayout())
+    if (d->delayedPendingLayout)
         return;
 
     QSize delta = e->size() - e->oldSize();

@@ -124,10 +124,8 @@ public:
     bool shouldEdit(QAbstractItemView::EditTrigger trigger, const QModelIndex &index) const;
     bool shouldForwardEvent(QAbstractItemView::EditTrigger trigger, const QEvent *event) const;
     bool shouldAutoScroll(const QPoint &pos) const;
-    void doDelayedItemsLayout(int delay = 0) { if (!delayedPendingLayout()) delayedLayout.start(delay, q_func()); }
-    void interruptDelayedItemsLayout() const { delayedLayout.stop(); }
-    bool delayedPendingLayout() const { return delayedLayout.isActive(); }
-
+    void doDelayedItemsLayout(int delay = 0);
+    void interruptDelayedItemsLayout() const;
 
     void startAutoScroll()
     {   // ### it would be nice to make this into a style hint one day
@@ -209,7 +207,7 @@ public:
     }
 
     inline void executePostedLayout() const {
-        if (delayedPendingLayout() && state != QAbstractItemView::CollapsingState) {
+        if (delayedPendingLayout && state != QAbstractItemView::CollapsingState) {
             interruptDelayedItemsLayout();
             const_cast<QAbstractItemView*>(q_func())->doItemsLayout();
         }
@@ -418,7 +416,9 @@ public:
     QAbstractItemView::ScrollMode horizontalScrollMode;
 
     bool currentIndexSet;
+
     bool wrapItemText;
+    mutable bool delayedPendingLayout;
 
 private:
     mutable QBasicTimer delayedLayout;
