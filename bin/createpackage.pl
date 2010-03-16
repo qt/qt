@@ -237,6 +237,11 @@ if (!$preservePkgOutput) {
 }
 
 # Preprocess PKG
+if ($certtext eq "Self Signed" && !@certificates) {
+    print("Patching capabilities for self signed package $certificate\n");
+    system ("patch_capabilities $templatepkg $targetplatform");
+}
+
 local $/;
 # read template file
 open( TEMPLATE, $templatepkg) or die "Error '$templatepkg': $!\n";
@@ -272,10 +277,6 @@ if($stub) {
     # Create stub SIS.
     system ("makesis -s $pkgoutput $stub_sis_name");
 } else {
-    if ($certtext eq "Self Signed" && !@certificates) {
-        print("Patching capabilities for self signed package $certificate\n");
-        system ("patch_capabilities $templatepkg $targetplatform");
-    }
     # Create SIS.
     # The 'and' is because system uses 0 to indicate success.
     system ("makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
