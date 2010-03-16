@@ -39,26 +39,26 @@
 **
 ****************************************************************************/
 
-#include "symbianaudiodeviceinfo.h"
-#include "symbianaudioutils.h"
+#include "qaudiodeviceinfo_symbian_p.h"
+#include "qaudio_symbian_p.h"
 
 QT_BEGIN_NAMESPACE
 
-SymbianAudioDeviceInfo::SymbianAudioDeviceInfo(QByteArray device,
+QAudioDeviceInfoInternal::QAudioDeviceInfoInternal(QByteArray device,
                                                QAudio::Mode mode)
-    :   m_deviceName(device)
+    :   m_deviceName(QLatin1String(device))
     ,   m_mode(mode)
     ,   m_updated(false)
 {
     QT_TRAP_THROWING(m_devsound.reset(CMMFDevSound::NewL()));
 }
 
-SymbianAudioDeviceInfo::~SymbianAudioDeviceInfo()
+QAudioDeviceInfoInternal::~QAudioDeviceInfoInternal()
 {
 
 }
 
-QAudioFormat SymbianAudioDeviceInfo::preferredFormat() const
+QAudioFormat QAudioDeviceInfoInternal::preferredFormat() const
 {
     QAudioFormat format;
     switch (m_mode) {
@@ -100,7 +100,7 @@ QAudioFormat SymbianAudioDeviceInfo::preferredFormat() const
     return format;
 }
 
-bool SymbianAudioDeviceInfo::isFormatSupported(
+bool QAudioDeviceInfoInternal::isFormatSupported(
                                  const QAudioFormat &format) const
 {
     getSupportedFormats();
@@ -115,7 +115,7 @@ bool SymbianAudioDeviceInfo::isFormatSupported(
     return supported;
 }
 
-QAudioFormat SymbianAudioDeviceInfo::nearestFormat(const QAudioFormat &format) const
+QAudioFormat QAudioDeviceInfoInternal::nearestFormat(const QAudioFormat &format) const
 {
     if (isFormatSupported(format))
         return format;
@@ -123,56 +123,65 @@ QAudioFormat SymbianAudioDeviceInfo::nearestFormat(const QAudioFormat &format) c
         return preferredFormat();
 }
 
-QString SymbianAudioDeviceInfo::deviceName() const
+QString QAudioDeviceInfoInternal::deviceName() const
 {
     return m_deviceName;
 }
 
-QStringList SymbianAudioDeviceInfo::codecList()
+QStringList QAudioDeviceInfoInternal::codecList()
 {
     getSupportedFormats();
     return m_codecs;
 }
 
-QList<int> SymbianAudioDeviceInfo::frequencyList()
+QList<int> QAudioDeviceInfoInternal::frequencyList()
 {
     getSupportedFormats();
     return m_frequencies;
 }
 
-QList<int> SymbianAudioDeviceInfo::channelsList()
+QList<int> QAudioDeviceInfoInternal::channelsList()
 {
     getSupportedFormats();
     return m_channels;
 }
 
-QList<int> SymbianAudioDeviceInfo::sampleSizeList()
+QList<int> QAudioDeviceInfoInternal::sampleSizeList()
 {
     getSupportedFormats();
     return m_sampleSizes;
 }
 
-QList<QAudioFormat::Endian> SymbianAudioDeviceInfo::byteOrderList()
+QList<QAudioFormat::Endian> QAudioDeviceInfoInternal::byteOrderList()
 {
     getSupportedFormats();
     return m_byteOrders;
 }
 
-QList<QAudioFormat::SampleType> SymbianAudioDeviceInfo::sampleTypeList()
+QList<QAudioFormat::SampleType> QAudioDeviceInfoInternal::sampleTypeList()
 {
     getSupportedFormats();
     return m_sampleTypes;
 }
 
-QList<QByteArray> SymbianAudioDeviceInfo::deviceList(QAudio::Mode mode)
+QByteArray QAudioDeviceInfoInternal::defaultInputDevice()
 {
-    Q_UNUSED(mode)
-    QList<QByteArray> devices;
-    devices.append("default");
-    return devices;
+    return QByteArray("default");
 }
 
-void SymbianAudioDeviceInfo::getSupportedFormats() const
+QByteArray QAudioDeviceInfoInternal::defaultOutputDevice()
+{
+    return QByteArray("default");
+}
+
+QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode)
+{
+    QList<QByteArray> result;
+    result += QByteArray("default");
+    return result;
+}
+
+void QAudioDeviceInfoInternal::getSupportedFormats() const
 {
     if (!m_updated) {
         QScopedPointer<SymbianAudio::DevSoundCapabilities> caps(

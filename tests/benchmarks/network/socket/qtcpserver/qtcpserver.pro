@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_qtcpserver
+TARGET = tst_bench_qtcpserver
 DEPENDPATH += .
 INCLUDEPATH += .
 

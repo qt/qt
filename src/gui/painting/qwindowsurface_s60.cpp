@@ -70,13 +70,13 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
     // We create empty CFbsBitmap here -> it will be resized in setGeometry
     CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new
     qt_symbian_throwIfError( bitmap->Create( TSize(0, 0), mode ) );
-	
+
     QS60PixmapData *data = new QS60PixmapData(QPixmapData::PixmapType);
     if (data) {
         data->fromSymbianBitmap(bitmap, true);
         d_ptr->device = QPixmap(data);
     }
-        
+
     setStaticContentsSupport(true);
 }
 QS60WindowSurface::~QS60WindowSurface()
@@ -89,24 +89,15 @@ void QS60WindowSurface::beginPaint(const QRegion &rgn)
     if (!qt_widget_private(window())->isOpaque) {
         QS60PixmapData *pixmapData = static_cast<QS60PixmapData *>(d_ptr->device.data_ptr().data());
         pixmapData->beginDataAccess();
-        QImage &image = pixmapData->image;
-        QRgb *data = reinterpret_cast<QRgb *>(image.bits());
-        const int row_stride = image.bytesPerLine() / 4;
 
+        QPainter p(&pixmapData->image);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
         const QVector<QRect> rects = rgn.rects();
+        const QColor blank = Qt::transparent;
         for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
-            const int x_start = it->x();
-            const int width = it->width();
-
-            const int y_start = it->y();
-            const int height = it->height();
-
-            QRgb *row = data + row_stride * y_start;
-            for (int y = 0; y < height; ++y) {
-                qt_memfill(row + x_start, 0U, width);
-                row += row_stride;
-            }
+            p.fillRect(*it, blank);
         }
+
         pixmapData->endDataAccess();
     }
 }
@@ -128,7 +119,7 @@ QImage* QS60WindowSurface::buffer(const QWidget *widget)
 
     const QPoint off = offset(widget);
     QImage *img = &(static_cast<QS60PixmapData *>(d_ptr->device.data_ptr().data())->image);
-    
+
     QRect rect(off, widget->size());
     rect &= QRect(QPoint(), img->size());
 

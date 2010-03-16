@@ -3,7 +3,7 @@ load(data_caging_paths)
 # If no_icon keyword exist, the S60 UI app is just made hidden. This because S60 app FW
 # requires the registration resource file to exist always
 contains( CONFIG, no_icon ) {
-    symbian:RSS_RULES ="hidden = KAppIsHidden;"
+    symbian:RSS_RULES += "hidden = KAppIsHidden;"
     CONFIG -= no_icon
 } else {
 # There is no point in compiling the MIF icon if no_icon CONFIGS is set

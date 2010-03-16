@@ -43,6 +43,7 @@ isEmpty(vcproj) {
 translations.path = $$[QT_INSTALL_TRANSLATIONS]
 translations.files = $$TRANSLATIONS
 translations.files ~= s,\\.ts$,.qm,g
+translations.files ~= s,^,$$OUT_PWD/,g
 translations.CONFIG += no_check_exist
 INSTALLS += translations
 

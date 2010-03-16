@@ -324,6 +324,14 @@ void QMenuBarPrivate::symbianDestroyMenuBar()
     symbian_menubar = 0;
 }
 
+void QMenuBarPrivate::reparentMenuBar(QWidget *oldParent, QWidget *newParent)
+{
+    if (menubars()->contains(oldParent)) {
+        QMenuBarPrivate *object = menubars()->take(oldParent);
+        menubars()->insert(newParent, object);
+    }
+}
+
 QMenuBarPrivate::QSymbianMenuBarPrivate::QSymbianMenuBarPrivate(QMenuBarPrivate *menubar)
 {
     d = menubar;

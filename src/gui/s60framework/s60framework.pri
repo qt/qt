@@ -5,7 +5,7 @@ minimalAppResource31 = \
     "SOURCEPATH s60framework" \
     "START RESOURCE s60main.rss" \
     "HEADER" \
-    "TARGETPATH resource\apps" \
+    "TARGETPATH /resource/apps" \
     "END"
 MMP_RULES += minimalAppResource31
 

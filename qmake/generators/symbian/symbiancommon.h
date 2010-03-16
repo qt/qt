@@ -71,10 +71,15 @@ protected:
     void generatePkgFile(const QString &iconFile, DeploymentList &depList, bool epocBuild);
     bool containsStartWithItem(const QChar &c, const QStringList& src);
 
-    void writeRegRssFile(QStringList &useritems);
+    void writeRegRssFile(QMap<QString, QStringList> &useritems);
+    void writeRegRssList(QTextStream &t, QStringList &userList,
+                         const QString &listTag,
+                         const QString &listItem);
     void writeRssFile(QString &numberOfIcons, QString &iconfile);
     void writeLocFile(QStringList &symbianLangCodes);
-    void readRssRules(QString &numberOfIcons, QString &iconFile, QStringList &userRssRules);
+    void readRssRules(QString &numberOfIcons,
+                      QString &iconFile,
+                      QMap<QString, QStringList> &userRssRules);
 
     QStringList symbianLangCodesFromTsFiles();
     void fillQt2S60LangMapTable();

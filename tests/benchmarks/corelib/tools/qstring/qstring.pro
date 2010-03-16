@@ -1,5 +1,5 @@
 load(qttest_p4)
-TARGET = tst_qstring
+TARGET = tst_bench_qstring
 QT -= gui
 SOURCES += main.cpp
 

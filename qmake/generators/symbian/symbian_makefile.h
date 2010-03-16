@@ -61,7 +61,7 @@ public:
     {
         QString numberOfIcons;
         QString iconFile;
-        QStringList userRssRules;
+        QMap<QString, QStringList> userRssRules;
         readRssRules(numberOfIcons, iconFile, userRssRules);
 
         // Generate pkg files if there are any actual files to deploy

@@ -201,6 +201,7 @@ private slots:
     void taskQTBUG_5237_wheelEventOnHeader();
     void taskQTBUG_8585_crashForNoGoodReason();
     void taskQTBUG_7774_RtoLVisualRegionForSelection();
+    void taskQTBUG_8777_scrollToSpans();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -3994,7 +3995,6 @@ void tst_QTableView::taskQTBUG_8585_crashForNoGoodReason()
     }
 }
 
-
 class TableView7774 : public QTableView
 {
 public:
@@ -4018,6 +4018,20 @@ void tst_QTableView::taskQTBUG_7774_RtoLVisualRegionForSelection()
     selection << range;
     QRegion region = view.visualRegionForSelection(selection);
     QCOMPARE(region.rects().at(0), view.visualRect(range.topLeft()) | view.visualRect(range.bottomRight()));
+}
+
+void tst_QTableView::taskQTBUG_8777_scrollToSpans()
+{
+    QTableWidget table(75,5);
+    for (int i=0; i<50; i++)
+        table.setSpan(2+i, 0, 1, 5);
+    table.setCurrentCell(0,2);
+    table.show();
+
+    for (int i = 0; i < 45; ++i)
+        QTest::keyClick(&table, Qt::Key_Down);
+
+    QVERIFY(table.verticalScrollBar()->value() > 10);
 }
 
 QTEST_MAIN(tst_QTableView)

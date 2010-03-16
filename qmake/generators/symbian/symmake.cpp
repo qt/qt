@@ -179,7 +179,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 
     QString numberOfIcons;
     QString iconFile;
-    QStringList userRssRules;
+    QMap<QString, QStringList> userRssRules;
     readRssRules(numberOfIcons, iconFile, userRssRules);
 
     // Get the application translations and convert to symbian OS lang code, i.e. decical number

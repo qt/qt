@@ -9,7 +9,7 @@ symbian {
     TARGET.UID3 = 0xA000CF74
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     INCLUDEPATH += $$QT_SOURCE_TREE/examples/network/qftp/
-    LIBS += -lesock -lcommdb  -lconnmon -linsock
+    LIBS += -lesock -lcommdb -linsock # For IAP selection
     TARGET.CAPABILITY = NetworkServices
 }
 

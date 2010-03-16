@@ -88,7 +88,10 @@ protected:
                                    QString &checkString);
 
     void writeHeader(QTextStream &t);
-    void writeBldInfContent(QTextStream& t, bool addDeploymentExtension, const QString &iconFile, DeploymentList &depList);
+    void writeBldInfContent(QTextStream& t,
+                            bool addDeploymentExtension,
+                            const QString &iconFile,
+                            DeploymentList &depList);
 
     static bool removeDuplicatedStrings(QStringList& stringList);
 
