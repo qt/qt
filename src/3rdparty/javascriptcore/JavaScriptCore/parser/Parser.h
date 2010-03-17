@@ -83,8 +83,7 @@ namespace JSC {
             source,
             m_features,
             m_numConstants);
-            int column = m_source->startOffset(); //is it good way to find column number?
-            result->setLoc(m_source->firstLine(), m_lastLine, column);
+            result->setLoc(m_source->firstLine(), m_lastLine);
         }
 
         m_arena.reset();

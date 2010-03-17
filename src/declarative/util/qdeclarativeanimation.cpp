@@ -2135,10 +2135,10 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
 }
 
 /*!
-    \qmlproperty string PropertyAnimation::property
     \qmlproperty string PropertyAnimation::properties
-    \qmlproperty Object PropertyAnimation::target
     \qmlproperty list<Object> PropertyAnimation::targets
+    \qmlproperty string PropertyAnimation::property
+    \qmlproperty Object PropertyAnimation::target
 
     These properties are used as a set to determine which properties should be animated.
     The singular and plural forms are functionally identical, e.g.

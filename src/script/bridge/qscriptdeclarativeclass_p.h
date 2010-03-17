@@ -104,7 +104,8 @@ public:
 
     private:
         friend class QScriptDeclarativeClass;
-        PersistentIdentifier(bool) : identifier(0), d(0) {}
+        PersistentIdentifier(QScriptEnginePrivate *e) : identifier(0), engine(e), d(0) {}
+        QScriptEnginePrivate *engine;
         void *d;
     };
 

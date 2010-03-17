@@ -439,6 +439,12 @@ struct QX11Data
     int xinput_eventbase;
     int xinput_errorbase;
 
+    // for XKEYBOARD support
+    bool use_xkb;
+    int xkb_major;
+    int xkb_eventbase;
+    int xkb_errorbase;
+
     QList<QWidget *> deferred_map;
     struct ScrollInProgress {
         long id;

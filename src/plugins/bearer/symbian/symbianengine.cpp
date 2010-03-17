@@ -75,6 +75,8 @@ SymbianNetworkConfigurationPrivate::~SymbianNetworkConfigurationPrivate()
 
 QString SymbianNetworkConfigurationPrivate::bearerName() const
 {
+    QMutexLocker locker(&mutex);
+
     switch (bearer) {
     case BearerEthernet:
         return QLatin1String("Ethernet");
@@ -250,7 +252,10 @@ void SymbianEngine::updateConfigurationsL()
             if (error == KErrNone) {
                 QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ptr->id, ptr);
+
+                locker.unlock();
                 emit configurationAdded(ptr);
+                locker.relock();
             }
         }
         CleanupStack::PopAndDestroy(&connectionMethod);
@@ -288,7 +293,10 @@ void SymbianEngine::updateConfigurationsL()
 
             QNetworkConfigurationPrivatePointer ptr(cpPriv);
             snapConfigurations.insert(ident, ptr);
+
+            locker.unlock();
             emit configurationAdded(ptr);
+            locker.relock();
             
             CleanupStack::Pop(cpPriv);
         }
@@ -309,7 +317,11 @@ void SymbianEngine::updateConfigurationsL()
                     QNetworkConfigurationPrivatePointer ptr(cpPriv);
                     toSymbianConfig(ptr)->serviceNetworkPtr = privSNAP;
                     accessPointConfigurations.insert(ptr->id, ptr);
+
+                    locker.unlock();
                     emit configurationAdded(ptr);
+                    locker.relock();
+
                     privSNAP->serviceNetworkMembers.append(ptr);
                 }
             } else {
@@ -358,7 +370,9 @@ void SymbianEngine::updateConfigurationsL()
                 QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ident, ptr);
 
+                locker.unlock();
                 emit configurationAdded(ptr);
+                locker.relock();
             } else {
                 delete cpPriv;
             }
@@ -372,7 +386,10 @@ void SymbianEngine::updateConfigurationsL()
     foreach (const QString &oldIface, knownConfigs) {
         //remove non existing IAP
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(oldIface);
+
+        locker.unlock();
         emit configurationRemoved(ptr);
+        locker.relock();
 
         // Remove non existing IAP from SNAPs
         foreach (const QString &iface, snapConfigurations.keys()) {
@@ -391,7 +408,10 @@ void SymbianEngine::updateConfigurationsL()
     foreach (const QString &oldIface, knownSnapConfigs) {
         //remove non existing SNAPs
         QNetworkConfigurationPrivatePointer ptr = snapConfigurations.take(oldIface);
+
+        locker.unlock();
         emit configurationRemoved(ptr);
+        locker.relock();
     }
 }
 
@@ -596,7 +616,7 @@ QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfigurationL()
     }
 #endif
     
-    if (!ptr->isValid) {
+    if (!ptr || !ptr->isValid) {
         QString iface = QString::number(qHash(KUserChoiceIAPId));
         ptr = userChoiceConfigurations.value(iface);
     }
@@ -651,7 +671,9 @@ void SymbianEngine::updateActiveAccessPoints()
 
     if (iOnline != online) {
         iOnline = online;
+        locker.unlock();
         emit this->onlineStateChanged(iOnline);
+        locker.relock();
     }
 }
 
@@ -704,7 +726,9 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
     
     if (!iFirstUpdate) {
         startCommsDatabaseNotifications();
+        locker.unlock();
         emit updateCompleted();
+        locker.relock();
     }
 }
 
@@ -746,10 +770,18 @@ bool SymbianEngine::changeConfigurationStateTo(QNetworkConfigurationPrivatePoint
 {
     QMutexLocker locker(&mutex);
 
+    ptr->mutex.lock();
     if (newState != ptr->state) {
         ptr->state = newState;
+        ptr->mutex.unlock();
+
+        locker.unlock();
         emit configurationChanged(ptr);
+        locker.relock();
+
         return true;
+    } else {
+        ptr->mutex.unlock();
     }
     return false;
 }
@@ -763,10 +795,18 @@ bool SymbianEngine::changeConfigurationStateAtMinTo(QNetworkConfigurationPrivate
 {
     QMutexLocker locker(&mutex);
 
+    ptr->mutex.lock();
     if ((newState | ptr->state) != ptr->state) {
         ptr->state = (ptr->state | newState);
+        ptr->mutex.unlock();
+
+        locker.unlock();
         emit configurationChanged(ptr);
+        locker.relock();
+
         return true;
+    } else {
+        ptr->mutex.unlock();
     }
     return false;
 }
@@ -781,10 +821,18 @@ bool SymbianEngine::changeConfigurationStateAtMaxTo(QNetworkConfigurationPrivate
 {
     QMutexLocker locker(&mutex);
 
+    ptr->mutex.lock();
     if ((newState & ptr->state) != ptr->state) {
         ptr->state = (newState & ptr->state);
+        ptr->mutex.unlock();
+
+        locker.unlock();
         emit configurationChanged(ptr);
+        locker.relock();
+
         return true;
+    } else {
+        ptr->mutex.unlock();
     }
     return false;
 }
@@ -893,7 +941,10 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
 
             if (!iOnline) {
                 iOnline = true;
+
+                locker.unlock();
                 emit this->onlineStateChanged(iOnline);
+                locker.relock();
             }
         }
         }
@@ -923,7 +974,10 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
         }
         if (iOnline != online) {
             iOnline = online;
+
+            locker.unlock();
             emit this->onlineStateChanged(iOnline);
+            locker.relock();
         }
         }
         break;

@@ -583,6 +583,63 @@ static QStringList qt_win_CID_get_open_file_names(const QFileDialogArgs &args,
     return result;
 }
 
+QString qt_win_CID_get_existing_directory(const QFileDialogArgs &args)
+{
+    QString result;
+    QDialog modal_widget;
+    modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
+    modal_widget.setParent(args.parent, Qt::Window);
+    QApplicationPrivate::enterModal(&modal_widget);
+
+    IFileOpenDialog *pfd = 0;
+    HRESULT hr = CoCreateInstance(QT_CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER,
+                                  QT_IID_IFileOpenDialog, reinterpret_cast<void**>(&pfd));
+
+    if (SUCCEEDED(hr)) {
+        qt_win_set_IFileDialogOptions(pfd, args.selection,
+                                      args.directory, args.caption,
+                                      QStringList(), QFileDialog::ExistingFiles,
+                                      args.options);
+
+        // Set the FOS_PICKFOLDERS flag
+        DWORD newOptions;
+        hr = pfd->GetOptions(&newOptions);
+        newOptions |= FOS_PICKFOLDERS;
+        if (SUCCEEDED(hr) && SUCCEEDED((hr = pfd->SetOptions(newOptions)))) {
+            QWidget *parentWindow = args.parent;
+            if (parentWindow)
+                parentWindow = parentWindow->window();
+            else
+                parentWindow = QApplication::activeWindow();
+
+            // Show the file dialog.
+            hr = pfd->Show(parentWindow ? parentWindow->winId() : 0);
+            if (SUCCEEDED(hr)) {
+                // Retrieve the result
+                IShellItem *psi = 0;
+                hr = pfd->GetResult(&psi);
+                if (SUCCEEDED(hr)) {
+                    // Retrieve the file name from shell item.
+                    wchar_t *pszPath;
+                    hr = psi->GetDisplayName(SIGDN_FILESYSPATH, &pszPath);
+                    if (SUCCEEDED(hr)) {
+                        result = QString::fromWCharArray(pszPath);
+                        CoTaskMemFree(pszPath);
+                    }
+                    psi->Release(); // Free the current item.
+                }
+            }
+        }
+    }
+    QApplicationPrivate::leaveModal(&modal_widget);
+
+    qt_win_eatMouseMove();
+
+    if (pfd)
+        pfd->Release();
+    return result;
+}
+
 #endif
 
 QStringList qt_win_get_open_file_names(const QFileDialogArgs &args,
@@ -701,6 +758,11 @@ static int __stdcall winGetExistDirCallbackProc(HWND hwnd,
 
 QString qt_win_get_existing_directory(const QFileDialogArgs &args)
 {
+#ifndef Q_WS_WINCE
+    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+        return qt_win_CID_get_existing_directory(args);
+#endif
+
     QString currentDir = QDir::currentPath();
     QString result;
     QWidget *parent = args.parent;

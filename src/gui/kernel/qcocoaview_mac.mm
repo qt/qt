@@ -480,7 +480,7 @@ static int qCocoaViewCount = 0;
         return;
 
     if (QApplicationPrivate::graphicsSystem() != 0) {
-        if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore()) {
+        if (qwidgetprivate->maybeBackingStore()) {
             // Drawing is handled on the window level
             // See qcocoasharedwindowmethods_mac_p.h
             if (!qwidget->testAttribute(Qt::WA_PaintOnScreen))
@@ -819,11 +819,12 @@ static int qCocoaViewCount = 0;
         // The mouse device containts pixel scroll wheel support (Mighty Mouse, Trackpad).
         // Since deviceDelta is delivered as pixels rather than degrees, we need to
         // convert from pixels to degrees in a sensible manner.
-        // It looks like four degrees per pixel behaves most native.
-        // Qt expects the unit for delta to be 1/8 of a degree:
-        deltaX = [theEvent deviceDeltaX];
-        deltaY = [theEvent deviceDeltaY];
-        deltaZ = [theEvent deviceDeltaZ];
+        // It looks like 1/4 degrees per pixel behaves most native.
+        // (NB: Qt expects the unit for delta to be 8 per degree):
+        const int pixelsToDegrees = 2; // 8 * 1/4
+        deltaX = [theEvent deviceDeltaX] * pixelsToDegrees;
+        deltaY = [theEvent deviceDeltaY] * pixelsToDegrees;
+        deltaZ = [theEvent deviceDeltaZ] * pixelsToDegrees;
     } else {
         // carbonEventKind == kEventMouseWheelMoved
         // Remove acceleration, and use either -120 or 120 as delta:

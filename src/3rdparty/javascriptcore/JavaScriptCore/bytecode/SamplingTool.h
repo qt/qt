@@ -113,7 +113,11 @@ namespace JSC {
         
         void sample(CodeBlock*, Instruction*);
 
+#if COMPILER(WINSCW) || COMPILER(ACC)
         ScriptExecutable* m_executable;
+#else
+        RefPtr<ScriptExecutable> m_executable;
+#endif
         CodeBlock* m_codeBlock;
         int m_sampleCount;
         int m_opcodeSampleCount;

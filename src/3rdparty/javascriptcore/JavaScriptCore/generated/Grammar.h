@@ -174,7 +174,7 @@
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 146 "../parser/Grammar.y"
+#line 146 "parser/Grammar.y"
 {
     int                 intValue;
     double              doubleValue;
@@ -207,7 +207,7 @@ typedef union YYSTYPE
     Operator            op;
 }
 /* Line 1489 of yacc.c.  */
-#line 211 "JavaScriptCore/tmp/../generated/Grammar.tab.h"
+#line 211 "generated/Grammar.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
