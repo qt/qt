@@ -74,6 +74,13 @@ private slots:
     void qobject_10tree_qml();
     void qobject_10tree_cpp();
 
+    void itemtree_notree_cpp();
+    void itemtree_objtree_cpp();
+    void itemtree_cpp();
+    void itemtree_data_cpp();
+    void itemtree_qml();
+    void itemtree_scene_cpp();
+
     void elements_data();
     void elements();
 
@@ -231,6 +238,101 @@ void tst_creation::qobject_alloc()
         QObjectFake *obj = new QObjectFake;
         delete obj;
     }
+}
+
+struct QDeclarativeGraphics_DerivedObject : public QObject
+{
+    void setParent_noEvent(QObject *parent) {
+        bool sce = d_ptr->sendChildEvents;
+        d_ptr->sendChildEvents = false;
+        setParent(parent);
+        d_ptr->sendChildEvents = sce;
+    }
+};
+
+inline void QDeclarativeGraphics_setParent_noEvent(QObject *object, QObject *parent)
+{
+    static_cast<QDeclarativeGraphics_DerivedObject *>(object)->setParent_noEvent(parent);
+}
+
+void tst_creation::itemtree_notree_cpp()
+{
+    QBENCHMARK {
+        QDeclarativeItem *item = new QDeclarativeItem;
+        for (int i = 0; i < 30; ++i) {
+            QDeclarativeItem *child = new QDeclarativeItem;
+        }
+        delete item;
+    }
+}
+
+void tst_creation::itemtree_objtree_cpp()
+{
+    QBENCHMARK {
+        QDeclarativeItem *item = new QDeclarativeItem;
+        for (int i = 0; i < 30; ++i) {
+            QDeclarativeItem *child = new QDeclarativeItem;
+            QDeclarativeGraphics_setParent_noEvent(child,item);
+        }
+        delete item;
+    }
+}
+
+void tst_creation::itemtree_cpp()
+{
+    QBENCHMARK {
+        QDeclarativeItem *item = new QDeclarativeItem;
+        for (int i = 0; i < 30; ++i) {
+            QDeclarativeItem *child = new QDeclarativeItem;
+            QDeclarativeGraphics_setParent_noEvent(child,item);
+            child->setParentItem(item);
+        }
+        delete item;
+    }
+}
+
+void tst_creation::itemtree_data_cpp()
+{
+    QBENCHMARK {
+        QDeclarativeItem *item = new QDeclarativeItem;
+        for (int i = 0; i < 30; ++i) {
+            QDeclarativeItem *child = new QDeclarativeItem;
+            QDeclarativeGraphics_setParent_noEvent(child,item);
+            QDeclarativeListReference ref(item, "data");
+            ref.append(child);
+        }
+        delete item;
+    }
+}
+
+void tst_creation::itemtree_qml()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("item.qml"));
+    QObject *obj = component.create();
+    delete obj;
+
+    QBENCHMARK {
+        QObject *obj = component.create();
+        delete obj;
+    }
+}
+
+void tst_creation::itemtree_scene_cpp()
+{
+    QGraphicsScene scene;
+    QDeclarativeItem *root = new QDeclarativeItem;
+    scene.addItem(root);
+    QBENCHMARK {
+        QDeclarativeItem *item = new QDeclarativeItem;
+        for (int i = 0; i < 30; ++i) {
+            QDeclarativeItem *child = new QDeclarativeItem;
+            QDeclarativeGraphics_setParent_noEvent(child,item);
+            child->setParentItem(item);
+        }
+        item->setParentItem(root);
+        delete item;
+    }
+    delete root;
 }
 
 void tst_creation::elements_data()
