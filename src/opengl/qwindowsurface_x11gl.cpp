@@ -104,6 +104,12 @@ void QX11GLWindowSurface::flush(QWidget *widget, const QRegion &widgetRegion, co
               boundingRect.x() + offset.x(), boundingRect.y() + offset.y(),
               boundingRect.width(), boundingRect.height(),
               windowBoundingRect.x(), windowBoundingRect.y());
+
+    QX11GLPixmapData* pmd = static_cast<QX11GLPixmapData*>(m_backBuffer.data_ptr().data());
+    Q_ASSERT(pmd->context());
+    pmd->context()->makeCurrent();
+    XSync(X11->display, False);
+    eglWaitNative(EGL_CORE_NATIVE_ENGINE);
 }
 
 void QX11GLWindowSurface::setGeometry(const QRect &rect)
