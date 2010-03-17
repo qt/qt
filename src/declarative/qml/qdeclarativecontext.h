@@ -58,6 +58,7 @@ class QDeclarativeEngine;
 class QDeclarativeRefCount;
 class QDeclarativeContextPrivate;
 class QDeclarativeCompositeTypeData;
+class QDeclarativeContextData;
 
 class Q_DECLARATIVE_EXPORT QDeclarativeContext : public QObject
 {
@@ -96,7 +97,8 @@ private:
     friend class QDeclarativeComponentPrivate;
     friend class QDeclarativeScriptPrivate;
     friend class QDeclarativeBoundSignalProxy;
-    QDeclarativeContext(QDeclarativeContext *parent, QObject *objParent, bool);
+    friend class QDeclarativeContextData;
+    QDeclarativeContext(QDeclarativeContextData *);
     QDeclarativeContext(QDeclarativeEngine *, bool);
 };
 QT_END_NAMESPACE

@@ -63,6 +63,7 @@
 
 #include "qdeclarativeguard_p.h"
 #include "qdeclarativecompiler_p.h"
+#include "qdeclarativecontext_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -121,7 +122,7 @@ protected:
 private:
     QObject *object;
     QDeclarativeCompiledData *compiledData;
-    QDeclarativeGuard<QDeclarativeContext> ctxt;
+    QDeclarativeGuardedContextData ctxt;
 
     const QDeclarativeVMEMetaData *metaData;
     int propOffset;

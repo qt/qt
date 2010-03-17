@@ -134,8 +134,9 @@ class Q_DECLARATIVE_EXPORT QDeclarativeBinding : public QDeclarativeExpression, 
 Q_OBJECT
 public:
     QDeclarativeBinding(const QString &, QObject *, QDeclarativeContext *, QObject *parent=0);
-    QDeclarativeBinding(void *, QDeclarativeRefCount *, QObject *, QDeclarativeContext *, const QString &, int, 
-               QObject *parent);
+    QDeclarativeBinding(const QString &, QObject *, QDeclarativeContextData *, QObject *parent=0);
+    QDeclarativeBinding(void *, QDeclarativeRefCount *, QObject *, QDeclarativeContextData *, 
+                        const QString &, int, QObject *parent);
     ~QDeclarativeBinding();
 
     void setTarget(const QDeclarativeProperty &);

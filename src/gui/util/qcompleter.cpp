@@ -907,7 +907,7 @@ void QCompleterPrivate::_q_fileSystemModelDirectoryLoaded(const QString &path)
 {
     Q_Q(QCompleter);
     //the path given by QFileSystemModel does not end with /
-    if (q->completionPrefix() != path + QLatin1Char('/'))
+    if (!q->completionPrefix().isEmpty() && q->completionPrefix() != path + QLatin1Char('/'))
         q->complete();
 }
 

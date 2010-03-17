@@ -301,34 +301,38 @@ void tst_QDeclarativeListModel::dynamic_worker()
 
     if (script[0] == QLatin1Char('{') && script[script.length()-1] == QLatin1Char('}'))
         script = script.mid(1, script.length() - 2);
-    QString finalTest = script.split(';').last();
-    QString scriptWithoutFinalTest = script.mid(0, script.indexOf(finalTest));
+    QVariantList operations;
+    foreach (const QString &s, script.split(';')) {
+        if (!s.isEmpty())
+            operations << s;
+    }
 
     if (!warning.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());
 
-    if (!scriptWithoutFinalTest.isEmpty()) {
+    if (operations.count() == 1) {
+        // test count(), get() return the correct default values in the worker list model
+        QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker",
+                Q_ARG(QVariant, operations)));
+        waitForWorker(item);
+        QCOMPARE(QDeclarativeProperty(item, "result").read().toInt(), result);
+    } else {
+        // execute a set of commands on the worker list model, then check the
+        // changes are reflected in the list model in the main thread
         if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
             QTest::ignoreMessage(QtWarningMsg, "QML ListModel (unknown location) Cannot add nested list values when modifying or after modification from a worker script");
-        QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", Q_ARG(QVariant, scriptWithoutFinalTest)));
+        QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", 
+                Q_ARG(QVariant, operations.mid(0, operations.length()-1))));
         waitForWorker(item);
+
+        QDeclarativeExpression e(eng.rootContext(), operations.last().toString(), &model);
+        if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
+            QVERIFY(e.value().toInt() != result);
+        else
+            QCOMPARE(e.value().toInt(), result);
     }
 
-    QDeclarativeExpression e(eng.rootContext(), finalTest, &model);
-    if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
-        QVERIFY(e.value().toInt() != result);
-    else
-        QCOMPARE(e.value().toInt(), result);
-
-    QEventLoop loop;
-    QTimer timer;
-    timer.setSingleShot(true);
-    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-    connect(item, SIGNAL(destroyed(QObject*)), &loop, SLOT(quit()));
-    timer.start(10000);
-    item->deleteLater();
-    loop.exec();
-
+    delete item;
     QTest::ignoreMessage(QtWarningMsg, "QThread: Destroyed while thread is still running");
     qApp->processEvents();
 }
@@ -354,7 +358,7 @@ void tst_QDeclarativeListModel::convertNestedToFlat_fail()
 
     QTest::ignoreMessage(QtWarningMsg, "QML ListModel (unknown location) List contains nested list values and cannot be used from a worker script");
     QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", Q_ARG(QVariant, script)));
-    waitForWorker(item);     
+    waitForWorker(item);
 
     QCOMPARE(model.count(), 2);
 

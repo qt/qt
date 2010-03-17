@@ -4,20 +4,18 @@ Item {
     id: item
     property var model
     property bool done: false
+    property var result
 
-    function evalExpressionViaWorker(expr) {
+    function evalExpressionViaWorker(commands) {
         done = false
-        if (expr[expr.length-1] == ';')
-            expr = expr.substring(0, expr.length-1)
-        var cmds = expr.split(';')
-
-        worker.sendMessage({'commands': cmds, 'model': model})
+        worker.sendMessage({'commands': commands, 'model': model})
     }
 
     WorkerScript {
         id: worker
         source: "script.js"
         onMessage: {
+            item.result = messageObject.result
             item.done = true
         }
     }

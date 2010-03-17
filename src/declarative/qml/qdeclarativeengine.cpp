@@ -189,7 +189,7 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 QUrl QDeclarativeScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
 {
     if (p) {
-        QDeclarativeContext *ctxt = QDeclarativeEnginePrivate::get(this)->getContext(context);
+        QDeclarativeContextData *ctxt = QDeclarativeEnginePrivate::get(this)->getContext(context);
         Q_ASSERT(ctxt);
         return ctxt->resolvedUrl(url);
     }
@@ -635,9 +635,9 @@ QDeclarativeContext *QDeclarativeEngine::contextForObject(const QObject *object)
     if (!data)
         return 0;
     else if (data->outerContext)
-        return data->outerContext;
+        return data->outerContext->asQDeclarativeContext();
     else
-        return data->context;
+        return 0;
 }
 
 /*!
@@ -658,12 +658,8 @@ void QDeclarativeEngine::setContextForObject(QObject *object, QDeclarativeContex
         return;
     }
 
-    data->context = context;
-    data->nextContextObject = context->d_func()->contextObjects;
-    if (data->nextContextObject) 
-        data->nextContextObject->prevContextObject = &data->nextContextObject;
-    data->prevContextObject = &context->d_func()->contextObjects;
-    context->d_func()->contextObjects = data;
+    QDeclarativeContextData *contextData = QDeclarativeContextData::get(context);
+    contextData->addObject(object);
 }
 
 /*!
@@ -727,7 +723,7 @@ void qmlExecuteDeferred(QObject *object)
 
     if (data && data->deferredComponent) {
 
-        QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(data->context->engine());
+        QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(data->context->engine);
 
         QDeclarativeComponentPrivate::ConstructionState state;
         QDeclarativeComponentPrivate::beginDeferred(data->context, ep, object, &state);
@@ -828,7 +824,13 @@ void QDeclarativeDeclarativeData::destroyed(QObject *object)
         g->objectDestroyed(object);
     }
 
-    delete this;
+    if (ownContext)
+        context->destroy();
+
+    if (ownMemory)
+        delete this;
+    else 
+        this->~QDeclarativeDeclarativeData();
 }
 
 void QDeclarativeDeclarativeData::parentChanged(QObject *, QObject *parent)
@@ -890,7 +892,7 @@ QScriptValue QDeclarativeEnginePrivate::qmlScriptObject(QObject* object,
 /*!
     Returns the QDeclarativeContext for the executing QScript \a ctxt.
 */
-QDeclarativeContext *QDeclarativeEnginePrivate::getContext(QScriptContext *ctxt)
+QDeclarativeContextData *QDeclarativeEnginePrivate::getContext(QScriptContext *ctxt)
 {
     QScriptValue scopeNode = QScriptDeclarativeClass::scopeChainValue(ctxt, -3);
     Q_ASSERT(scopeNode.isValid());
@@ -898,15 +900,15 @@ QDeclarativeContext *QDeclarativeEnginePrivate::getContext(QScriptContext *ctxt)
     return contextClass->contextFromValue(scopeNode);
 }
 
-QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt,
-                                               QScriptEngine *engine)
+QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
 {
     QDeclarativeEnginePrivate *activeEnginePriv =
         static_cast<QDeclarativeScriptEngine*>(engine)->p;
     QDeclarativeEngine* activeEngine = activeEnginePriv->q_func();
 
-    QDeclarativeContext* context = activeEnginePriv->getContext(ctxt);
+    QDeclarativeContextData* context = activeEnginePriv->getContext(ctxt);
     Q_ASSERT(context);
+
     if(ctxt->argumentCount() != 1) {
         return engine->nullValue();
     }else{
@@ -915,7 +917,7 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt,
             return engine->nullValue();
         QUrl url = QUrl(context->resolvedUrl(QUrl(arg)));
         QDeclarativeComponent *c = new QDeclarativeComponent(activeEngine, url, activeEngine);
-        c->setCreationContext(context);
+        QDeclarativeComponentPrivate::get(c)->creationContext = context;
         QDeclarativeDeclarativeData::get(c, true)->setImplicitDestructible();
         return activeEnginePriv->objectClass->newQObject(c, qMetaTypeId<QDeclarativeComponent*>());
     }
@@ -930,7 +932,7 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
     if(ctxt->argumentCount() < 2 || ctxt->argumentCount() > 3)
         return engine->nullValue();
 
-    QDeclarativeContext* context = activeEnginePriv->getContext(ctxt);
+    QDeclarativeContextData* context = activeEnginePriv->getContext(ctxt);
     Q_ASSERT(context);
 
     QString qml = ctxt->argument(0).toString();
@@ -968,7 +970,7 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
         return engine->nullValue();
     }
 
-    QObject *obj = component.create(context);
+    QObject *obj = component.create(context->asQDeclarativeContext());
 
     if(component.isError()) {
         QList<QDeclarativeError> errors = component.errors();
@@ -1613,7 +1615,8 @@ public:
         if (s) {
             if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return))
                 return true;
-            if (s->urls.count() == 1 && !s->isLibrary[0] && url_return) {
+            if (s->urls.count() == 1 && !s->isLibrary[0] && url_return && s != &unqualifiedset) {
+                // qualified, and only 1 url
                 *url_return = QUrl(s->urls[0]+QLatin1Char('/')).resolved(QUrl(QString::fromUtf8(unqualifiedtype) + QLatin1String(".qml")));
                 return true;
             }

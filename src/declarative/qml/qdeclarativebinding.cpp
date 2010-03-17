@@ -79,14 +79,25 @@ QDeclarativeBindingPrivate::QDeclarativeBindingPrivate()
 {
 }
 
-QDeclarativeBinding::QDeclarativeBinding(void *data, QDeclarativeRefCount *rc, QObject *obj, QDeclarativeContext *ctxt, const QString &url, int lineNumber, QObject *parent)
+QDeclarativeBinding::QDeclarativeBinding(void *data, QDeclarativeRefCount *rc, QObject *obj, 
+                                         QDeclarativeContextData *ctxt, const QString &url, int lineNumber, 
+                                         QObject *parent)
 : QDeclarativeExpression(ctxt, data, rc, obj, url, lineNumber, *new QDeclarativeBindingPrivate)
 {
     setParent(parent);
     setNotifyOnValueChanged(true);
 }
 
-QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDeclarativeContext *ctxt, QObject *parent)
+QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDeclarativeContext *ctxt, 
+                                         QObject *parent)
+: QDeclarativeExpression(QDeclarativeContextData::get(ctxt), str, obj, *new QDeclarativeBindingPrivate)
+{
+    setParent(parent);
+    setNotifyOnValueChanged(true);
+}
+
+QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDeclarativeContextData *ctxt, 
+                                         QObject *parent)
 : QDeclarativeExpression(ctxt, str, obj, *new QDeclarativeBindingPrivate)
 {
     setParent(parent);
@@ -181,8 +192,8 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
             }
 
             if (data->error.isValid()) {
-                QDeclarativeEnginePrivate *p = (data->context() && data->context()->engine())?
-                    QDeclarativeEnginePrivate::get(data->context()->engine()):0;
+                QDeclarativeEnginePrivate *p = (data->context() && data->context()->engine)?
+                    QDeclarativeEnginePrivate::get(data->context()->engine):0;
                if (!data->addError(p)) 
                    qWarning().nospace() << qPrintable(this->error().toString());
             } else {

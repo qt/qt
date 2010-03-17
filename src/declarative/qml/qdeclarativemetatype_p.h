@@ -111,6 +111,7 @@ public:
     bool availableInVersion(int vmajor, int vminor) const;
 
     QObject *create() const;
+    void create(QObject **, void **, size_t) const;
 
     QDeclarativeCustomParser *customParser() const;
 

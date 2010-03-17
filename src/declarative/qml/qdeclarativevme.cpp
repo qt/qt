@@ -100,9 +100,8 @@ struct ListInstance
     QDeclarativeListProperty<void> qListProperty;
 };
 
-QObject *QDeclarativeVME::run(QDeclarativeContext *ctxt, QDeclarativeCompiledData *comp, 
-                     int start, int count, 
-                     const QBitField &bindingSkipList)
+QObject *QDeclarativeVME::run(QDeclarativeContextData *ctxt, QDeclarativeCompiledData *comp, 
+                              int start, int count, const QBitField &bindingSkipList)
 {
     QDeclarativeVMEStack<QObject *> stack;
 
@@ -119,7 +118,7 @@ void QDeclarativeVME::runDeferred(QObject *object)
     if (!data || !data->context || !data->deferredComponent)
         return;
 
-    QDeclarativeContext *ctxt = data->context;
+    QDeclarativeContextData *ctxt = data->context;
     QDeclarativeCompiledData *comp = data->deferredComponent;
     int start = data->deferredIdx + 1;
     int count = data->deferredComponent->bytecode.at(data->deferredIdx).defer.deferCount;
@@ -129,7 +128,8 @@ void QDeclarativeVME::runDeferred(QObject *object)
     run(stack, ctxt, comp, start, count, QBitField());
 }
 
-QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarativeContext *ctxt, 
+QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, 
+                              QDeclarativeContextData *ctxt, 
                               QDeclarativeCompiledData *comp, 
                               int start, int count, 
                               const QBitField &bindingSkipList)
@@ -152,8 +152,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
     QDeclarativeVMEStack<ListInstance> qliststack;
 
     vmeErrors.clear();
-    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(ctxt->engine());
-    QDeclarativeContextPrivate *cp = (QDeclarativeContextPrivate *)QObjectPrivate::get(ctxt);
+    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(ctxt->engine);
 
     int status = -1;    //for dbus
     QDeclarativePropertyPrivate::WriteFlags flags = QDeclarativePropertyPrivate::BypassInterceptor;
@@ -169,9 +168,9 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                 if (instr.init.parserStatusSize)
                     parserStatus = QDeclarativeEnginePrivate::SimpleList<QDeclarativeParserStatus>(instr.init.parserStatusSize);
                 if (instr.init.contextCache != -1) 
-                    cp->setIdPropertyData(comp->contextCaches.at(instr.init.contextCache));
+                    ctxt->setIdPropertyData(comp->contextCaches.at(instr.init.contextCache));
                 if (instr.init.compiledBinding != -1) 
-                    cp->optimizedBindings = new QDeclarativeCompiledBindings(datas.at(instr.init.compiledBinding).constData(), ctxt);
+                    ctxt->optimizedBindings = new QDeclarativeCompiledBindings(datas.at(instr.init.compiledBinding).constData(), ctxt);
             }
             break;
 
@@ -188,6 +187,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
 
                 QObject *o = 
                     types.at(instr.create.type).createInstance(ctxt, bindings);
+
                 if (!o) {
                     if(types.at(instr.create.type).component)
                         vmeErrors << types.at(instr.create.type).component->errors();
@@ -197,6 +197,24 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
 
                 QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(o);
                 Q_ASSERT(ddata);
+
+                if (stack.isEmpty()) {
+                    if (ddata->context) {
+                        Q_ASSERT(ddata->context != ctxt);
+                        Q_ASSERT(ddata->outerContext);
+                        Q_ASSERT(ddata->outerContext != ctxt);
+                        QDeclarativeContextData *c = ddata->context;
+                        while (c->linkedContext) c = c->linkedContext;
+                        c->linkedContext = ctxt;
+                    } else {
+                        ctxt->addObject(o);
+                    }
+
+                    ddata->ownContext = true;
+                } else if (!ddata->context) {
+                    ctxt->addObject(o);
+                }
+
                 ddata->setImplicitDestructible();
                 ddata->outerContext = ctxt;
                 ddata->lineNumber = instr.line;
@@ -229,25 +247,30 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
         case QDeclarativeInstruction::SetId:
             {
                 QObject *target = stack.top();
-                cp->setIdProperty(instr.setId.index, target);
+                ctxt->setIdProperty(instr.setId.index, target);
             }
             break;
 
 
         case QDeclarativeInstruction::SetDefault:
             {
-                QObject *target = stack.top();
-                ctxt->setContextObject(target);
+                ctxt->contextObject = stack.top();
             }
             break;
 
         case QDeclarativeInstruction::CreateComponent:
             {
-                QObject *qcomp = new QDeclarativeComponent(ctxt->engine(), comp, ii + 1, instr.createComponent.count, stack.isEmpty() ? 0 : stack.top());
+                QObject *qcomp = new QDeclarativeComponent(ctxt->engine, comp, ii + 1, instr.createComponent.count,
+                                                           stack.isEmpty() ? 0 : stack.top());
 
-                QDeclarativeEngine::setContextForObject(qcomp, ctxt);
-                QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(qcomp);
+                QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(qcomp, true);
                 Q_ASSERT(ddata);
+
+                ctxt->addObject(qcomp);
+
+                if (stack.isEmpty()) 
+                    ddata->ownContext = true;
+
                 ddata->setImplicitDestructible();
                 ddata->outerContext = ctxt;
                 ddata->lineNumber = instr.line;
@@ -555,7 +578,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
         case QDeclarativeInstruction::StoreScript:
             {
                 QObject *target = stack.top();
-                cp->addScript(scripts.at(instr.storeScript.value), target);
+                ctxt->addScript(scripts.at(instr.storeScript.value), target);
             }
             break;
 
@@ -564,7 +587,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                 QObject *target = stack.top();
                 QObject *scope = stack.at(stack.count() - 1 - instr.storeScriptString.scope);
                 QDeclarativeScriptString ss;
-                ss.setContext(ctxt);
+                ss.setContext(ctxt->asQDeclarativeContext());
                 ss.setScopeObject(scope);
                 ss.setScript(primitives.at(instr.storeScriptString.value));
 
@@ -620,7 +643,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                     break;
 
                 QDeclarativeAbstractBinding *binding = 
-                    cp->optimizedBindings->configBinding(instr.assignBinding.value, target, scope, property);
+                    ctxt->optimizedBindings->configBinding(instr.assignBinding.value, target, scope, property);
                 bindValues.append(binding);
                 binding->m_mePtr = &bindValues.values[bindValues.count - 1];
                 binding->addToObject(target);
@@ -821,7 +844,9 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
 
     if (isError()) {
         if (!stack.isEmpty()) {
-            delete stack.at(0);
+            delete stack.at(0); // ### What about failures in deferred creation?
+        } else {
+            ctxt->destroy();
         }
 
         QDeclarativeEnginePrivate::clear(bindValues);
@@ -847,5 +872,26 @@ QList<QDeclarativeError> QDeclarativeVME::errors() const
 {
     return vmeErrors;
 }
+
+QObject *
+QDeclarativeCompiledData::TypeReference::createInstance(QDeclarativeContextData *ctxt, 
+                                                        const QBitField &bindings) const
+{
+    if (type) {
+        QObject *rv = 0;
+        void *memory = 0;
+
+        type->create(&rv, &memory, sizeof(QDeclarativeDeclarativeData));
+        QDeclarativeDeclarativeData *ddata = new (memory) QDeclarativeDeclarativeData;
+        ddata->ownMemory = false;
+        QObjectPrivate::get(rv)->declarativeData = ddata;
+
+        return rv;
+    } else {
+        Q_ASSERT(component);
+        return QDeclarativeComponentPrivate::get(component)->create(ctxt, bindings);
+    } 
+}
+
 
 QT_END_NAMESPACE

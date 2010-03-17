@@ -483,7 +483,7 @@ void QDeclarativeListModel::append(const QScriptValue& valuemap)
         qmlInfo(this) << tr("append: value is not an object");
         return;
     }
-    
+
     insert(count(), valuemap);
 }
 

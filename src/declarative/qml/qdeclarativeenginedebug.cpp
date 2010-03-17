@@ -49,6 +49,7 @@
 #include "qdeclarativebinding_p.h"
 #include "qdeclarativecontext_p.h"
 #include "qdeclarativewatcher_p.h"
+#include "qdeclarativevaluetype_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qmetaobject.h>
@@ -218,10 +219,9 @@ void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message,
         message << fakeProperties[ii];
 }
 
-void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, 
-                                           QDeclarativeContext *ctxt)
+void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDeclarativeContext *ctxt)
 {
-    QDeclarativeContextPrivate *p = (QDeclarativeContextPrivate *)QObjectPrivate::get(ctxt);
+    QDeclarativeContextData *p = QDeclarativeContextData::get(ctxt);
 
     QString ctxtName = ctxt->objectName();
     int ctxtId = QDeclarativeDebugService::idForObject(ctxt);
@@ -230,35 +230,34 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message,
 
     int count = 0;
 
-    QDeclarativeContext *child = p->childContexts;
+    QDeclarativeContextData *child = p->childContexts;
     while (child) {
-        QDeclarativeContextPrivate *p = QDeclarativeContextPrivate::get(child);
-        if (!p->isInternal)
+        if (!child->isInternal)
             ++count;
-        child = p->nextChild;
+        child = child->nextChild;
     }
 
     message << count;
 
     child = p->childContexts;
     while (child) {
-        QDeclarativeContextPrivate *p = QDeclarativeContextPrivate::get(child);
-        if (!p->isInternal) 
-            buildObjectList(message, child);
-        child = p->nextChild;
+        if (!child->isInternal) 
+            buildObjectList(message, child->asQDeclarativeContext());
+        child = child->nextChild;
     }
 
     // Clean deleted objects
-    for (int ii = 0; ii < p->instances.count(); ++ii) {
-        if (!p->instances.at(ii)) {
-            p->instances.removeAt(ii);
+    QDeclarativeContextPrivate *ctxtPriv = QDeclarativeContextPrivate::get(ctxt);
+    for (int ii = 0; ii < ctxtPriv->instances.count(); ++ii) {
+        if (!ctxtPriv->instances.at(ii)) {
+            ctxtPriv->instances.removeAt(ii);
             --ii;
         }
     }
 
-    message << p->instances.count();
-    for (int ii = 0; ii < p->instances.count(); ++ii) {
-        message << objectData(p->instances.at(ii));
+    message << ctxtPriv->instances.count();
+    for (int ii = 0; ii < ctxtPriv->instances.count(); ++ii) {
+        message << objectData(ctxtPriv->instances.at(ii));
     }
 }
 
@@ -267,8 +266,8 @@ QDeclarativeEngineDebugServer::objectData(QObject *object)
 {
     QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object);
     QDeclarativeObjectData rv;
-    if (ddata) {
-        rv.url = ddata->outerContext->baseUrl();
+    if (ddata && ddata->outerContext) {
+        rv.url = ddata->outerContext->url;
         rv.lineNumber = ddata->lineNumber;
         rv.columnNumber = ddata->columnNumber;
     } else {

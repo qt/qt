@@ -160,9 +160,6 @@ void QDeclarativeListModelWorkerAgent::insert(int index, const QScriptValue &val
 
 QScriptValue QDeclarativeListModelWorkerAgent::get(int index) const
 {
-    if (index < 0 || index >= count())
-        return m_engine->undefinedValue();
-
     return m_copy->get(index);
 }
 
@@ -206,7 +203,7 @@ bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
             FlatListModel *orig = m_orig->m_flat;
             FlatListModel *copy = s->list->m_flat;
             if (!orig || !copy) {
-                qWarning("QML List worker: cannot synchronize lists");
+                qWarning("QML ListModel worker: sync() failed");
                 return QObject::event(e);
             }
             orig->m_roles = copy->m_roles;
@@ -233,8 +230,6 @@ bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
 
             if (cc)
                 emit m_orig->countChanged(m_copy->count());
-
-            //qDebug() << "------sync():" << m_copy->count() << s->list->count() << m_orig->count();
         }
     }
 
