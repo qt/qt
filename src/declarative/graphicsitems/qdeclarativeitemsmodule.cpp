@@ -138,6 +138,7 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeKeyEvent>();
     qmlRegisterType<QDeclarativeMouseEvent>();
     qmlRegisterType<QGraphicsObject>();
+    qmlRegisterType<QGraphicsWidget>();
     qmlRegisterType<QGraphicsTransform>();
     qmlRegisterType<QDeclarativePathElement>();
     qmlRegisterType<QDeclarativeCurve>();
