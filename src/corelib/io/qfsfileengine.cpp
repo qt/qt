@@ -1033,6 +1033,10 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   to store temporary files).
 */
 
+/*! \fn QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFileEngine::FileFlags type) const
+    \internal
+*/
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_FSFILEENGINE

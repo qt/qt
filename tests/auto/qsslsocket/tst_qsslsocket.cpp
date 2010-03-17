@@ -666,6 +666,21 @@ void tst_QSslSocket::isEncrypted()
 
 void tst_QSslSocket::localCertificate()
 {
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    // This test does not make 100% sense yet. We just set some local CA/cert/key and use it
+    // to authenticate ourselves against the server. The server does not actually check this
+    // values. This test should just run the codepath inside qsslsocket_openssl.cpp
+
+    QSslSocketPtr socket = newSocket();
+    QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem");
+    socket->setCaCertificates(localCert);
+    socket->setLocalCertificate(QLatin1String(SRCDIR "certs/fluke.cert"));
+    socket->setPrivateKey(QLatin1String(SRCDIR "certs/fluke.key"));
+
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    QVERIFY(socket->waitForEncrypted(5000));
 }
 
 void tst_QSslSocket::mode()

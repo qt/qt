@@ -185,6 +185,8 @@ void QNativeWifiEngine::scanComplete()
 
                 bool changed = false;
 
+                ptr->mutex.lock();
+
                 if (!ptr->isValid) {
                     ptr->isValid = true;
                     changed = true;
@@ -200,8 +202,13 @@ void QNativeWifiEngine::scanComplete()
                     changed = true;
                 }
 
-                if (changed)
+                ptr->mutex.unlock();
+
+                if (changed) {
+                    locker.unlock();
                     emit configurationChanged(ptr);
+                    locker.relock();
+                }
             } else {
                 QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
 
@@ -214,7 +221,9 @@ void QNativeWifiEngine::scanComplete()
 
                 accessPointConfigurations.insert(id, ptr);
 
+                locker.unlock();
                 emit configurationAdded(ptr);
+                locker.relock();
             }
         }
 
@@ -227,9 +236,12 @@ void QNativeWifiEngine::scanComplete()
         QNetworkConfigurationPrivatePointer ptr =
             accessPointConfigurations.take(previous.takeFirst());
 
+        locker.unlock();
         emit configurationRemoved(ptr);
+        locker.relock();
     }
 
+    locker.unlock();
     emit updateCompleted();
 }
 
@@ -358,6 +370,7 @@ void QNativeWifiEngine::connectToId(const QString &id)
 #ifdef BEARER_MANAGEMENT_DEBUG
         qDebug("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
 #endif
+        locker.unlock();
         emit connectionError(id, InterfaceLookupError);
         return;
     }
@@ -405,7 +418,9 @@ void QNativeWifiEngine::connectToId(const QString &id)
 #ifdef BEARER_MANAGEMENT_DEBUG
                 qDebug("%s: WlanConnect failed with error %ld\n", __FUNCTION__, result);
 #endif
+                locker.unlock();
                 emit connectionError(id, ConnectError);
+                locker.relock();
                 break;
             }
 
@@ -415,8 +430,10 @@ void QNativeWifiEngine::connectToId(const QString &id)
 
     local_WlanFreeMemory(interfaceList);
 
-    if (profile.isEmpty())
+    if (profile.isEmpty()) {
+        locker.unlock();
         emit connectionError(id, InterfaceLookupError);
+    }
 }
 
 void QNativeWifiEngine::disconnectFromId(const QString &id)
@@ -426,6 +443,7 @@ void QNativeWifiEngine::disconnectFromId(const QString &id)
     QString interface = getInterfaceFromId(id);
 
     if (interface.isEmpty()) {
+        locker.unlock();
         emit connectionError(id, InterfaceLookupError);
         return;
     }
@@ -446,6 +464,7 @@ void QNativeWifiEngine::disconnectFromId(const QString &id)
 #ifdef BEARER_MANAGEMENT_DEBUG
         qDebug("%s: WlanDisconnect failed with error %ld\n", __FUNCTION__, result);
 #endif
+        locker.unlock();
         emit connectionError(id, DisconnectionError);
         return;
     }

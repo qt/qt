@@ -42,14 +42,19 @@ namespace JSC {
         friend class JSString;
         friend class JSValue;
         friend class JSAPIValueWrapper;
-        friend struct VPtrSet;
+        friend class JSZombie;
+        friend class JSGlobalData;
 
     private:
         explicit JSCell(Structure*);
-        JSCell(); // Only used for initializing Collector blocks.
         virtual ~JSCell();
 
     public:
+        static PassRefPtr<Structure> createDummyStructure()
+        {
+            return Structure::create(jsNull(), TypeInfo(UnspecifiedType));
+        }
+
         // Querying the type.
 #if USE(JSVALUE32)
         bool isNumber() const;
@@ -59,12 +64,13 @@ namespace JSC {
         virtual bool isGetterSetter() const;
         bool inherits(const ClassInfo*) const;
         virtual bool isAPIValueWrapper() const { return false; }
+        virtual bool isPropertyNameIterator() const { return false; }
 
         Structure* structure() const;
 
         // Extracting the value.
-        bool getString(UString&) const;
-        UString getString() const; // null string if not a string
+        bool getString(ExecState* exec, UString&) const;
+        UString getString(ExecState* exec) const; // null string if not a string
         JSObject* getObject(); // NULL if not an object
         const JSObject* getObject() const; // NULL if not an object
         
@@ -89,19 +95,23 @@ namespace JSC {
         void* operator new(size_t, void* placementNewDestination) { return placementNewDestination; }
 
         virtual void markChildren(MarkStack&);
+#if ENABLE(JSC_ZOMBIES)
+        virtual bool isZombie() const { return false; }
+#endif
 
         // Object operations, with the toObject operation included.
         virtual const ClassInfo* classInfo() const;
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
         virtual void put(ExecState*, unsigned propertyName, JSValue);
-        virtual bool deleteProperty(ExecState*, const Identifier& propertyName, bool checkDontDelete = true);
-        virtual bool deleteProperty(ExecState*, unsigned propertyName, bool checkDontDelete = true);
+        virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
+        virtual bool deleteProperty(ExecState*, unsigned propertyName);
 
         virtual JSObject* toThisObject(ExecState*) const;
         virtual UString toThisString(ExecState*) const;
         virtual JSString* toThisJSString(ExecState*);
         virtual JSValue getJSNumber();
         void* vptr() { return *reinterpret_cast<void**>(this); }
+        void setVPtr(void* vptr) { *reinterpret_cast<void**>(this) = vptr; }
 
     private:
         // Base implementation; for non-object classes implements getPropertySlot.
@@ -112,21 +122,8 @@ namespace JSC {
         Structure* m_structure;
     };
 
-    // FIXME: We should deprecate this and just use JSValue::asCell() instead.
-    JSCell* asCell(JSValue);
-
-    inline JSCell* asCell(JSValue value)
-    {
-        return value.asCell();
-    }
-
     inline JSCell::JSCell(Structure* structure)
         : m_structure(structure)
-    {
-    }
-
-    // Only used for initializing Collector blocks.
-    inline JSCell::JSCell()
     {
     }
 
@@ -137,7 +134,7 @@ namespace JSC {
 #if USE(JSVALUE32)
     inline bool JSCell::isNumber() const
     {
-        return Heap::isNumber(const_cast<JSCell*>(this));
+        return m_structure->typeInfo().type() == NumberType;
     }
 #endif
 
@@ -162,11 +159,12 @@ namespace JSC {
 
     inline void* JSCell::operator new(size_t size, JSGlobalData* globalData)
     {
-#ifdef JAVASCRIPTCORE_BUILDING_ALL_IN_ONE_FILE
-        return globalData->heap.inlineAllocate(size);
-#else
         return globalData->heap.allocate(size);
-#endif
+    }
+
+    inline void* JSCell::operator new(size_t size, ExecState* exec)
+    {
+        return exec->heap()->allocate(size);
     }
 
     // --- JSValue inlines ----------------------------
@@ -186,14 +184,14 @@ namespace JSC {
         return isCell() && asCell()->isObject();
     }
 
-    inline bool JSValue::getString(UString& s) const
+    inline bool JSValue::getString(ExecState* exec, UString& s) const
     {
-        return isCell() && asCell()->getString(s);
+        return isCell() && asCell()->getString(exec, s);
     }
 
-    inline UString JSValue::getString() const
+    inline UString JSValue::getString(ExecState* exec) const
     {
-        return isCell() ? asCell()->getString() : UString();
+        return isCell() ? asCell()->getString(exec) : UString();
     }
 
     inline JSObject* JSValue::getObject() const
@@ -342,11 +340,6 @@ namespace JSC {
             append(value.asCell());
     }
 
-    inline void Structure::markAggregate(MarkStack& markStack)
-    {
-        markStack.append(m_prototype);
-    }
-
     inline Heap* Heap::heap(JSValue v)
     {
         if (!v.isCell())
@@ -358,7 +351,13 @@ namespace JSC {
     {
         return cellBlock(c)->heap;
     }
-
+    
+#if ENABLE(JSC_ZOMBIES)
+    inline bool JSValue::isZombie() const
+    {
+        return isCell() && asCell() && asCell()->isZombie();
+    }
+#endif
 } // namespace JSC
 
 #endif // JSCell_h

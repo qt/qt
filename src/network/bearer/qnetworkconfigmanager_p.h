@@ -66,11 +66,16 @@ class QTimer;
 class Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate : public QObject
 {
     Q_OBJECT
+
 public:
     QNetworkConfigurationManagerPrivate();
     virtual ~QNetworkConfigurationManagerPrivate();
 
     QNetworkConfiguration defaultConfiguration();
+    QList<QNetworkConfiguration> allConfigurations(QNetworkConfiguration::StateFlags filter);
+    QNetworkConfiguration configurationFromIdentifier(const QString &identifier);
+
+    bool isOnline();
 
     QNetworkConfigurationManager::Capabilities capFlags;
 
@@ -78,7 +83,7 @@ public:
 
     QList<QBearerEngine *> engines();
 
-    void startPolling();
+    Q_INVOKABLE void startPolling();
 
     void enablePolling();
     void disablePolling();

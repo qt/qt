@@ -155,6 +155,7 @@ private slots:
     void nativeFunctionScopes();
     void evaluateProgram();
     void collectGarbageAfterConnect();
+    void promoteThisObjectToQObjectInConstructor();
 
     void qRegExpInport_data();
     void qRegExpInport();
@@ -4459,6 +4460,25 @@ void tst_QScriptEngine::collectGarbageAfterConnect()
     engine.evaluate("widget = null;");
     collectGarbage_helper(engine);
     QVERIFY(widget == 0);
+}
+
+static QScriptValue constructQObjectFromThisObject(QScriptContext *ctx, QScriptEngine *eng)
+{
+    Q_ASSERT(ctx->isCalledAsConstructor());
+    return eng->newQObject(ctx->thisObject(), new QObject, QScriptEngine::ScriptOwnership);
+}
+
+void tst_QScriptEngine::promoteThisObjectToQObjectInConstructor()
+{
+    QScriptEngine engine;
+    QScriptValue ctor = engine.newFunction(constructQObjectFromThisObject);
+    engine.globalObject().setProperty("Ctor", ctor);
+    QScriptValue object = engine.evaluate("new Ctor");
+    QVERIFY(!object.isError());
+    QVERIFY(object.isQObject());
+    QVERIFY(object.toQObject() != 0);
+    QVERIFY(object.property("objectName").isString());
+    QVERIFY(object.property("deleteLater").isFunction());
 }
 
 static QRegExp minimal(QRegExp r) { r.setMinimal(true); return r; }

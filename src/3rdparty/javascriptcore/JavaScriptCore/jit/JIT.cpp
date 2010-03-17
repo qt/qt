@@ -27,7 +27,7 @@
 #include "JIT.h"
 
 // This probably does not belong here; adding here for now as a quick Windows build fix.
-#if ENABLE(ASSEMBLER) && PLATFORM(X86) && !PLATFORM(MAC)
+#if ENABLE(ASSEMBLER) && CPU(X86) && !OS(MAC_OS_X)
 #include "MacroAssembler.h"
 JSC::MacroAssemblerX86Common::SSE2CheckState JSC::MacroAssemblerX86Common::s_sse2CheckState = NotCheckedSSE2;
 #endif
@@ -37,7 +37,6 @@ JSC::MacroAssemblerX86Common::SSE2CheckState JSC::MacroAssemblerX86Common::s_sse
 #include "CodeBlock.h"
 #include "Interpreter.h"
 #include "JITInlineMethods.h"
-#include "JITStubs.h"
 #include "JITStubCall.h"
 #include "JSArray.h"
 #include "JSFunction.h"
@@ -202,7 +201,6 @@ void JIT::privateCompileMainPass()
         DEFINE_BINARY_OP(op_less)
         DEFINE_BINARY_OP(op_lesseq)
         DEFINE_BINARY_OP(op_urshift)
-        DEFINE_UNARY_OP(op_get_pnames)
         DEFINE_UNARY_OP(op_is_boolean)
         DEFINE_UNARY_OP(op_is_function)
         DEFINE_UNARY_OP(op_is_number)
@@ -240,7 +238,9 @@ void JIT::privateCompileMainPass()
         DEFINE_OP(op_eq_null)
         DEFINE_OP(op_get_by_id)
         DEFINE_OP(op_get_by_val)
+        DEFINE_OP(op_get_by_pname)
         DEFINE_OP(op_get_global_var)
+        DEFINE_OP(op_get_pnames)
         DEFINE_OP(op_get_scoped_var)
         DEFINE_OP(op_instanceof)
         DEFINE_OP(op_jeq_null)
@@ -250,6 +250,7 @@ void JIT::privateCompileMainPass()
         DEFINE_OP(op_jneq_null)
         DEFINE_OP(op_jneq_ptr)
         DEFINE_OP(op_jnless)
+        DEFINE_OP(op_jless)
         DEFINE_OP(op_jnlesseq)
         DEFINE_OP(op_jsr)
         DEFINE_OP(op_jtrue)
@@ -258,6 +259,7 @@ void JIT::privateCompileMainPass()
         DEFINE_OP(op_loop_if_less)
         DEFINE_OP(op_loop_if_lesseq)
         DEFINE_OP(op_loop_if_true)
+        DEFINE_OP(op_loop_if_false)
         DEFINE_OP(op_lshift)
         DEFINE_OP(op_method_check)
         DEFINE_OP(op_mod)
@@ -385,14 +387,17 @@ void JIT::privateCompileSlowCases()
         DEFINE_SLOWCASE_OP(op_eq)
         DEFINE_SLOWCASE_OP(op_get_by_id)
         DEFINE_SLOWCASE_OP(op_get_by_val)
+        DEFINE_SLOWCASE_OP(op_get_by_pname)
         DEFINE_SLOWCASE_OP(op_instanceof)
         DEFINE_SLOWCASE_OP(op_jfalse)
         DEFINE_SLOWCASE_OP(op_jnless)
+        DEFINE_SLOWCASE_OP(op_jless)
         DEFINE_SLOWCASE_OP(op_jnlesseq)
         DEFINE_SLOWCASE_OP(op_jtrue)
         DEFINE_SLOWCASE_OP(op_loop_if_less)
         DEFINE_SLOWCASE_OP(op_loop_if_lesseq)
         DEFINE_SLOWCASE_OP(op_loop_if_true)
+        DEFINE_SLOWCASE_OP(op_loop_if_false)
         DEFINE_SLOWCASE_OP(op_lshift)
         DEFINE_SLOWCASE_OP(op_method_check)
         DEFINE_SLOWCASE_OP(op_mod)
@@ -489,21 +494,21 @@ JITCode JIT::privateCompile()
             ASSERT(record.type == SwitchRecord::Immediate || record.type == SwitchRecord::Character); 
             ASSERT(record.jumpTable.simpleJumpTable->branchOffsets.size() == record.jumpTable.simpleJumpTable->ctiOffsets.size());
 
-            record.jumpTable.simpleJumpTable->ctiDefault = patchBuffer.locationOf(m_labels[bytecodeIndex + 3 + record.defaultOffset]);
+            record.jumpTable.simpleJumpTable->ctiDefault = patchBuffer.locationOf(m_labels[bytecodeIndex + record.defaultOffset]);
 
             for (unsigned j = 0; j < record.jumpTable.simpleJumpTable->branchOffsets.size(); ++j) {
                 unsigned offset = record.jumpTable.simpleJumpTable->branchOffsets[j];
-                record.jumpTable.simpleJumpTable->ctiOffsets[j] = offset ? patchBuffer.locationOf(m_labels[bytecodeIndex + 3 + offset]) : record.jumpTable.simpleJumpTable->ctiDefault;
+                record.jumpTable.simpleJumpTable->ctiOffsets[j] = offset ? patchBuffer.locationOf(m_labels[bytecodeIndex + offset]) : record.jumpTable.simpleJumpTable->ctiDefault;
             }
         } else {
             ASSERT(record.type == SwitchRecord::String);
 
-            record.jumpTable.stringJumpTable->ctiDefault = patchBuffer.locationOf(m_labels[bytecodeIndex + 3 + record.defaultOffset]);
+            record.jumpTable.stringJumpTable->ctiDefault = patchBuffer.locationOf(m_labels[bytecodeIndex + record.defaultOffset]);
 
             StringJumpTable::StringOffsetTable::iterator end = record.jumpTable.stringJumpTable->offsetTable.end();            
             for (StringJumpTable::StringOffsetTable::iterator it = record.jumpTable.stringJumpTable->offsetTable.begin(); it != end; ++it) {
                 unsigned offset = it->second.branchOffset;
-                it->second.ctiOffset = offset ? patchBuffer.locationOf(m_labels[bytecodeIndex + 3 + offset]) : record.jumpTable.stringJumpTable->ctiDefault;
+                it->second.ctiOffset = offset ? patchBuffer.locationOf(m_labels[bytecodeIndex + offset]) : record.jumpTable.stringJumpTable->ctiDefault;
             }
         }
     }

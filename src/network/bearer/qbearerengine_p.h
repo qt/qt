@@ -73,15 +73,13 @@ class Q_NETWORK_EXPORT QBearerEngine : public QObject
 {
     Q_OBJECT
 
-    friend class QNetworkConfigurationManager;
+    friend class QNetworkConfigurationManagerPrivate;
 
 public:
     QBearerEngine(QObject *parent = 0);
     virtual ~QBearerEngine();
 
     virtual bool hasIdentifier(const QString &id) = 0;
-
-    virtual void requestUpdate() = 0;
 
     virtual QNetworkConfigurationManager::Capabilities capabilities() const = 0;
 
