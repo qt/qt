@@ -95,7 +95,13 @@ QDeclarativeExpressionPrivate::QDeclarativeExpressionPrivate(QDeclarativeExpress
 
 QDeclarativeExpressionPrivate::~QDeclarativeExpressionPrivate()
 {
-    if (data) { data->q = 0; data->release(); data = 0; }
+    if (data) { 
+        delete [] data->guardList; 
+        data->guardList = 0; 
+        data->q = 0; 
+        data->release(); 
+        data = 0; 
+    }
 }
 
 void QDeclarativeExpressionPrivate::init(QDeclarativeContextData *ctxt, const QString &expr, 

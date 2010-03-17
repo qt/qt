@@ -112,18 +112,22 @@ private:
 QDeclarativeNotifier::QDeclarativeNotifier()
 : endpoints(0)
 {
-    QDeclarativeNotifierEndpoint *endpoint = endpoints;
-    while (endpoint) {
-        QDeclarativeNotifierEndpoint *next = endpoint->asNotifier()->next;
-        endpoint->asNotifier()->next = 0;
-        endpoint->asNotifier()->prev = 0;
-        endpoint->asNotifier()->notifier = 0;
-        endpoint = next;
-    }
 }
 
 QDeclarativeNotifier::~QDeclarativeNotifier()
 {    
+    QDeclarativeNotifierEndpoint *endpoint = endpoints;
+    while (endpoint) {
+        QDeclarativeNotifierEndpoint::Notifier *n = endpoint->asNotifier();
+        endpoint = n->next;
+
+        n->next = 0;
+        n->prev = 0;
+        n->notifier = 0;
+        if (n->disconnected) *n->disconnected = 0;
+        n->disconnected = 0;
+    }
+    endpoints = 0;
 }
 
 void QDeclarativeNotifier::notify()
