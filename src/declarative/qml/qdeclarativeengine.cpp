@@ -1385,6 +1385,7 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
             QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
             QString qmldircontent = qmlDirContent.at(i);
 
+            bool typeWasDeclaredInQmldir = false;
             if (!qmldircontent.isEmpty()) {
                 const QString typeName = QString::fromUtf8(type);
 
@@ -1394,8 +1395,9 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
                 qmldirParser.parse();
 
                 foreach (const QDeclarativeDirParser::Component &c, qmldirParser.components()) { // ### TODO: cache the components
-                    if (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion)) {
-                        if (c.typeName == typeName) {
+                    if (c.typeName == typeName) {
+                        typeWasDeclaredInQmldir = true;
+                        if (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion)) {
                             if (url_return)
                                 *url_return = url.resolved(QUrl(c.fileName));
                             return true;
@@ -1404,7 +1406,7 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
                 }
             }
 
-            if (!isLibrary.at(i)) {
+            if (!typeWasDeclaredInQmldir  && !isLibrary.at(i)) {
                 // XXX search non-files too! (eg. zip files, see QT-524)
                 QFileInfo f(toLocalFileOrQrc(url));
                 if (f.exists()) {
