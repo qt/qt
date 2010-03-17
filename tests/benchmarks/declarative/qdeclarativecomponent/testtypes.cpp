@@ -42,5 +42,5 @@
 
 void registerTypes()
 {
-    QML_REGISTER_TYPE(Qt.test, 4, 6, MyQmlObject, MyQmlObject);
+    qmlRegisterType<MyQmlObject>("Qt.test", 4, 6, "MyQmlObject");
 }

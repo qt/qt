@@ -73,6 +73,9 @@ namespace QDeclarativePrivate
     QObject *create() { return new T; }
 
     template<typename T>
+    void createInto(void *memory) { new (memory) T; }
+
+    template<typename T>
     QObject *createParent(QObject *p) { return new T(p); }
 
     template<class From, class To, int N>
@@ -172,7 +175,8 @@ namespace QDeclarativePrivate
 
         int typeId;
         int listId;
-        QObject *(*create)();
+        int objectSize;
+        void (*create)(void *);
 
         const char *uri;
         int versionMajor;

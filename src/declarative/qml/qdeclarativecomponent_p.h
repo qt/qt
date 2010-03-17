@@ -81,8 +81,8 @@ class QDeclarativeComponentPrivate : public QObjectPrivate
 public:
     QDeclarativeComponentPrivate() : typeData(0), progress(0.), start(-1), count(-1), cc(0), engine(0), creationContext(0) {}
 
-    QObject *create(QDeclarativeContext *context, const QBitField &);
-    QObject *beginCreate(QDeclarativeContext *, const QBitField &);
+    QObject *create(QDeclarativeContextData *, const QBitField &);
+    QObject *beginCreate(QDeclarativeContextData *, const QBitField &);
     void completeCreate();
 
     QDeclarativeCompositeTypeData *typeData;
@@ -108,15 +108,15 @@ public:
     };
     ConstructionState state;
 
-    static QObject *begin(QDeclarativeContext *ctxt, QDeclarativeEnginePrivate *enginePriv,
+    static QObject *begin(QDeclarativeContextData *ctxt, QDeclarativeEnginePrivate *enginePriv,
                           QDeclarativeCompiledData *component, int start, int count,
                           ConstructionState *state, const QBitField &bindings = QBitField());
-    static void beginDeferred(QDeclarativeContext *ctxt, QDeclarativeEnginePrivate *enginePriv,
+    static void beginDeferred(QDeclarativeContextData *ctxt, QDeclarativeEnginePrivate *enginePriv,
                               QObject *object, ConstructionState *state);
     static void complete(QDeclarativeEnginePrivate *enginePriv, ConstructionState *state);
 
     QDeclarativeEngine *engine;
-    QDeclarativeContext *creationContext;
+    QDeclarativeContextData *creationContext;
 
     void clear();
 

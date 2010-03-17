@@ -191,10 +191,15 @@ public:
 
     static QDeclarativeListViewAttached *qmlAttachedProperties(QObject *);
 
+    enum PositionMode { Beginning, Center, End, Visible, Contain };
+    Q_ENUMS(PositionMode)
+
+    Q_INVOKABLE void positionViewAtIndex(int index, int mode);
+    Q_INVOKABLE int indexAt(int x, int y) const;
+
 public Q_SLOTS:
     void incrementCurrentIndex();
     void decrementCurrentIndex();
-    void positionViewAtIndex(int index);
 
 Q_SIGNALS:
     void countChanged();
@@ -219,6 +224,7 @@ Q_SIGNALS:
     void footerChanged();
 
 protected:
+    virtual bool event(QEvent *event);
     virtual void viewportMoved();
     virtual qreal minYExtent() const;
     virtual qreal maxYExtent() const;

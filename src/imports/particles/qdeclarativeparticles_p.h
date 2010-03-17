@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEPARTICLES_H
 #define QDECLARATIVEPARTICLES_H
 
-#include "qdeclarativeitem.h"
+#include <QtDeclarative/qdeclarativeitem.h>
 
 QT_BEGIN_HEADER
 
@@ -52,7 +52,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativeParticle;
 class QDeclarativeParticles;
-class Q_DECLARATIVE_EXPORT QDeclarativeParticleMotion : public QObject
+class QDeclarativeParticleMotion : public QObject
 {
     Q_OBJECT
 public:
@@ -63,7 +63,7 @@ public:
     virtual void destroy(QDeclarativeParticle &);
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeParticleMotionLinear : public QDeclarativeParticleMotion
+class QDeclarativeParticleMotionLinear : public QDeclarativeParticleMotion
 {
     Q_OBJECT
 public:
@@ -73,7 +73,7 @@ public:
     virtual void advance(QDeclarativeParticle &, int interval);
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeParticleMotionGravity : public QDeclarativeParticleMotion
+class QDeclarativeParticleMotionGravity : public QDeclarativeParticleMotion
 {
     Q_OBJECT
 
@@ -106,7 +106,7 @@ private:
     qreal _accel;
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeParticleMotionWander : public QDeclarativeParticleMotion
+class QDeclarativeParticleMotionWander : public QDeclarativeParticleMotion
 {
     Q_OBJECT
 public:
@@ -142,7 +142,7 @@ Q_SIGNALS:
     void xvarianceChanged();
     void yvarianceChanged();
     void paceChanged();
-    
+
 private:
     QDeclarativeParticles *particles;
     qreal _xvariance;
@@ -151,7 +151,7 @@ private:
 };
 
 class QDeclarativeParticlesPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeParticles : public QDeclarativeItem
+class QDeclarativeParticles : public QDeclarativeItem
 {
     Q_OBJECT
 

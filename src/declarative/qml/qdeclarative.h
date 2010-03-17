@@ -99,7 +99,7 @@ int qmlRegisterType()
 
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
-        0,
+        0, 0,
 
         0, 0, 0, 0, &T::staticMetaObject,
 
@@ -131,7 +131,7 @@ int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const c
 
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
-        QDeclarativePrivate::create<T>,
+        sizeof(T), QDeclarativePrivate::createInto<T>,
 
         uri, versionMajor, versionMinor, qmlName, &T::staticMetaObject,
 
@@ -163,7 +163,7 @@ int qmlRegisterExtendedType()
 
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
-        0,
+        0, 0,
 
         0, 0, 0, 0, &T::staticMetaObject,
 
@@ -203,7 +203,7 @@ int qmlRegisterExtendedType(const char *uri, int versionMajor, int versionMinor,
 
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
-        QDeclarativePrivate::create<T>,
+        sizeof(T), QDeclarativePrivate::createInto<T>,
 
         uri, versionMajor, versionMinor, qmlName, &T::staticMetaObject,
 
@@ -256,7 +256,7 @@ int qmlRegisterCustomType(const char *uri, int versionMajor, int versionMinor,
 
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
-        QDeclarativePrivate::create<T>,
+        sizeof(T), QDeclarativePrivate::createInto<T>,
 
         uri, versionMajor, versionMinor, qmlName, &T::staticMetaObject,
 
@@ -274,18 +274,6 @@ int qmlRegisterCustomType(const char *uri, int versionMajor, int versionMinor,
 
     return QDeclarativePrivate::registerType(type);
 }
-
-#define QML_REGISTER_INTERFACE(INTERFACE) \
-    qmlRegisterInterface<INTERFACE>(#INTERFACE)
-
-#define QML_REGISTER_EXTENDED_TYPE(URI, VERSION_MAJ, VERSION_MIN, NAME, CLASS, EXTENSION) \
-    qmlRegisterExtendedType<CLASS,EXTENSION>(#URI, VERSION_MAJ, VERSION_MIN, #NAME)
-
-#define QML_REGISTER_TYPE(URI,VMAJ,VMIN,NAME,CLASS) \
-    qmlRegisterType<CLASS>(#URI, VMAJ, VMIN, #NAME)
-
-#define QML_REGISTER_NOCREATE_TYPE(CLASS) \
-    qmlRegisterType<CLASS>()
 
 class QDeclarativeContext;
 class QDeclarativeEngine;

@@ -1,5 +1,5 @@
 import Qt 4.6
-import "content"
+import "content" as Content
 
 Rectangle {
     id: screen;
@@ -27,7 +27,7 @@ Rectangle {
 
     property var head;
 
-    HighScoreModel {
+    Content.HighScoreModel {
         id: highScores
         game: "Snake"
     }
@@ -46,7 +46,7 @@ Rectangle {
         onTriggered: { moveSkull() }
     }
     Timer {
-        id: startNewGameTimer;
+
         interval: 700;
         onTriggered: {startNewGame(); }
     }
@@ -97,7 +97,7 @@ Rectangle {
             height: numRowsAvailable * gridSize + 2*margin
 
 
-            Skull {
+            Content.Skull {
                 id: skull
             }
 
@@ -148,7 +148,7 @@ Rectangle {
         height: 32; width: parent.width
         anchors.bottom: screen.bottom
 
-        Button {
+        Content.Button {
             id: btnA; text: "New Game"; onClicked: {startNewGame();}
             anchors.left: parent.left; anchors.leftMargin: 3
             anchors.verticalCenter: parent.verticalCenter

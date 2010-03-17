@@ -132,7 +132,7 @@ QDeclarativeAbstractAnimation::QDeclarativeAbstractAnimation(QDeclarativeAbstrac
     using the \c start() and \c stop() methods.
 
     By default, animations are not running. Though, when the animations are assigned to properties,
-    as property value sources, they are set to running by default.
+    as property value sources using the \e on syntax, they are set to running by default.
 */
 bool QDeclarativeAbstractAnimation::isRunning() const
 {
@@ -1877,13 +1877,17 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
 }
 
 /*!
-    \qmlproperty QEasingCurve PropertyAnimation::easing
-    \brief the easing curve used for the transition.
+    \qmlproperty enum PropertyAnimation::easing.type
+    \qmlproperty real PropertyAnimation::easing.amplitude
+    \qmlproperty real PropertyAnimation::easing.overshoot
+    \qmlproperty real PropertyAnimation::easing.period
+    \brief the easing curve used for the animation.
 
-    For the easing you can specify the following parameters: type, amplitude, period and overshoot.
+    To specify an easing curve you need to specify at least the type. For some curves you can also specify
+    amplitude, period and/or overshoot (more details provided after the table).
 
     \qml
-    PropertyAnimation { properties: "y"; easing.type: "InOutElastc"; easing.amplitude: 2.0; easing.period: 1.5 }
+    PropertyAnimation { properties: "y"; easing.type: "InOutElastic"; easing.amplitude: 2.0; easing.period: 1.5 }
     \endqml
 
     Available types are:
@@ -2447,12 +2451,15 @@ QDeclarativeParentAnimation::QDeclarativeParentAnimation(QObject *parent)
     QDeclarative_setParent_noEvent(d->topLevelGroup, this);
 
     d->startAction = new QActionAnimation;
+    QDeclarative_setParent_noEvent(d->startAction, d->topLevelGroup);
     d->topLevelGroup->addAnimation(d->startAction);
 
     d->ag = new QParallelAnimationGroup;
+    QDeclarative_setParent_noEvent(d->ag, d->topLevelGroup);
     d->topLevelGroup->addAnimation(d->ag);
 
     d->endAction = new QActionAnimation;
+    QDeclarative_setParent_noEvent(d->endAction, d->topLevelGroup);
     d->topLevelGroup->addAnimation(d->endAction);
 }
 
@@ -2741,6 +2748,101 @@ QAbstractAnimation *QDeclarativeParentAnimation::qtAnimation()
 {
     Q_D(QDeclarativeParentAnimation);
     return d->topLevelGroup;
+}
+
+/*!
+    \qmlclass AnchorAnimation QDeclarativeAnchorAnimation
+    \since 4.7
+    \inherits Animation
+    \brief The AnchorAnimation element allows you to animate anchor changes.
+
+    AnchorAnimation will animated any changes specified by a state's AnchorChanges.
+    In the following snippet we animate the addition of a right anchor to our item.
+    \qml
+    Item {
+        id: myItem
+        width: 100
+    }
+    ...
+    State {
+        AnchorChanges {
+            target: myItem
+            anchors.right: container.right
+        }
+    }
+    ...
+    Transition {
+        //smoothly reanchor myItem and move into new position
+        AnchorAnimation {}
+    }
+    \endqml
+
+    \sa AnchorChanges
+*/
+
+QDeclarativeAnchorAnimation::QDeclarativeAnchorAnimation(QObject *parent)
+: QDeclarativeAbstractAnimation(*(new QDeclarativeAnchorAnimationPrivate), parent)
+{
+    Q_D(QDeclarativeAnchorAnimation);
+    d->va = new QDeclarativeBulkValueAnimator;
+    QDeclarative_setParent_noEvent(d->va, this);
+}
+
+QDeclarativeAnchorAnimation::~QDeclarativeAnchorAnimation()
+{
+}
+
+QAbstractAnimation *QDeclarativeAnchorAnimation::qtAnimation()
+{
+    Q_D(QDeclarativeAnchorAnimation);
+    return d->va;
+}
+
+/*!
+    \qmlproperty list<Item> AnchorAnimation::targets
+    The items to reanchor.
+
+    If no targets are specified all AnchorChanges will be
+    animated by the AnchorAnimation.
+*/
+QDeclarativeListProperty<QDeclarativeItem> QDeclarativeAnchorAnimation::targets()
+{
+    Q_D(QDeclarativeAnchorAnimation);
+    return QDeclarativeListProperty<QDeclarativeItem>(this, d->targets);
+}
+
+void QDeclarativeAnchorAnimation::transition(QDeclarativeStateActions &actions,
+                        QDeclarativeProperties &modified,
+                        TransitionDirection direction)
+{
+    Q_D(QDeclarativeAnchorAnimation);
+    PropertyUpdater *data = new PropertyUpdater;
+    data->interpolatorType = QMetaType::QReal;
+    data->interpolator = d->interpolator;
+
+    data->reverse = direction == Backward ? true : false;
+    data->fromSourced = false;
+    data->fromDefined = false;
+
+    for (int ii = 0; ii < actions.count(); ++ii) {
+        QDeclarativeAction &action = actions[ii];
+        if (action.event && action.event->typeName() == QLatin1String("AnchorChanges")
+            && (d->targets.isEmpty() || d->targets.contains(static_cast<QDeclarativeAnchorChanges*>(action.event)->object()))) {
+            data->actions << static_cast<QDeclarativeAnchorChanges*>(action.event)->additionalActions();
+        }
+    }
+
+    if (data->actions.count()) {
+        if (!d->rangeIsSet) {
+            d->va->setStartValue(qreal(0));
+            d->va->setEndValue(qreal(1));
+            d->rangeIsSet = true;
+        }
+        d->va->setAnimValue(data, QAbstractAnimation::DeleteWhenStopped);
+        d->va->setFromSourcedValue(&data->fromSourced);
+    } else {
+        delete data;
+    }
 }
 
 QT_END_NAMESPACE

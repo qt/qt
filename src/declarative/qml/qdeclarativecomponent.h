@@ -104,7 +104,6 @@ public:
     void loadUrl(const QUrl &url);
     void setData(const QByteArray &, const QUrl &baseUrl);
 
-    void setCreationContext(QDeclarativeContext*);
     QDeclarativeContext *creationContext() const;
 
     static QDeclarativeComponentAttached *qmlAttachedProperties(QObject *);
