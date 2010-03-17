@@ -29,6 +29,7 @@ symbian: {
         # Move RW-section base address to start from 0xE00000 instead of the toolchain default 0x400000.
         QMAKE_LFLAGS.ARMCC += --rw-base 0xE00000
         CONFIG += do_not_build_as_thumb
+        MMP_RULES += "LINKEROPTION  armcc --rw-base 0xE00000"
     }
 }
 
