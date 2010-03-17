@@ -491,9 +491,7 @@ static int qCocoaViewCount = 0;
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
     qwidgetprivate->hd = cg;
     CGContextSaveGState(cg);
-    CGFloat components[] = {1,0,0,1};
-    CGContextSetFillColor(cg, components);
-    CGContextFillRect(cg, aRect);
+
     if (qwidget->isVisible() && qwidget->updatesEnabled()) { //process the actual paint event.
         if (qwidget->testAttribute(Qt::WA_WState_InPaintEvent))
             qWarning("QWidget::repaint: Recursive repaint detected");
