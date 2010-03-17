@@ -94,8 +94,11 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     }
     \endcode
 
-    Roles (properties) must begin with a lower-case letter.  The above example defines a
+    Roles (properties) must begin with a lower-case letter.The above example defines a
     ListModel containing three elements, with the roles "name" and "cost".
+
+    Values must be simple constants - either strings (quoted), bools (true, false), numbers,
+    or enum values (like Text.AlignHCenter).
 
     The defined model can be used in views such as ListView:
     \code
@@ -166,6 +169,8 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
         }
     }
     \endcode
+
+    \section2 Modifying list models
 
     The content of a ListModel may be created and modified using the clear(),
     append(), and set() methods.  For example:
@@ -676,10 +681,17 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
                 d += char(variant.asBoolean());
             } else if (variant.isScript()) {
                 if (definesEmptyList(variant.asScript())) {
-                    d[0] = 0; // QDeclarativeParser::Variant::Invalid - marks empty list
+                    d[0] = char(QDeclarativeParser::Variant::Invalid); // marks empty list
                 } else {
-                    error(prop, QDeclarativeListModel::tr("ListElement: cannot use script for property value"));
-                    return false;
+                    QByteArray script = variant.asScript().toUtf8();
+                    int v = evaluateEnum(script);
+                    if (v<0) {
+                        error(prop, QDeclarativeListModel::tr("ListElement: cannot use script for property value"));
+                        return false;
+                    } else {
+                        d[0] = char(QDeclarativeParser::Variant::Number);
+                        d += QByteArray::number(v);
+                    }
                 }
             }
             d.append('\0');

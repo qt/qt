@@ -40,6 +40,7 @@
 ****************************************************************************/
 #include <qtest.h>
 #include <QtDeclarative/private/qdeclarativeitem_p.h>
+#include <QtDeclarative/private/qdeclarativetext_p.h>
 #include <QtDeclarative/private/qdeclarativelistmodel_p.h>
 #include <QtDeclarative/private/qdeclarativeexpression_p.h>
 #include <QDeclarativeComponent>
@@ -459,7 +460,7 @@ void tst_QDeclarativeListModel::static_types_data()
 
     QTest::newRow("enum")
         << "ListElement { foo: Text.AlignHCenter }"
-        << QVariant("QTBUG-5974:ListElement: constant script support for property value");
+        << QVariant(double(QDeclarativeText::AlignHCenter));
 }
 
 void tst_QDeclarativeListModel::static_types()
@@ -516,7 +517,7 @@ void tst_QDeclarativeListModel::error_data()
 
     QTest::newRow("bindings not allowed in ListElement")
         << "import Qt 4.6\nRectangle { id: rect; ListModel { ListElement { foo: rect.color } } }"
-        << "ListElement: cannot use script for property value"; // but note QTBUG-5974
+        << "ListElement: cannot use script for property value";
 
     QTest::newRow("random object list properties allowed in ListElement")
         << "import Qt 4.6\nListModel { ListElement { foo: [ ListElement { bar: 123 } ] } }"

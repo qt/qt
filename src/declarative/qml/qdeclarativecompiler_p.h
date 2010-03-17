@@ -161,6 +161,8 @@ public:
 
     static QMetaMethod findSignalByName(const QMetaObject *, const QByteArray &name);
 
+    int evaluateEnum(const QByteArray& script) const; // for QDeclarativeCustomParser::evaluateEnum
+
 private:
     static void reset(QDeclarativeCompiledData *);
 

@@ -43,6 +43,7 @@
 #include "qdeclarativecustomparser_p_p.h"
 
 #include "qdeclarativeparser_p.h"
+#include "qdeclarativecompiler_p.h"
 
 #include <QtCore/qdebug.h>
 
@@ -258,6 +259,17 @@ void QDeclarativeCustomParser::error(const QDeclarativeCustomParserNode& node, c
     error.setColumn(node.location().column);
     error.setDescription(description);
     exceptions << error;
+}
+
+/*!
+    If \a script is a simply enum expression (eg. Text.AlignLeft),
+    returns the integer equivalent (eg. 1).
+
+    Otherwise, returns -1.
+*/
+int QDeclarativeCustomParser::evaluateEnum(const QByteArray& script) const
+{
+    return compiler->evaluateEnum(script);
 }
 
 QT_END_NAMESPACE
