@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeState;
-class QDeclarativeAnchorLine;
+struct QDeclarativeAnchorLine;
 class QDeclarativeTransition;
 class QDeclarativeKeyEvent;
 class QDeclarativeAnchors;
