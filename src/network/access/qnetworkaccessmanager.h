@@ -126,7 +126,7 @@ Q_SIGNALS:
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 #endif
 
-    void networkSessionOnline();
+    void networkSessionConnected();
 
     void networkAccessChanged(bool enabled);
 

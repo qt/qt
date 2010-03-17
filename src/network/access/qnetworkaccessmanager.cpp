@@ -198,15 +198,15 @@ static void ensureInitialized()
 */
 
 /*!
-    \fn void QNetworkAccessManager::networkSessionOnline()
+    \fn void QNetworkAccessManager::networkSessionConnected()
 
     \since 4.7
 
     \internal
 
-    This signal is emitted when the status of the network session changes into a usable state.
-    It is used to signal QNetworkReply's to start or migrate their network operation once the
-    network session has been opened / roamed.
+    This signal is emitted when the status of the network session changes into a usable (Connected)
+    state. It is used to signal to QNetworkReplys to start or migrate their network operation once
+    the network session has been opened or finished roaming.
 */
 
 /*!
@@ -911,8 +911,10 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     // first step: create the reply
     QUrl url = request.url();
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
-    if (req.url().scheme() != QLatin1String("file") && !req.url().scheme().isEmpty())
-        connect(this, SIGNAL(networkSessionOnline()), reply, SLOT(_q_networkSessionOnline()));
+    if (req.url().scheme() != QLatin1String("file") && !req.url().scheme().isEmpty()) {
+        connect(this, SIGNAL(networkSessionConnected()),
+                reply, SLOT(_q_networkSessionConnected()));
+    }
     QNetworkReplyImplPrivate *priv = reply->d_func();
     priv->manager = this;
 
@@ -1222,7 +1224,7 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 
     networkSession = new QNetworkSession(config, q);
 
-    QObject::connect(networkSession, SIGNAL(opened()), q, SIGNAL(networkSessionOnline()));
+    QObject::connect(networkSession, SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
     QObject::connect(networkSession, SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
     QObject::connect(networkSession, SIGNAL(newConfigurationActivated()),
                      q, SLOT(_q_networkSessionNewConfigurationActivated()));
@@ -1249,7 +1251,7 @@ void QNetworkAccessManagerPrivate::_q_networkSessionNewConfigurationActivated()
     if (networkSession) {
         networkSession->accept();
 
-        emit q->networkSessionOnline();
+        emit q->networkSessionConnected();
     }
 }
 
