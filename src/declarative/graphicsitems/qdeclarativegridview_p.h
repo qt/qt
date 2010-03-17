@@ -140,6 +140,9 @@ public:
     enum PositionMode { Beginning, Center, End, Visible, Contain };
     Q_ENUMS(PositionMode)
 
+    Q_INVOKABLE void positionViewAtIndex(int index, int mode);
+    Q_INVOKABLE int indexAt(int x, int y) const;
+
     static QDeclarativeGridViewAttached *qmlAttachedProperties(QObject *);
 
 public Q_SLOTS:
@@ -147,7 +150,6 @@ public Q_SLOTS:
     void moveCurrentIndexDown();
     void moveCurrentIndexLeft();
     void moveCurrentIndexRight();
-    void positionViewAtIndex(int index, int mode);
 
 Q_SIGNALS:
     void countChanged();

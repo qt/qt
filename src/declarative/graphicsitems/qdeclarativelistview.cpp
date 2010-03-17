@@ -129,6 +129,10 @@ public:
             item->setX(pos);
         }
     }
+    bool contains(int x, int y) const {
+        return (x >= item->x() && x < item->x() + item->width() &&
+                y >= item->y() && y < item->y() + item->height());
+    }
 
     QDeclarativeItem *item;
     QDeclarativeItem *section;
@@ -393,9 +397,8 @@ public:
         QDeclarativeFlickablePrivate::itemGeometryChanged(item, newGeometry, oldGeometry);
         if (item != viewport) {
             if ((orient == QDeclarativeListView::Vertical && newGeometry.height() != oldGeometry.height())
-                || newGeometry.width() != oldGeometry.width()) {
-                layout();
-                fixupPosition();
+                || (orient == QDeclarativeListView::Horizontal && newGeometry.width() != oldGeometry.width())) {
+                scheduleLayout();
             }
         }
     }
@@ -2260,6 +2263,27 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
     d->fixupPosition();
 }
 
+/*!
+    \qmlmethod int ListView::indexAt(int x, int y)
+
+    Returns the index of the visible item containing the point \a x, \a y in content
+    coordinates.  If there is no item at the point specified, or the item is
+    not visible -1 is returned.
+
+    If the item is outside the visible area, -1 is returned, regardless of
+    whether an item will exist at that point when scrolled into view.
+*/
+int QDeclarativeListView::indexAt(int x, int y) const
+{
+    Q_D(const QDeclarativeListView);
+    for (int i = 0; i < d->visibleItems.count(); ++i) {
+        const FxListItem *listItem = d->visibleItems.at(i);
+        if(listItem->contains(x, y))
+            return listItem->index;
+    }
+
+    return -1;
+}
 
 void QDeclarativeListView::componentComplete()
 {

@@ -81,6 +81,10 @@ public:
             item->setPos(QPointF(row, col));
         }
     }
+    bool contains(int x, int y) const {
+        return (x >= item->x() && x < item->x() + view->cellWidth() &&
+                y >= item->y() && y < item->y() + view->cellHeight());
+    }
 
     QDeclarativeItem *item;
     QDeclarativeGridView *view;
@@ -115,7 +119,7 @@ public:
 
     void updateGrid();
     void scheduleLayout();
-    void layout(bool removed=false);
+    void layout();
     void updateUnrequestedIndexes();
     void updateUnrequestedPositions();
     void updateTrackedItem();
@@ -274,7 +278,7 @@ public:
                 || newGeometry.width() != oldGeometry.width()) {
                 if (q->isComponentComplete()) {
                     updateGrid();
-                    layout();
+                    scheduleLayout();
                 }
             }
         }
@@ -538,7 +542,7 @@ void QDeclarativeGridViewPrivate::scheduleLayout()
     }
 }
 
-void QDeclarativeGridViewPrivate::layout(bool removed)
+void QDeclarativeGridViewPrivate::layout()
 {
     Q_Q(QDeclarativeGridView);
     layoutScheduled = false;
@@ -547,8 +551,6 @@ void QDeclarativeGridViewPrivate::layout(bool removed)
         qreal colPos = visibleItems.first()->colPos();
         int col = visibleIndex % columns;
         if (colPos != col * colSize()) {
-            if (removed)
-                rowPos -= rowSize();
             colPos = col * colSize();
             visibleItems.first()->setPosition(colPos, rowPos);
         }
@@ -1503,7 +1505,7 @@ qreal QDeclarativeGridView::maxYExtent() const
         return QDeclarativeFlickable::maxYExtent();
     qreal extent;
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
-        extent = -(d->rowPosAt(count()-1) - d->highlightRangeEnd);
+        extent = -(d->endPosition() - d->highlightRangeEnd);
     else
         extent = -(d->endPosition() - height());
     const qreal minY = minYExtent();
@@ -1530,7 +1532,7 @@ qreal QDeclarativeGridView::maxXExtent() const
         return QDeclarativeFlickable::maxXExtent();
     qreal extent;
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
-        extent = -(d->rowPosAt(count()-1) - d->highlightRangeEnd);
+        extent = -(d->endPosition() - d->highlightRangeEnd);
     else
         extent = -(d->endPosition() - height());
     const qreal minX = minXExtent();
@@ -1742,6 +1744,28 @@ void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
         d->setPosition(pos);
     }
     d->fixupPosition();
+}
+
+/*!
+    \qmlmethod int GridView::indexAt(int x, int y)
+
+    Returns the index of the visible item containing the point \a x, \a y in content
+    coordinates.  If there is no item at the point specified, or the item is
+    not visible -1 is returned.
+
+    If the item is outside the visible area, -1 is returned, regardless of
+    whether an item will exist at that point when scrolled into view.
+*/
+int QDeclarativeGridView::indexAt(int x, int y) const
+{
+    Q_D(const QDeclarativeGridView);
+    for (int i = 0; i < d->visibleItems.count(); ++i) {
+        const FxGridItem *listItem = d->visibleItems.at(i);
+        if(listItem->contains(x, y))
+            return listItem->index;
+    }
+
+    return -1;
 }
 
 void QDeclarativeGridView::componentComplete()
@@ -2120,7 +2144,7 @@ void QDeclarativeGridView::itemsMoved(int from, int to, int count)
         d->releaseItem(item);
     }
 
-    d->layout(removedBeforeVisible);
+    d->layout();
 }
 
 void QDeclarativeGridView::modelReset()

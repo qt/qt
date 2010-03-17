@@ -194,10 +194,12 @@ public:
     enum PositionMode { Beginning, Center, End, Visible, Contain };
     Q_ENUMS(PositionMode)
 
+    Q_INVOKABLE void positionViewAtIndex(int index, int mode);
+    Q_INVOKABLE int indexAt(int x, int y) const;
+
 public Q_SLOTS:
     void incrementCurrentIndex();
     void decrementCurrentIndex();
-    void positionViewAtIndex(int index, int mode);
 
 Q_SIGNALS:
     void countChanged();
