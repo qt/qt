@@ -231,13 +231,15 @@ bool QX11GLPixmapData::scroll(int dx, int dy, const QRect &rect)
         eglWaitClient();
     }
 
-    QX11PixmapData::scroll(dx, dy, rect);
+    bool success = QX11PixmapData::scroll(dx, dy, rect);
     XSync(X11->display, False);
 
     if (ctx) {
         ctx->makeCurrent();
         eglWaitNative(EGL_CORE_NATIVE_ENGINE);
     }
+
+    return success;
 }
 
 #if !defined(QT_OPENGL_ES_1)
