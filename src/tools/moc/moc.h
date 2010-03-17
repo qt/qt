@@ -116,7 +116,7 @@ struct FunctionDef
 struct PropertyDef
 {
     PropertyDef():notifyId(-1), constant(false), final(false), gspec(ValueSpec){}
-    QByteArray name, type, read, write, reset, designable, scriptable, editable, stored, user, notify;
+    QByteArray name, type, read, write, reset, designable, scriptable, editable, stored, user, notify, inPrivateClass;
     int notifyId;
     bool constant;
     bool final;
@@ -217,6 +217,7 @@ public:
     void parseSlots(ClassDef *def, FunctionDef::Access access);
     void parseSignals(ClassDef *def);
     void parseProperty(ClassDef *def);
+    void createPropertyDef(PropertyDef &def);
     void parseEnumOrFlag(ClassDef *def, bool isFlag);
     void parseFlag(ClassDef *def);
     void parseClassInfo(ClassDef *def);
@@ -224,6 +225,7 @@ public:
     void parseDeclareInterface();
     void parseDeclareMetatype();
     void parseSlotInPrivate(ClassDef *def, FunctionDef::Access access);
+    void parsePrivateProperty(ClassDef *def);
 
     void parseFunctionArguments(FunctionDef *def);
 
