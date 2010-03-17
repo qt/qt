@@ -91,7 +91,7 @@ private:
 
     struct Notifier {
         QDeclarativeNotifier *notifier;
-        Notifier **disconnected;
+        QDeclarativeNotifierEndpoint **disconnected;
 
         QDeclarativeNotifierEndpoint  *next;
         QDeclarativeNotifierEndpoint **prev;

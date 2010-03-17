@@ -98,6 +98,7 @@ QDeclarativeExpressionPrivate::~QDeclarativeExpressionPrivate()
     if (data) { 
         delete [] data->guardList; 
         data->guardList = 0; 
+        data->guardListLength = 0; 
         data->q = 0; 
         data->release(); 
         data = 0; 

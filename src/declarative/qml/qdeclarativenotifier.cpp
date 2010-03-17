@@ -47,23 +47,23 @@ void QDeclarativeNotifier::emitNotify(QDeclarativeNotifierEndpoint *endpoint)
 {
     QDeclarativeNotifierEndpoint::Notifier *n = endpoint->asNotifier();
 
-    QDeclarativeNotifierEndpoint::Notifier **oldDisconnected = n->disconnected;
-    n->disconnected = &n;
+    QDeclarativeNotifierEndpoint **oldDisconnected = n->disconnected;
+    n->disconnected = &endpoint;
 
     if (n->next)
         emitNotify(n->next);
 
-    if (n) {
+    if (endpoint) {
         void *args[] = { 0 };
 
         QMetaObject::metacall(endpoint->target, QMetaObject::InvokeMetaMethod, 
                               endpoint->targetMethod, args);
 
-        if (n)
-            n->disconnected = oldDisconnected;
+        if (endpoint)
+            endpoint->asNotifier()->disconnected = oldDisconnected;
     } 
 
-    if (oldDisconnected) *oldDisconnected = n;
+    if (oldDisconnected) *oldDisconnected = endpoint;
 }
 
 void QDeclarativeNotifierEndpoint::copyAndClear(QDeclarativeNotifierEndpoint &other)
@@ -89,7 +89,7 @@ void QDeclarativeNotifierEndpoint::copyAndClear(QDeclarativeNotifierEndpoint &ot
 
         other_n->notifier = n->notifier;
         other_n->disconnected = n->disconnected;
-        if (other_n->disconnected) *other_n->disconnected = other_n;
+        if (other_n->disconnected) *other_n->disconnected = &other;
 
         if (n->next) {
             other_n->next = n->next;
