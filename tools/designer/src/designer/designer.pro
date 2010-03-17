@@ -14,10 +14,8 @@ INCLUDEPATH += \
     ../lib/uilib \
     extra
 
-LIBS += -L../../lib \
-    -L../../../../lib \
-    -lQtDesignerComponents \
-    -lQtDesigner
+QMAKE_LIBDIR += ../../lib ../../../../lib
+LIBS += -lQtDesignerComponents -lQtDesigner
 
 RESOURCES += designer.qrc
 
