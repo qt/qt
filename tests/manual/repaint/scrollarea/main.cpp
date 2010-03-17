@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,21 +39,27 @@
 **
 ****************************************************************************/
 
-#include <QDialog>
-#include <QtDBus>
 #include <QtGui>
+#include "../shared/shared.h"
 
-class StartDialog : public QDialog 
+
+int main(int argc, char **argv)
 {
-    Q_OBJECT
-public:
-    StartDialog(QWidget* parent = 0);
+    QApplication app(argc, argv);
 
-    QString device() const;
+    QScrollArea scrollView;
 
-public slots:
-    void accept();
-private:
-    QString dev;
-    QComboBox* box;
-};
+    QWidget * staticWidget = new StaticWidget();
+    staticWidget->resize(400, 200);
+    scrollView.setWidget(staticWidget);
+
+    scrollView.setAttribute(Qt::WA_StaticContents);
+
+    scrollView.resize(600, 400);
+    scrollView.show();
+    
+    
+    return app.exec();
+}
+
+

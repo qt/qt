@@ -67,6 +67,8 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
 
 void QNetworkReplyImplPrivate::_q_startOperation()
 {
+    Q_Q(QNetworkReplyImpl);
+
     // ensure this function is only being called once
     if (state == Working) {
         qDebug("QNetworkReplyImpl::_q_startOperation was called more than once");
@@ -93,6 +95,9 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         QNetworkSession *session = manager->d_func()->networkSession;
 
         if (session) {
+            QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
+                             q, SLOT(_q_networkSessionFailed()));
+
             if (!session->isOpen())
                 session->open();
         } else {
@@ -244,6 +249,17 @@ void QNetworkReplyImplPrivate::_q_networkSessionOnline()
         break;
     default:
         ;
+    }
+}
+
+void QNetworkReplyImplPrivate::_q_networkSessionFailed()
+{
+    // Abort waiting replies.
+    if (state == WaitingForSession) {
+        state = Working;
+        error(QNetworkReplyImpl::UnknownNetworkError,
+              QCoreApplication::translate("QNetworkReply", "Network session error."));
+        finished();
     }
 }
 
@@ -706,6 +722,13 @@ void QNetworkReplyImpl::close()
     d->error(OperationCanceledError, tr("Operation canceled"));
     d->finished();
 }
+
+bool QNetworkReplyImpl::canReadLine () const
+{
+    Q_D(const QNetworkReplyImpl);
+    return QNetworkReply::canReadLine() || d->readBuffer.canReadLine();
+}
+
 
 /*!
     Returns the number of bytes available for reading with

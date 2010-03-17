@@ -74,7 +74,7 @@
     \row \o \link #QPSQL QPSQL\endlink \o PostgreSQL (versions 7.3 and above)
     \row \o \link #QSQLITE2 QSQLITE2\endlink \o SQLite version 2
     \row \o \link #QSQLITE QSQLITE\endlink \o SQLite version 3
-    \row \o \link #QTDS QTDS\endlink \o Sybase Adaptive Server
+    \row \o \link #QTDS QTDS\endlink \o Sybase Adaptive Server \note obsolete from Qt 4.7
     \endtable
 
     SQLite is the in-process database system with the best test coverage
@@ -445,6 +445,10 @@
 
     \target QTDS
     \section2 QTDS for Sybase Adaptive Server
+
+    \note TDS is no longer used by MS Sql Server, and is superceded by
+    \l{QODBC}{ODBC}. QTDS is obsolete from Qt 4.7.
+
     \section3 General Information about QTDS
 
     It is not possible to set the port with QSqlDatabase::setPort() due to limitations in the

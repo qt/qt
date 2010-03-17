@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-!maemo:contains(QT_CONFIG, dbus):contains(QT_CONFIG, networkmanager) {
+!maemo6:contains(QT_CONFIG, dbus) {
     SUBDIRS += networkmanager generic
 }
 #win32:SUBDIRS += nla

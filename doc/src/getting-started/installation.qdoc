@@ -290,6 +290,10 @@ and follow the instructions to install Qt. You can later run the \c{uninstall-qt
 script to uninstall the binary package. The script is located in /Developer/Tools and
 must be run as root.
 
+\note Do not run the iPhone simulator while installing Qt. The
+\l{http://openradar.appspot.com/7214991} 
+{iPhone simulator conflicts with the package installer}.
+
 The following instructions describe how to install Qt from the source package.
 
 \list 1

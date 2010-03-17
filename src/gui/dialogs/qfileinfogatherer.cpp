@@ -216,41 +216,10 @@ void QFileInfoGatherer::run()
     }
 }
 
-/*
-    QFileInfo::permissions is different depending upon your platform.
-
-    "normalize this" so they can mean the same to us.
-*/
-QFile::Permissions QFileInfoGatherer::translatePermissions(const QFileInfo &fileInfo) const {
-    QFile::Permissions permissions = fileInfo.permissions();
-#ifdef Q_OS_WIN
-    return permissions;
-#else
-    QFile::Permissions p = permissions;
-    p &= ~(QFile::ReadUser|QFile::WriteUser|QFile::ExeUser);
-    if (                                     permissions & QFile::ReadOther
-        || (fileInfo.ownerId() == userId  && permissions & QFile::ReadOwner)
-        || (fileInfo.groupId() == groupId && permissions & QFile::ReadGroup))
-        p |= QFile::ReadUser;
-
-    if (                                     permissions & QFile::WriteOther
-        || (fileInfo.ownerId() == userId  && permissions & QFile::WriteOwner)
-        || (fileInfo.groupId() == groupId && permissions & QFile::WriteGroup))
-        p |= QFile::WriteUser;
-
-    if (                                     permissions & QFile::ExeOther
-        || (fileInfo.ownerId() == userId  && permissions & QFile::ExeOwner)
-        || (fileInfo.groupId() == groupId && permissions & QFile::ExeGroup))
-        p |= QFile::ExeUser;
-    return p;
-#endif
-}
-
 QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
 {
     QExtendedInformation info(fileInfo);
     info.icon = m_iconProvider->icon(fileInfo);
-    info.setPermissions(translatePermissions(fileInfo));
     info.displayType = m_iconProvider->type(fileInfo);
 #ifndef QT_NO_FILESYSTEMWATCHER
     // ### Not ready to listen all modifications

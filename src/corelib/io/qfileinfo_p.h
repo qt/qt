@@ -68,13 +68,6 @@ public:
 
     void initFileEngine(const QString &);
 
-    enum Access {
-        ReadAccess,
-        WriteAccess,
-        ExecuteAccess
-    };
-    bool hasAccess(Access access) const;
-
     uint getFileFlags(QAbstractFileEngine::FileFlags) const;
     QDateTime &getFileTime(QAbstractFileEngine::FileTime) const;
     QString getFileName(QAbstractFileEngine::FileName) const;

@@ -537,40 +537,43 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                 continue;
         }
 
+        QList<QByteArray> parameterTypeNames = method.parameterTypes();
+
         QVector<QScriptMetaType> types;
+        types.resize(1 + parameterTypeNames.size());
+        QScriptMetaType *typesData = types.data();
         // resolve return type
         QByteArray returnTypeName = method.typeName();
         int rtype = QMetaType::type(returnTypeName);
         if ((rtype == 0) && !returnTypeName.isEmpty()) {
             int enumIndex = indexOfMetaEnum(meta, returnTypeName);
             if (enumIndex != -1)
-                types.append(QScriptMetaType::metaEnum(enumIndex, returnTypeName));
+                typesData[0] = QScriptMetaType::metaEnum(enumIndex, returnTypeName);
             else
-                types.append(QScriptMetaType::unresolved(returnTypeName));
+                typesData[0] = QScriptMetaType::unresolved(returnTypeName);
         } else {
             if (callType == QMetaMethod::Constructor)
-                types.append(QScriptMetaType::metaType(QMetaType::QObjectStar, "QObject*"));
+                typesData[0] = QScriptMetaType::metaType(QMetaType::QObjectStar, "QObject*");
             else if (rtype == QMetaType::QVariant)
-                types.append(QScriptMetaType::variant());
+                typesData[0] = QScriptMetaType::variant();
             else
-                types.append(QScriptMetaType::metaType(rtype, returnTypeName));
+                typesData[0] = QScriptMetaType::metaType(rtype, returnTypeName);
         }
 
         // resolve argument types
-        QList<QByteArray> parameterTypeNames = method.parameterTypes();
         for (int i = 0; i < parameterTypeNames.count(); ++i) {
             QByteArray argTypeName = parameterTypeNames.at(i);
             int atype = QMetaType::type(argTypeName);
             if (atype == 0) {
                 int enumIndex = indexOfMetaEnum(meta, argTypeName);
                 if (enumIndex != -1)
-                    types.append(QScriptMetaType::metaEnum(enumIndex, argTypeName));
+                    typesData[1 + i] = QScriptMetaType::metaEnum(enumIndex, argTypeName);
                 else
-                    types.append(QScriptMetaType::unresolved(argTypeName));
+                    typesData[1 + i] = QScriptMetaType::unresolved(argTypeName);
             } else if (atype == QMetaType::QVariant) {
-                types.append(QScriptMetaType::variant());
+                typesData[1 + i] = QScriptMetaType::variant();
             } else {
-                types.append(QScriptMetaType::metaType(atype, argTypeName));
+                typesData[1 + i] = QScriptMetaType::metaType(atype, argTypeName);
             }
         }
 
@@ -1298,7 +1301,7 @@ bool QObjectDelegate::getOwnPropertyDescriptor(QScriptObject *object, JSC::ExecS
                                          const JSC::Identifier &propertyName,
                                          JSC::PropertyDescriptor &descriptor)
 {
-    //Note: this has to be kept in sync with getOwnPropertySlot abd getPropertyAttributes
+    //Note: this has to be kept in sync with getOwnPropertySlot
 #ifndef QT_NO_PROPERTIES
     QByteArray name = convertToLatin1(propertyName.ustring());
     QObject *qobject = data->value;
@@ -1528,8 +1531,7 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
 }
 
 bool QObjectDelegate::deleteProperty(QScriptObject *object, JSC::ExecState *exec,
-                                     const JSC::Identifier& propertyName,
-                                     bool checkDontDelete)
+                                     const JSC::Identifier& propertyName)
 {
 #ifndef QT_NO_PROPERTIES
     QByteArray name = convertToLatin1(propertyName.ustring());
@@ -1569,86 +1571,7 @@ bool QObjectDelegate::deleteProperty(QScriptObject *object, JSC::ExecState *exec
         return true;
     }
 
-    return QScriptObjectDelegate::deleteProperty(object, exec, propertyName, checkDontDelete);
-#else //QT_NO_PROPERTIES
-    return false;
-#endif //QT_NO_PROPERTIES
-}
-
-bool QObjectDelegate::getPropertyAttributes(const QScriptObject *object,
-                                            JSC::ExecState *exec,
-                                            const JSC::Identifier &propertyName,
-                                            unsigned &attributes) const
-{
-#ifndef QT_NO_PROPERTIES
-    //Note: this has to be kept in sync with getOwnPropertyDescriptor and getOwnPropertySlot
-    QByteArray name = convertToLatin1(propertyName.ustring());
-    QObject *qobject = data->value;
-    if (!qobject)
-        return false;
-
-    const QScriptEngine::QObjectWrapOptions &opt = data->options;
-    const QMetaObject *meta = qobject->metaObject();
-    int index = -1;
-    if (name.contains('(')) {
-        QByteArray normalized = QMetaObject::normalizedSignature(name);
-        if (-1 != (index = meta->indexOfMethod(normalized))) {
-            QMetaMethod method = meta->method(index);
-            if (hasMethodAccess(method, index, opt)) {
-                if (!(opt & QScriptEngine::ExcludeSuperClassMethods)
-                    || (index >= meta->methodOffset())) {
-                    attributes = QObjectMemberAttribute;
-                    if (opt & QScriptEngine::SkipMethodsInEnumeration)
-                        attributes |= JSC::DontEnum;
-                    return true;
-                }
-            }
-        }
-    }
-
-    index = meta->indexOfProperty(name);
-    if (index != -1) {
-        QMetaProperty prop = meta->property(index);
-        if (prop.isScriptable()) {
-            if (!(opt & QScriptEngine::ExcludeSuperClassProperties)
-                || (index >= meta->propertyOffset())) {
-                attributes = flagsForMetaProperty(prop);
-                return true;
-            }
-        }
-    }
-
-    index = qobject->dynamicPropertyNames().indexOf(name);
-    if (index != -1) {
-        attributes = QObjectMemberAttribute;
-        return true;
-    }
-
-    const int offset = (opt & QScriptEngine::ExcludeSuperClassMethods)
-                       ? meta->methodOffset() : 0;
-    for (index = meta->methodCount() - 1; index >= offset; --index) {
-        QMetaMethod method = meta->method(index);
-        if (hasMethodAccess(method, index, opt)
-            && methodNameEquals(method, name.constData(), name.length())) {
-            attributes = QObjectMemberAttribute;
-            if (opt & QScriptEngine::SkipMethodsInEnumeration)
-                attributes |= JSC::DontEnum;
-            return true;
-        }
-    }
-
-    if (!(opt & QScriptEngine::ExcludeChildObjects)) {
-        QList<QObject*> children = qobject->children();
-        for (index = 0; index < children.count(); ++index) {
-            QObject *child = children.at(index);
-            if (child->objectName() == (QString)(propertyName.ustring())) {
-                attributes = JSC::ReadOnly | JSC::DontDelete | JSC::DontEnum;
-                return true;
-            }
-        }
-    }
-
-    return QScriptObjectDelegate::getPropertyAttributes(object, exec, propertyName, attributes);
+    return QScriptObjectDelegate::deleteProperty(object, exec, propertyName);
 #else //QT_NO_PROPERTIES
     return false;
 #endif //QT_NO_PROPERTIES
@@ -1656,7 +1579,7 @@ bool QObjectDelegate::getPropertyAttributes(const QScriptObject *object,
 
 void QObjectDelegate::getOwnPropertyNames(QScriptObject *object, JSC::ExecState *exec,
                                           JSC::PropertyNameArray &propertyNames,
-                                          bool includeNonEnumerable)
+                                          JSC::EnumerationMode mode)
 {
 #ifndef QT_NO_PROPERTIES
     QObject *qobject = data->value;
@@ -1701,7 +1624,7 @@ void QObjectDelegate::getOwnPropertyNames(QScriptObject *object, JSC::ExecState 
         }
     }
 
-    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, includeNonEnumerable);
+    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, mode);
 #endif //QT_NO_PROPERTIES
 }
 
@@ -1884,6 +1807,39 @@ bool QMetaObjectWrapperObject::getOwnPropertySlot(
     return JSC::JSObject::getOwnPropertySlot(exec, propertyName, slot);
 }
 
+bool QMetaObjectWrapperObject::getOwnPropertyDescriptor(
+    JSC::ExecState* exec, const JSC::Identifier& propertyName,
+    JSC::PropertyDescriptor& descriptor)
+{
+    const QMetaObject *meta = data->value;
+    if (!meta)
+        return false;
+
+    if (propertyName == exec->propertyNames().prototype) {
+        descriptor.setDescriptor(data->ctor
+                                 ? data->ctor.get(exec, propertyName)
+                                 : data->prototype,
+                                 JSC::DontDelete | JSC::DontEnum);
+        return true;
+    }
+
+    QByteArray name = QString(propertyName.ustring()).toLatin1();
+
+    for (int i = 0; i < meta->enumeratorCount(); ++i) {
+        QMetaEnum e = meta->enumerator(i);
+        for (int j = 0; j < e.keyCount(); ++j) {
+            const char *key = e.key(j);
+            if (!qstrcmp(key, name.constData())) {
+                descriptor.setDescriptor(JSC::JSValue(exec, e.value(j)),
+                                         JSC::ReadOnly | JSC::DontDelete);
+                return true;
+            }
+        }
+    }
+
+    return JSC::JSObject::getOwnPropertyDescriptor(exec, propertyName, descriptor);
+}
+
 void QMetaObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                                    JSC::JSValue value, JSC::PutPropertySlot &slot)
 {
@@ -1909,8 +1865,7 @@ void QMetaObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& 
 }
 
 bool QMetaObjectWrapperObject::deleteProperty(
-    JSC::ExecState *exec, const JSC::Identifier& propertyName,
-    bool checkDontDelete)
+    JSC::ExecState *exec, const JSC::Identifier& propertyName)
 {
     if (propertyName == exec->propertyNames().prototype)
         return false;
@@ -1925,36 +1880,12 @@ bool QMetaObjectWrapperObject::deleteProperty(
             }
         }
     }
-    return JSC::JSObject::deleteProperty(exec, propertyName, checkDontDelete);
-}
-
-bool QMetaObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
-                                                     const JSC::Identifier &propertyName,
-                                                     unsigned &attributes) const
-{
-    if (propertyName == exec->propertyNames().prototype) {
-        attributes = JSC::DontDelete;
-        return true;
-    }
-    const QMetaObject *meta = data->value;
-    if (meta) {
-        QByteArray name = convertToLatin1(propertyName.ustring());
-        for (int i = 0; i < meta->enumeratorCount(); ++i) {
-            QMetaEnum e = meta->enumerator(i);
-            for (int j = 0; j < e.keyCount(); ++j) {
-                if (!qstrcmp(e.key(j), name.constData())) {
-                    attributes = JSC::ReadOnly | JSC::DontDelete;
-                    return true;
-                }
-            }
-        }
-    }
-    return JSC::JSObject::getPropertyAttributes(exec, propertyName, attributes);
+    return JSC::JSObject::deleteProperty(exec, propertyName);
 }
 
 void QMetaObjectWrapperObject::getOwnPropertyNames(JSC::ExecState *exec,
                                                    JSC::PropertyNameArray &propertyNames,
-                                                   bool includeNonEnumerable)
+                                                   JSC::EnumerationMode mode)
 {
     const QMetaObject *meta = data->value;
     if (!meta)
@@ -1964,7 +1895,7 @@ void QMetaObjectWrapperObject::getOwnPropertyNames(JSC::ExecState *exec,
         for (int j = 0; j < e.keyCount(); ++j)
             propertyNames.add(JSC::Identifier(exec, e.key(j)));
     }
-    JSC::JSObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
+    JSC::JSObject::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 void QMetaObjectWrapperObject::markChildren(JSC::MarkStack& markStack)

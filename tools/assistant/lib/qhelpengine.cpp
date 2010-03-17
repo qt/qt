@@ -75,14 +75,15 @@ void QHelpEnginePrivate::init(const QString &collectionFile,
 {
     QHelpEngineCorePrivate::init(collectionFile, helpEngineCore);
 
-    contentModel = new QHelpContentModel(this);
-    indexModel = new QHelpIndexModel(this);
+    if (!contentModel)
+        contentModel = new QHelpContentModel(this);
+    if (!indexModel)
+        indexModel = new QHelpIndexModel(this);
 
-    connect(helpEngineCore, SIGNAL(setupFinished()),
-        this, SLOT(applyCurrentFilter()));
-    connect(helpEngineCore, SIGNAL(currentFilterChanged(QString)),
-        this, SLOT(applyCurrentFilter()));
-
+    connect(helpEngineCore, SIGNAL(setupFinished()), this,
+        SLOT(applyCurrentFilter()));
+    connect(helpEngineCore, SIGNAL(currentFilterChanged(QString)), this,
+        SLOT(applyCurrentFilter()));
 }
 
 void QHelpEnginePrivate::applyCurrentFilter()
