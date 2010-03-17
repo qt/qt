@@ -880,15 +880,17 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         return new QDisabledNetworkReply(this, req, op);
     }
 
-#ifdef QT_QNAM_DEFAULT_NETWORK_SESSION
     if (!d->networkSession && (d->initializeSession || !d->networkConfiguration.isEmpty())) {
         QNetworkConfigurationManager manager;
-        if (d->networkConfiguration.isEmpty())
-            d->createSession(manager.defaultConfiguration());
-        else
+        if (!d->networkConfiguration.isEmpty()) {
             d->createSession(manager.configurationFromIdentifier(d->networkConfiguration));
+        } else {
+            if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired)
+                d->createSession(manager.defaultConfiguration());
+            else
+                d->initializeSession = false;
+        }
     }
-#endif
 
     if (d->networkSession)
         d->networkSession->setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), -1);
@@ -1208,9 +1210,7 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 {
     Q_Q(QNetworkAccessManager);
 
-#ifdef QT_QNAM_DEFAULT_NETWORK_SESSION
     initializeSession = false;
-#endif
 
     if (networkSession)
         delete networkSession;
