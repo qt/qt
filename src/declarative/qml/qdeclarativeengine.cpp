@@ -1342,6 +1342,7 @@ QVariant QDeclarativeScriptClass::toVariant(QDeclarativeEngine *engine, const QS
 }
 
 // XXX this beyonds in QUrl::toLocalFile()
+// WARNING, there is a copy of this function in qdeclarativecompositetypemanager.cpp
 static QString toLocalFileOrQrc(const QUrl& url)
 {
     if (url.scheme() == QLatin1String("qrc")) {

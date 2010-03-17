@@ -315,12 +315,17 @@ void QDeclarativeCompositeTypeManager::resourceReplyFinished()
     reply->deleteLater();
 }
 
+// XXX this beyonds in QUrl::toLocalFile()
+// WARNING, there is a copy of this function in qdeclarativeengine.cpp
 static QString toLocalFileOrQrc(const QUrl& url)
 {
-    QString r = url.toLocalFile();
-    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
-        r = QLatin1Char(':') + url.path();
-    return r;
+    if (url.scheme() == QLatin1String("qrc")) {
+        if (url.authority().isEmpty())
+            return QLatin1Char(':') + url.path();
+        qWarning() << "Invalid url:" << url.toString() << "authority" << url.authority() << "not known.";
+        return QString();
+    }
+    return url.toLocalFile();
 }
 
 void QDeclarativeCompositeTypeManager::loadResource(QDeclarativeCompositeTypeResource *resource)
@@ -504,6 +509,24 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
     // not called until all resources are loaded (they include import URLs)
 
     int waiting = 0;
+
+
+    /*
+     For local urls, add an implicit import "." to the beginning of a file. This will trigger
+     the loading of the qmldir and the import of any native types from available plugins.
+     */
+    QUrl baseUrl = unit->imports.baseUrl();
+    if (!toLocalFileOrQrc(baseUrl).isEmpty()) {
+        QDeclarativeEnginePrivate::get(engine)->
+                addToImport(&unit->imports,
+                            QString(),
+                            QLatin1String("."),
+                            QString(),
+                            -1, -1,
+                            QDeclarativeScriptParser::Import::File);
+
+    }
+
 
     foreach (QDeclarativeScriptParser::Import imp, unit->data.imports()) {
         QString qmldircontentnetwork;
