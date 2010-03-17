@@ -1997,6 +1997,24 @@ QModelIndex QTreeView::indexBelow(const QModelIndex &index) const
 void QTreeView::doItemsLayout()
 {
     Q_D(QTreeView);
+    if (d->hasRemovedItems) {
+        //clean the QSet that may contains old (and this invalid) indexes
+        d->hasRemovedItems = false;
+        QSet<QPersistentModelIndex>::iterator it = d->expandedIndexes.begin();
+        while (it != d->expandedIndexes.constEnd()) {
+            if (!it->isValid())
+                it = d->expandedIndexes.erase(it);
+            else
+                ++it;
+        }
+        it = d->hiddenIndexes.begin();
+        while (it != d->hiddenIndexes.constEnd()) {
+            if (!it->isValid())
+                it = d->hiddenIndexes.erase(it);
+            else
+                ++it;
+        }
+    }
     d->viewItems.clear(); // prepare for new layout
     QModelIndex parent = d->root;
     if (d->model->hasChildren(parent)) {
@@ -2406,24 +2424,6 @@ void QTreeView::reexpand()
 }
 
 /*!
-  \internal
-  This function assume that left is a (grand-)child of the parent of left.
-*/
-static bool treeViewItemLessThanInInsert(const QTreeViewItem &left, const QTreeViewItem &right)
-{
-    if (left.level != right.level) {
-        Q_ASSERT(left.level > right.level);
-        QModelIndex leftParent = left.index.parent();
-        QModelIndex rightParent = right.index.parent();
-        // computer parent, don't get
-        while (leftParent.isValid() && leftParent.parent() != rightParent)
-            leftParent = leftParent.parent();
-        return (leftParent.row() < right.index.row());
-    }
-    return (left.index.row() < right.index.row());
-}
-
-/*!
   Informs the view that the rows from the \a start row to the \a end row
   inclusive have been inserted into the \a parent model item.
 */
@@ -2452,83 +2452,6 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
     const int parentItem = d->viewIndex(parent);
     if (((parentItem != -1) && d->viewItems.at(parentItem).expanded && updatesEnabled())
         || (parent == d->root)) {
-        const uint childLevel = (parentItem == -1)
-                                ? uint(0) : d->viewItems.at(parentItem).level + 1;
-        const int firstChildItem = parentItem + 1;
-        const int lastChildItem = firstChildItem + ((parentItem == -1)
-                                                    ? d->viewItems.count()
-                                                    : d->viewItems.at(parentItem).total) - 1;
-
-        if (parentRowCount == end + 1 && start > 0) {
-            //need to Update hasMoreSiblings
-            int previousRow = start - 1;
-            QModelIndex previousSibilingModelIndex = d->model->index(previousRow, 0, parent);
-            bool isHidden = d->isRowHidden(previousSibilingModelIndex);
-            while (isHidden && previousRow > 0) {
-                previousRow--;
-                previousSibilingModelIndex = d->model->index(previousRow, 0, parent);
-                isHidden = d->isRowHidden(previousSibilingModelIndex);
-            }
-            if (!isHidden) {
-                const int previousSibilling = d->viewIndex(previousSibilingModelIndex);
-                if(previousSibilling != -1)
-                    d->viewItems[previousSibilling].hasMoreSiblings = true;
-            }
-        }
-
-        QVector<QTreeViewItem> insertedItems(delta);
-        for (int i = 0; i < delta; ++i) {
-            QTreeViewItem &item = insertedItems[i];
-            item.index = d->model->index(i + start, 0, parent);
-            item.parentItem = parentItem;
-            item.level = childLevel;
-            item.hasChildren = d->hasVisibleChildren(item.index);
-            item.hasMoreSiblings = !((i == delta - 1) && (parentRowCount == end +1));
-        }
-        if (d->viewItems.isEmpty())
-            d->defaultItemHeight = indexRowSizeHint(insertedItems[0].index);
-
-        int insertPos;
-        if (lastChildItem < firstChildItem) { // no children
-            insertPos = firstChildItem;
-        } else {
-            // do a binary search to figure out where to insert
-            QVector<QTreeViewItem>::iterator it;
-            it = qLowerBound(d->viewItems.begin() + firstChildItem,
-                             d->viewItems.begin() + lastChildItem + 1,
-                             insertedItems.at(0), treeViewItemLessThanInInsert);
-            insertPos = it - d->viewItems.begin();
-
-            // update stale model indexes of siblings
-            for (int item = insertPos; item <= lastChildItem; ) {
-                Q_ASSERT(d->viewItems.at(item).level == childLevel);
-                const QModelIndex modelIndex = d->viewItems.at(item).index;
-                //Q_ASSERT(modelIndex.parent() == parent);
-                d->viewItems[item].index = d->model->index(
-                    modelIndex.row() + delta, modelIndex.column(), parent);
-
-                if (!d->viewItems[item].index.isValid()) {
-                    // Something really bad is happening, a bad model is
-                    // often the cause.  We can't optimize in this case :(
-                    qWarning() << "QTreeView::rowsInserted internal representation of the model has been corrupted, resetting.";
-                    doItemsLayout();
-                    return;
-                }
-
-                item += d->viewItems.at(item).total + 1;
-            }
-        }
-
-        d->insertViewItems(insertPos, delta, insertedItems.at(0));
-        if (delta > 1) {
-            qCopy(insertedItems.begin() + 1, insertedItems.end(),
-                  d->viewItems.begin() + insertPos + 1);
-        }
-
-        if (parentItem != -1)
-            d->viewItems[parentItem].hasChildren = true;
-        d->updateChildCount(parentItem, delta);
-
         d->doDelayedItemsLayout();
     } else if ((parentItem != -1) && d->viewItems.at(parentItem).expanded) {
         d->doDelayedItemsLayout();
@@ -2547,8 +2470,8 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
 void QTreeView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
 {
     Q_D(QTreeView);
-    d->rowsRemoved(parent, start, end, false);
     QAbstractItemView::rowsAboutToBeRemoved(parent, start, end);
+    d->viewItems.clear();
 }
 
 /*!
@@ -2560,7 +2483,10 @@ void QTreeView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int e
 void QTreeView::rowsRemoved(const QModelIndex &parent, int start, int end)
 {
     Q_D(QTreeView);
-    d->rowsRemoved(parent, start, end, true);
+    d->viewItems.clear();
+    d->doDelayedItemsLayout();
+    d->hasRemovedItems = true;
+    d->_q_rowsRemoved(parent, start, end);
 }
 
 /*!
@@ -3398,7 +3324,7 @@ int QTreeViewPrivate::viewIndex(const QModelIndex &_index) const
     const int totalCount = viewItems.count();
     const QModelIndex index = _index.sibling(_index.row(), 0);
     const int row = index.row();
-    const quint64 internalId = index.internalId();
+    const qint64 internalId = index.internalId();
 
     // We start nearest to the lastViewedItem
     int localCount = qMin(lastViewedItem - 1, totalCount - lastViewedItem);
@@ -3750,118 +3676,6 @@ bool QTreeViewPrivate::hasVisibleChildren(const QModelIndex& parent) const
     }
     return false;
 }
-
-void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
-                                   int start, int end, bool after)
-{
-    // if we are going to do a complete relayout anyway, there is no need to update
-    if (delayedPendingLayout) {
-        _q_rowsRemoved(parent, start, end);
-        return;
-    }
-
-    const int parentItem = viewIndex(parent);
-    if ((parentItem != -1) || (parent == root)) {
-
-        const uint childLevel = (parentItem == -1)
-                                ? uint(0) : viewItems.at(parentItem).level + 1;
-        Q_UNUSED(childLevel); // unused in release mode, used in assert below
-
-        const int firstChildItem = parentItem + 1;
-        int lastChildItem = firstChildItem + ((parentItem == -1)
-                                              ? viewItems.count()
-                                              : viewItems.at(parentItem).total) - 1;
-
-        const int delta = end - start + 1;
-
-        int previousSibiling = -1;
-        int removedCount = 0;
-        for (int item = firstChildItem; item <= lastChildItem; ) {
-            Q_ASSERT(viewItems.at(item).level == childLevel);
-            const QModelIndex modelIndex = viewItems.at(item).index;
-            //Q_ASSERT(modelIndex.parent() == parent);
-            const int count = viewItems.at(item).total + 1;
-            if (modelIndex.row() < start) {
-                previousSibiling = item;
-                // not affected by the removal
-                item += count;
-            } else if (modelIndex.row() <= end) {
-                // removed
-                removeViewItems(item, count);
-                removedCount += count;
-                lastChildItem -= count;
-            } else {
-                if (after) {
-                    // moved; update the model index
-                    viewItems[item].index = model->index(
-                        modelIndex.row() - delta, modelIndex.column(), parent);
-                }
-                item += count;
-            }
-        }
-
-        if (previousSibiling != -1 && after && model->rowCount(parent) == start)
-            viewItems[previousSibiling].hasMoreSiblings = false;
-
-        if (parentItem != -1) {
-            if (viewItems.at(parentItem).expanded) {
-                updateChildCount(parentItem, -removedCount);
-                if (viewItems.at(parentItem).total == 0)
-                    viewItems[parentItem].hasChildren = false; //every children have been removed;
-            } else if (viewItems[parentItem].hasChildren && !hasVisibleChildren(parent)) {
-                viewItems[parentItem].hasChildren = false;
-            }
-        }
-        if (after) {
-            doDelayedItemsLayout();
-        } else {
-            //we have removed items: we should at least update the scroll bar values.
-            // They are used to determine the item geometry.
-            updateScrollBars();
-        }
-    } else {
-        // If an ancestor of root is removed then relayout
-        QModelIndex idx = root;
-        while (idx.isValid()) {
-            idx = idx.parent();
-            if (idx == parent) {
-                doDelayedItemsLayout();
-                break;
-            }
-        }
-    }
-    _q_rowsRemoved(parent, start, end);
-
-    QSet<QPersistentModelIndex>::iterator it = expandedIndexes.begin();
-    while (it != expandedIndexes.constEnd()) {
-        if (!it->isValid())
-            it = expandedIndexes.erase(it);
-        else
-            ++it;
-    }
-    it = hiddenIndexes.begin();
-    while (it != hiddenIndexes.constEnd()) {
-        if (!it->isValid())
-            it = hiddenIndexes.erase(it);
-        else
-            ++it;
-    }
-}
-
-void QTreeViewPrivate::updateChildCount(const int parentItem, const int delta)
-{
-    if ((parentItem != -1) && delta) {
-        int level = viewItems.at(parentItem).level;
-        int item = parentItem;
-        do {
-            Q_ASSERT(item >= 0);
-            for ( ; int(viewItems.at(item).level) != level; --item) ;
-            viewItems[item].total += delta;
-            --level;
-        } while (level >= 0);
-    }
-}
-
 
 void QTreeViewPrivate::_q_sortIndicatorChanged(int column, Qt::SortOrder order)
 {
