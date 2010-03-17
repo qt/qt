@@ -1404,14 +1404,14 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
                     }
                 }
 
-            } else {
-                // XXX search non-files too! (eg. zip files, see QT-524)
-                QFileInfo f(toLocalFileOrQrc(url));
-                if (f.exists()) {
-                    if (url_return)
-                        *url_return = url;
-                    return true;
-                }
+            }
+
+            // XXX search non-files too! (eg. zip files, see QT-524)
+            QFileInfo f(toLocalFileOrQrc(url));
+            if (f.exists()) {
+                if (url_return)
+                    *url_return = url;
+                return true;
             }
         }
         return false;
