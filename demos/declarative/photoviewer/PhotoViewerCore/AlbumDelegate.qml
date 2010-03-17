@@ -39,9 +39,8 @@ Component {
             }
 
             PathView {
-                id: photosPathView; model: visualModel.parts.stack
+                id: photosPathView; model: visualModel.parts.stack; pathItemCount: 5
                 anchors.centerIn: parent; anchors.verticalCenterOffset: -20
-                pathItemCount: 5
                 path: Path {
                     PathAttribute { name: 'z'; value: 9999.0 }
                     PathLine { x: 1; y: 1 }
@@ -51,24 +50,34 @@ Component {
 
             Tag {
                 anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom
-                label: tag; rotation: Math.random() * (2 * 6 + 1) - 6
+                frontLabel: tag; backLabel: "Delete"; rotation: Math.random() * (2 * 6 + 1) - 6
+                flipped: mainWindow.editMode
             }
 
-            MouseArea { anchors.fill: parent; onClicked: albumWrapper.state = 'inGrid' }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    if (mainWindow.editMode) {
+                        photosModel.remove(index)
+                    } else {
+                        albumWrapper.state = 'inGrid'
+                    }
+                }
+            }
 
             states: [
             State {
                 name: 'inGrid'
                 PropertyChanges { target: photosGridView; interactive: true }
                 PropertyChanges { target: albumsShade; opacity: 1 }
-                PropertyChanges{ target: backTag; onClicked: albumWrapper.state = ''; y: 6 }
+                PropertyChanges { target: backButton; onClicked: albumWrapper.state = ''; y: 6 }
             },
             State {
                 name: 'fullscreen'; extend: 'inGrid'
                 PropertyChanges { target: photosGridView; interactive: false }
                 PropertyChanges { target: photosListView; interactive: true }
                 PropertyChanges { target: photosShade; opacity: 1 }
-                PropertyChanges{ target: backTag; y: -backTag.height - 8 }
+                PropertyChanges { target: backButton; y: -backTag.height - 8 }
             }
             ]
 
@@ -78,7 +87,7 @@ Component {
                 SequentialAnimation {
                     NumberAnimation { properties: 'opacity'; duration: 250 }
                     PauseAnimation { duration: 350 }
-                    NumberAnimation { target: backTag; properties: "y"; duration: 200; easing.type: "OutQuad" }
+                    NumberAnimation { target: backButton; properties: "y"; duration: 200; easing.type: "OutQuad" }
                 }
             },
             Transition {
