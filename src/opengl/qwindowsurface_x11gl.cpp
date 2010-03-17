@@ -113,6 +113,8 @@ void QX11GLWindowSurface::setGeometry(const QRect &rect)
         QX11GLPixmapData *pd = new QX11GLPixmapData;
         pd->resize(newSize.width(), newSize.height());
         m_backBuffer = QPixmap(pd);
+        if (window()->testAttribute(Qt::WA_TranslucentBackground))
+            m_backBuffer.fill(Qt::transparent);
     }
 
 //    if (gc)
