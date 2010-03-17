@@ -1386,7 +1386,6 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
             QString qmldircontent = qmlDirContent.at(i);
 
             if (!qmldircontent.isEmpty()) {
-
                 const QString typeName = QString::fromUtf8(type);
 
                 QDeclarativeDirParser qmldirParser;
@@ -1403,15 +1402,16 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
                         }
                     }
                 }
-
             }
 
-            // XXX search non-files too! (eg. zip files, see QT-524)
-            QFileInfo f(toLocalFileOrQrc(url));
-            if (f.exists()) {
-                if (url_return)
-                    *url_return = url;
-                return true;
+            if (!isLibrary.at(i)) {
+                // XXX search non-files too! (eg. zip files, see QT-524)
+                QFileInfo f(toLocalFileOrQrc(url));
+                if (f.exists()) {
+                    if (url_return)
+                        *url_return = url;
+                    return true;
+                }
             }
         }
         return false;
