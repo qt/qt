@@ -2189,7 +2189,7 @@ bool QDeclarativeCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop
 // Similar logic to above, but not knowing target property.
 int QDeclarativeCompiler::evaluateEnum(const QByteArray& script) const
 {
-    int dot = script.find('.');
+    int dot = script.indexOf('.');
     if (dot > 0) {
         QDeclarativeType *type = 0;
         QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, script.left(dot), &type, 0, 0, 0, 0);
