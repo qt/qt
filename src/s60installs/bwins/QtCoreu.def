@@ -4399,4 +4399,22 @@ EXPORTS
 	?sender@SignalEvent@QStateMachine@@QBEPAVQObject@@XZ @ 4398 NONAME ; class QObject * QStateMachine::SignalEvent::sender(void) const
 	?signalIndex@SignalEvent@QStateMachine@@QBEHXZ @ 4399 NONAME ; int QStateMachine::SignalEvent::signalIndex(void) const
 	?disconnectOne@QMetaObject@@SA_NPBVQObject@@H0H@Z @ 4400 NONAME ; bool QMetaObject::disconnectOne(class QObject const *, int, class QObject const *, int)
+	?QBasicAtomicInt_fetchAndAddRelease@@YAHPCHH@Z @ 4401 NONAME ; int QBasicAtomicInt_fetchAndAddRelease(int volatile *, int)
+	?QBasicAtomicPointer_testAndSetRelaxed@@YA_NPCRAXPAX1@Z @ 4402 NONAME ; bool QBasicAtomicPointer_testAndSetRelaxed(void * volatile *, void *, void *)
+	?QBasicAtomicInt_fetchAndAddRelaxed@@YAHPCHH@Z @ 4403 NONAME ; int QBasicAtomicInt_fetchAndAddRelaxed(int volatile *, int)
+	?QBasicAtomicPointer_testAndSetRelease@@YA_NPCRAXPAX1@Z @ 4404 NONAME ; bool QBasicAtomicPointer_testAndSetRelease(void * volatile *, void *, void *)
+	?QBasicAtomicInt_fetchAndStoreRelease@@YAHPCHH@Z @ 4405 NONAME ; int QBasicAtomicInt_fetchAndStoreRelease(int volatile *, int)
+	?QBasicAtomicPointer_fetchAndAddAcquire@@YAPAXPCRAXH@Z @ 4406 NONAME ; void * QBasicAtomicPointer_fetchAndAddAcquire(void * volatile *, int)
+	?QBasicAtomicPointer_fetchAndAddRelease@@YAPAXPCRAXH@Z @ 4407 NONAME ; void * QBasicAtomicPointer_fetchAndAddRelease(void * volatile *, int)
+	?QBasicAtomicPointer_testAndSetAcquire@@YA_NPCRAXPAX1@Z @ 4408 NONAME ; bool QBasicAtomicPointer_testAndSetAcquire(void * volatile *, void *, void *)
+	?QBasicAtomicPointer_fetchAndStoreAcquire@@YAPAXPCRAXPAX@Z @ 4409 NONAME ; void * QBasicAtomicPointer_fetchAndStoreAcquire(void * volatile *, void *)
+	?QBasicAtomicPointer_fetchAndAddRelaxed@@YAPAXPCRAXH@Z @ 4410 NONAME ; void * QBasicAtomicPointer_fetchAndAddRelaxed(void * volatile *, int)
+	?QBasicAtomicInt_testAndSetAcquire@@YA_NPCHHH@Z @ 4411 NONAME ; bool QBasicAtomicInt_testAndSetAcquire(int volatile *, int, int)
+	?QBasicAtomicPointer_fetchAndStoreRelaxed@@YAPAXPCRAXPAX@Z @ 4412 NONAME ; void * QBasicAtomicPointer_fetchAndStoreRelaxed(void * volatile *, void *)
+	?QBasicAtomicInt_fetchAndStoreRelaxed@@YAHPCHH@Z @ 4413 NONAME ; int QBasicAtomicInt_fetchAndStoreRelaxed(int volatile *, int)
+	?QBasicAtomicInt_testAndSetRelaxed@@YA_NPCHHH@Z @ 4414 NONAME ; bool QBasicAtomicInt_testAndSetRelaxed(int volatile *, int, int)
+	?QBasicAtomicPointer_fetchAndStoreRelease@@YAPAXPCRAXPAX@Z @ 4415 NONAME ; void * QBasicAtomicPointer_fetchAndStoreRelease(void * volatile *, void *)
+	?QBasicAtomicInt_testAndSetRelease@@YA_NPCHHH@Z @ 4416 NONAME ; bool QBasicAtomicInt_testAndSetRelease(int volatile *, int, int)
+	?QBasicAtomicInt_fetchAndStoreAcquire@@YAHPCHH@Z @ 4417 NONAME ; int QBasicAtomicInt_fetchAndStoreAcquire(int volatile *, int)
+	?QBasicAtomicInt_fetchAndAddAcquire@@YAHPCHH@Z @ 4418 NONAME ; int QBasicAtomicInt_fetchAndAddAcquire(int volatile *, int)
 

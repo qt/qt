@@ -80,6 +80,8 @@ public:
     void connectUncontrolledAnimations();
     void disconnectUncontrolledAnimations();
 
+    void animationRemoved(int index, QAbstractAnimation *);
+
     // private slot
     void _q_uncontrolledAnimationFinished();
 };
