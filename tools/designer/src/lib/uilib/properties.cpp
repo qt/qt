@@ -655,16 +655,21 @@ DomProperty *variantToDomProperty(QAbstractFormBuilder *afb, const QMetaObject *
     case QVariant::Brush:
         dom_prop->setElementBrush(afb->saveBrush(qvariant_cast<QBrush>(v)));
         break;
-    default:
+    default: {
+        const bool hadAttributeStdset = dom_prop->hasAttributeStdset();
+        const bool attributeStdset = dom_prop->attributeStdset();
         delete dom_prop;
         if (afb->resourceBuilder()->isResourceType(v)) {
             dom_prop = afb->resourceBuilder()->saveResource(afb->workingDirectory(), v);
-            if (dom_prop)
+            if (dom_prop) {
                 dom_prop->setAttributeName(pname);
+                if (hadAttributeStdset)
+                    dom_prop->setAttributeStdset(attributeStdset);
+            }
             break;
         }
         uiLibWarning(msgCannotWriteProperty(pname, v));
-        return 0;
+    } return 0;
     }
     return dom_prop;
 }

@@ -37,35 +37,35 @@ const ClassInfo* InternalFunction::classInfo() const
     return &info;
 }
 
-InternalFunction::InternalFunction(JSGlobalData* globalData, PassRefPtr<Structure> structure, const Identifier& name)
+InternalFunction::InternalFunction(JSGlobalData* globalData, NonNullPassRefPtr<Structure> structure, const Identifier& name)
     : JSObject(structure)
 {
     putDirect(globalData->propertyNames->name, jsString(globalData, name.ustring()), DontDelete | ReadOnly | DontEnum);
 }
 
-const UString& InternalFunction::name(JSGlobalData* globalData)
+const UString& InternalFunction::name(ExecState* exec)
 {
-    return asString(getDirect(globalData->propertyNames->name))->value();
+    return asString(getDirect(exec->globalData().propertyNames->name))->value(exec);
 }
 
-const UString InternalFunction::displayName(JSGlobalData* globalData)
+const UString InternalFunction::displayName(ExecState* exec)
 {
-    JSValue displayName = getDirect(globalData->propertyNames->displayName);
+    JSValue displayName = getDirect(exec->globalData().propertyNames->displayName);
     
-    if (displayName && isJSString(globalData, displayName))
-        return asString(displayName)->value();
+    if (displayName && isJSString(&exec->globalData(), displayName))
+        return asString(displayName)->value(exec);
     
     return UString::null();
 }
 
-const UString InternalFunction::calculatedDisplayName(JSGlobalData* globalData)
+const UString InternalFunction::calculatedDisplayName(ExecState* exec)
 {
-    const UString explicitName = displayName(globalData);
+    const UString explicitName = displayName(exec);
     
     if (!explicitName.isEmpty())
         return explicitName;
     
-    return name(globalData);
+    return name(exec);
 }
 
 } // namespace JSC

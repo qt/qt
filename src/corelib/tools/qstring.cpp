@@ -3827,100 +3827,6 @@ const char *QString::latin1_helper() const
 
 #endif
 
-QT_END_NAMESPACE
-
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-#include "qt_windows.h"
-
-QT_BEGIN_NAMESPACE
-
-QByteArray qt_winQString2MB(const QString& s, int uclen)
-{
-    if (uclen < 0)
-        uclen = s.length();
-    if (s.isNull())
-        return QByteArray();
-    if (uclen == 0)
-        return QByteArray("");
-    return qt_winQString2MB(s.constData(), uclen);
-}
-
-QByteArray qt_winQString2MB(const QChar *ch, int uclen)
-{
-    if (!ch)
-	return QByteArray();
-    if (uclen == 0)
-        return QByteArray("");
-    BOOL used_def;
-    QByteArray mb(4096, 0);
-    int len;
-    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const wchar_t*)ch, uclen,
-                mb.data(), mb.size()-1, 0, &used_def)))
-    {
-        int r = GetLastError();
-        if (r == ERROR_INSUFFICIENT_BUFFER) {
-            mb.resize(1+WideCharToMultiByte(CP_ACP, 0,
-                                (const wchar_t*)ch, uclen,
-                                0, 0, 0, &used_def));
-                // and try again...
-        } else {
-#ifndef QT_NO_DEBUG
-            // Fail.
-            qWarning("WideCharToMultiByte: Cannot convert multibyte text (error %d): %s (UTF-8)",
-                r, QString(ch, uclen).toLocal8Bit().data());
-#endif
-            break;
-        }
-    }
-    mb.resize(len);
-    return mb;
-}
-
-QString qt_winMB2QString(const char *mb, int mblen)
-{
-    if (!mb || !mblen)
-        return QString();
-    const int wclen_auto = 4096;
-    wchar_t wc_auto[wclen_auto];
-    int wclen = wclen_auto;
-    wchar_t *wc = wc_auto;
-    int len;
-    while (!(len=MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-                mb, mblen, wc, wclen)))
-    {
-        int r = GetLastError();
-        if (r == ERROR_INSUFFICIENT_BUFFER) {
-            if (wc != wc_auto) {
-                qWarning("MultiByteToWideChar: Size changed");
-                break;
-            } else {
-                wclen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-                                    mb, mblen, 0, 0);
-                wc = new wchar_t[wclen];
-                // and try again...
-            }
-        } else {
-            // Fail.
-            qWarning("MultiByteToWideChar: Cannot convert multibyte text");
-            break;
-        }
-    }
-    if (len <= 0)
-        return QString();
-    if (wc[len-1] == 0) // len - 1: we don't want terminator
-        --len;
-    QString s((QChar*)wc, len);
-    if (wc != wc_auto)
-        delete [] wc;
-    return s;
-}
-
-QT_END_NAMESPACE
-
-#endif // Q_OS_WIN32
-
-QT_BEGIN_NAMESPACE
-
 /*!
     Returns a QString initialized with the first \a size characters
     of the 8-bit string \a str.
@@ -4814,6 +4720,12 @@ int QString::localeAwareCompare(const QString &other) const
 {
     return localeAwareCompare_helper(constData(), length(), other.constData(), other.length());
 }
+
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+QT_END_NAMESPACE
+#include "qt_windows.h"
+QT_BEGIN_NAMESPACE
+#endif
 
 /*!
     \internal

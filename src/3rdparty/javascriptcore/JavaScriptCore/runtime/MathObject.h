@@ -27,7 +27,7 @@ namespace JSC {
 
     class MathObject : public JSObject {
     public:
-        MathObject(ExecState*, PassRefPtr<Structure>);
+        MathObject(ExecState*, NonNullPassRefPtr<Structure>);
 
         virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
         virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
@@ -37,8 +37,11 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType, HasDefaultMark | HasDefaultGetPropertyNames));
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
         }
+
+    protected:
+        static const unsigned StructureFlags = OverridesGetOwnPropertySlot | JSObject::StructureFlags;
     };
 
 } // namespace JSC

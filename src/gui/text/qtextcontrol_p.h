@@ -62,6 +62,7 @@
 #include <QtCore/qrect.h>
 #include <QtGui/qabstracttextdocumentlayout.h>
 #include <QtGui/qtextdocumentfragment.h>
+#include <QtGui/qclipboard.h>
 
 #ifdef QT3_SUPPORT
 #include <QtGui/qtextobject.h>
@@ -191,7 +192,7 @@ public Q_SLOTS:
 #ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();
-    void paste();
+    void paste(QClipboard::Mode mode = QClipboard::Clipboard);
 #endif
 
     void undo();

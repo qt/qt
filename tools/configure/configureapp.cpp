@@ -2082,12 +2082,10 @@ bool Configure::checkAvailability(const QString &part)
         }
     } else if (part == "WMSDK") {
         available = findFile("wmsdk.h");
-    } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS") {
+    } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS" || part == "DECLARATIVE") {
         available = true;
     } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
-    } else if (part == "DECLARATIVE") {
-        available = QFile::exists(sourcePath + "/src/declarative/qml/qdeclarativecomponent.h");
     } else if (part == "AUDIO_BACKEND") {
         available = true;
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
@@ -2213,7 +2211,7 @@ void Configure::autoDetection()
     if (dictionary["SCRIPT"] == "auto")
         dictionary["SCRIPT"] = checkAvailability("SCRIPT") ? "yes" : "no";
     if (dictionary["SCRIPTTOOLS"] == "auto")
-        dictionary["SCRIPTTOOLS"] = checkAvailability("SCRIPTTOOLS") ? "yes" : "no";
+        dictionary["SCRIPTTOOLS"] = dictionary["SCRIPT"] == "yes" ? "yes" : "no";
     if (dictionary["XMLPATTERNS"] == "auto")
         dictionary["XMLPATTERNS"] = checkAvailability("XMLPATTERNS") ? "yes" : "no";
     if (dictionary["PHONON"] == "auto")
@@ -2221,7 +2219,7 @@ void Configure::autoDetection()
     if (dictionary["WEBKIT"] == "auto")
         dictionary["WEBKIT"] = checkAvailability("WEBKIT") ? "yes" : "no";
     if (dictionary["DECLARATIVE"] == "auto")
-        dictionary["DECLARATIVE"] = checkAvailability("DECLARATIVE") ? "yes" : "no";
+        dictionary["DECLARATIVE"] = dictionary["SCRIPT"] == "yes" ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
         dictionary["AUDIO_BACKEND"] = checkAvailability("AUDIO_BACKEND") ? "yes" : "no";
     if (dictionary["MEDIASERVICE"] == "auto")
@@ -2271,15 +2269,23 @@ bool Configure::verifyConfiguration()
         if(_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
             exit(0);      // Exit cleanly for Ctrl+C
     }
-	if (0 != dictionary["ARM_FPU_TYPE"].size())
-	{
-		QStringList l= QStringList()
-			<< "softvfp"
-			<< "softvfp+vfpv2"
-			<< "vfpv2";
-		if (!(l.contains(dictionary["ARM_FPU_TYPE"])))
-			cout << QString("WARNING: Using unsupported fpu flag: %1").arg(dictionary["ARM_FPU_TYPE"]) << endl;
-	}
+    if (0 != dictionary["ARM_FPU_TYPE"].size()) {
+            QStringList l= QStringList()
+                    << "softvfp"
+                    << "softvfp+vfpv2"
+                    << "vfpv2";
+            if (!(l.contains(dictionary["ARM_FPU_TYPE"])))
+                    cout << QString("WARNING: Using unsupported fpu flag: %1").arg(dictionary["ARM_FPU_TYPE"]) << endl;
+    }
+    if (dictionary["DECLARATIVE"] == "yes" && dictionary["SCRIPT"] == "no") {
+        cout << "WARNING: To be able to compile QtDeclarative we need to also compile the" << endl
+             << "QtScript module. If you continue, we will turn on the QtScript module." << endl
+             << "(Press any key to continue..)";
+        if(_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
+            exit(0);      // Exit cleanly for Ctrl+C
+
+        dictionary["SCRIPT"] = "yes";
+    }
 
     return true;
 }
@@ -2628,8 +2634,14 @@ void Configure::generateOutputVars()
     if (dictionary["WEBKIT"] == "yes")
         qtConfig += "webkit";
 
-    if (dictionary["DECLARATIVE"] == "yes")
+    if (dictionary["DECLARATIVE"] == "yes") {
+        if (dictionary[ "SCRIPT" ] == "no") {
+            cout << "QtDeclarative was requested, but it can't be built due to QtScript being "
+                    "disabled." << endl;
+            dictionary[ "DONE" ] = "error";
+        }
         qtConfig += "declarative";
+    }
 
     if( dictionary[ "NATIVE_GESTURES" ] == "yes" )
         qtConfig += "native-gestures";

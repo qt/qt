@@ -77,7 +77,9 @@ public:
 #endif
           networkSession(0),
           networkAccessEnabled(true),
+#ifdef QT_QNAM_DEFAULT_NETWORK_SESSION
           initializeSession(true),
+#endif
           cookieJarCreated(false)
     { }
     ~QNetworkAccessManagerPrivate();
@@ -124,7 +126,9 @@ public:
     QNetworkSession *networkSession;
     QString networkConfiguration;
     bool networkAccessEnabled;
+#ifdef QT_QNAM_DEFAULT_NETWORK_SESSION
     bool initializeSession;
+#endif
 
     bool cookieJarCreated;
 

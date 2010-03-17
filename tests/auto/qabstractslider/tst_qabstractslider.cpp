@@ -728,7 +728,12 @@ void tst_QAbstractSlider::wheelEvent_data()
                                    << 1                                  // delta
                                    << int(Qt::Vertical)                  // orientation of slider
                                    << int(Qt::Vertical)                  // orientation of wheel
+#ifndef Q_WS_MAC
                                    << 1                                  // expected position after
+#else
+                                   // We don't restrict scrolling to pageStep on Mac
+                                   << 100                                // expected position after
+#endif
                                    << QPoint(1,1);
 
     QTest::newRow("Different orientation") << 0                             // initial position
@@ -742,7 +747,12 @@ void tst_QAbstractSlider::wheelEvent_data()
                                         << 1                             // delta
                                         << int(Qt::Horizontal)           // orientation of slider
                                         << int(Qt::Vertical)             // orientation of wheel
+#ifndef Q_WS_MAC
                                         << 1                             // expected position after
+#else
+                                        // We don't restrict scrolling to pageStep on Mac
+                                        << 100                           // expected position after
+#endif
                                         << QPoint(1,1);
 
     QTest::newRow("Different orientation2")<< 0                             // initial position
@@ -756,7 +766,12 @@ void tst_QAbstractSlider::wheelEvent_data()
                                         << 1                             // delta
                                         << int(Qt::Horizontal)           // orientation of slider
                                         << int(Qt::Vertical)             // orientation of wheel
+#ifndef Q_WS_MAC
                                         << 1                             // expected position after
+#else
+                                        // We don't restrict scrolling to pageStep on Mac
+                                        << 100                           // expected position after
+#endif
                                         << QPoint(0,0);
 
 
