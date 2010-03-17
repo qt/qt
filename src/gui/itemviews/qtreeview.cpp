@@ -1232,17 +1232,17 @@ bool QTreeView::viewportEvent(QEvent *event)
         int oldBranch = d->hoverBranch;
         d->hoverBranch = d->itemDecorationAt(he->pos());
         if (oldBranch != d->hoverBranch) {
-            QModelIndex oldIndex = d->modelIndex(oldBranch),
-                newIndex = d->modelIndex(d->hoverBranch);
-            if (oldIndex != newIndex) {
-                QRect oldRect = visualRect(oldIndex);
-                QRect newRect = visualRect(newIndex);
-                oldRect.setLeft(oldRect.left() - d->indent);
-                newRect.setLeft(newRect.left() - d->indent);
-                //we need to paint the whole items (including the decoration) so that when the user
-                //moves the mouse over those elements they are updated
-                viewport()->update(oldRect);
-                viewport()->update(newRect);
+            //we need to paint the whole items (including the decoration) so that when the user
+            //moves the mouse over those elements they are updated
+            if (oldBranch >= 0) {
+                int y = d->coordinateForItem(oldBranch);
+                int h = d->itemHeight(oldBranch);
+                viewport()->update(QRect(0, y, viewport()->width(), h));
+            }
+            if (d->hoverBranch >= 0) {
+                int y = d->coordinateForItem(d->hoverBranch);
+                int h = d->itemHeight(d->hoverBranch);
+                viewport()->update(QRect(0, y, viewport()->width(), h));
             }
         }
         break; }
