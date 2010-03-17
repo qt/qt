@@ -788,7 +788,7 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
 
     }
     else if (!d->firstRepeat.isValid()) {
-        d->firstRepeat.invalidate()
+        d->firstRepeat.invalidate();
         d->repeatMultiplier = 1;
     }
 
