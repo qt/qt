@@ -74,7 +74,7 @@ exists($${EPOCROOT}epoc32/include/data_caging_paths.prf) {
     BOOTDATA_DIR            = /resource/bootdata
 }
 
-isEmpty(QT_PLUGINS_BASE_DIR): QT_PLUGINS_BASE_DIR = /$$RESOURCE_FILES_DIR/qt/plugins
+isEmpty(QT_PLUGINS_BASE_DIR): QT_PLUGINS_BASE_DIR = /$$RESOURCE_FILES_DIR/qt$${QT_LIBINFIX}/plugins
 isEmpty(HW_ZDIR): HW_ZDIR = epoc32/data/z
 isEmpty(REG_RESOURCE_DIR): REG_RESOURCE_DIR = /private/10003a3f/apps
 isEmpty(REG_RESOURCE_IMPORT_DIR): REG_RESOURCE_IMPORT_DIR = /private/10003a3f/import/apps

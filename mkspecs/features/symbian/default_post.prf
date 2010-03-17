@@ -5,7 +5,7 @@ contains(TEMPLATE, ".*app") {
         QMAKE_LIBS +=
     } else:contains(QT, gui):contains(CONFIG,qt) {
         S60MAIN_LIBS = -leuser
-        QMAKE_LIBS += -lqtmain.lib $$S60MAIN_LIBS
+        QMAKE_LIBS += -lqtmain$${QT_LIBINFIX}.lib $$S60MAIN_LIBS
     } else {
         QMAKE_LIBS += $$QMAKE_LIBS_QT_ENTRY
     }
