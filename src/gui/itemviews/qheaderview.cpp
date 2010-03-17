@@ -1698,13 +1698,10 @@ void QHeaderView::sectionsInserted(const QModelIndex &parent,
     if (!d->sectionHidden.isEmpty()) {
         QBitArray sectionHidden(d->sectionHidden);
         sectionHidden.resize(sectionHidden.count() + insertCount);
-        //sectionHidden.fill(false, logicalFirst, logicalLast + 1);
-        for (int i = logicalFirst; i <= logicalLast; ++i)
-            // visual == logical in this range (see previous block)
-            sectionHidden.setBit(i, false);
+        sectionHidden.fill(false, logicalFirst, logicalLast + 1);
         for (int j = logicalLast + 1; j < sectionHidden.count(); ++j)
-            sectionHidden.setBit(d->visualIndex(j),
-                    d->sectionHidden.testBit(d->visualIndex(j - insertCount)));
+            //here we simply copy the old sectionHidden
+            sectionHidden.setBit(j, d->sectionHidden.testBit(j - insertCount));
         d->sectionHidden = sectionHidden;
     }
 
