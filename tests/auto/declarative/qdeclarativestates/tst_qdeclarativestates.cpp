@@ -955,12 +955,12 @@ void tst_qdeclarativestates::reset()
 
     QDeclarativeText *text = rect->findChild<QDeclarativeText*>();
     QVERIFY(text != 0);
-    QCOMPARE(text->width(), qreal(50.));
+    QCOMPARE(text->width(), qreal(40.));
     QVERIFY(text->width() < text->height());
 
     rect->setState("state1");
 
-    QVERIFY(text->width() > 51);
+    QVERIFY(text->width() > 41);
     QVERIFY(text->width() > text->height());
 }
 
