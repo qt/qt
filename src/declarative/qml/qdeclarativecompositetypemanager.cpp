@@ -511,22 +511,6 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
     int waiting = 0;
 
 
-    /*
-     For local urls, add an implicit import "." to the beginning of a file. This will trigger
-     the loading of the qmldir and the import of any native types from available plugins.
-     */
-    QUrl baseUrl = unit->imports.baseUrl();
-    if (!toLocalFileOrQrc(baseUrl).isEmpty()) {
-        QDeclarativeEnginePrivate::get(engine)->
-                addToImport(&unit->imports,
-                            QString(),
-                            QLatin1String("."),
-                            QString(),
-                            -1, -1,
-                            QDeclarativeScriptParser::Import::File);
-
-    }
-
 
     foreach (QDeclarativeScriptParser::Import imp, unit->data.imports()) {
         QString qmldircontentnetwork;
@@ -567,6 +551,27 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             return 0;
         }
     }
+
+    /*
+     For local urls, add an implicit import "." as first lookup. This will also trigger
+     the loading of the qmldir and the import of any native types from available plugins.
+     */
+    {
+
+        QString qmldircontentnetwork;
+        if (QDeclarativeCompositeTypeResource *resource
+            = resources.value(unit->imports.baseUrl().resolved(QUrl(QLatin1String("./qmldir")))))
+            qmldircontentnetwork = QString::fromUtf8(resource->data);
+
+        QDeclarativeEnginePrivate::get(engine)->
+                addToImport(&unit->imports,
+                            qmldircontentnetwork,
+                            QLatin1String("."),
+                            QString(),
+                            -1, -1,
+                            QDeclarativeScriptParser::Import::File);
+    }
+
 
     QList<QDeclarativeScriptParser::TypeReference*> types = unit->data.referencedTypes();
 

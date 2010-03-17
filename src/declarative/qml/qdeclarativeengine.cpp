@@ -1587,6 +1587,8 @@ public:
             }
 
             url = base.resolved(QUrl(url)).toString();
+            if (url.endsWith(QLatin1Char('/')))
+                url.chop(1);
         }
 
         s->uris.prepend(uri);
@@ -1623,6 +1625,11 @@ public:
             }
 
         }
+
+
+        /* now comes really nasty code. It makes "private" types load in the remote case, but
+           it does this by breaking the import order. This must go. Instead private types must
+           be marked private in the qmldir. */
         if (url_return) {
             *url_return = base.resolved(QUrl(QString::fromUtf8(type + ".qml")));
             return true;
