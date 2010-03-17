@@ -825,7 +825,9 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
     if (isCustomParser && !customProps.isEmpty()) {
         QDeclarativeCustomParser *cp = output->types.at(obj->type).type->customParser();
         cp->clearErrors();
+        cp->compiler = this;
         obj->custom = cp->compile(customProps);
+        cp->compiler = 0;
         foreach (QDeclarativeError err, cp->errors()) {
             err.setUrl(output->url);
             exceptions << err;
@@ -2182,6 +2184,27 @@ bool QDeclarativeCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop
     *isAssignment = true;
 
     return true;
+}
+
+// Similar logic to above, but not knowing target property.
+int QDeclarativeCompiler::evaluateEnum(const QByteArray& script) const
+{
+    int dot = script.find('.');
+    if (dot > 0) {
+        QDeclarativeType *type = 0;
+        QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, script.left(dot), &type, 0, 0, 0, 0);
+        if (!type)
+            return -1;
+        const QMetaObject *mo = type->metaObject();
+        const char *key = script.constData() + dot+1;
+        int i = mo->enumeratorCount();
+        while (i--) {
+            int v = mo->enumerator(i).keyToValue(key);
+            if (v >= 0)
+                return v;
+        }
+    }
+    return -1;
 }
 
 // Ensures that the dynamic meta specification on obj is valid
