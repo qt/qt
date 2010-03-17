@@ -50,8 +50,7 @@ Component {
 
             Tag {
                 anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom
-                frontLabel: tag; backLabel: "Delete"; rotation: Math.random() * (2 * 6 + 1) - 6
-                flipped: mainWindow.editMode
+                frontLabel: tag; backLabel: "Delete"; flipped: mainWindow.editMode
             }
 
             MouseArea {
@@ -77,7 +76,7 @@ Component {
                 PropertyChanges { target: photosGridView; interactive: false }
                 PropertyChanges { target: photosListView; interactive: true }
                 PropertyChanges { target: photosShade; opacity: 1 }
-                PropertyChanges { target: backButton; y: -backTag.height - 8 }
+                PropertyChanges { target: backButton; y: -backButton.height - 8 }
             }
             ]
 
