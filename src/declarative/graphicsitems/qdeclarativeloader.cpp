@@ -155,6 +155,8 @@ void QDeclarativeLoaderPrivate::initResize()
 QDeclarativeLoader::QDeclarativeLoader(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeLoaderPrivate), parent)
 {
+    Q_D(QDeclarativeItem);
+    d->flags |= QGraphicsItem::ItemIsFocusScope;
 }
 
 /*!
@@ -273,7 +275,7 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
 
     if (component) {
         QDeclarativeContext *ctxt = new QDeclarativeContext(qmlContext(q));
-        ctxt->addDefaultObject(q);
+        ctxt->setContextObject(q);
 
         if (!component->errors().isEmpty()) {
             qWarning() << component->errors();
@@ -346,12 +348,13 @@ QDeclarativeLoader::Status QDeclarativeLoader::status() const
 }
 
 /*!
-    \qmlproperty real Loader::progress
+\qmlproperty real Loader::progress
 
-    This property holds the progress of QML data loading, from 0.0 (nothing loaded)
-    to 1.0 (finished).
+This property holds the progress of loading QML data from the network, from
+0.0 (nothing loaded) to 1.0 (finished).  Most QML files are quite small, so
+this value will rapidly change from 0 to 1.
 
-    \sa status
+\sa status
 */
 qreal QDeclarativeLoader::progress() const
 {

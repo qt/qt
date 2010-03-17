@@ -48,11 +48,16 @@
 #include <private/qdeclarativejsast_p.h>
 #include <private/qdeclarativejsengine_p.h>
 #include <private/qdeclarativeexpression_p.h>
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qnumeric.h>
 #include <private/qdeclarativeanchors_p_p.h>
+#include <private/qdeclarativeglobal_p.h>
 
 QT_BEGIN_NAMESPACE
+
+DEFINE_BOOL_CONFIG_OPTION(qmlExperimental, QML_EXPERIMENTAL);
+DEFINE_BOOL_CONFIG_OPTION(qmlDisableOptimizer, QML_DISABLE_OPTIMIZER);
 
 using namespace QDeclarativeJS;
 
@@ -124,24 +129,7 @@ public:
         QDeclarativeCompiledBindingsPrivate *parent;
     };
 
-    struct Subscription {
-        struct Signal {
-            QDeclarativeGuard<QObject> source;
-            int notifyIndex;
-        };
-
-        enum { InvalidType, SignalType, IdType } type;
-        inline Subscription();
-        inline ~Subscription();
-        bool isSignal() const { return type == SignalType; }
-        bool isId() const { return type == IdType; }
-        inline Signal *signal();
-        inline QDeclarativeContextPrivate::IdNotifier *id();
-        union {
-            char signalData[sizeof(Signal)];
-            char idData[sizeof(QDeclarativeContextPrivate::IdNotifier)];
-        };
-    };
+    typedef QDeclarativeNotifierEndpoint Subscription;
     Subscription *subscriptions;
     QScriptDeclarativeClass::PersistentIdentifier *identifiers;
 
@@ -154,18 +142,18 @@ public:
     static int methodCount;
 
     void init();
-    void run(int instr, QDeclarativeContextPrivate *context, 
+    void run(int instr, QDeclarativeContextData *context, 
              QDeclarativeDelayedError *error, QObject *scope, QObject *output);
 
 
     inline void unsubscribe(int subIndex);
-    inline void subscribeId(QDeclarativeContextPrivate *p, int idIndex, int subIndex);
+    inline void subscribeId(QDeclarativeContextData *p, int idIndex, int subIndex);
     inline void subscribe(QObject *o, int notifyIndex, int subIndex);
 
     QDeclarativePropertyCache::Data *findproperty(QObject *obj, 
-                                         const QScriptDeclarativeClass::Identifier &name,
-                                         QDeclarativeEnginePrivate *enginePriv, 
-                                         QDeclarativePropertyCache::Data &local);
+                                                  const QScriptDeclarativeClass::Identifier &name,
+                                                  QDeclarativeEnginePrivate *enginePriv, 
+                                                  QDeclarativePropertyCache::Data &local);
     bool findproperty(QObject *obj, 
                       Register *output, 
                       QDeclarativeEnginePrivate *enginePriv,
@@ -174,7 +162,7 @@ public:
                       bool isTerminal);
     void findgeneric(Register *output,                                 // value output
                      int subIdx,                                       // Subscription index in config
-                     QDeclarativeContextPrivate *context,                       // Context to search in
+                     QDeclarativeContextData *context,                 // Context to search in
                      const QScriptDeclarativeClass::Identifier &name, 
                      bool isTerminal);
 };
@@ -190,21 +178,9 @@ QDeclarativeCompiledBindingsPrivate::~QDeclarativeCompiledBindingsPrivate()
     delete [] identifiers; identifiers = 0;
 }
 
-QDeclarativeCompiledBindingsPrivate::Subscription::Subscription()
-: type(InvalidType)
-{
-}
-
-QDeclarativeCompiledBindingsPrivate::Subscription::~Subscription()
-{
-    if (type == SignalType) ((Signal *)signalData)->~Signal();
-    else if (type == IdType) ((QDeclarativeContextPrivate::IdNotifier *)idData)->~IdNotifier();
-}
-
-
 int QDeclarativeCompiledBindingsPrivate::methodCount = -1;
 
-QDeclarativeCompiledBindings::QDeclarativeCompiledBindings(const char *program, QDeclarativeContext *context)
+QDeclarativeCompiledBindings::QDeclarativeCompiledBindings(const char *program, QDeclarativeContextData *context)
 : QObject(*(new QDeclarativeCompiledBindingsPrivate))
 {
     Q_D(QDeclarativeCompiledBindings);
@@ -248,7 +224,6 @@ void QDeclarativeCompiledBindingsPrivate::Binding::setEnabled(bool e, QDeclarati
 {
     if (e) {
         addToObject(target);
-        update(flags);
     } else {
         removeFromObject();
     }
@@ -303,47 +278,51 @@ void QDeclarativeCompiledBindingsPrivate::run(Binding *binding)
 
     if (!binding->enabled)
         return;
-    if (binding->updating)
-        qWarning("ERROR: Circular binding");
 
-    QDeclarativeContext *context = q->QDeclarativeAbstractExpression::context();
+    QDeclarativeContextData *context = q->QDeclarativeAbstractExpression::context();
     if (!context) {
         qWarning("QDeclarativeCompiledBindings: Attempted to evaluate an expression in an invalid context");
         return;
     }
-    QDeclarativeContextPrivate *cp = QDeclarativeContextPrivate::get(context);
 
+    if (!context->engine)
+        return;
+
+    if (binding->updating) {
+        QString name;
+        if (binding->property & 0xFFFF0000) {
+            QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine);
+
+            QDeclarativeValueType *vt = ep->valueTypes[(binding->property >> 16) & 0xFF];
+            Q_ASSERT(vt);
+
+            name = QLatin1String(binding->target->metaObject()->property(binding->property & 0xFFFF).name());
+            name.append(QLatin1String("."));
+            name.append(QLatin1String(vt->metaObject()->property(binding->property >> 24).name()));
+        } else {
+            name = QLatin1String(binding->target->metaObject()->property(binding->property).name());
+        }
+        qmlInfo(binding->target) << QCoreApplication::translate("QDeclarativeCompiledBindings", "Binding loop detected for property \"%1\"").arg(name);
+        return;
+    }
+
+    binding->updating = true;
     if (binding->property & 0xFFFF0000) {
-        QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(cp->engine);
+        QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine);
 
         QDeclarativeValueType *vt = ep->valueTypes[(binding->property >> 16) & 0xFF];
         Q_ASSERT(vt);
         vt->read(binding->target, binding->property & 0xFFFF);
 
         QObject *target = vt;
-        run(binding->index, cp, binding, binding->scope, target);
+        run(binding->index, context, binding, binding->scope, target);
 
         vt->write(binding->target, binding->property & 0xFFFF, 
                   QDeclarativePropertyPrivate::DontRemoveBinding);
     } else {
-        run(binding->index, cp, binding, binding->scope, binding->target);
+        run(binding->index, context, binding, binding->scope, binding->target);
     }
-}
-
-QDeclarativeCompiledBindingsPrivate::Subscription::Signal *QDeclarativeCompiledBindingsPrivate::Subscription::signal() 
-{
-    if (type == IdType) ((QDeclarativeContextPrivate::IdNotifier *)idData)->~IdNotifier();
-    if (type != SignalType) new (signalData) Signal;
-    type = SignalType;
-    return (Signal *)signalData;
-}
-
-QDeclarativeContextPrivate::IdNotifier *QDeclarativeCompiledBindingsPrivate::Subscription::id()
-{
-    if (type == SignalType) ((Signal *)signalData)->~Signal();
-    if (type != IdType) new (idData) QDeclarativeContextPrivate::IdNotifier;
-    type = IdType;
-    return (QDeclarativeContextPrivate::IdNotifier *)idData;
+    binding->updating = false;
 }
 
 namespace {
@@ -653,26 +632,11 @@ struct QDeclarativeBindingCompilerPrivate
 
 void QDeclarativeCompiledBindingsPrivate::unsubscribe(int subIndex)
 {
-    Q_Q(QDeclarativeCompiledBindings);
-
     QDeclarativeCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
-    if (sub->isSignal()) {
-        QDeclarativeCompiledBindingsPrivate::Subscription::Signal *s = sub->signal();
-        if (s->source)
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
-            QMetaObject::disconnectOne(s->source, s->notifyIndex, 
-                                       q, methodCount + subIndex);
-#else
-            // QTBUG-6781
-            QMetaObject::disconnect(s->source, s->notifyIndex, 
-                                    q, methodCount + subIndex);
-#endif
-    } else if (sub->isId()) {
-        sub->id()->clear();
-    }
+    sub->disconnect();
 }
 
-void QDeclarativeCompiledBindingsPrivate::subscribeId(QDeclarativeContextPrivate *p, int idIndex, int subIndex)
+void QDeclarativeCompiledBindingsPrivate::subscribeId(QDeclarativeContextData *p, int idIndex, int subIndex)
 {
     Q_Q(QDeclarativeCompiledBindings);
 
@@ -680,15 +644,9 @@ void QDeclarativeCompiledBindingsPrivate::subscribeId(QDeclarativeContextPrivate
 
     if (p->idValues[idIndex]) {
         QDeclarativeCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
-        QDeclarativeContextPrivate::IdNotifier *i = sub->id();
-
-        i->next = p->idValues[idIndex].bindings;
-        i->prev = &p->idValues[idIndex].bindings;
-        p->idValues[idIndex].bindings = i;
-        if (i->next) i->next->prev = &i->next;
-
-        i->target = q;
-        i->methodIndex = methodCount + subIndex;
+        sub->target = q;
+        sub->targetMethod = methodCount + subIndex;
+        sub->connect(&p->idValues[idIndex].bindings);
     }
 }
  
@@ -697,27 +655,12 @@ void QDeclarativeCompiledBindingsPrivate::subscribe(QObject *o, int notifyIndex,
     Q_Q(QDeclarativeCompiledBindings);
 
     QDeclarativeCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
-    
-    if (sub->isId())
-        unsubscribe(subIndex);
-
-    QDeclarativeCompiledBindingsPrivate::Subscription::Signal *s = sub->signal();
-    if (o != s->source || notifyIndex != s->notifyIndex)  {
-        if (s->source)
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
-            QMetaObject::disconnectOne(s->source, s->notifyIndex, 
-                                       q, methodCount + subIndex);
-#else
-            // QTBUG-6781
-            QMetaObject::disconnect(s->source, s->notifyIndex, 
-                                    q, methodCount + subIndex);
-#endif
-        s->source = o;
-        s->notifyIndex = notifyIndex;
-        if (s->source && s->notifyIndex != -1) 
-            QMetaObject::connect(s->source, s->notifyIndex, q,
-                                 methodCount + subIndex, Qt::DirectConnection);
-    } 
+    sub->target = q;
+    sub->targetMethod = methodCount + subIndex; 
+    if (o)
+        sub->connect(o, notifyIndex);
+    else
+        sub->disconnect();
 }
 
 // Conversion functions - these MUST match the QtScript expression path
@@ -767,7 +710,7 @@ inline static bool toBool(Register *reg, int type, bool *ok = 0)
     }
 }
 
-inline static QUrl toUrl(Register *reg, int type, QDeclarativeContextPrivate *context, bool *ok = 0)
+inline static QUrl toUrl(Register *reg, int type, QDeclarativeContextData *context, bool *ok = 0)
 {
     if (ok) *ok = true;
 
@@ -811,9 +754,9 @@ static QObject *variantToQObject(const QVariant &value, bool *ok)
 }
 
 bool QDeclarativeCompiledBindingsPrivate::findproperty(QObject *obj, Register *output, 
-                                              QDeclarativeEnginePrivate *enginePriv,
-                                              int subIdx, const QScriptDeclarativeClass::Identifier &name,
-                                              bool isTerminal)
+                                                       QDeclarativeEnginePrivate *enginePriv,
+                                                       int subIdx, const QScriptDeclarativeClass::Identifier &name,
+                                                       bool isTerminal)
 {
     if (!obj) {
         output->setUndefined();
@@ -884,10 +827,10 @@ bool QDeclarativeCompiledBindingsPrivate::findproperty(QObject *obj, Register *o
 }
 
 void QDeclarativeCompiledBindingsPrivate::findgeneric(Register *output, 
-                                             int subIdx,      
-                                             QDeclarativeContextPrivate *context,
-                                             const QScriptDeclarativeClass::Identifier &name, 
-                                             bool isTerminal)
+                                                      int subIdx,      
+                                                      QDeclarativeContextData *context,
+                                                      const QScriptDeclarativeClass::Identifier &name, 
+                                                      bool isTerminal)
 {
     QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(context->engine);
 
@@ -898,14 +841,17 @@ void QDeclarativeCompiledBindingsPrivate::findgeneric(Register *output,
 
         if (contextPropertyIndex != -1) {
 
-            if (subIdx != -1) 
-                subscribe(QDeclarativeContextPrivate::get(context), contextPropertyIndex + context->notifyIndex, subIdx);
-
             if (contextPropertyIndex < context->idValueCount) {
                 output->setQObject(context->idValues[contextPropertyIndex]);
                 output->settype(QMetaType::QObjectStar);
+
+                if (subIdx != -1) 
+                    subscribeId(context, contextPropertyIndex, subIdx);
+
             } else {
-                const QVariant &value = context->propertyValues.at(contextPropertyIndex);
+                QDeclarativeContextPrivate *cp = context->asQDeclarativeContextPrivate();
+                const QVariant &value = cp->propertyValues.at(contextPropertyIndex);
+
                 if (isTerminal) {
                     new (output->typeDataPtr()) QVariant(value);
                     output->settype(qMetaTypeId<QVariant>());
@@ -916,6 +862,11 @@ void QDeclarativeCompiledBindingsPrivate::findgeneric(Register *output,
                     else { output->settype(QMetaType::QObjectStar); }
                     return;
                 }
+
+                if (subIdx != -1) 
+                    subscribe(context->asQDeclarativeContext(), contextPropertyIndex + cp->notifyIndex, subIdx);
+
+
             }
 
             return;
@@ -928,18 +879,14 @@ void QDeclarativeCompiledBindingsPrivate::findgeneric(Register *output,
             }
         }
 
-        if (QObject *root = context->defaultObjects.isEmpty()?0:context->defaultObjects.first()) {
+        if (QObject *root = context->contextObject) {
 
             if (findproperty(root, output, enginePriv, subIdx, name, isTerminal))
                 return;
 
         }
 
-        if (context->parent) {
-            context = QDeclarativeContextPrivate::get(context->parent);
-        } else {
-            context = 0;
-        }
+        context = context->parent;
     }
 
     output->setUndefined();
@@ -958,7 +905,7 @@ void QDeclarativeCompiledBindingsPrivate::init()
 }
 
 static void throwException(int id, QDeclarativeDelayedError *error, 
-                           Program *program, QDeclarativeContextPrivate *context,
+                           Program *program, QDeclarativeContextData *context,
                            const QString &description = QString())
 {
     error->error.setUrl(context->url);
@@ -1120,8 +1067,8 @@ static void dumpInstruction(const Instr *instr)
 }
 
 void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
-                                     QDeclarativeContextPrivate *context, QDeclarativeDelayedError *error,
-                                     QObject *scope, QObject *output)
+                                              QDeclarativeContextData *context, QDeclarativeDelayedError *error,
+                                              QObject *scope, QObject *output)
 {
     error->removeError();
 
@@ -1169,7 +1116,7 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         break;
 
     case Instr::LoadRoot:
-        registers[instr->load.reg].setQObject(context->defaultObjects.at(0));
+        registers[instr->load.reg].setQObject(context->contextObject);
         break;
 
     case Instr::LoadAttached:
@@ -1455,7 +1402,7 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         // name is not present in the current context or it would have been
         // found during the static compile
         findgeneric(registers + instr->find.reg, instr->find.subscribeIndex, 
-                    QDeclarativeContextPrivate::get(context->parent),
+                    context->parent,
                     identifiers[instr->find.name].identifier, 
                     instr->common.type == Instr::FindGenericTerminal);
         break;
@@ -1612,6 +1559,9 @@ bool QDeclarativeBindingCompilerPrivate::compile(QDeclarativeJS::AST::Node *node
         return false;
 
     if (type.unknownType) {
+        if (!qmlExperimental())
+            return false;
+
         if (destination->type != QMetaType::QReal &&
             destination->type != QVariant::String &&
             destination->type != QMetaType::Bool &&
@@ -1895,7 +1845,7 @@ bool QDeclarativeBindingCompilerPrivate::parseName(AST::Node *node, Result &type
 
                     if (!fetch(type, component->metaObject(), reg, d1Idx, subscribeName, nameNodes.at(ii)))
                         return false;
-                } else {
+                } else if (qmlExperimental()) {
                     Instr find;
                     if (nameParts.count() == 1)
                         find.common.type = Instr::FindGenericTerminal;
@@ -2051,7 +2001,11 @@ bool QDeclarativeBindingCompilerPrivate::numberArith(Result &type, const Result 
 
     int lhsTmp = -1;
     int rhsTmp = -1;
+
     if (lhs.unknownType) {
+        if (!qmlExperimental())
+            return false;
+
         lhsTmp = acquireReg();
 
         Instr conv;
@@ -2062,6 +2016,9 @@ bool QDeclarativeBindingCompilerPrivate::numberArith(Result &type, const Result 
     }
 
     if (rhs.unknownType) {
+        if (!qmlExperimental())
+            return false;
+
         rhsTmp = acquireReg();
 
         Instr conv;
@@ -2107,6 +2064,9 @@ bool QDeclarativeBindingCompilerPrivate::stringArith(Result &type, const Result 
     int rhsTmp = -1;
 
     if (lhs.unknownType) {
+        if (!qmlExperimental())
+            return false;
+
         lhsTmp = acquireReg(Instr::CleanupString);
 
         Instr convert;
@@ -2117,6 +2077,9 @@ bool QDeclarativeBindingCompilerPrivate::stringArith(Result &type, const Result 
     }
 
     if (rhs.unknownType) {
+        if (!qmlExperimental())
+            return false;
+
         rhsTmp = acquireReg(Instr::CleanupString);
 
         Instr convert;
@@ -2636,6 +2599,12 @@ bool QDeclarativeBindingCompiler::isValid() const
 int QDeclarativeBindingCompiler::compile(const Expression &expression, QDeclarativeEnginePrivate *engine)
 {
     if (!expression.expression.asAST()) return false;
+
+    if (!qmlExperimental() && expression.property->isValueTypeSubProperty)
+        return -1;
+
+    if (qmlDisableOptimizer())
+        return -1;
 
     d->context = expression.context;
     d->component = expression.component;

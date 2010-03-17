@@ -264,6 +264,7 @@ void QDeclarativeFlickablePrivate::fixupY()
 
 void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal maxExtent)
 {
+    Q_Q(QDeclarativeFlickable);
     if (data.move.value() > minExtent || maxExtent > minExtent) {
         timeline.reset(data.move);
         if (data.move.value() != minExtent) {
@@ -273,6 +274,7 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
                 timeline.move(data.move, minExtent, QEasingCurve(QEasingCurve::OutQuint), 3*fixupDuration/4);
             } else {
                 data.move.setValue(minExtent);
+                q->viewportMoved();
             }
         }
         //emit flickingChanged();
@@ -284,6 +286,7 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
             timeline.move(data.move, maxExtent, QEasingCurve(QEasingCurve::OutQuint), 3*fixupDuration/4);
         } else {
             data.move.setValue(maxExtent);
+            q->viewportMoved();
         }
         //emit flickingChanged();
     } else {

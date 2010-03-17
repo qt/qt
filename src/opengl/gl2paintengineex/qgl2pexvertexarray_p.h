@@ -132,6 +132,11 @@ public:
 
     }
 
+    inline void addVertex(const GLfloat x, const GLfloat y)
+    {
+        vertexArray.add(QGLPoint(x, y));
+    }
+
     void addPath(const QVectorPath &path, GLfloat curveInverseScale, bool outline = true);
     void clear();
 

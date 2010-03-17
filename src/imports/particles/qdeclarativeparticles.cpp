@@ -41,13 +41,12 @@
 
 #include "qdeclarativeparticles_p.h"
 
-#include "qdeclarativeitem_p.h"
+#include <private/qdeclarativeitem_p.h>
 
-#include <qdeclarativepixmapcache_p.h>
-#include <qfxperf_p_p.h>
-#include <qdeclarativeanimation_p_p.h>
+#include <private/qdeclarativepixmapcache_p.h>
+#include <private/qfxperf_p_p.h>
+#include <QtCore/QAbstractAnimation>
 
-#include <QNetworkReply>
 #include <QPainter>
 #include <QtGui/qdrawutil.h>
 #include <QVarLengthArray>
@@ -412,6 +411,20 @@ public:
     QDeclarativeParticlesPrivate* d;
 };
 
+//an animation that just gives a tick
+template<class T, void (T::*method)(int)>
+class TickAnimationProxy : public QAbstractAnimation
+{
+public:
+    TickAnimationProxy(T *p, QObject *parent = 0) : QAbstractAnimation(parent), m_p(p) {}
+    virtual int duration() const { return -1; }
+protected:
+    virtual void updateCurrentTime(int msec) { (m_p->*method)(msec); }
+
+private:
+    T *m_p;
+};
+
 //---------------------------------------------------------------------------
 class QDeclarativeParticlesPrivate : public QDeclarativeItemPrivate
 {
@@ -464,7 +477,7 @@ public:
 
     QList<QPair<int, int> > bursts;//countLeft, emissionRate pairs
     QList<QDeclarativeParticle> particles;
-    QTickAnimationProxy<QDeclarativeParticlesPrivate, &QDeclarativeParticlesPrivate::tick> clock;
+    TickAnimationProxy<QDeclarativeParticlesPrivate, &QDeclarativeParticlesPrivate::tick> clock;
 
 };
 

@@ -1245,7 +1245,7 @@ void QDeclarativeXMLHttpRequest::finished()
     if (m_redirectCount < XMLHTTPREQUEST_MAXIMUM_REDIRECT_RECURSION) {
         QVariant redirect = m_network->attribute(QNetworkRequest::RedirectionTargetAttribute);
         if (redirect.isValid()) {
-            QUrl url = redirect.toUrl();
+            QUrl url = m_network->url().resolved(redirect.toUrl());
             destroyNetwork();
             requestFromUrl(url);
             return;

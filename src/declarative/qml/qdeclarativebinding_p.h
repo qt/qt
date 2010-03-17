@@ -74,6 +74,9 @@ public:
 
     virtual QString expression() const;
 
+    enum Type { PropertyBinding, ValueTypeProxy };
+    virtual Type bindingType() const { return PropertyBinding; }
+
     void setEnabled(bool e) { setEnabled(e, QDeclarativePropertyPrivate::DontRemoveBinding); }
     virtual void setEnabled(bool, QDeclarativePropertyPrivate::WriteFlags) = 0;
     virtual int propertyIndex() = 0;
@@ -92,11 +95,36 @@ private:
     friend class QDeclarativeProperty;
     friend class QDeclarativePropertyPrivate;
     friend class QDeclarativeVME;
+    friend class QDeclarativeValueTypeProxyBinding;
 
     QObject *m_object;
     QDeclarativeAbstractBinding **m_mePtr;
     QDeclarativeAbstractBinding **m_prevBinding;
     QDeclarativeAbstractBinding  *m_nextBinding;
+};
+
+class QDeclarativeValueTypeProxyBinding : public QDeclarativeAbstractBinding
+{
+public:
+    QDeclarativeValueTypeProxyBinding(QObject *o, int coreIndex);
+    virtual ~QDeclarativeValueTypeProxyBinding();
+
+    virtual Type bindingType() const { return ValueTypeProxy; }
+
+    virtual void setEnabled(bool, QDeclarativePropertyPrivate::WriteFlags);
+    virtual int propertyIndex();
+    virtual void update(QDeclarativePropertyPrivate::WriteFlags);
+
+    QDeclarativeAbstractBinding *binding(int propertyIndex);
+
+private:
+    void recursiveEnable(QDeclarativeAbstractBinding *, QDeclarativePropertyPrivate::WriteFlags);
+    void recursiveDisable(QDeclarativeAbstractBinding *);
+
+    friend class QDeclarativeAbstractBinding;
+    QObject *m_object;
+    int m_index;
+    QDeclarativeAbstractBinding *m_bindings;
 };
 
 class QDeclarativeContext;
@@ -106,8 +134,9 @@ class Q_DECLARATIVE_EXPORT QDeclarativeBinding : public QDeclarativeExpression, 
 Q_OBJECT
 public:
     QDeclarativeBinding(const QString &, QObject *, QDeclarativeContext *, QObject *parent=0);
-    QDeclarativeBinding(void *, QDeclarativeRefCount *, QObject *, QDeclarativeContext *, const QString &, int, 
-               QObject *parent);
+    QDeclarativeBinding(const QString &, QObject *, QDeclarativeContextData *, QObject *parent=0);
+    QDeclarativeBinding(void *, QDeclarativeRefCount *, QObject *, QDeclarativeContextData *, 
+                        const QString &, int, QObject *parent);
     ~QDeclarativeBinding();
 
     void setTarget(const QDeclarativeProperty &);
