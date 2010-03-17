@@ -737,37 +737,22 @@ void QCoreWlanEngine::getUserConfigurations()
         CWInterface *wifiInterface = [CWInterface interfaceWithName: [wifiInterfaces objectAtIndex:row]];
 
 // add user configured system networks
-        NSString *filePath = @"/Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist";
-        NSDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
-        NSString *input = @"KnownNetworks";
-        NSString *ssidStr = @"SSID_STR";
+        SCDynamicStoreRef dynRef = SCDynamicStoreCreate(kCFAllocatorSystemDefault, (CFStringRef)@"Qt corewlan", nil, nil);
+        CFDictionaryRef airportPlist = (const __CFDictionary*)SCDynamicStoreCopyValue(dynRef, (CFStringRef)[NSString stringWithFormat:@"Setup:/Network/Interface/%@/AirPort", [wifiInterface name]]);
+        CFRelease(dynRef);
 
-        for (id key in plistDict) {
-            if ([input isEqualToString:key]) {
+        NSDictionary *prefNetDict = [airportPlist objectForKey:@"PreferredNetworks"];
 
-                NSDictionary *knownNetworksDict = [plistDict objectForKey:key];
-                for (id networkKey in knownNetworksDict) {
-
-                    NSDictionary *itemDict = [knownNetworksDict objectForKey:networkKey];
-                    NSInteger dictSize = [itemDict count];
-                    id objects[dictSize];
-                    id keys[dictSize];
-
-                    [itemDict getObjects:objects andKeys:keys];
-
-                    for(int i = 0; i < dictSize; i++) {
-                        if([ssidStr isEqualToString:keys[i]]) {
-                            QString thisSsid = qt_mac_NSStringToQString(objects[i]);
-                            if(!userProfiles.contains(thisSsid)) {
-                                QMap <QString,QString> map;
-                                map.insert(thisSsid, qt_mac_NSStringToQString([wifiInterface name]));
-                                userProfiles.insert(thisSsid, map);
-                            }
-                        }
-                    }
-                }
+        NSArray *thisSsidarray = [prefNetDict valueForKey:@"SSID_STR"];
+        for(NSString *ssidkey in thisSsidarray) {
+            QString thisSsid = qt_mac_NSStringToQString(ssidkey);
+            if(!userProfiles.contains(thisSsid)) {
+                QMap <QString,QString> map;
+                map.insert(thisSsid, qt_mac_NSStringToQString([wifiInterface name]));
+                userProfiles.insert(thisSsid, map);
             }
         }
+        CFRelease(airportPlist);
 
         // 802.1X user profiles
         QString userProfilePath = QDir::homePath() + "/Library/Preferences/com.apple.eap.profiles.plist";
