@@ -54,8 +54,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-struct QDeclarativeAnchorsPrivate;
-class QDeclarativeAnchorLine;
+class QDeclarativeAnchorsPrivate;
+struct QDeclarativeAnchorLine;
 class Q_DECLARATIVE_EXPORT QDeclarativeAnchors : public QObject
 {
     Q_OBJECT
