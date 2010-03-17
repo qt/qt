@@ -410,6 +410,7 @@ Option::init(int argc, char **argv)
     Option::res_ext = ".res";
 #else
     Option::dirlist_sep = ":";
+    Option::shellPath = QStringList("sh");
 #endif
     Option::sysenv_mod = "QMAKE_ENV_";
     Option::field_sep = ' ';

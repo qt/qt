@@ -29,3 +29,20 @@ contains(TEMPLATE, lib): {
 contains(TEMPLATE, ".*app"):contains(QT, gui):contains(CONFIG,qt) {
     load(application_icon.prf)
 }
+
+isEmpty(TARGET.UID3):TARGET.UID3 = $$generate_uid("$${OUT_PWD}/$${TARGET}")
+isEmpty(TARGET.UID2) {
+    contains(CONFIG, stdbinary) {
+        TARGET.UID2 = 0x20004C45
+    } else {
+        contains(TEMPLATE, app) {
+            contains(QT, gui) {
+                TARGET.UID2 = 0x100039CE
+            } else {
+                TARGET.UID2 = 0
+            }
+        } else:contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
+            TARGET.UID2 = 0x1000008d
+        }
+    }
+}

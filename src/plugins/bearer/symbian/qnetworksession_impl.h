@@ -58,7 +58,7 @@
 #include <QDateTime>
 
 #include <e32base.h>
-#include <CommDbConnPref.h>
+#include <commdbconnpref.h>
 #include <es_sock.h>
 #include <rconnmon.h>
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE

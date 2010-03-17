@@ -1,0 +1,8 @@
+symbian-abld|symbian-sbsv2 {
+    MMP_RULES += ALWAYS_BUILD_AS_ARM
+} else:linux-armcc {
+    QMAKE_CFLAGS -= --thumb
+    QMAKE_CFLAGS += --arm
+    QMAKE_CXXFLAGS -= --thumb
+    QMAKE_CXXFLAGS += --arm
+}
