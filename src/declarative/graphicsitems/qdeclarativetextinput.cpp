@@ -834,6 +834,9 @@ void QDeclarativeTextInputPrivate::init()
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
     lastSelectionEnd = 0;
+    QPalette p = control->palette();
+    selectedTextColor = p.color(QPalette::HighlightedText);
+    selectionColor = p.color(QPalette::Highlight);
 }
 
 void QDeclarativeTextInput::cursorPosChanged()
