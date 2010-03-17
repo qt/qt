@@ -55,11 +55,11 @@
 QT_BEGIN_NAMESPACE
 
 QDeclarativeVMEMetaObject::QDeclarativeVMEMetaObject(QObject *obj,
-                                   const QMetaObject *other, 
-                                   const QDeclarativeVMEMetaData *meta,
-                                   QDeclarativeCompiledData *cdata)
-: object(obj), compiledData(cdata), ctxt(qmlContext(obj)), metaData(meta), methods(0),
-  parent(0)
+                                                     const QMetaObject *other, 
+                                                     const QDeclarativeVMEMetaData *meta,
+                                                     QDeclarativeCompiledData *cdata)
+: object(obj), compiledData(cdata), ctxt(QDeclarativeDeclarativeData::get(obj)->outerContext), 
+  metaData(meta), methods(0), parent(0)
 {
     compiledData->addref();
 
@@ -115,7 +115,7 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
 
             if (type != QVariant::Invalid) {
                 if (valueIndex != -1) {
-                    QDeclarativeEnginePrivate *ep = ctxt?QDeclarativeEnginePrivate::get(ctxt->engine()):0;
+                    QDeclarativeEnginePrivate *ep = ctxt?QDeclarativeEnginePrivate::get(ctxt->engine):0;
                     QDeclarativeValueType *valueType = 0;
                     if (ep) valueType = ep->valueTypes[type];
                     else valueType = QDeclarativeValueTypeFactory::valueType(type);
@@ -214,16 +214,17 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                         *reinterpret_cast<void **>(a[0]) = 0;
 
                 if (!ctxt) return -1;
-                QDeclarativeContextPrivate *ctxtPriv = 
-                    (QDeclarativeContextPrivate *)QObjectPrivate::get(ctxt);
 
-                QObject *target = ctxtPriv->idValues[d->contextIdx].data();
+                QDeclarativeContext *context = ctxt->asQDeclarativeContext();
+                QDeclarativeContextPrivate *ctxtPriv = QDeclarativeContextPrivate::get(context);
+
+                QObject *target = ctxtPriv->data->idValues[d->contextIdx].data();
                 if (!target) 
                     return -1;
 
                 if (c == QMetaObject::ReadProperty && !aConnected.testBit(id)) {
                     int sigIdx = methodOffset + id + metaData->propertyCount;
-                    QMetaObject::connect(ctxt, d->contextIdx + ctxtPriv->notifyIndex, object, sigIdx);
+                    QMetaObject::connect(context, d->contextIdx + ctxtPriv->notifyIndex, object, sigIdx);
 
                     if (d->propertyIdx != -1) {
                         QMetaProperty prop = 
@@ -262,10 +263,10 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
             id -= plainSignals;
 
             if (id < metaData->methodCount) {
-                if (!ctxt->engine())
+                if (!ctxt->engine)
                     return -1; // We can't run the method
 
-                QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(ctxt->engine());
+                QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(ctxt->engine);
 
                 QScriptValue function = method(id);
 

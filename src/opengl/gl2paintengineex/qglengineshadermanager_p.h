@@ -401,7 +401,7 @@ public:
 
     bool                useTextureCoords;
     bool                useOpacityAttribute;
-    bool                usePmvMatrix;
+    bool                usePmvMatrixAttribute;
 
     bool operator==(const QGLEngineShaderProg& other) {
         // We don't care about the program

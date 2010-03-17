@@ -63,13 +63,14 @@ class QDeclarativeCompiledData;
 class QDeclarativeAbstractBinding;
 class QDeclarativeContext;
 class QDeclarativePropertyCache;
+class QDeclarativeContextData;
 class Q_AUTOTEST_EXPORT QDeclarativeDeclarativeData : public QDeclarativeData
 {
 public:
-    QDeclarativeDeclarativeData(QDeclarativeContext *ctxt = 0)
-        : indestructible(true), explicitIndestructibleSet(false), context(ctxt), 
-          bindings(0), nextContextObject(0), prevContextObject(0), bindingBitsSize(0), bindingBits(0), 
-          outerContext(0), lineNumber(0), columnNumber(0), deferredComponent(0), deferredIdx(0), 
+    QDeclarativeDeclarativeData()
+        : ownMemory(true), ownContext(false), indestructible(true), explicitIndestructibleSet(false), 
+          context(0), outerContext(0), bindings(0), nextContextObject(0), prevContextObject(0), bindingBitsSize(0), 
+          bindingBits(0), lineNumber(0), columnNumber(0), deferredComponent(0), deferredIdx(0), 
           attachedProperties(0), propertyCache(0), guards(0) {}
 
     virtual void destroyed(QObject *);
@@ -79,11 +80,15 @@ public:
         if (!explicitIndestructibleSet) indestructible = false;
     }
 
+    quint32 ownMemory:1;
+    quint32 ownContext:1;
     quint32 indestructible:1;
     quint32 explicitIndestructibleSet:1;
-    quint32 dummy:29;
+    quint32 dummy:28;
 
-    QDeclarativeContext *context;
+    QDeclarativeContextData *context;
+    QDeclarativeContextData *outerContext;
+
     QDeclarativeAbstractBinding *bindings;
 
     // Linked list for QDeclarativeContext::contextObjects
@@ -96,7 +101,6 @@ public:
     void clearBindingBit(int);
     void setBindingBit(QObject *obj, int);
 
-    QDeclarativeContext *outerContext; // Can't this be found from context?
     ushort lineNumber;
     ushort columnNumber;
 

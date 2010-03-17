@@ -142,7 +142,7 @@ QDeclarativeObjectScriptClass::queryProperty(Object *object, const Identifier &n
 
 QScriptClass::QueryFlags 
 QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &name, 
-                                    QScriptClass::QueryFlags flags, QDeclarativeContext *evalContext,
+                                    QScriptClass::QueryFlags flags, QDeclarativeContextData *evalContext,
                                     QueryHints hints)
 {
     Q_UNUSED(flags);
@@ -173,15 +173,11 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
             }
         }
 
-        if (evalContext) {
-            QDeclarativeContextPrivate *cp = QDeclarativeContextPrivate::get(evalContext);
-
-            if (cp->imports) {
-                QDeclarativeTypeNameCache::Data *data = cp->imports->data(name);
-                if (data) {
-                    lastTNData = data;
-                    return QScriptClass::HandlesReadAccess;
-                }
+        if (evalContext && evalContext->imports) {
+            QDeclarativeTypeNameCache::Data *data = evalContext->imports->data(name);
+            if (data) {
+                lastTNData = data;
+                return QScriptClass::HandlesReadAccess;
             }
         }
     }
@@ -316,7 +312,7 @@ void QDeclarativeObjectScriptClass::setProperty(Object *object,
 void QDeclarativeObjectScriptClass::setProperty(QObject *obj, 
                                        const Identifier &name, 
                                        const QScriptValue &value,
-                                       QDeclarativeContext *evalContext)
+                                       QDeclarativeContextData *evalContext)
 {
     Q_UNUSED(name);
 

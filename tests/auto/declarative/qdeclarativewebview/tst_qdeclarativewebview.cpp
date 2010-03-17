@@ -122,8 +122,7 @@ void tst_qdeclarativewebview::cleanupTestCase()
 void tst_qdeclarativewebview::checkNoErrors(const QDeclarativeComponent& component)
 {
     // Wait until the component is ready
-    QTRY_VERIFY(component.isReady());
-
+    QTRY_VERIFY(component.isReady() || component.isError());
 
     if (component.isError()) {
         QList<QDeclarativeError> errors = component.errors();

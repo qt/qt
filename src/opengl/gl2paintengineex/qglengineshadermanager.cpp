@@ -328,7 +328,7 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
             newProg->program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
         if (newProg->useOpacityAttribute)
             newProg->program->bindAttributeLocation("opacityArray", QT_OPACITY_ATTR);
-        if (newProg->usePmvMatrix) {
+        if (newProg->usePmvMatrixAttribute) {
             newProg->program->bindAttributeLocation("pmvMatrix1", QT_PMV_MATRIX_1_ATTR);
             newProg->program->bindAttributeLocation("pmvMatrix2", QT_PMV_MATRIX_2_ATTR);
             newProg->program->bindAttributeLocation("pmvMatrix3", QT_PMV_MATRIX_3_ATTR);
@@ -753,9 +753,16 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     }
     requiredProgram.useTextureCoords = texCoords;
     requiredProgram.useOpacityAttribute = (opacityMode == AttributeOpacity);
-    requiredProgram.usePmvMatrix = true;
-    if (complexGeometry)
+    if (complexGeometry && srcPixelType == Qt::SolidPattern) {
         requiredProgram.positionVertexShader = QGLEngineSharedShaders::ComplexGeometryPositionOnlyVertexShader;
+        requiredProgram.usePmvMatrixAttribute = false;
+    } else {
+        requiredProgram.usePmvMatrixAttribute = true;
+
+        // Force complexGeometry off, since we currently don't support that mode for
+        // non-solid brushes
+        complexGeometry = false;
+    }
 
     // At this point, requiredProgram is fully populated so try to find the program in the cache
     currentShaderProg = sharedShaders->findProgramInCache(requiredProgram);
