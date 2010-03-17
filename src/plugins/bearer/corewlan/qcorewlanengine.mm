@@ -158,7 +158,6 @@ QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
     } else {
         hasWifi = false;
     }
-    getUserConfigurations();
     requestUpdate();
 }
 
@@ -298,6 +297,7 @@ void QCoreWlanEngine::disconnectFromId(const QString &id)
 
 void QCoreWlanEngine::requestUpdate()
 {
+    getUserConfigurations();
     doRequestUpdate();
 }
 
