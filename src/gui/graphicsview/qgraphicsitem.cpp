@@ -11141,7 +11141,7 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlags flags)
 {
     debug << '(';
     bool f = false;
-    for (int i = 0; i < 16; ++i) {
+    for (int i = 0; i < 17; ++i) {
         if (flags & (1 << i)) {
             if (f)
                 debug << '|';
