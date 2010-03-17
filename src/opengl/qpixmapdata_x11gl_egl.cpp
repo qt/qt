@@ -55,6 +55,7 @@
 #endif
 
 #include <QtOpenGL/private/qgl_p.h>
+#include <QtOpenGL/private/qgl_egl_p.h>
 
 #include "qpixmapdata_x11gl_p.h"
 
@@ -255,6 +256,8 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
         ctx = new QGLContext(glFormat());
         Q_ASSERT(ctx->d_func()->eglContext == 0);
         ctx->d_func()->eglContext = hasAlphaChannel() ? argbContext : rgbContext;
+        // Update the glFormat for the QGLContext:
+        qt_glformat_from_eglconfig(ctx->d_func()->glFormat, ctx->d_func()->eglContext->config());
     }
 
     QPaintEngine* engine;
@@ -303,6 +306,7 @@ void QX11GLPixmapData::beginPaint()
         EGLConfig cfg = ctx->d_func()->eglContext->config();
         Q_ASSERT(cfg != QEGL_NO_CONFIG);
 
+//        qDebug("QX11GLPixmapData - using EGL Config ID %d", ctx->d_func()->eglContext->configAttrib(EGL_CONFIG_ID));
         EGLSurface surface = QEgl::createSurface(&tmpPixmap, cfg);
         if (surface == EGL_NO_SURFACE) {
             qWarning() << "Error creating EGL surface for pixmap:" << QEgl::errorString();
