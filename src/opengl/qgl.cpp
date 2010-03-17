@@ -5031,25 +5031,54 @@ void QGLWidget::drawTexture(const QPointF &point, QMacCompatGLuint textureId, QM
 }
 #endif
 
-#ifndef QT_OPENGL_ES_1
-Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_2_engine)
+#if !defined(QT_OPENGL_ES_1)
+class QtGL2EngineStorage
+{
+public:
+    QPaintEngine *engine() {
+        QPaintEngine *localEngine = storage.localData();
+        if (!localEngine) {
+            localEngine = new QGL2PaintEngineEx;
+            storage.setLocalData(localEngine);
+        }
+        return localEngine;
+    }
+
+private:
+    QThreadStorage<QPaintEngine *> storage;
+};
+Q_GLOBAL_STATIC(QtGL2EngineStorage, qt_gl_2_engine)
 #endif
 
 #ifndef QT_OPENGL_ES_2
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_engine)
+class QtGL1EngineStorage
+{
+public:
+    QPaintEngine *engine() {
+        QPaintEngine *localEngine = storage.localData();
+        if (!localEngine) {
+            localEngine = new QOpenGLPaintEngine;
+            storage.setLocalData(localEngine);
+        }
+        return localEngine;
+    }
+private:
+    QThreadStorage<QPaintEngine *> storage;
+};
+Q_GLOBAL_STATIC(QtGL1EngineStorage, qt_gl_engine)
 #endif
 
 Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
 {
 #if defined(QT_OPENGL_ES_1)
-    return qt_gl_engine();
+    return qt_gl_engine()->engine();
 #elif defined(QT_OPENGL_ES_2)
-    return qt_gl_2_engine();
+    return qt_gl_2_engine()->engine();
 #else
     if (qt_gl_preferGL2Engine())
-        return qt_gl_2_engine();
+        return qt_gl_2_engine()->engine();
     else
-        return qt_gl_engine();
+        return qt_gl_engine()->engine();
 #endif
 }
 
