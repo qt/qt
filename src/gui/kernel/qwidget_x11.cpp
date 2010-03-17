@@ -49,7 +49,7 @@
 #include "qbitmap.h"
 #include "qlayout.h"
 #include "qtextcodec.h"
-#include "qdatetime.h"
+#include "qelapsedtimer.h"
 #include "qcursor.h"
 #include "qstack.h"
 #include "qcolormap.h"
@@ -352,7 +352,7 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
         return;
     QApplication::flush();
     XEvent ev;
-    QTime t;
+    QElapsedTimer t;
     t.start();
     static const int maximumWaitTime = 2000;
     if (!w->testAttribute(Qt::WA_WState_Created))
@@ -369,7 +369,7 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
     //  ConfigureNotify ... MapNotify ... Expose
 
     enum State {
-        Initial, Reparented, Mapped
+        Initial, Mapped
     } state = Initial;
 
     do {
@@ -377,33 +377,15 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
             XNextEvent(X11->display, &ev);
             qApp->x11ProcessEvent(&ev);
 
-            if (w->windowFlags() & Qt::X11BypassWindowManagerHint) {
-                switch (state) {
-                case Initial:
-                case Reparented:
-                    if (ev.type == MapNotify && ev.xany.window == winid)
-                        state = Mapped;
-                    break;
-                case Mapped:
-                    if (ev.type == Expose && ev.xany.window == winid)
-                        return;
-                    break;
-                }
-            } else {
-                switch (state) {
-                case Initial:
-                    if (ev.type == ReparentNotify && ev.xany.window == winid)
-                        state = Reparented;
-                    break;
-                case Reparented:
-                    if (ev.type == MapNotify && ev.xany.window == winid)
-                        state = Mapped;
-                    break;
-                case Mapped:
-                    if (ev.type == Expose && ev.xany.window == winid)
-                        return;
-                    break;
-                }
+            switch (state) {
+            case Initial:
+                if (ev.type == MapNotify && ev.xany.window == winid)
+                    state = Mapped;
+                break;
+            case Mapped:
+                if (ev.type == Expose && ev.xany.window == winid)
+                    return;
+                break;
             }
         } else {
             if (!XEventsQueued(X11->display, QueuedAfterFlush))
