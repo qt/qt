@@ -958,7 +958,8 @@ void QTreeView::keyboardSearch(const QString &search)
     else
         start = d->model->index(0, 0, d->root);
 
-    QTime now(QTime::currentTime());
+    QElapsedTimer now;
+    now.start();
     bool skipRow = false;
     if (search.isEmpty()
         || (d->keyboardInputTime.msecsTo(now) > QApplication::keyboardInputInterval())) {

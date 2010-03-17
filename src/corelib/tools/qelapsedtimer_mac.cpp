@@ -39,67 +39,88 @@
 **
 ****************************************************************************/
 
-#include "qcore_unix_p.h"
 #include "qelapsedtimer.h"
+#include <sys/time.h>
+#include <unistd.h>
 
-#ifndef Q_OS_VXWORKS
-# if !defined(Q_OS_HPUX) || defined(__ia64)
-#  include <sys/select.h>
-# endif
-#  include <sys/time.h>
-#else
-#  include <selectLib.h>
-#endif
-
-#include <stdlib.h>
-
-#ifdef Q_OS_MAC
 #include <mach/mach_time.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
-static inline bool time_update(struct timeval *tv, const struct timeval &start,
-                               const struct timeval &timeout)
+QElapsedTimer::ClockType QElapsedTimer::clockType()
 {
-    if (!QElapsedTimer::isMonotonic()) {
-        // we cannot recalculate the timeout without a monotonic clock as the time may have changed
-        return false;
-    }
-
-    // clock source is monotonic, so we can recalculate how much timeout is left
-    struct timeval now = qt_gettime();
-    *tv = timeout + start - now;
-    return tv->tv_sec >= 0;
+    return MachAbsoluteTime;
 }
 
-int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
-                   const struct timeval *orig_timeout)
+bool QElapsedTimer::isMonotonic()
 {
-    if (!orig_timeout) {
-        // no timeout -> block forever
-        register int ret;
-        EINTR_LOOP(ret, select(nfds, fdread, fdwrite, fdexcept, 0));
-        return ret;
-    }
+    return true;
+}
 
-    timeval start = qt_gettime();
-    timeval timeout = *orig_timeout;
+static mach_timebase_info_data_t info = {0,0};
+static qint64 absoluteToNSecs(qint64 cpuTime)
+{
+    if (info.denom == 0)
+        mach_timebase_info(&info);
+    qint64 nsecs = cpuTime * info.numer / info.denom;
+    return nsecs;
+}
 
-    // loop and recalculate the timeout as needed
-    int ret;
-    forever {
-        ret = ::select(nfds, fdread, fdwrite, fdexcept, &timeout);
-        if (ret != -1 || errno != EINTR)
-            return ret;
+static qint64 absoluteToMSecs(qint64 cpuTime)
+{
+    return absoluteToNSecs(cpuTime) / 1000000;
+}
 
-        // recalculate the timeout
-        if (!time_update(&timeout, start, *orig_timeout)) {
-            // timeout during update
-            // or clock reset, fake timeout error
-            return 0;
-        }
-    }
+timeval qt_gettime()
+{
+    timeval tv;
+
+    uint64_t cpu_time = mach_absolute_time();
+    uint64_t nsecs = absoluteToNSecs(cpu_time);
+    tv.tv_sec = nsecs / 1000000000ull;
+    tv.tv_usec = (nsecs / 1000) - (tv.tv_sec * 1000000);
+    return tv;
+}
+
+void QElapsedTimer::start()
+{
+    t1 = mach_absolute_time();
+    t2 = 0;
+}
+
+qint64 QElapsedTimer::restart()
+{
+    qint64 old = t1;
+    t1 = mach_absolute_time();
+    t2 = 0;
+
+    return absoluteToMSecs(t1 - old);
+}
+
+qint64 QElapsedTimer::elapsed() const
+{
+    uint64_t cpu_time = mach_absolute_time();
+    return absoluteToMSecs(cpu_time - t1);
+}
+
+qint64 QElapsedTimer::msecsSinceReference()
+{
+    return absoluteToMSecs(t1);
+}
+
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
+{
+    return absoluteToMSecs(other.t1 - t1);
+}
+
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const
+{
+    return msecsTo(other) / 1000;
+}
+
+bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2)
+{
+    return v1.t1 < v2.t1;
 }
 
 QT_END_NAMESPACE

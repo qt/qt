@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtTest module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,57 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTSYSTEM_H
-#define QTESTSYSTEM_H
+#ifndef QTIMESTAMP_H
+#define QTIMESTAMP_H
 
-#include <QtTest/qtestcase.h>
-#include <QtCore/qcoreapplication.h>
-#include <QtCore/qelapsedtimer.h>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Test)
+QT_MODULE(Core)
 
-class QWidget;
-#ifdef Q_WS_X11
-extern void qt_x11_wait_for_window_manager(QWidget *w);
-#endif
-
-namespace QTest
+class Q_CORE_EXPORT QElapsedTimer
 {
-    inline static void qWait(int ms)
-    {
-        Q_ASSERT(QCoreApplication::instance());
+public:
+    enum ClockType {
+        SystemTime,
+        MonotonicClock,
+        TickCounter,
+        MachAbsoluteTime
+    };
+    static ClockType clockType();
+    static bool isMonotonic();
 
-        QElapsedTimer timer;
-        timer.start();
-        do {
-            QCoreApplication::processEvents(QEventLoop::AllEvents, ms);
-            QTest::qSleep(10);
-        } while (timer.elapsed() < ms);
-    }
+    void start();
+    qint64 restart();
+    void invalidate();
+    bool isValid() const;
 
-    inline static bool qWaitForWindowShown(QWidget *window)
-    {
-#if defined(Q_WS_X11)
-        qt_x11_wait_for_window_manager(window);
-        QCoreApplication::processEvents();
-#elif defined(Q_WS_QWS)
-        Q_UNUSED(window);
-        qWait(100);
-#else
-        Q_UNUSED(window);
-        qWait(50);
-#endif
-        return true;
-    }
+    qint64 elapsed() const;
+    bool hasExpired(qint64 timeout) const;
 
-}
+    qint64 msecsSinceReference() const;
+    qint64 msecsTo(const QElapsedTimer &other) const;
+    qint64 secsTo(const QElapsedTimer &other) const;
+
+    bool operator==(const QElapsedTimer &other) const
+    { return t1 == other.t1 && t2 == other.t2; }
+    bool operator!=(const QElapsedTimer &other) const
+    { return !(*this == other); }
+
+    friend bool Q_CORE_EXPORT operator<(const QElapsedTimer &v1, const QElapsedTimer &v2);
+
+private:
+    qint64 t1;
+    qint64 t2;
+};
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif
+#endif // QTIMESTAMP_H

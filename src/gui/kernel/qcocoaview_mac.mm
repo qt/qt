@@ -241,7 +241,8 @@ static int qCocoaViewCount = 0;
 
     QRegion mask = qt_widget_private(cursorWidget)->extra->mask;
     NSCursor *nscursor = static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursorWidget->cursor()));
-    if (mask.isEmpty()) {
+    // The mask could have the WA_MouseNoMask attribute set and that means that we have to ignore the mask.
+    if (mask.isEmpty() || cursorWidget->testAttribute(Qt::WA_MouseNoMask)) {
         [self addCursorRect:[qt_mac_nativeview_for(cursorWidget) visibleRect] cursor:nscursor];
     } else {
         const QVector<QRect> &rects = mask.rects();
@@ -490,7 +491,9 @@ static int qCocoaViewCount = 0;
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
     qwidgetprivate->hd = cg;
     CGContextSaveGState(cg);
-
+    CGFloat components[] = {1,0,0,1};
+    CGContextSetFillColor(cg, components);
+    CGContextFillRect(cg, aRect);
     if (qwidget->isVisible() && qwidget->updatesEnabled()) { //process the actual paint event.
         if (qwidget->testAttribute(Qt::WA_WState_InPaintEvent))
             qWarning("QWidget::repaint: Recursive repaint detected");

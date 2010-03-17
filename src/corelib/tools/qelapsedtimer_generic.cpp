@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtTest module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,57 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTSYSTEM_H
-#define QTESTSYSTEM_H
-
-#include <QtTest/qtestcase.h>
-#include <QtCore/qcoreapplication.h>
-#include <QtCore/qelapsedtimer.h>
-
-QT_BEGIN_HEADER
+#include "qelapsedtimer.h"
+#include "qdatetime.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Test)
-
-class QWidget;
-#ifdef Q_WS_X11
-extern void qt_x11_wait_for_window_manager(QWidget *w);
-#endif
-
-namespace QTest
+QElapsedTimer::ClockType QElapsedTimer::clockType()
 {
-    inline static void qWait(int ms)
-    {
-        Q_ASSERT(QCoreApplication::instance());
+    return SystemTime;
+}
 
-        QElapsedTimer timer;
-        timer.start();
-        do {
-            QCoreApplication::processEvents(QEventLoop::AllEvents, ms);
-            QTest::qSleep(10);
-        } while (timer.elapsed() < ms);
-    }
+bool QElapsedTimer::isMonotonic()
+{
+    return false;
+}
 
-    inline static bool qWaitForWindowShown(QWidget *window)
-    {
-#if defined(Q_WS_X11)
-        qt_x11_wait_for_window_manager(window);
-        QCoreApplication::processEvents();
-#elif defined(Q_WS_QWS)
-        Q_UNUSED(window);
-        qWait(100);
-#else
-        Q_UNUSED(window);
-        qWait(50);
-#endif
-        return true;
-    }
+void QElapsedTimer::start()
+{
+    restart();
+}
 
+qint64 QElapsedTimer::restart()
+{
+    qint64 old = t1;
+    t1 = QDateTime::currentMsecsSinceEpoch();
+    t2 = 0;
+    return t1 - old;
+}
+
+qint64 QElapsedTimer::elapsed() const
+{
+    return QDateTime::currentMsecsSinceEpoch() - t1;
+}
+
+qint64 QElapsedTimer::msecsSinceReference() const
+{
+    return t1;
+}
+
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
+{
+    qint64 diff = other.t1 - t1;
+    return diff;
+}
+
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const
+{
+    return msecsTo(other) / 1000;
+}
+
+bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2)
+{
+    return v1.t1 < v2.t1;
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif

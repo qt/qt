@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtTest module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,57 +39,27 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTSYSTEM_H
-#define QTESTSYSTEM_H
-
-#include <QtTest/qtestcase.h>
-#include <QtCore/qcoreapplication.h>
-#include <QtCore/qelapsedtimer.h>
-
-QT_BEGIN_HEADER
+#include "qelapsedtimer.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Test)
+static const qint64 invalidData = Q_INT64_C(0x8000000000000000);
 
-class QWidget;
-#ifdef Q_WS_X11
-extern void qt_x11_wait_for_window_manager(QWidget *w);
-#endif
-
-namespace QTest
+void QElapsedTimer::invalidate()
 {
-    inline static void qWait(int ms)
-    {
-        Q_ASSERT(QCoreApplication::instance());
+     t1 = t2 = invalidData;
+}
 
-        QElapsedTimer timer;
-        timer.start();
-        do {
-            QCoreApplication::processEvents(QEventLoop::AllEvents, ms);
-            QTest::qSleep(10);
-        } while (timer.elapsed() < ms);
-    }
+bool QElapsedTimer::isValid() const
+{
+    return t1 != invalidData && t2 != invalidData;
+}
 
-    inline static bool qWaitForWindowShown(QWidget *window)
-    {
-#if defined(Q_WS_X11)
-        qt_x11_wait_for_window_manager(window);
-        QCoreApplication::processEvents();
-#elif defined(Q_WS_QWS)
-        Q_UNUSED(window);
-        qWait(100);
-#else
-        Q_UNUSED(window);
-        qWait(50);
-#endif
-        return true;
-    }
-
+bool QElapsedTimer::hasExpired(qint64 timeout) const
+{
+    // if timeout is -1, quint64(timeout) is LLINT_MAX, so this will be
+    // considered as never expired
+    return quint64(elapsed()) > quint64(timeout);
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif
