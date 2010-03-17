@@ -103,7 +103,7 @@ qint64 QElapsedTimer::elapsed() const
     return absoluteToMSecs(cpu_time - t1);
 }
 
-qint64 QElapsedTimer::msecsSinceReference()
+qint64 QElapsedTimer::msecsSinceReference() const
 {
     return absoluteToMSecs(t1);
 }
