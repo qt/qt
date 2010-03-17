@@ -52,6 +52,7 @@
 #include "qstring.h"
 #include "qdebug.h"
 #include "qimage.h"
+#include "qcombobox.h"
 #include "private/qkeymapper_p.h"
 #include "private/qfont_p.h"
 #ifndef QT_NO_STYLE_S60
@@ -1407,10 +1408,12 @@ void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 
 void QApplicationPrivate::openPopup(QWidget *popup)
 {
+    if (popup && qobject_cast<QComboBox *>(popup->parentWidget()))
+        static_cast<QSymbianControl *>(popup->effectiveWinId())->FadeBehindPopup(ETrue);
+
     if (!QApplicationPrivate::popupWidgets)
         QApplicationPrivate::popupWidgets = new QWidgetList;
     QApplicationPrivate::popupWidgets->append(popup);
-
 
     // Cancel focus widget pointer capture and long tap timer
     if (QApplication::focusWidget()) {
@@ -1450,6 +1453,9 @@ void QApplicationPrivate::openPopup(QWidget *popup)
 
 void QApplicationPrivate::closePopup(QWidget *popup)
 {
+    if (popup && qobject_cast<QComboBox *>(popup->parentWidget()))
+        static_cast<QSymbianControl *>(popup->effectiveWinId())->FadeBehindPopup(EFalse);
+
     if (!QApplicationPrivate::popupWidgets)
         return;
     QApplicationPrivate::popupWidgets->removeAll(popup);

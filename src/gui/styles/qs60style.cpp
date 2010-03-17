@@ -2475,6 +2475,9 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
 {
     int retValue = -1;
     switch (sh) {
+        case SH_ComboBox_Popup:
+            retValue = true;
+            break;
         case SH_Table_GridLineColor:
             retValue = int(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 2, 0).rgba());
             break;
@@ -2690,6 +2693,19 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                         height - 2 * frameThickness);
                     }
                 break;
+                case SC_ComboBoxListBoxPopup: {
+                    const QRect desktopContent = QApplication::desktop()->availableGeometry();
+
+                    // take the size of this and position bottom above available area
+                    QRect popupRect;
+                    const int width = desktopContent.width() - pixelMetric(PM_LayoutRightMargin) - pixelMetric(PM_LayoutLeftMargin);
+                    popupRect.setWidth(width);
+                    popupRect.setHeight(desktopContent.height()); //combobox resets height anyway based on content
+                    popupRect.setBottom(desktopContent.bottom());
+                    popupRect.translate(pixelMetric(PM_LayoutLeftMargin), 0);
+                    ret = popupRect;
+                    }
+                break;
             default:
                 break;
             }
@@ -2844,9 +2860,13 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                 ret = menuItem->rect;
 
                 if (element == SE_ItemViewItemDecoration) {
-                    if (menuItem->direction == Qt::RightToLeft)
-                        ret.translate(ret.width()-indicatorWidth, 0);
-                    ret.setWidth(indicatorWidth);
+                    if (menuItem->icon.isNull()) {
+                        ret = QRect();
+                    } else {
+                        if (menuItem->direction == Qt::RightToLeft)
+                            ret.translate(ret.width()-indicatorWidth, 0);
+                        ret.setWidth(indicatorWidth);
+                    }
                 } else {
                     ret = menuItem->rect;
                     if (!menuItem->icon.isNull())
