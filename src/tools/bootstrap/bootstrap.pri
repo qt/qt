@@ -42,12 +42,12 @@ hpux-acc*|hpuxi-acc* {
 } else {
     contains(CONFIG, debug_and_release_target) {
         CONFIG(debug, debug|release) {
-            LIBS+=-L$$QT_BUILD_TREE/src/tools/bootstrap/debug
+            QMAKE_LIBDIR += $$QT_BUILD_TREE/src/tools/bootstrap/debug
         } else {
-            LIBS+=-L$$QT_BUILD_TREE/src/tools/bootstrap/release
+            QMAKE_LIBDIR += $$QT_BUILD_TREE/src/tools/bootstrap/release
         }
     } else {
-        LIBS += -L$$QT_BUILD_TREE/src/tools/bootstrap
+        QMAKE_LIBDIR += $$QT_BUILD_TREE/src/tools/bootstrap
     }
     LIBS += -lbootstrap
 }
@@ -62,3 +62,12 @@ mac {
     LIBS += -framework CoreServices
 }
 
+# Make dummy "sis" and "freeze" target to keep recursive "make sis/freeze" working.
+sis_target.target = sis
+sis_target.commands =
+sis_target.depends = first
+QMAKE_EXTRA_TARGETS += sis_target
+freeze_target.target = freeze
+freeze_target.commands =
+freeze_target.depends = first
+QMAKE_EXTRA_TARGETS += freeze_target
