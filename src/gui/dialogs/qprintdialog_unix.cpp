@@ -706,9 +706,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p)
 #ifndef QT_NO_FILESYSTEMMODEL
     QFileSystemModel *fsm = new QFileSystemModel(widget.filename);
     fsm->setRootPath(QDir::homePath());
-#if !defined(QT_NO_FSCOMPLETER) && !defined(QT_NO_FILEDIALOG)
-    widget.filename->setCompleter(new QFSCompleter(fsm, widget.filename));
-#endif
+    widget.filename->setCompleter(new QCompleter(fsm, widget.filename));
 #endif
     _q_printerChanged(currentPrinterIndex);
 
