@@ -51,14 +51,16 @@
 QT_BEGIN_NAMESPACE
 
 QX11GLWindowSurface::QX11GLWindowSurface(QWidget* window)
-    : QWindowSurface(window), m_GC(0), m_window(window)
+    : QWindowSurface(window), m_windowGC(0), m_pixmapGC(0), m_window(window)
 {
 }
 
 QX11GLWindowSurface::~QX11GLWindowSurface()
 {
-    if (m_GC)
-        XFree(m_GC);
+    if (m_windowGC)
+        XFree(m_windowGC);
+    if (m_pixmapGC)
+        XFree(m_pixmapGC);
 }
 
 QPaintDevice *QX11GLWindowSurface::paintDevice()
@@ -92,13 +94,13 @@ void QX11GLWindowSurface::flush(QWidget *widget, const QRegion &widgetRegion, co
 //         for  (int i = 0; i < num; ++i)
 //             qDebug() << ' ' << i << rects[i].x << rects[i].x << rects[i].y << rects[i].width << rects[i].height;
 
-    if (m_GC == 0) {
-        m_GC = XCreateGC(X11->display, m_window->handle(), 0, 0);
-        XSetGraphicsExposures(X11->display, m_GC, False);
+    if (m_windowGC == 0) {
+        m_windowGC = XCreateGC(X11->display, m_window->handle(), 0, 0);
+        XSetGraphicsExposures(X11->display, m_windowGC, False);
     }
 
-    XSetClipRectangles(X11->display, m_GC, 0, 0, rects, rectCount, YXBanded);
-    XCopyArea(X11->display, m_backBuffer.handle(), m_window->handle(), m_GC,
+    XSetClipRectangles(X11->display, m_windowGC, 0, 0, rects, rectCount, YXBanded);
+    XCopyArea(X11->display, m_backBuffer.handle(), m_window->handle(), m_windowGC,
               boundingRect.x() + offset.x(), boundingRect.y() + offset.y(),
               boundingRect.width(), boundingRect.height(),
               windowBoundingRect.x(), windowBoundingRect.y());
@@ -126,10 +128,30 @@ void QX11GLWindowSurface::setGeometry(const QRect &rect)
 
 bool QX11GLWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
-    Q_UNUSED(area);
-    Q_UNUSED(dx);
-    Q_UNUSED(dy);
-    return false;
+    if (m_backBuffer.isNull())
+        return false;
+
+    Q_ASSERT(m_backBuffer.data_ptr()->classId() == QPixmapData::X11Class);
+
+    QX11GLPixmapData* pmd = static_cast<QX11GLPixmapData*>(m_backBuffer.data_ptr().data());
+    Q_ASSERT(pmd->context());
+    pmd->context()->makeCurrent();
+    glFinish();
+    eglWaitClient();
+
+    if (!m_pixmapGC)
+        m_pixmapGC = XCreateGC(X11->display, m_backBuffer.handle(), 0, 0);
+
+    foreach (const QRect& rect, area.rects()) {
+        XCopyArea(X11->display, m_backBuffer.handle(), m_backBuffer.handle(), m_pixmapGC,
+                  rect.x(), rect.y(), rect.width(), rect.height(),
+                  rect.x()+dx, rect.y()+dy);
+    }
+
+    XSync(X11->display, False);
+    eglWaitNative(EGL_CORE_NATIVE_ENGINE);
+
+    return true;
 }
 
 /*
