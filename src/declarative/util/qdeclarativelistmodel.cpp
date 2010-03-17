@@ -303,7 +303,7 @@ QDeclarativeListModelWorkerAgent *QDeclarativeListModel::agent()
         return 0;
     }
 
-    m_agent = new QDeclarativeListModelWorkerAgent(this); 
+    m_agent = new QDeclarativeListModelWorkerAgent(this);
     return m_agent;
 }
 
@@ -383,8 +383,10 @@ void QDeclarativeListModel::remove(int index)
     else
         m_nested->remove(index);
 
-    if (!m_isWorkerCopy)
+    if (!m_isWorkerCopy) {
+        emit itemsRemoved(index, 1);
         emit countChanged(this->count());
+    }
 }
 
 /*!
@@ -612,7 +614,7 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
         const QVariant &value = values.at(ii);
 
         if(value.userType() == qMetaTypeId<QDeclarativeCustomParserNode>()) {
-            QDeclarativeCustomParserNode node = 
+            QDeclarativeCustomParserNode node =
                 qvariant_cast<QDeclarativeCustomParserNode>(value);
 
             {
@@ -659,7 +661,7 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
 
         } else {
 
-            QDeclarativeParser::Variant variant = 
+            QDeclarativeParser::Variant variant =
                 qvariant_cast<QDeclarativeParser::Variant>(value);
 
             int ref = data.count();
@@ -710,15 +712,15 @@ QByteArray QDeclarativeListModelParser::compile(const QList<QDeclarativeCustomPa
         }
     }
 
-    int size = sizeof(ListModelData) + 
-               instr.count() * sizeof(ListInstruction) + 
+    int size = sizeof(ListModelData) +
+               instr.count() * sizeof(ListInstruction) +
                data.count();
 
     QByteArray rv;
     rv.resize(size);
 
     ListModelData *lmd = (ListModelData *)rv.data();
-    lmd->dataOffset = sizeof(ListModelData) + 
+    lmd->dataOffset = sizeof(ListModelData) +
                      instr.count() * sizeof(ListInstruction);
     lmd->instrCount = instr.count();
     for (int ii = 0; ii < instr.count(); ++ii)
@@ -904,7 +906,7 @@ QScriptValue FlatListModel::get(int index) const
     QScriptValue rv = scriptEngine->newObject();
 
     QHash<int, QVariant> row = m_values.at(index);
-    for (QHash<int, QVariant>::ConstIterator iter = row.begin(); iter != row.end(); ++iter) 
+    for (QHash<int, QVariant>::ConstIterator iter = row.begin(); iter != row.end(); ++iter)
         rv.setProperty(m_roles.value(iter.key()), qScriptValueFromValue(scriptEngine, iter.value()));
 
     return rv;
@@ -930,7 +932,7 @@ void FlatListModel::setProperty(int index, const QString& property, const QVaria
         m_roles.insert(role, property);
         m_strings.insert(property, role);
     } else {
-        role = iter.value(); 
+        role = iter.value();
     }
     roles->append(role);
 
@@ -977,7 +979,7 @@ bool FlatListModel::addValue(const QScriptValue &value, QHash<int, QVariant> *ro
             m_roles.insert(role, name);
             iter = m_strings.insert(name, role);
             if (roles)
-                roles->append(role); 
+                roles->append(role);
         }
         row->insert(*iter, v);
     }
@@ -1031,7 +1033,7 @@ QVariant NestedListModel::valueForNode(ModelNode *node, bool *hasNested) const
         return QVariant::fromValue(rv);
     } else {
         return QVariant();
-    }        
+    }
 }
 
 QHash<int,QVariant> NestedListModel::data(int index, const QList<int> &roles, bool *hasNested) const
@@ -1041,7 +1043,7 @@ QHash<int,QVariant> NestedListModel::data(int index, const QList<int> &roles, bo
     QHash<int, QVariant> rv;
 
     ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
-    if (!node) 
+    if (!node)
         return rv;
 
     for (int ii = 0; ii < roles.count(); ++ii) {
@@ -1148,7 +1150,7 @@ bool NestedListModel::append(const QScriptValue& valuemap)
 QScriptValue NestedListModel::get(int index) const
 {
     ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
-    if (!node) 
+    if (!node)
         return 0;
     QDeclarativeEngine *eng = qmlEngine(m_listModel);
     if (!eng) {
@@ -1204,7 +1206,7 @@ void NestedListModel::checkRoles() const
                 if (!roleStrings.contains(role))
                     roleStrings.append(role);
             }
-        } 
+        }
     }
 
     _rolesOk = true;
