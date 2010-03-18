@@ -511,6 +511,8 @@ QScriptValue QDeclarativeComponent::createObject()
         return QScriptValue();
     }
     QObject* ret = create(ctxt);
+    if (!ret)
+        return QScriptValue();
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
     QDeclarativeDeclarativeData::get(ret, true)->setImplicitDestructible();
     return priv->objectClass->newQObject(ret, QMetaType::QObjectStar);
