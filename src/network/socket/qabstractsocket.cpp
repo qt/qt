@@ -365,12 +365,12 @@
 #include "private/qhostinfo_p.h"
 
 #include <qabstracteventdispatcher.h>
-#include <qdatetime.h>
 #include <qhostaddress.h>
 #include <qhostinfo.h>
 #include <qmetaobject.h>
 #include <qpointer.h>
 #include <qtimer.h>
+#include <qelapsedtimer.h>
 
 #ifndef QT_NO_OPENSSL
 #include <QtNetwork/qsslsocket.h>
@@ -1738,7 +1738,7 @@ bool QAbstractSocket::waitForConnected(int msecs)
 
     bool wasPendingClose = d->pendingClose;
     d->pendingClose = false;
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     if (d->state == HostLookupState) {
@@ -1819,7 +1819,7 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
         return false;
     }
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     // handle a socket in connecting state
@@ -1878,7 +1878,7 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
     if (d->writeBuffer.isEmpty())
         return false;
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     // handle a socket in connecting state
@@ -1960,7 +1960,7 @@ bool QAbstractSocket::waitForDisconnected(int msecs)
         return false;
     }
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     // handle a socket in connecting state

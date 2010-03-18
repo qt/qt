@@ -47,7 +47,7 @@
 #include <qlayout.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
-#include <qdatetime.h>
+#include <qelapsedtimer.h>
 #include <qpointer.h>
 #include <qdebug.h>
 #include <qx11info_x11.h>
@@ -1231,7 +1231,7 @@ void QX11EmbedContainer::embedClient(WId id)
       For safety, we will not wait more than 500 ms, so that we can
       preemptively workaround buggy window managers.
     */
-    QTime t;
+    QElapsedTimer t;
     t.start();
 
     functorData data;
