@@ -2309,19 +2309,20 @@ static bool qt_detectRTLLanguage()
                          " languages or to 'RTL' in right-to-left languages (such as Hebrew"
                          " and Arabic) to get proper widget layout.") == QLatin1String("RTL"));
 }
-#if defined(QT_MAC_USE_COCOA)
 static const char *application_menu_strings[] = {
     QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Services"),
     QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide %1"),
     QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide Others"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Show All")
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Show All"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Preferences..."),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Quit %1"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","About %1")
     };
 QString qt_mac_applicationmenu_string(int type)
 {
     return qApp->translate("MAC_APPLICATION_MENU",
                            application_menu_strings[type]);
 }
-#endif
 #endif
 
 /*!\reimp

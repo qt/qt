@@ -909,6 +909,7 @@ static NSMenuItem *qt_mac_menu_merge_action(OSMenuRef merge, QMacMenuAction *act
 static QString qt_mac_menu_merge_text(QMacMenuAction *action)
 {
     QString ret;
+    extern QString qt_mac_applicationmenu_string(int type);
 #ifdef QT_MAC_USE_COCOA
     QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
 #endif
@@ -916,34 +917,25 @@ static QString qt_mac_menu_merge_text(QMacMenuAction *action)
         ret = action->action->text();
 #ifndef QT_MAC_USE_COCOA
     else if (action->command == kHICommandAbout)
-        ret = QMenuBar::tr("About %1").arg(qAppName());
+        ret = qt_mac_applicationmenu_string(6).arg(qAppName());
     else if (action->command == kHICommandAboutQt)
         ret = QMenuBar::tr("About Qt");
     else if (action->command == kHICommandPreferences)
-        ret = QMenuBar::tr("Preferences");
+        ret = qt_mac_applicationmenu_string(4);
     else if (action->command == kHICommandQuit)
-        ret = QMenuBar::tr("Quit %1").arg(qAppName());
+        ret = qt_mac_applicationmenu_string(5).arg(qAppName());
 #else
     else if (action->menuItem == [loader aboutMenuItem]) {
-        if (action->action->text() == QString("About %1").arg(qAppName()))
-            ret = QMenuBar::tr("About %1").arg(qAppName());
-        else
-            ret = action->action->text();
+        ret = qt_mac_applicationmenu_string(6).arg(qAppName());
     } else if (action->menuItem == [loader aboutQtMenuItem]) {
         if (action->action->text() == QString("About Qt"))
             ret = QMenuBar::tr("About Qt");
         else
             ret = action->action->text();
     } else if (action->menuItem == [loader preferencesMenuItem]) {
-        if (action->action->text() == QString("Preferences"))
-            ret = QMenuBar::tr("Preferences");
-        else
-            ret = action->action->text();
+        ret = qt_mac_applicationmenu_string(4);
     } else if (action->menuItem == [loader quitMenuItem]) {
-        if (action->action->text() == QString("Quit %1").arg(qAppName()))
-            ret = QMenuBar::tr("About %1").arg(qAppName());
-        else
-            ret = action->action->text();
+        ret = qt_mac_applicationmenu_string(5).arg(qAppName());
     }
 #endif
     return ret;

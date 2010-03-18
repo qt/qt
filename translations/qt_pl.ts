@@ -23,6 +23,21 @@
         <source>Show All</source>
         <translation>Pokaż wszystko</translation>
     </message>
+    <message>
+        <location line="+1"/>
+        <source>Preferences...</source>
+        <translation>Preferencje…</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quit %1</source>
+        <translation>Zakończ %1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>About %1</source>
+        <translation>%1…</translation>
+    </message>
 </context>
 <context>
     <name>CloseButton</name>
