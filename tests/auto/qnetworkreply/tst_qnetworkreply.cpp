@@ -3952,7 +3952,7 @@ void tst_QNetworkReply::httpReUsingConnectionSequential()
 }
 
 class HttpReUsingConnectionFromFinishedSlot : public QObject {
-    Q_OBJECT;
+    Q_OBJECT
 public:
     QNetworkReply* reply1;
     QNetworkReply* reply2;

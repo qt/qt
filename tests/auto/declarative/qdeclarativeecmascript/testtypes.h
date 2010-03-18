@@ -237,9 +237,9 @@ class MyDeferredObject : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
-    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty);
-    Q_PROPERTY(QObject *objectProperty2 READ objectProperty2 WRITE setObjectProperty2);
-    Q_CLASSINFO("DeferredPropertyNames", "value,objectProperty,objectProperty2");
+    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty)
+    Q_PROPERTY(QObject *objectProperty2 READ objectProperty2 WRITE setObjectProperty2)
+    Q_CLASSINFO("DeferredPropertyNames", "value,objectProperty,objectProperty2")
 
 public:
     MyDeferredObject() : m_value(0), m_object(0), m_object2(0) {}

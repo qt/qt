@@ -135,7 +135,7 @@ public:
     static MyAttachedObject *qmlAttachedProperties(QObject *other) {
         return new MyAttachedObject(other);
     }
-    Q_CLASSINFO("DefaultMethod", "basicSlot()");
+    Q_CLASSINFO("DefaultMethod", "basicSlot()")
 
     int onLiteralSignal() const { return m_value; }
     void setOnLiteralSignal(int v) { m_value = v; }
@@ -467,7 +467,7 @@ class MyContainer : public QObject
     Q_OBJECT
     Q_PROPERTY(QDeclarativeListProperty<QObject> children READ children)
     Q_PROPERTY(QDeclarativeListProperty<MyInterface> qlistInterfaces READ qlistInterfaces)
-    Q_CLASSINFO("DefaultProperty", "children");
+    Q_CLASSINFO("DefaultProperty", "children")
 public:
     MyContainer() {}
 

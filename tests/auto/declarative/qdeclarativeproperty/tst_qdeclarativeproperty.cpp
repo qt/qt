@@ -191,7 +191,7 @@ class PropertyObject : public QObject
     Q_PROPERTY(int propertyWithNotify READ propertyWithNotify WRITE setPropertyWithNotify NOTIFY oddlyNamedNotifySignal)
     Q_PROPERTY(MyQmlObject *qmlObject READ qmlObject);
 
-    Q_CLASSINFO("DefaultProperty", "defaultProperty");
+    Q_CLASSINFO("DefaultProperty", "defaultProperty")
 public:
     PropertyObject() : m_resetProperty(9) {}
 

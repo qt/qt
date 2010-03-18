@@ -79,7 +79,7 @@ class TestType : public QObject
     Q_OBJECT
     Q_PROPERTY(int foo READ foo);
 
-    Q_CLASSINFO("DefaultProperty", "foo");
+    Q_CLASSINFO("DefaultProperty", "foo")
 public:
     int foo() { return 0; }
 };
@@ -88,7 +88,7 @@ QML_DECLARE_TYPE(TestType);
 class ParserStatusTestType : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
-    Q_CLASSINFO("DefaultProperty", "foo"); // Missing default property
+    Q_CLASSINFO("DefaultProperty", "foo") // Missing default property
 };
 QML_DECLARE_TYPE(ParserStatusTestType);
 
