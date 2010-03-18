@@ -405,7 +405,7 @@ void tst_QFileSystemWatcher::removePaths()
 
 #if 0
 class SignalTest : public QObject {
-    Q_OBJECT;
+    Q_OBJECT
     public slots:
         void fileSlot(const QString &file) { qDebug() << "file " << file;}
         void dirSlot(const QString &dir) { qDebug() << "dir" << dir;}
