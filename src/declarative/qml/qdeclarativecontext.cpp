@@ -242,7 +242,15 @@ QObject *QDeclarativeContext::contextObject() const
 void QDeclarativeContext::setContextObject(QObject *object)
 {
     Q_D(QDeclarativeContext);
-    d->data->contextObject = object;
+
+    QDeclarativeContextData *data = d->data;
+
+    if (data->isInternal) {
+        qWarning("QDeclarativeContext: Cannot set context object for internal context.");
+        return;
+    }
+
+    data->contextObject = object;
 }
 
 /*!
@@ -255,6 +263,11 @@ void QDeclarativeContext::setContextProperty(const QString &name, const QVariant
         d->notifyIndex = this->metaObject()->methodCount();
 
     QDeclarativeContextData *data = d->data;
+
+    if (data->isInternal) {
+        qWarning("QDeclarativeContext: Cannot set property on internal context.");
+        return;
+    }
 
     if (data->engine) {
         bool ok;
@@ -291,6 +304,11 @@ void QDeclarativeContext::setContextProperty(const QString &name, QObject *value
         d->notifyIndex = this->metaObject()->methodCount();
 
     QDeclarativeContextData *data = d->data;
+
+    if (data->isInternal) {
+        qWarning("QDeclarativeContext: Cannot set property on internal context.");
+        return;
+    }
 
     if (!data->propertyNames) data->propertyNames = new QDeclarativeIntegerCache(data->engine);
     int idx = data->propertyNames->value(name);

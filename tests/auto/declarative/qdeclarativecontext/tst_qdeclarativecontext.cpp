@@ -61,6 +61,7 @@ private slots:
     void setContextObject();
     void destruction();
     void idAsContextProperty();
+    void readOnlyContexts();
 
 private:
     QDeclarativeEngine engine;
@@ -423,6 +424,36 @@ void tst_qdeclarativecontext::idAsContextProperty()
     QVERIFY(ctxt.userType() == QMetaType::QObjectStar);
 
     QVERIFY(a == ctxt);
+
+    delete obj;
+}
+
+// Internal contexts should be read-only
+void tst_qdeclarativecontext::readOnlyContexts()
+{
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt 4.6; QtObject { id: me }", QUrl());
+
+    QObject *obj = component.create();
+    QVERIFY(obj);
+
+    QDeclarativeContext *context = qmlContext(obj);
+    QVERIFY(context);
+
+    QVERIFY(qvariant_cast<QObject*>(context->contextProperty("me")) == obj);
+    QVERIFY(context->contextObject() == obj);
+
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeContext: Cannot set property on internal context.");
+    context->setContextProperty("hello", 12);
+    QVERIFY(context->contextProperty("hello") == QVariant());
+
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeContext: Cannot set property on internal context.");
+    context->setContextProperty("hello", obj);
+    QVERIFY(context->contextProperty("hello") == QVariant());
+
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeContext: Cannot set context object for internal context.");
+    context->setContextObject(0);
+    QVERIFY(context->contextObject() == obj);
 
     delete obj;
 }
