@@ -2309,6 +2309,7 @@ static bool qt_detectRTLLanguage()
                          " languages or to 'RTL' in right-to-left languages (such as Hebrew"
                          " and Arabic) to get proper widget layout.") == QLatin1String("RTL"));
 }
+#if defined(Q_WS_MAC)
 static const char *application_menu_strings[] = {
     QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Services"),
     QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide %1"),
@@ -2323,6 +2324,7 @@ QString qt_mac_applicationmenu_string(int type)
     return qApp->translate("MAC_APPLICATION_MENU",
                            application_menu_strings[type]);
 }
+#endif
 #endif
 
 /*!\reimp
