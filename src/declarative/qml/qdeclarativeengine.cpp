@@ -1363,7 +1363,8 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
     QList<bool> isLibrary;
     QList<QString> qmlDirContent;
 
-    bool find(const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return, QUrl* url_return)
+    bool find(const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return, QUrl* url_return,
+              QUrl *base = 0)
     {
         for (int i=0; i<urls.count(); ++i) {
             int vmaj = majversions.at(i);
@@ -1398,8 +1399,13 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
                     if (c.typeName == typeName) {
                         typeWasDeclaredInQmldir = true;
                         if (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion)) {
+                            QUrl candidate = url.resolved(QUrl(c.fileName));
+                            if (c.internal && base) {
+                                if (base->resolved(QUrl(c.fileName)) != candidate)
+                                    continue; // failed attempt to access an internal type
+                            }
                             if (url_return)
-                                *url_return = url.resolved(QUrl(c.fileName));
+                                *url_return = candidate;
                             return true;
                         }
                     }
@@ -1617,7 +1623,7 @@ public:
         }
         QByteArray unqualifiedtype = slash < 0 ? type : type.mid(slash+1); // common-case opt (QString::mid works fine, but slower)
         if (s) {
-            if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return))
+            if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return, &base))
                 return true;
             if (s->urls.count() == 1 && !s->isLibrary[0] && url_return && s != &unqualifiedset) {
                 // qualified, and only 1 url
@@ -1627,16 +1633,7 @@ public:
 
         }
 
-
-        /* now comes really nasty code. It makes "private" types load in the remote case, but
-           it does this by breaking the import order. This must go. Instead private types must
-           be marked private in the qmldir. */
-        if (url_return) {
-            *url_return = base.resolved(QUrl(QString::fromUtf8(type + ".qml")));
-            return true;
-        } else {
-            return false;
-        }
+        return false;
     }
 
     QDeclarativeEnginePrivate::ImportedNamespace *findNamespace(const QString& type)

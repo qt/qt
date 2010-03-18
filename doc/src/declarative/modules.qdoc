@@ -143,6 +143,13 @@ since the \e first name-version match is used.
 
 Installed files do not need to import the module of which they are a part, as they can refer
 to the other QML files in the module as relative (local) files.
+If the module is imported from a remote location, those files must nevertheless be listed in
+the \c qmldir file. Internal files can be marked with the \c internal keyword, to ensure
+they are not visible outside the module:
+
+\code
+internal <TypeName> <File>
+\endcode
 
 Installed and remote files \e must be referred to by version information described above,
 local files \e may have it.
