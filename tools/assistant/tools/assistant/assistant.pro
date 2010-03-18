@@ -15,7 +15,7 @@ DEPENDPATH += ../shared
 
 # ## Work around a qmake issue when statically linking to
 # ## not-yet-installed plugins
-LIBS += -L$$QT_BUILD_TREE/plugins/sqldrivers
+QMAKE_LIBDIR += $$QT_BUILD_TREE/plugins/sqldrivers
 HEADERS += aboutdialog.h \
     bookmarkdialog.h \
     bookmarkfiltermodel.h \
