@@ -85,7 +85,7 @@ public:
     void activateCurrentAnimation(bool intermediate = false);
 
     void animationInsertedAt(int index);
-    void animationRemovedAt(int index);
+    void animationRemoved(int index, QAbstractAnimation *anim);
 
     bool atEnd() const;
 
