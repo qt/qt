@@ -459,10 +459,6 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
 #if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
     if (type == QPixmapData::SgImage && pixmap) {
         RSgImage *sgImage = reinterpret_cast<RSgImage*>(pixmap);
-        // when "0" used as argument then
-        // default display, context are used
-        if (!context)
-            context = qt_vg_create_context(0, QInternal::Pixmap);
 
         destroyImages();
         prevSize = QSize();
@@ -500,7 +496,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         }
 
         const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
-        EGLImageKHR eglImage = eglCreateImageKHR(context->display(),
+        EGLImageKHR eglImage = eglCreateImageKHR(QEglContext::display(),
                 EGL_NO_CONTEXT,
                 EGL_NATIVE_PIXMAP_KHR,
                 (EGLClientBuffer)sgImage,
@@ -515,7 +511,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         vgImage = vgCreateEGLImageTargetKHR(eglImage);
         if(vgGetError() != VG_NO_ERROR) {
             cleanup();
-            eglDestroyImageKHR(context->display(), eglImage);
+            eglDestroyImageKHR(QEglContext::display(), eglImage);
             SgDriver::Close();
             return;
         }
@@ -529,7 +525,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         prevSize = QSize(w, h);
         setSerialNumber(++qt_vg_pixmap_serial);
         // release stuff
-        eglDestroyImageKHR(context->display(), eglImage);
+        eglDestroyImageKHR(QEglContext::display(), eglImage);
         SgDriver::Close();
     } else if (type == QPixmapData::FbsBitmap) {
         CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap*>(pixmap);
@@ -624,7 +620,7 @@ void* QVGPixmapData::toNativeType(NativeType type)
         }
 
         const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
-        EGLImageKHR eglImage = eglCreateImageKHR(context->display(),
+        EGLImageKHR eglImage = eglCreateImageKHR(QEglContext::display(),
                 EGL_NO_CONTEXT,
                 EGL_NATIVE_PIXMAP_KHR,
                 (EGLClientBuffer)sgImage,
@@ -637,7 +633,7 @@ void* QVGPixmapData::toNativeType(NativeType type)
 
         VGImage dstVgImage = vgCreateEGLImageTargetKHR(eglImage);
         if(vgGetError() != VG_NO_ERROR) {
-            eglDestroyImageKHR(context->display(), eglImage);
+            eglDestroyImageKHR(QEglContext::display(), eglImage);
             sgImage->Close();
             SgDriver::Close();
             return 0;
@@ -653,7 +649,7 @@ void* QVGPixmapData::toNativeType(NativeType type)
         }
         // release stuff
         vgDestroyImage(dstVgImage);
-        eglDestroyImageKHR(context->display(), eglImage);
+        eglDestroyImageKHR(QEglContext::display(), eglImage);
         SgDriver::Close();
         return reinterpret_cast<void*>(sgImage);
     } else if (type == QPixmapData::FbsBitmap) {

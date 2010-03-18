@@ -82,6 +82,7 @@ void BrowserView::initialize()
     connect(m_controlStrip, SIGNAL(menuClicked()), SIGNAL(menuButtonClicked()));
     connect(m_controlStrip, SIGNAL(backClicked()), m_webView, SLOT(back()));
     connect(m_controlStrip, SIGNAL(forwardClicked()), m_webView, SLOT(forward()));
+    connect(m_controlStrip, SIGNAL(closeClicked()), qApp, SLOT(quit()));
 
     QPalette pal = m_webView->palette();
     pal.setBrush(QPalette::Base, Qt::white);
