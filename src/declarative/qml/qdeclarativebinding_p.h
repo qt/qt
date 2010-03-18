@@ -68,7 +68,6 @@ class Q_DECLARATIVE_EXPORT QDeclarativeAbstractBinding
 {
 public:
     QDeclarativeAbstractBinding();
-    virtual ~QDeclarativeAbstractBinding();
 
     virtual void destroy();
 
@@ -88,14 +87,15 @@ public:
     void removeFromObject();
 
 protected:
+    virtual ~QDeclarativeAbstractBinding();
     void clear();
 
 private:
+
     friend class QDeclarativeDeclarativeData;
-    friend class QDeclarativeProperty;
+    friend class QDeclarativeValueTypeProxyBinding;
     friend class QDeclarativePropertyPrivate;
     friend class QDeclarativeVME;
-    friend class QDeclarativeValueTypeProxyBinding;
 
     QObject *m_object;
     QDeclarativeAbstractBinding **m_mePtr;
@@ -107,7 +107,6 @@ class QDeclarativeValueTypeProxyBinding : public QDeclarativeAbstractBinding
 {
 public:
     QDeclarativeValueTypeProxyBinding(QObject *o, int coreIndex);
-    virtual ~QDeclarativeValueTypeProxyBinding();
 
     virtual Type bindingType() const { return ValueTypeProxy; }
 
@@ -116,6 +115,9 @@ public:
     virtual void update(QDeclarativePropertyPrivate::WriteFlags);
 
     QDeclarativeAbstractBinding *binding(int propertyIndex);
+
+protected:
+    ~QDeclarativeValueTypeProxyBinding();
 
 private:
     void recursiveEnable(QDeclarativeAbstractBinding *, QDeclarativePropertyPrivate::WriteFlags);
@@ -137,7 +139,6 @@ public:
     QDeclarativeBinding(const QString &, QObject *, QDeclarativeContextData *, QObject *parent=0);
     QDeclarativeBinding(void *, QDeclarativeRefCount *, QObject *, QDeclarativeContextData *, 
                         const QString &, int, QObject *parent);
-    ~QDeclarativeBinding();
 
     void setTarget(const QDeclarativeProperty &);
     QDeclarativeProperty property() const;
@@ -154,6 +155,7 @@ public Q_SLOTS:
     void update() { update(QDeclarativePropertyPrivate::DontRemoveBinding); }
 
 protected:
+    ~QDeclarativeBinding();
     void emitValueChanged();
 
 private:
