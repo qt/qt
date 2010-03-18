@@ -391,6 +391,7 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
         QGraphicsSceneResizeEvent re;
         re.setOldSize(oldSize);
         re.setNewSize(newGeom.size());
+        emit sizeChanged();
         QApplication::sendEvent(this, &re);
     }
 }

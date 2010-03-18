@@ -73,7 +73,7 @@ class Q_GUI_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphicsLay
     Q_PROPERTY(QPalette palette READ palette WRITE setPalette)
     Q_PROPERTY(QFont font READ font WRITE setFont)
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection RESET unsetLayoutDirection)
-    Q_PROPERTY(QSizeF size READ size WRITE resize)
+    Q_PROPERTY(QSizeF size READ size WRITE resize NOTIFY sizeChanged)
     Q_PROPERTY(QSizeF minimumSize READ minimumSize WRITE setMinimumSize)
     Q_PROPERTY(QSizeF preferredSize READ preferredSize WRITE setPreferredSize)
     Q_PROPERTY(QSizeF maximumSize READ maximumSize WRITE setMaximumSize)
@@ -174,6 +174,9 @@ public:
 #else
     using QObject::children;
 #endif
+
+Q_SIGNALS:
+    void sizeChanged();
 
 public Q_SLOTS:
     bool close();
