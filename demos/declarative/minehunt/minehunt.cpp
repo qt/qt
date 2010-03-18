@@ -54,16 +54,16 @@ class Tile : public QObject
 public:
     Tile() : _hasFlag(false), _hasMine(false), _hint(-1), _flipped(false) {}
 
-    Q_PROPERTY(bool hasFlag READ hasFlag WRITE setHasFlag NOTIFY hasFlagChanged);
+    Q_PROPERTY(bool hasFlag READ hasFlag WRITE setHasFlag NOTIFY hasFlagChanged)
     bool hasFlag() const { return _hasFlag; }
 
-    Q_PROPERTY(bool hasMine READ hasMine NOTIFY hasMineChanged);
+    Q_PROPERTY(bool hasMine READ hasMine NOTIFY hasMineChanged)
     bool hasMine() const { return _hasMine; }
 
-    Q_PROPERTY(int hint READ hint NOTIFY hintChanged);
+    Q_PROPERTY(int hint READ hint NOTIFY hintChanged)
     int hint() const { return _hint; }
 
-    Q_PROPERTY(bool flipped READ flipped NOTIFY flippedChanged());
+    Q_PROPERTY(bool flipped READ flipped NOTIFY flippedChanged())
     bool flipped() const { return _flipped; }
 
     void setHasFlag(bool flag) {if(flag==_hasFlag) return; _hasFlag = flag; emit hasFlagChanged();}
@@ -91,19 +91,19 @@ class MinehuntGame : public QObject
 public:
     MinehuntGame();
 
-    Q_PROPERTY(QDeclarativeListProperty<Tile> tiles READ tiles CONSTANT);
+    Q_PROPERTY(QDeclarativeListProperty<Tile> tiles READ tiles CONSTANT)
     QDeclarativeListProperty<Tile> tiles() { return QDeclarativeListProperty<Tile>(this, _tiles); }
 
-    Q_PROPERTY(bool isPlaying READ isPlaying NOTIFY isPlayingChanged);
+    Q_PROPERTY(bool isPlaying READ isPlaying NOTIFY isPlayingChanged)
     bool isPlaying() {return playing;}
 
-    Q_PROPERTY(bool hasWon READ hasWon NOTIFY hasWonChanged);
+    Q_PROPERTY(bool hasWon READ hasWon NOTIFY hasWonChanged)
     bool hasWon() {return won;}
 
-    Q_PROPERTY(int numMines READ numMines NOTIFY numMinesChanged);
+    Q_PROPERTY(int numMines READ numMines NOTIFY numMinesChanged)
     int numMines() const{return nMines;}
 
-    Q_PROPERTY(int numFlags READ numFlags NOTIFY numFlagsChanged);
+    Q_PROPERTY(int numFlags READ numFlags NOTIFY numFlagsChanged)
     int numFlags() const{return nFlags;}
 
 public slots:
