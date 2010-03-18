@@ -69,8 +69,6 @@
 #include "qdeclarativelist_p.h"
 #include "qdeclarativetypenamecache_p.h"
 
-#include <qfxperf_p_p.h>
-
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
 #include <QNetworkReply>

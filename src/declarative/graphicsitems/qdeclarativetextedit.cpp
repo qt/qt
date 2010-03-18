@@ -44,8 +44,6 @@
 
 #include "qdeclarativeevents_p_p.h"
 
-#include <qfxperf_p_p.h>
-
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>

@@ -50,8 +50,6 @@
 #include "parser/qdeclarativejsast_p.h"
 #include "qdeclarativerewrite_p.h"
 
-#include <qfxperf_p_p.h>
-
 #include <QStack>
 #include <QCoreApplication>
 #include <QtDebug>
@@ -866,9 +864,6 @@ public:
 
 bool QDeclarativeScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::QDeclarativeParsing> pt;
-#endif
     clear();
 
     const QString fileName = url.toString();

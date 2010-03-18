@@ -54,8 +54,6 @@
 #include "qdeclarativeglobal_p.h"
 #include "qdeclarativescriptparser_p.h"
 
-#include <qfxperf_p_p.h>
-
 #include <QStack>
 #include <QStringList>
 #include <QFileInfo>

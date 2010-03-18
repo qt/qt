@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qdeclarativeutilmodule_p.h"
-#include "qfxperf_p_p.h"
 #include "qdeclarativeanimation_p.h"
 #include "qdeclarativeanimation_p_p.h"
 #include "qdeclarativebehavior_p.h"
@@ -71,7 +70,6 @@
 #ifndef QT_NO_XMLPATTERNS
 #include "qdeclarativexmllistmodel_p.h"
 #endif
-#include "qperformancelog_p_p.h"
 
 void QDeclarativeUtilModule::defineModule()
 {
