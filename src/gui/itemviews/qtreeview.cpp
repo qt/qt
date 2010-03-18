@@ -2271,6 +2271,9 @@ void QTreeView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
 /*!
   Returns the rectangle from the viewport of the items in the given
   \a selection.
+
+  Since 4.7, the returned region only contains rectangles intersecting
+  (or included in) the viewport.
 */
 QRegion QTreeView::visualRegionForSelection(const QItemSelection &selection) const
 {
@@ -2279,6 +2282,7 @@ QRegion QTreeView::visualRegionForSelection(const QItemSelection &selection) con
         return QRegion();
 
     QRegion selectionRegion;
+    const QRect &viewportRect = d->viewport->rect();
     for (int i = 0; i < selection.count(); ++i) {
         QItemSelectionRange range = selection.at(i);
         if (!range.isValid())
@@ -2311,13 +2315,16 @@ QRegion QTreeView::visualRegionForSelection(const QItemSelection &selection) con
             qSwap<int>(top, bottom);
         int height = bottom - top + 1;
         if (d->header->sectionsMoved()) {
-            for (int c = range.left(); c <= range.right(); ++c)
-                selectionRegion += QRegion(QRect(columnViewportPosition(c), top,
-                                                 columnWidth(c), height));
+            for (int c = range.left(); c <= range.right(); ++c) {
+                const QRect rangeRect(columnViewportPosition(c), top, columnWidth(c), height);
+                if (viewportRect.intersects(rangeRect))
+                    selectionRegion += rangeRect;
+            }
         } else {
             QRect combined = leftRect|rightRect;
             combined.setX(columnViewportPosition(isRightToLeft() ? range.right() : range.left()));
-            selectionRegion += combined;
+            if (viewportRect.intersects(combined))
+                selectionRegion += combined;
         }
     }
     return selectionRegion;
