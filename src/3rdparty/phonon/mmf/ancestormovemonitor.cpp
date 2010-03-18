@@ -18,7 +18,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ancestormovemonitor.h"
 #include "utils.h"
-#include "videooutput.h"
+
+#include "videooutput_dsa.h"
 
 #include <QCoreApplication>
 
@@ -59,7 +60,7 @@ AncestorMoveMonitor::~AncestorMoveMonitor()
 // Public functions
 //-----------------------------------------------------------------------------
 
-void AncestorMoveMonitor::registerTarget(VideoOutput *target)
+void AncestorMoveMonitor::registerTarget(DsaVideoOutput *target)
 {
     TRACE_CONTEXT(AncestorMoveMonitor::registerTarget, EVideoInternal);
     TRACE_ENTRY("target 0x%08x", target);
@@ -93,7 +94,7 @@ void AncestorMoveMonitor::registerTarget(VideoOutput *target)
     TRACE_EXIT_0();
 }
 
-void AncestorMoveMonitor::unRegisterTarget(VideoOutput *target)
+void AncestorMoveMonitor::unRegisterTarget(DsaVideoOutput *target)
 {
     TRACE_CONTEXT(AncestorMoveMonitor::unRegisterTarget, EVideoInternal);
     TRACE_ENTRY("target 0x%08x", target);
@@ -126,7 +127,7 @@ bool AncestorMoveMonitor::eventFilter(QObject *watched, QEvent *event)
         const Hash::const_iterator it = m_hash.find(watched);
         if(it != m_hash.end()) {
             const TargetList& targetList = it.value();
-            VideoOutput* target = 0;
+            DsaVideoOutput* target = 0;
             foreach(target, targetList) {
                 switch (event->type()) {
 
@@ -166,15 +167,13 @@ void AncestorMoveMonitor::dump()
         const QObject *ancestor = it.key();
         TRACE("ancestor 0x%08x", ancestor);
         const TargetList& targetList = it.value();
-        VideoOutput* target = 0;
+        DsaVideoOutput* target = 0;
         foreach(target, targetList) {
             TRACE("    target 0x%08x", target);
         }
     }
 #endif
 }
-
-
 
 QT_END_NAMESPACE
 
