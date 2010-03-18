@@ -83,8 +83,8 @@ public:
 
     QSize nativeSize() const;
 
-    QVideoWidget::AspectRatioMode aspectRatioMode() const;
-    void setAspectRatioMode(QVideoWidget::AspectRatioMode mode);
+    Qt::AspectRatioMode aspectRatioMode() const;
+    void setAspectRatioMode(Qt::AspectRatioMode mode);
 
     int brightness() const;
     void setBrightness(int brightness);
@@ -118,7 +118,7 @@ private:
 
     bool m_fullscreen;
     QSize m_nativeSize;
-    QVideoWidget::AspectRatioMode m_aspectRatioMode;
+    Qt::AspectRatioMode m_aspectRatioMode;
     int m_brightness;
     int m_contrast;
     int m_hue;
