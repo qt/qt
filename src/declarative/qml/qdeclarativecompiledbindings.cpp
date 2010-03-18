@@ -251,8 +251,8 @@ void QDeclarativeCompiledBindingsPrivate::Binding::destroy()
 {
     enabled = false;
     removeFromObject();
-    parent->q_func()->release();
     clear();
+    parent->q_func()->release();
 }
 
 int QDeclarativeCompiledBindings::qt_metacall(QMetaObject::Call c, int id, void **)
