@@ -136,22 +136,22 @@ int main(int argc, char *argv[])
     if (serialPortName.isEmpty()) {
         if (loglevel > 0)
             outstream << "Detecting serial ports" << endl;
-        QList <SerialPortId> ports = enumerateSerialPorts();
-        foreach(SerialPortId id, ports) {
+        foreach (const SerialPortId &id, enumerateSerialPorts()) {
             if (loglevel > 0)
                 outstream << "Port Name: " << id.portName << ", "
                      << "Friendly Name:" << id.friendlyName << endl;
-            if (serialPortName.isEmpty()) {
-                if (!id.friendlyName.isEmpty()
-                        && serialPortFriendlyName.isEmpty()
-                        && (id.friendlyName.contains("symbian", Qt::CaseInsensitive)
-                            || id.friendlyName.contains("s60", Qt::CaseInsensitive)
-                            || id.friendlyName.contains("nokia", Qt::CaseInsensitive)))
-                        serialPortName = id.portName;
-                else if (!id.friendlyName.isEmpty()
-                        && !serialPortFriendlyName.isEmpty()
-                        && id.friendlyName.contains(serialPortFriendlyName))
-                    serialPortName = id.portName;
+            if (!id.friendlyName.isEmpty()
+                    && serialPortFriendlyName.isEmpty()
+                    && (id.friendlyName.contains("symbian", Qt::CaseInsensitive)
+                        || id.friendlyName.contains("s60", Qt::CaseInsensitive)
+                        || id.friendlyName.contains("nokia", Qt::CaseInsensitive))) {
+                serialPortName = id.portName;
+                break;
+            } else if (!id.friendlyName.isEmpty()
+                    && !serialPortFriendlyName.isEmpty()
+                    && id.friendlyName.contains(serialPortFriendlyName)) {
+                serialPortName = id.portName;
+                break;
             }
         }
         if (serialPortName.isEmpty()) {
