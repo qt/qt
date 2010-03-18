@@ -944,7 +944,7 @@ void QDeclarativeAnchorChanges::saveOriginals()
     d->origBaseline = d->target->anchors()->baseline();
 
     d->applyOrigLeft = d->applyOrigRight = d->applyOrigHCenter = d->applyOrigTop
-      = d->applyOrigBottom = d->applyOrigHCenter = d->applyOrigBaseline = false;
+      = d->applyOrigBottom = d->applyOrigVCenter = d->applyOrigBaseline = false;
 
     saveCurrentValues();
 }
