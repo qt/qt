@@ -24,7 +24,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QObject>
 
-#include "videooutput.h"
+#include "abstractvideooutput.h"
 
 class RFile;
 
@@ -34,7 +34,6 @@ namespace Phonon
 {
 namespace MMF
 {
-class VideoOutput;
 
 /**
  * @short Interface which abstracts from MediaObject the current
@@ -79,7 +78,7 @@ public:
 
     virtual void volumeChanged(qreal volume);
 
-    void setVideoOutput(VideoOutput* videoOutput);
+    void setVideoOutput(AbstractVideoOutput *videoOutput);
 
     /**
      * Records error message and changes state to ErrorState
@@ -156,7 +155,7 @@ private:
 
 protected:
     // Not owned
-    VideoOutput*                m_videoOutput;
+    AbstractVideoOutput*        m_videoOutput;
 
     qreal                       m_volume;
 

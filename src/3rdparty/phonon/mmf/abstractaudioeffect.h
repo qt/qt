@@ -28,7 +28,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "audioplayer.h"
 #include "effectparameter.h"
 #include "mmf_medianode.h"
-#include "mmf_videoplayer.h"
 
 class CMdaAudioOutputStream;
 

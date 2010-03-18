@@ -96,7 +96,7 @@ void MMF::AbstractPlayer::volumeChanged(qreal volume)
 // Video output
 //-----------------------------------------------------------------------------
 
-void MMF::AbstractPlayer::setVideoOutput(VideoOutput* videoOutput)
+void MMF::AbstractPlayer::setVideoOutput(AbstractVideoOutput* videoOutput)
 {
     m_videoOutput = videoOutput;
     videoOutputChanged();

@@ -18,9 +18,14 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mediaobject.h"
 #include "utils.h"
-#include "videooutput.h"
 
 #include "videowidget.h"
+
+#ifdef PHONON_MMF_VIDEO_SURFACES
+#include "videooutput_surface.h"
+#else
+#include "videooutput_dsa.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -45,10 +50,13 @@ static const qreal DefaultSaturation = 1.0;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::VideoWidget::VideoWidget
-    (AncestorMoveMonitor* ancestorMoveMonitor, QWidget* parent)
+MMF::VideoWidget::VideoWidget(QWidget *parent)
         :   MediaNode(parent)
-        ,   m_videoOutput(new VideoOutput(ancestorMoveMonitor, parent))
+#ifdef PHONON_MMF_VIDEO_SURFACES
+        ,   m_videoOutput(new SurfaceVideoOutput(parent))
+#else
+        ,   m_videoOutput(new DsaVideoOutput(parent))
+#endif
         ,   m_brightness(DefaultBrightness)
         ,   m_contrast(DefaultContrast)
         ,   m_hue(DefaultHue)
@@ -67,6 +75,13 @@ MMF::VideoWidget::~VideoWidget()
 
     TRACE_EXIT_0();
 }
+
+#ifndef PHONON_MMF_VIDEO_SURFACES
+void MMF::VideoWidget::setAncestorMoveMonitor(AncestorMoveMonitor *monitor)
+{
+    static_cast<DsaVideoOutput *>(m_videoOutput.data())->setAncestorMoveMonitor(monitor);
+}
+#endif
 
 
 //-----------------------------------------------------------------------------
