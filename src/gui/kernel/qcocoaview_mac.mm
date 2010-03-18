@@ -1058,7 +1058,8 @@ static int qCocoaViewCount = 0;
 {
     // see the comment in the acceptsFirstResponder - if the window "stole" focus
     // let it become the responder, but don't tell Qt
-    if (!QApplication::focusWidget() && qwidget->focusPolicy() != Qt::NoFocus)
+    if (qwidget && qt_widget_private(qwidget->window())->topData()->embedded
+        && !QApplication::focusWidget() && qwidget->focusPolicy() != Qt::NoFocus)
         qwidget->setFocus(Qt::OtherFocusReason);
     return YES;
 }
