@@ -4,6 +4,7 @@
 minimalAppResource31 = \
     "SOURCEPATH s60framework" \
     "START RESOURCE s60main.rss" \
+    "TARGET s60main$${QT_LIBINFIX}" \
     "HEADER" \
     "TARGETPATH /resource/apps" \
     "END"
@@ -17,3 +18,5 @@ HEADERS += s60framework/qs60mainapplication_p.h \
            s60framework/qs60mainapplication.h \
            s60framework/qs60mainappui.h \
            s60framework/qs60maindocument.h
+
+!isEmpty(QT_LIBINFIX): DEFINES += QT_LIBINFIX_UNQUOTED=$$QT_LIBINFIX

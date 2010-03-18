@@ -45,7 +45,15 @@
 #include <eikmenub.h>
 #include <eikmenup.h>
 #include <barsread.h>
-#include <s60main.rsg>
+#include <qconfig.h>
+#if defined(QT_LIBINFIX_UNQUOTED)
+// Two level macro needed for proper expansion of libinfix
+#  define QT_S60MAIN_RSG_2(x) <s60main##x##.rsg>
+#  define QT_S60MAIN_RSG(x) QT_S60MAIN_RSG_2(x)
+#  include QT_S60MAIN_RSG(QT_LIBINFIX_UNQUOTED)
+#else
+#  include <s60main.rsg>
+#endif
 #include <avkon.rsg>
 
 #include "qs60mainappui.h"
