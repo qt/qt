@@ -162,17 +162,10 @@ FilterWidget::FilterWidget(QWidget *parent, LayoutMode lm)  :
     // Let the style determine minimum height for our widget
     QSize size(ICONBUTTON_SIZE + 2, ICONBUTTON_SIZE + 2);
 
-    QStyleOptionFrame frameOpt;
-    frameOpt.initFrom(m_editor);
-    QSize adjustedSize = style()->sizeFromContents(QStyle::CT_LineEdit, &frameOpt, size, m_editor);
-
     // Note KDE does not reserve space for the highlight color
     if (style()->inherits("OxygenStyle")) {
-        adjustedSize = adjustedSize.expandedTo(QSize(0, 32));
         size = size.expandedTo(QSize(24, 0));
     }
-
-    m_editor->setMinimumHeight(adjustedSize.height());
 
     // Make room for clear icon
     QMargins margins = m_editor->textMargins();
