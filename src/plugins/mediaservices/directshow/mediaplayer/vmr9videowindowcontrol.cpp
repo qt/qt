@@ -162,30 +162,30 @@ QSize Vmr9VideoWindowControl::nativeSize() const
     return size;
 }
 
-QVideoWidget::AspectRatioMode Vmr9VideoWindowControl::aspectRatioMode() const
+Qt::AspectRatioMode Vmr9VideoWindowControl::aspectRatioMode() const
 {
-    QVideoWidget::AspectRatioMode mode = QVideoWidget::KeepAspectRatio;
+    Qt::AspectRatioMode mode = Qt::KeepAspectRatio;
 
     if (IVMRWindowlessControl9 *control = com_cast<IVMRWindowlessControl9>(
             m_filter, IID_IVMRWindowlessControl9)) {
         DWORD arMode;
 
         if (control->GetAspectRatioMode(&arMode) == S_OK && arMode == VMR9ARMode_None)
-            mode = QVideoWidget::IgnoreAspectRatio;
+            mode = Qt::IgnoreAspectRatio;
         control->Release();
     }
     return mode;
 }
 
-void Vmr9VideoWindowControl::setAspectRatioMode(QVideoWidget::AspectRatioMode mode)
+void Vmr9VideoWindowControl::setAspectRatioMode(Qt::AspectRatioMode mode)
 {
     if (IVMRWindowlessControl9 *control = com_cast<IVMRWindowlessControl9>(
             m_filter, IID_IVMRWindowlessControl9)) {
         switch (mode) {
-        case QVideoWidget::IgnoreAspectRatio:
+        case Qt::IgnoreAspectRatio:
             control->SetAspectRatioMode(VMR9ARMode_None);
             break;
-        case QVideoWidget::KeepAspectRatio:
+        case Qt::KeepAspectRatio:
             control->SetAspectRatioMode(VMR9ARMode_LetterBox);
             break;
         default:

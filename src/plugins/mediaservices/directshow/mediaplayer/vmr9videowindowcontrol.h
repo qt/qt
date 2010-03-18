@@ -75,8 +75,8 @@ public:
 
     QSize nativeSize() const;
 
-    QVideoWidget::AspectRatioMode aspectRatioMode() const;
-    void setAspectRatioMode(QVideoWidget::AspectRatioMode mode);
+    Qt::AspectRatioMode aspectRatioMode() const;
+    void setAspectRatioMode(Qt::AspectRatioMode mode);
 
     int brightness() const;
     void setBrightness(int brightness);
