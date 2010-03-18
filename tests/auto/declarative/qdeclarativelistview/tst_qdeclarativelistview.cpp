@@ -321,7 +321,7 @@ void tst_QDeclarativeListView::items()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
     qApp->processEvents();
 
     QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
@@ -402,7 +402,7 @@ void tst_QDeclarativeListView::changed()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
     qApp->processEvents();
 
     QDeclarativeFlickable *listview = findItem<QDeclarativeFlickable>(canvas->rootObject(), "list");
@@ -438,7 +438,7 @@ void tst_QDeclarativeListView::inserted()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
     qApp->processEvents();
 
     QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
@@ -531,7 +531,7 @@ void tst_QDeclarativeListView::removed(bool animated)
     testObject->setAnimate(animated);
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
     qApp->processEvents();
 
     QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
@@ -673,7 +673,7 @@ void tst_QDeclarativeListView::clear()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
     qApp->processEvents();
 
     QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
@@ -710,7 +710,7 @@ void tst_QDeclarativeListView::moved()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
     qApp->processEvents();
 
     QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
@@ -851,7 +851,7 @@ void tst_QDeclarativeListView::spacing()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
     qApp->processEvents();
 
     QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
@@ -1122,7 +1122,7 @@ void tst_QDeclarativeListView::cacheBuffer()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
     qApp->processEvents();
 
     QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
@@ -1174,7 +1174,7 @@ void tst_QDeclarativeListView::positionViewAtIndex()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
     qApp->processEvents();
 
     QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
@@ -1333,7 +1333,7 @@ void tst_QDeclarativeListView::propertyChanges()
 {
     QDeclarativeView *canvas = createView();
     QVERIFY(canvas);
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychangestest.qml"));
 
     QDeclarativeListView *listView = canvas->rootObject()->findChild<QDeclarativeListView*>("listView");
     QVERIFY(listView);
@@ -1401,7 +1401,7 @@ void tst_QDeclarativeListView::componentChanges()
 {
     QDeclarativeView *canvas = createView();
     QVERIFY(canvas);
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychangestest.qml"));
 
     QDeclarativeListView *listView = canvas->rootObject()->findChild<QDeclarativeListView*>("listView");
     QVERIFY(listView);
@@ -1449,7 +1449,7 @@ void tst_QDeclarativeListView::modelChanges()
 {
     QDeclarativeView *canvas = createView();
     QVERIFY(canvas);
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychangestest.qml"));
 
     QDeclarativeListView *listView = canvas->rootObject()->findChild<QDeclarativeListView*>("listView");
     QVERIFY(listView);

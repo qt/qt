@@ -239,7 +239,7 @@ void tst_QDeclarativePositioners::test_vertical_animated()
 
 void tst_QDeclarativePositioners::test_grid()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/grid.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/gridtest.qml");
 
     QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
     QVERIFY(one != 0);
@@ -365,9 +365,10 @@ void tst_QDeclarativePositioners::test_grid_animated()
 }
 void tst_QDeclarativePositioners::test_propertychanges()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/propertychanges.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/propertychangestest.qml");
 
     QDeclarativeGrid *grid = qobject_cast<QDeclarativeGrid*>(canvas->rootObject());
+    QVERIFY(grid != 0);
     QDeclarativeTransition *rowTransition = canvas->rootObject()->findChild<QDeclarativeTransition*>("rowTransition");
     QDeclarativeTransition *columnTransition = canvas->rootObject()->findChild<QDeclarativeTransition*>("columnTransition");
 
@@ -421,7 +422,7 @@ void tst_QDeclarativePositioners::test_propertychanges()
 
 void tst_QDeclarativePositioners::test_repeater()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/repeater.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/repeatertest.qml");
 
     QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
     QVERIFY(one != 0);
