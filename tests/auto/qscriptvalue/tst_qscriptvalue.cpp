@@ -2571,6 +2571,10 @@ void tst_QScriptValue::call()
         // call with something else as arguments
         QScriptValue ret5 = fun.call(QScriptValue(), QScriptValue(&eng, 123.0));
         QCOMPARE(ret5.isError(), true);
+        // call with a non-array object as arguments
+        QScriptValue ret6 = fun.call(QScriptValue(), eng.globalObject());
+        QVERIFY(ret6.isError());
+        QCOMPARE(ret6.toString(), QString::fromLatin1("TypeError: Arguments must be an array"));
     }
 
     // calling things that are not functions
@@ -2703,6 +2707,10 @@ void tst_QScriptValue::construct()
         // construct with something else as arguments
         QScriptValue ret5 = fun.construct(QScriptValue(&eng, 123.0));
         QCOMPARE(ret5.isError(), true);
+        // construct with a non-array object as arguments
+        QScriptValue ret6 = fun.construct(eng.globalObject());
+        QVERIFY(ret6.isError());
+        QCOMPARE(ret6.toString(), QString::fromLatin1("TypeError: Arguments must be an array"));
     }
 
     // construct on things that are not functions
