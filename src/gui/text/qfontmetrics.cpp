@@ -472,8 +472,9 @@ int QFontMetrics::leftBearing(QChar ch) const
     int nglyphs = 9;
     engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
     // ### can nglyphs != 1 happen at all? Not currently I think
-    glyph_metrics_t gi = engine->boundingBox(glyphs.glyphs[0]);
-    return qRound(gi.x);
+    qreal lb;
+    engine->getGlyphBearings(glyphs.glyphs[0], &lb);
+    return qRound(lb);
 }
 
 /*!
@@ -506,8 +507,9 @@ int QFontMetrics::rightBearing(QChar ch) const
     int nglyphs = 9;
     engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
     // ### can nglyphs != 1 happen at all? Not currently I think
-    glyph_metrics_t gi = engine->boundingBox(glyphs.glyphs[0]);
-    return qRound(gi.xoff - gi.x - gi.width);
+    qreal rb;
+    engine->getGlyphBearings(glyphs.glyphs[0], 0, &rb);
+    return qRound(rb);
 }
 
 /*!
@@ -1317,8 +1319,9 @@ qreal QFontMetricsF::leftBearing(QChar ch) const
     int nglyphs = 9;
     engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
     // ### can nglyphs != 1 happen at all? Not currently I think
-    glyph_metrics_t gi = engine->boundingBox(glyphs.glyphs[0]);
-    return gi.x.toReal();
+    qreal lb;
+    engine->getGlyphBearings(glyphs.glyphs[0], &lb);
+    return lb;
 }
 
 /*!
@@ -1351,8 +1354,10 @@ qreal QFontMetricsF::rightBearing(QChar ch) const
     int nglyphs = 9;
     engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
     // ### can nglyphs != 1 happen at all? Not currently I think
-    glyph_metrics_t gi = engine->boundingBox(glyphs.glyphs[0]);
-    return (gi.xoff - gi.x - gi.width).toReal();
+    qreal rb;
+    engine->getGlyphBearings(glyphs.glyphs[0], 0, &rb);
+    return rb;
+
 }
 
 /*!
