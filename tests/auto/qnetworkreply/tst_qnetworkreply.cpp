@@ -199,6 +199,10 @@ private Q_SLOTS:
 #endif
     void ioGetFromHttpBrokenServer_data();
     void ioGetFromHttpBrokenServer();
+    void ioGetFromHttpStatus100_data();
+    void ioGetFromHttpStatus100();
+    void ioGetFromHttpNoHeaders_data();
+    void ioGetFromHttpNoHeaders();
     void ioGetFromHttpWithCache_data();
     void ioGetFromHttpWithCache();
 
@@ -2072,6 +2076,60 @@ void tst_QNetworkReply::ioGetFromHttpBrokenServer()
 
     QCOMPARE(reply->url(), request.url());
     QVERIFY(reply->error() != QNetworkReply::NoError);
+}
+
+void tst_QNetworkReply::ioGetFromHttpStatus100_data()
+{
+    QTest::addColumn<QByteArray>("dataToSend");
+    QTest::newRow("normal") << QByteArray("HTTP/1.1 100 Continue\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
+    QTest::newRow("minimal") << QByteArray("HTTP/1.1 100 Continue\n\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
+    QTest::newRow("minimal2") << QByteArray("HTTP/1.1 100 Continue\n\nHTTP/1.0 200 OK\r\n\r\n");
+    QTest::newRow("minimal3") << QByteArray("HTTP/1.1 100 Continue\n\nHTTP/1.0 200 OK\n\n");
+    QTest::newRow("with_headers") << QByteArray("HTTP/1.1 100 Continue\r\nBla: x\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
+    QTest::newRow("with_headers2") << QByteArray("HTTP/1.1 100 Continue\nBla: x\n\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
+}
+
+void tst_QNetworkReply::ioGetFromHttpStatus100()
+{
+    QFETCH(QByteArray, dataToSend);
+    MiniHttpServer server(dataToSend);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->url(), request.url());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    QVERIFY(reply->rawHeader("bla").isNull());
+}
+
+void tst_QNetworkReply::ioGetFromHttpNoHeaders_data()
+{
+    QTest::addColumn<QByteArray>("dataToSend");
+    QTest::newRow("justStatus+noheaders+disconnect") << QByteArray("HTTP/1.0 200 OK\r\n\r\n");
+}
+
+void tst_QNetworkReply::ioGetFromHttpNoHeaders()
+{
+    QFETCH(QByteArray, dataToSend);
+    MiniHttpServer server(dataToSend);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->url(), request.url());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
 }
 
 void tst_QNetworkReply::ioGetFromHttpWithCache_data()
