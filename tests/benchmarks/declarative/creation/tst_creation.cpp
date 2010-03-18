@@ -47,6 +47,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsItem>
 #include <QDeclarativeItem>
+#include <QDeclarativeContext>
 #include <private/qobject_p.h>
 
 #ifdef Q_OS_SYMBIAN
@@ -59,7 +60,7 @@ class tst_creation : public QObject
 {
     Q_OBJECT
 public:
-    tst_creation() {}
+    tst_creation();
 
 private slots:
     void qobject_cpp();
@@ -67,13 +68,11 @@ private slots:
     void qobject_qmltype();
     void qobject_alloc();
 
-    void objects_qmltype_data();
-    void objects_qmltype();
+    void qobject_10flat_qml();
+    void qobject_10flat_cpp();
 
-    void qgraphicsitem();
-    void qgraphicsobject();
-    void qgraphicsitem14();
-    void qgraphicsitem_tree14();
+    void qobject_10tree_qml();
+    void qobject_10tree_cpp();
 
     void itemtree_notree_cpp();
     void itemtree_objtree_cpp();
@@ -82,9 +81,35 @@ private slots:
     void itemtree_qml();
     void itemtree_scene_cpp();
 
+    void elements_data();
+    void elements();
+
 private:
     QDeclarativeEngine engine;
 };
+
+class TestType : public QObject
+{
+Q_OBJECT
+Q_PROPERTY(QDeclarativeListProperty<QObject> resources READ resources);
+Q_CLASSINFO("DefaultProperty", "resources");
+public:
+    TestType(QObject *parent = 0)
+    : QObject(parent) {}
+
+    QDeclarativeListProperty<QObject> resources() { 
+        return QDeclarativeListProperty<QObject>(this, 0, resources_append); 
+    }
+
+    static void resources_append(QDeclarativeListProperty<QObject> *p, QObject *o) {
+        o->setParent(p->object);
+    }
+};
+
+tst_creation::tst_creation() 
+{
+    qmlRegisterType<TestType>("Qt.test", 1, 0, "TestType");
+}
 
 inline QUrl TEST_FILE(const QString &filename)
 {
@@ -101,13 +126,78 @@ void tst_creation::qobject_cpp()
 
 void tst_creation::qobject_qml()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("qobject.qml"));
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt 4.6\nQtObject {}", QUrl());
     QObject *obj = component.create();
     delete obj;
 
     QBENCHMARK {
         QObject *obj = component.create();
         delete obj;
+    }
+}
+
+void tst_creation::qobject_10flat_qml()
+{
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt.test 1.0\nTestType { resources: [ TestType{},TestType{},TestType{},TestType{},TestType{},TestType{},TestType{},TestType{},TestType{},TestType{} ] }", QUrl());
+    QObject *obj = component.create();
+    delete obj;
+
+    QBENCHMARK {
+        QObject *obj = component.create();
+        delete obj;
+    }
+}
+
+void tst_creation::qobject_10flat_cpp()
+{
+    QBENCHMARK {
+        QObject *item = new TestType;
+        new TestType(item);
+        new TestType(item);
+        new TestType(item);
+        new TestType(item);
+        new TestType(item);
+        new TestType(item);
+        new TestType(item);
+        new TestType(item);
+        new TestType(item);
+        new TestType(item);
+        delete item;
+    }
+}
+
+void tst_creation::qobject_10tree_qml()
+{
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt.test 1.0\nTestType { TestType{ TestType { TestType{ TestType{ TestType{ TestType{ TestType{ TestType{ TestType{ TestType{ } } } } } } } } } } }", QUrl());
+
+    QObject *obj = component.create();
+    delete obj;
+
+    QBENCHMARK {
+        QObject *obj = component.create();
+        delete obj;
+    }
+}
+
+void tst_creation::qobject_10tree_cpp()
+{
+    QBENCHMARK {
+        QObject *item = new TestType;
+        QObject *root = item;
+        item = new TestType(item);
+        item = new TestType(item);
+        item = new TestType(item);
+        item = new TestType(item);
+        item = new TestType(item);
+        item = new TestType(item);
+        item = new TestType(item);
+        item = new TestType(item);
+        item = new TestType(item);
+        item = new TestType(item);
+        delete root;
     }
 }
 
@@ -147,139 +237,6 @@ void tst_creation::qobject_alloc()
     QBENCHMARK {
         QObjectFake *obj = new QObjectFake;
         delete obj;
-    }
-}
-
-void tst_creation::objects_qmltype_data()
-{
-    QTest::addColumn<QByteArray>("type");
-
-    QList<QByteArray> types = QDeclarativeMetaType::qmlTypeNames();
-    foreach (QByteArray type, types)
-        QTest::newRow(type.constData()) << type;
-}
-
-void tst_creation::objects_qmltype()
-{
-    QFETCH(QByteArray, type);
-    QDeclarativeType *t = QDeclarativeMetaType::qmlType(type, 4, 6);
-    if (!t || !t->isCreatable())
-        QSKIP("Non-creatable type", SkipSingle);
-
-    QBENCHMARK {
-        QObject *obj = t->create();
-        delete obj;
-    }
-}
-
-class QGraphicsItemDummy : public QGraphicsItem
-{
-public:
-    virtual QRectF boundingRect() const { return QRectF(); }
-    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) {}
-};
-
-class QGraphicsObjectDummy : public QGraphicsObject
-{
-public:
-    virtual QRectF boundingRect() const { return QRectF(); }
-    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) {}
-};
-
-void tst_creation::qgraphicsitem()
-{
-    QBENCHMARK {
-        QGraphicsItemDummy *i = new QGraphicsItemDummy();
-        delete i;
-    }
-}
-
-void tst_creation::qgraphicsobject()
-{
-    QBENCHMARK {
-        QGraphicsObjectDummy *i = new QGraphicsObjectDummy();
-        delete i;
-    }
-}
-
-void tst_creation::qgraphicsitem14()
-{
-    QBENCHMARK {
-        QGraphicsItemDummy *i1 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i2 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i3 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i4 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i5 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i6 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i7 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i8 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i9 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i10 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i11 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i12 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i13 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i14 = new QGraphicsItemDummy();
-
-        delete i1;
-        delete i2;
-        delete i3;
-        delete i4;
-        delete i5;
-        delete i6;
-        delete i7;
-        delete i8;
-        delete i9;
-        delete i10;
-        delete i11;
-        delete i12;
-        delete i13;
-        delete i14;
-    }
-}
-
-void tst_creation::qgraphicsitem_tree14()
-{
-    QBENCHMARK {
-        // i1
-        // +-------------------------+
-        // i2                        i3
-        // +-----------+       +-----+-----+
-        // i4          i5      i6          i7
-        // +----+   +--+    +--+--+        +----+
-        // i8   i9  i10   i11     i12      i13  i14
-
-        QGraphicsItemDummy *i1 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i2 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i3 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i4 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i5 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i6 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i7 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i8 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i9 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i10 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i11 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i12 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i13 = new QGraphicsItemDummy();
-        QGraphicsItemDummy *i14 = new QGraphicsItemDummy();
-
-        i14->setParentItem(i7);
-        i13->setParentItem(i7);
-        i12->setParentItem(i6);
-        i11->setParentItem(i6);
-        i10->setParentItem(i5);
-        i9->setParentItem(i4);
-        i8->setParentItem(i4);
-
-        i7->setParentItem(i3);
-        i6->setParentItem(i3);
-        i5->setParentItem(i2);
-        i4->setParentItem(i2);
-
-        i3->setParentItem(i1);
-        i2->setParentItem(i1);
-
-        delete i1;
     }
 }
 
@@ -378,6 +335,27 @@ void tst_creation::itemtree_scene_cpp()
     delete root;
 }
 
+void tst_creation::elements_data()
+{
+    QTest::addColumn<QByteArray>("type");
+
+    QList<QByteArray> types = QDeclarativeMetaType::qmlTypeNames();
+    foreach (QByteArray type, types)
+        QTest::newRow(type.constData()) << type;
+}
+
+void tst_creation::elements()
+{
+    QFETCH(QByteArray, type);
+    QDeclarativeType *t = QDeclarativeMetaType::qmlType(type, 4, 6);
+    if (!t || !t->isCreatable())
+        QSKIP("Non-creatable type", SkipSingle);
+
+    QBENCHMARK {
+        QObject *obj = t->create();
+        delete obj;
+    }
+}
 
 QTEST_MAIN(tst_creation)
 

@@ -207,13 +207,14 @@ QDeclarativeParser::Object::DynamicSlot::DynamicSlot(const DynamicSlot &o)
 }
 
 QDeclarativeParser::Property::Property()
-: parent(0), type(0), index(-1), value(0), isDefault(true), isDeferred(false)
+: parent(0), type(0), index(-1), value(0), isDefault(true), isDeferred(false), 
+  isValueTypeSubProperty(false)
 {
 }
 
 QDeclarativeParser::Property::Property(const QByteArray &n)
 : parent(0), type(0), index(-1), value(0), name(n), isDefault(false), 
-  isDeferred(false)
+  isDeferred(false), isValueTypeSubProperty(false)
 {
 }
 

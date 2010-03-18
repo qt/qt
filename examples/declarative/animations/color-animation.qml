@@ -1,4 +1,5 @@
 import Qt 4.6
+import Qt.labs.particles 1.0
 
 Item {
     id: window

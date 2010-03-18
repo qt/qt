@@ -109,7 +109,7 @@ public:
         setRoleNames(roles);
     }
 
-    int rowCount(const QModelIndex &parent=QModelIndex()) const { return list.count(); }
+    int rowCount(const QModelIndex &parent=QModelIndex()) const { Q_UNUSED(parent); return list.count(); }
     QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const {
         QVariant rv;
         if (role == Name)
@@ -224,7 +224,7 @@ void tst_QDeclarativeRepeater::stringList()
     QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testData", data);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/repeater.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/repeater1.qml"));
     qApp->processEvents();
 
     QDeclarativeRepeater *repeater = findItem<QDeclarativeRepeater>(canvas->rootObject(), "repeater");

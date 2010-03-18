@@ -91,7 +91,7 @@ public Q_SLOTS:
     void calcWidth();
 
 Q_SIGNALS:
-    void rectChanged();
+    void rectChanged(QRectF);
 
 private:
     QDeclarativeItem *m_item;
@@ -101,7 +101,7 @@ private:
     qreal m_height;
 };
 
-class QDeclarativeItemPrivate : public QGraphicsItemPrivate
+class Q_DECLARATIVE_EXPORT QDeclarativeItemPrivate : public QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeItem)
 
@@ -240,7 +240,7 @@ public:
     // Reimplemented from QGraphicsItemPrivate
     virtual void subFocusItemChange()
     {
-        emit q_func()->wantsFocusChanged();
+        emit q_func()->wantsFocusChanged(subFocusItem != 0);
     }
 
     // Reimplemented from QGraphicsItemPrivate
@@ -255,9 +255,11 @@ public:
         }
     }
 
+    virtual void focusChanged(bool);
+
     static int consistentTime;
     static QTime currentTime();
-    static void Q_DECLARATIVE_EXPORT setConsistentTime(int t);
+    static void setConsistentTime(int t);
     static void start(QTime &);
     static int elapsed(QTime &);
     static int restart(QTime &);
