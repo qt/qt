@@ -183,13 +183,13 @@ void tst_qdeclarativeproperty::qmlmetaproperty()
 class PropertyObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int defaultProperty READ defaultProperty);
-    Q_PROPERTY(QRect rectProperty READ rectProperty);
-    Q_PROPERTY(QRect wrectProperty READ wrectProperty WRITE setWRectProperty);
-    Q_PROPERTY(QUrl url READ url WRITE setUrl);
-    Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty);
+    Q_PROPERTY(int defaultProperty READ defaultProperty)
+    Q_PROPERTY(QRect rectProperty READ rectProperty)
+    Q_PROPERTY(QRect wrectProperty READ wrectProperty WRITE setWRectProperty)
+    Q_PROPERTY(QUrl url READ url WRITE setUrl)
+    Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty)
     Q_PROPERTY(int propertyWithNotify READ propertyWithNotify WRITE setPropertyWithNotify NOTIFY oddlyNamedNotifySignal)
-    Q_PROPERTY(MyQmlObject *qmlObject READ qmlObject);
+    Q_PROPERTY(MyQmlObject *qmlObject READ qmlObject)
 
     Q_CLASSINFO("DefaultProperty", "defaultProperty")
 public:

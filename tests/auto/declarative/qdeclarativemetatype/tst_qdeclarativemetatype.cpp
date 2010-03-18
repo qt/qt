@@ -77,7 +77,7 @@ private slots:
 class TestType : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int foo READ foo);
+    Q_PROPERTY(int foo READ foo)
 
     Q_CLASSINFO("DefaultProperty", "foo")
 public:
