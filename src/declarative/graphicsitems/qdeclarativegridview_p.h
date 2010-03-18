@@ -138,7 +138,7 @@ public:
     void setSnapMode(SnapMode mode);
 
     enum PositionMode { Beginning, Center, End, Visible, Contain };
-    Q_ENUMS(PositionMode)
+    Q_ENUMS(PositionMode);
 
     Q_INVOKABLE void positionViewAtIndex(int index, int mode);
     Q_INVOKABLE int indexAt(int x, int y) const;
