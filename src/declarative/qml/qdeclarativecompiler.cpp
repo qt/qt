@@ -1713,16 +1713,6 @@ bool QDeclarativeCompiler::buildIdProperty(QDeclarativeParser::Property *prop,
 
     COMPILE_CHECK(checkValidId(idValue, val));
 
-    // We disallow id's that conflict with import prefixes and types
-    QDeclarativeEnginePrivate::ImportedNamespace *ns = 0;
-    QDeclarativeType *type = 0;
-    QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, val.toUtf8(), 
-                                               &type, 0, 0, 0, &ns);
-    if (type)
-        COMPILE_EXCEPTION(idValue, QCoreApplication::translate("QDeclarativeCompiler","id conflicts with type name"));
-    if (ns)
-        COMPILE_EXCEPTION(idValue, QCoreApplication::translate("QDeclarativeCompiler","id conflicts with namespace prefix"));
-
     if (compileState.ids.contains(val))
         COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","id is not unique"));
 
