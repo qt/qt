@@ -4355,7 +4355,8 @@ void tst_QGraphicsScene::taskQT657_paintIntoCacheWithTransparentParts()
     w->setGeometry(0, 0, 50, 50);
 
     QGraphicsScene *scene = new QGraphicsScene();
-    QGraphicsView *view = new QGraphicsView(scene);
+    CustomView *view = new CustomView;
+    view->setScene(scene);
 
     QGraphicsProxyWidget *proxy = scene->addWidget(w);
     proxy->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
@@ -4363,13 +4364,14 @@ void tst_QGraphicsScene::taskQT657_paintIntoCacheWithTransparentParts()
 
     view->show();
     QTest::qWaitForWindowShown(view);
-    w->update(10, 10, 10, 10);
+    view->repaints = 0;
+    proxy->update(10, 10, 10, 10);
     QTest::qWait(50);
+    QTRY_VERIFY(view->repaints > 0);
 
     QPixmap pix;
     QGraphicsItemPrivate* itemp = QGraphicsItemPrivate::get(proxy);
-    QPixmapCache::Key key = itemp->extraItemCache()->deviceData.value(view->viewport()).key;
-    QVERIFY(QPixmapCache::find(key, &pix));
+    QTRY_VERIFY(QPixmapCache::find(itemp->extraItemCache()->deviceData.value(view->viewport()).key, &pix));
 
     QTransform t = proxy->sceneTransform();
     // Map from scene coordinates to pixmap coordinates.
@@ -4399,7 +4401,8 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         rectItem->setParentItem(backItem);
 
         QGraphicsScene *scene = new QGraphicsScene();
-        QGraphicsView *view = new QGraphicsView(scene);
+        CustomView *view = new CustomView;
+        view->setScene(scene);
 
         scene->addItem(backItem);
         rectItem->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
@@ -4407,13 +4410,14 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
 
         view->show();
         QTest::qWaitForWindowShown(view);
+        view->repaints = 0;
         rectItem->update(10, 10, 10, 10);
         QTest::qWait(50);
+        QTRY_VERIFY(view->repaints > 0);
 
         QPixmap pix;
         QGraphicsItemPrivate* itemp = QGraphicsItemPrivate::get(rectItem);
-        QPixmapCache::Key key = itemp->extraItemCache()->deviceData.value(view->viewport()).key;
-        QVERIFY(QPixmapCache::find(key, &pix));
+        QTRY_VERIFY(QPixmapCache::find(itemp->extraItemCache()->deviceData.value(view->viewport()).key, &pix));
 
         QTransform t = rectItem->sceneTransform();
         // Map from scene coordinates to pixmap coordinates.
@@ -4439,7 +4443,8 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         rectItem->setBrush(QColor(0, 0, 255));
 
         QGraphicsScene *scene = new QGraphicsScene();
-        QGraphicsView *view = new QGraphicsView(scene);
+        CustomView *view = new CustomView;
+        view->setScene(scene);
 
         scene->addItem(rectItem);
         rectItem->setCacheMode(QGraphicsItem::ItemCoordinateCache);
@@ -4447,13 +4452,14 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
 
         view->show();
         QTest::qWaitForWindowShown(view);
+        view->repaints = 0;
         rectItem->update(10, 10, 10, 10);
         QTest::qWait(50);
+        QTRY_VERIFY(view->repaints > 0);
 
         QPixmap pix;
         QGraphicsItemPrivate* itemp = QGraphicsItemPrivate::get(rectItem);
-        QPixmapCache::Key key = itemp->extraItemCache()->key;
-        QVERIFY(QPixmapCache::find(key, &pix));
+        QTRY_VERIFY(QPixmapCache::find(itemp->extraItemCache()->key, &pix));
 
         QTransform t = rectItem->sceneTransform();
         // Map from scene coordinates to pixmap coordinates.
@@ -4478,7 +4484,8 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         rectItem->setBrush(QColor(0, 0, 255, 125));
 
         QGraphicsScene *scene = new QGraphicsScene();
-        QGraphicsView *view = new QGraphicsView(scene);
+        CustomView *view = new CustomView;
+        view->setScene(scene);
 
         scene->addItem(rectItem);
         rectItem->setCacheMode(QGraphicsItem::ItemCoordinateCache);
@@ -4486,13 +4493,14 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
 
         view->show();
         QTest::qWaitForWindowShown(view);
+        view->repaints = 0;
         rectItem->update(10, 10, 10, 10);
         QTest::qWait(50);
+        QTRY_VERIFY(view->repaints > 0);
 
         QPixmap pix;
         QGraphicsItemPrivate* itemp = QGraphicsItemPrivate::get(rectItem);
-        QPixmapCache::Key key = itemp->extraItemCache()->key;
-        QVERIFY(QPixmapCache::find(key, &pix));
+        QTRY_VERIFY(QPixmapCache::find(itemp->extraItemCache()->key, &pix));
 
         QTransform t = rectItem->sceneTransform();
         // Map from scene coordinates to pixmap coordinates.
