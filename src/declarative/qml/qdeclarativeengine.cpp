@@ -1476,9 +1476,8 @@ public:
 
         QStringList paths;
 
-        QUrl baseUrl = QDeclarativeEnginePrivate::get(engine)->baseUrl;
-        if (!baseUrl.isEmpty()) {
-            QString baseDir = QFileInfo(toLocalFileOrQrc(baseUrl)).path();
+        if (!base.isEmpty()) {
+            QString baseDir = QFileInfo(toLocalFileOrQrc(base)).path();
             paths += baseDir;
         }
 
