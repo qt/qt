@@ -4285,6 +4285,12 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
     if (!subPix.isNull()) {
         // Blit the subpixmap into the main pixmap.
         pixmapPainter.begin(pix);
+        if (item->cacheMode() == QGraphicsItem::DeviceCoordinateCache
+            && itemToPixmap.type() > QTransform::TxTranslate) {
+            pixmapPainter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
+        } else {
+            pixmapPainter.setCompositionMode(QPainter::CompositionMode_Source);
+        }
         pixmapPainter.setClipRegion(pixmapExposed);
         pixmapPainter.drawPixmap(br.topLeft(), subPix);
         pixmapPainter.end();

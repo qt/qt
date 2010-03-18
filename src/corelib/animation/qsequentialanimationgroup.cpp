@@ -479,7 +479,7 @@ void QSequentialAnimationGroupPrivate::activateCurrentAnimation(bool intermediat
 
     // connects to the finish signal of uncontrolled animations
     if (currentAnimation->totalDuration() == -1)
-        QObject::connect(currentAnimation, SIGNAL(finished()), q, SLOT(_q_uncontrolledAnimationFinished()));
+        connectUncontrolledAnimation(currentAnimation);
 
     currentAnimation->start();
     if (!intermediate && state == QSequentialAnimationGroup::Paused)
@@ -496,7 +496,7 @@ void QSequentialAnimationGroupPrivate::_q_uncontrolledAnimationFinished()
         actualDuration.append(-1);
     actualDuration[currentAnimationIndex] = currentAnimation->currentTime();
 
-    QObject::disconnect(currentAnimation, SIGNAL(finished()), q, SLOT(_q_uncontrolledAnimationFinished()));
+    disconnectUncontrolledAnimation(currentAnimation);
 
     if ((direction == QAbstractAnimation::Forward && currentAnimation == animations.last())
         || (direction == QAbstractAnimation::Backward && currentAnimationIndex == 0)) {
@@ -543,10 +543,10 @@ void QSequentialAnimationGroupPrivate::animationInsertedAt(int index)
     the group at index \a index. The animation is no more listed when this
     method is called.
 */
-void QSequentialAnimationGroupPrivate::animationRemovedAt(int index)
+void QSequentialAnimationGroupPrivate::animationRemoved(int index, QAbstractAnimation *anim)
 {
     Q_Q(QSequentialAnimationGroup);
-    QAnimationGroupPrivate::animationRemovedAt(index);
+    QAnimationGroupPrivate::animationRemoved(index, anim);
 
     Q_ASSERT(currentAnimation); // currentAnimation should always be set
 
@@ -555,7 +555,10 @@ void QSequentialAnimationGroupPrivate::animationRemovedAt(int index)
 
     const int currentIndex = animations.indexOf(currentAnimation);
     if (currentIndex == -1) {
-        //we're removing the current animation, let's update it to another one
+        //we're removing the current animation
+
+        disconnectUncontrolledAnimation(currentAnimation);
+
         if (index < animations.count())
             setCurrentAnimation(index); //let's try to take the next one
         else if (index > 0)

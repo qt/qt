@@ -246,11 +246,9 @@ void QParallelAnimationGroupPrivate::_q_uncontrolledAnimationFinished()
 
 void QParallelAnimationGroupPrivate::disconnectUncontrolledAnimations()
 {
-    Q_Q(QParallelAnimationGroup);
-
     QHash<QAbstractAnimation *, int>::iterator it = uncontrolledFinishTime.begin();
     while (it != uncontrolledFinishTime.end()) {
-        QObject::disconnect(it.key(), SIGNAL(finished()), q, SLOT(_q_uncontrolledAnimationFinished()));
+        disconnectUncontrolledAnimation(it.key());
         ++it;
     }
 
@@ -259,13 +257,11 @@ void QParallelAnimationGroupPrivate::disconnectUncontrolledAnimations()
 
 void QParallelAnimationGroupPrivate::connectUncontrolledAnimations()
 {
-    Q_Q(QParallelAnimationGroup);
-
     for (int i = 0; i < animations.size(); ++i) {
         QAbstractAnimation *animation = animations.at(i);
         if (animation->duration() == -1 || animation->loopCount() < 0) {
             uncontrolledFinishTime[animation] = -1;
-            QObject::connect(animation, SIGNAL(finished()), q, SLOT(_q_uncontrolledAnimationFinished()));
+            connectUncontrolledAnimation(animation);
         }
     }
 }
@@ -303,6 +299,13 @@ void QParallelAnimationGroupPrivate::applyGroupState(QAbstractAnimation *animati
 bool QParallelAnimationGroupPrivate::isUncontrolledAnimationFinished(QAbstractAnimation *anim) const
 {
     return uncontrolledFinishTime.value(anim, -1) >= 0;
+}
+
+void QParallelAnimationGroupPrivate::animationRemoved(int index, QAbstractAnimation *anim)
+{
+    QAnimationGroupPrivate::animationRemoved(index, anim);
+    disconnectUncontrolledAnimation(anim);
+    uncontrolledFinishTime.remove(anim);
 }
 
 /*!
