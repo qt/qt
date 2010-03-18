@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -285,14 +285,12 @@ void tst_QNetworkConfigurationManager::defaultConfiguration()
     QNetworkConfiguration defaultConfig = manager.defaultConfiguration();
 
     bool confirm = configs.contains(defaultConfig);
-    bool isUserChoice = (defaultConfig.type() == QNetworkConfiguration::UserChoice);
 
-    //user choice config is not part of allConfigurations()
-    QVERIFY(isUserChoice != confirm);
-    if (!isUserChoice) {
+    if (defaultConfig.type() != QNetworkConfiguration::UserChoice) {
         QVERIFY(confirm || !defaultConfig.isValid());
         QVERIFY(!(confirm && !defaultConfig.isValid()));
     } else {
+        QVERIFY(!confirm);  // user choice config is not part of allConfigurations()
         QVERIFY(defaultConfig.isValid());
         QCOMPARE(defaultConfig.name(), QString("UserChoice"));
         QCOMPARE(defaultConfig.children().count(), 0);
