@@ -1418,6 +1418,11 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
     }
 };
 
+static bool greaterThan(const QString &s1, const QString &s2)
+{
+    return s1 > s2;
+}
+
 class QDeclarativeImportsPrivate {
 public:
     QDeclarativeImportsPrivate() : ref(1)
@@ -1495,6 +1500,8 @@ public:
         // add fileImportPath last, this is *not* search order.
         paths += QDeclarativeEnginePrivate::get(engine)->fileImportPath;
 
+        qSort(paths.begin(), paths.end(), greaterThan); // Ensure subdirs preceed their parents.
+
         QString stableRelativePath = dir;
         foreach( QString path, paths) {
             if (dir.startsWith(path)) {
@@ -1545,11 +1552,11 @@ public:
                 paths += applicationDirPath;
 
             paths += QDeclarativeEnginePrivate::get(engine)->environmentImportPath;
-    #if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
             QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
-    #else
+#else
             QString builtinPath;
-    #endif
+#endif
             if (!builtinPath.isEmpty())
                 paths += builtinPath;
 
