@@ -65,7 +65,7 @@ tst_QDeclarativeParticles::tst_QDeclarativeParticles()
 
 void tst_QDeclarativeParticles::properties()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/particles.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/particlestest.qml");
     QVERIFY(canvas->rootObject());
 
     QObject* particles = canvas->rootObject()->findChild<QObject*>("particles");
@@ -104,7 +104,7 @@ void tst_QDeclarativeParticles::properties()
 
 void tst_QDeclarativeParticles::motionGravity()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/particlemotion.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/particlemotiontest.qml");
     QVERIFY(canvas->rootObject());
 
     QObject* particles = canvas->rootObject()->findChild<QObject*>("particles");
@@ -144,7 +144,7 @@ void tst_QDeclarativeParticles::motionGravity()
 
 void tst_QDeclarativeParticles::motionWander()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/particlemotion.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/particlemotiontest.qml");
     QVERIFY(canvas->rootObject());
 
     QObject* particles = canvas->rootObject()->findChild<QObject*>("particles");
@@ -192,7 +192,7 @@ void tst_QDeclarativeParticles::motionWander()
 
 void tst_QDeclarativeParticles::runs()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/particles.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/particlestest.qml");
     QVERIFY(canvas->rootObject());
 
     QObject* particles = canvas->rootObject()->findChild<QObject*>("particles");

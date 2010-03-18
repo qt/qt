@@ -213,7 +213,7 @@ void tst_QDeclarativePathView::items()
     QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview0.qml"));
     qApp->processEvents();
 
     QDeclarativePathView *pathview = findItem<QDeclarativePathView>(canvas->rootObject(), "view");
@@ -272,7 +272,7 @@ void tst_QDeclarativePathView::pathview3()
 void tst_QDeclarativePathView::path()
 {
     QDeclarativeEngine engine;
-    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/path.qml"));
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/pathtest.qml"));
     QDeclarativePath *obj = qobject_cast<QDeclarativePath*>(c.create());
 
     QVERIFY(obj != 0);
@@ -407,7 +407,7 @@ void tst_QDeclarativePathView::pathMoved()
     QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview0.qml"));
     qApp->processEvents();
 
     QDeclarativePathView *pathview = findItem<QDeclarativePathView>(canvas->rootObject(), "view");
@@ -448,7 +448,7 @@ void tst_QDeclarativePathView::setCurrentIndex()
     QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview0.qml"));
     qApp->processEvents();
 
     QDeclarativePathView *pathview = findItem<QDeclarativePathView>(canvas->rootObject(), "view");

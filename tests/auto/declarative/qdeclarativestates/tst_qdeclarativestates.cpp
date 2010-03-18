@@ -441,7 +441,7 @@ void tst_qdeclarativestates::parentChange()
     QDeclarativeEngine engine;
 
     {
-        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/parentChange.qml");
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/parentChange1.qml");
         QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
         QVERIFY(rect != 0);
 
@@ -546,7 +546,7 @@ void tst_qdeclarativestates::anchorChanges()
 {
     QDeclarativeEngine engine;
 
-    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChanges.qml");
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChanges1.qml");
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
     QVERIFY(rect != 0);
 

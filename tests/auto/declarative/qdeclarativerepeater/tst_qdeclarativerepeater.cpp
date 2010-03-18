@@ -224,7 +224,7 @@ void tst_QDeclarativeRepeater::stringList()
     QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testData", data);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/repeater.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/repeater1.qml"));
     qApp->processEvents();
 
     QDeclarativeRepeater *repeater = findItem<QDeclarativeRepeater>(canvas->rootObject(), "repeater");
