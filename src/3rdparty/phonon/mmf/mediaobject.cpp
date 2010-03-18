@@ -22,7 +22,13 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "dummyplayer.h"
 #include "utils.h"
 #include "utils.h"
-#include "mmf_videoplayer.h"
+
+#ifdef PHONON_MMF_VIDEO_SURFACES
+#include "videoplayer_surface.h"
+#else
+#include "videoplayer_dsa.h"
+#endif
+
 #include "videowidget.h"
 
 #include "mediaobject.h"
@@ -293,7 +299,11 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
         break;
 
     case MediaTypeVideo:
-        newPlayer = new VideoPlayer(this, oldPlayer);
+#ifdef PHONON_MMF_VIDEO_SURFACES
+        newPlayer = SurfaceVideoPlayer::create(this, oldPlayer);
+#else
+        newPlayer = DsaVideoPlayer::create(this, oldPlayer);
+#endif
         break;
     }
 
@@ -383,7 +393,7 @@ void MMF::MediaObject::disconnectMediaObject(MediaObject * /*mediaObject*/)
 // Video output
 //-----------------------------------------------------------------------------
 
-void MMF::MediaObject::setVideoOutput(VideoOutput* videoOutput)
+void MMF::MediaObject::setVideoOutput(AbstractVideoOutput* videoOutput)
 {
     m_player->setVideoOutput(videoOutput);
 }

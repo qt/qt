@@ -16,37 +16,51 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef PHONON_MMF_DEFS_H
-#define PHONON_MMF_DEFS_H
+#ifndef PHONON_MMF_VIDEOOUTPUT_SURFACE_H
+#define PHONON_MMF_VIDEOOUTPUT_SURFACE_H
 
-#include <QtGlobal>
+#include "phonon/mmf/abstractvideooutput.h"
 
 QT_BEGIN_NAMESPACE
+
+class QResizeEvent;
 
 namespace Phonon
 {
 namespace MMF
 {
-static const qint32 DefaultTickInterval = 10;
-static const qreal  InitialVolume = 0.5;
 
-enum MediaType {
-    MediaTypeUnknown,
-    MediaTypeAudio,
-    MediaTypeVideo
-};
+/**
+ * @short Widget on which video is displayed by rendering to a surface
+ *
+ * This implementation is used on devices with a graphics subsystem which
+ * supports surfaces.
+ *
+ * @see DsaVideoOutput
+ */
+class SurfaceVideoOutput
+    :   public AbstractVideoOutput
+{
+    Q_OBJECT
 
-enum VideoParameter {
-    WindowHandle        = 0x1,
-    WindowScreenRect    = 0x2,
-    ScaleFactors        = 0x4
+public:
+    SurfaceVideoOutput(QWidget *parent);
+    ~SurfaceVideoOutput();
+
+Q_SIGNALS:
+    void videoWindowSizeChanged();
+
+private:
+    // QWidget
+    void resizeEvent(QResizeEvent *event);
+    bool event(QEvent *event);
+
 };
-Q_DECLARE_FLAGS(VideoParameters, VideoParameter)
-Q_DECLARE_OPERATORS_FOR_FLAGS(VideoParameters)
 
 }
 }
 
 QT_END_NAMESPACE
 
-#endif // PHONON_MMF_DEFS_H
+#endif // !PHONON_MMF_VIDEOOUTPUT_SURFACE_H
+
