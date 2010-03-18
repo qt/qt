@@ -1387,6 +1387,9 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
 
 /*!
   \reimp
+
+  Since 4.7, the returned region only contains rectangles intersecting
+  (or included in) the viewport.
 */
 QRegion QListView::visualRegionForSelection(const QItemSelection &selection) const
 {
@@ -1394,6 +1397,7 @@ QRegion QListView::visualRegionForSelection(const QItemSelection &selection) con
     // ### NOTE: this is a potential bottleneck in non-static mode
     int c = d->column;
     QRegion selectionRegion;
+    const QRect &viewportRect = d->viewport->rect();
     for (int i = 0; i < selection.count(); ++i) {
         if (!selection.at(i).isValid())
             continue;
@@ -1405,8 +1409,11 @@ QRegion QListView::visualRegionForSelection(const QItemSelection &selection) con
         int t = selection.at(i).topLeft().row();
         int b = selection.at(i).bottomRight().row();
         if (d->viewMode == IconMode || d->isWrapping()) { // in non-static mode, we have to go through all selected items
-            for (int r = t; r <= b; ++r)
-                selectionRegion += QRegion(visualRect(d->model->index(r, c, parent)));
+            for (int r = t; r <= b; ++r) {
+                const QRect &rect = visualRect(d->model->index(r, c, parent));
+                if (viewportRect.intersects(rect))
+                    selectionRegion += rect;
+            }
         } else { // in static mode, we can optimize a bit
             while (t <= b && d->isHidden(t)) ++t;
             while (b >= t && d->isHidden(b)) --b;
@@ -1414,7 +1421,8 @@ QRegion QListView::visualRegionForSelection(const QItemSelection &selection) con
             const QModelIndex bottom = d->model->index(b, c, parent);
             QRect rect(visualRect(top).topLeft(),
                        visualRect(bottom).bottomRight());
-            selectionRegion += QRegion(rect);
+            if (viewportRect.intersects(rect))
+                selectionRegion += rect;
         }
     }
 
