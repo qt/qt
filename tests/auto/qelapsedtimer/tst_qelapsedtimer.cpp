@@ -111,9 +111,14 @@ void tst_QElapsedTimer::basics()
 
     quint64 value1 = t1.msecsSinceReference();
     qint64 elapsed = t1.restart();
-    quint64 value2 = t1.msecsSinceReference();
-    QCOMPARE(elapsed, qint64(value2 - value1));
     QVERIFY(elapsed < minResolution);
+
+    quint64 value2 = t1.msecsSinceReference();
+    // in theory, elapsed == value2 - value1
+
+    // However, since QElapsedTimer keeps internally the full resolution,
+    // we have here a rounding error due to integer division
+    QVERIFY(qAbs(elapsed - qint64(value2 - value1)) < 1);
 }
 
 void tst_QElapsedTimer::elapsed()
