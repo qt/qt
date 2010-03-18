@@ -72,6 +72,7 @@ private slots:
     void readOnly();
 
     void sendRequestSoftwareInputPanelEvent();
+    void setHAlignClearCache();
 
 private:
     void simulateKey(QDeclarativeView *, int key);
@@ -649,6 +650,38 @@ void tst_qdeclarativetextinput::sendRequestSoftwareInputPanelEvent()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
     QApplication::processEvents();
     QCOMPARE(ic.softwareInputPanelEventReceived, true);
+}
+
+class MyTextInput : public QDeclarativeTextInput
+{
+public:
+    MyTextInput(QDeclarativeItem *parent = 0) : QDeclarativeTextInput(parent)
+    {
+        nbPaint = 0;
+    }
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+       nbPaint++;
+       QDeclarativeTextInput::paint(painter, option, widget);
+    }
+    int nbPaint;
+};
+
+void tst_qdeclarativetextinput::setHAlignClearCache()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    MyTextInput input;
+    input.setText("Hello world");
+    scene.addItem(&input);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QCOMPARE(input.nbPaint, 1);
+    input.setHAlign(QDeclarativeTextInput::AlignRight);
+    QApplication::processEvents();
+    //Changing the alignment should trigger a repaint
+    QCOMPARE(input.nbPaint, 2);
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)
