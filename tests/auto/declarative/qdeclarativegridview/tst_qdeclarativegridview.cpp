@@ -165,7 +165,7 @@ void tst_QDeclarativeGridView::items()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
@@ -213,7 +213,7 @@ void tst_QDeclarativeGridView::changed()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeFlickable *gridview = findItem<QDeclarativeFlickable>(canvas->rootObject(), "grid");
@@ -246,7 +246,7 @@ void tst_QDeclarativeGridView::inserted()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
@@ -331,7 +331,7 @@ void tst_QDeclarativeGridView::removed()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
@@ -495,7 +495,7 @@ void tst_QDeclarativeGridView::moved()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
@@ -703,6 +703,11 @@ void tst_QDeclarativeGridView::currentIndex()
     QCOMPARE(gridview->highlightItem()->x(), hlPosX);
     QCOMPARE(gridview->highlightItem()->y(), hlPosY);
 
+    // insert item before currentIndex
+    gridview->setCurrentIndex(28);
+    model.insertItem(0, "Foo", "1111");
+    QCOMPARE(canvas->rootObject()->property("current").toInt(), 29);
+
     delete canvas;
 }
 
@@ -718,7 +723,7 @@ void tst_QDeclarativeGridView::changeFlow()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
@@ -815,7 +820,7 @@ void tst_QDeclarativeGridView::propertyChanges()
 {
     QDeclarativeView *canvas = createView();
     QVERIFY(canvas);
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychangestest.qml"));
 
     QDeclarativeGridView *gridView = canvas->rootObject()->findChild<QDeclarativeGridView*>("gridView");
     QVERIFY(gridView);
@@ -855,7 +860,7 @@ void tst_QDeclarativeGridView::componentChanges()
 {
     QDeclarativeView *canvas = createView();
     QVERIFY(canvas);
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychangestest.qml"));
 
     QDeclarativeGridView *gridView = canvas->rootObject()->findChild<QDeclarativeGridView*>("gridView");
     QVERIFY(gridView);
@@ -890,7 +895,7 @@ void tst_QDeclarativeGridView::modelChanges()
 {
     QDeclarativeView *canvas = createView();
     QVERIFY(canvas);
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychangestest.qml"));
 
     QDeclarativeGridView *gridView = canvas->rootObject()->findChild<QDeclarativeGridView*>("gridView");
     QVERIFY(gridView);
@@ -924,7 +929,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
@@ -944,7 +949,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     }
 
     // Position on a currently visible item
-    gridview->positionViewAtIndex(4);
+    gridview->positionViewAtIndex(4, QDeclarativeGridView::Beginning);
     QCOMPARE(gridview->contentY(), 60.);
 
     // Confirm items positioned correctly
@@ -958,7 +963,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     }
 
     // Position on an item beyond the visible items
-    gridview->positionViewAtIndex(21);
+    gridview->positionViewAtIndex(21, QDeclarativeGridView::Beginning);
     QCOMPARE(gridview->contentY(), 420.);
 
     // Confirm items positioned correctly
@@ -972,7 +977,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     }
 
     // Position on an item that would leave empty space if positioned at the top
-    gridview->positionViewAtIndex(31);
+    gridview->positionViewAtIndex(31, QDeclarativeGridView::Beginning);
     QCOMPARE(gridview->contentY(), 520.);
 
     // Confirm items positioned correctly
@@ -986,7 +991,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     }
 
     // Position at the beginning again
-    gridview->positionViewAtIndex(0);
+    gridview->positionViewAtIndex(0, QDeclarativeGridView::Beginning);
     QCOMPARE(gridview->contentY(), 0.);
 
     // Confirm items positioned correctly
@@ -998,6 +1003,47 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
         QCOMPARE(item->x(), (i%3)*80.);
         QCOMPARE(item->y(), (i/3)*60.);
     }
+
+    // Position at End
+    gridview->positionViewAtIndex(30, QDeclarativeGridView::End);
+    QCOMPARE(gridview->contentY(), 340.);
+
+    // Position in Center
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Center);
+    QCOMPARE(gridview->contentY(), 170.);
+
+    // Ensure at least partially visible
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Visible);
+    QCOMPARE(gridview->contentY(), 170.);
+
+    gridview->setContentY(302);
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Visible);
+    QCOMPARE(gridview->contentY(), 302.);
+
+    gridview->setContentY(360);
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Visible);
+    QCOMPARE(gridview->contentY(), 300.);
+
+    gridview->setContentY(60);
+    gridview->positionViewAtIndex(20, QDeclarativeGridView::Visible);
+    QCOMPARE(gridview->contentY(), 60.);
+
+    gridview->setContentY(20);
+    gridview->positionViewAtIndex(20, QDeclarativeGridView::Visible);
+    QCOMPARE(gridview->contentY(), 100.);
+
+    // Ensure completely visible
+    gridview->setContentY(120);
+    gridview->positionViewAtIndex(20, QDeclarativeGridView::Contain);
+    QCOMPARE(gridview->contentY(), 120.);
+
+    gridview->setContentY(302);
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Contain);
+    QCOMPARE(gridview->contentY(), 300.);
+
+    gridview->setContentY(60);
+    gridview->positionViewAtIndex(20, QDeclarativeGridView::Contain);
+    QCOMPARE(gridview->contentY(), 100.);
 
     delete canvas;
 }

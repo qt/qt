@@ -413,7 +413,7 @@ void QDeclarativeFolderListModel::setShowOnlyReadable(bool on)
 
 void QDeclarativeFolderListModel::registerTypes()
 {
-    QML_REGISTER_TYPE(Qt,4,6,FolderListModel,QDeclarativeFolderListModel);
+    qmlRegisterType<QDeclarativeFolderListModel>("Qt",4,6,"FolderListModel");
 }
 
 QT_END_NAMESPACE

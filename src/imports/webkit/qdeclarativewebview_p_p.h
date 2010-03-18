@@ -42,8 +42,6 @@
 #ifndef QDECLARATIVEWEBVIEW_P_H
 #define QDECLARATIVEWEBVIEW_P_H
 
-#include "webkitqmlplugin_export.h"
-
 #include <qdeclarative.h>
 
 #include <QtWebKit/QWebPage>
@@ -54,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class WEBKITQMLPLUGIN_EXPORT QDeclarativeWebSettings : public QObject {
+class QDeclarativeWebSettings : public QObject {
     Q_OBJECT
 
     Q_PROPERTY(QString standardFontFamily READ standardFontFamily WRITE setStandardFontFamily)

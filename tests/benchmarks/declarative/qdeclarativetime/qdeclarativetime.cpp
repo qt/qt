@@ -156,7 +156,7 @@ int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
 
-    QML_REGISTER_TYPE(QDeclarativeTime, 1, 0, Timer, Timer);
+    qmlRegisterType<Timer>("QDeclarativeTime", 1, 0, "Timer");
 
     uint iterations = 1024;
     QString filename;

@@ -298,6 +298,7 @@ QDeclarativeView::~QDeclarativeView()
 void QDeclarativeView::setSource(const QUrl& url)
 {
     d->source = url;
+    d->engine.setBaseUrl(url);
     d->execute();
 }
 
@@ -458,8 +459,8 @@ void QDeclarativeView::setRootObject(QObject *obj)
         QPerformanceLog::clear();
         d->root = item;
         d->qmlRoot = item;
-        connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
-        connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
+        connect(item, SIGNAL(widthChanged(qreal)), this, SLOT(sizeChanged()));
+        connect(item, SIGNAL(heightChanged(qreal)), this, SLOT(sizeChanged()));
         if (d->initialSize.height() <= 0 && d->qmlRoot->width() > 0)
             d->initialSize.setWidth(d->qmlRoot->width());
         if (d->initialSize.height() <= 0 && d->qmlRoot->height() > 0)

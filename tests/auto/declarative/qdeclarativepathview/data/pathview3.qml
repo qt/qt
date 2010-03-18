@@ -2,7 +2,7 @@ import Qt 4.6
 
 PathView {
     id: photoPathView
-    y: 100; width: 800; height: 330; pathItemCount: 4; offset: 10
+    y: 100; width: 800; height: 330; pathItemCount: 4; offset: 0.1
     dragMargin: 24; snapPosition: 0.50
 
     path: Path {

@@ -41,6 +41,8 @@
 
 #include "qdeclarativevaluetypescriptclass_p.h"
 
+#include "qdeclarativebinding_p.h"
+#include "qdeclarativeproperty_p.h"
 #include "qdeclarativeengine_p.h"
 #include "qdeclarativeguard_p.h"
 
@@ -114,6 +116,11 @@ void QDeclarativeValueTypeScriptClass::setProperty(Object *obj, const Identifier
                                           const QScriptValue &value)
 {
     QDeclarativeValueTypeReference *ref = static_cast<QDeclarativeValueTypeReference *>(obj);
+
+    QDeclarativeAbstractBinding *delBinding = 
+        QDeclarativePropertyPrivate::setBinding(ref->object, ref->property, m_lastIndex, 0);
+    if (delBinding) 
+        delBinding->destroy();
 
     QVariant v = QDeclarativeScriptClass::toVariant(engine, value);
 

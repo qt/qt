@@ -68,7 +68,7 @@ internet-enabled applications like a \l {http://www.flickr.com}{Flickr} photo br
 
 Qt Declarative builds on \l {QML for Qt programmers}{Qt's existing strengths}.
 QML can be be used to incrementally extend an existing application or to build
-completely new applications.  QML is fully \l {Extending QML}{extensible from C++}.
+completely new applications.  QML is fully \l {Extending QML in C++}{extensible from C++}.
 
 \section1 Getting Started:
 \list
@@ -100,7 +100,7 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \list
 \o \l {QML Elements}
 \o \l {QML Global Object}
-\o \l {Extending QML}
+\o \l {Extending QML in C++}
 \o \l {QML Internationalization}
 \o \l {QtDeclarative Module}
 \o \l {Debugging QML}

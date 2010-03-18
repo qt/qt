@@ -1418,12 +1418,12 @@ void tst_qdeclarativelanguage::initTestCase()
 {
     registerTypes();
 
-    QML_REGISTER_TYPE(com.nokia.Test, 0, 0, TestTP, TestType);
-    QML_REGISTER_TYPE(com.nokia.Test, 1, 0, Test, TestType);
-    QML_REGISTER_TYPE(com.nokia.Test, 1, 5, Test, TestType);
-    QML_REGISTER_TYPE(com.nokia.Test, 1, 8, Test, TestType2);
-    QML_REGISTER_TYPE(com.nokia.Test, 1, 9, OldTest, TestType);
-    QML_REGISTER_TYPE(com.nokia.Test, 1, 12, Test, TestType2);
+    qmlRegisterType<TestType>("com.nokia.Test", 0, 0, "TestTP");
+    qmlRegisterType<TestType>("com.nokia.Test", 1, 0, "Test");
+    qmlRegisterType<TestType>("com.nokia.Test", 1, 5, "Test");
+    qmlRegisterType<TestType2>("com.nokia.Test", 1, 8, "Test");
+    qmlRegisterType<TestType>("com.nokia.Test", 1, 9, "OldTest");
+    qmlRegisterType<TestType2>("com.nokia.Test", 1, 12, "Test");
 
     // Create locale-specific file
     // For POSIX, this will just be data/I18nType.qml, since POSIX is 7-bit
