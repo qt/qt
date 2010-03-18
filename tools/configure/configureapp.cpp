@@ -969,6 +969,10 @@ void Configure::parseCmdLine()
             if(i==argCount)
                 break;
             dictionary[ "QT_LIBINFIX" ] = configCmdLine.at(i);
+            if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
+                dictionary[ "QT_INSTALL_PLUGINS" ] =
+                    QString("\\resource\\qt%1\\plugins").arg(dictionary[ "QT_LIBINFIX" ]);
+            }
         } else if( configCmdLine.at(i) == "-D" ) {
             ++i;
             if (i==argCount)
@@ -3023,6 +3027,8 @@ void Configure::generateConfigfiles()
             qconfigList += "QT_NO_CRASHHANDLER";
             qconfigList += "QT_NO_PRINTER";
             qconfigList += "QT_NO_SYSTEMTRAYICON";
+            if (dictionary.contains("QT_LIBINFIX"))
+                tmpStream << QString("#define QT_LIBINFIX \"%1\"").arg(dictionary["QT_LIBINFIX"]) << endl;
         }
 
         qconfigList.sort();

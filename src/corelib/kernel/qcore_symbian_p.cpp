@@ -132,9 +132,27 @@ private:
     void init()
     {
 #ifdef Q_WS_S60
+#  if defined(QT_LIBINFIX)
+#    define S60_LIBNAME_3_1 "qts60plugin_3_1" QT_LIBINFIX ".dll"
+#    define S60_LIBNAME_3_2 "qts60plugin_3_2" QT_LIBINFIX ".dll"
+#    define S60_LIBNAME_5_0 "qts60plugin_5_0" QT_LIBINFIX ".dll"
+
+        TPtrC8 ptrLibName_3_1(reinterpret_cast<const TUint8 *>(S60_LIBNAME_3_1));
+        TPtrC8 ptrLibName_3_2(reinterpret_cast<const TUint8 *>(S60_LIBNAME_3_2));
+        TPtrC8 ptrLibName_5_0(reinterpret_cast<const TUint8 *>(S60_LIBNAME_5_0));
+
+        TFileName KLibName_3_1;
+        TFileName KLibName_3_2;
+        TFileName KLibName_5_0;
+
+        KLibName_3_1.Copy(ptrLibName_3_1);
+        KLibName_3_2.Copy(ptrLibName_3_2);
+        KLibName_5_0.Copy(ptrLibName_5_0);
+#  else
         _LIT(KLibName_3_1, "qts60plugin_3_1.dll");
         _LIT(KLibName_3_2, "qts60plugin_3_2.dll");
         _LIT(KLibName_5_0, "qts60plugin_5_0.dll");
+#  endif
         TPtrC libName;
         TInt uidValue;
         switch (QSysInfo::s60Version()) {

@@ -6123,6 +6123,8 @@ void QWidget::setFocus(Qt::FocusReason reason)
             previousProxyFocus = topData->proxyWidget->widget()->focusWidget();
             if (previousProxyFocus && previousProxyFocus->focusProxy())
                 previousProxyFocus = previousProxyFocus->focusProxy();
+            if (previousProxyFocus == this && !topData->proxyWidget->d_func()->proxyIsGivingFocus)
+                return;
         }
     }
 #endif
