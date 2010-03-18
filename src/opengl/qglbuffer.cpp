@@ -369,6 +369,38 @@ void QGLBuffer::release() const
         glBindBuffer(d->type, 0);
 }
 
+#undef ctx
+
+/*!
+    Binds a raw \a bufferId to the specified buffer \a type
+    in the current QGLContext.  Returns false if there is
+    no context current or the GL buffer extension could
+    not be resolved.
+
+    This function is a direct call to \c{glBindBuffer()} for
+    use when the caller does not have a QGLBuffer but does
+    have a raw \a bufferId.  It can also be used to release
+    the current buffer when the caller does not know which
+    QGLBuffer object is currently bound:
+
+    \code
+    QGLBuffer::bind(QGLBuffer::VertexBuffer, 0);
+    \endcode
+*/
+bool QGLBuffer::bind(QGLBuffer::Type type, uint bufferId)
+{
+    const QGLContext *ctx = QGLContext::currentContext();
+    if (ctx) {
+        if (qt_resolve_buffer_extensions(const_cast<QGLContext *>(ctx))) {
+            glBindBuffer(GLenum(type), GLuint(bufferId));
+            return true;
+        }
+    }
+    return false;
+}
+
+#define ctx d->guard.context()
+
 /*!
     Returns the GL identifier associated with this buffer; zero if
     the buffer has not been created.
