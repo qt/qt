@@ -1286,10 +1286,10 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap) {
 void ModelNode::setListValue(const QScriptValue& valuelist) {
     QScriptValueIterator it(valuelist);
     values.clear();
-    while (it.hasNext()) {
-        it.next();
+    int size = valuelist.property(QLatin1String("length")).toInt32();
+    for (int i=0; i<size; i++) {
         ModelNode *value = new ModelNode;
-        QScriptValue v = it.value();
+        QScriptValue v = valuelist.property(i);
         if (v.isArray()) {
             value->isArray = true;
             value->setListValue(v);
@@ -1299,7 +1299,6 @@ void ModelNode::setListValue(const QScriptValue& valuelist) {
             value->values << v.toVariant();
         }
         values.append(qVariantFromValue(value));
-
     }
 }
 
