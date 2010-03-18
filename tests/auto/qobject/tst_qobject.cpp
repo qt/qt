@@ -429,12 +429,14 @@ public:
 
 public slots:
     void on_Sender_signalNoParams() { ++called_slot1; }
-    void on_Sender_signalWithParams(int i = 0) { ++called_slot2; }
-    void on_Sender_signalWithParams(int i, QString string) { ++called_slot3; }
+    void on_Sender_signalWithParams(int i = 0) { ++called_slot2; Q_UNUSED(i); }
+    void on_Sender_signalWithParams(int i, QString string) { ++called_slot3; Q_UNUSED(i);Q_UNUSED(string); }
     void on_Sender_signalManyParams() { ++called_slot4; }
-    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff) { ++called_slot5; }
-    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff, bool dummy) { ++called_slot6; }
-    void on_Sender_signalManyParams2(int i1, int i2, int i3, QString string, bool onoff) { ++called_slot7; }
+    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff) { ++called_slot5; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
+    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff, bool dummy)
+    { ++called_slot6; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); Q_UNUSED(dummy);}
+    void on_Sender_signalManyParams2(int i1, int i2, int i3, QString string, bool onoff)
+    { ++called_slot7; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
     void slotLoopBack() { ++called_slot8; }
 
 protected slots:
@@ -2090,21 +2092,21 @@ public slots:
     void constUintPointerSlot(const uint *) { }
     void constUlongPointerSlot(const ulong *) { }
 
-    void structSlot(Struct s) { }
-    void classSlot(Class c) { }
-    void enumSlot(Enum e) { }
+    void structSlot(Struct s) { Q_UNUSED(s); }
+    void classSlot(Class c) { Q_UNUSED(c); }
+    void enumSlot(Enum e) { Q_UNUSED(e); }
 
-    void structPointerSlot(Struct *s) { }
-    void classPointerSlot(Class *c) { }
-    void enumPointerSlot(Enum *e) { }
+    void structPointerSlot(Struct *s) { Q_UNUSED(s); }
+    void classPointerSlot(Class *c) { Q_UNUSED(c); }
+    void enumPointerSlot(Enum *e) { Q_UNUSED(e); }
 
-    void constStructPointerSlot(const Struct *s) { }
-    void constClassPointerSlot(const Class *c) { }
-    void constEnumPointerSlot(const Enum *e) { }
+    void constStructPointerSlot(const Struct *s) { Q_UNUSED(s); }
+    void constClassPointerSlot(const Class *c) { Q_UNUSED(c); }
+    void constEnumPointerSlot(const Enum *e) { Q_UNUSED(e); }
 
-    void constStructPointerConstPointerSlot(const Struct * const *s) { }
-    void constClassPointerConstPointerSlot(const Class * const *c) { }
-    void constEnumPointerConstPointerSlot(const Enum * const *e) { }
+    void constStructPointerConstPointerSlot(const Struct * const *s) { Q_UNUSED(s); }
+    void constClassPointerConstPointerSlot(const Class * const *c) { Q_UNUSED(c); }
+    void constEnumPointerConstPointerSlot(const Enum * const *e) { Q_UNUSED(e); }
 
     void uintSlot(uint) {};
     void unsignedintSlot(unsigned int) {};
