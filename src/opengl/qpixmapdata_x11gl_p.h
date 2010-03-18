@@ -71,6 +71,11 @@ public:
     QX11GLPixmapData();
     virtual ~QX11GLPixmapData();
 
+    // Re-implemented from QX11PixmapData:
+    void fill(const QColor &color);
+    void copy(const QPixmapData *data, const QRect &rect);
+    bool scroll(int dx, int dy, const QRect &rect);
+
     // Re-implemented from QGLPaintDevice
     QPaintEngine* paintEngine() const; // Also re-implements QX11PixmapData::paintEngine
     void beginPaint();

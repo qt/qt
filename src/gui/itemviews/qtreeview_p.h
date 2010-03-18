@@ -91,7 +91,7 @@ public:
           expandsOnDoubleClick(true),
           allColumnsShowFocus(false), current(0), spanning(false),
           animationsEnabled(false), columnResizeTimerID(0),
-          autoExpandDelay(-1), hoverBranch(-1), geometryRecursionBlock(false) {}
+          autoExpandDelay(-1), hoverBranch(-1), geometryRecursionBlock(false), hasRemovedItems(false) {}
 
     ~QTreeViewPrivate() {}
     void initialize();
@@ -165,8 +165,6 @@ public:
     QPair<int,int> startAndEndColumns(const QRect &rect) const;
 
     void updateChildCount(const int parentItem, const int delta);
-    void rowsRemoved(const QModelIndex &parent,
-                     int start, int end, bool before);
 
     void paintAlternatingRowColors(QPainter *painter, QStyleOptionViewItemV4 *option, int y, int bottom) const;
 
@@ -242,6 +240,9 @@ public:
 
     // used for blocking recursion when calling setViewportMargins from updateGeometries
     bool geometryRecursionBlock;
+
+    // If we should clean the set
+    bool hasRemovedItems;
 };
 
 QT_END_NAMESPACE

@@ -246,7 +246,7 @@ public:
        fetched(false), rows(0), cols(0), levels(INT_MAX), wrongIndex(false) { init(); }
 
     QtTestModel(int _rows, int _cols, QObject *parent = 0): QAbstractItemModel(parent),
-       rows(_rows), cols(_cols), levels(INT_MAX), wrongIndex(false) { init(); }
+       fetched(false), rows(_rows), cols(_cols), levels(INT_MAX), wrongIndex(false) { init(); }
 
     void init() {
         decorationsEnabled = false;

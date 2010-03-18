@@ -97,6 +97,8 @@ public:
     bool bind() const;
     void release() const;
 
+    static bool bind(QGLBuffer::Type type, uint bufferId);
+
     uint bufferId() const;
 
     int size() const;
