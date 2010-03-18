@@ -55,6 +55,7 @@
 
 #include "private/qabstractitemview_p.h"
 #include <QtCore/qvariantanimation.h>
+#include <QtCore/qabstractitemmodel.h>
 
 #ifndef QT_NO_TREEVIEW
 
@@ -75,6 +76,8 @@ struct QTreeViewItem
     int height : 16; // row height
 };
 
+Q_DECLARE_TYPEINFO(QTreeViewItem, Q_MOVABLE_TYPE);
+
 class QTreeViewPrivate : public QAbstractItemViewPrivate
 {
     Q_DECLARE_PUBLIC(QTreeView)
@@ -88,7 +91,7 @@ public:
           expandsOnDoubleClick(true),
           allColumnsShowFocus(false), current(0), spanning(false),
           animationsEnabled(false), columnResizeTimerID(0),
-          autoExpandDelay(-1), hoverBranch(-1), geometryRecursionBlock(false) {}
+          autoExpandDelay(-1), hoverBranch(-1), geometryRecursionBlock(false), hasRemovedItems(false) {}
 
     ~QTreeViewPrivate() {}
     void initialize();
@@ -124,7 +127,7 @@ public:
     void _q_sortIndicatorChanged(int column, Qt::SortOrder order);
     void _q_modelDestroyed();
 
-    void layout(int item);
+    void layout(int item, bool recusiveExpanding = false, bool afterIsUninitialized = false);
 
     int pageUp(int item) const;
     int pageDown(int item) const;
@@ -162,8 +165,6 @@ public:
     QPair<int,int> startAndEndColumns(const QRect &rect) const;
 
     void updateChildCount(const int parentItem, const int delta);
-    void rowsRemoved(const QModelIndex &parent,
-                     int start, int end, bool before);
 
     void paintAlternatingRowColors(QPainter *painter, QStyleOptionViewItemV4 *option, int y, int bottom) const;
 
@@ -239,6 +240,9 @@ public:
 
     // used for blocking recursion when calling setViewportMargins from updateGeometries
     bool geometryRecursionBlock;
+
+    // If we should clean the set
+    bool hasRemovedItems;
 };
 
 QT_END_NAMESPACE

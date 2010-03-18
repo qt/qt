@@ -128,7 +128,7 @@ public:
 
 #ifndef QT_NO_CLIPBOARD
     void copy(QClipboard::Mode mode = QClipboard::Clipboard) const;
-    void paste();
+    void paste(QClipboard::Mode mode = QClipboard::Clipboard);
 #endif
 
     int cursor() const;

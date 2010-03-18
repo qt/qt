@@ -435,7 +435,7 @@ QIODevice* QAudioOutputPrivate::start(QIODevice* device)
 {
     QIODevice*  op = device;
 
-    if (!open()) {
+    if (!audioFormat.isValid() || !open()) {
         stateCode = QAudio::StoppedState;
         errorCode = QAudio::OpenError;
         return audioIO;
@@ -536,6 +536,12 @@ int QAudioOutputPrivate::bufferSize() const
 
 void QAudioOutputPrivate::setNotifyInterval(int milliSeconds)
 {
+    if (intervalTimer->interval() == milliSeconds)
+        return;
+
+    if (milliSeconds <= 0)
+        milliSeconds = 0;
+
     intervalTimer->setInterval(milliSeconds);
 }
 
@@ -622,7 +628,8 @@ void QAudioOutputPrivate::audioDeviceError()
 void QAudioOutputPrivate::startTimers()
 {
     audioBuffer->startFillTimer();
-    intervalTimer->start();
+    if (intervalTimer->interval() > 0)
+        intervalTimer->start();
 }
 
 void QAudioOutputPrivate::stopTimers()

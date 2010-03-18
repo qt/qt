@@ -9767,6 +9767,9 @@ void tst_QGraphicsItem::scenePosChange()
     child1->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
     grandChild2->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
 
+    QVERIFY(child1->flags() & QGraphicsItem::ItemSendsScenePositionChanges);
+    QVERIFY(grandChild2->flags() & QGraphicsItem::ItemSendsScenePositionChanges);
+
     QGraphicsScene scene;
     scene.addItem(root);
 

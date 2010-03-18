@@ -70,6 +70,7 @@
 #include "webxmlgenerator.h"
 #include "tokenizer.h"
 #include "tree.h"
+#include <qdebug.h>
 
 #include "qtranslator.h"
 #ifndef QT_BOOTSTRAPPED
@@ -362,7 +363,13 @@ static void processQdocconfFile(const QString &fileName)
 #ifndef QT_NO_TRANSLATION
     qDeleteAll(translators);
 #endif
+#ifdef DEBUG_SHUTDOWN_CRASH    
+    qDebug() << "main(): Delete tree";
+#endif    
     delete tree;
+#ifdef DEBUG_SHUTDOWN_CRASH    
+    qDebug() << "main(): Tree deleted";
+#endif
 }
 
 QT_END_NAMESPACE

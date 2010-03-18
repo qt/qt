@@ -415,8 +415,15 @@ bool QDialog::event(QEvent *e)
         result = true;
      }
 #else
-    if ((e->type() == QEvent::StyleChange) || (e->type() == QEvent::Resize ))
-        adjustPosition(parentWidget());
+    if ((e->type() == QEvent::StyleChange) || (e->type() == QEvent::Resize )) {
+        if (!testAttribute(Qt::WA_Moved)) {
+            Qt::WindowStates state = windowState();
+            adjustPosition(parentWidget());
+            setAttribute(Qt::WA_Moved, false); // not really an explicit position
+            if (state != windowState())
+                setWindowState(state);
+        }
+    }
 #endif
     return result;
 }

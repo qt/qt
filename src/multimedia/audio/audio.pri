@@ -41,6 +41,21 @@ mac {
     !wince*:LIBS += -lwinmm
     wince*:LIBS += -lcoredll
 
+} else:symbian {
+    INCLUDEPATH += /epoc32/include/mmf/common
+    INCLUDEPATH += /epoc32/include/mmf/server
+
+    HEADERS += $$PWD/qaudio_symbian_p.h \
+               $$PWD/qaudiodeviceinfo_symbian_p.h \
+               $$PWD/qaudioinput_symbian_p.h \
+               $$PWD/qaudiooutput_symbian_p.h
+
+    SOURCES += $$PWD/qaudio_symbian_p.cpp \
+               $$PWD/qaudiodeviceinfo_symbian_p.cpp \
+               $$PWD/qaudioinput_symbian_p.cpp \
+               $$PWD/qaudiooutput_symbian_p.cpp
+
+    LIBS += -lmmfdevsound
 } else:unix {
     unix:contains(QT_CONFIG, alsa) {
         linux-*|freebsd-*|openbsd-*:{

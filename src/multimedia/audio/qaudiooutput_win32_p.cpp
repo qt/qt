@@ -88,7 +88,7 @@ QAudioOutputPrivate::~QAudioOutputPrivate()
     DeleteCriticalSection(&waveOutCriticalSection);
 }
 
-void CALLBACK QAudioOutputPrivate::waveOutProc( HWAVEOUT hWaveOut, UINT uMsg,
+void QT_WIN_CALLBACK QAudioOutputPrivate::waveOutProc( HWAVEOUT hWaveOut, UINT uMsg,
         DWORD dwInstance, DWORD dwParam1, DWORD dwParam2 )
 {
     Q_UNUSED(dwParam1)
@@ -455,6 +455,9 @@ void QAudioOutputPrivate::feedback()
 
 bool QAudioOutputPrivate::deviceReady()
 {
+    if(deviceState == QAudio::StoppedState)
+        return false;
+
     if(pullMode) {
         int chunks = bytesAvailable/period_size;
 #ifdef DEBUG_AUDIO

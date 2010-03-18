@@ -95,7 +95,7 @@ QT_BEGIN_NAMESPACE
       format.setByteOrder(QAudioFormat::LittleEndian);
       format.setSampleType(QAudioFormat::UnSignedInt);
 
-      if (QAudioDeviceInfo info(QAudioDeviceInfo::defaultInputDevice());
+      QAudioDeviceInfo info = QAudioDeviceInfo::defaultInputDevice();
       if (!info.isFormatSupported(format)) {
           qWarning()<<"default format not supported try to use nearest";
           format = info.nearestFormat(format);

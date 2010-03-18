@@ -119,11 +119,13 @@ static void initializeIsForbiddenKey()
   pthread_key_create(&isForbiddenKey, 0);
 }
 
+#if !ASSERT_DISABLED
 static bool isForbidden()
 {
     pthread_once(&isForbiddenKeyOnce, initializeIsForbiddenKey);
     return !!pthread_getspecific(isForbiddenKey);
 }
+#endif
 
 void fastMallocForbid()
 {
@@ -182,6 +184,17 @@ void* fastZeroedMalloc(size_t n)
     memset(result, 0, n);
     return result;
 }
+
+char* fastStrDup(const char* src)
+{
+    int len = strlen(src) + 1;
+    char* dup = static_cast<char*>(fastMalloc(len));
+
+    if (dup)
+        memcpy(dup, src, len);
+
+    return dup;
+}
     
 TryMallocReturnValue tryFastZeroedMalloc(size_t n) 
 {
@@ -195,13 +208,6 @@ TryMallocReturnValue tryFastZeroedMalloc(size_t n)
 } // namespace WTF
 
 #if FORCE_SYSTEM_MALLOC
-
-#include <stdlib.h>
-#if !PLATFORM(WIN_OS)
-    #include <pthread.h>
-#else
-    #include "windows.h"
-#endif
 
 namespace WTF {
 
@@ -354,7 +360,7 @@ FastMallocStatistics fastMallocStatistics()
 
 } // namespace WTF
 
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
 // This symbol is present in the JavaScriptCore exports file even when FastMalloc is disabled.
 // It will never be used in this case, so it's type and value are less interesting than its presence.
 extern "C" const int jscore_fastmalloc_introspection = 0;
@@ -384,7 +390,7 @@ extern "C" const int jscore_fastmalloc_introspection = 0;
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
-#if PLATFORM(UNIX)
+#if OS(UNIX)
 #include <unistd.h>
 #endif
 #if COMPILER(MSVC)
@@ -396,11 +402,15 @@ extern "C" const int jscore_fastmalloc_introspection = 0;
 
 #if WTF_CHANGES
 
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
 #include "MallocZoneSupport.h"
 #include <wtf/HashSet.h>
 #include <wtf/Vector.h>
 #endif
+#if HAVE(DISPATCH_H)
+#include <dispatch/dispatch.h>
+#endif
+
 
 #ifndef PRIuS
 #define PRIuS "zu"
@@ -410,7 +420,7 @@ extern "C" const int jscore_fastmalloc_introspection = 0;
 // call to the function on Mac OS X, and it's used in performance-critical code. So we
 // use a function pointer. But that's not necessarily faster on other platforms, and we had
 // problems with this technique on Windows, so we'll do this only on Mac OS X.
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
 static void* (*pthread_getspecific_function_pointer)(pthread_key_t) = pthread_getspecific;
 #define pthread_getspecific(key) pthread_getspecific_function_pointer(key)
 #endif
@@ -438,7 +448,7 @@ namespace WTF {
 #define MESSAGE LOG_ERROR
 #define CHECK_CONDITION ASSERT
 
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
 class Span;
 class TCMalloc_Central_FreeListPadded;
 class TCMalloc_PageHeap;
@@ -995,7 +1005,7 @@ class PageHeapAllocator {
 
   int inuse() const { return inuse_; }
 
-#if defined(WTF_CHANGES) && PLATFORM(DARWIN)
+#if defined(WTF_CHANGES) && OS(DARWIN)
   template <class Recorder>
   void recordAdministrativeRegions(Recorder& recorder, const RemoteMemoryReader& reader)
   {
@@ -1177,7 +1187,7 @@ template <int BITS> class MapSelector {
 };
 
 #if defined(WTF_CHANGES)
-#if PLATFORM(X86_64)
+#if CPU(X86_64)
 // On all known X86-64 platforms, the upper 16 bits are always unused and therefore 
 // can be excluded from the PageMap key.
 // See http://en.wikipedia.org/wiki/X86-64#Virtual_address_space_details
@@ -1228,7 +1238,7 @@ static const int kScavengeTimerDelayInSeconds = 5;
 static const size_t kMinimumFreeCommittedPageCount = 512;
 
 // During a scavenge, we'll release up to a fraction of the free committed pages.
-#if PLATFORM(WIN)
+#if OS(WINDOWS)
 // We are slightly less aggressive in releasing memory on Windows due to performance reasons.
 static const int kMaxScavengeAmountFactor = 3;
 #else
@@ -1377,26 +1387,34 @@ class TCMalloc_PageHeap {
   // Index of last free list we scavenged
   size_t scavenge_index_;
   
-#if defined(WTF_CHANGES) && PLATFORM(DARWIN)
+#if defined(WTF_CHANGES) && OS(DARWIN)
   friend class FastMallocZone;
 #endif
 
 #if USE_BACKGROUND_THREAD_TO_SCAVENGE_MEMORY
-  static NO_RETURN void* runScavengerThread(void*);
-
-  NO_RETURN void scavengerThread();
-
+  void initializeScavenger();
+  ALWAYS_INLINE void signalScavenger();
   void scavenge();
+  ALWAYS_INLINE bool shouldContinueScavenging() const;
 
-  inline bool shouldContinueScavenging() const;
-
-  pthread_mutex_t m_scavengeMutex;
-
-  pthread_cond_t m_scavengeCondition;
+#if !HAVE(DISPATCH_H)
+  static NO_RETURN void* runScavengerThread(void*);
+  NO_RETURN void scavengerThread();
 
   // Keeps track of whether the background thread is actively scavenging memory every kScavengeTimerDelayInSeconds, or
   // it's blocked waiting for more pages to be deleted.
   bool m_scavengeThreadActive;
+
+  pthread_mutex_t m_scavengeMutex;
+  pthread_cond_t m_scavengeCondition;
+#else // !HAVE(DISPATCH_H)
+  void periodicScavenge();
+
+  dispatch_queue_t m_scavengeQueue;
+  dispatch_source_t m_scavengeTimer;
+  bool m_scavengingScheduled;
+#endif
+
 #endif  // USE_BACKGROUND_THREAD_TO_SCAVENGE_MEMORY
 };
 
@@ -1424,23 +1442,59 @@ void TCMalloc_PageHeap::init()
   }
 
 #if USE_BACKGROUND_THREAD_TO_SCAVENGE_MEMORY
+  initializeScavenger();
+#endif  // USE_BACKGROUND_THREAD_TO_SCAVENGE_MEMORY
+}
+
+#if USE_BACKGROUND_THREAD_TO_SCAVENGE_MEMORY
+
+#if !HAVE(DISPATCH_H)
+
+void TCMalloc_PageHeap::initializeScavenger()
+{
   pthread_mutex_init(&m_scavengeMutex, 0);
   pthread_cond_init(&m_scavengeCondition, 0);
   m_scavengeThreadActive = true;
   pthread_t thread;
   pthread_create(&thread, 0, runScavengerThread, this);
-#endif  // USE_BACKGROUND_THREAD_TO_SCAVENGE_MEMORY
 }
 
-#if USE_BACKGROUND_THREAD_TO_SCAVENGE_MEMORY
 void* TCMalloc_PageHeap::runScavengerThread(void* context)
 {
   static_cast<TCMalloc_PageHeap*>(context)->scavengerThread();
-#if COMPILER(MSVC) || PLATFORM(SOLARIS)
+#if COMPILER(MSVC) || OS(SOLARIS)
   // Without this, Visual Studio will complain that this method does not return a value.
   return 0;
 #endif
 }
+
+ALWAYS_INLINE void TCMalloc_PageHeap::signalScavenger()
+{
+  if (!m_scavengeThreadActive && shouldContinueScavenging())
+    pthread_cond_signal(&m_scavengeCondition);
+}
+
+#else // !HAVE(DISPATCH_H)
+
+void TCMalloc_PageHeap::initializeScavenger()
+{
+  m_scavengeQueue = dispatch_queue_create("com.apple.JavaScriptCore.FastMallocSavenger", NULL);
+  m_scavengeTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, m_scavengeQueue);
+  dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, kScavengeTimerDelayInSeconds * NSEC_PER_SEC);
+  dispatch_source_set_timer(m_scavengeTimer, startTime, kScavengeTimerDelayInSeconds * NSEC_PER_SEC, 1000 * NSEC_PER_USEC);
+  dispatch_source_set_event_handler(m_scavengeTimer, ^{ periodicScavenge(); });
+  m_scavengingScheduled = false;
+}
+
+ALWAYS_INLINE void TCMalloc_PageHeap::signalScavenger()
+{
+  if (!m_scavengingScheduled && shouldContinueScavenging()) {
+    m_scavengingScheduled = true;
+    dispatch_resume(m_scavengeTimer);
+  }
+}
+
+#endif
 
 void TCMalloc_PageHeap::scavenge() 
 {
@@ -1477,7 +1531,7 @@ void TCMalloc_PageHeap::scavenge()
     free_committed_pages_ -= pagesDecommitted;
 }
 
-inline bool TCMalloc_PageHeap::shouldContinueScavenging() const 
+ALWAYS_INLINE bool TCMalloc_PageHeap::shouldContinueScavenging() const 
 {
     return free_committed_pages_ > kMinimumFreeCommittedPageCount; 
 }
@@ -1739,8 +1793,7 @@ inline void TCMalloc_PageHeap::Delete(Span* span) {
   }
 
   // Make sure the scavenge thread becomes active if we have enough freed pages to release some back to the system.
-  if (!m_scavengeThreadActive && shouldContinueScavenging())
-      pthread_cond_signal(&m_scavengeCondition);
+  signalScavenger();
 #else
   IncrementalScavenge(n);
 #endif
@@ -2283,7 +2336,9 @@ static inline TCMalloc_PageHeap* getPageHeap()
 #define pageheap getPageHeap()
 
 #if USE_BACKGROUND_THREAD_TO_SCAVENGE_MEMORY
-#if PLATFORM(WIN_OS)
+
+#if !HAVE(DISPATCH_H)
+#if OS(WINDOWS)
 static void sleep(unsigned seconds)
 {
     ::Sleep(seconds * 1000);
@@ -2312,6 +2367,23 @@ void TCMalloc_PageHeap::scavengerThread()
       }
   }
 }
+
+#else
+
+void TCMalloc_PageHeap::periodicScavenge()
+{
+  {
+    SpinLockHolder h(&pageheap_lock);
+    pageheap->scavenge();
+  }
+
+  if (!shouldContinueScavenging()) {
+    m_scavengingScheduled = false;
+    dispatch_suspend(m_scavengeTimer);
+  }
+}
+#endif // HAVE(DISPATCH_H)
+
 #endif
 
 // If TLS is available, we also store a copy
@@ -2821,7 +2893,7 @@ void TCMalloc_ThreadCache::InitModule() {
     }
     pageheap->init();
     phinited = 1;
-#if defined(WTF_CHANGES) && PLATFORM(DARWIN)
+#if defined(WTF_CHANGES) && OS(DARWIN)
     FastMallocZone::init();
 #endif
   }
@@ -3800,7 +3872,7 @@ void* realloc(void* old_ptr, size_t new_size) {
     return new_ptr;
   } else {
 #if ENABLE(FAST_MALLOC_MATCH_VALIDATION)
-    old_ptr = pByte + sizeof(AllocAlignmentInteger);  // Set old_ptr back to the user pointer.
+    old_ptr = static_cast<AllocAlignmentInteger*>(old_ptr) + 1; // Set old_ptr back to the user pointer.
 #endif
     return old_ptr;
   }
@@ -4019,7 +4091,7 @@ void *(*__memalign_hook)(size_t, size_t, const void *) = MemalignOverride;
 
 #endif
 
-#if defined(WTF_CHANGES) && PLATFORM(DARWIN)
+#if defined(WTF_CHANGES) && OS(DARWIN)
 
 class FreeObjectFinder {
     const RemoteMemoryReader& m_reader;
@@ -4302,7 +4374,7 @@ extern "C" {
 malloc_introspection_t jscore_fastmalloc_introspection = { &FastMallocZone::enumerate, &FastMallocZone::goodSize, &FastMallocZone::check, &FastMallocZone::print,
     &FastMallocZone::log, &FastMallocZone::forceLock, &FastMallocZone::forceUnlock, &FastMallocZone::statistics
 
-#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !PLATFORM(IPHONE)
+#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !OS(IPHONE_OS)
     , 0 // zone_locked will not be called on the zone unless it advertises itself as version five or higher.
 #endif
 

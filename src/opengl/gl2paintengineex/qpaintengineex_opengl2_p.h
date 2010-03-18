@@ -259,6 +259,7 @@ public:
     bool brushTextureDirty;
     bool brushUniformsDirty;
     bool opacityUniformDirty;
+    bool matrixUniformDirty;
 
     bool stencilClean; // Has the stencil not been used for clipping so far?
     bool useSystemClip;

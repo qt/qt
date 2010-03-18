@@ -136,9 +136,9 @@ void QLineControl::copy(QClipboard::Mode mode) const
 
     \sa insert()
 */
-void QLineControl::paste()
+void QLineControl::paste(QClipboard::Mode clipboardMode)
 {
-    QString clip = QApplication::clipboard()->text(QClipboard::Clipboard);
+    QString clip = QApplication::clipboard()->text(clipboardMode);
     if (!clip.isEmpty() || hasSelectedText()) {
         separate(); //make it a separate undo/redo command
         insert(clip);
@@ -1576,8 +1576,14 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
         copy();
     }
     else if (event == QKeySequence::Paste) {
-        if (!isReadOnly())
-            paste();
+        if (!isReadOnly()) {
+            QClipboard::Mode mode = QClipboard::Clipboard;
+#ifdef Q_WS_X11
+            if (event->modifiers() == (Qt::CTRL | Qt::SHIFT) && event->key() == Qt::Key_Insert)
+                mode = QClipboard::Selection;
+#endif
+            paste(mode);
+        }
     }
     else if (event == QKeySequence::Cut) {
         if (!isReadOnly()) {

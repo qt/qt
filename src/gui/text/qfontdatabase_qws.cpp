@@ -638,8 +638,9 @@ QFontEngine *loadSingleEngine(int script, const QFontPrivate *fp,
 #ifndef QT_NO_FREETYPE
 
             QScopedPointer<QFontEngineFT> fte(new QFontEngineFT(def));
-            if (fte->init(faceId, style->antialiased,
-                          style->antialiased ? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono)) {
+            bool antialias = style->antialiased && !(request.styleStrategy & QFont::NoAntialias);
+            if (fte->init(faceId, antialias,
+                          antialias ? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono)) {
 #ifdef QT_NO_QWS_QPF2
                 return fte.take();
 #else
@@ -801,7 +802,7 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
              "    family: %s [%s], script: %d\n"
              "    weight: %d, style: %d\n"
              "    stretch: %d\n"
-             "    pixelSize: %d\n"
+             "    pixelSize: %g\n"
              "    pitch: %c",
              family_name.isEmpty() ? "-- first in script --" : family_name.toLatin1().constData(),
              foundry_name.isEmpty() ? "-- any --" : foundry_name.toLatin1().constData(),

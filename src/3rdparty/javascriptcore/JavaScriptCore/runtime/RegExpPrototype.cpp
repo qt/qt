@@ -46,7 +46,7 @@ static JSValue JSC_HOST_CALL regExpProtoFuncToString(ExecState*, JSObject*, JSVa
 
 const ClassInfo RegExpPrototype::info = { "RegExpPrototype", 0, 0, 0 };
 
-RegExpPrototype::RegExpPrototype(ExecState* exec, PassRefPtr<Structure> structure, Structure* prototypeFunctionStructure)
+RegExpPrototype::RegExpPrototype(ExecState* exec, NonNullPassRefPtr<Structure> structure, Structure* prototypeFunctionStructure)
     : JSObject(structure)
 {
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 0, exec->propertyNames().compile, regExpProtoFuncCompile), DontEnum);
@@ -91,7 +91,7 @@ JSValue JSC_HOST_CALL regExpProtoFuncCompile(ExecState* exec, JSObject*, JSValue
     }
 
     if (!regExp->isValid())
-        return throwError(exec, SyntaxError, UString("Invalid regular expression: ").append(regExp->errorMessage()));
+        return throwError(exec, SyntaxError, makeString("Invalid regular expression: ", regExp->errorMessage()));
 
     asRegExpObject(thisValue)->setRegExp(regExp.release());
     asRegExpObject(thisValue)->setLastIndex(0);
@@ -106,19 +106,17 @@ JSValue JSC_HOST_CALL regExpProtoFuncToString(ExecState* exec, JSObject*, JSValu
         return throwError(exec, TypeError);
     }
 
-    UString result = "/" + asRegExpObject(thisValue)->get(exec, exec->propertyNames().source).toString(exec);
-#ifdef QT_BUILD_SCRIPT_LIB
-    if (result.size() == 1)
-        result.append("(?:)");
-#endif
-    result.append('/');
+    char postfix[5] = { '/', 0, 0, 0, 0 };
+    int index = 1;
     if (asRegExpObject(thisValue)->get(exec, exec->propertyNames().global).toBoolean(exec))
-        result.append('g');
+        postfix[index++] = 'g';
     if (asRegExpObject(thisValue)->get(exec, exec->propertyNames().ignoreCase).toBoolean(exec))
-        result.append('i');
+        postfix[index++] = 'i';
     if (asRegExpObject(thisValue)->get(exec, exec->propertyNames().multiline).toBoolean(exec))
-        result.append('m');
-    return jsNontrivialString(exec, result);
+        postfix[index] = 'm';
+    UString source = asRegExpObject(thisValue)->get(exec, exec->propertyNames().source).toString(exec);
+    // If source is empty, use "/(?:)/" to avoid colliding with comment syntax
+    return jsNontrivialString(exec, makeString("/", source.size() ? source : UString("(?:)"), postfix));
 }
 
 } // namespace JSC

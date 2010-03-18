@@ -28,8 +28,8 @@ namespace JSC {
 
     class StringObject : public JSWrapperObject {
     public:
-        StringObject(ExecState*, PassRefPtr<Structure>);
-        StringObject(ExecState*, PassRefPtr<Structure>, const UString&);
+        StringObject(ExecState*, NonNullPassRefPtr<Structure>);
+        StringObject(ExecState*, NonNullPassRefPtr<Structure>, const UString&);
 
         static StringObject* create(ExecState*, JSString*);
 
@@ -38,8 +38,8 @@ namespace JSC {
         virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
 
         virtual void put(ExecState* exec, const Identifier& propertyName, JSValue, PutPropertySlot&);
-        virtual bool deleteProperty(ExecState*, const Identifier& propertyName, bool checkDontDelete = true);
-        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
+        virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
+        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
 
         virtual const ClassInfo* classInfo() const { return &info; }
         static const JS_EXPORTDATA ClassInfo info;
@@ -48,11 +48,12 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType));
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
         }
 
     protected:
-        StringObject(PassRefPtr<Structure>, JSString*);
+        static const unsigned StructureFlags = OverridesGetOwnPropertySlot | OverridesMarkChildren | OverridesGetPropertyNames | JSWrapperObject::StructureFlags;
+        StringObject(NonNullPassRefPtr<Structure>, JSString*);
   };
 
     StringObject* asStringObject(JSValue);

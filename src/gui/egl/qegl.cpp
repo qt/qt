@@ -60,7 +60,7 @@ static QEglContext * volatile currentVGContext = 0;
 QEglContext::QEglContext()
     : apiType(QEgl::OpenGL)
     , ctx(EGL_NO_CONTEXT)
-    , cfg(0)
+    , cfg(QEGL_NO_CONFIG)
     , currentSurface(EGL_NO_SURFACE)
     , current(false)
     , ownsContext(true)

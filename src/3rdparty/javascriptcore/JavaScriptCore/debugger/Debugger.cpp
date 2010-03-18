@@ -67,8 +67,9 @@ void Debugger::recompileAllJSFunctions(JSGlobalData* globalData)
     FunctionExecutableSet functionExecutables;
     SourceProviderMap sourceProviders;
 
-    Heap::iterator heapEnd = globalData->heap.primaryHeapEnd();
-    for (Heap::iterator it = globalData->heap.primaryHeapBegin(); it != heapEnd; ++it) {
+    LiveObjectIterator it = globalData->heap.primaryHeapBegin();
+    LiveObjectIterator heapEnd = globalData->heap.primaryHeapEnd();
+    for ( ; it != heapEnd; ++it) {
         if (!(*it)->inherits(&JSFunction::info))
             continue;
 
@@ -100,12 +101,12 @@ JSValue evaluateInGlobalCallFrame(const UString& script, JSValue& exception, JSG
 {
     CallFrame* globalCallFrame = globalObject->globalExec();
 
-    EvalExecutable eval(globalCallFrame, makeSource(script));
-    JSObject* error = eval.compile(globalCallFrame, globalCallFrame->scopeChain());
+    RefPtr<EvalExecutable> eval = EvalExecutable::create(globalCallFrame, makeSource(script));
+    JSObject* error = eval->compile(globalCallFrame, globalCallFrame->scopeChain());
     if (error)
         return error;
 
-    return globalObject->globalData()->interpreter->execute(&eval, globalCallFrame, globalObject, globalCallFrame->scopeChain(), &exception);
+    return globalObject->globalData()->interpreter->execute(eval.get(), globalCallFrame, globalObject, globalCallFrame->scopeChain(), &exception);
 }
 
 } // namespace JSC

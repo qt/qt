@@ -4663,7 +4663,7 @@ EXPORTS
 	_ZN20QGraphicsItemPrivate12resolveDepthEv @ 4662 NONAME
 	_ZN20QGraphicsItemPrivate12setPosHelperERK7QPointF @ 4663 NONAME
 	_ZN20QGraphicsItemPrivate13clearSubFocusEP13QGraphicsItem @ 4664 NONAME
-	_ZN20QGraphicsItemPrivate14setFocusHelperEN2Qt11FocusReasonEb @ 4665 NONAME
+	_ZN20QGraphicsItemPrivate14setFocusHelperEN2Qt11FocusReasonEb @ 4665 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate15resetFocusProxyEv @ 4666 NONAME
 	_ZN20QGraphicsItemPrivate16setEnabledHelperEbbb @ 4667 NONAME
 	_ZN20QGraphicsItemPrivate16setVisibleHelperEbbb @ 4668 NONAME

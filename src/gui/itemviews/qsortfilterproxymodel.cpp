@@ -111,6 +111,35 @@ private:
 };
 
 
+//this struct is used to store what are the rows that are removed
+//between a call to rowsAboutToBeRemoved and rowsRemoved
+//it avoids readding rows to the mapping that are currently being removed
+struct QRowsRemoval
+{
+    QRowsRemoval(const QModelIndex &parent_source, int start, int end) : parent_source(parent_source), start(start), end(end)
+    {
+    }
+
+    QRowsRemoval() : start(-1), end(-1)
+    {
+    }
+
+    bool contains(QModelIndex parent, int row)
+    {
+        do {
+            if (parent == parent_source)
+                return row >= start && row <= end;
+            row = parent.row();
+            parent = parent.parent();
+        } while (row >= 0);
+        return false;
+    }
+private:
+    QModelIndex parent_source;
+    int start;
+    int end;
+};
+
 class QSortFilterProxyModelPrivate : public QAbstractProxyModelPrivate
 {
     Q_DECLARE_PUBLIC(QSortFilterProxyModel)
@@ -122,10 +151,10 @@ public:
         QVector<int> proxy_rows;
         QVector<int> proxy_columns;
         QVector<QModelIndex> mapped_children;
-        QMap<QModelIndex, Mapping *>::const_iterator map_iter;
+        QHash<QModelIndex, Mapping *>::const_iterator map_iter;
     };
 
-    mutable QMap<QModelIndex, Mapping*> source_index_mapping;
+    mutable QHash<QModelIndex, Mapping*> source_index_mapping;
 
     int source_sort_column;
     int proxy_sort_column;
@@ -139,10 +168,11 @@ public:
     int filter_role;
 
     bool dynamic_sortfilter;
+    QRowsRemoval itemsBeingRemoved;
 
     QModelIndexPairList saved_persistent_indexes;
 
-    QMap<QModelIndex, Mapping *>::const_iterator create_mapping(
+    QHash<QModelIndex, Mapping *>::const_iterator create_mapping(
         const QModelIndex &source_parent) const;
     QModelIndex proxy_to_source(const QModelIndex &proxyIndex) const;
     QModelIndex source_to_proxy(const QModelIndex &sourceIndex) const;
@@ -150,14 +180,14 @@ public:
 
     void remove_from_mapping(const QModelIndex &source_parent);
 
-    inline QMap<QModelIndex, Mapping *>::const_iterator index_to_iterator(
+    inline QHash<QModelIndex, Mapping *>::const_iterator index_to_iterator(
         const QModelIndex &proxy_index) const
     {
         Q_ASSERT(proxy_index.isValid());
         Q_ASSERT(proxy_index.model() == q_func());
         const void *p = proxy_index.internalPointer();
         Q_ASSERT(p);
-        QMap<QModelIndex, Mapping *>::const_iterator it =
+        QHash<QModelIndex, Mapping *>::const_iterator it =
             static_cast<const Mapping*>(p)->map_iter;
         Q_ASSERT(it != source_index_mapping.constEnd());
         Q_ASSERT(it.value());
@@ -165,7 +195,7 @@ public:
     }
 
     inline QModelIndex create_index(int row, int column,
-                                    QMap<QModelIndex, Mapping*>::const_iterator it) const
+                                    QHash<QModelIndex, Mapping*>::const_iterator it) const
     {
         return q_func()->createIndex(row, column, *it);
     }
@@ -246,7 +276,7 @@ public:
     virtual void _q_sourceModelDestroyed();
 };
 
-typedef QMap<QModelIndex, QSortFilterProxyModelPrivate::Mapping *> IndexMap;
+typedef QHash<QModelIndex, QSortFilterProxyModelPrivate::Mapping *> IndexMap;
 
 void QSortFilterProxyModelPrivate::_q_sourceModelDestroyed()
 {
@@ -292,11 +322,13 @@ IndexMap::const_iterator QSortFilterProxyModelPrivate::create_mapping(
     Mapping *m = new Mapping;
 
     int source_rows = model->rowCount(source_parent);
+    m->source_rows.reserve(source_rows);
     for (int i = 0; i < source_rows; ++i) {
         if (q->filterAcceptsRow(i, source_parent))
             m->source_rows.append(i);
     }
     int source_cols = model->columnCount(source_parent);
+    m->source_columns.reserve(source_cols);
     for (int i = 0; i < source_cols; ++i) {
         if (q->filterAcceptsColumn(i, source_parent))
             m->source_columns.append(i);
@@ -1094,7 +1126,7 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
                     source_rows_change.append(source_row);
                 }
             } else {
-                if (q->filterAcceptsRow(source_row, source_parent)) {
+                if (!itemsBeingRemoved.contains(source_parent, source_row) && q->filterAcceptsRow(source_row, source_parent)) {
                     // This source row now satisfies the filter, so it must be added
                     source_rows_insert.append(source_row);
                 }
@@ -1251,6 +1283,7 @@ void QSortFilterProxyModelPrivate::_q_sourceRowsInserted(
 void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeRemoved(
     const QModelIndex &source_parent, int start, int end)
 {
+    itemsBeingRemoved = QRowsRemoval(source_parent, start, end);
     source_items_about_to_be_removed(source_parent, start, end,
                                      Qt::Vertical);
 }
@@ -1258,6 +1291,7 @@ void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeRemoved(
 void QSortFilterProxyModelPrivate::_q_sourceRowsRemoved(
     const QModelIndex &source_parent, int start, int end)
 {
+    itemsBeingRemoved = QRowsRemoval();
     source_items_removed(source_parent, start, end, Qt::Vertical);
 }
 

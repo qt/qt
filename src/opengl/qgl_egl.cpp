@@ -63,10 +63,8 @@ void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLForma
 
     // QGLFormat uses a magic value of -1 to indicate "don't care", even when a buffer of that
     // type has been requested. So we must check QGLFormat's booleans too if size is -1:
-    if (glFormat.alpha() && alphaSize <= 0) {
-        qDebug("QGLFormat::alpha() returned true");
+    if (glFormat.alpha() && alphaSize <= 0)
         alphaSize = 1;
-    }
     if (glFormat.depth() && depthSize <= 0)
         depthSize = 1;
     if (glFormat.stencil() && stencilSize <= 0)
@@ -164,10 +162,11 @@ void QGLContext::reset()
         return;
     d->cleanup();
     doneCurrent();
-    if (d->eglContext) {
+    if (d->eglContext && d->ownsEglContext) {
         d->destroyEglSurfaceForDevice();
         delete d->eglContext;
     }
+    d->ownsEglContext = false;
     d->eglContext = 0;
     d->eglSurface = EGL_NO_SURFACE;
     d->crWin = false;
@@ -215,7 +214,7 @@ void QGLContextPrivate::destroyEglSurfaceForDevice()
 #ifdef Q_WS_X11
         // Make sure we don't call eglDestroySurface on a surface which
         // was created for a different winId:
-        if (paintDevice->devType() == QInternal::Widget) {
+        if (paintDevice && paintDevice->devType() == QInternal::Widget) {
             QGLWidget* w = static_cast<QGLWidget*>(paintDevice);
 
             if (w->d_func()->eglSurfaceWindowId == w->winId())

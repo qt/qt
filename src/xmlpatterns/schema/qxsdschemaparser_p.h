@@ -120,10 +120,22 @@ namespace QPatternist
             typedef QSet<QUrl> NamespaceSet;
 
             /**
+             * Adds @p schemas to the list of already included schemas, so the parser
+             * can detect multiple includes of the same schema.
+             */
+            void addIncludedSchemas(const NamespaceSet &schemas);
+
+            /**
              * Sets which @p schemas have been included already, so the parser
-             * can detect circular includes.
+             * can detect multiple includes of the same schema.
              */
             void setIncludedSchemas(const NamespaceSet &schemas);
+
+            /**
+             * Adds @p schemas to the list of already imported schemas, so the parser
+             * can detect multiple imports of the same schema.
+             */
+            void addImportedSchemas(const NamespaceSet &schemas);
 
             /**
              * Sets which @p schemas have been imported already, so the parser
@@ -132,8 +144,14 @@ namespace QPatternist
             void setImportedSchemas(const NamespaceSet &schemas);
 
             /**
+             * Adds @p schemas to the list of already redefined schemas, so the parser
+             * can detect multiple redefines of the same schema.
+             */
+            void addRedefinedSchemas(const NamespaceSet &schemas);
+
+            /**
              * Sets which @p schemas have been redefined already, so the parser
-             * can detect circular redefines.
+             * can detect multiple redefines of the same schema.
              */
             void setRedefinedSchemas(const NamespaceSet &schemas);
 
