@@ -9819,6 +9819,16 @@ void tst_QGraphicsItem::scenePosChange()
     QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 4);
     QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
     QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+
+    root->setX(1);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 5);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+
+    root->setY(1);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 6);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
 }
 
 void tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
