@@ -1012,12 +1012,15 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             value = PixelMetricTabValue(QStyle::PM_TabBarScrollButtonWidth, appWindow.Rect(), landscape);
             break;
 
+        case QStyle::PM_MenuScrollerHeight:
+            value = 0;
+            break;
+
 // todo: re-check if these really are not available in s60
         case QStyle::PM_MenuDesktopFrameWidth:    // not needed in S60 - dislocates Menu both horizontally and vertically
         case QStyle::PM_HeaderMarkSize:           // The size of the sort indicator in a header. Not in S60
         case QStyle::PM_SpinBoxSliderHeight:       // The height of the optional spin box slider. Not in S60
         case QStyle::PM_HeaderMargin: // not in S60
-        case QStyle::PM_MenuScrollerHeight: // not in S60
         case QStyle::PM_MenuTearoffHeight: // not in S60
         case QStyle::PM_DockWidgetFrameWidth: // not in S60
         case QStyle::PM_DockWidgetSeparatorExtent: // not in S60
