@@ -2815,6 +2815,7 @@ void QDeclarativeAnchorAnimation::transition(QDeclarativeStateActions &actions,
                         QDeclarativeProperties &modified,
                         TransitionDirection direction)
 {
+    Q_UNUSED(modified);
     Q_D(QDeclarativeAnchorAnimation);
     PropertyUpdater *data = new PropertyUpdater;
     data->interpolatorType = QMetaType::QReal;

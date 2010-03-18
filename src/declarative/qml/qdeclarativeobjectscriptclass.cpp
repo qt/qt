@@ -78,7 +78,7 @@ struct ObjectData : public QScriptDeclarativeClass::Object {
     QtScript for QML.
  */
 QDeclarativeObjectScriptClass::QDeclarativeObjectScriptClass(QDeclarativeEngine *bindEngine)
-: QDeclarativeScriptClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), 
+: QDeclarativeScriptClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)),
 #if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
   methods(bindEngine),
 #endif
@@ -133,15 +133,15 @@ int QDeclarativeObjectScriptClass::objectType(const QScriptValue &value) const
     return ((ObjectData*)(o))->type;
 }
 
-QScriptClass::QueryFlags 
-QDeclarativeObjectScriptClass::queryProperty(Object *object, const Identifier &name, 
+QScriptClass::QueryFlags
+QDeclarativeObjectScriptClass::queryProperty(Object *object, const Identifier &name,
                                     QScriptClass::QueryFlags flags)
 {
     return queryProperty(toQObject(object), name, flags, 0);
 }
 
-QScriptClass::QueryFlags 
-QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &name, 
+QScriptClass::QueryFlags
+QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
                                     QScriptClass::QueryFlags flags, QDeclarativeContextData *evalContext,
                                     QueryHints hints)
 {
@@ -160,12 +160,12 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
     lastData = QDeclarativePropertyCache::property(engine, obj, name, local);
 
     if (lastData)
-        return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess; 
+        return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess;
 
     if (!(hints & SkipAttachedProperties)) {
         if (!evalContext && context()) {
             // Global object, QScriptContext activation object, QDeclarativeContext object
-            QScriptValue scopeNode = scopeChainValue(context(), -3);         
+            QScriptValue scopeNode = scopeChainValue(context(), -3);
             if (scopeNode.isValid()) {
                 Q_ASSERT(scriptClass(scopeNode) == enginePrivate->contextClass);
 
@@ -237,7 +237,7 @@ QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
         }
     } else {
         if (enginePriv->captureProperties && !(lastData->flags & QDeclarativePropertyCache::Data::IsConstant)) {
-            enginePriv->capturedProperties << 
+            enginePriv->capturedProperties <<
                 QDeclarativeEnginePrivate::CapturedProperty(obj, lastData->coreIndex, lastData->notifyIndex);
         }
 
@@ -302,15 +302,15 @@ QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
     }
 }
 
-void QDeclarativeObjectScriptClass::setProperty(Object *object, 
-                                       const Identifier &name, 
+void QDeclarativeObjectScriptClass::setProperty(Object *object,
+                                       const Identifier &name,
                                        const QScriptValue &value)
 {
     return setProperty(toQObject(object), name, value);
 }
 
-void QDeclarativeObjectScriptClass::setProperty(QObject *obj, 
-                                       const Identifier &name, 
+void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
+                                       const Identifier &name,
                                        const QScriptValue &value,
                                        QDeclarativeContextData *evalContext)
 {
@@ -339,7 +339,7 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
 
     if (!evalContext && context()) {
         // Global object, QScriptContext activation object, QDeclarativeContext object
-        QScriptValue scopeNode = scopeChainValue(context(), -3);         
+        QScriptValue scopeNode = scopeChainValue(context(), -3);
         if (scopeNode.isValid()) {
             Q_ASSERT(scriptClass(scopeNode) == enginePriv->contextClass);
 
@@ -347,7 +347,7 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         }
     }
 
-    QDeclarativeAbstractBinding *delBinding = 
+    QDeclarativeAbstractBinding *delBinding =
         QDeclarativePropertyPrivate::setBinding(obj, lastData->coreIndex, -1, 0);
     if (delBinding)
         delBinding->destroy();
@@ -413,7 +413,7 @@ QScriptValue QDeclarativeObjectScriptClass::destroy(QScriptContext *context, QSc
         return engine->undefinedValue();
 
     QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(data->object, false);
-    if (!ddata || ddata->indestructible) 
+    if (!ddata || ddata->indestructible)
         return engine->currentContext()->throwError(QLatin1String("Invalid attempt  to destroy() an indestructible object"));
 
     QObject *obj = data->object;
@@ -469,7 +469,7 @@ struct MethodData : public QScriptDeclarativeClass::Object {
 };
 
 QDeclarativeObjectMethodScriptClass::QDeclarativeObjectMethodScriptClass(QDeclarativeEngine *bindEngine)
-: QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), 
+: QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)),
   engine(bindEngine)
 {
     qRegisterMetaType<QList<QObject *> >("QList<QObject *>");
@@ -516,7 +516,7 @@ QScriptValue QDeclarativeObjectMethodScriptClass::connect(QScriptContext *contex
     } else {
         qScriptConnect(data->object, signal.constData(), context->argument(0), context->argument(1));
     }
-    
+
     return engine->undefinedValue();
 }
 
@@ -541,14 +541,15 @@ QScriptValue QDeclarativeObjectMethodScriptClass::disconnect(QScriptContext *con
     } else {
         qScriptDisconnect(data->object, signal.constData(), context->argument(0), context->argument(1));
     }
-    
+
     return engine->undefinedValue();
 }
 
-QScriptClass::QueryFlags 
-QDeclarativeObjectMethodScriptClass::queryProperty(Object *, const Identifier &name, 
+QScriptClass::QueryFlags
+QDeclarativeObjectMethodScriptClass::queryProperty(Object *, const Identifier &name,
                                                    QScriptClass::QueryFlags flags)
 {
+    Q_UNUSED(flags);
     if (name == m_connectId.identifier || name == m_disconnectId.identifier)
         return QScriptClass::HandlesReadAccess;
     else
@@ -581,7 +582,7 @@ struct MetaCallArgument {
 
 private:
     MetaCallArgument(const MetaCallArgument &);
-    
+
     inline void cleanup();
 
     void *data[4];
@@ -599,7 +600,7 @@ MetaCallArgument::~MetaCallArgument()
     cleanup();
 }
 
-void MetaCallArgument::cleanup() 
+void MetaCallArgument::cleanup()
 {
     if (type == QMetaType::QString) {
         ((QString *)&data)->~QString();
@@ -614,7 +615,7 @@ void MetaCallArgument::cleanup()
 
 void *MetaCallArgument::dataPtr()
 {
-    if (type == -1) 
+    if (type == -1)
         return ((QVariant *)data)->data();
     else
         return (void *)&data;
@@ -626,7 +627,7 @@ void MetaCallArgument::initAsType(int callType, QDeclarativeEngine *e)
     if (callType == 0) return;
 
     QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(e);
-    
+
     if (callType == qMetaTypeId<QScriptValue>()) {
         new (&data) QScriptValue(engine->undefinedValue());
         type = callType;
@@ -710,7 +711,7 @@ void MetaCallArgument::fromScriptValue(int callType, QDeclarativeEngine *engine,
 QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
 {
     QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(e);
-    
+
     if (type == qMetaTypeId<QScriptValue>()) {
         return QScriptDeclarativeClass::Value(engine, *((QScriptValue *)&data));
     } else if (type == QMetaType::Int) {
@@ -760,21 +761,21 @@ QDeclarativeObjectMethodScriptClass::Value QDeclarativeObjectMethodScriptClass::
         // ### Cache
         for (int ii = 0; ii < argTypeNames.count(); ++ii) {
             argTypes[ii] = QMetaType::type(argTypeNames.at(ii));
-            if (argTypes[ii] == QVariant::Invalid) 
+            if (argTypes[ii] == QVariant::Invalid)
                 return Value(ctxt, ctxt->throwError(QString::fromLatin1("Unknown method parameter type: %1").arg(QLatin1String(argTypeNames.at(ii)))));
         }
 
-        if (argTypes.count() > ctxt->argumentCount()) 
+        if (argTypes.count() > ctxt->argumentCount())
             return Value(ctxt, ctxt->throwError(QLatin1String("Insufficient arguments")));
 
         QVarLengthArray<MetaCallArgument, 9> args(argTypes.count() + 1);
         args[0].initAsType(method->data.propType, engine);
 
-        for (int ii = 0; ii < argTypes.count(); ++ii) 
+        for (int ii = 0; ii < argTypes.count(); ++ii)
             args[ii + 1].fromScriptValue(argTypes[ii], engine, ctxt->argument(ii));
 
         QVarLengthArray<void *, 9> argData(args.count());
-        for (int ii = 0; ii < args.count(); ++ii) 
+        for (int ii = 0; ii < args.count(); ++ii)
             argData[ii] = args[ii].dataPtr();
 
         QMetaObject::metacall(method->object, QMetaObject::InvokeMetaMethod, method->data.coreIndex, argData.data());
