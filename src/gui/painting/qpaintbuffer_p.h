@@ -78,6 +78,12 @@ public:
     int numFrames() const;
 
     void draw(QPainter *painter, int frame = 0) const;
+
+    int frameStartIndex(int frame) const;
+    int frameEndIndex(int frame) const;
+    int processCommands(QPainter *painter, int begin, int end) const;
+    QString commandDescription(int command) const;
+
     void setBoundingRect(const QRectF &rect);
     QRectF boundingRect() const;
 
@@ -317,7 +323,7 @@ public:
 
     void setupTransform(QPainter *painter);
     virtual void process(const QPaintBufferCommand &cmd);
-    void draw(const QPaintBuffer &buffer, QPainter *painter, int frame);
+    void processCommands(const QPaintBuffer &buffer, QPainter *painter, int begin, int end);
 
 protected:
     QPaintBufferPrivate *d;
