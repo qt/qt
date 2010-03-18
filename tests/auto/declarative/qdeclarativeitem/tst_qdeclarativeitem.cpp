@@ -120,7 +120,7 @@ void tst_QDeclarativeItem::keys()
 
     canvas->rootContext()->setContextProperty("enableKeyHanding", QVariant(true));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keys.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keystest.qml"));
     canvas->show();
     qApp->processEvents();
 
@@ -215,7 +215,7 @@ void tst_QDeclarativeItem::keyNavigation()
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setFixedSize(240,320);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keynavigation.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keynavigationtest.qml"));
     canvas->show();
     qApp->processEvents();
 

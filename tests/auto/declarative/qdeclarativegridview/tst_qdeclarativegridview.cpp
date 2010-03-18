@@ -165,7 +165,7 @@ void tst_QDeclarativeGridView::items()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
@@ -213,7 +213,7 @@ void tst_QDeclarativeGridView::changed()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeFlickable *gridview = findItem<QDeclarativeFlickable>(canvas->rootObject(), "grid");
@@ -246,7 +246,7 @@ void tst_QDeclarativeGridView::inserted()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
@@ -331,7 +331,7 @@ void tst_QDeclarativeGridView::removed()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
@@ -495,7 +495,7 @@ void tst_QDeclarativeGridView::moved()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
@@ -723,7 +723,7 @@ void tst_QDeclarativeGridView::changeFlow()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
@@ -820,7 +820,7 @@ void tst_QDeclarativeGridView::propertyChanges()
 {
     QDeclarativeView *canvas = createView();
     QVERIFY(canvas);
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychangestest.qml"));
 
     QDeclarativeGridView *gridView = canvas->rootObject()->findChild<QDeclarativeGridView*>("gridView");
     QVERIFY(gridView);
@@ -860,7 +860,7 @@ void tst_QDeclarativeGridView::componentChanges()
 {
     QDeclarativeView *canvas = createView();
     QVERIFY(canvas);
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychangestest.qml"));
 
     QDeclarativeGridView *gridView = canvas->rootObject()->findChild<QDeclarativeGridView*>("gridView");
     QVERIFY(gridView);
@@ -895,7 +895,7 @@ void tst_QDeclarativeGridView::modelChanges()
 {
     QDeclarativeView *canvas = createView();
     QVERIFY(canvas);
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychangestest.qml"));
 
     QDeclarativeGridView *gridView = canvas->rootObject()->findChild<QDeclarativeGridView*>("gridView");
     QVERIFY(gridView);
@@ -929,7 +929,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
