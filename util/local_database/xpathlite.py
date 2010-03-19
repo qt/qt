@@ -64,16 +64,16 @@ class Error:
     def __str__(self):
         return self.msg
 
-def findChild(parent, tag_name, arg_value, draft=None):
+def findChild(parent, tag_name, arg_name=None, arg_value=None, draft=None):
     for node in parent.childNodes:
         if node.nodeType != node.ELEMENT_NODE:
             continue
         if node.nodeName != tag_name:
             continue
         if arg_value:
-            if not node.attributes.has_key('type'):
+            if not node.attributes.has_key(arg_name):
                 continue
-            if node.attributes['type'].nodeValue != arg_value:
+            if node.attributes[arg_name].nodeValue != arg_value:
                 continue
         if draft:
             if not node.attributes.has_key('draft'):
@@ -101,12 +101,18 @@ def _findEntryInFile(file, path, draft=None, attribute=None):
     for i in range(len(tag_spec_list)):
         tag_spec = tag_spec_list[i]
         tag_name = tag_spec
+        arg_name = 'type'
         arg_value = ''
         left_bracket = tag_spec.find('[')
         if left_bracket != -1:
             tag_name = tag_spec[:left_bracket]
-            arg_value = tag_spec[left_bracket+1:-1]
-        alias = findChild(elt, 'alias', None)
+            arg_value = tag_spec[left_bracket+1:-1].split("=")
+            if len(arg_value) == 2:
+                arg_name = arg_value[0]
+                arg_value = arg_value[1]
+            else:
+                arg_value = arg_value[0]
+        alias = findChild(elt, 'alias')
         if alias and alias.attributes['source'].nodeValue == 'locale':
             path = alias.attributes['path'].nodeValue
             aliaspath = tag_spec_list[:i] + path.split("/")
@@ -123,7 +129,7 @@ def _findEntryInFile(file, path, draft=None, attribute=None):
             aliaspath = "/".join(aliaspath)
             # "locale" aliases are special - we need to start lookup from scratch
             return (None, aliaspath)
-        elt = findChild(elt, tag_name, arg_value, draft)
+        elt = findChild(elt, tag_name, arg_name, arg_value, draft)
         if not elt:
             return ("", None)
     if attribute is not None:
@@ -136,7 +142,7 @@ def findAlias(file):
     if not doc_cache.has_key(file):
         return False
     doc = doc_cache[file]
-    alias_elt = findChild(doc.documentElement, "alias", "")
+    alias_elt = findChild(doc.documentElement, "alias")
     if not alias_elt:
         return False
     if not alias_elt.attributes.has_key('source'):

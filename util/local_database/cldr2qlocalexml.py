@@ -102,6 +102,9 @@ def generateLocaleInfo(path):
     country = ""
     if country_id != -1:
         country = enumdata.country_list[country_id][0]
+    if country == "":
+        sys.stderr.write("unnknown country code \"" + country_code + "\"\n")
+        return {}
 
     # So we say we accept only those values that have "contributed" or
     # "approved" resolution. see http://www.unicode.org/cldr/process.html
@@ -118,16 +121,29 @@ def generateLocaleInfo(path):
     result['variant_code'] = variant_code
     result['language_id'] = language_id
     result['country_id'] = country_id
-    result['decimal'] = findEntry(path, "numbers/symbols/decimal")
-    result['group'] = findEntry(path, "numbers/symbols/group")
-    result['list'] = findEntry(path, "numbers/symbols/list")
-    result['percent'] = findEntry(path, "numbers/symbols/percentSign")
-    result['zero'] = findEntry(path, "numbers/symbols/nativeZeroDigit")
-    result['minus'] = findEntry(path, "numbers/symbols/minusSign")
-    result['plus'] = findEntry(path, "numbers/symbols/plusSign")
-    result['exp'] = findEntry(path, "numbers/symbols/exponential").lower()
-    result['am'] = findEntry(path, "dates/calendars/calendar[gregorian]/am", draft)
-    result['pm'] = findEntry(path, "dates/calendars/calendar[gregorian]/pm", draft)
+
+    numberingSystem = None
+    try:
+        numbering_system = findEntry(path, "numbers/defaultNumberingSystem")
+    except:
+        pass
+    def get_number_in_system(path, xpath, numbering_system):
+        if numbering_system:
+            try:
+                return findEntry(path, xpath + "[numberSystem=" + numbering_system + "]")
+            except xpathlite.Error:
+                pass
+        return findEntry(path, xpath)
+    result['decimal'] = get_number_in_system(path, "numbers/symbols/decimal", numbering_system)
+    result['group'] = get_number_in_system(path, "numbers/symbols/group", numbering_system)
+    result['list'] = get_number_in_system(path, "numbers/symbols/list", numbering_system)
+    result['percent'] = get_number_in_system(path, "numbers/symbols/percentSign", numbering_system)
+    result['zero'] = get_number_in_system(path, "numbers/symbols/nativeZeroDigit", numbering_system)
+    result['minus'] = get_number_in_system(path, "numbers/symbols/minusSign", numbering_system)
+    result['plus'] = get_number_in_system(path, "numbers/symbols/plusSign", numbering_system)
+    result['exp'] = get_number_in_system(path, "numbers/symbols/exponential", numbering_system).lower()
+    result['am'] = findEntry(path, "dates/calendars/calendar[gregorian]/dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/dayPeriod[am]", draft)
+    result['pm'] = findEntry(path, "dates/calendars/calendar[gregorian]/dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/dayPeriod[pm]", draft)
     result['longDateFormat'] = findEntry(path, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[full]/dateFormat/pattern")
     result['shortDateFormat'] = findEntry(path, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[short]/dateFormat/pattern")
     result['longTimeFormat'] = findEntry(path, "dates/calendars/calendar[gregorian]/timeFormats/timeFormatLength[full]/timeFormat/pattern")
