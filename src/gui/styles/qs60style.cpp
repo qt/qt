@@ -2475,6 +2475,12 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
 {
     int retValue = -1;
     switch (sh) {
+        case SH_RequestSoftwareInputPanel:
+            if (QS60StylePrivate::isSingleClickUi())
+                retValue = RSIP_OnMouseClick;
+            else
+                retValue = RSIP_OnMouseClickAndAlreadyFocused;
+            break;
         case SH_ComboBox_Popup:
             retValue = true;
             break;
@@ -2530,9 +2536,6 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             break;
         case SH_UnderlineShortcut:
             retValue = 0;
-            break;
-        case SH_RequestSoftwareInputPanel:
-            retValue = RSIP_OnMouseClickAndAlreadyFocused;
             break;
         case SH_FormLayoutWrapPolicy:
             retValue = QFormLayout::WrapLongRows;
