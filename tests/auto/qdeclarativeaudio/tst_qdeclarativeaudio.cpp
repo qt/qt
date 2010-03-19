@@ -61,6 +61,7 @@ private slots:
     void nullService();
 
     void source();
+    void autoLoad();
     void playing();
     void paused();
     void duration();
@@ -428,6 +429,33 @@ void tst_QmlAudio::source()
     QCOMPARE(audio.source(), url3);
     QCOMPARE(provider.playerControl()->media().canonicalUrl(), url3);
     QCOMPARE(spy.count(), 3);
+}
+
+void tst_QmlAudio::autoLoad()
+{
+    QtTestMediaServiceProvider provider;
+    QDeclarativeAudio audio;
+    audio.componentComplete();
+
+    QSignalSpy spy(&audio, SIGNAL(autoLoadChanged()));
+
+    QCOMPARE(audio.isAutoLoad(), true);
+
+    audio.setAutoLoad(false);
+    QCOMPARE(audio.isAutoLoad(), false);
+    QCOMPARE(spy.count(), 1);
+
+    audio.setSource(QUrl("http://example.com"));
+    QCOMPARE(audio.source(), QUrl("http://example.com"));
+    audio.play();
+    QCOMPARE(audio.isPlaying(), true);
+    audio.stop();
+
+    audio.setAutoLoad(true);
+    audio.setSource(QUrl("http://example.com"));
+    audio.setPaused(true);
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(audio.isPaused(), true);
 }
 
 void tst_QmlAudio::playing()

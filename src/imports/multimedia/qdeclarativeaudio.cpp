@@ -142,6 +142,14 @@ void QDeclarativeAudio::stop()
 */
 
 /*!
+    \qmlproperty url Audio:autoLoad
+
+    This property indicates if loading of media should begin immediately.
+
+    Defaults to true, if false media will not be loaded until playback is started.
+*/
+
+/*!
     \qmlproperty bool Audio::playing
 
     This property holds whether the media is playing.

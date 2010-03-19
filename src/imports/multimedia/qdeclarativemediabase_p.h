@@ -76,6 +76,9 @@ public:
     QUrl source() const;
     void setSource(const QUrl &url);
 
+    bool isAutoLoad() const;
+    void setAutoLoad(bool autoLoad);
+
     bool isPlaying() const;
     void setPlaying(bool playing);
 
@@ -115,6 +118,7 @@ protected:
     void setObject(QObject *object);
 
     virtual void sourceChanged() = 0;
+    virtual void autoLoadChanged() = 0;
     virtual void playingChanged() = 0;
     virtual void pausedChanged() = 0;
 
@@ -146,6 +150,8 @@ protected:
 
     bool m_paused;
     bool m_playing;
+    bool m_autoLoad;
+    bool m_loaded;
     bool m_muted;
     int m_position;
     qreal m_volume;

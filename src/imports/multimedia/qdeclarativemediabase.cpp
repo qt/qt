@@ -228,6 +228,8 @@ void QDeclarativeMediaBase::_q_metaDataChanged()
 QDeclarativeMediaBase::QDeclarativeMediaBase()
     : m_paused(false)
     , m_playing(false)
+    , m_autoLoad(true)
+    , m_loaded(false)
     , m_muted(false)
     , m_position(0)
     , m_volume(1.0)
@@ -315,13 +317,15 @@ void QDeclarativeMediaBase::setObject(QObject *object)
     m_playerControl->setMuted(m_muted);
     m_playerControl->setPlaybackRate(m_playbackRate);
 
-    if (!m_source.isEmpty())
+    if (!m_source.isEmpty() && (m_autoLoad || m_playing)) // Override autoLoad if playing set
         m_playerControl->setMedia(m_source, 0);
 
-    if (m_playing)
+    if (m_paused)
+        m_playerControl->pause();
+    else if (m_playing)
         m_playerControl->play();
 
-    if (m_position > 0)
+    if ((m_playing || m_paused) && m_position > 0)
         m_playerControl->setPosition(m_position);
 }
 
@@ -339,8 +343,8 @@ void QDeclarativeMediaBase::setSource(const QUrl &url)
         return;
 
     m_source = url;
-
-    if (m_playerControl != 0) {
+    m_loaded = false;
+    if (m_playerControl != 0 && m_autoLoad) {
         if (m_error != QMediaPlayer::ServiceMissingError && m_error != QMediaPlayer::NoError) {
             m_error = QMediaPlayer::NoError;
             m_errorString = QString();
@@ -349,9 +353,24 @@ void QDeclarativeMediaBase::setSource(const QUrl &url)
         }
 
         m_playerControl->setMedia(m_source, 0);
+        m_loaded = true;
     }
     else
         emit sourceChanged();
+}
+
+bool QDeclarativeMediaBase::isAutoLoad() const
+{
+    return m_autoLoad;
+}
+
+void QDeclarativeMediaBase::setAutoLoad(bool autoLoad)
+{
+    if (m_autoLoad == autoLoad)
+        return;
+
+    m_autoLoad = autoLoad;
+    emit autoLoadChanged();
 }
 
 bool QDeclarativeMediaBase::isPlaying() const
@@ -367,6 +386,12 @@ void QDeclarativeMediaBase::setPlaying(bool playing)
     m_playing = playing;
     if (m_playerControl != 0) {
         if (m_playing) {
+            if (!m_autoLoad && !m_loaded) {
+                m_playerControl->setMedia(m_source, 0);
+                m_playerControl->setPosition(m_position);
+                m_loaded = true;
+            }
+
             if (!m_paused)
                 m_playerControl->play();
             else
@@ -391,7 +416,12 @@ void QDeclarativeMediaBase::setPaused(bool paused)
 
     m_paused = paused;
     if (m_playerControl != 0) {
-        // Check if completed, change state
+        if (!m_autoLoad && !m_loaded) {
+            m_playerControl->setMedia(m_source, 0);
+            m_playerControl->setPosition(m_position);
+            m_loaded = true;
+        }
+
         if (m_paused && m_state == QMediaPlayer::PlayingState) {
             m_playerControl->pause();
         }
