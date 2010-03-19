@@ -105,12 +105,12 @@ void QVideoWidgetControlBackend::setFullScreen(bool fullScreen)
 }
 
 
-QVideoWidget::AspectRatioMode QVideoWidgetControlBackend::aspectRatioMode() const
+Qt::AspectRatioMode QVideoWidgetControlBackend::aspectRatioMode() const
 {
     return m_widgetControl->aspectRatioMode();
 }
 
-void QVideoWidgetControlBackend::setAspectRatioMode(QVideoWidget::AspectRatioMode mode)
+void QVideoWidgetControlBackend::setAspectRatioMode(Qt::AspectRatioMode mode)
 {
     m_widgetControl->setAspectRatioMode(mode);
 }
@@ -120,16 +120,16 @@ QRendererVideoWidgetBackend::QRendererVideoWidgetBackend(
     : m_rendererControl(control)
     , m_widget(widget)
     , m_surface(new QPainterVideoSurface)
-    , m_aspectRatioMode(QVideoWidget::KeepAspectRatio)
+    , m_aspectRatioMode(Qt::KeepAspectRatio)
     , m_updatePaintDevice(true)
 {
     connect(this, SIGNAL(brightnessChanged(int)), m_widget, SLOT(_q_brightnessChanged(int)));
     connect(this, SIGNAL(contrastChanged(int)), m_widget, SLOT(_q_contrastChanged(int)));
     connect(this, SIGNAL(hueChanged(int)), m_widget, SLOT(_q_hueChanged(int)));
     connect(this, SIGNAL(saturationChanged(int)), m_widget, SLOT(_q_saturationChanged(int)));
-    connect(m_surface, SIGNAL(frameChanged()), m_widget, SLOT(update()));
+    connect(m_surface, SIGNAL(frameChanged()), this, SLOT(frameChanged()));
     connect(m_surface, SIGNAL(surfaceFormatChanged(QVideoSurfaceFormat)),
-            m_widget, SLOT(_q_dimensionsChanged()));
+            this, SLOT(formatChanged(QVideoSurfaceFormat)));
 
     m_rendererControl->setSurface(m_surface);
 }
@@ -172,12 +172,12 @@ void QRendererVideoWidgetBackend::setSaturation(int saturation)
     emit saturationChanged(saturation);
 }
 
-QVideoWidget::AspectRatioMode QRendererVideoWidgetBackend::aspectRatioMode() const
+Qt::AspectRatioMode QRendererVideoWidgetBackend::aspectRatioMode() const
 {
     return m_aspectRatioMode;
 }
 
-void QRendererVideoWidgetBackend::setAspectRatioMode(QVideoWidget::AspectRatioMode mode)
+void QRendererVideoWidgetBackend::setAspectRatioMode(Qt::AspectRatioMode mode)
 {
     m_aspectRatioMode = mode;
 
@@ -207,6 +207,7 @@ void QRendererVideoWidgetBackend::hideEvent(QHideEvent *)
 
 void QRendererVideoWidgetBackend::resizeEvent(QResizeEvent *)
 {
+    updateRects();
 }
 
 void QRendererVideoWidgetBackend::moveEvent(QMoveEvent *)
@@ -217,8 +218,8 @@ void QRendererVideoWidgetBackend::paintEvent(QPaintEvent *event)
 {
     QPainter painter(m_widget);
 
-    if (m_surface->isActive()) {
-        m_surface->paint(&painter, displayRect());
+    if (m_surface->isActive() && m_boundingRect.intersects(event->rect())) {
+        m_surface->paint(&painter, m_boundingRect, m_sourceRect);
 
         m_surface->setReady(true);
     } else {
@@ -240,33 +241,53 @@ void QRendererVideoWidgetBackend::paintEvent(QPaintEvent *event)
     }
 }
 
-QRect QRendererVideoWidgetBackend::displayRect() const
+void QRendererVideoWidgetBackend::formatChanged(const QVideoSurfaceFormat &format)
 {
-    QRect displayRect = m_widget->rect();
+    m_nativeSize = format.sizeHint();
 
-    if (m_aspectRatioMode != QVideoWidget::IgnoreAspectRatio) {
-        QVideoSurfaceFormat format = m_surface->surfaceFormat();
+    updateRects();
 
-        QSize aspectRatio = format.pixelAspectRatio();
+    m_widget->updateGeometry();
+}
 
-        QSize size = format.viewport().size();
-        size.rwidth() *= aspectRatio.width();
-        size.rheight() *= aspectRatio.height();
-        size.scale(displayRect.size(), Qt::KeepAspectRatio);
+void QRendererVideoWidgetBackend::frameChanged()
+{
+    m_widget->update(m_boundingRect);
+}
 
-        QPoint center = displayRect.center();
+void QRendererVideoWidgetBackend::updateRects()
+{
+    QRect rect = m_widget->rect();
 
-        displayRect = QRect(QPoint(0, 0), size);
-        displayRect.moveCenter(center);
+    if (m_nativeSize.isEmpty()) {
+        m_boundingRect = QRect();
+    } else if (m_aspectRatioMode == Qt::IgnoreAspectRatio) {
+        m_boundingRect = rect;
+        m_sourceRect = QRectF(0, 0, 1, 1);
+    } else if (m_aspectRatioMode == Qt::KeepAspectRatio) {
+        QSize size = m_nativeSize;
+        size.scale(rect.size(), Qt::KeepAspectRatio);
+
+        m_boundingRect = QRect(0, 0, size.width(), size.height());
+        m_boundingRect.moveCenter(rect.center());
+
+        m_sourceRect = QRectF(0, 0, 1, 1);
+    } else if (m_aspectRatioMode == Qt::KeepAspectRatioByExpanding) {
+        m_boundingRect = rect;
+
+        QSizeF size = rect.size();
+        size.scale(m_nativeSize, Qt::KeepAspectRatio);
+
+        m_sourceRect = QRectF(
+                0, 0, size.width() / m_nativeSize.width(), size.height() / m_nativeSize.height());
+        m_sourceRect.moveCenter(QPointF(0.5, 0.5));
     }
-
-    return displayRect;
 }
 
 QWindowVideoWidgetBackend::QWindowVideoWidgetBackend(QVideoWindowControl *control, QWidget *widget)
     : m_windowControl(control)
     , m_widget(widget)
-    , m_aspectRatioMode(QVideoWidget::KeepAspectRatio)
+    , m_aspectRatioMode(Qt::KeepAspectRatio)
 {
     connect(control, SIGNAL(brightnessChanged(int)), m_widget, SLOT(_q_brightnessChanged(int)));
     connect(control, SIGNAL(contrastChanged(int)), m_widget, SLOT(_q_contrastChanged(int)));
@@ -305,12 +326,12 @@ void QWindowVideoWidgetBackend::setFullScreen(bool fullScreen)
     m_windowControl->setFullScreen(fullScreen);
 }
 
-QVideoWidget::AspectRatioMode QWindowVideoWidgetBackend::aspectRatioMode() const
+Qt::AspectRatioMode QWindowVideoWidgetBackend::aspectRatioMode() const
 {
     return m_windowControl->aspectRatioMode();
 }
 
-void QWindowVideoWidgetBackend::setAspectRatioMode(QVideoWidget::AspectRatioMode mode)
+void QWindowVideoWidgetBackend::setAspectRatioMode(Qt::AspectRatioMode mode)
 {
     m_windowControl->setAspectRatioMode(mode);
 }
@@ -515,16 +536,6 @@ void QVideoWidgetPrivate::_q_dimensionsChanged()
 */
 
 /*!
-    \enum QVideoWidget::AspectRatioMode
-
-    Specfies how video is scaled with respect to its aspect ratio.
-
-    \value IgnoreAspectRatio The video is scaled to fill the widget ignoring its aspect ratio.
-    \value KeepAspectRatio The video is scaled to the largest rectangle that will fit within the
-    widget's dimensions while still retaining its original aspect ratio.
-*/
-
-/*!
     Constructs a new video widget.
 
     The \a parent is passed to QWidget.
@@ -617,12 +628,12 @@ void QVideoWidget::setMediaObject(QMediaObject *object)
     \brief how video is scaled with respect to its aspect ratio.
 */
 
-QVideoWidget::AspectRatioMode QVideoWidget::aspectRatioMode() const
+Qt::AspectRatioMode QVideoWidget::aspectRatioMode() const
 {
     return d_func()->aspectRatioMode;
 }
 
-void QVideoWidget::setAspectRatioMode(QVideoWidget::AspectRatioMode mode)
+void QVideoWidget::setAspectRatioMode(Qt::AspectRatioMode mode)
 {
     Q_D(QVideoWidget);
 

@@ -91,8 +91,8 @@ private slots:
 class TestType : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QDeclarativeListProperty<TestType> data READ dataProperty);
-    Q_PROPERTY(int intProperty READ intProperty);
+    Q_PROPERTY(QDeclarativeListProperty<TestType> data READ dataProperty)
+    Q_PROPERTY(int intProperty READ intProperty)
 
 public:
     TestType() : property(this, data) {}

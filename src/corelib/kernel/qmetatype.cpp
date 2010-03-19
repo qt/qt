@@ -518,19 +518,15 @@ int QMetaType::registerTypedef(const char* typeName, int aliasId)
     idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
                                            normalizedTypeName.size());
 
-    if (idx) {
-        Q_ASSERT(idx == aliasId);
+    if (idx)
         return idx;
-    }
 
-    if (!idx) {
-        QCustomTypeInfo inf;
-        inf.typeName = normalizedTypeName;
-        inf.alias = aliasId;
-        inf.constr = 0;
-        inf.destr = 0;
-        ct->append(inf);
-    }
+    QCustomTypeInfo inf;
+    inf.typeName = normalizedTypeName;
+    inf.alias = aliasId;
+    inf.constr = 0;
+    inf.destr = 0;
+    ct->append(inf);
     return aliasId;
 }
 
