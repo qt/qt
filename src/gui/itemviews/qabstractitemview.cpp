@@ -2090,7 +2090,7 @@ void QAbstractItemView::focusInEvent(QFocusEvent *event)
         bool autoScroll = d->autoScroll;
         d->autoScroll = false;
         QModelIndex index = moveCursor(MoveNext, Qt::NoModifier); // first visible index
-        if (index.isValid() && d->isIndexEnabled(index))
+        if (index.isValid() && d->isIndexEnabled(index) && event->reason() != Qt::MouseFocusReason)
             selectionModel()->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
         d->autoScroll = autoScroll;
     }
