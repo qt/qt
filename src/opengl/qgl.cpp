@@ -2208,8 +2208,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     Q_Q(QGLContext);
 
 #ifdef QGL_BIND_TEXTURE_DEBUG
-    printf("QGLContextPrivate::bindTexture(), imageSize=(%d,%d), internalFormat =0x%x, options=%x\n",
-           image.width(), image.height(), internalFormat, int(options));
+    printf("QGLContextPrivate::bindTexture(), imageSize=(%d,%d), internalFormat =0x%x, options=%x, key=%llx\n",
+           image.width(), image.height(), internalFormat, int(options), key);
     QTime time;
     time.start();
 #endif
@@ -2547,7 +2547,7 @@ GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format,
         return 0;
 
     Q_D(QGLContext);
-    QGLTexture *texture = d->bindTexture(image, target, format, false, options);
+    QGLTexture *texture = d->bindTexture(image, target, format, options);
     return texture->id;
 }
 
@@ -2559,7 +2559,7 @@ GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMa
         return 0;
 
     Q_D(QGLContext);
-    QGLTexture *texture = d->bindTexture(image, GLenum(target), GLint(format), false, DefaultBindOption);
+    QGLTexture *texture = d->bindTexture(image, GLenum(target), GLint(format), DefaultBindOption);
     return texture->id;
 }
 
@@ -2571,7 +2571,7 @@ GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMa
         return 0;
 
     Q_D(QGLContext);
-    QGLTexture *texture = d->bindTexture(image, GLenum(target), GLint(format), false, options);
+    QGLTexture *texture = d->bindTexture(image, GLenum(target), GLint(format), options);
     return texture->id;
 }
 #endif
