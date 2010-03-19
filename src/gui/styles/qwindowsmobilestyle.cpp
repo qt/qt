@@ -6949,10 +6949,11 @@ int QWindowsMobileStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, co
     case PM_SliderThickness:
         ret = d->doubleControls ? windowsMobileSliderThickness * 2: windowsMobileSliderThickness;
         break;
-     case PM_TabBarScrollButtonWidth:
-         ret = d->doubleControls ? 14 * 2 : 18;
-      case PM_CheckBoxLabelSpacing:
-      case PM_RadioButtonLabelSpacing:
+    case PM_TabBarScrollButtonWidth:
+        ret = d->doubleControls ? 14 * 2 : 18;
+        break;
+    case PM_CheckBoxLabelSpacing:
+    case PM_RadioButtonLabelSpacing:
         ret = d->doubleControls ? 6 * 2 : 6;
         break;
         // Returns the number of pixels to use for the business part of the
