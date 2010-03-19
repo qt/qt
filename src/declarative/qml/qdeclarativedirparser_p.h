@@ -59,7 +59,6 @@
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeError;
-
 class QDeclarativeDirParser
 {
     Q_DISABLE_COPY(QDeclarativeDirParser)
@@ -121,6 +120,9 @@ private:
     QList<Plugin> _plugins;
     unsigned _isParsed: 1;
 };
+
+typedef QList<QDeclarativeDirParser::Component> QDeclarativeDirComponents;
+
 
 QT_END_NAMESPACE
 

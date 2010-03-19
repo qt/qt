@@ -1361,7 +1361,7 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
     QList<int> majversions;
     QList<int> minversions;
     QList<bool> isLibrary;
-    QList<QString> qmlDirContent;
+    QList<QDeclarativeDirComponents> qmlDirComponents;
 
     bool find(const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return, QUrl* url_return,
               QUrl *base = 0)
@@ -1384,18 +1384,12 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
             }
 
             QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
-            QString qmldircontent = qmlDirContent.at(i);
+            QDeclarativeDirComponents qmldircomponents = qmlDirComponents.at(i);
 
             bool typeWasDeclaredInQmldir = false;
-            if (!qmldircontent.isEmpty()) {
+            if (!qmldircomponents.isEmpty()) {
                 const QString typeName = QString::fromUtf8(type);
-
-                QDeclarativeDirParser qmldirParser;
-                qmldirParser.setUrl(url);
-                qmldirParser.setSource(qmldircontent);
-                qmldirParser.parse();
-
-                foreach (const QDeclarativeDirParser::Component &c, qmldirParser.components()) { // ### TODO: cache the components
+                foreach (const QDeclarativeDirParser::Component &c, qmldircomponents) {
                     if (c.typeName == typeName) {
                         typeWasDeclaredInQmldir = true;
                         if (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion)) {
@@ -1440,22 +1434,22 @@ public:
 
     QSet<QString> qmlDirFilesForWhichPluginsHaveBeenLoaded;
 
-    QString importExtension(const QString &absoluteFilePath, const QString &uri, QDeclarativeEngine *engine) {
+    QDeclarativeDirComponents importExtension(const QString &absoluteFilePath, const QString &uri, QDeclarativeEngine *engine) {
         QFile file(absoluteFilePath);
         QString dir = QFileInfo(file).path();
-        QString qmldircontent;
+        QString filecontent;
         if (file.open(QFile::ReadOnly)) {
-            qmldircontent = QString::fromUtf8(file.readAll());
+            filecontent = QString::fromUtf8(file.readAll());
             if (qmlImportTrace())
                 qDebug() << "QDeclarativeEngine::add: loaded" << absoluteFilePath;
         }
+        QDeclarativeDirParser qmldirParser;
+        qmldirParser.setSource(filecontent);
+        qmldirParser.parse();
 
         if (! qmlDirFilesForWhichPluginsHaveBeenLoaded.contains(absoluteFilePath)) {
             qmlDirFilesForWhichPluginsHaveBeenLoaded.insert(absoluteFilePath);
 
-            QDeclarativeDirParser qmldirParser;
-            qmldirParser.setSource(qmldircontent);
-            qmldirParser.parse();
 
             foreach (const QDeclarativeDirParser::Plugin &plugin, qmldirParser.plugins()) {
                 QDir pluginDir(dir + QDir::separator() + plugin.path);
@@ -1471,7 +1465,7 @@ public:
                 }
             }
         }
-        return qmldircontent;
+        return qmldirParser.components();
     }
 
     QString resolvedUri(const QString &dir_arg, QDeclarativeEngine *engine)
@@ -1518,9 +1512,9 @@ public:
 
 
 
-    bool add(const QUrl& base, const QString &qmldircontentnetwork, const QString& uri_arg, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType, QDeclarativeEngine *engine)
+    bool add(const QUrl& base, const QDeclarativeDirComponents &qmldircomponentsnetwork, const QString& uri_arg, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType, QDeclarativeEngine *engine)
     {
-        QString qmldircontent = qmldircontentnetwork;
+        QDeclarativeDirComponents qmldircomponents = qmldircomponentsnetwork;
         QString uri = uri_arg;
         QDeclarativeEnginePrivate::ImportedNamespace *s;
         if (prefix.isEmpty()) {
@@ -1572,19 +1566,19 @@ public:
 
                     url = QUrl::fromLocalFile(fi.absolutePath()).toString();
                     uri = resolvedUri(dir, engine);
-                    qmldircontent = importExtension(absoluteFilePath, uri, engine);
+                    qmldircomponents = importExtension(absoluteFilePath, uri, engine);
                     break;
                 }
             }
 
         } else {
 
-            if (importType == QDeclarativeScriptParser::Import::File && qmldircontent.isEmpty()) {
+            if (importType == QDeclarativeScriptParser::Import::File && qmldircomponents.isEmpty()) {
                 QUrl importUrl = base.resolved(QUrl(uri + QLatin1String("/qmldir")));
                 QString localFileOrQrc = toLocalFileOrQrc(importUrl);
                 if (!localFileOrQrc.isEmpty()) {
                     uri = resolvedUri(toLocalFileOrQrc(base.resolved(QUrl(uri))), engine);
-                    qmldircontent = importExtension(localFileOrQrc,
+                    qmldircomponents = importExtension(localFileOrQrc,
                                                     uri,
                                                     engine);
 
@@ -1603,7 +1597,7 @@ public:
         s->majversions.prepend(vmaj);
         s->minversions.prepend(vmin);
         s->isLibrary.prepend(importType == QDeclarativeScriptParser::Import::Library);
-        s->qmlDirContent.prepend(qmldircontent);
+        s->qmlDirComponents.prepend(qmldircomponents);
         return true;
     }
 
@@ -1967,12 +1961,12 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
 
   The base URL must already have been set with Import::setBaseUrl().
 */
-bool QDeclarativeEnginePrivate::addToImport(Imports* imports, const QString &qmldircontentnetwork, const QString& uri, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType) const
+bool QDeclarativeEnginePrivate::addToImport(Imports* imports, const QDeclarativeDirComponents &qmldircomponentsnetwork, const QString& uri, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType) const
 {
     QDeclarativeEngine *engine = QDeclarativeEnginePrivate::get(const_cast<QDeclarativeEnginePrivate *>(this));
     if (qmlImportTrace())
         qDebug().nospace() << "QDeclarativeEngine::addToImport " << imports << " " << uri << " " << vmaj << '.' << vmin << " " << (importType==QDeclarativeScriptParser::Import::Library? "Library" : "File") << " as " << prefix;
-    bool ok = imports->d->add(imports->d->base,qmldircontentnetwork, uri,prefix,vmaj,vmin,importType, engine);
+    bool ok = imports->d->add(imports->d->base,qmldircomponentsnetwork, uri,prefix,vmaj,vmin,importType, engine);
     return ok;
 }
 
