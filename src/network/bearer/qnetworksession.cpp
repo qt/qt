@@ -231,7 +231,7 @@ QNetworkSession::QNetworkSession(const QNetworkConfiguration& connectionConfig, 
             d->q = this;
             d->publicConfig = connectionConfig;
             d->syncStateWithInterface();
-            connect(d, SIGNAL(opened()), this, SIGNAL(opened()));
+            connect(d, SIGNAL(quitPendingWaitsForOpened()), this, SIGNAL(opened()));
             connect(d, SIGNAL(error(QNetworkSession::SessionError)),
                     this, SIGNAL(error(QNetworkSession::SessionError)));
             connect(d, SIGNAL(stateChanged(QNetworkSession::State)),
@@ -308,9 +308,10 @@ bool QNetworkSession::waitForOpened(int msecs)
         return false;
 
     QEventLoop* loop = new QEventLoop(this);
-    connect(d, SIGNAL(opened()), loop, SLOT(quit()));
-    connect(d, SIGNAL(closed()), loop, SLOT(quit()));
-    connect(d, SIGNAL(error(QNetworkSession::SessionError)), loop, SLOT(quit()));
+    QObject::connect(d, SIGNAL(quitPendingWaitsForOpened()),
+                     loop, SLOT(quit()));
+    QObject::connect(this, SIGNAL(error(QNetworkSession::SessionError)),
+                     loop, SLOT(quit()));
 
     //final call
     if (msecs>=0)

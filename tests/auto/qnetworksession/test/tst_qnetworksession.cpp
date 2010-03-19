@@ -628,9 +628,6 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
             QVERIFY(session.state() == previousState);
 
-            QVERIFY(sessionOpenedSpy.isEmpty());
-            QCOMPARE(sessionClosedSpy.count(), 1);
-
             if (error == QNetworkSession::OperationNotSupportedError) {
                 // The session needed to bring up the interface,
                 // but the operation is not supported.

@@ -114,7 +114,7 @@ private Q_SLOTS:
     void decrementTimeout();
 
 private:
-    bool sessionOpened;
+    bool opened;
 
     QBearerEngineImpl *engine;
 

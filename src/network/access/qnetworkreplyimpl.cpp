@@ -262,16 +262,6 @@ void QNetworkReplyImplPrivate::_q_networkSessionConnected()
     }
 }
 
-void QNetworkReplyImplPrivate::_q_networkSessionClosed()
-{
-    if (state != Finished) {
-        state = Working;
-        error(QNetworkReply::UnknownNetworkError,
-              QCoreApplication::translate("QNetworkReply", "Network session closed."));
-        finished();
-    }
-}
-
 void QNetworkReplyImplPrivate::_q_networkSessionFailed()
 {
     // Abort waiting replies.

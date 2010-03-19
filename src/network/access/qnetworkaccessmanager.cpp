@@ -944,8 +944,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     if (req.url().scheme() != QLatin1String("file") && !req.url().scheme().isEmpty()) {
         connect(this, SIGNAL(networkSessionConnected()),
                 reply, SLOT(_q_networkSessionConnected()));
-        if (d->networkSession)
-            connect(d->networkSession, SIGNAL(closed()), reply, SLOT(_q_networkSessionClosed()));
     }
     QNetworkReplyImplPrivate *priv = reply->d_func();
     priv->manager = this;
