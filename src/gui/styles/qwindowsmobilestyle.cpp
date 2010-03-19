@@ -5076,6 +5076,10 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
                     color = option->palette.buttonText().color();
                 QImage image;
                 int xoffset, yoffset;
+                bool isTabBarArrow = widget && widget->parent()
+                                   && widget->inherits("QToolButton")
+                                   && widget->parent()->inherits("QTabBar");
+
                 switch (element) {
                     case PE_IndicatorArrowUp:
                           image = d->imageArrowUp;
@@ -5090,12 +5094,12 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
                     case PE_IndicatorArrowLeft:
                           image = d->imageArrowLeft;
                           xoffset = 8;
-                          yoffset = 2;
+                          yoffset = isTabBarArrow ? 12 : 2;
                           break;
                     case PE_IndicatorArrowRight:
                           image = d->imageArrowRight;
                           xoffset = 8;
-                          yoffset = 2;
+                          yoffset = isTabBarArrow ? 12 : 2;
                           break;
                      case PE_IndicatorArrowUpBig:
                           image = d->imageArrowUpBig;
