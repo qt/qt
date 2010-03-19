@@ -41,7 +41,6 @@
 
 #include "qapplication.h"
 #ifndef QT_NO_EFFECTS
-#include "qdatetime.h"
 #include "qdesktopwidget.h"
 #include "qeffects_p.h"
 #include "qevent.h"
@@ -50,6 +49,7 @@
 #include "qpixmap.h"
 #include "qpointer.h"
 #include "qtimer.h"
+#include "qelapsedtimer.h"
 #include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
@@ -103,7 +103,7 @@ private:
     int elapsed;
     bool showWidget;
     QTimer anim;
-    QTime checkTime;
+    QElapsedTimer checkTime;
     double windowOpacity;
 };
 
@@ -384,7 +384,7 @@ private:
     int orientation;
 
     QTimer anim;
-    QTime checkTime;
+    QElapsedTimer checkTime;
 
     QPixmap pm;
 };

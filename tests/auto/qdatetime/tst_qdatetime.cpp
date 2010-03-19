@@ -106,6 +106,8 @@ private slots:
     void secsTo();
     void operator_eqeq();
     void currentDateTime();
+    void currentDateTimeUtc();
+    void currentDateTimeUtc2();
     void fromStringTextDate_data();
     void fromStringTextDate();
 
@@ -878,6 +880,79 @@ void tst_QDateTime::currentDateTime()
     QVERIFY(dt1.timeSpec() == Qt::LocalTime);
     QVERIFY(dt2.timeSpec() == Qt::LocalTime);
     QVERIFY(dt3.timeSpec() == Qt::UTC);
+}
+
+void tst_QDateTime::currentDateTimeUtc()
+{
+#if defined(Q_OS_WINCE)
+    __time64_t buf1, buf2;
+    ::_time64(&buf1);
+#else
+    time_t buf1, buf2;
+    ::time(&buf1);
+#endif
+    QDateTime lowerBound;
+    lowerBound.setTime_t(buf1);
+
+    QDateTime dt1 = QDateTime::currentDateTimeUtc();
+    QDateTime dt2 = QDateTime::currentDateTimeUtc().toLocalTime();
+    QDateTime dt3 = QDateTime::currentDateTimeUtc().toUTC();
+
+#if defined(Q_OS_WINCE)
+    ::_time64(&buf2);
+#else
+    ::time(&buf2);
+#endif
+    QDateTime upperBound;
+    upperBound.setTime_t(buf2);
+    upperBound = upperBound.addSecs(1);
+
+    QVERIFY(lowerBound < upperBound);
+
+    QVERIFY(lowerBound <= dt1);
+    QVERIFY(dt1 < upperBound);
+    QVERIFY(lowerBound <= dt2);
+    QVERIFY(dt2 < upperBound);
+    QVERIFY(lowerBound <= dt3);
+    QVERIFY(dt3 < upperBound);
+
+    QVERIFY(dt1.timeSpec() == Qt::UTC);
+    QVERIFY(dt2.timeSpec() == Qt::LocalTime);
+    QVERIFY(dt3.timeSpec() == Qt::UTC);
+}
+
+void tst_QDateTime::currentDateTimeUtc2()
+{
+    QDateTime local, utc;
+    qint64 msec;
+
+    // check that we got all down to the same milliseconds
+    int i = 2;
+    bool ok = false;
+    do {
+        local = QDateTime::currentDateTime();
+        utc = QDateTime::currentDateTimeUtc();
+        msec = QDateTime::currentMsecsSinceEpoch();
+        ok = local.time().msec() == utc.time().msec()
+            && utc.time().msec() == (msec % 1000);
+    } while (--i && !ok);
+
+    if (!i)
+        QSKIP("Failed to get the dates within 1 ms of each other", SkipAll);
+
+    // seconds and milliseconds should be the same:
+    QCOMPARE(utc.time().second(), local.time().second());
+    QCOMPARE(utc.time().msec(), local.time().msec());
+    QCOMPARE(msec % 1000, qint64(local.time().msec()));
+    QCOMPARE(msec / 1000 % 60, qint64(local.time().second()));
+
+    // the two dates should be equal, actually
+    QCOMPARE(local.toUTC(), utc);
+    QCOMPARE(utc.toLocalTime(), local);
+
+    // and finally, the time_t should equal our number
+    QCOMPARE(qint64(utc.toTime_t()), msec / 1000);
+    QCOMPARE(qint64(local.toTime_t()), msec / 1000);
 }
 
 void tst_QDateTime::toTime_t_data()
