@@ -12,10 +12,7 @@ symbian: {
     isEmpty(QT_LIBINFIX) {
         TARGET.UID3 = 0x2001E61C
 
-        # s60main.rsc  and sqlite3 are expected to be already found on phone if
-        # infixed configuration is built.
-        DEPLOYMENT += qtresources
-
+        # sqlite3 is expected to be already found on phone if infixed configuration is built.
         sqlitedeployment = \
             "; Deploy sqlite onto phone that does not have it already" \
             "@\"$$PWD/sqlite3.sis\", (0x2002af5f)"
@@ -26,8 +23,9 @@ symbian: {
     }
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 
-    qtresources.sources = $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/s60main.rsc
+    qtresources.sources = $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/s60main$${QT_LIBINFIX}.rsc
     qtresources.path = c:$$APP_RESOURCE_DIR
+    DEPLOYMENT += qtresources
 
     qtlibraries.sources = \
         QtCore$${QT_LIBINFIX}.dll \
