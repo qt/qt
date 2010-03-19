@@ -484,6 +484,7 @@ private slots:
     void singleFunctionKeywordSignalAndSlot();
     void templateGtGt();
     void qprivateslots();
+    void qprivateproperties();
     void inlineSlotsWithThrowDeclaration();
     void warnOnPropertyWithoutREAD();
     void constructors();
@@ -1069,6 +1070,56 @@ void tst_Moc::qprivateslots()
     const QMetaObject *mobj = tst.metaObject();
     QVERIFY(mobj->indexOfSlot("_q_privateslot()") != -1);
     QVERIFY(mobj->indexOfMethod("method1()") != -1); //tast204730
+}
+
+class PrivatePropertyTest : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int foo READ foo WRITE setFoo);
+    Q_PRIVATE_PROPERTY(d, int bar READ bar WRITE setBar);
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, int plop READ plop WRITE setPlop);
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d_func(), int baz READ baz WRITE setBaz);
+    class MyDPointer {
+    public:
+        MyDPointer() : mBar(0), mPlop(0) {}
+        int bar() { return mBar ; }
+        void setBar(int value) { mBar = value; }
+        int plop() { return mPlop ; }
+        void setPlop(int value) { mPlop = value; }
+        int baz() { return mBaz ; }
+        void setBaz(int value) { mBaz = value; }
+    private:
+        int mBar;
+        int mPlop;
+        int mBaz;
+    };
+public:
+    PrivatePropertyTest() : mFoo(0), d (new MyDPointer) {}
+    int foo() { return mFoo ; }
+    void setFoo(int value) { mFoo = value; }
+    MyDPointer *d_func() {return d;}
+private:
+    int mFoo;
+    MyDPointer *d;
+};
+
+
+void tst_Moc::qprivateproperties()
+{
+    PrivatePropertyTest test;
+
+    test.setProperty("foo", 1);
+    QCOMPARE(test.property("foo"), qVariantFromValue(1));
+
+    test.setProperty("bar", 2);
+    QCOMPARE(test.property("bar"), qVariantFromValue(2));
+
+    test.setProperty("plop", 3);
+    QCOMPARE(test.property("plop"), qVariantFromValue(3));
+
+    test.setProperty("baz", 4);
+    QCOMPARE(test.property("baz"), qVariantFromValue(4));
+
 }
 
 #include "task189996.h"

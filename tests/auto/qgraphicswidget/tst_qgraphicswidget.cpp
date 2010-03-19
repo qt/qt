@@ -765,11 +765,13 @@ void tst_QGraphicsWidget::geometry()
 {
     SubQGraphicsWidget widget;
     QCOMPARE(widget.geometry(), QRectF(widget.pos(), widget.size()));
-
+    QSignalSpy spy(&widget, SIGNAL(geometryChanged()));
     QFETCH(QPointF, pos);
     QFETCH(QSizeF, size);
     widget.setPos(pos);
     widget.resize(size);
+    if (!size.isNull())
+        QCOMPARE(spy.count(), 1);
     QCOMPARE(widget.geometry(), QRectF(pos, size));
 }
 

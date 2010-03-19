@@ -5076,6 +5076,10 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
                     color = option->palette.buttonText().color();
                 QImage image;
                 int xoffset, yoffset;
+                bool isTabBarArrow = widget && widget->parent()
+                                   && widget->inherits("QToolButton")
+                                   && widget->parent()->inherits("QTabBar");
+
                 switch (element) {
                     case PE_IndicatorArrowUp:
                           image = d->imageArrowUp;
@@ -5090,12 +5094,12 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
                     case PE_IndicatorArrowLeft:
                           image = d->imageArrowLeft;
                           xoffset = 8;
-                          yoffset = 2;
+                          yoffset = isTabBarArrow ? 12 : 2;
                           break;
                     case PE_IndicatorArrowRight:
                           image = d->imageArrowRight;
                           xoffset = 8;
-                          yoffset = 2;
+                          yoffset = isTabBarArrow ? 12 : 2;
                           break;
                      case PE_IndicatorArrowUpBig:
                           image = d->imageArrowUpBig;
@@ -6949,10 +6953,11 @@ int QWindowsMobileStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, co
     case PM_SliderThickness:
         ret = d->doubleControls ? windowsMobileSliderThickness * 2: windowsMobileSliderThickness;
         break;
-     case PM_TabBarScrollButtonWidth:
-         ret = d->doubleControls ? 14 * 2 : 18;
-      case PM_CheckBoxLabelSpacing:
-      case PM_RadioButtonLabelSpacing:
+    case PM_TabBarScrollButtonWidth:
+        ret = d->doubleControls ? 14 * 2 : 18;
+        break;
+    case PM_CheckBoxLabelSpacing:
+    case PM_RadioButtonLabelSpacing:
         ret = d->doubleControls ? 6 * 2 : 6;
         break;
         // Returns the number of pixels to use for the business part of the
