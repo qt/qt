@@ -150,6 +150,7 @@ private slots:
     void getSetAgent();
     void reentrancy();
     void incDecNonObjectProperty();
+    void installTranslatorFunctions_data();
     void installTranslatorFunctions();
     void functionScopes();
     void nativeFunctionScopes();
@@ -4118,22 +4119,46 @@ void tst_QScriptEngine:: incDecNonObjectProperty()
     }
 }
 
+void tst_QScriptEngine::installTranslatorFunctions_data()
+{
+    QTest::addColumn<bool>("useCustomGlobalObject");
+
+    QTest::newRow("Default global object") << false;
+    QTest::newRow("Custom global object") << true;
+}
+
 void tst_QScriptEngine::installTranslatorFunctions()
 {
+    QFETCH(bool, useCustomGlobalObject);
+
     QScriptEngine eng;
-    QScriptValue global = eng.globalObject();
+    QScriptValue globalOrig = eng.globalObject();
+    QScriptValue global;
+    if (useCustomGlobalObject) {
+        global = eng.newObject();
+        eng.setGlobalObject(global);
+    } else {
+        global = globalOrig;
+    }
     QVERIFY(!global.property("qsTranslate").isValid());
     QVERIFY(!global.property("QT_TRANSLATE_NOOP").isValid());
     QVERIFY(!global.property("qsTr").isValid());
     QVERIFY(!global.property("QT_TR_NOOP").isValid());
-    QVERIFY(!global.property("String").property("prototype").property("arg").isValid());
+    QVERIFY(!globalOrig.property("String").property("prototype").property("arg").isValid());
 
     eng.installTranslatorFunctions();
     QVERIFY(global.property("qsTranslate").isFunction());
     QVERIFY(global.property("QT_TRANSLATE_NOOP").isFunction());
     QVERIFY(global.property("qsTr").isFunction());
     QVERIFY(global.property("QT_TR_NOOP").isFunction());
-    QVERIFY(global.property("String").property("prototype").property("arg").isFunction());
+    QVERIFY(globalOrig.property("String").property("prototype").property("arg").isFunction());
+
+    if (useCustomGlobalObject) {
+        QVERIFY(!globalOrig.property("qsTranslate").isValid());
+        QVERIFY(!globalOrig.property("QT_TRANSLATE_NOOP").isValid());
+        QVERIFY(!globalOrig.property("qsTr").isValid());
+        QVERIFY(!globalOrig.property("QT_TR_NOOP").isValid());
+    }
 
     {
         QScriptValue ret = eng.evaluate("qsTr('foo')");
