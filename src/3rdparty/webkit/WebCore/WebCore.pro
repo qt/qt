@@ -8,7 +8,7 @@ symbian: {
     TARGET.CAPABILITY = All -Tcb
     TARGET.UID3 = 0x200267C2
 
-    webkitlibs.sources = QtWebKit.dll
+    webkitlibs.sources = $$QMAKE_LIBDIR_QT/QtWebKit.dll
     webkitlibs.path = /sys/bin
     vendorinfo = \
         "; Localised Vendor name" \
@@ -24,9 +24,12 @@ symbian: {
 
     DEPLOYMENT += webkitlibs webkitbackup
 
-    # RO text (code) section in qtwebkit.dll exceeds allocated space for gcce udeb target.
-    # Move RW-section base address to start from 0xE00000 instead of the toolchain default 0x400000.
-    MMP_RULES += "LINKEROPTION  armcc --rw-base 0xE00000"
+    symbian-abld|symbian-sbsv2 {
+        # RO text (code) section in qtwebkit.dll exceeds allocated space for gcce udeb target.
+        # Move RW-section base address to start from 0xE00000 instead of the toolchain default 0x400000.
+        QMAKE_LFLAGS.ARMCC += --rw-base 0xE00000
+        CONFIG += do_not_build_as_thumb
+    }
 }
 
 include($$PWD/../WebKit.pri)
@@ -3417,7 +3420,7 @@ CONFIG(QTDIR_build):isEqual(QT_MAJOR_VERSION, 4):greaterThan(QT_MINOR_VERSION, 4
 symbian {
     shared {
         contains(CONFIG, def_files) {
-            defFilePath=../WebKit/qt/symbian
+            DEF_FILE=../WebKit/qt/symbian
         }
     }
 }

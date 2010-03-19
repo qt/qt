@@ -5,5 +5,6 @@
         <file>images/edit-find.png</file>
         <file>images/list-add.png</file>
         <file>images/list-remove.png</file>
+        <file>images/button-close.png</file>
     </qresource>
 </RCC>

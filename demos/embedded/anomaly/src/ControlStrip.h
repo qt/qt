@@ -58,6 +58,7 @@ signals:
     void menuClicked();
     void backClicked();
     void forwardClicked();
+    void closeClicked();
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -67,6 +68,7 @@ private:
     QPixmap menuPixmap;
     QPixmap backPixmap;
     QPixmap forwardPixmap;
+    QPixmap closePixmap;
 };
 
 #endif // CONTROLSTRIP_H
