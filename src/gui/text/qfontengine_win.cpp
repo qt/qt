@@ -649,30 +649,6 @@ static const ushort char_table[] = {
 
 static const int char_table_entries = sizeof(char_table)/sizeof(ushort);
 
-void QFontEngineWin::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qreal *rightBearing)
-{
-    HDC hdc = shared_dc();
-    SelectObject(hdc, hfont);
-
-#ifndef Q_WS_WINCE
-    if (ttf)
-#endif
-
-    {
-        ABC abcWidths;
-        GetCharABCWidthsI(hdc, glyph, 1, 0, &abcWidths);
-        if (leftBearing)
-            *leftBearing = abcWidths.abcA;
-        if (rightBearing)
-            *rightBearing = abcWidths.abcC;
-    }
-
-#ifndef Q_WS_WINCE
-    else {
-        QFontEngine::getGlyphBearings(glyph, leftBearing, rightBearing);
-    }
-#endif
-}
 
 qreal QFontEngineWin::minLeftBearing() const
 {
