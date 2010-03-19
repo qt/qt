@@ -1305,7 +1305,7 @@ void QSplitter::setRubberBand(int pos)
     Q_D(QSplitter);
     if (pos < 0) {
         if (d->rubberBand)
-            QTimer::singleShot(0, d->rubberBand, SLOT(deleteLater()));
+            d->rubberBand->deleteLater();
         return;
     }
     QRect r = contentsRect();
