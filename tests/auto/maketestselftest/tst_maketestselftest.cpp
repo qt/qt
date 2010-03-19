@@ -63,9 +63,18 @@ private slots:
     void tests_pro_files();
     void tests_pro_files_data();
 
+    void naming_convention();
+    void naming_convention_data();
+
 private:
-    QStringList find_subdirs(QString const&, FindSubdirsMode);
+    QStringList find_subdirs(QString const&, FindSubdirsMode, QString const& = QString());
+
+    QSet<QString> all_test_classes;
 };
+
+bool looks_like_testcase(QString const&,QString*);
+bool looks_like_subdirs(QString const&);
+QStringList find_test_class(QString const&);
 
 /*
     Verify that auto.pro only contains other .pro files (and not directories).
@@ -145,10 +154,164 @@ void tst_MakeTestSelfTest::tests_pro_files_data()
     }
 }
 
+QString format_list(QStringList const& list)
+{
+    if (list.count() == 1) {
+        return list.at(0);
+    }
+    return QString("one of (%1)").arg(list.join(", "));
+}
+
+void tst_MakeTestSelfTest::naming_convention()
+{
+    QFETCH(QString, subdir);
+    QFETCH(QString, target);
+
+    QDir dir(SRCDIR "/../" + subdir);
+
+    QStringList cppfiles = dir.entryList(QStringList() << "*.h" << "*.cpp");
+    if (cppfiles.isEmpty()) {
+        // Common convention is to have test/test.pro and source files in parent dir
+        if (dir.dirName() == "test") {
+            dir.cdUp();
+            cppfiles = dir.entryList(QStringList() << "*.h" << "*.cpp");
+        }
+
+        if (cppfiles.isEmpty()) {
+            QSKIP("Couldn't locate source files for test", SkipSingle);
+        }
+    }
+
+    QStringList possible_test_classes;
+    foreach (QString const& file, cppfiles) {
+        possible_test_classes << find_test_class(dir.path() + "/" + file);
+    }
+
+    if (possible_test_classes.isEmpty()) {
+        QSKIP(qPrintable(QString("Couldn't locate test class in %1").arg(format_list(cppfiles))), SkipSingle);
+    }
+
+    QVERIFY2(possible_test_classes.contains(target), qPrintable(QString(
+        "TARGET is %1, while test class appears to be %2.\n"
+        "TARGET and test class _must_ match so that all testcase names can be accurately "
+        "determined even if a test fails to compile or run.")
+        .arg(target)
+        .arg(format_list(possible_test_classes))
+    ));
+
+    QVERIFY2(!all_test_classes.contains(target), qPrintable(QString(
+        "It looks like there are multiple tests named %1.\n"
+        "This makes it impossible to separate results for these tests.\n"
+        "Please ensure all tests are uniquely named.")
+        .arg(target)
+    ));
+
+    all_test_classes << target;
+}
+
+void tst_MakeTestSelfTest::naming_convention_data()
+{
+    QTest::addColumn<QString>("subdir");
+    QTest::addColumn<QString>("target");
+
+    foreach (const QString& subdir, find_subdirs(SRCDIR "/../auto.pro", Recursive)) {
+        if (QFileInfo(SRCDIR "/../" + subdir).isDir()) {
+            QString target;
+            if (looks_like_testcase(SRCDIR "/../" + subdir + "/" + QFileInfo(subdir).baseName() + ".pro", &target)) {
+                QTest::newRow(qPrintable(subdir)) << subdir << target.toLower();
+            }
+        }
+    }
+}
+
+/*
+    Returns true if a .pro file seems to be for an autotest.
+    Running qmake to figure this out takes too long.
+*/
+bool looks_like_testcase(QString const& pro_file, QString* target)
+{
+    QFile file(pro_file);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return false;
+    }
+
+    *target = QString();
+
+    bool loaded_qttest = false;
+
+    do {
+        QByteArray line = file.readLine();
+        if (line.isEmpty()) {
+            break;
+        }
+
+        line = line.trimmed();
+        line.replace(' ', "");
+
+        if (line == "load(qttest_p4)") {
+            loaded_qttest = true;
+        }
+
+        if (line.startsWith("TARGET=")) {
+            *target = QString::fromLatin1(line.mid(sizeof("TARGET=")-1));
+            if (target->contains('/')) {
+                *target = target->right(target->lastIndexOf('/')+1);
+            }
+        }
+
+        if (loaded_qttest && !target->isEmpty()) {
+            break;
+        }
+    } while(1);
+
+    if (!loaded_qttest) {
+        return false;
+    }
+
+    if (!target->isEmpty() && !target->startsWith("tst_")) {
+        return false;
+    }
+
+    // If no target was set, default to tst_<dirname>
+    if (target->isEmpty()) {
+        *target = "tst_" + QFileInfo(pro_file).baseName();
+    }
+
+    return true;
+}
+
+/*
+    Returns true if a .pro file seems to be a subdirs project.
+    Running qmake to figure this out takes too long.
+*/
+bool looks_like_subdirs(QString const& pro_file)
+{
+    QFile file(pro_file);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return false;
+    }
+
+    do {
+        QByteArray line = file.readLine();
+        if (line.isEmpty()) {
+            break;
+        }
+
+        line = line.trimmed();
+        line.replace(' ', "");
+
+        if (line == "TEMPLATE=subdirs") {
+            return true;
+        }
+    } while(1);
+
+    return false;
+}
+
 /*
     Returns a list of all subdirs in a given .pro file
 */
-QStringList tst_MakeTestSelfTest::find_subdirs(QString const& pro_file, FindSubdirsMode mode)
+QStringList tst_MakeTestSelfTest::find_subdirs(QString const& pro_file, FindSubdirsMode mode, QString const& prefix)
 {
     QStringList out;
 
@@ -158,11 +321,41 @@ QStringList tst_MakeTestSelfTest::find_subdirs(QString const& pro_file, FindSubd
         features = SRCDIR "/features";
     }
     else {
-        features.prepend(SRCDIR "/features:");
+        features.prepend(SRCDIR "/features"
+#ifdef Q_OS_WIN32
+                ";"
+#else
+                ":"
+#endif
+        );
     }
 
     QStringList args;
     args << pro_file << "-o" << SRCDIR "/dummy_output" << "CONFIG+=dump_subdirs";
+
+    /* Turn on every option there is, to ensure we process every single directory */
+    args
+        << "QT_CONFIG+=dbus"
+        << "QT_CONFIG+=declarative"
+        << "QT_CONFIG+=egl"
+        << "QT_CONFIG+=multimedia"
+        << "QT_CONFIG+=OdfWriter"
+        << "QT_CONFIG+=opengl"
+        << "QT_CONFIG+=openvg"
+        << "QT_CONFIG+=phonon"
+        << "QT_CONFIG+=private_tests"
+        << "QT_CONFIG+=pulseaudio"
+        << "QT_CONFIG+=qt3support"
+        << "QT_CONFIG+=script"
+        << "QT_CONFIG+=svg"
+        << "QT_CONFIG+=webkit"
+        << "QT_CONFIG+=xmlpatterns"
+        << "CONFIG+=mac"
+        << "CONFIG+=embedded"
+        << "CONFIG+=symbian"
+    ;
+
+
 
     QString cmd_with_args = QString("qmake %1").arg(args.join(" "));
 
@@ -224,22 +417,89 @@ QStringList tst_MakeTestSelfTest::find_subdirs(QString const& pro_file, FindSubd
     foreach (QByteArray const& line, lines) {
         static const QByteArray marker = "Project MESSAGE: subdir: ";
         if (line.startsWith(marker)) {
-            QString subdir = QString::fromLocal8Bit(line.mid(marker.size()));
-            out << subdir;
+            QString subdir = QString::fromLocal8Bit(line.mid(marker.size()).trimmed());
+            out << prefix + subdir;
 
             if (mode == Flat) {
                 continue;
             }
 
+            // Need full path to subdir
+            QString subdir_filepath = subdir;
+            subdir_filepath.prepend(QFileInfo(pro_file).path() + "/");
+
             // Add subdirs recursively
-            if (subdir.endsWith(".pro")) {
+            if (subdir.endsWith(".pro") && looks_like_subdirs(subdir_filepath)) {
                 // Need full path to .pro file
-                QString subdir_pro = subdir;
-                subdir_pro.prepend(QFileInfo(pro_file).path() + "/");
-                out << find_subdirs(subdir_pro, mode);
+                out << find_subdirs(subdir_filepath, mode, prefix);
+            }
+
+            if (QFileInfo(subdir_filepath).isDir()) {
+                subdir_filepath += "/" + subdir + ".pro";
+                if (looks_like_subdirs(subdir_filepath)) {
+                    out << find_subdirs(subdir_filepath, mode, prefix + subdir + "/");
+                }
             }
         }
     }
+
+    return out;
+}
+
+QStringList find_test_class(QString const& filename)
+{
+    QStringList out;
+
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return out;
+    }
+
+    static char const* klass_indicators[] = {
+        "QTEST_MAIN(",
+        "QTEST_APPLESS_MAIN(",
+        "class",
+        "staticconstcharklass[]=\"",  /* hax0r tests which define their own metaobject */
+        0
+    };
+
+    do {
+        QByteArray line = file.readLine();
+        if (line.isEmpty()) {
+            break;
+        }
+
+        line = line.trimmed();
+        line.replace(' ', "");
+
+        for (int i = 0; klass_indicators[i]; ++i) {
+            char const* prefix = klass_indicators[i];
+            if (!line.startsWith(prefix)) {
+                continue;
+            }
+            QByteArray klass = line.mid(strlen(prefix));
+            if (!klass.startsWith("tst_")) {
+                continue;
+            }
+            for (int j = 0; j < klass.size(); ++j) {
+                char c = klass[j];
+                if (c == '_'
+                        || (c >= '0' && c <= '9')
+                        || (c >= 'A' && c <= 'Z')
+                        || (c >= 'a' && c <= 'z')) {
+                    continue;
+                }
+                else {
+                    klass.truncate(j);
+                    break;
+                }
+            }
+            QString klass_str = QString::fromLocal8Bit(klass).toLower();
+            if (!out.contains(klass_str))
+                out << klass_str;
+            break;
+        }
+    } while(1);
 
     return out;
 }
