@@ -136,6 +136,8 @@ public:
 
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
+    void componentComplete();
+
 public Q_SLOTS:
     void play();
     void pause();

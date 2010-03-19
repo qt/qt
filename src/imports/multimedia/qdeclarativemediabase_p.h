@@ -107,13 +107,14 @@ public:
 
     void _q_metaDataChanged();
 
+    void componentComplete();
+
 protected:
     void shutdown();
 
     void setObject(QObject *object);
 
     virtual void sourceChanged() = 0;
-
     virtual void playingChanged() = 0;
     virtual void pausedChanged() = 0;
 
@@ -143,6 +144,12 @@ protected:
 
     virtual void errorChanged() = 0;
 
+    bool m_paused;
+    bool m_playing;
+    bool m_muted;
+    int m_position;
+    qreal m_volume;
+    qreal m_playbackRate;
     QMediaService *m_mediaService;
     QMediaPlayerControl *m_playerControl;
 
@@ -155,8 +162,8 @@ protected:
     QMediaPlayer::State m_state;
     QMediaPlayer::MediaStatus m_status;
     QMediaPlayer::Error m_error;
-    bool m_paused;
     QString m_errorString;
+    QUrl m_source;
 
     friend class QDeclarativeMediaBaseAnimation;
 };

@@ -114,6 +114,8 @@ public:
     Status status() const;
     Error error() const;
 
+    void componentComplete();
+
 public Q_SLOTS:
     void play();
     void pause();
