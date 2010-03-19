@@ -44,9 +44,9 @@
 #include <QStringList>
 #include <QScopedPointer>
 #include <QTimer>
-#include "trkutils.h"
-#include "trkdevice.h"
-#include "launcher.h"
+#include "symbianutils/trkutils.h"
+#include "symbianutils/trkdevice.h"
+#include "symbianutils/launcher.h"
 
 #include "trksignalhandler.h"
 #include "serenum.h"
@@ -133,28 +133,28 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if(serialPortName.isEmpty()) {
-        if(loglevel > 0)
+    if (serialPortName.isEmpty()) {
+        if (loglevel > 0)
             outstream << "Detecting serial ports" << endl;
         QList <SerialPortId> ports = enumerateSerialPorts();
         foreach(SerialPortId id, ports) {
-            if(loglevel > 0)
+            if (loglevel > 0)
                 outstream << "Port Name: " << id.portName << ", "
                      << "Friendly Name:" << id.friendlyName << endl;
-            if(serialPortName.isEmpty()) {
-                if(!id.friendlyName.isEmpty() &&
-                   serialPortFriendlyName.isEmpty() &&
-                    (id.friendlyName.contains("symbian", Qt::CaseInsensitive) ||
-                       id.friendlyName.contains("s60", Qt::CaseInsensitive) ||
-                       id.friendlyName.contains("nokia", Qt::CaseInsensitive)))
+            if (serialPortName.isEmpty()) {
+                if (!id.friendlyName.isEmpty()
+                        && serialPortFriendlyName.isEmpty()
+                        && (id.friendlyName.contains("symbian", Qt::CaseInsensitive)
+                            || id.friendlyName.contains("s60", Qt::CaseInsensitive)
+                            || id.friendlyName.contains("nokia", Qt::CaseInsensitive)))
                         serialPortName = id.portName;
-                else if (!id.friendlyName.isEmpty() &&
-                         !serialPortFriendlyName.isEmpty() &&
-                         id.friendlyName.contains(serialPortFriendlyName))
-                        serialPortName = id.portName;
+                else if (!id.friendlyName.isEmpty()
+                        && !serialPortFriendlyName.isEmpty()
+                        && id.friendlyName.contains(serialPortFriendlyName))
+                    serialPortName = id.portName;
             }
         }
-        if(serialPortName.isEmpty()) {
+        if (serialPortName.isEmpty()) {
             errstream << "No phone found, ensure USB cable is connected or specify manually with -p" << endl;
             return 1;
         }
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 
     QScopedPointer<trk::Launcher> launcher;
 
-    if(sisFile.isEmpty()) {
+    if (sisFile.isEmpty()) {
         launcher.reset(new trk::Launcher(trk::Launcher::ActionCopyRun));
         launcher->setCopyFileName(exeFile, QString("c:\\sys\\bin\\") + exeFile);
         errstream << "System TRK required to copy EXE, use --sis if using Application TRK" << endl;
@@ -172,14 +172,14 @@ int main(int argc, char *argv[])
         launcher->setCopyFileName(sisFile, "c:\\data\\testtemp.sis");
         launcher->setInstallFileName("c:\\data\\testtemp.sis");
     }
-    if(loglevel > 0)
+    if (loglevel > 0)
         outstream << "Connecting to target via " << serialPortName << endl;
     launcher->setTrkServerName(serialPortName);
 
     launcher->setFileName(QString("c:\\sys\\bin\\") + exeFile);
     launcher->setCommandLineArgs(cmdLine);
 
-    if(loglevel > 1)
+    if (loglevel > 1)
         launcher->setVerbose(1);
 
     TrkSignalHandler handler;
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
     }
 
     QString errorMessage;
-    if(!launcher->startServer(&errorMessage)) {
+    if (!launcher->startServer(&errorMessage)) {
         errstream << errorMessage << endl;
         return 1;
     }
