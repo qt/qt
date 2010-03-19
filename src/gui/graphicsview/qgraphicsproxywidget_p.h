@@ -118,6 +118,7 @@ public:
     quint32 styleChangeMode : 2;
     quint32 paletteChangeMode : 2;
     quint32 focusFromWidgetToProxy : 1;
+    quint32 proxyIsGivingFocus : 1;
 };
 
 QT_END_NAMESPACE

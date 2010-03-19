@@ -48,7 +48,7 @@
 #include <QtGui/qwindowsstyle.h>
 
 class tst_QGraphicsAnchorLayout : public QObject {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     tst_QGraphicsAnchorLayout() : QObject() {

@@ -43,7 +43,7 @@
 class BaseExtensionObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int baseExtendedProperty READ extendedProperty WRITE setExtendedProperty NOTIFY extendedPropertyChanged);
+    Q_PROPERTY(int baseExtendedProperty READ extendedProperty WRITE setExtendedProperty NOTIFY extendedPropertyChanged)
 public:
     BaseExtensionObject(QObject *parent) : QObject(parent), m_value(0) {}
 
@@ -59,7 +59,7 @@ private:
 class ExtensionObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int extendedProperty READ extendedProperty WRITE setExtendedProperty NOTIFY extendedPropertyChanged);
+    Q_PROPERTY(int extendedProperty READ extendedProperty WRITE setExtendedProperty NOTIFY extendedPropertyChanged)
 public:
     ExtensionObject(QObject *parent) : QObject(parent), m_value(0) {}
 

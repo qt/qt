@@ -62,7 +62,7 @@ private slots:
 
 class DownloadCheckWidget : public QWidget
 {
-    Q_OBJECT;
+    Q_OBJECT
 public:
     DownloadCheckWidget(QWidget *parent = 0) : QWidget(parent)
                                     , progressDlg(this), netmanager(this)

@@ -644,6 +644,8 @@ CFG_XVIDEO=auto
 CFG_XINERAMA=runtime
 CFG_XFIXES=runtime
 CFG_ZLIB=auto
+CFG_SYMBIAN_DEFFILES=auto
+CFG_S60=auto
 CFG_SQLITE=qt
 CFG_GIF=auto
 CFG_TIFF=auto
@@ -678,7 +680,7 @@ CFG_PHONON=auto
 CFG_PHONON_BACKEND=yes
 CFG_MULTIMEDIA=yes
 CFG_MEDIASERVICE=yes
-CFG_AUDIO_BACKEND=yes
+CFG_AUDIO_BACKEND=auto
 CFG_SVG=yes
 CFG_DECLARATIVE=auto
 CFG_WEBKIT=auto # (yes|no|auto)
@@ -723,7 +725,7 @@ CFG_DBUS=auto
 CFG_GLIB=auto
 CFG_GSTREAMER=auto
 CFG_QGTKSTYLE=auto
-CFG_LARGEFILE=auto
+CFG_LARGEFILE=yes
 CFG_OPENSSL=auto
 CFG_PTMALLOC=no
 CFG_STL=auto
@@ -926,8 +928,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xvideo|-xsync|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-mediaservice|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-mediaservice|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1492,7 +1493,6 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     feature-*)
-        if [ "$PLATFORM_QWS" = "yes" ]; then
             FEATURE=`echo $VAR | sed "s,^[^-]*-\([^-]*\),\1," | tr 'abcdefghijklmnopqrstuvwxyz-' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ_'`
             if [ "$VAL" = "no" ]; then
                 QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_$FEATURE"
@@ -1501,9 +1501,6 @@ while [ "$#" -gt 0 ]; do
             else
                 UNKNOWN_OPT=yes
             fi
-        else
-            UNKNOWN_OPT=yes
-        fi
         ;;
     shared)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -1656,6 +1653,20 @@ while [ "$#" -gt 0 ]; do
         fi
         # No longer supported:
         #[ "$VAL" = "no" ] && CFG_LIBPNG=no
+        ;;
+    s60)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_S60="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    usedeffiles)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_SYMBIAN_DEFFILES="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
         ;;
     sqlite)
         if [ "$VAL" = "system" ]; then
@@ -2170,6 +2181,7 @@ esac
 # where to find which..
 unixtests="$relpath/config.tests/unix"
 mactests="$relpath/config.tests/mac"
+symbiantests="$relpath/config.tests/symbian"
 WHICH="$unixtests/which.test"
 
 PERL=`$WHICH perl 2>/dev/null`
@@ -3341,6 +3353,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-no-javascript-jit] [-javascript-jit]
         [-no-script] [-script] [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
+        [-no-s60] [-s60] [-no-usedeffiles] [-usedeffiles]
 
         [additional platform specific options (see below)]
 
@@ -3523,6 +3536,11 @@ cat << EOF
 EOF
 fi
 cat << EOF
+
+    -no-s60 ............ Do not compile in S60 support.
+ +  -s60 ............... Compile with support for the S60 UI Framework.
+    -no-usedeffiles .... Disable the usage of DEF files.
+ *  -usedeffiles ....... Enable the usage of DEF files.
 
     -no-mmx ............ Do not compile with use of MMX instructions.
     -no-3dnow .......... Do not compile with use of 3DNOW instructions.
@@ -3987,7 +4005,7 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     Platform="Qt for Embedded Linux"
 elif [ "$PLATFORM_MAC" = "yes" ]; then
     Platform="Qt for Mac OS X"
-else
+elif [ '!' -z "`getQMakeConf \"$XQMAKESPEC\" | grep QMAKE_LIBS_X11 | awk '{print $3;}'`" ]; then
     PLATFORM_X11=yes
     Platform="Qt for Linux/X11"
 fi
@@ -4611,6 +4629,22 @@ if [ "$CFG_ZLIB" = "auto" ]; then
     fi
 fi
 
+if [ "$CFG_S60" = "auto" ]; then
+    if echo "$XQMAKESPEC" | grep symbian > /dev/null; then
+        CFG_S60=yes
+    else
+        CFG_S60=no
+    fi
+fi
+
+if [ "$CFG_SYMBIAN_DEFFILES" = "auto" ]; then
+    if echo "$XQMAKESPEC" | grep symbian > /dev/null && [ "$CFG_DEV" = "no" ]; then
+        CFG_SYMBIAN_DEFFILES=yes
+    else
+        CFG_SYMBIAN_DEFFILES=no
+    fi
+fi
+
 # detect how jpeg should be built
 if [ "$CFG_JPEG" = "auto" ]; then
     if [ "$CFG_SHARED" = "yes" ]; then
@@ -4889,6 +4923,14 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             fi
             ;;
         sqlite)
+            if [ "$CFG_SQL_sqlite" = "auto" ]; then # the default
+                case "$XPLATFORM" in
+                    symbian*)
+                    # sqlite on symbian is typically not build in Qt but deployed as a pre-existing sis file.
+                    CFG_SQL_sqlite=no
+                    ;;
+                esac
+            fi
             if [ "$CFG_SQL_sqlite" != "no" ]; then
                 SQLITE_AUTODETECT_FAILED="no"
                 if [ "$CFG_SQLITE" = "system" ]; then
@@ -5714,7 +5756,7 @@ if [ "$CFG_DOUBLEFORMAT" = "auto" ]; then
 fi
 
 HAVE_STL=no
-if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS; then
+if echo "$XQMAKESPEC" | grep symbian > /dev/null || "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS; then
     HAVE_STL=yes
 fi
 
@@ -5848,23 +5890,6 @@ if [ "$CFG_GETIFADDRS" != "no" ]; then
     fi
 fi
 
-# find if the platform supports X/Open Large File compilation environment
-if [ "$CFG_LARGEFILE" != "no" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/largefile "X/Open Large File" $L_FLAGS $I_FLAGS $l_FLAGS; then
-        CFG_LARGEFILE=yes
-    else
-        if [ "$CFG_LARGEFILE" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-            echo "X/Open Large File support cannot be enabled due to functionality tests!"
-            echo " Turn on verbose messaging (-v) to $0 to see the final report."
-            echo " If you believe this message is in error you may use the continue"
-            echo " switch (-continue) to $0 to continue."
-            exit 101
-        else
-            CFG_LARGEFILE=no
-        fi
-    fi
-fi
-
 # detect OpenSSL
 if [ "$CFG_OPENSSL" != "no" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/openssl "OpenSSL" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
@@ -5966,6 +5991,14 @@ if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ]; then
     QMakeVar set JAVASCRIPTCORE_JIT yes
 elif [ "$CFG_JAVASCRIPTCORE_JIT" = "no" ]; then
     QMakeVar set JAVASCRIPTCORE_JIT no
+fi
+
+if [ "$CFG_AUDIO_BACKEND" = "auto" ]; then
+    if echo "$XQMAKESPEC" | grep symbian > /dev/null 2>&1; then
+        "$symbiantests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/symbian/audio "audio" $L_FLAGS $I_FLAGS $l_FLAGS
+    else
+        CFG_AUDIO_BACKEND=yes
+    fi
 fi
 
 #-------------------------------------------------------------------------------
@@ -6083,9 +6116,9 @@ case "$PLATFORM,$CFG_MAC_COCOA" in
 	;;
 esac
 
-# disable Qt 3 support on VxWorks
+# disable Qt 3 support on VxWorks and Symbian
 case "$XPLATFORM" in
-    unsupported/vxworks*)
+    unsupported/vxworks*|symbian*)
 	CFG_QT3SUPPORT="no"
     ;;
 esac
@@ -6138,6 +6171,13 @@ else
         QCONFIG_FLAGS="$QCONFIG_FLAGS QT_SHIVAVG"
     fi
 fi
+
+# Disable OpenGL on Symbian.
+case "$XPLATFORM" in
+    symbian*)
+        CFG_OPENGL="no"
+        ;;
+esac
 
 # enable opengl
 if [ "$CFG_OPENGL" = "no" ]; then
@@ -6311,6 +6351,16 @@ if [ "$CFG_ZLIB" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG zlib"
 elif [ "$CFG_ZLIB" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-zlib"
+fi
+
+if [ "$CFG_S60" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG s60"
+fi
+
+if [ "$CFG_SYMBIAN_DEFFILES" = "yes" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG def_files"
+else
+    QMAKE_CONFIG="$QMAKE_CONFIG def_files_disabled"
 fi
 
 [ "$CFG_NIS" = "yes" ] && QT_CONFIG="$QT_CONFIG nis"
@@ -7117,6 +7167,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_JPEG" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_JPEG"
 [ "$CFG_MNG" != "yes" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_MNG"
 [ "$CFG_ZLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ZLIB"
+[ "$CFG_S60" != "yes" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_S60"
 [ "$CFG_EXCEPTIONS" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EXCEPTIONS"
 [ "$CFG_IPV6" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IPV6"
 [ "$CFG_SXE" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SXE"
@@ -7171,6 +7222,15 @@ fi
 # sort QCONFIG_FLAGS for neatness if we can
 [ '!' -z "$AWK" ] && QCONFIG_FLAGS=`echo $QCONFIG_FLAGS | $AWK '{ gsub(" ", "\n"); print }' | sort | uniq`
 QCONFIG_FLAGS=`echo $QCONFIG_FLAGS`
+
+if echo $XPLATFORM | grep symbian >/dev/null
+then
+    # Enable Symbian DLLs and export rules.
+    # We cannot use Linux's default export rules since they export everything.
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_DLL"
+    # Disable non-working features.
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CONCURRENT QT_NO_QFUTURE QT_NO_CRASHHANDLER QT_NO_PRINTER QT_NO_CURSOR QT_NO_SYSTEMTRAYICON"
+fi
 
 if [ -n "$QCONFIG_FLAGS" ]; then
     for cfg in $QCONFIG_FLAGS; do
@@ -7543,9 +7603,11 @@ if [ "$CFG_WEBKIT" = "yes" ]; then
     fi
 fi
 echo "Declarative module ..... $CFG_DECLARATIVE"
+echo "Support for S60 ........ $CFG_S60"
+echo "Symbian DEF files ...... $CFG_SYMBIAN_DEFFILES"
 echo "STL support ............ $CFG_STL"
 echo "PCH support ............ $CFG_PRECOMPILE"
-echo "MMX/3DNOW/SSE/SSE2 ..... ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"
+echo "MMX/3DNOW/SSE/SSE2...... ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"
 if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
     echo "iWMMXt support ......... ${CFG_IWMMXT}"
     echo "NEON support ........... ${CFG_NEON}"
