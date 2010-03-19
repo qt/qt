@@ -77,7 +77,6 @@ void QDeclarativeAudio::_q_error(int errorCode, const QString &errorString)
 QDeclarativeAudio::QDeclarativeAudio(QObject *parent)
     : QObject(parent)
 {
-    setObject(this);
 }
 
 QDeclarativeAudio::~QDeclarativeAudio()
@@ -94,13 +93,12 @@ QDeclarativeAudio::~QDeclarativeAudio()
 */
 
 void QDeclarativeAudio::play()
-{    
-    m_playerControl->play();
+{
+    if (m_playerControl == 0)
+        return;
 
-    if (m_paused) {
-        m_paused = false;
-        emit pausedChanged();
-    }
+    setPaused(false);
+    setPlaying(true);
 }
 
 /*!
@@ -113,12 +111,11 @@ void QDeclarativeAudio::play()
 
 void QDeclarativeAudio::pause()
 {
-    m_playerControl->pause();
+    if (m_playerControl == 0)
+        return;
 
-    if (!m_paused && m_state == QMediaPlayer::PausedState) {
-        m_paused = true;
-        emit pausedChanged();
-    }
+    setPaused(true);
+    setPlaying(true);
 }
 
 /*!
@@ -131,18 +128,25 @@ void QDeclarativeAudio::pause()
 
 void QDeclarativeAudio::stop()
 {
-    m_playerControl->stop();
+    if (m_playerControl == 0)
+        return;
 
-    if (m_paused) {
-        m_paused = false;
-        emit pausedChanged();
-    }
+    setPlaying(false);
+    setPaused(false);
 }
 
 /*!
     \qmlproperty url Audio::source
 
     This property holds the source URL of the media.
+*/
+
+/*!
+    \qmlproperty url Audio:autoLoad
+
+    This property indicates if loading of media should begin immediately.
+
+    Defaults to true, if false media will not be loaded until playback is started.
 */
 
 /*!
@@ -306,6 +310,12 @@ QDeclarativeAudio::Error QDeclarativeAudio::error() const
 {
     return Error(m_error);
 }
+
+void QDeclarativeAudio::componentComplete()
+{
+    setObject(this);
+}
+
 
 /*!
     \qmlproperty string Audio::errorString

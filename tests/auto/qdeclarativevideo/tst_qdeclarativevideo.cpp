@@ -304,11 +304,12 @@ void tst_QmlGraphicsVideo::nullPlayerControl()
 
     QCOMPARE(video.source(), QUrl());
     video.setSource(QUrl("http://example.com"));
-    QCOMPARE(video.source(), QUrl());
+    QCOMPARE(video.source(), QUrl("http://example.com"));
 
     QCOMPARE(video.isPlaying(), false);
     video.setPlaying(true);
-    QCOMPARE(video.isPlaying(), false);
+    QCOMPARE(video.isPlaying(), true);
+    video.setPlaying(false);
     video.play();
     QCOMPARE(video.isPlaying(), false);
 
@@ -322,15 +323,15 @@ void tst_QmlGraphicsVideo::nullPlayerControl()
 
     QCOMPARE(video.position(), 0);
     video.setPosition(10000);
-    QCOMPARE(video.position(), 0);
+    QCOMPARE(video.position(), 10000);
 
-    QCOMPARE(video.volume(), qreal(0));
-    video.setVolume(50);
-    QCOMPARE(video.volume(), qreal(0));
+    QCOMPARE(video.volume(), qreal(1.0));
+    video.setVolume(0.5);
+    QCOMPARE(video.volume(), qreal(0.5));
 
     QCOMPARE(video.isMuted(), false);
     video.setMuted(true);
-    QCOMPARE(video.isMuted(), false);
+    QCOMPARE(video.isMuted(), true);
 
     QCOMPARE(video.bufferProgress(), qreal(0));
 
@@ -354,11 +355,12 @@ void tst_QmlGraphicsVideo::nullService()
 
     QCOMPARE(video.source(), QUrl());
     video.setSource(QUrl("http://example.com"));
-    QCOMPARE(video.source(), QUrl());
+    QCOMPARE(video.source(), QUrl("http://example.com"));
 
     QCOMPARE(video.isPlaying(), false);
     video.setPlaying(true);
-    QCOMPARE(video.isPlaying(), false);
+    QCOMPARE(video.isPlaying(), true);
+    video.setPlaying(false);
     video.play();
     QCOMPARE(video.isPlaying(), false);
 
@@ -372,15 +374,15 @@ void tst_QmlGraphicsVideo::nullService()
 
     QCOMPARE(video.position(), 0);
     video.setPosition(10000);
-    QCOMPARE(video.position(), 0);
+    QCOMPARE(video.position(), 10000);
 
-    QCOMPARE(video.volume(), qreal(0));
-    video.setVolume(50);
-    QCOMPARE(video.volume(), qreal(0));
+    QCOMPARE(video.volume(), qreal(1.0));
+    video.setVolume(0.5);
+    QCOMPARE(video.volume(), qreal(0.5));
 
     QCOMPARE(video.isMuted(), false);
     video.setMuted(true);
-    QCOMPARE(video.isMuted(), false);
+    QCOMPARE(video.isMuted(), true);
 
     QCOMPARE(video.bufferProgress(), qreal(0));
 
@@ -404,6 +406,7 @@ void tst_QmlGraphicsVideo::playing()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+    video.componentComplete();
 
     QSignalSpy playingChangedSpy(&video, SIGNAL(playingChanged()));
     QSignalSpy startedSpy(&video, SIGNAL(started()));
@@ -491,6 +494,7 @@ void tst_QmlGraphicsVideo::paused()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+    video.componentComplete();
 
     QSignalSpy playingChangedSpy(&video, SIGNAL(playingChanged()));
     QSignalSpy pausedChangedSpy(&video, SIGNAL(pausedChanged()));
@@ -780,6 +784,7 @@ void tst_QmlGraphicsVideo::error()
 
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+    video.componentComplete();
 
     QSignalSpy errorSpy(&video, SIGNAL(error(QDeclarativeVideo::Error,QString)));
     QSignalSpy errorChangedSpy(&video, SIGNAL(errorChanged()));
@@ -814,6 +819,7 @@ void tst_QmlGraphicsVideo::hasAudio()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+    video.componentComplete();
 
     QSignalSpy spy(&video, SIGNAL(hasAudioChanged()));
 
@@ -837,6 +843,8 @@ void tst_QmlGraphicsVideo::hasVideo()
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
 
+    video.componentComplete();
+
     QSignalSpy spy(&video, SIGNAL(hasVideoChanged()));
 
     QCOMPARE(video.hasVideo(), false);
@@ -858,6 +866,7 @@ void tst_QmlGraphicsVideo::fillMode()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+    video.componentComplete();
 
     QList<QGraphicsItem *> children = video.childItems();
     QCOMPARE(children.count(), 1);
@@ -883,6 +892,7 @@ void tst_QmlGraphicsVideo::geometry()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+    video.componentComplete();
 
     QAbstractVideoSurface *surface = provider.rendererControl()->surface();
     QVERIFY(surface != 0);

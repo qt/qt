@@ -73,6 +73,7 @@ class QDeclarativeVideo : public QDeclarativeItem, public QDeclarativeMediaBase
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(bool autoLoad READ isAutoLoad WRITE setAutoLoad NOTIFY autoLoadChanged)
     Q_PROPERTY(bool playing READ isPlaying WRITE setPlaying NOTIFY playingChanged)
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
@@ -136,6 +137,8 @@ public:
 
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
+    void componentComplete();
+
 public Q_SLOTS:
     void play();
     void pause();
@@ -143,7 +146,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void sourceChanged();
-
+    void autoLoadChanged();
     void playingChanged();
     void pausedChanged();
 

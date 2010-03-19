@@ -61,6 +61,7 @@ private slots:
     void nullService();
 
     void source();
+    void autoLoad();
     void playing();
     void paused();
     void duration();
@@ -298,11 +299,12 @@ void tst_QmlAudio::nullPlayerControl()
 
     QCOMPARE(audio.source(), QUrl());
     audio.setSource(QUrl("http://example.com"));
-    QCOMPARE(audio.source(), QUrl());
+    QCOMPARE(audio.source(), QUrl("http://example.com"));
 
     QCOMPARE(audio.isPlaying(), false);
     audio.setPlaying(true);
-    QCOMPARE(audio.isPlaying(), false);
+    QCOMPARE(audio.isPlaying(), true);
+    audio.setPlaying(false);
     audio.play();
     QCOMPARE(audio.isPlaying(), false);
 
@@ -316,15 +318,15 @@ void tst_QmlAudio::nullPlayerControl()
 
     QCOMPARE(audio.position(), 0);
     audio.setPosition(10000);
-    QCOMPARE(audio.position(), 0);
+    QCOMPARE(audio.position(), 10000);
 
-    QCOMPARE(audio.volume(), qreal(0));
-    audio.setVolume(50);
-    QCOMPARE(audio.volume(), qreal(0));
+    QCOMPARE(audio.volume(), qreal(1.0));
+    audio.setVolume(0.5);
+    QCOMPARE(audio.volume(), qreal(0.5));
 
     QCOMPARE(audio.isMuted(), false);
     audio.setMuted(true);
-    QCOMPARE(audio.isMuted(), false);
+    QCOMPARE(audio.isMuted(), true);
 
     QCOMPARE(audio.bufferProgress(), qreal(0));
 
@@ -357,11 +359,12 @@ void tst_QmlAudio::nullService()
 
     QCOMPARE(audio.source(), QUrl());
     audio.setSource(QUrl("http://example.com"));
-    QCOMPARE(audio.source(), QUrl());
+    QCOMPARE(audio.source(), QUrl("http://example.com"));
 
     QCOMPARE(audio.isPlaying(), false);
     audio.setPlaying(true);
-    QCOMPARE(audio.isPlaying(), false);
+    QCOMPARE(audio.isPlaying(), true);
+    audio.setPlaying(false);
     audio.play();
     QCOMPARE(audio.isPlaying(), false);
 
@@ -375,15 +378,15 @@ void tst_QmlAudio::nullService()
 
     QCOMPARE(audio.position(), 0);
     audio.setPosition(10000);
-    QCOMPARE(audio.position(), 0);
+    QCOMPARE(audio.position(), 10000);
 
-    QCOMPARE(audio.volume(), qreal(0));
-    audio.setVolume(50);
-    QCOMPARE(audio.volume(), qreal(0));
+    QCOMPARE(audio.volume(), qreal(1.0));
+    audio.setVolume(0.5);
+    QCOMPARE(audio.volume(), qreal(0.5));
 
     QCOMPARE(audio.isMuted(), false);
     audio.setMuted(true);
-    QCOMPARE(audio.isMuted(), false);
+    QCOMPARE(audio.isMuted(), true);
 
     QCOMPARE(audio.bufferProgress(), qreal(0));
 
@@ -408,6 +411,7 @@ void tst_QmlAudio::source()
 
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
+    audio.componentComplete();
 
     QSignalSpy spy(&audio, SIGNAL(sourceChanged()));
 
@@ -427,6 +431,33 @@ void tst_QmlAudio::source()
     QCOMPARE(spy.count(), 3);
 }
 
+void tst_QmlAudio::autoLoad()
+{
+    QtTestMediaServiceProvider provider;
+    QDeclarativeAudio audio;
+    audio.componentComplete();
+
+    QSignalSpy spy(&audio, SIGNAL(autoLoadChanged()));
+
+    QCOMPARE(audio.isAutoLoad(), true);
+
+    audio.setAutoLoad(false);
+    QCOMPARE(audio.isAutoLoad(), false);
+    QCOMPARE(spy.count(), 1);
+
+    audio.setSource(QUrl("http://example.com"));
+    QCOMPARE(audio.source(), QUrl("http://example.com"));
+    audio.play();
+    QCOMPARE(audio.isPlaying(), true);
+    audio.stop();
+
+    audio.setAutoLoad(true);
+    audio.setSource(QUrl("http://example.com"));
+    audio.setPaused(true);
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(audio.isPaused(), true);
+}
+
 void tst_QmlAudio::playing()
 {
     QtTestMediaServiceProvider provider;
@@ -439,6 +470,8 @@ void tst_QmlAudio::playing()
     int playingChanged = 0;
     int started = 0;
     int stopped = 0;
+
+    audio.componentComplete();
 
     QCOMPARE(audio.isPlaying(), false);
 
@@ -532,6 +565,8 @@ void tst_QmlAudio::paused()
     int paused = 0;
     int resumed = 0;
     int stopped = 0;
+
+    audio.componentComplete();
 
     QCOMPARE(audio.isPlaying(), false);
     QCOMPARE(audio.isPaused(), false);
@@ -806,6 +841,8 @@ void tst_QmlAudio::duration()
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
 
+    audio.componentComplete();
+
     QSignalSpy spy(&audio, SIGNAL(durationChanged()));
 
     QCOMPARE(audio.duration(), 0);
@@ -832,6 +869,7 @@ void tst_QmlAudio::position()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
+    audio.componentComplete();
 
     QSignalSpy spy(&audio, SIGNAL(positionChanged()));
 
@@ -853,32 +891,33 @@ void tst_QmlAudio::position()
     audio.setPosition(-5403);
     QCOMPARE(audio.position(), -5403);
     QCOMPARE(provider.playerControl()->position(), qint64(-5403));
-    QCOMPARE(spy.count(), 3);
+    QCOMPARE(spy.count(), 2);
 
     // Check the signal change signal is emitted if the change originates from the media service.
     provider.playerControl()->setPosition(0);
     QCOMPARE(audio.position(), 0);
-    QCOMPARE(spy.count(), 4);
+    QCOMPARE(spy.count(), 3);
 
     connect(&audio, SIGNAL(positionChanged()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
     provider.playerControl()->updateState(QMediaPlayer::PlayingState);
     QTestEventLoop::instance().enterLoop(1);
-    QVERIFY(spy.count() > 4 && spy.count() < 7); // 5 or 6
+    QVERIFY(spy.count() > 3 && spy.count() < 6); // 4 or 5
 
     provider.playerControl()->updateState(QMediaPlayer::PausedState);
     QTestEventLoop::instance().enterLoop(1);
-    QVERIFY(spy.count() < 7);
+    QVERIFY(spy.count() < 6);
 }
 
 void tst_QmlAudio::volume()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
+    audio.componentComplete();
 
     QSignalSpy spy(&audio, SIGNAL(volumeChanged()));
 
-    QCOMPARE(audio.volume(), qreal(0.5));
+    QCOMPARE(audio.volume(), qreal(1.0));
 
     audio.setVolume(0.7);
     QCOMPARE(audio.volume(), qreal(0.7));
@@ -888,17 +927,18 @@ void tst_QmlAudio::volume()
     audio.setVolume(0.7);
     QCOMPARE(audio.volume(), qreal(0.7));
     QCOMPARE(provider.playerControl()->volume(), 70);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.count(), 1);
 
     provider.playerControl()->setVolume(30);
     QCOMPARE(audio.volume(), qreal(0.3));
-    QCOMPARE(spy.count(), 3);
+    QCOMPARE(spy.count(), 2);
 }
 
 void tst_QmlAudio::muted()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
+    audio.componentComplete();
 
     QSignalSpy spy(&audio, SIGNAL(mutedChanged()));
 
@@ -923,6 +963,8 @@ void tst_QmlAudio::bufferProgress()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
+
+    audio.componentComplete();
 
     QSignalSpy spy(&audio, SIGNAL(bufferProgressChanged()));
 
@@ -957,6 +999,8 @@ void tst_QmlAudio::seekable()
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
 
+    audio.componentComplete();
+
     QSignalSpy spy(&audio, SIGNAL(seekableChanged()));
 
     QCOMPARE(audio.isSeekable(), false);
@@ -978,6 +1022,8 @@ void tst_QmlAudio::playbackRate()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
+
+    audio.componentComplete();
 
     QSignalSpy spy(&audio, SIGNAL(playbackRateChanged()));
 
@@ -1002,6 +1048,8 @@ void tst_QmlAudio::status()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
+
+    audio.componentComplete();
 
     QSignalSpy statusChangedSpy(&audio, SIGNAL(statusChanged()));
     QSignalSpy loadedSpy(&audio, SIGNAL(loaded()));
@@ -1141,6 +1189,8 @@ void tst_QmlAudio::metaData()
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
 
+    audio.componentComplete();
+
     QSignalSpy spy(&audio, SIGNAL(__metaDataChanged()));
 
     const int index = audio.metaObject()->indexOfProperty(propertyName.constData());
@@ -1165,6 +1215,8 @@ void tst_QmlAudio::error()
 
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
+
+    audio.componentComplete();
 
     QSignalSpy errorSpy(&audio, SIGNAL(error(QDeclarativeAudio::Error,QString)));
     QSignalSpy errorChangedSpy(&audio, SIGNAL(errorChanged()));
