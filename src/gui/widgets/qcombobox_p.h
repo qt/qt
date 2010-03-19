@@ -270,7 +270,9 @@ protected:
                const QStyleOptionViewItem &option,
                const QModelIndex &index) const {
         QStyleOptionMenuItem opt = getStyleOption(option, index);
+#ifndef Q_WS_S60
         painter->fillRect(option.rect, opt.palette.background());
+#endif
         mCombo->style()->drawControl(QStyle::CE_MenuItem, &opt, painter, mCombo);
     }
     QSize sizeHint(const QStyleOptionViewItem &option,
