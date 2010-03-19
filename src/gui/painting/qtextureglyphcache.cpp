@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 // returns the highest number closest to v, which is a power of 2
 // NB! assumes 32 bit ints
-int qt_next_power_of_two(int v)
+static inline int qt_next_power_of_two(int v)
 {
     v--;
     v |= v >> 1;
