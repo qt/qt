@@ -82,7 +82,7 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
 DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATISTICS_DUMP);
-DEFINE_BOOL_CONFIG_OPTION(qmlExperimental, QML_EXPERIMENTAL);
+DEFINE_BOOL_CONFIG_OPTION(bindingsDump, QML_BINDINGS_DUMP);
 
 using namespace QDeclarativeParser;
 
@@ -825,7 +825,9 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
     if (isCustomParser && !customProps.isEmpty()) {
         QDeclarativeCustomParser *cp = output->types.at(obj->type).type->customParser();
         cp->clearErrors();
+        cp->compiler = this;
         obj->custom = cp->compile(customProps);
+        cp->compiler = 0;
         foreach (QDeclarativeError err, cp->errors()) {
             err.setUrl(output->url);
             exceptions << err;
@@ -1711,16 +1713,6 @@ bool QDeclarativeCompiler::buildIdProperty(QDeclarativeParser::Property *prop,
 
     COMPILE_CHECK(checkValidId(idValue, val));
 
-    // We disallow id's that conflict with import prefixes and types
-    QDeclarativeEnginePrivate::ImportedNamespace *ns = 0;
-    QDeclarativeType *type = 0;
-    QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, val.toUtf8(), 
-                                               &type, 0, 0, 0, &ns);
-    if (type)
-        COMPILE_EXCEPTION(idValue, QCoreApplication::translate("QDeclarativeCompiler","id conflicts with type name"));
-    if (ns)
-        COMPILE_EXCEPTION(idValue, QCoreApplication::translate("QDeclarativeCompiler","id conflicts with namespace prefix"));
-
     if (compileState.ids.contains(val))
         COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","id is not unique"));
 
@@ -1850,6 +1842,7 @@ bool QDeclarativeCompiler::buildValueTypeProperty(QObject *type,
         QMetaProperty p = type->metaObject()->property(idx);
         prop->index = idx;
         prop->type = p.userType();
+        prop->isValueTypeSubProperty = true;
 
         if (prop->value)
             COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Property assignment expected"));
@@ -2181,6 +2174,27 @@ bool QDeclarativeCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop
     *isAssignment = true;
 
     return true;
+}
+
+// Similar logic to above, but not knowing target property.
+int QDeclarativeCompiler::evaluateEnum(const QByteArray& script) const
+{
+    int dot = script.indexOf('.');
+    if (dot > 0) {
+        QDeclarativeType *type = 0;
+        QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, script.left(dot), &type, 0, 0, 0, 0);
+        if (!type)
+            return -1;
+        const QMetaObject *mo = type->metaObject();
+        const char *key = script.constData() + dot+1;
+        int i = mo->enumeratorCount();
+        while (i--) {
+            int v = mo->enumerator(i).keyToValue(key);
+            if (v >= 0)
+                return v;
+        }
+    }
+    return -1;
 }
 
 // Ensures that the dynamic meta specification on obj is valid
@@ -2712,7 +2726,9 @@ bool QDeclarativeCompiler::completeComponentBuild()
 
     QDeclarativeBindingCompiler bindingCompiler;
 
-    for (QHash<QDeclarativeParser::Value*,BindingReference>::Iterator iter = compileState.bindings.begin(); iter != compileState.bindings.end(); ++iter) {
+    for (QHash<QDeclarativeParser::Value*,BindingReference>::Iterator iter = compileState.bindings.begin(); 
+         iter != compileState.bindings.end(); ++iter) {
+
         BindingReference &binding = *iter;
 
         expr.context = binding.bindingContext.object;
@@ -2720,18 +2736,13 @@ bool QDeclarativeCompiler::completeComponentBuild()
         expr.expression = binding.expression;
         expr.imports = unit->imports;
 
-        if (qmlExperimental()) {
-            int index = bindingCompiler.compile(expr, QDeclarativeEnginePrivate::get(engine));
-            if (index != -1) {
-                qWarning() << "Accepted for optimization:" << qPrintable(expr.expression.asScript());
-                binding.dataType = BindingReference::Experimental;
-                binding.compiledIndex = index;
-                componentStat.optimizedBindings++;
-                continue;
-            } else {
-                qWarning() << "Rejected for optimization:" << qPrintable(expr.expression.asScript());
-            }
-        }
+        int index = bindingCompiler.compile(expr, QDeclarativeEnginePrivate::get(engine));
+        if (index != -1) {
+            binding.dataType = BindingReference::Experimental;
+            binding.compiledIndex = index;
+            componentStat.optimizedBindings++;
+            continue;
+        } 
 
         binding.dataType = BindingReference::QtScript;
 
@@ -2768,7 +2779,8 @@ bool QDeclarativeCompiler::completeComponentBuild()
 
     if (bindingCompiler.isValid()) {
         compileState.compiledBindingData = bindingCompiler.program();
-        QDeclarativeBindingCompiler::dump(compileState.compiledBindingData);
+        if (bindingsDump()) 
+            QDeclarativeBindingCompiler::dump(compileState.compiledBindingData);
     }
 
     saveComponentState();

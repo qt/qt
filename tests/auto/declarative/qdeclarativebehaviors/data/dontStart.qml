@@ -10,7 +10,7 @@ Rectangle {
         width: 100; height: 100
         color: Qt.rgba(1,0,0)
         Behavior on x {
-            NumberAnimation { objectName: "MyAnim"; running: true }
+            NumberAnimation {id: myAnim; objectName: "MyAnim"; running: true }
         }
 
     }

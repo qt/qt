@@ -48,7 +48,7 @@ int main(int argc, char ** argv)
 {
     QCoreApplication app(argc, argv);
 
-    QML_REGISTER_TYPE(People, 1,0, Person, Person);
+    qmlRegisterType<Person>("People", 1,0, "Person");
 
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, ":example.qml");

@@ -80,6 +80,7 @@ public:
     void updateDefaultTextOption();
     void relayoutDocument();
     void updateSelection();
+    void focusChanged(bool);
 
     QString text;
     QFont font;

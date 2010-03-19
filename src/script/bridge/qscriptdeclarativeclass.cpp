@@ -497,6 +497,11 @@ QScriptDeclarativeClass::Value QScriptDeclarativeClass::call(Object *object,
     return Value();
 }
 
+bool QScriptDeclarativeClass::compare(Object *o, Object *o2)
+{
+    return o == o2;
+}
+
 QStringList QScriptDeclarativeClass::propertyNames(Object *object)
 {
     Q_UNUSED(object);

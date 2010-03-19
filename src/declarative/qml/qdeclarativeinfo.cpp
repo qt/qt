@@ -43,6 +43,7 @@
 
 #include "qdeclarativedeclarativedata_p.h"
 #include "qdeclarativecontext.h"
+#include "qdeclarativecontext_p.h"
 #include "qdeclarativemetatype_p.h"
 
 #include <QCoreApplication>
@@ -102,8 +103,8 @@ QDeclarativeInfo::QDeclarativeInfo(const QObject *object)
     QDeclarativeDeclarativeData *ddata = object?QDeclarativeDeclarativeData::get(object):0;
     pos += QLatin1String(" (");
     if (ddata) {
-        if (ddata->outerContext) {
-            pos += ddata->outerContext->baseUrl().toString();
+        if (ddata->outerContext && !ddata->outerContext->url.isEmpty()) {
+            pos += ddata->outerContext->url.toString();
             pos += QLatin1Char(':');
             pos += QString::number(ddata->lineNumber);
             pos += QLatin1Char(':');

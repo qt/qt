@@ -704,28 +704,13 @@ bool QRegion::intersects(const QRegion &region) const
 }
 
 /*!
+    \fn bool QRegion::intersects(const QRect &rect) const
     \since 4.2
 
     Returns true if this region intersects with \a rect, otherwise
     returns false.
 */
-bool QRegion::intersects(const QRect &rect) const
-{
-    if (isEmpty() || rect.isNull())
-        return false;
 
-    const QRect r = rect.normalized();
-    if (!rect_intersects(boundingRect(), r))
-        return false;
-    if (rectCount() == 1)
-        return true;
-
-    const QVector<QRect> myRects = rects();
-    for (QVector<QRect>::const_iterator it = myRects.constBegin(); it < myRects.constEnd(); ++it)
-        if (rect_intersects(r, *it))
-            return true;
-    return false;
-}
 
 #if !defined (Q_OS_UNIX) && !defined (Q_WS_WIN)
 /*!
@@ -4348,6 +4333,25 @@ bool QRegion::operator==(const QRegion &r) const
     else
         return EqualRegion(d->qt_rgn, r.d->qt_rgn);
 }
+
+bool QRegion::intersects(const QRect &rect) const
+{
+    if (isEmptyHelper(d->qt_rgn) || rect.isNull())
+        return false;
+
+    const QRect r = rect.normalized();
+    if (!rect_intersects(d->qt_rgn->extents, r))
+        return false;
+    if (d->qt_rgn->numRects == 1)
+        return true;
+
+    const QVector<QRect> myRects = rects();
+    for (QVector<QRect>::const_iterator it = myRects.constBegin(); it < myRects.constEnd(); ++it)
+        if (rect_intersects(r, *it))
+            return true;
+    return false;
+}
+
 
 #endif
 QT_END_NAMESPACE

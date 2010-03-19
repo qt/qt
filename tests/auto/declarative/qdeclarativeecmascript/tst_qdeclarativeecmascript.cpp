@@ -126,6 +126,8 @@ private slots:
     void attachedPropertyScope();
     void scriptConnect();
     void scriptDisconnect();
+    void ownership();
+    void qlistqobjectMethods();
 
     void bug1();
 
@@ -348,7 +350,6 @@ void tst_qdeclarativeecmascript::basicExpressions()
     MyQmlObject object2;
     MyQmlObject object3;
     MyDefaultObject1 default1;
-    MyDefaultObject2 default2;
     MyDefaultObject3 default3;
     object1.setStringProperty("Object1");
     object2.setStringProperty("Object2");
@@ -357,13 +358,12 @@ void tst_qdeclarativeecmascript::basicExpressions()
     QDeclarativeContext context(engine.rootContext());
     QDeclarativeContext nestedContext(&context);
 
-    context.addDefaultObject(&default1);
-    context.addDefaultObject(&default2);
+    context.setContextObject(&default1);
     context.setContextProperty("a", QVariant(1944));
     context.setContextProperty("b", QVariant("Milk"));
     context.setContextProperty("object", &object1);
     context.setContextProperty("objectOverride", &object2);
-    nestedContext.addDefaultObject(&default3);
+    nestedContext.setContextObject(&default3);
     nestedContext.setContextProperty("b", QVariant("Cow"));
     nestedContext.setContextProperty("objectOverride", &object3);
     nestedContext.setContextProperty("millipedeLegs", QVariant(100));
@@ -889,6 +889,7 @@ void tst_qdeclarativeecmascript::dynamicDestruction()
     }
     QVERIFY(!createdQmlObject);
 
+    QDeclarativeEngine::setObjectOwnership(object, QDeclarativeEngine::JavaScriptOwnership);
     QMetaObject::invokeMethod(object, "killMe");
     QVERIFY(object);
     QTest::qWait(0);
@@ -1636,7 +1637,7 @@ void tst_qdeclarativeecmascript::listToVariant()
     MyQmlContainer container;
 
     QDeclarativeContext context(engine.rootContext());
-    context.addDefaultObject(&container);
+    context.setContextObject(&container);
 
     QObject *object = component.create(&context);
     QVERIFY(object != 0);
@@ -1890,7 +1891,94 @@ void tst_qdeclarativeecmascript::scriptDisconnect()
 
         delete object;
     }
+}
 
+class OwnershipObject : public QObject
+{
+    Q_OBJECT
+public:
+    OwnershipObject() { object = new QObject; }
+
+    QPointer<QObject> object;
+
+public slots:
+    QObject *getObject() { return object; }
+};
+
+void tst_qdeclarativeecmascript::ownership()
+{
+    OwnershipObject own;
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    context->setContextObject(&own);
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("ownership.qml"));
+
+        QVERIFY(own.object != 0);
+
+        QObject *object = component.create(context);
+        QDeclarativeEnginePrivate::getScriptEngine(&engine)->collectGarbage();
+
+        QCoreApplication::processEvents(QEventLoop::DeferredDeletion);
+
+        QVERIFY(own.object == 0);
+
+        delete object;
+    }
+
+    own.object = new QObject(&own);
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("ownership.qml"));
+
+        QVERIFY(own.object != 0);
+
+        QObject *object = component.create(context);
+        QDeclarativeEnginePrivate::getScriptEngine(&engine)->collectGarbage();
+
+        QCoreApplication::processEvents(QEventLoop::DeferredDeletion);
+
+        QVERIFY(own.object != 0);
+
+        delete object;
+    }
+}
+
+class QListQObjectMethodsObject : public QObject
+{
+    Q_OBJECT
+public:
+    QListQObjectMethodsObject() {
+        m_objects.append(new MyQmlObject());
+        m_objects.append(new MyQmlObject());
+    }
+
+    ~QListQObjectMethodsObject() {
+        qDeleteAll(m_objects);
+    }
+
+public slots:
+    QList<QObject *> getObjects() { return m_objects; }
+
+private:
+    QList<QObject *> m_objects;
+};
+
+// Tests that returning a QList<QObject*> from a method works
+void tst_qdeclarativeecmascript::qlistqobjectMethods()
+{
+    QListQObjectMethodsObject obj;
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    context->setContextObject(&obj);
+
+    QDeclarativeComponent component(&engine, TEST_FILE("qlistqobjectMethods.qml"));
+
+    QObject *object = component.create(context);
+
+    QCOMPARE(object->property("test").toInt(), 2);
+    QCOMPARE(object->property("test2").toBool(), true);
+
+    delete object;
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

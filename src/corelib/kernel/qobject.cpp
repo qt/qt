@@ -2033,6 +2033,8 @@ void QObjectPrivate::setParent_helper(QObject *o)
             }
         }
     }
+    if (!wasDeleted && declarativeData)
+        declarativeData->parentChanged(q, o);
 }
 
 /*!

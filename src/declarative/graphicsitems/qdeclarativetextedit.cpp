@@ -760,17 +760,11 @@ void QDeclarativeTextEdit::keyReleaseEvent(QKeyEvent *event)
         QDeclarativePaintedItem::keyReleaseEvent(event);
 }
 
-/*!
-    \overload
-    Handles changing of the focus property.  Focus is applied to the control
-    even if the edit does not have active focus.  This is because things
-    like KeyProxy can give the behavior of focus even when hasFocus() isn't
-    true.
-*/
-void QDeclarativeTextEdit::focusChanged(bool hasFocus)
+void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
 {
-    setCursorVisible(hasFocus);
-    QDeclarativeItem::focusChanged(hasFocus);
+    Q_Q(QDeclarativeTextEdit);
+    q->setCursorVisible(hasFocus);
+    QDeclarativeItemPrivate::focusChanged(hasFocus);
 }
 
 /*!

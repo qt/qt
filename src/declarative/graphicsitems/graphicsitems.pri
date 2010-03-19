@@ -48,7 +48,6 @@ HEADERS += \
     $$PWD/qdeclarativevisualitemmodel_p.h \
     $$PWD/qdeclarativelistview_p.h \
     $$PWD/qdeclarativegraphicsobjectcontainer_p.h \
-    $$PWD/qdeclarativeparticles_p.h \
     $$PWD/qdeclarativelayoutitem_p.h \
     $$PWD/qdeclarativeitemchangelistener_p.h \
     $$PWD/qdeclarativeeffects.cpp
@@ -82,5 +81,4 @@ SOURCES += \
     $$PWD/qdeclarativevisualitemmodel.cpp \
     $$PWD/qdeclarativelistview.cpp \
     $$PWD/qdeclarativegraphicsobjectcontainer.cpp \
-    $$PWD/qdeclarativeparticles.cpp \
-    $$PWD/qdeclarativelayoutitem.cpp \
+    $$PWD/qdeclarativelayoutitem.cpp
