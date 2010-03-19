@@ -56,8 +56,8 @@ void MyWidget::drawIcon(QPainter *painter, QPoint pos)
     QPixmap pixmap = icon.pixmap(QSize(22, 22),
                                    isEnabled() ? QIcon::Normal
                                                : QIcon::Disabled,
-                                   isOn() ? QIcon::On
-                                          : QIcon::Off);
+                                   isChecked() ? QIcon::On
+                                               : QIcon::Off);
     painter->drawPixmap(pos, pixmap);
 }
 //! [2]
