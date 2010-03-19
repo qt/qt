@@ -47,7 +47,7 @@
 QList<SerialPortId> enumerateSerialPorts()
 {
     QList<SerialPortId> list;
-    qWarning() << "enumerateSerialPorts not implemented" << endl;
+    qWarning() << "enumerateSerialPorts not implemented";
     return list;
 }
 
