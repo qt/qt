@@ -17,7 +17,7 @@ symbian {
                     qts60main_mcrt0.cpp
 
     # s60main needs to be built in ARM mode for GCCE to work.
-    MMP_RULES+="ALWAYS_BUILD_AS_ARM"
+    CONFIG += do_not_build_as_thumb
 
     # staticlib should not have any lib depencies in s60
     # This seems not to work, some hard coded libs are still added as dependency
