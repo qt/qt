@@ -2921,7 +2921,7 @@ void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
     JSC::JSValue jscObject = d->scriptValueToJSCValue(object);
     JSC::JSGlobalObject *glob = d->originalGlobalObject();
     if (!jscObject || !jscObject.isObject())
-        jscObject = glob;
+        jscObject = d->globalObject();
 //    unsigned attribs = JSC::DontEnum;
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 5, JSC::Identifier(exec, "qsTranslate"), QScript::functionQsTranslate));
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 2, JSC::Identifier(exec, "QT_TRANSLATE_NOOP"), QScript::functionQsTranslateNoOp));
