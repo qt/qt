@@ -10,7 +10,7 @@ Rectangle {
         width: 100; height: 100
     }
 
-    MouseRegion {
+    MouseArea {
         id: mouser
         anchors.fill: parent
     }

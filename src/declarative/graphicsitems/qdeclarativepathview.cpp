@@ -354,7 +354,7 @@ void QDeclarativePathView::setCurrentIndex(int idx)
 /*!
     \qmlproperty real PathView::offset
 
-    The offset specifies how far along the path the items are from their initial positions.
+    The offset specifies how far along the path (0.0-1.0) the items are from their initial positions.
 */
 qreal QDeclarativePathView::offset() const
 {
@@ -373,9 +373,9 @@ void QDeclarativePathViewPrivate::setOffset(qreal o)
 {
     Q_Q(QDeclarativePathView);
     if (_offset != o) {
-        _offset = qmlMod(o, qreal(100.0));
+        _offset = qmlMod(o, qreal(1.0));
         if (_offset < 0)
-            _offset = 100.0 + _offset;
+            _offset = 1.0 + _offset;
         q->refill();
     }
 }
@@ -503,7 +503,7 @@ QPointF QDeclarativePathViewPrivate::pointNear(const QPointF &point, qreal *near
     }
 
     if (nearPercent)
-        *nearPercent = nearPc / 10.0;
+        *nearPercent = nearPc / 1000.0;
 
     return nearPoint;
 }
@@ -559,10 +559,10 @@ void QDeclarativePathView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         if (diff) {
             setOffset(d->_offset + diff);
 
-            if (diff > 50)
-                diff -= 100;
-            else if (diff < -50)
-                diff += 100;
+            if (diff > 0.5)
+                diff -= 1.0;
+            else if (diff < -0.5)
+                diff += 1.0;
 
             d->lastElapsed = QDeclarativeItemPrivate::restart(d->lastPosTime);
             d->lastDist = diff;
@@ -579,15 +579,15 @@ void QDeclarativePathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
 
     qreal elapsed = qreal(d->lastElapsed + QDeclarativeItemPrivate::elapsed(d->lastPosTime)) / 1000.;
     qreal velocity = elapsed > 0. ? d->lastDist / elapsed : 0;
-    if (d->model && d->model->count() && qAbs(velocity) > 5) {
-        if (velocity > 100)
-            velocity = 100;
-        else if (velocity < -100)
-            velocity = -100;
-        qreal inc = qmlMod(d->_offset - d->snapPos, qreal(100.0 / d->model->count()));
-        qreal dist = qAbs(velocity/2 - qmlMod(velocity/2, qreal(100.0 / d->model->count()) - inc));
+    if (d->model && d->model->count() && qAbs(velocity) > 0.05) {
+        if (velocity > 1.5)
+            velocity = 1.5;
+        else if (velocity < -1.5)
+            velocity = -1.5;
+        qreal inc = qmlMod(d->_offset - d->snapPos, qreal(1.0 / d->model->count()));
+        qreal dist = qAbs(velocity/2 - qmlMod(velocity/2, qreal(1.0 / d->model->count()) - inc));
         d->moveOffset.setValue(d->_offset);
-        d->tl.accel(d->moveOffset, velocity, 10, dist);
+        d->tl.accel(d->moveOffset, velocity, 0.1, dist);
         d->tl.callback(QDeclarativeTimeLineCallback(&d->moveOffset, d->fixOffsetCallback, d));
     } else {
         d->fixOffset();
@@ -676,10 +676,10 @@ void QDeclarativePathView::componentComplete()
 
         itemIndex += d->pathOffset;
         itemIndex %= d->items.count();
-        qreal targetOffset = qmlMod(100 + (d->snapPos*100) - 100.0 * itemIndex / d->items.count(), qreal(100.0));
+        qreal targetOffset = qmlMod(1.0 + d->snapPos - qreal(itemIndex) / d->items.count(), qreal(1.0));
 
         if (targetOffset < 0)
-            targetOffset = 100.0 + targetOffset;
+            targetOffset = 1.0 + targetOffset;
         if (targetOffset != d->_offset) {
             d->moveOffset.setValue(targetOffset);
         }
@@ -712,8 +712,8 @@ void QDeclarativePathViewPrivate::regenerate()
         }
         items.append(item);
         item->setZValue(i);
-        qreal percent = i * (100. / numItems) + _offset;
-        percent = qAbs(qmlMod(percent, qreal(100.0))/100.0);
+        qreal percent = qreal(i) / numItems + _offset;
+        percent = qAbs(qmlMod(percent, qreal(1.0)));
         updateItem(item, percent);
         model->completeItem();
         if (currentIndex == index) {
@@ -745,10 +745,10 @@ void QDeclarativePathView::refill()
 
     QList<qreal> positions;
     for (int i=0; i<d->items.count(); i++){
-        qreal percent = i * (100. / d->items.count());
+        qreal percent = qreal(i) / d->items.count();
         percent = percent + d->_offset;
-        percent = qmlMod(percent, qreal(100.0));
-        positions << qAbs(percent/100.0);
+        percent = qmlMod(percent, qreal(1.0));
+        positions << qAbs(percent);
     }
 
     if (d->pathItems==-1) {
@@ -843,10 +843,10 @@ void QDeclarativePathView::itemsInserted(int modelIndex, int count)
     int itemIndex = (d->currentIndex - d->firstIndex + d->model->count())%d->model->count();
     itemIndex += d->pathOffset;
     itemIndex %= d->items.count();
-    qreal targetOffset = qmlMod(100 + (d->snapPos*100) - 100.0 * itemIndex / d->items.count(), qreal(100.0));
+    qreal targetOffset = qmlMod(1.0 + d->snapPos - qreal(itemIndex) / d->items.count(), qreal(1.0));
 
     if (targetOffset < 0)
-        targetOffset = 100.0 + targetOffset;
+        targetOffset = 1.0 + targetOffset;
     if (targetOffset != d->_offset)
         d->moveOffset.setValue(targetOffset);
 }
@@ -880,10 +880,10 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
     int itemIndex = (d->currentIndex - d->firstIndex + d->model->count())%d->model->count();
     itemIndex += d->pathOffset;
     itemIndex %= d->items.count();
-    qreal targetOffset = qmlMod(100 + (d->snapPos*100) - 100.0 * itemIndex / d->items.count(), qreal(100.0));
+    qreal targetOffset = qmlMod(1.0 + d->snapPos - qreal(itemIndex) / d->items.count(), qreal(1.0));
 
     if (targetOffset < 0)
-        targetOffset = 100.0 + targetOffset;
+        targetOffset = 1.0 + targetOffset;
     if (targetOffset != d->_offset)
         d->moveOffset.setValue(targetOffset);
 }
@@ -919,15 +919,15 @@ int QDeclarativePathViewPrivate::calcCurrentIndex()
 {
     int current = -1;
     if (model && items.count()) {
-        _offset = qmlMod(_offset, qreal(100.0));
+        _offset = qmlMod(_offset, qreal(1.0));
         if (_offset < 0)
-            _offset += 100.0;
+            _offset += 1.0;
 
         if (pathItems == -1) {
-            qreal delta = qmlMod(_offset - snapPos, qreal(100.0));
+            qreal delta = qmlMod(_offset - snapPos, qreal(1.0));
             if (delta < 0)
-                delta = 100.0 + delta;
-            int ii = model->count() - qRound(delta * model->count() / 100);
+                delta = 1.0 + delta;
+            int ii = model->count() - qRound(delta * model->count());
             if (ii < 0)
                 ii = 0;
             current = ii;
@@ -935,10 +935,10 @@ int QDeclarativePathViewPrivate::calcCurrentIndex()
             qreal bestDiff=1e9;
             int bestI=-1;
             for (int i=0; i<items.count(); i++){
-                qreal percent = i * (100. / items.count());
+                qreal percent = qreal(i) / items.count();
                 percent = percent + _offset;
-                percent = qmlMod(percent, qreal(100.0));
-                qreal diff = qAbs(snapPos - (percent/100.0));
+                percent = qmlMod(percent, qreal(1.0));
+                qreal diff = qAbs(snapPos - percent);
                 if (diff < bestDiff){
                     bestDiff = diff;
                     bestI = i;
@@ -1017,10 +1017,10 @@ void QDeclarativePathViewPrivate::snapToCurrent()
         itemIndex = itemIndex - model->count() + items.count();
     }
     itemIndex %= items.count();
-    qreal targetOffset = qmlMod(100 + (snapPos*100) - 100.0 * itemIndex / items.count(), qreal(100.0));
+    qreal targetOffset = qmlMod(1.0 + snapPos - qreal(itemIndex) / items.count(), qreal(1.0));
 
     if (targetOffset < 0)
-        targetOffset = 100.0 + targetOffset;
+        targetOffset = 1.0 + targetOffset;
     if (targetOffset == _offset && rounds == 0)
         return;
 
@@ -1031,24 +1031,24 @@ void QDeclarativePathViewPrivate::snapToCurrent()
     if (rounds!=0){
         //Compensate if the targetOffset would bring the target in from off the screen
         qreal distance = targetOffset - _offset;
-        if (distance <= -50)
+        if (distance <= -0.5)
             rounds--;
-        if (distance > 50)
+        if (distance > 0.5)
             rounds++;
-        tl.move(moveOffset, targetOffset + 100.0*(-rounds), QEasingCurve(QEasingCurve::InOutQuad),
-                int(100*items.count()*qMax((qreal)(2.0/items.count()),(qreal)qAbs(rounds))));
+        tl.move(moveOffset, targetOffset -rounds, QEasingCurve(QEasingCurve::InOutQuad),
+                int(items.count()*qMax((qreal)(2.0/items.count()),(qreal)qAbs(rounds))));
         tl.callback(QDeclarativeTimeLineCallback(&moveOffset, fixOffsetCallback, this));
         return;
     }
 
-    if (targetOffset - _offset > 50.0) {
-        qreal distance = 100 - targetOffset + _offset;
+    if (targetOffset - _offset > 0.5) {
+        qreal distance = 1 - targetOffset + _offset;
         tl.move(moveOffset, 0.0, QEasingCurve(QEasingCurve::OutQuad), int(200 * _offset / distance));
-        tl.set(moveOffset, 100.0);
-        tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::InQuad), int(200 * (100-targetOffset) / distance));
-    } else if (targetOffset - _offset <= -50.0) {
-        qreal distance = 100 - _offset + targetOffset;
-        tl.move(moveOffset, 100.0, QEasingCurve(QEasingCurve::OutQuad), int(200 * (100-_offset) / distance));
+        tl.set(moveOffset, 1.0);
+        tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::InQuad), int(200 * (1.0-targetOffset) / distance));
+    } else if (targetOffset - _offset <= -0.5) {
+        qreal distance = 1 - _offset + targetOffset;
+        tl.move(moveOffset, 1.0, QEasingCurve(QEasingCurve::OutQuad), int(200 * (1.0-_offset) / distance));
         tl.set(moveOffset, 0.0);
         tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::InQuad), int(200 * targetOffset / distance));
     } else {

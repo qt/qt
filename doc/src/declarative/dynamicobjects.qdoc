@@ -76,25 +76,25 @@ the component. Example QML script is below. Remember that QML files that might b
     \code
         var component;
         var sprite;
-        function finishCreation(){
-            if(component.isReady()){
+        function finishCreation() {
+            if(component.isReady()) {
                 sprite = component.createObject();
-                if(sprite == 0){
+                if(sprite == 0) {
                     // Error Handling
-                }else{
+                } else {
                     sprite.parent = page;
                     sprite.x = 200;
                     //...
                 }
-            }else if(component.isError()){
+            } else if(component.isError()) {
                 // Error Handling
             }
         }
 
         component = createComponent("Sprite.qml");
-        if(component.isReady()){
+        if(component.isReady()) {
             finishCreation();
-        }else{
+        } else {
             component.statusChanged.connect(finishCreation);
         }
     \endcode
@@ -104,10 +104,10 @@ the component. Example QML script is below. Remember that QML files that might b
     \code
         component = createComponent("Sprite.qml");
         sprite = component.createObject();
-        if(sprite == 0){
+        if(sprite == 0) {
             // Error Handling
             console.log(component.errorsString());
-        }else{
+        } else {
             sprite.parent = page;
             sprite.x = 200;
             //...
@@ -122,7 +122,7 @@ If the QML does not exist until runtime, you can create a QML item from
 a string of QML using the createQmlObject function, as in the following example:
 
     \code
-    newObject = createQmlObject('import Qt 4.6; Rectangle {color: "red"; width: 20; height: 20}',
+    newObject = createQmlObject('import Qt 4.6; Rectangle { color: "red"; width: 20; height: 20 }',
         targetItem, "dynamicSnippet1");
     \endcode
 The first argument is the string of QML to create. Just like in a new file, you will need to
@@ -158,11 +158,12 @@ argument, which is an approximate delay in ms and which defaults to zero. This
 allows you to wait until the completion of an animation or transition. An example:
 
 \code
-    Component{ id:fadesOut
+    Component {
+        id: fadesOut
         Rectangle{
             id: rect
             width: 40; height: 40;
-            opacity: NumberAnimation{from:1; to:0; duration: 1000;}
+            NumberAnimation on opacity { from:1; to:0; duration: 1000 }
             Component.onCompleted: rect.destroy(1000);
         }
     }

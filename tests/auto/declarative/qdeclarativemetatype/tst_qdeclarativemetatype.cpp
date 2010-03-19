@@ -132,10 +132,10 @@ QML_DECLARE_TYPE(ValueInterceptorTestType);
 
 void tst_qdeclarativemetatype::initTestCase()
 {
-    QML_REGISTER_TYPE(Test, 1, 0, TestType, TestType);
-    QML_REGISTER_TYPE(Test, 1, 0, ParserStatusTestType, ParserStatusTestType);
-    QML_REGISTER_TYPE(Test, 1, 0, ValueSourceTestType, ValueSourceTestType);
-    QML_REGISTER_TYPE(Test, 1, 0, ValueInterceptorTestType, ValueInterceptorTestType);
+    qmlRegisterType<TestType>("Test", 1, 0, "TestType");
+    qmlRegisterType<ParserStatusTestType>("Test", 1, 0, "ParserStatusTestType");
+    qmlRegisterType<ValueSourceTestType>("Test", 1, 0, "ValueSourceTestType");
+    qmlRegisterType<ValueInterceptorTestType>("Test", 1, 0, "ValueInterceptorTestType");
 }
 
 void tst_qdeclarativemetatype::copy()

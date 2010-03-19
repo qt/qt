@@ -106,7 +106,7 @@ QML_DECLARE_TYPE(TestType);
 
 void tst_qdeclarativelistreference::initTestCase()
 {
-    QML_REGISTER_NOCREATE_TYPE(TestType);
+    qmlRegisterType<TestType>();
 }
 
 void tst_qdeclarativelistreference::qmllistreference()

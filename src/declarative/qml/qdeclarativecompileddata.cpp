@@ -199,20 +199,6 @@ void QDeclarativeCompiledData::clear()
         cachedPrograms[ii] = 0;
 }
 
-
-QObject *QDeclarativeCompiledData::TypeReference::createInstance(QDeclarativeContext *ctxt, const QBitField &bindings) const
-{
-    if (type) {
-        QObject *rv = type->create();
-        if (rv)
-            QDeclarativeEngine::setContextForObject(rv, ctxt);
-        return rv;
-    } else {
-        Q_ASSERT(component);
-        return QDeclarativeComponentPrivate::get(component)->create(ctxt, bindings);
-    } 
-}
-
 const QMetaObject *QDeclarativeCompiledData::TypeReference::metaObject() const
 {
     if (type) {

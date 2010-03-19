@@ -8,6 +8,7 @@ SUBDIRS = \
 sources.files = \
    calculator \
    flickr \
+   photoviewer \
    samegame \
    snake \
    twitter \

@@ -191,6 +191,23 @@ will be positioned by the view.
 \section2 QAbstractItemModel
 
 QAbstractItemModel provides the roles set via the QAbstractItemModel::setRoleNames() method.
+The default role names set by Qt are:
+
+\table
+\header
+\o Qt Role
+\o QML Role Name
+\row
+\o Qt::DisplayRole
+\o display
+\row
+\o Qt::DecorationRole
+\o decoration
+\endtable
+
+QAbstractItemModel presents a heirachy of tables.  Views currently provided by QML
+can only display list data.  In order to display child lists of a heirachical model
+use the VisualDataModel element with \e rootIndex set to a parent node.
 
 
 \section2 QStringList
@@ -198,9 +215,6 @@ QAbstractItemModel provides the roles set via the QAbstractItemModel::setRoleNam
 QStringList provides the contents of the list via the \e modelData role:
 
 \table
-\header
-\o 
-\o 
 \row
 \o
 \code
@@ -208,7 +222,7 @@ QStringList provides the contents of the list via the \e modelData role:
 QStringList dataList;
 dataList.append("Fred");
 dataList.append("Ginger");
-dataList.appenf("Skipper");
+dataList.append("Skipper");
 
 QDeclarativeContext *ctxt = view.rootContext();
 ctxt->setContextProperty("myModel", QVariant::fromValue(&dataList));

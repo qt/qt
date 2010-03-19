@@ -373,7 +373,6 @@ void tst_qdeclarativeanchors::crash1()
 
     QString expect = "QML Text (" + source.toString() + ":4:5" + ") Possible anchor loop detected on fill.";
     QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
-    QTest::ignoreMessage(QtWarningMsg, expect.toLatin1()); // XXX ideally, should be one message
 
     QDeclarativeView *view = new QDeclarativeView(source);
     qApp->processEvents();
