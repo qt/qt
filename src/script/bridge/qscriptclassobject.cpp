@@ -226,7 +226,7 @@ JSC::JSObject* ClassObjectDelegate::construct(JSC::ExecState *exec, JSC::JSObjec
     QScriptClass *scriptClass = static_cast<ClassObjectDelegate*>(delegate)->scriptClass();
 
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
-    //JSC::ExecState *oldFrame = eng_p->currentFrame;
+    JSC::ExecState *oldFrame = eng_p->currentFrame;
     eng_p->pushContext(exec, JSC::JSValue(), args, callee, true);
     QScriptContext *ctx = eng_p->contextForFrame(eng_p->currentFrame);
 
@@ -234,6 +234,8 @@ JSC::JSObject* ClassObjectDelegate::construct(JSC::ExecState *exec, JSC::JSObjec
     QScriptValue result = qvariant_cast<QScriptValue>(scriptClass->extension(QScriptClass::Callable, qVariantFromValue(ctx)));
     if (!result.isObject())
         result = defaultObject;
+    eng_p->popContext();
+    eng_p->currentFrame = oldFrame;
     return JSC::asObject(eng_p->scriptValueToJSCValue(result));
 }
 
