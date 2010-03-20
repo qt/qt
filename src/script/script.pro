@@ -80,3 +80,6 @@ INCLUDEPATH += $$PWD
 include(script.pri)
 
 symbian:TARGET.UID3=0x2001B2E1
+
+# WebKit doesn't compile in C++0x mode
+*-g++*:QMAKE_CXXFLAGS -= -std=c++0x -std=gnu++0x
