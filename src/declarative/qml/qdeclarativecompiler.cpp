@@ -2094,7 +2094,7 @@ bool QDeclarativeCompiler::buildPropertyOnAssignment(QDeclarativeParser::Propert
             buildDynamicMeta(baseObj, ForceCreation);
         v->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
     } else {
-        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","\"%1\" cannot operate on \"%2\"").arg(v->object->typeName.constData()).arg(prop->name.constData()));
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","\"%1\" cannot operate on \"%2\"").arg(QLatin1String(v->object->typeName.constData())).arg(QLatin1String(prop->name.constData())));
     }
 
     return true;
