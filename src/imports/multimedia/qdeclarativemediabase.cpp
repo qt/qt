@@ -232,7 +232,7 @@ QDeclarativeMediaBase::QDeclarativeMediaBase()
     , m_loaded(false)
     , m_muted(false)
     , m_position(0)
-    , m_volume(1.0)
+    , m_vol(1.0)
     , m_playbackRate(1.0)
     , m_mediaService(0)
     , m_playerControl(0)
@@ -313,7 +313,7 @@ void QDeclarativeMediaBase::setObject(QObject *object)
     }
 
     // Init
-    m_playerControl->setVolume(m_volume * 100);
+    m_playerControl->setVolume(m_vol * 100);
     m_playerControl->setMuted(m_muted);
     m_playerControl->setPlaybackRate(m_playbackRate);
 
@@ -457,15 +457,15 @@ void QDeclarativeMediaBase::setPosition(int position)
 
 qreal QDeclarativeMediaBase::volume() const
 {
-    return m_playerControl == 0 ? m_volume : qreal(m_playerControl->volume()) / 100;
+    return m_playerControl == 0 ? m_vol : qreal(m_playerControl->volume()) / 100;
 }
 
 void QDeclarativeMediaBase::setVolume(qreal volume)
 {
-    if (m_volume == volume)
+    if (m_vol == volume)
         return;
 
-    m_volume = volume;
+    m_vol = volume;
 
     if (m_playerControl != 0)
         m_playerControl->setVolume(qRound(volume * 100));
