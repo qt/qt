@@ -9,3 +9,6 @@ QT += opengl
 HEADERS += tst_openglthreading.h
 SOURCES += tst_openglthreading.cpp
 
+x11 {
+    LIBS += $$QMAKE_LIBS_X11
+}
