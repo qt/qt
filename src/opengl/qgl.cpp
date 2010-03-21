@@ -2453,8 +2453,15 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     }
 #endif
 
-    if (!texture)
-        texture = bindTexture(pixmap.toImage(), target, format, key, options);
+    if (!texture) {
+        QImage image = pixmap.toImage();
+        // If the system depth is 16 and the pixmap doesn't have an alpha channel
+        // then we convert it to RGB16 in the hope that it gets uploaded as a 16
+        // bit texture which is much faster to access than a 32-bit one.
+        if (pixmap.depth() == 16 && !image.hasAlphaChannel() )
+            image = image.convertToFormat(QImage::Format_RGB16);
+        texture = bindTexture(image, target, format, key, options);
+    }
     // NOTE: bindTexture(const QImage&, GLenum, GLint, const qint64, bool) should never return null
     Q_ASSERT(texture);
 

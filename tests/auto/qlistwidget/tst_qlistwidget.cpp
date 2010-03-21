@@ -132,6 +132,7 @@ private slots:
     void task199503_crashWhenCleared();
     void task217070_scrollbarsAdjusted();
     void task258949_keypressHangup();
+    void QTBUG8086_currentItemChangedOnClick();
 
 
 protected slots:
@@ -1608,6 +1609,36 @@ void tst_QListWidget::task258949_keypressHangup()
     QTest::qWait(30);
     QCOMPARE(lw.currentIndex(), lw.model()->index(0,0));
 }
+
+void tst_QListWidget::QTBUG8086_currentItemChangedOnClick()
+{
+    qRegisterMetaType<QListWidgetItem*>("QListWidgetItem*");
+    QWidget win;
+    QHBoxLayout layout(&win);
+    QListWidget list;
+    for (int i = 0 ; i < 4; ++i)
+        new QListWidgetItem(QString::number(i), &list);
+
+    layout.addWidget(&list);
+
+    QLineEdit edit;
+    layout.addWidget(&edit);
+
+    edit.setFocus();
+    win.show();
+
+    QSignalSpy spy(&list, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)));
+
+    QTest::qWaitForWindowShown(&win);
+
+    QCOMPARE(spy.count(), 0);
+
+    QTest::mouseClick(list.viewport(), Qt::LeftButton, 0, list.visualItemRect(list.item(2)).center());
+
+    QCOMPARE(spy.count(), 1);
+
+}
+
 
 QTEST_MAIN(tst_QListWidget)
 #include "tst_qlistwidget.moc"
