@@ -513,12 +513,15 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
 
 
     foreach (QDeclarativeScriptParser::Import imp, unit->data.imports()) {
-        QString qmldircontentnetwork;
+        QDeclarativeDirComponents qmldircomponentsnetwork;
         if (imp.type == QDeclarativeScriptParser::Import::File && imp.qualifier.isEmpty()) {
             QString importUrl = unit->imports.baseUrl().resolved(QUrl(imp.uri + QLatin1String("/qmldir"))).toString();
             for (int ii = 0; ii < unit->resources.count(); ++ii) {
                 if (unit->resources.at(ii)->url == importUrl) {
-                    qmldircontentnetwork = QString::fromUtf8(unit->resources.at(ii)->data);
+                    QDeclarativeDirParser parser;
+                    parser.setSource(QString::fromUtf8(unit->resources.at(ii)->data));
+                    parser.parse();
+                    qmldircomponentsnetwork = parser.components();
                     break;
                 }
             }
@@ -539,7 +542,7 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
         }
 
         if (!QDeclarativeEnginePrivate::get(engine)->
-                addToImport(&unit->imports, qmldircontentnetwork, imp.uri, imp.qualifier, vmaj, vmin, imp.type))
+                addToImport(&unit->imports, qmldircomponentsnetwork, imp.uri, imp.qualifier, vmaj, vmin, imp.type))
         {
             QDeclarativeError error;
             error.setUrl(unit->imports.baseUrl());
@@ -558,14 +561,18 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
      */
     {
 
-        QString qmldircontentnetwork;
+        QDeclarativeDirComponents qmldircomponentsnetwork;
         if (QDeclarativeCompositeTypeResource *resource
-            = resources.value(unit->imports.baseUrl().resolved(QUrl(QLatin1String("./qmldir")))))
-            qmldircontentnetwork = QString::fromUtf8(resource->data);
+            = resources.value(unit->imports.baseUrl().resolved(QUrl(QLatin1String("./qmldir"))))) {
+            QDeclarativeDirParser parser;
+            parser.setSource(QString::fromUtf8(resource->data));
+            parser.parse();
+            qmldircomponentsnetwork = parser.components();
+        }
 
         QDeclarativeEnginePrivate::get(engine)->
                 addToImport(&unit->imports,
-                            qmldircontentnetwork,
+                            qmldircomponentsnetwork,
                             QLatin1String("."),
                             QString(),
                             -1, -1,
