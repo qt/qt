@@ -237,12 +237,14 @@ void drawTabShape(QPainter *p, const QStyleOptionTabV3 *tabOpt)
 
         // fill body
         if (active) {
-            p->fillRect(rect, QColor(151, 151, 151));
+            int d = (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) ? 16 : 0;
+            p->fillRect(rect, QColor(151 + d, 151 + d, 151 + d));
         } else {
+            int d = (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) ? 9 : 0;
             QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
-            gradient.setColorAt(0, QColor(207, 207, 207));
-            gradient.setColorAt(0.5, QColor(206, 206, 206));
-            gradient.setColorAt(1, QColor(201, 201, 201));
+            gradient.setColorAt(0, QColor(207 + d, 207 + d, 207 + d));
+            gradient.setColorAt(0.5, QColor(206 + d, 206 + d, 206 + d));
+            gradient.setColorAt(1, QColor(201 + d, 201 + d, 201 + d));
             p->fillRect(rect, gradient);
         }
 
