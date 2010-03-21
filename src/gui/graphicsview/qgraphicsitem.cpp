@@ -10936,7 +10936,7 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
         // Item coordinates with info.
         QTransform newEffectTransform = info->transformPtr->inverted();
         newEffectTransform *= effectTransform;
-        scened->draw(item, &pixmapPainter, info->viewTransform, info->transformPtr, info->exposedRegion,
+        scened->draw(item, &pixmapPainter, info->viewTransform, info->transformPtr, 0,
                      info->widget, info->opacity, &newEffectTransform, info->wasDirtySceneTransform,
                      info->drawItem);
     }

@@ -7719,7 +7719,7 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     QTest::qWait(50);
 
     // Make sure all visible items are repainted.
-    QCOMPARE(item1->repaints, 0);
+    QCOMPARE(item1->repaints, 1);
     QCOMPARE(item2->repaints, 1);
     QCOMPARE(item3->repaints, 1);
 
