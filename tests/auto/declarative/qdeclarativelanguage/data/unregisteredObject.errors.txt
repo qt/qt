@@ -1,1 +1,1 @@
-2:1:Type UnregisteredObjectType unavailable
+2:1:UnregisteredObjectType is not a type
