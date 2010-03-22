@@ -31,6 +31,7 @@ contains( CONFIG, no_icon ) {
 
         # Note: symbian-sbsv2 builds can't utilize extra compiler for mifconv, so ICON handling is done in code
         !symbian-sbsv2 {
+            !contains(ICON, "^(/|\\|.:).*"):ICON = $$_PRO_FILE_PWD_/$$ICON #absolute path
             #Makefile: requires paths with backslash
             ICON_backslashed = $$ICON
             contains(QMAKE_HOST.os, "Windows"):ICON_backslashed = $$replace( ICON_backslashed, /, \\)
@@ -50,6 +51,7 @@ contains( CONFIG, no_icon ) {
             # Based on: http://www.forum.nokia.com/document/Cpp_Developers_Library
             # svg-t icons should always use /c32 depth
             mifconv.commands = mifconv $$mifconv.target /c32 $$ICON_backslashed
+
             mifconv.depends = $$ICON
             PRE_TARGETDEPS += $$mifconv.target
             QMAKE_EXTRA_TARGETS += mifconv
