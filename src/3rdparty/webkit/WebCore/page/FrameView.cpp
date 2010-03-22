@@ -106,6 +106,7 @@ struct ScheduledEvent {
 FrameView::FrameView(Frame* frame)
     : m_frame(frame)
     , m_slowRepaintObjectCount(0)
+    , m_fixedObjectCount(0)
     , m_layoutTimer(this, &FrameView::layoutTimerFired)
     , m_layoutRoot(0)
     , m_postLayoutTasksTimer(this, &FrameView::postLayoutTimerFired)
@@ -735,7 +736,7 @@ String FrameView::mediaType() const
 
 bool FrameView::useSlowRepaints() const
 {
-    return m_useSlowRepaints || m_slowRepaintObjectCount > 0 || m_isOverlapped || !m_contentIsOpaque;
+    return m_useSlowRepaints || m_slowRepaintObjectCount > 0 || (platformWidget() && m_fixedObjectCount > 0) || m_isOverlapped || !m_contentIsOpaque;
 }
 
 void FrameView::setUseSlowRepaints()
@@ -757,6 +758,78 @@ void FrameView::removeSlowRepaintObject()
     m_slowRepaintObjectCount--;
     if (!m_slowRepaintObjectCount)
         setCanBlitOnScroll(!useSlowRepaints());
+}
+
+void FrameView::addFixedObject()
+{
+    if (!m_fixedObjectCount && platformWidget())
+        setCanBlitOnScroll(false);
+    ++m_fixedObjectCount;
+}
+
+void FrameView::removeFixedObject()
+{
+    ASSERT(m_fixedObjectCount > 0);
+    m_fixedObjectCount--;
+    if (!m_fixedObjectCount)
+        setCanBlitOnScroll(!useSlowRepaints());
+}
+
+void FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
+{
+    const size_t fixedObjectThreshold = 5;
+
+    ListHashSet<RenderBox*>* positionedObjects = 0;
+    if (RenderView* root = m_frame->contentRenderer())
+        positionedObjects = root->positionedObjects();
+
+    if (!positionedObjects || positionedObjects->isEmpty()) {
+        hostWindow()->scroll(scrollDelta, rectToScroll, clipRect);
+        return;
+    }
+
+    // Get the rects of the fixed objects visible in the rectToScroll
+    Vector<IntRect, fixedObjectThreshold> subRectToUpdate;
+    bool updateInvalidatedSubRect = true;
+    ListHashSet<RenderBox*>::const_iterator end = positionedObjects->end();
+    for (ListHashSet<RenderBox*>::const_iterator it = positionedObjects->begin(); it != end; ++it) {
+        RenderBox* renderBox = *it;
+        if (renderBox->style()->position() != FixedPosition)
+            continue;
+        IntRect topLevelRect;
+        IntRect updateRect = renderBox->paintingRootRect(topLevelRect);
+        updateRect.move(-scrollX(), -scrollY());
+        updateRect.intersect(rectToScroll);
+        if (!updateRect.isEmpty()) {
+            if (subRectToUpdate.size() >= fixedObjectThreshold) {
+                updateInvalidatedSubRect = false;
+                break;
+            }
+            subRectToUpdate.append(updateRect);
+        }
+    }
+
+    // Scroll the view
+    if (updateInvalidatedSubRect) {
+        // 1) scroll
+        hostWindow()->scroll(scrollDelta, rectToScroll, clipRect);
+
+        // 2) update the area of fixed objets that has been invalidated
+        size_t fixObjectsCount = subRectToUpdate.size();
+        for (size_t i = 0; i < fixObjectsCount; ++i) {
+            IntRect updateRect = subRectToUpdate[i];
+            IntRect scrolledRect = updateRect;
+            scrolledRect.move(scrollDelta);
+            updateRect.unite(scrolledRect);
+            updateRect.intersect(rectToScroll);
+            hostWindow()->repaint(updateRect, true, false, true);
+        }
+    } else {
+        // the number of fixed objects exceed the threshold, so we repaint everything.
+        IntRect updateRect = clipRect;
+        updateRect.intersect(rectToScroll);
+        hostWindow()->repaint(updateRect, true, false, true);
+    }
 }
 
 void FrameView::setIsOverlapped(bool isOverlapped)
