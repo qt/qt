@@ -1964,40 +1964,37 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_MenuScroller:
         break;
     case CE_FocusFrame: {
-            // The pen width should nearly fill the layoutspacings around the widget
-            const int penWidth =
-                qMin(pixelMetric(QS60Style::PM_LayoutVerticalSpacing), pixelMetric(QS60Style::PM_LayoutHorizontalSpacing))
-                - 2; // But keep 1 pixel distance to the focus widget and 1 pixel to the adjacent widgets
-
 #ifdef QT_KEYPAD_NAVIGATION
             bool editFocus = false;
             if (const QFocusFrame *focusFrame = qobject_cast<const QFocusFrame*>(widget)) {
                 if (focusFrame->widget() && focusFrame->widget()->hasEditFocus())
                     editFocus = true;
             }
-            const qreal opacity = editFocus ? 0.65 : 0.45; // Trial and error factors. Feel free to improve.
+            const qreal opacity = editFocus ? 1 : 0.75; // Trial and error factors. Feel free to improve.
 #else
-            const qreal opacity = 0.5;
+            const qreal opacity = 0.85;
 #endif
-            // Because of Qts coordinate system, we need to tweak the rect by .5 pixels, otherwise it gets blurred.
-            const qreal rectAdjustment = (penWidth % 2) ? -.5 : 0;
-
-            // Make sure that the pen stroke is inside the rect
-            const QRectF adjustedRect =
-                QRectF(option->rect).adjusted(
-                    rectAdjustment + penWidth,
-                    rectAdjustment + penWidth,
-                    -rectAdjustment - penWidth,
-                    -rectAdjustment - penWidth
-                );
-
-            const qreal roundRectRadius = penWidth * goldenRatio;
+            // We need to reduce the focus frame size if LayoutSpacing is smaller than FocusFrameMargin
+            // Otherwise, we would overlay adjacent widgets.
+            const int frameHeightReduction =
+                    qMin(0, pixelMetric(QStyle::PM_LayoutVerticalSpacing)
+                            - pixelMetric(QStyle::PM_FocusFrameVMargin));
+            const int frameWidthReduction =
+                    qMin(0, pixelMetric(QStyle::PM_LayoutHorizontalSpacing)
+                            - pixelMetric(QStyle::PM_FocusFrameHMargin));
+            const int rounding =
+                    qMin(pixelMetric(QStyle::PM_FocusFrameVMargin),
+                            pixelMetric(QStyle::PM_LayoutVerticalSpacing));
+            const QRect frameRect =
+                    option->rect.adjusted(-frameWidthReduction, -frameHeightReduction,
+                            frameWidthReduction, frameHeightReduction);
+            QPainterPath framePath;
+            framePath.addRoundedRect(frameRect, rounding, rounding);
 
             painter->save();
             painter->setRenderHint(QPainter::Antialiasing);
             painter->setOpacity(opacity);
-            painter->setPen(QPen(option->palette.color(QPalette::Text), penWidth));
-            painter->drawRoundedRect(adjustedRect, roundRectRadius, roundRectRadius);
+            painter->fillPath(framePath, option->palette.color(QPalette::Text));
             painter->restore();
         }
         break;
