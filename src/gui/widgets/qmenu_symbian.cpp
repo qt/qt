@@ -48,7 +48,7 @@
 #include <private/qapplication_p.h>
 #include <private/qmenu_p.h>
 #include <private/qmenubar_p.h>
-#include <qt_s60_p.h>
+#include <private/qt_s60_p.h>
 #include <QtCore/qlibrary.h>
 
 #ifdef Q_WS_S60
@@ -322,6 +322,14 @@ void QMenuBarPrivate::symbianDestroyMenuBar()
     if (symbian_menubar)
         delete symbian_menubar;
     symbian_menubar = 0;
+}
+
+void QMenuBarPrivate::reparentMenuBar(QWidget *oldParent, QWidget *newParent)
+{
+    if (menubars()->contains(oldParent)) {
+        QMenuBarPrivate *object = menubars()->take(oldParent);
+        menubars()->insert(newParent, object);
+    }
 }
 
 QMenuBarPrivate::QSymbianMenuBarPrivate::QSymbianMenuBarPrivate(QMenuBarPrivate *menubar)

@@ -13,7 +13,7 @@ isEmpty(TARGET) {
 QMLDIRFILE = $${_PRO_FILE_PWD_}/qmldir
 copy2build.input = QMLDIRFILE
 copy2build.output = $$QT_BUILD_TREE/imports/$$TARGETPATH/qmldir
-isEmpty(vcproj):copy2build.variable_out = PRE_TARGETDEPS
+!contains(TEMPLATE_PREFIX, vc):copy2build.variable_out = PRE_TARGETDEPS
 copy2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
 copy2build.name = COPY ${QMAKE_FILE_IN}
 copy2build.CONFIG += no_link
@@ -22,7 +22,7 @@ QMAKE_EXTRA_COMPILERS += copy2build
 TARGET = $$qtLibraryTarget($$TARGET)
 contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 
-include(../../qt_targets.pri)
+include(../qt_targets.pri)
 
 wince*:LIBS += $$QMAKE_LIBS_GUI
 

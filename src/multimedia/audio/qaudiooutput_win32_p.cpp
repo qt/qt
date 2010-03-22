@@ -455,6 +455,9 @@ void QAudioOutputPrivate::feedback()
 
 bool QAudioOutputPrivate::deviceReady()
 {
+    if(deviceState == QAudio::StoppedState)
+        return false;
+
     if(pullMode) {
         int chunks = bytesAvailable/period_size;
 #ifdef DEBUG_AUDIO

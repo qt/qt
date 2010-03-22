@@ -81,14 +81,10 @@ public:
                      const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
     virtual bool deleteProperty(QScriptObject*, JSC::ExecState*,
-                                const JSC::Identifier& propertyName,
-                                bool checkDontDelete = true);
-    virtual bool getPropertyAttributes(const QScriptObject*, JSC::ExecState*,
-                                       const JSC::Identifier&,
-                                       unsigned&) const;
+                                const JSC::Identifier& propertyName);
     virtual void getOwnPropertyNames(QScriptObject*, JSC::ExecState*,
                                      JSC::PropertyNameArray&, 
-                                     bool includeNonEnumerable = false);
+                                     JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties);
 
     virtual JSC::CallType getCallData(QScriptObject*, JSC::CallData&);
     static JSC::JSValue JSC_HOST_CALL call(JSC::ExecState*, JSC::JSObject*,
@@ -98,6 +94,8 @@ public:
 
     virtual bool hasInstance(QScriptObject*, JSC::ExecState*,
                              JSC::JSValue value, JSC::JSValue proto);
+
+    bool compareToObject(QScriptObject *, JSC::ExecState *, JSC::JSObject *);
 
 private:
     QScriptDeclarativeClass *m_class;

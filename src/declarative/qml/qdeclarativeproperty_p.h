@@ -82,7 +82,7 @@ public:
           valueType(other.valueType) {}
 
     QDeclarativeProperty *q;
-    QDeclarativeContext *context;
+    QDeclarativeContextData *context;
     QDeclarativeEngine *engine;
     QDeclarativeGuard<QObject> object;
 
@@ -109,15 +109,15 @@ public:
     static bool writeEnumProperty(const QMetaProperty &prop, int idx, QObject *object, 
                                   const QVariant &value, int flags);
     static bool write(QObject *, const QDeclarativePropertyCache::Data &, const QVariant &, 
-                      QDeclarativeContext *, WriteFlags flags = 0);
-    static QDeclarativeAbstractBinding *setBinding(QObject *, const QDeclarativePropertyCache::Data &, 
+                      QDeclarativeContextData *, WriteFlags flags = 0);
+    static QDeclarativeAbstractBinding *setBinding(QObject *, int coreIndex, int valueTypeIndex /* -1 */,
                                                    QDeclarativeAbstractBinding *,
                                                    WriteFlags flags = DontRemoveBinding);
 
     static QByteArray saveValueType(const QMetaObject *, int, 
                                     const QMetaObject *, int);
     static QByteArray saveProperty(const QMetaObject *, int);
-    static QDeclarativeProperty restore(const QByteArray &, QObject *, QDeclarativeContext *);
+    static QDeclarativeProperty restore(const QByteArray &, QObject *, QDeclarativeContextData *);
 
     static bool equal(const QMetaObject *, const QMetaObject *);
     static bool canConvert(const QMetaObject *from, const QMetaObject *to);
@@ -133,6 +133,7 @@ public:
                                                        QDeclarativeExpression *) ;
     static bool write(const QDeclarativeProperty &that, const QVariant &, WriteFlags);
     static int valueTypeCoreIndex(const QDeclarativeProperty &that);
+    static int bindingIndex(const QDeclarativeProperty &that);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativePropertyPrivate::WriteFlags)

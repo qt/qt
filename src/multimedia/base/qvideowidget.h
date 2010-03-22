@@ -60,16 +60,13 @@ class Q_MULTIMEDIA_EXPORT QVideoWidget : public QWidget
     Q_OBJECT
     Q_PROPERTY(QMediaObject* mediaObject READ mediaObject WRITE setMediaObject)
     Q_PROPERTY(bool fullScreen READ isFullScreen WRITE setFullScreen NOTIFY fullScreenChanged)
-    Q_PROPERTY(AspectRatioMode aspectRatioMode READ aspectRatioMode WRITE setAspectRatioMode NOTIFY aspectRatioModeChanged)
+    Q_PROPERTY(Qt::AspectRatioMode aspectRatioMode READ aspectRatioMode WRITE setAspectRatioMode NOTIFY aspectRatioModeChanged)
     Q_PROPERTY(int brightness READ brightness WRITE setBrightness NOTIFY brightnessChanged)
     Q_PROPERTY(int contrast READ contrast WRITE setContrast NOTIFY contrastChanged)
     Q_PROPERTY(int hue READ hue WRITE setHue NOTIFY hueChanged)
     Q_PROPERTY(int saturation READ saturation WRITE setSaturation NOTIFY saturationChanged)
-    Q_ENUMS(AspectRatio)
 
 public:
-    enum AspectRatioMode { IgnoreAspectRatio, KeepAspectRatio };
-
     QVideoWidget(QWidget *parent = 0);
     ~QVideoWidget();   
 
@@ -80,7 +77,7 @@ public:
     bool isFullScreen() const;
 #endif
 
-    AspectRatioMode aspectRatioMode() const;
+    Qt::AspectRatioMode aspectRatioMode() const;
 
     int brightness() const;
     int contrast() const;
@@ -91,7 +88,7 @@ public:
 
 public Q_SLOTS:
     void setFullScreen(bool fullScreen);
-    void setAspectRatioMode(QVideoWidget::AspectRatioMode mode);
+    void setAspectRatioMode(Qt::AspectRatioMode mode);
     void setBrightness(int brightness);
     void setContrast(int contrast);
     void setHue(int hue);

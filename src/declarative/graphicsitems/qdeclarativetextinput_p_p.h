@@ -83,6 +83,7 @@ public:
 
     void init();
     void startCreatingCursor();
+    void focusChanged(bool hasFocus);
 
     QLineControl* control;
 

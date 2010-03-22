@@ -58,13 +58,13 @@ private:
 
 void TrkSignalHandler::copyingStarted()
 {
-    if(d->loglevel > 0)
+    if (d->loglevel > 0)
         d->out << "Copying..." << endl;
 }
 
 void TrkSignalHandler::canNotConnect(const QString &errorMessage)
 {
-    d->err << "Cannot Connect - " << errorMessage << endl;
+    d->err << "Cannot connect - " << errorMessage << endl;
 }
 
 void TrkSignalHandler::canNotCreateFile(const QString &filename, const QString &errorMessage)
@@ -84,7 +84,7 @@ void TrkSignalHandler::canNotCloseFile(const QString &filename, const QString &e
 
 void TrkSignalHandler::installingStarted()
 {
-    if(d->loglevel > 0)
+    if (d->loglevel > 0)
         d->out << "Installing..." << endl;
 }
 
@@ -95,19 +95,19 @@ void TrkSignalHandler::canNotInstall(const QString &packageFilename, const QStri
 
 void TrkSignalHandler::installingFinished()
 {
-    if(d->loglevel > 0)
+    if (d->loglevel > 0)
         d->out << "Installing finished" << endl;
 }
 
 void TrkSignalHandler::startingApplication()
 {
-    if(d->loglevel > 0)
+    if (d->loglevel > 0)
         d->out << "Starting app..." << endl;
 }
 
 void TrkSignalHandler::applicationRunning(uint pid)
 {
-    if(d->loglevel > 0)
+    if (d->loglevel > 0)
         d->out << "Running..." << endl;
 }
 
@@ -118,7 +118,7 @@ void TrkSignalHandler::canNotRun(const QString &errorMessage)
 
 void TrkSignalHandler::finished()
 {
-    if(d->loglevel > 0)
+    if (d->loglevel > 0)
         d->out << "Done." << endl;
     QCoreApplication::quit();
 }
@@ -130,17 +130,17 @@ void TrkSignalHandler::applicationOutputReceived(const QString &output)
 
 void TrkSignalHandler::copyProgress(int percent)
 {
-    if(d->loglevel > 0) {
+    if (d->loglevel > 0) {
         d->out << percent << "% ";
         d->out.flush();
-        if(percent==100)
+        if (percent==100)
             d->out << endl;
     }
 }
 
 void TrkSignalHandler::stateChanged(int state)
 {
-    if(d->loglevel > 1)
+    if (d->loglevel > 1)
         d->out << "State" << state << endl;
 }
 
@@ -164,10 +164,10 @@ void TrkSignalHandler::timeout()
     emit terminate();
 }
 
-TrkSignalHandlerPrivate::TrkSignalHandlerPrivate() :
-        out(stdout),
-        err(stderr),
-        loglevel(0)
+TrkSignalHandlerPrivate::TrkSignalHandlerPrivate()
+    : out(stdout),
+    err(stderr),
+    loglevel(0)
 {
 
 }
@@ -179,8 +179,8 @@ TrkSignalHandlerPrivate::~TrkSignalHandlerPrivate()
 }
 
 TrkSignalHandler::TrkSignalHandler()
+    : d(new TrkSignalHandlerPrivate())
 {
-    d = new TrkSignalHandlerPrivate();
 }
 
 TrkSignalHandler::~TrkSignalHandler()

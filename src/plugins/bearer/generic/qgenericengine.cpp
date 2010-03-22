@@ -50,6 +50,7 @@
 #include <QtCore/qstringlist.h>
 
 #include <QtCore/qdebug.h>
+#include <QtCore/private/qcoreapplication_p.h>
 
 #ifdef Q_OS_WIN
 #include "../platformdefs_win.h"
@@ -174,8 +175,6 @@ void QGenericEngine::disconnectFromId(const QString &id)
 
 void QGenericEngine::requestUpdate()
 {
-    QMutexLocker locker(&mutex);
-
     doRequestUpdate();
 }
 
@@ -231,6 +230,8 @@ void QGenericEngine::doRequestUpdate()
 
             bool changed = false;
 
+            ptr->mutex.lock();
+
             if (!ptr->isValid) {
                 ptr->isValid = true;
                 changed = true;
@@ -251,8 +252,13 @@ void QGenericEngine::doRequestUpdate()
                 changed = true;
             }
 
-            if (changed)
+            ptr->mutex.unlock();
+
+            if (changed) {
+                locker.unlock();
                 emit configurationChanged(ptr);
+                locker.relock();
+            }
         } else {
             QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
 
@@ -266,7 +272,9 @@ void QGenericEngine::doRequestUpdate()
             accessPointConfigurations.insert(id, ptr);
             configurationInterface.insert(id, interface.name());
 
+            locker.unlock();
             emit configurationAdded(ptr);
+            locker.relock();
         }
     }
 
@@ -275,9 +283,13 @@ void QGenericEngine::doRequestUpdate()
             accessPointConfigurations.take(previous.takeFirst());
 
         configurationInterface.remove(ptr->id);
+
+        locker.unlock();
         emit configurationRemoved(ptr);
+        locker.relock();
     }
 
+    locker.unlock();
     emit updateCompleted();
 }
 
@@ -289,6 +301,8 @@ QNetworkSession::State QGenericEngine::sessionStateForId(const QString &id)
 
     if (!ptr)
         return QNetworkSession::Invalid;
+
+    QMutexLocker configLocker(&ptr->mutex);
 
     if (!ptr->isValid) {
         return QNetworkSession::Invalid;

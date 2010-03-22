@@ -205,28 +205,20 @@ public slots:
 class MyDefaultObject1 : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int horseLegs READ horseLegs CONSTANT);
-    Q_PROPERTY(int antLegs READ antLegs CONSTANT);
+    Q_PROPERTY(int horseLegs READ horseLegs CONSTANT)
+    Q_PROPERTY(int antLegs READ antLegs CONSTANT)
+    Q_PROPERTY(int emuLegs READ emuLegs CONSTANT)
 public:
     int horseLegs() const { return 4; }
     int antLegs() const { return 6; }
-};
-
-class MyDefaultObject2 : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int antLegs READ antLegs CONSTANT);
-    Q_PROPERTY(int emuLegs READ emuLegs CONSTANT);
-public:
-    int antLegs() const { return 5; } // Had an accident
     int emuLegs() const { return 2; }
 };
 
 class MyDefaultObject3 : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int antLegs READ antLegs CONSTANT);
-    Q_PROPERTY(int humanLegs READ humanLegs CONSTANT);
+    Q_PROPERTY(int antLegs READ antLegs CONSTANT)
+    Q_PROPERTY(int humanLegs READ humanLegs CONSTANT)
 public:
     int antLegs() const { return 7; } // Mutant
     int humanLegs() const { return 2; }
@@ -237,9 +229,9 @@ class MyDeferredObject : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
-    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty);
-    Q_PROPERTY(QObject *objectProperty2 READ objectProperty2 WRITE setObjectProperty2);
-    Q_CLASSINFO("DeferredPropertyNames", "value,objectProperty,objectProperty2");
+    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty)
+    Q_PROPERTY(QObject *objectProperty2 READ objectProperty2 WRITE setObjectProperty2)
+    Q_CLASSINFO("DeferredPropertyNames", "value,objectProperty,objectProperty2")
 
 public:
     MyDeferredObject() : m_value(0), m_object(0), m_object2(0) {}
@@ -266,7 +258,7 @@ QML_DECLARE_TYPE(MyDeferredObject);
 class MyBaseExtendedObject : public QObject
 {
 Q_OBJECT
-Q_PROPERTY(int baseProperty READ baseProperty WRITE setBaseProperty);
+Q_PROPERTY(int baseProperty READ baseProperty WRITE setBaseProperty)
 public:
     MyBaseExtendedObject() : m_value(0) {}
 
@@ -281,7 +273,7 @@ QML_DECLARE_TYPE(MyBaseExtendedObject);
 class MyExtendedObject : public MyBaseExtendedObject
 {
 Q_OBJECT
-Q_PROPERTY(int coreProperty READ coreProperty WRITE setCoreProperty);
+Q_PROPERTY(int coreProperty READ coreProperty WRITE setCoreProperty)
 public:
     MyExtendedObject() : m_value(0) {}
 
@@ -299,34 +291,34 @@ class MyTypeObject : public QObject
     Q_ENUMS(MyEnum)
     Q_FLAGS(MyFlags)
 
-    Q_PROPERTY(QString id READ id WRITE setId);
-    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty);
-    Q_PROPERTY(QDeclarativeComponent *componentProperty READ componentProperty WRITE setComponentProperty);
-    Q_PROPERTY(MyFlags flagProperty READ flagProperty WRITE setFlagProperty);
-    Q_PROPERTY(MyEnum enumProperty READ enumProperty WRITE setEnumProperty);
-    Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty);
-    Q_PROPERTY(uint uintProperty READ uintProperty WRITE setUintProperty);
-    Q_PROPERTY(int intProperty READ intProperty WRITE setIntProperty);
-    Q_PROPERTY(qreal realProperty READ realProperty WRITE setRealProperty);
-    Q_PROPERTY(double doubleProperty READ doubleProperty WRITE setDoubleProperty);
-    Q_PROPERTY(float floatProperty READ floatProperty WRITE setFloatProperty);
-    Q_PROPERTY(QColor colorProperty READ colorProperty WRITE setColorProperty);
-    Q_PROPERTY(QDate dateProperty READ dateProperty WRITE setDateProperty);
-    Q_PROPERTY(QTime timeProperty READ timeProperty WRITE setTimeProperty);
-    Q_PROPERTY(QDateTime dateTimeProperty READ dateTimeProperty WRITE setDateTimeProperty);
-    Q_PROPERTY(QPoint pointProperty READ pointProperty WRITE setPointProperty);
-    Q_PROPERTY(QPointF pointFProperty READ pointFProperty WRITE setPointFProperty);
-    Q_PROPERTY(QSize sizeProperty READ sizeProperty WRITE setSizeProperty);
-    Q_PROPERTY(QSizeF sizeFProperty READ sizeFProperty WRITE setSizeFProperty);
-    Q_PROPERTY(QRect rectProperty READ rectProperty WRITE setRectProperty NOTIFY rectPropertyChanged);
-    Q_PROPERTY(QRect rectProperty2 READ rectProperty2 WRITE setRectProperty2);
-    Q_PROPERTY(QRectF rectFProperty READ rectFProperty WRITE setRectFProperty);
-    Q_PROPERTY(bool boolProperty READ boolProperty WRITE setBoolProperty);
-    Q_PROPERTY(QVariant variantProperty READ variantProperty WRITE setVariantProperty);
-    Q_PROPERTY(QVector3D vectorProperty READ vectorProperty WRITE setVectorProperty);
-    Q_PROPERTY(QUrl urlProperty READ urlProperty WRITE setUrlProperty);
+    Q_PROPERTY(QString id READ id WRITE setId)
+    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty)
+    Q_PROPERTY(QDeclarativeComponent *componentProperty READ componentProperty WRITE setComponentProperty)
+    Q_PROPERTY(MyFlags flagProperty READ flagProperty WRITE setFlagProperty)
+    Q_PROPERTY(MyEnum enumProperty READ enumProperty WRITE setEnumProperty)
+    Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty)
+    Q_PROPERTY(uint uintProperty READ uintProperty WRITE setUintProperty)
+    Q_PROPERTY(int intProperty READ intProperty WRITE setIntProperty)
+    Q_PROPERTY(qreal realProperty READ realProperty WRITE setRealProperty)
+    Q_PROPERTY(double doubleProperty READ doubleProperty WRITE setDoubleProperty)
+    Q_PROPERTY(float floatProperty READ floatProperty WRITE setFloatProperty)
+    Q_PROPERTY(QColor colorProperty READ colorProperty WRITE setColorProperty)
+    Q_PROPERTY(QDate dateProperty READ dateProperty WRITE setDateProperty)
+    Q_PROPERTY(QTime timeProperty READ timeProperty WRITE setTimeProperty)
+    Q_PROPERTY(QDateTime dateTimeProperty READ dateTimeProperty WRITE setDateTimeProperty)
+    Q_PROPERTY(QPoint pointProperty READ pointProperty WRITE setPointProperty)
+    Q_PROPERTY(QPointF pointFProperty READ pointFProperty WRITE setPointFProperty)
+    Q_PROPERTY(QSize sizeProperty READ sizeProperty WRITE setSizeProperty)
+    Q_PROPERTY(QSizeF sizeFProperty READ sizeFProperty WRITE setSizeFProperty)
+    Q_PROPERTY(QRect rectProperty READ rectProperty WRITE setRectProperty NOTIFY rectPropertyChanged)
+    Q_PROPERTY(QRect rectProperty2 READ rectProperty2 WRITE setRectProperty2)
+    Q_PROPERTY(QRectF rectFProperty READ rectFProperty WRITE setRectFProperty)
+    Q_PROPERTY(bool boolProperty READ boolProperty WRITE setBoolProperty)
+    Q_PROPERTY(QVariant variantProperty READ variantProperty WRITE setVariantProperty)
+    Q_PROPERTY(QVector3D vectorProperty READ vectorProperty WRITE setVectorProperty)
+    Q_PROPERTY(QUrl urlProperty READ urlProperty WRITE setUrlProperty)
 
-    Q_PROPERTY(QDeclarativeScriptString scriptProperty READ scriptProperty WRITE setScriptProperty);
+    Q_PROPERTY(QDeclarativeScriptString scriptProperty READ scriptProperty WRITE setScriptProperty)
 
 public:
     MyTypeObject()

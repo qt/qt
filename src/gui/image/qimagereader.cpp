@@ -503,7 +503,7 @@ QImageReaderPrivate::~QImageReaderPrivate()
 bool QImageReaderPrivate::initHandler()
 {
     // check some preconditions
-    if (!device || (!deleteDevice && !device->isOpen())) {
+    if (!device || (!deleteDevice && !device->isOpen() && !device->open(QIODevice::ReadOnly))) {
         imageReaderError = QImageReader::DeviceError;
         errorString = QLatin1String(QT_TRANSLATE_NOOP(QImageReader, "Invalid device"));
         return false;

@@ -47,6 +47,7 @@
 #include "node.h"
 #include "tree.h"
 #include "config.h"
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 

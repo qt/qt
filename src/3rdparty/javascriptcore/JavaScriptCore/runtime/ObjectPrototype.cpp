@@ -40,7 +40,7 @@ static JSValue JSC_HOST_CALL objectProtoFuncLookupSetter(ExecState*, JSObject*, 
 static JSValue JSC_HOST_CALL objectProtoFuncPropertyIsEnumerable(ExecState*, JSObject*, JSValue, const ArgList&);
 static JSValue JSC_HOST_CALL objectProtoFuncToLocaleString(ExecState*, JSObject*, JSValue, const ArgList&);
 
-ObjectPrototype::ObjectPrototype(ExecState* exec, PassRefPtr<Structure> stucture, Structure* prototypeFunctionStructure)
+ObjectPrototype::ObjectPrototype(ExecState* exec, NonNullPassRefPtr<Structure> stucture, Structure* prototypeFunctionStructure)
     : JSObject(stucture)
     , m_hasNoPropertiesWithUInt32Names(true)
 {
@@ -148,7 +148,7 @@ JSValue JSC_HOST_CALL objectProtoFuncToLocaleString(ExecState* exec, JSObject*, 
 
 JSValue JSC_HOST_CALL objectProtoFuncToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    return jsNontrivialString(exec, "[object " + thisValue.toThisObject(exec)->className() + "]");
+    return jsNontrivialString(exec, makeString("[object ", thisValue.toThisObject(exec)->className(), "]"));
 }
 
 } // namespace JSC

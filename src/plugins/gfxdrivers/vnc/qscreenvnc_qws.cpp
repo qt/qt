@@ -2163,6 +2163,9 @@ bool QVNCScreen::connect(const QString &displaySpec)
     if (QScreenDriverFactory::keys().contains(driver, Qt::CaseInsensitive)) {
         const int id = getDisplayId(dspec);
         QScreen *s = qt_get_screen(id, dspec.toLatin1().constData());
+        if (s->pixelFormat() == QImage::Format_Indexed8
+            || s->pixelFormat() == QImage::Format_Invalid && s->depth() == 8)
+            qFatal("QVNCScreen: unsupported screen format");
         setScreen(s);
     } else { // create virtual screen
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN

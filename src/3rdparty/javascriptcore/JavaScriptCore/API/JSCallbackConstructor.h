@@ -33,7 +33,7 @@ namespace JSC {
 
 class JSCallbackConstructor : public JSObject {
 public:
-    JSCallbackConstructor(PassRefPtr<Structure>, JSClassRef, JSObjectCallAsConstructorCallback);
+    JSCallbackConstructor(NonNullPassRefPtr<Structure>, JSClassRef, JSObjectCallAsConstructorCallback);
     virtual ~JSCallbackConstructor();
     JSClassRef classRef() const { return m_class; }
     JSObjectCallAsConstructorCallback callback() const { return m_callback; }
@@ -41,8 +41,11 @@ public:
     
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance | HasStandardGetOwnPropertySlot | HasDefaultMark | HasDefaultGetPropertyNames)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+
+protected:
+    static const unsigned StructureFlags = ImplementsHasInstance | JSObject::StructureFlags;
 
 private:
     virtual ConstructType getConstructData(ConstructData&);

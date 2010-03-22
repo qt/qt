@@ -66,7 +66,7 @@ public:
         : QGLWidget(format, parent),
           m_texRef(0),
           m_nativeSize(640,480),
-          m_aspectRatioMode(QVideoWidget::KeepAspectRatio)
+          m_aspectRatioMode(Qt::KeepAspectRatio)
     {
         setAutoFillBackground(false);        
     }
@@ -145,7 +145,7 @@ public:
         m_nativeSize = size;        
     }
 
-    void setAspectRatioMode(QVideoWidget::AspectRatioMode mode)
+    void setAspectRatioMode(Qt::AspectRatioMode mode)
     {
         if (m_aspectRatioMode != mode) {
             m_aspectRatioMode = mode;
@@ -158,7 +158,7 @@ private:
     {
         QRect displayRect = rect();
 
-        if (m_aspectRatioMode == QVideoWidget::KeepAspectRatio) {
+        if (m_aspectRatioMode == Qt::KeepAspectRatio) {
             QSize size = m_nativeSize;
             size.scale(displayRect.size(), Qt::KeepAspectRatio);
 
@@ -170,7 +170,7 @@ private:
 
     CVOpenGLTextureRef m_texRef;
     QSize m_nativeSize;
-    QVideoWidget::AspectRatioMode m_aspectRatioMode;
+    Qt::AspectRatioMode m_aspectRatioMode;
 };
 
 QT7MovieVideoWidget::QT7MovieVideoWidget(QObject *parent)
@@ -178,7 +178,7 @@ QT7MovieVideoWidget::QT7MovieVideoWidget(QObject *parent)
     m_movie(0),    
     m_videoWidget(0),    
     m_fullscreen(false),
-    m_aspectRatioMode(QVideoWidget::KeepAspectRatio),
+    m_aspectRatioMode(Qt::KeepAspectRatio),
     m_brightness(0),
     m_contrast(0),
     m_hue(0),
@@ -324,12 +324,12 @@ QSize QT7MovieVideoWidget::nativeSize() const
     return m_nativeSize;
 }
 
-QVideoWidget::AspectRatioMode QT7MovieVideoWidget::aspectRatioMode() const
+Qt::AspectRatioMode QT7MovieVideoWidget::aspectRatioMode() const
 {
     return m_aspectRatioMode;
 }
 
-void QT7MovieVideoWidget::setAspectRatioMode(QVideoWidget::AspectRatioMode mode)
+void QT7MovieVideoWidget::setAspectRatioMode(Qt::AspectRatioMode mode)
 {
     m_aspectRatioMode = mode;
     m_videoWidget->setAspectRatioMode(mode);    

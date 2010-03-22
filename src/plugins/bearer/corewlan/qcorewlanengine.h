@@ -68,7 +68,7 @@ public:
     void connectToId(const QString &id);
     void disconnectFromId(const QString &id);
 
-    void requestUpdate();
+    Q_INVOKABLE void requestUpdate();
 
     QNetworkSession::State sessionStateForId(const QString &id);
 
@@ -90,14 +90,21 @@ private:
     QMap<QString, QString> configurationInterface;
     QStringList scanForSsids(const QString &interfaceName);
 
-    bool isKnownSsid(const QString &interfaceName, const QString &ssid);
+    bool isKnownSsid(const QString &ssid);
     QList<QNetworkConfigurationPrivate *> foundConfigurations;
 
     SCDynamicStoreRef storeSession;
     CFRunLoopSourceRef runloopSource;
 
-    void startNetworkChangeLoop();
+    bool hasWifi;
 
+protected:
+   QMap<QString, QMap<QString,QString> > userProfiles;
+
+    void startNetworkChangeLoop();
+    void getUserConfigurations();
+    QString getNetworkNameFromSsid(const QString &ssid);
+    QString getSsidFromNetworkName(const QString &name);
 };
 
 QT_END_NAMESPACE

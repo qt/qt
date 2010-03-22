@@ -50,6 +50,7 @@ ControlStrip::ControlStrip(QWidget *parent)
     menuPixmap.load(":/images/edit-find.png");
     backPixmap.load(":/images/go-previous.png");
     forwardPixmap.load(":/images/go-next.png");
+    closePixmap.load(":/images/button-close.png");
 }
 
 QSize ControlStrip::sizeHint() const
@@ -74,12 +75,18 @@ void ControlStrip::mousePressEvent(QMouseEvent *event)
     }
 
     if (x > width() - h) {
-        emit forwardClicked();
+        emit closeClicked();
         event->accept();
         return;
     }
 
     if ((x < width() - 2 * h) && (x > width() - 3 * h)) {
+        emit forwardClicked();
+        event->accept();
+        return;
+    }
+
+    if ((x < width() - 3 * h) && (x > width() - 5 * h)) {
         emit backClicked();
         event->accept();
         return;
@@ -95,7 +102,9 @@ void ControlStrip::paintEvent(QPaintEvent *event)
     p.fillRect(event->rect(), QColor(32, 32, 32, 192));
     p.setCompositionMode(QPainter::CompositionMode_SourceOver);
     p.drawPixmap(s, s, menuPixmap);
-    p.drawPixmap(width() - 3 * h + s, s, backPixmap);
-    p.drawPixmap(width() - h + s, s, forwardPixmap);
+    p.drawPixmap(width() - h + s, s, closePixmap);
+    p.drawPixmap(width() - 3 * h + s, s, forwardPixmap);
+    p.drawPixmap(width() - 5 * h + s, s, backPixmap);
+
     p.end();
 }

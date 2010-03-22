@@ -395,6 +395,7 @@ void QGL2PaintEngineExPrivate::updateMatrix()
                         qreal(0.0001));
 
     matrixDirty = false;
+    matrixUniformDirty = true;
 
     // Set the PMV matrix attribute. As we use an attributes rather than uniforms, we only
     // need to do this once for every matrix change and persists across all shader programs.
@@ -594,6 +595,9 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
     if (newMode == TextDrawingMode) {
         setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinateArray.data());
         setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinateArray.data());
+        shaderManager->setHasComplexGeometry(true);
+    } else {
+        shaderManager->setHasComplexGeometry(false);
     }
 
     if (newMode == ImageDrawingMode) {
@@ -1045,6 +1049,7 @@ bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
         // The shader program has changed so mark all uniforms as dirty:
         brushUniformsDirty = true;
         opacityUniformDirty = true;
+        matrixUniformDirty = true;
     }
 
     if (brushUniformsDirty && mode != ImageDrawingMode && mode != ImageArrayDrawingMode)
@@ -1053,6 +1058,12 @@ bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
     if (opacityMode == QGLEngineShaderManager::UniformOpacity && opacityUniformDirty) {
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::GlobalOpacity), (GLfloat)q->state()->opacity);
         opacityUniformDirty = false;
+    }
+
+    if (matrixUniformDirty && shaderManager->hasComplexGeometry()) {
+        shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::Matrix),
+                                                         pmvMatrix);
+        matrixUniformDirty = false;
     }
 
     return changed;
@@ -1631,7 +1642,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         lastMaskTextureUsed = cache->texture();
     }
     updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
-
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
@@ -1696,23 +1706,23 @@ void QGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFragmen
         QGLPoint bottomRight(right * c - bottom * s, right * s + bottom * c);
         QGLPoint bottomLeft(-right * c - bottom * s, -right * s + bottom * c);
 
-        vertexCoordinateArray.lineToArray(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(-bottomLeft.x + fragments[i].x, -bottomLeft.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(bottomLeft.x + fragments[i].x, bottomLeft.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(-bottomLeft.x + fragments[i].x, -bottomLeft.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(bottomLeft.x + fragments[i].x, bottomLeft.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
 
         QGLRect src(fragments[i].sourceLeft * dx, fragments[i].sourceTop * dy,
                     (fragments[i].sourceLeft + fragments[i].width) * dx,
                     (fragments[i].sourceTop + fragments[i].height) * dy);
 
-        textureCoordinateArray.lineToArray(src.right, src.bottom);
-        textureCoordinateArray.lineToArray(src.right, src.top);
-        textureCoordinateArray.lineToArray(src.left, src.top);
-        textureCoordinateArray.lineToArray(src.left, src.top);
-        textureCoordinateArray.lineToArray(src.left, src.bottom);
-        textureCoordinateArray.lineToArray(src.right, src.bottom);
+        textureCoordinateArray.addVertex(src.right, src.bottom);
+        textureCoordinateArray.addVertex(src.right, src.top);
+        textureCoordinateArray.addVertex(src.left, src.top);
+        textureCoordinateArray.addVertex(src.left, src.top);
+        textureCoordinateArray.addVertex(src.left, src.bottom);
+        textureCoordinateArray.addVertex(src.right, src.bottom);
 
         qreal opacity = fragments[i].opacity * q->state()->opacity;
         opacityArray << opacity << opacity << opacity << opacity << opacity << opacity;
@@ -1776,6 +1786,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->mode = BrushDrawingMode;
     d->brushTextureDirty = true;
     d->brushUniformsDirty = true;
+    d->matrixUniformDirty = true;
     d->matrixDirty = true;
     d->compositionModeDirty = true;
     d->opacityUniformDirty = true;

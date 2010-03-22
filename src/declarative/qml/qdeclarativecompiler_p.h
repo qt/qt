@@ -72,6 +72,7 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeEngine;
 class QDeclarativeComponent;
 class QDeclarativeContext;
+class QDeclarativeContextData;
 
 class QScriptProgram;
 class Q_AUTOTEST_EXPORT QDeclarativeCompiledData : public QDeclarativeRefCount, public QDeclarativeCleanup
@@ -95,7 +96,7 @@ public:
         QDeclarativeComponent *component;
 
         QDeclarativeRefCount *ref;
-        QObject *createInstance(QDeclarativeContext *, const QBitField &) const;
+        QObject *createInstance(QDeclarativeContextData *, const QBitField &) const;
         const QMetaObject *metaObject() const;
     };
     QList<TypeReference> types;
@@ -159,6 +160,8 @@ public:
     static bool isSignalPropertyName(const QByteArray &);
 
     static QMetaMethod findSignalByName(const QMetaObject *, const QByteArray &name);
+
+    int evaluateEnum(const QByteArray& script) const; // for QDeclarativeCustomParser::evaluateEnum
 
 private:
     static void reset(QDeclarativeCompiledData *);

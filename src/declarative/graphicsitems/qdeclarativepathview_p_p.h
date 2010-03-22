@@ -66,11 +66,6 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef struct PathViewItem{
-    int index;
-    QDeclarativeItem* item;
-}PathViewItem;
-
 class QDeclarativeOpenMetaObjectType;
 class QDeclarativePathViewAttached;
 class QDeclarativePathViewPrivate : public QDeclarativeItemPrivate

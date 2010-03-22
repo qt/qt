@@ -141,19 +141,22 @@ QScriptValue QScriptDeclarativeClass::Value::toScriptValue(QScriptEngine *engine
 }
 
 QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier()
-: identifier(0)
+    : identifier(0), engine(0)
 {
     new (&d) JSC::Identifier();
 }
 
 QScriptDeclarativeClass::PersistentIdentifier::~PersistentIdentifier()
 {
+    if (engine)
+        JSC::setCurrentIdentifierTable(engine->globalData->identifierTable);
     ((JSC::Identifier &)d).JSC::Identifier::~Identifier();
 }
 
 QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier(const PersistentIdentifier &other)
 {
     identifier = other.identifier;
+    engine = other.engine;
     new (&d) JSC::Identifier((JSC::Identifier &)(other.d));
 }
 
@@ -161,6 +164,7 @@ QScriptDeclarativeClass::PersistentIdentifier &
 QScriptDeclarativeClass::PersistentIdentifier::operator=(const PersistentIdentifier &other)
 {
     identifier = other.identifier;
+    engine = other.engine;
     ((JSC::Identifier &)d) = (JSC::Identifier &)(other.d);
     return *this;
 }
@@ -419,7 +423,7 @@ QScriptDeclarativeClass::createPersistentIdentifier(const QString &str)
         static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(d_ptr->engine)); 
     JSC::ExecState* exec = p->currentFrame;
 
-    PersistentIdentifier rv(true);
+    PersistentIdentifier rv(p);
     new (&rv.d) JSC::Identifier(exec, (UChar *)str.constData(), str.size());
     rv.identifier = (void *)((JSC::Identifier &)rv.d).ustring().rep();
     return rv;
@@ -432,7 +436,7 @@ QScriptDeclarativeClass::createPersistentIdentifier(const Identifier &id)
         static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(d_ptr->engine)); 
     JSC::ExecState* exec = p->currentFrame;
 
-    PersistentIdentifier rv(true);
+    PersistentIdentifier rv(p);
     new (&rv.d) JSC::Identifier(exec, (JSC::UString::Rep *)id);
     rv.identifier = (void *)((JSC::Identifier &)rv.d).ustring().rep();
     return rv;
@@ -491,6 +495,11 @@ QScriptDeclarativeClass::Value QScriptDeclarativeClass::call(Object *object,
     Q_UNUSED(object);
     Q_UNUSED(ctxt);
     return Value();
+}
+
+bool QScriptDeclarativeClass::compare(Object *o, Object *o2)
+{
+    return o == o2;
 }
 
 QStringList QScriptDeclarativeClass::propertyNames(Object *object)

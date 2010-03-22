@@ -43,6 +43,7 @@
 #define SYMMAKEFILE_H
 
 #include "initprojectdeploy_symbian.h"
+#include "symbiancommon.h"
 #include <makefile.h>
 
 QT_BEGIN_NAMESPACE
@@ -53,22 +54,11 @@ QT_BEGIN_NAMESPACE
 #define MAKE_CACHE_NAME ".make.cache"
 #define SYMBIAN_TEST_CONFIG "symbian_test"
 
-class SymbianMakefileGenerator : public MakefileGenerator
+class SymbianMakefileGenerator : public MakefileGenerator, public SymbianCommonGenerator
 {
 protected:
-    enum TargetType {
-        TypeExe,
-        TypeDll,
-        TypeLib,
-        TypePlugin,
-        TypeSubdirs
-    };
-
     QString platform;
     QString uid2;
-    QString uid3;
-    QString privateDirUid;
-    TargetType targetType;
     QMap<QString, QStringList> sources;
     QMap<QString, QStringList> systeminclude;
     QMap<QString, QStringList> library;
@@ -76,19 +66,10 @@ protected:
     QMap<QString, QStringList> makmakeCommands;
     QStringList overriddenMmpKeywords;
 
-    QStringList generatedFiles;
-    QStringList generatedDirs;
-    QHash<QString, QString> qt2S60LangMapTable;
-
-    QString fixedTarget;
-
-    void removeSpecialCharacters(QString& str);
     QString fixPathForMmp(const QString& origPath, const QDir& parentDir);
     QString absolutizePath(const QString& origPath);
 
     virtual bool writeMakefile(QTextStream &t);
-    void generatePkgFile(const QString &iconFile, DeploymentList &depList);
-    bool containsStartWithItem(const QChar &c, const QStringList& src);
 
     virtual void init();
 
@@ -107,7 +88,10 @@ protected:
                                    QString &checkString);
 
     void writeHeader(QTextStream &t);
-    void writeBldInfContent(QTextStream& t, bool addDeploymentExtension, const QString &iconFile, DeploymentList &depList);
+    void writeBldInfContent(QTextStream& t,
+                            bool addDeploymentExtension,
+                            const QString &iconFile,
+                            DeploymentList &depList);
 
     static bool removeDuplicatedStrings(QStringList& stringList);
 
@@ -127,18 +111,9 @@ protected:
 
     void writeCustomDefFile();
 
-    void writeRegRssFile(QStringList &useritems);
-    void writeRssFile(QString &numberOfIcons, QString &iconfile);
-    void writeLocFile(QStringList &symbianLangCodes);
-    void readRssRules(QString &numberOfIcons, QString &iconFile, QStringList &userRssRules);
-
-    QStringList symbianLangCodesFromTsFiles();
-    void fillQt2S60LangMapTable();
-
     void appendIfnotExist(QStringList &list, QString value);
     void appendIfnotExist(QStringList &list, QStringList values);
 
-    QString removePathSeparators(QString &file);
     QString removeTrailingPathSeparators(QString &file);
     void generateCleanCommands(QTextStream& t,
                                const QStringList& toClean,

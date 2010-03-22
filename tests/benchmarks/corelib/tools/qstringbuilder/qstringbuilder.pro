@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_qstringbuilder
+TARGET = tst_bench_qstringbuilder
 
 QMAKE_CXXFLAGS += -g
 QMAKE_CFLAGS += -g

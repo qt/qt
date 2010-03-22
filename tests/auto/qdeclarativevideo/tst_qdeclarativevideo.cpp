@@ -53,7 +53,7 @@
 #include <QtMultimedia/qvideosurfaceformat.h>
 
 
-class tst_QmlGraphicsVideo : public QObject
+class tst_QDeclarativeVideo : public QObject
 {
     Q_OBJECT
 public slots:
@@ -291,12 +291,12 @@ public:
 };
 
 
-void tst_QmlGraphicsVideo::initTestCase()
+void tst_QDeclarativeVideo::initTestCase()
 {
     qRegisterMetaType<QDeclarativeVideo::Error>();
 }
 
-void tst_QmlGraphicsVideo::nullPlayerControl()
+void tst_QDeclarativeVideo::nullPlayerControl()
 {
     QtTestMediaServiceProvider provider(0, 0, 0);
 
@@ -304,11 +304,12 @@ void tst_QmlGraphicsVideo::nullPlayerControl()
 
     QCOMPARE(video.source(), QUrl());
     video.setSource(QUrl("http://example.com"));
-    QCOMPARE(video.source(), QUrl());
+    QCOMPARE(video.source(), QUrl("http://example.com"));
 
     QCOMPARE(video.isPlaying(), false);
     video.setPlaying(true);
-    QCOMPARE(video.isPlaying(), false);
+    QCOMPARE(video.isPlaying(), true);
+    video.setPlaying(false);
     video.play();
     QCOMPARE(video.isPlaying(), false);
 
@@ -322,15 +323,15 @@ void tst_QmlGraphicsVideo::nullPlayerControl()
 
     QCOMPARE(video.position(), 0);
     video.setPosition(10000);
-    QCOMPARE(video.position(), 0);
+    QCOMPARE(video.position(), 10000);
 
-    QCOMPARE(video.volume(), qreal(0));
-    video.setVolume(50);
-    QCOMPARE(video.volume(), qreal(0));
+    QCOMPARE(video.volume(), qreal(1.0));
+    video.setVolume(0.5);
+    QCOMPARE(video.volume(), qreal(0.5));
 
     QCOMPARE(video.isMuted(), false);
     video.setMuted(true);
-    QCOMPARE(video.isMuted(), false);
+    QCOMPARE(video.isMuted(), true);
 
     QCOMPARE(video.bufferProgress(), qreal(0));
 
@@ -346,7 +347,7 @@ void tst_QmlGraphicsVideo::nullPlayerControl()
     QCOMPARE(video.error(), QDeclarativeVideo::ServiceMissing);
 }
 
-void tst_QmlGraphicsVideo::nullService()
+void tst_QDeclarativeVideo::nullService()
 {
     QtTestMediaServiceProvider provider(0);
 
@@ -354,11 +355,12 @@ void tst_QmlGraphicsVideo::nullService()
 
     QCOMPARE(video.source(), QUrl());
     video.setSource(QUrl("http://example.com"));
-    QCOMPARE(video.source(), QUrl());
+    QCOMPARE(video.source(), QUrl("http://example.com"));
 
     QCOMPARE(video.isPlaying(), false);
     video.setPlaying(true);
-    QCOMPARE(video.isPlaying(), false);
+    QCOMPARE(video.isPlaying(), true);
+    video.setPlaying(false);
     video.play();
     QCOMPARE(video.isPlaying(), false);
 
@@ -372,15 +374,15 @@ void tst_QmlGraphicsVideo::nullService()
 
     QCOMPARE(video.position(), 0);
     video.setPosition(10000);
-    QCOMPARE(video.position(), 0);
+    QCOMPARE(video.position(), 10000);
 
-    QCOMPARE(video.volume(), qreal(0));
-    video.setVolume(50);
-    QCOMPARE(video.volume(), qreal(0));
+    QCOMPARE(video.volume(), qreal(1.0));
+    video.setVolume(0.5);
+    QCOMPARE(video.volume(), qreal(0.5));
 
     QCOMPARE(video.isMuted(), false);
     video.setMuted(true);
-    QCOMPARE(video.isMuted(), false);
+    QCOMPARE(video.isMuted(), true);
 
     QCOMPARE(video.bufferProgress(), qreal(0));
 
@@ -400,10 +402,11 @@ void tst_QmlGraphicsVideo::nullService()
     QCOMPARE(video.metaObject()->indexOfProperty("description"), -1);
 }
 
-void tst_QmlGraphicsVideo::playing()
+void tst_QDeclarativeVideo::playing()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+    video.componentComplete();
 
     QSignalSpy playingChangedSpy(&video, SIGNAL(playingChanged()));
     QSignalSpy startedSpy(&video, SIGNAL(started()));
@@ -487,10 +490,11 @@ void tst_QmlGraphicsVideo::playing()
     QCOMPARE(stoppedSpy.count(),          stopped);
 }
 
-void tst_QmlGraphicsVideo::paused()
+void tst_QDeclarativeVideo::paused()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+    video.componentComplete();
 
     QSignalSpy playingChangedSpy(&video, SIGNAL(playingChanged()));
     QSignalSpy pausedChangedSpy(&video, SIGNAL(pausedChanged()));
@@ -774,12 +778,13 @@ void tst_QmlGraphicsVideo::paused()
     QCOMPARE(stoppedSpy.count(),          stopped);
 }
 
-void tst_QmlGraphicsVideo::error()
+void tst_QDeclarativeVideo::error()
 {
     const QString errorString = QLatin1String("Failed to open device.");
 
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+    video.componentComplete();
 
     QSignalSpy errorSpy(&video, SIGNAL(error(QDeclarativeVideo::Error,QString)));
     QSignalSpy errorChangedSpy(&video, SIGNAL(errorChanged()));
@@ -810,10 +815,11 @@ void tst_QmlGraphicsVideo::error()
 }
 
 
-void tst_QmlGraphicsVideo::hasAudio()
+void tst_QDeclarativeVideo::hasAudio()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+    video.componentComplete();
 
     QSignalSpy spy(&video, SIGNAL(hasAudioChanged()));
 
@@ -832,10 +838,12 @@ void tst_QmlGraphicsVideo::hasAudio()
     QCOMPARE(spy.count(), 3);
 }
 
-void tst_QmlGraphicsVideo::hasVideo()
+void tst_QDeclarativeVideo::hasVideo()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+
+    video.componentComplete();
 
     QSignalSpy spy(&video, SIGNAL(hasVideoChanged()));
 
@@ -854,10 +862,11 @@ void tst_QmlGraphicsVideo::hasVideo()
     QCOMPARE(spy.count(), 3);
 }
 
-void tst_QmlGraphicsVideo::fillMode()
+void tst_QDeclarativeVideo::fillMode()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+    video.componentComplete();
 
     QList<QGraphicsItem *> children = video.childItems();
     QCOMPARE(children.count(), 1);
@@ -879,10 +888,11 @@ void tst_QmlGraphicsVideo::fillMode()
     QCOMPARE(videoItem->aspectRatioMode(), Qt::KeepAspectRatio);
 }
 
-void tst_QmlGraphicsVideo::geometry()
+void tst_QDeclarativeVideo::geometry()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeVideo video;
+    video.componentComplete();
 
     QAbstractVideoSurface *surface = provider.rendererControl()->surface();
     QVERIFY(surface != 0);
@@ -906,6 +916,6 @@ void tst_QmlGraphicsVideo::geometry()
     QCOMPARE(videoItem->size().height(), qreal(328));
 }
 
-QTEST_MAIN(tst_QmlGraphicsVideo)
+QTEST_MAIN(tst_QDeclarativeVideo)
 
 #include "tst_qdeclarativevideo.moc"

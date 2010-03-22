@@ -59,10 +59,10 @@ static const union {
     } doubles;
     
 } NaNInf = { {
-#if PLATFORM(BIG_ENDIAN)
+#if CPU(BIG_ENDIAN)
     { 0x7f, 0xf8, 0, 0, 0, 0, 0, 0 },
     { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 }
-#elif PLATFORM(MIDDLE_ENDIAN)
+#elif CPU(MIDDLE_ENDIAN)
     { 0, 0, 0xf8, 0x7f, 0, 0, 0, 0 },
     { 0, 0, 0xf0, 0x7f, 0, 0, 0, 0 }
 #else
@@ -76,31 +76,22 @@ extern const double Inf = NaNInf.doubles.Inf_Double;
  
 #endif // !(defined NAN && defined INFINITY)
 
-void* JSCell::operator new(size_t size, ExecState* exec)
-{
-#ifdef JAVASCRIPTCORE_BUILDING_ALL_IN_ONE_FILE
-    return exec->heap()->inlineAllocate(size);
-#else
-    return exec->heap()->allocate(size);
-#endif
-}
-
 bool JSCell::getUInt32(uint32_t&) const
 {
     return false;
 }
 
-bool JSCell::getString(UString&stringValue) const
+bool JSCell::getString(ExecState* exec, UString&stringValue) const
 {
     if (!isString())
         return false;
-    stringValue = static_cast<const JSString*>(this)->value();
+    stringValue = static_cast<const JSString*>(this)->value(exec);
     return true;
 }
 
-UString JSCell::getString() const
+UString JSCell::getString(ExecState* exec) const
 {
-    return isString() ? static_cast<const JSString*>(this)->value() : UString();
+    return isString() ? static_cast<const JSString*>(this)->value(exec) : UString();
 }
 
 JSObject* JSCell::getObject()
@@ -157,14 +148,14 @@ void JSCell::put(ExecState* exec, unsigned identifier, JSValue value)
     toObject(exec)->put(exec, identifier, value);
 }
 
-bool JSCell::deleteProperty(ExecState* exec, const Identifier& identifier, bool checkDontDelete)
+bool JSCell::deleteProperty(ExecState* exec, const Identifier& identifier)
 {
-    return toObject(exec)->deleteProperty(exec, identifier, checkDontDelete);
+    return toObject(exec)->deleteProperty(exec, identifier);
 }
 
-bool JSCell::deleteProperty(ExecState* exec, unsigned identifier, bool checkDontDelete)
+bool JSCell::deleteProperty(ExecState* exec, unsigned identifier)
 {
-    return toObject(exec)->deleteProperty(exec, identifier, checkDontDelete);
+    return toObject(exec)->deleteProperty(exec, identifier);
 }
 
 JSObject* JSCell::toThisObject(ExecState* exec) const

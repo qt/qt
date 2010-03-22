@@ -370,7 +370,8 @@ void QHelpContentModel::invalidateContents(bool onShutDown)
         delete d->rootItem;
         d->rootItem = 0;
     }
-    reset();
+    if (!onShutDown)
+        reset();
 }
 
 /*!

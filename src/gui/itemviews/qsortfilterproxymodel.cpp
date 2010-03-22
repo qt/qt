@@ -111,6 +111,35 @@ private:
 };
 
 
+//this struct is used to store what are the rows that are removed
+//between a call to rowsAboutToBeRemoved and rowsRemoved
+//it avoids readding rows to the mapping that are currently being removed
+struct QRowsRemoval
+{
+    QRowsRemoval(const QModelIndex &parent_source, int start, int end) : parent_source(parent_source), start(start), end(end)
+    {
+    }
+
+    QRowsRemoval() : start(-1), end(-1)
+    {
+    }
+
+    bool contains(QModelIndex parent, int row)
+    {
+        do {
+            if (parent == parent_source)
+                return row >= start && row <= end;
+            row = parent.row();
+            parent = parent.parent();
+        } while (row >= 0);
+        return false;
+    }
+private:
+    QModelIndex parent_source;
+    int start;
+    int end;
+};
+
 class QSortFilterProxyModelPrivate : public QAbstractProxyModelPrivate
 {
     Q_DECLARE_PUBLIC(QSortFilterProxyModel)
@@ -139,6 +168,7 @@ public:
     int filter_role;
 
     bool dynamic_sortfilter;
+    QRowsRemoval itemsBeingRemoved;
 
     QModelIndexPairList saved_persistent_indexes;
 
@@ -1096,7 +1126,7 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
                     source_rows_change.append(source_row);
                 }
             } else {
-                if (q->filterAcceptsRow(source_row, source_parent)) {
+                if (!itemsBeingRemoved.contains(source_parent, source_row) && q->filterAcceptsRow(source_row, source_parent)) {
                     // This source row now satisfies the filter, so it must be added
                     source_rows_insert.append(source_row);
                 }
@@ -1187,13 +1217,13 @@ void QSortFilterProxyModelPrivate::_q_sourceAboutToBeReset()
 {
     Q_Q(QSortFilterProxyModel);
     q->beginResetModel();
-    invalidatePersistentIndexes();
-    clear_mapping();
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceReset()
 {
     Q_Q(QSortFilterProxyModel);
+    invalidatePersistentIndexes();
+    clear_mapping();
     // All internal structures are deleted in clear()
     q->endResetModel();
     update_source_sort_column();
@@ -1253,6 +1283,7 @@ void QSortFilterProxyModelPrivate::_q_sourceRowsInserted(
 void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeRemoved(
     const QModelIndex &source_parent, int start, int end)
 {
+    itemsBeingRemoved = QRowsRemoval(source_parent, start, end);
     source_items_about_to_be_removed(source_parent, start, end,
                                      Qt::Vertical);
 }
@@ -1260,6 +1291,7 @@ void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeRemoved(
 void QSortFilterProxyModelPrivate::_q_sourceRowsRemoved(
     const QModelIndex &source_parent, int start, int end)
 {
+    itemsBeingRemoved = QRowsRemoval();
     source_items_removed(source_parent, start, end, Qt::Vertical);
 }
 

@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += \
            graphicswidgets \        # Cover
-           layouts \                # Cover
            parserstress \           # Cover
            qmetaobjectbuilder \     # Cover
            qdeclarativeanimations \          # Cover
@@ -29,6 +28,7 @@ SUBDIRS += \
            qdeclarativeitem \        # Cover
            qdeclarativelistview \    # Cover
            qdeclarativeloader \      # Cover
+           qdeclarativelayouts \     # Cover
            qdeclarativemousearea \   # Cover
            qdeclarativeparticles \   # Cover
            qdeclarativepathview \    # Cover
@@ -55,7 +55,6 @@ SUBDIRS += \
            qpacketprotocol \        # Cover
            qdeclarativerepeater \    # Cover
            qdeclarativeworkerscript \    # Cover
-           qdeclarativeworkerlistmodel \    # Cover
            qdeclarativevaluetypes \          # Cover
            qdeclarativexmlhttprequest \      # Cover
            qdeclarativeimageprovider \       # Cover

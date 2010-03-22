@@ -274,7 +274,7 @@ void DirectShowPlayerService::doSetUrlSource(QMutexLocker *locker)
     }
 
     if (SUCCEEDED(hr)) {
-        m_executedTasks = SetSource;
+        m_executedTasks |= SetSource;
         m_pendingTasks |= Render;
 
         if (m_audioOutput)
@@ -282,7 +282,7 @@ void DirectShowPlayerService::doSetUrlSource(QMutexLocker *locker)
         if (m_videoOutput)
             m_pendingTasks |= SetVideoOutput;
 
-        if (m_rate != 1.0)
+        if (m_rate != 1.0 && m_rate != 0.0)
             m_pendingTasks |= SetRate;
 
         m_source = source;
@@ -319,7 +319,7 @@ void DirectShowPlayerService::doSetStreamSource(QMutexLocker *locker)
     source->setDevice(m_stream);
 
     if (SUCCEEDED(m_graph->AddFilter(source, L"Source"))) {
-        m_executedTasks = SetSource;
+        m_executedTasks |= SetSource;
         m_pendingTasks |= Render;
 
         if (m_audioOutput)
@@ -327,7 +327,7 @@ void DirectShowPlayerService::doSetStreamSource(QMutexLocker *locker)
         if (m_videoOutput)
             m_pendingTasks |= SetVideoOutput;
 
-        if (m_rate != 1.0)
+        if (m_rate != 1.0 && m_rate != 0.0)
             m_pendingTasks |= SetRate;
 
         m_source = source;
@@ -346,7 +346,10 @@ void DirectShowPlayerService::doSetStreamSource(QMutexLocker *locker)
 
 void DirectShowPlayerService::doRender(QMutexLocker *locker)
 {
-    m_pendingTasks |= m_executedTasks & (Play | Pause);
+    if (m_executedTasks & Pause)
+        m_pendingTasks |= Pause;
+    else if (m_executedTasks & Play && m_rate != 0.0)
+        m_pendingTasks |= Play;
 
     if (IMediaControl *control = com_cast<IMediaControl>(m_graph, IID_IMediaControl)) {
         control->Stop();
@@ -624,8 +627,13 @@ void DirectShowPlayerService::play()
 {
     QMutexLocker locker(&m_mutex);
 
-    m_pendingTasks &= ~Pause;
-    m_pendingTasks |= Play;
+    if (m_rate != 0.0) {
+        m_pendingTasks &= ~Pause;
+        m_pendingTasks |= Play;
+    } else {
+        m_pendingTasks |= Pause;
+        m_executedTasks |= Play;
+    }
 
     if (m_executedTasks & Render) {
         if (m_executedTasks & Stop) {
@@ -650,6 +658,7 @@ void DirectShowPlayerService::doPlay(QMutexLocker *locker)
 
         if (SUCCEEDED(hr)) {
             m_executedTasks |= Play;
+            m_executedTasks &= ~Pause;
 
             QCoreApplication::postEvent(this, new QEvent(QEvent::Type(StatusChange)));
         } else {
@@ -703,6 +712,9 @@ void DirectShowPlayerService::doPause(QMutexLocker *locker)
             }
 
             m_executedTasks |= Pause;
+
+            if (m_rate != 0.0)
+                m_executedTasks &= ~Play;
 
             QCoreApplication::postEvent(this, new QEvent(QEvent::Type(StatusChange)));
         } else {
@@ -764,9 +776,27 @@ void DirectShowPlayerService::setRate(qreal rate)
 {
     QMutexLocker locker(&m_mutex);
 
-    m_rate = rate;
+    if (m_rate == rate)
+        return;
 
-    m_pendingTasks |= SetRate;
+    if (rate == 0.0) {
+        if (m_pendingTasks & Play) {
+            m_executedTasks |= Play;
+            m_pendingTasks &= ~(Play | SetRate);
+
+            if (!((m_executingTask | m_executedTasks) & Pause))
+                m_pendingTasks |= Pause;
+        } else if ((m_executingTask | m_executedTasks) & Play) {
+            m_pendingTasks |= Pause;
+        }
+    } else {
+        m_pendingTasks |= SetRate;
+
+        if (m_rate == 0.0 && (m_executedTasks & Play) && !(m_executingTask & Play))
+            m_pendingTasks |= Play;
+    }
+
+    m_rate = rate;
 
     if (m_executedTasks & FinalizeLoad)
         ::SetEvent(m_taskHandle);
@@ -800,8 +830,9 @@ void DirectShowPlayerService::doSetRate(QMutexLocker *locker)
 
         seeking->Release();
     } else if (m_rate != 1.0) {
-        m_rate = 1.0;   
+        m_rate = 1.0;
     }
+
     QCoreApplication::postEvent(this, new QEvent(QEvent::Type(RateChange)));
 }
 
@@ -1344,16 +1375,16 @@ void DirectShowPlayerService::run()
             m_executingTask = Stop;
 
             doStop(&locker);
-        } else if (m_pendingTasks & SetRate) {
-            m_pendingTasks ^= SetRate;
-            m_executingTask = SetRate;
-
-            doSetRate(&locker);
         } else if (m_pendingTasks & Pause) {
             m_pendingTasks ^= Pause;
             m_executingTask = Pause;
 
             doPause(&locker);
+        } else if (m_pendingTasks & SetRate) {
+            m_pendingTasks ^= SetRate;
+            m_executingTask = SetRate;
+
+            doSetRate(&locker);
         } else if (m_pendingTasks & Seek) {
             m_pendingTasks ^= Seek;
             m_executingTask = Seek;

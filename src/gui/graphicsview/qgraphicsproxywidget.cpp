@@ -1315,6 +1315,8 @@ void QGraphicsProxyWidget::focusInEvent(QFocusEvent *event)
         return;
     }
 
+    d->proxyIsGivingFocus = true;
+
     switch (event->reason()) {
     case Qt::TabFocusReason: {
 	if (QWidget *focusChild = d->findFocusChild(0, true))
@@ -1328,10 +1330,11 @@ void QGraphicsProxyWidget::focusInEvent(QFocusEvent *event)
     default:
 	if (d->widget && d->widget->focusWidget()) {
 	    d->widget->focusWidget()->setFocus(event->reason());
-	    return;
         }
         break;
     }
+
+    d->proxyIsGivingFocus = false;
 }
 
 /*!

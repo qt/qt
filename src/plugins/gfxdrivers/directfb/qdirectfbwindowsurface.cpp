@@ -61,6 +61,7 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 #endif
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
+    , flushPending(false)
 {
 #ifdef QT_NO_DIRECTFB_WM
     mode = Offscreen;
@@ -80,6 +81,7 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 #endif
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
+    , flushPending(false)
 {
     SurfaceFlags flags = 0;
     if (!widget || widget->window()->windowOpacity() == 0xff)
@@ -299,28 +301,19 @@ void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
     }
 }
 
-static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int dx, int dy)
-{
-    const DFBRectangle rect = { r.x(), r.y(), r.width(), r.height() };
-    surface->Blit(surface, surface, &rect, r.x() + dx, r.y() + dy);
-    const DFBRegion region = { rect.x + dx, rect.y + dy, r.right() + dx, r.bottom() + dy };
-    surface->Flip(surface, &region, DSFLIP_BLIT);
-}
-
 bool QDirectFBWindowSurface::scroll(const QRegion &region, int dx, int dy)
 {
-    if (!dfbSurface || !(flipFlags & DSFLIP_BLIT) || region.isEmpty())
+    if (!dfbSurface || !(flipFlags & DSFLIP_BLIT) || region.rectCount() != 1)
         return false;
-    dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
-    if (region.rectCount() == 1) {
-        scrollSurface(dfbSurface, region.boundingRect(), dx, dy);
+    if (flushPending) {
+        dfbSurface->Flip(dfbSurface, 0, DSFLIP_BLIT);
     } else {
-        const QVector<QRect> rects = region.rects();
-        const int n = rects.size();
-        for (int i=0; i<n; ++i) {
-            scrollSurface(dfbSurface, rects.at(i), dx, dy);
-        }
+        flushPending = true;
     }
+    dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
+    const QRect r = region.boundingRect();
+    const DFBRectangle rect = { r.x(), r.y(), r.width(), r.height() };
+    dfbSurface->Blit(dfbSurface, dfbSurface, &rect, r.x() + dx, r.y() + dy);
     return true;
 }
 
@@ -384,6 +377,7 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
         timer.restart();
     }
 #endif
+    flushPending = false;
 }
 
 void QDirectFBWindowSurface::beginPaint(const QRegion &)
@@ -391,6 +385,7 @@ void QDirectFBWindowSurface::beginPaint(const QRegion &)
     if (!engine) {
         engine = new QDirectFBPaintEngine(this);
     }
+    flushPending = true;
 }
 
 void QDirectFBWindowSurface::endPaint(const QRegion &)

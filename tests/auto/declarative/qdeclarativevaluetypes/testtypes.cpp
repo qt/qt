@@ -42,7 +42,7 @@
 
 void registerTypes()
 {
-    QML_REGISTER_TYPE(Test, 1, 0, MyTypeObject, MyTypeObject);
-    QML_REGISTER_TYPE(Test, 1, 0, MyConstantValueSource, MyConstantValueSource);
-    QML_REGISTER_TYPE(Test, 1, 0, MyOffsetValueInterceptor, MyOffsetValueInterceptor);
+    qmlRegisterType<MyTypeObject>("Test", 1, 0, "MyTypeObject");
+    qmlRegisterType<MyConstantValueSource>("Test", 1, 0, "MyConstantValueSource");
+    qmlRegisterType<MyOffsetValueInterceptor>("Test", 1, 0, "MyOffsetValueInterceptor");
 }

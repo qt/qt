@@ -58,12 +58,12 @@ QDeclarativeDrag::~QDeclarativeDrag()
 {
 }
 
-QDeclarativeItem *QDeclarativeDrag::target() const
+QGraphicsObject *QDeclarativeDrag::target() const
 {
     return _target;
 }
 
-void QDeclarativeDrag::setTarget(QDeclarativeItem *t)
+void QDeclarativeDrag::setTarget(QGraphicsObject *t)
 {
     if (_target == t)
         return;
@@ -383,7 +383,6 @@ void QDeclarativeMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
         d->dragged = false;
         setHovered(true);
-        d->start = event->pos();
         d->startScene = event->scenePos();
         // we should only start timer if pressAndHold is connected to.
         if (d->isConnected("pressAndHold(QDeclarativeMouseEvent*)"))

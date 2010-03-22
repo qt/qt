@@ -237,6 +237,8 @@ private Q_SLOTS:
     void lastModifiedHeaderForFile();
     void lastModifiedHeaderForHttp();
 
+    void httpCanReadLine();
+
     void rateControl_data();
     void rateControl();
 
@@ -3315,6 +3317,21 @@ void tst_QNetworkReply::lastModifiedHeaderForHttp()
     QCOMPARE(header, realDate);
 }
 
+void tst_QNetworkReply::httpCanReadLine()
+{
+    QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    QVERIFY(reply->canReadLine());
+    QVERIFY(!reply->readAll().isEmpty());
+    QVERIFY(!reply->canReadLine());
+}
+
 void tst_QNetworkReply::rateControl_data()
 {
     QTest::addColumn<int>("rate");
@@ -3935,7 +3952,7 @@ void tst_QNetworkReply::httpReUsingConnectionSequential()
 }
 
 class HttpReUsingConnectionFromFinishedSlot : public QObject {
-    Q_OBJECT;
+    Q_OBJECT
 public:
     QNetworkReply* reply1;
     QNetworkReply* reply2;

@@ -17,8 +17,8 @@ SUBDIRS=\
     qhttpsocketengine \
     qnativesocketengine \
     qnetworkaddressentry \
-    qnetworkconfigmanager \
     qnetworkconfiguration \
+    qnetworkconfigurationmanager \
     qnetworkcookie \
     qnetworkcookiejar \
     qnetworkinterface \

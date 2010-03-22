@@ -439,7 +439,8 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
             if (d->isExplicit) {
                 a.toValue = d->expressions.at(ii).second->value();
             } else {
-                QDeclarativeBinding *newBinding = new QDeclarativeBinding(d->expressions.at(ii).second->expression(), object(), qmlContext(this));
+                QDeclarativeBinding *newBinding = 
+                    new QDeclarativeBinding(d->expressions.at(ii).second->expression(), object(), qmlContext(this));
                 newBinding->setTarget(prop);
                 a.toBinding = newBinding;
                 a.deletableToBinding = true;

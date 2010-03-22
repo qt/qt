@@ -52,6 +52,7 @@
 #include "qstring.h"
 #include "qdebug.h"
 #include "qimage.h"
+#include "qcombobox.h"
 #include "private/qkeymapper_p.h"
 #include "private/qfont_p.h"
 #ifndef QT_NO_STYLE_S60
@@ -1034,7 +1035,7 @@ void QSymbianControl::HandleResourceChange(int resourceType)
                 qwidget->adjustSize();
                 qwidget->setAttribute(Qt::WA_Resized, false); //not a user resize
             }
-            if (!qwidget->testAttribute(Qt::WA_Moved)) {
+            if (!qwidget->testAttribute(Qt::WA_Moved) && qwidget->windowType() != Qt::Dialog) {
                 TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
                 SetPosition(r.iTl);
                 qwidget->setAttribute(Qt::WA_Moved, false); // not really an explicit position
@@ -1254,11 +1255,13 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     }
 #endif
 
+#ifdef QT_KEYPAD_NAVIGATION
     if (touch) {
         QApplicationPrivate::navigationMode = Qt::NavigationModeNone;
     } else {
         QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
     }
+#endif
 
 #ifndef QT_NO_CURSOR
     //Check if window server pointer cursors are supported or not
@@ -1407,10 +1410,12 @@ void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 
 void QApplicationPrivate::openPopup(QWidget *popup)
 {
+    if (popup && qobject_cast<QComboBox *>(popup->parentWidget()))
+        static_cast<QSymbianControl *>(popup->effectiveWinId())->FadeBehindPopup(ETrue);
+
     if (!QApplicationPrivate::popupWidgets)
         QApplicationPrivate::popupWidgets = new QWidgetList;
     QApplicationPrivate::popupWidgets->append(popup);
-
 
     // Cancel focus widget pointer capture and long tap timer
     if (QApplication::focusWidget()) {
@@ -1450,6 +1455,9 @@ void QApplicationPrivate::openPopup(QWidget *popup)
 
 void QApplicationPrivate::closePopup(QWidget *popup)
 {
+    if (popup && qobject_cast<QComboBox *>(popup->parentWidget()))
+        static_cast<QSymbianControl *>(popup->effectiveWinId())->FadeBehindPopup(EFalse);
+
     if (!QApplicationPrivate::popupWidgets)
         return;
     QApplicationPrivate::popupWidgets->removeAll(popup);

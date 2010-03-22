@@ -66,6 +66,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QDeclarativeCompiler;
+
 class QDeclarativeCustomParserPropertyPrivate;
 class Q_DECLARATIVE_EXPORT QDeclarativeCustomParserProperty
 {
@@ -111,6 +113,7 @@ private:
 class Q_DECLARATIVE_EXPORT QDeclarativeCustomParser
 {
 public:
+    QDeclarativeCustomParser() : compiler(0) {}
     virtual ~QDeclarativeCustomParser() {}
 
     void clearErrors();
@@ -124,13 +127,18 @@ protected:
     void error(const QDeclarativeCustomParserProperty&, const QString& description);
     void error(const QDeclarativeCustomParserNode&, const QString& description);
 
+    int evaluateEnum(const QByteArray&) const;
+
 private:
     QList<QDeclarativeError> exceptions;
+    QDeclarativeCompiler *compiler;
+    friend class QDeclarativeCompiler;
 };
 
+#if 0
 #define QML_REGISTER_CUSTOM_TYPE(URI, VERSION_MAJ, VERSION_MIN, NAME, TYPE, CUSTOMTYPE) \
             qmlRegisterCustomType<TYPE>(#URI, VERSION_MAJ, VERSION_MIN, #NAME, #TYPE, new CUSTOMTYPE)
-
+#endif
 
 QT_END_NAMESPACE
 

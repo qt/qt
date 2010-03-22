@@ -110,7 +110,7 @@ private slots:
 
 void tst_qdeclarativestates::initTestCase()
 {
-    QML_REGISTER_TYPE(Qt.test, 1, 0, MyRectangle,MyRect);
+    qmlRegisterType<MyRect>("Qt.test", 1, 0, "MyRectangle");
 }
 
 QByteArray tst_qdeclarativestates::fullDataPath(const QString &path)
@@ -441,7 +441,7 @@ void tst_qdeclarativestates::parentChange()
     QDeclarativeEngine engine;
 
     {
-        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/parentChange.qml");
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/parentChange1.qml");
         QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
         QVERIFY(rect != 0);
 
@@ -546,7 +546,7 @@ void tst_qdeclarativestates::anchorChanges()
 {
     QDeclarativeEngine engine;
 
-    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChanges.qml");
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChanges1.qml");
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
     QVERIFY(rect != 0);
 
@@ -955,12 +955,12 @@ void tst_qdeclarativestates::reset()
 
     QDeclarativeText *text = rect->findChild<QDeclarativeText*>();
     QVERIFY(text != 0);
-    QCOMPARE(text->width(), qreal(50.));
+    QCOMPARE(text->width(), qreal(40.));
     QVERIFY(text->width() < text->height());
 
     rect->setState("state1");
 
-    QVERIFY(text->width() > 51);
+    QVERIFY(text->width() > 41);
     QVERIFY(text->width() > text->height());
 }
 
