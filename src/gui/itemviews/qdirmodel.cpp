@@ -1182,12 +1182,18 @@ QFileInfo QDirModel::fileInfo(const QModelIndex &index) const
 
 void QDirModelPrivate::init()
 {
+    Q_Q(QDirModel);
     filters = QDir::AllEntries | QDir::NoDotAndDotDot;
     sort = QDir::Name;
     nameFilters << QLatin1String("*");
     root.parent = 0;
     root.info = QFileInfo();
     clear(&root);
+    QHash<int, QByteArray> roles = q->roleNames();
+    roles.insertMulti(QDirModel::FileIconRole, "fileIcon"); // == Qt::decoration
+    roles.insert(QDirModel::FilePathRole, "filePath");
+    roles.insert(QDirModel::FileNameRole, "fileName");
+    q->setRoleNames(roles);
 }
 
 QDirModelPrivate::QDirNode *QDirModelPrivate::node(int row, QDirNode *parent) const

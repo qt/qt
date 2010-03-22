@@ -88,6 +88,8 @@ private slots:
     void failNetworkRequest();
 //    void networkComponent();
 
+    void deleteComponentCrash();
+
 private:
     QDeclarativeEngine engine;
 };
@@ -457,6 +459,28 @@ void tst_QDeclarativeLoader::failNetworkRequest()
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 0);
 
     delete loader;
+}
+
+// QTBUG-9241
+void tst_QDeclarativeLoader::deleteComponentCrash()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("/crash.qml"));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+
+    item->metaObject()->invokeMethod(item, "setLoaderSource");
+
+    QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(item->QGraphicsObject::children().at(0));
+    QVERIFY(loader);
+    QVERIFY(loader->item());
+    QCOMPARE(loader->item()->objectName(), QLatin1String("blue"));
+    QCOMPARE(loader->progress(), 1.0);
+    QCOMPARE(loader->status(), QDeclarativeLoader::Ready);
+    QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
+    QEXPECT_FAIL("", "QTBUG-9245", Continue);
+    QVERIFY(loader->source() == QUrl::fromLocalFile(SRCDIR "/data/BlueRect.qml"));
+
+    delete item;
 }
 
 QTEST_MAIN(tst_QDeclarativeLoader)

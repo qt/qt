@@ -358,14 +358,10 @@ void QDeclarativeRepeater::itemsMoved(int from, int to, int count)
         removed << d->deletables.takeAt(from);
     for (int i = 0; i < count; ++i)
         d->deletables.insert(to + i, removed.at(i));
-    for (int i = 0; i < d->model->count(); ++i) {
-        if (i < from && i < to)
-            continue;
-        QDeclarativeItem *item = d->deletables.at(i);
-        if (i < d->deletables.count()-1)
-            item->stackBefore(d->deletables.at(i+1));
-        else
-            item->stackBefore(this);
+    d->deletables.last()->stackBefore(this);
+    for (int i = d->model->count()-1; i > 0; --i) {
+        QDeclarativeItem *item = d->deletables.at(i-1);
+        item->stackBefore(d->deletables.at(i));
     }
 }
 

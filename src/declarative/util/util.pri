@@ -3,8 +3,6 @@ INCLUDEPATH += $$PWD
 SOURCES += \
     $$PWD/qdeclarativeutilmodule.cpp\
     $$PWD/qdeclarativeview.cpp \
-    $$PWD/qfxperf.cpp \
-    $$PWD/qperformancelog.cpp \
     $$PWD/qdeclarativeconnections.cpp \
     $$PWD/qdeclarativepackage.cpp \
     $$PWD/qdeclarativeanimation.cpp \
@@ -33,8 +31,6 @@ SOURCES += \
 HEADERS += \
     $$PWD/qdeclarativeutilmodule_p.h\
     $$PWD/qdeclarativeview.h \
-    $$PWD/qfxperf_p_p.h \
-    $$PWD/qperformancelog_p_p.h \
     $$PWD/qdeclarativeconnections_p.h \
     $$PWD/qdeclarativepackage_p.h \
     $$PWD/qdeclarativeanimation_p.h \
@@ -62,8 +58,7 @@ HEADERS += \
     $$PWD/qdeclarativebehavior_p.h \
     $$PWD/qdeclarativefontloader_p.h \
     $$PWD/qdeclarativestyledtext_p.h \
-    $$PWD/qdeclarativelistmodelworkeragent_p.h \
-    $$PWD/qdeclarativelistmodelworkeragent_p_p.h
+    $$PWD/qdeclarativelistmodelworkeragent_p.h
 
 contains(QT_CONFIG, xmlpatterns) {
     QT+=xmlpatterns

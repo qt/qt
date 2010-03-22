@@ -61,8 +61,6 @@
 #include "qdeclarativeglobal_p.h"
 #include "qdeclarativescriptstring.h"
 
-#include <qfxperf_p_p.h>
-
 #include <QStack>
 #include <QWidget>
 #include <QColor>
@@ -72,6 +70,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -260,8 +259,9 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
         case QDeclarativeInstruction::CreateComponent:
             {
-                QObject *qcomp = new QDeclarativeComponent(ctxt->engine, comp, ii + 1, instr.createComponent.count,
-                                                           stack.isEmpty() ? 0 : stack.top());
+                QDeclarativeComponent *qcomp = 
+                    new QDeclarativeComponent(ctxt->engine, comp, ii + 1, instr.createComponent.count,
+                                              stack.isEmpty() ? 0 : stack.top());
 
                 QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(qcomp, true);
                 Q_ASSERT(ddata);
@@ -275,6 +275,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                 ddata->outerContext = ctxt;
                 ddata->lineNumber = instr.line;
                 ddata->columnNumber = instr.create.column;
+
+                QDeclarativeComponentPrivate::get(qcomp)->creationContext = ctxt;
 
                 stack.push(qcomp);
                 ii += instr.createComponent.count;
@@ -579,6 +581,12 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
             {
                 QObject *target = stack.top();
                 ctxt->addScript(scripts.at(instr.storeScript.value), target);
+            }
+            break;
+
+        case QDeclarativeInstruction::StoreImportedScript:
+            {
+                ctxt->addImportedScript(scripts.at(instr.storeScript.value));
             }
             break;
 
