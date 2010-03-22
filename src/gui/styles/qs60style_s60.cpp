@@ -755,7 +755,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
 
             if (drawn)
                 result = fromFbsBitmap(background, NULL, flags, targetSize);
-            // if drawing fails in skin server, just ignore the background (probably OOM occured)
+            // if drawing fails in skin server, just ignore the background (probably OOM case)
 
             CleanupStack::PopAndDestroy(4, background); //background, dev, gc, bgContext
     //        QS60WindowSurface::lockBitmapHeap();
@@ -787,7 +787,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
 
             const int currentFrame = QS60StylePrivate::currentAnimationFrame(part);
             if (constructedFromTheme && aknAnimation && aknAnimation->BitmapAnimData()->FrameArray().Count() > 0) {
-                //Animation was created succesfully and contains frames, just fetch current frame
+                //Animation was created successfully and contains frames, just fetch current frame
                 if(currentFrame >= aknAnimation->BitmapAnimData()->FrameArray().Count())
                     User::Leave(KErrOverflow);
                 const CBitmapFrameData* frameData = aknAnimation->BitmapAnimData()->FrameArray().At(currentFrame);

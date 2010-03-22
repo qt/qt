@@ -428,7 +428,7 @@ public:
         SE_ToolBarButton,
         SE_ToolBarButtonPressed,
         SE_PanelBackground,
-        SE_ScrollBarHandlePressedHorizontal, //only for 5.0+
+        SE_ScrollBarHandlePressedHorizontal,
         SE_ScrollBarHandlePressedVertical,
         SE_ButtonInactive,
         SE_Editor,

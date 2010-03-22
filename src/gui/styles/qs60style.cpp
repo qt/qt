@@ -61,7 +61,6 @@
 #include "qscrollarea.h"
 #include "qscrollbar.h"
 #include "qtabbar.h"
-#include "qtablewidget.h"
 #include "qtableview.h"
 #include "qtextedit.h"
 #include "qtoolbar.h"
@@ -1009,7 +1008,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     QS60StylePrivate::SE_SliderGrooveVertical;
                 QS60StylePrivate::drawSkinElement(grooveElement, painter, sliderGroove, flags);
             } else {
-                const QRect sliderGroove = subControlRect(control, optionSlider, SC_SliderGroove, widget);
                 const QPoint sliderGrooveCenter = sliderGroove.center();
                 const bool horizontal = optionSlider->orientation == Qt::Horizontal;
                 painter->save();
@@ -1136,7 +1134,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 drawPrimitive(pe, &toolButton, painter, widget);
             }
 
-            if (toolBtn->text.length()>0 ||
+            if (toolBtn->text.length() > 0 ||
                 !toolBtn->icon.isNull()) {
                 const int frameWidth = pixelMetric(PM_DefaultFrameWidth, option, widget);
                 toolButton.rect = button.adjusted(frameWidth, frameWidth, -frameWidth, -frameWidth);
@@ -2316,7 +2314,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                         (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
                 int minDimension = qMin(option->rect.width(), option->rect.height());
                 QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
-				const int magicTweak = 3;
+                const int magicTweak = 3;
                 int resizeValue = minDimension >> 1;
                 if (!QS60StylePrivate::isTouchSupported()) {
                     minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
@@ -2461,9 +2459,9 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 #ifndef QT_NO_COMBOBOX
         case CT_ComboBox: {
                 // Fixing Ui design issues with too wide QComboBoxes and greedy SizeHints
-                // Make sure, that the combobox says within the screen.
+                // Make sure, that the combobox stays within the screen.
                 const QSize desktopContentSize = QApplication::desktop()->availableGeometry().size()
-                        -QSize(pixelMetric(PM_LayoutLeftMargin) + pixelMetric(PM_LayoutRightMargin), 0);
+                        - QSize(pixelMetric(PM_LayoutLeftMargin) + pixelMetric(PM_LayoutRightMargin), 0);
                 sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget).
                         boundedTo(desktopContentSize);
             }
@@ -3249,7 +3247,7 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
 
 /*!
     \internal
-    Handle the timer \a event. 
+    Handle the timer \a event.
 */
 void QS60Style::timerEvent(QTimerEvent *event)
 {
