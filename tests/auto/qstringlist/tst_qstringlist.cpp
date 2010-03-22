@@ -77,7 +77,7 @@ private slots:
     void streamingOperator();
     void join() const;
     void join_data() const;
-    void join_emptiness() const;
+    void joinEmptiness() const;
 };
 
 extern const char email[];
@@ -312,13 +312,13 @@ void tst_QStringList::join_data() const
                 << QString("a b c");
 }
 
-void tst_QStringList::join_emptiness() const
+void tst_QStringList::joinEmptiness() const
 {
     QStringList list;
     QString string = list.join(QString());
 
-    QCOMPARE(string.isEmpty(), true);
-    QCOMPARE(string.isNull(), true);
+    QVERIFY(string.isEmpty());
+    QVERIFY(string.isNull());
 }
 
 QTEST_APPLESS_MAIN(tst_QStringList)
