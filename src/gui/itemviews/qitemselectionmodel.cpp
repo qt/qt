@@ -814,6 +814,10 @@ static QItemSelection mergeIndexes(const QList<QPersistentModelIndex> &indexes)
         while (++i < colSpans.count()) {
             QModelIndex nextTl = colSpans.at(i).topLeft();
             QModelIndex nextBr = colSpans.at(i).bottomRight();
+
+            if (nextTl.parent() != tl.parent())
+                break; // we can't merge selection ranges from different parents
+
             if ((nextTl.column() == prevTl.column()) && (nextBr.column() == br.column())
                 && (nextTl.row() == prevTl.row() + 1) && (nextBr.row() == br.row() + 1)) {
                 br = nextBr;
