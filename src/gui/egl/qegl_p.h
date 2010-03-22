@@ -100,13 +100,34 @@ typedef NativeDisplayType EGLNativeDisplayType;
 QT_END_INCLUDE_NAMESPACE
 
 #include <QtGui/qpaintdevice.h>
-
 #include <QFlags>
 
 QT_BEGIN_NAMESPACE
 
 #define QEGL_NO_CONFIG ((EGLConfig)-1)
 
+#ifndef EGLAPIENTRY
+#define EGLAPIENTRY
+#endif
+
+#if !defined(EGL_KHR_image) || !defined(EGL_KHR_image_base)
+
+typedef void *EGLImageKHR;
+#define EGL_NO_IMAGE_KHR            ((EGLImageKHR)0)
+#define EGL_IMAGE_PRESERVED_KHR     0x30D2
+
+typedef EGLImageKHR (EGLAPIENTRY *_eglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, EGLint*);
+typedef EGLBoolean (EGLAPIENTRY *_eglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
+
+// Defined in qegl.cpp:
+extern Q_GUI_EXPORT _eglCreateImageKHR eglCreateImageKHR;
+extern Q_GUI_EXPORT _eglDestroyImageKHR eglDestroyImageKHR;
+
+#endif // !defined(EGL_KHR_image) || !defined(EGL_KHR_image_base)
+
+#if !defined(EGL_KHR_image) || !defined(EGL_KHR_image_pixmap)
+#define EGL_NATIVE_PIXMAP_KHR       0x30B0
+#endif
 
 
 class QEglProperties;
@@ -131,7 +152,6 @@ namespace QEgl {
         Renderable  = 0x02  // Config will be compatable with the paint engines (VG or GL)
     };
     Q_DECLARE_FLAGS(ConfigOptions, ConfigOption);
-
 
     // Most of the time we use the same config for things like widgets & pixmaps, so rather than
     // go through the eglChooseConfig loop every time, we use defaultConfig, which will return

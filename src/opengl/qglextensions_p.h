@@ -68,6 +68,11 @@
 # define APIENTRYP *
 #endif
 
+#ifndef QT_NO_EGL
+// Needed for EGLImageKHR definition:
+#include <QtGui/private/qegl_p.h>
+#endif
+
 #include <QtCore/qglobal.h>
 
 #ifndef GL_ARB_vertex_buffer_object
@@ -210,6 +215,14 @@ typedef void (APIENTRY *_glFramebufferTextureFaceEXT)(GLenum target, GLenum atta
 typedef void (APIENTRY *_glCompressedTexImage2DARB) (GLenum, GLint, GLenum, GLsizei,
                                                      GLsizei, GLint, GLsizei, const GLvoid *);
 
+#ifndef QT_NO_EGL
+// OES_EGL_image
+// Note: We define these to take EGLImage whereas spec says they take a new GLeglImageOES
+//       type, which the EGL image should be cast to.
+typedef void (APIENTRY *_glEGLImageTargetTexture2DOES) (GLenum, EGLImageKHR);
+typedef void (APIENTRY *_glEGLImageTargetRenderbufferStorageOES) (GLenum, EGLImageKHR);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 struct QGLExtensionFuncs
@@ -326,6 +339,12 @@ struct QGLExtensionFuncs
 #if !defined(QT_OPENGL_ES)
         // Texture compression
         qt_glCompressedTexImage2DARB = 0;
+#endif
+
+#ifndef QT_NO_EGL
+        // OES_EGL_image
+        qt_glEGLImageTargetTexture2DOES = 0;
+        qt_glEGLImageTargetRenderbufferStorageOES = 0;
 #endif
     }
 
@@ -447,6 +466,13 @@ struct QGLExtensionFuncs
     // Texture compression
     _glCompressedTexImage2DARB qt_glCompressedTexImage2DARB;
 #endif
+
+#ifndef QT_NO_EGL
+    // OES_EGL_image
+    _glEGLImageTargetTexture2DOES qt_glEGLImageTargetTexture2DOES;
+    _glEGLImageTargetRenderbufferStorageOES qt_glEGLImageTargetRenderbufferStorageOES;
+#endif
+
 };
 
 
@@ -839,6 +865,12 @@ struct QGLExtensionFuncs
 #define glCompressedTexImage2D QGLContextPrivate::extensionFuncs(ctx).qt_glCompressedTexImage2DARB
 #endif
 
+#ifndef QT_NO_EGL
+// OES_EGL_image
+#define glEGLImageTargetTexture2DOES QGLContextPrivate::extensionFuncs(ctx).qt_glEGLImageTargetTexture2DOES
+#define glEGLImageTargetRenderbufferStorageOES QGLContextPrivate::extensionFuncs(ctx).qt_glEGLImageTargetRenderbufferStorageOES
+#endif
+
 extern bool qt_resolve_framebufferobject_extensions(QGLContext *ctx);
 bool qt_resolve_buffer_extensions(QGLContext *ctx);
 
@@ -848,6 +880,10 @@ bool qt_resolve_stencil_face_extension(QGLContext *ctx);
 bool qt_resolve_frag_program_extensions(QGLContext *ctx);
 
 bool qt_resolve_glsl_extensions(QGLContext *ctx);
+
+#ifndef QT_NO_EGL
+bool qt_resolve_eglimage_gl_extensions(QGLContext *ctx);
+#endif
 
 QT_END_NAMESPACE
 
