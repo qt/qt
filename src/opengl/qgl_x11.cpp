@@ -1671,7 +1671,7 @@ static bool qt_resolveTextureFromPixmap(QPaintDevice *paintDevice)
 #endif //defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
 
 
-QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, const qint64 key,
+QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, const qint64 key,
                                                            QGLContext::BindOptions options)
 {
 #if !defined(GLX_VERSION_1_3) || defined(Q_OS_HPUX)
@@ -1679,12 +1679,12 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, con
 #else
     Q_Q(QGLContext);
 
-    Q_ASSERT(pmd->classId() == QPixmapData::X11Class);
+    QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pixmap->data_ptr().data());
+    Q_ASSERT(pixmapData->classId() == QPixmapData::X11Class);
 
     if (!qt_resolveTextureFromPixmap(paintDevice))
         return 0;
 
-    QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pmd);
     const QX11Info &x11Info = pixmapData->xinfo;
 
     // Store the configs (Can be static because configs aren't dependent on current context)

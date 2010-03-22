@@ -2444,7 +2444,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     if (pd->classId() == QPixmapData::X11Class && pd->pixelType() == QPixmapData::PixmapType
         && xinfo && xinfo->screen() == pixmap.x11Info().screen())
     {
-        texture = bindTextureFromNativePixmap(pd, key, options);
+        texture = bindTextureFromNativePixmap(const_cast<QPixmap*>(&pixmap), key, options);
         if (texture) {
             texture->options |= QGLContext::MemoryManagedBindOption;
             texture->boundPixmap = pd;

@@ -354,7 +354,7 @@ void QGLWidgetPrivate::recreateEglSurface(bool force)
 }
 
 
-QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, const qint64 key,
+QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, const qint64 key,
                                                            QGLContext::BindOptions options)
 {
     Q_Q(QGLContext);
@@ -363,7 +363,6 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
     if (!(options & QGLContext::CanFlipNativePixmapBindOption))
         return 0;
 
-    Q_ASSERT(pd->classId() == QPixmapData::X11Class);
 
     static bool checkedForTFP = false;
     static bool haveTFP = false;
@@ -407,8 +406,8 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
         return 0;
 
 
-
-    QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pd);
+    QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pixmap->data_ptr().data());
+    Q_ASSERT(pixmapData->classId() == QPixmapData::X11Class);
     bool hasAlpha = pixmapData->hasAlphaChannel();
     bool pixmapHasValidSurface = false;
     bool textureIsBound = false;
@@ -440,14 +439,13 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
         Q_ASSERT(eglCreateImageKHR);
 
         EGLImageKHR eglImage;
-        QPixmap tmpPixmap(pd);
 
         EGLint attribs[] = {
             EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
             EGL_NONE
         };
         eglImage = eglCreateImageKHR(QEgl::display(), EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR,
-                                     (EGLClientBuffer)QEgl::nativePixmap(&tmpPixmap), attribs);
+                                     (EGLClientBuffer)QEgl::nativePixmap(pixmap), attribs);
 
         QGLContext* ctx = q;
         glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, eglImage);
@@ -476,8 +474,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
                                                    QEgl::OpenGL,
                                                    hasAlpha ? QEgl::Translucent : QEgl::NoOptions);
 
-            QPixmap tmpPixmap(pixmapData); //###
-            pixmapData->gl_surface = (void*)QEgl::createSurface(&tmpPixmap, config);
+            pixmapData->gl_surface = (void*)QEgl::createSurface(pixmap, config);
             if (pixmapData->gl_surface == (void*)EGL_NO_SURFACE)
                 return false;
         }
