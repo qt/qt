@@ -652,8 +652,7 @@ bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widge
     UInt32 macScanCode = 1;
     QKeyEventEx ke(cocoaEvent2QtEvent([event type]), qtKey, keyMods, text, [event isARepeat], qMax(1, keyLength),
                    macScanCode, [event keyCode], [event modifierFlags]);
-    qt_sendSpontaneousEvent(widgetToGetEvent, &ke);
-    return ke.isAccepted();
+    return qt_sendSpontaneousEvent(widgetToGetEvent, &ke) && ke.isAccepted();
 }
 #endif
 
@@ -703,8 +702,8 @@ bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEve
     if (mustUseCocoaKeyEvent())
         return qt_dispatchKeyEventWithCocoa(keyEvent, widgetToGetEvent);
     bool isAccepted;
-    qt_keymapper_private()->translateKeyEvent(widgetToGetEvent, 0, key_event, &isAccepted, true);
-    return isAccepted;
+    bool consumed = qt_keymapper_private()->translateKeyEvent(widgetToGetEvent, 0, key_event, &isAccepted, true);
+    return consumed && isAccepted;
 #endif
 }
 

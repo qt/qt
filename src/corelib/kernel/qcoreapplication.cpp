@@ -47,7 +47,6 @@
 #include "qeventloop.h"
 #include "qcorecmdlineargs_p.h"
 #include <qdatastream.h>
-#include <qdatetime.h>
 #include <qdebug.h>
 #include <qdir.h>
 #include <qfile.h>
@@ -59,6 +58,7 @@
 #include <qthreadpool.h>
 #include <qthreadstorage.h>
 #include <private/qthread_p.h>
+#include <qelapsedtimer.h>
 #include <qlibraryinfo.h>
 #include <qvarlengtharray.h>
 #include <private/qfactoryloader_p.h>
@@ -917,7 +917,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
     QThreadData *data = QThreadData::current();
     if (!data->eventDispatcher)
         return;
-    QTime start;
+    QElapsedTimer start;
     start.start();
     if (flags & QEventLoop::DeferredDeletion)
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);

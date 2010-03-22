@@ -100,6 +100,7 @@ typedef struct _NSModalSession *NSModalSession;
 typedef struct _QCocoaModalSessionInfo {
     QPointer<QWidget> widget;
     NSModalSession session;
+    void *nswindow;
 } QCocoaModalSessionInfo;
 #endif
 
