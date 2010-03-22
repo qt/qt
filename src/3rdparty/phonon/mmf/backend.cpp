@@ -24,7 +24,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <apmstd.h> // for TDataType
 
 #include "abstractaudioeffect.h"
-#include "ancestormovemonitor.h"
 #include "audiooutput.h"
 #include "audioplayer.h"
 #include "backend.h"
@@ -44,7 +43,9 @@ using namespace Phonon::MMF;
 
 Backend::Backend(QObject *parent)
     : QObject(parent)
+#ifndef PHONON_MMF_VIDEO_SURFACES
     , m_ancestorMoveMonitor(new AncestorMoveMonitor(this))
+#endif
     , m_effectFactory(new EffectFactory(this))
 {
     TRACE_CONTEXT(Backend::Backend, EBackend);
@@ -86,8 +87,15 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
             static_cast<EffectFactory::Type>(args.first().toInt());
         return m_effectFactory->createAudioEffect(type, parent);
     }
+
     case VideoWidgetClass:
-        result = new VideoWidget(m_ancestorMoveMonitor.data(), qobject_cast<QWidget *>(parent));
+    {
+        VideoWidget *widget = new VideoWidget(qobject_cast<QWidget *>(parent));
+#ifndef PHONON_MMF_VIDEO_SURFACES
+        widget->setAncestorMoveMonitor(m_ancestorMoveMonitor.data());
+#endif
+        result = widget;
+    }
         break;
 
     default:
