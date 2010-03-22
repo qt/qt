@@ -1970,9 +1970,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 if (focusFrame->widget() && focusFrame->widget()->hasEditFocus())
                     editFocus = true;
             }
-            const qreal opacity = editFocus ? 0.65 : 0.45; // Trial and error factors. Feel free to improve.
+            const qreal opacity = editFocus ? 1 : 0.75; // Trial and error factors. Feel free to improve.
 #else
-            const qreal opacity = 0.5;
+            const qreal opacity = 0.85;
 #endif
             // We need to reduce the focus frame size if LayoutSpacing is smaller than FocusFrameMargin
             // Otherwise, we would overlay adjacent widgets.
