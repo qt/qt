@@ -52,25 +52,25 @@
  \since 4.5
  \brief Test QtXmlPatterns test suite driver in tests/auto/xmlpatternsxqts/lib/.
  */
-class tst_XmlPatternsXSLTS : public tst_SuiteTest
+class tst_XmlPatternsDiagnosticsTS : public tst_SuiteTest
 {
     Q_OBJECT
 public:
-    tst_XmlPatternsXSLTS();
+    tst_XmlPatternsDiagnosticsTS();
 protected:
     virtual void catalogPath(QString &write) const;
 };
 
-tst_XmlPatternsXSLTS::tst_XmlPatternsXSLTS() : tst_SuiteTest(tst_SuiteTest::XQuerySuite, true)
+tst_XmlPatternsDiagnosticsTS::tst_XmlPatternsDiagnosticsTS() : tst_SuiteTest(tst_SuiteTest::XQuerySuite, true)
 {
 }
 
-void tst_XmlPatternsXSLTS::catalogPath(QString &write) const
+void tst_XmlPatternsDiagnosticsTS::catalogPath(QString &write) const
 {
     write = QLatin1String("TestSuite/DiagnosticsCatalog.xml");
 }
 
-QTEST_MAIN(tst_XmlPatternsXSLTS)
+QTEST_MAIN(tst_XmlPatternsDiagnosticsTS)
 
 #include "tst_xmlpatternsdiagnosticsts.moc"
 #else
