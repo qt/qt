@@ -46,7 +46,6 @@
 #include <qdeclarativestate_p.h>
 #include <qdeclarativestategroup_p.h>
 #include <qdeclarativestateoperations_p.h>
-#include <qfxperf_p_p.h>
 #include <QtCore/qmath.h>
 
 #include <QDebug>
@@ -164,9 +163,6 @@ void QDeclarativeBasePositioner::componentComplete()
 {
     Q_D(QDeclarativeBasePositioner);
     QDeclarativeItem::componentComplete();
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::BasepositionerComponentComplete> cc;
-#endif
     positionedItems.reserve(d->QGraphicsItemPrivate::children.count());
     prePositioning();
 }

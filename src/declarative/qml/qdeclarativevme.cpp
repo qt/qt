@@ -61,8 +61,6 @@
 #include "qdeclarativeglobal_p.h"
 #include "qdeclarativescriptstring.h"
 
-#include <qfxperf_p_p.h>
-
 #include <QStack>
 #include <QWidget>
 #include <QColor>
@@ -72,6 +70,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 

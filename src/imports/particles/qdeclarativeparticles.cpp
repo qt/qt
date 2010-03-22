@@ -44,7 +44,6 @@
 #include <private/qdeclarativeitem_p.h>
 
 #include <private/qdeclarativepixmapcache_p.h>
-#include <private/qfxperf_p_p.h>
 #include <QtCore/QAbstractAnimation>
 
 #include <QPainter>
@@ -567,9 +566,6 @@ void QDeclarativeParticlesPrivate::tick(int time)
 
 void QDeclarativeParticlesPrivate::createParticle(int time)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::CreateParticle> x;
-#endif
     Q_Q(QDeclarativeParticles);
     QDeclarativeParticle p(time);
     p.x = q->x() + q->width() * qreal(qrand()) / RAND_MAX - image.width()/2.0;

@@ -67,8 +67,6 @@
 #include "qdeclarativecompiledbindings_p.h"
 #include "qdeclarativeglobalscriptclass_p.h"
 
-#include <qfxperf_p_p.h>
-
 #include <QCoreApplication>
 #include <QColor>
 #include <QDebug>
@@ -77,6 +75,7 @@
 #include <QRectF>
 #include <QAtomicInt>
 #include <QtCore/qdebug.h>
+#include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -546,9 +545,6 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
                           QDeclarativeCompositeTypeData *unit,
                           QDeclarativeCompiledData *out)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::Compilation> pc;
-#endif
     exceptions.clear();
 
     Q_ASSERT(out);
