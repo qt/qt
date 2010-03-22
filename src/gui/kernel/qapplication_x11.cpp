@@ -3060,6 +3060,8 @@ int QApplication::x11ClientMessage(QWidget* w, XEvent* event, bool passive_only)
                 if ((ulong) event->xclient.data.l[1] > X11->time)
                     X11->time = event->xclient.data.l[1];
                 QWidget *amw = activeModalWidget();
+                if (amw && amw->testAttribute(Qt::WA_X11DoNotAcceptFocus))
+                    amw = 0;
                 if (amw && !QApplicationPrivate::tryModalHelper(widget, 0)) {
                     QWidget *p = amw->parentWidget();
                     while (p && p != widget)
