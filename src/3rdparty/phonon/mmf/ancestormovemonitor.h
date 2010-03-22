@@ -29,7 +29,7 @@ namespace Phonon
 {
 namespace MMF
 {
-class VideoOutput;
+class DsaVideoOutput;
 
 class AncestorMoveMonitor : public QObject
 {
@@ -49,7 +49,7 @@ public:
      * ancestor list to be updated - therefore it should be called when
      * the target receives a ParentChange event.
      */
-    void registerTarget(VideoOutput *target);
+    void registerTarget(DsaVideoOutput *target);
 
     /**
      * Remove target from the monitor.
@@ -57,7 +57,7 @@ public:
      * The target will no longer receive notification when move events are
      * delivered to its ancestors.
      */
-    void unRegisterTarget(VideoOutput *target);
+    void unRegisterTarget(DsaVideoOutput *target);
 
 protected:
     /**
@@ -77,7 +77,7 @@ private:
      * therefore a set, however we use QList rather than QSet for
      * efficiency of iteration.
      */
-    typedef QList<VideoOutput *> TargetList;
+    typedef QList<DsaVideoOutput *> TargetList;
 
     /**
      * Map from widget on which the move event occurs, to widgets which
@@ -92,4 +92,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif
+#endif // !PHONON_MMF_ANCESTORMOVEMONITOR_H

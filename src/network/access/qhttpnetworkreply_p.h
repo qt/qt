@@ -172,6 +172,7 @@ public:
     bool findChallenge(bool forProxy, QByteArray &challenge) const;
     QAuthenticatorPrivate::Method authenticationMethod(bool isProxy) const;
     void clear();
+    void clearHttpLayerInformation();
 
     qint64 readReplyBodyRaw(QIODevice *in, QByteDataBuffer *out, qint64 size);
     qint64 readReplyBodyChunked(QIODevice *in, QByteDataBuffer *out);

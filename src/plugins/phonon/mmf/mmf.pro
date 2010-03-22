@@ -20,13 +20,16 @@ phonon_mmf_audio_drm {
 # '#include <videoplayer.h>' picks up the Symbian header, as intended.
 PREPEND_INCLUDEPATH = /epoc32/include
 
+PREPEND_INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty
+
 INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
 
 HEADERS +=                                           \
            $$PHONON_MMF_DIR/abstractaudioeffect.h    \
            $$PHONON_MMF_DIR/abstractmediaplayer.h    \
            $$PHONON_MMF_DIR/abstractplayer.h         \
-           $$PHONON_MMF_DIR/ancestormovemonitor.h    \
+           $$PHONON_MMF_DIR/abstractvideooutput.h    \
+           $$PHONON_MMF_DIR/abstractvideoplayer.h    \
            $$PHONON_MMF_DIR/audioequalizer.h         \
            $$PHONON_MMF_DIR/audiooutput.h            \
            $$PHONON_MMF_DIR/audioplayer.h            \
@@ -40,23 +43,22 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/loudness.h               \
            $$PHONON_MMF_DIR/mediaobject.h            \
            $$PHONON_MMF_DIR/mmf_medianode.h          \
-           $$PHONON_MMF_DIR/mmf_videoplayer.h        \
            $$PHONON_MMF_DIR/stereowidening.h         \
            $$PHONON_MMF_DIR/objectdump.h             \
            $$PHONON_MMF_DIR/objectdump_symbian.h     \
            $$PHONON_MMF_DIR/objecttree.h             \
            $$PHONON_MMF_DIR/utils.h                  \
-           $$PHONON_MMF_DIR/videooutput.h            \
            $$PHONON_MMF_DIR/videowidget.h
 
 SOURCES +=                                           \
            $$PHONON_MMF_DIR/abstractaudioeffect.cpp  \
            $$PHONON_MMF_DIR/abstractmediaplayer.cpp  \
            $$PHONON_MMF_DIR/abstractplayer.cpp       \
-           $$PHONON_MMF_DIR/ancestormovemonitor.cpp  \
            $$PHONON_MMF_DIR/audioequalizer.cpp       \
            $$PHONON_MMF_DIR/audiooutput.cpp          \
            $$PHONON_MMF_DIR/audioplayer.cpp          \
+           $$PHONON_MMF_DIR/abstractvideooutput.cpp  \
+           $$PHONON_MMF_DIR/abstractvideoplayer.cpp  \
            $$PHONON_MMF_DIR/backend.cpp              \
            $$PHONON_MMF_DIR/bassboost.cpp            \
            $$PHONON_MMF_DIR/dummyplayer.cpp          \
@@ -66,14 +68,33 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/loudness.cpp             \
            $$PHONON_MMF_DIR/mediaobject.cpp          \
            $$PHONON_MMF_DIR/mmf_medianode.cpp        \
-           $$PHONON_MMF_DIR/mmf_videoplayer.cpp      \
            $$PHONON_MMF_DIR/stereowidening.cpp       \
            $$PHONON_MMF_DIR/objectdump.cpp           \
            $$PHONON_MMF_DIR/objectdump_symbian.cpp   \
            $$PHONON_MMF_DIR/objecttree.cpp           \
            $$PHONON_MMF_DIR/utils.cpp                \
-           $$PHONON_MMF_DIR/videooutput.cpp          \
            $$PHONON_MMF_DIR/videowidget.cpp
+
+# Test for whether the build environment supports video rendering to graphics
+# surfaces.
+exists($${EPOCROOT}epoc32/include/platform/videoplayer2.h) {
+    HEADERS +=                                       \
+           $$PHONON_MMF_DIR/videooutput_surface.h    \
+           $$PHONON_MMF_DIR/videoplayer_surface.h
+    SOURCES +=                                       \
+           $$PHONON_MMF_DIR/videooutput_surface.cpp  \
+           $$PHONON_MMF_DIR/videoplayer_surface.cpp
+    DEFINES += PHONON_MMF_VIDEO_SURFACES
+} else {
+    HEADERS +=                                       \
+           $$PHONON_MMF_DIR/ancestormovemonitor.h    \
+           $$PHONON_MMF_DIR/videooutput_dsa.h        \
+           $$PHONON_MMF_DIR/videoplayer_dsa.h
+    SOURCES +=                                       \
+           $$PHONON_MMF_DIR/ancestormovemonitor.cpp  \
+           $$PHONON_MMF_DIR/videooutput_dsa.cpp      \
+           $$PHONON_MMF_DIR/videoplayer_dsa.cpp      \
+}
 
 LIBS += -lcone
 LIBS += -lws32

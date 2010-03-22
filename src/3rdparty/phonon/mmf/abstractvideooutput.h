@@ -16,14 +16,15 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef PHONON_MMF_VIDEOOUTPUT_H
-#define PHONON_MMF_VIDEOOUTPUT_H
+#ifndef PHONON_MMF_ABSTRACTVIDEOOUTPUT_H
+#define PHONON_MMF_ABSTRACTVIDEOOUTPUT_H
 
 #include <QtGui/QWidget>
 #include <QVector>
 #include <QRect>
 #include "defs.h"
 
+#include <phonon/abstractvideooutput.h>
 #include <phonon/videowidget.h>
 
 #include <e32std.h>
@@ -35,21 +36,25 @@ namespace Phonon
 {
 namespace MMF
 {
-class AncestorMoveMonitor;
 
-class VideoOutput       :   public QWidget
+/**
+ * @short ABC for widget on which video is displayed
+ *
+ * @see DsaVideoOutput, SurfaceVideoOutput
+ */
+class AbstractVideoOutput
+    :   public QWidget
 {
     Q_OBJECT
 
 public:
-    VideoOutput(AncestorMoveMonitor* ancestorMoveMonitor, QWidget* parent);
-    ~VideoOutput();
+    ~AbstractVideoOutput();
 
     // Set size of video frame.  Called by VideoPlayer.
-    void setVideoSize(const QSize& size);
+    void setVideoSize(const QSize &size);
 
-    RWindowBase* videoWindow();
-    const QRect& videoWindowRect() const;
+    RWindowBase* videoWindow() const;
+    QSize videoWindowSize() const;
 
     Phonon::VideoWidget::AspectRatio aspectRatio() const;
     void setAspectRatio(Phonon::VideoWidget::AspectRatio aspectRatio);
@@ -57,41 +62,24 @@ public:
     Phonon::VideoWidget::ScaleMode scaleMode() const;
     void setScaleMode(Phonon::VideoWidget::ScaleMode scaleMode);
 
-    // Called by AncestorMoveMonitor
-    void ancestorMoved();
-
     // Debugging output
     void dump() const;
-
-public Q_SLOTS:
-    void beginNativePaintEvent(const QRect& /*controlRect*/);
-    void endNativePaintEvent(const QRect& /*controlRect*/);
 
 Q_SIGNALS:
     void videoWindowChanged();
     void aspectRatioChanged();
     void scaleModeChanged();
-    void beginVideoWindowNativePaint();
-    void endVideoWindowNativePaint();
 
 protected:
-    // Override QWidget functions
+    AbstractVideoOutput(QWidget *parent);
+
+private:
+    // QWidget
     QSize sizeHint() const;
-    void paintEvent(QPaintEvent* event);
-    void resizeEvent(QResizeEvent* event);
-    void moveEvent(QMoveEvent* event);
-    bool event(QEvent* event);
 
 private:
-    void getVideoWindowRect();
-    void registerForAncestorMoved();
-
-private:
-    // Not owned
-    AncestorMoveMonitor*    m_ancestorMoveMonitor;
-
+    // Dimensions of the video clip
     QSize                   m_videoFrameSize;
-    QRect                   m_videoWindowRect;
 
     Phonon::VideoWidget::AspectRatio        m_aspectRatio;
     Phonon::VideoWidget::ScaleMode          m_scaleMode;

@@ -75,6 +75,8 @@ private slots:
     void loopCount();
     void autoAdd();
     void pauseResume();
+
+    void QTBUG8910_crashWhenRemovingUncontrolledAnimation();
 };
 
 tst_QParallelAnimationGroup::tst_QParallelAnimationGroup()
@@ -999,9 +1001,22 @@ void tst_QParallelAnimationGroup::pauseResume()
     QCOMPARE(spy.count(), 2); //this shouldn't have changed
     group.resume();
     QCOMPARE(spy.count(), 2); //this shouldn't have changed
+}
 
 
-
+void tst_QParallelAnimationGroup::QTBUG8910_crashWhenRemovingUncontrolledAnimation()
+{
+    QParallelAnimationGroup group;
+    TestAnimation *anim = new TestAnimation;
+    anim->setLoopCount(-1);
+    TestAnimation *anim2 = new TestAnimation;
+    anim2->setLoopCount(-1);
+    group.addAnimation(anim);
+    group.addAnimation(anim2);
+    group.start();
+    delete anim;
+    // it would crash here because the internals of the group would still have a reference to anim
+    delete anim2;
 }
 
 
