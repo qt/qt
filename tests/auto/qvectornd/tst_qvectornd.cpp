@@ -45,12 +45,12 @@
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector4d.h>
 
-class tst_QVector : public QObject
+class tst_QVectorND : public QObject
 {
     Q_OBJECT
 public:
-    tst_QVector() {}
-    ~tst_QVector() {}
+    tst_QVectorND() {}
+    ~tst_QVectorND() {}
 
 private slots:
     void create2();
@@ -155,7 +155,7 @@ static bool fuzzyCompare(qreal x, qreal y)
 
 // Test the creation of QVector2D objects in various ways:
 // construct, copy, and modify.
-void tst_QVector::create2()
+void tst_QVectorND::create2()
 {
     QVector2D null;
     QCOMPARE(null.x(), (qreal)0.0f);
@@ -244,7 +244,7 @@ void tst_QVector::create2()
 
 // Test the creation of QVector3D objects in various ways:
 // construct, copy, and modify.
-void tst_QVector::create3()
+void tst_QVectorND::create3()
 {
     QVector3D null;
     QCOMPARE(null.x(), (qreal)0.0f);
@@ -370,7 +370,7 @@ void tst_QVector::create3()
 
 // Test the creation of QVector4D objects in various ways:
 // construct, copy, and modify.
-void tst_QVector::create4()
+void tst_QVectorND::create4()
 {
     QVector4D null;
     QCOMPARE(null.x(), (qreal)0.0f);
@@ -556,7 +556,7 @@ void tst_QVector::create4()
 }
 
 // Test vector length computation for 2D vectors.
-void tst_QVector::length2_data()
+void tst_QVectorND::length2_data()
 {
     QTest::addColumn<qreal>("x");
     QTest::addColumn<qreal>("y");
@@ -569,7 +569,7 @@ void tst_QVector::length2_data()
     QTest::newRow("-1y") << (qreal)0.0f << (qreal)-1.0f << (qreal)1.0f;
     QTest::newRow("two") << (qreal)2.0f << (qreal)-2.0f << (qreal)qSqrt(8.0f);
 }
-void tst_QVector::length2()
+void tst_QVectorND::length2()
 {
     QFETCH(qreal, x);
     QFETCH(qreal, y);
@@ -581,7 +581,7 @@ void tst_QVector::length2()
 }
 
 // Test vector length computation for 3D vectors.
-void tst_QVector::length3_data()
+void tst_QVectorND::length3_data()
 {
     QTest::addColumn<qreal>("x");
     QTest::addColumn<qreal>("y");
@@ -597,7 +597,7 @@ void tst_QVector::length3_data()
     QTest::newRow("-1z") << (qreal)0.0f << (qreal)0.0f << (qreal)-1.0f << (qreal)1.0f;
     QTest::newRow("two") << (qreal)2.0f << (qreal)-2.0f << (qreal)2.0f << (qreal)qSqrt(12.0f);
 }
-void tst_QVector::length3()
+void tst_QVectorND::length3()
 {
     QFETCH(qreal, x);
     QFETCH(qreal, y);
@@ -610,7 +610,7 @@ void tst_QVector::length3()
 }
 
 // Test vector length computation for 4D vectors.
-void tst_QVector::length4_data()
+void tst_QVectorND::length4_data()
 {
     QTest::addColumn<qreal>("x");
     QTest::addColumn<qreal>("y");
@@ -629,7 +629,7 @@ void tst_QVector::length4_data()
     QTest::newRow("-1w") << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)-1.0f << (qreal)1.0f;
     QTest::newRow("two") << (qreal)2.0f << (qreal)-2.0f << (qreal)2.0f << (qreal)2.0f << (qreal)qSqrt(16.0f);
 }
-void tst_QVector::length4()
+void tst_QVectorND::length4()
 {
     QFETCH(qreal, x);
     QFETCH(qreal, y);
@@ -643,12 +643,12 @@ void tst_QVector::length4()
 }
 
 // Test the unit vector conversion for 2D vectors.
-void tst_QVector::normalized2_data()
+void tst_QVectorND::normalized2_data()
 {
     // Use the same test data as the length test.
     length2_data();
 }
-void tst_QVector::normalized2()
+void tst_QVectorND::normalized2()
 {
     QFETCH(qreal, x);
     QFETCH(qreal, y);
@@ -665,12 +665,12 @@ void tst_QVector::normalized2()
 }
 
 // Test the unit vector conversion for 3D vectors.
-void tst_QVector::normalized3_data()
+void tst_QVectorND::normalized3_data()
 {
     // Use the same test data as the length test.
     length3_data();
 }
-void tst_QVector::normalized3()
+void tst_QVectorND::normalized3()
 {
     QFETCH(qreal, x);
     QFETCH(qreal, y);
@@ -689,12 +689,12 @@ void tst_QVector::normalized3()
 }
 
 // Test the unit vector conversion for 4D vectors.
-void tst_QVector::normalized4_data()
+void tst_QVectorND::normalized4_data()
 {
     // Use the same test data as the length test.
     length4_data();
 }
-void tst_QVector::normalized4()
+void tst_QVectorND::normalized4()
 {
     QFETCH(qreal, x);
     QFETCH(qreal, y);
@@ -715,12 +715,12 @@ void tst_QVector::normalized4()
 }
 
 // Test the unit vector conversion for 2D vectors.
-void tst_QVector::normalize2_data()
+void tst_QVectorND::normalize2_data()
 {
     // Use the same test data as the length test.
     length2_data();
 }
-void tst_QVector::normalize2()
+void tst_QVectorND::normalize2()
 {
     QFETCH(qreal, x);
     QFETCH(qreal, y);
@@ -735,12 +735,12 @@ void tst_QVector::normalize2()
 }
 
 // Test the unit vector conversion for 3D vectors.
-void tst_QVector::normalize3_data()
+void tst_QVectorND::normalize3_data()
 {
     // Use the same test data as the length test.
     length3_data();
 }
-void tst_QVector::normalize3()
+void tst_QVectorND::normalize3()
 {
     QFETCH(qreal, x);
     QFETCH(qreal, y);
@@ -756,12 +756,12 @@ void tst_QVector::normalize3()
 }
 
 // Test the unit vector conversion for 4D vectors.
-void tst_QVector::normalize4_data()
+void tst_QVectorND::normalize4_data()
 {
     // Use the same test data as the length test.
     length4_data();
 }
-void tst_QVector::normalize4()
+void tst_QVectorND::normalize4()
 {
     QFETCH(qreal, x);
     QFETCH(qreal, y);
@@ -778,7 +778,7 @@ void tst_QVector::normalize4()
 }
 
 // Test the comparison operators for 2D vectors.
-void tst_QVector::compare2()
+void tst_QVectorND::compare2()
 {
     QVector2D v1(1, 2);
     QVector2D v2(1, 2);
@@ -791,7 +791,7 @@ void tst_QVector::compare2()
 }
 
 // Test the comparison operators for 3D vectors.
-void tst_QVector::compare3()
+void tst_QVectorND::compare3()
 {
     QVector3D v1(1, 2, 4);
     QVector3D v2(1, 2, 4);
@@ -806,7 +806,7 @@ void tst_QVector::compare3()
 }
 
 // Test the comparison operators for 4D vectors.
-void tst_QVector::compare4()
+void tst_QVectorND::compare4()
 {
     QVector4D v1(1, 2, 4, 8);
     QVector4D v2(1, 2, 4, 8);
@@ -823,7 +823,7 @@ void tst_QVector::compare4()
 }
 
 // Test vector addition for 2D vectors.
-void tst_QVector::add2_data()
+void tst_QVectorND::add2_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -852,7 +852,7 @@ void tst_QVector::add2_data()
         << (qreal)4.0f << (qreal)5.0f
         << (qreal)5.0f << (qreal)7.0f;
 }
-void tst_QVector::add2()
+void tst_QVectorND::add2()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -876,7 +876,7 @@ void tst_QVector::add2()
 }
 
 // Test vector addition for 3D vectors.
-void tst_QVector::add3_data()
+void tst_QVectorND::add3_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -913,7 +913,7 @@ void tst_QVector::add3_data()
         << (qreal)4.0f << (qreal)5.0f << (qreal)-6.0f
         << (qreal)5.0f << (qreal)7.0f << (qreal)-3.0f;
 }
-void tst_QVector::add3()
+void tst_QVectorND::add3()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -941,7 +941,7 @@ void tst_QVector::add3()
 }
 
 // Test vector addition for 4D vectors.
-void tst_QVector::add4_data()
+void tst_QVectorND::add4_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -986,7 +986,7 @@ void tst_QVector::add4_data()
         << (qreal)4.0f << (qreal)5.0f << (qreal)-6.0f << (qreal)9.0f
         << (qreal)5.0f << (qreal)7.0f << (qreal)-3.0f << (qreal)17.0f;
 }
-void tst_QVector::add4()
+void tst_QVectorND::add4()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1018,12 +1018,12 @@ void tst_QVector::add4()
 }
 
 // Test vector subtraction for 2D vectors.
-void tst_QVector::subtract2_data()
+void tst_QVectorND::subtract2_data()
 {
     // Use the same test data as the add test.
     add2_data();
 }
-void tst_QVector::subtract2()
+void tst_QVectorND::subtract2()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1055,12 +1055,12 @@ void tst_QVector::subtract2()
 }
 
 // Test vector subtraction for 3D vectors.
-void tst_QVector::subtract3_data()
+void tst_QVectorND::subtract3_data()
 {
     // Use the same test data as the add test.
     add3_data();
 }
-void tst_QVector::subtract3()
+void tst_QVectorND::subtract3()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1097,12 +1097,12 @@ void tst_QVector::subtract3()
 }
 
 // Test vector subtraction for 4D vectors.
-void tst_QVector::subtract4_data()
+void tst_QVectorND::subtract4_data()
 {
     // Use the same test data as the add test.
     add4_data();
 }
-void tst_QVector::subtract4()
+void tst_QVectorND::subtract4()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1144,7 +1144,7 @@ void tst_QVector::subtract4()
 }
 
 // Test component-wise vector multiplication for 2D vectors.
-void tst_QVector::multiply2_data()
+void tst_QVectorND::multiply2_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -1173,7 +1173,7 @@ void tst_QVector::multiply2_data()
         << (qreal)4.0f << (qreal)5.0f
         << (qreal)4.0f << (qreal)10.0f;
 }
-void tst_QVector::multiply2()
+void tst_QVectorND::multiply2()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1197,7 +1197,7 @@ void tst_QVector::multiply2()
 }
 
 // Test component-wise vector multiplication for 3D vectors.
-void tst_QVector::multiply3_data()
+void tst_QVectorND::multiply3_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -1234,7 +1234,7 @@ void tst_QVector::multiply3_data()
         << (qreal)4.0f << (qreal)5.0f << (qreal)-6.0f
         << (qreal)4.0f << (qreal)10.0f << (qreal)-18.0f;
 }
-void tst_QVector::multiply3()
+void tst_QVectorND::multiply3()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1262,7 +1262,7 @@ void tst_QVector::multiply3()
 }
 
 // Test component-wise vector multiplication for 4D vectors.
-void tst_QVector::multiply4_data()
+void tst_QVectorND::multiply4_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -1307,7 +1307,7 @@ void tst_QVector::multiply4_data()
         << (qreal)4.0f << (qreal)5.0f << (qreal)-6.0f << (qreal)9.0f
         << (qreal)4.0f << (qreal)10.0f << (qreal)-18.0f << (qreal)72.0f;
 }
-void tst_QVector::multiply4()
+void tst_QVectorND::multiply4()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1339,7 +1339,7 @@ void tst_QVector::multiply4()
 }
 
 // Test vector multiplication by a factor for 2D vectors.
-void tst_QVector::multiplyFactor2_data()
+void tst_QVectorND::multiplyFactor2_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -1372,7 +1372,7 @@ void tst_QVector::multiplyFactor2_data()
         << (qreal)0.0f
         << (qreal)0.0f << (qreal)0.0f;
 }
-void tst_QVector::multiplyFactor2()
+void tst_QVectorND::multiplyFactor2()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1395,7 +1395,7 @@ void tst_QVector::multiplyFactor2()
 }
 
 // Test vector multiplication by a factor for 3D vectors.
-void tst_QVector::multiplyFactor3_data()
+void tst_QVectorND::multiplyFactor3_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -1435,7 +1435,7 @@ void tst_QVector::multiplyFactor3_data()
         << (qreal)0.0f
         << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f;
 }
-void tst_QVector::multiplyFactor3()
+void tst_QVectorND::multiplyFactor3()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1461,7 +1461,7 @@ void tst_QVector::multiplyFactor3()
 }
 
 // Test vector multiplication by a factor for 4D vectors.
-void tst_QVector::multiplyFactor4_data()
+void tst_QVectorND::multiplyFactor4_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -1508,7 +1508,7 @@ void tst_QVector::multiplyFactor4_data()
         << (qreal)0.0f
         << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f;
 }
-void tst_QVector::multiplyFactor4()
+void tst_QVectorND::multiplyFactor4()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1537,12 +1537,12 @@ void tst_QVector::multiplyFactor4()
 }
 
 // Test vector division by a factor for 2D vectors.
-void tst_QVector::divide2_data()
+void tst_QVectorND::divide2_data()
 {
     // Use the same test data as the multiply test.
     multiplyFactor2_data();
 }
-void tst_QVector::divide2()
+void tst_QVectorND::divide2()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1567,12 +1567,12 @@ void tst_QVector::divide2()
 }
 
 // Test vector division by a factor for 3D vectors.
-void tst_QVector::divide3_data()
+void tst_QVectorND::divide3_data()
 {
     // Use the same test data as the multiply test.
     multiplyFactor3_data();
 }
-void tst_QVector::divide3()
+void tst_QVectorND::divide3()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1600,12 +1600,12 @@ void tst_QVector::divide3()
 }
 
 // Test vector division by a factor for 4D vectors.
-void tst_QVector::divide4_data()
+void tst_QVectorND::divide4_data()
 {
     // Use the same test data as the multiply test.
     multiplyFactor4_data();
 }
-void tst_QVector::divide4()
+void tst_QVectorND::divide4()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1636,12 +1636,12 @@ void tst_QVector::divide4()
 }
 
 // Test vector negation for 2D vectors.
-void tst_QVector::negate2_data()
+void tst_QVectorND::negate2_data()
 {
     // Use the same test data as the add test.
     add2_data();
 }
-void tst_QVector::negate2()
+void tst_QVectorND::negate2()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1653,12 +1653,12 @@ void tst_QVector::negate2()
 }
 
 // Test vector negation for 3D vectors.
-void tst_QVector::negate3_data()
+void tst_QVectorND::negate3_data()
 {
     // Use the same test data as the add test.
     add3_data();
 }
-void tst_QVector::negate3()
+void tst_QVectorND::negate3()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1671,12 +1671,12 @@ void tst_QVector::negate3()
 }
 
 // Test vector negation for 4D vectors.
-void tst_QVector::negate4_data()
+void tst_QVectorND::negate4_data()
 {
     // Use the same test data as the add test.
     add4_data();
 }
-void tst_QVector::negate4()
+void tst_QVectorND::negate4()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1690,7 +1690,7 @@ void tst_QVector::negate4()
 }
 
 // Test the computation of vector cross-products.
-void tst_QVector::crossProduct_data()
+void tst_QVectorND::crossProduct_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -1721,7 +1721,7 @@ void tst_QVector::crossProduct_data()
         << (qreal)-3.0f << (qreal)6.0f << (qreal)-3.0f
         << (qreal)32.0f;
 }
-void tst_QVector::crossProduct()
+void tst_QVectorND::crossProduct()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1751,12 +1751,12 @@ void tst_QVector::crossProduct()
 }
 
 // Test the computation of normals.
-void tst_QVector::normal_data()
+void tst_QVectorND::normal_data()
 {
     // Use the same test data as the crossProduct test.
     crossProduct_data();
 }
-void tst_QVector::normal()
+void tst_QVectorND::normal()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1780,7 +1780,7 @@ void tst_QVector::normal()
 }
 
 // Test distance to plane calculations.
-void tst_QVector::distanceToPlane_data()
+void tst_QVectorND::distanceToPlane_data()
 {
     QTest::addColumn<qreal>("x1");  // Point on plane
     QTest::addColumn<qreal>("y1");
@@ -1823,7 +1823,7 @@ void tst_QVector::distanceToPlane_data()
         << (qreal)0.0f << (qreal)2.0f << (qreal)0.0f
         << (qreal)-2.0f;
 }
-void tst_QVector::distanceToPlane()
+void tst_QVectorND::distanceToPlane()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1853,7 +1853,7 @@ void tst_QVector::distanceToPlane()
 }
 
 // Test distance to line calculations.
-void tst_QVector::distanceToLine_data()
+void tst_QVectorND::distanceToLine_data()
 {
     QTest::addColumn<qreal>("x1");  // Point on line
     QTest::addColumn<qreal>("y1");
@@ -1896,7 +1896,7 @@ void tst_QVector::distanceToLine_data()
         << (qreal)0.0f << (qreal)5.0f << (qreal)0.0f
         << (qreal)5.0f;
 }
-void tst_QVector::distanceToLine()
+void tst_QVectorND::distanceToLine()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1917,7 +1917,7 @@ void tst_QVector::distanceToLine()
 }
 
 // Test the computation of dot products for 2D vectors.
-void tst_QVector::dotProduct2_data()
+void tst_QVectorND::dotProduct2_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -1940,7 +1940,7 @@ void tst_QVector::dotProduct2_data()
         << (qreal)4.0f << (qreal)5.0f
         << (qreal)14.0f;
 }
-void tst_QVector::dotProduct2()
+void tst_QVectorND::dotProduct2()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1960,12 +1960,12 @@ void tst_QVector::dotProduct2()
 }
 
 // Test the computation of dot products for 3D vectors.
-void tst_QVector::dotProduct3_data()
+void tst_QVectorND::dotProduct3_data()
 {
     // Use the same test data as the crossProduct test.
     crossProduct_data();
 }
-void tst_QVector::dotProduct3()
+void tst_QVectorND::dotProduct3()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -1994,7 +1994,7 @@ void tst_QVector::dotProduct3()
 }
 
 // Test the computation of dot products for 4D vectors.
-void tst_QVector::dotProduct4_data()
+void tst_QVectorND::dotProduct4_data()
 {
     QTest::addColumn<qreal>("x1");
     QTest::addColumn<qreal>("y1");
@@ -2021,7 +2021,7 @@ void tst_QVector::dotProduct4_data()
         << (qreal)4.0f << (qreal)5.0f << (qreal)6.0f << (qreal)7.0f
         << (qreal)60.0f;
 }
-void tst_QVector::dotProduct4()
+void tst_QVectorND::dotProduct4()
 {
     QFETCH(qreal, x1);
     QFETCH(qreal, y1);
@@ -2044,14 +2044,14 @@ void tst_QVector::dotProduct4()
     QCOMPARE(QVector4D::dotProduct(v1, v2), d);
 }
 
-class tst_QVectorProperties : public QObject
+class tst_QVectorNDProperties : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QVector2D vector2D READ vector2D WRITE setVector2D)
     Q_PROPERTY(QVector3D vector3D READ vector3D WRITE setVector3D)
     Q_PROPERTY(QVector4D vector4D READ vector4D WRITE setVector4D)
 public:
-    tst_QVectorProperties(QObject *parent = 0) : QObject(parent) {}
+    tst_QVectorNDProperties(QObject *parent = 0) : QObject(parent) {}
 
     QVector2D vector2D() const { return v2; }
     void setVector2D(const QVector2D& value) { v2 = value; }
@@ -2069,9 +2069,9 @@ private:
 };
 
 // Test getting and setting vector properties via the metaobject system.
-void tst_QVector::properties()
+void tst_QVectorND::properties()
 {
-    tst_QVectorProperties obj;
+    tst_QVectorNDProperties obj;
 
     obj.setVector2D(QVector2D(1.0f, 2.0f));
     obj.setVector3D(QVector3D(3.0f, 4.0f, 5.0f));
@@ -2115,7 +2115,7 @@ void tst_QVector::properties()
     QCOMPARE(v4.w(), (qreal)-9.0f);
 }
 
-void tst_QVector::metaTypes()
+void tst_QVectorND::metaTypes()
 {
     QVERIFY(QMetaType::type("QVector2D") == QMetaType::QVector2D);
     QVERIFY(QMetaType::type("QVector3D") == QMetaType::QVector3D);
@@ -2137,6 +2137,6 @@ void tst_QVector::metaTypes()
     QVERIFY(qMetaTypeId<QVector4D>() == QMetaType::QVector4D);
 }
 
-QTEST_APPLESS_MAIN(tst_QVector)
+QTEST_APPLESS_MAIN(tst_QVectorND)
 
 #include "tst_qvectornd.moc"

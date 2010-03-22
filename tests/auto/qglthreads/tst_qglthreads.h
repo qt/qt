@@ -39,16 +39,16 @@
 **
 ****************************************************************************/
 
-#ifndef TST_OPENGLTHREADING_H
-#define TST_OPENGLTHREADING_H
+#ifndef TST_QGLTHREADS_H
+#define TST_QGLTHREADS_H
 
 #include <QObject>
 
-class tst_OpenGLThreading : public QObject
+class tst_QGLThreads : public QObject
 {
 Q_OBJECT
 public:
-    explicit tst_OpenGLThreading(QObject *parent = 0);
+    explicit tst_QGLThreads(QObject *parent = 0);
 
 private slots:
     void swapInThread();
@@ -58,4 +58,4 @@ private slots:
     void renderInThread();
 };
 
-#endif // TST_OPENGLTHREADING_H
+#endif // TST_QGLTHREADS_H

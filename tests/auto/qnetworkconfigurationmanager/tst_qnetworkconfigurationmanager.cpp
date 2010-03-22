@@ -332,4 +332,4 @@ void tst_QNetworkConfigurationManager::configurationFromIdentifier()
 
 
 QTEST_MAIN(tst_QNetworkConfigurationManager)
-#include "tst_qnetworkconfigmanager.moc"
+#include "tst_qnetworkconfigurationmanager.moc"

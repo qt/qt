@@ -1,5 +1,5 @@
 load(qttest_p4)
-SOURCES  += tst_qnetworkconfigmanager.cpp
+SOURCES  += tst_qnetworkconfigurationmanager.cpp
 HEADERS  += ../qbearertestcommon.h
 
 QT = core network
