@@ -1130,6 +1130,9 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
         }
     }
 
+    // Resolve depth.
+    invalidateDepthRecursively();
+
     if ((parent = newParent)) {
         if (parent->d_func()->scene && parent->d_func()->scene != scene) {
             // Move this item to its new parent's scene
@@ -1180,8 +1183,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
         }
     }
 
-    // Resolve depth.
-    invalidateDepthRecursively();
     dirtySceneTransform = 1;
 
     // Restore the sub focus chain.
