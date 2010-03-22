@@ -232,9 +232,19 @@ void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
     }
 }
 
-void QNetworkReplyImplPrivate::_q_networkSessionOnline()
+void QNetworkReplyImplPrivate::_q_networkSessionConnected()
 {
     Q_Q(QNetworkReplyImpl);
+
+    if (manager.isNull())
+        return;
+
+    QNetworkSession *session = manager->d_func()->networkSession;
+    if (!session)
+        return;
+
+    if (session->state() != QNetworkSession::Connected)
+        return;
 
     switch (state) {
     case QNetworkReplyImplPrivate::Buffering:

@@ -184,7 +184,8 @@ QNetworkConfigurationManager::Capabilities SymbianEngine::capabilities() const
     capFlags = QNetworkConfigurationManager::CanStartAndStopInterfaces |
                QNetworkConfigurationManager::DirectConnectionRouting |
                QNetworkConfigurationManager::SystemSessionSupport |
-               QNetworkConfigurationManager::DataStatistics;
+               QNetworkConfigurationManager::DataStatistics |
+               QNetworkConfigurationManager::NetworkSessionRequired;
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     capFlags |= QNetworkConfigurationManager::ApplicationLevelRoaming |

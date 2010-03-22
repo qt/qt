@@ -958,7 +958,8 @@ void QTreeView::keyboardSearch(const QString &search)
     else
         start = d->model->index(0, 0, d->root);
 
-    QTime now(QTime::currentTime());
+    QElapsedTimer now;
+    now.start();
     bool skipRow = false;
     if (search.isEmpty()
         || (d->keyboardInputTime.msecsTo(now) > QApplication::keyboardInputInterval())) {
@@ -2156,9 +2157,10 @@ QModelIndex QTreeView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         return d->modelIndex(d->above(vi), current.column());
     case MoveLeft: {
         QScrollBar *sb = horizontalScrollBar();
-        if (vi < d->viewItems.count() && d->viewItems.at(vi).expanded && d->itemsExpandable && sb->value() == sb->minimum())
+        if (vi < d->viewItems.count() && d->viewItems.at(vi).expanded && d->itemsExpandable && sb->value() == sb->minimum()) {
             d->collapse(vi, true);
-        else {
+            d->moveCursorUpdatedView = true;
+        } else {
             bool descend = style()->styleHint(QStyle::SH_ItemView_ArrowKeysNavigateIntoChildren, 0, this);
             if (descend) {
                 QModelIndex par = current.parent();
@@ -2178,7 +2180,10 @@ QModelIndex QTreeView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
                         return next;
                 }
 
+                int oldValue = sb->value();
                 sb->setValue(sb->value() - sb->singleStep());
+                if (oldValue != sb->value())
+                    d->moveCursorUpdatedView = true;
             }
 
         }
@@ -2190,6 +2195,7 @@ QModelIndex QTreeView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         if (vi < d->viewItems.count() && !d->viewItems.at(vi).expanded && d->itemsExpandable
             && d->hasVisibleChildren(d->viewItems.at(vi).index)) {
             d->expand(vi, true);
+            d->moveCursorUpdatedView = true;
         } else {
             bool descend = style()->styleHint(QStyle::SH_ItemView_ArrowKeysNavigateIntoChildren, 0, this);
             if (descend) {
@@ -2212,7 +2218,10 @@ QModelIndex QTreeView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
 
                 //last restort: we change the scrollbar value
                 QScrollBar *sb = horizontalScrollBar();
+                int oldValue = sb->value();
                 sb->setValue(sb->value() + sb->singleStep());
+                if (oldValue != sb->value())
+                    d->moveCursorUpdatedView = true;
             }
         }
         updateGeometries();

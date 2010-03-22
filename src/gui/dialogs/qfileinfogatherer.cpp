@@ -297,7 +297,8 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
         return;
     }
 
-    QTime base = QTime::currentTime();
+    QElapsedTimer base;
+    base.start();
     QFileInfo fileInfo;
     bool firstTime = true;
     QList<QPair<QString, QFileInfo> > updatedFiles;
@@ -326,9 +327,10 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     emit directoryLoaded(path);
 }
 
-void QFileInfoGatherer::fetch(const QFileInfo &fileInfo, QTime &base, bool &firstTime, QList<QPair<QString, QFileInfo> > &updatedFiles, const QString &path) {
+void QFileInfoGatherer::fetch(const QFileInfo &fileInfo, QElapsedTimer &base, bool &firstTime, QList<QPair<QString, QFileInfo> > &updatedFiles, const QString &path) {
     updatedFiles.append(QPair<QString, QFileInfo>(fileInfo.fileName(), fileInfo));
-    QTime current = QTime::currentTime();
+    QElapsedTimer current;
+    current.start();
     if ((firstTime && updatedFiles.count() > 100) || base.msecsTo(current) > 1000) {
         emit updates(path, updatedFiles);
         updatedFiles.clear();

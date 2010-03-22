@@ -49,7 +49,7 @@
 #include "qbitmap.h"
 #include "qlayout.h"
 #include "qtextcodec.h"
-#include "qdatetime.h"
+#include "qelapsedtimer.h"
 #include "qcursor.h"
 #include "qstack.h"
 #include "qcolormap.h"
@@ -352,7 +352,7 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
         return;
     QApplication::flush();
     XEvent ev;
-    QTime t;
+    QElapsedTimer t;
     t.start();
     static const int maximumWaitTime = 2000;
     if (!w->testAttribute(Qt::WA_WState_Created))
@@ -1166,7 +1166,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     adjustFlags(data.window_flags, q);
     // keep compatibility with previous versions, we need to preserve the created state
     // (but we recreate the winId for the widget being reparented, again for compatibility)
-    if (wasCreated || (!q->isWindow() && parent->testAttribute(Qt::WA_WState_Created)))
+    if (wasCreated)
         createWinId();
     if (q->isWindow() || (!parent || parent->isVisible()) || explicitlyHidden)
         q->setAttribute(Qt::WA_WState_Hidden);
