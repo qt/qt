@@ -58,8 +58,7 @@ HEADERS += \
     $$PWD/qdeclarativebehavior_p.h \
     $$PWD/qdeclarativefontloader_p.h \
     $$PWD/qdeclarativestyledtext_p.h \
-    $$PWD/qdeclarativelistmodelworkeragent_p.h \
-    $$PWD/qdeclarativelistmodelworkeragent_p_p.h
+    $$PWD/qdeclarativelistmodelworkeragent_p.h
 
 contains(QT_CONFIG, xmlpatterns) {
     QT+=xmlpatterns
