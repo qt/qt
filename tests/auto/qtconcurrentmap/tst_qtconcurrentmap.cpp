@@ -56,7 +56,7 @@ Q_DECLARE_METATYPE(QList<int>);
 Q_DECLARE_METATYPE(QList<double>);
 Q_DECLARE_METATYPE(QList<QString>);
 
-class tst_map: public QObject
+class tst_QtConcurrentMap: public QObject
 {
     Q_OBJECT
 private slots:
@@ -114,7 +114,7 @@ public:
 
 Q_DECLARE_METATYPE(QList<Number>);
 
-void tst_map::map()
+void tst_QtConcurrentMap::map()
 {
     // functors take arguments by reference, modifying the sequence in place
     {
@@ -246,7 +246,7 @@ void tst_map::map()
 #endif
 }
 
-void tst_map::blocking_map()
+void tst_QtConcurrentMap::blocking_map()
 {
     // functors take arguments by reference, modifying the sequence in place
     {
@@ -428,7 +428,7 @@ public:
     }
 };
 
-void tst_map::mapped()
+void tst_QtConcurrentMap::mapped()
 {
     QList<int> list;
     list << 1 << 2 << 3;
@@ -790,7 +790,7 @@ void tst_map::mapped()
     }
 }
 
-void tst_map::blocking_mapped()
+void tst_QtConcurrentMap::blocking_mapped()
 {
     QList<int> list;
     list << 1 << 2 << 3;
@@ -1244,7 +1244,7 @@ public:
     }
 };
 
-void tst_map::mappedReduced()
+void tst_QtConcurrentMap::mappedReduced()
 {
     QList<int> list;
     list << 1 << 2 << 3;
@@ -1625,7 +1625,7 @@ void tst_map::mappedReduced()
     // ### the same as above, with an initial result value
 }
 
-void tst_map::blocking_mappedReduced()
+void tst_QtConcurrentMap::blocking_mappedReduced()
 {
     QList<int> list;
     list << 1 << 2 << 3;
@@ -2010,7 +2010,7 @@ int sleeper(int val)
     return val;
 }
 
-void tst_map::assignResult()
+void tst_QtConcurrentMap::assignResult()
 {
     const QList<int> startList = QList<int>() << 0 << 1 << 2;
     QList<int> list = QtConcurrent::blockingMapped(startList, sleeper);
@@ -2077,7 +2077,7 @@ public:
 Q_DECLARE_METATYPE(QVector<MemFnTester>);
 Q_DECLARE_METATYPE(QList<MemFnTester>);
 
-void tst_map::functionOverloads()
+void tst_QtConcurrentMap::functionOverloads()
 {
     QList<int> intList;
     const QList<int> constIntList;
@@ -2159,7 +2159,7 @@ void fastReduce(int &result, const InstanceCounter&)
     ++result;
 }
 
-void tst_map::throttling()
+void tst_QtConcurrentMap::throttling()
 {
     const int itemcount = 100;
     const int allowedTemporaries = QThread::idealThreadCount() * 40;
@@ -2208,7 +2208,7 @@ void throwMapper(int &e)
     throw QtConcurrent::Exception();
 }
 
-void tst_map::exceptions()
+void tst_QtConcurrentMap::exceptions()
 {
     bool caught = false;
     try  {
@@ -2228,7 +2228,7 @@ int mapper(const int &i)
     return i;
 }
 
-void tst_map::incrementalResults()
+void tst_QtConcurrentMap::incrementalResults()
 {
     const int count = 200;
     QList<int> ints; 
@@ -2256,7 +2256,7 @@ void tst_map::incrementalResults()
     Test that mapped does not cause deep copies when holding
     references to Qt containers.
 */
-void tst_map::noDetatch()
+void tst_QtConcurrentMap::noDetatch()
 {
     {
         QList<int> l = QList<int>() << 1;
@@ -2299,7 +2299,7 @@ void tst_map::noDetatch()
 
 }
 
-void tst_map::stlContainers()
+void tst_QtConcurrentMap::stlContainers()
 {
 #ifdef QT_NO_STL
     QSKIP("Qt compiled without STL support", SkipAll);
@@ -2331,7 +2331,7 @@ InstanceCounter ic_fn(const InstanceCounter & ic)
 
 // Verify that held results are deleted when a future is
 // assigned over with operator ==
-void tst_map::qFutureAssignmentLeak()
+void tst_QtConcurrentMap::qFutureAssignmentLeak()
 {
     currentInstanceCount = 0;
     peakInstanceCount = 0;
@@ -2370,7 +2370,7 @@ void add(int &result, const int &sum)
     result += sum;
 }
 
-void tst_map::stressTest()
+void tst_QtConcurrentMap::stressTest()
 {
     const int listSize = 1000;
     const int sum = (listSize - 1) * (listSize / 2);
@@ -2399,26 +2399,26 @@ void tst_map::stressTest()
     }
 }
 
-QTEST_MAIN(tst_map)
+QTEST_MAIN(tst_QtConcurrentMap)
 
 #else
 
-void tst_map::map() {}
-void tst_map::blocking_map() {}
-void tst_map::mapped() {}
-void tst_map::blocking_mapped() {}
-void tst_map::mappedReduced() {}
-void tst_map::blocking_mappedReduced() {}
-void tst_map::assignResult() {}
-void tst_map::functionOverloads() {}
+void tst_QtConcurrentMap::map() {}
+void tst_QtConcurrentMap::blocking_map() {}
+void tst_QtConcurrentMap::mapped() {}
+void tst_QtConcurrentMap::blocking_mapped() {}
+void tst_QtConcurrentMap::mappedReduced() {}
+void tst_QtConcurrentMap::blocking_mappedReduced() {}
+void tst_QtConcurrentMap::assignResult() {}
+void tst_QtConcurrentMap::functionOverloads() {}
 #ifndef QT_NO_EXCEPTIONS
-void tst_map::exceptions() {}
+void tst_QtConcurrentMap::exceptions() {}
 #endif
-void tst_map::incrementalResults() {}
-void tst_map::stressTest() {}
-void tst_map::throttling() {}
-void tst_map::stlContainers() {}
-void tst_map::noDetatch() {}
+void tst_QtConcurrentMap::incrementalResults() {}
+void tst_QtConcurrentMap::stressTest() {}
+void tst_QtConcurrentMap::throttling() {}
+void tst_QtConcurrentMap::stlContainers() {}
+void tst_QtConcurrentMap::noDetatch() {}
 
 QTEST_NOOP_MAIN
 
