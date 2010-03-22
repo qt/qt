@@ -1121,7 +1121,7 @@ QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
         &KAknsIIDQsnParentColors,
         &KAknsIIDQsnTextColors
     };
-    Q_ASSERT((int)list <= (int)sizeof(idMap)/sizeof(idMap[0]));
+    Q_ASSERT((int)list < (int)sizeof(idMap)/sizeof(idMap[0]));
     const QColor color = QS60StyleModeSpecifics::colorValue(*idMap[(int) list], index - 1);
     return option ? QS60StylePrivate::stateColor(color, option) : color;
 }
