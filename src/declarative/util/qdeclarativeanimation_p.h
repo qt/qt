@@ -72,7 +72,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeAbstractAnimation : public QObject, public Q
     Q_INTERFACES(QDeclarativePropertyValueSource)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
-    Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged())
+    Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged)
     Q_PROPERTY(bool repeat READ repeat WRITE setRepeat NOTIFY repeatChanged)
     Q_CLASSINFO("DefaultMethod", "start()")
 
