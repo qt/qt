@@ -2069,11 +2069,11 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         break;
     case PE_IndicatorViewItemCheck:
 #ifndef QT_NO_ITEMVIEWS
-        if (const QListView *listItem = (qobject_cast<const QListView *>(widget))) {
+        if (const QAbstractItemView *itemView = (qobject_cast<const QAbstractItemView *>(widget))) {
             if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
                 const bool checkBoxVisible = vopt->features & QStyleOptionViewItemV2::HasCheckIndicator;
-                const bool singleSelection = listItem->selectionMode() ==
-                    QAbstractItemView::SingleSelection || listItem->selectionMode() == QAbstractItemView::NoSelection;
+                const bool singleSelection = itemView->selectionMode() ==
+                    QAbstractItemView::SingleSelection || itemView->selectionMode() == QAbstractItemView::NoSelection;
                 // draw either checkbox at the beginning
                 if (checkBoxVisible && singleSelection) {
                     drawPrimitive(PE_IndicatorCheckBox, option, painter, widget);
