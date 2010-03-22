@@ -307,6 +307,13 @@ void QS60StylePrivate::drawSkinPart(QS60StyleEnums::SkinParts part,
 
 short QS60StylePrivate::pixelMetric(int metric)
 {
+    //If it is a custom value, need to strip away the base to map to internal
+    //pixel metric value table
+    if (metric & QStyle::PM_CustomBase) {
+        metric -= QStyle::PM_CustomBase;
+        metric += MAX_NON_CUSTOM_PIXELMETRICS - 1;
+    }
+
     Q_ASSERT(metric < MAX_PIXELMETRICS);
     const short returnValue = m_pmPointer[metric];
     return returnValue;

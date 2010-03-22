@@ -61,12 +61,15 @@ QT_BEGIN_NAMESPACE
 
 const int MAX_NON_CUSTOM_PIXELMETRICS = 92;
 const int CUSTOMVALUESCOUNT = 4;
+
+//internal custom pixel metrics values, these map to entry in data[] table
 enum {
     PM_Custom_FrameCornerWidth = MAX_NON_CUSTOM_PIXELMETRICS,
     PM_Custom_FrameCornerHeight,
     PM_Custom_BoldLineWidth,
     PM_Custom_ThinLineWidth
     };
+
 const int MAX_PIXELMETRICS = MAX_NON_CUSTOM_PIXELMETRICS + CUSTOMVALUESCOUNT;
 
 typedef struct {
