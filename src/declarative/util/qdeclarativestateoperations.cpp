@@ -456,11 +456,10 @@ void QDeclarativeParentChange::saveCurrentValues()
     }
 
     d->rewindParent = d->target->parentItem();
+    d->rewindStackBefore = 0;
 
-    if (!d->rewindParent) {
-        d->rewindStackBefore = 0;
+    if (!d->rewindParent)
         return;
-    }
 
     //try to determine the item's original stack position so we can restore it
     int siblingIndex = ((AccessibleFxItem*)d->target)->siblingIndex() + 1;
