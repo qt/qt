@@ -42,6 +42,7 @@
 #include "qdeclarativeflipable_p.h"
 
 #include "qdeclarativeitem_p.h"
+#include "qdeclarativeguard_p.h"
 
 #include <qdeclarativeinfo.h>
 
@@ -58,8 +59,8 @@ public:
     void updateSceneTransformFromParent();
 
     QDeclarativeFlipable::Side current;
-    QDeclarativeItem *front;
-    QDeclarativeItem *back;
+    QDeclarativeGuard<QDeclarativeItem> front;
+    QDeclarativeGuard<QDeclarativeItem> back;
 };
 
 /*!
@@ -192,7 +193,7 @@ void QDeclarativeFlipablePrivate::updateSceneTransformFromParent()
 
     if (newSide != current) {
         current = newSide;
-        if (current == QDeclarativeFlipable::Back) {
+        if (current == QDeclarativeFlipable::Back && back) {
             QTransform mat;
             mat.translate(back->width()/2,back->height()/2);
             if (back->width() && p1.x() >= p2.x())

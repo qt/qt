@@ -456,11 +456,10 @@ void QDeclarativeParentChange::saveCurrentValues()
     }
 
     d->rewindParent = d->target->parentItem();
+    d->rewindStackBefore = 0;
 
-    if (!d->rewindParent) {
-        d->rewindStackBefore = 0;
+    if (!d->rewindParent)
         return;
-    }
 
     //try to determine the item's original stack position so we can restore it
     int siblingIndex = ((AccessibleFxItem*)d->target)->siblingIndex() + 1;
@@ -944,7 +943,7 @@ void QDeclarativeAnchorChanges::saveOriginals()
     d->origBaseline = d->target->anchors()->baseline();
 
     d->applyOrigLeft = d->applyOrigRight = d->applyOrigHCenter = d->applyOrigTop
-      = d->applyOrigBottom = d->applyOrigHCenter = d->applyOrigBaseline = false;
+      = d->applyOrigBottom = d->applyOrigVCenter = d->applyOrigBaseline = false;
 
     saveCurrentValues();
 }

@@ -106,6 +106,7 @@ private slots:
     void illegalTempState();
     void nonExistantProperty();
     void reset();
+    void illegalObjectCreation();
 };
 
 void tst_qdeclarativestates::initTestCase()
@@ -962,6 +963,19 @@ void tst_qdeclarativestates::reset()
 
     QVERIFY(text->width() > 41);
     QVERIFY(text->width() > text->height());
+}
+
+void tst_qdeclarativestates::illegalObjectCreation()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent component(&engine, SRCDIR "/data/illegalObj.qml");
+    QList<QDeclarativeError> errors = component.errors();
+    QVERIFY(errors.count() == 1);
+    const QDeclarativeError &error = errors.at(0);
+    QCOMPARE(error.line(), 9);
+    QCOMPARE(error.column(), 23);
+    QCOMPARE(error.description().toUtf8().constData(), "PropertyChanges does not support creating state-specific objects.");
 }
 
 QTEST_MAIN(tst_qdeclarativestates)

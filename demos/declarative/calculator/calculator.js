@@ -14,7 +14,7 @@ function disabled(op) {
     }
 }
 
-function doOp(op) {
+function doOperation(op) {
     if (disabled(op)) {
         return;
     }

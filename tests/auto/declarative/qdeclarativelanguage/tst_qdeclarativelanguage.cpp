@@ -1242,6 +1242,9 @@ void tst_qdeclarativelanguage::importsRemote_data()
     QTest::newRow("remote import") << "import \""+serverdir+"\"\nTest {}" << "QDeclarativeRectangle";
     QTest::newRow("remote import with subdir") << "import \""+serverdir+"\"\nTestSubDir {}" << "QDeclarativeText";
     QTest::newRow("remote import with local") << "import \""+serverdir+"\"\nTestLocal {}" << "QDeclarativeImage";
+    QTest::newRow("wrong remote import with undeclared local") << "import \""+serverdir+"\"\nWrongTestLocal {}" << "";
+    QTest::newRow("wrong remote import of internal local") << "import \""+serverdir+"\"\nLocalInternal {}" << "";
+    QTest::newRow("wrong remote import of undeclared local") << "import \""+serverdir+"\"\nUndeclaredLocal {}" << "";
 }
 
 #include "testhttpserver.h"

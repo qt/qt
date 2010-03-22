@@ -10,8 +10,6 @@ Rectangle {
 
     width: 800; height: 480; color: "#d5d6d8"
 
-    Script { source: "PhotoViewerCore/script/script.js" }
-
     ListModel {
         id: photosModel
         ListElement { tag: "Flowers" }

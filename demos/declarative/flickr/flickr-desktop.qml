@@ -31,21 +31,19 @@ Item {
                 }
             }
 
-            Script {
-               function photoClicked() {
-                   imageDetails.photoTitle = title;
-                   imageDetails.photoDescription = description;
-                   imageDetails.photoTags = tags;
-                   imageDetails.photoWidth = photoWidth;
-                   imageDetails.photoHeight = photoHeight;
-                   imageDetails.photoType = photoType;
-                   imageDetails.photoAuthor = photoAuthor;
-                   imageDetails.photoDate = photoDate;
-                   imageDetails.photoUrl = url;
-                   imageDetails.rating = 0;
-                   wrapper.state = "Details";
-               }
-            }
+           function photoClicked() {
+               imageDetails.photoTitle = title;
+               imageDetails.photoDescription = description;
+               imageDetails.photoTags = tags;
+               imageDetails.photoWidth = photoWidth;
+               imageDetails.photoHeight = photoHeight;
+               imageDetails.photoType = photoType;
+               imageDetails.photoAuthor = photoAuthor;
+               imageDetails.photoDate = photoDate;
+               imageDetails.photoUrl = url;
+               imageDetails.rating = 0;
+               wrapper.state = "Details";
+           }
 
             Rectangle {
                 id: whiteRect; anchors.fill: parent; color: "white"; radius: 5

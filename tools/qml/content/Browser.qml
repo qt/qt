@@ -22,38 +22,36 @@ Rectangle {
 
     SystemPalette { id: palette }
 
-    Script {
-        function down(path) {
-            if (folders == folders1) {
-                view = view2
-                folders = folders2;
-                view1.state = "exitLeft";
-            } else {
-                view = view1
-                folders = folders1;
-                view2.state = "exitLeft";
-            }
-            view.x = root.width;
-            view.state = "current";
-            view.focus = true;
-            folders.folder = path;
+    function down(path) {
+        if (folders == folders1) {
+            view = view2
+            folders = folders2;
+            view1.state = "exitLeft";
+        } else {
+            view = view1
+            folders = folders1;
+            view2.state = "exitLeft";
         }
-        function up() {
-            var path = folders.parentFolder;
-            if (folders == folders1) {
-                view = view2
-                folders = folders2;
-                view1.state = "exitRight";
-            } else {
-                view = view1
-                folders = folders1;
-                view2.state = "exitRight";
-            }
-            view.x = -root.width;
-            view.state = "current";
-            view.focus = true;
-            folders.folder = path;
+        view.x = root.width;
+        view.state = "current";
+        view.focus = true;
+        folders.folder = path;
+    }
+    function up() {
+        var path = folders.parentFolder;
+        if (folders == folders1) {
+            view = view2
+            folders = folders2;
+            view1.state = "exitRight";
+        } else {
+            view = view1
+            folders = folders1;
+            view2.state = "exitRight";
         }
+        view.x = -root.width;
+        view.state = "current";
+        view.focus = true;
+        folders.folder = path;
     }
 
     Component {
