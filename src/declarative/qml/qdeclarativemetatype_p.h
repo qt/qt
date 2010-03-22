@@ -97,6 +97,8 @@ public:
     typedef QVariant (*StringConverter)(const QString &);
     static void registerCustomStringConverter(int, StringConverter);
     static StringConverter customStringConverter(int);
+
+    static bool isModule(const QByteArray &module, int versionMajor, int versionMinor);
 };
 
 class QDeclarativeTypePrivate;

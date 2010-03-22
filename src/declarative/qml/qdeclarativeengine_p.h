@@ -283,7 +283,8 @@ public:
 
     bool addToImport(Imports*, const QDeclarativeDirComponents &qmldircomponentsnetwork, 
                      const QString& uri, const QString& prefix, int vmaj, int vmin, 
-                     QDeclarativeScriptParser::Import::Type importType) const;
+                     QDeclarativeScriptParser::Import::Type importType,
+                     QString *errorString) const;
     bool resolveType(const Imports&, const QByteArray& type,
                      QDeclarativeType** type_return, QUrl* url_return,
                      int *version_major, int *version_minor,

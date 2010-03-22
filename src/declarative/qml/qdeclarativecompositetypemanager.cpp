@@ -570,12 +570,15 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             }
         }
 
+        QString errorString;
         if (!QDeclarativeEnginePrivate::get(engine)->
-                addToImport(&unit->imports, qmldircomponentsnetwork, imp.uri, imp.qualifier, vmaj, vmin, imp.type))
+                addToImport(&unit->imports, qmldircomponentsnetwork, imp.uri, imp.qualifier, vmaj, vmin, imp.type, &errorString))
         {
             QDeclarativeError error;
             error.setUrl(unit->imports.baseUrl());
-            error.setDescription(tr("Import %1 unavailable").arg(imp.uri));
+            error.setDescription(errorString);
+            error.setLine(imp.location.start.line);
+            error.setColumn(imp.location.start.column);
             unit->status = QDeclarativeCompositeTypeData::Error;
             unit->errorType = QDeclarativeCompositeTypeData::GeneralError;
             unit->errors << error;
@@ -605,7 +608,8 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
                             QLatin1String("."),
                             QString(),
                             -1, -1,
-                            QDeclarativeScriptParser::Import::File);
+                            QDeclarativeScriptParser::Import::File,
+                            0); // error ignored (just means no fallback)
     }
 
 
