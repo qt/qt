@@ -612,6 +612,11 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
     ctxt->isInternal = true;
     ctxt->url = cc->url;
     ctxt->imports = cc->importCache;
+
+    // Nested global imports
+    if (creationContext && start != -1) 
+        ctxt->importedScripts = creationContext->importedScripts;
+
     cc->importCache->addref();
     ctxt->setParent(context);
 

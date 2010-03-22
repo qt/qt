@@ -1695,11 +1695,9 @@ static QDeclarativeTypeNameCache *cacheForNamespace(QDeclarativeEngine *engine, 
     return cache;
 }
 
-QDeclarativeTypeNameCache *QDeclarativeEnginePrivate::Imports::cache(QDeclarativeEngine *engine) const
+void QDeclarativeEnginePrivate::Imports::cache(QDeclarativeTypeNameCache *cache, QDeclarativeEngine *engine) const
 {
     const QDeclarativeEnginePrivate::ImportedNamespace &set = d->unqualifiedset;
-
-    QDeclarativeTypeNameCache *cache = new QDeclarativeTypeNameCache(engine);
 
     for (QHash<QString,QDeclarativeEnginePrivate::ImportedNamespace* >::ConstIterator iter = d->set.begin();
          iter != d->set.end(); ++iter) {
@@ -1716,8 +1714,6 @@ QDeclarativeTypeNameCache *QDeclarativeEnginePrivate::Imports::cache(QDeclarativ
     }
 
     cacheForNamespace(engine, set, cache);
-
-    return cache;
 }
 
 /*

@@ -441,8 +441,14 @@ bool ProcessAST::visit(AST::UiImport *node)
     QDeclarativeScriptParser::Import import;
 
     if (node->fileName) {
-        import.type = QDeclarativeScriptParser::Import::File;
         uri = node->fileName->asString();
+
+        if (uri.endsWith(QLatin1String(".js"))) {
+            import.type = QDeclarativeScriptParser::Import::Script;
+            _parser->_refUrls << QUrl(uri);
+        } else {
+            import.type = QDeclarativeScriptParser::Import::File;
+        }
     } else {
         import.type = QDeclarativeScriptParser::Import::Library;
         uri = asString(node->importUri);
@@ -451,6 +457,7 @@ bool ProcessAST::visit(AST::UiImport *node)
     AST::SourceLocation startLoc = node->importToken;
     AST::SourceLocation endLoc = node->semicolonToken;
 
+    // Qualifier
     if (node->importId) {
         import.qualifier = node->importId->asString();
         if (!import.qualifier.at(0).isUpper()) {
@@ -461,17 +468,43 @@ bool ProcessAST::visit(AST::UiImport *node)
             _parser->_errors << error;
             return false;
         }
+
+        // Check for script qualifier clashes
+        bool isScript = import.type == QDeclarativeScriptParser::Import::Script;
+        for (int ii = 0; ii < _parser->_imports.count(); ++ii) {
+            const QDeclarativeScriptParser::Import &other = _parser->_imports.at(ii);
+            bool otherIsScript = other.type == QDeclarativeScriptParser::Import::Script;
+
+            if ((isScript || otherIsScript) && import.qualifier == other.qualifier) {
+                QDeclarativeError error;
+                error.setDescription(QCoreApplication::translate("QDeclarativeParser","Script import qualifiers must be unique."));
+                error.setLine(node->importIdToken.startLine);
+                error.setColumn(node->importIdToken.startColumn);
+                _parser->_errors << error;
+                return false;
+            }
+        }
+
+    } else if (import.type == QDeclarativeScriptParser::Import::Script) {
+        QDeclarativeError error;
+        error.setDescription(QCoreApplication::translate("QDeclarativeParser","Script import requires a qualifier"));
+        error.setLine(node->importIdToken.startLine);
+        error.setColumn(node->importIdToken.startColumn);
+        _parser->_errors << error;
+        return false;
     }
-    if (node->versionToken.isValid())
+
+    if (node->versionToken.isValid()) {
         import.version = textAt(node->versionToken);
-    else if (import.type == QDeclarativeScriptParser::Import::Library) {
+    } else if (import.type == QDeclarativeScriptParser::Import::Library) {
         QDeclarativeError error;
         error.setDescription(QCoreApplication::translate("QDeclarativeParser","Library import requires a version"));
         error.setLine(node->importIdToken.startLine);
         error.setColumn(node->importIdToken.startColumn);
         _parser->_errors << error;
         return false;
-    }
+    } 
+
 
     import.location = location(startLoc, endLoc);
     import.uri = uri;
@@ -932,6 +965,95 @@ QList<QDeclarativeScriptParser::Import> QDeclarativeScriptParser::imports() cons
 QList<QDeclarativeError> QDeclarativeScriptParser::errors() const
 {
     return _errors;
+}
+
+/*
+Searches for ".pragma <value>" declarations within \a script.  Currently supported pragmas
+are:
+    library
+*/
+QDeclarativeParser::Object::ScriptBlock::Pragmas QDeclarativeScriptParser::extractPragmas(QString &script)
+{
+    QDeclarativeParser::Object::ScriptBlock::Pragmas rv = QDeclarativeParser::Object::ScriptBlock::None;
+
+    const QChar forwardSlash(QLatin1Char('/'));
+    const QChar star(QLatin1Char('*'));
+    const QChar newline(QLatin1Char('\n'));
+    const QChar dot(QLatin1Char('.'));
+    const QChar semicolon(QLatin1Char(';'));
+    const QChar space(QLatin1Char(' '));
+    const QString pragma(QLatin1String(".pragma "));
+
+    const QChar *pragmaData = pragma.constData();
+
+    const QChar *data = script.constData();
+    const int length = script.count();
+    for (int ii = 0; ii < length; ++ii) {
+        const QChar &c = data[ii];
+
+        if (c.isSpace()) 
+            continue;
+
+        if (c == forwardSlash) {
+            ++ii;
+            if (ii >= length)
+                return rv;
+
+            const QChar &c = data[ii];
+            if (c == forwardSlash) {
+                // Find next newline
+                while (ii < length && data[++ii] != newline) {};
+            } else if (c == star) {
+                // Find next star
+                while (true) {
+                    while (ii < length && data[++ii] != star) {};
+                    if (ii + 1 >= length)
+                        return rv;
+
+                    if (data[ii + 1] == forwardSlash) {
+                        ++ii;
+                        break;
+                    }
+                }
+            } else {
+                return rv;
+            }
+        } else if (c == dot) {
+            // Could be a pragma!
+            if (ii + pragma.length() >= length ||
+                0 != ::memcmp(data + ii, pragmaData, sizeof(QChar) * pragma.length()))
+                return rv;
+
+            int pragmaStatementIdx = ii;
+
+            ii += pragma.length();
+
+            while (ii < length && data[ii].isSpace()) { ++ii; }
+
+            int startIdx = ii;
+
+            while (ii < length && data[ii].isLetter()) { ++ii; }
+
+            int endIdx = ii;
+
+            if (ii != length && data[ii] != forwardSlash && !data[ii].isSpace() && data[ii] != semicolon)
+                return rv;
+
+            QString p(data + startIdx, endIdx - startIdx);
+
+            if (p == QLatin1String("library"))
+                rv |= QDeclarativeParser::Object::ScriptBlock::Shared;
+            else
+                return rv;
+
+            for (int jj = pragmaStatementIdx; jj < endIdx; ++jj) script[jj] = space;
+
+        } else {
+            return rv;
+        }
+    }
+
+    return rv;
 }
 
 void QDeclarativeScriptParser::clear()

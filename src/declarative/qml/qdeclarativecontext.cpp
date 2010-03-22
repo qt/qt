@@ -606,6 +606,75 @@ void QDeclarativeContextData::addObject(QObject *o)
     contextObjects = data;
 }
 
+void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object::ScriptBlock &script)
+{
+    if (!engine) 
+        return;
+
+    Q_ASSERT(script.codes.count() == 1);
+
+    QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
+    QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
+
+    const QString &code = script.codes.at(0);
+    const QString &url = script.files.at(0);
+    const QDeclarativeParser::Object::ScriptBlock::Pragmas &pragmas = script.pragmas.at(0);
+
+    Q_ASSERT(!url.isEmpty());
+
+    if (pragmas & QDeclarativeParser::Object::ScriptBlock::Shared) {
+
+        QHash<QString, QScriptValue>::Iterator iter = enginePriv->m_sharedScriptImports.find(url);
+        if (iter == enginePriv->m_sharedScriptImports.end()) {
+            QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
+
+            scriptContext->pushScope(enginePriv->globalClass->globalObject());
+        
+            QScriptValue scope = scriptEngine->newObject();
+            scriptContext->setActivationObject(scope);
+            scriptContext->pushScope(scope);
+
+            scriptEngine->evaluate(code, url, 1);
+
+            if (scriptEngine->hasUncaughtException()) {
+                QDeclarativeError error;
+                QDeclarativeExpressionPrivate::exceptionToError(scriptEngine, error);
+                qWarning().nospace() << qPrintable(error.toString());
+            }
+
+            scriptEngine->popContext();
+
+            iter = enginePriv->m_sharedScriptImports.insert(url, scope);
+        }
+
+        importedScripts.append(*iter);
+
+    } else {
+
+        QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
+
+        scriptContext->pushScope(enginePriv->contextClass->newContext(this, 0));
+        scriptContext->pushScope(enginePriv->globalClass->globalObject());
+        
+        QScriptValue scope = scriptEngine->newObject();
+        scriptContext->setActivationObject(scope);
+        scriptContext->pushScope(scope);
+
+        scriptEngine->evaluate(code, url, 1);
+
+        if (scriptEngine->hasUncaughtException()) {
+            QDeclarativeError error;
+            QDeclarativeExpressionPrivate::exceptionToError(scriptEngine, error);
+            qWarning().nospace() << qPrintable(error.toString());
+        }
+
+        scriptEngine->popContext();
+
+        importedScripts.append(scope);
+
+    }
+}
+
 void QDeclarativeContextData::addScript(const QDeclarativeParser::Object::ScriptBlock &script, 
                                         QObject *scopeObject)
 {

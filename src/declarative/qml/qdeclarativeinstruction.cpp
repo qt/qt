@@ -144,6 +144,9 @@ void QDeclarativeCompiledData::dump(QDeclarativeInstruction *instr, int idx)
     case QDeclarativeInstruction::StoreScript:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_SCRIPT\t\t" << instr->storeScript.value;
         break;
+    case QDeclarativeInstruction::StoreImportedScript:
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_IMPORTED_SCRIPT\t" << instr->storeScript.value;
+        break;
     case QDeclarativeInstruction::StoreScriptString:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_SCRIPT_STRING\t" << instr->storeScriptString.propertyIndex << "\t" << instr->storeScriptString.value << "\t" << instr->storeScriptString.scope;
         break;

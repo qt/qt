@@ -116,7 +116,7 @@ public:
     static void complete(QDeclarativeEnginePrivate *enginePriv, ConstructionState *state);
 
     QDeclarativeEngine *engine;
-    QDeclarativeContextData *creationContext;
+    QDeclarativeGuardedContextData creationContext;
 
     void clear();
 

@@ -542,8 +542,8 @@ void QDeclarativeCompiler::reset(QDeclarativeCompiledData *data)
     on a successful compiler.
 */
 bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
-                          QDeclarativeCompositeTypeData *unit,
-                          QDeclarativeCompiledData *out)
+                                   QDeclarativeCompositeTypeData *unit,
+                                   QDeclarativeCompiledData *out)
 {
     exceptions.clear();
 
@@ -633,6 +633,37 @@ void QDeclarativeCompiler::compileTree(Object *tree)
         init.init.compiledBinding = output->indexForByteArray(compileState.compiledBindingData);
     output->bytecode << init;
 
+    // Build global import scripts
+    QHash<QString, Object::ScriptBlock> importedScripts;
+    QStringList importedScriptIndexes;
+
+    for (int ii = 0; ii < unit->scripts.count(); ++ii) {
+        QString scriptCode = QString::fromUtf8(unit->scripts.at(ii).resource->data);
+        Object::ScriptBlock::Pragmas pragmas = QDeclarativeScriptParser::extractPragmas(scriptCode);
+
+        if (!scriptCode.isEmpty()) {
+            Object::ScriptBlock &scriptBlock = importedScripts[unit->scripts.at(ii).qualifier];
+
+            scriptBlock.codes.append(scriptCode);
+            scriptBlock.lineNumbers.append(1);
+            scriptBlock.files.append(unit->scripts.at(ii).resource->url);
+            scriptBlock.pragmas.append(pragmas);
+        }
+    }
+
+    for (QHash<QString, Object::ScriptBlock>::Iterator iter = importedScripts.begin(); 
+         iter != importedScripts.end(); ++iter) {
+
+        importedScriptIndexes.append(iter.key());
+
+        QDeclarativeInstruction import;
+        import.type = QDeclarativeInstruction::StoreImportedScript;
+        import.line = 0;
+        import.storeScript.value = output->scripts.count();
+        output->scripts << *iter;
+        output->bytecode << import;
+    }
+
     genObject(tree);
 
     QDeclarativeInstruction def;
@@ -641,7 +672,13 @@ void QDeclarativeCompiler::compileTree(Object *tree)
     output->bytecode << def;
 
     output->imports = unit->imports;
-    output->importCache = output->imports.cache(engine);
+
+    output->importCache = new QDeclarativeTypeNameCache(engine);
+
+    for (int ii = 0; ii < importedScriptIndexes.count(); ++ii) 
+        output->importCache->add(importedScriptIndexes.at(ii), ii);
+
+    output->imports.cache(output->importCache, engine);
 
     Q_ASSERT(tree->metatype);
 
@@ -1153,6 +1190,8 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
 
 bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclarativeParser::Object *script)
 {
+    qWarning().nospace() << qPrintable(output->url.toString()) << ":" << obj->location.start.line << ":" << obj->location.start.column << ": Script blocks have been deprecated.  Support will be removed entirely shortly.";
+
     Object::ScriptBlock scriptBlock;
 
     if (script->properties.count() == 1 && 
@@ -1184,6 +1223,7 @@ bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclara
                 scriptBlock.codes.append(scriptCode);
                 scriptBlock.files.append(sourceUrl);
                 scriptBlock.lineNumbers.append(lineNumber);
+                scriptBlock.pragmas.append(Object::ScriptBlock::None);
             }
         }
 
@@ -1226,6 +1266,7 @@ bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclara
             scriptBlock.codes.append(scriptCode);
             scriptBlock.files.append(sourceUrl);
             scriptBlock.lineNumbers.append(lineNumber);
+            scriptBlock.pragmas.append(Object::ScriptBlock::None);
         }
     }
 
