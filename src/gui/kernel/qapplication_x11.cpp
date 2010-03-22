@@ -275,6 +275,8 @@ static const char * x11_atomnames = {
 
     "_NET_SYSTEM_TRAY_VISUAL\0"
 
+    "_NET_ACTIVE_WINDOW\0"
+
     // Property formats
     "COMPOUND_TEXT\0"
     "TEXT\0"
