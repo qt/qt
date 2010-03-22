@@ -1109,9 +1109,11 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         QTLWExtra *top = d->topData();
         const QRect normalGeometry = (top->normalGeometry.width() < 0) ? geometry() : top->normalGeometry;
 
-        if (newstate & Qt::WindowFullScreen)
-            setGeometry(qApp->desktop()->availableGeometry(this));
-        else if (newstate & Qt::WindowMaximized)
+
+        const bool cbaVisibilityHint = windowFlags() & Qt::WindowSoftkeysVisibleHint;
+        if (newstate & Qt::WindowFullScreen && !cbaVisibilityHint)
+            setGeometry(qApp->desktop()->screenGeometry(this));
+        else if (newstate & Qt::WindowMaximized || ((newstate & Qt::WindowFullScreen) && cbaVisibilityHint))
             setGeometry(qApp->desktop()->availableGeometry(this));
         else
             setGeometry(normalGeometry);
