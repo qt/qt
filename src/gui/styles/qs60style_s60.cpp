@@ -1096,7 +1096,7 @@ void QS60StylePrivate::setActiveLayout()
         activeLayoutIndex += (!landscape) ? 1 : 0;
     }
 
-    m_pmPointer = data[activeLayoutIndex];
+    setCurrentLayout(activeLayoutIndex);
 }
 
 Q_GLOBAL_STATIC(QList<QS60StyleAnimation *>, m_animations)
