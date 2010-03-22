@@ -45,7 +45,6 @@
 #include "qdeclarativeevents_p_p.h"
 #include <private/qdeclarativeengine_p.h>
 
-#include <qfxperf_p_p.h>
 #include <qdeclarativeengine.h>
 #include <qdeclarativeopenmetaobject_p.h>
 #include <qdeclarativestate_p.h>
@@ -2491,10 +2490,6 @@ void QDeclarativeItem::classBegin()
 */
 void QDeclarativeItem::componentComplete()
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::ItemComponentComplete> cc;
-#endif
-
     Q_D(QDeclarativeItem);
     d->_componentComplete = true;
     if (d->_stateGroup)

@@ -1896,6 +1896,13 @@ void QFileSystemModelPrivate::init()
     q->connect(&fileInfoGatherer, SIGNAL(directoryLoaded(QString)),
                q, SIGNAL(directoryLoaded(QString)));
     q->connect(&delayedSortTimer, SIGNAL(timeout()), q, SLOT(_q_performDelayedSort()), Qt::QueuedConnection);
+
+    QHash<int, QByteArray> roles = q->roleNames();
+    roles.insertMulti(QFileSystemModel::FileIconRole, "fileIcon"); // == Qt::decoration
+    roles.insert(QFileSystemModel::FilePathRole, "filePath");
+    roles.insert(QFileSystemModel::FileNameRole, "fileName");
+    roles.insert(QFileSystemModel::FilePermissions, "filePermissions");
+    q->setRoleNames(roles);
 }
 
 /*!

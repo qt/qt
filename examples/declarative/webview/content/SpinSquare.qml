@@ -15,7 +15,7 @@ Item {
             width: root.width
             height: width
         }
-        rotation: NumberAnimation {
+        NumberAnimation on rotation {
             from: 0
             to: 360
             repeat: true
