@@ -49,7 +49,7 @@
 #include <QtMultimedia/qmetadatacontrol.h>
 
 
-class tst_QmlAudio : public QObject
+class tst_QDeclarativeAudio : public QObject
 {
     Q_OBJECT
 public slots:
@@ -285,12 +285,12 @@ public:
 };
 
 
-void tst_QmlAudio::initTestCase()
+void tst_QDeclarativeAudio::initTestCase()
 {
     qRegisterMetaType<QDeclarativeAudio::Error>();
 }
 
-void tst_QmlAudio::nullPlayerControl()
+void tst_QDeclarativeAudio::nullPlayerControl()
 {
     QtTestMetaDataControl metaDataControl;
     QtTestMediaServiceProvider provider(0, &metaDataControl);
@@ -339,7 +339,7 @@ void tst_QmlAudio::nullPlayerControl()
     QCOMPARE(audio.error(), QDeclarativeAudio::ServiceMissing);
 }
 
-void tst_QmlAudio::nullMetaDataControl()
+void tst_QDeclarativeAudio::nullMetaDataControl()
 {
     QtTestMediaPlayerControl playerControl;
     QtTestMediaServiceProvider provider(&playerControl, 0);
@@ -351,7 +351,7 @@ void tst_QmlAudio::nullMetaDataControl()
     QCOMPARE(audio.metaObject()->indexOfProperty("description"), -1);
 }
 
-void tst_QmlAudio::nullService()
+void tst_QDeclarativeAudio::nullService()
 {
     QtTestMediaServiceProvider provider(0);
 
@@ -403,7 +403,7 @@ void tst_QmlAudio::nullService()
     QCOMPARE(audio.metaObject()->indexOfProperty("description"), -1);
 }
 
-void tst_QmlAudio::source()
+void tst_QDeclarativeAudio::source()
 {
     const QUrl url1("http://example.com");
     const QUrl url2("file:///local/path");
@@ -431,7 +431,7 @@ void tst_QmlAudio::source()
     QCOMPARE(spy.count(), 3);
 }
 
-void tst_QmlAudio::autoLoad()
+void tst_QDeclarativeAudio::autoLoad()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
@@ -458,7 +458,7 @@ void tst_QmlAudio::autoLoad()
     QCOMPARE(audio.isPaused(), true);
 }
 
-void tst_QmlAudio::playing()
+void tst_QDeclarativeAudio::playing()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
@@ -547,7 +547,7 @@ void tst_QmlAudio::playing()
     QCOMPARE(stoppedSpy.count(),          stopped);
 }
 
-void tst_QmlAudio::paused()
+void tst_QDeclarativeAudio::paused()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
@@ -836,7 +836,7 @@ void tst_QmlAudio::paused()
     QCOMPARE(stoppedSpy.count(),          stopped);
 }
 
-void tst_QmlAudio::duration()
+void tst_QDeclarativeAudio::duration()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
@@ -865,7 +865,7 @@ void tst_QmlAudio::duration()
     QCOMPARE(spy.count(), 4);
 }
 
-void tst_QmlAudio::position()
+void tst_QDeclarativeAudio::position()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
@@ -909,7 +909,7 @@ void tst_QmlAudio::position()
     QVERIFY(spy.count() < 6);
 }
 
-void tst_QmlAudio::volume()
+void tst_QDeclarativeAudio::volume()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
@@ -934,7 +934,7 @@ void tst_QmlAudio::volume()
     QCOMPARE(spy.count(), 2);
 }
 
-void tst_QmlAudio::muted()
+void tst_QDeclarativeAudio::muted()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
@@ -959,7 +959,7 @@ void tst_QmlAudio::muted()
     QCOMPARE(spy.count(), 3);
 }
 
-void tst_QmlAudio::bufferProgress()
+void tst_QDeclarativeAudio::bufferProgress()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
@@ -994,7 +994,7 @@ void tst_QmlAudio::bufferProgress()
     QVERIFY(spy.count() < 6);
 }
 
-void tst_QmlAudio::seekable()
+void tst_QDeclarativeAudio::seekable()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
@@ -1018,7 +1018,7 @@ void tst_QmlAudio::seekable()
     QCOMPARE(spy.count(), 3);
 }
 
-void tst_QmlAudio::playbackRate()
+void tst_QDeclarativeAudio::playbackRate()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
@@ -1044,7 +1044,7 @@ void tst_QmlAudio::playbackRate()
     QCOMPARE(spy.count(), 3);
 }
 
-void tst_QmlAudio::status()
+void tst_QDeclarativeAudio::status()
 {
     QtTestMediaServiceProvider provider;
     QDeclarativeAudio audio;
@@ -1153,7 +1153,7 @@ void tst_QmlAudio::status()
     QCOMPARE(endOfMediaSpy.count(), 1);
 }
 
-void tst_QmlAudio::metaData_data()
+void tst_QDeclarativeAudio::metaData_data()
 {
     QTest::addColumn<QByteArray>("propertyName");
     QTest::addColumn<QtMultimedia::MetaData>("propertyKey");
@@ -1179,7 +1179,7 @@ void tst_QmlAudio::metaData_data()
             << QVariant(12);
 }
 
-void tst_QmlAudio::metaData()
+void tst_QDeclarativeAudio::metaData()
 {
     QFETCH(QByteArray, propertyName);
     QFETCH(QtMultimedia::MetaData, propertyKey);
@@ -1209,7 +1209,7 @@ void tst_QmlAudio::metaData()
     QCOMPARE(spy.count(), 2);
 }
 
-void tst_QmlAudio::error()
+void tst_QDeclarativeAudio::error()
 {
     const QString errorString = QLatin1String("Failed to open device.");
 
@@ -1247,6 +1247,6 @@ void tst_QmlAudio::error()
 }
 
 
-QTEST_MAIN(tst_QmlAudio)
+QTEST_MAIN(tst_QDeclarativeAudio)
 
 #include "tst_qdeclarativeaudio.moc"

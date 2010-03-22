@@ -87,13 +87,13 @@ public:
     }
 };
 
-class tst_QFiledialog : public QObject
+class tst_QFileDialog2 : public QObject
 {
 Q_OBJECT
 
 public:
-    tst_QFiledialog();
-    virtual ~tst_QFiledialog();
+    tst_QFileDialog2();
+    virtual ~tst_QFileDialog2();
 
 public slots:
     void init();
@@ -138,18 +138,18 @@ private:
     QByteArray userSettings;
 };
 
-tst_QFiledialog::tst_QFiledialog()
+tst_QFileDialog2::tst_QFileDialog2()
 {   
 #if defined(Q_OS_WINCE)
     qApp->setAutoMaximizeThreshold(-1);
 #endif
 }
 
-tst_QFiledialog::~tst_QFiledialog()
+tst_QFileDialog2::~tst_QFileDialog2()
 {
 }
 
-void tst_QFiledialog::init()
+void tst_QFileDialog2::init()
 {
     // Save the developers settings so they don't get mad when their sidebar folders are gone.
     QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
@@ -164,14 +164,14 @@ void tst_QFiledialog::init()
 #endif
 }
 
-void tst_QFiledialog::cleanup()
+void tst_QFileDialog2::cleanup()
 {
     QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
     settings.beginGroup(QLatin1String("Qt"));
     settings.setValue(QLatin1String("filedialog"), userSettings);
 }
 
-void tst_QFiledialog::listRoot()
+void tst_QFileDialog2::listRoot()
 {
 #if defined QT_BUILD_INTERNAL
     QFileInfoGatherer fileInfoGatherer;
@@ -193,7 +193,7 @@ void tst_QFiledialog::listRoot()
 #endif
 }
 
-void tst_QFiledialog::heapCorruption()
+void tst_QFileDialog2::heapCorruption()
 {
     QVector<QNonNativeFileDialog*> dialogs;
     for (int i=0; i < 10; i++) {
@@ -205,12 +205,12 @@ void tst_QFiledialog::heapCorruption()
 
 struct FriendlyQFileDialog : public QNonNativeFileDialog
 {
-    friend class tst_QFileDialog;
+    friend class tst_QFileDialog2;
     Q_DECLARE_PRIVATE(QFileDialog)
 };
 
 
-void tst_QFiledialog::deleteDirAndFiles()
+void tst_QFileDialog2::deleteDirAndFiles()
 {
 #if defined QT_BUILD_INTERNAL
     QString tempPath = QDir::tempPath() + '/' + "QFileDialogTestDir4FullDelete";
@@ -242,7 +242,7 @@ void tst_QFiledialog::deleteDirAndFiles()
 #endif
 }
 
-void tst_QFiledialog::filter()
+void tst_QFileDialog2::filter()
 {
     QNonNativeFileDialog fd;
     QAction *hiddenAction = qFindChild<QAction*>(&fd, "qt_show_hidden_action");
@@ -255,7 +255,7 @@ void tst_QFiledialog::filter()
     QVERIFY(hiddenAction->isChecked());
 }
 
-void tst_QFiledialog::showNameFilterDetails()
+void tst_QFileDialog2::showNameFilterDetails()
 {
     QNonNativeFileDialog fd;
     QComboBox *filters = qFindChild<QComboBox*>(&fd, "fileTypeCombo");
@@ -280,7 +280,7 @@ void tst_QFiledialog::showNameFilterDetails()
     QCOMPARE(filters->itemText(2), filterChoices.at(2));
 }
 
-void tst_QFiledialog::unc()
+void tst_QFileDialog2::unc()
 {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     // Only test UNC on Windows./
@@ -295,7 +295,7 @@ void tst_QFiledialog::unc()
     QCOMPARE(model->index(fd.directory().absolutePath()), model->index(dir));
 }
 
-void tst_QFiledialog::emptyUncPath()
+void tst_QFileDialog2::emptyUncPath()
 {
     QNonNativeFileDialog fd;
 	fd.show();
@@ -308,7 +308,7 @@ void tst_QFiledialog::emptyUncPath()
     QVERIFY(model);
 }
 
-void tst_QFiledialog::task178897_minimumSize()
+void tst_QFileDialog2::task178897_minimumSize()
 {
     QNonNativeFileDialog fd;
     QSize oldMs = fd.layout()->minimumSize();
@@ -322,7 +322,7 @@ void tst_QFiledialog::task178897_minimumSize()
     QVERIFY(ms.width() <= oldMs.width());
 }
 
-void tst_QFiledialog::task180459_lastDirectory_data()
+void tst_QFileDialog2::task180459_lastDirectory_data()
 {
     QTest::addColumn<QString>("path");
     QTest::addColumn<QString>("directory");
@@ -345,7 +345,7 @@ void tst_QFiledialog::task180459_lastDirectory_data()
 
 }
 
-void tst_QFiledialog::task180459_lastDirectory()
+void tst_QFileDialog2::task180459_lastDirectory()
 {
     //first visit the temp directory and close the dialog
     QNonNativeFileDialog *dlg = new QNonNativeFileDialog(0, "", QDir::tempPath());
@@ -449,7 +449,7 @@ QString &dir, const QString &filter)
         }
 };
 
-void tst_QFiledialog::task227304_proxyOnFileDialog()
+void tst_QFileDialog2::task227304_proxyOnFileDialog()
 {
 #if defined QT_BUILD_INTERNAL
     QNonNativeFileDialog fd(0, "", QDir::currentPath(), 0);
@@ -488,7 +488,7 @@ void tst_QFiledialog::task227304_proxyOnFileDialog()
 #endif
 }
 
-void tst_QFiledialog::task227930_correctNavigationKeyboardBehavior()
+void tst_QFileDialog2::task227930_correctNavigationKeyboardBehavior()
 {
     QDir current = QDir::currentPath();
     current.mkdir("test");
@@ -527,7 +527,7 @@ void tst_QFiledialog::task227930_correctNavigationKeyboardBehavior()
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-void tst_QFiledialog::task226366_lowerCaseHardDriveWindows()
+void tst_QFileDialog2::task226366_lowerCaseHardDriveWindows()
 {
     QNonNativeFileDialog fd;
     fd.setDirectory(QDir::root().path());
@@ -553,7 +553,7 @@ void tst_QFiledialog::task226366_lowerCaseHardDriveWindows()
 }
 #endif
 
-void tst_QFiledialog::completionOnLevelAfterRoot()
+void tst_QFileDialog2::completionOnLevelAfterRoot()
 {
     QNonNativeFileDialog fd;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
@@ -592,7 +592,7 @@ void tst_QFiledialog::completionOnLevelAfterRoot()
 #endif
 }
 
-void tst_QFiledialog::task233037_selectingDirectory()
+void tst_QFileDialog2::task233037_selectingDirectory()
 {
     QDir current = QDir::currentPath();
     current.mkdir("test");
@@ -615,7 +615,7 @@ void tst_QFiledialog::task233037_selectingDirectory()
     current.rmdir("test");
 }
 
-void tst_QFiledialog::task235069_hideOnEscape()
+void tst_QFileDialog2::task235069_hideOnEscape()
 {
     QDir current = QDir::currentPath();
     QNonNativeFileDialog fd;
@@ -637,7 +637,7 @@ void tst_QFiledialog::task235069_hideOnEscape()
     QCOMPARE(fd2.isVisible(), false);
 }
 
-void tst_QFiledialog::task236402_dontWatchDeletedDir()
+void tst_QFileDialog2::task236402_dontWatchDeletedDir()
 {
 #if defined QT_BUILD_INTERNAL
     //THIS TEST SHOULD NOT DISPLAY WARNINGS
@@ -662,7 +662,7 @@ void tst_QFiledialog::task236402_dontWatchDeletedDir()
 #endif
 }
 
-void tst_QFiledialog::task203703_returnProperSeparator()
+void tst_QFileDialog2::task203703_returnProperSeparator()
 {
     QDir current = QDir::currentPath();
     current.mkdir("aaaaaaaaaaaaaaaaaa");
@@ -687,7 +687,7 @@ void tst_QFiledialog::task203703_returnProperSeparator()
     current.rmdir("aaaaaaaaaaaaaaaaaa");
 }
 
-void tst_QFiledialog::task228844_ensurePreviousSorting()
+void tst_QFileDialog2::task228844_ensurePreviousSorting()
 {
     QDir current = QDir::currentPath();
     current.mkdir("aaaaaaaaaaaaaaaaaa");
@@ -789,7 +789,7 @@ void tst_QFiledialog::task228844_ensurePreviousSorting()
 }
 
 
-void tst_QFiledialog::task239706_editableFilterCombo()
+void tst_QFileDialog2::task239706_editableFilterCombo()
 {
     QNonNativeFileDialog d;
     d.setNameFilter("*.cpp *.h");
@@ -812,7 +812,7 @@ void tst_QFiledialog::task239706_editableFilterCombo()
     QTest::keyPress(filterCombo, Qt::Key_Enter); // should not trigger assertion failure
 }
 
-void tst_QFiledialog::task218353_relativePaths()
+void tst_QFileDialog2::task218353_relativePaths()
 {
     QDir appDir = QDir::current();
     QVERIFY(appDir.cdUp() != false);
@@ -829,7 +829,7 @@ void tst_QFiledialog::task218353_relativePaths()
     appDir.rmdir("test");
 }
 
-void tst_QFiledialog::task251321_sideBarHiddenEntries()
+void tst_QFileDialog2::task251321_sideBarHiddenEntries()
 {
 #if defined QT_BUILD_INTERNAL
     QNonNativeFileDialog fd;
@@ -889,7 +889,7 @@ public :
 };
 #endif
 
-void tst_QFiledialog::task251341_sideBarRemoveEntries()
+void tst_QFileDialog2::task251341_sideBarRemoveEntries()
 {
 #if defined QT_BUILD_INTERNAL
     QNonNativeFileDialog fd;
@@ -954,7 +954,7 @@ void tst_QFiledialog::task251341_sideBarRemoveEntries()
 #endif
 }
 
-void tst_QFiledialog::task254490_selectFileMultipleTimes()
+void tst_QFileDialog2::task254490_selectFileMultipleTimes()
 {
     QString tempPath = QDir::tempPath();
     QTemporaryFile *t;
@@ -986,7 +986,7 @@ void tst_QFiledialog::task254490_selectFileMultipleTimes()
     t->deleteLater();
 }
 
-void tst_QFiledialog::task257579_sideBarWithNonCleanUrls()
+void tst_QFileDialog2::task257579_sideBarWithNonCleanUrls()
 {
 #if defined QT_BUILD_INTERNAL
     QDir tempDir = QDir::temp();
@@ -1012,7 +1012,7 @@ void tst_QFiledialog::task257579_sideBarWithNonCleanUrls()
 #endif
 }
 
-void tst_QFiledialog::task259105_filtersCornerCases()
+void tst_QFileDialog2::task259105_filtersCornerCases()
 {
     QNonNativeFileDialog fd(0, "TestFileDialog");
     fd.setNameFilter(QLatin1String("All Files! (*);;Text Files (*.txt)"));
@@ -1056,7 +1056,7 @@ void tst_QFiledialog::task259105_filtersCornerCases()
     QCOMPARE(filters->currentText(), QLatin1String("Text Files"));
 }
 
-void tst_QFiledialog::QTBUG4419_lineEditSelectAll()
+void tst_QFileDialog2::QTBUG4419_lineEditSelectAll()
 {
     QString tempPath = QDir::tempPath();
     QTemporaryFile *t;
@@ -1082,7 +1082,7 @@ void tst_QFiledialog::QTBUG4419_lineEditSelectAll()
     QCOMPARE(tempPath + QChar('/') + lineEdit->selectedText(), t->fileName());
 }
 
-void tst_QFiledialog::QTBUG6558_showDirsOnly()
+void tst_QFileDialog2::QTBUG6558_showDirsOnly()
 {
     const QString tempPath = QDir::tempPath();
     QDir dirTemp(tempPath);
@@ -1148,7 +1148,7 @@ void tst_QFiledialog::QTBUG6558_showDirsOnly()
     dirTemp.rmdir(tempName);
 }
 
-void tst_QFiledialog::QTBUG4842_selectFilterWithHideNameFilterDetails()
+void tst_QFileDialog2::QTBUG4842_selectFilterWithHideNameFilterDetails()
 {
     QStringList filtersStr;
     filtersStr << "Images (*.png *.xpm *.jpg)" << "Text files (*.txt)" << "XML files (*.xml)";
@@ -1188,5 +1188,5 @@ void tst_QFiledialog::QTBUG4842_selectFilterWithHideNameFilterDetails()
 
 }
 
-QTEST_MAIN(tst_QFiledialog)
+QTEST_MAIN(tst_QFileDialog2)
 #include "tst_qfiledialog2.moc"
