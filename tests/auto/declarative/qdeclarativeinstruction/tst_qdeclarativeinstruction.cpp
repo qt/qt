@@ -507,8 +507,16 @@ void tst_qdeclarativeinstruction::dump()
 
     {
         QDeclarativeInstruction i;
+        i.line = 48;
+        i.type = QDeclarativeInstruction::StoreImportedScript;
+        i.storeScript.value = 2;
+        data->bytecode << i;
+    }
+
+    {
+        QDeclarativeInstruction i;
         i.line = 50;
-        i.type = (QDeclarativeInstruction::Type)(QDeclarativeInstruction::Defer + 1); // Non-existant
+        i.type = (QDeclarativeInstruction::Type)(1234); // Non-existant
         data->bytecode << i;
     }
 
@@ -564,7 +572,8 @@ void tst_qdeclarativeinstruction::dump()
         << "45\t\t47\tPOP_VALUE\t\t35\t8"
         << "46\t\t48\tDEFER\t\t\t7"
         << "47\t\tNA\tDEFER\t\t\t7"
-        << "48\t\t50\tXXX UNKOWN INSTRUCTION\t47"
+        << "48\t\t48\tSTORE_IMPORTED_SCRIPT\t2"
+        << "49\t\t50\tXXX UNKOWN INSTRUCTION\t1234"
         << "-------------------------------------------------------------------------------";
 
     messages = QStringList();
