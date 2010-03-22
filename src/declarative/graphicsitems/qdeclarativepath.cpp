@@ -43,6 +43,7 @@
 #include "qdeclarativepath_p_p.h"
 
 #include <QSet>
+#include <QTime>
 
 #include <private/qbezier_p.h>
 
@@ -312,7 +313,6 @@ QStringList QDeclarativePath::attributes() const
     Q_D(const QDeclarativePath);
     return d->_attributes;
 }
-#include <QTime>
 
 static inline QBezier nextBezier(const QPainterPath &path, int *from, qreal *bezLength)
 {
