@@ -25,6 +25,44 @@ syntax has been introduced:
     Item { Behavior on x {}; NumberAnimation on y {} }
 Only the syntax has changed, the behavior is identical.
 
+Script element removed
+----------------------
+Inline Script{} blocks have been deprecated, and will soon be removed entirely.
+If you used Script to write inline javascript code, it can simply be removed.
+For example
+
+Item {
+    Script {
+        function doSomething() {}
+    }
+}
+
+becomes
+
+Item {
+    function doSomething() {}
+}
+
+If you used Script to include external JavaScript files, you can replace the
+Script element with an “import” line.  For example
+
+MouseArea {
+    Script {
+        source: “foo.js”
+    }
+    onClicked: foo()
+}
+
+becomes
+
+Import “foo.js” as Foo
+MouseArea {
+    onClicked: Foo.foo()
+}
+
+The “as” qualifier is mandatory for script imports (as opposed to type
+imports where it is optional).
+
 
 =============================================================================
 The changes below are pre Qt 4.7.0 alpha
