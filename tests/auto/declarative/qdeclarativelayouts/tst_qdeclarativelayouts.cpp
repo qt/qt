@@ -144,4 +144,4 @@ QDeclarativeView *tst_QDeclarativeLayouts::createView(const QString &filename)
 
 QTEST_MAIN(tst_QDeclarativeLayouts)
 
-#include "tst_layouts.moc"
+#include "tst_qdeclarativelayouts.moc"

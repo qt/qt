@@ -43,7 +43,7 @@
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
 #include <QtOpenGL/QtOpenGL>
-#include "tst_openglthreading.h"
+#include "tst_qglthreads.h"
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -51,7 +51,7 @@
 
 #define RUNNING_TIME 5000
 
-tst_OpenGLThreading::tst_OpenGLThreading(QObject *parent)
+tst_QGLThreads::tst_QGLThreads(QObject *parent)
     : QObject(parent)
 {
 }
@@ -143,7 +143,7 @@ public:
     SwapThread *m_thread;
 };
 
-void tst_OpenGLThreading::swapInThread()
+void tst_QGLThreads::swapInThread()
 {
 #ifdef Q_OS_MAC
     QSKIP("OpenGL threading tests are currently disabled on mac as they were causing reboots", SkipAll);
@@ -249,7 +249,7 @@ private:
     QList <QPoint> m_positions;
 };
 
-void tst_OpenGLThreading::textureUploadInThread()
+void tst_QGLThreads::textureUploadInThread()
 {
 #ifdef Q_OS_MAC
     QSKIP("OpenGL threading tests are currently disabled on mac as they were causing reboots", SkipAll);
@@ -412,7 +412,7 @@ private:
     QSize m_size;
 };
 
-void tst_OpenGLThreading::renderInThread_data()
+void tst_QGLThreads::renderInThread_data()
 {
     QTest::addColumn<bool>("resize");
     QTest::addColumn<bool>("update");
@@ -423,7 +423,7 @@ void tst_OpenGLThreading::renderInThread_data()
     QTest::newRow("with-resize-and-update") << true << true;
 }
 
-void tst_OpenGLThreading::renderInThread()
+void tst_QGLThreads::renderInThread()
 {
 #ifdef Q_OS_MAC
     QSKIP("OpenGL threading tests are currently disabled on mac as they were causing reboots", SkipAll);
@@ -473,8 +473,8 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
     QTEST_DISABLE_KEYPAD_NAVIGATION \
 
-    tst_OpenGLThreading tc;
+    tst_QGLThreads tc;
     return QTest::qExec(&tc, argc, argv);
 }
 
-#include "tst_openglthreading.moc"
+#include "tst_qglthreads.moc"
