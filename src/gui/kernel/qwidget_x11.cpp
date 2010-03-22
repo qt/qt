@@ -780,7 +780,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         XWMHints wm_hints;                        // window manager hints
         memset(&wm_hints, 0, sizeof(wm_hints)); // make valgrind happy
         wm_hints.flags = InputHint | StateHint | WindowGroupHint;
-        wm_hints.input = True;
+        wm_hints.input = q->testAttribute(Qt::WA_X11DoNotAcceptFocus) ? False : True;
         wm_hints.initial_state = NormalState;
         wm_hints.window_group = X11->wm_client_leader;
 
@@ -3048,6 +3048,26 @@ void qt_x11_getX11InfoForWindow(QX11Info * xinfo, const QX11WindowAttributes &at
     xd->colormap = a.colormap;
     xd->defaultColormap = (a.colormap == QX11Info::appColormap(xinfo->screen()));
     xinfo->setX11Data(xd);
+}
+
+void QWidgetPrivate::updateX11AcceptFocus()
+{
+    Q_Q(QWidget);
+    if (!q->isWindow() || !q->internalWinId())
+        return;
+
+    XWMHints *h = XGetWMHints(X11->display, q->internalWinId());
+    XWMHints wm_hints;
+    if (!h) {
+        memset(&wm_hints, 0, sizeof(wm_hints)); // make valgrind happy
+        h = &wm_hints;
+    }
+    h->flags |= InputHint;
+    h->input = q->testAttribute(Qt::WA_X11DoNotAcceptFocus) ? False : True;
+
+    XSetWMHints(X11->display, q->internalWinId(), h);
+    if (h != &wm_hints)
+        XFree((char *)h);
 }
 
 QT_END_NAMESPACE

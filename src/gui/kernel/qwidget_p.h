@@ -703,6 +703,7 @@ public:
     void setNetWmWindowTypes();
     void x11UpdateIsOpaque();
     bool isBackgroundInherited() const;
+    void updateX11AcceptFocus();
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()
     uint nativeGesturePanEnabled : 1;
