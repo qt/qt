@@ -725,6 +725,7 @@ CFG_DBUS=auto
 CFG_GLIB=auto
 CFG_GSTREAMER=auto
 CFG_QGTKSTYLE=auto
+CFG_QS60STYLE=auto
 CFG_LARGEFILE=yes
 CFG_OPENSSL=auto
 CFG_PTMALLOC=no
@@ -1794,6 +1795,13 @@ while [ "$#" -gt 0 ]; do
     gtkstyle)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_QGTKSTYLE="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    style-s60)
+        if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ]; then
+            CFG_QS60STYLE="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3353,7 +3361,6 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-no-javascript-jit] [-javascript-jit]
         [-no-script] [-script] [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
-        [-no-s60] [-s60] [-no-usedeffiles] [-usedeffiles]
 
         [additional platform specific options (see below)]
 
@@ -3536,11 +3543,6 @@ cat << EOF
 EOF
 fi
 cat << EOF
-
-    -no-s60 ............ Do not compile in S60 support.
- +  -s60 ............... Compile with support for the S60 UI Framework.
-    -no-usedeffiles .... Disable the usage of DEF files.
- *  -usedeffiles ....... Enable the usage of DEF files.
 
     -no-mmx ............ Do not compile with use of MMX instructions.
     -no-3dnow .......... Do not compile with use of 3DNOW instructions.
@@ -3992,6 +3994,20 @@ if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_X11" = "yes" ]; then
 EOF
 fi
 
+if echo "$XQMAKESPEC" | grep symbian > /dev/null ; then
+    cat << EOF
+
+Qt for Symbian only:
+    -no-s60 ............ Do not compile in S60 support.
+ +  -s60 ............... Compile with support for the S60 UI Framework.
+    -no-style-s60....... Disable s60 style
+ +  -qt-style-s60....... Enable s60 style in the Qt Library
+
+    -no-usedeffiles .... Disable the usage of DEF files.
+ *  -usedeffiles ....... Enable the usage of DEF files.
+EOF
+fi
+
    [ "x$ERROR" = "xyes" ] && exit 1
    exit 0
 fi # Help
@@ -4005,6 +4021,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     Platform="Qt for Embedded Linux"
 elif [ "$PLATFORM_MAC" = "yes" ]; then
     Platform="Qt for Mac OS X"
+elif echo "$XPLATFORM" | grep "symbian" > /dev/null ; then
+    Platform="Qt for Symbian"
 elif [ '!' -z "`getQMakeConf \"$XQMAKESPEC\" | grep QMAKE_LIBS_X11 | awk '{print $3;}'`" ]; then
     PLATFORM_X11=yes
     Platform="Qt for Linux/X11"
@@ -4634,6 +4652,14 @@ if [ "$CFG_S60" = "auto" ]; then
         CFG_S60=yes
     else
         CFG_S60=no
+    fi
+fi
+
+if [ "$CFG_QS60STYLE" = "auto" ]; then
+    if echo "$XQMAKESPEC" | grep symbian > /dev/null; then
+        CFG_QS60STYLE=qt
+    else
+        CFG_QS60STYLE=no
     fi
 fi
 
@@ -5671,6 +5697,8 @@ fi
 if [ "$CFG_ENDIAN" = "auto" ]; then
     if [ "$PLATFORM_MAC" = "yes" ]; then
 	true #leave as auto
+    elif [ "$XPLATFORM" = "symbian-sbsv2" ]; then
+        CFG_ENDIAN="Q_LITTLE_ENDIAN"
     else
         "$unixtests/endian.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
 	F="$?"
@@ -5910,7 +5938,7 @@ if [ "$CFG_OPENSSL" != "no" ]; then
 fi
 
 # detect OpenVG support
-if [ "$CFG_OPENVG" != "no" ]; then
+if [ "$CFG_OPENVG" != "no" ] && [ "$XPLATFORM" != "symbian-sbsv2" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/openvg" "OpenVG" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
         if [ "$CFG_OPENVG" = "auto" ]; then
             CFG_OPENVG=yes
@@ -6170,6 +6198,12 @@ else
         QT_CONFIG="$QT_CONFIG shivavg"
         QCONFIG_FLAGS="$QCONFIG_FLAGS QT_SHIVAVG"
     fi
+fi
+
+if [ "$CFG_QS60STYLE" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_S60"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_STYLE_S60"
 fi
 
 # Disable OpenGL on Symbian.
