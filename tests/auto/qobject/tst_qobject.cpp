@@ -128,6 +128,7 @@ private slots:
     void isSignalConnected();
     void qMetaObjectConnect();
     void qMetaObjectDisconnectOne();
+    void sameName();
 protected:
 };
 
@@ -162,7 +163,7 @@ class SenderObject : public QObject
     Q_OBJECT
 
 public:
-    SenderObject() : recursionCount(0) {}
+    SenderObject() : aPublicSlotCalled(0), recursionCount(0) {}
 
     void emitSignal1AfterRecursion()
     {
@@ -185,11 +186,12 @@ signals:
     QT_MOC_COMPAT void signal5();
 
 public slots:
-    void aPublicSlot(){}
+    void aPublicSlot() { aPublicSlotCalled++; }
 
 public:
     Q_INVOKABLE void invoke1(){}
     Q_SCRIPTABLE void sinvoke1(){}
+    int aPublicSlotCalled;
 protected:
     Q_INVOKABLE QT_MOC_COMPAT void invoke2(){}
     Q_INVOKABLE QT_MOC_COMPAT void invoke2(int){}
@@ -3550,6 +3552,42 @@ void tst_QObject::qMetaObjectDisconnectOne()
 
     delete s;
     delete r1;
+}
+
+class ConfusingObject : public SenderObject
+{ Q_OBJECT
+public slots:
+    void signal1() { s++; }
+signals:
+    void aPublicSlot();
+public:
+    int s;
+    ConfusingObject() : s(0) {}
+    friend class tst_QObject;
+};
+
+void tst_QObject::sameName()
+{
+    ConfusingObject c1, c2;
+    QVERIFY(connect(&c1, SIGNAL(signal1()), &c1, SLOT(signal1())));
+    c1.emitSignal1();
+    QCOMPARE(c1.s, 1);
+
+    QVERIFY(connect(&c2, SIGNAL(signal1()), &c1, SIGNAL(signal1())));
+    c2.emitSignal1();
+    QCOMPARE(c1.s, 2);
+
+    QVERIFY(connect(&c2, SIGNAL(aPublicSlot()), &c1, SLOT(signal1())));
+    c2.aPublicSlot();
+    QCOMPARE(c2.aPublicSlotCalled, 0);
+    QCOMPARE(c1.aPublicSlotCalled, 0);
+    QCOMPARE(c1.s, 3);
+
+    QVERIFY(connect(&c2, SIGNAL(aPublicSlot()), &c1, SLOT(aPublicSlot())));
+    c2.aPublicSlot();
+    QCOMPARE(c2.aPublicSlotCalled, 0);
+    QCOMPARE(c1.aPublicSlotCalled, 1);
+    QCOMPARE(c1.s, 4);
 }
 
 QTEST_MAIN(tst_QObject)
