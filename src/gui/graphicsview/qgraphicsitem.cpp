@@ -3482,7 +3482,7 @@ void QGraphicsItem::setX(qreal x)
     if (qIsNaN(x))
         return;
 
-    d_ptr->setPosHelper(QPointF(x, d_ptr->pos.y()));
+    setPos(QPointF(x, d_ptr->pos.y()));
 }
 
 /*!
@@ -3509,7 +3509,7 @@ void QGraphicsItem::setY(qreal y)
     if (qIsNaN(y))
         return;
 
-    d_ptr->setPosHelper(QPointF(d_ptr->pos.x(), y));
+    setPos(QPointF(d_ptr->pos.x(), y));
 }
 
 /*!
@@ -3577,7 +3577,7 @@ void QGraphicsItem::setPos(const QPointF &pos)
         return;
 
     // Update and repositition.
-    if (!(d_ptr->flags & ItemSendsGeometryChanges)) {
+    if (!(d_ptr->flags & ItemSendsGeometryChanges) && !(d_ptr->flags & ItemSendsScenePositionChanges)) {
         d_ptr->setPosHelper(pos);
         return;
     }
@@ -10936,7 +10936,7 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
         // Item coordinates with info.
         QTransform newEffectTransform = info->transformPtr->inverted();
         newEffectTransform *= effectTransform;
-        scened->draw(item, &pixmapPainter, info->viewTransform, info->transformPtr, info->exposedRegion,
+        scened->draw(item, &pixmapPainter, info->viewTransform, info->transformPtr, 0,
                      info->widget, info->opacity, &newEffectTransform, info->wasDirtySceneTransform,
                      info->drawItem);
     }

@@ -47,7 +47,6 @@
 
 #include <string.h>
 
-#  include <qt_windows.h>
 #if defined (QT_NO_IPV6)
 #  include <winsock.h>
 #else
