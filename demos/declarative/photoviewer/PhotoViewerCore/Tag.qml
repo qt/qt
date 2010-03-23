@@ -12,11 +12,13 @@ Flipable {
 
     signal frontClicked
     signal backClicked
+    signal tagChanged(string tag)
 
-    front: Button {
+    front: EditableButton {
         id: frontButton; rotation: flipable.randomAngle
         anchors { centerIn: parent; verticalCenterOffset: -20 }
         onClicked: flipable.frontClicked()
+        onLabelChanged: flipable.tagChanged(label)
     }
 
     back: Button {

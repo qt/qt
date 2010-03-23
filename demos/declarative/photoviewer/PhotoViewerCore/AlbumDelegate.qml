@@ -25,8 +25,7 @@ Component {
 
         Item {
             Package.name: 'album'
-            id: albumWrapper
-            width: 210; height: 220
+            id: albumWrapper; width: 210; height: 220
 
             VisualDataModel {
                 id: visualModel; delegate: PhotoDelegate { }
@@ -48,20 +47,15 @@ Component {
                 }
             }
 
+            MouseArea {
+                anchors.fill: parent
+                onClicked: mainWindow.editMode ? photosModel.remove(index) : albumWrapper.state = 'inGrid'
+            }
+
             Tag {
                 anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom
                 frontLabel: tag; backLabel: "Delete"; flipped: mainWindow.editMode
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    if (mainWindow.editMode) {
-                        photosModel.remove(index)
-                    } else {
-                        albumWrapper.state = 'inGrid'
-                    }
-                }
+                onTagChanged: rssModel.tags = tag
             }
 
             states: [
