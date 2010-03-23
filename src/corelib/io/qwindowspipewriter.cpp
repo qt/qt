@@ -100,8 +100,7 @@ qint64 QWindowsPipeWriter::write(const char *ptr, qint64 maxlen)
 
 void QWindowsPipeWriter::run()
 {
-    OVERLAPPED overl = {0, 0, 0, 0, NULL};
-    overl.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    OVERLAPPED overl = {0, 0, { {0, 0 } }, CreateEvent(NULL, TRUE, FALSE, NULL)};
     forever {
         lock.lock();
         while(data.isEmpty() && (!quitNow)) {

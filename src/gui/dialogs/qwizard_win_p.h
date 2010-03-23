@@ -82,7 +82,6 @@ class QWizard;
 
 class QVistaHelper : public QObject
 {
-    Q_OBJECT
 public:
     QVistaHelper(QWizard *wizard);
     ~QVistaHelper();

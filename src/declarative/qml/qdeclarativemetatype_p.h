@@ -136,7 +136,7 @@ public:
     int index() const;
 private:
     friend class QDeclarativeTypePrivate;
-    friend class QDeclarativeMetaTypeData;
+    friend struct QDeclarativeMetaTypeData;
     friend int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterInterface &);
     friend int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &);
     QDeclarativeType(int, const QDeclarativePrivate::RegisterInterface &);
