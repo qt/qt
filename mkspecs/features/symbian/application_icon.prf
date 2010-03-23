@@ -31,7 +31,7 @@ contains( CONFIG, no_icon ) {
 
         # Note: symbian-sbsv2 builds can't utilize extra compiler for mifconv, so ICON handling is done in code
         !symbian-sbsv2 {
-            !contains(ICON, "^(/|\\|.:).*"):ICON = $$_PRO_FILE_PWD_/$$ICON #absolute path
+            !contains(ICON, "^(/|\\\\|.:).*"):ICON = $$_PRO_FILE_PWD_/$$ICON #absolute path
             #Makefile: requires paths with backslash
             ICON_backslashed = $$ICON
             contains(QMAKE_HOST.os, "Windows"):ICON_backslashed = $$replace( ICON_backslashed, /, \\)
