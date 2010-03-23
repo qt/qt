@@ -1299,10 +1299,10 @@ QTextEngine::QTextEngine()
 }
 
 QTextEngine::QTextEngine(const QString &str, const QFont &f)
-    : fnt(f)
+    : text(str),
+      fnt(f)
 {
     init(this);
-    text = str;
 }
 
 QTextEngine::~QTextEngine()
@@ -2610,10 +2610,9 @@ void QTextEngine::resolveAdditionalFormats() const
 }
 
 QStackTextEngine::QStackTextEngine(const QString &string, const QFont &f)
-    : _layoutData(string, _memory, MemSize)
+    : QTextEngine(string, f),
+      _layoutData(string, _memory, MemSize)
 {
-    fnt = f;
-    text = string;
     stackEngine = true;
     layoutData = &_layoutData;
 }

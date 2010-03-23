@@ -23,6 +23,21 @@
         <source>Show All</source>
         <translation>すべてを表示</translation>
     </message>
+    <message>
+        <location line="+1"/>
+        <source>Preferences...</source>
+        <translation>環境設定...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quit %1</source>
+        <translation>%1 を終了</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>About %1</source>
+        <translation>%1 について</translation>
+    </message>
 </context>
 <context>
     <name>CloseButton</name>

@@ -417,7 +417,8 @@ QNetworkConfigurationManager::Capabilities QIcdEngine::capabilities() const
 {
     return QNetworkConfigurationManager::CanStartAndStopInterfaces |
            QNetworkConfigurationManager::DataStatistics |
-           QNetworkConfigurationManager::ForcedRoaming;
+           QNetworkConfigurationManager::ForcedRoaming |
+           QNetworkConfigurationManager::NetworkSessionRequired;
 }
 
 QNetworkSessionPrivate *QIcdEngine::createSessionBackend()

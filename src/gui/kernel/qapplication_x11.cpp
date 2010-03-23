@@ -275,6 +275,8 @@ static const char * x11_atomnames = {
 
     "_NET_SYSTEM_TRAY_VISUAL\0"
 
+    "_NET_ACTIVE_WINDOW\0"
+
     // Property formats
     "COMPOUND_TEXT\0"
     "TEXT\0"
@@ -3058,6 +3060,8 @@ int QApplication::x11ClientMessage(QWidget* w, XEvent* event, bool passive_only)
                 if ((ulong) event->xclient.data.l[1] > X11->time)
                     X11->time = event->xclient.data.l[1];
                 QWidget *amw = activeModalWidget();
+                if (amw && amw->testAttribute(Qt::WA_X11DoNotAcceptFocus))
+                    amw = 0;
                 if (amw && !QApplicationPrivate::tryModalHelper(widget, 0)) {
                     QWidget *p = amw->parentWidget();
                     while (p && p != widget)
