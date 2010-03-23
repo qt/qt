@@ -84,6 +84,8 @@ QMap <QString, QString> networkInterfaces;
 @end
 
 @implementation QNSListener
+@synthesize engine;
+
 - (id) init
 {
     [locker lock];
@@ -125,12 +127,6 @@ QMap <QString, QString> networkInterfaces;
 QNSListener *listener = 0;
 
 QT_BEGIN_NAMESPACE
-
-
-static QString qGetInterfaceType(const QString &interfaceString)
-{
-    return networkInterfaces.value(interfaceString, QLatin1String("WLAN"));
-}
 
 void networkChangeCallback(SCDynamicStoreRef/* store*/, CFArrayRef changedKeys, void *info)
 {
