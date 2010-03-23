@@ -55,9 +55,9 @@
 
 #include "qdeclarativeitem.h"
 
-#include "qdeclarativeanchors_p.h"
-#include "qdeclarativeanchors_p_p.h"
-#include "qdeclarativeitemchangelistener_p.h"
+#include "private/qdeclarativeanchors_p.h"
+#include "private/qdeclarativeanchors_p_p.h"
+#include "private/qdeclarativeitemchangelistener_p.h"
 #include <private/qpodvector_p.h>
 
 #include <private/qdeclarativestate_p.h>

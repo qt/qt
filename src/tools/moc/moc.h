@@ -55,7 +55,7 @@ struct QMetaObject;
 
 struct Type
 {
-    enum ReferenceType { NoReference, Reference, Pointer };
+    enum ReferenceType { NoReference, Reference, RValueReference, Pointer };
 
     inline Type() : isVolatile(false), isScoped(false), firstToken(NOTOKEN), referenceType(NoReference) {}
     inline explicit Type(const QByteArray &_name) : name(_name), isVolatile(false), isScoped(false), firstToken(NOTOKEN), referenceType(NoReference) {}
@@ -242,8 +242,11 @@ public:
 
 inline QByteArray noRef(const QByteArray &type)
 {
-    if (type.endsWith('&'))
+    if (type.endsWith('&')) {
+        if (type.endsWith("&&"))
+            return type.left(type.length()-2);
         return type.left(type.length()-1);
+    }
     return type;
 }
 
