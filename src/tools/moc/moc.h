@@ -55,7 +55,7 @@ struct QMetaObject;
 
 struct Type
 {
-    enum ReferenceType { NoReference, Reference, Pointer };
+    enum ReferenceType { NoReference, Reference, RValueReference, Pointer };
 
     inline Type() : isVolatile(false), isScoped(false), firstToken(NOTOKEN), referenceType(NoReference) {}
     inline explicit Type(const QByteArray &_name) : name(_name), isVolatile(false), isScoped(false), firstToken(NOTOKEN), referenceType(NoReference) {}
@@ -116,7 +116,7 @@ struct FunctionDef
 struct PropertyDef
 {
     PropertyDef():notifyId(-1), constant(false), final(false), gspec(ValueSpec){}
-    QByteArray name, type, read, write, reset, designable, scriptable, editable, stored, user, notify;
+    QByteArray name, type, read, write, reset, designable, scriptable, editable, stored, user, notify, inPrivateClass;
     int notifyId;
     bool constant;
     bool final;
@@ -217,6 +217,7 @@ public:
     void parseSlots(ClassDef *def, FunctionDef::Access access);
     void parseSignals(ClassDef *def);
     void parseProperty(ClassDef *def);
+    void createPropertyDef(PropertyDef &def);
     void parseEnumOrFlag(ClassDef *def, bool isFlag);
     void parseFlag(ClassDef *def);
     void parseClassInfo(ClassDef *def);
@@ -224,6 +225,7 @@ public:
     void parseDeclareInterface();
     void parseDeclareMetatype();
     void parseSlotInPrivate(ClassDef *def, FunctionDef::Access access);
+    void parsePrivateProperty(ClassDef *def);
 
     void parseFunctionArguments(FunctionDef *def);
 
@@ -240,8 +242,11 @@ public:
 
 inline QByteArray noRef(const QByteArray &type)
 {
-    if (type.endsWith('&'))
+    if (type.endsWith('&')) {
+        if (type.endsWith("&&"))
+            return type.left(type.length()-2);
         return type.left(type.length()-1);
+    }
     return type;
 }
 

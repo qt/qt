@@ -230,11 +230,13 @@ Type Moc::parseType()
         }
     }
     while (test(CONST) || test(VOLATILE) || test(SIGNED) || test(UNSIGNED)
-           || test(STAR) || test(AND)) {
+           || test(STAR) || test(AND) || test(ANDAND)) {
         type.name += ' ';
         type.name += lexem();
         if (lookup(0) == AND)
             type.referenceType = Type::Reference;
+        else if (lookup(0) == ANDAND)
+            type.referenceType = Type::RValueReference;
         else if (lookup(0) == STAR)
             type.referenceType = Type::Pointer;
     }
@@ -658,6 +660,9 @@ void Moc::parse()
                 case Q_PRIVATE_SLOT_TOKEN:
                     parseSlotInPrivate(&def, access);
                     break;
+                case Q_PRIVATE_PROPERTY_TOKEN:
+                    parsePrivateProperty(&def);
+                    break;
                 case ENUM: {
                     EnumDef enumDef;
                     if (parseEnum(&enumDef))
@@ -872,11 +877,8 @@ void Moc::parseSignals(ClassDef *def)
     }
 }
 
-
-void Moc::parseProperty(ClassDef *def)
+void Moc::createPropertyDef(PropertyDef &propDef)
 {
-    next(LPAREN);
-    PropertyDef propDef;
     QByteArray type = parseType().name;
     if (type.isEmpty())
         error();
@@ -964,7 +966,6 @@ void Moc::parseProperty(ClassDef *def)
             error(2);
         }
     }
-    next(RPAREN);
     if (propDef.read.isNull()) {
         QByteArray msg;
         msg += "Property declaration ";
@@ -988,6 +989,41 @@ void Moc::parseProperty(ClassDef *def)
         propDef.constant = false;
         warning(msg.constData());
     }
+}
+
+void Moc::parseProperty(ClassDef *def)
+{
+    next(LPAREN);
+    PropertyDef propDef;
+    createPropertyDef(propDef);
+    next(RPAREN);
+
+
+    if(!propDef.notify.isEmpty())
+        def->notifyableProperties++;
+    def->propertyList += propDef;
+}
+
+void Moc::parsePrivateProperty(ClassDef *def)
+{
+    next(LPAREN);
+    PropertyDef propDef;
+    next(IDENTIFIER);
+    propDef.inPrivateClass = lexem();
+    while (test(SCOPE)) {
+        propDef.inPrivateClass += lexem();
+        next(IDENTIFIER);
+        propDef.inPrivateClass += lexem();
+    }
+    // also allow void functions
+    if (test(LPAREN)) {
+        next(RPAREN);
+        propDef.inPrivateClass += "()";
+    }
+
+    next(COMMA);
+
+    createPropertyDef(propDef);
 
     if(!propDef.notify.isEmpty())
         def->notifyableProperties++;

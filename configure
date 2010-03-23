@@ -788,6 +788,7 @@ CFG_GRAPHICS_SYSTEM=default
 CFG_ALSA=auto
 CFG_PULSEAUDIO=auto
 CFG_COREWLAN=auto
+CFG_ICD=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -825,6 +826,10 @@ QT_LIBS_GLIB=
 # flags for GStreamer (X11 only)
 QT_CFLAGS_GSTREAMER=
 QT_LIBS_GSTREAMER=
+
+# flags for icd (Maemo Internet Connection Daemon)
+QT_CFLAGS_ICD=
+QT_LIBS_ICD=
 
 #-------------------------------------------------------------------------------
 # check SQL drivers, mouse drivers and decorations available in this package
@@ -5149,6 +5154,39 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
             CFG_PHONON=yes
         fi
     fi
+
+    # auto-detect icd support
+    if [ "$CFG_GLIB" = "yes" -a "$CFG_ICD" != "no" ]; then
+        # ICD support has a cyclic dependency on Qt.
+        if [ -n "$PKG_CONFIG" ]; then
+            QT_CFLAGS_ICD=`$PKG_CONFIG --cflags dbus-glib-1 gconf-2.0 osso-ic conninet 2>/dev/null`
+            QT_LIBS_ICD=`$PKG_CONFIG --libs dbus-glib-1 gconf-2.0 osso-ic conninet 2>/dev/null`
+            QT_CFLAGS_QTNETWORK=`$PKG_CONFIG --cflags QtNetwork 2>/dev/null`
+            QT_LIBS_QTNETWORK=`$PKG_CONFIG --libs QtNetwork 2>/dev/null`
+        else
+            QT_CFLAGS_QTNETOWRK=
+            QT_LIBS_QTNETWORK=
+        fi
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icd "ICD" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_ICD $QT_LIBS_ICD $QT_CFLAGS_QTNETWORK $QT_LIBS_QTNETWORK; then
+            [ "$CFG_ICD" = "auto" ] && CFG_ICD=yes
+            QMakeVar set QT_CFLAGS_ICD "$QT_CFLAGS_ICD"
+            QMakeVar set QT_LIBS_ICD "$QT_LIBS_ICD"
+        else
+            if [ "$CFG_ICD" = "auto" ]; then
+                CFG_ICD=no
+            elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                # CFG_ICD is "yes"
+
+                echo "The ICD Bearer Management plugin cannot be enabled because dbus-glib-1, gconf-2.0, osso-ic or conninet was not found."
+                echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                echo " If you believe this message is in error you may use the continue"
+                echo " switch (-continue) to $0 to continue."
+                exit 101
+            fi
+        fi
+    elif [ "$CFG_GLIB" = "no" ]; then
+        CFG_ICD=no
+    fi
 fi # X11/QWS
 
 # x11
@@ -6493,6 +6531,10 @@ if [ "$CFG_COREWLAN" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG corewlan"
 fi
 
+if [ "$CFG_ICD" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG icd"
+fi
+
 #
 # Some Qt modules are too advanced in C++ for some old compilers
 # Detect here the platforms where they are known to work.
@@ -7218,6 +7260,7 @@ fi
 [ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
 [ "$CFG_PULSEAUDIO" = "no" ]          && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_PULSEAUDIO"
 [ "$CFG_COREWLAN" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_COREWLAN"
+[ "$CFG_ICD" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICD"
 
 # sort QCONFIG_FLAGS for neatness if we can
 [ '!' -z "$AWK" ] && QCONFIG_FLAGS=`echo $QCONFIG_FLAGS | $AWK '{ gsub(" ", "\n"); print }' | sort | uniq`
@@ -7734,6 +7777,7 @@ echo "Pulse Audio support .... $CFG_PULSEAUDIO"
 if [ "$PLATFORM_MAC" = "yes" ]; then
     echo "CoreWlan support ....... $CFG_COREWLAN"
 fi
+echo "ICD support ............ $CFG_ICD"
 echo
 
 [ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........... $CFG_PTMALLOC"

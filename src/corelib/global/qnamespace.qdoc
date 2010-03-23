@@ -1255,6 +1255,10 @@
     window boundary (widget without parent or dialog) is found.
     This attribute currently has effect only on Symbian platforms
 
+    \value WA_X11DoNoAcceptFocus Asks the window manager to not give focus
+    to this top level window. This attribute has no effect on non-X11
+    platforms.
+
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys

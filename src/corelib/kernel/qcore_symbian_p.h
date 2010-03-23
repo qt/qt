@@ -60,6 +60,15 @@
 #include <qhash.h>
 #include <f32file.h>
 
+#define QT_LSTRING2(x) L##x
+#define QT_LSTRING(x) QT_LSTRING2(x)
+
+#if defined(QT_LIBINFIX)
+#  define QT_LIBINFIX_UNICODE QT_LSTRING(QT_LIBINFIX)
+#else
+#  define QT_LIBINFIX_UNICODE L""
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE

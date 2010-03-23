@@ -140,3 +140,4 @@ private:
 };
 
 #endif // QGraphicsWebView_h
+    Q_PRIVATE_SLOT(d, void _q_updateMicroFocus())

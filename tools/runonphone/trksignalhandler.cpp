@@ -125,7 +125,7 @@ void TrkSignalHandler::finished()
 
 void TrkSignalHandler::applicationOutputReceived(const QString &output)
 {
-    d->out << output;
+    d->out << output << flush;
 }
 
 void TrkSignalHandler::copyProgress(int percent)

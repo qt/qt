@@ -104,7 +104,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         horizontalScrollMode(QAbstractItemView::ScrollPerItem),
         currentIndexSet(false),
         wrapItemText(false),
-        delayedPendingLayout(false),
+        delayedPendingLayout(true),
         moveCursorUpdatedView(false)
 {
 }
@@ -131,8 +131,6 @@ void QAbstractItemViewPrivate::init()
                      q, SLOT(horizontalScrollbarValueChanged(int)));
 
     viewport->setBackgroundRole(QPalette::Base);
-
-    doDelayedItemsLayout();
 
     q->setAttribute(Qt::WA_InputMethodEnabled);
 

@@ -3923,9 +3923,8 @@ void tst_QAccessibility::comboBoxTest()
 
     acc = QAccessible::queryAccessibleInterface(cb);
 
-    QRect accRect = acc->rect(0);
     for (int i = 1; i < acc->childCount(); ++i) {
-        QVERIFY(accRect.contains(acc->rect(i)));
+        QTRY_VERIFY(acc->rect(0).contains(acc->rect(i)));
     }
     QCOMPARE(acc->doAction(QAccessible::Press, 2), true);
     QTest::qWait(400);
