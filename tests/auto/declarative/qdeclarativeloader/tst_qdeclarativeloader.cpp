@@ -86,6 +86,8 @@ private slots:
     void noResizeGraphicsWidget();
     void networkRequestUrl();
     void failNetworkRequest();
+    void networkSafety();
+    void networkSafety_data();
 //    void networkComponent();
 
     void deleteComponentCrash();
@@ -394,7 +396,7 @@ void tst_QDeclarativeLoader::networkRequestUrl()
     server.serveDirectory(SRCDIR "/data");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/Rect120x60.qml\" }"), TEST_FILE(""));
+    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/Rect120x60.qml\" }"), QUrl("http://127.0.0.1:14445/dummy.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
 
@@ -448,7 +450,7 @@ void tst_QDeclarativeLoader::failNetworkRequest()
     QTest::ignoreMessage(QtWarningMsg, "(:-1: Network error for URL http://127.0.0.1:14445/IDontExist.qml) ");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/IDontExist.qml\" }"), TEST_FILE(""));
+    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/IDontExist.qml\" }"), QUrl("http://127.0.0.1:14445/dummy.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
 
@@ -481,6 +483,41 @@ void tst_QDeclarativeLoader::deleteComponentCrash()
     QVERIFY(loader->source() == QUrl::fromLocalFile(SRCDIR "/data/BlueRect.qml"));
 
     delete item;
+}
+
+void tst_QDeclarativeLoader::networkSafety_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QString>("message");
+
+    QTest::newRow("same origin") << QUrl("http://127.0.0.1:14445/sameorigin.qml") << QString();
+    QTest::newRow("different origin") << QUrl("http://127.0.0.1:14445/differentorigin.qml") << QString(" QUrl( \"http://evil.place/evil.qml\" )  is not a safe origin from  QUrl( \"http://127.0.0.1:14445/differentorigin.qml\" )  ");
+}
+
+void tst_QDeclarativeLoader::networkSafety()
+{
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/data");
+
+    QFETCH(QUrl, url);
+    QFETCH(QString, message);
+
+    if (!message.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, message.toLatin1());
+
+    QDeclarativeComponent component(&engine, url);
+    TRY_WAIT(component.status() == QDeclarativeComponent::Ready);
+    QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
+    QVERIFY(loader != 0);
+
+    if (message.isEmpty()) {
+        TRY_WAIT(loader->status() == QDeclarativeLoader::Ready);
+    } else {
+        TRY_WAIT(loader->status() == QDeclarativeLoader::Null);
+    }
+
+    delete loader;
 }
 
 QTEST_MAIN(tst_QDeclarativeLoader)

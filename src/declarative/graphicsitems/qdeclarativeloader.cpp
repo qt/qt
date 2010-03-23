@@ -185,6 +185,9 @@ void QDeclarativeLoader::setSource(const QUrl &url)
     if (d->source == url)
         return;
 
+    if (!qmlContext(this)->isSafeOrigin(url))
+        return;
+
     d->clear();
 
     d->source = url;
