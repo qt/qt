@@ -680,7 +680,7 @@ public:
     QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
 
     // Bit fields.
-    uint high_attributes[3]; // the low ones are in QWidget::widget_attributes
+    uint high_attributes[4]; // the low ones are in QWidget::widget_attributes
     QPalette::ColorRole fg_role : 8;
     QPalette::ColorRole bg_role : 8;
     uint dirtyOpaqueChildren : 1;
