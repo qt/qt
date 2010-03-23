@@ -54,6 +54,7 @@ private:
     QTextStream out;
     QTextStream err;
     int loglevel;
+    int lastpercent;
 };
 
 void TrkSignalHandler::copyingStarted()
@@ -131,7 +132,12 @@ void TrkSignalHandler::applicationOutputReceived(const QString &output)
 void TrkSignalHandler::copyProgress(int percent)
 {
     if (d->loglevel > 0) {
-        d->out << percent << "% ";
+        if (d->lastpercent == 0)
+            d->out << "[                                                 ]\r[" << flush;
+        while (percent > d->lastpercent) {
+            d->out << QLatin1Char('#');
+            d->lastpercent+=2; //because typical console is 80 chars wide
+        }
         d->out.flush();
         if (percent==100)
             d->out << endl;
@@ -167,7 +173,8 @@ void TrkSignalHandler::timeout()
 TrkSignalHandlerPrivate::TrkSignalHandlerPrivate()
     : out(stdout),
     err(stderr),
-    loglevel(0)
+    loglevel(0),
+    lastpercent(0)
 {
 
 }

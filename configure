@@ -4630,7 +4630,7 @@ if [ "$CFG_ZLIB" = "auto" ]; then
 fi
 
 if [ "$CFG_S60" = "auto" ]; then
-    if echo "$XQMAKESPEC" | grep symbian > /dev/null; then
+    if echo "$XPLATFORM" | grep symbian > /dev/null; then
         CFG_S60=yes
     else
         CFG_S60=no
@@ -4638,7 +4638,7 @@ if [ "$CFG_S60" = "auto" ]; then
 fi
 
 if [ "$CFG_SYMBIAN_DEFFILES" = "auto" ]; then
-    if echo "$XQMAKESPEC" | grep symbian > /dev/null && [ "$CFG_DEV" = "no" ]; then
+    if echo "$XPLATFORM" | grep symbian > /dev/null && [ "$CFG_DEV" = "no" ]; then
         CFG_SYMBIAN_DEFFILES=yes
     else
         CFG_SYMBIAN_DEFFILES=no
@@ -5756,7 +5756,7 @@ if [ "$CFG_DOUBLEFORMAT" = "auto" ]; then
 fi
 
 HAVE_STL=no
-if echo "$XQMAKESPEC" | grep symbian > /dev/null || "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS; then
+if echo "$XPLATFORM" | grep symbian > /dev/null || "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS; then
     HAVE_STL=yes
 fi
 
@@ -5994,7 +5994,7 @@ elif [ "$CFG_JAVASCRIPTCORE_JIT" = "no" ]; then
 fi
 
 if [ "$CFG_AUDIO_BACKEND" = "auto" ]; then
-    if echo "$XQMAKESPEC" | grep symbian > /dev/null 2>&1; then
+    if echo "$XPLATFORM" | grep symbian > /dev/null 2>&1; then
         "$symbiantests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/symbian/audio "audio" $L_FLAGS $I_FLAGS $l_FLAGS
     else
         CFG_AUDIO_BACKEND=yes
