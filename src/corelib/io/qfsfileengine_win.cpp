@@ -1275,12 +1275,7 @@ static QString readSymLink(const QString &link)
         REPARSE_DATA_BUFFER *rdb = (REPARSE_DATA_BUFFER*)qMalloc(bufsize);
         DWORD retsize = 0;
         if (::DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, 0, 0, rdb, bufsize, &retsize, 0)) {
-            if (rdb->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
-                int length = rdb->MountPointReparseBuffer.SubstituteNameLength / sizeof(wchar_t);
-                int offset = rdb->MountPointReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
-                const wchar_t* PathBuffer = &rdb->MountPointReparseBuffer.PathBuffer[offset];
-                result = QString::fromWCharArray(PathBuffer, length);
-            } else {
+            if (rdb->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
                 int length = rdb->SymbolicLinkReparseBuffer.SubstituteNameLength / sizeof(wchar_t);
                 int offset = rdb->SymbolicLinkReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
                 const wchar_t* PathBuffer = &rdb->SymbolicLinkReparseBuffer.PathBuffer[offset];
@@ -1543,8 +1538,7 @@ bool QFSFileEnginePrivate::isSymlink() const
             if (hFind != INVALID_HANDLE_VALUE) {
                 ::FindClose(hFind);
                 if ((findData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-                    && (findData.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT
-                        || findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK)) {
+                    && findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK) {
                     is_link = true;
                 }
             }
