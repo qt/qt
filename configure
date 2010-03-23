@@ -3994,7 +3994,7 @@ if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_X11" = "yes" ]; then
 EOF
 fi
 
-if echo "$XQMAKESPEC" | grep symbian > /dev/null ; then
+if echo "$XPLATFORM" | grep symbian > /dev/null ; then
     cat << EOF
 
 Qt for Symbian only:
@@ -4656,7 +4656,7 @@ if [ "$CFG_S60" = "auto" ]; then
 fi
 
 if [ "$CFG_QS60STYLE" = "auto" ]; then
-    if echo "$XQMAKESPEC" | grep symbian > /dev/null; then
+    if echo "$XPLATFORM" | grep symbian > /dev/null; then
         CFG_QS60STYLE=qt
     else
         CFG_QS60STYLE=no
