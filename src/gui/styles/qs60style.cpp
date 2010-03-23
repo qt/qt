@@ -413,8 +413,8 @@ QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
 {
     const bool cachedColorExists = m_colorCache.contains(frame);
     if (!cachedColorExists) {
-        const int frameCornerWidth = pixelMetric(PM_Custom_FrameCornerWidth);
-        const int frameCornerHeight = pixelMetric(PM_Custom_FrameCornerHeight);
+        const int frameCornerWidth = pixelMetric(PM_FrameCornerWidth);
+        const int frameCornerHeight = pixelMetric(PM_FrameCornerHeight);
         Q_ASSERT(2 * frameCornerWidth < 32);
         Q_ASSERT(2 * frameCornerHeight < 32);
 
@@ -874,7 +874,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
 
         case QS60StyleEnums::SP_QgnGrafBarFrameSideL:
         case QS60StyleEnums::SP_QgnGrafBarFrameSideR:
-            result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+            result.setWidth(pixelMetric(PM_FrameCornerWidth));
             break;
 
         case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
@@ -901,15 +901,15 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
                     case 7: /* CornerTr */
                     case 6: /* CornerBl */
                     case 5: /* CornerBr */
-                        result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+                        result.setWidth(pixelMetric(PM_FrameCornerWidth));
                         // Falltrough intended...
                     case 4: /* SideT */
                     case 3: /* SideB */
-                        result.setHeight(pixelMetric(PM_Custom_FrameCornerHeight));
+                        result.setHeight(pixelMetric(PM_FrameCornerHeight));
                         break;
                     case 2: /* SideL */
                     case 1: /* SideR */
-                        result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+                        result.setWidth(pixelMetric(PM_FrameCornerWidth));
                         break;
                     case 0: /* center */
                     default:
@@ -1376,7 +1376,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             }
             if (!comboBox->currentText.isEmpty() && !comboBox->editable) {
                 QCommonStyle::drawItemText(painter,
-                            editRect.adjusted(QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth), 0, -1, 0),
+                            editRect.adjusted(QS60StylePrivate::pixelMetric(PM_FrameCornerWidth), 0, -1, 0),
                             visualAlignment(comboBox->direction, Qt::AlignLeft | Qt::AlignVCenter),
                             comboBox->palette, comboBox->state & State_Enabled, comboBox->currentText);
             }
@@ -1841,8 +1841,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             painter->save();
             QPen linePen = QPen(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 1, header));
             const int penWidth = (header->orientation == Qt::Horizontal) ?
-                linePen.width() + QS60StylePrivate::pixelMetric(PM_Custom_BoldLineWidth)
-                : linePen.width() + QS60StylePrivate::pixelMetric(PM_Custom_ThinLineWidth);
+                linePen.width() + QS60StylePrivate::pixelMetric(PM_BoldLineWidth)
+                : linePen.width() + QS60StylePrivate::pixelMetric(PM_ThinLineWidth);
             linePen.setWidth(penWidth);
             painter->setPen(linePen);
             if (header->orientation == Qt::Horizontal){
@@ -1861,7 +1861,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 //Make cornerButton slightly smaller so that it is not on top of table border graphic.
                 QStyleOptionHeader subopt = *header;
                 const int borderTweak =
-                    QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth) >> 1;
+                    QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) >> 1;
                 if (subopt.direction == Qt::LeftToRight)
                     subopt.rect.adjust(borderTweak, borderTweak, 0, -borderTweak);
                 else
@@ -2085,7 +2085,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 // ... or normal "tick" selection at the end.
                 } else if (option->state & State_Selected) {
                     QRect tickRect = option->rect;
-                    const int frameBorderWidth = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
+                    const int frameBorderWidth = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth);
                     // adjust tickmark rect to exclude frame border
                     tickRect.adjust(0, -frameBorderWidth, 0, -frameBorderWidth);
                     QS60StyleEnums::SkinParts skinPart = QS60StyleEnums::SP_QgnIndiMarkedAdd;
@@ -2166,7 +2166,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 const QS60StyleEnums::SkinParts part = (element == PE_IndicatorSpinUp) ?
                     QS60StyleEnums::SP_QgnGrafScrollArrowUp :
                     QS60StyleEnums::SP_QgnGrafScrollArrowDown;
-                const int iconMargin = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth) >> 1;
+                const int iconMargin = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) >> 1;
                 optionSpinBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? iconMargin : -iconMargin );
                 QS60StylePrivate::drawSkinPart(part, painter, optionSpinBox.rect, flags);
             } else {
@@ -2180,7 +2180,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 // We want to draw down arrow here for comboboxes as well.
                 QStyleOptionFrame optionsComboBox = *cmb;
                 const QS60StyleEnums::SkinParts part = QS60StyleEnums::SP_QgnGrafScrollArrowDown;
-                const int iconMargin = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth) >> 1;
+                const int iconMargin = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) >> 1;
                 optionsComboBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? iconMargin : -iconMargin );
                 QS60StylePrivate::drawSkinPart(part, painter, optionsComboBox.rect, flags);
             } else {
@@ -2934,9 +2934,9 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             if (qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
                 // Subtract area needed for line
                 if (opt->state & State_Horizontal)
-                    ret.setHeight(ret.height() - QS60StylePrivate::pixelMetric(PM_Custom_BoldLineWidth));
+                    ret.setHeight(ret.height() - QS60StylePrivate::pixelMetric(PM_BoldLineWidth));
                 else
-                    ret.setWidth(ret.width() - QS60StylePrivate::pixelMetric(PM_Custom_ThinLineWidth));
+                    ret.setWidth(ret.width() - QS60StylePrivate::pixelMetric(PM_ThinLineWidth));
                 }
             ret = visualRect(opt->direction, opt->rect, ret);
             break;
