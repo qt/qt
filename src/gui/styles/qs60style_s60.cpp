@@ -978,8 +978,8 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
 TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameElements frameElement, const TRect &outerRect)
 {
-    TInt widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
-    TInt heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight);
+    TInt widthShrink = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth);
+    TInt heightShrink = QS60StylePrivate::pixelMetric(PM_FrameCornerHeight);
     switch(frameElement) {
         case QS60StylePrivate::SF_PanelBackground:
             // panel should have slightly slimmer border to enable thin line of background graphics between closest component
