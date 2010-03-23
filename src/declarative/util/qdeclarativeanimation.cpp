@@ -1006,212 +1006,6 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
     }
 }
 
-
-
-/*!
-    \qmlclass ParentAction QDeclarativeParentAction
-    \since 4.7
-    \inherits Animation
-    \brief The ParentAction element allows parent changes during animation.
-
-    ParentAction provides a way to specify at what point in a Transition a ParentChange should
-    occur.
-    \qml
-    State {
-        ParentChange {
-            target: myItem
-            parent: newParent
-        }
-    }
-    Transition {
-        SequentialAnimation {
-            PropertyAnimation { ... }
-            ParentAction {}   //reparent myItem now
-            PropertyAnimation { ... }
-        }
-    }
-    \endqml
-
-    It also provides a way to explicitly reparent an item during an animation.
-    \qml
-    SequentialAnimation {
-        ParentAction { target: myItem; parent: newParent }
-        PropertyAnimation {}
-    }
-    \endqml
-
-    The ParentAction is immediate - it is not animated in any way.
-*/
-
-QDeclarativeParentAction::QDeclarativeParentAction(QObject *parent)
-: QDeclarativeAbstractAnimation(*(new QDeclarativeParentActionPrivate), parent)
-{
-    Q_D(QDeclarativeParentAction);
-    d->init();
-}
-
-QDeclarativeParentAction::~QDeclarativeParentAction()
-{
-}
-
-void QDeclarativeParentActionPrivate::init()
-{
-    Q_Q(QDeclarativeParentAction);
-    cpa = new QActionAnimation;
-    QDeclarative_setParent_noEvent(cpa, q);
-}
-
-/*!
-    \qmlproperty Item ParentAction::target
-
-    This property holds a target item to reparent.
-
-    In the following example, \c myItem will be reparented by the ParentAction, while
-    \c myOtherItem will not.
-    \qml
-    State {
-        ParentChange {
-            target: myItem
-            parent: newParent
-        }
-        ParentChange {
-            target: myOtherItem
-            parent: otherNewParent
-        }
-    }
-    Transition {
-        SequentialAnimation {
-            PropertyAnimation { ... }
-            ParentAction { target: myItem }
-            PropertyAnimation { ... }
-        }
-    }
-    \endqml
-
- */
-QDeclarativeItem *QDeclarativeParentAction::object() const
-{
-    Q_D(const QDeclarativeParentAction);
-    return d->pcTarget;
-}
-
-void QDeclarativeParentAction::setObject(QDeclarativeItem *target)
-{
-    Q_D(QDeclarativeParentAction);
-    d->pcTarget = target;
-}
-
-/*!
-    \qmlproperty Item ParentAction::parent
-
-    The item to reparent to (i.e. the new parent).
- */
-QDeclarativeItem *QDeclarativeParentAction::parent() const
-{
-    Q_D(const QDeclarativeParentAction);
-    return d->pcParent;
-}
-
-void QDeclarativeParentAction::setParent(QDeclarativeItem *parent)
-{
-    Q_D(QDeclarativeParentAction);
-    d->pcParent = parent;
-}
-
-void QDeclarativeParentActionPrivate::doAction()
-{
-    QDeclarativeParentChange pc;
-    pc.setObject(pcTarget);
-    pc.setParent(pcParent);
-    pc.execute();
-}
-
-QAbstractAnimation *QDeclarativeParentAction::qtAnimation()
-{
-    Q_D(QDeclarativeParentAction);
-    return d->cpa;
-}
-
-void QDeclarativeParentAction::transition(QDeclarativeStateActions &actions,
-                                       QDeclarativeProperties &modified,
-                                       TransitionDirection direction)
-{
-    Q_D(QDeclarativeParentAction);
-    Q_UNUSED(modified);
-    Q_UNUSED(direction);
-
-    struct QDeclarativeParentActionData : public QAbstractAnimationAction
-    {
-        QDeclarativeParentActionData(): pc(0) {}
-        ~QDeclarativeParentActionData() { delete pc; }
-
-        QDeclarativeStateActions actions;
-        bool reverse;
-        QDeclarativeParentChange *pc;
-        virtual void doAction()
-        {
-            for (int ii = 0; ii < actions.count(); ++ii) {
-                const QDeclarativeAction &action = actions.at(ii);
-                if (reverse)
-                    action.event->reverse();
-                else
-                    action.event->execute();
-            }
-        }
-    };
-
-    QDeclarativeParentActionData *data = new QDeclarativeParentActionData;
-
-    //### need to correctly handle modified/done
-
-    bool hasExplicit = false;
-    if (d->pcTarget && d->pcParent) {
-        data->reverse = false;
-        QDeclarativeAction myAction;
-        QDeclarativeParentChange *pc = new QDeclarativeParentChange;
-        pc->setObject(d->pcTarget);
-        pc->setParent(d->pcParent);
-        myAction.event = pc;
-        data->pc = pc;
-        data->actions << myAction;
-        hasExplicit = true;
-    }
-
-    if (!hasExplicit)
-    for (int ii = 0; ii < actions.count(); ++ii) {
-        QDeclarativeAction &action = actions[ii];
-
-        if (action.event && action.event->typeName() == QLatin1String("ParentChange")
-            && (!d->pcTarget || static_cast<QDeclarativeParentChange*>(action.event)->object() == d->pcTarget)) {
-            QDeclarativeAction myAction = action;
-            data->reverse = action.reverseEvent;
-            //### this logic differs from PropertyAnimation
-            //    (probably a result of modified vs. done)
-            if (d->pcParent) {
-                //### should we disallow this case?
-                QDeclarativeParentChange *pc = new QDeclarativeParentChange;
-                pc->setObject(d->pcTarget);
-                pc->setParent(static_cast<QDeclarativeParentChange*>(action.event)->parent());
-                myAction.event = pc;
-                data->pc = pc;
-                data->actions << myAction;
-                break;  //only match one
-            } else {
-                action.actionDone = true;
-                data->actions << myAction;
-            }
-        }
-    }
-
-    if (data->actions.count()) {
-        d->cpa->setAnimAction(data, QAbstractAnimation::DeleteWhenStopped);
-    } else {
-        delete data;
-    }
-}
-
-
-
 /*!
     \qmlclass NumberAnimation QDeclarativeNumberAnimation
     \since 4.7
@@ -2561,10 +2355,10 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
 {
     Q_D(QDeclarativeParentAnimation);
 
-    struct QDeclarativeParentActionData : public QAbstractAnimationAction
+    struct QDeclarativeParentAnimationData : public QAbstractAnimationAction
     {
-        QDeclarativeParentActionData() {}
-        ~QDeclarativeParentActionData() { qDeleteAll(pc); }
+        QDeclarativeParentAnimationData() {}
+        ~QDeclarativeParentAnimationData() { qDeleteAll(pc); }
 
         QDeclarativeStateActions actions;
         //### reverse should probably apply on a per-action basis
@@ -2582,8 +2376,8 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
         }
     };
 
-    QDeclarativeParentActionData *data = new QDeclarativeParentActionData;
-    QDeclarativeParentActionData *viaData = new QDeclarativeParentActionData;
+    QDeclarativeParentAnimationData *data = new QDeclarativeParentAnimationData;
+    QDeclarativeParentAnimationData *viaData = new QDeclarativeParentAnimationData;
 
     bool hasExplicit = false;
     if (d->target && d->newParent) {

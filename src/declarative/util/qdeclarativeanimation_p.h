@@ -227,32 +227,6 @@ protected:
 };
 
 class QDeclarativeItem;
-class QDeclarativeParentActionPrivate;
-class QDeclarativeParentAction : public QDeclarativeAbstractAnimation
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QDeclarativeParentAction)
-
-    Q_PROPERTY(QDeclarativeItem *target READ object WRITE setObject)
-    Q_PROPERTY(QDeclarativeItem *parent READ parent WRITE setParent) //### newParent
-
-public:
-    QDeclarativeParentAction(QObject *parent=0);
-    virtual ~QDeclarativeParentAction();
-
-    QDeclarativeItem *object() const;
-    void setObject(QDeclarativeItem *);
-
-    QDeclarativeItem *parent() const;
-    void setParent(QDeclarativeItem *);
-
-protected:
-    virtual void transition(QDeclarativeStateActions &actions,
-                            QDeclarativeProperties &modified,
-                            TransitionDirection direction);
-    virtual QAbstractAnimation *qtAnimation();
-};
-
 class QDeclarativePropertyAnimationPrivate;
 class Q_AUTOTEST_EXPORT QDeclarativePropertyAnimation : public QDeclarativeAbstractAnimation
 {
@@ -506,7 +480,6 @@ QML_DECLARE_TYPE(QDeclarativeAbstractAnimation)
 QML_DECLARE_TYPE(QDeclarativePauseAnimation)
 QML_DECLARE_TYPE(QDeclarativeScriptAction)
 QML_DECLARE_TYPE(QDeclarativePropertyAction)
-QML_DECLARE_TYPE(QDeclarativeParentAction)
 QML_DECLARE_TYPE(QDeclarativePropertyAnimation)
 QML_DECLARE_TYPE(QDeclarativeColorAnimation)
 QML_DECLARE_TYPE(QDeclarativeNumberAnimation)

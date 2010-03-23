@@ -52,14 +52,16 @@
              transitions: [
                  Transition {
                      from: "Show"; to: "Details"
-                     ParentAction { }
-                     NumberAnimation { properties: "x,y"; duration: 500; easing.type: "InOutQuad" }
+                     ParentAnimation {
+                         NumberAnimation { properties: "x,y"; duration: 500; easing.type: "InOutQuad" }
+                     }
                  },
                  Transition {
                      from: "Details"; to: "Show"
                      SequentialAnimation {
-                         ParentAction { }
-                         NumberAnimation { properties: "x,y"; duration: 500; easing.type: "InOutQuad" }
+                         ParentAnimation {
+                            NumberAnimation { properties: "x,y"; duration: 500; easing.type: "InOutQuad" }
+                         }
                          PropertyAction { targets: wrapper; properties: "z" }
                      }
                  }
