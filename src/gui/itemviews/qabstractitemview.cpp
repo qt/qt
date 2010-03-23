@@ -104,7 +104,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         horizontalScrollMode(QAbstractItemView::ScrollPerItem),
         currentIndexSet(false),
         wrapItemText(false),
-        delayedPendingLayout(true)
+        delayedPendingLayout(true),
         moveCursorUpdatedView(false)
 {
 }
