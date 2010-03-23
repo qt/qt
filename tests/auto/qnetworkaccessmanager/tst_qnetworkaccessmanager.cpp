@@ -72,21 +72,21 @@ void tst_QNetworkAccessManager::networkAccessible()
     QSignalSpy spy(&manager,
                    SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)));
 
-    QCOMPARE(manager.isNetworkAccessible(), QNetworkAccessManager::UnknownAccessibility);
+    QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::UnknownAccessibility);
 
     manager.setNetworkAccessible(QNetworkAccessManager::NotAccessible);
 
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).value<QNetworkAccessManager::NetworkAccessibility>(),
              QNetworkAccessManager::NotAccessible);
-    QCOMPARE(manager.isNetworkAccessible(), QNetworkAccessManager::NotAccessible);
+    QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::NotAccessible);
 
     manager.setNetworkAccessible(QNetworkAccessManager::Accessible);
 
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).value<QNetworkAccessManager::NetworkAccessibility>(),
              QNetworkAccessManager::UnknownAccessibility);
-    QCOMPARE(manager.isNetworkAccessible(), QNetworkAccessManager::UnknownAccessibility);
+    QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::UnknownAccessibility);
 
     QNetworkConfigurationManager configManager;
     QNetworkConfiguration defaultConfig = configManager.defaultConfiguration();
@@ -96,14 +96,14 @@ void tst_QNetworkAccessManager::networkAccessible()
         QCOMPARE(spy.count(), 1);
         QCOMPARE(spy.takeFirst().at(0).value<QNetworkAccessManager::NetworkAccessibility>(),
                  QNetworkAccessManager::Accessible);
-        QCOMPARE(manager.isNetworkAccessible(), QNetworkAccessManager::Accessible);
+        QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::Accessible);
 
         manager.setNetworkAccessible(QNetworkAccessManager::NotAccessible);
 
         QCOMPARE(spy.count(), 1);
         QCOMPARE(QNetworkAccessManager::NetworkAccessibility(spy.takeFirst().at(0).toInt()),
                  QNetworkAccessManager::NotAccessible);
-        QCOMPARE(manager.isNetworkAccessible(), QNetworkAccessManager::NotAccessible);
+        QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::NotAccessible);
     }
 }
 
