@@ -200,7 +200,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
 
     QTest::newRow("NoDot")
         << QString("entrylist") << QDirIterator::IteratorFlags(0)
-        << QDir::Filters(QDir::NoDot) << QStringList("*")
+        << QDir::Filters(QDir::AllEntries | QDir::NoDot) << QStringList("*")
         << QString(
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
                    "entrylist/..,"
@@ -217,7 +217,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
 
     QTest::newRow("NoDotDot")
         << QString("entrylist") << QDirIterator::IteratorFlags(0)
-        << QDir::Filters(QDir::NoDotDot) << QStringList("*")
+        << QDir::Filters(QDir::AllEntries | QDir::NoDotDot) << QStringList("*")
         << QString(
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
                   "entrylist/.,"
@@ -234,7 +234,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
 
     QTest::newRow("NoDotAndDotDot")
         << QString("entrylist") << QDirIterator::IteratorFlags(0)
-        << QDir::Filters(QDir::NoDotAndDotDot) << QStringList("*")
+        << QDir::Filters(QDir::AllEntries | QDir::NoDotAndDotDot) << QStringList("*")
         << QString(
                    "entrylist/file,"
 #ifndef Q_NO_SYMLINKS
