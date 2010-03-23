@@ -1318,8 +1318,8 @@ void QDeclarativeAnimationGroupPrivate::append_animation(QDeclarativeListPropert
 {
     QDeclarativeAnimationGroup *q = qobject_cast<QDeclarativeAnimationGroup *>(list->object);
     if (q) {
-        q->d_func()->animations.append(a);
         a->setGroup(q);
+        QDeclarative_setParent_noEvent(a->qtAnimation(), q->d_func()->ag);
         q->d_func()->ag->addAnimation(a->qtAnimation());
     }
 }
