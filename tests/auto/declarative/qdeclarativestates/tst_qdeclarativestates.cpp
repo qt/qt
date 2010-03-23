@@ -565,7 +565,7 @@ void tst_qdeclarativestates::anchorChanges()
     rect->setState("right");
     QCOMPARE(innerRect->x(), qreal(150));
     QCOMPARE(aChanges->reset(), QString("left"));
-    QCOMPARE(aChanges->object(), innerRect);
+    QCOMPARE(aChanges->object(), qobject_cast<QDeclarativeItem*>(innerRect));
     QCOMPARE(aChanges->right().item, rect->right().item);
     QCOMPARE(aChanges->right().anchorLine, rect->right().anchorLine);
 
@@ -622,7 +622,7 @@ void tst_qdeclarativestates::anchorChanges3()
     QVERIFY(aChanges != 0);
 
     rect->setState("reanchored");
-    QCOMPARE(aChanges->object(), innerRect);
+    QCOMPARE(aChanges->object(), qobject_cast<QDeclarativeItem*>(innerRect));
     QCOMPARE(aChanges->left().item, leftGuideline->left().item);
     QCOMPARE(aChanges->left().anchorLine, leftGuideline->left().anchorLine);
     QCOMPARE(aChanges->right().item, rect->right().item);
@@ -672,7 +672,7 @@ void tst_qdeclarativestates::anchorChanges4()
     QVERIFY(aChanges != 0);
 
     rect->setState("reanchored");
-    QCOMPARE(aChanges->object(), innerRect);
+    QCOMPARE(aChanges->object(), qobject_cast<QDeclarativeItem*>(innerRect));
     QCOMPARE(aChanges->horizontalCenter().item, bottomGuideline->horizontalCenter().item);
     QCOMPARE(aChanges->horizontalCenter().anchorLine, bottomGuideline->horizontalCenter().anchorLine);
     QCOMPARE(aChanges->verticalCenter().item, leftGuideline->verticalCenter().item);
@@ -707,7 +707,7 @@ void tst_qdeclarativestates::anchorChanges5()
     QVERIFY(aChanges != 0);
 
     rect->setState("reanchored");
-    QCOMPARE(aChanges->object(), innerRect);
+    QCOMPARE(aChanges->object(), qobject_cast<QDeclarativeItem*>(innerRect));
     QCOMPARE(aChanges->horizontalCenter().item, bottomGuideline->horizontalCenter().item);
     QCOMPARE(aChanges->horizontalCenter().anchorLine, bottomGuideline->horizontalCenter().anchorLine);
     QCOMPARE(aChanges->baseline().item, leftGuideline->baseline().item);

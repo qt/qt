@@ -690,7 +690,7 @@ void tst_qdeclarativelanguage::propertyValueSource()
     MyPropertyValueSource *valueSource = 
         qobject_cast<MyPropertyValueSource *>(valueSources.at(0));
     QVERIFY(valueSource != 0);
-    QCOMPARE(valueSource->prop.object(), object);
+    QCOMPARE(valueSource->prop.object(), qobject_cast<QObject*>(object));
     QCOMPARE(valueSource->prop.name(), QString(QLatin1String("intProperty")));
     }
 
@@ -711,7 +711,7 @@ void tst_qdeclarativelanguage::propertyValueSource()
     MyPropertyValueSource *valueSource = 
         qobject_cast<MyPropertyValueSource *>(valueSources.at(0));
     QVERIFY(valueSource != 0);
-    QCOMPARE(valueSource->prop.object(), object);
+    QCOMPARE(valueSource->prop.object(), qobject_cast<QObject*>(object));
     QCOMPARE(valueSource->prop.name(), QString(QLatin1String("intProperty")));
     }
 }
@@ -1033,12 +1033,12 @@ void tst_qdeclarativelanguage::scriptString()
     MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->scriptProperty().script(), QString("foo + bar"));
-    QCOMPARE(object->scriptProperty().scopeObject(), object);
+    QCOMPARE(object->scriptProperty().scopeObject(), qobject_cast<QObject*>(object));
     QCOMPARE(object->scriptProperty().context(), qmlContext(object));
 
     QVERIFY(object->grouped() != 0);
     QCOMPARE(object->grouped()->script().script(), QString("console.log(1921)"));
-    QCOMPARE(object->grouped()->script().scopeObject(), object);
+    QCOMPARE(object->grouped()->script().scopeObject(), qobject_cast<QObject*>(object));
     QCOMPARE(object->grouped()->script().context(), qmlContext(object));
 }
 
