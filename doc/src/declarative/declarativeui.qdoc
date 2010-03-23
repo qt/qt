@@ -83,7 +83,7 @@ completely new applications.  QML is fully \l {Extending QML in C++}{extensible 
 \list
 \o \l {QML Documents}
 \o \l {Property Binding}
-\o \l {JavaScript Blocks}
+\o \l {Integrating JavaScript}
 \o \l {QML Scope}
 \o \l {Network Transparency}
 \o \l {Data Models}

@@ -300,22 +300,6 @@ public:
     QActionAnimation *spa;
 };
 
-class QDeclarativeParentActionPrivate : public QDeclarativeAbstractAnimationPrivate
-{
-    Q_DECLARE_PUBLIC(QDeclarativeParentAction)
-public:
-    QDeclarativeParentActionPrivate()
-    : QDeclarativeAbstractAnimationPrivate(), pcTarget(0), pcParent(0) {}
-
-    void init();
-
-    QDeclarativeItem *pcTarget;
-    QDeclarativeItem *pcParent;
-
-    void doAction();
-    QActionAnimation *cpa;
-};
-
 class QDeclarativeAnimationGroupPrivate : public QDeclarativeAbstractAnimationPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeAnimationGroup)
@@ -369,7 +353,7 @@ class QDeclarativeRotationAnimationPrivate : public QDeclarativePropertyAnimatio
 {
     Q_DECLARE_PUBLIC(QDeclarativeRotationAnimation)
 public:
-    QDeclarativeRotationAnimationPrivate() : direction(QDeclarativeRotationAnimation::Shortest) {}
+    QDeclarativeRotationAnimationPrivate() : direction(QDeclarativeRotationAnimation::Numerical) {}
 
     QDeclarativeRotationAnimation::RotationDirection direction;
 };
