@@ -7999,7 +7999,7 @@ start_lengthVariant:
         for (int i = 0; i < textLayout.lineCount(); i++) {
             QTextLine line = textLayout.lineAt(i);
 
-            qreal advance = textLayout.engine()->lines[i].textAdvance.toReal();
+            qreal advance = line.horizontalAdvance();
             if (tf & Qt::AlignRight)
                 xoff = r.width() - advance;
             else if (tf & Qt::AlignHCenter)

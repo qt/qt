@@ -202,6 +202,7 @@ public:
     bool leadingIncluded() const;
 
     qreal naturalTextWidth() const;
+    qreal horizontalAdvance() const;
     QRectF naturalTextRect() const;
 
     enum Edge {
