@@ -5414,10 +5414,15 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
         scale(w / sw, h / sh);
         setBackgroundMode(Qt::TransparentMode);
         setRenderHint(Antialiasing, renderHints() & SmoothPixmapTransform);
-        QBrush brush(d->state->pen.color(), pm);
+        QBrush brush;
+
+        if (sw == pm.width() && sh == pm.height())
+            brush = QBrush(d->state->pen.color(), pm);
+        else
+            brush = QBrush(d->state->pen.color(), pm.copy(sx, sy, sw, sh));
+
         setBrush(brush);
         setPen(Qt::NoPen);
-        setBrushOrigin(QPointF(-sx, -sy));
 
         drawRect(QRectF(0, 0, sw, sh));
         restore();

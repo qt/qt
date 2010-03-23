@@ -45,8 +45,10 @@
 
 \tableofcontents
 
-\l {Property Binding}s and \l {JavaScript Blocks} are executed in a scope chain automatically 
-established by QML when a component instance is constructed.  QML is a \e {dynamically scoped} 
+NOTE: This documentation is out of data.
+
+\l {Property Binding}s and \l {Integrating JavaScript}{JavaScript} are executed in a scope chain 
+automatically established by QML when a component instance is constructed.  QML is a \e {dynamically scoped} 
 language.  Different object instances instantiated from the same component can exist in 
 different scope chains.
 

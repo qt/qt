@@ -85,7 +85,6 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterType<QDeclarativeNumberAnimation>("Qt",4,6,"NumberAnimation");
     qmlRegisterType<QDeclarativePackage>("Qt",4,6,"Package");
     qmlRegisterType<QDeclarativeParallelAnimation>("Qt",4,6,"ParallelAnimation");
-    qmlRegisterType<QDeclarativeParentAction>("Qt",4,6,"ParentAction");
     qmlRegisterType<QDeclarativeParentAnimation>("Qt",4,6,"ParentAnimation");
     qmlRegisterType<QDeclarativeParentChange>("Qt",4,6,"ParentChange");
     qmlRegisterType<QDeclarativePauseAnimation>("Qt",4,6,"PauseAnimation");

@@ -168,7 +168,7 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
     for the original and new parent).
 
     You can specify at which point in a transition you want a ParentChange to occur by
-    using a ParentAnimation or ParentAction.
+    using a ParentAnimation.
 */
 
 

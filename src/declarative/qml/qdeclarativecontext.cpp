@@ -361,6 +361,22 @@ QVariant QDeclarativeContext::contextProperty(const QString &name) const
     return value;
 }
 
+bool QDeclarativeContext::isSafeOrigin(const QUrl &src) const
+{
+    if (src.isRelative())
+        return true;
+    if (src.scheme()==QLatin1String("https"))
+        return true;
+
+    QUrl base = baseUrl();
+    if (src.host() == base.host() && src.port() == base.port()) // including files (with no host)
+        return true;
+
+    qWarning() << src << "is not a safe origin from" << base;
+
+    return false;
+}
+
 /*!
     Resolves the URL \a src relative to the URL of the
     containing component.

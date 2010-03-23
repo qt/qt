@@ -179,6 +179,7 @@ const char *tokenTypeName(Token t)
         case Q_SIGNAL_TOKEN: return "Q_SIGNAL_TOKEN";
         case Q_SLOT_TOKEN: return "Q_SLOT_TOKEN";
         case Q_PRIVATE_SLOT_TOKEN: return "Q_PRIVATE_SLOT_TOKEN";
+        case Q_PRIVATE_PROPERTY_TOKEN: return "Q_PRIVATE_PROPERTY_TOKEN";
         case SPECIAL_TREATMENT_MARK: return "SPECIAL_TREATMENT_MARK";
         case MOC_INCLUDE_BEGIN: return "MOC_INCLUDE_BEGIN";
         case MOC_INCLUDE_END: return "MOC_INCLUDE_END";

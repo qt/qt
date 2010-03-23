@@ -353,6 +353,7 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                     replyPrivate->autoDecompress = false;
                 }
                 if (replyPrivate->statusCode == 100) {
+                    replyPrivate->clearHttpLayerInformation();
                     replyPrivate->state = QHttpNetworkReplyPrivate::ReadingStatusState;
                     break; // ignore
                 }

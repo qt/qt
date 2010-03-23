@@ -35,6 +35,15 @@ enum MediaType {
     MediaTypeAudio,
     MediaTypeVideo
 };
+
+enum VideoParameter {
+    WindowHandle        = 0x1,
+    WindowScreenRect    = 0x2,
+    ScaleFactors        = 0x4
+};
+Q_DECLARE_FLAGS(VideoParameters, VideoParameter)
+Q_DECLARE_OPERATORS_FOR_FLAGS(VideoParameters)
+
 }
 }
 

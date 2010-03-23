@@ -85,6 +85,8 @@ public:
     void setBaseUrl(const QUrl &);
     QUrl baseUrl() const;
 
+    bool isSafeOrigin(const QUrl &src) const;
+
 private:
     friend class QDeclarativeVME;
     friend class QDeclarativeEngine;

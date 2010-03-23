@@ -81,7 +81,7 @@ class QDeclarativeBinding_Id;
 class QDeclarativeCompiledBindings;
 class QDeclarativeContextData;
 
-class Q_DECLARATIVE_EXPORT QDeclarativeContextPrivate : public QObjectPrivate
+class QDeclarativeContextPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeContext)
 public:

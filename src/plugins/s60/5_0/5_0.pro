@@ -1,6 +1,6 @@
 include(../s60pluginbase.pri)
 
-TARGET  = qts60plugin_5_0
+TARGET  = qts60plugin_5_0$${QT_LIBINFIX}
 
 contains(S60_VERSION, 3.1) {
     SOURCES += ../src/qlocale_3_1.cpp \

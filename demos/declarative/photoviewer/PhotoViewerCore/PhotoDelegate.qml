@@ -33,8 +33,12 @@ Package {
                 property int h: Script.getHeight(content)
                 property double s: Script.calculateScale(w, h, photoWrapper.width)
 
-                color: '#878787'; anchors.centerIn: parent; smooth: true; border.color: 'white'; border.width: 3
+                color: 'white'; anchors.centerIn: parent; smooth: true
                 width:  w * s; height: h * s; visible: originalImage.status != Image.Ready
+                Rectangle {
+                    color: "#878787"; smooth: true
+                    anchors { fill: parent; topMargin: 3; bottomMargin: 3; leftMargin: 3; rightMargin: 3 }
+                }
             }
             Rectangle {
                 id: border; color: 'white'; anchors.centerIn: parent; smooth: true

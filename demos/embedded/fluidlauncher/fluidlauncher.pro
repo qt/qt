@@ -180,10 +180,12 @@ symbian {
         mifs.sources += \
             $$appResourceDir(demos/embedded/anomaly/anomaly.mif)
 
-        # Since Fluidlauncher itself doesn't link webkit, we won't get dependency automatically
-        executables.pkg_prerules += \
-            "; Dependency to Qt Webkit" \
-            "(0x200267C2), $${QT_MAJOR_VERSION}, $${QT_MINOR_VERSION}, $${QT_PATCH_VERSION},  {\"QtWebKit\"}"
+        isEmpty(QT_LIBINFIX) {
+            # Since Fluidlauncher itself doesn't link webkit, we won't get dependency automatically
+            executables.pkg_prerules += \
+                "; Dependency to Qt Webkit" \
+                "(0x200267C2), $${QT_MAJOR_VERSION}, $${QT_MINOR_VERSION}, $${QT_PATCH_VERSION},  {\"QtWebKit\"}"
+        }
     }
 
     contains(QT_CONFIG, phonon) {
