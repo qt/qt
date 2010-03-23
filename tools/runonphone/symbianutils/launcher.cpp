@@ -44,6 +44,7 @@
 #include "trkutils_p.h"
 #include "trkdevice.h"
 #include "bluetoothlistener.h"
+#include "symbiandevicemanager.h"
 
 #include <QtCore/QTimer>
 #include <QtCore/QDateTime>
@@ -100,12 +101,15 @@ Launcher::Launcher(Actions startupActions,
     d(new LauncherPrivate(dev))
 {
     d->m_startupActions = startupActions;
-    connect(d->m_device.data(), SIGNAL(messageReceived(trk::TrkResult)), this, SLOT(handleResult(trk::TrkResult)));    
-    connect(this, SIGNAL(finished()), d->m_device.data(), SLOT(close()));
+    connect(d->m_device.data(), SIGNAL(messageReceived(trk::TrkResult)), this, SLOT(handleResult(trk::TrkResult)));
 }
 
 Launcher::~Launcher()
 {
+    // Destroyed before protocol was through: Close
+    if (d->m_closeDevice && d->m_device->isOpen())
+        d->m_device->close();
+    emit destroyed(d->m_device->port());
     logMessage("Shutting down.\n");
     delete d;
 }
@@ -214,11 +218,6 @@ bool Launcher::startServer(QString *errorMessage)
     }
     if (!d->m_device->isOpen() && !d->m_device->open(errorMessage))
         return false;
-    if (d->m_closeDevice) {
-        connect(this, SIGNAL(finished()), d->m_device.data(), SLOT(close()));
-    } else {
-        disconnect(this, SIGNAL(finished()), d->m_device.data(), 0);
-    }
     setState(Connecting);
     // Set up the temporary 'waiting' state if we do not get immediate connection
     QTimer::singleShot(1000, this, SLOT(slotWaitingForTrk()));
@@ -266,6 +265,13 @@ void Launcher::logMessage(const QString &msg)
         qDebug() << "LAUNCHER: " << qPrintable(msg);
 }
 
+void Launcher::handleFinished()
+{
+    if (d->m_closeDevice)
+        d->m_device->close();
+    emit finished();
+}
+
 void Launcher::terminate()
 {
     switch (state()) {
@@ -287,7 +293,7 @@ void Launcher::terminate()
     case Connecting:
     case WaitingForTrk:
         setState(Disconnected);
-        emit finished();
+        handleFinished();
         break;
     }
 }
@@ -446,7 +452,7 @@ void Launcher::handleTrkVersion(const TrkResult &result)
     if (result.errorCode() || result.data.size() < 5) {
         if (d->m_startupActions == ActionPingOnly) {
             setState(Disconnected);
-            emit finished();
+            handleFinished();
         }
         return;
     }
@@ -455,11 +461,13 @@ void Launcher::handleTrkVersion(const TrkResult &result)
     d->m_session.trkAppVersion.protocolMajor = result.data.at(3);
     d->m_session.trkAppVersion.protocolMinor = result.data.at(4);
     setState(DeviceDescriptionReceived);
+    const QString msg = deviceDescription();
+    emit deviceDescriptionReceived(trkServerName(), msg);
     // Ping mode: Log & Terminate
     if (d->m_startupActions == ActionPingOnly) {
-        qWarning("%s", qPrintable(deviceDescription()));
+        qWarning("%s", qPrintable(msg));
         setState(Disconnected);
-        emit finished();
+        handleFinished();
     }
 }
 
@@ -586,7 +594,7 @@ void Launcher::handleWaitForFinished(const TrkResult &result)
 {
     logMessage("   FINISHED: " + stringFromArray(result.data));
     setState(Disconnected);
-    emit finished();
+    handleFinished();
 }
 
 void Launcher::handleSupportMask(const TrkResult &result)
@@ -704,18 +712,14 @@ QByteArray Launcher::startProcessMessage(const QString &executable,
 {
     // It's not started yet
     QByteArray ba;
-    appendShort(&ba, 0, TargetByteOrder); // create new process
+    appendShort(&ba, 0, TargetByteOrder); // create new process (kDSOSProcessItem)
     ba.append(char(0)); // options - currently unused
-    if(arguments.isEmpty()) {
-        appendString(&ba, executable.toLocal8Bit(), TargetByteOrder);
-        return ba;
-    }
-    // Append full command line as one string (leading length information).
-    QByteArray commandLineBa;
-    commandLineBa.append(executable.toLocal8Bit());
-    commandLineBa.append('\0');
-    commandLineBa.append(arguments.join(QString(QLatin1Char(' '))).toLocal8Bit());
-    appendString(&ba, commandLineBa, TargetByteOrder);
+    // One string consisting of binary terminated by '\0' and arguments terminated by '\0'
+    QByteArray commandLineBa = executable.toLocal8Bit();
+    commandLineBa.append(char(0));
+    if (!arguments.isEmpty())
+        commandLineBa.append(arguments.join(QString(QLatin1Char(' '))).toLocal8Bit());
+    appendString(&ba, commandLineBa, TargetByteOrder, true);
     return ba;
 }
 
@@ -737,4 +741,37 @@ void Launcher::resumeProcess(uint pid, uint tid)
     appendInt(&ba, tid, BigEndian);
     d->m_device->sendTrkMessage(TrkContinue, TrkCallback(), ba, "CONTINUE");
 }
+
+// Acquire a device from SymbianDeviceManager, return 0 if not available.
+Launcher *Launcher::acquireFromDeviceManager(const QString &serverName,
+                                             QObject *parent,
+                                             QString *errorMessage)
+{
+    SymbianUtils::SymbianDeviceManager *sdm = SymbianUtils::SymbianDeviceManager::instance();
+    const QSharedPointer<trk::TrkDevice> device = sdm->acquireDevice(serverName);
+    if (device.isNull()) {
+        *errorMessage = tr("Unable to acquire a device for port '%1'. It appears to be in use.").arg(serverName);
+        return 0;
+    }
+    // Wire release signal.
+    Launcher *rc = new Launcher(trk::Launcher::ActionPingOnly, device, parent);
+    connect(rc, SIGNAL(deviceDescriptionReceived(QString,QString)),
+            sdm, SLOT(setAdditionalInformation(QString,QString)));
+    connect(rc, SIGNAL(destroyed(QString)), sdm, SLOT(releaseDevice(QString)));
+    return rc;
+}
+
+// Preliminary release of device, disconnecting the signal.
+void Launcher::releaseToDeviceManager(Launcher *launcher)
+{
+    SymbianUtils::SymbianDeviceManager *sdm = SymbianUtils::SymbianDeviceManager::instance();
+    // Disentangle launcher and its device, remove connection from destroyed
+    launcher->setCloseDevice(false);
+    TrkDevice *device = launcher->trkDevice().data();
+    launcher->disconnect(device);
+    device->disconnect(launcher);
+    launcher->disconnect(sdm);
+    sdm->releaseDevice(launcher->trkServerName());
+}
+
 } // namespace trk

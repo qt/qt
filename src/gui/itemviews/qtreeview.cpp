@@ -674,15 +674,19 @@ void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &botto
     // refresh the height cache here; we don't really lose anything by getting the size hint,
     // since QAbstractItemView::dataChanged() will get the visualRect for the items anyway
 
-    int topViewIndex = d->viewIndex(topLeft);
-    if (topViewIndex == 0)
-        d->defaultItemHeight = indexRowSizeHint(topLeft);
     bool sizeChanged = false;
+    int topViewIndex = d->viewIndex(topLeft);
+    if (topViewIndex == 0) {
+        int newDefaultItemHeight = indexRowSizeHint(topLeft);
+        sizeChanged = d->defaultItemHeight != newDefaultItemHeight;
+        d->defaultItemHeight = newDefaultItemHeight;
+    }
+
     if (topViewIndex != -1) {
         if (topLeft.row() == bottomRight.row()) {
             int oldHeight = d->itemHeight(topViewIndex);
             d->invalidateHeightCache(topViewIndex);
-            sizeChanged = (oldHeight != d->itemHeight(topViewIndex));
+            sizeChanged |= (oldHeight != d->itemHeight(topViewIndex));
             if (topLeft.column() == 0)
                 d->viewItems[topViewIndex].hasChildren = d->hasVisibleChildren(topLeft);
         } else {
