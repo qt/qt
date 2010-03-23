@@ -22,7 +22,7 @@ Flipable {
     }
 
     back: Button {
-        id: backButton; tint: "red"
+        id: backButton; tint: "red"; rotation: flipable.randomAngle
         anchors { centerIn: parent; verticalCenterOffset: -20 }
         onClicked: flipable.backClicked()
     }

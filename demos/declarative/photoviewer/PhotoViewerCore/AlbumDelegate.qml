@@ -33,13 +33,15 @@ Component {
             }
 
             BusyIndicator {
+                id: busyIndicator
                 anchors { centerIn: parent; verticalCenterOffset: -20 }
                 on: rssModel.status != XmlListModel.Ready
             }
 
             PathView {
                 id: photosPathView; model: visualModel.parts.stack; pathItemCount: 5
-                anchors.centerIn: parent; anchors.verticalCenterOffset: -20
+                visible: !busyIndicator.visible
+                anchors.centerIn: parent; anchors.verticalCenterOffset: -30
                 path: Path {
                     PathAttribute { name: 'z'; value: 9999.0 }
                     PathLine { x: 1; y: 1 }
@@ -53,9 +55,10 @@ Component {
             }
 
             Tag {
-                anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom
+                anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 10 }
                 frontLabel: tag; backLabel: "Delete"; flipped: mainWindow.editMode
                 onTagChanged: rssModel.tags = tag
+                onBackClicked: if (mainWindow.editMode) photosModel.remove(index);
             }
 
             states: [
@@ -73,6 +76,13 @@ Component {
                 PropertyChanges { target: backButton; y: -backButton.height - 8 }
             }
             ]
+
+            GridView.onAdd: NumberAnimation { target: albumWrapper; properties: "scale"; from: 0.0; to: 1.0 }
+            GridView.onRemove: SequentialAnimation {
+                PropertyAction { target: albumWrapper.GridView; property: "delayRemove"; value: true }
+                NumberAnimation { target: albumWrapper; property: "scale"; from: 1.0; to: 0.0 }
+                PropertyAction { target: albumWrapper.GridView; property: "delayRemove"; value: false }
+            }
 
             transitions: [
             Transition {

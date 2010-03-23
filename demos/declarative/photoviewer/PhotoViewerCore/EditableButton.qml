@@ -28,6 +28,10 @@ Item {
     TextInput {
         id: textInput; text: label; font.pixelSize: 15; anchors.centerIn: parent; smooth: true; visible: false
         Keys.onReturnPressed: container.labelChanged(textInput.text)
+        Keys.onEscapePressed: {
+            textInput.text = labelText.text
+            container.state = ''
+        }
     }
 
     MouseArea {
@@ -37,7 +41,7 @@ Item {
 
     states: State {
         name: "editMode"
-        PropertyChanges { target: container; width: textInput.width + 70; height: textInput.height + 18 }
+        PropertyChanges { target: container; width: textInput.width + 70; height: textInput.height + 17 }
         PropertyChanges { target: textInput; visible: true; focus: true }
         PropertyChanges { target: labelText; visible: false }
     }
