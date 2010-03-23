@@ -44,6 +44,7 @@
 #include <QStringList>
 #include <QScopedPointer>
 #include <QTimer>
+#include <QFileInfo>
 #include "symbianutils/trkutils.h"
 #include "symbianutils/trkdevice.h"
 #include "symbianutils/launcher.h"
@@ -51,9 +52,9 @@
 #include "trksignalhandler.h"
 #include "serenum.h"
 
-void printUsage(QTextStream& outstream)
+void printUsage(QTextStream& outstream, QString exeName)
 {
-    outstream << "runtest [options] <program> [program arguments]" << endl
+    outstream << exeName << " [options] [program] [program arguments]" << endl
             << "-s, --sis <file>                     specify sis file to install" << endl
             << "-p, --portname <COMx>                specify COM port to use by device name" << endl
             << "-f, --portfriendlyname <substring>   specify COM port to use by friendly name" << endl
@@ -61,7 +62,9 @@ void printUsage(QTextStream& outstream)
             << "-v, --verbose                        show debugging output" << endl
             << "-q, --quiet                          hide progress messages" << endl
             << endl
-            << "USB COM ports can usually be autodetected" << endl;
+            << "USB COM ports can usually be autodetected, use -p or -f to force a specific port." << endl
+            << "If using System TRK, it is possible to copy the program directly to sys/bin on the phone." << endl
+            << "-s can be used with both System and Application TRK to install the program" << endl;
 }
 
 int main(int argc, char *argv[])
@@ -86,22 +89,22 @@ int main(int argc, char *argv[])
                 return 1;
             }
             QString param = args.at(i+1);
-            if(arg.compare("--portname", Qt::CaseSensitive) == 0
+            if (arg.compare("--portname", Qt::CaseSensitive) == 0
                || arg.compare("-p", Qt::CaseSensitive) == 0) {
                 serialPortName = param;
                 i++;
             }
-            else if(arg.compare("--portfriendlyname", Qt::CaseSensitive) == 0
+            else if (arg.compare("--portfriendlyname", Qt::CaseSensitive) == 0
                     || arg.compare("-f", Qt::CaseSensitive) == 0) {
                 serialPortFriendlyName = param;
                 i++;
             }
-            else if(arg.compare("--sis", Qt::CaseSensitive) == 0
+            else if (arg.compare("--sis", Qt::CaseSensitive) == 0
                     || arg.compare("-s", Qt::CaseSensitive) == 0) {
                 sisFile = param;
                 i++;
             }
-            else if(arg.compare("--timeout", Qt::CaseSensitive) == 0
+            else if (arg.compare("--timeout", Qt::CaseSensitive) == 0
                     || arg.compare("-t", Qt::CaseSensitive) == 0) {
                 bool ok;
                 timeout = param.toInt(&ok);
@@ -111,10 +114,10 @@ int main(int argc, char *argv[])
                 }
                 i++;
             }
-            else if(arg.compare("--verbose", Qt::CaseSensitive) == 0
+            else if (arg.compare("--verbose", Qt::CaseSensitive) == 0
                     || arg.compare("-v", Qt::CaseSensitive) == 0)
                 loglevel=2;
-            else if(arg.compare("--quiet", Qt::CaseSensitive) == 0
+            else if (arg.compare("--quiet", Qt::CaseSensitive) == 0
                     || arg.compare("-q", Qt::CaseSensitive) == 0)
                 loglevel=0;
             else
@@ -128,8 +131,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    if(exeFile.isEmpty()) {
-        printUsage(outstream);
+    if (exeFile.isEmpty() && sisFile.isEmpty()) {
+        printUsage(outstream, args[0]);
         return 1;
     }
 
@@ -161,23 +164,25 @@ int main(int argc, char *argv[])
     }
 
     QScopedPointer<trk::Launcher> launcher;
-
-    if (sisFile.isEmpty()) {
-        launcher.reset(new trk::Launcher(trk::Launcher::ActionCopyRun));
-        launcher->setCopyFileName(exeFile, QString("c:\\sys\\bin\\") + exeFile);
-        errstream << "System TRK required to copy EXE, use --sis if using Application TRK" << endl;
-    } else {
-        launcher.reset(new trk::Launcher(trk::Launcher::ActionCopyInstallRun));
-        launcher->addStartupActions(trk::Launcher::ActionInstall);
+    launcher.reset(new trk::Launcher(trk::Launcher::ActionPingOnly));
+    QFileInfo info(exeFile);
+    if (!sisFile.isEmpty()) {
+        launcher->addStartupActions(trk::Launcher::ActionCopyInstall);
         launcher->setCopyFileName(sisFile, "c:\\data\\testtemp.sis");
         launcher->setInstallFileName("c:\\data\\testtemp.sis");
+    }
+    else if (info.exists()) {
+        launcher->addStartupActions(trk::Launcher::ActionCopy);
+        launcher->setCopyFileName(exeFile, QString("c:\\sys\\bin\\") + info.fileName());
+    }
+    if (!exeFile.isEmpty()) {
+        launcher->addStartupActions(trk::Launcher::ActionRun);
+        launcher->setFileName(QString("c:\\sys\\bin\\") + info.fileName());
+        launcher->setCommandLineArgs(cmdLine);
     }
     if (loglevel > 0)
         outstream << "Connecting to target via " << serialPortName << endl;
     launcher->setTrkServerName(serialPortName);
-
-    launcher->setFileName(QString("c:\\sys\\bin\\") + exeFile);
-    launcher->setCommandLineArgs(cmdLine);
 
     if (loglevel > 1)
         launcher->setVerbose(1);
