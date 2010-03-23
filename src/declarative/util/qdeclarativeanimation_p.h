@@ -430,9 +430,9 @@ class QDeclarativeParentAnimation : public QDeclarativeAnimationGroup
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeParentAnimation)
 
-    Q_PROPERTY(QDeclarativeItem *target READ target WRITE setTarget)
-    Q_PROPERTY(QDeclarativeItem *newParent READ newParent WRITE setNewParent)
-    Q_PROPERTY(QDeclarativeItem *via READ via WRITE setVia)
+    Q_PROPERTY(QDeclarativeItem *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(QDeclarativeItem *newParent READ newParent WRITE setNewParent NOTIFY newParentChanged)
+    Q_PROPERTY(QDeclarativeItem *via READ via WRITE setVia NOTIFY viaChanged)
 
 public:
     QDeclarativeParentAnimation(QObject *parent=0);
@@ -446,6 +446,11 @@ public:
 
     QDeclarativeItem *via() const;
     void setVia(QDeclarativeItem *);
+
+Q_SIGNALS:
+    void targetChanged();
+    void newParentChanged();
+    void viaChanged();
 
 protected:
     virtual void transition(QDeclarativeStateActions &actions,

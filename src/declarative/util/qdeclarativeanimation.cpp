@@ -2277,7 +2277,11 @@ QDeclarativeItem *QDeclarativeParentAnimation::target() const
 void QDeclarativeParentAnimation::setTarget(QDeclarativeItem *target)
 {
     Q_D(QDeclarativeParentAnimation);
+    if (target == d->target)
+        return;
+
     d->target = target;
+    emit targetChanged();
 }
 
 /*!
@@ -2295,7 +2299,11 @@ QDeclarativeItem *QDeclarativeParentAnimation::newParent() const
 void QDeclarativeParentAnimation::setNewParent(QDeclarativeItem *newParent)
 {
     Q_D(QDeclarativeParentAnimation);
+    if (newParent == d->newParent)
+        return;
+
     d->newParent = newParent;
+    emit newParentChanged();
 }
 
 /*!
@@ -2320,7 +2328,11 @@ QDeclarativeItem *QDeclarativeParentAnimation::via() const
 void QDeclarativeParentAnimation::setVia(QDeclarativeItem *via)
 {
     Q_D(QDeclarativeParentAnimation);
+    if (via == d->via)
+        return;
+
     d->via = via;
+    emit viaChanged();
 }
 
 //### mirrors same-named function in QDeclarativeItem
