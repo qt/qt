@@ -738,7 +738,7 @@ void QCoreWlanEngine::getUserConfigurations()
 
 // add user configured system networks
         SCDynamicStoreRef dynRef = SCDynamicStoreCreate(kCFAllocatorSystemDefault, (CFStringRef)@"Qt corewlan", nil, nil);
-        CFDictionaryRef airportPlist = (const __CFDictionary*)SCDynamicStoreCopyValue(dynRef, (CFStringRef)[NSString stringWithFormat:@"Setup:/Network/Interface/%@/AirPort", [wifiInterface name]]);
+        NSDictionary * airportPlist = (NSDictionary *)SCDynamicStoreCopyValue(dynRef, (CFStringRef)[NSString stringWithFormat:@"Setup:/Network/Interface/%@/AirPort", [wifiInterface name]]);
         CFRelease(dynRef);
 
         NSDictionary *prefNetDict = [airportPlist objectForKey:@"PreferredNetworks"];
