@@ -33,9 +33,14 @@
         }
         if (map)
             req.bounds = map.getBounds()
+        window.qml.status = "Loading";
         geocoder.geocode(req, function(results, status) {
-          if (status == google.maps.GeocoderStatus.OK)
+          if (status == google.maps.GeocoderStatus.OK) {
+            window.qml.status = "Ready";
             goToLatLng(results[0].geometry.location,results[0].geometry.bounds);
+          } else {
+            window.qml.status = "Error";
+          }
         });
       }
   }
