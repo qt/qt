@@ -1136,9 +1136,10 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
     \brief The RotationAnimation element allows you to animate rotations.
 
     RotationAnimation is a specialized PropertyAnimation that gives control
-    over the direction of rotation. By default, it will rotate
-    via the shortest path; for example, a rotation from 20 to 340 degrees will
-    rotation 40 degrees counterclockwise.
+    over the direction of rotation. By default, it will rotate in the direction
+    of the numerical change; a rotation from 0 to 240 will rotate 220 degrees
+    clockwise, while a rotation from 240 to 0 will rotate 220 degrees
+    counterclockwise.
 
     When used in a transition RotationAnimation will rotate all
     properties named "rotation" or "angle". You can override this by providing
@@ -1153,7 +1154,7 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
         State { name: "-90"; PropertyChanges { target: myItem; rotation: -90 } }
     }
     transition: Transition {
-        RotationAnimation { }
+        RotationAnimation { direction: RotationAnimation.Shortest }
     }
     \endqml
 */
@@ -1205,7 +1206,7 @@ QDeclarativeRotationAnimation::QDeclarativeRotationAnimation(QObject *parent)
 {
     Q_D(QDeclarativeRotationAnimation);
     d->interpolatorType = QMetaType::QReal;
-    d->interpolator = reinterpret_cast<QVariantAnimation::Interpolator>(&_q_interpolateShortestRotation);
+    d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
     d->defaultProperties = QLatin1String("rotation,angle");
 }
 
@@ -1268,7 +1269,7 @@ void QDeclarativeRotationAnimation::setTo(qreal t)
            A rotation from 10 to 350 will rotate 20 degrees counterclockwise.
     \endtable
 
-    The default direction is Shortest.
+    The default direction is Numerical.
 */
 QDeclarativeRotationAnimation::RotationDirection QDeclarativeRotationAnimation::direction() const
 {

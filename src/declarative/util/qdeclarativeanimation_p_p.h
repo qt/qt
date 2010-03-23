@@ -353,7 +353,7 @@ class QDeclarativeRotationAnimationPrivate : public QDeclarativePropertyAnimatio
 {
     Q_DECLARE_PUBLIC(QDeclarativeRotationAnimation)
 public:
-    QDeclarativeRotationAnimationPrivate() : direction(QDeclarativeRotationAnimation::Shortest) {}
+    QDeclarativeRotationAnimationPrivate() : direction(QDeclarativeRotationAnimation::Numerical) {}
 
     QDeclarativeRotationAnimation::RotationDirection direction;
 };
