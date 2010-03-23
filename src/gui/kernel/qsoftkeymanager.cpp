@@ -197,8 +197,8 @@ QWidget *QSoftKeyManager::softkeySource(QWidget *previousSource, bool& recursive
     QWidget *source = NULL;
     if (!previousSource) {
         // Initial source is primarily focuswidget and secondarily activeWindow
-        const QWidget *focus = QApplication::focusWidget();
-        const QWidget *popup = QApplication::activePopupWidget();
+        QWidget *focus = QApplication::focusWidget();
+        QWidget *popup = QApplication::activePopupWidget();
         if (popup) {
             if (isChildOf(focus, popup))
                 source = focus;
@@ -206,7 +206,7 @@ QWidget *QSoftKeyManager::softkeySource(QWidget *previousSource, bool& recursive
                 source = popup;
         }
         if (!source) {
-            const QWidget *modal = QApplication::activeModalWidget();
+            QWidget *modal = QApplication::activeModalWidget();
             if (modal) {
                 if (isChildOf(focus, modal))
                     source = focus;
