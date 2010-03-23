@@ -464,8 +464,8 @@ void QVGPixmapData::cleanup()
 
 void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
 {
-#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
     if (type == QPixmapData::SgImage && pixmap) {
+#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
         RSgImage *sgImage = reinterpret_cast<RSgImage*>(pixmap);
 
         destroyImages();
@@ -536,6 +536,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         // release stuff
         eglDestroyImageKHR(QEglContext::display(), eglImage);
         driver.Close();
+#endif
     } else if (type == QPixmapData::FbsBitmap) {
         CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap*>(pixmap);
 
@@ -581,16 +582,12 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         if(deleteSourceBitmap)
             delete bitmap;
     }
-#else
-    Q_UNUSED(pixmap);
-    Q_UNUSED(type);
-#endif
 }
 
 void* QVGPixmapData::toNativeType(NativeType type)
 {
-#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
     if (type == QPixmapData::SgImage) {
+#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
         toVGImage();
 
         if (!isValid() || vgImage == VG_INVALID_HANDLE)
@@ -657,6 +654,7 @@ void* QVGPixmapData::toNativeType(NativeType type)
         eglDestroyImageKHR(QEglContext::display(), eglImage);
         driver.Close();
         return reinterpret_cast<void*>(sgImage);
+#endif
     } else if (type == QPixmapData::FbsBitmap) {
         CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);
 
@@ -678,10 +676,7 @@ void* QVGPixmapData::toNativeType(NativeType type)
 
         return reinterpret_cast<void*>(bitmap);
     }
-#else
-    Q_UNUSED(type);
     return 0;
-#endif
 }
 #endif //Q_OS_SYMBIAN
 

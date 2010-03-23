@@ -379,6 +379,15 @@ void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform
     Q_ASSERT(positions.size() == glyphs_out.size());
 }
 
+void QFontEngine::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qreal *rightBearing)
+{
+    glyph_metrics_t gi = boundingBox(glyph);
+    bool isValid = gi.isValid();
+    if (leftBearing != 0)
+        *leftBearing = isValid ? gi.x.toReal() : 0.0;
+    if (rightBearing != 0)
+        *rightBearing = isValid ? (gi.xoff - gi.x - gi.width).toReal() : 0.0;
+}
 
 glyph_metrics_t QFontEngine::tightBoundingBox(const QGlyphLayout &glyphs)
 {
@@ -1383,6 +1392,12 @@ glyph_metrics_t QFontEngineMulti::boundingBox(const QGlyphLayout &glyphs)
         glyphs.glyphs[i] = hi | glyphs.glyphs[i];
 
     return overall;
+}
+
+void QFontEngineMulti::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qreal *rightBearing)
+{
+    int which = highByte(glyph);
+    engine(which)->getGlyphBearings(stripped(glyph), leftBearing, rightBearing);
 }
 
 void QFontEngineMulti::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs,
