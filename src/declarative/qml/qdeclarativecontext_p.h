@@ -213,8 +213,11 @@ public:
 
     inline operator QDeclarativeContextData*() const { return m_contextData; }
     inline QDeclarativeContextData* operator->() const { return m_contextData; }
+    inline QDeclarativeGuardedContextData &operator=(QDeclarativeContextData *d);
 
 private:
+    QDeclarativeGuardedContextData &operator=(const QDeclarativeGuardedContextData &);
+    QDeclarativeGuardedContextData(const QDeclarativeGuardedContextData &);
     friend class QDeclarativeContextData;
 
     inline void clear();
@@ -267,6 +270,13 @@ void QDeclarativeGuardedContextData::clear()
         m_next = 0;
         m_prev = 0;
     }
+}
+
+QDeclarativeGuardedContextData &
+QDeclarativeGuardedContextData::operator=(QDeclarativeContextData *d)
+{
+    setContextData(d);
+    return *this;
 }
 
 QT_END_NAMESPACE
