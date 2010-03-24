@@ -60,9 +60,10 @@
 
 #include <private/qobject_p.h>
 
+Q_DECLARE_METATYPE(QDeclarativeXmlQueryResult)
+
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_METATYPE(QDeclarativeXmlQueryResult)
 
 typedef QPair<int, int> QDeclarativeXmlListRange;
 
