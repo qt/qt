@@ -218,8 +218,8 @@ public:
     : topLevelMarginLeft(-1), topLevelMarginRight(-1), topLevelMarginTop(-1),
       topLevelMarginBottom(-1), childMarginLeft(-1), childMarginRight(-1),
       childMarginTop(-1), childMarginBottom(-1), hspacing(-1), vspacing(-1),
-          wizStyle(QWizard::ClassicStyle), header(false), watermark(false), title(false),
-          subTitle(false), extension(false) {}
+      wizStyle(QWizard::ClassicStyle), header(false), watermark(false), title(false),
+      subTitle(false), extension(false), sideWidget(false) {}
 
     int topLevelMarginLeft;
     int topLevelMarginRight;
@@ -238,6 +238,7 @@ public:
     bool title;
     bool subTitle;
     bool extension;
+    bool sideWidget;
 
     bool operator==(const QWizardLayoutInfo &other);
     inline bool operator!=(const QWizardLayoutInfo &other) { return !operator==(other); }
@@ -261,7 +262,8 @@ bool QWizardLayoutInfo::operator==(const QWizardLayoutInfo &other)
            && watermark == other.watermark
            && title == other.title
            && subTitle == other.subTitle
-           && extension == other.extension;
+           && extension == other.extension
+           && sideWidget == other.sideWidget;
 }
 
 class QWizardHeader : public QWidget
@@ -425,6 +427,40 @@ public:
         : QWizardHeader(Ruler, parent) {}
 };
 
+class QWatermarkLabel : public QLabel
+{
+public:
+    QWatermarkLabel(QWidget *parent, QWidget *sideWidget) : QLabel(parent), m_sideWidget(sideWidget) {
+        m_layout = new QVBoxLayout(this);
+        if (m_sideWidget)
+            m_layout->addWidget(m_sideWidget);
+    }
+
+    QSize minimumSizeHint() const {
+        if (!pixmap() && !pixmap()->isNull())
+            return pixmap()->size();
+        return QFrame::minimumSizeHint();
+    }
+
+    void setSideWidget(QWidget *widget) {
+        if (m_sideWidget == widget)
+            return;
+        if (m_sideWidget) {
+            m_layout->removeWidget(m_sideWidget);
+            m_sideWidget->hide();
+        }
+        m_sideWidget = widget;
+        if (m_sideWidget)
+            m_layout->addWidget(m_sideWidget);
+    }
+    QWidget *sideWidget() const {
+        return m_sideWidget;
+    }
+private:
+    QVBoxLayout *m_layout;
+    QWidget *m_sideWidget;
+};
+
 class QWizardPagePrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QWizardPage)
@@ -501,6 +537,7 @@ public:
 
     inline QWizardPrivate()
         : start(-1)
+        , startSetByUser(false)
         , current(-1)
         , canContinue(false)
         , canFinish(false)
@@ -513,6 +550,7 @@ public:
         , placeholderWidget2(0)
         , headerWidget(0)
         , watermarkLabel(0)
+        , sideWidget(0)
         , titleLabel(0)
         , subTitleLabel(0)
         , bottomRuler(0)
@@ -581,6 +619,7 @@ public:
     QList<int> history;
     QSet<int> initialized; // ### remove and move bit to QWizardPage?
     int start;
+    bool startSetByUser;
     int current;
     bool canContinue;
     bool canFinish;
@@ -612,7 +651,8 @@ public:
     QWidget *placeholderWidget1;
     QWidget *placeholderWidget2;
     QWizardHeader *headerWidget;
-    QLabel *watermarkLabel;
+    QWatermarkLabel *watermarkLabel;
+    QWidget *sideWidget;
     QFrame *pageFrame;
     QLabel *titleLabel;
     QLabel *subTitleLabel;
@@ -907,11 +947,12 @@ QWizardLayoutInfo QWizardPrivate::layoutInfoForCurrentPage()
 
     info.header = (info.wizStyle == QWizard::ClassicStyle || info.wizStyle == QWizard::ModernStyle)
         && !(opts & QWizard::IgnoreSubTitles) && !subTitleText.isEmpty();
+    info.sideWidget = sideWidget;
     info.watermark = (info.wizStyle != QWizard::MacStyle) && (info.wizStyle != QWizard::AeroStyle)
         && !watermarkPixmap.isNull();
     info.title = !info.header && !titleText.isEmpty();
     info.subTitle = !(opts & QWizard::IgnoreSubTitles) && !info.header && !subTitleText.isEmpty();
-    info.extension = info.watermark && (opts & QWizard::ExtendedWatermarkPixmap);
+    info.extension = (info.watermark || info.sideWidget) && (opts & QWizard::ExtendedWatermarkPixmap);
 
     return info;
 }
@@ -954,7 +995,7 @@ void QWizardPrivate::recreateLayout(const QWizardLayoutInfo &info)
     int numColumns;
     if (mac) {
         numColumns = 3;
-    } else if (info.watermark) {
+    } else if (info.watermark || info.sideWidget) {
         numColumns = 2;
     } else {
         numColumns = 1;
@@ -1096,8 +1137,8 @@ void QWizardPrivate::recreateLayout(const QWizardLayoutInfo &info)
         pageFrame->setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     }
 
-    if (info.watermark && !watermarkLabel) {
-        watermarkLabel = new QLabel(antiFlickerWidget);
+    if ((info.watermark || info.sideWidget) && !watermarkLabel) {
+        watermarkLabel = new QWatermarkLabel(antiFlickerWidget, sideWidget);
         watermarkLabel->setBackgroundRole(QPalette::Base);
         watermarkLabel->setMinimumHeight(1);
         watermarkLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
@@ -1173,7 +1214,7 @@ void QWizardPrivate::recreateLayout(const QWizardLayoutInfo &info)
 
     mainLayout->addLayout(buttonLayout, row++, buttonStartColumn, 1, buttonNumColumns);
 
-    if (info.watermark) {
+    if (info.watermark || info.sideWidget) {
         if (info.extension)
             watermarkEndRow = row;
         mainLayout->addWidget(watermarkLabel, watermarkStartRow, 0,
@@ -1193,7 +1234,7 @@ void QWizardPrivate::recreateLayout(const QWizardLayoutInfo &info)
     if (bottomRuler)
         bottomRuler->setVisible(classic || modern);
     if (watermarkLabel)
-        watermarkLabel->setVisible(info.watermark);
+        watermarkLabel->setVisible(info.watermark || info.sideWidget);
 
     layoutInfo = info;
 }
@@ -1233,10 +1274,17 @@ void QWizardPrivate::updateLayout()
                             titleFmt, subTitleFmt);
     }
 
-    if (info.watermark) {
-        Q_ASSERT(page);
-        watermarkLabel->setPixmap(page->pixmap(QWizard::WatermarkPixmap));
+    if (info.watermark || info.sideWidget) {
+        QPixmap pix;
+        if (info.watermark) {
+            if (page)
+                pix = page->pixmap(QWizard::WatermarkPixmap);
+            else
+                pix = q->pixmap(QWizard::WatermarkPixmap);
+        }
+        watermarkLabel->setPixmap(pix); // in case there is no watermark and we show the side widget we need to clear the watermark
     }
+
     if (info.title) {
         Q_ASSERT(page);
         titleLabel->setTextFormat(titleFmt);
@@ -1267,7 +1315,7 @@ void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
         minimumSize.setWidth(headerWidget->maximumWidth());
         maximumSize.setWidth(headerWidget->maximumWidth());
     }
-    if (info.watermark) {
+    if (info.watermark && !info.sideWidget) {
         minimumSize.setHeight(mainLayout->totalSizeHint().height());
         maximumSize.setHeight(mainLayout->totalSizeHint().height());
     }
@@ -2149,7 +2197,7 @@ QWizard::~QWizard()
     The ID is guaranteed to be larger than any other ID in the
     QWizard so far.
 
-    \sa setPage(), page()
+    \sa setPage(), page(), pageAdded()
 */
 int QWizard::addPage(QWizardPage *page)
 {
@@ -2166,7 +2214,10 @@ int QWizard::addPage(QWizardPage *page)
 
     Adds the given \a page to the wizard with the given \a id.
 
-    \sa addPage(), page()
+    \note Adding a page may influence the value of the startId property
+    in case it was not set explicitly.
+
+    \sa addPage(), page(), pageAdded()
 */
 void QWizard::setPage(int theid, QWizardPage *page)
 {
@@ -2210,12 +2261,19 @@ void QWizard::setPage(int theid, QWizardPage *page)
     // hide new page and reset layout to old status
     page->hide();
     d->pageVBoxLayout->setEnabled(pageVBoxLayoutEnabled);
+
+    if (!d->startSetByUser && d->pageMap.constBegin().key() == theid)
+        d->start = theid;
+    emit pageAdded(theid);
 }
 
 /*!
     Removes the page with the given \a id. cleanupPage() will be called if necessary.
+
+    \note Removing a page may influence the value of the startId property.
+
     \since 4.5
-    \sa addPage(), setPage()
+    \sa addPage(), setPage(), pageRemoved(), startId()
 */
 void QWizard::removePage(int id)
 {
@@ -2223,8 +2281,24 @@ void QWizard::removePage(int id)
 
     QWizardPage *removedPage = 0;
 
-    if (d->start == id)
-        d->start = -1;
+    // update startItem accordingly
+    if (d->pageMap.count() > 0) { // only if we have any pages
+        if (d->start == id) {
+            const int firstId = d->pageMap.constBegin().key();
+            if (firstId == id) {
+                if (d->pageMap.count() > 1)
+                    d->start = (++d->pageMap.constBegin()).key(); // secondId
+                else
+                    d->start = -1; // removing the last page
+            } else { // startSetByUser has to be "true" here
+                d->start = firstId;
+            }
+            d->startSetByUser = false;
+        }
+    }
+
+    if (d->pageMap.contains(id))
+        emit pageRemoved(id);
 
     if (!d->history.contains(id)) {
         // Case 1: removing a page not in the history
@@ -2334,21 +2408,27 @@ QList<int> QWizard::pageIds() const
 void QWizard::setStartId(int theid)
 {
     Q_D(QWizard);
-    if (!d->pageMap.contains(theid)) {
-        qWarning("QWizard::setStartId: Invalid page ID %d", theid);
+    int newStart = theid;
+    if (theid == -1)
+        newStart = d->pageMap.count() ? d->pageMap.constBegin().key() : -1;
+
+    if (d->start == newStart) {
+        d->startSetByUser = theid != -1;
         return;
     }
-    d->start = theid;
+
+    if (!d->pageMap.contains(newStart)) {
+        qWarning("QWizard::setStartId: Invalid page ID %d", newStart);
+        return;
+    }
+    d->start = newStart;
+    d->startSetByUser = theid != -1;
 }
 
 int QWizard::startId() const
 {
     Q_D(const QWizard);
-    if (d->start != -1)
-        return d->start;
-    if (!d->pageMap.isEmpty())
-        return d->pageMap.constBegin().key();
-    return -1;
+    return d->start;
 }
 
 /*!
@@ -2825,6 +2905,55 @@ void QWizard::setDefaultProperty(const char *className, const char *property,
 }
 
 /*!
+    \since 4.7
+
+    Sets the given \a widget to be shown on the left side of the wizard.
+    For styles which use the WatermarkPixmap (ClassicStyle and ModernStyle)
+    the side widget is displayed on top of the watermark, for other styles
+    or when the watermark is not provided the side widget is displayed
+    on the left side of the wizard.
+
+    Passing 0 shows no side widget.
+
+    When the \a widget is not 0 the wizard reparents it.
+
+    Any previous side widget is hidden.
+
+    You may call setSideWidget() with the same widget at different
+    times.
+
+    All widgets set here will be deleted by the wizard when it is
+    destroyed unless you separately reparent the widget after setting
+    some other side widget (or 0).
+
+    By default, no side widget is present.
+*/
+void QWizard::setSideWidget(QWidget *widget)
+{
+    Q_D(QWizard);
+
+    d->sideWidget = widget;
+    if (d->watermarkLabel) {
+        d->watermarkLabel->setSideWidget(widget);
+        d->updateLayout();
+    }
+}
+
+/*!
+    \since 4.7
+
+    Returns the widget on the left side of the wizard or 0.
+
+    By default, no side widget is present.
+*/
+QWidget *QWizard::sideWidget() const
+{
+    Q_D(const QWizard);
+
+    return d->sideWidget;
+}
+
+/*!
     \reimp
 */
 void QWizard::setVisible(bool visible)
@@ -2875,6 +3004,28 @@ QSize QWizard::sizeHint() const
     current \a id.
 
     \sa currentId(), currentPage()
+*/
+
+/*!
+    \fn void QWizard::pageAdded(int id)
+
+    \since 4.7
+
+    This signal is emitted whenever a page is added to the
+    wizard. The page's \a id is passed as parameter.
+
+    \sa addPage(), setPage(), startId()
+*/
+
+/*!
+    \fn void QWizard::pageRemoved(int id)
+
+    \since 4.7
+
+    This signal is emitted whenever a page is removed from the
+    wizard. The page's \a id is passed as parameter.
+
+    \sa removePage(), startId()
 */
 
 /*!

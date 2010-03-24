@@ -56,7 +56,7 @@ class Cloud : public QObject, public QGraphicsItem
     Q_INTERFACES(QGraphicsItem)
 
 public:
-    Cloud(const QNetworkConfiguration &config, QGraphicsItem *parent = 0);
+    explicit Cloud(const QNetworkConfiguration &config, QGraphicsItem *parent = 0);
     ~Cloud();
 
     enum { Type = UserType + 1 };

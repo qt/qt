@@ -72,12 +72,11 @@ QT_BEGIN_NAMESPACE
 class ConnectionProgressNotifier;
 class SymbianEngine;
 
+class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate, public CActive,
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
-class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate, public CActive, public MMobilityProtocolResp,
-                                     public MConnectionMonitorObserver
-#else
-class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate, public CActive, public MConnectionMonitorObserver
+                                   public MMobilityProtocolResp,
 #endif
+                                   public MConnectionMonitorObserver
 {
     Q_OBJECT
 public:

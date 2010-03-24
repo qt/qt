@@ -52,9 +52,9 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include <qdatetime.h>
 #include <qdir.h>
 #include <qdebug.h>
+#include <qelapsedtimer.h>
 
 #ifdef Q_OS_VXWORKS
 #  include <selectLib.h>
@@ -534,7 +534,7 @@ bool QLocalSocket::waitForConnected(int msec)
 
     int result = -1;
     // on Linux timeout will be updated by select, but _not_ on other systems.
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     while (state() == ConnectingState
            && (-1 == msec || timer.elapsed() < msec)) {

@@ -72,7 +72,7 @@ public:
     {
     }
 
-    ~QNetworkConfigurationPrivate()
+    virtual ~QNetworkConfigurationPrivate()
     {
         //release pointers to member configurations
         serviceNetworkMembers.clear(); 

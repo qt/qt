@@ -63,14 +63,14 @@ QT_BEGIN_NAMESPACE
 struct Q_CORE_EXPORT QLocalePrivate
 {
 public:
-    QChar decimal() const { return QChar(m_decimal); }
-    QChar group() const { return QChar(m_group); }
-    QChar list() const { return QChar(m_list); }
-    QChar percent() const { return QChar(m_percent); }
-    QChar zero() const { return QChar(m_zero); }
-    QChar plus() const { return QChar(m_plus); }
-    QChar minus() const { return QChar(m_minus); }
-    QChar exponential() const { return QChar(m_exponential); }
+    QChar decimal() const { Q_ASSERT(m_decimal); return QChar(m_decimal); }
+    QChar group() const { Q_ASSERT(m_group); return QChar(m_group); }
+    QChar list() const { Q_ASSERT(m_list); return QChar(m_list); }
+    QChar percent() const { Q_ASSERT(m_percent); return QChar(m_percent); }
+    QChar zero() const { Q_ASSERT(m_zero); return QChar(m_zero); }
+    QChar plus() const { Q_ASSERT(m_plus); return QChar(m_plus); }
+    QChar minus() const { Q_ASSERT(m_minus); return QChar(m_minus); }
+    QChar exponential() const { Q_ASSERT(m_exponential); return QChar(m_exponential); }
 
     quint32 languageId() const { return m_language_id; }
     quint32 countryId() const { return m_country_id; }
@@ -132,6 +132,8 @@ public:
                           CharBuff *result) const;
     inline char digitToCLocale(const QChar &c) const;
 
+    inline bool isUninitializedSystemLocale() const;
+    QVariant querySystemLocale(int type, const QVariant &in) const;
     static void updateSystemPrivate();
 
     enum NumberMode { IntegerMode, DoubleStandardMode, DoubleScientificMode };

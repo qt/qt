@@ -938,6 +938,11 @@ void tst_QString::sprintf()
     // Check utf8 conversion for %s
     QCOMPARE(a.sprintf("%s", "\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205"), QString("\366\344\374\326\304\334\370\346\345\330\306\305"));
 
+    // Check codecForCStrings is used to read non-modifier sequences in the format string
+    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+    QCOMPARE(a.sprintf("\303\251\303\250\303\240 %s", "\303\251\303\250\303\240"), QString("\303\251\303\250\303\240 \303\251\303\250\303\240"));
+    QTextCodec::setCodecForCStrings(0);
+
     int n1;
     a.sprintf("%s%n%s", "hello", &n1, "goodbye");
     QCOMPARE(n1, 5);

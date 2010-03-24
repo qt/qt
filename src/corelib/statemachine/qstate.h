@@ -44,6 +44,8 @@
 
 #include <QtCore/qabstractstate.h>
 
+#include <QtCore/qlist.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -80,6 +82,7 @@ public:
     QSignalTransition *addTransition(QObject *sender, const char *signal, QAbstractState *target);
     QAbstractTransition *addTransition(QAbstractState *target);
     void removeTransition(QAbstractTransition *transition);
+    QList<QAbstractTransition*> transitions() const;
 
     QAbstractState *initialState() const;
     void setInitialState(QAbstractState *state);

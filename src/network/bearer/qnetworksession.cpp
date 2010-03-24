@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     \since 4.7
 
     \inmodule QtNetwork
-    \ingroup bearer
+    \ingroup network
 
     A QNetworkSession enables control over the system's network interfaces. The session's configuration
     parameter are determined via the QNetworkConfiguration object to which it is bound. Depending on the 

@@ -48,6 +48,10 @@
 #include <QtCore/qvariant.h>
 #include <QtNetwork/qnetworkconfiguration.h>
 
+#if defined(Q_OS_WIN) && defined(interface)
+#undef interface
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -77,7 +81,7 @@ public:
         InvalidConfigurationError
     };
 
-    QNetworkSession(const QNetworkConfiguration& connConfig, QObject* parent =0);
+    explicit QNetworkSession(const QNetworkConfiguration& connConfig, QObject* parent =0);
     virtual ~QNetworkSession();
 
     bool isOpen() const;

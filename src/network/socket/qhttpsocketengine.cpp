@@ -42,9 +42,9 @@
 #include "qhttpsocketengine_p.h"
 #include "qtcpsocket.h"
 #include "qhostaddress.h"
-#include "qdatetime.h"
 #include "qurl.h"
 #include "qhttp.h"
+#include "qelapsedtimer.h"
 
 #if !defined(QT_NO_NETWORKPROXY) && !defined(QT_NO_HTTP)
 #include <qdebug.h>
@@ -319,7 +319,7 @@ bool QHttpSocketEngine::waitForRead(int msecs, bool *timedOut)
     if (!d->socket || d->socket->state() == QAbstractSocket::UnconnectedState)
         return false;
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     // Wait for more data if nothing is available.
@@ -366,7 +366,7 @@ bool QHttpSocketEngine::waitForWrite(int msecs, bool *timedOut)
         return true;
     }
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     // If we're not connected yet, wait until we are, and until bytes have

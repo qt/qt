@@ -510,6 +510,9 @@ public:
         WA_Maemo5AutoOrientation = 130,
         WA_Maemo5ShowProgressIndicator = 131,
 #endif
+
+        WA_X11DoNotAcceptFocus = 132,
+
         // Add new attributes before this line
         WA_AttributeCount
     };

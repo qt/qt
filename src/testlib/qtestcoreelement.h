@@ -45,8 +45,6 @@
 #include <QtTest/qtestcorelist.h>
 #include <QtTest/qtestelementattribute.h>
 
-#include <cstdlib>
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -94,9 +92,6 @@ void QTestCoreElement<ElementType>::addAttribute(const QTest::AttributeIndex att
 
     if (attribute(attributeIndex))
         return;
-
-    // if (attributeIndex == QTest::AI_Metric)
-    //     abort();
 
     QTestElementAttribute *testAttribute = new QTestElementAttribute;
     testAttribute->setPair(attributeIndex, value);

@@ -654,7 +654,11 @@ void QToolBarLayout::setExpanded(bool exp)
     if (!tb)
         return;
     if (QMainWindow *win = qobject_cast<QMainWindow*>(tb->parentWidget())) {
+#ifdef QT_NO_DOCKWIDGET
+        animating = false;
+#else
         animating = !tb->isWindow() && win->isAnimated();
+#endif
         QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
         if (expanded) {
             tb->raise();
