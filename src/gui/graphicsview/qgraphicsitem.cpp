@@ -2177,8 +2177,12 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
         QGraphicsItemCache *c = (QGraphicsItemCache *)qVariantValue<void *>(extra(ExtraCacheData));
         if (c)
             c->purge();
-        if (scene)
+        if (scene) {
+#ifndef QT_NO_GRAPHICSEFFECT
+            invalidateParentGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
             scene->d_func()->markDirty(q_ptr, QRectF(), /*invalidateChildren=*/false, /*force=*/true);
+        }
     }
 
     // Certain properties are dropped as an item becomes invisible.
