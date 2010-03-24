@@ -786,28 +786,32 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         QDeclarativeFlickablePrivate::flick(data, minExtent, maxExtent, vSize, fixupCallback, velocity);
         return;
     }
-    qreal maxDistance = -1;
+    qreal maxDistance = 0;
     // -ve velocity means list is moving up
     if (velocity > 0) {
-        if (snapMode == QDeclarativeGridView::SnapOneRow) {
-            if (FxGridItem *item = firstVisibleItem())
-                maxDistance = qAbs(item->rowPos() + data.move.value());
-        } else if (data.move.value() < minExtent) {
-            maxDistance = qAbs(minExtent - data.move.value());
+        if (data.move.value() < minExtent) {
+            if (snapMode == QDeclarativeGridView::SnapOneRow) {
+                if (FxGridItem *item = firstVisibleItem())
+                    maxDistance = qAbs(item->rowPos() + data.move.value());
+            } else {
+                maxDistance = qAbs(minExtent - data.move.value());
+            }
         }
         if (snapMode != QDeclarativeGridView::SnapToRow && highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
             data.flickTarget = minExtent;
     } else {
-        if (snapMode == QDeclarativeGridView::SnapOneRow) {
-            qreal pos = snapPosAt(-data.move.value()) + rowSize();
-            maxDistance = qAbs(pos + data.move.value());
-        } else if (data.move.value() > maxExtent) {
-            maxDistance = qAbs(maxExtent - data.move.value());
+        if (data.move.value() > maxExtent) {
+            if (snapMode == QDeclarativeGridView::SnapOneRow) {
+                qreal pos = snapPosAt(-data.move.value()) + rowSize();
+                maxDistance = qAbs(pos + data.move.value());
+            } else {
+                maxDistance = qAbs(maxExtent - data.move.value());
+            }
         }
         if (snapMode != QDeclarativeGridView::SnapToRow && highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
             data.flickTarget = maxExtent;
     }
-    if (maxDistance > 0 && (snapMode != QDeclarativeGridView::NoSnap || highlightRange == QDeclarativeGridView::StrictlyEnforceRange)) {
+    if ((maxDistance > 0 || overShoot) && (snapMode != QDeclarativeGridView::NoSnap || highlightRange == QDeclarativeGridView::StrictlyEnforceRange)) {
         // This mode requires the grid to stop exactly on a row boundary.
         qreal v = velocity;
         if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
@@ -818,9 +822,8 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         }
         qreal accel = deceleration;
         qreal v2 = v * v;
-        qreal maxAccel = v2 / (2.0f * maxDistance);
         qreal overshootDist = 0.0;
-        if (maxAccel < accel) {
+        if (maxDistance > 0.0 && v2 / (2.0f * maxDistance) < accel) {
             // + rowSize()/4 to encourage moving at least one item in the flick direction
             qreal dist = v2 / (accel * 2.0) + rowSize()/4;
             if (v > 0)
@@ -1504,10 +1507,12 @@ qreal QDeclarativeGridView::maxYExtent() const
     if (d->flow == QDeclarativeGridView::TopToBottom)
         return QDeclarativeFlickable::maxYExtent();
     qreal extent;
-    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
+    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
         extent = -(d->endPosition() - d->highlightRangeEnd);
-    else
+        extent = qMax(extent, -(d->rowPosAt(d->model->count()-1) - d->highlightRangeStart));
+    } else {
         extent = -(d->endPosition() - height());
+    }
     const qreal minY = minYExtent();
     if (extent > minY)
         extent = minY;
@@ -1531,10 +1536,12 @@ qreal QDeclarativeGridView::maxXExtent() const
     if (d->flow == QDeclarativeGridView::LeftToRight)
         return QDeclarativeFlickable::maxXExtent();
     qreal extent;
-    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
+    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
         extent = -(d->endPosition() - d->highlightRangeEnd);
-    else
+        extent = qMax(extent, -(d->rowPosAt(d->model->count()-1) - d->highlightRangeStart));
+    } else {
         extent = -(d->endPosition() - height());
+    }
     const qreal minX = minXExtent();
     if (extent > minX)
         extent = minX;
