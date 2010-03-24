@@ -755,7 +755,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
 
             if (drawn)
                 result = fromFbsBitmap(background, NULL, flags, targetSize);
-            // if drawing fails in skin server, just ignore the background (probably OOM occured)
+            // if drawing fails in skin server, just ignore the background (probably OOM case)
 
             CleanupStack::PopAndDestroy(4, background); //background, dev, gc, bgContext
     //        QS60WindowSurface::lockBitmapHeap();
@@ -787,7 +787,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
 
             const int currentFrame = QS60StylePrivate::currentAnimationFrame(part);
             if (constructedFromTheme && aknAnimation && aknAnimation->BitmapAnimData()->FrameArray().Count() > 0) {
-                //Animation was created succesfully and contains frames, just fetch current frame
+                //Animation was created successfully and contains frames, just fetch current frame
                 if(currentFrame >= aknAnimation->BitmapAnimData()->FrameArray().Count())
                     User::Leave(KErrOverflow);
                 const CBitmapFrameData* frameData = aknAnimation->BitmapAnimData()->FrameArray().At(currentFrame);
@@ -978,8 +978,8 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
 TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameElements frameElement, const TRect &outerRect)
 {
-    TInt widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
-    TInt heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight);
+    TInt widthShrink = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth);
+    TInt heightShrink = QS60StylePrivate::pixelMetric(PM_FrameCornerHeight);
     switch(frameElement) {
         case QS60StylePrivate::SF_PanelBackground:
             // panel should have slightly slimmer border to enable thin line of background graphics between closest component
@@ -1096,7 +1096,7 @@ void QS60StylePrivate::setActiveLayout()
         activeLayoutIndex += (!landscape) ? 1 : 0;
     }
 
-    m_pmPointer = data[activeLayoutIndex];
+    setCurrentLayout(activeLayoutIndex);
 }
 
 Q_GLOBAL_STATIC(QList<QS60StyleAnimation *>, m_animations)

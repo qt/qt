@@ -322,17 +322,36 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, Deployme
     tw << headerComment.arg(wrapperPkgFilename).arg(dateStr);
 
     // Construct QStringList from pkg_prerules since we need search it before printed to file
+    // Note: Though there can't be more than one language or header line, use stringlists
+    // in case user wants comments to go with the rules.
     QStringList rawPkgPreRules;
+    QStringList languageRules;
+    QStringList headerRules;
     foreach(QString deploymentItem, project->values("DEPLOYMENT")) {
         foreach(QString pkgrulesItem, project->values(deploymentItem + ".pkg_prerules")) {
             QStringList pkgrulesValue = project->values(pkgrulesItem);
             // If there is no stringlist defined for a rule, use rule name directly
             // This is convenience for defining single line mmp statements
             if (pkgrulesValue.isEmpty()) {
-                rawPkgPreRules << pkgrulesItem;
+                if (pkgrulesItem.startsWith("&"))
+                    languageRules << pkgrulesItem;
+                else if (pkgrulesItem.startsWith("#"))
+                    headerRules << pkgrulesItem;
+                else
+                    rawPkgPreRules << pkgrulesItem;
             } else {
-                foreach(QString pkgrule, pkgrulesValue) {
-                    rawPkgPreRules << pkgrule;
+                if (containsStartWithItem('&', pkgrulesValue)) {
+                    foreach(QString pkgrule, pkgrulesValue) {
+                        languageRules << pkgrule;
+                    }
+                } else if (containsStartWithItem('#', pkgrulesValue)) {
+                    foreach(QString pkgrule, pkgrulesValue) {
+                        headerRules << pkgrule;
+                    }
+                } else {
+                    foreach(QString pkgrule, pkgrulesValue) {
+                        rawPkgPreRules << pkgrule;
+                    }
                 }
             }
         }
@@ -340,16 +359,16 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, Deployme
 
     // Apply some defaults if specific data does not exist in PKG pre-rules
 
-    if (!containsStartWithItem('&', rawPkgPreRules)) {
+    if (languageRules.isEmpty()) {
         // language, (*** hardcoded to english atm, should be parsed from TRANSLATIONS)
-        QString languageCode = "; Language\n&EN\n\n";
-        t << languageCode;
-        tw << languageCode;
-    } else {
+        languageRules << "; Language\n&EN\n\n";
+    } else if (headerRules.isEmpty()) {
         // In case user defines langs, he must take care also about SIS header
-        if (!containsStartWithItem('#', rawPkgPreRules))
-            fprintf(stderr, "Warning: If language is defined with DEPLOYMENT pkg_prerules, also the SIS header must be defined\n");
+        fprintf(stderr, "Warning: If language is defined with DEPLOYMENT pkg_prerules, also the SIS header must be defined\n");
     }
+
+    t << languageRules.join("\n") << endl;
+    tw << languageRules.join("\n") << endl;
 
     // name of application, UID and version
     QString applicationVersion = project->first("VERSION").isEmpty() ? "1,0,0" : project->first("VERSION").replace('.', ',');
@@ -364,9 +383,10 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, Deployme
         tw << installerSisHeader << endl;
     }
 
-    if (!containsStartWithItem('#', rawPkgPreRules)) {
+    if (headerRules.isEmpty())
         t << sisHeader.arg(visualTarget).arg(uid3).arg(applicationVersion);
-    }
+    else
+        t << headerRules.join("\n") << endl;
 
     // Localized vendor name
     QString vendorName;
@@ -456,14 +476,29 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, Deployme
     // deploy any additional DEPLOYMENT  files
     QString remoteTestPath;
     remoteTestPath = QString("!:\\private\\%1").arg(privateDirUid);
+    QString zDir = epocRoot() + QLatin1String("epoc32/data/z");
 
     initProjectDeploySymbian(project, depList, remoteTestPath, true, "$(PLATFORM)", "$(TARGET)", generatedDirs, generatedFiles);
     if (depList.size())
         t << "; DEPLOYMENT" << endl;
     for (int i = 0; i < depList.size(); ++i)  {
-        t << QString("\"%1\"    - \"%2\"")
-             .arg(QString(depList.at(i).from).replace('\\','/'))
-             .arg(depList.at(i).to) << endl;
+        QString from = depList.at(i).from;
+        QString to = depList.at(i).to;
+
+        // Deploy anything not already deployed from under epoc32 instead from under
+        // \epoc32\data\z\ to enable using pkg file without rebuilding
+        // the project, which can be useful for some binary only distributions.
+        if (!from.contains(QLatin1String("epoc32"), Qt::CaseInsensitive)) {
+            from = to;
+            if (from.size() > 1 && from.at(1) == QLatin1Char(':'))
+                from = from.mid(2);
+            from.prepend(zDir);
+        } else {
+            if (from.size() > 1 && from.at(1) == QLatin1Char(':'))
+                from = from.mid(2);
+        }
+
+        t << QString("\"%1\"    - \"%2\"").arg(from.replace('\\','/')).arg(to) << endl;
     }
     t << endl;
 
