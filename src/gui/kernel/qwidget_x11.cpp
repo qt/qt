@@ -1661,7 +1661,8 @@ void QWidget::activateWindow()
             XSendEvent(X11->display, RootWindow(X11->display, tlw->x11Info().screen()),
                        false, SubstructureNotifyMask | SubstructureRedirectMask, &e);
         } else {
-            XSetInputFocus(X11->display, tlw->internalWinId(), XRevertToParent, X11->time);
+            if (!qt_widget_private(tlw)->topData()->waitingForMapNotify)
+                XSetInputFocus(X11->display, tlw->internalWinId(), XRevertToParent, X11->time);
         }
     }
 }

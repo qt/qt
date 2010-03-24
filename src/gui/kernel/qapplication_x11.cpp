@@ -669,11 +669,6 @@ static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
             return 0;
         break;
 
-    case BadMatch:
-        if (err->request_code == 42 /* X_SetInputFocus */)
-            return 0;
-        break;
-
     default:
 #if !defined(QT_NO_XINPUT)
         if (err->request_code == X11->xinput_major
