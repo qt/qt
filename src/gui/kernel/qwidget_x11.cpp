@@ -1642,7 +1642,8 @@ void QWidget::activateWindow()
             X11->userTime = X11->time;
         qt_net_update_user_time(tlw, X11->userTime);
 
-        if (X11->isSupportedByWM(ATOM(_NET_ACTIVE_WINDOW))) {
+        if (X11->isSupportedByWM(ATOM(_NET_ACTIVE_WINDOW))
+            && !(tlw->windowFlags() & Qt::X11BypassWindowManagerHint)) {
             XEvent e;
             e.xclient.type = ClientMessage;
             e.xclient.message_type = ATOM(_NET_ACTIVE_WINDOW);
