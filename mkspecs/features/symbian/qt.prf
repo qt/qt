@@ -43,5 +43,5 @@ isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x020000 0x800000
 # Workaround for the fact that Gnupoc and Symbian chose different approaches to
 # the letter casing of headers.
 contains(CONFIG, is_using_gnupoc) {
-    INCLUDEPATH += $$[QT_INSTALL_PREFIX]/mkspecs/common/symbian/header-wrappers
+    INCLUDEPATH += $$QMAKESPEC/../../common/symbian/header-wrappers
 }
