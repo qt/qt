@@ -439,6 +439,7 @@ private slots:
     void QTBUG_7714_fullUpdateDiscardingOpacityUpdate2();
     void QT_2653_fullUpdateDiscardingOpacityUpdate();
     void QT_2649_focusScope();
+    void sortItemsWhileAdding();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -10068,6 +10069,39 @@ void tst_QGraphicsItem::QT_2649_focusScope()
     // This should not crash
     scope->hide();
     delete scene;
+}
+
+class MyGraphicsItemWithItemChange : public QGraphicsWidget
+{
+public:
+    MyGraphicsItemWithItemChange(QGraphicsItem *parent = 0) : QGraphicsWidget(parent)
+    {}
+
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value)
+    {
+        if (change == QGraphicsItem::ItemSceneHasChanged) {
+            foreach (QGraphicsView *view, scene()->views()) {
+                //We trigger a sort of unindexed items in the BSP
+                view->sceneRect();
+            }
+        }
+        return QGraphicsWidget::itemChange(change, value);
+    }
+};
+
+void tst_QGraphicsItem::sortItemsWhileAdding()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QGraphicsWidget grandGrandParent;
+    grandGrandParent.resize(200, 200);
+    scene.addItem(&grandGrandParent);
+    QGraphicsWidget grandParent;
+    grandParent.resize(200, 200);
+    QGraphicsWidget parent(&grandParent);
+    parent.resize(200, 200);
+    MyGraphicsItemWithItemChange item(&parent);
+    grandParent.setParentItem(&grandGrandParent);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
