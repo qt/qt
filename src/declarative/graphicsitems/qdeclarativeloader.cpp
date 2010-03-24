@@ -320,6 +320,8 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
                 delete ctxt;
             }
         } else {
+            if (!component->errors().isEmpty())
+                qWarning() << component->errors();
             delete obj;
             delete ctxt;
             source = QUrl();

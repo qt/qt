@@ -92,6 +92,7 @@ private slots:
 
     void deleteComponentCrash();
     void nonItem();
+    void vmeErrors();
 
 private:
     QDeclarativeEngine engine;
@@ -467,7 +468,7 @@ void tst_QDeclarativeLoader::failNetworkRequest()
 // QTBUG-9241
 void tst_QDeclarativeLoader::deleteComponentCrash()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("/crash.qml"));
+    QDeclarativeComponent component(&engine, TEST_FILE("crash.qml"));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
 
@@ -480,7 +481,6 @@ void tst_QDeclarativeLoader::deleteComponentCrash()
     QCOMPARE(loader->progress(), 1.0);
     QCOMPARE(loader->status(), QDeclarativeLoader::Ready);
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
-    QEXPECT_FAIL("", "QTBUG-9245", Continue);
     QVERIFY(loader->source() == QUrl::fromLocalFile(SRCDIR "/data/BlueRect.qml"));
 
     delete item;
@@ -488,9 +488,19 @@ void tst_QDeclarativeLoader::deleteComponentCrash()
 
 void tst_QDeclarativeLoader::nonItem()
 {
-    QSKIP("QTBUG-9245", SkipAll);
-    QDeclarativeComponent component(&engine, TEST_FILE("/nonItem.qml"));
+    QDeclarativeComponent component(&engine, TEST_FILE("nonItem.qml"));
     QTest::ignoreMessage(QtWarningMsg, "QML Loader (file://" SRCDIR "/data/nonItem.qml:3:1) Loader does not support loading non-visual elements.");
+    QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
+    QVERIFY(loader);
+    QVERIFY(loader->item() == 0);
+
+    delete loader;
+}
+
+void tst_QDeclarativeLoader::vmeErrors()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("vmeErrors.qml"));
+    QTest::ignoreMessage(QtWarningMsg, "(file://" SRCDIR "/data/VmeError.qml:6: Cannot assign object type QObject with no default method\n        onSomethingHappened: QtObject {}) ");
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader);
     QVERIFY(loader->item() == 0);
