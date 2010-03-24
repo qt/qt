@@ -494,9 +494,31 @@ public:
     \qmlclass StateChangeScript QDeclarativeStateChangeScript
     \brief The StateChangeScript element allows you to run a script in a state.
 
-    The script specified will be run immediately when the state is made current.
-    Alternatively you can use a ScriptAction to specify at which point in the transition
+    StateChangeScripts are run when entering the state. You can use
+    ScriptAction to specify at which point in the transition
     you want the StateChangeScript to be run.
+
+    \qml
+    State {
+        name "state1"
+        StateChangeScript {
+            name: "myScript"
+            script: doStateStuff();
+        }
+        ...
+    }
+    ...
+    Transition {
+        to: "state1"
+        SequentialAnimation {
+            NumberAnimation { ... }
+            ScriptAction { scriptName: "myScript" }
+            NumberAnimation { ... }
+        }
+    }
+    \endqml
+
+    \sa ScriptAction
 */
 
 QDeclarativeStateChangeScript::QDeclarativeStateChangeScript(QObject *parent)
