@@ -53,6 +53,19 @@
 
 #include "../../../shared/util.h"
 
+class SafeLocalhostDeclarativeEngine : public QDeclarativeEngine {
+public:
+    SafeLocalhostDeclarativeEngine() : QDeclarativeEngine() {}
+
+    virtual bool isSafeOrigin(const QUrl& to_url, const QUrl& from_url) const
+    {
+        if (to_url.host() == "127.0.0.1")
+            return true;
+        else
+            return QDeclarativeEngine::isSafeOrigin(to_url,from_url);
+    }
+};
+
 /*
 This test case covers QML language issues.  This covers everything that does not
 involve evaluating ECMAScript expressions and bindings.
@@ -121,6 +134,7 @@ private slots:
     void importsLocal();
     void importsRemote_data();
     void importsRemote();
+    void importsUnsafe();
     void importsInstalled_data();
     void importsInstalled();
     void importsOrder_data();
@@ -135,7 +149,7 @@ private slots:
     void crash2();
 
 private:
-    QDeclarativeEngine engine;
+    SafeLocalhostDeclarativeEngine engine;
     void testType(const QString& qml, const QString& type);
 };
 
@@ -1260,6 +1274,33 @@ void tst_qdeclarativelanguage::importsRemote()
     server.serveDirectory(SRCDIR);
 
     testType(qml,type);
+}
+
+void tst_qdeclarativelanguage::importsUnsafe()
+{
+    TestHTTPServer server(14445);
+    server.serveDirectory(SRCDIR);
+
+    QString qml = "import \"http://127.0.0.1:14445/qtest/declarative/qmllanguage\"\n\nTest {}";
+
+    {
+        QDeclarativeEngine engine; // plain engine without special localhost handling
+        QDeclarativeComponent component(&engine);
+        component.setData(qml.toUtf8(), TEST_FILE("empty.qml")); // just a file for relative local imports
+
+        QTRY_VERIFY(!component.isLoading());
+
+        QVERIFY(component.isError());
+    }
+
+    {
+        QDeclarativeComponent component(&engine); // engine special localhost handling
+        component.setData(qml.toUtf8(), TEST_FILE("empty.qml")); // just a file for relative local imports
+
+        QTRY_VERIFY(!component.isLoading());
+
+        QVERIFY(!component.isError());
+    }
 }
 
 void tst_qdeclarativelanguage::importsInstalled_data()

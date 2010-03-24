@@ -491,7 +491,7 @@ void tst_QDeclarativeLoader::networkSafety_data()
     QTest::addColumn<QString>("message");
 
     QTest::newRow("same origin") << QUrl("http://127.0.0.1:14445/sameorigin.qml") << QString();
-    QTest::newRow("different origin") << QUrl("http://127.0.0.1:14445/differentorigin.qml") << QString(" QUrl( \"http://evil.place/evil.qml\" )  is not a safe origin from  QUrl( \"http://127.0.0.1:14445/differentorigin.qml\" )  ");
+    QTest::newRow("different origin") << QUrl("http://127.0.0.1:14445/differentorigin.qml") << QString("QML Loader (http://127.0.0.1:14445/differentorigin.qml:3:1) \"http://evil.place/evil.qml\" is not a safe origin from \"http://127.0.0.1:14445/differentorigin.qml\"");
 }
 
 void tst_QDeclarativeLoader::networkSafety()
