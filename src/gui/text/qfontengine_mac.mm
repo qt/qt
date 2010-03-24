@@ -303,12 +303,20 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
                 outGlyphs[idx] = tmpGlyphs[i] | fontIndex;
                 outAdvances_x[idx] = QFixed::fromReal(tmpPoints[i + 1].x - tmpPoints[i].x);
                 outAdvances_y[idx] = QFixed::fromReal(tmpPoints[i + 1].y - tmpPoints[i].y);
+                
+                if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+                    outAdvances_x[idx] = outAdvances_x[idx].ceil();
+                    outAdvances_y[idx] = outAdvances_y[idx].ceil();
+                }
             }
             CGSize lastGlyphAdvance;
             CTFontGetAdvancesForGlyphs(runFont, kCTFontHorizontalOrientation, tmpGlyphs + glyphCount - 1, &lastGlyphAdvance, 1);
 
             outGlyphs[rtl ? 0 : (glyphCount - 1)] = tmpGlyphs[glyphCount - 1] | fontIndex;
-            outAdvances_x[rtl ? 0 : (glyphCount - 1)] = QFixed::fromReal(lastGlyphAdvance.width);
+            outAdvances_x[rtl ? 0 : (glyphCount - 1)] =
+                    (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+                    ? QFixed::fromReal(lastGlyphAdvance.width).ceil()
+                    : QFixed::fromReal(lastGlyphAdvance.width);
         }
         outGlyphs += glyphCount;
         outAttributes += glyphCount;
@@ -378,8 +386,11 @@ bool QCoreTextFontEngine::stringToCMap(const QChar *, int, QGlyphLayout *, int *
 glyph_metrics_t QCoreTextFontEngine::boundingBox(const QGlyphLayout &glyphs)
 {
     QFixed w;
-    for (int i = 0; i < glyphs.numGlyphs; ++i)
-        w += glyphs.effectiveAdvance(i);
+    for (int i = 0; i < glyphs.numGlyphs; ++i) {
+        w += (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+             ? glyphs.effectiveAdvance(i).ceil()
+             : glyphs.effectiveAdvance(i);
+    }
     return glyph_metrics_t(0, -(ascent()), w, ascent()+descent(), w, 0);
 }
 glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
@@ -393,33 +404,51 @@ glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
     ret.y = -QFixed::fromReal(rect.origin.y) - ret.height;
     CGSize advances[1];
     CTFontGetAdvancesForGlyphs(ctfont, kCTFontHorizontalOrientation, &g, advances, 1);
-    ret.xoff = QFixed::fromReal(advances[0].width).ceil();
-    ret.yoff = QFixed::fromReal(advances[0].height).ceil();
+    ret.xoff = QFixed::fromReal(advances[0].width);
+    ret.yoff = QFixed::fromReal(advances[0].height);
+
+    if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+        ret.xoff = ret.xoff.ceil();
+        ret.yoff = ret.yoff.ceil();
+    }
+
     return ret;
 }
 
 QFixed QCoreTextFontEngine::ascent() const
 {
-    return QFixed::fromReal(CTFontGetAscent(ctfont)).ceil();
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+            ? QFixed::fromReal(CTFontGetAscent(ctfont)).ceil()
+            : QFixed::fromReal(CTFontGetAscent(ctfont));
 }
 QFixed QCoreTextFontEngine::descent() const
 {
+    QFixed d = QFixed::fromReal(CTFontGetDescent(ctfont));
+    if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+        d = d.ceil();
+
     // subtract a pixel to even out the historical +1 in QFontMetrics::height().
     // Fix in Qt 5.
-    return QFixed::fromReal(CTFontGetDescent(ctfont)).ceil() - 1;
+    return d - 1;
 }
 QFixed QCoreTextFontEngine::leading() const
 {
-    return QFixed::fromReal(CTFontGetLeading(ctfont)).ceil();
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+            ? QFixed::fromReal(CTFontGetLeading(ctfont)).ceil()
+            : QFixed::fromReal(CTFontGetLeading(ctfont));
 }
 QFixed QCoreTextFontEngine::xHeight() const
 {
-    return QFixed::fromReal(CTFontGetXHeight(ctfont)).ceil();
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+            ? QFixed::fromReal(CTFontGetXHeight(ctfont)).ceil()
+            : QFixed::fromReal(CTFontGetXHeight(ctfont));
 }
 QFixed QCoreTextFontEngine::averageCharWidth() const
 {
     // ### Need to implement properly and get the information from the OS/2 Table.
-    return QFontEngine::averageCharWidth();
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+            ? QFontEngine::averageCharWidth().ceil()
+            : QFontEngine::averageCharWidth();
 }
 
 qreal QCoreTextFontEngine::maxCharWidth() const
