@@ -361,12 +361,6 @@ QVariant QDeclarativeContext::contextProperty(const QString &name) const
     return value;
 }
 
-bool QDeclarativeContext::isSafeOrigin(const QUrl &src) const
-{
-    Q_D(const QDeclarativeContext);
-    return !d->data->engine || d->data->engine->isSafeOrigin(src, baseUrl());
-}
-
 /*!
     Resolves the URL \a src relative to the URL of the
     containing component.

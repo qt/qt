@@ -102,8 +102,6 @@ public:
     static void setObjectOwnership(QObject *, ObjectOwnership);
     static ObjectOwnership objectOwnership(QObject *);
 
-    virtual bool isSafeOrigin(const QUrl& to_url, const QUrl& from_url) const;
-
 Q_SIGNALS:
     void quit ();
 
