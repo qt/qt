@@ -523,10 +523,11 @@ void FormWindowManager::setupActions()
     connect(m_actionShowFormWindowSettingsDialog, SIGNAL(triggered()), this, SLOT(slotActionShowFormWindowSettingsDialog()));
     m_actionShowFormWindowSettingsDialog->setEnabled(false);
 
-
+#ifdef Q_WS_X11
     m_actionCopy->setIcon(QIcon::fromTheme("edit-copy", m_actionCopy->icon()));
     m_actionCut->setIcon(QIcon::fromTheme("edit-cut", m_actionCut->icon()));
     m_actionPaste->setIcon(QIcon::fromTheme("edit-paste", m_actionPaste->icon()));
+    m_actionDelete->setIcon(QIcon::fromTheme("edit-delete", m_actionDelete->icon()));
 
     // These do not currently exist, but will allow theme authors to fill in the gaps
     m_actionBreakLayout->setIcon(QIcon::fromTheme("designer-break-layout", m_actionBreakLayout->icon()));
@@ -536,6 +537,7 @@ void FormWindowManager::setupActions()
     m_actionSplitHorizontal->setIcon(QIcon::fromTheme("designer-split-horizontal", m_actionSplitHorizontal->icon()));
     m_actionSplitVertical->setIcon(QIcon::fromTheme("designer-split-vertical", m_actionSplitVertical->icon()));
     m_actionAdjustSize->setIcon(QIcon::fromTheme("designer-adjust-size", m_actionAdjustSize->icon()));
+#endif
 }
 
 void FormWindowManager::slotActionCutActivated()

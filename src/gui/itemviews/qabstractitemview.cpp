@@ -104,9 +104,10 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         horizontalScrollMode(QAbstractItemView::ScrollPerItem),
         currentIndexSet(false),
         wrapItemText(false),
-        delayedPendingLayout(true)
+        delayedPendingLayout(true),
         moveCursorUpdatedView(false)
 {
+    keyboardInputTime.invalidate();
 }
 
 QAbstractItemViewPrivate::~QAbstractItemViewPrivate()
@@ -2842,17 +2843,16 @@ void QAbstractItemView::keyboardSearch(const QString &search)
 
     QModelIndex start = currentIndex().isValid() ? currentIndex()
                         : d->model->index(0, 0, d->root);
-    QElapsedTimer now;
-    now.start();
     bool skipRow = false;
-    if (search.isEmpty()
-        || (d->keyboardInputTime.msecsTo(now) > QApplication::keyboardInputInterval())) {
+    bool keyboardTimeWasValid = d->keyboardInputTime.isValid();
+    qint64 keyboardInputTimeElapsed = d->keyboardInputTime.restart();
+    if (search.isEmpty() || !keyboardTimeWasValid
+        || keyboardInputTimeElapsed > QApplication::keyboardInputInterval()) {
         d->keyboardInput = search;
         skipRow = currentIndex().isValid(); //if it is not valid we should really start at QModelIndex(0,0)
     } else {
         d->keyboardInput += search;
     }
-    d->keyboardInputTime = now;
 
     // special case for searches with same key like 'aaaaa'
     bool sameKey = false;

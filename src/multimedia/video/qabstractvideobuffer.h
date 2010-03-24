@@ -61,6 +61,8 @@ public:
     {
         NoHandle,
         GLTextureHandle,
+        XvShmImageHandle,
+        CoreImageHandle,
         UserHandle = 1000
     };
 

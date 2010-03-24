@@ -1124,14 +1124,13 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
     bool kerningEnabled = this->font(si).d->kerning;
 
     HB_ShaperItem entire_shaper_item;
-    entire_shaper_item.kerning_applied = false;
+    qMemSet(&entire_shaper_item, 0, sizeof(entire_shaper_item));
     entire_shaper_item.string = reinterpret_cast<const HB_UChar16 *>(layoutData->string.constData());
     entire_shaper_item.stringLength = layoutData->string.length();
     entire_shaper_item.item.script = (HB_Script)si.analysis.script;
     entire_shaper_item.item.pos = si.position;
     entire_shaper_item.item.length = length(item);
     entire_shaper_item.item.bidiLevel = si.analysis.bidiLevel;
-    entire_shaper_item.glyphIndicesPresent = false;
 
     HB_UChar16 upperCased[256]; // XXX what about making this 4096, so we don't have to extend it ever.
     if (si.analysis.flags == QScriptAnalysis::SmallCaps || si.analysis.flags == QScriptAnalysis::Uppercase
@@ -2467,7 +2466,7 @@ void QTextEngine::splitItem(int item, int pos) const
     if (pos <= 0)
         return;
 
-    layoutData->items.insert(item + 1, QScriptItem(layoutData->items[item]));
+    layoutData->items.insert(item + 1, layoutData->items[item]);
     QScriptItem &oldItem = layoutData->items[item];
     QScriptItem &newItem = layoutData->items[item+1];
     newItem.position += pos;

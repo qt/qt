@@ -674,15 +674,19 @@ void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &botto
     // refresh the height cache here; we don't really lose anything by getting the size hint,
     // since QAbstractItemView::dataChanged() will get the visualRect for the items anyway
 
-    int topViewIndex = d->viewIndex(topLeft);
-    if (topViewIndex == 0)
-        d->defaultItemHeight = indexRowSizeHint(topLeft);
     bool sizeChanged = false;
+    int topViewIndex = d->viewIndex(topLeft);
+    if (topViewIndex == 0) {
+        int newDefaultItemHeight = indexRowSizeHint(topLeft);
+        sizeChanged = d->defaultItemHeight != newDefaultItemHeight;
+        d->defaultItemHeight = newDefaultItemHeight;
+    }
+
     if (topViewIndex != -1) {
         if (topLeft.row() == bottomRight.row()) {
             int oldHeight = d->itemHeight(topViewIndex);
             d->invalidateHeightCache(topViewIndex);
-            sizeChanged = (oldHeight != d->itemHeight(topViewIndex));
+            sizeChanged |= (oldHeight != d->itemHeight(topViewIndex));
             if (topLeft.column() == 0)
                 d->viewItems[topViewIndex].hasChildren = d->hasVisibleChildren(topLeft);
         } else {
@@ -958,17 +962,16 @@ void QTreeView::keyboardSearch(const QString &search)
     else
         start = d->model->index(0, 0, d->root);
 
-    QElapsedTimer now;
-    now.start();
     bool skipRow = false;
-    if (search.isEmpty()
-        || (d->keyboardInputTime.msecsTo(now) > QApplication::keyboardInputInterval())) {
+    bool keyboardTimeWasValid = d->keyboardInputTime.isValid();
+    qint64 keyboardInputTimeElapsed = d->keyboardInputTime.restart();
+    if (search.isEmpty() || !keyboardTimeWasValid
+        || keyboardInputTimeElapsed > QApplication::keyboardInputInterval()) {
         d->keyboardInput = search;
-        skipRow = true;
+        skipRow = currentIndex().isValid(); //if it is not valid we should really start at QModelIndex(0,0)
     } else {
         d->keyboardInput += search;
     }
-    d->keyboardInputTime = now;
 
     // special case for searches with same key like 'aaaaa'
     bool sameKey = false;

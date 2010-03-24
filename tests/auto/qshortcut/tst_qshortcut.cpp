@@ -224,10 +224,10 @@ void tst_QShortcut::initTestCase()
     mainW->setFixedSize( 100, 100 );
     mainW->setCentralWidget( edit );
     mainW->show();
-    mainW->activateWindow();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(mainW);
 #endif
+    mainW->activateWindow();
     QTest::qWait(100);
     connect( mainW->statusBar(), SIGNAL(messageChanged(const QString&)),
 	     this, SLOT(statusMessage(const QString&)) );

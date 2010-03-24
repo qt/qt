@@ -292,6 +292,7 @@ QT_BEGIN_NAMESPACE
     \value ExcludeSuperClassProperties The script object will not expose properties inherited from the superclass.
     \value ExcludeSuperClassContents Shorthand form for ExcludeSuperClassMethods | ExcludeSuperClassProperties
     \value ExcludeDeleteLater The script object will not expose the QObject::deleteLater() slot.
+    \value ExcludeSlots The script object will not expose the QObject's slots.
     \value AutoCreateDynamicProperties Properties that don't already exist in the QObject will be created as dynamic properties of that object, rather than as properties of the script object.
     \value PreferExistingWrapperObject If a wrapper object with the requested configuration already exists, return that object.
     \value SkipMethodsInEnumeration Don't include methods (signals and slots) when enumerating the object's properties.

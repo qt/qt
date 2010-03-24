@@ -40,76 +40,75 @@
 ****************************************************************************/
 
 /*!
-\module QtDeclarative
-\title QtDeclarative Module
-\ingroup modules
+  \module QtDeclarative
+  \title QtDeclarative Module
+  \ingroup modules
 
-\brief The Qt Declarative module provides a declarative framework for building
-highly dynamic, custom user interfaces.
+  \brief The Qt Declarative module provides a declarative framework
+  for building highly dynamic, custom user interfaces.
 
-To include the definitions of the module's classes, use the
-following directive:
+  To include the definitions of the module's classes, use the
+  following directive:
 
-\code
-#include <QtDeclarative>
-\endcode
+  \code
+  #include <QtDeclarative>
+  \endcode
 
-To link against the module, add this line to your \l qmake \c
-.pro file:
+  To link against the module, add this line to your \l qmake \c
+  .pro file:
 
-\code
-QT += declarative
-\endcode
+  \code
+  QT += declarative
+  \endcode
 
-For more information on the Qt Declarative module, see the
-\l{declarativeui.html}{Declarative UI} documentation.
-
+  For more information on the Qt Declarative module, see the
+  \l{declarativeui.html}{Declarative UI} documentation.
 */
 
 
 /*!
-    \macro QML_DECLARE_TYPE(T)
-    \relates QDeclarativeEngine
-
-    yada yada yada
-
+  \macro QML_DECLARE_TYPE()
+  \relates QDeclarativeEngine
 */
 
 
 /*!
-    \fn int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
-    \relates QDeclarativeEngine
+  \fn int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
+  \relates QDeclarativeEngine
 
-    This template function registers the C++ type \a T with the QML system, and make it available in
-    QML under the name \a qmlName in the import library \a uri version \a versionMajor.versionMajor.
+  This template function registers the C++ type in the QML system with
+  the name \a qmlName. in the library imported from \a uri having the
+  version number composed from \a versionMajor and \a versionMinor.
 
-    Returns the QML type id.
+  Returns the QML type id.
 
-    Example: Register the C++ class \c MinehuntGame as QML type \c Game version 0.1 in the import
-    library \c MinehuntCore:
+  Example: Register the C++ class \c MinehuntGame as the QML type
+  named \c Game for version 0.1 in the import library \c MinehuntCore:
 
-    \code
-        qmlRegisterType<MinehuntGame>("MinehuntCore", 0, 1, "Game");
-    \endcode
+  \code
+  qmlRegisterType<MinehuntGame>("MinehuntCore", 0, 1, "Game");
+  \endcode
 
 */
 
 /*!
-    \fn int qmlRegisterType()
-    \relates QDeclarativeEngine
-    \overload
+  \fn int qmlRegisterType()
+  \relates QDeclarativeEngine
+  \overload
 
-    This template function registers the C++ type \a T with the QML system. Instances of this type cannot
-    be created from the QML system.
+  This template function registers the C++ type in the QML
+  system. Instances of this type cannot be created from the QML
+  system.
 
-    Returns the QML type id.
+  Returns the QML type id.
 */
 
-/*! \fn int qmlRegisterInterface(const char *typeName)
-    \relates QDeclarativeEngine
+/*!
+  \fn int qmlRegisterInterface(const char *typeName)
+  \relates QDeclarativeEngine
 
-    This template function registers the C++ type \a T as interface with the QML system, under the name
-    \a typeName.
+  This template function registers the C++ type in the QML system
+  under the name \a typeName.
 
-    Returns the QML type id.
+  Returns the QML type id.
   */

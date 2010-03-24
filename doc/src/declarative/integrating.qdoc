@@ -103,13 +103,13 @@ and that this approach allows you to integrate new items written in QML
 without using the above method.
 
 You can make custom C++ types 
-available in QML using the pair of macros listed in \l{Extending QML}.
+available in QML using the pair of macros listed in \l{Extending QML in C++}.
 While this is normally only useful for
 types that were designed for QML use, in conjunction with the
 \l{GraphicsObjectContainer} element QGraphicsWidget subclasses can also be
 used effectively (if they were designed, like QGraphicsWidget, to be controllable through Qt's property system).
 This way you can write your UI using QML, without having to rewrite your existing items.
 
-For details on implementing this approach see \l{Extending QML} page for details on exposing your C++ types,
+For details on implementing this approach see \l{Extending QML in C++} page for details on exposing your C++ types,
 and the \l{GraphicsObjectContainer} documentation for details about using it to wrap QGraphicsWidgets. 
 */
