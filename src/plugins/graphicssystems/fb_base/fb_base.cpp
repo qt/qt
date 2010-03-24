@@ -81,7 +81,7 @@ void QGraphicsSystemSoftwareCursor::changeCursor(QCursor * widgetCursor, QWidget
     screen->setDirty(currentRect);
 }
 
-QGraphicsSystemFbScreen::QGraphicsSystemFbScreen() : cursor(0), mGeometry(), mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0)
+QGraphicsSystemFbScreen::QGraphicsSystemFbScreen() : cursor(0), mGeometry(), mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0), compositePainter(0), isUpToDate(false)
 {
     mScreenImage = new QImage(mGeometry.size(), mFormat);
     redrawTimer.setSingleShot(true);
@@ -94,6 +94,9 @@ void QGraphicsSystemFbScreen::setGeometry(QRect rect)
     delete mScreenImage;
     mGeometry = rect;
     mScreenImage = new QImage(mGeometry.size(), mFormat);
+    delete compositePainter;
+    compositePainter = 0;
+    invalidateRectCache();
 }
 
 void QGraphicsSystemFbScreen::setDepth(int depth)
@@ -111,10 +114,13 @@ void QGraphicsSystemFbScreen::setFormat(QImage::Format format)
     mFormat = format;
     delete mScreenImage;
     mScreenImage = new QImage(mGeometry.size(), mFormat);
+    delete compositePainter;
+    compositePainter = 0;
 }
 
 QGraphicsSystemFbScreen::~QGraphicsSystemFbScreen()
 {
+    delete compositePainter;
     delete mScreenImage;
 }
 
@@ -126,6 +132,31 @@ void QGraphicsSystemFbScreen::setDirty(const QRect &rect)
     }
 }
 
+void QGraphicsSystemFbScreen::generateRects()
+{
+    cachedRects.clear();
+    QRegion remainingScreen(mGeometry);
+
+    for (int i = 0; i < windowStack.length(); i++) {
+        if (remainingScreen.isEmpty())
+            break;
+        if (!windowStack[i]->window()->testAttribute(Qt::WA_TranslucentBackground)) {
+            remainingScreen -= windowStack[i]->geometry();
+            QRegion windowRegion(windowStack[i]->geometry());
+            windowRegion -= remainingScreen;
+            foreach(QRect rect, windowRegion.rects()) {
+                cachedRects += QPair<QRect, int>(rect, i);
+            }
+        }
+    }
+    foreach (QRect rect, remainingScreen.rects())
+        cachedRects += QPair<QRect, int>(rect, -1);
+    isUpToDate = true;
+    return;
+}
+
+
+
 QRegion QGraphicsSystemFbScreen::doRedraw()
 {
     QRegion touchedRegion;
@@ -134,32 +165,65 @@ QRegion QGraphicsSystemFbScreen::doRedraw()
     if (repaintRegion.isEmpty())
         return touchedRegion;
 
-    QPainter compositePainter(mScreenImage);
     QVector<QRect> rects = repaintRegion.rects();
 
+    if (!isUpToDate)
+        generateRects();
+
+    if (!compositePainter)
+        compositePainter = new QPainter(mScreenImage);
     for (int rectIndex = 0; rectIndex < repaintRegion.numRects(); rectIndex++) {
-        QRect rect = rects[rectIndex];
-        // Blank the affected area, just in case there's nothing to display
-        compositePainter.fillRect(rect, Qt::black);
-        for (int i = windowStack.length() - 1; i >= 0; i--) {
-            if (!windowStack[i]->visible())
+        QRegion rectRegion = rects[rectIndex];
+
+        for(int i = 0; i < cachedRects.length(); i++) {
+            QRect screenSubRect = cachedRects[i].first;
+            int layer = cachedRects[i].second;
+            QRegion intersect = rectRegion.intersected(screenSubRect);
+
+            if (intersect.isEmpty())
                 continue;
-            if (windowStack[i]->window()->isMinimized())
-                continue;
-            QRect windowRect = windowStack[i]->geometry();
-            QRect intersect = windowRect.intersected(rect);
-            QRect windowIntersect = intersect.translated(-windowRect.left(),
-                                                         -windowRect.top());
-            if (intersect.isNull())
-                continue;
-            compositePainter.drawImage(intersect, windowStack[i]->image(),
-                                       windowIntersect);
+
+            rectRegion -= intersect;
+
+            // we only expect one rectangle, but defensive coding...
+            foreach (QRect rect, intersect.rects()) {
+                bool firstLayer = true;
+                if (layer == -1) {
+                    compositePainter->setCompositionMode(QPainter::CompositionMode_Source);
+                    compositePainter->fillRect(rect, Qt::black);
+                    compositePainter->setCompositionMode(QPainter::CompositionMode_SourceOver);
+                    firstLayer = false;
+                    layer = windowStack.size() - 1;
+                }
+
+                for (int layerIndex = layer; layerIndex != -1; layerIndex--) {
+                    if (!windowStack[layerIndex]->visible())
+                        continue;
+                    if (windowStack[layerIndex]->window()->isMinimized())
+                        continue;
+                    QRect windowRect = windowStack[layerIndex]->geometry();
+                    QRect windowIntersect = rect.translated(-windowRect.left(),
+                                                                 -windowRect.top());
+                    if (firstLayer)
+                        compositePainter->setCompositionMode(QPainter::CompositionMode_Source);
+                    compositePainter->drawImage(rect, windowStack[layerIndex]->image(),
+                                                windowIntersect);
+                    if (firstLayer) {
+                        compositePainter->setCompositionMode(QPainter::CompositionMode_SourceOver);
+                        firstLayer = false;
+                    }
+                }
+            }
         }
+        if (!rectRegion.isEmpty())
+            qWarning() << "non-empty region!" << rectRegion;
+        // Everything on screen should be mapped to a sub-rectangle
+        // unless it's off the screen...
     }
 
     QRect cursorRect;
     if (cursor) {
-        cursorRect = cursor->drawCursor(compositePainter);
+        cursorRect = cursor->drawCursor(*compositePainter);
         touchedRegion += cursorRect;
     }
     touchedRegion += repaintRegion;
@@ -171,6 +235,7 @@ QRegion QGraphicsSystemFbScreen::doRedraw()
 void QGraphicsSystemFbScreen::removeWindowSurface(QGraphicsSystemFbWindowSurface * surface)
 {
     windowStack.removeOne(surface);
+    invalidateRectCache();
     setDirty(surface->geometry());
 }
 
@@ -186,6 +251,7 @@ void QGraphicsSystemFbScreen::raise(QWindowSurface * surface)
     if (index <= 0)
         return;
     windowStack.move(index, 0);
+    invalidateRectCache();
     setDirty(s->geometry());
 }
 
@@ -201,6 +267,7 @@ void QGraphicsSystemFbScreen::lower(QWindowSurface * surface)
     if (index == -1 || index == (windowStack.size() - 1))
         return;
     windowStack.move(index, windowStack.size() - 1);
+    invalidateRectCache();
     setDirty(s->geometry());
 }
 
@@ -261,6 +328,7 @@ void QGraphicsSystemFbWindowSurface::setGeometry(const QRect &rect)
     if (mImage.size() != rect.size())
         mImage = QImage(rect.size(), mScreen->format());
 
+    mScreen->invalidateRectCache();
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 
     QWindowSurface::setGeometry(rect);
@@ -284,12 +352,14 @@ void QGraphicsSystemFbWindowSurface::endPaint(const QRegion &region)
 void QGraphicsSystemFbWindowSurface::setVisible(bool visible)
 {
     visibleFlag = visible;
+    mScreen->invalidateRectCache();
     mScreen->setDirty(geometry());
 }
 
 Qt::WindowFlags QGraphicsSystemFbWindowSurface::setWindowFlags(Qt::WindowFlags type)
 {
     flags = type;
+    mScreen->invalidateRectCache();
     return flags;
 }
 

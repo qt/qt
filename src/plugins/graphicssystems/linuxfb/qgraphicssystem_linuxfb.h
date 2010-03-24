@@ -61,6 +61,8 @@ private:
     QImage * mFbScreenImage;
     uchar * data;
     int bytesPerLine;
+
+    QPainter *compositePainter;
 };
 
 class QLinuxFbGraphicsSystemPrivate;

@@ -797,7 +797,7 @@ QWindowSurface *QLinuxFbGraphicsSystem::createWindowSurface(QWidget *widget) con
 }
 
 QLinuxFbGraphicsSystemScreen::QLinuxFbGraphicsSystemScreen(uchar * d, int w,
-    int h, int lstep, QImage::Format screenFormat)
+    int h, int lstep, QImage::Format screenFormat) : compositePainter(0)
 {
     data = d;
     mGeometry = QRect(0,0,w,h);
@@ -817,6 +817,9 @@ void QLinuxFbGraphicsSystemScreen::setGeometry(QRect rect)
     delete mFbScreenImage;
     mFbScreenImage = new QImage(data, mGeometry.width(), mGeometry.height(),
                            bytesPerLine, mFormat);
+    delete compositePainter;
+    compositePainter = 0;
+
     delete mScreenImage;
     mScreenImage = new QImage(mGeometry.width(), mGeometry.height(),
                               mFormat);
@@ -828,6 +831,9 @@ void QLinuxFbGraphicsSystemScreen::setFormat(QImage::Format format)
     delete mFbScreenImage;
     mFbScreenImage = new QImage(data, mGeometry.width(), mGeometry.height(),
                              bytesPerLine, mFormat);
+    delete compositePainter;
+    compositePainter = 0;
+
     delete mScreenImage;
     mScreenImage = new QImage(mGeometry.width(), mGeometry.height(),
                               mFormat);
@@ -838,10 +844,14 @@ QRegion QLinuxFbGraphicsSystemScreen::doRedraw()
     QRegion touched;
     touched = QGraphicsSystemFbScreen::doRedraw();
 
-    QPainter compositePainter(mFbScreenImage);
+    if (!compositePainter) {
+        compositePainter = new QPainter(mFbScreenImage);
+        compositePainter->setCompositionMode(QPainter::CompositionMode_Source);
+    }
+
     QVector<QRect> rects = touched.rects();
     for (int i = 0; i < rects.size(); i++)
-        compositePainter.drawImage(rects[i], *mScreenImage, rects[i]);
+        compositePainter->drawImage(rects[i], *mScreenImage, rects[i]);
     return touched;
 }
 QT_END_NAMESPACE

@@ -94,7 +94,8 @@ public:
     virtual void setDirty(const QRect &rect);
 
     virtual void removeWindowSurface(QGraphicsSystemFbWindowSurface * surface);
-    virtual void addWindowSurface(QGraphicsSystemFbWindowSurface * surface) { windowStack.prepend(surface); }
+    virtual void addWindowSurface(QGraphicsSystemFbWindowSurface * surface) {
+        windowStack.prepend(surface); invalidateRectCache(); }
     virtual void raise(QWindowSurface * surface);
     virtual void lower(QWindowSurface * surface);
     virtual QWidget * topLevelAt(const QPoint & p) const;
@@ -117,6 +118,15 @@ protected:
     QImage::Format mFormat;
     QSize mPhysicalSize;
     QImage *mScreenImage;
+
+private:
+    QPainter * compositePainter;
+    void generateRects();
+    QList<QPair<QRect, int> > cachedRects;
+
+    void invalidateRectCache() { isUpToDate = false; }
+    friend class QGraphicsSystemFbWindowSurface;
+    bool isUpToDate;
 };
 
 #endif // QLIGHTHOUSEGRAPHICSSCREEN_H
