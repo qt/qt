@@ -668,7 +668,7 @@ void QDeclarativeColorAnimation::setTo(const QColor &t)
     }
     \endqml
 
-    When used as part of a Transition, you could also target a specific
+    When used as part of a Transition, you can also target a specific
     StateChangeScript to run using the \c scriptName property.
 
     \qml
@@ -734,6 +734,9 @@ void QDeclarativeScriptAction::setScript(const QDeclarativeScriptString &script)
 
     This property is only valid when ScriptAction is used as part of a transition.
     If both script and scriptName are set, scriptName will be used.
+
+    \note When using scriptName in a reversible transition, the script will only
+    be run when the transition is being run forwards.
 */
 QString QDeclarativeScriptAction::stateChangeScriptName() const
 {
@@ -749,6 +752,9 @@ void QDeclarativeScriptAction::setStateChangeScriptName(const QString &name)
 
 void QDeclarativeScriptActionPrivate::execute()
 {
+    if (hasRunScriptScript && reversing)
+        return;
+
     QDeclarativeScriptString scriptStr = hasRunScriptScript ? runScriptScript : script;
 
     const QString &str = scriptStr.script();
@@ -764,19 +770,18 @@ void QDeclarativeScriptAction::transition(QDeclarativeStateActions &actions,
 {
     Q_D(QDeclarativeScriptAction);
     Q_UNUSED(modified);
-    Q_UNUSED(direction);
 
     d->hasRunScriptScript = false;
+    d->reversing = (direction == Backward);
     for (int ii = 0; ii < actions.count(); ++ii) {
         QDeclarativeAction &action = actions[ii];
 
         if (action.event && action.event->typeName() == QLatin1String("StateChangeScript")
             && static_cast<QDeclarativeStateChangeScript*>(action.event)->name() == d->name) {
-            //### how should we handle reverse direction?
             d->runScriptScript = static_cast<QDeclarativeStateChangeScript*>(action.event)->script();
             d->hasRunScriptScript = true;
             action.actionDone = true;
-            break;  //assumes names are unique
+            break;  //only match one (names should be unique)
         }
     }
 }
