@@ -163,7 +163,7 @@ class QDeclarativeScriptAction : public QDeclarativeAbstractAnimation
     Q_DECLARE_PRIVATE(QDeclarativeScriptAction)
 
     Q_PROPERTY(QDeclarativeScriptString script READ script WRITE setScript)
-    Q_PROPERTY(QString stateChangeScriptName READ stateChangeScriptName WRITE setStateChangeScriptName)
+    Q_PROPERTY(QString scriptName READ stateChangeScriptName WRITE setStateChangeScriptName)
 
 public:
     QDeclarativeScriptAction(QObject *parent=0);

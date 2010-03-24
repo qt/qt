@@ -11,6 +11,7 @@ Using WebView now requires "import org.webkit 1.0"
 Using Particles now requires "import Qt.labs.particles 1.0"
 AnchorAnimation must now be used to animate anchor changes (and not NumberAnimation)
 Removed ParentAction (use ParentAnimation instead)
+ScriptAction: renamed stateChangeScriptName -> scriptName
 
 C++ API
 -------
