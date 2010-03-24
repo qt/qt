@@ -160,7 +160,7 @@ QDeclarativeFlipable::Side QDeclarativeFlipable::side() const
 {
     Q_D(const QDeclarativeFlipable);
     if (d->dirtySceneTransform)
-        const_cast<QDeclarativeFlipablePrivate *>(d)->updateSceneTransformFromParent();
+        const_cast<QDeclarativeFlipablePrivate *>(d)->ensureSceneTransform();
 
     return d->current;
 }

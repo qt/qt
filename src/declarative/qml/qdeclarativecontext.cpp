@@ -724,6 +724,21 @@ void QDeclarativeContextData::setIdPropertyData(QDeclarativeIntegerCache *data)
     idValues = new ContextGuard[idValueCount];
 }
 
+QString QDeclarativeContextData::findObjectId(const QObject *obj) const
+{
+    if (!idValues || !propertyNames)
+        return QString();
+
+    for (int i=0; i<idValueCount; i++) {
+        if (idValues[i] == obj)
+            return propertyNames->findId(i);
+    }    
+
+    if (linkedContext)
+        return linkedContext->findObjectId(obj);
+    return QString();
+}
+
 QDeclarativeContext *QDeclarativeContextData::asQDeclarativeContext()
 {
     if (!publicContext) 

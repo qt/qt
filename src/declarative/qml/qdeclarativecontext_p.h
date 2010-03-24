@@ -190,6 +190,8 @@ public:
     // Linked contexts. this owns linkedContext.
     QDeclarativeContextData *linkedContext;
 
+    QString findObjectId(const QObject *obj) const;
+
     static QDeclarativeContextData *get(QDeclarativeContext *context) {
         return QDeclarativeContextPrivate::get(context)->data;
     }
