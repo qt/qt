@@ -197,6 +197,7 @@ static int qCocoaViewCount = 0;
     if (self) {
         [self finishInitWithQWidget:widget widgetPrivate:widgetprivate];
     }
+    [self setFocusRingType:NSFocusRingTypeNone];
     composingText = new QString();
 
 #ifdef ALIEN_DEBUG
@@ -445,7 +446,11 @@ static int qCocoaViewCount = 0;
     return YES;
 }
 
-- (BOOL) preservesContentDuringLiveResize;
+// We preserve the content of the view if WA_StaticContents is defined.
+//
+// More info in the Cocoa documentation:
+// http://developer.apple.com/mac/library/documentation/cocoa/conceptual/CocoaViewsGuide/Optimizing/Optimizing.html
+- (BOOL) preservesContentDuringLiveResize
 {
     return qwidget->testAttribute(Qt::WA_StaticContents);
 }
@@ -472,6 +477,18 @@ static int qCocoaViewCount = 0;
         qwidgetprivate->needWindowChange = true;
         QEvent event(QEvent::MacGLWindowChange);
         qApp->sendEvent(qwidget, &event);
+    }
+}
+
+// We catch the 'setNeedsDisplay:' message in order to avoid a useless full repaint.
+// During the resize, the top of the widget is repainted, probably because of the
+// change of coordinate space (Quartz vs Qt). This is then followed by this message:
+// -[NSView _setNeedsDisplayIfTopLeftChanged]
+// which force a full repaint by sending the message 'setNeedsDisplay:'.
+// That is what we are preventing here.
+- (void)setNeedsDisplay:(BOOL)flag {
+    if (![self inLiveResize] || !(qwidget->testAttribute(Qt::WA_StaticContents))) {
+        [super setNeedsDisplay:flag];
     }
 }
 
