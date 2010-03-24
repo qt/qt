@@ -3631,7 +3631,7 @@ void QGraphicsItem::setPos(const QPointF &pos)
         return;
 
     // Update and repositition.
-    if (!(d_ptr->flags & ItemSendsGeometryChanges) && !(d_ptr->flags & ItemSendsScenePositionChanges)) {
+    if (!(d_ptr->flags & (ItemSendsGeometryChanges | ItemSendsScenePositionChanges))) {
         d_ptr->setPosHelper(pos);
         return;
     }
