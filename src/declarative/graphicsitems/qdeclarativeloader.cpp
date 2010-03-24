@@ -41,8 +41,9 @@
 
 #include "qdeclarativeloader_p_p.h"
 
-#include <qdeclarativeengine_p.h>
 #include <qdeclarativeinfo.h>
+#include <qdeclarativeengine_p.h>
+#include <qdeclarativeglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -302,7 +303,7 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
             return;
         }
         if (obj) {
-            ctxt->setParent(obj);
+            QDeclarative_setParent_noEvent(ctxt, obj);
             item = qobject_cast<QGraphicsObject *>(obj);
             if (item) {
                 if (QDeclarativeItem* qmlItem = qobject_cast<QDeclarativeItem *>(item)) {
