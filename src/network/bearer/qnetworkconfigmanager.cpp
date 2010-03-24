@@ -64,7 +64,7 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
     \since 4.7
 
     \inmodule QtNetwork
-    \ingroup bearer
+    \ingroup network
 
     QNetworkConfigurationManager provides access to the network configurations known to the system and
     enables applications to detect the system capabilities (with regards to network sessions) at runtime.
