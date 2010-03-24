@@ -357,7 +357,7 @@ int Environment::execute(QStringList arguments, const QStringList &additionalEnv
     QString args = qt_create_commandline(program, arguments);
     QByteArray envlist = qt_create_environment(fullEnv);
 
-    DWORD exitCode = -1;
+    DWORD exitCode = DWORD(-1);
     PROCESS_INFORMATION procInfo;
     memset(&procInfo, 0, sizeof(procInfo));
 
@@ -378,7 +378,7 @@ int Environment::execute(QStringList arguments, const QStringList &additionalEnv
     }
 
 
-    if (exitCode == -1) {
+    if (exitCode == DWORD(-1)) {
         switch(GetLastError()) {
         case E2BIG:
             cerr << "execute: Argument list exceeds 1024 bytes" << endl;

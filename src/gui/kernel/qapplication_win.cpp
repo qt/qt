@@ -2282,7 +2282,7 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
         case WM_GETOBJECT:
             {
                 // Ignoring all requests while starting up
-                if (QApplication::startingUp() || QApplication::closingDown() || (DWORD)lParam != OBJID_CLIENT) {
+                if (QApplication::startingUp() || QApplication::closingDown() || (LONG)lParam != OBJID_CLIENT) {
                     result = false;
                     break;
                 }
