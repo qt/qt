@@ -3933,7 +3933,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget *w)
     widget, either by scrolling its contents or repainting, depending on the WA_StaticContents
     flag
 */
-static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newRect)
+static void qt_mac_update_widget_position(QWidget *q, QRect oldRect, QRect newRect)
 {
 #ifndef QT_MAC_USE_COCOA
     HIRect bounds = CGRectMake(newRect.x(), newRect.y(),
@@ -4195,7 +4195,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
         }
     }
 
-    qt_mac_update_widget_posisiton(q, oldRect, xrect);
+    qt_mac_update_widget_position(q, oldRect, xrect);
 
     if  (jump)
         q->update();
