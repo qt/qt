@@ -512,6 +512,7 @@ void tst_QGraphicsEffect::drawPixmapItem()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(effect->repaints >= 1);
 
     item->rotate(180);
     QTest::qWait(50);
@@ -642,7 +643,7 @@ void tst_QGraphicsEffect::childrenVisibilityShouldInvalidateCache()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QCOMPARE(parent.nbPaint, 1);
+    QTRY_COMPARE(parent.nbPaint, 1);
     //we set an effect on the parent
     parent.setGraphicsEffect(new QGraphicsDropShadowEffect(&parent));
     //flush the events
