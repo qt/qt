@@ -962,17 +962,16 @@ void QTreeView::keyboardSearch(const QString &search)
     else
         start = d->model->index(0, 0, d->root);
 
-    QElapsedTimer now;
-    now.start();
     bool skipRow = false;
-    if (search.isEmpty()
-        || (d->keyboardInputTime.msecsTo(now) > QApplication::keyboardInputInterval())) {
+    bool keyboardTimeWasValid = d->keyboardInputTime.isValid();
+    qint64 keyboardInputTimeElapsed = d->keyboardInputTime.restart();
+    if (search.isEmpty() || !keyboardTimeWasValid
+        || keyboardInputTimeElapsed > QApplication::keyboardInputInterval()) {
         d->keyboardInput = search;
-        skipRow = true;
+        skipRow = currentIndex().isValid(); //if it is not valid we should really start at QModelIndex(0,0)
     } else {
         d->keyboardInput += search;
     }
-    d->keyboardInputTime = now;
 
     // special case for searches with same key like 'aaaaa'
     bool sameKey = false;
