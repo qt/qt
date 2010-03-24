@@ -151,6 +151,10 @@ public:
     static bool uncListSharesOnServer(const QString &server, QStringList *list);
 #endif
 
+#ifdef Q_OS_SYMBIAN
+    void setSymbianError(int symbianError, QFile::FileError defaultError, QString defaultString);
+#endif
+
 protected:
     QFSFileEnginePrivate();
 
