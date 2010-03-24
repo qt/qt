@@ -1641,7 +1641,29 @@ void QWidget::activateWindow()
         if (X11->userTime == 0)
             X11->userTime = X11->time;
         qt_net_update_user_time(tlw, X11->userTime);
-        XSetInputFocus(X11->display, tlw->internalWinId(), XRevertToParent, X11->time);
+
+        if (X11->isSupportedByWM(ATOM(_NET_ACTIVE_WINDOW))
+            && !(tlw->windowFlags() & Qt::X11BypassWindowManagerHint)) {
+            XEvent e;
+            e.xclient.type = ClientMessage;
+            e.xclient.message_type = ATOM(_NET_ACTIVE_WINDOW);
+            e.xclient.display = X11->display;
+            e.xclient.window = tlw->internalWinId();
+            e.xclient.format = 32;
+            e.xclient.data.l[0] = 1;     // 1 == application
+            e.xclient.data.l[1] = X11->userTime;
+            if (QWidget *aw = QApplication::activeWindow())
+                e.xclient.data.l[2] = aw->internalWinId();
+            else
+                e.xclient.data.l[2] = XNone;
+            e.xclient.data.l[3] = 0;
+            e.xclient.data.l[4] = 0;
+            XSendEvent(X11->display, RootWindow(X11->display, tlw->x11Info().screen()),
+                       false, SubstructureNotifyMask | SubstructureRedirectMask, &e);
+        } else {
+            if (!qt_widget_private(tlw)->topData()->waitingForMapNotify)
+                XSetInputFocus(X11->display, tlw->internalWinId(), XRevertToParent, X11->time);
+        }
     }
 }
 

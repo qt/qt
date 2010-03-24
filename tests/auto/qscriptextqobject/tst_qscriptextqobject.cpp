@@ -533,6 +533,7 @@ private slots:
     void objectDeleted();
     void connectToDestroyedSignal();
     void emitAfterReceiverDeleted();
+    void inheritedSlots();
 
 private:
     QScriptEngine *m_engine;
@@ -2658,6 +2659,21 @@ void tst_QScriptExtQObject::enumerate_data()
             << "mySignal()"
             // slots
             << "mySlot()" << "myOtherSlot()");
+
+    QTest::newRow( "don't enumerate slots" )
+        << int(QScriptEngine::ExcludeSlots)
+        << (QStringList()
+            // meta-object-defined properties:
+            //   inherited
+            << "objectName"
+            //   non-inherited
+            << "p1" << "p2" << "p4" << "p6"
+            // dynamic properties
+            << "dp1" << "dp2" << "dp3"
+            // inherited signals
+            << "destroyed(QObject*)" << "destroyed()"
+            // signals
+            << "mySignal()");
 }
 
 void tst_QScriptExtQObject::enumerate()
@@ -2850,6 +2866,28 @@ void tst_QScriptExtQObject::wrapOptions()
         QVERIFY(obj.property("intProperty").isValid());
         QVERIFY(obj.propertyFlags("intProperty") & QScriptValue::QObjectMember);
     }
+    // exclude slots
+    {
+        QScriptValue obj = m_engine->newQObject(m_myObject, QScriptEngine::QtOwnership,
+                                                QScriptEngine::ExcludeSlots);
+        QVERIFY(!obj.property("deleteLater").isValid());
+        QVERIFY(!(obj.propertyFlags("deleteLater") & QScriptValue::QObjectMember));
+        QVERIFY(!obj.property("mySlot").isValid());
+        QVERIFY(!(obj.propertyFlags("mySlot") & QScriptValue::QObjectMember));
+
+        QVERIFY(obj.property("myInvokable").isFunction());
+        QVERIFY(obj.propertyFlags("myInvokable") & QScriptValue::QObjectMember);
+
+        QVERIFY(obj.property("mySignal").isFunction());
+        QVERIFY(obj.propertyFlags("mySignal") & QScriptValue::QObjectMember);
+        QVERIFY(obj.property("destroyed").isFunction());
+        QVERIFY(obj.propertyFlags("destroyed") & QScriptValue::QObjectMember);
+
+        QVERIFY(obj.property("objectName").isValid());
+        QVERIFY(obj.propertyFlags("objectName") & QScriptValue::QObjectMember);
+        QVERIFY(obj.property("intProperty").isValid());
+        QVERIFY(obj.propertyFlags("intProperty") & QScriptValue::QObjectMember);
+    }
     // exclude all that we can
     {
         QScriptValue obj = m_engine->newQObject(m_myObject, QScriptEngine::QtOwnership,
@@ -2870,6 +2908,33 @@ void tst_QScriptExtQObject::wrapOptions()
         obj.setProperty("child", QScriptValue(m_engine, 123));
         QCOMPARE(obj.property("child")
                  .strictlyEquals(QScriptValue(m_engine, 123)), true);
+    }
+    // exclude absolutely all that we can
+    {
+        QScriptValue obj = m_engine->newQObject(m_myObject, QScriptEngine::QtOwnership,
+                                                QScriptEngine::ExcludeSuperClassMethods
+                                                | QScriptEngine::ExcludeSuperClassProperties
+                                                | QScriptEngine::ExcludeChildObjects
+                                                | QScriptEngine::ExcludeSlots);
+        QVERIFY(!obj.property("deleteLater").isValid());
+        QVERIFY(!(obj.propertyFlags("deleteLater") & QScriptValue::QObjectMember));
+
+        QVERIFY(!obj.property("mySlot").isValid());
+        QVERIFY(!(obj.propertyFlags("mySlot") & QScriptValue::QObjectMember));
+
+        QVERIFY(obj.property("mySignal").isFunction());
+        QVERIFY(obj.propertyFlags("mySignal") & QScriptValue::QObjectMember);
+
+        QVERIFY(obj.property("myInvokable").isFunction());
+        QVERIFY(obj.propertyFlags("myInvokable") & QScriptValue::QObjectMember);
+
+        QVERIFY(!obj.property("objectName").isValid());
+        QVERIFY(!(obj.propertyFlags("objectName") & QScriptValue::QObjectMember));
+
+        QVERIFY(obj.property("intProperty").isValid());
+        QVERIFY(obj.propertyFlags("intProperty") & QScriptValue::QObjectMember);
+
+        QVERIFY(!obj.property("child").isValid());
     }
 
     delete child;
@@ -3041,6 +3106,28 @@ void tst_QScriptExtQObject::emitAfterReceiverDeleted()
         QCOMPARE(signalHandlerExceptionSpy.count(), 0);
         QVERIFY(!m_engine->hasUncaughtException());
     }
+}
+
+void tst_QScriptExtQObject::inheritedSlots()
+{
+    QScriptEngine eng;
+
+    QPushButton prototypeButton;
+    QScriptValue scriptPrototypeButton = eng.newQObject(&prototypeButton);
+
+    QPushButton button;
+    QScriptValue scriptButton = eng.newQObject(&button, QScriptEngine::QtOwnership,
+                                               QScriptEngine::ExcludeSlots);
+    scriptButton.setPrototype(scriptPrototypeButton);
+
+    QVERIFY(scriptButton.property("click").isFunction());
+    QVERIFY(scriptButton.property("click").strictlyEquals(scriptPrototypeButton.property("click")));
+
+    QSignalSpy prototypeButtonClickedSpy(&prototypeButton, SIGNAL(clicked()));
+    QSignalSpy buttonClickedSpy(&button, SIGNAL(clicked()));
+    scriptButton.property("click").call(scriptButton);
+    QCOMPARE(buttonClickedSpy.count(), 1);
+    QCOMPARE(prototypeButtonClickedSpy.count(), 0);
 }
 
 QTEST_MAIN(tst_QScriptExtQObject)

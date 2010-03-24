@@ -183,82 +183,34 @@ inline my_jpeg_source_mgr::my_jpeg_source_mgr(QIODevice *device)
 }
 
 
-static bool read_jpeg_size(QIODevice *device, int &w, int &h)
+inline static bool read_jpeg_size(int &w, int &h, j_decompress_ptr cinfo)
 {
-    bool rt = false;
-    struct jpeg_decompress_struct cinfo;
+    (void) jpeg_calc_output_dimensions(cinfo);
 
-    struct my_jpeg_source_mgr *iod_src = new my_jpeg_source_mgr(device);
-    struct my_error_mgr jerr;
-
-    jpeg_create_decompress(&cinfo);
-
-    cinfo.src = iod_src;
-
-    cinfo.err = jpeg_std_error(&jerr);
-    jerr.error_exit = my_error_exit;
-
-    if (!setjmp(jerr.setjmp_buffer)) {
-#if defined(Q_OS_UNIXWARE)
-        (void) jpeg_read_header(&cinfo, B_TRUE);
-#else
-        (void) jpeg_read_header(&cinfo, true);
-#endif
-        (void) jpeg_calc_output_dimensions(&cinfo);
-
-        w = cinfo.output_width;
-        h = cinfo.output_height;
-        rt = true;
-    }
-    jpeg_destroy_decompress(&cinfo);
-    delete iod_src;
-    return rt;
+    w = cinfo->output_width;
+    h = cinfo->output_height;
+    return true;
 }
 
 #define HIGH_QUALITY_THRESHOLD 50
 
-static bool read_jpeg_format(QIODevice *device, QImage::Format &format)
+inline static bool read_jpeg_format(QImage::Format &format, j_decompress_ptr cinfo)
 {
-    bool result = false;
-    struct jpeg_decompress_struct cinfo;
 
-    struct my_jpeg_source_mgr *iod_src = new my_jpeg_source_mgr(device);
-    struct my_error_mgr jerr;
-
-    jpeg_create_decompress(&cinfo);
-
-    cinfo.src = iod_src;
-
-    cinfo.err = jpeg_std_error(&jerr);
-    jerr.error_exit = my_error_exit;
-
-    if (!setjmp(jerr.setjmp_buffer)) {
-#if defined(Q_OS_UNIXWARE)
-        (void) jpeg_read_header(&cinfo, B_TRUE);
-#else
-        (void) jpeg_read_header(&cinfo, true);
-#endif
-        // This does not allocate memory for the whole image
-        // or such, so we are safe.
-        (void) jpeg_start_decompress(&cinfo);
-        result = true;
-        switch (cinfo.output_components) {
-        case 1:
-            format = QImage::Format_Indexed8;
-            break;
-        case 3:
-        case 4:
-            format = QImage::Format_RGB32;
-            break;
-        default:
-            result = false;
-            break;
-        }
-        cinfo.output_scanline = cinfo.output_height;
-        (void) jpeg_finish_decompress(&cinfo);
+    bool result = true;
+    switch (cinfo->output_components) {
+    case 1:
+        format = QImage::Format_Indexed8;
+        break;
+    case 3:
+    case 4:
+        format = QImage::Format_RGB32;
+        break;
+    default:
+        result = false;
+        break;
     }
-    jpeg_destroy_decompress(&cinfo);
-    delete iod_src;
+    cinfo->output_scanline = cinfo->output_height;
     return result;
 }
 
@@ -291,29 +243,11 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
     return !dest->isNull();
 }
 
-static bool read_jpeg_image(QIODevice *device, QImage *outImage,
+static bool read_jpeg_image(QImage *outImage,
                             QSize scaledSize, QRect scaledClipRect,
-                            QRect clipRect, int inQuality )
+                            QRect clipRect, int inQuality, j_decompress_ptr info, struct my_error_mgr* err  )
 {
-    struct jpeg_decompress_struct cinfo;
-
-    struct my_jpeg_source_mgr *iod_src = new my_jpeg_source_mgr(device);
-    struct my_error_mgr jerr;
-
-    jpeg_create_decompress(&cinfo);
-
-    cinfo.src = iod_src;
-
-    cinfo.err = jpeg_std_error(&jerr);
-    jerr.error_exit = my_error_exit;
-
-    if (!setjmp(jerr.setjmp_buffer)) {
-#if defined(Q_OS_UNIXWARE)
-        (void) jpeg_read_header(&cinfo, B_TRUE);
-#else
-        (void) jpeg_read_header(&cinfo, true);
-#endif
-
+    if (!setjmp(err->setjmp_buffer)) {
         // -1 means default quality.
         int quality = inQuality;
         if (quality < 0)
@@ -335,16 +269,16 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
             } else if (clipRect.isEmpty()) {
                 // No clipping, but scaling: if we can map back to an
                 // integer pixel boundary, then clip before scaling.
-                if ((cinfo.image_width % scaledSize.width()) == 0 &&
-                        (cinfo.image_height % scaledSize.height()) == 0) {
-                    int x = scaledClipRect.x() * cinfo.image_width /
+                if ((info->image_width % scaledSize.width()) == 0 &&
+                        (info->image_height % scaledSize.height()) == 0) {
+                    int x = scaledClipRect.x() * info->image_width /
                             scaledSize.width();
-                    int y = scaledClipRect.y() * cinfo.image_height /
+                    int y = scaledClipRect.y() * info->image_height /
                             scaledSize.height();
                     int width = (scaledClipRect.right() + 1) *
-                                cinfo.image_width / scaledSize.width() - x;
+                                info->image_width / scaledSize.width() - x;
                     int height = (scaledClipRect.bottom() + 1) *
-                                 cinfo.image_height / scaledSize.height() - y;
+                                 info->image_height / scaledSize.height() - y;
                     clipRect = QRect(x, y, width, height);
                     scaledSize = scaledClipRect.size();
                     scaledClipRect = QRect();
@@ -358,69 +292,69 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
         // Determine the scale factor to pass to libjpeg for quick downscaling.
         if (!scaledSize.isEmpty()) {
             if (clipRect.isEmpty()) {
-                cinfo.scale_denom =
-                    qMin(cinfo.image_width / scaledSize.width(),
-                         cinfo.image_height / scaledSize.height());
+                info->scale_denom =
+                    qMin(info->image_width / scaledSize.width(),
+                         info->image_height / scaledSize.height());
             } else {
-                cinfo.scale_denom =
+                info->scale_denom =
                     qMin(clipRect.width() / scaledSize.width(),
                          clipRect.height() / scaledSize.height());
             }
-            if (cinfo.scale_denom < 2) {
-                cinfo.scale_denom = 1;
-            } else if (cinfo.scale_denom < 4) {
-                cinfo.scale_denom = 2;
-            } else if (cinfo.scale_denom < 8) {
-                cinfo.scale_denom = 4;
+            if (info->scale_denom < 2) {
+                info->scale_denom = 1;
+            } else if (info->scale_denom < 4) {
+                info->scale_denom = 2;
+            } else if (info->scale_denom < 8) {
+                info->scale_denom = 4;
             } else {
-                cinfo.scale_denom = 8;
+                info->scale_denom = 8;
             }
-            cinfo.scale_num = 1;
+            info->scale_num = 1;
             if (!clipRect.isEmpty()) {
                 // Correct the scale factor so that we clip accurately.
                 // It is recommended that the clip rectangle be aligned
                 // on an 8-pixel boundary for best performance.
-                while (cinfo.scale_denom > 1 &&
-                       ((clipRect.x() % cinfo.scale_denom) != 0 ||
-                        (clipRect.y() % cinfo.scale_denom) != 0 ||
-                        (clipRect.width() % cinfo.scale_denom) != 0 ||
-                        (clipRect.height() % cinfo.scale_denom) != 0)) {
-                    cinfo.scale_denom /= 2;
+                while (info->scale_denom > 1 &&
+                       ((clipRect.x() % info->scale_denom) != 0 ||
+                        (clipRect.y() % info->scale_denom) != 0 ||
+                        (clipRect.width() % info->scale_denom) != 0 ||
+                        (clipRect.height() % info->scale_denom) != 0)) {
+                    info->scale_denom /= 2;
                 }
             }
         }
 
         // If high quality not required, use fast decompression
         if( quality < HIGH_QUALITY_THRESHOLD ) {
-            cinfo.dct_method = JDCT_IFAST;
-            cinfo.do_fancy_upsampling = FALSE;
+            info->dct_method = JDCT_IFAST;
+            info->do_fancy_upsampling = FALSE;
         }
 
-        (void) jpeg_calc_output_dimensions(&cinfo);
+        (void) jpeg_calc_output_dimensions(info);
 
         // Determine the clip region to extract.
-        QRect imageRect(0, 0, cinfo.output_width, cinfo.output_height);
+        QRect imageRect(0, 0, info->output_width, info->output_height);
         QRect clip;
         if (clipRect.isEmpty()) {
             clip = imageRect;
-        } else if (cinfo.scale_denom == cinfo.scale_num) {
+        } else if (info->scale_denom == info->scale_num) {
             clip = clipRect.intersected(imageRect);
         } else {
             // The scale factor was corrected above to ensure that
             // we don't miss pixels when we scale the clip rectangle.
-            clip = QRect(clipRect.x() / int(cinfo.scale_denom),
-                         clipRect.y() / int(cinfo.scale_denom),
-                         clipRect.width() / int(cinfo.scale_denom),
-                         clipRect.height() / int(cinfo.scale_denom));
+            clip = QRect(clipRect.x() / int(info->scale_denom),
+                         clipRect.y() / int(info->scale_denom),
+                         clipRect.width() / int(info->scale_denom),
+                         clipRect.height() / int(info->scale_denom));
             clip = clip.intersected(imageRect);
         }
 
         // Allocate memory for the clipped QImage.
-        if (!ensureValidImage(outImage, &cinfo, clip.size()))
-            longjmp(jerr.setjmp_buffer, 1);
+        if (!ensureValidImage(outImage, info, clip.size()))
+            longjmp(err->setjmp_buffer, 1);
 
         // Avoid memcpy() overhead if grayscale with no clipping.
-        bool quickGray = (cinfo.output_components == 1 &&
+        bool quickGray = (info->output_components == 1 &&
                           clip == imageRect);
         if (!quickGray) {
             // Ask the jpeg library to allocate a temporary row.
@@ -429,23 +363,23 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
             // jpeg_start_decompress().  We can't use "new" here
             // because we are inside the setjmp() block and an error
             // in the jpeg input stream would cause a memory leak.
-            JSAMPARRAY rows = (cinfo.mem->alloc_sarray)
-                              ((j_common_ptr)&cinfo, JPOOL_IMAGE,
-                               cinfo.output_width * cinfo.output_components, 1);
+            JSAMPARRAY rows = (info->mem->alloc_sarray)
+                              ((j_common_ptr)info, JPOOL_IMAGE,
+                               info->output_width * info->output_components, 1);
 
-            (void) jpeg_start_decompress(&cinfo);
+            (void) jpeg_start_decompress(info);
 
-            while (cinfo.output_scanline < cinfo.output_height) {
-                int y = int(cinfo.output_scanline) - clip.y();
+            while (info->output_scanline < info->output_height) {
+                int y = int(info->output_scanline) - clip.y();
                 if (y >= clip.height())
                     break;      // We've read the entire clip region, so abort.
 
-                (void) jpeg_read_scanlines(&cinfo, rows, 1);
+                (void) jpeg_read_scanlines(info, rows, 1);
 
                 if (y < 0)
                     continue;   // Haven't reached the starting line yet.
 
-                if (cinfo.output_components == 3) {
+                if (info->output_components == 3) {
                     // Expand 24->32 bpp.
                     uchar *in = rows[0] + clip.x() * 3;
                     QRgb *out = (QRgb*)outImage->scanLine(y);
@@ -453,7 +387,7 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
                         *out++ = qRgb(in[0], in[1], in[2]);
                         in += 3;
                     }
-                } else if (cinfo.out_color_space == JCS_CMYK) {
+                } else if (info->out_color_space == JCS_CMYK) {
                     // Convert CMYK->RGB.
                     uchar *in = rows[0] + clip.x() * 4;
                     QRgb *out = (QRgb*)outImage->scanLine(y);
@@ -463,7 +397,7 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
                                       k * in[2] / 255);
                         in += 4;
                     }
-                } else if (cinfo.output_components == 1) {
+                } else if (info->output_components == 1) {
                     // Grayscale.
                     memcpy(outImage->scanLine(y),
                            rows[0] + clip.x(), clip.width());
@@ -471,36 +405,35 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
             }
         } else {
             // Load unclipped grayscale data directly into the QImage.
-            (void) jpeg_start_decompress(&cinfo);
-            while (cinfo.output_scanline < cinfo.output_height) {
-                uchar *row = outImage->scanLine(cinfo.output_scanline);
-                (void) jpeg_read_scanlines(&cinfo, &row, 1);
+            (void) jpeg_start_decompress(info);
+            while (info->output_scanline < info->output_height) {
+                uchar *row = outImage->scanLine(info->output_scanline);
+                (void) jpeg_read_scanlines(info, &row, 1);
             }
         }
 
-        if (cinfo.output_scanline == cinfo.output_height)
-            (void) jpeg_finish_decompress(&cinfo);
+        if (info->output_scanline == info->output_height)
+            (void) jpeg_finish_decompress(info);
 
-        if (cinfo.density_unit == 1) {
-            outImage->setDotsPerMeterX(int(100. * cinfo.X_density / 2.54));
-            outImage->setDotsPerMeterY(int(100. * cinfo.Y_density / 2.54));
-        } else if (cinfo.density_unit == 2) {
-            outImage->setDotsPerMeterX(int(100. * cinfo.X_density));
-            outImage->setDotsPerMeterY(int(100. * cinfo.Y_density));
+        if (info->density_unit == 1) {
+            outImage->setDotsPerMeterX(int(100. * info->X_density / 2.54));
+            outImage->setDotsPerMeterY(int(100. * info->Y_density / 2.54));
+        } else if (info->density_unit == 2) {
+            outImage->setDotsPerMeterX(int(100. * info->X_density));
+            outImage->setDotsPerMeterY(int(100. * info->Y_density));
         }
 
         if (scaledSize.isValid() && scaledSize != clip.size()) {
             *outImage = outImage->scaled(scaledSize, Qt::IgnoreAspectRatio, quality >= HIGH_QUALITY_THRESHOLD ? Qt::SmoothTransformation : Qt::FastTransformation);
         }
+
+        if (!scaledClipRect.isEmpty())
+            *outImage = outImage->copy(scaledClipRect);
+        return !outImage->isNull();
     }
-
-    jpeg_destroy_decompress(&cinfo);
-    delete iod_src;
-    if (!scaledClipRect.isEmpty())
-        *outImage = outImage->copy(scaledClipRect);
-    return !outImage->isNull();
+    else
+        return false;
 }
-
 
 struct my_jpeg_destination_mgr : public jpeg_destination_mgr {
     // Nothing dynamic - cannot rely on destruction over longjump
@@ -745,18 +678,124 @@ static bool write_jpeg_image(const QImage &sourceImage, QIODevice *device, int s
     return success;
 }
 
-QJpegHandler::QJpegHandler()
+class QJpegHandlerPrivate
 {
-    quality = 75;
+public:
+    enum State {
+        Ready,
+        ReadHeader,
+        Error
+    };
+
+    QJpegHandlerPrivate(QJpegHandler *qq)
+        : quality(75), iod_src(0), state(Ready), q(qq)
+    {}
+
+    ~QJpegHandlerPrivate()
+    {
+        if(iod_src)
+        {
+            jpeg_destroy_decompress(&info);
+            delete iod_src;
+            iod_src = 0;
+        }
+    }
+
+    bool readJpegHeader(QIODevice*);
+    bool read(QImage *image);
+
+    int quality;
+    QVariant size;
+    QImage::Format format;
+    QSize scaledSize;
+    QRect scaledClipRect;
+    QRect clipRect;
+    struct jpeg_decompress_struct info;
+    struct my_jpeg_source_mgr * iod_src;
+    struct my_error_mgr err;
+
+    State state;
+
+    QJpegHandler *q;
+};
+
+/*!
+    \internal
+*/
+bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
+{
+    if(state == Ready)
+    {
+        state = Error;
+        iod_src = new my_jpeg_source_mgr(device);
+
+        jpeg_create_decompress(&info);
+        info.src = iod_src;
+        info.err = jpeg_std_error(&err);
+        err.error_exit = my_error_exit;
+
+        if (!setjmp(err.setjmp_buffer)) {
+    #if defined(Q_OS_UNIXWARE)
+            (void) jpeg_read_header(&info, B_TRUE);
+    #else
+            (void) jpeg_read_header(&info, true);
+    #endif
+
+            int width = 0;
+            int height = 0;
+            read_jpeg_size(width, height, &info);
+            size = QSize(width, height);
+
+            format = QImage::Format_Invalid;
+            read_jpeg_format(format, &info);
+            state = ReadHeader;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else if(state == Error)
+        return false;
+    return true;
+}
+
+bool QJpegHandlerPrivate::read(QImage *image)
+{
+    if(state == Ready)
+        readJpegHeader(q->device());
+
+    if(state == ReadHeader)
+    {
+        bool success = read_jpeg_image(image, scaledSize, scaledClipRect, clipRect, quality,  &info, &err);
+        state = success ? Ready : Error;
+        return success;
+    }
+
+    return false;
+
+}
+
+QJpegHandler::QJpegHandler()
+    : d(new QJpegHandlerPrivate(this))
+{
+}
+
+QJpegHandler::~QJpegHandler()
+{
+    delete d;
 }
 
 bool QJpegHandler::canRead() const
 {
-    if (canRead(device())) {
+    if(d->state == QJpegHandlerPrivate::Ready) {
+        if (!canRead(device()))
+            return false;
         setFormat("jpeg");
         return true;
     }
-    return false;
+    return d->state != QJpegHandlerPrivate::Error;
 }
 
 bool QJpegHandler::canRead(QIODevice *device)
@@ -769,7 +808,6 @@ bool QJpegHandler::canRead(QIODevice *device)
     char buffer[2];
     if (device->peek(buffer, 2) != 2)
         return false;
-
     return uchar(buffer[0]) == 0xff && uchar(buffer[1]) == 0xd8;
 }
 
@@ -777,12 +815,12 @@ bool QJpegHandler::read(QImage *image)
 {
     if (!canRead())
         return false;
-    return read_jpeg_image(device(), image, scaledSize, scaledClipRect, clipRect, quality);
+    return d->read(image);
 }
 
 bool QJpegHandler::write(const QImage &image)
 {
-    return write_jpeg_image(image, device(), quality);
+    return write_jpeg_image(image, device(), d->quality);
 }
 
 bool QJpegHandler::supportsOption(ImageOption option) const
@@ -799,32 +837,19 @@ QVariant QJpegHandler::option(ImageOption option) const
 {
     switch(option) {
     case Quality:
-        return quality;
+        return d->quality;
     case ScaledSize:
-        return scaledSize;
+        return d->scaledSize;
     case ScaledClipRect:
-        return scaledClipRect;
+        return d->scaledClipRect;
     case ClipRect:
-        return clipRect;
+        return d->clipRect;
     case Size:
-        if (canRead() && !device()->isSequential()) {
-            qint64 pos = device()->pos();
-            int width = 0;
-            int height = 0;
-            read_jpeg_size(device(), width, height);
-            device()->seek(pos);
-            return QSize(width, height);
-        }
-        return QVariant();
+        d->readJpegHeader(device());
+        return d->size;
     case ImageFormat:
-        if (canRead() && !device()->isSequential()) {
-            qint64 pos = device()->pos();
-            QImage::Format format = QImage::Format_Invalid;
-            read_jpeg_format(device(), format);
-            device()->seek(pos);
-            return format;
-        }
-        return QImage::Format_Invalid;
+        d->readJpegHeader(device());
+        return d->format;
     default:
         return QVariant();
     }
@@ -834,16 +859,16 @@ void QJpegHandler::setOption(ImageOption option, const QVariant &value)
 {
     switch(option) {
     case Quality:
-        quality = value.toInt();
+        d->quality = value.toInt();
         break;
     case ScaledSize:
-        scaledSize = value.toSize();
+        d->scaledSize = value.toSize();
         break;
     case ScaledClipRect:
-        scaledClipRect = value.toRect();
+        d->scaledClipRect = value.toRect();
         break;
     case ClipRect:
-        clipRect = value.toRect();
+        d->clipRect = value.toRect();
         break;
     default:
         break;
@@ -854,5 +879,8 @@ QByteArray QJpegHandler::name() const
 {
     return "jpeg";
 }
+
+
+
 
 QT_END_NAMESPACE
