@@ -497,7 +497,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         {
 #ifndef Q_OS_WINCE
             NONCLIENTMETRICS ncm;
-            ncm.cbSize = sizeof(NONCLIENTMETRICS);
+            ncm.cbSize = FIELD_OFFSET(NONCLIENTMETRICS, lfMessageFont) + sizeof(LOGFONT);
             if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0))
                 ret = qMax(ncm.iScrollHeight, ncm.iScrollWidth);
             else
