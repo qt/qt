@@ -303,9 +303,9 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
             return;
         }
         if (obj) {
-            QDeclarative_setParent_noEvent(ctxt, obj);
             item = qobject_cast<QGraphicsObject *>(obj);
             if (item) {
+                QDeclarative_setParent_noEvent(ctxt, obj);
                 if (QDeclarativeItem* qmlItem = qobject_cast<QDeclarativeItem *>(item)) {
                     qmlItem->setParentItem(q);
                 } else {
@@ -314,6 +314,10 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
                 }
 //                item->setFocus(true);
                 initResize();
+            } else {
+                qmlInfo(q) << QDeclarativeLoader::tr("Loader does not support loading non-visual elements.");
+                delete obj;
+                delete ctxt;
             }
         } else {
             delete obj;

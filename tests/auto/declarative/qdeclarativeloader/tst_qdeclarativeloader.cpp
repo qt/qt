@@ -91,6 +91,7 @@ private slots:
 //    void networkComponent();
 
     void deleteComponentCrash();
+    void nonItem();
 
 private:
     QDeclarativeEngine engine;
@@ -483,6 +484,18 @@ void tst_QDeclarativeLoader::deleteComponentCrash()
     QVERIFY(loader->source() == QUrl::fromLocalFile(SRCDIR "/data/BlueRect.qml"));
 
     delete item;
+}
+
+void tst_QDeclarativeLoader::nonItem()
+{
+    QSKIP("QTBUG-9245", SkipAll);
+    QDeclarativeComponent component(&engine, TEST_FILE("/nonItem.qml"));
+    QTest::ignoreMessage(QtWarningMsg, "QML Loader (file://" SRCDIR "/data/nonItem.qml:3:1) Loader does not support loading non-visual elements.");
+    QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
+    QVERIFY(loader);
+    QVERIFY(loader->item() == 0);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::networkSafety_data()
