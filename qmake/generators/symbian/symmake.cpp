@@ -456,14 +456,29 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, Deployme
     // deploy any additional DEPLOYMENT  files
     QString remoteTestPath;
     remoteTestPath = QString("!:\\private\\%1").arg(privateDirUid);
+    QString zDir = epocRoot() + QLatin1String("epoc32/data/z");
 
     initProjectDeploySymbian(project, depList, remoteTestPath, true, "$(PLATFORM)", "$(TARGET)", generatedDirs, generatedFiles);
     if (depList.size())
         t << "; DEPLOYMENT" << endl;
     for (int i = 0; i < depList.size(); ++i)  {
-        t << QString("\"%1\"    - \"%2\"")
-             .arg(QString(depList.at(i).from).replace('\\','/'))
-             .arg(depList.at(i).to) << endl;
+        QString from = depList.at(i).from;
+        QString to = depList.at(i).to;
+
+        // Deploy anything not already deployed from under epoc32 instead from under
+        // \epoc32\data\z\ to enable using pkg file without rebuilding
+        // the project, which can be useful for some binary only distributions.
+        if (!from.contains(QLatin1String("epoc32"), Qt::CaseInsensitive)) {
+            from = to;
+            if (from.size() > 1 && from.at(1) == QLatin1Char(':'))
+                from = from.mid(2);
+            from.prepend(zDir);
+        } else {
+            if (from.size() > 1 && from.at(1) == QLatin1Char(':'))
+                from = from.mid(2);
+        }
+
+        t << QString("\"%1\"    - \"%2\"").arg(from.replace('\\','/')).arg(to) << endl;
     }
     t << endl;
 

@@ -61,7 +61,6 @@
 #include "qscrollarea.h"
 #include "qscrollbar.h"
 #include "qtabbar.h"
-#include "qtablewidget.h"
 #include "qtableview.h"
 #include "qtextedit.h"
 #include "qtoolbar.h"
@@ -307,6 +306,13 @@ void QS60StylePrivate::drawSkinPart(QS60StyleEnums::SkinParts part,
 
 short QS60StylePrivate::pixelMetric(int metric)
 {
+    //If it is a custom value, need to strip away the base to map to internal
+    //pixel metric value table
+    if (metric & QStyle::PM_CustomBase) {
+        metric -= QStyle::PM_CustomBase;
+        metric += MAX_NON_CUSTOM_PIXELMETRICS - 1;
+    }
+
     Q_ASSERT(metric < MAX_PIXELMETRICS);
     const short returnValue = m_pmPointer[metric];
     return returnValue;
@@ -407,8 +413,8 @@ QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
 {
     const bool cachedColorExists = m_colorCache.contains(frame);
     if (!cachedColorExists) {
-        const int frameCornerWidth = pixelMetric(PM_Custom_FrameCornerWidth);
-        const int frameCornerHeight = pixelMetric(PM_Custom_FrameCornerHeight);
+        const int frameCornerWidth = pixelMetric(PM_FrameCornerWidth);
+        const int frameCornerHeight = pixelMetric(PM_FrameCornerHeight);
         Q_ASSERT(2 * frameCornerWidth < 32);
         Q_ASSERT(2 * frameCornerHeight < 32);
 
@@ -868,7 +874,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
 
         case QS60StyleEnums::SP_QgnGrafBarFrameSideL:
         case QS60StyleEnums::SP_QgnGrafBarFrameSideR:
-            result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+            result.setWidth(pixelMetric(PM_FrameCornerWidth));
             break;
 
         case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
@@ -895,15 +901,15 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
                     case 7: /* CornerTr */
                     case 6: /* CornerBl */
                     case 5: /* CornerBr */
-                        result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+                        result.setWidth(pixelMetric(PM_FrameCornerWidth));
                         // Falltrough intended...
                     case 4: /* SideT */
                     case 3: /* SideB */
-                        result.setHeight(pixelMetric(PM_Custom_FrameCornerHeight));
+                        result.setHeight(pixelMetric(PM_FrameCornerHeight));
                         break;
                     case 2: /* SideL */
                     case 1: /* SideR */
-                        result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+                        result.setWidth(pixelMetric(PM_FrameCornerWidth));
                         break;
                     case 0: /* center */
                     default:
@@ -1002,7 +1008,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     QS60StylePrivate::SE_SliderGrooveVertical;
                 QS60StylePrivate::drawSkinElement(grooveElement, painter, sliderGroove, flags);
             } else {
-                const QRect sliderGroove = subControlRect(control, optionSlider, SC_SliderGroove, widget);
                 const QPoint sliderGrooveCenter = sliderGroove.center();
                 const bool horizontal = optionSlider->orientation == Qt::Horizontal;
                 painter->save();
@@ -1129,7 +1134,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 drawPrimitive(pe, &toolButton, painter, widget);
             }
 
-            if (toolBtn->text.length()>0 ||
+            if (toolBtn->text.length() > 0 ||
                 !toolBtn->icon.isNull()) {
                 const int frameWidth = pixelMetric(PM_DefaultFrameWidth, option, widget);
                 toolButton.rect = button.adjusted(frameWidth, frameWidth, -frameWidth, -frameWidth);
@@ -1371,7 +1376,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             }
             if (!comboBox->currentText.isEmpty() && !comboBox->editable) {
                 QCommonStyle::drawItemText(painter,
-                            editRect.adjusted(QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth), 0, -1, 0),
+                            editRect.adjusted(QS60StylePrivate::pixelMetric(PM_FrameCornerWidth), 0, -1, 0),
                             visualAlignment(comboBox->direction, Qt::AlignLeft | Qt::AlignVCenter),
                             comboBox->palette, comboBox->state & State_Enabled, comboBox->currentText);
             }
@@ -1836,8 +1841,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             painter->save();
             QPen linePen = QPen(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 1, header));
             const int penWidth = (header->orientation == Qt::Horizontal) ?
-                linePen.width() + QS60StylePrivate::pixelMetric(PM_Custom_BoldLineWidth)
-                : linePen.width() + QS60StylePrivate::pixelMetric(PM_Custom_ThinLineWidth);
+                linePen.width() + QS60StylePrivate::pixelMetric(PM_BoldLineWidth)
+                : linePen.width() + QS60StylePrivate::pixelMetric(PM_ThinLineWidth);
             linePen.setWidth(penWidth);
             painter->setPen(linePen);
             if (header->orientation == Qt::Horizontal){
@@ -1856,7 +1861,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 //Make cornerButton slightly smaller so that it is not on top of table border graphic.
                 QStyleOptionHeader subopt = *header;
                 const int borderTweak =
-                    QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth) >> 1;
+                    QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) >> 1;
                 if (subopt.direction == Qt::LeftToRight)
                     subopt.rect.adjust(borderTweak, borderTweak, 0, -borderTweak);
                 else
@@ -2077,7 +2082,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 // ... or normal "tick" selection at the end.
                 } else if (option->state & State_Selected) {
                     QRect tickRect = option->rect;
-                    const int frameBorderWidth = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
+                    const int frameBorderWidth = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth);
                     // adjust tickmark rect to exclude frame border
                     tickRect.adjust(0, -frameBorderWidth, 0, -frameBorderWidth);
                     QS60StyleEnums::SkinParts skinPart = QS60StyleEnums::SP_QgnIndiMarkedAdd;
@@ -2158,7 +2163,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 const QS60StyleEnums::SkinParts part = (element == PE_IndicatorSpinUp) ?
                     QS60StyleEnums::SP_QgnGrafScrollArrowUp :
                     QS60StyleEnums::SP_QgnGrafScrollArrowDown;
-                const int iconMargin = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth) >> 1;
+                const int iconMargin = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) >> 1;
                 optionSpinBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? iconMargin : -iconMargin );
                 QS60StylePrivate::drawSkinPart(part, painter, optionSpinBox.rect, flags);
             } else {
@@ -2172,7 +2177,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 // We want to draw down arrow here for comboboxes as well.
                 QStyleOptionFrame optionsComboBox = *cmb;
                 const QS60StyleEnums::SkinParts part = QS60StyleEnums::SP_QgnGrafScrollArrowDown;
-                const int iconMargin = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth) >> 1;
+                const int iconMargin = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) >> 1;
                 optionsComboBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? iconMargin : -iconMargin );
                 QS60StylePrivate::drawSkinPart(part, painter, optionsComboBox.rect, flags);
             } else {
@@ -2306,7 +2311,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                         (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
                 int minDimension = qMin(option->rect.width(), option->rect.height());
                 QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
-				const int magicTweak = 3;
+                const int magicTweak = 3;
                 int resizeValue = minDimension >> 1;
                 if (!QS60StylePrivate::isTouchSupported()) {
                     minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
@@ -2451,9 +2456,9 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 #ifndef QT_NO_COMBOBOX
         case CT_ComboBox: {
                 // Fixing Ui design issues with too wide QComboBoxes and greedy SizeHints
-                // Make sure, that the combobox says within the screen.
+                // Make sure, that the combobox stays within the screen.
                 const QSize desktopContentSize = QApplication::desktop()->availableGeometry().size()
-                        -QSize(pixelMetric(PM_LayoutLeftMargin) + pixelMetric(PM_LayoutRightMargin), 0);
+                        - QSize(pixelMetric(PM_LayoutLeftMargin) + pixelMetric(PM_LayoutRightMargin), 0);
                 sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget).
                         boundedTo(desktopContentSize);
             }
@@ -2926,9 +2931,9 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             if (qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
                 // Subtract area needed for line
                 if (opt->state & State_Horizontal)
-                    ret.setHeight(ret.height() - QS60StylePrivate::pixelMetric(PM_Custom_BoldLineWidth));
+                    ret.setHeight(ret.height() - QS60StylePrivate::pixelMetric(PM_BoldLineWidth));
                 else
-                    ret.setWidth(ret.width() - QS60StylePrivate::pixelMetric(PM_Custom_ThinLineWidth));
+                    ret.setWidth(ret.width() - QS60StylePrivate::pixelMetric(PM_ThinLineWidth));
                 }
             ret = visualRect(opt->direction, opt->rect, ret);
             break;
@@ -3239,7 +3244,7 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
 
 /*!
     \internal
-    Handle the timer \a event. 
+    Handle the timer \a event.
 */
 void QS60Style::timerEvent(QTimerEvent *event)
 {

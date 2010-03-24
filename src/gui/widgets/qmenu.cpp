@@ -168,8 +168,8 @@ void QMenuPrivate::init()
 #ifdef QT_SOFTKEYS_ENABLED
     selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, q);
     cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Back, q);
-    selectAction->setVisible(false); // Don't show these in the menu
-    cancelAction->setVisible(false);
+    selectAction->setPriority(QAction::HighPriority);
+    cancelAction->setPriority(QAction::HighPriority);
     q->addAction(selectAction);
     q->addAction(cancelAction);
 #endif
