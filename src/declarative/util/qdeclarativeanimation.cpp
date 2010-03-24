@@ -658,6 +658,37 @@ void QDeclarativeColorAnimation::setTo(const QColor &t)
     \inherits Animation
     \brief The ScriptAction element allows scripts to be run during an animation.
 
+    ScriptAction can be used to run script at a specific point in an animation.
+
+    \qml
+    SequentialAnimation {
+        NumberAnimation { ... }
+        ScriptAction { script: doSomething(); }
+        NumberAnimation { ... }
+    }
+    \endqml
+
+    When used as part of a Transition, you could also target a specific
+    StateChangeScript to run using the \c scriptName property.
+
+    \qml
+    State {
+        StateChangeScript {
+            name: "myScript"
+            script: doStateStuff();
+        }
+    }
+    ...
+    Transition {
+        SequentialAnimation {
+            NumberAnimation { ... }
+            ScriptAction { scriptName: "myScript" }
+            NumberAnimation { ... }
+        }
+    }
+    \endqml
+
+    \sa StateChangeScript
 */
 /*!
     \internal
