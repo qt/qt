@@ -40,6 +40,8 @@
 ****************************************************************************/
 
 #include <private/qdrawhelper_p.h>
+#include <private/qblendfunctions_p.h>
+#include <private/qmath_p.h>
 
 #ifdef QT_HAVE_NEON
 
@@ -308,6 +310,143 @@ void qt_alphamapblit_quint16_neon(QRasterBuffer *rasterBuffer,
     uchar *mask = const_cast<uchar *>(bitmap);
 
     pixman_composite_over_n_8_0565_asm_neon(mapWidth, mapHeight, dest, destStride, color, 0, mask, mapStride);
+}
+
+extern "C" void blend_8_pixels_argb32_on_rgb16_neon(quint16 *dst, const quint32 *src, int const_alpha);
+extern "C" void blend_8_pixels_rgb16_on_rgb16_neon(quint16 *dst, const quint16 *src, int const_alpha);
+
+template <typename SRC, typename BlendFunc>
+struct Blend_on_RGB16_SourceAndConstAlpha_Neon {
+    Blend_on_RGB16_SourceAndConstAlpha_Neon(BlendFunc blender, int const_alpha)
+        : m_index(0)
+        , m_blender(blender)
+        , m_const_alpha(const_alpha)
+    {
+    }
+
+    inline void write(quint16 *dst, quint32 src)
+    {
+        srcBuffer[m_index++] = src;
+
+        if (m_index == 8) {
+            m_blender(dst - 7, srcBuffer, m_const_alpha);
+            m_index = 0;
+        }
+    }
+
+    inline void flush(quint16 *dst)
+    {
+        if (m_index > 0) {
+            quint16 dstBuffer[8];
+            for (int i = 0; i < m_index; ++i)
+                dstBuffer[i] = dst[i - m_index];
+
+            m_blender(dstBuffer, srcBuffer, m_const_alpha);
+
+            for (int i = 0; i < m_index; ++i)
+                dst[i - m_index] = dstBuffer[i];
+
+            m_index = 0;
+        }
+    }
+
+    SRC srcBuffer[8];
+
+    int m_index;
+    BlendFunc m_blender;
+    int m_const_alpha;
+};
+
+template <typename SRC, typename BlendFunc>
+Blend_on_RGB16_SourceAndConstAlpha_Neon<SRC, BlendFunc>
+Blend_on_RGB16_SourceAndConstAlpha_Neon_create(BlendFunc blender, int const_alpha)
+{
+    return Blend_on_RGB16_SourceAndConstAlpha_Neon<SRC, BlendFunc>(blender, const_alpha);
+}
+
+void qt_scale_image_argb32_on_rgb16_neon(uchar *destPixels, int dbpl,
+                                         const uchar *srcPixels, int sbpl,
+                                         const QRectF &targetRect,
+                                         const QRectF &sourceRect,
+                                         const QRect &clip,
+                                         int const_alpha)
+{
+    if (const_alpha == 0)
+        return;
+
+    qt_scale_image_16bit<quint32>(destPixels, dbpl, srcPixels, sbpl, targetRect, sourceRect, clip,
+        Blend_on_RGB16_SourceAndConstAlpha_Neon_create<quint32>(blend_8_pixels_argb32_on_rgb16_neon, const_alpha));
+}
+
+void qt_scale_image_rgb16_on_rgb16(uchar *destPixels, int dbpl,
+                                   const uchar *srcPixels, int sbpl,
+                                   const QRectF &targetRect,
+                                   const QRectF &sourceRect,
+                                   const QRect &clip,
+                                   int const_alpha);
+
+void qt_scale_image_rgb16_on_rgb16_neon(uchar *destPixels, int dbpl,
+                                        const uchar *srcPixels, int sbpl,
+                                        const QRectF &targetRect,
+                                        const QRectF &sourceRect,
+                                        const QRect &clip,
+                                        int const_alpha)
+{
+    if (const_alpha == 0)
+        return;
+
+    if (const_alpha == 256) {
+        qt_scale_image_rgb16_on_rgb16(destPixels, dbpl, srcPixels, sbpl, targetRect, sourceRect, clip, const_alpha);
+        return;
+    }
+
+    qt_scale_image_16bit<quint16>(destPixels, dbpl, srcPixels, sbpl, targetRect, sourceRect, clip,
+        Blend_on_RGB16_SourceAndConstAlpha_Neon_create<quint16>(blend_8_pixels_rgb16_on_rgb16_neon, const_alpha));
+}
+
+extern void qt_transform_image_rgb16_on_rgb16(uchar *destPixels, int dbpl,
+                                              const uchar *srcPixels, int sbpl,
+                                              const QRectF &targetRect,
+                                              const QRectF &sourceRect,
+                                              const QRect &clip,
+                                              const QTransform &targetRectTransform,
+                                              int const_alpha);
+
+void qt_transform_image_rgb16_on_rgb16_neon(uchar *destPixels, int dbpl,
+                                            const uchar *srcPixels, int sbpl,
+                                            const QRectF &targetRect,
+                                            const QRectF &sourceRect,
+                                            const QRect &clip,
+                                            const QTransform &targetRectTransform,
+                                            int const_alpha)
+{
+    if (const_alpha == 0)
+        return;
+
+    if (const_alpha == 256) {
+        qt_transform_image_rgb16_on_rgb16(destPixels, dbpl, srcPixels, sbpl, targetRect, sourceRect, clip, targetRectTransform, const_alpha);
+        return;
+    }
+
+    qt_transform_image(reinterpret_cast<quint16 *>(destPixels), dbpl,
+                       reinterpret_cast<const quint16 *>(srcPixels), sbpl, targetRect, sourceRect, clip, targetRectTransform,
+        Blend_on_RGB16_SourceAndConstAlpha_Neon_create<quint16>(blend_8_pixels_rgb16_on_rgb16_neon, const_alpha));
+}
+
+void qt_transform_image_argb32_on_rgb16_neon(uchar *destPixels, int dbpl,
+                                             const uchar *srcPixels, int sbpl,
+                                             const QRectF &targetRect,
+                                             const QRectF &sourceRect,
+                                             const QRect &clip,
+                                             const QTransform &targetRectTransform,
+                                             int const_alpha)
+{
+    if (const_alpha == 0)
+        return;
+
+    qt_transform_image(reinterpret_cast<quint16 *>(destPixels), dbpl,
+                       reinterpret_cast<const quint32 *>(srcPixels), sbpl, targetRect, sourceRect, clip, targetRectTransform,
+        Blend_on_RGB16_SourceAndConstAlpha_Neon_create<quint32>(blend_8_pixels_argb32_on_rgb16_neon, const_alpha));
 }
 
 QT_END_NAMESPACE

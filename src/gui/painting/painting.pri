@@ -91,6 +91,8 @@ SOURCES += \
 
         HEADERS +=                                      \
                 painting/qpaintengine_raster_p.h        \
+                painting/qdrawhelper_p.h                \
+                painting/qblendfunctions_p.h            \
                 painting/qrasterdefs_p.h                \
                 painting/qgrayraster_p.h
 
@@ -385,13 +387,13 @@ neon:*-g++* {
     SOURCES += painting/qdrawhelper_neon.cpp
     QMAKE_CXXFLAGS *= -mfpu=neon
 
-    PIXMAN_NEON_ASM_FILES = ../3rdparty/pixman/pixman-arm-neon-asm.S
+    DRAWHELPER_NEON_ASM_FILES = ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S
 
     neon_compiler.commands = $$QMAKE_CXX -c
     neon_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
     neon_compiler.dependency_type = TYPE_C
     neon_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-    neon_compiler.input = PIXMAN_NEON_ASM_FILES
+    neon_compiler.input = DRAWHELPER_NEON_ASM_FILES
     neon_compiler.variable_out = OBJECTS
     neon_compiler.name = compiling[neon] ${QMAKE_FILE_IN}
     silent:neon_compiler.commands = @echo compiling[neon] ${QMAKE_FILE_IN} && $$neon_compiler.commands

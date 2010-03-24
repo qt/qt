@@ -84,6 +84,37 @@ void qt_alphamapblit_quint16_neon(QRasterBuffer *rasterBuffer,
                                   const uchar *bitmap,
                                   int mapWidth, int mapHeight, int mapStride,
                                   const QClipData *clip);
+
+void qt_scale_image_argb32_on_rgb16_neon(uchar *destPixels, int dbpl,
+                                         const uchar *srcPixels, int sbpl,
+                                         const QRectF &targetRect,
+                                         const QRectF &sourceRect,
+                                         const QRect &clip,
+                                         int const_alpha);
+
+void qt_scale_image_rgb16_on_rgb16_neon(uchar *destPixels, int dbpl,
+                                        const uchar *srcPixels, int sbpl,
+                                        const QRectF &targetRect,
+                                        const QRectF &sourceRect,
+                                        const QRect &clip,
+                                        int const_alpha);
+
+void qt_transform_image_argb32_on_rgb16_neon(uchar *destPixels, int dbpl,
+                                             const uchar *srcPixels, int sbpl,
+                                             const QRectF &targetRect,
+                                             const QRectF &sourceRect,
+                                             const QRect &clip,
+                                             const QTransform &targetRectTransform,
+                                             int const_alpha);
+
+void qt_transform_image_rgb16_on_rgb16_neon(uchar *destPixels, int dbpl,
+                                            const uchar *srcPixels, int sbpl,
+                                            const QRectF &targetRect,
+                                            const QRectF &sourceRect,
+                                            const QRect &clip,
+                                            const QTransform &targetRectTransform,
+                                            int const_alpha);
+
 #endif // QT_HAVE_NEON
 
 QT_END_NAMESPACE
