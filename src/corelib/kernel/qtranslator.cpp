@@ -412,12 +412,12 @@ bool QTranslator::load(const QString & filename, const QString & directory,
 
         realname = prefix + fname + (suffix.isNull() ? QString::fromLatin1(".qm") : suffix);
         fi.setFile(realname);
-        if (fi.isReadable())
+        if (fi.isReadable() && fi.isFile())
             break;
 
         realname = prefix + fname;
         fi.setFile(realname);
-        if (fi.isReadable())
+        if (fi.isReadable() && fi.isFile())
             break;
 
         int rightmost = 0;
