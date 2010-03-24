@@ -44,8 +44,9 @@
 #include <QPushButton>
 #include <QtTest/QtTest>
 
-#include "qnativeinput.h"
-#include "qnativeplayer.h"
+#include "qnativeevents.h"
+#include "nativeeventlist.h"
+#include "expectedeventlist.h"
 
 #ifdef Q_OS_MAC
 
@@ -55,19 +56,126 @@ class tst_MacNativeEvents : public QObject
 {
 Q_OBJECT
 private slots:
-    void testLeftMousePressRelease();
+    void testMouseMoveLocation();
+    void testPushButtonPressRelease();
+    void testMouseLeftDoubleClick();
+    void stressTestMouseLeftDoubleClick();
+    void testMouseDragInside();
 };
 
-void tst_MacNativeEvents::testLeftMousePressRelease()
+void tst_MacNativeEvents::testMouseMoveLocation()
 {
+    QWidget w;
+    w.setMouseTracking(true);
+    w.show();
+    QPoint p = w.geometry().center();
+
+    NativeEventList native;
+    native.append(new QNativeMouseMoveEvent(p, Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QMouseEvent(QEvent::MouseMove, w.mapFromGlobal(p), p, Qt::NoButton, Qt::NoButton, Qt::NoModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(500), "the test did not receive all expected events!");
+}
+
+void tst_MacNativeEvents::testPushButtonPressRelease()
+{
+    // Check that a native mouse press and release generates the
+    // same qevents on a pushbutton:
     QPushButton w("click me");
     w.show();
     QPoint p = w.geometry().center();
 
-    QNativePlayer player;
-    player.append(50, new QNativeMouseButtonEvent(p, Qt::LeftButton, 1, Qt::NoModifier));
-    player.append(50, new QNativeMouseButtonEvent(p, Qt::LeftButton, 0, Qt::NoModifier));
-    player.play();
+    NativeEventList native;
+    native.append(new QNativeMouseButtonEvent(p, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(p, Qt::LeftButton, 0, Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QMouseEvent(QEvent::MouseButtonPress, w.mapFromGlobal(p), p, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseButtonRelease, w.mapFromGlobal(p), p, Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+}
+
+void tst_MacNativeEvents::testMouseLeftDoubleClick()
+{
+    // Check that a native double click makes
+    // the test widget receive a press-release-click-release:
+    QWidget w;
+    w.show();
+    QPoint p = w.geometry().center();
+
+    NativeEventList native;
+    native.append(new QNativeMouseButtonEvent(p, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(p, Qt::LeftButton, 0, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(p, Qt::LeftButton, 2, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(p, Qt::LeftButton, 0, Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QMouseEvent(QEvent::MouseButtonPress, w.mapFromGlobal(p), p, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseButtonRelease, w.mapFromGlobal(p), p, Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseButtonDblClick, w.mapFromGlobal(p), p, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseButtonRelease, w.mapFromGlobal(p), p, Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+}
+
+void tst_MacNativeEvents::stressTestMouseLeftDoubleClick()
+{
+    // Check that multiple, fast, double clicks makes
+    // the test widget receive correct click events
+    QWidget w;
+    w.show();
+    QPoint p = w.geometry().center();
+
+    NativeEventList native;
+    ExpectedEventList expected(&w);
+
+    for (int i=0; i<10; ++i){
+        native.append(new QNativeMouseButtonEvent(p, Qt::LeftButton, 1, Qt::NoModifier));
+        native.append(new QNativeMouseButtonEvent(p, Qt::LeftButton, 0, Qt::NoModifier));
+        native.append(new QNativeMouseButtonEvent(p, Qt::LeftButton, 2, Qt::NoModifier));
+        native.append(new QNativeMouseButtonEvent(p, Qt::LeftButton, 0, Qt::NoModifier));
+
+        expected.append(new QMouseEvent(QEvent::MouseButtonPress, w.mapFromGlobal(p), p, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier));
+        expected.append(new QMouseEvent(QEvent::MouseButtonRelease, w.mapFromGlobal(p), p, Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
+        expected.append(new QMouseEvent(QEvent::MouseButtonDblClick, w.mapFromGlobal(p), p, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier));
+        expected.append(new QMouseEvent(QEvent::MouseButtonRelease, w.mapFromGlobal(p), p, Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
+    }
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+}
+
+void tst_MacNativeEvents::testMouseDragInside()
+{
+    // Check that a mouse drag inside a widget
+    // will cause press-move-release events to be delivered
+    QWidget w;
+    w.show();
+    QPoint p1 = w.geometry().center();
+    QPoint p2 = p1 - QPoint(10, 0);
+    QPoint p3 = p1 - QPoint(20, 0);
+    QPoint p4 = p1 - QPoint(30, 0);
+
+    NativeEventList native;
+    native.append(new QNativeMouseButtonEvent(p1, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseDragEvent(p2, Qt::LeftButton, Qt::NoModifier));
+    native.append(new QNativeMouseDragEvent(p3, Qt::LeftButton, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(p4, Qt::LeftButton, 0, Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QMouseEvent(QEvent::MouseButtonPress, w.mapFromGlobal(p1), p1, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseMove, w.mapFromGlobal(p2), p2, Qt::NoButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseMove, w.mapFromGlobal(p3), p3, Qt::NoButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseButtonRelease, w.mapFromGlobal(p4), p4, Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
 }
 
 #include "tst_macnativeevents.moc"

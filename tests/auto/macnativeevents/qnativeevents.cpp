@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qnativeinput.h"
+#include "qnativeevents.h"
 
 QNativeInput::QNativeInput(bool subscribe)
 {

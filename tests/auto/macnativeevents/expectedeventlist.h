@@ -39,54 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef Q_NATIVE_PLAYBACK
-#define Q_NATIVE_PLAYBACK
+#ifndef EVENTFILTER
+#define EVENTFILTER
 
-#include <QtCore>
-#include "qnativeinput.h"
+#include <QWidget>
+#include <QList>
+#include <QEvent>
+#include <QBasicTimer>
 
-class QNativePlayer : public QObject
+class ExpectedEventList : public QObject
 {
-    Q_OBJECT;
+    QList<QEvent *> eventList;
+    QBasicTimer timer;
+    int eventCount;
+    void timerEvent(QTimerEvent *);
 
-    public:
-    enum Playback {ReturnImmediately, WaitUntilFinished};
-
-    QNativePlayer();
-    ~QNativePlayer();
-
-    void append(int waitMs, QNativeEvent *event = 0);
-    void play(Playback playback = WaitUntilFinished);
-    void stop();
-    float playbackMultiplier;
-
-signals:
-    void done();
-
-private slots:
-    void sendNextEvent();
-
-    private:
-    void waitNextEvent();
-
-    QList<QPair<int, QNativeEvent *> > eventList;
-    int currIndex;
-    bool wait;
-};
-
-// ******************************************************************
-
-class QEventOutputList : public QList<QEvent *>
-{
 public:
-    QEventOutputList();
-    ~QEventOutputList();
-    bool waitUntilEmpty(int maxEventWaitTime = 1000);
-    bool wait;
+    ExpectedEventList(QObject *target);
+    ~ExpectedEventList();
+    void append(QEvent *e);
+    bool waitForAllEvents(int timeoutPerEvent = 2000);
+    bool eventFilter(QObject *obj, QEvent *event);
 
-    // Useful method. Just sleep and process events:
-    static void sleep(int sleepTime);
+private:
+    void compareMouseEvents(QEvent *event1, QEvent *event2);
+    void compareKeyEvents(QEvent *event1, QEvent *event2);
 };
-
 
 #endif
+

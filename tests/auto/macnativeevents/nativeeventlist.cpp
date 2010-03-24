@@ -39,22 +39,23 @@
 **
 ****************************************************************************/
 
-#include "qnativeplayer.h"
+#include "nativeeventlist.h"
 
-QNativePlayer::QNativePlayer()
+NativeEventList::NativeEventList(int defaultWaitMs)
+    : playbackMultiplier(1.0)
+    , currIndex(-1)
+    , wait(false)
+    , defaultWaitMs(defaultWaitMs)
 {
-    currIndex = -1;
-    playbackMultiplier = 1.0;
-    wait = false;
 }
 
-QNativePlayer::~QNativePlayer()
+NativeEventList::~NativeEventList()
 {
     for (int i=0; i<eventList.size(); i++)
         delete eventList.takeAt(i).second;
 }
 
-void QNativePlayer::sendNextEvent()
+void NativeEventList::sendNextEvent()
 {
     QNativeEvent *e = eventList.at(currIndex).second;
     if (e)
@@ -62,7 +63,7 @@ void QNativePlayer::sendNextEvent()
     waitNextEvent();
 }
 
-void QNativePlayer::waitNextEvent()
+void NativeEventList::waitNextEvent()
 {
     if (++currIndex >= eventList.size()){
         emit done();
@@ -74,12 +75,22 @@ void QNativePlayer::waitNextEvent()
     QTimer::singleShot(interval * playbackMultiplier, this, SLOT(sendNextEvent()));
 }
 
-void QNativePlayer::append(int waitMs, QNativeEvent *event)
+void NativeEventList::append(QNativeEvent *event)
+{
+    eventList.append(QPair<int, QNativeEvent *>(defaultWaitMs, event));
+}
+
+void NativeEventList::append(int waitMs, QNativeEvent *event)
 {
     eventList.append(QPair<int, QNativeEvent *>(waitMs, event));
 }
 
-void QNativePlayer::play(Playback playback)
+void NativeEventList::append(int waitMs)
+{
+    eventList.append(QPair<int, QNativeEvent *>(waitMs, 0));
+}
+
+void NativeEventList::play(Playback playback)
 {
     waitNextEvent();
 
@@ -88,52 +99,9 @@ void QNativePlayer::play(Playback playback)
         QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
 }
 
-void QNativePlayer::stop()
+void NativeEventList::stop()
 {
     wait = false;
     QAbstractEventDispatcher::instance()->interrupt();
 }
 
-// ************************************************************************
-
-QEventOutputList::QEventOutputList()
-{
-    wait = true;
-}
-
-QEventOutputList::~QEventOutputList()
-{
-    qDeleteAll(*this);
-}
-
-bool QEventOutputList::waitUntilEmpty(int maxEventWaitTime)
-{
-    int currSize = size();
-    QTime time;
-    time.restart();
-    while (wait){
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
-
-        if (isEmpty()){
-            return true;
-        }
-        else if (currSize == size()){
-            if (time.elapsed() > maxEventWaitTime){
-                return false;
-            }
-        }
-        else{
-            currSize = size();
-            time.restart();
-        }
-    }
-    return false;
-}
-
-void QEventOutputList::sleep(int sleepTime)
-{
-    QTime time;
-    time.restart();
-    while (time.elapsed() < sleepTime)
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
-}
