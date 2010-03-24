@@ -187,11 +187,6 @@ void QDeclarativeLoader::setSource(const QUrl &url)
     if (d->source == url)
         return;
 
-    if (!qmlContext(this)->isSafeOrigin(url)) {
-        qmlInfo(this) << tr("\"%1\" is not a safe origin from \"%2\"").arg(url.toString()).arg(qmlContext(this)->baseUrl().toString());
-        return;
-    }
-
     d->clear();
 
     d->source = url;

@@ -539,19 +539,6 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
 
 
     foreach (QDeclarativeScriptParser::Import imp, unit->data.imports()) {
-        if (imp.type != QDeclarativeScriptParser::Import::Library && !engine->isSafeOrigin(QUrl(imp.uri), unit->imports.baseUrl())) {
-            QDeclarativeError error;
-            error.setUrl(unit->imports.baseUrl());
-            error.setDescription(tr("\"%1\" is not a safe origin").arg(imp.uri));
-            error.setLine(imp.location.start.line);
-            error.setColumn(imp.location.start.column);
-            unit->status = QDeclarativeCompositeTypeData::Error;
-            unit->errorType = QDeclarativeCompositeTypeData::GeneralError;
-            unit->errors << error;
-            doComplete(unit);
-            return 0;
-        }
-
         QDeclarativeDirComponents qmldircomponentsnetwork;
         if (imp.type == QDeclarativeScriptParser::Import::Script)
             continue;

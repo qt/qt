@@ -1883,33 +1883,6 @@ QString QDeclarativeEngine::offlineStoragePath() const
 }
 
 /*!
-  Returns whether \a to_url is considered safe content when reference by
-  content at \a from_url.
-
-  The default implementation implements:
-
-  \list
-    \i Relative URLs are safe
-    \i https content is safe
-    \i URLs from the same host and port are safe (including no-host)
-  \endlist
-
-  You should consider whether this convention is adequate for your pareticular application.
-*/
-bool QDeclarativeEngine::isSafeOrigin(const QUrl& to_url, const QUrl& from_url) const
-{
-    if (to_url.isRelative())
-        return true;
-    if (to_url.scheme()==QLatin1String("https"))
-        return true;
-
-    if (to_url.host() == from_url.host() && to_url.port() == from_url.port()) // including files (with no host)
-        return true;
-
-    return false;
-}
-
-/*!
   \internal
 
   Returns the result of the merge of \a baseName with \a dir, \a suffixes, and \a prefix.

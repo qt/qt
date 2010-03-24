@@ -86,8 +86,6 @@ private slots:
     void noResizeGraphicsWidget();
     void networkRequestUrl();
     void failNetworkRequest();
-    void networkSafety();
-    void networkSafety_data();
 //    void networkComponent();
 
     void deleteComponentCrash();
@@ -504,41 +502,6 @@ void tst_QDeclarativeLoader::vmeErrors()
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader);
     QVERIFY(loader->item() == 0);
-
-    delete loader;
-}
-
-void tst_QDeclarativeLoader::networkSafety_data()
-{
-    QTest::addColumn<QUrl>("url");
-    QTest::addColumn<QString>("message");
-
-    QTest::newRow("same origin") << QUrl("http://127.0.0.1:14445/sameorigin.qml") << QString();
-    QTest::newRow("different origin") << QUrl("http://127.0.0.1:14445/differentorigin.qml") << QString("QML Loader (http://127.0.0.1:14445/differentorigin.qml:3:1) \"http://evil.place/evil.qml\" is not a safe origin from \"http://127.0.0.1:14445/differentorigin.qml\"");
-}
-
-void tst_QDeclarativeLoader::networkSafety()
-{
-    TestHTTPServer server(SERVER_PORT);
-    QVERIFY(server.isValid());
-    server.serveDirectory(SRCDIR "/data");
-
-    QFETCH(QUrl, url);
-    QFETCH(QString, message);
-
-    if (!message.isEmpty())
-        QTest::ignoreMessage(QtWarningMsg, message.toLatin1());
-
-    QDeclarativeComponent component(&engine, url);
-    TRY_WAIT(component.status() == QDeclarativeComponent::Ready);
-    QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
-    QVERIFY(loader != 0);
-
-    if (message.isEmpty()) {
-        TRY_WAIT(loader->status() == QDeclarativeLoader::Ready);
-    } else {
-        TRY_WAIT(loader->status() == QDeclarativeLoader::Null);
-    }
 
     delete loader;
 }
