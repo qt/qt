@@ -769,9 +769,9 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             GtkArrowType type = GTK_ARROW_UP;
             QRect r = header->rect;
             QImage arrow;
-            if (header->sortIndicator & QStyleOptionHeader::SortDown)
+            if (header->sortIndicator & QStyleOptionHeader::SortUp)
                 type = GTK_ARROW_UP;
-            else if (header->sortIndicator & QStyleOptionHeader::SortUp)
+            else if (header->sortIndicator & QStyleOptionHeader::SortDown)
                 type = GTK_ARROW_DOWN;
 
             gtkPainter.paintArrow(gtkTreeHeader, "button", option->rect.adjusted(1, 1, -1, -1), type, state,
