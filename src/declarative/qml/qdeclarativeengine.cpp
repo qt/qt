@@ -116,16 +116,16 @@ QT_BEGIN_NAMESPACE
 DEFINE_BOOL_CONFIG_OPTION(qmlImportTrace, QML_IMPORT_TRACE)
 
 /*!
-    \qmlclass QtObject QObject
+  \qmlclass QtObject QObject
   \since 4.7
-    \brief The QtObject element is the most basic element in QML
+  \brief The QtObject element is the most basic element in QML
 
-    The QtObject element is a non-visual element which contains only
-    the objectName property. It is useful for when you need an extremely
-    lightweight element to place your own custom properties in.
+  The QtObject element is a non-visual element which contains only the
+  objectName property. It is useful for when you need an extremely
+  lightweight element to place your own custom properties in.
 
-    It can also be useful for C++ integration, as it is just a plain QObject. See
-    the QObject documentation for further details.
+  It can also be useful for C++ integration, as it is just a plain
+  QObject. See the QObject documentation for further details.
 */
 /*!
   \qmlproperty string QtObject::objectName
@@ -374,37 +374,38 @@ QDeclarativeWorkerScriptEngine *QDeclarativeEnginePrivate::getWorkerScriptEngine
 }
 
 /*!
-    \class QDeclarativeEngine
+  \class QDeclarativeEngine
   \since 4.7
-    \brief The QDeclarativeEngine class provides an environment for instantiating QML components.
-    \mainclass
+  \brief The QDeclarativeEngine class provides an environment for instantiating QML components.
+  \mainclass
 
-    Each QML component is instantiated in a QDeclarativeContext.  QDeclarativeContext's are
-    essential for passing data to QML components.  In QML, contexts are arranged
-    hierarchically and this hierarchy is managed by the QDeclarativeEngine.
+  Each QML component is instantiated in a QDeclarativeContext.
+  QDeclarativeContext's are essential for passing data to QML
+  components.  In QML, contexts are arranged hierarchically and this
+  hierarchy is managed by the QDeclarativeEngine.
 
-    Prior to creating any QML components, an application must have created a
-    QDeclarativeEngine to gain access to a QML context.  The following example shows how
-    to create a simple Text item.
+  Prior to creating any QML components, an application must have
+  created a QDeclarativeEngine to gain access to a QML context.  The
+  following example shows how to create a simple Text item.
 
-    \code
-    QDeclarativeEngine engine;
-    QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6\nText { text: \"Hello world!\" }", QUrl());
-    QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(component.create());
+  \code
+  QDeclarativeEngine engine;
+  QDeclarativeComponent component(&engine);
+  component.setData("import Qt 4.6\nText { text: \"Hello world!\" }", QUrl());
+  QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(component.create());
+  
+  //add item to view, etc
+  ...
+  \endcode
 
-    //add item to view, etc
-    ...
-    \endcode
+  In this case, the Text item will be created in the engine's
+  \l {QDeclarativeEngine::rootContext()}{root context}.
 
-    In this case, the Text item will be created in the engine's
-    \l {QDeclarativeEngine::rootContext()}{root context}.
-
-    \sa QDeclarativeComponent QDeclarativeContext
+  \sa QDeclarativeComponent QDeclarativeContext
 */
 
 /*!
-    Create a new QDeclarativeEngine with the given \a parent.
+  Create a new QDeclarativeEngine with the given \a parent.
 */
 QDeclarativeEngine::QDeclarativeEngine(QObject *parent)
 : QObject(*new QDeclarativeEnginePrivate(this), parent)
@@ -414,10 +415,11 @@ QDeclarativeEngine::QDeclarativeEngine(QObject *parent)
 }
 
 /*!
-    Destroys the QDeclarativeEngine.
+  Destroys the QDeclarativeEngine.
 
-    Any QDeclarativeContext's created on this engine will be invalidated, but not
-    destroyed (unless they are parented to the QDeclarativeEngine object).
+  Any QDeclarativeContext's created on this engine will be
+  invalidated, but not destroyed (unless they are parented to the
+  QDeclarativeEngine object).
 */
 QDeclarativeEngine::~QDeclarativeEngine()
 {
@@ -433,8 +435,9 @@ QDeclarativeEngine::~QDeclarativeEngine()
 /*!
   Clears the engine's internal component cache.
 
-  Normally the QDeclarativeEngine caches components loaded from qml files.  This method
-  clears this cache and forces the component to be reloaded.
+  Normally the QDeclarativeEngine caches components loaded from qml
+  files.  This method clears this cache and forces the component to be
+  reloaded.
  */
 void QDeclarativeEngine::clearComponentCache()
 {
@@ -443,14 +446,15 @@ void QDeclarativeEngine::clearComponentCache()
 }
 
 /*!
-    Returns the engine's root context.
+  Returns the engine's root context.
 
-    The root context is automatically created by the QDeclarativeEngine.  Data that
-    should be available to all QML component instances instantiated by the
-    engine should be put in the root context.
+  The root context is automatically created by the QDeclarativeEngine.
+  Data that should be available to all QML component instances
+  instantiated by the engine should be put in the root context.
 
-    Additional data that should only be available to a subset of component
-    instances should be added to sub-contexts parented to the root context.
+  Additional data that should only be available to a subset of
+  component instances should be added to sub-contexts parented to the
+  root context.
 */
 QDeclarativeContext *QDeclarativeEngine::rootContext()
 {
@@ -459,14 +463,14 @@ QDeclarativeContext *QDeclarativeEngine::rootContext()
 }
 
 /*!
-    Sets the \a factory to use for creating QNetworkAccessManager(s).
+  Sets the \a factory to use for creating QNetworkAccessManager(s).
 
-    QNetworkAccessManager is used for all network access by QML.
-    By implementing a factory it is possible to create custom
-    QNetworkAccessManager with specialized caching, proxy and
-    cookie support.
+  QNetworkAccessManager is used for all network access by QML.  By
+  implementing a factory it is possible to create custom
+  QNetworkAccessManager with specialized caching, proxy and cookie
+  support.
 
-    The factory must be set before exceuting the engine.
+  The factory must be set before exceuting the engine.
 */
 void QDeclarativeEngine::setNetworkAccessManagerFactory(QDeclarativeNetworkAccessManagerFactory *factory)
 {
@@ -476,9 +480,9 @@ void QDeclarativeEngine::setNetworkAccessManagerFactory(QDeclarativeNetworkAcces
 }
 
 /*!
-    Returns the current QDeclarativeNetworkAccessManagerFactory.
+  Returns the current QDeclarativeNetworkAccessManagerFactory.
 
-    \sa setNetworkAccessManagerFactory()
+  \sa setNetworkAccessManagerFactory()
 */
 QDeclarativeNetworkAccessManagerFactory *QDeclarativeEngine::networkAccessManagerFactory() const
 {
@@ -508,15 +512,16 @@ QNetworkAccessManager *QDeclarativeEnginePrivate::getNetworkAccessManager() cons
 }
 
 /*!
-    Returns a common QNetworkAccessManager which can be used by any QML element
-    instantiated by this engine.
+  Returns a common QNetworkAccessManager which can be used by any QML
+  element instantiated by this engine.
 
-    If a QDeclarativeNetworkAccessManagerFactory has been set and a QNetworkAccessManager
-    has not yet been created, the QDeclarativeNetworkAccessManagerFactory will be used
-    to create the QNetworkAccessManager; otherwise the returned QNetworkAccessManager
-    will have no proxy or cache set.
+  If a QDeclarativeNetworkAccessManagerFactory has been set and a
+  QNetworkAccessManager has not yet been created, the
+  QDeclarativeNetworkAccessManagerFactory will be used to create the
+  QNetworkAccessManager; otherwise the returned QNetworkAccessManager
+  will have no proxy or cache set.
 
-    \sa setNetworkAccessManagerFactory()
+  \sa setNetworkAccessManagerFactory()
 */
 QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
 {
@@ -525,26 +530,27 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
 }
 
 /*!
-    Sets the \a provider to use for images requested via the \e image: url
-    scheme, with host \a providerId.
 
-    QDeclarativeImageProvider allows images to be provided to QML asynchronously.
-    The image request will be run in a low priority thread.  This allows
-    potentially costly image loading to be done in the background, without
-    affecting the performance of the UI.
+  Sets the \a provider to use for images requested via the \e
+  image: url scheme, with host \a providerId.
 
-    Note that images loaded from a QDeclarativeImageProvider are cached by
-    QPixmapCache, similar to any image loaded by QML.
+  QDeclarativeImageProvider allows images to be provided to QML
+  asynchronously.  The image request will be run in a low priority
+  thread.  This allows potentially costly image loading to be done in
+  the background, without affecting the performance of the UI.
 
-    The QDeclarativeEngine assumes ownership of the provider.
+  Note that images loaded from a QDeclarativeImageProvider are cached
+  by QPixmapCache, similar to any image loaded by QML.
 
-    This example creates a provider with id \e colors:
+  The QDeclarativeEngine assumes ownership of the provider.
 
-    \snippet examples/declarative/imageprovider/imageprovider.cpp 0
+  This example creates a provider with id \e colors:
 
-    \snippet examples/declarative/imageprovider/imageprovider.qml 0
+  \snippet examples/declarative/imageprovider/imageprovider.cpp 0
 
-    \sa removeImageProvider()
+  \snippet examples/declarative/imageprovider/imageprovider-example.qml 0
+
+  \sa removeImageProvider()
 */
 void QDeclarativeEngine::addImageProvider(const QString &providerId, QDeclarativeImageProvider *provider)
 {
@@ -554,7 +560,7 @@ void QDeclarativeEngine::addImageProvider(const QString &providerId, QDeclarativ
 }
 
 /*!
-    Returns the QDeclarativeImageProvider set for \a providerId.
+  Returns the QDeclarativeImageProvider set for \a providerId.
 */
 QDeclarativeImageProvider *QDeclarativeEngine::imageProvider(const QString &providerId) const
 {
@@ -564,11 +570,11 @@ QDeclarativeImageProvider *QDeclarativeEngine::imageProvider(const QString &prov
 }
 
 /*!
-    Removes the QDeclarativeImageProvider for \a providerId.
+  Removes the QDeclarativeImageProvider for \a providerId.
 
-    Returns the provider if it was found; otherwise returns 0.
+  Returns the provider if it was found; otherwise returns 0.
 
-    \sa addImageProvider()
+  \sa addImageProvider()
 */
 void QDeclarativeEngine::removeImageProvider(const QString &providerId)
 {
@@ -588,13 +594,14 @@ QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url)
 }
 
 /*!
-    Return the base URL for this engine.  The base URL is only used to resolve
-    components when a relative URL is passed to the QDeclarativeComponent constructor.
+  Return the base URL for this engine.  The base URL is only used to
+  resolve components when a relative URL is passed to the
+  QDeclarativeComponent constructor.
 
-    If a base URL has not been explicitly set, this method returns the
-    application's current working directory.
+  If a base URL has not been explicitly set, this method returns the
+  application's current working directory.
 
-    \sa setBaseUrl()
+  \sa setBaseUrl()
 */
 QUrl QDeclarativeEngine::baseUrl() const
 {
@@ -607,9 +614,9 @@ QUrl QDeclarativeEngine::baseUrl() const
 }
 
 /*!
-    Set the  base URL for this engine to \a url.
+  Set the  base URL for this engine to \a url.
 
-    \sa baseUrl()
+  \sa baseUrl()
 */
 void QDeclarativeEngine::setBaseUrl(const QUrl &url)
 {
@@ -618,9 +625,11 @@ void QDeclarativeEngine::setBaseUrl(const QUrl &url)
 }
 
 /*!
-  Returns the QDeclarativeContext for the \a object, or 0 if no context has been set.
+  Returns the QDeclarativeContext for the \a object, or 0 if no
+  context has been set.
 
-  When the QDeclarativeEngine instantiates a QObject, the context is set automatically.
+  When the QDeclarativeEngine instantiates a QObject, the context is
+  set automatically.
   */
 QDeclarativeContext *QDeclarativeEngine::contextForObject(const QObject *object)
 {
@@ -645,7 +654,8 @@ QDeclarativeContext *QDeclarativeEngine::contextForObject(const QObject *object)
   If the \a object already has a context, a warning is
   output, but the context is not changed.
 
-  When the QDeclarativeEngine instantiates a QObject, the context is set automatically.
+  When the QDeclarativeEngine instantiates a QObject, the context is
+  set automatically.
  */
 void QDeclarativeEngine::setContextForObject(QObject *object, QDeclarativeContext *context)
 {
@@ -663,37 +673,43 @@ void QDeclarativeEngine::setContextForObject(QObject *object, QDeclarativeContex
 }
 
 /*!
-\enum QDeclarativeEngine::ObjectOwnership
+  \enum QDeclarativeEngine::ObjectOwnership
 
-Ownership controls whether or not QML automatically destroys the QObject when the object 
-is garbage collected by the JavaScript engine.  The two ownership options are:
+  Ownership controls whether or not QML automatically destroys the
+  QObject when the object is garbage collected by the JavaScript
+  engine.  The two ownership options are:
 
-\list
-\o CppOwnership - The object is owned by C++ code, and will never be deleted by QML.  The
-JavaScript destroy() method cannot be used on objects with CppOwnership.  This option
-is similar to QScriptEngine::QtOwnership.
+  \value CppOwnership The object is owned by C++ code, and will
+  never be deleted by QML.  The JavaScript destroy() method cannot be
+  used on objects with CppOwnership.  This option is similar to
+  QScriptEngine::QtOwnership.
 
-\o JavaScriptOwnership - The object is owned by JavaScript.  When the object is returned to QML
-as the return value of a method call or property access, QML will delete the object if there
-are no remaining JavaScript references to it and it has no QObject::parent().  This option
-is similar to QScriptEngine::ScriptOwnership.
-\endlist
+  \value JavaScriptOwnership The object is owned by JavaScript.
+  When the object is returned to QML as the return value of a method
+  call or property access, QML will delete the object if there are no
+  remaining JavaScript references to it and it has no
+  QObject::parent().  This option is similar to
+  QScriptEngine::ScriptOwnership.
 
-Generally an application doesn't need to set an object's ownership explicitly.  QML uses
-a heuristic to set the default object ownership.  By default, an object that is created by
-QML has JavaScriptOwnership.  The exception to this are the root objects created by calling
-QDeclarativeCompnent::create() or QDeclarativeComponent::beginCreate() which have 
-CppOwnership by default.  The ownership of these root-level objects is considered to have
-been transfered to the C++ caller.
+  Generally an application doesn't need to set an object's ownership
+  explicitly.  QML uses a heuristic to set the default object
+  ownership.  By default, an object that is created by QML has
+  JavaScriptOwnership.  The exception to this are the root objects
+  created by calling QDeclarativeCompnent::create() or
+  QDeclarativeComponent::beginCreate() which have CppOwnership by
+  default.  The ownership of these root-level objects is considered to
+  have been transfered to the C++ caller.
 
-Objects not-created by QML have CppOwnership by default.  The exception to this is objects
-returned from a C++ method call.  The ownership of these objects is passed to JavaScript.
+  Objects not-created by QML have CppOwnership by default.  The
+  exception to this is objects returned from a C++ method call.  The
+  ownership of these objects is passed to JavaScript.
 
-Calling setObjectOwnership() overrides the default ownership heuristic used by QML.
+  Calling setObjectOwnership() overrides the default ownership
+  heuristic used by QML.
 */
 
 /*!
-Sets the \a ownership of \a object.
+  Sets the \a ownership of \a object.
 */
 void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership ownership)
 {
@@ -706,7 +722,7 @@ void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership own
 }
 
 /*!
-Returns the ownership of \a object.
+  Returns the ownership of \a object.
 */
 QDeclarativeEngine::ObjectOwnership QDeclarativeEngine::objectOwnership(QObject *object)
 {

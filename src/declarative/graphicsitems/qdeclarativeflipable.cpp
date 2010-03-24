@@ -74,7 +74,7 @@ public:
 
     Here is a Flipable that flips whenever it is clicked:
 
-    \snippet examples/declarative/flipable/flipable.qml 0
+    \snippet examples/declarative/flipable/flipable-example.qml 0
 
     \image flipable.gif
 

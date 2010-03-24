@@ -142,7 +142,7 @@ void QDeclarativeAudio::stop()
 */
 
 /*!
-    \qmlproperty url Audio:autoLoad
+    \qmlproperty url Audio::autoLoad
 
     This property indicates if loading of media should begin immediately.
 
