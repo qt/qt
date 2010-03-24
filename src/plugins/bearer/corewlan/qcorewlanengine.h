@@ -95,11 +95,10 @@ private:
 
     SCDynamicStoreRef storeSession;
     CFRunLoopSourceRef runloopSource;
-
     bool hasWifi;
 
 protected:
-   QMap<QString, QMap<QString,QString> > userProfiles;
+    QMap<QString, QMap<QString,QString> > userProfiles;
 
     void startNetworkChangeLoop();
     void getUserConfigurations();

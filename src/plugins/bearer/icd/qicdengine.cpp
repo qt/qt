@@ -335,7 +335,7 @@ void QIcdEngine::doRequestUpdate()
                         locker.relock();
                     }
 
-                    if (!ap.scan.network_type.startsWith("WLAN"))
+                    if (!ap.scan.network_type.startsWith(QLatin1String("WLAN")))
                         continue; // not a wlan AP
                 }
             } else {
