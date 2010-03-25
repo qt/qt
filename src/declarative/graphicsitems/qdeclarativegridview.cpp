@@ -927,7 +927,7 @@ QDeclarativeGridView::~QDeclarativeGridView()
             id: wrapper
             SequentialAnimation on GridView.onRemove {
                 PropertyAction { target: wrapper.GridView; property: "delayRemove"; value: true }
-                NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing: "easeInOutQuad" }
+                NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing.type: "InOutQuad" }
                 PropertyAction { target: wrapper.GridView; property: "delayRemove"; value: false }
             }
         }

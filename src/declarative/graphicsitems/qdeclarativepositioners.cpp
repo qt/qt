@@ -385,7 +385,7 @@ Column {
     move: Transition {
         NumberAnimation {
             properties: "y"
-            easing: "easeOutBounce"
+            easing.type: "OutBounce"
         }
     }
 }
