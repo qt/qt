@@ -200,7 +200,6 @@ void QCoreWlanEngine::connectToId(const QString &id)
         const QString idHash2 = QString::number(qHash(QLatin1String("corewlan:") + getNetworkNameFromSsid(ptr->name)));
 
         bool using8021X = false;
-
         if (idHash2 != id) {
             NSArray *array = [CW8021XProfile allUser8021XProfiles];
 
@@ -695,9 +694,7 @@ QString QCoreWlanEngine::getNetworkNameFromSsid(const QString &ssid)
              if(ij.key() == ssid) {
                  return i.key();
              }
-
          }
-            return map.key(ssid);
     }
     return QString();
 }
