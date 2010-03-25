@@ -1390,7 +1390,9 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
                 foreach (const QDeclarativeDirParser::Component &c, qmldircomponents) {
                     if (c.typeName == typeName) {
                         typeWasDeclaredInQmldir = true;
-                        if (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion)) {
+
+                        // importing version -1 means import ALL versions
+                        if ((vmaj == -1) || (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion))) {
                             QUrl candidate = url.resolved(QUrl(c.fileName));
                             if (c.internal && base) {
                                 if (base->resolved(QUrl(c.fileName)) != candidate)
@@ -1479,10 +1481,10 @@ public:
 
         QStringList paths;
 
-        if (!base.isEmpty()) {
-            QString baseDir = QFileInfo(toLocalFileOrQrc(base)).path();
-            paths += baseDir;
-        }
+//        if (!base.isEmpty()) {
+//            QString baseDir = QFileInfo(toLocalFileOrQrc(base)).path();
+//            paths += baseDir;
+//        }
 
         QString applicationDirPath = QCoreApplication::applicationDirPath();
         if (!applicationDirPath.isEmpty())
@@ -1542,9 +1544,9 @@ public:
             // user import paths
             QStringList paths;
             // base..
-            QString localFileOrQrc = toLocalFileOrQrc(base);
-            QString localFileOrQrcPath = QFileInfo(localFileOrQrc).path();
-            paths += localFileOrQrcPath;
+//            QString localFileOrQrc = toLocalFileOrQrc(base);
+//            QString localFileOrQrcPath = QFileInfo(localFileOrQrc).path();
+//            paths += localFileOrQrcPath;
             paths += QDeclarativeEnginePrivate::get(engine)->fileImportPath;
 
             QString applicationDirPath = QCoreApplication::applicationDirPath();
