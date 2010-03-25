@@ -983,16 +983,20 @@ TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameEl
     switch(frameElement) {
         case QS60StylePrivate::SF_PanelBackground:
             // panel should have slightly slimmer border to enable thin line of background graphics between closest component
-            widthShrink = widthShrink-2;
-            heightShrink = heightShrink-2;
+            widthShrink = widthShrink - 2;
+            heightShrink = heightShrink - 2;
             break;
         case QS60StylePrivate::SF_ToolTip:
-            widthShrink = widthShrink>>1;
-            heightShrink = heightShrink>>1;
+            widthShrink = widthShrink >> 1;
+            heightShrink = heightShrink >> 1;
             break;
         case QS60StylePrivate::SF_ListHighlight:
-            widthShrink = widthShrink-2;
-            heightShrink = heightShrink-2;
+            widthShrink = widthShrink - 2;
+            heightShrink = heightShrink - 2;
+            break;
+        case QS60StylePrivate::SF_PopupBackground:
+            widthShrink = widthShrink + 5;
+            heightShrink = heightShrink + 5;
             break;
         default:
             break;
