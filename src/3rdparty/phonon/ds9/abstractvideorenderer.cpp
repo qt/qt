@@ -99,8 +99,8 @@ namespace Phonon
             m_dstX = m_dstY = 0;
 
             if (ratio > 0) {
-                if ((realWidth / realHeight > ratio && scaleMode == Phonon::VideoWidget::FitInView)
-                    || (realWidth / realHeight < ratio && scaleMode == Phonon::VideoWidget::ScaleAndCrop)) {
+                if (realWidth / realHeight > ratio && scaleMode == Phonon::VideoWidget::FitInView
+                    || realWidth / realHeight < ratio && scaleMode == Phonon::VideoWidget::ScaleAndCrop) {
                         //the height is correct, let's change the width
                         m_dstWidth = qRound(realHeight * ratio);
                         m_dstX = qRound((realWidth - realHeight * ratio) / 2.);
