@@ -1107,7 +1107,7 @@ Rectangle {
     x: NumberAnimation {
         from: 0
         to: 100
-        loops: Qt.Infinite
+        loops: Animation.Infinite
     }
 }
     \endqml
@@ -1155,7 +1155,7 @@ Rectangle {
     x: NumberAnimation {
         from: 0
         to: 100
-        loops: Qt.Infinite
+        loops: Animation.Infinite
     }
 }
     \endqml

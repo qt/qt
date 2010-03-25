@@ -14,9 +14,9 @@ Rectangle {
                 ProgressBar {
                     property int r: Math.floor(Math.random() * 5000 + 1000)
                     width: main.width - 20
-                    NumberAnimation on value { duration: r; from: 0; to: 100; loops: Qt.Infinite }
-                    ColorAnimation on color { duration: r; from: "lightsteelblue"; to: "thistle"; loops: Qt.Infinite }
-                    ColorAnimation on secondColor { duration: r; from: "steelblue"; to: "#CD96CD"; loops: Qt.Infinite }
+                    NumberAnimation on value { duration: r; from: 0; to: 100; loops: Animation.Infinite }
+                    ColorAnimation on color { duration: r; from: "lightsteelblue"; to: "thistle"; loops: Animation.Infinite }
+                    ColorAnimation on secondColor { duration: r; from: "steelblue"; to: "#CD96CD"; loops: Animation.Infinite }
                 }
             }
         }

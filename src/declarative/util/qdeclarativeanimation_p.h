@@ -70,6 +70,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeAbstractAnimation : public QObject, public Q
 
     Q_INTERFACES(QDeclarativeParserStatus)
     Q_INTERFACES(QDeclarativePropertyValueSource)
+    Q_ENUMS(Loops)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged)
@@ -79,6 +80,8 @@ class Q_AUTOTEST_EXPORT QDeclarativeAbstractAnimation : public QObject, public Q
 public:
     QDeclarativeAbstractAnimation(QObject *parent=0);
     virtual ~QDeclarativeAbstractAnimation();
+
+    enum Loops { Infinite = -2 };
 
     bool isRunning() const;
     void setRunning(bool);

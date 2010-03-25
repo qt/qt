@@ -309,7 +309,7 @@ void QDeclarativeAbstractAnimation::setAlwaysRunToEnd(bool f)
 
     By default, \c loops is 1: the animation will play through once and then stop.
 
-    If set to Qt.Infinite, the animation will continuously repeat until it is explicitly
+    If set to Animation.Infinite, the animation will continuously repeat until it is explicitly
     stopped - either by setting the \c running property to false, or by calling
     the \c stop() method.
 
@@ -319,7 +319,7 @@ void QDeclarativeAbstractAnimation::setAlwaysRunToEnd(bool f)
     Rectangle {
         width: 100; height: 100; color: "green"
         RotationAnimation on rotation {
-            loops: Qt.Infinite
+            loops: Animation.Infinite
             from: 0
             to: 360
         }
@@ -335,6 +335,9 @@ int QDeclarativeAbstractAnimation::loops() const
 void QDeclarativeAbstractAnimation::setLoops(int loops)
 {
     Q_D(QDeclarativeAbstractAnimation);
+    if (loops < 0)
+        loops = -1;
+
     if (loops == d->loopCount)
         return;
 
@@ -1598,7 +1601,7 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     \qml
     Rectangle {
         SequentialAnimation on x {
-            loops: Qt.Infinite
+            loops: Animation.Infinite
             PropertyAnimation { to: 50 }
             PropertyAnimation { to: 0 }
         }
@@ -2007,7 +2010,7 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
            id: theRect
            width: 100; height: 100
            color: Qt.rgba(0,0,1)
-           NumberAnimation on x { to: 500; loops: Qt.Infinite } //animate theRect's x property
+           NumberAnimation on x { to: 500; loops: Animation.Infinite } //animate theRect's x property
            Behavior on y { NumberAnimation {} } //animate theRect's y property
        }
        \endqml

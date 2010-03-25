@@ -16,7 +16,7 @@ Rectangle {
                 running: false
                 from: 0; to: 10
                 duration: 1000
-                loops: Qt.Infinite
+                loops: Animation.Infinite
             }
         }
 
@@ -33,7 +33,7 @@ Rectangle {
         effect: DropShadow {
             blurRadius: 3
             offset.x: 3
-            NumberAnimation on offset.y { id: dropShadowEffect; from: 0; to: 10; duration: 1000; running: false; loops: Qt.Infinite; }
+            NumberAnimation on offset.y { id: dropShadowEffect; from: 0; to: 10; duration: 1000; running: false; loops: Animation.Infinite; }
         }
 
         MouseArea { anchors.fill: parent; onClicked: dropShadowEffect.running = !dropShadowEffect.running }

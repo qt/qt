@@ -43,7 +43,7 @@ Item {
         // Animate the y property. Setting repeat to true makes the
         // animation repeat indefinitely, otherwise it would only run once.
         SequentialAnimation on y {
-            loops: Qt.Infinite
+            loops: Animation.Infinite
 
             // Move from minHeight to maxHeight in 300ms, using the OutExpo easing function
             NumberAnimation {

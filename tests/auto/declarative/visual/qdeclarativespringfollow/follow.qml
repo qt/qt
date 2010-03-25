@@ -8,7 +8,7 @@ Rectangle {
         color: "#00ff00"
         y: 200; width: 60; height: 20
         y: SequentialAnimation {
-            loops: Qt.Infinite
+            loops: Animation.Infinite
             NumberAnimation {
                 to: 20; duration: 500
                 easing.type: "InOutQuad"
