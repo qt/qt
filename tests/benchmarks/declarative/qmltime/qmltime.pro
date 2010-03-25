@@ -1,10 +1,10 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = qdeclarativetime
+TARGET = qmltime
 QT += declarative
 macx:CONFIG -= app_bundle
 
-SOURCES += qdeclarativetime.cpp 
+SOURCES += qmltime.cpp 
 
 symbian* {
     TARGET.CAPABILITY = "All -TCB"

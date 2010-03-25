@@ -156,7 +156,7 @@ int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
 
-    qmlRegisterType<Timer>("QDeclarativeTime", 1, 0, "Timer");
+    qmlRegisterType<Timer>("QmlTime", 1, 0, "Timer");
 
     uint iterations = 1024;
     QString filename;
@@ -228,4 +228,4 @@ int main(int argc, char ** argv)
     return 0;
 }
 
-#include "qdeclarativetime.moc"
+#include "qmltime.moc"
