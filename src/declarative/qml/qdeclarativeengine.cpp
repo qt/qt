@@ -218,6 +218,8 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
     // XXX When the above a done some better way, that way should also be
     // XXX used to add Qt.Sound class.
 
+    //for animations that loop forever
+    qtObject.setProperty(QLatin1String("Infinite"), -1);
 
     //types
     qtObject.setProperty(QLatin1String("rgba"), newFunction(QDeclarativeEnginePrivate::rgba, 4));

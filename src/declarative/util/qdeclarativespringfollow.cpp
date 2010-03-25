@@ -224,11 +224,11 @@ void QDeclarativeSpringFollowPrivate::stop()
         color: "#00ff00"
         y: 200  // initial value
         SequentialAnimation on y {
-            running: true
-            repeat: true
+            loops: Qt.Infinite
             NumberAnimation {
                 to: 200
-                easing: "easeOutBounce(amplitude:100)"
+                easing.type: "OutBounce"
+                easing.amplitude: 100
                 duration: 2000
             }
             PauseAnimation { duration: 1000 }

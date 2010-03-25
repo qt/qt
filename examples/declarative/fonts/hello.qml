@@ -10,7 +10,7 @@ Rectangle {
             text: "Hello world!"; font.pixelSize: 60
 
             SequentialAnimation on font.letterSpacing {
-                repeat: true;
+                loops: Qt.Infinite;
                 NumberAnimation { from: 100; to: 300; easing.type: "InQuad"; duration: 3000 }
                 ScriptAction { script: {
                     container.y = (screen.height / 4) + (Math.random() * screen.height / 2)
@@ -18,7 +18,7 @@ Rectangle {
                 } }
             }
             SequentialAnimation on opacity {
-                repeat: true;
+                loops: Qt.Infinite;
                 NumberAnimation { from: 1; to: 0; duration: 2600 }
                 PauseAnimation { duration: 400 }
             }
