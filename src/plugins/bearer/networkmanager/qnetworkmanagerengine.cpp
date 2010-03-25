@@ -151,7 +151,7 @@ QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
                 continue;
 
             QNetworkManagerInterfaceDevice device(devices.at(0).path());
-            return device.networkInterface().name();
+            return device.networkInterface();
         }
     }
 

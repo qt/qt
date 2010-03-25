@@ -66,6 +66,7 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_NETWORKINTERFACE
 static QString qGetInterfaceType(const QString &interface)
 {
 #ifdef Q_OS_WIN32
@@ -139,6 +140,7 @@ static QString qGetInterfaceType(const QString &interface)
 
     return QLatin1String("Unknown");
 }
+#endif
 
 QGenericEngine::QGenericEngine(QObject *parent)
 :   QBearerEngineImpl(parent)
@@ -180,6 +182,7 @@ void QGenericEngine::requestUpdate()
 
 void QGenericEngine::doRequestUpdate()
 {
+#ifndef QT_NO_NETWORKINTERFACE
     QMutexLocker locker(&mutex);
 
     // Immediately after connecting with a wireless access point
@@ -290,6 +293,8 @@ void QGenericEngine::doRequestUpdate()
     }
 
     locker.unlock();
+#endif
+
     emit updateCompleted();
 }
 

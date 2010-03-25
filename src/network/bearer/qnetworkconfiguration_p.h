@@ -57,7 +57,6 @@
 
 #include <QtCore/qshareddata.h>
 #include <QtCore/qmutex.h>
-#include <QtNetwork/QNetworkInterface>
 
 QT_BEGIN_NAMESPACE
 

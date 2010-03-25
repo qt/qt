@@ -152,6 +152,7 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
     }
 }
 
+#ifndef QT_NO_NETWORKINTERFACE
 QNetworkInterface QNetworkSessionPrivateImpl::interface(TUint iapId) const
 {
     QString interfaceName;
@@ -189,7 +190,9 @@ QNetworkInterface QNetworkSessionPrivateImpl::interface(TUint iapId) const
  
     return QNetworkInterface::interfaceFromName(interfaceName);
 }
+#endif
 
+#ifndef QT_NO_NETWORKINTERFACE
 QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
 {
     if (!publicConfig.isValid() || state != QNetworkSession::Connected) {
@@ -198,6 +201,7 @@ QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
     
     return activeInterface;
 }
+#endif
 
 QVariant QNetworkSessionPrivateImpl::sessionProperty(const QString& /*key*/) const
 {
@@ -309,7 +313,9 @@ void QNetworkSessionPrivateImpl::open()
                     if (connInfo().iIapId == symbianConfig->numericId) {
                         if (iConnection.Attach(connInfo, RConnection::EAttachTypeNormal) == KErrNone) {
                             activeConfig = publicConfig;
+#ifndef QT_NO_NETWORKINTERFACE
                             activeInterface = interface(symbianConfig->numericId);
+#endif
                             connected = ETrue;
                             startTime = QDateTime::currentDateTime();
                             if (iDynamicSetdefaultif) {
@@ -878,7 +884,9 @@ void QNetworkSessionPrivateImpl::RunL()
                 toSymbianConfig(privateConfiguration(activeConfig));
 
             symbianConfig->mutex.lock();
+#ifndef QT_NO_NETWORKINTERFACE
             activeInterface = interface(symbianConfig->numericId);
+#endif
             if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
                 serviceConfig = QNetworkConfigurationManager()
                     .configurationFromIdentifier(symbianConfig->serviceNetworkPtr->id);
@@ -936,9 +944,11 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
         SymbianNetworkConfigurationPrivate *symbianConfig =
             toSymbianConfig(privateConfiguration(activeConfig));
 
+#ifndef QT_NO_NETWORKINTERFACE
         symbianConfig->mutex.lock();
         activeInterface = interface(symbianConfig->numericId);
         symbianConfig->mutex.unlock();
+#endif
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
         if (iDynamicSetdefaultif) {

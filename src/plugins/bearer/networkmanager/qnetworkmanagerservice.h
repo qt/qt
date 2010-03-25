@@ -59,8 +59,6 @@
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusMessage>
 #include <QtDBus/QDBusReply>
-#include <QNetworkInterface>
-
 
 #include <QtDBus/QDBusPendingCallWatcher>
 #include <QtDBus/QDBusObjectPath>
@@ -252,7 +250,7 @@ public:
     ~QNetworkManagerInterfaceDevice();
     
     QString udi() const;
-    QNetworkInterface networkInterface() const;
+    QString networkInterface() const;
     QDBusInterface *connectionInterface() const;
     quint32 ip4Address() const;
     quint32 state() const;

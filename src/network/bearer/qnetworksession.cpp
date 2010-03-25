@@ -370,6 +370,7 @@ QNetworkConfiguration QNetworkSession::configuration() const
     return d ? d->publicConfig : QNetworkConfiguration();
 }
 
+#ifndef QT_NO_NETWORKINTERFACE
 /*!
     Returns the network interface that is used by this session.
 
@@ -386,6 +387,7 @@ QNetworkInterface QNetworkSession::interface() const
 {
     return d ? d->currentInterface() : QNetworkInterface();
 }
+#endif
 
 /*!
     Returns true if this session is open. If the number of all open sessions is greater than

@@ -355,10 +355,12 @@ void tst_QNetworkSession::sessionProperties()
     // QNetworkSession::interface() should return an invalid interface unless
     // session is in the connected state.
     qDebug() << "Session state:" << session.state();
+#ifndef QT_NO_NETWORKINTERFACE
     qDebug() << "Session iface:" << session.interface().isValid() << session.interface().name();
 #if !(defined(Q_OS_SYMBIAN) && defined(__WINS__))
     // On Symbian emulator, the support for data bearers is limited
     QCOMPARE(session.state() == QNetworkSession::Connected, session.interface().isValid());
+#endif
 #endif
 
     if (!configuration.isValid()) {
@@ -694,9 +696,11 @@ void tst_QNetworkSession::userChoiceSession()
                 QTRY_VERIFY(!stateChangedSpy.isEmpty());
 
             QVERIFY(session.state() == QNetworkSession::Connected);
+#ifndef QT_NO_NETWORKINTERFACE
 #if !(defined(Q_OS_SYMBIAN) && defined(__WINS__))
             // On Symbian emulator, the support for data bearers is limited
             QVERIFY(session.interface().isValid());
+#endif
 #endif
 
             const QString userChoiceIdentifier =
@@ -839,9 +843,11 @@ void tst_QNetworkSession::sessionOpenCloseStop()
             }
 
             QVERIFY(session.state() == QNetworkSession::Connected);
+#ifndef QT_NO_NETWORKINTERFACE
 #if !(defined(Q_OS_SYMBIAN) && defined(__WINS__))
             // On Symbian emulator, the support for data bearers is limited
             QVERIFY(session.interface().isValid());
+#endif
 #endif
         } else {
             QFAIL("Timeout waiting for session to open.");
@@ -875,12 +881,14 @@ void tst_QNetworkSession::sessionOpenCloseStop()
         QVERIFY(session2.isOpen());
         QVERIFY(session.state() == QNetworkSession::Connected);
         QVERIFY(session2.state() == QNetworkSession::Connected);
+#ifndef QT_NO_NETWORKINTERFACE
 #if !(defined(Q_OS_SYMBIAN) && defined(__WINS__))
         // On Symbian emulator, the support for data bearers is limited
         QVERIFY(session.interface().isValid());
 #endif
         QCOMPARE(session.interface().hardwareAddress(), session2.interface().hardwareAddress());
         QCOMPARE(session.interface().index(), session2.interface().index());
+#endif
     }
 
     sessionOpenedSpy2.clear();
@@ -1051,12 +1059,14 @@ void tst_QNetworkSession::sessionOpenCloseStop()
             QVERIFY(!session2.isOpen());
             QVERIFY(session.state() == QNetworkSession::Connected);
             QVERIFY(session2.state() == QNetworkSession::Connected);
+#ifndef QT_NO_NETWORKINTERFACE
 #if !(defined(Q_OS_SYMBIAN) && defined(__WINS__))
             // On Symbian emulator, the support for data bearers is limited
             QVERIFY(session.interface().isValid());
 #endif
             QCOMPARE(session.interface().hardwareAddress(), session2.interface().hardwareAddress());
             QCOMPARE(session.interface().index(), session2.interface().index());
+#endif
         }
 
         sessionClosedSpy2.clear();

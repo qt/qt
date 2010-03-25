@@ -1110,7 +1110,7 @@ void QNetworkSessionPrivateImpl::reject()
 {
 }
 
-
+#ifndef QT_NO_NETWORKINTERFACE
 QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
 {
     if (!publicConfig.isValid() || state != QNetworkSession::Connected)
@@ -1121,7 +1121,7 @@ QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
 
     return QNetworkInterface::interfaceFromName(currentNetworkInterface);
 }
-
+#endif
 
 void QNetworkSessionPrivateImpl::setSessionProperty(const QString& key, const QVariant& value)
 {

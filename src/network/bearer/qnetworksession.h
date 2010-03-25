@@ -86,7 +86,9 @@ public:
 
     bool isOpen() const;
     QNetworkConfiguration configuration() const;
+#ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface interface() const;
+#endif
 
     State state() const;
     SessionError error() const;
