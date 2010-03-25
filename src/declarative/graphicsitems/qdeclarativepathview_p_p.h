@@ -75,17 +75,18 @@ class QDeclarativePathViewPrivate : public QDeclarativeItemPrivate
 public:
     QDeclarativePathViewPrivate()
       : path(0), currentIndex(0), startPc(0), lastDist(0)
-        , lastElapsed(0), stealMouse(false), ownModel(false), activeItem(0)
-        , snapPos(0), dragMargin(0), moveOffset(this, &QDeclarativePathViewPrivate::setOffset)
-        , firstIndex(0), pathItems(-1), pathOffset(0), requestedIndex(-1)
-        , moveReason(Other), attType(0)
+        , lastElapsed(0), mappedRange(1.0), stealMouse(false), ownModel(false), interactive(true)
+        , snapPos(0), dragMargin(0), deceleration(100)
+        , moveOffset(this, &QDeclarativePathViewPrivate::setOffset)
+        , firstIndex(-1), pathItems(-1), requestedIndex(-1)
+        , moveReason(Other), attType(0), highlightComponent(0), highlightItem(0)
     {
     }
 
     void init()
     {
         Q_Q(QDeclarativePathView);
-        _offset = 0;
+        offset = 0;
         q->setAcceptedMouseButtons(Qt::LeftButton);
         q->setFlag(QGraphicsItem::ItemIsFocusScope);
         q->setFiltersChildEvents(true);
@@ -96,7 +97,10 @@ public:
     void releaseItem(QDeclarativeItem *item);
     QDeclarativePathViewAttached *attached(QDeclarativeItem *item);
     void clear();
-
+    void updateMappedRange();
+    qreal positionOfIndex(int index) const;
+    void createHighlight();
+    void updateHighlight();
     bool isValid() const {
         return model && model->count() > 0 && model->isValid() && path;
     }
@@ -117,19 +121,20 @@ public:
     QPointF startPoint;
     qreal lastDist;
     int lastElapsed;
-    qreal _offset;
+    qreal offset;
+    qreal mappedRange;
     bool stealMouse : 1;
     bool ownModel : 1;
+    bool interactive : 1;
     QTime lastPosTime;
     QPointF lastPos;
-    QDeclarativeItem *activeItem;
     qreal snapPos;
     qreal dragMargin;
+    qreal deceleration;
     QDeclarativeTimeLine tl;
     QDeclarativeTimeLineValueProxy<QDeclarativePathViewPrivate> moveOffset;
     int firstIndex;
     int pathItems;
-    int pathOffset;
     int requestedIndex;
     QList<QDeclarativeItem *> items;
     QDeclarativeGuard<QDeclarativeVisualModel> model;
@@ -137,6 +142,8 @@ public:
     enum MovementReason { Other, Key, Mouse };
     MovementReason moveReason;
     QDeclarativeOpenMetaObjectType *attType;
+    QDeclarativeComponent *highlightComponent;
+    QDeclarativeItem *highlightItem;
 };
 
 QT_END_NAMESPACE
