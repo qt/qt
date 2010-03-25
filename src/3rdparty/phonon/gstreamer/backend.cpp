@@ -18,6 +18,7 @@
 #include "common.h"
 #include "backend.h"
 #include "audiooutput.h"
+#include "audiodataoutput.h"
 #include "audioeffect.h"
 #include "mediaobject.h"
 #include "videowidget.h"
@@ -26,6 +27,7 @@
 #include "message.h"
 #include "volumefadereffect.h"
 #include <gst/interfaces/propertyprobe.h>
+#include <phonon/pulsesupport.h>
 
 #include <QtCore/QSet>
 #include <QtCore/QVariant>
@@ -49,13 +51,17 @@ Backend::Backend(QObject *parent, const QVariantList &)
         , m_debugLevel(Warning)
         , m_isValid(false)
 {
+    // Initialise PulseAudio support
+    PulseSupport *pulse = PulseSupport::getInstance();
+    pulse->enable();
+    connect(pulse, SIGNAL(objectDescriptionChanged(ObjectDescriptionType)), SIGNAL(objectDescriptionChanged(ObjectDescriptionType)));
+
     // In order to support reloading, we only set the app name once...
     static bool first = true;
     if (first) {
         first = false;
         g_set_application_name(qApp->applicationName().toUtf8());
     }
-
     GError *err = 0;
     bool wasInit = gst_init_check(0, 0, &err);  //init gstreamer: must be called before any gst-related functions
     if (err)
@@ -92,6 +98,9 @@ Backend::Backend(QObject *parent, const QVariantList &)
 
 Backend::~Backend() 
 {
+    delete m_effectManager;
+    delete m_deviceManager;
+    PulseSupport::shutdown();
 }
 
 gboolean Backend::busCall(GstBus *bus, GstMessage *msg, gpointer data)
@@ -119,18 +128,15 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
     case MediaObjectClass:
         return new MediaObject(this, parent);
 
-    case AudioOutputClass: {
-            AudioOutput *ao = new AudioOutput(this, parent);
-            m_audioOutputs.append(ao);
-            return ao;
-        }
+    case AudioOutputClass:
+        return new AudioOutput(this, parent);
+
 #ifndef QT_NO_PHONON_EFFECT
     case EffectClass:
         return new AudioEffect(this, args[0].toInt(), parent);
 #endif //QT_NO_PHONON_EFFECT
     case AudioDataOutputClass:
-        logMessage("createObject() : AudioDataOutput not implemented");
-        break;
+        return new AudioDataOutput(this, parent);
 
 #ifndef QT_NO_PHONON_VIDEO
     case VideoDataOutputClass:
@@ -244,6 +250,15 @@ QStringList Backend::availableMimeTypes() const
         }
     }
     g_list_free(factoryList);
+    if (availableMimeTypes.contains("audio/x-vorbis")
+        && availableMimeTypes.contains("application/x-ogm-audio")) {
+        if (!availableMimeTypes.contains("audio/x-vorbis+ogg"))
+            availableMimeTypes.append("audio/x-vorbis+ogg");
+        if (!availableMimeTypes.contains("application/ogg"))  /* *.ogg */
+            availableMimeTypes.append("application/ogg");
+        if (!availableMimeTypes.contains("audio/ogg")) /* *.oga */
+            availableMimeTypes.append("audio/ogg");
+    }
     availableMimeTypes.sort();
     return availableMimeTypes;
 }
@@ -293,14 +308,11 @@ QHash<QByteArray, QVariant> Backend::objectDescriptionProperties(ObjectDescripti
 
     switch (type) {
     case Phonon::AudioOutputDeviceType: {
-            QList<AudioDevice> audioDevices = deviceManager()->audioOutputDevices();
-            foreach(const AudioDevice &device, audioDevices) {
-                if (device.id == index) {
-                    ret.insert("name", device.gstId);
-                    ret.insert("description", device.description);
-                    ret.insert("icon", QLatin1String("audio-card"));
-                    break;
-                }
+            AudioDevice* ad;
+            if ((ad = deviceManager()->audioDevice(index))) {
+                ret.insert("name", ad->gstId);
+                ret.insert("description", ad->description);
+                ret.insert("icon", ad->icon);
             }
         }
         break;
@@ -429,7 +441,7 @@ EffectManager* Backend::effectManager() const
 
 /**
  * Returns a debuglevel that is determined by the
- * PHONON_GSTREAMER_DEBUG environment variable.
+ * PHONON_GST_DEBUG environment variable.
  *
  *  Warning - important warnings
  *  Info    - general info
