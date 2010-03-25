@@ -225,18 +225,20 @@ class QDeclarativeAbstractAnimationPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QDeclarativeAbstractAnimation)
 public:
     QDeclarativeAbstractAnimationPrivate()
-    : running(false), paused(false), alwaysRunToEnd(false), repeat(false),
+    : running(false), paused(false), alwaysRunToEnd(false),
       connectedTimeLine(false), componentComplete(true),
-      avoidPropertyValueSourceStart(false), disableUserControl(false), group(0) {}
+      avoidPropertyValueSourceStart(false), disableUserControl(false),
+      loopCount(1), group(0) {}
 
     bool running:1;
     bool paused:1;
     bool alwaysRunToEnd:1;
-    bool repeat:1;
     bool connectedTimeLine:1;
     bool componentComplete:1;
     bool avoidPropertyValueSourceStart:1;
     bool disableUserControl:1;
+
+    int loopCount;
 
     void commence();
 

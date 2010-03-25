@@ -5,7 +5,7 @@ Image {
     height: 250
     source: "face.png"
     SequentialAnimation on fillMode {
-        repeat: true
+        loops: Qt.Infinite
         PropertyAction { value: Image.Stretch }
         PropertyAction { target: label; property: "text"; value: "Stretch" }
         PauseAnimation { duration: 1000 }

@@ -190,9 +190,13 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
 
     d->running = r;
     if (d->running) {
-        if (d->alwaysRunToEnd && d->repeat
+        if (d->alwaysRunToEnd && d->loopCount != 1
             && qtAnimation()->state() == QAbstractAnimation::Running) {
-            qtAnimation()->setLoopCount(-1);
+            //we've restarted before the final loop finished; restore proper loop count
+            if (d->loopCount == -1)
+                qtAnimation()->setLoopCount(d->loopCount);
+            else
+                qtAnimation()->setLoopCount(qtAnimation()->currentLoop() + d->loopCount);
         }
 
         if (!d->connectedTimeLine) {
@@ -204,8 +208,8 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
         emit started();
     } else {
         if (d->alwaysRunToEnd) {
-            if (d->repeat)
-                qtAnimation()->setLoopCount(qtAnimation()->currentLoop()+1);
+            if (d->loopCount != 1)
+                qtAnimation()->setLoopCount(qtAnimation()->currentLoop()+1);    //finish the current loop
         } else
             qtAnimation()->stop();
 
@@ -300,10 +304,12 @@ void QDeclarativeAbstractAnimation::setAlwaysRunToEnd(bool f)
 }
 
 /*!
-    \qmlproperty bool Animation::repeat
-    This property holds whether the animation should repeat.
+    \qmlproperty int Animation::loops
+    This property holds the number of times the animation should play.
 
-    If set, the animation will continuously repeat until it is explicitly
+    By default, \c loops is 1: the animation will play through once and then stop.
+
+    If set to Qt.Infinite, the animation will continuously repeat until it is explicitly
     stopped - either by setting the \c running property to false, or by calling
     the \c stop() method.
 
@@ -311,27 +317,32 @@ void QDeclarativeAbstractAnimation::setAlwaysRunToEnd(bool f)
 
     \code
     Rectangle {
-        NumberAnimation on rotation { running: true; repeat: true; from: 0 to: 360 }
+        width: 100; height: 100; color: "green"
+        RotationAnimation on rotation {
+            loops: Qt.Infinite
+            from: 0
+            to: 360
+        }
     }
     \endcode
 */
-bool QDeclarativeAbstractAnimation::repeat() const
+int QDeclarativeAbstractAnimation::loops() const
 {
     Q_D(const QDeclarativeAbstractAnimation);
-    return d->repeat;
+    return d->loopCount;
 }
 
-void QDeclarativeAbstractAnimation::setRepeat(bool r)
+void QDeclarativeAbstractAnimation::setLoops(int loops)
 {
     Q_D(QDeclarativeAbstractAnimation);
-    if (r == d->repeat)
+    if (loops == d->loopCount)
         return;
 
-    d->repeat = r;
-    int lc = r ? -1 : 1;
-    qtAnimation()->setLoopCount(lc);
-    emit repeatChanged(r);
+    d->loopCount = loops;
+    qtAnimation()->setLoopCount(loops);
+    emit loopCountChanged(loops);
 }
+
 
 int QDeclarativeAbstractAnimation::currentTime()
 {
@@ -509,8 +520,9 @@ void QDeclarativeAbstractAnimation::timelineComplete()
 {
     Q_D(QDeclarativeAbstractAnimation);
     setRunning(false);
-    if (d->alwaysRunToEnd && d->repeat) {
-        qtAnimation()->setLoopCount(-1);
+    if (d->alwaysRunToEnd && d->loopCount != 1) {
+        //restore the proper loopCount for the next run
+        qtAnimation()->setLoopCount(d->loopCount);
     }
 }
 
@@ -1586,7 +1598,7 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     \qml
     Rectangle {
         SequentialAnimation on x {
-            repeat: true
+            loops: Qt.Infinite
             PropertyAnimation { to: 50 }
             PropertyAnimation { to: 0 }
         }
@@ -1995,7 +2007,7 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
            id: theRect
            width: 100; height: 100
            color: Qt.rgba(0,0,1)
-           NumberAnimation on x { to: 500; repeat: true } //animate theRect's x property
+           NumberAnimation on x { to: 500; loops: Qt.Infinite } //animate theRect's x property
            Behavior on y { NumberAnimation {} } //animate theRect's y property
        }
        \endqml

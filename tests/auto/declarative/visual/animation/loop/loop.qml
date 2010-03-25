@@ -14,7 +14,7 @@ Rectangle {
            back to 100, jumps to 200, and so on.
         */
         x: SequentialAnimation {
-            repeat: true
+            loops: Qt.Infinite
             NumberAnimation { to: 100; duration: 1000 }
             NumberAnimation { from: 200; to: 400; duration: 1000 }
         }
