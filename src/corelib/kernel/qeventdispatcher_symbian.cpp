@@ -50,6 +50,13 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+// when the system UI is Qt based, priority drop is not needed as CPU starved processes will not be killed.
+#undef QT_SYMBIAN_PRIORITY_DROP
+#else
+#define QT_SYMBIAN_PRIORITY_DROP
+#endif
+
 #define WAKE_UP_PRIORITY CActive::EPriorityStandard
 #define TIMER_PRIORITY CActive::EPriorityHigh
 #define NULLTIMER_PRIORITY CActive::EPriorityLow
@@ -697,6 +704,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
         bool handledSymbianEvent = false;
         m_interrupt = false;
 
+#ifdef QT_SYMBIAN_PRIORITY_DROP
         /*
          * This QTime variable is used to measure the time it takes to finish
          * the event loop. If we take too long in the loop, other processes
@@ -714,6 +722,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
         } timeState = FirstRun;
 
         TProcessPriority priority;
+#endif
 
         while (1) {
             if (block) {
@@ -727,10 +736,12 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
                 CActiveScheduler::Current()->WaitForAnyRequest();
             }
 
+#ifdef QT_SYMBIAN_PRIORITY_DROP
             if (timeState == SubsequentRun) {
                 time.start();
                 timeState = TimeStarted;
             }
+#endif
 
             TInt error;
             handledSymbianEvent = CActiveScheduler::RunIfReady(error, KMinTInt);
@@ -747,6 +758,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
                 break;
             }
             block = false;
+#ifdef QT_SYMBIAN_PRIORITY_DROP
             if (timeState == TimeStarted && time.elapsed() > 100) {
                 priority = m_processHandle.Priority();
                 m_processHandle.SetPriority(EPriorityBackground);
@@ -759,6 +771,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
             }
             if (timeState == FirstRun)
                 timeState = SubsequentRun;
+#endif
         };
 
         emit awake();

@@ -50,7 +50,7 @@
 // so that we can keep dynamic and static values inline.
 // Please adjust version data if correcting dynamic PM calculations.
 const TInt KPMMajorVersion = 1;
-const TInt KPMMinorVersion = 16;
+const TInt KPMMinorVersion = 17;
 
 TPixelMetricsVersion PixelMetrics::Version()
     {
@@ -869,7 +869,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             // The difference of center piece from border tell the frame width.
             if ( value == QStyle::PM_FocusFrameHMargin)
                 {
-				//use topleft for horizontal as S60 uses different values for right and left borders
+                 //use topleft for horizontal as S60 uses different values for right and left borders
                  value = listSinglePaneText.TextRect().iTl.iX - highlightRect.Rect().iTl.iX;
                 }
             else
@@ -1002,6 +1002,13 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             break;
         case QStyle::PM_Custom_ThinLineWidth:
             value = 1;
+            break;
+        case QStyle::PM_Custom_MessageBoxHeight:
+            {
+            TAknLayoutRect popupRect;
+            popupRect.LayoutRect(mainPaneRect, AknLayoutScalable_Avkon::popup_window_general(0));
+            value = popupRect.Rect().Height();
+            }
             break;
         case QStyle::PM_ButtonShiftHorizontal:
         case QStyle::PM_ButtonShiftVertical:
