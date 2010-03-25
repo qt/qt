@@ -114,7 +114,6 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePathPercent>("Qt",4,6,"PathPercent");
     qmlRegisterType<QDeclarativePathQuad>("Qt",4,6,"PathQuad");
     qmlRegisterType<QDeclarativePathView>("Qt",4,6,"PathView");
-    qmlRegisterType<QDeclarativePen>("Qt",4,6,"Pen");
     qmlRegisterType<QIntValidator>("Qt",4,6,"QIntValidator");
 #if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
     qmlRegisterType<QDoubleValidator>("Qt",4,7,"QDoubleValidator");
@@ -146,6 +145,7 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QValidator>();
     qmlRegisterType<QDeclarativeVisualModel>();
     qmlRegisterType<QAction>();
+    qmlRegisterType<QDeclarativePen>();
 #ifdef QT_WEBKIT_LIB
     qmlRegisterType<QDeclarativeWebSettings>();
 #endif
