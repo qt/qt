@@ -48,10 +48,12 @@
 
 QT_BEGIN_NAMESPACE
 
+class QJpegHandlerPrivate;
 class QJpegHandler : public QImageIOHandler
 {
 public:
     QJpegHandler();
+    ~QJpegHandler();
 
     bool canRead() const;
     bool read(QImage *image);
@@ -66,10 +68,7 @@ public:
     bool supportsOption(ImageOption option) const;
 
 private:
-    int quality;
-    QSize scaledSize;
-    QRect scaledClipRect;
-    QRect clipRect;
+    QJpegHandlerPrivate *d;
 };
 
 QT_END_NAMESPACE

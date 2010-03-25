@@ -1263,22 +1263,22 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::childrenRectChanged()
+    \fn void QDeclarativeItem::childrenRectChanged(const QRectF &)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::baselineOffsetChanged()
+    \fn void QDeclarativeItem::baselineOffsetChanged(qreal)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::widthChanged()
+    \fn void QDeclarativeItem::widthChanged(qreal)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::heightChanged()
+    \fn void QDeclarativeItem::heightChanged(qreal)
     \internal
 */
 
@@ -1288,17 +1288,17 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::parentChanged()
+    \fn void QDeclarativeItem::parentChanged(QDeclarativeItem *)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::smoothChanged()
+    \fn void QDeclarativeItem::smoothChanged(bool)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::clipChanged()
+    \fn void QDeclarativeItem::clipChanged(bool)
     \internal
 */
 
@@ -1312,12 +1312,12 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::focusChanged()
+    \fn void QDeclarativeItem::focusChanged(bool)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::wantsFocusChanged()
+    \fn void QDeclarativeItem::wantsFocusChanged(bool)
     \internal
 */
 

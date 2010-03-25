@@ -172,6 +172,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *);
     void mousePressEvent(QMouseEvent *);
     void mouseReleaseEvent(QMouseEvent *);
+    void resizeEvent(QResizeEvent *);
     bool event(QEvent *);
 
     void moveSplitter(int p);

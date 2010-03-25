@@ -78,8 +78,6 @@ public:
 
     QNetworkConfigurationPrivatePointer defaultConfiguration();
 
-    bool getWifiInterfaces();
-
     bool requiresPolling() const;
 
 private Q_SLOTS:
@@ -95,16 +93,16 @@ private:
 
     SCDynamicStoreRef storeSession;
     CFRunLoopSourceRef runloopSource;
-
     bool hasWifi;
 
 protected:
-   QMap<QString, QMap<QString,QString> > userProfiles;
+    QMap<QString, QMap<QString,QString> > userProfiles;
 
     void startNetworkChangeLoop();
     void getUserConfigurations();
     QString getNetworkNameFromSsid(const QString &ssid);
     QString getSsidFromNetworkName(const QString &name);
+    QStringList foundNetwork(const QString &id, const QString &ssid, const QNetworkConfiguration::StateFlags state, const QString &interfaceName);
 };
 
 QT_END_NAMESPACE

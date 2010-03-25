@@ -437,7 +437,7 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             bool ok;
             QPointF point =
                 QDeclarativeStringConverters::pointFFromString(string, &ok);
-            float data[] = { point.x(), point.y() };
+            float data[] = { float(point.x()), float(point.y()) };
             int index = output->indexForFloat(data, 2);
             if (type == QVariant::PointF)
                 instr.type = QDeclarativeInstruction::StorePointF;
@@ -452,7 +452,7 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             {
             bool ok;
             QSizeF size = QDeclarativeStringConverters::sizeFFromString(string, &ok);
-            float data[] = { size.width(), size.height() };
+            float data[] = { float(size.width()), float(size.height()) };
             int index = output->indexForFloat(data, 2);
             if (type == QVariant::SizeF)
                 instr.type = QDeclarativeInstruction::StoreSizeF;
@@ -467,8 +467,8 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             {
             bool ok;
             QRectF rect = QDeclarativeStringConverters::rectFFromString(string, &ok);
-            float data[] = { rect.x(), rect.y(),
-                             rect.width(), rect.height() };
+            float data[] = { float(rect.x()), float(rect.y()),
+                             float(rect.width()), float(rect.height()) };
             int index = output->indexForFloat(data, 4);
             if (type == QVariant::RectF)
                 instr.type = QDeclarativeInstruction::StoreRectF;
@@ -491,7 +491,7 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             bool ok;
             QVector3D vector =
                 QDeclarativeStringConverters::vector3DFromString(string, &ok);
-            float data[] = { vector.x(), vector.y(), vector.z() };
+            float data[] = { float(vector.x()), float(vector.y()), float(vector.z()) };
             int index = output->indexForFloat(data, 3);
             instr.type = QDeclarativeInstruction::StoreVector3D;
             instr.storeRealPair.propertyIndex = prop.propertyIndex();
@@ -2130,7 +2130,7 @@ bool QDeclarativeCompiler::buildPropertyOnAssignment(QDeclarativeParser::Propert
             buildDynamicMeta(baseObj, ForceCreation);
         v->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
     } else {
-        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","\"%1\" cannot operate on \"%2\"").arg(QString::fromUtf8(v->object->typeName)).arg(QString::fromUtf8(prop->name)));
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","\"%1\" cannot operate on \"%2\"").arg(QString::fromUtf8(v->object->typeName)).arg(QString::fromUtf8(prop->name.constData())));
     }
 
     return true;

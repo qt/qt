@@ -1110,7 +1110,7 @@ void QCompleter::setPopup(QAbstractItemView *popup)
         delete d->popup;
     if (popup->model() != d->proxy)
         popup->setModel(d->proxy);
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
      popup->show();
 #else
      popup->hide();
