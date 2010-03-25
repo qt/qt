@@ -532,7 +532,7 @@ QHash<int,QVariant> QDeclarativeXmlListModel::data(int index, const QList<int> &
     for (int i = 0; i < roles.size(); ++i) {
         int role = roles.at(i);
         int roleIndex = d->roles.indexOf(role);
-        rv.insert(role, roleIndex == -1 ? QVariant() : d->data.at(roleIndex).at(index));
+        rv.insert(role, roleIndex == -1 ? QVariant() : d->data.value(roleIndex).value(index));
     }
     return rv;
 }
@@ -541,7 +541,7 @@ QVariant QDeclarativeXmlListModel::data(int index, int role) const
 {
     Q_D(const QDeclarativeXmlListModel);
     int roleIndex = d->roles.indexOf(role);
-    return (roleIndex == -1) ? QVariant() : d->data.at(roleIndex).at(index);
+    return (roleIndex == -1) ? QVariant() : d->data.value(roleIndex).value(index);
 }
 
 /*!
@@ -728,6 +728,8 @@ void QDeclarativeXmlListModel::componentComplete()
 
     Otherwise, items are only added if the model does not already
     contain items with matching key role values.
+    
+    \sa XmlRole::isKey
 */
 void QDeclarativeXmlListModel::reload()
 {
