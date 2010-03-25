@@ -381,8 +381,12 @@ QT_BEGIN_NAMESPACE
 
     \value Null A QChar with this value isNull().
     \value Nbsp Non-breaking space.
-    \value ReplacementCharacter
-    \value ObjectReplacementCharacter The character shown when a font has no glyph for a certain codepoint. The square character is normally used.
+    \value ReplacementCharacter The character shown when a font has no glyph
+           for a certain codepoint. A special question mark character is often
+           used. Codecs use this codepoint when input data cannot be
+           represented in Unicode.
+    \value ObjectReplacementCharacter Used to represent an object such as an
+           image when such objects cannot be presented.
     \value ByteOrderMark
     \value ByteOrderSwapped
     \value ParagraphSeparator
