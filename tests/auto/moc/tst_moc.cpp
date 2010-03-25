@@ -1302,6 +1302,17 @@ void tst_Moc::QTBUG5590_dummyProperty()
     QCOMPARE(o.value2(), 82);
 }
 
+class QTBUG7421_ReturnConstTemplate: public QObject
+{ Q_OBJECT
+public slots:
+        const QList<int> returnConstTemplate1() { return QList<int>(); }
+        QList<int> const returnConstTemplate2() { return QList<int>(); }
+        const int returnConstInt() { return 0; }
+        const QString returnConstString(const QString s) { return s; }
+        QString const returnConstString2( QString const s) { return s; }
+};
+
+
 QTEST_APPLESS_MAIN(tst_Moc)
 #include "tst_moc.moc"
 

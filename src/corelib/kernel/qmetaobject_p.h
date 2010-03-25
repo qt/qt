@@ -196,7 +196,7 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
         if (*(e-1) == '&') { // treat const reference as value
             t += 6;
             --e;
-        } else if (is_ident_char(*(e-1))) { // treat const value as value
+        } else if (is_ident_char(*(e-1)) || *(e-1) == '>') { // treat const value as value
             t += 6;
         }
     }
@@ -294,6 +294,8 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
             if (adjustConst && t != e && *t == '&') {
                 // treat const ref as value
                 ++t;
+            } else if (adjustConst && !star) {
+                // treat const as value
             } else if (!star) {
                 // move const to the front (but not if const comes after a *)
                 result.prepend("const ");

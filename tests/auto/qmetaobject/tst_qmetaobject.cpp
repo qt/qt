@@ -706,6 +706,12 @@ void tst_QMetaObject::normalizedSignature_data()
     QTest::newRow("const6") << "void foo(QList<const int>)" << "void foo(QList<const int>)";
     QTest::newRow("const7") << "void foo(QList<const int*>)" << "void foo(QList<const int*>)";
     QTest::newRow("const8") << "void foo(QList<int const*>)" << "void foo(QList<const int*>)";
+    QTest::newRow("const9") << "void foo(const Foo<Bar>)" << "void foo(Foo<Bar>)";
+    QTest::newRow("const10") << "void foo(Foo<Bar>const)" << "void foo(Foo<Bar>)";
+    QTest::newRow("const11") << "void foo(Foo<Bar> *const)" << "void foo(Foo<Bar>*const)";
+    QTest::newRow("const12") << "void foo(Foo<Bar>const*const *const)" << "void foo(Foo<Bar>*const*const)";
+    QTest::newRow("const13") << "void foo(const Foo<Bar>&)" << "void foo(Foo<Bar>)";
+    QTest::newRow("const14") << "void foo(Foo<Bar>const&)" << "void foo(Foo<Bar>)";
 }
 
 void tst_QMetaObject::normalizedSignature()
