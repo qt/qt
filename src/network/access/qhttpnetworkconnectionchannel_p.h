@@ -138,7 +138,7 @@ public:
     {}
 
     void setConnection(QHttpNetworkConnection *c) {connection = c;}
-    QHttpNetworkConnection *connection;
+    QPointer<QHttpNetworkConnection> connection;
 
     void init();
     void close();
