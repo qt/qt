@@ -53,6 +53,7 @@
 #include <qvarlengtharray.h>
 #include <qdebug.h>
 #include <qendian.h>
+#include <qmath.h>
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <AppKit/AppKit.h>
@@ -816,6 +817,7 @@ struct QGlyphLayoutInfo
     int *mappedFonts;
     QTextEngine::ShaperFlags flags;
     QFontEngineMacMulti::ShaperItem *shaperItem;
+    unsigned int styleStrategy;
 };
 
 static OSStatus atsuPostLayoutCallback(ATSULayoutOperationSelector selector, ATSULineRef lineRef, URefCon refCon,
@@ -884,6 +886,11 @@ static OSStatus atsuPostLayoutCallback(ATSULayoutOperationSelector selector, ATS
 
         QFixed yAdvance = FixedToQFixed(baselineDeltas[glyphIdx]);
         QFixed xAdvance = FixedToQFixed(layoutData[glyphIdx + 1].realPos - layoutData[glyphIdx].realPos);
+
+        if (nfo->styleStrategy & QFont::ForceIntegerMetrics) {
+            yAdvance = yAdvance.ceil();
+            xAdvance = xAdvance.ceil();
+        }
 
         if (glyphId != 0xffff || i == 0) {
             if (i < nfo->glyphs->numGlyphs)
@@ -1061,6 +1068,7 @@ bool QFontEngineMacMulti::stringToCMapInternal(const QChar *str, int len, QGlyph
     nfo.callbackCalled = false;
     nfo.flags = flags;
     nfo.shaperItem = shaperItem;
+    nfo.styleStrategy = fontDef.styleStrategy;
 
     int prevNumGlyphs = *nglyphs;
 
@@ -1089,8 +1097,6 @@ bool QFontEngineMacMulti::stringToCMapInternal(const QChar *str, int len, QGlyph
                                        | kATSLineNoSpecialJustification // we do kashidas ourselves
                                        | kATSLineDisableAllJustification
                                        ;
-
-	layopts |= kATSLineUseDeviceMetrics;
 
         if (fontDef.styleStrategy & QFont::NoAntialias)
             layopts |= kATSLineNoAntiAliasing;
@@ -1395,14 +1401,22 @@ void QFontEngineMac::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
     for (int i = 0; i < glyphs->numGlyphs; ++i) {
         glyphs->advances_x[i] = QFixed::fromReal(metrics[i].deviceAdvance.x);
         glyphs->advances_y[i] = QFixed::fromReal(metrics[i].deviceAdvance.y);
+
+        if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+            glyphs->advances_x[i] = glyphs->advances_x[i].ceil();
+            glyphs->advances_y[i] = glyphs->advances_y[i].ceil();
+        }
     }
 }
 
 glyph_metrics_t QFontEngineMac::boundingBox(const QGlyphLayout &glyphs)
 {
     QFixed w;
-    for (int i = 0; i < glyphs.numGlyphs; ++i)
-        w += glyphs.effectiveAdvance(i);
+    for (int i = 0; i < glyphs.numGlyphs; ++i) {
+        w += (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+             ? glyphs.effectiveAdvance(i).ceil()
+             : glyphs.effectiveAdvance(i);
+    }
     return glyph_metrics_t(0, -(ascent()), w, ascent()+descent(), w, 0);
 }
 
@@ -1427,39 +1441,58 @@ glyph_metrics_t QFontEngineMac::boundingBox(glyph_t glyph)
     gm.xoff = QFixed::fromReal(metrics.deviceAdvance.x);
     gm.yoff = QFixed::fromReal(metrics.deviceAdvance.y);
 
+    if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+        gm.x = gm.x.floor();
+        gm.y = gm.y.floor();
+        gm.xoff = gm.xoff.ceil();
+        gm.yoff = gm.yoff.ceil();
+    }
+
     return gm;
 }
 
 QFixed QFontEngineMac::ascent() const
 {
-    return m_ascent;
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+            ? m_ascent.ceil()
+            : m_ascent;
 }
 
 QFixed QFontEngineMac::descent() const
 {
     // subtract a pixel to even out the historical +1 in QFontMetrics::height().
     // Fix in Qt 5.
-    return m_descent - 1;
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+            ? m_descent.ceil() - 1
+            : m_descent;
 }
 
 QFixed QFontEngineMac::leading() const
 {
-    return m_leading;
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+            ? m_leading.ceil()
+            : m_leading;
 }
 
 qreal QFontEngineMac::maxCharWidth() const
 {
-    return m_maxCharWidth;
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+            ? qCeil(m_maxCharWidth)
+            : m_maxCharWidth;
 }
 
 QFixed QFontEngineMac::xHeight() const
 {
-    return m_xHeight;
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+            ? m_xHeight.ceil()
+            : m_xHeight;
 }
 
 QFixed QFontEngineMac::averageCharWidth() const
 {
-    return m_averageCharWidth;
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+            ? m_averageCharWidth.ceil()
+            : m_averageCharWidth;
 }
 
 static void addGlyphsToPathHelper(ATSUStyle style, glyph_t *glyphs, QFixedPoint *positions, int numGlyphs, QPainterPath *path)
