@@ -1250,14 +1250,9 @@ ModelNode::ModelNode()
 
 ModelNode::~ModelNode()
 {
+    qDeleteAll(properties.values());
+
     ModelNode *node;
-
-    QList<ModelNode *> nodeValues = properties.values();
-    for (int ii = 0; ii < nodeValues.count(); ++ii) {
-        node = nodeValues[ii];
-        if (node) { delete node; node = 0; }
-    }
-
     for (int ii = 0; ii < values.count(); ++ii) {
         node = qvariant_cast<ModelNode *>(values.at(ii));
         if (node) { delete node; node = 0; }
@@ -1279,7 +1274,9 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap) {
         } else {
             value->values << v.toVariant();
         }
-        properties.insert(it.name(),value);
+        if (properties.contains(it.name()))
+            delete properties[it.name()];
+        properties.insert(it.name(), value);
     }
 }
 
