@@ -28,7 +28,7 @@ Rectangle {
     transitions: Transition {
         SequentialAnimation {
             NumberAnimation { properties: "x"; easing.type: "InOutQuad" }
-            ScriptAction { stateChangeScriptName: "setColor" }
+            ScriptAction { scriptName: "setColor" }
             NumberAnimation { properties: "y"; easing.type: "InOutQuad" }
         }
     }

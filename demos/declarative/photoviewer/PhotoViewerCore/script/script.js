@@ -1,3 +1,5 @@
+.pragma library
+
 function getWidth(string) {
     return (string.match(/width=\"([0-9]+)\"/))[1]
 }

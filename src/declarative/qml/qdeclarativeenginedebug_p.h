@@ -75,6 +75,7 @@ public:
         QUrl url;
         int lineNumber;
         int columnNumber;
+        QString idString;
         QString objectName;
         QString objectType;
         int objectId;

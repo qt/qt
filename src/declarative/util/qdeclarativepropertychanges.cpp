@@ -227,6 +227,8 @@ QDeclarativePropertyChangesParser::compileList(QList<QPair<QByteArray, QVariant>
         const QVariant &value = values.at(ii);
 
         if (value.userType() == qMetaTypeId<QDeclarativeCustomParserNode>()) {
+            error(qvariant_cast<QDeclarativeCustomParserNode>(value),
+                  QDeclarativePropertyChanges::tr("PropertyChanges does not support creating state-specific objects."));
             continue;
         } else if(value.userType() == qMetaTypeId<QDeclarativeCustomParserProperty>()) {
 

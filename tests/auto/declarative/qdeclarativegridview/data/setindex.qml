@@ -8,13 +8,9 @@ Rectangle {
 
         Item {
             id : wrapper
-            Script {
-                 function startupFunction()
-                 {
-                     if (index == 5) view.currentIndex = index;
-
-                 }
-            }
+             function startupFunction() {
+                 if (index == 5) view.currentIndex = index;
+             }
             Component.onCompleted: startupFunction();
             width: 30; height: 30
             Text { text: index }

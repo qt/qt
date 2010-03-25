@@ -41,6 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
+#include <QtDeclarative/qdeclarativeview.h>
 #include <private/qdeclarativeflipable_p.h>
 #include <private/qdeclarativevaluetype_p.h>
 #include <QFontMetrics>
@@ -57,6 +58,10 @@ private slots:
     void create();
     void checkFrontAndBack();
     void setFrontAndBack();
+
+    // below here task issues
+    void QTBUG_9161_crash();
+    void QTBUG_8474_qgv_abort();
 
 private:
     QDeclarativeEngine engine;
@@ -106,6 +111,22 @@ void tst_qdeclarativeflipable::setFrontAndBack()
     QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
     obj->setBack(new QDeclarativeRectangle());
     delete obj;
+}
+
+void tst_qdeclarativeflipable::QTBUG_9161_crash()
+{
+    QDeclarativeView *canvas = new QDeclarativeView;
+    canvas->setSource(QUrl(SRCDIR "/data/crash.qml"));
+    canvas->show();
+    delete canvas;
+}
+
+void tst_qdeclarativeflipable::QTBUG_8474_qgv_abort()
+{
+    QDeclarativeView *canvas = new QDeclarativeView;
+    canvas->setSource(QUrl(SRCDIR "/data/flipable-abort.qml"));
+    canvas->show();
+    delete canvas;
 }
 
 QTEST_MAIN(tst_qdeclarativeflipable)
