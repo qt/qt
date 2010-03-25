@@ -225,18 +225,20 @@ class QDeclarativeAbstractAnimationPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QDeclarativeAbstractAnimation)
 public:
     QDeclarativeAbstractAnimationPrivate()
-    : running(false), paused(false), alwaysRunToEnd(false), repeat(false),
+    : running(false), paused(false), alwaysRunToEnd(false),
       connectedTimeLine(false), componentComplete(true),
-      avoidPropertyValueSourceStart(false), disableUserControl(false), group(0) {}
+      avoidPropertyValueSourceStart(false), disableUserControl(false),
+      loopCount(1), group(0) {}
 
     bool running:1;
     bool paused:1;
     bool alwaysRunToEnd:1;
-    bool repeat:1;
     bool connectedTimeLine:1;
     bool componentComplete:1;
     bool avoidPropertyValueSourceStart:1;
     bool disableUserControl:1;
+
+    int loopCount;
 
     void commence();
 
@@ -264,7 +266,7 @@ class QDeclarativeScriptActionPrivate : public QDeclarativeAbstractAnimationPriv
     Q_DECLARE_PUBLIC(QDeclarativeScriptAction)
 public:
     QDeclarativeScriptActionPrivate()
-        : QDeclarativeAbstractAnimationPrivate(), hasRunScriptScript(false), proxy(this), rsa(0) {}
+        : QDeclarativeAbstractAnimationPrivate(), hasRunScriptScript(false), reversing(false), proxy(this), rsa(0) {}
 
     void init();
 
@@ -272,6 +274,7 @@ public:
     QString name;
     QDeclarativeScriptString runScriptScript;
     bool hasRunScriptScript;
+    bool reversing;
 
     void execute();
 
@@ -298,22 +301,6 @@ public:
     QDeclarativeNullableValue<QVariant> value;
 
     QActionAnimation *spa;
-};
-
-class QDeclarativeParentActionPrivate : public QDeclarativeAbstractAnimationPrivate
-{
-    Q_DECLARE_PUBLIC(QDeclarativeParentAction)
-public:
-    QDeclarativeParentActionPrivate()
-    : QDeclarativeAbstractAnimationPrivate(), pcTarget(0), pcParent(0) {}
-
-    void init();
-
-    QDeclarativeItem *pcTarget;
-    QDeclarativeItem *pcParent;
-
-    void doAction();
-    QActionAnimation *cpa;
 };
 
 class QDeclarativeAnimationGroupPrivate : public QDeclarativeAbstractAnimationPrivate
@@ -369,7 +356,7 @@ class QDeclarativeRotationAnimationPrivate : public QDeclarativePropertyAnimatio
 {
     Q_DECLARE_PUBLIC(QDeclarativeRotationAnimation)
 public:
-    QDeclarativeRotationAnimationPrivate() : direction(QDeclarativeRotationAnimation::Shortest) {}
+    QDeclarativeRotationAnimationPrivate() : direction(QDeclarativeRotationAnimation::Numerical) {}
 
     QDeclarativeRotationAnimation::RotationDirection direction;
 };

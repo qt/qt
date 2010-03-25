@@ -51,6 +51,9 @@ void registerTypes()
     qmlRegisterType<MyNamespace::MyNamespacedType>("Test",1,0,"MyNamespacedType");
     qmlRegisterType<MyNamespace::MySecondNamespacedType>("Test",1,0,"MySecondNamespacedType");
     qmlRegisterType<MyGroupedObject>();
+
+    qmlRegisterCustomType<MyCustomParserType>("Test", 1, 0, "MyCustomParserType", "MyCustomParserType",
+                                                       new MyCustomParserTypeParser);
 }
 
 QVariant myCustomVariantTypeConverter(const QString &data)

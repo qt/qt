@@ -48,8 +48,8 @@ class tst_qdeclarativemoduleplugin : public QObject
 {
     Q_OBJECT
 public:
-    tst_qdeclarativemoduleplugin() {
-        QCoreApplication::addLibraryPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("plugin"));
+    tst_qdeclarativemoduleplugin()
+    {
     }
 
 private slots:
@@ -103,9 +103,10 @@ void tst_qdeclarativemoduleplugin::importsPlugin()
 {
 QSKIP("Fix me", SkipAll);
     QDeclarativeEngine engine;
+    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
     QTest::ignoreMessage(QtWarningMsg, "plugin created");
     QTest::ignoreMessage(QtWarningMsg, "import worked");
-    QDeclarativeComponent component(&engine, TEST_FILE("plugin.qml"));
+    QDeclarativeComponent component(&engine, TEST_FILE("data/works.qml"));
     foreach (QDeclarativeError err, component.errors())
     	qWarning() << err;
     VERIFY_ERRORS(0);

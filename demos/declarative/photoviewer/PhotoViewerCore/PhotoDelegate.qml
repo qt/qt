@@ -1,4 +1,5 @@
 import Qt 4.6
+import "script/script.js" as Script
 
 Package {
     Item { id: stackItem; Package.name: 'stack'; width: 160; height: 153; z: stackItem.PathView.z }
@@ -28,12 +29,16 @@ Package {
             Rectangle {
                 id: placeHolder
 
-                property int w: getWidth(content)
-                property int h: getHeight(content)
-                property double s: calculateScale(w, h, photoWrapper.width)
+                property int w: Script.getWidth(content)
+                property int h: Script.getHeight(content)
+                property double s: Script.calculateScale(w, h, photoWrapper.width)
 
-                color: '#878787'; anchors.centerIn: parent; smooth: true; border.color: 'white'; border.width: 3
+                color: 'white'; anchors.centerIn: parent; smooth: true
                 width:  w * s; height: h * s; visible: originalImage.status != Image.Ready
+                Rectangle {
+                    color: "#878787"; smooth: true
+                    anchors { fill: parent; topMargin: 3; bottomMargin: 3; leftMargin: 3; rightMargin: 3 }
+                }
             }
             Rectangle {
                 id: border; color: 'white'; anchors.centerIn: parent; smooth: true
@@ -42,7 +47,7 @@ Package {
             }
             BusyIndicator { anchors.centerIn: parent; on: originalImage.status != Image.Ready }
             Image {
-                id: originalImage; smooth: true; source: "http://" + getImagePath(content)
+                id: originalImage; smooth: true; source: "http://" + Script.getImagePath(content)
                 fillMode: Image.PreserveAspectFit; width: photoWrapper.width; height: photoWrapper.height
             }
             Image {

@@ -1,5 +1,6 @@
 import Qt 4.6
 import SamegameCore 1.0
+import "SamegameCore/samegame.js" as Logic
 
 Rectangle {
     id: screen
@@ -22,15 +23,13 @@ Rectangle {
             property int score: 0
             property int tileSize: 40
 
-            Script { source: "SamegameCore/samegame.js" }
-
             z: 20; anchors.centerIn: parent
-            width: parent.width - (parent.width % getTileSize());
-            height: parent.height - (parent.height % getTileSize());
+            width: parent.width - (parent.width % tileSize);
+            height: parent.height - (parent.height % tileSize);
 
             MouseArea {
                 id: gameMR
-                anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
+                anchors.fill: parent; onClicked: Logic.handleClick(mouse.x,mouse.y);
             }
         }
     }
@@ -57,7 +56,7 @@ Rectangle {
             }
             onAccepted: {
                 if(scoreName.opacity==1&&editor.text!="")
-                    saveHighScore(editor.text);
+                    Logic.saveHighScore(editor.text);
                 scoreName.forceClose();
             }
             anchors.verticalCenter: parent.verticalCenter
@@ -73,13 +72,13 @@ Rectangle {
         anchors.bottom: screen.bottom
 
         Button {
-            id: btnA; text: "New Game"; onClicked: {initBoard();}
+            id: btnA; text: "New Game"; onClicked: Logic.initBoard();
             anchors.left: parent.left; anchors.leftMargin: 3
             anchors.verticalCenter: parent.verticalCenter
         }
 
         Button {
-            id: btnB; text: "Quit"; onClicked: {Qt.quit();}
+            id: btnB; text: "Quit"; onClicked: Qt.quit();
             anchors.left: btnA.right; anchors.leftMargin: 3
             anchors.verticalCenter: parent.verticalCenter
         }

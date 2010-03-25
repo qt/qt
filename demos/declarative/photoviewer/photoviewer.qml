@@ -10,13 +10,11 @@ Rectangle {
 
     width: 800; height: 480; color: "#d5d6d8"
 
-    Script { source: "PhotoViewerCore/script/script.js" }
-
     ListModel {
         id: photosModel
         ListElement { tag: "Flowers" }
-        ListElement { tag: "Savanna" }
-        ListElement { tag: "Central Park" }
+        ListElement { tag: "Wildlife" }
+        ListElement { tag: "Prague" }
     }
 
     VisualDataModel { id: albumVisualModel; model: photosModel; delegate: AlbumDelegate {} }
@@ -28,13 +26,19 @@ Rectangle {
 
     Column {
         spacing: 20; anchors { bottom: parent.bottom; right: parent.right; rightMargin: 20; bottomMargin: 20 }
-        Button { id: deleteButton; label: "Edit"; rotation: -2; onClicked: mainWindow.editMode = !mainWindow.editMode }
         Button {
             id: newButton; label: "New"; rotation: 3
+            anchors.horizontalCenter: parent.horizontalCenter
             onClicked: {
+                mainWindow.editMode = false
                 photosModel.append( { tag: "" } )
                 albumView.positionViewAtIndex(albumView.count - 1, GridView.Contain)
             }
+        }
+        Button {
+            id: deleteButton; label: "Delete"; rotation: -2;
+            onClicked: mainWindow.editMode = !mainWindow.editMode
+            anchors.horizontalCenter: parent.horizontalCenter
         }
     }
 

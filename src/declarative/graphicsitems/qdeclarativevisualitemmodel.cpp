@@ -422,6 +422,8 @@ int QDeclarativeVisualDataModelDataMetaObject::createProperty(const char *name, 
         return -1;
 
     QDeclarativeVisualDataModelPrivate *model = QDeclarativeVisualDataModelPrivate::get(data->m_model);
+    if (data->m_index < 0 || data->m_index >= model->modelCount())
+        return -1;
 
     if ((!model->m_listModelInterface || !model->m_abstractItemModel) && model->m_listAccessor) {
         if (model->m_listAccessor->type() == QDeclarativeListAccessor::ListProperty) {

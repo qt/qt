@@ -92,7 +92,7 @@ public:
     MinehuntGame();
 
     Q_PROPERTY(QDeclarativeListProperty<Tile> tiles READ tiles CONSTANT)
-    QDeclarativeListProperty<Tile> tiles() { return QDeclarativeListProperty<Tile>(this, _tiles); }
+    QDeclarativeListProperty<Tile> tiles();
 
     Q_PROPERTY(bool isPlaying READ isPlaying NOTIFY isPlayingChanged)
     bool isPlaying() {return playing;}
@@ -133,6 +133,28 @@ private:
     int nMines;
     int nFlags;
 };
+
+void tilesPropAppend(QDeclarativeListProperty<Tile>* prop, Tile* value)
+{
+    Q_UNUSED(prop);
+    Q_UNUSED(value);
+    return; //Append not supported
+}
+
+int tilesPropCount(QDeclarativeListProperty<Tile>* prop)
+{
+    return static_cast<QList<Tile*>*>(prop->data)->count();
+}
+
+Tile* tilesPropAt(QDeclarativeListProperty<Tile>* prop, int index)
+{
+    return static_cast<QList<Tile*>*>(prop->data)->at(index);
+}
+
+QDeclarativeListProperty<Tile> MinehuntGame::tiles(){
+    return QDeclarativeListProperty<Tile>(this, &_tiles, &tilesPropAppend,
+            &tilesPropCount, &tilesPropAt, 0);
+}
 
 MinehuntGame::MinehuntGame()
 : numCols(9), numRows(9), playing(true), won(false)

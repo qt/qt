@@ -54,8 +54,6 @@
 #include "qdeclarativeglobal_p.h"
 #include "qdeclarativescriptparser_p.h"
 
-#include <qfxperf_p_p.h>
-
 #include <QStack>
 #include <QStringList>
 #include <QFileInfo>
@@ -511,6 +509,8 @@ QScriptValue QDeclarativeComponent::createObject()
         return QScriptValue();
     }
     QObject* ret = create(ctxt);
+    if (!ret)
+        return QScriptValue();
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
     QDeclarativeDeclarativeData::get(ret, true)->setImplicitDestructible();
     return priv->objectClass->newQObject(ret, QMetaType::QObjectStar);
@@ -612,6 +612,11 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
     ctxt->isInternal = true;
     ctxt->url = cc->url;
     ctxt->imports = cc->importCache;
+
+    // Nested global imports
+    if (creationContext && start != -1) 
+        ctxt->importedScripts = creationContext->importedScripts;
+
     cc->importCache->addref();
     ctxt->setParent(context);
 
