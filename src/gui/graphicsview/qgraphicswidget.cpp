@@ -408,6 +408,12 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
 }
 
 /*!
+  \fn QGraphicsWidget::geometryChanged()
+
+  This signal gets emitted whenever the geometry is changed in setGeometry().
+*/
+
+/*!
     \fn QRectF QGraphicsWidget::rect() const
 
     Returns the item's local rect as a QRectF. This function is equivalent

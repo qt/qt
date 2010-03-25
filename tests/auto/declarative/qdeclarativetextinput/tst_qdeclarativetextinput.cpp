@@ -677,7 +677,7 @@ void tst_qdeclarativetextinput::setHAlignClearCache()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QCOMPARE(input.nbPaint, 1);
+    QTRY_COMPARE(input.nbPaint, 1);
     input.setHAlign(QDeclarativeTextInput::AlignRight);
     QApplication::processEvents();
     //Changing the alignment should trigger a repaint

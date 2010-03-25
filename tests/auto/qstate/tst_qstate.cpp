@@ -77,6 +77,7 @@ private slots:
     void assignProperty();
     void assignPropertyTwice();
     void historyInitialState();
+    void transitions();
 
 private:
     bool functionCalled;
@@ -370,6 +371,38 @@ void tst_QState::historyInitialState()
     QVERIFY(machine.configuration().contains(s4));
 }
 
+void tst_QState::transitions()
+{
+    QState s1;
+    QState s2;
+
+    QVERIFY(s1.transitions().isEmpty());
+
+    QAbstractTransition *t1 = s1.addTransition(this, SIGNAL(destroyed()), &s2);
+    QVERIFY(t1 != 0);
+    QCOMPARE(s1.transitions().count(), 1);
+    QCOMPARE(s1.transitions().first(), t1);
+    QVERIFY(s2.transitions().isEmpty());
+
+    s1.removeTransition(t1);
+    QVERIFY(s1.transitions().isEmpty());
+
+    s1.addTransition(t1);
+    QCOMPARE(s1.transitions().count(), 1);
+    QCOMPARE(s1.transitions().first(), t1);
+
+    QAbstractTransition *t2 = new QEventTransition(&s1);
+    QCOMPARE(s1.transitions().count(), 2);
+    QVERIFY(s1.transitions().contains(t1));
+    QVERIFY(s1.transitions().contains(t2));
+
+    // Transitions from child states should not be reported.
+    QState *s21 = new QState(&s2);
+    QAbstractTransition *t3 = s21->addTransition(this, SIGNAL(destroyed()), &s2);
+    QVERIFY(s2.transitions().isEmpty());
+    QCOMPARE(s21->transitions().count(), 1);
+    QCOMPARE(s21->transitions().first(), t3);
+}
 
 QTEST_MAIN(tst_QState)
 #include "tst_qstate.moc"
