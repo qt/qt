@@ -52,8 +52,6 @@
 #include "parser/qdeclarativejsast_p.h"
 #include "parser/qdeclarativejsengine_p.h"
 
-#include <qfxperf_p_p.h>
-
 #include <QStack>
 #include <QColor>
 #include <QPointF>

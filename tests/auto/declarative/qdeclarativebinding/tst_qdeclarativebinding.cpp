@@ -79,7 +79,7 @@ void tst_qdeclarativebinding::binding()
 
     QDeclarativeBind *binding = qobject_cast<QDeclarativeBind*>(rect->findChild<QDeclarativeBind*>("binding1"));
     QVERIFY(binding != 0);
-    QCOMPARE(binding->object(), rect);
+    QCOMPARE(binding->object(), qobject_cast<QObject*>(rect));
     QCOMPARE(binding->property(), QLatin1String("text"));
     QCOMPARE(binding->value().toString(), QLatin1String("Hello"));
 

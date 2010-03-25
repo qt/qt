@@ -43,8 +43,6 @@
 #include "qdeclarativenetworkaccessmanagerfactory.h"
 #include "qdeclarativeimageprovider.h"
 
-#include "qfxperf_p_p.h"
-
 #include <qdeclarativeengine.h>
 #include <private/qdeclarativeglobal_p.h>
 #include <private/qdeclarativeengine_p.h>

@@ -18,4 +18,10 @@ MyQmlObject{
     {
         obj.objectProperty = createQmlObject('TypeForDynamicCreation{}', obj);
     }
+
+    function dontCrash()
+    {
+        var component = createComponent('file-doesnt-exist.qml');
+        obj.objectProperty = component.createObject();
+    }
 }

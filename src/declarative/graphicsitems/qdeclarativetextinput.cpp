@@ -220,6 +220,7 @@ void QDeclarativeTextInput::setHAlign(HAlignment align)
     if(align == d->hAlign)
         return;
     d->hAlign = align;
+    updateRect();
     emit horizontalAlignmentChanged(d->hAlign);
 }
 
