@@ -78,8 +78,6 @@ public:
 
     QNetworkConfigurationPrivatePointer defaultConfiguration();
 
-    bool getWifiInterfaces();
-
     bool requiresPolling() const;
 
 private Q_SLOTS:
