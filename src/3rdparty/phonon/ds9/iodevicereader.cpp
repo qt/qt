@@ -107,9 +107,6 @@ namespace Phonon
               HRESULT read(LONGLONG pos, LONG length, BYTE *buffer, LONG *actual)
               {
                   Q_ASSERT(!m_mutex.tryLock());
-                  if (m_mediaGraph->isStopping()) {
-                      return VFW_E_WRONG_STATE;
-                  }
 
                   if(m_size != 1 && pos + length > m_size) {
                       //it tries to read outside of the boundaries
@@ -128,9 +125,6 @@ namespace Phonon
                   int oldSize = m_buffer.size();
                   while (m_buffer.size() < int(length)) {
                       needData();
-                      if (m_mediaGraph->isStopping()) {
-                          return VFW_E_WRONG_STATE;
-                      }
 
                       if (oldSize == m_buffer.size()) {
                           break; //we didn't get any data
