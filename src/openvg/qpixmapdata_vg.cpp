@@ -45,8 +45,10 @@
 #include "qvg_p.h"
 #include "qvgimagepool_p.h"
 
+#if defined(Q_OS_SYMBIAN)
 #include <private/qt_s60_p.h>
 #include <fbs.h>
+#endif
 #ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
 #include <sgresource/sgimage.h>
 typedef EGLImageKHR (*pfnEglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, EGLint*);
