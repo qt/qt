@@ -8,7 +8,7 @@ WebView {
     settings.zoomTextOnly: true
     zoomFactor:
         SequentialAnimation {
-            repeat: true
+            loops: Qt.Infinite
             NumberAnimation { from: 2; to: 0.25; duration: 1000 }
             NumberAnimation { from: 0.25; to: 2; duration: 1000 }
         }

@@ -64,6 +64,7 @@ Q_DECLARE_METATYPE(QDeclarativeXmlQueryResult)
 
 QT_BEGIN_NAMESPACE
 
+
 typedef QPair<int, int> QDeclarativeXmlListRange;
 
 /*!

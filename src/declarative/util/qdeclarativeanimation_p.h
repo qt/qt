@@ -73,7 +73,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeAbstractAnimation : public QObject, public Q
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged)
-    Q_PROPERTY(bool repeat READ repeat WRITE setRepeat NOTIFY repeatChanged)
+    Q_PROPERTY(int loops READ loops WRITE setLoops NOTIFY loopsChanged)
     Q_CLASSINFO("DefaultMethod", "start()")
 
 public:
@@ -86,8 +86,9 @@ public:
     void setPaused(bool);
     bool alwaysRunToEnd() const;
     void setAlwaysRunToEnd(bool);
-    bool repeat() const;
-    void setRepeat(bool);
+
+    int loops() const;
+    void setLoops(int);
 
     int currentTime();
     void setCurrentTime(int);
@@ -106,8 +107,8 @@ Q_SIGNALS:
     void completed();
     void runningChanged(bool);
     void pausedChanged(bool);
-    void repeatChanged(bool);
     void alwaysRunToEndChanged(bool);
+    void loopCountChanged(int);
 
 public Q_SLOTS:
     void restart();

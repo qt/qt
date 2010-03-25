@@ -1491,8 +1491,9 @@ void QDeclarativeListView::setCurrentIndex(int index)
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         cancelFlick();
         d->updateCurrent(index);
-    } else {
+    } else if (index != d->currentIndex) {
         d->currentIndex = index;
+        emit currentIndexChanged();
     }
 }
 
@@ -2366,11 +2367,19 @@ void QDeclarativeListView::trackedPositionChanged()
 void QDeclarativeListView::itemsInserted(int modelIndex, int count)
 {
     Q_D(QDeclarativeListView);
+    if (!isComponentComplete())
+        return;
     d->updateUnrequestedIndexes();
     d->moveReason = QDeclarativeListViewPrivate::Other;
     if (!d->visibleItems.count() || d->model->count() <= 1) {
         d->scheduleLayout();
-        d->updateCurrent(qMax(0, qMin(d->currentIndex, d->model->count()-1)));
+        if (d->currentIndex >= modelIndex) {
+            // adjust current item index
+            d->currentIndex += count;
+            if (d->currentItem)
+                d->currentItem->index = d->currentIndex;
+            emit currentIndexChanged();
+        }
         emit countChanged();
         return;
     }
@@ -2500,6 +2509,8 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
 void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
 {
     Q_D(QDeclarativeListView);
+    if (!isComponentComplete())
+        return;
     d->moveReason = QDeclarativeListViewPrivate::Other;
     d->updateUnrequestedIndexes();
 
@@ -2598,6 +2609,8 @@ void QDeclarativeListView::destroyRemoved()
 void QDeclarativeListView::itemsMoved(int from, int to, int count)
 {
     Q_D(QDeclarativeListView);
+    if (!isComponentComplete())
+        return;
     d->updateUnrequestedIndexes();
 
     if (d->visibleItems.isEmpty()) {
