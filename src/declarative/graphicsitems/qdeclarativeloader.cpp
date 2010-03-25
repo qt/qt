@@ -41,7 +41,9 @@
 
 #include "qdeclarativeloader_p_p.h"
 
+#include <qdeclarativeinfo.h>
 #include <qdeclarativeengine_p.h>
+#include <qdeclarativeglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +68,7 @@ void QDeclarativeLoaderPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem
 void QDeclarativeLoaderPrivate::clear()
 {
     if (ownComponent) {
-        delete component;
+        component->deleteLater();
         component = 0;
         ownComponent = false;
     }
@@ -285,11 +287,20 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
             return;
         }
 
+        QDeclarativeComponent *c = component;
         QObject *obj = component->create(ctxt);
+        if (component != c) {
+            // component->create could trigger a change in source that causes
+            // component to be set to something else. In that case we just
+            // need to cleanup.
+            delete obj;
+            delete ctxt;
+            return;
+        }
         if (obj) {
-            ctxt->setParent(obj);
             item = qobject_cast<QGraphicsObject *>(obj);
             if (item) {
+                QDeclarative_setParent_noEvent(ctxt, obj);
                 if (QDeclarativeItem* qmlItem = qobject_cast<QDeclarativeItem *>(item)) {
                     qmlItem->setParentItem(q);
                 } else {
@@ -298,8 +309,14 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
                 }
 //                item->setFocus(true);
                 initResize();
+            } else {
+                qmlInfo(q) << QDeclarativeLoader::tr("Loader does not support loading non-visual elements.");
+                delete obj;
+                delete ctxt;
             }
         } else {
+            if (!component->errors().isEmpty())
+                qWarning() << component->errors();
             delete obj;
             delete ctxt;
             source = QUrl();

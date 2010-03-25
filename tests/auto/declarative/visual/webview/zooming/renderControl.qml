@@ -10,7 +10,7 @@ Rectangle {
         width: 400
         url: "renderControl.html"
         x: SequentialAnimation {
-                repeat: true
+                loops: Animation.Infinite
                 NumberAnimation { from: 100; to: 0; duration: 200 }
                 PropertyAction { target: webview; property: "renderingEnabled"; value: false }
                 NumberAnimation { from: 0; to: -100; duration: 200 }

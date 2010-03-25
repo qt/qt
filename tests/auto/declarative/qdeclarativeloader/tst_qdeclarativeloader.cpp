@@ -88,6 +88,10 @@ private slots:
     void failNetworkRequest();
 //    void networkComponent();
 
+    void deleteComponentCrash();
+    void nonItem();
+    void vmeErrors();
+
 private:
     QDeclarativeEngine engine;
 };
@@ -392,7 +396,7 @@ void tst_QDeclarativeLoader::networkRequestUrl()
     server.serveDirectory(SRCDIR "/data");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/Rect120x60.qml\" }"), TEST_FILE(""));
+    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/Rect120x60.qml\" }"), QUrl("http://127.0.0.1:14445/dummy.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
 
@@ -446,7 +450,7 @@ void tst_QDeclarativeLoader::failNetworkRequest()
     QTest::ignoreMessage(QtWarningMsg, "(:-1: Network error for URL http://127.0.0.1:14445/IDontExist.qml) ");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/IDontExist.qml\" }"), TEST_FILE(""));
+    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/IDontExist.qml\" }"), QUrl("http://127.0.0.1:14445/dummy.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
 
@@ -455,6 +459,52 @@ void tst_QDeclarativeLoader::failNetworkRequest()
     QVERIFY(loader->item() == 0);
     QCOMPARE(loader->progress(), 0.0);
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 0);
+
+    delete loader;
+}
+
+// QTBUG-9241
+void tst_QDeclarativeLoader::deleteComponentCrash()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("crash.qml"));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+
+    item->metaObject()->invokeMethod(item, "setLoaderSource");
+
+    QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(item->QGraphicsObject::children().at(0));
+    QVERIFY(loader);
+    QVERIFY(loader->item());
+    QCOMPARE(loader->item()->objectName(), QLatin1String("blue"));
+    QCOMPARE(loader->progress(), 1.0);
+    QCOMPARE(loader->status(), QDeclarativeLoader::Ready);
+    QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
+    QVERIFY(loader->source() == QUrl::fromLocalFile(SRCDIR "/data/BlueRect.qml"));
+
+    delete item;
+}
+
+void tst_QDeclarativeLoader::nonItem()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("nonItem.qml"));
+    QString err = QString("QML Loader (") + QUrl::fromLocalFile(SRCDIR).toString() + QString("/data/nonItem.qml:3:1) Loader does not support loading non-visual elements.");
+
+    QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
+    QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
+    QVERIFY(loader);
+    QVERIFY(loader->item() == 0);
+
+    delete loader;
+}
+
+void tst_QDeclarativeLoader::vmeErrors()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("vmeErrors.qml"));
+    QString err = QString("(") + QUrl::fromLocalFile(SRCDIR).toString() + QString("/data/VmeError.qml:6: Cannot assign object type QObject with no default method\n        onSomethingHappened: QtObject {}) ");
+    QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
+    QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
+    QVERIFY(loader);
+    QVERIFY(loader->item() == 0);
 
     delete loader;
 }

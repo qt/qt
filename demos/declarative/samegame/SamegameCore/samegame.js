@@ -22,11 +22,6 @@ function timeStr(msecs) {
     return ret;
 }
 
-function getTileSize()
-{
-    return tileSize;
-}
-
 function initBoard()
 {
     for(var i = 0; i<maxIndex; i++){

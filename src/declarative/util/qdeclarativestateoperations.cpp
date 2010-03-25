@@ -168,7 +168,7 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
     for the original and new parent).
 
     You can specify at which point in a transition you want a ParentChange to occur by
-    using a ParentAnimation or ParentAction.
+    using a ParentAnimation.
 */
 
 
@@ -456,11 +456,10 @@ void QDeclarativeParentChange::saveCurrentValues()
     }
 
     d->rewindParent = d->target->parentItem();
+    d->rewindStackBefore = 0;
 
-    if (!d->rewindParent) {
-        d->rewindStackBefore = 0;
+    if (!d->rewindParent)
         return;
-    }
 
     //try to determine the item's original stack position so we can restore it
     int siblingIndex = ((AccessibleFxItem*)d->target)->siblingIndex() + 1;
@@ -495,9 +494,31 @@ public:
     \qmlclass StateChangeScript QDeclarativeStateChangeScript
     \brief The StateChangeScript element allows you to run a script in a state.
 
-    The script specified will be run immediately when the state is made current.
-    Alternatively you can use a ScriptAction to specify at which point in the transition
+    StateChangeScripts are run when entering the state. You can use
+    ScriptAction to specify at which point in the transition
     you want the StateChangeScript to be run.
+
+    \qml
+    State {
+        name "state1"
+        StateChangeScript {
+            name: "myScript"
+            script: doStateStuff();
+        }
+        ...
+    }
+    ...
+    Transition {
+        to: "state1"
+        SequentialAnimation {
+            NumberAnimation { ... }
+            ScriptAction { scriptName: "myScript" }
+            NumberAnimation { ... }
+        }
+    }
+    \endqml
+
+    \sa ScriptAction
 */
 
 QDeclarativeStateChangeScript::QDeclarativeStateChangeScript(QObject *parent)
@@ -944,7 +965,7 @@ void QDeclarativeAnchorChanges::saveOriginals()
     d->origBaseline = d->target->anchors()->baseline();
 
     d->applyOrigLeft = d->applyOrigRight = d->applyOrigHCenter = d->applyOrigTop
-      = d->applyOrigBottom = d->applyOrigHCenter = d->applyOrigBaseline = false;
+      = d->applyOrigBottom = d->applyOrigVCenter = d->applyOrigBaseline = false;
 
     saveCurrentValues();
 }

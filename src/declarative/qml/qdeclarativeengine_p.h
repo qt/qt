@@ -69,6 +69,7 @@
 #include "qdeclarativecontextscriptclass_p.h"
 #include "qdeclarativevaluetypescriptclass_p.h"
 #include "qdeclarativemetatype_p.h"
+#include "qdeclarativedirparser_p.h"
 
 #include <QtScript/QScriptClass>
 #include <QtScript/QScriptValue>
@@ -263,7 +264,7 @@ public:
         void setBaseUrl(const QUrl& url);
         QUrl baseUrl() const;
 
-        QDeclarativeTypeNameCache *cache(QDeclarativeEngine *) const;
+        void cache(QDeclarativeTypeNameCache *cache, QDeclarativeEngine *) const;
 
     private:
         friend class QDeclarativeEnginePrivate;
@@ -280,7 +281,10 @@ public:
     QString resolvePlugin(const QDir &dir, const QString &baseName);
 
 
-    bool addToImport(Imports*, const QString& uri, const QString &qmldircontentnetwork, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType) const;
+    bool addToImport(Imports*, const QDeclarativeDirComponents &qmldircomponentsnetwork, 
+                     const QString& uri, const QString& prefix, int vmaj, int vmin, 
+                     QDeclarativeScriptParser::Import::Type importType,
+                     QString *errorString) const;
     bool resolveType(const Imports&, const QByteArray& type,
                      QDeclarativeType** type_return, QUrl* url_return,
                      int *version_major, int *version_minor,
@@ -301,6 +305,8 @@ public:
     const QMetaObject *metaObjectForType(int) const;
     QHash<int, int> m_qmlLists;
     QHash<int, QDeclarativeCompiledData *> m_compositeTypes;
+
+    QHash<QString, QScriptValue> m_sharedScriptImports;
 
     QScriptValue scriptValueFromVariant(const QVariant &);
     QVariant scriptValueToVariant(const QScriptValue &);

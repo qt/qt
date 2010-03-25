@@ -31,21 +31,19 @@ Item {
                 }
             }
 
-            Script {
-               function photoClicked() {
-                   imageDetails.photoTitle = title;
-                   imageDetails.photoDescription = description;
-                   imageDetails.photoTags = tags;
-                   imageDetails.photoWidth = photoWidth;
-                   imageDetails.photoHeight = photoHeight;
-                   imageDetails.photoType = photoType;
-                   imageDetails.photoAuthor = photoAuthor;
-                   imageDetails.photoDate = photoDate;
-                   imageDetails.photoUrl = url;
-                   imageDetails.rating = 0;
-                   wrapper.state = "Details";
-               }
-            }
+           function photoClicked() {
+               imageDetails.photoTitle = title;
+               imageDetails.photoDescription = description;
+               imageDetails.photoTags = tags;
+               imageDetails.photoWidth = photoWidth;
+               imageDetails.photoHeight = photoHeight;
+               imageDetails.photoType = photoType;
+               imageDetails.photoAuthor = photoAuthor;
+               imageDetails.photoDate = photoDate;
+               imageDetails.photoUrl = url;
+               imageDetails.rating = 0;
+               wrapper.state = "Details";
+           }
 
             Rectangle {
                 id: whiteRect; anchors.fill: parent; color: "white"; radius: 5
@@ -85,15 +83,17 @@ Item {
                 Transition {
                     from: "*"; to: "Details"
                     SequentialAnimation {
-                        ParentAction { }
-                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing.type: "InOutQuad" }
+                        ParentAnimation {
+                            NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing.type: "InOutQuad" }
+                        }
                     }
                 },
                 Transition {
                     from: "Details"; to: "*"
                     SequentialAnimation {
-                        ParentAction { }
-                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing.type: "InOutQuad" }
+                        ParentAnimation {
+                            NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing.type: "InOutQuad" }
+                        }
                         PropertyAction { targets: wrapper; properties: "z" }
                     }
                 }

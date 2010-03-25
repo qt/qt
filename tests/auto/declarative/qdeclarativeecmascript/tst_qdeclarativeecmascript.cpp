@@ -130,6 +130,7 @@ private slots:
     void qlistqobjectMethods();
 
     void bug1();
+    void dynamicCreationCrash();
 
     void callQtInvokables();
 private:
@@ -1225,6 +1226,19 @@ void tst_qdeclarativeecmascript::bug1()
     QCOMPARE(object->property("test").toInt(), 9);
 
     delete object;
+}
+
+// Don't crash in createObject when the component has errors.
+void tst_qdeclarativeecmascript::dynamicCreationCrash()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("dynamicCreation.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeComponent: Component is not ready");
+    QMetaObject::invokeMethod(object, "dontCrash");
+    QObject *created = object->objectProperty();
+    QVERIFY(created == 0);
 }
 
 void tst_qdeclarativeecmascript::callQtInvokables()

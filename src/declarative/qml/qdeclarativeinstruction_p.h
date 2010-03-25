@@ -119,6 +119,7 @@ public:
 
         StoreSignal,              /* storeSignal */
         StoreScript,              /* storeScript */
+        StoreImportedScript,      /* storeScript */
         StoreScriptString,        /* storeScriptString */
 
         //
