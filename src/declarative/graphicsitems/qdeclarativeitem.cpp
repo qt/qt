@@ -1575,7 +1575,7 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     Item {
         Text {}
         Rectangle {}
-        Script {}
+        Timer {}
     }
     \endqml
 
@@ -1587,7 +1587,7 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
             Rectangle {}
         ]
         resources: [
-            Script {}
+            Timer {}
         ]
     }
     \endqml
@@ -2356,13 +2356,11 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItem::transitions()
   example:
 
   \qml
-    Script {
-        function toggle() {
-            if (button.state == 'On')
-                button.state = 'Off';
-            else
-                button.state = 'On';
-        }
+    function toggle() {
+        if (button.state == 'On')
+            button.state = 'Off';
+        else
+            button.state = 'On';
     }
   \endqml
 
