@@ -244,6 +244,7 @@ public:
     void mark(JSC::MarkStack& markStack);
     bool isCollecting() const;
     void collectGarbage();
+    void reportAdditionalMemoryCost(int size);
 
     //flags that we set on the return value register for native function. (ie when codeBlock is 0)
     enum ContextFlags {

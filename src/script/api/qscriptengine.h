@@ -233,6 +233,7 @@ public:
     QStringList importedExtensions() const;
 
     void collectGarbage();
+    void reportAdditionalMemoryCost(int size);
 
     void setProcessEventsInterval(int interval);
     int processEventsInterval() const;

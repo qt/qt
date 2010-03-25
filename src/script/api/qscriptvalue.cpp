@@ -1970,6 +1970,8 @@ QScriptValue QScriptValue::data() const
   this function to set object-specific data that won't be directly
   accessible to scripts, but may be retrieved in C++ using the data()
   function.
+
+  \sa QScriptEngine::reportAdditionalMemoryCost()
 */
 void QScriptValue::setData(const QScriptValue &data)
 {

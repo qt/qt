@@ -121,6 +121,7 @@ private slots:
     void castWithPrototypeChain();
     void castWithMultipleInheritance();
     void collectGarbage();
+    void reportAdditionalMemoryCost();
     void gcWithNestedDataStructure();
     void processEventsWhileRunning();
     void throwErrorFromProcessEvents();
@@ -2367,6 +2368,24 @@ void tst_QScriptEngine::collectGarbage()
     (void)eng.newQObject(ptr, QScriptEngine::ScriptOwnership);
     collectGarbage_helper(eng);
     QVERIFY(ptr == 0);
+}
+
+void tst_QScriptEngine::reportAdditionalMemoryCost()
+{
+    QScriptEngine eng;
+    for (int x = 0; x < 1000; ++x) {
+        eng.reportAdditionalMemoryCost(0);
+        eng.reportAdditionalMemoryCost(10);
+        eng.reportAdditionalMemoryCost(1000);
+        eng.reportAdditionalMemoryCost(10000);
+        eng.reportAdditionalMemoryCost(100000);
+        eng.reportAdditionalMemoryCost(1000000);
+        eng.reportAdditionalMemoryCost(10000000);
+        eng.reportAdditionalMemoryCost(-1);
+        eng.reportAdditionalMemoryCost(-1000);
+        QScriptValue obj = eng.newObject();
+        eng.collectGarbage();
+    }
 }
 
 void tst_QScriptEngine::gcWithNestedDataStructure()
