@@ -1194,12 +1194,12 @@ void Generator::appendSortedQmlNames(Text& text,
     QMap<QString,Text> classMap;
     int index = 0;
 
-#ifdef DEBUG_MULTIPLE QDOCCONF_FILES
+#ifdef DEBUG_MULTIPLE
     qDebug() << "Generator::appendSortedQmlNames():" << base->name() << "is inherited by...";
 #endif    
     for (int i = 0; i < subs.size(); ++i) {
         Text t;
-#ifdef DEBUG_MULTIPLE QDOCCONF_FILES
+#ifdef DEBUG_MULTIPLE
         qDebug() << "    " << subs[i]->name();
 #endif        
         appendFullName(t, subs[i], base, marker);

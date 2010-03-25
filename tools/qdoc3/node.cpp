@@ -1297,7 +1297,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
  */
 QmlClassNode::~QmlClassNode()
 {
-#ifdef DEBUG_MULTIPLE QDOCCONF_FILES
+#ifdef DEBUG_MULTIPLE
     qDebug() << "Deleting QmlClassNode:" << name();
 #endif    
 }
@@ -1334,7 +1334,7 @@ QString QmlClassNode::fileBase() const
 void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
 {
     inheritedBy.insert(base,sub);
-#ifdef DEBUG_MULTIPLE QDOCCONF_FILES
+#ifdef DEBUG_MULTIPLE
     qDebug() << "QmlClassNode::addInheritedBy(): insert" << base << sub->name() << inheritedBy.size();
 #endif    
 }
@@ -1347,7 +1347,7 @@ void QmlClassNode::subclasses(const QString& base, NodeList& subs)
     subs.clear();
     if (inheritedBy.count(base) > 0) {
         subs = inheritedBy.values(base);
-#ifdef DEBUG_MULTIPLE QDOCCONF_FILES
+#ifdef DEBUG_MULTIPLE
         qDebug() << "QmlClassNode::subclasses():" <<  inheritedBy.count(base) << base
                  << "subs:" << subs.size() << "total size:" << inheritedBy.size();
 #endif        
