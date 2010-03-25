@@ -846,7 +846,6 @@ QRegion QLinuxFbGraphicsSystemScreen::doRedraw()
 
     if (!compositePainter) {
         compositePainter = new QPainter(mFbScreenImage);
-        compositePainter->setCompositionMode(QPainter::CompositionMode_Source);
     }
 
     QVector<QRect> rects = touched.rects();

@@ -189,9 +189,7 @@ QRegion QGraphicsSystemFbScreen::doRedraw()
             foreach (QRect rect, intersect.rects()) {
                 bool firstLayer = true;
                 if (layer == -1) {
-                    compositePainter->setCompositionMode(QPainter::CompositionMode_Source);
                     compositePainter->fillRect(rect, Qt::black);
-                    compositePainter->setCompositionMode(QPainter::CompositionMode_SourceOver);
                     firstLayer = false;
                     layer = windowStack.size() - 1;
                 }
@@ -204,12 +202,9 @@ QRegion QGraphicsSystemFbScreen::doRedraw()
                     QRect windowRect = windowStack[layerIndex]->geometry();
                     QRect windowIntersect = rect.translated(-windowRect.left(),
                                                                  -windowRect.top());
-                    if (firstLayer)
-                        compositePainter->setCompositionMode(QPainter::CompositionMode_Source);
                     compositePainter->drawImage(rect, windowStack[layerIndex]->image(),
                                                 windowIntersect);
                     if (firstLayer) {
-                        compositePainter->setCompositionMode(QPainter::CompositionMode_SourceOver);
                         firstLayer = false;
                     }
                 }
