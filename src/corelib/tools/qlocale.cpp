@@ -1570,7 +1570,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     This constructor converts the locale name to a language/country
     pair; it does not use the system locale database.
 
-    QLocale's data is based on Common Locale Data Repository v1.6.1.
+    QLocale's data is based on Common Locale Data Repository v1.8.0.
 
     The double-to-string and string-to-double conversion functions are
     covered by the following licenses:
@@ -1771,6 +1771,55 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     \value Hawaiian
     \value Tyap
     \value Chewa
+    \value Filipino
+    \value SwissGerman
+    \value SichuanYi
+    \value Kpelle
+    \value LowGerman
+    \value SouthNdebele
+    \value NorthernSotho
+    \value NorthernSami
+    \value Taroko
+    \value Gusii
+    \value Taita
+    \value Fulah
+    \value Kikuyu
+    \value Samburu
+    \value Sena
+    \value NorthNdebele
+    \value Rombo
+    \value Tachelhit
+    \value Kabyle
+    \value Nyankole
+    \value Bena
+    \value Vunjo
+    \value Bambara
+    \value Embu
+    \value Cherokee
+    \value Morisyen
+    \value Makonde
+    \value Langi
+    \value Ganda
+    \value Bemba
+    \value Kabuverdianu
+    \value Meru
+    \value Kalenjin
+    \value Nama
+    \value Machame
+    \value Colognian
+    \value Masai
+    \value Soga
+    \value Luyia
+    \value Asu
+    \value Teso
+    \value Saho
+    \value KoyraChiini
+    \value Rwa
+    \value Luo
+    \value Chiga
+    \value CentralMoroccoTamazight
+    \value KoyraboroSenni
+    \value Shambala
     \omitvalue LastLanguage
 
     \sa language()
@@ -2023,6 +2072,11 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     \value Yugoslavia
     \value Zambia
     \value Zimbabwe
+    \value SerbiaAndMontenegro
+    \value Montenegro
+    \value Serbia
+    \value SaintBarthelemy
+    \value SaintMartin
     \omitvalue LastCountry
 
     \sa country()

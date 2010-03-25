@@ -200,9 +200,15 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
 #endif
       m_previewManager(0)
 {
+#ifdef Q_WS_X11
     m_newFormAction->setIcon(QIcon::fromTheme("document-new", m_newFormAction->icon()));
     m_openFormAction->setIcon(QIcon::fromTheme("document-open", m_openFormAction->icon()));
     m_saveFormAction->setIcon(QIcon::fromTheme("document-save", m_saveFormAction->icon()));
+    m_saveFormAsAction->setIcon(QIcon::fromTheme("document-save-as", m_saveFormAsAction->icon()));
+    m_printPreviewAction->setIcon(QIcon::fromTheme("document-print", m_printPreviewAction->icon()));
+    m_closeFormAction->setIcon(QIcon::fromTheme("window-close", m_closeFormAction->icon()));
+    m_quitAction->setIcon(QIcon::fromTheme("application-exit", m_quitAction->icon()));
+#endif
 
     Q_ASSERT(m_core != 0);
     qdesigner_internal::QDesignerFormWindowManager *ifwm = qobject_cast<qdesigner_internal::QDesignerFormWindowManager *>(m_core->formWindowManager());
@@ -490,13 +496,13 @@ QAction *QDesignerActions::createRecentFilesMenu()
     }
     updateRecentFileActions();
     menu->addSeparator();
-    act = new QAction(tr("Clear &Menu"), this);
+    act = new QAction(QIcon::fromTheme("edit-clear"), tr("Clear &Menu"), this);
     act->setObjectName(QLatin1String("__qt_action_clear_menu_"));
     connect(act, SIGNAL(triggered()), this, SLOT(clearRecentFiles()));
     m_recentFilesActions->addAction(act);
     menu->addAction(act);
 
-    act = new QAction(tr("&Recent Forms"), this);
+    act = new QAction(QIcon::fromTheme("document-open-recent"), tr("&Recent Forms"), this);
     act->setMenu(menu);
     return act;
 }

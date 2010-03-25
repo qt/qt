@@ -1505,8 +1505,9 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
                                 const QScriptValueList &args)
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC())
+    if (!d || !d->isObject())
         return QScriptValue();
+    QScript::APIShim shim(d->engine);
     JSC::JSValue callee = d->jscValue;
     JSC::CallData callData;
     JSC::CallType callType = callee.getCallData(callData);
@@ -1582,8 +1583,9 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
                                 const QScriptValue &arguments)
 {
     Q_D(QScriptValue);
-    if (!d || !d->isJSC())
+    if (!d || !d->isObject())
         return QScriptValue();
+    QScript::APIShim shim(d->engine);
     JSC::JSValue callee = d->jscValue;
     JSC::CallData callData;
     JSC::CallType callType = callee.getCallData(callData);
@@ -1656,8 +1658,9 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
 QScriptValue QScriptValue::construct(const QScriptValueList &args)
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC())
+    if (!d || !d->isObject())
         return QScriptValue();
+    QScript::APIShim shim(d->engine);
     JSC::JSValue callee = d->jscValue;
     JSC::ConstructData constructData;
     JSC::ConstructType constructType = callee.getConstructData(constructData);
@@ -1705,8 +1708,9 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
 QScriptValue QScriptValue::construct(const QScriptValue &arguments)
 {
     Q_D(QScriptValue);
-    if (!d || !d->isJSC())
+    if (!d || !d->isObject())
         return QScriptValue();
+    QScript::APIShim shim(d->engine);
     JSC::JSValue callee = d->jscValue;
     JSC::ConstructData constructData;
     JSC::ConstructType constructType = callee.getConstructData(constructData);
@@ -1966,6 +1970,8 @@ QScriptValue QScriptValue::data() const
   this function to set object-specific data that won't be directly
   accessible to scripts, but may be retrieved in C++ using the data()
   function.
+
+  \sa QScriptEngine::reportAdditionalMemoryCost()
 */
 void QScriptValue::setData(const QScriptValue &data)
 {

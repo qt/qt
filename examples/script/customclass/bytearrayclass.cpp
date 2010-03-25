@@ -148,13 +148,13 @@ void ByteArrayClass::setProperty(QScriptValue &object,
     if (!ba)
         return;
     if (name == length) {
-        ba->resize(value.toInt32());
+        resize(*ba, value.toInt32());
     } else {
         qint32 pos = id;
         if (pos < 0)
             return;
         if (ba->size() <= pos)
-            ba->resize(pos + 1);
+            resize(*ba, pos + 1);
         (*ba)[pos] = char(value.toInt32());
     }
 }
@@ -194,10 +194,13 @@ QScriptValue ByteArrayClass::constructor()
     return ctor;
 }
 
+//! [10]
 QScriptValue ByteArrayClass::newInstance(int size)
 {
+    engine()->reportAdditionalMemoryCost(size);
     return newInstance(QByteArray(size, /*ch=*/0));
 }
+//! [10]
 
 //! [1]
 QScriptValue ByteArrayClass::newInstance(const QByteArray &ba)
@@ -234,6 +237,16 @@ void ByteArrayClass::fromScriptValue(const QScriptValue &obj, QByteArray &ba)
 {
     ba = qvariant_cast<QByteArray>(obj.data().toVariant());
 }
+
+//! [9]
+void ByteArrayClass::resize(QByteArray &ba, int newSize)
+{
+    int oldSize = ba.size();
+    ba.resize(newSize);
+    if (newSize > oldSize)
+        engine()->reportAdditionalMemoryCost(newSize - oldSize);
+}
+//! [9]
 
 
 

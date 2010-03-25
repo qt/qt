@@ -409,6 +409,11 @@ void MainWindow::setupActions()
 
     QMenu *menu = menuBar()->addMenu(tr("&File"));
 
+    m_newTabAction = menu->addAction(tr("New &Tab"), m_centralWidget, SLOT(newTab()));
+    m_newTabAction->setShortcut(QKeySequence::AddTab);
+
+    menu->addSeparator();
+
     m_pageSetupAction = menu->addAction(tr("Page Set&up..."), m_centralWidget,
         SLOT(pageSetup()));
     m_printPreviewAction = menu->addAction(tr("Print Preview..."), m_centralWidget,
@@ -421,14 +426,12 @@ void MainWindow::setupActions()
 
     menu->addSeparator();
 
-    m_newTabAction = menu->addAction(tr("New &Tab"), m_centralWidget, SLOT(newTab()));
-    m_newTabAction->setShortcut(QKeySequence::AddTab);
-
     m_closeTabAction = menu->addAction(tr("&Close Tab"), m_centralWidget,
         SLOT(closeTab()));
     m_closeTabAction->setShortcuts(QKeySequence::Close);
 
-    QAction *tmp = menu->addAction(tr("&Quit"), this, SLOT(close()));
+    QAction *tmp = menu->addAction(QIcon::fromTheme("application-exit"),
+                                   tr("&Quit"), this, SLOT(close()));
     tmp->setMenuRole(QAction::QuitRole);
 #ifdef Q_OS_WIN
     tmp->setShortcut(QKeySequence(tr("CTRL+Q")));
@@ -532,6 +535,8 @@ void MainWindow::setupActions()
     m_aboutAction->setMenuRole(QAction::AboutRole);
 
 #ifdef Q_WS_X11
+    m_newTabAction->setIcon(QIcon::fromTheme("tab-new", m_newTabAction->icon()));
+    m_closeTabAction->setIcon(QIcon::fromTheme("window-close", m_closeTabAction->icon()));
     m_backAction->setIcon(QIcon::fromTheme("go-previous" , m_backAction->icon()));
     m_nextAction->setIcon(QIcon::fromTheme("go-next" , m_nextAction->icon()));
     m_zoomInAction->setIcon(QIcon::fromTheme("zoom-in" , m_zoomInAction->icon()));
@@ -541,7 +546,10 @@ void MainWindow::setupActions()
     m_copyAction->setIcon(QIcon::fromTheme("edit-copy" , m_copyAction->icon()));
     m_findAction->setIcon(QIcon::fromTheme("edit-find" , m_findAction->icon()));
     m_homeAction->setIcon(QIcon::fromTheme("go-home" , m_homeAction->icon()));
+    m_pageSetupAction->setIcon(QIcon::fromTheme("document-page-setup", m_pageSetupAction->icon()));
+    m_printPreviewAction->setIcon(QIcon::fromTheme("document-print-preview", m_printPreviewAction->icon()));
     m_printAction->setIcon(QIcon::fromTheme("document-print" , m_printAction->icon()));
+    m_aboutAction->setIcon(QIcon::fromTheme("help-about", m_aboutAction->icon()));
 #endif
 
     QToolBar *navigationBar = addToolBar(tr("Navigation Toolbar"));

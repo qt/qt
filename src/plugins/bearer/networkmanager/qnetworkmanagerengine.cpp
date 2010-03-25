@@ -91,6 +91,15 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
     connect(userSettings, SIGNAL(newConnection(QDBusObjectPath)),
             this, SLOT(newConnection(QDBusObjectPath)));
 
+    QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
+}
+
+QNetworkManagerEngine::~QNetworkManagerEngine()
+{
+}
+
+void QNetworkManagerEngine::init()
+{
     // Get current list of access points.
     foreach (const QDBusObjectPath &devicePath, interface->getDevices())
         deviceAdded(devicePath);
@@ -111,10 +120,6 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
         connect(activeConnection, SIGNAL(propertiesChanged(QString,QMap<QString,QVariant>)),
                 this, SLOT(activeConnectionPropertiesChanged(QString,QMap<QString,QVariant>)));
     }
-}
-
-QNetworkManagerEngine::~QNetworkManagerEngine()
-{
 }
 
 bool QNetworkManagerEngine::networkManagerAvailable() const
@@ -146,7 +151,7 @@ QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
                 continue;
 
             QNetworkManagerInterfaceDevice device(devices.at(0).path());
-            return device.networkInterface().name();
+            return device.networkInterface();
         }
     }
 

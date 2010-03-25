@@ -64,7 +64,7 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
     \since 4.7
 
     \inmodule QtNetwork
-    \ingroup bearer
+    \ingroup network
 
     QNetworkConfigurationManager provides access to the network configurations known to the system and
     enables applications to detect the system capabilities (with regards to network sessions) at runtime.
@@ -166,6 +166,8 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
                                      sockets.
     \value DataStatistics            If this flag is set QNetworkSession can provide statistics
                                      about transmitted and received data.
+    \value NetworkSessionRequired    If this flag is set the platform requires that a network
+                                     session is created before network operations can be performed.
 */
 
 /*!

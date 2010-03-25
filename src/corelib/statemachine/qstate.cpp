@@ -66,7 +66,8 @@ QT_BEGIN_NAMESPACE
   states. QState is part of \l{The State Machine Framework}.
 
   The addTransition() function adds a transition. The removeTransition()
-  function removes a transition.
+  function removes a transition. The transitions() function returns the
+  state's outgoing transitions.
 
   The assignProperty() function is used for defining property assignments that
   should be performed when a state is entered.
@@ -405,6 +406,21 @@ void QState::removeTransition(QAbstractTransition *transition)
     if (mach)
         mach->unregisterTransition(transition);
     transition->setParent(0);
+}
+
+/*!
+  \since 4.7
+
+  Returns this state's outgoing transitions (i.e. transitions where
+  this state is the \l{QAbstractTransition::sourceState()}{source
+  state}), or an empty list if this state has no outgoing transitions.
+
+  \sa addTransition()
+*/
+QList<QAbstractTransition*> QState::transitions() const
+{
+    Q_D(const QState);
+    return d->transitions();
 }
 
 /*!
