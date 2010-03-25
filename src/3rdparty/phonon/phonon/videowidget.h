@@ -172,6 +172,7 @@ class AbstractVideoOutput;
             qreal contrast() const;
             qreal hue() const;
             qreal saturation() const;
+            QImage snapshot() const;
 
             //TODO: bar colors property
         public Q_SLOTS:

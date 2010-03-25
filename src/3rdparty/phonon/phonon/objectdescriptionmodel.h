@@ -35,6 +35,18 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PHONON_OBJECTDESCRIPTIONMODEL
 
+/* MinGW 3.4.x gives an ICE when trying to instantiate one of the
+   ObjectDescriptionModel<foo> classes because it can't handle
+   half exported classes correct. gcc 4.3.x has a fix for this but
+   we currently there's no official gcc 4.3 on windows available.
+   Because of this we need this little hack
+ */
+#if defined(Q_CC_MINGW)
+#define PHONON_EXPORT_ODM
+#else
+#define PHONON_EXPORT_ODM  PHONON_EXPORT
+#endif
+
 namespace Phonon
 {
     class ObjectDescriptionModelDataPrivate;
@@ -139,21 +151,6 @@ namespace Phonon
             ObjectDescriptionModelDataPrivate *const d;
     };
 
-/* Required to ensure template class vtables are exported on both symbian
-and existing builds. */
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT)
-// RVCT compiler (2.2.686) requires the export declaration to be on the class to export vtables
-// MWC compiler works both ways
-// GCCE compiler is unknown (it can't compile QtCore yet)
-#define PHONON_TEMPLATE_CLASS_EXPORT PHONON_EXPORT
-#define PHONON_TEMPLATE_CLASS_MEMBER_EXPORT
-#else
-// Windows builds (at least) do not support export declaration on templated class
-// But if you export a member function, the vtable is implicitly exported
-#define PHONON_TEMPLATE_CLASS_EXPORT
-#define PHONON_TEMPLATE_CLASS_MEMBER_EXPORT PHONON_EXPORT
-#endif
-
     /** \class ObjectDescriptionModel objectdescriptionmodel.h Phonon/ObjectDescriptionModel
      * \short The ObjectDescriptionModel class provides a model from
      * a list of ObjectDescription objects.
@@ -190,17 +187,16 @@ and existing builds. */
      * \author Matthias Kretz <kretz@kde.org>
      */
     template<ObjectDescriptionType type>
-    class PHONON_TEMPLATE_CLASS_EXPORT ObjectDescriptionModel : public QAbstractListModel
+    class ObjectDescriptionModel : public QAbstractListModel
     {
         public:
             Q_OBJECT_CHECK
-
             /** \internal */
-            static PHONON_TEMPLATE_CLASS_MEMBER_EXPORT const QMetaObject staticMetaObject;
+            static PHONON_EXPORT const QMetaObject staticMetaObject;
             /** \internal */
-            PHONON_TEMPLATE_CLASS_MEMBER_EXPORT const QMetaObject *metaObject() const;
+            PHONON_EXPORT_ODM const QMetaObject *metaObject() const;
             /** \internal */
-            PHONON_TEMPLATE_CLASS_MEMBER_EXPORT void *qt_metacast(const char *_clname);
+            PHONON_EXPORT_ODM void *qt_metacast(const char *_clname);
             //int qt_metacall(QMetaObject::Call _c, int _id, void **_a);
 
             /**

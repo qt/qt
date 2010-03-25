@@ -24,8 +24,8 @@
 #define SEEKSLIDER_P_H
 
 #include "seekslider.h"
+#include "swiftslider_p.h"
 #include <QtGui/QBoxLayout>
-#include <QtGui/QSlider>
 #include <QtGui/QLabel>
 #include <QtGui/QPixmap>
 #include <QtGui/QIcon>
@@ -84,7 +84,7 @@ class SeekSliderPrivate
         void _k_currentSourceChanged();
 
         QBoxLayout layout;
-        QSlider slider;
+        SwiftSlider slider;
         QLabel iconLabel;
         QPointer<MediaObject> media;
         bool ticking;
