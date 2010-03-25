@@ -162,18 +162,46 @@ void qt_blend_rgb16_on_argb32_neon(uchar *destPixels, int dbpl,
     pixman_composite_src_0565_8888_asm_neon(w, h, dst, dbpl, src, sbpl);
 }
 
+extern "C" void blend_8_pixels_argb32_on_rgb16_neon(quint16 *dst, const quint32 *src, int const_alpha);
+
 void qt_blend_argb32_on_rgb16_neon(uchar *destPixels, int dbpl,
                                    const uchar *srcPixels, int sbpl,
                                    int w, int h,
                                    int const_alpha)
 {
-    if (const_alpha != 256) {
-        qt_blend_argb32_on_rgb16_const_alpha(destPixels, dbpl, srcPixels, sbpl, w, h, const_alpha);
-        return;
-    }
-
     quint16 *dst = (quint16 *) destPixels;
     quint32 *src = (quint32 *) srcPixels;
+
+    if (const_alpha != 256) {
+        for (int y=0; y<h; ++y) {
+            int i = 0;
+            for (; i < w-7; i += 8)
+                blend_8_pixels_argb32_on_rgb16_neon(&dst[i], &src[i], const_alpha);
+
+            if (i < w) {
+                int tail = w - i;
+
+                quint16 dstBuffer[8];
+                quint32 srcBuffer[8];
+
+                for (int j = 0; j < tail; ++j) {
+                    dstBuffer[j] = dst[i + j];
+                    srcBuffer[j] = src[i + j];
+                }
+
+                blend_8_pixels_argb32_on_rgb16_neon(dstBuffer, srcBuffer, const_alpha);
+
+                for (int j = 0; j < tail; ++j) {
+                    dst[i + j] = dstBuffer[j];
+                    src[i + j] = srcBuffer[j];
+                }
+            }
+
+            dst = (quint16 *)(((uchar *) dst) + dbpl);
+            src = (quint32 *)(((uchar *) src) + sbpl);
+        }
+        return;
+    }
 
     pixman_composite_over_8888_0565_asm_neon(w, h, dst, dbpl / 2, src, sbpl / 4);
 }
@@ -325,7 +353,6 @@ void qt_alphamapblit_quint16_neon(QRasterBuffer *rasterBuffer,
     pixman_composite_over_n_8_0565_asm_neon(mapWidth, mapHeight, dest, destStride, color, 0, mask, mapStride);
 }
 
-extern "C" void blend_8_pixels_argb32_on_rgb16_neon(quint16 *dst, const quint32 *src, int const_alpha);
 extern "C" void blend_8_pixels_rgb16_on_rgb16_neon(quint16 *dst, const quint16 *src, int const_alpha);
 
 template <typename SRC, typename BlendFunc>
