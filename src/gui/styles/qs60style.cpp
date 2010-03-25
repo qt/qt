@@ -2389,13 +2389,6 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
     if (metricValue == KNotFound)
         metricValue = QCommonStyle::pixelMetric(metric, option, widget);
 
-    if (metric == PM_SubMenuOverlap && widget) {
-        const QMenu *menu = qobject_cast<const QMenu *>(widget);
-        if (menu && menu->activeAction() && menu->activeAction()->menu()) {
-            const int menuWidth = menu->activeAction()->menu()->sizeHint().width();
-            metricValue = -menuWidth;
-        }
-    }
     //if layout direction is mirrored, switch left and right border margins
     if (option && option->direction == Qt::RightToLeft) {
         if (metric == PM_LayoutLeftMargin)
