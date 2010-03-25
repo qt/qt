@@ -3148,6 +3148,21 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
         if (place[var].isEmpty())
             place[var] = QStringList(epocRoot());
     }
+#if defined(Q_OS_WIN32) && defined(Q_CC_MSVC)
+      else if(var.startsWith(QLatin1String("QMAKE_TARGET."))) {
+            QString ret, type = var.mid(13);
+            if(type == "arch") {
+                QString paths = qgetenv("PATH");
+                QString vcBin64 = qgetenv("VCINSTALLDIR").append("\\bin\\amd64");
+                QString vcBinX86_64 = qgetenv("VCINSTALLDIR").append("\\bin\\x86_amd64");
+                if(paths.contains(vcBin64,Qt::CaseInsensitive) || paths.contains(vcBinX86_64,Qt::CaseInsensitive))
+                    ret = "x86_64";
+                else
+                    ret = "x86";
+            }
+            place[var] = QStringList(ret);
+    }
+#endif
     //qDebug("REPLACE [%s]->[%s]", qPrintable(var), qPrintable(place[var].join("::")));
     return place[var];
 }
