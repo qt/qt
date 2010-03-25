@@ -487,7 +487,9 @@ void tst_QDeclarativeLoader::deleteComponentCrash()
 void tst_QDeclarativeLoader::nonItem()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("nonItem.qml"));
-    QTest::ignoreMessage(QtWarningMsg, "QML Loader (file://" SRCDIR "/data/nonItem.qml:3:1) Loader does not support loading non-visual elements.");
+    QString err = QString("QML Loader (") + QUrl::fromLocalFile(SRCDIR).toString() + QString("/data/nonItem.qml:3:1) Loader does not support loading non-visual elements.");
+
+    QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader);
     QVERIFY(loader->item() == 0);
@@ -498,7 +500,8 @@ void tst_QDeclarativeLoader::nonItem()
 void tst_QDeclarativeLoader::vmeErrors()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("vmeErrors.qml"));
-    QTest::ignoreMessage(QtWarningMsg, "(file://" SRCDIR "/data/VmeError.qml:6: Cannot assign object type QObject with no default method\n        onSomethingHappened: QtObject {}) ");
+    QString err = QString("(") + QUrl::fromLocalFile(SRCDIR).toString() + QString("/data/VmeError.qml:6: Cannot assign object type QObject with no default method\n        onSomethingHappened: QtObject {}) ");
+    QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader);
     QVERIFY(loader->item() == 0);
