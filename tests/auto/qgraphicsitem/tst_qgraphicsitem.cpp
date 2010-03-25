@@ -4316,6 +4316,21 @@ protected:
             break;
         case QGraphicsItem::ItemScenePositionHasChanged:
             break;
+        case QGraphicsItem::ItemRotationChange:
+            oldValues << rotation();
+            break;
+        case QGraphicsItem::ItemRotationHasChanged:
+            break;
+        case QGraphicsItem::ItemScaleChange:
+            oldValues << scale();
+            break;
+        case QGraphicsItem::ItemScaleHasChanged:
+            break;
+        case QGraphicsItem::ItemTransformOriginPointChange:
+            oldValues << transformOriginPoint();
+            break;
+        case QGraphicsItem::ItemTransformOriginPointHasChanged:
+            break;
         }
         return itemChangeReturnValue.isValid() ? itemChangeReturnValue : value;
     }
@@ -4410,6 +4425,48 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(tester.values.at(tester.changes.size() - 1), QVariant(qreal(2.0)));
         QCOMPARE(tester.oldValues.last(), QVariant(qreal(0.0)));
         QCOMPARE(tester.zValue(), qreal(2.0));
+    }
+    {
+        // ItemRotationChange / ItemRotationHasChanged
+        tester.itemChangeReturnValue = qreal(15.0);
+        tester.setRotation(10.0);
+        ++changeCount; // notification sent too
+        ++changeCount;
+        QCOMPARE(tester.changes.size(), changeCount);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 2), QGraphicsItem::ItemRotationChange);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 1), QGraphicsItem::ItemRotationHasChanged);
+        QCOMPARE(tester.values.at(tester.changes.size() - 2), QVariant(qreal(10.0)));
+        QCOMPARE(tester.values.at(tester.changes.size() - 1), QVariant(qreal(15.0)));
+        QCOMPARE(tester.oldValues.last(), QVariant(qreal(0.0)));
+        QCOMPARE(tester.rotation(), qreal(15.0));
+    }
+    {
+        // ItemScaleChange / ItemScaleHasChanged
+        tester.itemChangeReturnValue = qreal(2.0);
+        tester.setScale(1.5);
+        ++changeCount; // notification sent too
+        ++changeCount;
+        QCOMPARE(tester.changes.size(), changeCount);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 2), QGraphicsItem::ItemScaleChange);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 1), QGraphicsItem::ItemScaleHasChanged);
+        QCOMPARE(tester.values.at(tester.changes.size() - 2), QVariant(qreal(1.5)));
+        QCOMPARE(tester.values.at(tester.changes.size() - 1), QVariant(qreal(2.0)));
+        QCOMPARE(tester.oldValues.last(), QVariant(qreal(1.0)));
+        QCOMPARE(tester.scale(), qreal(2.0));
+    }
+    {
+        // ItemTransformOriginPointChange / ItemTransformOriginPointHasChanged
+        tester.itemChangeReturnValue = QPointF(2.0, 2.0);
+        tester.setTransformOriginPoint(1.0, 1.0);
+        ++changeCount; // notification sent too
+        ++changeCount;
+        QCOMPARE(tester.changes.size(), changeCount);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 2), QGraphicsItem::ItemTransformOriginPointChange);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 1), QGraphicsItem::ItemTransformOriginPointHasChanged);
+        QCOMPARE(tester.values.at(tester.changes.size() - 2), QVariant(QPointF(1.0, 1.0)));
+        QCOMPARE(tester.values.at(tester.changes.size() - 1), QVariant(QPointF(2.0, 2.0)));
+        QCOMPARE(tester.oldValues.last(), QVariant(QPointF(0.0, 0.0)));
+        QCOMPARE(tester.transformOriginPoint(), QPointF(2.0, 2.0));
     }
     {
         // ItemFlagsChange
@@ -7385,10 +7442,19 @@ void tst_QGraphicsItem::itemSendsGeometryChanges()
     QTransform x = QTransform().rotate(45);
     QPointF pos(10, 10);
     qreal o(0.5);
+    qreal r(10.0);
+    qreal s(1.5);
+    QPointF origin(1.0, 1.0);
     item.setTransform(x);
     item.setPos(pos);
+    item.setRotation(r);
+    item.setScale(s);
+    item.setTransformOriginPoint(origin);
     QCOMPARE(item.transform(), x);
     QCOMPARE(item.pos(), pos);
+    QCOMPARE(item.rotation(), r);
+    QCOMPARE(item.scale(), s);
+    QCOMPARE(item.transformOriginPoint(), origin);
     QCOMPARE(item.changes.size(), 0);
 
     item.setOpacity(o);
@@ -7402,6 +7468,13 @@ void tst_QGraphicsItem::itemSendsGeometryChanges()
     QCOMPARE(item.transform(), QTransform());
     QCOMPARE(item.pos(), QPointF());
     QCOMPARE(item.opacity(), o);
+    item.setRotation(0.0);
+    item.setScale(1.0);
+    item.setTransformOriginPoint(0.0, 0.0);
+    QCOMPARE(item.changes.size(), 14); // rotation + scale + origin
+    QCOMPARE(item.rotation(), qreal(0.0));
+    QCOMPARE(item.scale(), qreal(1.0));
+    QCOMPARE(item.transformOriginPoint(), QPointF(0.0, 0.0));
 
     QCOMPARE(item.changes, QList<QGraphicsItem::GraphicsItemChange>()
              << QGraphicsItem::ItemOpacityChange
@@ -7411,7 +7484,13 @@ void tst_QGraphicsItem::itemSendsGeometryChanges()
              << QGraphicsItem::ItemTransformChange
              << QGraphicsItem::ItemTransformHasChanged
              << QGraphicsItem::ItemPositionChange
-             << QGraphicsItem::ItemPositionHasChanged);
+             << QGraphicsItem::ItemPositionHasChanged
+             << QGraphicsItem::ItemRotationChange
+             << QGraphicsItem::ItemRotationHasChanged
+             << QGraphicsItem::ItemScaleChange
+             << QGraphicsItem::ItemScaleHasChanged
+             << QGraphicsItem::ItemTransformOriginPointChange
+             << QGraphicsItem::ItemTransformOriginPointHasChanged);
 }
 
 // Make sure we update moved items correctly.
