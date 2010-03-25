@@ -1273,16 +1273,6 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::widthChanged()
-    \internal
-*/
-
-/*!
-    \fn void QDeclarativeItem::heightChanged()
-    \internal
-*/
-
-/*!
     \fn void QDeclarativeItem::stateChanged(const QString &state)
     \internal
 */
@@ -1462,11 +1452,6 @@ QDeclarativeItem *QDeclarativeItem::parentItem() const
 */
 
 /*!
-    \property QDeclarativeItem::children
-    \internal
-*/
-
-/*!
     \property QDeclarativeItem::resources
     \internal
 */
@@ -1500,11 +1485,12 @@ QDeclarativeAnchors *QDeclarativeItem::anchors()
 
 void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
 {
-    QDeclarativeItem *i = qobject_cast<QDeclarativeItem *>(o);
-    if (i)
+    QGraphicsObject *i = qobject_cast<QGraphicsObject *>(o);
+    if (i) {
         i->setParentItem(static_cast<QDeclarativeItem *>(prop->object));
-    else
+    } else {
         o->setParent(static_cast<QDeclarativeItem *>(prop->object));
+    }
 }
 
 QObject *QDeclarativeItemPrivate::resources_at(QDeclarativeListProperty<QObject> *prop, int index)
@@ -1524,27 +1510,6 @@ void QDeclarativeItemPrivate::resources_append(QDeclarativeListProperty<QObject>
 int QDeclarativeItemPrivate::resources_count(QDeclarativeListProperty<QObject> *prop)
 {
     return prop->object->children().count();
-}
-
-QDeclarativeItem *QDeclarativeItemPrivate::children_at(QDeclarativeListProperty<QDeclarativeItem> *prop, int index)
-{
-    QList<QGraphicsItem *> children = static_cast<QDeclarativeItem*>(prop->object)->childItems();
-
-    if (index < children.count())
-        return qobject_cast<QDeclarativeItem *>(children.at(index));
-    else
-        return 0;
-}
-
-void QDeclarativeItemPrivate::children_append(QDeclarativeListProperty<QDeclarativeItem> *prop, QDeclarativeItem *i)
-{
-    if (i)
-        i->setParentItem(static_cast<QDeclarativeItem*>(prop->object));
-}
-
-int QDeclarativeItemPrivate::children_count(QDeclarativeListProperty<QDeclarativeItem> *prop)
-{
-    return static_cast<QDeclarativeItem*>(prop->object)->childItems().count();
 }
 
 int QDeclarativeItemPrivate::transform_count(QDeclarativeListProperty<QGraphicsTransform> *list)
@@ -1678,18 +1643,6 @@ void QDeclarativeItem::setClip(bool c)
  */
 
 /*!
-  \property QDeclarativeItem::width
-
-  Defines the item's width relative to its parent.
- */
-
-/*!
-  \property QDeclarativeItem::height
-
-  Defines the item's height relative to its parent.
- */
-
-/*!
   \qmlproperty real Item::z
 
   Sets the stacking order of the item.  By default the stacking order is 0.
@@ -1801,11 +1754,11 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
     if (newGeometry.x() != oldGeometry.x())
         emit xChanged();
     if (newGeometry.width() != oldGeometry.width())
-        emit widthChanged(newGeometry.width());
+        emit widthChanged();
     if (newGeometry.y() != oldGeometry.y())
         emit yChanged();
     if (newGeometry.height() != oldGeometry.height())
-        emit heightChanged(newGeometry.height());
+        emit heightChanged();
 
     for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
         const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
@@ -2281,14 +2234,6 @@ void QDeclarativeItemPrivate::focusChanged(bool flag)
 }
 
 /*! \internal */
-QDeclarativeListProperty<QDeclarativeItem> QDeclarativeItem::fxChildren()
-{
-    return QDeclarativeListProperty<QDeclarativeItem>(this, 0, QDeclarativeItemPrivate::children_append,
-                                                     QDeclarativeItemPrivate::children_count,
-                                                     QDeclarativeItemPrivate::children_at);
-}
-
-/*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItem::resources()
 {
     return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::resources_append,
@@ -2632,7 +2577,7 @@ QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
 QRectF QDeclarativeItem::boundingRect() const
 {
     Q_D(const QDeclarativeItem);
-    return QRectF(0, 0, d->width, d->height);
+    return QRectF(0, 0, d->mWidth, d->mHeight);
 }
 
 /*!
@@ -2717,33 +2662,50 @@ void QDeclarativeItem::setSmooth(bool smooth)
 qreal QDeclarativeItem::width() const
 {
     Q_D(const QDeclarativeItem);
-    return d->width;
+    return d->width();
 }
 
 void QDeclarativeItem::setWidth(qreal w)
 {
     Q_D(QDeclarativeItem);
-    if (qIsNaN(w))
-        return;
-
-    d->widthValid = true;
-    if (d->width == w)
-        return;
-
-    qreal oldWidth = d->width;
-
-    prepareGeometryChange();
-    d->width = w;
-
-    geometryChanged(QRectF(x(), y(), width(), height()),
-                    QRectF(x(), y(), oldWidth, height()));
+    d->setWidth(w);
 }
 
 void QDeclarativeItem::resetWidth()
 {
     Q_D(QDeclarativeItem);
-    d->widthValid = false;
-    setImplicitWidth(implicitWidth());
+    d->resetWidth();
+}
+
+qreal QDeclarativeItemPrivate::width() const
+{
+    return mWidth;
+}
+
+void QDeclarativeItemPrivate::setWidth(qreal w)
+{
+    Q_Q(QDeclarativeItem);
+    if (qIsNaN(w))
+        return;
+
+    widthValid = true;
+    if (mWidth == w)
+        return;
+
+    qreal oldWidth = mWidth;
+
+    q->prepareGeometryChange();
+    mWidth = w;
+
+    q->geometryChanged(QRectF(q->x(), q->y(), width(), height()),
+                    QRectF(q->x(), q->y(), oldWidth, height()));
+}
+
+void QDeclarativeItemPrivate    ::resetWidth()
+{
+    Q_Q(QDeclarativeItem);
+    widthValid = false;
+    q->setImplicitWidth(q->implicitWidth());
 }
 
 /*!
@@ -2763,13 +2725,13 @@ void QDeclarativeItem::setImplicitWidth(qreal w)
 {
     Q_D(QDeclarativeItem);
     d->implicitWidth = w;
-    if (d->width == w || widthValid())
+    if (d->mWidth == w || widthValid())
         return;
 
-    qreal oldWidth = d->width;
+    qreal oldWidth = d->mWidth;
 
     prepareGeometryChange();
-    d->width = w;
+    d->mWidth = w;
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), oldWidth, height()));
@@ -2787,33 +2749,50 @@ bool QDeclarativeItem::widthValid() const
 qreal QDeclarativeItem::height() const
 {
     Q_D(const QDeclarativeItem);
-    return d->height;
+    return d->height();
 }
 
 void QDeclarativeItem::setHeight(qreal h)
 {
     Q_D(QDeclarativeItem);
-    if (qIsNaN(h))
-        return;
-
-    d->heightValid = true;
-    if (d->height == h)
-        return;
-
-    qreal oldHeight = d->height;
-
-    prepareGeometryChange();
-    d->height = h;
-
-    geometryChanged(QRectF(x(), y(), width(), height()),
-                    QRectF(x(), y(), width(), oldHeight));
+    d->setHeight(h);
 }
 
 void QDeclarativeItem::resetHeight()
 {
     Q_D(QDeclarativeItem);
-    d->heightValid = false;
-    setImplicitHeight(implicitHeight());
+    d->resetHeight();
+}
+
+qreal QDeclarativeItemPrivate::height() const
+{
+    return mHeight;
+}
+
+void QDeclarativeItemPrivate::setHeight(qreal h)
+{
+    Q_Q(QDeclarativeItem);
+    if (qIsNaN(h))
+        return;
+
+    heightValid = true;
+    if (mHeight == h)
+        return;
+
+    qreal oldHeight = mHeight;
+
+    q->prepareGeometryChange();
+    mHeight = h;
+
+    q->geometryChanged(QRectF(q->x(), q->y(), width(), height()),
+                    QRectF(q->x(), q->y(), width(), oldHeight));
+}
+
+void QDeclarativeItemPrivate::resetHeight()
+{
+    Q_Q(QDeclarativeItem);
+    heightValid = false;
+    q->setImplicitHeight(q->implicitHeight());
 }
 
 /*!
@@ -2833,13 +2812,13 @@ void QDeclarativeItem::setImplicitHeight(qreal h)
 {
     Q_D(QDeclarativeItem);
     d->implicitHeight = h;
-    if (d->height == h || heightValid())
+    if (d->mHeight == h || heightValid())
         return;
 
-    qreal oldHeight = d->height;
+    qreal oldHeight = d->mHeight;
 
     prepareGeometryChange();
-    d->height = h;
+    d->mHeight = h;
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), width(), oldHeight));
@@ -2861,15 +2840,15 @@ void QDeclarativeItem::setSize(const QSizeF &size)
     d->heightValid = true;
     d->widthValid = true;
 
-    if (d->height == size.height() && d->width == size.width())
+    if (d->height() == size.height() && d->width() == size.width())
         return;
 
-    qreal oldHeight = d->height;
-    qreal oldWidth = d->width;
+    qreal oldHeight = d->height();
+    qreal oldWidth = d->width();
 
     prepareGeometryChange();
-    d->height = size.height();
-    d->width = size.width();
+    d->setHeight(size.height());
+    d->setWidth(size.width());
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), oldWidth, oldHeight));
