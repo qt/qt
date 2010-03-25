@@ -275,6 +275,9 @@ private Q_SLOTS:
     void ignoreSslErrorsListWithSlot_data();
     void ignoreSslErrorsListWithSlot();
 #endif
+
+    // NOTE: This test must be last!
+    void parentingRepliesToTheApp();
 };
 
 QT_BEGIN_NAMESPACE
@@ -3831,7 +3834,7 @@ void tst_QNetworkReply::httpConnectionCount()
     for (int i = 0; i < 10; i++) {
         QNetworkRequest request (QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/" +  QString::number(i)));
         QNetworkReply* reply = manager.get(request);
-        reply->setParent(this);
+        reply->setParent(&server);
     }
 
     int pendingConnectionCount = 0;
@@ -4104,6 +4107,14 @@ void tst_QNetworkReply::ignoreSslErrorsListWithSlot()
 }
 
 #endif // QT_NO_OPENSSL
+
+// NOTE: This test must be last testcase in tst_qnetworkreply!
+void tst_QNetworkReply::parentingRepliesToTheApp()
+{
+    QNetworkRequest request (QUrl("http://" + QtNetworkSettings::serverName()));
+    manager.get(request)->setParent(this); // parent to this object
+    manager.get(request)->setParent(qApp); // parent to the app
+}
 
 QTEST_MAIN(tst_QNetworkReply)
 #include "tst_qnetworkreply.moc"
