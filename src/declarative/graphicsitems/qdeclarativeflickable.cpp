@@ -990,10 +990,10 @@ QDeclarativeListProperty<QObject> QDeclarativeFlickable::flickableData()
     return QDeclarativeListProperty<QObject>(this, (void *)d, QDeclarativeFlickablePrivate::data_append);
 }
 
-QDeclarativeListProperty<QDeclarativeItem> QDeclarativeFlickable::flickableChildren()
+QDeclarativeListProperty<QGraphicsObject> QDeclarativeFlickable::flickableChildren()
 {
     Q_D(QDeclarativeFlickable);
-    return d->viewport->fxChildren();
+    return QGraphicsItemPrivate::get(d->viewport)->childrenList();
 }
 
 /*!
