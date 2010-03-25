@@ -88,7 +88,7 @@ bool MediaObject::setState(Phonon::State state)
         emit stateChanged(m_state, prevState);
         if (m_state != state){
             // End-application did something
-            // upon  receiving the signal.
+            // upon  receiving the signal. 
             return false;
         }
     }
@@ -122,7 +122,7 @@ void MediaObject::inspectGraph()
     // Inspect the graph to check wether there are any
     // effects or outputs connected. This will have
     // influence on the audio system and video system that ends up beeing used:
-    int prevVideoOutputCount = m_videoOutputCount;
+    int prevVideoOutputCount = m_videoOutputCount;	
     m_audioEffectCount = 0;
     m_audioOutputCount = 0;
     m_videoEffectCount = 0;
@@ -134,7 +134,7 @@ void MediaObject::inspectGraph()
 	if (m_videoOutputCount != prevVideoOutputCount){
 	    MediaNodeEvent e1(MediaNodeEvent::VideoOutputCountChanged, &m_videoOutputCount);
 	    notify(&e1);
-    }
+	}	
 }
 
 void MediaObject::setupAudioSystem()
@@ -167,14 +167,14 @@ void MediaObject::setupAudioSystem()
 
     if (newAudioSystem == m_audioSystem)
         return;
-
+  
     // Enable selected audio system:
-    m_audioSystem = newAudioSystem;
+    m_audioSystem = newAudioSystem; 
     switch (newAudioSystem){
         case AS_Silent:
             m_audioGraph->stop();
             m_videoPlayer->enableAudio(false);
-            m_nextVideoPlayer->enableAudio(false);
+            m_nextVideoPlayer->enableAudio(false);    
             m_audioPlayer->enableAudio(false);
             m_nextAudioPlayer->enableAudio(false);
         break;
@@ -260,7 +260,7 @@ void MediaObject::setSource(const MediaSource &source)
         return;
     if (!m_videoPlayer->canPlayMedia())
         SET_ERROR("Cannot play media.", FATAL_ERROR)
-
+        
     // The state might have changed from LoadingState
     // as a response to an error state change. So we
     // need to check it before stopping: 
@@ -382,7 +382,7 @@ void MediaObject::play()
     if (!m_videoPlayer->canPlayMedia())
         return;
     if (!setState(Phonon::PlayingState))
-        return;
+        return;        
     if (m_audioSystem == AS_Graph){
         m_audioGraph->start();
         m_mediaObjectAudioNode->setMute(true);
@@ -446,7 +446,7 @@ void MediaObject::seek(qint64 milliseconds)
     m_videoPlayer->seek(milliseconds);
     m_audioPlayer->seek(m_videoPlayer->currentTime());
     m_mediaObjectAudioNode->setMute(false);
-
+    
     // Update time and cancel pending swap:
     if (m_currentTime < m_videoPlayer->duration())
         m_waitNextSwap = false;
@@ -557,7 +557,7 @@ bool MediaObject::isSeekable() const
 qint64 MediaObject::currentTime() const
 {
     IMPLEMENTED_SILENT;
-    const_cast<MediaObject *>(this)->updateCurrentTime();
+    const_cast<MediaObject *>(this)->updateCurrentTime(); 
     return m_currentTime;
 }
 

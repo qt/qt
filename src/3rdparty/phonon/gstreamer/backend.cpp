@@ -220,14 +220,14 @@ QStringList Backend::availableMimeTypes() const
         GstPluginFeature *feature = GST_PLUGIN_FEATURE(iter->data);
         QString klass = gst_element_factory_get_klass(GST_ELEMENT_FACTORY(feature));
 
-        if (klass == QLatin1String("Codec/Decoder") ||
-            klass == QLatin1String("Codec/Decoder/Audio") ||
-            klass == QLatin1String("Codec/Decoder/Video") ||
-            klass == QLatin1String("Codec/Demuxer") ||
-            klass == QLatin1String("Codec/Demuxer/Audio") ||
-            klass == QLatin1String("Codec/Demuxer/Video") ||
-            klass == QLatin1String("Codec/Parser") ||
-            klass == QLatin1String("Codec/Parser/Audio") ||
+        if (klass == QLatin1String("Codec/Decoder") || 
+            klass == QLatin1String("Codec/Decoder/Audio") || 
+            klass == QLatin1String("Codec/Decoder/Video") || 
+            klass == QLatin1String("Codec/Demuxer") || 
+            klass == QLatin1String("Codec/Demuxer/Audio") || 
+            klass == QLatin1String("Codec/Demuxer/Video") || 
+            klass == QLatin1String("Codec/Parser") || 
+            klass == QLatin1String("Codec/Parser/Audio") || 
             klass == QLatin1String("Codec/Parser/Video")) {
 
             const GList *static_templates;
@@ -240,10 +240,13 @@ QStringList Backend::availableMimeTypes() const
                     GstCaps *caps = gst_static_pad_template_get_caps (padTemplate);
 
                     if (caps) {
-                        const GstStructure* capsStruct = gst_caps_get_structure (caps, 0);
-                        QString mime = QString::fromUtf8(gst_structure_get_name (capsStruct));
-                        if (!availableMimeTypes.contains(mime))
-                              availableMimeTypes.append(mime);
+                        for (unsigned int struct_idx = 0; struct_idx < gst_caps_get_size (caps); struct_idx++) {
+
+                            const GstStructure* capsStruct = gst_caps_get_structure (caps, struct_idx);
+                            QString mime = QString::fromUtf8(gst_structure_get_name (capsStruct));
+                            if (!availableMimeTypes.contains(mime))
+                                availableMimeTypes.append(mime);
+                        }
                     }
                 }
             }
