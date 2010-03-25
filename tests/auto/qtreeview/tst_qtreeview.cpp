@@ -237,6 +237,7 @@ private slots:
     void task245654_changeModelAndExpandAll();
     void doubleClickedWithSpans();
     void taskQTBUG_6450_selectAllWith1stColumnHidden();
+    void taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -3712,6 +3713,35 @@ void tst_QTreeView::taskQTBUG_6450_selectAllWith1stColumnHidden()
     QVERIFY(tree.selectionModel()->hasSelection());
     for (int i = 0; i < nrRows; ++i)
         QVERIFY(tree.selectionModel()->isRowSelected(i, QModelIndex()));
+}
+
+class TreeViewQTBUG_9216 : public QTreeView
+{
+    Q_OBJECT
+public:
+    void paintEvent(QPaintEvent *event)
+    {
+        QCOMPARE(event->rect(), viewport()->rect());
+        QTreeView::paintEvent(event);
+    }
+};
+
+void tst_QTreeView::taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint()
+{
+    QStandardItemModel model(10, 10, this);
+    for (int row = 0; row < 10; row++)
+        for (int col = 0; col < 10; col++)
+            model.setItem(row, col, new QStandardItem(QString("row %0, col %1").arg(row).arg(col)));
+    TreeViewQTBUG_9216 view;
+    view.setUniformRowHeights(true);
+    view.setModel(&model);
+    view.resize(800, 800);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QTest::qWait(100);  // This one is needed to make the test fail before the patch.
+    model.setData(model.index(0, 5), QVariant(QSize(100,100)), Qt::SizeHintRole);
+    QTest::qWait(100);
 }
 
 QTEST_MAIN(tst_QTreeView)
