@@ -114,6 +114,21 @@ pixman_composite_src_0565_8888_asm_neon (int32_t   w,
                                          uint16_t *src,
                                          int32_t   src_stride);
 
+extern "C" void
+pixman_composite_over_n_8_0565_asm_neon (int32_t    w,
+                                         int32_t    h,
+                                         uint16_t  *dst,
+                                         int32_t    dst_stride,
+                                         uint32_t   src,
+                                         int32_t    unused,
+                                         uint8_t   *mask,
+                                         int32_t    mask_stride);
+
+extern "C" void
+pixman_composite_scanline_over_asm_neon (int32_t         w,
+                                         const uint32_t *dst,
+                                         const uint32_t *src);
+
 // qblendfunctions.cpp
 void qt_blend_argb32_on_rgb16_const_alpha(uchar *destPixels, int dbpl,
                                           const uchar *srcPixels, int sbpl,
@@ -161,6 +176,15 @@ void qt_blend_argb32_on_rgb16_neon(uchar *destPixels, int dbpl,
     quint32 *src = (quint32 *) srcPixels;
 
     pixman_composite_over_8888_0565_asm_neon(w, h, dst, dbpl / 2, src, sbpl / 4);
+}
+
+void qt_blend_argb32_on_argb32_scanline_neon(uint *dest, const uint *src, int length, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        pixman_composite_scanline_over_asm_neon(length, dest, src);
+    } else {
+        qt_blend_argb32_on_argb32_neon((uchar *)dest, 4 * length, (uchar *)src, 4 * length, length, 1, (const_alpha * 256) / 255);
+    }
 }
 
 void qt_blend_argb32_on_argb32_neon(uchar *destPixels, int dbpl,
@@ -286,17 +310,6 @@ void qt_blend_rgb32_on_rgb32_neon(uchar *destPixels, int dbpl,
         qt_blend_rgb32_on_rgb32(destPixels, dbpl, srcPixels, sbpl, w, h, const_alpha);
     }
 }
-
-extern "C" void
-pixman_composite_over_n_8_0565_asm_neon (int32_t    w,
-                                         int32_t    h,
-                                         uint16_t  *dst,
-                                         int32_t    dst_stride,
-                                         uint32_t   src,
-                                         int32_t    unused,
-                                         uint8_t   *mask,
-                                         int32_t    mask_stride);
-
 
 void qt_alphamapblit_quint16_neon(QRasterBuffer *rasterBuffer,
                                   int x, int y, quint32 color,
@@ -447,6 +460,96 @@ void qt_transform_image_argb32_on_rgb16_neon(uchar *destPixels, int dbpl,
     qt_transform_image(reinterpret_cast<quint16 *>(destPixels), dbpl,
                        reinterpret_cast<const quint32 *>(srcPixels), sbpl, targetRect, sourceRect, clip, targetRectTransform,
         Blend_on_RGB16_SourceAndConstAlpha_Neon_create<quint32>(blend_8_pixels_argb32_on_rgb16_neon, const_alpha));
+}
+
+static inline void convert_8_pixels_rgb16_to_argb32(quint32 *dst, const quint16 *src)
+{
+    asm volatile (
+        "vld1.16     { d0, d1 }, [%[SRC]]\n\t"
+
+        /* convert 8 r5g6b5 pixel data from {d0, d1} to planar 8-bit format
+           and put data into d4 - red, d3 - green, d2 - blue */
+        "vshrn.u16   d4,  q0,  #8\n\t"
+        "vshrn.u16   d3,  q0,  #3\n\t"
+        "vsli.u16    q0,  q0,  #5\n\t"
+        "vsri.u8     d4,  d4,  #5\n\t"
+        "vsri.u8     d3,  d3,  #6\n\t"
+        "vshrn.u16   d2,  q0,  #2\n\t"
+
+        /* fill d5 - alpha with 0xff */
+        "mov         r2, #255\n\t"
+        "vdup.8      d5, r2\n\t"
+
+        "vst4.8      { d2, d3, d4, d5 }, [%[DST]]"
+        : : [DST]"r" (dst), [SRC]"r" (src)
+        : "memory", "r2", "d0", "d1", "d2", "d3", "d4", "d5"
+    );
+}
+
+uint * QT_FASTCALL qt_destFetchRGB16_neon(uint *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length)
+{
+    const ushort *data = (const ushort *)rasterBuffer->scanLine(y) + x;
+
+    int i = 0;
+    for (; i < length - 7; i += 8)
+        convert_8_pixels_rgb16_to_argb32(&buffer[i], &data[i]);
+
+    if (i < length) {
+        quint16 srcBuffer[8];
+        quint32 dstBuffer[8];
+
+        int tail = length - i;
+        for (int j = 0; j < tail; ++j)
+            srcBuffer[j] = data[i + j];
+
+        convert_8_pixels_rgb16_to_argb32(dstBuffer, srcBuffer);
+
+        for (int j = 0; j < tail; ++j)
+            buffer[i + j] = dstBuffer[j];
+    }
+
+    return buffer;
+}
+
+static inline void convert_8_pixels_argb32_to_rgb16(quint16 *dst, const quint32 *src)
+{
+    asm volatile (
+        "vld4.8      { d0, d1, d2, d3 }, [%[SRC]]\n\t"
+
+        /* convert to r5g6b5 and store it into {d28, d29} */
+        "vshll.u8    q14, d2, #8\n\t"
+        "vshll.u8    q8,  d1, #8\n\t"
+        "vshll.u8    q9,  d0, #8\n\t"
+        "vsri.u16    q14, q8, #5\n\t"
+        "vsri.u16    q14, q9, #11\n\t"
+
+        "vst1.16     { d28, d29 }, [%[DST]]"
+        : : [DST]"r" (dst), [SRC]"r" (src)
+        : "memory", "d0", "d1", "d2", "d3", "d16", "d17", "d18", "d19", "d28", "d29"
+    );
+}
+
+void QT_FASTCALL qt_destStoreRGB16_neon(QRasterBuffer *rasterBuffer, int x, int y, const uint *buffer, int length)
+{
+    quint16 *data = (quint16*)rasterBuffer->scanLine(y) + x;
+
+    int i = 0;
+    for (; i < length - 7; i += 8)
+        convert_8_pixels_argb32_to_rgb16(&data[i], &buffer[i]);
+
+    if (i < length) {
+        quint32 srcBuffer[8];
+        quint16 dstBuffer[8];
+
+        int tail = length - i;
+        for (int j = 0; j < tail; ++j)
+            srcBuffer[j] = buffer[i + j];
+
+        convert_8_pixels_argb32_to_rgb16(dstBuffer, srcBuffer);
+
+        for (int j = 0; j < tail; ++j)
+            data[i + j] = dstBuffer[j];
+    }
 }
 
 QT_END_NAMESPACE
