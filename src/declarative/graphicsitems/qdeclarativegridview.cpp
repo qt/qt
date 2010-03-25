@@ -1083,8 +1083,9 @@ void QDeclarativeGridView::setCurrentIndex(int index)
         d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
         cancelFlick();
         d->updateCurrent(index);
-    } else {
+    } else if (index != d->currentIndex) {
         d->currentIndex = index;
+        emit currentIndexChanged();
     }
 }
 
@@ -1845,9 +1846,17 @@ void QDeclarativeGridView::trackedPositionChanged()
 void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
 {
     Q_D(QDeclarativeGridView);
+    if (!isComponentComplete())
+        return;
     if (!d->visibleItems.count() || d->model->count() <= 1) {
         d->scheduleLayout();
-        d->updateCurrent(qMax(0, qMin(d->currentIndex, d->model->count()-1)));
+        if (d->currentIndex >= modelIndex) {
+            // adjust current item index
+            d->currentIndex += count;
+            if (d->currentItem)
+                d->currentItem->index = d->currentIndex;
+            emit currentIndexChanged();
+        }
         emit countChanged();
         return;
     }
@@ -1971,6 +1980,8 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
 void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
 {
     Q_D(QDeclarativeGridView);
+    if (!isComponentComplete())
+        return;
     bool currentRemoved = d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count;
     bool removedVisible = false;
 
@@ -2061,6 +2072,8 @@ void QDeclarativeGridView::destroyRemoved()
 void QDeclarativeGridView::itemsMoved(int from, int to, int count)
 {
     Q_D(QDeclarativeGridView);
+    if (!isComponentComplete())
+        return;
     QHash<int,FxGridItem*> moved;
 
     bool removedBeforeVisible = false;
