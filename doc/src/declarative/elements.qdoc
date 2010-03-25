@@ -78,7 +78,6 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l ParentAnimation
 \o \l AnchorAnimation
 \o \l PropertyAction
-\o \l ParentAction
 \o \l ScriptAction
 \o \l Transition
 \o \l SpringFollow

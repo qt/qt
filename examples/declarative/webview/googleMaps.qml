@@ -21,6 +21,7 @@ Map {
         radius: 5
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 5
+        opacity: map.status == "Ready" ? 1 : 0
         x: 70
         TextInput {
             id: input
@@ -28,5 +29,13 @@ Map {
             anchors.centerIn: parent
             Keys.onReturnPressed: map.address = input.text
         }
+    }
+    Text {
+        id: loading
+        anchors.centerIn: parent
+        text: map.status == "Error" ? "Error" : "Loading"
+        opacity: map.status == "Ready" ? 0 : 1
+        font.pixelSize: 30
+        Behavior on opacity {NumberAnimation{}}
     }
 }

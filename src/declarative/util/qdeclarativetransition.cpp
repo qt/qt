@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
     \ingroup group_states
 */
 
-//ParallelAnimationWrapperallows us to do a "callback" when the animation finishes, rather than connecting
+//ParallelAnimationWrapper allows us to do a "callback" when the animation finishes, rather than connecting
 //and disconnecting signals and slots frequently
 class ParallelAnimationWrapper : public QParallelAnimationGroup
 {
@@ -195,7 +195,11 @@ QString QDeclarativeTransition::fromState() const
 void QDeclarativeTransition::setFromState(const QString &f)
 {
     Q_D(QDeclarativeTransition);
+    if (f == d->fromState)
+        return;
+
     d->fromState = f;
+    emit fromChanged();
 }
 
 /*!
@@ -213,7 +217,11 @@ bool QDeclarativeTransition::reversible() const
 void QDeclarativeTransition::setReversible(bool r)
 {
     Q_D(QDeclarativeTransition);
+    if (r == d->reversible)
+        return;
+
     d->reversible = r;
+    emit reversibleChanged();
 }
 
 QString QDeclarativeTransition::toState() const
@@ -225,7 +233,11 @@ QString QDeclarativeTransition::toState() const
 void QDeclarativeTransition::setToState(const QString &t)
 {
     Q_D(QDeclarativeTransition);
+    if (t == d->toState)
+        return;
+
     d->toState = t;
+    emit toChanged();
 }
 
 /*!

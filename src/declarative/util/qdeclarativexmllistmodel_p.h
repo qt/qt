@@ -46,6 +46,7 @@
 #include <qdeclarativeinfo.h>
 
 #include <QtCore/qurl.h>
+#include <QtCore/qstringlist.h>
 
 #include <private/qlistmodelinterface_p.h>
 
@@ -56,10 +57,18 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeContext;
-
 class QDeclarativeXmlListModelRole;
-
 class QDeclarativeXmlListModelPrivate;
+
+struct QDeclarativeXmlQueryResult {
+    int queryId;
+    int size;
+    QList<QList<QVariant> > data;
+    QList<QPair<int, int> > inserted;
+    QList<QPair<int, int> > removed;
+    QStringList keyRoleResultsCache;
+};
+
 class Q_DECLARATIVE_EXPORT QDeclarativeXmlListModel : public QListModelInterface, public QDeclarativeParserStatus
 {
     Q_OBJECT
@@ -126,7 +135,7 @@ public Q_SLOTS:
 private Q_SLOTS:
     void requestFinished();
     void requestProgress(qint64,qint64);
-    void queryCompleted(int,int);
+    void queryCompleted(const QDeclarativeXmlQueryResult &);
 
 private:
     Q_DECLARE_PRIVATE(QDeclarativeXmlListModel)

@@ -11,7 +11,7 @@ Rectangle {
         x: 60-width/2
         y: 200-height
         y: SequentialAnimation {
-            repeat: true
+            loops: Animation.Infinite
             NumberAnimation {
                 to: 0; duration: 500
                 easing.type: "InOutQuad"

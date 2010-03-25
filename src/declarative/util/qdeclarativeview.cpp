@@ -41,9 +41,6 @@
 
 #include "qdeclarativeview.h"
 
-#include "qperformancelog_p_p.h"
-#include "qfxperf_p_p.h"
-
 #include <qdeclarative.h>
 #include <qdeclarativeitem.h>
 #include <qdeclarativeengine.h>
@@ -132,6 +129,7 @@ class QDeclarativeViewPrivate
 public:
     QDeclarativeViewPrivate(QDeclarativeView *view)
         : q(view), root(0), component(0), resizeMode(QDeclarativeView::SizeViewToRootObject) {}
+    ~QDeclarativeViewPrivate() { delete root; }
 
     void execute();
 
@@ -251,13 +249,6 @@ QDeclarativeView::QDeclarativeView(const QUrl &source, QWidget *parent)
 
 void QDeclarativeViewPrivate::init()
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    {
-        QDeclarativePerfTimer<QDeclarativePerf::FontDatabase> perf;
-        QFontDatabase database;
-    }
-#endif
-
     q->setScene(&scene);
 
     q->setOptimizationFlags(QGraphicsView::DontSavePainterState);
@@ -280,7 +271,7 @@ void QDeclarativeViewPrivate::init()
  */
 QDeclarativeView::~QDeclarativeView()
 {
-    delete d->root;
+    delete d;
 }
 
 /*! \property QDeclarativeView::source
@@ -455,8 +446,6 @@ void QDeclarativeView::setRootObject(QObject *obj)
     if (QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(obj)) {
         d->scene.addItem(item);
 
-        QPerformanceLog::displayData();
-        QPerformanceLog::clear();
         d->root = item;
         d->qmlRoot = item;
         connect(item, SIGNAL(widthChanged(qreal)), this, SLOT(sizeChanged()));

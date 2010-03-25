@@ -74,6 +74,8 @@ private slots:
     void useKeys_data();
     void noKeysValueChanges();
     void keysChanged();
+    void threading();
+    void threading_data();
     void propertyChanges();
 
 private:
@@ -86,6 +88,8 @@ private:
         if (!data.isEmpty()) {
             QStringList items = data.split(";");
             foreach(const QString &item, items) {
+                if (item.isEmpty())
+                    continue;
                 QVariantList variants;
                 xml += QLatin1String("<item>");
                 QStringList fields = item.split(",");
@@ -505,6 +509,63 @@ void tst_qdeclarativexmllistmodel::keysChanged()
     delete model;
 }
 
+void tst_qdeclarativexmllistmodel::threading()
+{
+    QFETCH(int, xmlDataCount);
+
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/roleKeys.qml"));
+
+    QDeclarativeXmlListModel *m1 = qobject_cast<QDeclarativeXmlListModel*>(component.create());
+    QVERIFY(m1 != 0); 
+    QDeclarativeXmlListModel *m2 = qobject_cast<QDeclarativeXmlListModel*>(component.create());
+    QVERIFY(m2 != 0); 
+    QDeclarativeXmlListModel *m3 = qobject_cast<QDeclarativeXmlListModel*>(component.create());
+    QVERIFY(m3 != 0); 
+
+    for (int dataCount=0; dataCount<xmlDataCount; dataCount++) {
+
+        QString data1, data2, data3;
+        for (int i=0; i<dataCount; i++) {
+            data1 += "name=A" + QString::number(i) + ",age=1" + QString::number(i) + ",sport=Football;";
+            data2 += "name=B" + QString::number(i) + ",age=2" + QString::number(i) + ",sport=Athletics;";
+            data3 += "name=C" + QString::number(i) + ",age=3" + QString::number(i) + ",sport=Curling;";
+        }
+
+        m1->setXml(makeItemXmlAndData(data1));
+        m2->setXml(makeItemXmlAndData(data2));
+        m3->setXml(makeItemXmlAndData(data3));
+
+        QTRY_VERIFY(m1->count() == dataCount && m2->count() == dataCount && m3->count() == dataCount);
+
+        for (int i=0; i<dataCount; i++) {
+            QCOMPARE(m1->data(i, m1->roles()[0]).toString(), QString("A" + QString::number(i)));
+            QCOMPARE(m1->data(i, m1->roles()[1]).toString(), QString("1" + QString::number(i)));
+            QCOMPARE(m1->data(i, m1->roles()[2]).toString(), QString("Football"));
+
+            QCOMPARE(m2->data(i, m2->roles()[0]).toString(), QString("B" + QString::number(i)));
+            QCOMPARE(m2->data(i, m2->roles()[1]).toString(), QString("2" + QString::number(i)));
+            QCOMPARE(m2->data(i, m2->roles()[2]).toString(), QString("Athletics"));
+
+            QCOMPARE(m3->data(i, m3->roles()[0]).toString(), QString("C" + QString::number(i)));
+            QCOMPARE(m3->data(i, m3->roles()[1]).toString(), QString("3" + QString::number(i)));
+            QCOMPARE(m3->data(i, m3->roles()[2]).toString(), QString("Curling"));
+        }
+    }
+
+    delete m1;
+    delete m2;
+    delete m3;
+}
+
+void tst_qdeclarativexmllistmodel::threading_data()
+{
+    QTest::addColumn<int>("xmlDataCount");
+
+    QTest::newRow("1") << 1;
+    QTest::newRow("2") << 2;
+    QTest::newRow("10") << 10;
+}
+
 void tst_qdeclarativexmllistmodel::propertyChanges()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
@@ -554,6 +615,8 @@ void tst_qdeclarativexmllistmodel::propertyChanges()
     QCOMPARE(model->query(), QString("/Pets"));
     QCOMPARE(model->namespaceDeclarations(), QString("declare namespace media=\"http://search.yahoo.com/mrss/\";"));
 
+    QTRY_VERIFY(model->count() == 1);
+
     QCOMPARE(sourceSpy.count(),1);
     QCOMPARE(xmlSpy.count(),1);
     QCOMPARE(modelQuerySpy.count(),1);
@@ -568,6 +631,9 @@ void tst_qdeclarativexmllistmodel::propertyChanges()
     QCOMPARE(xmlSpy.count(),1);
     QCOMPARE(modelQuerySpy.count(),1);
     QCOMPARE(namespaceDeclarationsSpy.count(),1);
+
+    QTRY_VERIFY(model->count() == 1);
+    delete model;
 }
 
 QTEST_MAIN(tst_qdeclarativexmllistmodel)

@@ -301,15 +301,17 @@ void tst_qdeclarativeqt::createQmlObject()
 
     QString warning1 = "QDeclarativeEngine::createQmlObject():";
     QString warning2 = "    " + TEST_FILE("main.qml").toString() + ":4:1: Duplicate property name";
-    QString warning3 = "QDeclarativeEngine::createQmlObject(): Component is not ready";
-    QString warning4 = "QDeclarativeEngine::createQmlObject():";
-    QString warning5 = "    " + TEST_FILE("inline").toString() + ":3: Cannot assign object type QObject with no default method";
+    QString warning3 = "QDeclarativeEngine::createQmlObject():";
+    QString warning4 = "    " + TEST_FILE("inline").toString() + ":2:10: Blah is not a type";
+    QString warning5 = "QDeclarativeEngine::createQmlObject():";
+    QString warning6 = "    " + TEST_FILE("inline").toString() + ":3: Cannot assign object type QObject with no default method";
 
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning3));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning4));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning5));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning6));
 
     QObject *object = component.create();
     QVERIFY(object != 0);
@@ -319,7 +321,7 @@ void tst_qdeclarativeqt::createQmlObject()
     QCOMPARE(object->property("emptyArg").toBool(), true);
     QCOMPARE(object->property("errors").toBool(), true);
     QCOMPARE(object->property("noParent").toBool(), true);
-    QCOMPARE(object->property("notReady").toBool(), true);
+    QCOMPARE(object->property("notAvailable").toBool(), true);
     QCOMPARE(object->property("runtimeError").toBool(), true);
     QCOMPARE(object->property("success").toBool(), true);
 
