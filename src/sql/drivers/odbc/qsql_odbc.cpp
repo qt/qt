@@ -352,7 +352,9 @@ static QVariant::Type qDecodeODBCType(SQLSMALLINT sqltype, const T* p, bool isSi
 #endif
     case SQL_CHAR:
     case SQL_VARCHAR:
+#if (ODBCVER >= 0x0350)
     case SQL_GUID:
+#endif
     case SQL_LONGVARCHAR:
         type = QVariant::String;
         break;
