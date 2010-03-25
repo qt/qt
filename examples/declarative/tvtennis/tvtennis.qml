@@ -21,7 +21,7 @@ Rectangle {
 
         // Move the ball to the right and back to the left repeatedly
         SequentialAnimation on x {
-            loops: Qt.Infinite
+            loops: Animation.Infinite
             NumberAnimation { to: page.width - 40; duration: 2000 }
             ScriptAction { script: paddle.play() }
             PropertyAction { target: ball; property: "direction"; value: "left" }

@@ -224,7 +224,7 @@ void QDeclarativeSpringFollowPrivate::stop()
         color: "#00ff00"
         y: 200  // initial value
         SequentialAnimation on y {
-            loops: Qt.Infinite
+            loops: Animation.Infinite
             NumberAnimation {
                 to: 200
                 easing.type: "OutBounce"

@@ -18,7 +18,7 @@ Item {
         ScriptAction { script: page.clicked() }
         PauseAnimation { duration: repeatdelay }
         SequentialAnimation {
-            loops: Qt.Infinite
+            loops: Animation.Infinite
             ScriptAction { script: page.clicked() }
             PauseAnimation { duration: repeatperiod }
         }

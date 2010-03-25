@@ -18,7 +18,7 @@ Item {
         NumberAnimation on rotation {
             from: 0
             to: 360
-            loops: Qt.Infinite
+            loops: Animation.Infinite
             duration: root.period
         }
     }

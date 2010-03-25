@@ -14,8 +14,8 @@ Rectangle {
         name: "right"
         AnchorChanges {
             target: myRect;
-            reset: "left"
-            right: parent.right
+            anchors.left: undefined
+            anchors.right: parent.right
         }
     }
 }

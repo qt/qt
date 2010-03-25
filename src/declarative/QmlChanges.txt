@@ -12,7 +12,9 @@ Using Particles now requires "import Qt.labs.particles 1.0"
 AnchorAnimation must now be used to animate anchor changes (and not NumberAnimation)
 Removed ParentAction (use ParentAnimation instead)
 ScriptAction: renamed stateChangeScriptName -> scriptName
-Animation: replace repeat with loops (loops: Qt.Infinite gives the old repeat behavior)
+Animation: replace repeat with loops (loops: Animation.Infinite gives the old repeat behavior)
+AnchorChanges: use natural form to specify anchors (anchors.left instead of left)
+AnchorChanges: removed reset property. (reset: "left" should now be anchors.left: undefined)
 
 C++ API
 -------
