@@ -1,8 +1,8 @@
 import Qt 4.6
-import QDeclarativeTime 1.0 as QDeclarativeTime
+import QmlTime 1.0 as QmlTime
 
 Item {
-    QDeclarativeTime.Timer {
+    QmlTime.Timer {
         component: Component {
             Item {
                 Rectangle { }
@@ -16,16 +16,19 @@ Item {
                     Item {
                         Image { }
                         Image { }
-                        Row { }
-                        Image { }
-                        Image { }
+                        Item {
+                            Image { }
+                            Image { }
+                        }
                     }
 
-                    Column { }
-                    Row { }
-                    Text { }
-                    Text { }
-                    Text { }
+                    Item {
+                        Item {
+                            Text { }
+                            Text { }
+                        }
+                        Text { }
+                    }
                 }
                 MouseArea { }
             }

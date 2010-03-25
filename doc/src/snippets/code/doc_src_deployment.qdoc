@@ -463,7 +463,8 @@ vendorinfo = \
     "%{\"Example Localized Vendor\"}" \
     ":\"Example Vendor\""
 
-default_deployment.pkg_prerules = vendorinfo
+my_deployment.pkg_prerules = vendorinfo
+DEPLOYMENT += my_deployment
 //! [56]
 
 //! [57]
@@ -471,7 +472,9 @@ supported_platforms = \
     "; This demo only supports S60 5.0" \
     "[0x1028315F],0,0,0,{\"S60ProductID\"}"
 
-default_deployment.pkg_prerules += supported_platforms
+default_deployment.pkg_prerules -= pkg_platform_dependencies
+my_deployment.pkg_prerules += supported_platforms
+DEPLOYMENT += my_deployment
 //! [57]
 
 //! [58]

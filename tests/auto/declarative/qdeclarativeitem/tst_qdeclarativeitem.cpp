@@ -421,8 +421,8 @@ void tst_QDeclarativeItem::propertyChanges()
     QVERIFY(parentItem);
 
     QSignalSpy parentSpy(item, SIGNAL(parentChanged(QDeclarativeItem *)));
-    QSignalSpy widthSpy(item, SIGNAL(widthChanged(qreal)));
-    QSignalSpy heightSpy(item, SIGNAL(heightChanged(qreal)));
+    QSignalSpy widthSpy(item, SIGNAL(widthChanged()));
+    QSignalSpy heightSpy(item, SIGNAL(heightChanged()));
     QSignalSpy baselineOffsetSpy(item, SIGNAL(baselineOffsetChanged(qreal)));
     QSignalSpy childrenRectSpy(parentItem, SIGNAL(childrenRectChanged(QRectF)));
     QSignalSpy focusSpy(item, SIGNAL(focusChanged(bool)));
@@ -442,15 +442,9 @@ void tst_QDeclarativeItem::propertyChanges()
 
     QCOMPARE(item->width(), 100.0);
     QCOMPARE(widthSpy.count(),1);
-    QList<QVariant> widthArguments = widthSpy.first();
-    QVERIFY(widthArguments.count() == 1);
-    QCOMPARE(item->width(), widthArguments.at(0).toReal());
 
     QCOMPARE(item->height(), 200.0);
     QCOMPARE(heightSpy.count(),1);
-    QList<QVariant> heightArguments = heightSpy.first();
-    QVERIFY(heightArguments.count() == 1);
-    QCOMPARE(item->height(), heightArguments.at(0).toReal());
 
     QCOMPARE(item->baselineOffset(), 10.0);
     QCOMPARE(baselineOffsetSpy.count(),1);

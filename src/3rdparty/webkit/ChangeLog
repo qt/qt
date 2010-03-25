@@ -1,3 +1,11 @@
+2010-02-18  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        Add .gitattributes file for custom ChangeLog merge-driver
+
+        * .gitattributes: Added.
+
 2009-11-30  Jan-Arve Sæther  <jan-arve.saether@nokia.com>
 
         Reviewed by Simon Hausmann.
