@@ -312,9 +312,9 @@ void QDeclarativeContents::setItem(QDeclarativeItem *item)
         QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
         if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
             continue;
-        connect(child, SIGNAL(heightChanged(qreal)), this, SLOT(calcHeight()));
+        connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
-        connect(child, SIGNAL(widthChanged(qreal)), this, SLOT(calcWidth()));
+        connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
         connect(child, SIGNAL(xChanged()), this, SLOT(calcWidth()));
         connect(this, SIGNAL(rectChanged(QRectF)), m_item, SIGNAL(childrenRectChanged(QRectF)));
     }
