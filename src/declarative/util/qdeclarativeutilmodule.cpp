@@ -140,6 +140,7 @@ void QDeclarativeUtilModule::defineModule()
 
     qmlRegisterType<QDeclarativeAnchors>();
     qmlRegisterType<QDeclarativeStateOperation>();
+    qmlRegisterType<QDeclarativeAnchorSet>();
 
     qmlRegisterTypeEnums<QDeclarativeAbstractAnimation>("Animation");
 

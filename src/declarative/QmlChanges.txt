@@ -13,6 +13,8 @@ AnchorAnimation must now be used to animate anchor changes (and not NumberAnimat
 Removed ParentAction (use ParentAnimation instead)
 ScriptAction: renamed stateChangeScriptName -> scriptName
 Animation: replace repeat with loops (loops: Animation.Infinite gives the old repeat behavior)
+AnchorChanges: use natural form to specify anchors (anchors.left instead of left)
+AnchorChanges: removed reset property. (reset: "left" should now be anchors.left: undefined)
 
 C++ API
 -------
