@@ -295,10 +295,10 @@ void QCoreWlanEngine::connectToId(const QString &id)
 
                                     password = [NSString stringWithUTF8String:pBuf];
                                 }
+                                SecKeychainItemFreeContent(&listW, realPassword);
                             }
 
                             CFRelease(searchItem);
-                            SecKeychainItemFreeContent(&listW, realPassword);
                         } else {
                             qDebug() << "SecKeychainSearchCopyNext error";
                         }
