@@ -444,7 +444,7 @@ void QDeclarativeBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem 
     const QDeclarativeScaleGrid *border = d->getScaleGrid();
     QMargins margins(border->left(), border->top(), border->right(), border->bottom());
     QTileRules rules((Qt::TileRule)d->horizontalTileMode, (Qt::TileRule)d->verticalTileMode);
-    qDrawBorderPixmap(p, QRect(0, 0, (int)d->width, (int)d->height), margins, d->pix, d->pix.rect(), margins, rules);
+    qDrawBorderPixmap(p, QRect(0, 0, (int)d->width(), (int)d->height()), margins, d->pix, d->pix.rect(), margins, rules);
     if (d->smooth) {
         p->setRenderHint(QPainter::Antialiasing, oldAA);
         p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
