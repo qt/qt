@@ -1368,7 +1368,6 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
                                        const BindingContext &ctxt)
 {
     Q_ASSERT(obj->metaObject());
-    Q_ASSERT(!prop->isEmpty());
 
     QByteArray name = prop->name;
     Q_ASSERT(name.startsWith("on"));
@@ -1387,7 +1386,7 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
     }  else {
 
         if (prop->value || prop->values.count() != 1)
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Incorrectly specified signal"));
+            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Incorrectly specified signal assignment"));
 
         prop->index = sigIdx;
         obj->addSignalProperty(prop);
