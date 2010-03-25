@@ -1,9 +1,9 @@
 import Qt 4.6
-import QDeclarativeTime 1.0 as QDeclarativeTime
+import QmlTime 1.0 as QmlTime
 
 Item {
 
-    QDeclarativeTime.Timer {
+    QmlTime.Timer {
         component: Component {
             ParallelAnimation {
                 NumberAnimation { }
