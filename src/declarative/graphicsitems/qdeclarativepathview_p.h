@@ -62,8 +62,15 @@ class Q_DECLARATIVE_EXPORT QDeclarativePathView : public QDeclarativeItem
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(qreal offset READ offset WRITE setOffset NOTIFY offsetChanged)
     Q_PROPERTY(qreal snapPosition READ snapPosition WRITE setSnapPosition NOTIFY snapPositionChanged)
+
+    Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight NOTIFY highlightChanged)
+    Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightItemChanged)
+
     Q_PROPERTY(qreal dragMargin READ dragMargin WRITE setDragMargin NOTIFY dragMarginChanged)
-    Q_PROPERTY(int count READ count)
+    Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration NOTIFY flickDecelerationChanged)
+    Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive NOTIFY interactiveChanged)
+
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
     Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount NOTIFY pathItemCountChanged)
 
@@ -86,8 +93,18 @@ public:
     qreal snapPosition() const;
     void setSnapPosition(qreal pos);
 
+    QDeclarativeComponent *highlight() const;
+    void setHighlight(QDeclarativeComponent *highlight);
+    QDeclarativeItem *highlightItem();
+
     qreal dragMargin() const;
     void setDragMargin(qreal margin);
+
+    qreal flickDeceleration() const;
+    void setFlickDeceleration(qreal dec);
+
+    bool isInteractive() const;
+    void setInteractive(bool);
 
     int count() const;
 
@@ -103,11 +120,16 @@ Q_SIGNALS:
     void currentIndexChanged();
     void offsetChanged();
     void modelChanged();
+    void countChanged();
     void pathChanged();
     void dragMarginChanged();
     void snapPositionChanged();
     void delegateChanged();
     void pathItemCountChanged();
+    void flickDecelerationChanged();
+    void interactiveChanged();
+    void highlightChanged();
+    void highlightItemChanged();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -122,6 +144,7 @@ private Q_SLOTS:
     void ticked();
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
+    void itemsMoved(int,int,int);
     void modelReset();
     void createdItem(int index, QDeclarativeItem *item);
     void destroyingItem(QDeclarativeItem *item);

@@ -1570,6 +1570,20 @@ qreal QTextLine::naturalTextWidth() const
     return eng->lines[i].textWidth.toReal();
 }
 
+/*! \since 4.7
+  Returns the horizontal advance of the text. The advance of the text
+  is the distance from its position to the next position at which
+  text would naturally be drawn.
+
+  By adding the advance to the position of the text line and using this
+  as the position of a second text line, you will be able to position
+  the two lines side-by-side without gaps in-between.
+*/
+qreal QTextLine::horizontalAdvance() const
+{
+    return eng->lines[i].textAdvance.toReal();
+}
+
 /*!
     Lays out the line with the given \a width. The line is filled from
     its starting position with as many characters as will fit into
@@ -1688,9 +1702,9 @@ namespace {
             if (currentPosition <= 0)
                 return;
 
-            glyph_metrics_t gi = fontEngine->boundingBox(currentGlyph());
-            if (gi.isValid())
-                rightBearing = qMin(QFixed(), gi.xoff - gi.x - gi.width);
+            qreal rb;
+            fontEngine->getGlyphBearings(currentGlyph(), 0, &rb);
+            rightBearing = qMin(QFixed(), QFixed::fromReal(rb));
         }
 
         inline void resetRightBearing()

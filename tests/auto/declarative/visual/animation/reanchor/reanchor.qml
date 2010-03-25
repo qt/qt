@@ -36,18 +36,19 @@ Rectangle {
         name: "reanchored"
         AnchorChanges {
             target: myRect;
-            left: leftGuideline.left
-            right: container.right
-            top: container.top
-            bottom: bottomGuideline.bottom
+            anchors.left: leftGuideline.left
+            anchors.right: container.right
+            anchors.top: container.top
+            anchors.bottom: bottomGuideline.bottom
         }
     }, State {
         name: "reanchored2"
         AnchorChanges {
             target: myRect;
-            reset: "left, right"
-            top: topGuideline2.top
-            bottom: bottomGuideline2.bottom
+            anchors.left: undefined
+            anchors.right: undefined
+            anchors.top: topGuideline2.top
+            anchors.bottom: bottomGuideline2.bottom
         }
     }]
 

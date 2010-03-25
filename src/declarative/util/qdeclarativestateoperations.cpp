@@ -494,9 +494,31 @@ public:
     \qmlclass StateChangeScript QDeclarativeStateChangeScript
     \brief The StateChangeScript element allows you to run a script in a state.
 
-    The script specified will be run immediately when the state is made current.
-    Alternatively you can use a ScriptAction to specify at which point in the transition
+    StateChangeScripts are run when entering the state. You can use
+    ScriptAction to specify at which point in the transition
     you want the StateChangeScript to be run.
+
+    \qml
+    State {
+        name "state1"
+        StateChangeScript {
+            name: "myScript"
+            script: doStateStuff();
+        }
+        ...
+    }
+    ...
+    Transition {
+        to: "state1"
+        SequentialAnimation {
+            NumberAnimation { ... }
+            ScriptAction { scriptName: "myScript" }
+            NumberAnimation { ... }
+        }
+    }
+    \endqml
+
+    \sa ScriptAction
 */
 
 QDeclarativeStateChangeScript::QDeclarativeStateChangeScript(QObject *parent)
@@ -587,24 +609,242 @@ QString QDeclarativeStateChangeScript::typeName() const
     For more information on anchors see \l {anchor-layout}{Anchor Layouts}.
 */
 
+class QDeclarativeAnchorSetPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QDeclarativeAnchorSet)
+public:
+    QDeclarativeAnchorSetPrivate()
+      : usedAnchors(0), fill(0),
+        centerIn(0)/*, leftMargin(0), rightMargin(0), topMargin(0), bottomMargin(0),
+        margins(0), vCenterOffset(0), hCenterOffset(0), baselineOffset(0)*/
+    {
+    }
+
+    QDeclarativeAnchors::UsedAnchors usedAnchors;
+    //### change to QDeclarativeAnchors::UsedAnchors resetAnchors
+    QStringList resetList;
+
+    QDeclarativeItem *fill;
+    QDeclarativeItem *centerIn;
+
+    QDeclarativeAnchorLine left;
+    QDeclarativeAnchorLine right;
+    QDeclarativeAnchorLine top;
+    QDeclarativeAnchorLine bottom;
+    QDeclarativeAnchorLine vCenter;
+    QDeclarativeAnchorLine hCenter;
+    QDeclarativeAnchorLine baseline;
+
+    /*qreal leftMargin;
+    qreal rightMargin;
+    qreal topMargin;
+    qreal bottomMargin;
+    qreal margins;
+    qreal vCenterOffset;
+    qreal hCenterOffset;
+    qreal baselineOffset;*/
+};
+
+QDeclarativeAnchorSet::QDeclarativeAnchorSet(QObject *parent)
+  : QObject(*new QDeclarativeAnchorSetPrivate, parent)
+{
+}
+
+QDeclarativeAnchorSet::~QDeclarativeAnchorSet()
+{
+}
+
+QDeclarativeAnchorLine QDeclarativeAnchorSet::top() const
+{
+    Q_D(const QDeclarativeAnchorSet);
+    return d->top;
+}
+
+void QDeclarativeAnchorSet::setTop(const QDeclarativeAnchorLine &edge)
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors |= QDeclarativeAnchors::HasTopAnchor;
+    d->top = edge;
+}
+
+void QDeclarativeAnchorSet::resetTop()
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors &= ~QDeclarativeAnchors::HasTopAnchor;
+    d->top = QDeclarativeAnchorLine();
+    d->resetList << QLatin1String("top");
+}
+
+QDeclarativeAnchorLine QDeclarativeAnchorSet::bottom() const
+{
+    Q_D(const QDeclarativeAnchorSet);
+    return d->bottom;
+}
+
+void QDeclarativeAnchorSet::setBottom(const QDeclarativeAnchorLine &edge)
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors |= QDeclarativeAnchors::HasBottomAnchor;
+    d->bottom = edge;
+}
+
+void QDeclarativeAnchorSet::resetBottom()
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors &= ~QDeclarativeAnchors::HasBottomAnchor;
+    d->bottom = QDeclarativeAnchorLine();
+    d->resetList << QLatin1String("bottom");
+}
+
+QDeclarativeAnchorLine QDeclarativeAnchorSet::verticalCenter() const
+{
+    Q_D(const QDeclarativeAnchorSet);
+    return d->vCenter;
+}
+
+void QDeclarativeAnchorSet::setVerticalCenter(const QDeclarativeAnchorLine &edge)
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors |= QDeclarativeAnchors::HasVCenterAnchor;
+    d->vCenter = edge;
+}
+
+void QDeclarativeAnchorSet::resetVerticalCenter()
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors &= ~QDeclarativeAnchors::HasVCenterAnchor;
+    d->vCenter = QDeclarativeAnchorLine();
+    d->resetList << QLatin1String("verticalCenter");
+}
+
+QDeclarativeAnchorLine QDeclarativeAnchorSet::baseline() const
+{
+    Q_D(const QDeclarativeAnchorSet);
+    return d->baseline;
+}
+
+void QDeclarativeAnchorSet::setBaseline(const QDeclarativeAnchorLine &edge)
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors |= QDeclarativeAnchors::HasBaselineAnchor;
+    d->baseline = edge;
+}
+
+void QDeclarativeAnchorSet::resetBaseline()
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors &= ~QDeclarativeAnchors::HasBaselineAnchor;
+    d->baseline = QDeclarativeAnchorLine();
+    d->resetList << QLatin1String("baseline");
+}
+
+QDeclarativeAnchorLine QDeclarativeAnchorSet::left() const
+{
+    Q_D(const QDeclarativeAnchorSet);
+    return d->left;
+}
+
+void QDeclarativeAnchorSet::setLeft(const QDeclarativeAnchorLine &edge)
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors |= QDeclarativeAnchors::HasLeftAnchor;
+    d->left = edge;
+}
+
+void QDeclarativeAnchorSet::resetLeft()
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors &= ~QDeclarativeAnchors::HasLeftAnchor;
+    d->left = QDeclarativeAnchorLine();
+    d->resetList << QLatin1String("left");
+}
+
+QDeclarativeAnchorLine QDeclarativeAnchorSet::right() const
+{
+    Q_D(const QDeclarativeAnchorSet);
+    return d->right;
+}
+
+void QDeclarativeAnchorSet::setRight(const QDeclarativeAnchorLine &edge)
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors |= QDeclarativeAnchors::HasRightAnchor;
+    d->right = edge;
+}
+
+void QDeclarativeAnchorSet::resetRight()
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors &= ~QDeclarativeAnchors::HasRightAnchor;
+    d->right = QDeclarativeAnchorLine();
+    d->resetList << QLatin1String("right");
+}
+
+QDeclarativeAnchorLine QDeclarativeAnchorSet::horizontalCenter() const
+{
+    Q_D(const QDeclarativeAnchorSet);
+    return d->hCenter;
+}
+
+void QDeclarativeAnchorSet::setHorizontalCenter(const QDeclarativeAnchorLine &edge)
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors |= QDeclarativeAnchors::HasHCenterAnchor;
+    d->hCenter = edge;
+}
+
+void QDeclarativeAnchorSet::resetHorizontalCenter()
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->usedAnchors &= ~QDeclarativeAnchors::HasHCenterAnchor;
+    d->hCenter = QDeclarativeAnchorLine();
+    d->resetList << QLatin1String("horizontalCenter");
+}
+
+QDeclarativeItem *QDeclarativeAnchorSet::fill() const
+{
+    Q_D(const QDeclarativeAnchorSet);
+    return d->fill;
+}
+
+void QDeclarativeAnchorSet::setFill(QDeclarativeItem *f)
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->fill = f;
+}
+
+void QDeclarativeAnchorSet::resetFill()
+{
+    setFill(0);
+}
+
+QDeclarativeItem *QDeclarativeAnchorSet::centerIn() const
+{
+    Q_D(const QDeclarativeAnchorSet);
+    return d->centerIn;
+}
+
+void QDeclarativeAnchorSet::setCenterIn(QDeclarativeItem* c)
+{
+    Q_D(QDeclarativeAnchorSet);
+    d->centerIn = c;
+}
+
+void QDeclarativeAnchorSet::resetCenterIn()
+{
+    setCenterIn(0);
+}
 
 
 class QDeclarativeAnchorChangesPrivate : public QObjectPrivate
 {
 public:
-    QDeclarativeAnchorChangesPrivate() : target(0) {}
+    QDeclarativeAnchorChangesPrivate()
+        : target(0), anchorSet(new QDeclarativeAnchorSet) {}
+    ~QDeclarativeAnchorChangesPrivate() { delete anchorSet; }
 
     QDeclarativeItem *target;
-    QString resetString;
-    QStringList resetList;
-
-    QDeclarativeAnchorLine left;
-    QDeclarativeAnchorLine right;
-    QDeclarativeAnchorLine horizontalCenter;
-    QDeclarativeAnchorLine top;
-    QDeclarativeAnchorLine bottom;
-    QDeclarativeAnchorLine verticalCenter;
-    QDeclarativeAnchorLine baseline;
+    QDeclarativeAnchorSet *anchorSet;
 
     QDeclarativeAnchorLine origLeft;
     QDeclarativeAnchorLine origRight;
@@ -667,6 +907,12 @@ QDeclarativeAnchorChanges::ActionList QDeclarativeAnchorChanges::actions()
     return ActionList() << a;
 }
 
+QDeclarativeAnchorSet *QDeclarativeAnchorChanges::anchors()
+{
+    Q_D(QDeclarativeAnchorChanges);
+    return d->anchorSet;
+}
+
 QDeclarativeItem *QDeclarativeAnchorChanges::object() const
 {
     Q_D(const QDeclarativeAnchorChanges);
@@ -679,116 +925,26 @@ void QDeclarativeAnchorChanges::setObject(QDeclarativeItem *target)
     d->target = target;
 }
 
-QString QDeclarativeAnchorChanges::reset() const
-{
-    Q_D(const QDeclarativeAnchorChanges);
-    return d->resetString;
-}
-
-void QDeclarativeAnchorChanges::setReset(const QString &reset)
-{
-    Q_D(QDeclarativeAnchorChanges);
-    d->resetString = reset;
-    d->resetList = d->resetString.split(QLatin1Char(','));
-    for (int i = 0; i < d->resetList.count(); ++i)
-        d->resetList[i] = d->resetList.at(i).trimmed();
-}
-
 /*!
-    \qmlproperty AnchorLine AnchorChanges::left
-    \qmlproperty AnchorLine AnchorChanges::right
-    \qmlproperty AnchorLine AnchorChanges::horizontalCenter
-    \qmlproperty AnchorLine AnchorChanges::top
-    \qmlproperty AnchorLine AnchorChanges::bottom
-    \qmlproperty AnchorLine AnchorChanges::verticalCenter
-    \qmlproperty AnchorLine AnchorChanges::baseline
+    \qmlproperty AnchorLine AnchorChanges::anchors.left
+    \qmlproperty AnchorLine AnchorChanges::anchors.right
+    \qmlproperty AnchorLine AnchorChanges::anchors.horizontalCenter
+    \qmlproperty AnchorLine AnchorChanges::anchors.top
+    \qmlproperty AnchorLine AnchorChanges::anchors.bottom
+    \qmlproperty AnchorLine AnchorChanges::anchors.verticalCenter
+    \qmlproperty AnchorLine AnchorChanges::anchors.baseline
 
     These properties change the respective anchors of the item.
+
+    To reset an anchor you can assign \c undefined:
+    \qml
+    AnchorChanges {
+        target: myItem
+        left: undefined          //remove myItem's left anchor
+        right: otherItem.right
+    }
+    \endqml
 */
-
-QDeclarativeAnchorLine QDeclarativeAnchorChanges::left() const
-{
-    Q_D(const QDeclarativeAnchorChanges);
-    return d->left;
-}
-
-void QDeclarativeAnchorChanges::setLeft(const QDeclarativeAnchorLine &edge)
-{
-    Q_D(QDeclarativeAnchorChanges);
-    d->left = edge;
-}
-
-QDeclarativeAnchorLine QDeclarativeAnchorChanges::right() const
-{
-    Q_D(const QDeclarativeAnchorChanges);
-    return d->right;
-}
-
-void QDeclarativeAnchorChanges::setRight(const QDeclarativeAnchorLine &edge)
-{
-    Q_D(QDeclarativeAnchorChanges);
-    d->right = edge;
-}
-
-QDeclarativeAnchorLine QDeclarativeAnchorChanges::horizontalCenter() const
-{
-    Q_D(const QDeclarativeAnchorChanges);
-    return d->horizontalCenter;
-}
-
-void QDeclarativeAnchorChanges::setHorizontalCenter(const QDeclarativeAnchorLine &edge)
-{
-    Q_D(QDeclarativeAnchorChanges);
-    d->horizontalCenter = edge;
-}
-
-QDeclarativeAnchorLine QDeclarativeAnchorChanges::top() const
-{
-    Q_D(const QDeclarativeAnchorChanges);
-    return d->top;
-}
-
-void QDeclarativeAnchorChanges::setTop(const QDeclarativeAnchorLine &edge)
-{
-    Q_D(QDeclarativeAnchorChanges);
-    d->top = edge;
-}
-
-QDeclarativeAnchorLine QDeclarativeAnchorChanges::bottom() const
-{
-    Q_D(const QDeclarativeAnchorChanges);
-    return d->bottom;
-}
-
-void QDeclarativeAnchorChanges::setBottom(const QDeclarativeAnchorLine &edge)
-{
-    Q_D(QDeclarativeAnchorChanges);
-    d->bottom = edge;
-}
-
-QDeclarativeAnchorLine QDeclarativeAnchorChanges::verticalCenter() const
-{
-    Q_D(const QDeclarativeAnchorChanges);
-    return d->verticalCenter;
-}
-
-void QDeclarativeAnchorChanges::setVerticalCenter(const QDeclarativeAnchorLine &edge)
-{
-    Q_D(QDeclarativeAnchorChanges);
-    d->verticalCenter = edge;
-}
-
-QDeclarativeAnchorLine QDeclarativeAnchorChanges::baseline() const
-{
-    Q_D(const QDeclarativeAnchorChanges);
-    return d->baseline;
-}
-
-void QDeclarativeAnchorChanges::setBaseline(const QDeclarativeAnchorLine &edge)
-{
-    Q_D(QDeclarativeAnchorChanges);
-    d->baseline = edge;
-}
 
 void QDeclarativeAnchorChanges::execute()
 {
@@ -813,36 +969,36 @@ void QDeclarativeAnchorChanges::execute()
         d->target->anchors()->setBaseline(d->origBaseline);
 
     //reset any anchors that have been specified
-    if (d->resetList.contains(QLatin1String("left")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("left")))
         d->target->anchors()->resetLeft();
-    if (d->resetList.contains(QLatin1String("right")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("right")))
         d->target->anchors()->resetRight();
-    if (d->resetList.contains(QLatin1String("horizontalCenter")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("horizontalCenter")))
         d->target->anchors()->resetHorizontalCenter();
-    if (d->resetList.contains(QLatin1String("top")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("top")))
         d->target->anchors()->resetTop();
-    if (d->resetList.contains(QLatin1String("bottom")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("bottom")))
         d->target->anchors()->resetBottom();
-    if (d->resetList.contains(QLatin1String("verticalCenter")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("verticalCenter")))
         d->target->anchors()->resetVerticalCenter();
-    if (d->resetList.contains(QLatin1String("baseline")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("baseline")))
         d->target->anchors()->resetBaseline();
 
     //set any anchors that have been specified
-    if (d->left.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setLeft(d->left);
-    if (d->right.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setRight(d->right);
-    if (d->horizontalCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setHorizontalCenter(d->horizontalCenter);
-    if (d->top.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setTop(d->top);
-    if (d->bottom.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setBottom(d->bottom);
-    if (d->verticalCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setVerticalCenter(d->verticalCenter);
-    if (d->baseline.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setBaseline(d->baseline);
+    if (d->anchorSet->d_func()->left.anchorLine != QDeclarativeAnchorLine::Invalid)
+        d->target->anchors()->setLeft(d->anchorSet->d_func()->left);
+    if (d->anchorSet->d_func()->right.anchorLine != QDeclarativeAnchorLine::Invalid)
+        d->target->anchors()->setRight(d->anchorSet->d_func()->right);
+    if (d->anchorSet->d_func()->hCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
+        d->target->anchors()->setHorizontalCenter(d->anchorSet->d_func()->hCenter);
+    if (d->anchorSet->d_func()->top.anchorLine != QDeclarativeAnchorLine::Invalid)
+        d->target->anchors()->setTop(d->anchorSet->d_func()->top);
+    if (d->anchorSet->d_func()->bottom.anchorLine != QDeclarativeAnchorLine::Invalid)
+        d->target->anchors()->setBottom(d->anchorSet->d_func()->bottom);
+    if (d->anchorSet->d_func()->vCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
+        d->target->anchors()->setVerticalCenter(d->anchorSet->d_func()->vCenter);
+    if (d->anchorSet->d_func()->baseline.anchorLine != QDeclarativeAnchorLine::Invalid)
+        d->target->anchors()->setBaseline(d->anchorSet->d_func()->baseline);
 }
 
 bool QDeclarativeAnchorChanges::isReversable()
@@ -857,19 +1013,19 @@ void QDeclarativeAnchorChanges::reverse()
         return;
 
     //reset any anchors set by the state
-    if (d->left.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->left.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetLeft();
-    if (d->right.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->right.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetRight();
-    if (d->horizontalCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->hCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetHorizontalCenter();
-    if (d->top.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->top.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetTop();
-    if (d->bottom.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->bottom.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetBottom();
-    if (d->verticalCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->vCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetVerticalCenter();
-    if (d->baseline.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->baseline.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetBaseline();
 
     //restore previous anchors
@@ -955,26 +1111,26 @@ void QDeclarativeAnchorChanges::copyOriginals(QDeclarativeActionEvent *other)
     QDeclarativeAnchorChangesPrivate *acp = ac->d_func();
 
     //probably also need to revert some things
-    d->applyOrigLeft = (acp->left.anchorLine != QDeclarativeAnchorLine::Invalid ||
-        acp->resetList.contains(QLatin1String("left")));
+    d->applyOrigLeft = (acp->anchorSet->d_func()->left.anchorLine != QDeclarativeAnchorLine::Invalid ||
+        acp->anchorSet->d_func()->resetList.contains(QLatin1String("left")));
 
-    d->applyOrigRight = (acp->right.anchorLine != QDeclarativeAnchorLine::Invalid ||
-        acp->resetList.contains(QLatin1String("right")));
+    d->applyOrigRight = (acp->anchorSet->d_func()->right.anchorLine != QDeclarativeAnchorLine::Invalid ||
+        acp->anchorSet->d_func()->resetList.contains(QLatin1String("right")));
 
-    d->applyOrigHCenter = (acp->horizontalCenter.anchorLine != QDeclarativeAnchorLine::Invalid ||
-        acp->resetList.contains(QLatin1String("horizontalCenter")));
+    d->applyOrigHCenter = (acp->anchorSet->d_func()->hCenter.anchorLine != QDeclarativeAnchorLine::Invalid ||
+        acp->anchorSet->d_func()->resetList.contains(QLatin1String("horizontalCenter")));
 
-    d->applyOrigTop = (acp->top.anchorLine != QDeclarativeAnchorLine::Invalid ||
-        acp->resetList.contains(QLatin1String("top")));
+    d->applyOrigTop = (acp->anchorSet->d_func()->top.anchorLine != QDeclarativeAnchorLine::Invalid ||
+        acp->anchorSet->d_func()->resetList.contains(QLatin1String("top")));
 
-    d->applyOrigBottom = (acp->bottom.anchorLine != QDeclarativeAnchorLine::Invalid ||
-        acp->resetList.contains(QLatin1String("bottom")));
+    d->applyOrigBottom = (acp->anchorSet->d_func()->bottom.anchorLine != QDeclarativeAnchorLine::Invalid ||
+        acp->anchorSet->d_func()->resetList.contains(QLatin1String("bottom")));
 
-    d->applyOrigVCenter = (acp->verticalCenter.anchorLine != QDeclarativeAnchorLine::Invalid ||
-        acp->resetList.contains(QLatin1String("verticalCenter")));
+    d->applyOrigVCenter = (acp->anchorSet->d_func()->vCenter.anchorLine != QDeclarativeAnchorLine::Invalid ||
+        acp->anchorSet->d_func()->resetList.contains(QLatin1String("verticalCenter")));
 
-    d->applyOrigBaseline = (acp->baseline.anchorLine != QDeclarativeAnchorLine::Invalid ||
-        acp->resetList.contains(QLatin1String("baseline")));
+    d->applyOrigBaseline = (acp->anchorSet->d_func()->baseline.anchorLine != QDeclarativeAnchorLine::Invalid ||
+        acp->anchorSet->d_func()->resetList.contains(QLatin1String("baseline")));
 
     d->origLeft = ac->d_func()->origLeft;
     d->origRight = ac->d_func()->origRight;
@@ -1012,35 +1168,35 @@ void QDeclarativeAnchorChanges::clearBindings()
         d->target->anchors()->resetBaseline();
 
     //reset any anchors that have been specified
-    if (d->resetList.contains(QLatin1String("left")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("left")))
         d->target->anchors()->resetLeft();
-    if (d->resetList.contains(QLatin1String("right")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("right")))
         d->target->anchors()->resetRight();
-    if (d->resetList.contains(QLatin1String("horizontalCenter")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("horizontalCenter")))
         d->target->anchors()->resetHorizontalCenter();
-    if (d->resetList.contains(QLatin1String("top")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("top")))
         d->target->anchors()->resetTop();
-    if (d->resetList.contains(QLatin1String("bottom")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("bottom")))
         d->target->anchors()->resetBottom();
-    if (d->resetList.contains(QLatin1String("verticalCenter")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("verticalCenter")))
         d->target->anchors()->resetVerticalCenter();
-    if (d->resetList.contains(QLatin1String("baseline")))
+    if (d->anchorSet->d_func()->resetList .contains(QLatin1String("baseline")))
         d->target->anchors()->resetBaseline();
 
     //reset any anchors that we'll be setting in the state
-    if (d->left.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->left.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetLeft();
-    if (d->right.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->right.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetRight();
-    if (d->horizontalCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->hCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetHorizontalCenter();
-    if (d->top.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->top.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetTop();
-    if (d->bottom.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->bottom.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetBottom();
-    if (d->verticalCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->vCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetVerticalCenter();
-    if (d->baseline.anchorLine != QDeclarativeAnchorLine::Invalid)
+    if (d->anchorSet->d_func()->baseline.anchorLine != QDeclarativeAnchorLine::Invalid)
         d->target->anchors()->resetBaseline();
 }
 

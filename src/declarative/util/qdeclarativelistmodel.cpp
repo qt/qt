@@ -401,7 +401,7 @@ void QDeclarativeListModel::remove(int index)
     values in \a dict.
 
     \code
-        FruitModel.insert(2, {"cost": 5.95, "name":"Pizza"})
+        fruitModel.insert(2, {"cost": 5.95, "name":"Pizza"})
     \endcode
 
     The \a index must be to an existing item in the list, or one past
@@ -437,7 +437,7 @@ void QDeclarativeListModel::insert(int index, const QScriptValue& valuemap)
     to the end of the list:
 
     \code
-        FruitModel.move(0,FruitModel.count-3,3)
+        fruitModel.move(0,fruitModel.count-3,3)
     \endcode
 
     \sa append()
@@ -479,7 +479,7 @@ void QDeclarativeListModel::move(int from, int to, int n)
     values in \a dict.
 
     \code
-        FruitModel.append({"cost": 5.95, "name":"Pizza"})
+        fruitModel.append({"cost": 5.95, "name":"Pizza"})
     \endcode
 
     \sa set() remove()
@@ -500,8 +500,8 @@ void QDeclarativeListModel::append(const QScriptValue& valuemap)
     Returns the item at \a index in the list model.
 
     \code
-        FruitModel.append({"cost": 5.95, "name":"Jackfruit"})
-        FruitModel.get(0).cost
+        fruitModel.append({"cost": 5.95, "name":"Jackfruit"})
+        fruitModel.get(0).cost
     \endcode
 
     The \a index must be an element in the list.
@@ -510,10 +510,10 @@ void QDeclarativeListModel::append(const QScriptValue& valuemap)
     will also be models, and this get() method is used to access elements:
 
     \code
-        FruitModel.append(..., "attributes":
+        fruitModel.append(..., "attributes":
             [{"name":"spikes","value":"7mm"},
              {"name":"color","value":"green"}]);
-        FruitModel.get(0).attributes.get(1).value; // == "green"
+        fruitModel.get(0).attributes.get(1).value; // == "green"
     \endcode
 
     \sa append()
@@ -536,7 +536,7 @@ QScriptValue QDeclarativeListModel::get(int index) const
     are left unchanged.
 
     \code
-        FruitModel.set(3, {"cost": 5.95, "name":"Pizza"})
+        fruitModel.set(3, {"cost": 5.95, "name":"Pizza"})
     \endcode
 
     The \a index must be an element in the list.
@@ -574,7 +574,7 @@ void QDeclarativeListModel::set(int index, const QScriptValue& valuemap)
     Changes the \a property of the item at \a index in the list model to \a value.
 
     \code
-        FruitModel.set(3, "cost", 5.95)
+        fruitModel.set(3, "cost", 5.95)
     \endcode
 
     The \a index must be an element in the list.

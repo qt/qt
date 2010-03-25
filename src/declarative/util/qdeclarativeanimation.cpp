@@ -190,9 +190,13 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
 
     d->running = r;
     if (d->running) {
-        if (d->alwaysRunToEnd && d->repeat
+        if (d->alwaysRunToEnd && d->loopCount != 1
             && qtAnimation()->state() == QAbstractAnimation::Running) {
-            qtAnimation()->setLoopCount(-1);
+            //we've restarted before the final loop finished; restore proper loop count
+            if (d->loopCount == -1)
+                qtAnimation()->setLoopCount(d->loopCount);
+            else
+                qtAnimation()->setLoopCount(qtAnimation()->currentLoop() + d->loopCount);
         }
 
         if (!d->connectedTimeLine) {
@@ -204,8 +208,8 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
         emit started();
     } else {
         if (d->alwaysRunToEnd) {
-            if (d->repeat)
-                qtAnimation()->setLoopCount(qtAnimation()->currentLoop()+1);
+            if (d->loopCount != 1)
+                qtAnimation()->setLoopCount(qtAnimation()->currentLoop()+1);    //finish the current loop
         } else
             qtAnimation()->stop();
 
@@ -300,10 +304,12 @@ void QDeclarativeAbstractAnimation::setAlwaysRunToEnd(bool f)
 }
 
 /*!
-    \qmlproperty bool Animation::repeat
-    This property holds whether the animation should repeat.
+    \qmlproperty int Animation::loops
+    This property holds the number of times the animation should play.
 
-    If set, the animation will continuously repeat until it is explicitly
+    By default, \c loops is 1: the animation will play through once and then stop.
+
+    If set to Animation.Infinite, the animation will continuously repeat until it is explicitly
     stopped - either by setting the \c running property to false, or by calling
     the \c stop() method.
 
@@ -311,27 +317,35 @@ void QDeclarativeAbstractAnimation::setAlwaysRunToEnd(bool f)
 
     \code
     Rectangle {
-        NumberAnimation on rotation { running: true; repeat: true; from: 0 to: 360 }
+        width: 100; height: 100; color: "green"
+        RotationAnimation on rotation {
+            loops: Animation.Infinite
+            from: 0
+            to: 360
+        }
     }
     \endcode
 */
-bool QDeclarativeAbstractAnimation::repeat() const
+int QDeclarativeAbstractAnimation::loops() const
 {
     Q_D(const QDeclarativeAbstractAnimation);
-    return d->repeat;
+    return d->loopCount;
 }
 
-void QDeclarativeAbstractAnimation::setRepeat(bool r)
+void QDeclarativeAbstractAnimation::setLoops(int loops)
 {
     Q_D(QDeclarativeAbstractAnimation);
-    if (r == d->repeat)
+    if (loops < 0)
+        loops = -1;
+
+    if (loops == d->loopCount)
         return;
 
-    d->repeat = r;
-    int lc = r ? -1 : 1;
-    qtAnimation()->setLoopCount(lc);
-    emit repeatChanged(r);
+    d->loopCount = loops;
+    qtAnimation()->setLoopCount(loops);
+    emit loopCountChanged(loops);
 }
+
 
 int QDeclarativeAbstractAnimation::currentTime()
 {
@@ -509,8 +523,9 @@ void QDeclarativeAbstractAnimation::timelineComplete()
 {
     Q_D(QDeclarativeAbstractAnimation);
     setRunning(false);
-    if (d->alwaysRunToEnd && d->repeat) {
-        qtAnimation()->setLoopCount(-1);
+    if (d->alwaysRunToEnd && d->loopCount != 1) {
+        //restore the proper loopCount for the next run
+        qtAnimation()->setLoopCount(d->loopCount);
     }
 }
 
@@ -658,6 +673,37 @@ void QDeclarativeColorAnimation::setTo(const QColor &t)
     \inherits Animation
     \brief The ScriptAction element allows scripts to be run during an animation.
 
+    ScriptAction can be used to run script at a specific point in an animation.
+
+    \qml
+    SequentialAnimation {
+        NumberAnimation { ... }
+        ScriptAction { script: doSomething(); }
+        NumberAnimation { ... }
+    }
+    \endqml
+
+    When used as part of a Transition, you can also target a specific
+    StateChangeScript to run using the \c scriptName property.
+
+    \qml
+    State {
+        StateChangeScript {
+            name: "myScript"
+            script: doStateStuff();
+        }
+    }
+    ...
+    Transition {
+        SequentialAnimation {
+            NumberAnimation { ... }
+            ScriptAction { scriptName: "myScript" }
+            NumberAnimation { ... }
+        }
+    }
+    \endqml
+
+    \sa StateChangeScript
 */
 /*!
     \internal
@@ -698,11 +744,14 @@ void QDeclarativeScriptAction::setScript(const QDeclarativeScriptString &script)
 }
 
 /*!
-    \qmlproperty QString ScriptAction::stateChangeScriptName
+    \qmlproperty QString ScriptAction::scriptName
     This property holds the the name of the StateChangeScript to run.
 
     This property is only valid when ScriptAction is used as part of a transition.
-    If both script and stateChangeScriptName are set, stateChangeScriptName will be used.
+    If both script and scriptName are set, scriptName will be used.
+
+    \note When using scriptName in a reversible transition, the script will only
+    be run when the transition is being run forwards.
 */
 QString QDeclarativeScriptAction::stateChangeScriptName() const
 {
@@ -718,6 +767,9 @@ void QDeclarativeScriptAction::setStateChangeScriptName(const QString &name)
 
 void QDeclarativeScriptActionPrivate::execute()
 {
+    if (hasRunScriptScript && reversing)
+        return;
+
     QDeclarativeScriptString scriptStr = hasRunScriptScript ? runScriptScript : script;
 
     const QString &str = scriptStr.script();
@@ -733,19 +785,18 @@ void QDeclarativeScriptAction::transition(QDeclarativeStateActions &actions,
 {
     Q_D(QDeclarativeScriptAction);
     Q_UNUSED(modified);
-    Q_UNUSED(direction);
 
     d->hasRunScriptScript = false;
+    d->reversing = (direction == Backward);
     for (int ii = 0; ii < actions.count(); ++ii) {
         QDeclarativeAction &action = actions[ii];
 
         if (action.event && action.event->typeName() == QLatin1String("StateChangeScript")
             && static_cast<QDeclarativeStateChangeScript*>(action.event)->name() == d->name) {
-            //### how should we handle reverse direction?
             d->runScriptScript = static_cast<QDeclarativeStateChangeScript*>(action.event)->script();
             d->hasRunScriptScript = true;
             action.actionDone = true;
-            break;  //assumes names are unique
+            break;  //only match one (names should be unique)
         }
     }
 }
@@ -1318,8 +1369,8 @@ void QDeclarativeAnimationGroupPrivate::append_animation(QDeclarativeListPropert
 {
     QDeclarativeAnimationGroup *q = qobject_cast<QDeclarativeAnimationGroup *>(list->object);
     if (q) {
-        q->d_func()->animations.append(a);
         a->setGroup(q);
+        QDeclarative_setParent_noEvent(a->qtAnimation(), q->d_func()->ag);
         q->d_func()->ag->addAnimation(a->qtAnimation());
     }
 }
@@ -1550,7 +1601,7 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     \qml
     Rectangle {
         SequentialAnimation on x {
-            repeat: true
+            loops: Animation.Infinite
             PropertyAnimation { to: 50 }
             PropertyAnimation { to: 0 }
         }
@@ -1959,7 +2010,7 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
            id: theRect
            width: 100; height: 100
            color: Qt.rgba(0,0,1)
-           NumberAnimation on x { to: 500; repeat: true } //animate theRect's x property
+           NumberAnimation on x { to: 500; loops: Animation.Infinite } //animate theRect's x property
            Behavior on y { NumberAnimation {} } //animate theRect's y property
        }
        \endqml

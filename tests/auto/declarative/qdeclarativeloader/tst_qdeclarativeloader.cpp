@@ -86,11 +86,11 @@ private slots:
     void noResizeGraphicsWidget();
     void networkRequestUrl();
     void failNetworkRequest();
-    void networkSafety();
-    void networkSafety_data();
 //    void networkComponent();
 
     void deleteComponentCrash();
+    void nonItem();
+    void vmeErrors();
 
 private:
     QDeclarativeEngine engine;
@@ -466,7 +466,7 @@ void tst_QDeclarativeLoader::failNetworkRequest()
 // QTBUG-9241
 void tst_QDeclarativeLoader::deleteComponentCrash()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("/crash.qml"));
+    QDeclarativeComponent component(&engine, TEST_FILE("crash.qml"));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
 
@@ -479,43 +479,32 @@ void tst_QDeclarativeLoader::deleteComponentCrash()
     QCOMPARE(loader->progress(), 1.0);
     QCOMPARE(loader->status(), QDeclarativeLoader::Ready);
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
-    QEXPECT_FAIL("", "QTBUG-9245", Continue);
     QVERIFY(loader->source() == QUrl::fromLocalFile(SRCDIR "/data/BlueRect.qml"));
 
     delete item;
 }
 
-void tst_QDeclarativeLoader::networkSafety_data()
+void tst_QDeclarativeLoader::nonItem()
 {
-    QTest::addColumn<QUrl>("url");
-    QTest::addColumn<QString>("message");
+    QDeclarativeComponent component(&engine, TEST_FILE("nonItem.qml"));
+    QString err = QString("QML Loader (") + QUrl::fromLocalFile(SRCDIR).toString() + QString("/data/nonItem.qml:3:1) Loader does not support loading non-visual elements.");
 
-    QTest::newRow("same origin") << QUrl("http://127.0.0.1:14445/sameorigin.qml") << QString();
-    QTest::newRow("different origin") << QUrl("http://127.0.0.1:14445/differentorigin.qml") << QString(" QUrl( \"http://evil.place/evil.qml\" )  is not a safe origin from  QUrl( \"http://127.0.0.1:14445/differentorigin.qml\" )  ");
+    QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
+    QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
+    QVERIFY(loader);
+    QVERIFY(loader->item() == 0);
+
+    delete loader;
 }
 
-void tst_QDeclarativeLoader::networkSafety()
+void tst_QDeclarativeLoader::vmeErrors()
 {
-    TestHTTPServer server(SERVER_PORT);
-    QVERIFY(server.isValid());
-    server.serveDirectory(SRCDIR "/data");
-
-    QFETCH(QUrl, url);
-    QFETCH(QString, message);
-
-    if (!message.isEmpty())
-        QTest::ignoreMessage(QtWarningMsg, message.toLatin1());
-
-    QDeclarativeComponent component(&engine, url);
-    TRY_WAIT(component.status() == QDeclarativeComponent::Ready);
+    QDeclarativeComponent component(&engine, TEST_FILE("vmeErrors.qml"));
+    QString err = QString("(") + QUrl::fromLocalFile(SRCDIR).toString() + QString("/data/VmeError.qml:6: Cannot assign object type QObject with no default method\n        onSomethingHappened: QtObject {}) ");
+    QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
-    QVERIFY(loader != 0);
-
-    if (message.isEmpty()) {
-        TRY_WAIT(loader->status() == QDeclarativeLoader::Ready);
-    } else {
-        TRY_WAIT(loader->status() == QDeclarativeLoader::Null);
-    }
+    QVERIFY(loader);
+    QVERIFY(loader->item() == 0);
 
     delete loader;
 }

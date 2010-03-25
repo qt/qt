@@ -204,9 +204,9 @@ void tst_qdeclarativeanimations::alwaysRunToEnd()
     animation.setProperty("x");
     animation.setTo(200);
     animation.setDuration(1000);
-    animation.setRepeat(true);
+    animation.setLoops(-1);
     animation.setAlwaysRunToEnd(true);
-    QVERIFY(animation.repeat() == true);
+    QVERIFY(animation.loops() == -1);
     QVERIFY(animation.alwaysRunToEnd() == true);
     animation.start();
     QTest::qWait(1500);

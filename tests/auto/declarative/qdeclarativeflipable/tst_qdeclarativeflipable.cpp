@@ -58,7 +58,10 @@ private slots:
     void create();
     void checkFrontAndBack();
     void setFrontAndBack();
-    void crash();
+
+    // below here task issues
+    void QTBUG_9161_crash();
+    void QTBUG_8474_qgv_abort();
 
 private:
     QDeclarativeEngine engine;
@@ -110,10 +113,18 @@ void tst_qdeclarativeflipable::setFrontAndBack()
     delete obj;
 }
 
-void tst_qdeclarativeflipable::crash()
+void tst_qdeclarativeflipable::QTBUG_9161_crash()
 {
     QDeclarativeView *canvas = new QDeclarativeView;
     canvas->setSource(QUrl(SRCDIR "/data/crash.qml"));
+    canvas->show();
+    delete canvas;
+}
+
+void tst_qdeclarativeflipable::QTBUG_8474_qgv_abort()
+{
+    QDeclarativeView *canvas = new QDeclarativeView;
+    canvas->setSource(QUrl(SRCDIR "/data/flipable-abort.qml"));
     canvas->show();
     delete canvas;
 }

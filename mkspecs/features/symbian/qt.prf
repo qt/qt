@@ -22,19 +22,23 @@ load(qt)
 INCLUDEPATH = $$PREPEND_INCLUDEPATH $$INCLUDEPATH
 
 # Add dependency to Qt package to all other projects besides Qt libs.
-# Note: Qt libs with full capabilities has UID3 of 0x2001E61C,
+# Note: Qt libs package with full capabilities has UID3 of 0x2001E61C,
 #       while self-signed version typically has temporary UID3 of 0xE001E61C.
 contains(CONFIG, qt):!contains(TARGET.UID3, 0x2001E61C):!contains(TARGET.UID3, 0xE001E61C):isEmpty(QT_LIBINFIX) {
-    default_deployment.pkg_prerules += \
+    pkg_depends_qt += \
         "; Default dependency to Qt libraries" \
         "(0x2001E61C), $${QT_MAJOR_VERSION}, $${QT_MINOR_VERSION}, $${QT_PATCH_VERSION},  {\"Qt\"}"
 
     # Projects linking to webkit need dependency to webkit
     contains(QT, webkit): {
-        default_deployment.pkg_prerules += \
+        pkg_depends_webkit += \
             "; Dependency to Qt Webkit" \
             "(0x200267C2), $${QT_MAJOR_VERSION}, $${QT_MINOR_VERSION}, $${QT_PATCH_VERSION},  {\"QtWebKit\"}"
+    } else {
+        default_deployment.pkg_prerules -= pkg_depends_webkit
     }
+} else {
+    default_deployment.pkg_prerules -= pkg_depends_webkit pkg_depends_qt
 }
 
 isEmpty(TARGET.EPOCSTACKSIZE):TARGET.EPOCSTACKSIZE = 0x14000
@@ -43,5 +47,5 @@ isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x020000 0x800000
 # Workaround for the fact that Gnupoc and Symbian chose different approaches to
 # the letter casing of headers.
 contains(CONFIG, is_using_gnupoc) {
-    INCLUDEPATH += $$[QT_INSTALL_PREFIX]/mkspecs/common/symbian/header-wrappers
+    INCLUDEPATH += $$QMAKESPEC/../../common/symbian/header-wrappers
 }

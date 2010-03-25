@@ -70,15 +70,18 @@ class Q_AUTOTEST_EXPORT QDeclarativeAbstractAnimation : public QObject, public Q
 
     Q_INTERFACES(QDeclarativeParserStatus)
     Q_INTERFACES(QDeclarativePropertyValueSource)
+    Q_ENUMS(Loops)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged)
-    Q_PROPERTY(bool repeat READ repeat WRITE setRepeat NOTIFY repeatChanged)
+    Q_PROPERTY(int loops READ loops WRITE setLoops NOTIFY loopsChanged)
     Q_CLASSINFO("DefaultMethod", "start()")
 
 public:
     QDeclarativeAbstractAnimation(QObject *parent=0);
     virtual ~QDeclarativeAbstractAnimation();
+
+    enum Loops { Infinite = -2 };
 
     bool isRunning() const;
     void setRunning(bool);
@@ -86,8 +89,9 @@ public:
     void setPaused(bool);
     bool alwaysRunToEnd() const;
     void setAlwaysRunToEnd(bool);
-    bool repeat() const;
-    void setRepeat(bool);
+
+    int loops() const;
+    void setLoops(int);
 
     int currentTime();
     void setCurrentTime(int);
@@ -106,8 +110,8 @@ Q_SIGNALS:
     void completed();
     void runningChanged(bool);
     void pausedChanged(bool);
-    void repeatChanged(bool);
     void alwaysRunToEndChanged(bool);
+    void loopCountChanged(int);
 
 public Q_SLOTS:
     void restart();
@@ -163,7 +167,7 @@ class QDeclarativeScriptAction : public QDeclarativeAbstractAnimation
     Q_DECLARE_PRIVATE(QDeclarativeScriptAction)
 
     Q_PROPERTY(QDeclarativeScriptString script READ script WRITE setScript)
-    Q_PROPERTY(QString stateChangeScriptName READ stateChangeScriptName WRITE setStateChangeScriptName)
+    Q_PROPERTY(QString scriptName READ stateChangeScriptName WRITE setStateChangeScriptName)
 
 public:
     QDeclarativeScriptAction(QObject *parent=0);

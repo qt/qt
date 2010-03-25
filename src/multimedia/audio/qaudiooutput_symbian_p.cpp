@@ -185,9 +185,10 @@ void QAudioOutputPrivate::suspend()
 
         const qint64 samplesWritten = SymbianAudio::Utils::bytesToSamples(
                                           m_format, m_bytesWritten);
-        m_bytesWritten = 0;
 
         const qint64 samplesPlayed = getSamplesPlayed();
+
+        m_bytesWritten = 0;
 
         // CMMFDevSound::Pause() is not guaranteed to work correctly in all
         // implementations, for play-mode DevSound sessions.  We therefore

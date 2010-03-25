@@ -138,6 +138,7 @@ these libraries, the JavaScript programmer can indicate a particular file is a
 stateless library through the use of a pragma, as shown in the following example.
 
 \code
+// factorial.js
 .pragma library
 
 function factorial(a) {

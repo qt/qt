@@ -361,22 +361,6 @@ QVariant QDeclarativeContext::contextProperty(const QString &name) const
     return value;
 }
 
-bool QDeclarativeContext::isSafeOrigin(const QUrl &src) const
-{
-    if (src.isRelative())
-        return true;
-    if (src.scheme()==QLatin1String("https"))
-        return true;
-
-    QUrl base = baseUrl();
-    if (src.host() == base.host() && src.port() == base.port()) // including files (with no host)
-        return true;
-
-    qWarning() << src << "is not a safe origin from" << base;
-
-    return false;
-}
-
 /*!
     Resolves the URL \a src relative to the URL of the
     containing component.
@@ -738,6 +722,21 @@ void QDeclarativeContextData::setIdPropertyData(QDeclarativeIntegerCache *data)
 
     idValueCount = data->count();
     idValues = new ContextGuard[idValueCount];
+}
+
+QString QDeclarativeContextData::findObjectId(const QObject *obj) const
+{
+    if (!idValues || !propertyNames)
+        return QString();
+
+    for (int i=0; i<idValueCount; i++) {
+        if (idValues[i] == obj)
+            return propertyNames->findId(i);
+    }    
+
+    if (linkedContext)
+        return linkedContext->findObjectId(obj);
+    return QString();
 }
 
 QDeclarativeContext *QDeclarativeContextData::asQDeclarativeContext()
