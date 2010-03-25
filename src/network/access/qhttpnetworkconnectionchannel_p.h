@@ -65,6 +65,7 @@
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qhttpnetworkreply_p.h>
 
+#include "qhttpnetworkconnection_p.h"
 
 #ifndef QT_NO_HTTP
 
