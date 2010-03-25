@@ -31,6 +31,7 @@ SOURCES += \
     $$PWD/qdeclarativerewrite.cpp \
     $$PWD/qdeclarativevaluetype.cpp \
     $$PWD/qdeclarativecompiledbindings.cpp \
+    $$PWD/qdeclarativefastproperties.cpp \
     $$PWD/qdeclarativexmlhttprequest.cpp \
     $$PWD/qdeclarativesqldatabase.cpp \
     $$PWD/qmetaobjectbuilder.cpp \
@@ -103,6 +104,7 @@ HEADERS += \
     $$PWD/qbitfield_p.h \
     $$PWD/qdeclarativevaluetype_p.h \
     $$PWD/qdeclarativecompiledbindings_p.h \
+    $$PWD/qdeclarativefastproperties_p.h \
     $$PWD/qdeclarativexmlhttprequest_p.h \
     $$PWD/qdeclarativesqldatabase_p.h \
     $$PWD/qmetaobjectbuilder_p.h \

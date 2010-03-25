@@ -62,6 +62,8 @@
 
 #include <private/qdeclarativestate_p.h>
 #include <private/qdeclarativenullablevalue_p_p.h>
+#include <private/qdeclarativenotifier_p.h>
+
 #include <qdeclarative.h>
 #include <qdeclarativecontext.h>
 
@@ -159,6 +161,10 @@ public:
     static void transform_append(QDeclarativeListProperty<QGraphicsTransform> *list, QGraphicsTransform *);
     static QGraphicsTransform *transform_at(QDeclarativeListProperty<QGraphicsTransform> *list, int);
     static void transform_clear(QDeclarativeListProperty<QGraphicsTransform> *list);
+
+    // Accelerated property accessors
+    QDeclarativeNotifier parentNotifier;
+    static void parentProperty(QObject *o, void *rv, QDeclarativeNotifierEndpoint *e);
 
     QDeclarativeAnchors *anchors() {
         if (!_anchors) {

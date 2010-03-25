@@ -1554,6 +1554,14 @@ void QDeclarativeItemPrivate::transform_clear(QDeclarativeListProperty<QGraphics
     }
 }
 
+void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeNotifierEndpoint *e) 
+{
+    QDeclarativeItem *item = static_cast<QDeclarativeItem*>(o);
+    if (e) 
+        e->connect(&item->d_func()->parentNotifier);
+    *((QDeclarativeItem **)rv) = item->parentItem();
+}
+
 /*!
     \qmlproperty list<Object> Item::data
     \default
@@ -2539,10 +2547,11 @@ bool QDeclarativeItem::sceneEvent(QEvent *event)
 QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
-    Q_D(const QDeclarativeItem);
+    Q_D(QDeclarativeItem);
     switch (change) {
     case ItemParentHasChanged:
         emit parentChanged(parentItem());
+        d->parentNotifier.notify();
         break;
     case ItemChildAddedChange:
     case ItemChildRemovedChange:
