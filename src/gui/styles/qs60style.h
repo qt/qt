@@ -58,7 +58,8 @@ enum {
     PM_FrameCornerWidth = QStyle::PM_CustomBase + 1,
     PM_FrameCornerHeight,
     PM_BoldLineWidth,
-    PM_ThinLineWidth
+    PM_ThinLineWidth,
+    PM_MessageBoxHeight
     };
 
 class QS60StylePrivate;
