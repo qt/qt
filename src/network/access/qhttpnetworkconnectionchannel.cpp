@@ -58,6 +58,28 @@ QT_BEGIN_NAMESPACE
 
 // TODO: Put channel specific stuff here so it does not polute qhttpnetworkconnection.cpp
 
+QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
+    : socket(0)
+    , state(IdleState)
+    , reply(0)
+    , written(0)
+    , bytesTotal(0)
+    , resendCurrent(false)
+    , lastStatus(0)
+    , pendingEncrypt(false)
+    , reconnectAttempts(2)
+    , authMehtod(QAuthenticatorPrivate::None)
+    , proxyAuthMehtod(QAuthenticatorPrivate::None)
+#ifndef QT_NO_OPENSSL
+    , ignoreAllSslErrors(false)
+#endif
+    , pipeliningSupported(PipeliningSupportUnknown)
+    , connection(0)
+{
+    // Inlining this function in the header leads to compiler error on
+    // release-armv5, on at least timebox 9.2 and 10.1.
+}
+
 void QHttpNetworkConnectionChannel::init()
 {
 #ifndef QT_NO_OPENSSL
@@ -994,7 +1016,15 @@ void QHttpNetworkConnectionChannel::_q_encryptedBytesWritten(qint64 bytes)
         sendRequest();
     // otherwise we do nothing
 }
+
 #endif
+
+void QHttpNetworkConnectionChannel::setConnection(QHttpNetworkConnection *c)
+{
+    // Inlining this function in the header leads to compiler error on
+    // release-armv5, on at least timebox 9.2 and 10.1.
+    connection = c;
+}
 
 QT_END_NAMESPACE
 
