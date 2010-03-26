@@ -59,8 +59,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeImageBase : public QDeclarativeItem
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(bool asynchronous READ asynchronous WRITE setAsynchronous NOTIFY asynchronousChanged)
 
-    Q_PROPERTY(int sourceWidth READ sourceWidth WRITE setSourceWidth NOTIFY sourceSizeChanged)
-    Q_PROPERTY(int sourceHeight READ sourceHeight WRITE setSourceHeight NOTIFY sourceSizeChanged)
+    Q_PROPERTY(QSize sourceSize READ sourceSize WRITE setSourceSize NOTIFY sourceSizeChanged)
 
 public:
     ~QDeclarativeImageBase();
@@ -74,10 +73,8 @@ public:
     bool asynchronous() const;
     void setAsynchronous(bool);
 
-    void setSourceWidth(int);
-    int sourceWidth() const;
-    void setSourceHeight(int);
-    int sourceHeight() const;
+    void setSourceSize(const QSize&);
+    QSize sourceSize() const;
 
 Q_SIGNALS:
     void sourceChanged(const QUrl &);

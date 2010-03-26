@@ -257,7 +257,7 @@ void tst_qdeclarativeimage::pixmap()
 
 void tst_qdeclarativeimage::svg()
 {
-    QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/heart.svg\"; sourceWidth: 300; sourceHeight: 300 }";
+    QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/heart.svg\"; sourceSize.width: 300; sourceSize.height: 300 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -268,8 +268,7 @@ void tst_qdeclarativeimage::svg()
     QCOMPARE(obj->height(), 500.0);
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart.png"));
 
-    obj->setSourceWidth(200);
-    obj->setSourceHeight(200);
+    obj->setSourceSize(QSize(200,200));
 
     QCOMPARE(obj->pixmap().width(), 200);
     QCOMPARE(obj->pixmap().height(), 200);
@@ -282,7 +281,7 @@ void tst_qdeclarativeimage::svg()
 
 void tst_qdeclarativeimage::big()
 {
-    QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/big.jpeg\"; sourceWidth: 256; sourceHeight: 256 }";
+    QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/big.jpeg\"; sourceSize.width: 256; sourceSize.height: 256 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());

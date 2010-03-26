@@ -267,28 +267,27 @@ qreal QDeclarativeImage::paintedHeight() const
 */
 
 /*!
-    \qmlproperty int Image::sourceWidth
-    \qmlproperty int Image::sourceHeight
+    \qmlproperty QSize Image::sourceSize
 
-    These properties are the size of the loaded image, in pixels.
+    This properties is the size of the loaded image, in pixels.
 
-    If you set these properties explicitly, you can to control the storage
+    If you set this property explicitly, you can to control the storage
     used by a loaded image. The image will be scaled down if its intrinsic size
-    is greater than these values.
+    is greater than this value.
 
     Unlike setting the width and height properties, which merely scale the painting
-    of the image, these properties affect the number of pixels stored.
+    of the image, this property affects the number of pixels stored.
 
-    \e{Changing these properties dynamically will lead to the image source being reloaded,
+    \e{Changing this property dynamically will lead to the image source being reloaded,
     potentially even from the network if it is not in the disk cache.}
 
-    If the source is an instrinsically scalable image (eg. SVG), these properties
-    determine the size of the loaded image regardless of intrinsic size. You should
-    avoid changing these properties dynamically - rendering an SVG is \e slow compared
+    If the source is an instrinsically scalable image (eg. SVG), this property
+    determines the size of the loaded image regardless of intrinsic size. You should
+    avoid changing this property dynamically - rendering an SVG is \e slow compared
     to an image.
 
     If the source is a non-scalable image (eg. JPEG), the loaded image will
-    be no greater than these properties specify. For some formats (currently only JPEG),
+    be no greater than this property specifies. For some formats (currently only JPEG),
     the whole image will never actually be loaded into memory.
 */
 

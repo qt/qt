@@ -116,40 +116,22 @@ void QDeclarativeImageBase::setSource(const QUrl &url)
         load();
 }
 
-void QDeclarativeImageBase::setSourceWidth(int w)
+void QDeclarativeImageBase::setSourceSize(const QSize& size)
 {
     Q_D(QDeclarativeImageBase);
-    if (d->sourcewidth == w)
+    if (d->sourcesize == size)
         return;
-    d->sourcewidth = w;
+    d->sourcesize = size;
     emit sourceSizeChanged();
     if (isComponentComplete())
         load();
 }
 
-int QDeclarativeImageBase::sourceWidth() const
+QSize QDeclarativeImageBase::sourceSize() const
 {
     Q_D(const QDeclarativeImageBase);
-    return d->sourcewidth <= 0 ? implicitWidth() : d->sourcewidth;
+    return d->sourcesize.isValid() ? d->sourcesize : QSize(implicitWidth(),implicitHeight());
 }
-
-void QDeclarativeImageBase::setSourceHeight(int h)
-{
-    Q_D(QDeclarativeImageBase);
-    if (d->sourceheight == h)
-        return;
-    d->sourceheight = h;
-    emit sourceSizeChanged();
-    if (isComponentComplete())
-        load();
-}
-
-int QDeclarativeImageBase::sourceHeight() const
-{
-    Q_D(const QDeclarativeImageBase);
-    return d->sourceheight <= 0 ? implicitHeight() : d->sourceheight;
-}
-
 
 void QDeclarativeImageBase::load()
 {
@@ -169,8 +151,8 @@ void QDeclarativeImageBase::load()
         update();
     } else {
         d->status = Loading;
-        int reqwidth = d->sourcewidth;
-        int reqheight = d->sourceheight;
+        int reqwidth = d->sourcesize.width();
+        int reqheight = d->sourcesize.width();
         QSize impsize;
         QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, &impsize, d->async, reqwidth, reqheight);
         if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
@@ -205,7 +187,7 @@ void QDeclarativeImageBase::load()
                 if (d->status == Loading)
                     d->status = Ready;
 
-                if (d->sourcewidth <= 0 || d->sourceheight <= 0)
+                if (!d->sourcesize.isValid())
                     emit sourceSizeChanged();
             } else {
                 d->status = Error;
@@ -228,7 +210,7 @@ void QDeclarativeImageBase::requestFinished()
     d->pendingPixmapCache = false;
 
     QSize impsize;
-    if (QDeclarativePixmapCache::get(d->url, &d->pix, &impsize, d->async, d->sourcewidth, d->sourceheight) != QDeclarativePixmapReply::Ready)
+    if (QDeclarativePixmapCache::get(d->url, &d->pix, &impsize, d->async, d->sourcesize.width(), d->sourcesize.height()) != QDeclarativePixmapReply::Ready)
         d->status = Error;
     setImplicitWidth(impsize.width());
     setImplicitHeight(impsize.height());
@@ -238,7 +220,7 @@ void QDeclarativeImageBase::requestFinished()
     d->progress = 1.0;
     emit statusChanged(d->status);
     emit progressChanged(1.0);
-    if (d->sourcewidth <= 0 || d->sourceheight <= 0)
+    if (!d->sourcesize.isValid())
         emit sourceSizeChanged();
     pixmapChange();
     update();
