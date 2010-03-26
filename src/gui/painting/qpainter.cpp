@@ -5720,6 +5720,16 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, const QPointF *posit
 
     QFontEngine *fontEngine = state->font.d->engineForScript(QUnicodeTables::Common);
 
+    while (fontEngine->type() == QFontEngine::Multi) {
+        // Pick engine based on first glyph in array if we are using a multi engine.
+        // (all glyphs must be for same font)
+        int engineIdx = 0;
+        if (glyphCount > 0)
+            engineIdx = glyphArray[0] >> 24;
+
+        fontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
+    }
+
     QVarLengthArray<QFixedPoint, 128> positions;
     for (int i=0; i<glyphCount; ++i) {
         QFixedPoint fp = QFixedPoint::fromPointF(positionArray[i]);

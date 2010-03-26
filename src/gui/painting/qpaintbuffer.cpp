@@ -557,11 +557,7 @@ QString QPaintBuffer::commandDescription(int command) const
         debug << "Cmd_Translate:" << delta;
         break; }
     case QPaintBufferPrivate::Cmd_DrawStaticText: {
-        QPointF delta(d_ptr->floats.at(cmd.extra), d_ptr->floats.at(cmd.extra+1));
-        QVariantList variants(d_ptr->variants.at(cmd.offset).value<QVariantList>());
-
-        QStaticText text(variants.at(0).value<QStaticText>());
-        debug << "Cmd_DrawStaticText:" << text.text();
+        debug << "Cmd_DrawStaticText";
         break; }
     }
 
@@ -1272,13 +1268,14 @@ void QPaintBufferEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
 
 void QPaintBufferEngine::drawStaticTextItem(QStaticTextItem *staticTextItem)
 {
-    QString text = QString(staticTextItem->chars, staticTextItem->numChars);
-
-    QStaticText staticText(text);
-    staticText.prepare(state()->matrix, staticTextItem->font);
-
     QVariantList variants;
-    variants << QVariant(staticTextItem->font) << QVariant::fromValue(staticText);
+
+    variants << QVariant(staticTextItem->font);
+    for (int i=0; i<staticTextItem->numGlyphs; ++i) {
+        variants.append(staticTextItem->glyphs[i]);
+        variants.append(staticTextItem->glyphPositions[i].toPointF());
+    }
+
     buffer->addCommand(QPaintBufferPrivate::Cmd_DrawStaticText, QVariant(variants));
 }
 
@@ -1761,11 +1758,19 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
             
             QVariantList variants(d->variants.at(cmd.offset).value<QVariantList>());
             
-            QFont font(variants.at(0).value<QFont>());
-            QStaticText text(variants.at(0).value<QStaticText>());
-            
+            QFont font = variants.at(0).value<QFont>();
+
+            QVector<quint32> glyphs;
+            QVector<QPointF> positions;
+
+            for (int i=0; i<(variants.size() - 1) / 2; ++i) {
+                glyphs.append(variants.at(i*2 + 1).toUInt());
+                positions.append(variants.at(i*2 + 2).toPointF());
+            }
+
             painter->setFont(font);
-            painter->drawStaticText(QPointF(0, 0), text);
+
+            qt_draw_glyphs(painter, glyphs.constData(), positions.constData(), glyphs.size());
             
         break;
     }
