@@ -81,6 +81,10 @@ private slots:
     void transformationChanged();    
 
     void plainTextVsRichText();
+
+    void setPenPlainText();
+    void setPenRichText();
+    void richTextOverridesPen();
 };
 
 void tst_QStaticText::init()
@@ -516,6 +520,92 @@ void tst_QStaticText::plainTextVsRichText()
 #endif
 
     QCOMPARE(imagePlainText, imageRichText);
+}
+
+void tst_QStaticText::setPenPlainText()
+{
+    QFont font = QApplication::font();
+    font.setStyleStrategy(QFont::NoAntialias);
+
+    QFontMetricsF fm(font);
+    QPixmap image(qCeil(fm.width("XXXXX")), qCeil(fm.height()));
+    image.fill(Qt::white);
+    {
+        QPainter p(&image);
+        p.setFont(font);
+        p.setPen(Qt::green);
+
+        QStaticText staticText("XXXXX");
+        staticText.setTextFormat(Qt::PlainText);
+        p.drawStaticText(0, fm.ascent(), staticText);
+    }
+
+    QImage img = image.toImage();
+    for (int x=0; x<img.width(); ++x) {
+        for (int y=0; y<img.height(); ++y) {
+            QRgb pixel = img.pixel(x, y);
+            QVERIFY(pixel == QColor(Qt::white).rgba()
+                    || pixel == QColor(Qt::green).rgba());
+        }
+    }
+}
+
+void tst_QStaticText::setPenRichText()
+{
+    QFont font = QApplication::font();
+    font.setStyleStrategy(QFont::NoAntialias);
+
+    QFontMetricsF fm(font);
+    QPixmap image(qCeil(fm.width("XXXXX")), qCeil(fm.height()));
+    image.fill(Qt::white);
+    {
+        QPainter p(&image);
+        p.setFont(font);
+        p.setPen(Qt::green);
+
+        QStaticText staticText;
+        staticText.setText("<html><body>XXXXX</body></html>");
+        staticText.setTextFormat(Qt::RichText);
+        p.drawStaticText(0, fm.ascent(), staticText);
+    }
+
+    QImage img = image.toImage();
+    for (int x=0; x<img.width(); ++x) {
+        for (int y=0; y<img.height(); ++y) {
+            QRgb pixel = img.pixel(x, y);
+            QVERIFY(pixel == QColor(Qt::white).rgba()
+                    || pixel == QColor(Qt::green).rgba());
+        }
+    }
+}
+
+void tst_QStaticText::richTextOverridesPen()
+{
+    QFont font = QApplication::font();
+    font.setStyleStrategy(QFont::NoAntialias);
+
+    QFontMetricsF fm(font);
+    QPixmap image(qCeil(fm.width("XXXXX")), qCeil(fm.height()));
+    image.fill(Qt::white);
+    {
+        QPainter p(&image);
+        p.setFont(font);
+        p.setPen(Qt::green);
+
+        QStaticText staticText;
+        staticText.setText("<html><body><font color=\"#ff0000\">XXXXX</font></body></html>");
+        staticText.setTextFormat(Qt::RichText);
+        p.drawStaticText(0, fm.ascent(), staticText);
+    }
+
+    QImage img = image.toImage();
+    for (int x=0; x<img.width(); ++x) {
+        for (int y=0; y<img.height(); ++y) {
+            QRgb pixel = img.pixel(x, y);
+            QVERIFY(pixel == QColor(Qt::white).rgba()
+                    || pixel == QColor(Qt::red).rgba());
+        }
+    }
 }
 
 QTEST_MAIN(tst_QStaticText)

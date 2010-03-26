@@ -5901,7 +5901,7 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     QColor currentColor = oldPen.color();
     for (int i=0; i<staticText_d->itemCount; ++i) {
         QStaticTextItem *item = staticText_d->items + i;
-        if (currentColor != item->color) {
+        if (item->color.isValid() && currentColor != item->color) {
             setPen(item->color);
             currentColor = item->color;
         }

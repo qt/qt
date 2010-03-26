@@ -388,8 +388,15 @@ namespace {
                   m_expectedItemCount(expectedItemCount),
                   m_expectedGlyphCount(expectedGlyphCount),
                   m_glyphPool(glyphPool),
-                  m_positionPool(positionPool)
+                  m_positionPool(positionPool),
+                  m_dirtyPen(false)
         {
+        }
+
+        virtual void updateState(const QPaintEngineState &newState)
+        {
+            if (newState.state() & QPaintEngine::DirtyPen)
+                m_dirtyPen = true;
         }
 
         virtual void drawTextItem(const QPointF &position, const QTextItem &textItem)
@@ -412,7 +419,8 @@ namespace {
             currentItem->numGlyphs = ti.glyphs.numGlyphs;
             currentItem->glyphs = m_glyphPool;
             currentItem->glyphPositions = m_positionPool;
-            currentItem->color = state->pen().color();
+            if (m_dirtyPen)
+                currentItem->color = state->pen().color();
 
             QTransform matrix = state->transform();
             matrix.translate(position.x(), position.y());
@@ -435,7 +443,6 @@ namespace {
 
         virtual bool begin(QPaintDevice *)  { return true; }
         virtual bool end() { return true; }
-        virtual void updateState(const QPaintEngineState &) {}
         virtual void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) {}
         virtual Type type() const
         {
@@ -461,6 +468,8 @@ namespace {
 
         glyph_t *m_glyphPool;
         QFixedPoint *m_positionPool;
+
+        bool m_dirtyPen;
     };
 
     class DrawTextItemDevice: public QPaintDevice
