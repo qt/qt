@@ -3041,6 +3041,10 @@ void Configure::generateConfigfiles()
         if(dictionary["S60"] == "no")               qconfigList += "QT_NO_S60";
         if(dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
+        if(dictionary["OPENGL_ES_CM"] == "no" &&
+           dictionary["OPENGL_ES_2"]  == "no" &&
+           dictionary["OPENVG"]       == "no")      qconfigList += "QT_NO_EGL";
+
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
            dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
 
