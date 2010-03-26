@@ -2074,6 +2074,7 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     JSC::JSValue slot;
     JSC::JSValue senderWrapper;
     int signalIndex = -1;
+    QScript::APIShim shim(engine);
     for (int i = 0; i < connections.size(); ++i) {
         const QVector<QObjectConnection> &cs = connections.at(i);
         for (int j = 0; j < cs.size(); ++j) {
