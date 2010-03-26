@@ -118,6 +118,11 @@ public:
     void init();
     void paintText(const QPointF &pos, QPainter *p);
 
+    void invalidate()
+    {
+        needsRelayout = true;
+    }
+
     QAtomicInt ref;                      // 4 bytes per text
 
     QString text;                        // 4 bytes per text
@@ -132,6 +137,7 @@ public:
     glyph_t *glyphPool;                  // 4 bytes per text
     QFixedPoint *positionPool;           // 4 bytes per text
 
+    unsigned char needsRelayout : 1;
     unsigned char useBackendOptimizations : 1; // 1 byte per text
     unsigned char textFormat              : 2;
                                          // ================

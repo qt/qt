@@ -99,19 +99,26 @@ QT_BEGIN_NAMESPACE
     point with no boundaries, and also when QPainter::drawText() is called with a bounding 
     rectangle. 
 
-    If a bounding rectangle is not required, create a QStaticText object without setting a maximum 
-    size. The text will then occupy a single line. 
+    If a bounding rectangle is not required, create a QStaticText object without setting a preferred
+    text width. The text will then occupy a single line.
 
-    If you set a maximum size on the QStaticText object, this will bound the text. The text will
-    be formatted so that no line exceeds the given width. When the object is painted, it will 
-    be clipped at the given size. The position of the text is decided by the argument
-    passed to QPainter::drawStaticText() and can change from call to call with a minimal impact
-    on performance.
+    If you set a text width on the QStaticText object, this will bound the text. The text will
+    be formatted so that no line exceeds the given width. The text width set for QStaticText will
+    not automatically be used for clipping. To achieve clipping in addition to line breaks, use
+    QPainter::setClipRect(). The position of the text is decided by the argument passed to
+    QPainter::drawStaticText() and can change from call to call with a minimal impact on
+    performance.
 
     QStaticText will attempt to guess the format of the input text using Qt::mightBeRichText().
     To force QStaticText to display its contents as either plain text or rich text, use the
     function QStaticText::setTextFormat() and pass in, respectively, Qt::PlainText and
     Qt::RichText.
+
+    If it's the first time the static text is drawn, or if the static text, or the painter's font
+    or matrix have been altered since the last time it was drawn, the text's layout has to be
+    recalculated. This will impose an overhead on the QPainter::drawStaticText() call where the
+    relayout occurs. To avoid this overhead in the paint event, you can call prepare() ahead of
+    time to ensure that the layout is calculated.
 
     \sa QPainter::drawText(), QPainter::drawStaticText(), QTextLayout, QTextDocument
 */
@@ -147,7 +154,7 @@ QStaticText::QStaticText(const QString &text)
     : data(new QStaticTextPrivate)
 {    
     data->text = text;
-    data->init();
+    data->invalidate();
 }
 
 /*!
@@ -176,17 +183,17 @@ void QStaticText::detach()
 }
 
 /*!
-  Prepares the QStaticText object for being painted with the given \a matrix and the given
-  \a font to avoid overhead when the actual drawStaticText() call is made.
+  Prepares the QStaticText object for being painted with the given \a matrix and the given \a font
+  to avoid overhead when the actual drawStaticText() call is made.
 
-  When drawStaticText() is called, the layout of the QStaticText will be recalculated if the
-  painter's font or matrix is different from the one used for the currently cached layout. By
-  default, QStaticText will use a default constructed QFont and an identity matrix to create
-  its layout.
+  When drawStaticText() is called, the layout of the QStaticText will be recalculated if any part
+  of the QStaticText object has changed since the last time it was drawn. It will also be
+  recalculated if the painter's font or matrix are not the same as when the QStaticText was last
+  drawn.
 
-  To avoid the overhead of creating the layout the first time you draw the QStaticText with
-  a painter whose matrix or font are different from the defaults, you can use the prepare()
-  function and pass in the matrix and font you expect to use when drawing the text.
+  To avoid the overhead of creating the layout the first time you draw the QStaticText after
+  making changes, you can use the prepare() function and pass in the \a matrix and \a font you
+  expect to use when drawing the text.
 
   \sa QPainter::setFont(), QPainter::setMatrix()
 */
@@ -231,7 +238,7 @@ bool QStaticText::operator!=(const QStaticText &other) const
 /*!
     Sets the text of the QStaticText to \a text.
 
-    \note This function will cause the layout of the text to be recalculated.
+    \note This function will cause the layout of the text to require recalculation.
 
     \sa text()
 */
@@ -239,7 +246,7 @@ void QStaticText::setText(const QString &text)
 {
     detach();
     data->text = text;
-    data->init();
+    data->invalidate();
 }
 
 /*!
@@ -249,7 +256,7 @@ void QStaticText::setText(const QString &text)
    displayed as is, whereas it will be interpreted as HTML if the format is Qt::RichText. HTML tags
    that alter the font of the text, its color, or its layout are supported by QStaticText.
 
-   \note This function will cause the layout of the text to be recalculated.
+   \note This function will cause the layout of the text to require recalculation.
 
    \sa textFormat(), setText(), text()
 */
@@ -257,7 +264,7 @@ void QStaticText::setTextFormat(Qt::TextFormat textFormat)
 {
     detach();
     data->textFormat = textFormat;
-    data->init();
+    data->invalidate();
 }
 
 /*!
@@ -288,7 +295,7 @@ QString QStaticText::text() const
 
   The default is QStaticText::ModerateCaching.
 
-  \note This function will cause the layout of the text to be recalculated.
+  \note This function will cause the layout of the text to require recalculation.
 
   \sa performanceHint()
 */
@@ -300,7 +307,7 @@ void QStaticText::setPerformanceHint(PerformanceHint performanceHint)
     }
     detach();
     data->useBackendOptimizations = (performanceHint == AggressiveCaching);
-    data->init();
+    data->invalidate();
 }
 
 /*!
@@ -322,7 +329,7 @@ QStaticText::PerformanceHint QStaticText::performanceHint() const
 
     Use size() to get the actual size of the text.
 
-    \note This function will cause the layout of the text to be recalculated.
+    \note This function will cause the layout of the text to require recalculation.
 
     \sa textWidth(), size()
 */
@@ -330,7 +337,7 @@ void QStaticText::setTextWidth(qreal textWidth)
 {
     detach();
     data->textWidth = textWidth;
-    data->init();
+    data->invalidate();
 }
 
 /*!
@@ -350,18 +357,20 @@ qreal QStaticText::textWidth() const
 */
 QSizeF QStaticText::size() const
 {
+    if (data->needsRelayout)
+        data->init();
     return data->actualSize;
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
         : items(0), itemCount(0), glyphPool(0), positionPool(0), textWidth(-1.0),
-          useBackendOptimizations(false), textFormat(Qt::AutoText)
+          needsRelayout(true), useBackendOptimizations(false), textFormat(Qt::AutoText)
 {
 }
 
 QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
     : text(other.text), font(other.font), textWidth(other.textWidth), matrix(other.matrix),
-      items(0), itemCount(0), glyphPool(0), positionPool(0),
+      items(0), itemCount(0), glyphPool(0), positionPool(0), needsRelayout(true),
       useBackendOptimizations(other.useBackendOptimizations), textFormat(other.textFormat)
 {
 }
@@ -634,6 +643,7 @@ void QStaticTextPrivate::init()
         paintText(QPointF(0, 0), &painter);
     }
 
+    needsRelayout = false;
 }
 
 QT_END_NAMESPACE

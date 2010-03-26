@@ -5864,7 +5864,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
 
     // If the transform is not identical to the text transform,
     // we have to relayout the text (for other transformations than plain translation)
-    bool staticTextNeedsReinit = false;
+    bool staticTextNeedsReinit = staticText_d->needsRelayout;
     if (staticText_d->matrix != d->state->matrix) {
         staticText_d->matrix = d->state->matrix;
         staticTextNeedsReinit = true;

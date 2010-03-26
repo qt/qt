@@ -81,7 +81,7 @@ public:
 
     QSizeF size() const;
 
-    void prepare(const QTransform &matrix, const QFont &font);
+    void prepare(const QTransform &matrix = QTransform(), const QFont &font = QFont());
 
     void setPerformanceHint(PerformanceHint performanceHint);
     PerformanceHint performanceHint() const;
