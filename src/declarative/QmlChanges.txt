@@ -1,6 +1,7 @@
 =============================================================================
 The changes below are pre Qt 4.7.0 beta
 
+Removed Q-prefix from validators (IntValidator, DoubleValidator, and RegExpValidator)
 PathView: offset property now uses range 0-1.0 rather than 0-100
 ListView, GridView::positionViewAtIndex() gained a 'mode' parameter
 Removed Qt.playSound (replaced by SoundEffect element)
