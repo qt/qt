@@ -194,7 +194,7 @@ void tst_QDeclarativePathView::initValues()
     QCOMPARE(obj->model(), QVariant());
     QCOMPARE(obj->currentIndex(), 0);
     QCOMPARE(obj->offset(), 0.);
-    QCOMPARE(obj->snapPosition(), 0.);
+    QCOMPARE(obj->preferredHighlightBegin(), 0.);
     QCOMPARE(obj->dragMargin(), 0.);
     QCOMPARE(obj->count(), 0);
     QCOMPARE(obj->pathItemCount(), -1);
@@ -255,7 +255,7 @@ void tst_QDeclarativePathView::pathview2()
     QVERIFY(obj->model() != QVariant());
     QCOMPARE(obj->currentIndex(), 0);
     QCOMPARE(obj->offset(), 0.);
-    QCOMPARE(obj->snapPosition(), 0.);
+    QCOMPARE(obj->preferredHighlightBegin(), 0.);
     QCOMPARE(obj->dragMargin(), 0.);
     QCOMPARE(obj->count(), 8);
     QCOMPARE(obj->pathItemCount(), 10);
@@ -273,7 +273,7 @@ void tst_QDeclarativePathView::pathview3()
     QVERIFY(obj->model() != QVariant());
     QCOMPARE(obj->currentIndex(), 0);
     QCOMPARE(obj->offset(), 1.0);
-    QCOMPARE(obj->snapPosition(), 0.5);
+    QCOMPARE(obj->preferredHighlightBegin(), 0.5);
     QCOMPARE(obj->dragMargin(), 24.);
     QCOMPARE(obj->count(), 8);
     QCOMPARE(obj->pathItemCount(), 4);
@@ -534,22 +534,25 @@ void tst_QDeclarativePathView::propertyChanges()
     QDeclarativePathView *pathView = canvas->rootObject()->findChild<QDeclarativePathView*>("pathView");
     QVERIFY(pathView);
 
-    QSignalSpy snapPositionSpy(pathView, SIGNAL(snapPositionChanged()));
+    QSignalSpy snapPositionSpy(pathView, SIGNAL(preferredHighlightBeginChanged()));
     QSignalSpy dragMarginSpy(pathView, SIGNAL(dragMarginChanged()));
 
-    QCOMPARE(pathView->snapPosition(), 0.1);
+    QCOMPARE(pathView->preferredHighlightBegin(), 0.1);
     QCOMPARE(pathView->dragMargin(), 5.0);
 
-    pathView->setSnapPosition(0.4);
+    pathView->setPreferredHighlightBegin(0.4);
+    pathView->setPreferredHighlightEnd(0.4);
     pathView->setDragMargin(20.0);
 
-    QCOMPARE(pathView->snapPosition(), 0.4);
+    QCOMPARE(pathView->preferredHighlightBegin(), 0.4);
+    QCOMPARE(pathView->preferredHighlightEnd(), 0.4);
     QCOMPARE(pathView->dragMargin(), 20.0);
 
     QCOMPARE(snapPositionSpy.count(), 1);
     QCOMPARE(dragMarginSpy.count(), 1);
 
-    pathView->setSnapPosition(0.4);
+    pathView->setPreferredHighlightBegin(0.4);
+    pathView->setPreferredHighlightEnd(0.4);
     pathView->setDragMargin(20.0);
 
     QCOMPARE(snapPositionSpy.count(), 1);

@@ -44,6 +44,7 @@
 
 #include <qdeclarativestate_p.h>
 #include <qdeclarativeopenmetaobject_p.h>
+#include <qdeclarativeeasefollow_p.h>
 #include <QDebug>
 #include <QEvent>
 #include <qlistmodelinterface_p.h>
@@ -146,20 +147,23 @@ void QDeclarativePathViewPrivate::updateMappedRange()
         mappedRange = 1.0;
 }
 
-qreal QDeclarativePathViewPrivate::positionOfIndex(int index) const
+qreal QDeclarativePathViewPrivate::positionOfIndex(qreal index) const
 {
     qreal pos = -1.0;
 
     if (model && index >= 0 && index < model->count()) {
-        qreal globalPos = qreal(index) + offset;
+        qreal start = 0.0;
+        if (haveHighlightRange && highlightRangeMode != QDeclarativePathView::NoHighlightRange)
+            start = highlightRangeStart;
+        qreal globalPos = index + offset;
         globalPos = qmlMod(globalPos, qreal(model->count())) / model->count();
         if (pathItems != -1 && pathItems < model->count()) {
-            globalPos += snapPos * mappedRange;
+            globalPos += start * mappedRange;
             globalPos = qmlMod(globalPos, 1.0);
             if (globalPos < mappedRange)
                 pos = globalPos / mappedRange;
         } else {
-            pos = qmlMod(globalPos + snapPos, 1.0);
+            pos = qmlMod(globalPos + start, 1.0);
         }
     }
 
@@ -169,6 +173,9 @@ qreal QDeclarativePathViewPrivate::positionOfIndex(int index) const
 void QDeclarativePathViewPrivate::createHighlight()
 {
     Q_Q(QDeclarativePathView);
+    if (!q->isComponentComplete())
+        return;
+
     bool changed = false;
     if (highlightItem) {
         delete highlightItem;
@@ -203,10 +210,67 @@ void QDeclarativePathViewPrivate::createHighlight()
 void QDeclarativePathViewPrivate::updateHighlight()
 {
     Q_Q(QDeclarativePathView);
-    if (!q->isComponentComplete())
+    if (!q->isComponentComplete() || !isValid())
         return;
-    if (highlightItem)
-        updateItem(highlightItem, snapPos);
+    if (highlightItem) {
+        if (haveHighlightRange && highlightRangeMode == QDeclarativePathView::StrictlyEnforceRange) {
+            updateItem(highlightItem, highlightRangeStart);
+        } else {
+            qreal target = currentIndex;
+
+            tl.reset(moveHighlight);
+            moveHighlight.setValue(highlightPosition);
+
+            const int duration = 300;
+
+            if (target - highlightPosition > model->count()/2) {
+                highlightUp = false;
+                qreal distance = model->count() - target + highlightPosition;
+                tl.move(moveHighlight, 0.0, QEasingCurve(QEasingCurve::InQuad), int(duration * highlightPosition / distance));
+                tl.set(moveHighlight, model->count()-0.01);
+                tl.move(moveHighlight, target, QEasingCurve(QEasingCurve::OutQuad), int(duration * (model->count()-target) / distance));
+            } else if (target - highlightPosition <= -model->count()/2) {
+                highlightUp = true;
+                qreal distance = model->count() - highlightPosition + target;
+                tl.move(moveHighlight, model->count()-0.01, QEasingCurve(QEasingCurve::InQuad), int(duration * (model->count()-highlightPosition) / distance));
+                tl.set(moveHighlight, 0.0);
+                tl.move(moveHighlight, target, QEasingCurve(QEasingCurve::OutQuad), int(duration * target / distance));
+            } else {
+                highlightUp = highlightPosition - target < 0;
+                tl.move(moveHighlight, target, QEasingCurve(QEasingCurve::InOutQuad), duration);
+            }
+        }
+    }
+}
+
+void QDeclarativePathViewPrivate::setHighlightPosition(qreal pos)
+{
+    if (pos != highlightPosition) {
+        qreal start = 0.0;
+        qreal end = 1.0;
+        if (haveHighlightRange && highlightRangeMode != QDeclarativePathView::NoHighlightRange) {
+            start = highlightRangeStart;
+            end = highlightRangeEnd;
+        }
+
+        qreal range = qreal(model->count());
+        // calc normalized position of highlight relative to offset
+        qreal relativeHighlight = qmlMod(pos + offset, range) / range;
+
+        if (!highlightUp && relativeHighlight > end * mappedRange) {
+            qreal diff = 1.0 - relativeHighlight;
+            setOffset(offset + diff * range);
+        } else if (highlightUp && relativeHighlight >= (end - start) * mappedRange) {
+            qreal diff = relativeHighlight - (end - start) * mappedRange;
+            setOffset(offset - diff * range - 0.00001);
+        }
+
+        highlightPosition = pos;
+        qreal pathPos = positionOfIndex(pos);
+        updateItem(highlightItem, pathPos);
+        if (QDeclarativePathViewAttached *att = attached(highlightItem))
+            att->setOnPath(pathPos != -1.0);
+    }
 }
 
 void QDeclarativePathViewPrivate::updateItem(QDeclarativeItem *item, qreal percent)
@@ -437,9 +501,11 @@ void QDeclarativePathView::setCurrentIndex(int idx)
                 }
             }
         }
+        d->moveReason = QDeclarativePathViewPrivate::SetIndex;
         d->currentIndex = idx;
         if (d->model->count()) {
-            d->snapToCurrent();
+            if (d->haveHighlightRange && d->highlightRangeMode == QDeclarativePathView::StrictlyEnforceRange)
+                d->snapToCurrent();
             int itemIndex = (idx - d->firstIndex + d->model->count()) % d->model->count();
             if (itemIndex < d->items.count()) {
                 QDeclarativeItem *item = d->items.at(itemIndex);
@@ -447,6 +513,8 @@ void QDeclarativePathView::setCurrentIndex(int idx)
                 if (QDeclarativePathViewAttached *att = d->attached(item))
                     att->setIsCurrentItem(true);
             }
+            d->currentItemOffset = d->positionOfIndex(d->currentIndex);
+            d->updateHighlight();
         }
         emit currentIndexChanged();
     }
@@ -478,7 +546,7 @@ void QDeclarativePathViewPrivate::setOffset(qreal o)
         if (isValid() && q->isComponentComplete()) {
             offset = qmlMod(o, qreal(model->count()));
             if (offset < 0)
-                offset = model->count() + offset;
+                offset += qreal(model->count());
             q->refill();
         } else {
             offset = o;
@@ -488,29 +556,28 @@ void QDeclarativePathViewPrivate::setOffset(qreal o)
 }
 
 /*!
-    \qmlproperty real PathView::snapPosition
+    \qmlproperty component PathView::highlight
+    This property holds the component to use as the highlight.
 
-    This property determines the position on the path (0.0-1.0) the nearest item will snap to.
-    The item nearest this position will set currentIndex, for example when offset is 0.0 the
-    first item will be placed at this position and currentIndex will be 0.
+    An instance of the highlight component will be created for each view.
+    The geometry of the resultant component instance will be managed by the view
+    so as to stay with the current item.
+
+    The below example demonstrates how to make a simple highlight.  Note the use
+    of the PathView.onPath property to ensure that the highlight is hidden
+    when flicked off of the path.
+
+    \code
+    Component {
+        Rectangle {
+            visible: PathView.onPath
+            ...
+        }
+    }
+    \endcode
+
+    \sa highlightItem, highlightRangeMode
 */
-qreal QDeclarativePathView::snapPosition() const
-{
-    Q_D(const QDeclarativePathView);
-    return d->snapPos;
-}
-
-void QDeclarativePathView::setSnapPosition(qreal pos)
-{
-    Q_D(QDeclarativePathView);
-    qreal normalizedPos = pos - int(pos);
-    if (qFuzzyCompare(normalizedPos, d->snapPos))
-        return;
-    d->snapPos = normalizedPos;
-    d->updateHighlight();
-    d->fixOffset();
-    emit snapPositionChanged();
-}
 
 QDeclarativeComponent *QDeclarativePathView::highlight() const
 {
@@ -529,10 +596,98 @@ void QDeclarativePathView::setHighlight(QDeclarativeComponent *highlight)
     }
 }
 
+/*!
+  \qmlproperty Item PathView::highlightItem
+
+  \c highlightItem holds the highlight item, which was created
+  from the \l highlight component.
+
+  \sa highlight
+*/
 QDeclarativeItem *QDeclarativePathView::highlightItem()
 {
     Q_D(const QDeclarativePathView);
     return d->highlightItem;
+}
+/*!
+    \qmlproperty real PathView::preferredHighlightBegin
+    \qmlproperty real PathView::preferredHighlightEnd
+    \qmlproperty enumeration PathView::highlightRangeMode
+
+    These properties set the preferred range of the highlight (current item)
+    within the view.  The preferred values must be in the range 0.0-1.0.
+
+    If highlightRangeMode is set to \e ApplyRange the view will
+    attempt to maintain the highlight within the range, however
+    the highlight can move outside of the range at the ends of the path
+    or due to a mouse interaction.
+
+    If highlightRangeMode is set to \e StrictlyEnforceRange the highlight will never
+    move outside of the range.  This means that the current item will change
+    if a keyboard or mouse action would cause the highlight to move
+    outside of the range.
+
+    Note that this is the correct way to influence where the
+    current item ends up when the view moves. For example, if you want the
+    currently selected item to be in the middle of the path, then set the
+    highlight range to be 0.5,0.5 and highlightRangeMode to StrictlyEnforceRange.
+    Then, when the path scrolls,
+    the currently selected item will be the item at that position. This also applies to
+    when the currently selected item changes - it will scroll to within the preferred
+    highlight range. Furthermore, the behaviour of the current item index will occur
+    whether or not a highlight exists.
+
+    The default value is \e StrictlyEnforceRange.
+
+    Note that a valid range requires preferredHighlightEnd to be greater
+    than or equal to preferredHighlightBegin.
+*/
+qreal QDeclarativePathView::preferredHighlightBegin() const
+{
+    Q_D(const QDeclarativePathView);
+    return d->highlightRangeStart;
+}
+
+void QDeclarativePathView::setPreferredHighlightBegin(qreal start)
+{
+    Q_D(QDeclarativePathView);
+    if (d->highlightRangeStart == start || start < 0 || start > 1.0)
+        return;
+    d->highlightRangeStart = start;
+    d->haveHighlightRange = d->highlightRangeMode != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
+    emit preferredHighlightBeginChanged();
+}
+
+qreal QDeclarativePathView::preferredHighlightEnd() const
+{
+    Q_D(const QDeclarativePathView);
+    return d->highlightRangeEnd;
+}
+
+void QDeclarativePathView::setPreferredHighlightEnd(qreal end)
+{
+    Q_D(QDeclarativePathView);
+    if (d->highlightRangeEnd == end || end < 0 || end > 1.0)
+        return;
+    d->highlightRangeEnd = end;
+    d->haveHighlightRange = d->highlightRangeMode != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
+    emit preferredHighlightEndChanged();
+}
+
+QDeclarativePathView::HighlightRangeMode QDeclarativePathView::highlightRangeMode() const
+{
+    Q_D(const QDeclarativePathView);
+    return d->highlightRangeMode;
+}
+
+void QDeclarativePathView::setHighlightRangeMode(HighlightRangeMode mode)
+{
+    Q_D(QDeclarativePathView);
+    if (d->highlightRangeMode == mode)
+        return;
+    d->highlightRangeMode = mode;
+    d->haveHighlightRange = d->highlightRangeMode != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
+    emit highlightRangeModeChanged();
 }
 
 /*!
@@ -770,16 +925,18 @@ void QDeclarativePathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
             velocity = (velocity > 0 ? count : -count) * 2;
         // Calculate the distance to be travelled
         qreal v2 = velocity*velocity;
-        qreal accel = d->deceleration;
+        qreal accel = d->deceleration/10;
         // + 0.25 to encourage moving at least one item in the flick direction
-        qreal dist = qMin(qreal(d->model->count()-1), qreal(qreal(d->model->count()) * v2 / (accel * 2.0) + 0.25));
-        // round to nearest item.
-        if (velocity > 0.)
-            dist = qRound(dist + d->offset) - d->offset;
-        else
-            dist = qRound(dist - d->offset) + d->offset;
-        // Calculate accel required to stop on item boundary
-        accel = v2 / (2.0f * qAbs(dist));
+        qreal dist = qMin(qreal(d->model->count()-1), qreal(v2 / (accel * 2.0) + 0.25));
+        if (d->haveHighlightRange && d->highlightRangeMode == QDeclarativePathView::StrictlyEnforceRange) {
+            // round to nearest item.
+            if (velocity > 0.)
+                dist = qRound(dist + d->offset) - d->offset;
+            else
+                dist = qRound(dist - d->offset) + d->offset;
+            // Calculate accel required to stop on item boundary
+            accel = v2 / (2.0f * qAbs(dist));
+        }
         d->moveOffset.setValue(d->offset);
         d->tl.accel(d->moveOffset, velocity, accel, dist);
         d->tl.callback(QDeclarativeTimeLineCallback(&d->moveOffset, d->fixOffsetCallback, d));
@@ -862,6 +1019,7 @@ void QDeclarativePathView::componentComplete()
 {
     Q_D(QDeclarativePathView);
     QDeclarativeItem::componentComplete();
+    d->createHighlight();
     d->regenerate();
     d->updateHighlight();
 }
@@ -872,7 +1030,7 @@ void QDeclarativePathView::refill()
     if (!d->isValid() || !isComponentComplete())
         return;
 
-//    qDebug() << "offset" << d->_offset;
+    bool currentVisible = false;
 
     // first move existing items and remove items off path
     int idx = d->firstIndex;
@@ -882,6 +1040,10 @@ void QDeclarativePathView::refill()
         QDeclarativeItem *item = *it;
         if (pos >= 0.0) {
             d->updateItem(item, pos);
+            if (idx == d->currentIndex) {
+                currentVisible = true;
+                d->currentItemOffset = pos;
+            }
             ++it;
         } else {
 //            qDebug() << "release";
@@ -902,7 +1064,9 @@ void QDeclarativePathView::refill()
     int count = d->pathItems == -1 ? d->model->count() : qMin(d->pathItems, d->model->count());
     if (d->items.count() < count) {
         int idx = qRound(d->model->count() - d->offset) % d->model->count();
-        qreal startPos = d->snapPos;
+        qreal startPos = 0.0;
+        if (d->haveHighlightRange && d->highlightRangeMode != QDeclarativePathView::NoHighlightRange)
+            startPos = d->highlightRangeStart;
         if (d->firstIndex >= 0) {
             startPos = d->positionOfIndex(d->firstIndex);
             idx = (d->firstIndex + d->items.count()) % d->model->count();
@@ -917,6 +1081,8 @@ void QDeclarativePathView::refill()
                 item->setFocus(true);
                 if (QDeclarativePathViewAttached *att = d->attached(item))
                     att->setIsCurrentItem(true);
+                currentVisible = true;
+                d->currentItemOffset = pos;
             }
             if (d->items.count() == 0)
                 d->firstIndex = idx;
@@ -941,6 +1107,8 @@ void QDeclarativePathView::refill()
                 item->setFocus(true);
                 if (QDeclarativePathViewAttached *att = d->attached(item))
                     att->setIsCurrentItem(true);
+                currentVisible = true;
+                d->currentItemOffset = pos;
             }
             d->items.prepend(item);
             d->updateItem(item, pos);
@@ -950,6 +1118,19 @@ void QDeclarativePathView::refill()
                 idx = d->model->count() - 1;
             pos = d->positionOfIndex(idx);
         }
+    }
+
+    if (!currentVisible)
+        d->currentItemOffset = 1.0;
+
+    if (d->highlightItem && d->haveHighlightRange && d->highlightRangeMode == QDeclarativePathView::StrictlyEnforceRange) {
+        d->updateItem(d->highlightItem, d->highlightRangeStart);
+        if (QDeclarativePathViewAttached *att = d->attached(d->highlightItem))
+            att->setOnPath(true);
+    } else if (d->moveReason != QDeclarativePathViewPrivate::SetIndex) {
+        d->updateItem(d->highlightItem, d->currentItemOffset);
+        if (QDeclarativePathViewAttached *att = d->attached(d->highlightItem))
+            att->setOnPath(currentVisible);
     }
 }
 
@@ -962,6 +1143,10 @@ void QDeclarativePathView::itemsInserted(int modelIndex, int count)
 
     QList<QDeclarativeItem *> removedItems = d->items;
     d->items.clear();
+    if (modelIndex <= d->currentIndex) {
+        d->currentIndex += count;
+        emit currentIndexChanged();
+    }
     d->regenerate();
     while (removedItems.count())
         d->releaseItem(removedItems.takeLast());
@@ -980,6 +1165,7 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
     d->items.clear();
     if (d->offset >= d->model->count())
         d->offset = d->model->count() - 1;
+    //XXX update currentIndex
     d->regenerate();
     while (removedItems.count())
         d->releaseItem(removedItems.takeLast());
@@ -995,6 +1181,7 @@ void QDeclarativePathView::itemsMoved(int from, int to, int count)
 
     QList<QDeclarativeItem *> removedItems = d->items;
     d->items.clear();
+    //XXX update currentIndex
     d->regenerate();
     while (removedItems.count())
         d->releaseItem(removedItems.takeLast());
@@ -1047,6 +1234,9 @@ void QDeclarativePathViewPrivate::updateCurrent()
     Q_Q(QDeclarativePathView);
     if (moveReason != Mouse)
         return;
+    if (!haveHighlightRange || highlightRangeMode != QDeclarativePathView::StrictlyEnforceRange)
+        return;
+
     int idx = calcCurrentIndex();
     if (model && idx != currentIndex) {
         int itemIndex = (currentIndex - firstIndex + model->count()) % model->count();
@@ -1077,11 +1267,13 @@ void QDeclarativePathViewPrivate::fixOffset()
 {
     Q_Q(QDeclarativePathView);
     if (model && items.count()) {
-        int curr = calcCurrentIndex();
-        if (curr != currentIndex)
-            q->setCurrentIndex(curr);
-        else
-            snapToCurrent();
+        if (haveHighlightRange && highlightRangeMode == QDeclarativePathView::StrictlyEnforceRange) {
+            int curr = calcCurrentIndex();
+            if (curr != currentIndex)
+                q->setCurrentIndex(curr);
+            else
+                snapToCurrent();
+        }
     }
 }
 
@@ -1093,7 +1285,7 @@ void QDeclarativePathViewPrivate::snapToCurrent()
     qreal targetOffset = model->count() - currentIndex;
 
     moveReason = Other;
-    tl.clear();
+    tl.reset(moveOffset);
     moveOffset.setValue(offset);
 
     const int duration = 300;

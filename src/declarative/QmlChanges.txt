@@ -16,6 +16,7 @@ ScriptAction: renamed stateChangeScriptName -> scriptName
 Animation: replace repeat with loops (loops: Animation.Infinite gives the old repeat behavior)
 AnchorChanges: use natural form to specify anchors (anchors.left instead of left)
 AnchorChanges: removed reset property. (reset: "left" should now be anchors.left: undefined)
+PathView: snapPosition replaced by preferredHighlightBegin, preferredHighlightEnd
 
 C++ API
 -------
