@@ -73,6 +73,7 @@
 #endif
 #ifdef Q_WS_S60
 #include "qcoefepinputcontext_p.h"
+#include "akninputlanguageinfo.h"
 #endif
 
 #include "private/qfactoryloader_p.h"
@@ -198,6 +199,42 @@ QStringList QInputContextFactory::keys()
     return result;
 }
 
+#if defined(Q_WS_S60)
+/*!
+    \internal
+
+    This function contains pure Symbian exception handling code for
+    getting S60 language list.
+    Returned object ownership is transfered to caller.
+*/
+static CAknInputLanguageList* s60LangListL()
+{
+    CAknInputLanguageInfo *langInfo = AknInputLanguageInfoFactory::CreateInputLanguageInfoL();
+    CleanupStack::PushL(langInfo);
+    // In rare phone there is more than 7 languages installed -> use 7 as an array granularity
+    CAknInputLanguageList *langList = new (ELeave) CAknInputLanguageList(7);
+    CleanupStack::PushL(langList);
+    langInfo->AppendAvailableLanguagesL(langList);
+    CleanupStack::Pop(langList);
+    CleanupStack::PopAndDestroy(langInfo);
+    return langList;
+}
+
+/*!
+    \internal
+
+    This function utility function return S60 language list.
+    Returned object ownership is transfered to caller.
+*/
+static CAknInputLanguageList* s60LangList()
+{
+    CAknInputLanguageList *langList = NULL;
+    TRAP_IGNORE(langList = s60LangListL());
+    q_check_ptr(langList);
+    return langList;
+}
+#endif
+
 /*!
     Returns the languages supported by the QInputContext object
     specified by \a key.
@@ -229,7 +266,15 @@ QStringList QInputContextFactory::languages( const QString &key )
 #endif
 #if defined(Q_WS_S60)
     if (key == QLatin1String("coefep"))
-        return QStringList(QString());
+        {
+        CAknInputLanguageList *langList = s60LangList();
+        int count = langList->Count();
+        for (int i = 0; i < count; ++i)
+            {
+            result.append(QString(qt_symbianLocaleName(langList->At(i)->LanguageCode())));
+            }
+        delete langList;
+        }
 #endif
 #if defined(QT_NO_LIBRARY) || defined(QT_NO_SETTINGS)
     Q_UNUSED(key);
