@@ -69,6 +69,7 @@
 #include <qdebug.h>
 #include <qlocale.h>
 #include <qdialog.h>
+#include <qmath.h>
 
 #include <limits.h>
 
@@ -1148,7 +1149,8 @@ QRect QItemDelegate::textRectangle(QPainter * /*painter*/, const QRect &rect,
     d->textLayout.setTextOption(d->textOption);
     d->textLayout.setFont(font);
     d->textLayout.setText(QItemDelegatePrivate::replaceNewLine(text));
-    const QSize size = d->doTextLayout(rect.width()).toSize();
+    QSizeF fpSize = d->doTextLayout(rect.width());
+    const QSize size = QSize(qCeil(fpSize.width()), qCeil(fpSize.height()));
     // ###: textRectangle should take style option as argument
     const int textMargin = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 1;
     return QRect(0, 0, size.width() + 2 * textMargin, size.height());
