@@ -3721,11 +3721,13 @@ class TreeViewQTBUG_9216 : public QTreeView
 public:
     void paintEvent(QPaintEvent *event)
     {
-        QCOMPARE(event->rect(), viewport()->rect());
+        if (doCompare)
+            QCOMPARE(event->rect(), viewport()->rect());
         QTreeView::paintEvent(event);
         painted++;
     }
     int painted;
+    bool doCompare;
 };
 
 void tst_QTreeView::taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint()
@@ -3737,15 +3739,16 @@ void tst_QTreeView::taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint()
     TreeViewQTBUG_9216 view;
     view.setUniformRowHeights(true);
     view.setModel(&model);
-    view.resize(800, 800);
     view.painted = 0;
+    view.doCompare = false;
     view.show();
     QTest::qWaitForWindowShown(&view);
     QTRY_VERIFY(view.painted > 0);
 
     QTest::qWait(100);  // This one is needed to make the test fail before the patch.
     view.painted = 0;
-    model.setData(model.index(0, 5), QVariant(QSize(100,100)), Qt::SizeHintRole);
+    view.doCompare = true;
+    model.setData(model.index(0, 0), QVariant(QSize(50, 50)), Qt::SizeHintRole);
     QTest::qWait(100);
     QTRY_VERIFY(view.painted > 0);
 }
