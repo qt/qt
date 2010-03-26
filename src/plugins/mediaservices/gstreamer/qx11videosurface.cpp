@@ -213,6 +213,16 @@ void QX11VideoSurface::setDisplayRect(const QRect &rect)
     m_displayRect = rect;
 }
 
+QRect QX11VideoSurface::viewport() const
+{
+    return m_viewport;
+}
+
+void QX11VideoSurface::setViewport(const QRect &rect)
+{
+    m_viewport = rect;
+}
+
 int QX11VideoSurface::brightness() const
 {
     return getAttribute("XV_BRIGHTNESS", m_brightnessRange.first, m_brightnessRange.second);
