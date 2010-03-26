@@ -83,7 +83,44 @@ QT_BEGIN_NAMESPACE
     You can assign any number of Transform elements to an Item. Each Transform is applied in order,
     one at a time, to the Item it's assigned to.
 
-    \sa Rotation, Scale
+    \sa Rotation, Scale, Translate
+*/
+
+/*!
+    \qmlclass Translate QGraphicsTranslate
+    \since 4.7
+    \brief The Translate object provides a way to move an Item without changing its x or y properties.
+
+    The Translate object independent control over position in addition to the Item's x and y properties.
+
+    The following example moves the Y axis of the Rectangles while still allowing the Row element
+    to lay the items out as if they had not been transformed:
+    \qml
+    Row {
+        Rectangle {
+            width: 100; height: 100
+            color: "blue"
+            transform: Translate { y: 20 }
+        }
+        Rectangle {
+            width: 100; height: 100
+            color: "red"
+            transform: Translate { y: -20 }
+        }
+    }
+    \endqml
+*/
+
+/*!
+    \qmlproperty real Translate::x
+
+    The translation along the X axis.
+*/
+
+/*!
+    \qmlproperty real Translate::yTranslate
+
+    The translation along the Y axis.
 */
 
 /*!
@@ -1263,12 +1300,12 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::childrenRectChanged()
+    \fn void QDeclarativeItem::childrenRectChanged(const QRectF &)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::baselineOffsetChanged()
+    \fn void QDeclarativeItem::baselineOffsetChanged(qreal)
     \internal
 */
 
@@ -1278,17 +1315,17 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::parentChanged()
+    \fn void QDeclarativeItem::parentChanged(QDeclarativeItem *)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::smoothChanged()
+    \fn void QDeclarativeItem::smoothChanged(bool)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::clipChanged()
+    \fn void QDeclarativeItem::clipChanged(bool)
     \internal
 */
 
@@ -1302,12 +1339,12 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::focusChanged()
+    \fn void QDeclarativeItem::focusChanged(bool)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::wantsFocusChanged()
+    \fn void QDeclarativeItem::wantsFocusChanged(bool)
     \internal
 */
 
@@ -1526,8 +1563,8 @@ int QDeclarativeItemPrivate::transform_count(QDeclarativeListProperty<QGraphicsT
 void QDeclarativeItemPrivate::transform_append(QDeclarativeListProperty<QGraphicsTransform> *list, QGraphicsTransform *item)
 {
     QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
-    if (object)
-        QGraphicsItemPrivate::get(object)->appendGraphicsTransform(item);
+    if (object) // QGraphicsItem applies the list in the wrong order, so we prepend.
+        QGraphicsItemPrivate::get(object)->prependGraphicsTransform(item);
 }
 
 QGraphicsTransform *QDeclarativeItemPrivate::transform_at(QDeclarativeListProperty<QGraphicsTransform> *list, int idx)
@@ -1575,7 +1612,7 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     Item {
         Text {}
         Rectangle {}
-        Script {}
+        Timer {}
     }
     \endqml
 
@@ -1587,7 +1624,7 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
             Rectangle {}
         ]
         resources: [
-            Script {}
+            Timer {}
         ]
     }
     \endqml
@@ -2356,13 +2393,11 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItem::transitions()
   example:
 
   \qml
-    Script {
-        function toggle() {
-            if (button.state == 'On')
-                button.state = 'Off';
-            else
-                button.state = 'On';
-        }
+    function toggle() {
+        if (button.state == 'On')
+            button.state = 'Off';
+        else
+            button.state = 'On';
     }
   \endqml
 
@@ -2552,10 +2587,6 @@ QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
     case ItemParentHasChanged:
         emit parentChanged(parentItem());
         d->parentNotifier.notify();
-        break;
-    case ItemChildAddedChange:
-    case ItemChildRemovedChange:
-        emit childrenChanged();
         break;
     case ItemVisibleHasChanged: {
             for(int ii = 0; ii < d->changeListeners.count(); ++ii) {

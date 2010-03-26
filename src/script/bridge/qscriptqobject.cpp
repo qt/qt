@@ -151,7 +151,8 @@ private:
 static bool hasMethodAccess(const QMetaMethod &method, int index, const QScriptEngine::QObjectWrapOptions &opt)
 {
     return (method.access() != QMetaMethod::Private)
-        && ((index != 2) || !(opt & QScriptEngine::ExcludeDeleteLater));
+        && ((index != 2) || !(opt & QScriptEngine::ExcludeDeleteLater))
+        && (!(opt & QScriptEngine::ExcludeSlots) || (method.methodType() != QMetaMethod::Slot));
 }
 
 static bool isEnumerableMetaProperty(const QMetaProperty &prop,

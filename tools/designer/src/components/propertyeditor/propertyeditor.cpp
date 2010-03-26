@@ -79,6 +79,7 @@
 #include <QtGui/QToolButton>
 #include <QtGui/QActionGroup>
 #include <QtGui/QLabel>
+#include <QtGui/QPainter>
 
 #include <QtCore/QDebug>
 #include <QtCore/QTextStream>
@@ -98,6 +99,53 @@ QT_BEGIN_NAMESPACE
 // ---------------------------------------------------------------------------------
 
 namespace qdesigner_internal {
+
+// ----------- ElidingLabel
+// QLabel does not support text eliding so we need a helper class
+
+class ElidingLabel : public QWidget
+{
+public:
+    ElidingLabel(const QString &text = QString(), QWidget *parent = 0)
+        : QWidget(parent),
+        m_text(text),
+        m_mode(Qt::ElideRight) {
+        setContentsMargins(3, 2, 3, 2);
+    }
+    QSize sizeHint() const;
+    void paintEvent(QPaintEvent *e);
+    void setText(const QString &text) {
+        m_text = text;
+        updateGeometry();
+    }
+    void setElidemode(Qt::TextElideMode mode) {
+        m_mode = mode;
+        updateGeometry();
+    }
+private:
+    QString m_text;
+    Qt::TextElideMode m_mode;
+};
+
+QSize ElidingLabel::sizeHint() const
+{
+    QSize size = fontMetrics().boundingRect(m_text).size();
+    size += QSize(contentsMargins().left() + contentsMargins().right(),
+                  contentsMargins().top() + contentsMargins().bottom());
+    return size;
+}
+
+void ElidingLabel::paintEvent(QPaintEvent *e) {
+    QPainter painter(this);
+    painter.setPen(QColor(0, 0, 0, 60));
+    painter.setBrush(QColor(255, 255, 255, 40));
+    painter.drawRect(rect().adjusted(0, 0, -1, -1));
+    painter.setPen(palette().windowText().color());
+    painter.drawText(contentsRect(), Qt::AlignLeft,
+                     fontMetrics().elidedText(m_text, Qt::ElideRight, width(), 0));
+}
+
+
 // ----------- PropertyEditor::Strings
 
 PropertyEditor::Strings::Strings() :
@@ -186,7 +234,7 @@ PropertyEditor::PropertyEditor(QDesignerFormEditorInterface *core, QWidget *pare
     m_coloringAction(new QAction(createIconSet(QLatin1String("color.png")), tr("Color Groups"), this)),
     m_treeAction(new QAction(tr("Tree View"), this)),
     m_buttonAction(new QAction(tr("Drop Down Button View"), this)),
-    m_classLabel(new QLabel),
+    m_classLabel(new ElidingLabel),
     m_sorting(false),
     m_coloring(false),
     m_brightness(false)
@@ -222,11 +270,6 @@ PropertyEditor::PropertyEditor(QDesignerFormEditorInterface *core, QWidget *pare
     actionGroup->addAction(m_treeAction);
     actionGroup->addAction(m_buttonAction);
     connect(actionGroup, SIGNAL(triggered(QAction*)), this, SLOT(slotViewTriggered(QAction*)));
-
-    QWidget *classWidget = new QWidget;
-    QHBoxLayout *l = new QHBoxLayout(classWidget);
-    l->setContentsMargins(5, 0, 5, 0);
-    l->addWidget(m_classLabel);
 
     // Add actions
     QActionGroup *addDynamicActionGroup = new QActionGroup(this);
@@ -269,7 +312,6 @@ PropertyEditor::PropertyEditor(QDesignerFormEditorInterface *core, QWidget *pare
 #endif
     // Assemble toolbar
     QToolBar *toolBar = new QToolBar;
-    toolBar->addWidget(classWidget);
     toolBar->addWidget(m_filterWidget);
     toolBar->addWidget(createDropDownButton(m_addDynamicAction));
     toolBar->addAction(m_removeDynamicAction);
@@ -292,6 +334,8 @@ PropertyEditor::PropertyEditor(QDesignerFormEditorInterface *core, QWidget *pare
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(toolBar);
+    layout->addWidget(m_classLabel);
+    layout->addSpacerItem(new QSpacerItem(0,1));
     layout->addWidget(m_stackedWidget);
     layout->setMargin(0);
     layout->setSpacing(0);
@@ -778,9 +822,14 @@ void PropertyEditor::updateToolBarLabel()
         className = realClassName(m_object);
     }
 
-    QString classLabelText = objectName;
-    classLabelText += QLatin1Char('\n');
+    m_classLabel->setVisible(!objectName.isEmpty() || !className.isEmpty());
+    m_classLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    QString classLabelText;
+    if (!objectName.isEmpty())
+        classLabelText += objectName + QLatin1String(" : ");
     classLabelText += className;
+
     m_classLabel->setText(classLabelText);
     m_classLabel->setToolTip(tr("Object: %1\nClass: %2").arg(objectName).arg(className));
 }

@@ -57,6 +57,7 @@ embedded:SUBDIRS += qws
 contains(QT_CONFIG, opengl): SUBDIRS += opengl
 contains(QT_CONFIG, openvg): SUBDIRS += openvg
 contains(QT_CONFIG, dbus): SUBDIRS += dbus
+contains(QT_CONFIG, declarative): SUBDIRS += declarative
 win32: SUBDIRS += activeqt
 contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns
 contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows

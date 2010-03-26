@@ -39,50 +39,50 @@
 **
 ****************************************************************************/
 
-// This is just a dummy file to include the documentation
+#ifndef QDECLARATIVETRANSLATE_H
+#define QDECLARATIVETRANSLATE_H
 
-/*!
-    \qmlclass Script QDeclarativeScript
-    \since 4.7
-    \brief The Script element provides a way to add JavaScript code snippets in QML.
-    \ingroup group_utility
+#include "qdeclarativeitem.h"
 
-    The Script element is used to add convenient JavaScript "glue" methods to
-    your Qt Declarative application or component. 
+QT_BEGIN_HEADER
 
-    An example: 
+QT_BEGIN_NAMESPACE
 
-    \qml
-    Script {
-        function debugMyComponent() {
-            console.log(text.text);
-            console.log(otherinterestingitem.property);
-        }
-    }
-    MouseArea { onClicked: debugMyComponent() }
-    \endqml
+QT_MODULE(Declarative)
 
-    \note While it is possible to use any JavaScript code within a Script element,
-    it is recommended that the code be limited to defining functions. The Script
-    element executes JavaScript as soon as it is specified, so
-    when defining a component, this may be done before the execution context is
-    fully specified.  As a result, some properties or items may not be
-    accessible. You can avoid this problem by limiting your JavaScript to
-    defining functions that are only executed later once the context is fully
-    defined.
+class QDeclarativeTranslatePrivate;
 
-    \sa {JavaScript Blocks}
-*/
+class Q_GUI_EXPORT QDeclarativeTranslate : public QGraphicsTransform
+{
+    Q_OBJECT
 
-/*!
-    \qmlproperty string Script::script
-    \default
-    The JavaScript code to be executed.
-*/
+    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY positionChanged)
+    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY positionChanged)
 
-/*!
-    \qmlproperty url Script::source
+public:
+    QDeclarativeTranslate(QObject *parent = 0);
+    ~QDeclarativeTranslate();
 
-    Specifies a source file containing JavaScript code. This can be used instead
-    of providing inline JavaScript code in the Script element.
-*/
+    qreal x() const;
+    void setX(qreal);
+
+    qreal y() const;
+    void setY(qreal);
+
+    void applyTo(QMatrix4x4 *matrix) const;
+
+Q_SIGNALS:
+    void positionChanged();
+
+private:
+    Q_DECLARE_PRIVATE(QDeclarativeTranslate)
+    Q_DISABLE_COPY(QDeclarativeTranslate)
+};
+
+QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QDeclarativeTranslate)
+
+QT_END_HEADER
+
+#endif

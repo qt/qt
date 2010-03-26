@@ -90,6 +90,7 @@ class MyQmlObject : public QObject
     Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty NOTIFY objectChanged)
     Q_PROPERTY(QDeclarativeListProperty<QObject> objectListProperty READ objectListProperty CONSTANT)
     Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty)
+    Q_PROPERTY(QRegExp regExp READ regExp WRITE setRegExp)
 
 public:
     MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false), m_object(0), m_value(0), m_resetProperty(13) {}
@@ -138,6 +139,9 @@ public:
     void setResettableProperty(int v) { m_resetProperty = v; }
     void resetProperty() { m_resetProperty = 13; }
 
+    QRegExp regExp() { return m_regExp; }
+    void setRegExp(const QRegExp &regExp) { m_regExp = regExp; }
+
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
@@ -162,6 +166,7 @@ private:
     QList<QObject *> m_objectQList;
     int m_value;
     int m_resetProperty;
+    QRegExp m_regExp;
 };
 
 QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)

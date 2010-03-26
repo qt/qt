@@ -36,7 +36,6 @@ SOURCES += \
     $$PWD/qdeclarativesqldatabase.cpp \
     $$PWD/qmetaobjectbuilder.cpp \
     $$PWD/qdeclarativewatcher.cpp \
-    $$PWD/qdeclarativescript.cpp \
     $$PWD/qdeclarativecleanup.cpp \
     $$PWD/qdeclarativepropertycache.cpp \
     $$PWD/qdeclarativenotifier.cpp \

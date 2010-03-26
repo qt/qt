@@ -60,11 +60,6 @@
 #include <private/qobject_p.h>
 #include <QSslError>
 
-#ifdef Q_OS_LINUX
-#include <pthread.h>
-#include <linux/sched.h>
-#endif
-
 // Maximum number of simultaneous image requests to send.
 static const int maxImageRequestCount = 8;
 
@@ -106,7 +101,7 @@ public:
     QDeclarativeImageReader(QDeclarativeEngine *eng);
     ~QDeclarativeImageReader();
 
-    QDeclarativePixmapReply *getImage(const QUrl &url);
+    QDeclarativePixmapReply *getImage(const QUrl &url, int req_width, int req_height);
     void cancel(QDeclarativePixmapReply *rep);
 
     static QDeclarativeImageReader *instance(QDeclarativeEngine *engine);
@@ -140,7 +135,7 @@ public:
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
 
-    QDeclarativePixmapReply *getImage(const QUrl &url);
+    QDeclarativePixmapReply *getImage(const QUrl &url, int req_width, int req_height);
     void cancel(QDeclarativePixmapReply *reply);
 
 protected:
@@ -170,10 +165,49 @@ private:
 
 //===========================================================================
 
+static bool readImage(const QUrl& url, QIODevice *dev, QImage *image, QString *errorString, QSize *impsize, int req_width, int req_height)
+{
+    QImageReader imgio(dev);
+
+    bool force_scale = false;
+    if (url.path().endsWith(QLatin1String(".svg"),Qt::CaseInsensitive)) {
+        imgio.setFormat("svg"); // QSvgPlugin::capabilities bug QTBUG-9053
+        force_scale = true;
+    }
+
+    bool scaled = false;
+    if (req_width > 0 || req_height > 0) {
+        QSize s = imgio.size();
+        if (req_width && (force_scale || req_width < s.width())) { s.setWidth(req_width); scaled = true; }
+        if (req_height && (force_scale || req_height < s.height())) { s.setHeight(req_height); scaled = true; }
+        if (scaled) { imgio.setScaledSize(s); }
+    }
+
+    if (impsize)
+        *impsize = imgio.size();
+
+    if (imgio.read(image)) {
+        if (impsize && impsize->width() < 0)
+            *impsize = image->size();
+        return true;
+    } else {
+        if (errorString)
+            *errorString = QLatin1String("Error decoding: ") + url.toString()
+                          + QLatin1String(" \"") + imgio.errorString() + QLatin1String("\"");
+        return false;
+    }
+}
+
+
+//===========================================================================
+
 int QDeclarativeImageRequestHandler::replyDownloadProgress = -1;
 int QDeclarativeImageRequestHandler::replyFinished = -1;
 int QDeclarativeImageRequestHandler::downloadProgress = -1;
 int QDeclarativeImageRequestHandler::thisNetworkRequestDone = -1;
+
+typedef QHash<QUrl, QSize> QDeclarativePixmapSizeHash;
+Q_GLOBAL_STATIC(QDeclarativePixmapSizeHash, qmlOriginalSizes);
 
 bool QDeclarativeImageRequestHandler::event(QEvent *event)
 {
@@ -238,10 +272,10 @@ bool QDeclarativeImageRequestHandler::event(QEvent *event)
                     QString errorStr;
                     QFile f(lf);
                     if (f.open(QIODevice::ReadOnly)) {
-                        QImageReader imgio(&f);
-                        if (!imgio.read(&image)) {
-                            errorStr = QLatin1String("Error decoding: ") + url.toString()
-                                          + QLatin1String(" \"") + imgio.errorString() + QLatin1String("\"");
+                        QSize read_impsize;
+                        if (readImage(url, &f, &image, &errorStr, &read_impsize, runningJob->forcedWidth(),runningJob->forcedHeight())) {
+                            qmlOriginalSizes()->insert(url, read_impsize);
+                        } else {
                             errorCode = QDeclarativeImageReaderEvent::Loading;
                         }
                     } else {
@@ -303,12 +337,11 @@ void QDeclarativeImageRequestHandler::networkRequestDone()
             error = QDeclarativeImageReaderEvent::Loading;
             errorString = reply->errorString();
         } else {
-            QImageReader imgio(reply);
-            if (imgio.read(&image)) {
+            QSize read_impsize;
+            if (readImage(reply->url(), reply, &image, &errorString, &read_impsize, job->forcedWidth(), job->forcedHeight())) {
+                qmlOriginalSizes()->insert(reply->url(), read_impsize);
                 error = QDeclarativeImageReaderEvent::NoError;
             } else {
-                errorString = QLatin1String("Error decoding: ") + reply->url().toString()
-                              + QLatin1String(" \"") + imgio.errorString() + QLatin1String("\"");
                 error = QDeclarativeImageReaderEvent::Decoding;
             }
         }
@@ -326,7 +359,7 @@ void QDeclarativeImageRequestHandler::networkRequestDone()
 QDeclarativeImageReader::QDeclarativeImageReader(QDeclarativeEngine *eng)
     : QThread(eng), engine(eng), handler(0)
 {
-    start(QThread::LowPriority);
+    start(QThread::IdlePriority);
 }
 
 QDeclarativeImageReader::~QDeclarativeImageReader()
@@ -352,10 +385,10 @@ QDeclarativeImageReader *QDeclarativeImageReader::instance(QDeclarativeEngine *e
     return reader;
 }
 
-QDeclarativePixmapReply *QDeclarativeImageReader::getImage(const QUrl &url)
+QDeclarativePixmapReply *QDeclarativeImageReader::getImage(const QUrl &url, int req_width, int req_height)
 {
     mutex.lock();
-    QDeclarativePixmapReply *reply = new QDeclarativePixmapReply(this, url);
+    QDeclarativePixmapReply *reply = new QDeclarativePixmapReply(this, url, req_width, req_height);
     reply->addRef();
     reply->setLoading();
     jobs.append(reply);
@@ -379,14 +412,6 @@ void QDeclarativeImageReader::cancel(QDeclarativePixmapReply *reply)
 
 void QDeclarativeImageReader::run()
 {
-#if defined(Q_OS_LINUX) && defined(SCHED_IDLE)
-    struct sched_param param;
-    int policy;
-
-    pthread_getschedparam(pthread_self(), &policy, &param);
-    pthread_setschedparam(pthread_self(), SCHED_IDLE, &param);
-#endif
-
     handler = new QDeclarativeImageRequestHandler(this, engine);
 
     exec();
@@ -396,40 +421,6 @@ void QDeclarativeImageReader::run()
 }
 
 //===========================================================================
-
-static bool readImage(QIODevice *dev, QPixmap *pixmap, QString &errorString)
-{
-    QImageReader imgio(dev);
-
-//#define QT_TEST_SCALED_SIZE
-#ifdef QT_TEST_SCALED_SIZE
-    /*
-    Some mechanism is needed for loading images at a limited size, especially
-    for remote images. Loading only thumbnails of remote progressive JPEG
-    images can be efficient. (Qt jpeg handler does not do so currently)
-    */
-
-    QSize limit(60,60);
-    QSize sz = imgio.size();
-    if (sz.width() > limit.width() || sz.height() > limit.height()) {
-        sz.scale(limit,Qt::KeepAspectRatio);
-        imgio.setScaledSize(sz);
-    }
-#endif
-
-    QImage img;
-    if (imgio.read(&img)) {
-#ifdef QT_TEST_SCALED_SIZE
-        if (!sz.isValid())
-            img = img.scaled(limit,Qt::KeepAspectRatio);
-#endif
-        *pixmap = QPixmap::fromImage(img);
-        return true;
-    } else {
-        errorString = imgio.errorString();
-        return false;
-    }
-}
 
 /*!
     \internal
@@ -447,8 +438,10 @@ class QDeclarativePixmapReplyPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QDeclarativePixmapReply)
 
 public:
-    QDeclarativePixmapReplyPrivate(QDeclarativeImageReader *r, const QUrl &u)
-        : QObjectPrivate(), refCount(1), url(u), status(QDeclarativePixmapReply::Loading), loading(false), reader(r) {
+    QDeclarativePixmapReplyPrivate(QDeclarativeImageReader *r, const QUrl &u, int req_width, int req_height)
+        : QObjectPrivate(), refCount(1), url(u), status(QDeclarativePixmapReply::Loading), loading(false), reader(r),
+            forced_width(req_width), forced_height(req_height)
+    {
     }
 
     int refCount;
@@ -457,11 +450,12 @@ public:
     QDeclarativePixmapReply::Status status;
     bool loading;
     QDeclarativeImageReader *reader;
+    int forced_width, forced_height;
 };
 
 
-QDeclarativePixmapReply::QDeclarativePixmapReply(QDeclarativeImageReader *reader, const QUrl &url)
-  : QObject(*new QDeclarativePixmapReplyPrivate(reader, url), 0)
+QDeclarativePixmapReply::QDeclarativePixmapReply(QDeclarativeImageReader *reader, const QUrl &url, int req_width, int req_height)
+  : QObject(*new QDeclarativePixmapReplyPrivate(reader, url, req_width, req_height), 0)
 {
 }
 
@@ -473,6 +467,28 @@ const QUrl &QDeclarativePixmapReply::url() const
 {
     Q_D(const QDeclarativePixmapReply);
     return d->url;
+}
+
+int QDeclarativePixmapReply::forcedWidth() const
+{
+    Q_D(const QDeclarativePixmapReply);
+    return d->forced_width;
+}
+
+int QDeclarativePixmapReply::forcedHeight() const
+{
+    Q_D(const QDeclarativePixmapReply);
+    return d->forced_height;
+}
+
+QSize QDeclarativePixmapReply::implicitSize() const
+{
+    Q_D(const QDeclarativePixmapReply);
+    QDeclarativePixmapSizeHash::Iterator iter = qmlOriginalSizes()->find(d->url);
+    if (iter != qmlOriginalSizes()->end())
+        return *iter;
+    else
+        return QSize();
 }
 
 bool QDeclarativePixmapReply::event(QEvent *event)
@@ -554,13 +570,25 @@ bool QDeclarativePixmapReply::release(bool defer)
     If \a async is false the image will be loaded and decoded immediately;
     otherwise the image will be loaded and decoded in a separate thread.
 
+    If \a req_width and \a req_height are non-zero, they are used for
+    the size of the rendered pixmap rather than the intrinsic size of the image.
+    Different request sizes add different cache items.
+
     Note that images sourced from the network will always be loaded and
     decoded asynchonously.
 */
-QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QPixmap *pixmap, bool async)
+QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QPixmap *pixmap, QSize *impsize, bool async, int req_width, int req_height)
 {
     QDeclarativePixmapReply::Status status = QDeclarativePixmapReply::Unrequested;
     QByteArray key = url.toEncoded(QUrl::FormattingOption(0x100));
+
+    if (req_width > 0 && req_height > 0) {
+        key += ':';
+        key += QByteArray::number(req_width);
+        key += 'x';
+        key += QByteArray::number(req_height);
+    }
+
     QString strKey = QString::fromLatin1(key.constData(), key.count());
 
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
@@ -570,11 +598,13 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
             status = QDeclarativePixmapReply::Ready;
             if (!QPixmapCache::find(strKey,pixmap)) {
                 QFile f(lf);
+                QSize read_impsize;
                 if (f.open(QIODevice::ReadOnly)) {
                     QString errorString;
-                    if (!readImage(&f, pixmap, errorString)) {
-                        errorString = QLatin1String("Error decoding: ") + url.toString()
-                                      + QLatin1String(" \"") + errorString + QLatin1String("\"");
+                    QImage image;
+                    if (readImage(url, &f, &image, &errorString, &read_impsize, req_width, req_height)) {
+                        *pixmap = QPixmap::fromImage(image);
+                    } else {
                         qWarning() << errorString;
                         *pixmap = QPixmap();
                         status = QDeclarativePixmapReply::Error;
@@ -584,8 +614,18 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
                     *pixmap = QPixmap();
                     status = QDeclarativePixmapReply::Error;
                 }
-                if (status == QDeclarativePixmapReply::Ready)
+                if (status == QDeclarativePixmapReply::Ready) {
                     QPixmapCache::insert(strKey, *pixmap);
+                    qmlOriginalSizes()->insert(url, read_impsize);
+                }
+                if (impsize)
+                    *impsize = read_impsize;
+            } else {
+                if (impsize) {
+                    QDeclarativePixmapSizeHash::Iterator iter = qmlOriginalSizes()->find(url);
+                    if (iter != qmlOriginalSizes()->end())
+                        *impsize = *iter;
+                }
             }
             return status;
         }
@@ -608,6 +648,11 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
     } else if (iter != qmlActivePixmapReplies()->end()) {
         status = QDeclarativePixmapReply::Loading;
     }
+    if (impsize) {
+        QDeclarativePixmapSizeHash::Iterator iter = qmlOriginalSizes()->find(url);
+        if (iter != qmlOriginalSizes()->end())
+            *impsize = *iter;
+    }
 
     return status;
 }
@@ -621,12 +666,12 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
     The returned QDeclarativePixmapReply will be deleted when all request() calls are
     matched by a corresponding get() call.
 */
-QDeclarativePixmapReply *QDeclarativePixmapCache::request(QDeclarativeEngine *engine, const QUrl &url)
+QDeclarativePixmapReply *QDeclarativePixmapCache::request(QDeclarativeEngine *engine, const QUrl &url, int req_width, int req_height)
 {
     QDeclarativePixmapReplyHash::Iterator iter = qmlActivePixmapReplies()->find(url);
     if (iter == qmlActivePixmapReplies()->end()) {
         QDeclarativeImageReader *reader = QDeclarativeImageReader::instance(engine);
-        QDeclarativePixmapReply *item = reader->getImage(url);
+        QDeclarativePixmapReply *item = reader->getImage(url, req_width, req_height);
         iter = qmlActivePixmapReplies()->insert(url, item);
     } else {
         (*iter)->addRef();

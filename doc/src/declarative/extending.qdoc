@@ -177,7 +177,7 @@ The guest property declaration looks like this:
 
 \snippet examples/declarative/extending/properties/birthdayparty.h 2
 
-\l {Extending QML in C++ - Object and List Property Types Example} shows the complete
+\l {Extending QML - Object and List Property Types Example} shows the complete
 code used to create the \c BirthdayParty type.
 
 \section1 Inheritance and Coercion
@@ -224,7 +224,7 @@ QML will automatically coerce C++ types when assigning to either an object
 property, or to a list property.  Only if coercion fails does an assignment
 error occur.
 
-\l {Extending QML in C++ - Inheritance and Coercion Example} shows the complete
+\l {Extending QML - Inheritance and Coercion Example} shows the complete
 code used to create the \c Boy and \c Girl types.
 
 \section1 Default Property
@@ -256,7 +256,7 @@ refer to a property declared in the class itself, or a property inherited from a
 base class.
 \endquotation
 
-\l {Extending QML in C++ - Default Property Example} shows the complete code used to
+\l {Extending QML - Default Property Example} shows the complete code used to
 specify a default property.
 
 \section1 Grouped Properties
@@ -281,7 +281,7 @@ property block - in this case the size, color, brand and price properties.
 
 Grouped property blocks may declared and accessed be recusively.
 
-\l {Extending QML in C++ - Grouped Properties Example} shows the complete code used to
+\l {Extending QML - Grouped Properties Example} shows the complete code used to
 implement the \c shoe property grouping.
 
 \section1 Attached Properties
@@ -373,7 +373,7 @@ creating it if it does not already exist.  If \a create is false, the attachment
 object will only be returned if it has previously been created.
 \endquotation
 
-\l {Extending QML in C++ - Attached Properties Example} shows the complete code used to
+\l {Extending QML - Attached Properties Example} shows the complete code used to
 implement the rsvp attached property.
 
 \section1 Memory Management and QVariant types
@@ -435,7 +435,7 @@ listed in \l {Adding Types}, as well registered object types are permitted as
 signal parameter types.  Using other types is not an error, but the parameter
 value will not be accessible from script.
 
-\l {Extending QML in C++ - Signal Support Example} shows the complete code used to
+\l {Extending QML - Signal Support Example} shows the complete code used to
 implement the onPartyStarted signal property.
 
 \section1 Property Value Sources
@@ -482,7 +482,7 @@ to assign it normally, as though it were a regular QML type.  Only if this
 assignment fails does the engine call the setTarget() method.  This allows
 the type to also be used in contexts other than just as a value source.
 
-\l {Extending QML in C++ -  Property Value Source Example} shows the complete code used
+\l {Extending QML -  Property Value Source Example} shows the complete code used
 implement the HappyBirthday property value source.
 
 \section1 Property Binding
@@ -554,7 +554,7 @@ The CONSTANT attribute should only be used for properties whose value is set,
 and finalized, only in the class constructor.  All other properties that want
 to be used in bindings should have a NOTIFY signal instead.
 
-\l {Extending QML in C++ -  Binding Example} shows the BirthdayParty example updated to
+\l {Extending QML -  Binding Example} shows the BirthdayParty example updated to
 include NOTIFY signals for use in binding.
 
 \section1 Extension Objects

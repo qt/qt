@@ -206,13 +206,11 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeStateGroup::transit
   example:
 
   \qml
-    Script {
-        function toggle() {
-            if (button.state == 'On')
-                button.state = 'Off';
-            else
-                button.state = 'On';
-        }
+    function toggle() {
+        if (button.state == 'On')
+            button.state = 'Off';
+        else
+            button.state = 'On';
     }
   \endqml
 
