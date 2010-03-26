@@ -31,6 +31,7 @@
 #include "pulsesupport.h"
 
 #include <QtCore/qmath.h>
+#include <QtCore/quuid.h>
 
 #define PHONON_CLASSNAME AudioOutput
 #define IFACES2 AudioOutputInterface42
