@@ -15,7 +15,7 @@ Item {
             validator: DoubleValidator{top: 12.12; bottom: 2.93; decimals: 2; notation: DoubleValidator.StandardNotation}
         }
         TextInput { id: strInput;
-            validator: RegExpValidator { regExp: RegExp(/[a-zA-z]{2,4}/) }
+            validator: RegExpValidator { regExp: /[a-zA-z]{2,4}/ }
         }
     }
         
