@@ -772,7 +772,7 @@ void QDeclarativePathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
         qreal v2 = velocity*velocity;
         qreal accel = d->deceleration;
         // + 0.25 to encourage moving at least one item in the flick direction
-        qreal dist = qMin(qreal(d->model->count()-1), qreal(d->model->count()) * v2 / (accel * 2.0) + 0.25);
+        qreal dist = qMin(qreal(d->model->count()-1), qreal(qreal(d->model->count()) * v2 / (accel * 2.0) + 0.25));
         // round to nearest item.
         if (velocity > 0.)
             dist = qRound(dist + d->offset) - d->offset;
