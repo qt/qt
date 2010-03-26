@@ -276,6 +276,7 @@ public:
 
     virtual void setPosHelper(const QPointF &pos);
     void setTransformHelper(const QTransform &transform);
+    void prependGraphicsTransform(QGraphicsTransform *t);
     void appendGraphicsTransform(QGraphicsTransform *t);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);

@@ -50,10 +50,9 @@ class QDeclarativeTranslatePrivate : public QGraphicsTransformPrivate
 {
 public:
     QDeclarativeTranslatePrivate()
-        : x(0), y(0), z(0) {}
+        : x(0), y(0) {}
     qreal x;
     qreal y;
-    qreal z;
 };
 
 /*!
@@ -77,7 +76,7 @@ QDeclarativeTranslate::~QDeclarativeTranslate()
 
     The translation can be any real number; the default value is 0.0.
 
-    \sa y, z
+    \sa y
 */
 qreal QDeclarativeTranslate::x() const
 {
@@ -100,7 +99,7 @@ void QDeclarativeTranslate::setX(qreal x)
 
     The translation can be any real number; the default value is 0.0.
 
-    \sa x, z
+    \sa x
 */
 qreal QDeclarativeTranslate::y() const
 {
@@ -118,35 +117,12 @@ void QDeclarativeTranslate::setY(qreal y)
 }
 
 /*!
-    \property QDeclarativeTranslate::z
-    \brief the depth translation.
-
-    The translation can be any real number; the default value is 0.0.
-
-    \sa x, y
-*/
-qreal QDeclarativeTranslate::z() const
-{
-    Q_D(const QDeclarativeTranslate);
-    return d->z;
-}
-void QDeclarativeTranslate::setZ(qreal z)
-{
-    Q_D(QDeclarativeTranslate);
-    if (d->z == z)
-        return;
-    d->z = z;
-    update();
-    emit positionChanged();
-}
-
-/*!
     \reimp
 */
 void QDeclarativeTranslate::applyTo(QMatrix4x4 *matrix) const
 {
     Q_D(const QDeclarativeTranslate);
-    matrix->translate(d->x, d->y, d->z);
+    matrix->translate(d->x, d->y, 0);
 }
 
 /*!
@@ -155,7 +131,6 @@ void QDeclarativeTranslate::applyTo(QMatrix4x4 *matrix) const
     QDeclarativeTranslate emits this signal when its position changes.
 
     \sa QDeclarativeTranslate::x, QDeclarativeTranslate::y
-    \sa QDeclarativeTranslate::z
 */
 
 QT_END_NAMESPACE

@@ -3843,6 +3843,22 @@ void QGraphicsItem::setTransformations(const QList<QGraphicsTransform *> &transf
 /*!
     \internal
 */
+void QGraphicsItemPrivate::prependGraphicsTransform(QGraphicsTransform *t)
+{
+    if (!transformData)
+        transformData = new QGraphicsItemPrivate::TransformData;
+    if (!transformData->graphicsTransforms.contains(t))
+        transformData->graphicsTransforms.prepend(t);
+
+    Q_Q(QGraphicsItem);
+    t->d_func()->setItem(q);
+    transformData->onlyTransform = false;
+    dirtySceneTransform = 1;
+}
+
+/*!
+    \internal
+*/
 void QGraphicsItemPrivate::appendGraphicsTransform(QGraphicsTransform *t)
 {
     if (!transformData)

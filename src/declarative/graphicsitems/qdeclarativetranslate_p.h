@@ -58,7 +58,6 @@ class Q_GUI_EXPORT QDeclarativeTranslate : public QGraphicsTransform
 
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY positionChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY positionChanged)
-    Q_PROPERTY(qreal z READ z WRITE setZ NOTIFY positionChanged)
 
 public:
     QDeclarativeTranslate(QObject *parent = 0);
@@ -69,9 +68,6 @@ public:
 
     qreal y() const;
     void setY(qreal);
-
-    qreal z() const;
-    void setZ(qreal);
 
     void applyTo(QMatrix4x4 *matrix) const;
 

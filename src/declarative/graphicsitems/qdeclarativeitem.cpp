@@ -89,11 +89,12 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass Translate QGraphicsTranslate
     \since 4.7
-    \brief The Translate object provides a way to move an Item without changing its x or y.
+    \brief The Translate object provides a way to move an Item without changing its x or y properties.
 
     The Translate object independent control over position in addition to the Item's x and y properties.
 
-    The following example moves the X axis of the Rectangle, relative to its interior point 25, 25:
+    The following example moves the Y axis of the Rectangles while still allowing the Row element
+    to lay the items out as if they had not been transformed:
     \qml
     Row {
         Rectangle {
@@ -1562,8 +1563,8 @@ int QDeclarativeItemPrivate::transform_count(QDeclarativeListProperty<QGraphicsT
 void QDeclarativeItemPrivate::transform_append(QDeclarativeListProperty<QGraphicsTransform> *list, QGraphicsTransform *item)
 {
     QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
-    if (object)
-        QGraphicsItemPrivate::get(object)->appendGraphicsTransform(item);
+    if (object) // QGraphicsItem applies the list in the wrong order, so we prepend.
+        QGraphicsItemPrivate::get(object)->prependGraphicsTransform(item);
 }
 
 QGraphicsTransform *QDeclarativeItemPrivate::transform_at(QDeclarativeListProperty<QGraphicsTransform> *list, int idx)
