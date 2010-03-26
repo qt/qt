@@ -44,6 +44,8 @@
 #include <QDebug>
 #include <QtCore/qmath.h>
 
+QT_BEGIN_NAMESPACE
+
 class QDeclarativeTranslatePrivate : public QGraphicsTransformPrivate
 {
 public:
@@ -156,4 +158,4 @@ void QDeclarativeTranslate::applyTo(QMatrix4x4 *matrix) const
     \sa QDeclarativeTranslate::z
 */
 
-//#include "moc_qdeclarativetranslate.cpp"
+QT_END_NAMESPACE
