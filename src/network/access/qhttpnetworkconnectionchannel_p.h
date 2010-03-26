@@ -65,6 +65,7 @@
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qhttpnetworkreply_p.h>
 
+#include "qhttpnetworkconnection_p.h"
 
 #ifndef QT_NO_HTTP
 
@@ -80,7 +81,6 @@ QT_BEGIN_NAMESPACE
 class QHttpNetworkRequest;
 class QHttpNetworkReply;
 class QByteArray;
-class QHttpNetworkConnection;
 
 #ifndef HttpMessagePair
 typedef QPair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
@@ -127,18 +127,10 @@ public:
     QList<HttpMessagePair> alreadyPipelinedRequests;
 
 
-    QHttpNetworkConnectionChannel() : socket(0), state(IdleState), reply(0), written(0), bytesTotal(0), resendCurrent(false),
-    lastStatus(0), pendingEncrypt(false), reconnectAttempts(2),
-    authMehtod(QAuthenticatorPrivate::None), proxyAuthMehtod(QAuthenticatorPrivate::None)
-#ifndef QT_NO_OPENSSL
-    , ignoreAllSslErrors(false)
-#endif
-    , pipeliningSupported(PipeliningSupportUnknown)
-    , connection(0)
-    {}
-
-    void setConnection(QHttpNetworkConnection *c) {connection = c;}
-    QHttpNetworkConnection *connection;
+    QHttpNetworkConnectionChannel();
+    
+    void setConnection(QHttpNetworkConnection *c);
+    QPointer<QHttpNetworkConnection> connection;
 
     void init();
     void close();
@@ -186,8 +178,6 @@ public:
     void _q_encryptedBytesWritten(qint64 bytes); // proceed sending
 #endif
 };
-
-
 
 QT_END_NAMESPACE
 
