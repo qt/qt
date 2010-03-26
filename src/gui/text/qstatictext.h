@@ -66,7 +66,7 @@ public:
     };
 
     QStaticText();
-    QStaticText(const QString &text, const QSizeF &maximumSize = QSizeF());
+    QStaticText(const QString &text);
     QStaticText(const QStaticText &other);
     ~QStaticText();
 
@@ -76,8 +76,8 @@ public:
     void setTextFormat(Qt::TextFormat textFormat);
     Qt::TextFormat textFormat() const;
 
-    void setMaximumSize(const QSizeF &maximumSize);
-    QSizeF maximumSize() const;
+    void setTextWidth(qreal textWidth);
+    qreal textWidth() const;
 
     QSizeF size() const;
 

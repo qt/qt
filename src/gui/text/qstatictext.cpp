@@ -143,11 +143,10 @@ QStaticText::QStaticText()
 
     If an invalid size is passed for \a size the text will be unbounded.
 */
-QStaticText::QStaticText(const QString &text, const QSizeF &size)
+QStaticText::QStaticText(const QString &text)
     : data(new QStaticTextPrivate)
 {    
     data->text = text;
-    data->maximumSize = size;
     data->init();
 }
 
@@ -209,7 +208,7 @@ QStaticText &QStaticText::operator=(const QStaticText &other)
 }
 
 /*!
-    Compares \a other to this QStaticText. Returns true if the texts, fonts and maximum sizes
+    Compares \a other to this QStaticText. Returns true if the texts, fonts and text widths
     are equal.
 */
 bool QStaticText::operator==(const QStaticText &other) const
@@ -217,7 +216,7 @@ bool QStaticText::operator==(const QStaticText &other) const
     return (data == other.data
             || (data->text == other.data->text
                 && data->font == other.data->font
-                && data->maximumSize == other.data->maximumSize));
+                && data->textWidth == other.data->textWidth));
 }
 
 /*!
@@ -315,33 +314,39 @@ QStaticText::PerformanceHint QStaticText::performanceHint() const
 }
 
 /*!
-    Sets the maximum size of the QStaticText to \a size.
+    Sets the preferred width for this QStaticText. If the text is wider than the specified width,
+    it will be broken into multiple lines and grow vertically. If the text cannot be split into
+    multiple lines, it will be larger than the specified \a textWidth.
+
+    Setting the preferred text width to a negative number will cause the text to be unbounded.
+
+    Use size() to get the actual size of the text.
 
     \note This function will cause the layout of the text to be recalculated.
 
-    \sa maximumSize(), size()
+    \sa textWidth(), size()
 */
-void QStaticText::setMaximumSize(const QSizeF &size)
+void QStaticText::setTextWidth(qreal textWidth)
 {
     detach();
-    data->maximumSize = size;
+    data->textWidth = textWidth;
     data->init();
 }
 
 /*!
-    Returns the maximum size of the QStaticText.
+    Returns the preferred width for this QStaticText.
 
-    \sa setMaximumSize()
+    \sa setTextWidth()
 */
-QSizeF QStaticText::maximumSize() const
+qreal QStaticText::textWidth() const
 {
-    return data->maximumSize;
+    return data->textWidth;
 }
 
 /*!
   Returns the size of the bounding rect for this QStaticText.
 
-  \sa maximumSize()
+  \sa textWidth()
 */
 QSizeF QStaticText::size() const
 {
@@ -349,14 +354,14 @@ QSizeF QStaticText::size() const
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
-        : items(0), itemCount(0), glyphPool(0), positionPool(0), needsClipRect(false),
+        : items(0), itemCount(0), glyphPool(0), positionPool(0), textWidth(-1.0),
           useBackendOptimizations(false), textFormat(Qt::AutoText)
 {
 }
 
 QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
-    : text(other.text), font(other.font), maximumSize(other.maximumSize), matrix(other.matrix),
-      items(0), itemCount(0), glyphPool(0), positionPool(0), needsClipRect(false),
+    : text(other.text), font(other.font), textWidth(other.textWidth), matrix(other.matrix),
+      items(0), itemCount(0), glyphPool(0), positionPool(0),
       useBackendOptimizations(other.useBackendOptimizations), textFormat(other.textFormat)
 {
 }
@@ -539,43 +544,50 @@ namespace {
     };
 }
 
-void QStaticTextPrivate::paintText(const QPointF &pos, QPainter *p)
+void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
 {
     bool preferRichText = textFormat == Qt::RichText
                           || (textFormat == Qt::AutoText && Qt::mightBeRichText(text));
 
     if (!preferRichText) {
-        if (maximumSize.isValid()) {
-            QRectF boundingRect;
-            p->drawText(QRectF(pos, maximumSize), Qt::TextWordWrap, text, &boundingRect);
+        QTextLayout textLayout;
+        textLayout.setText(text);
+        textLayout.setFont(font);
 
-            actualSize = boundingRect.size();
-            needsClipRect = boundingRect.width() > maximumSize.width()
-                            || boundingRect.height() > maximumSize.height();
-        } else {
-            p->drawText(pos, text);
-            needsClipRect = false;
+        qreal leading = QFontMetricsF(font).leading();
+        qreal height = -leading;
 
-            QFontMetrics fm(font);
-            actualSize = fm.boundingRect(text).size();
+        textLayout.beginLayout();
+        while (1) {
+            QTextLine line = textLayout.createLine();
+            if (!line.isValid())
+                break;
+
+            if (textWidth >= 0.0)
+                line.setLineWidth(textWidth);
+            height += leading;
+            line.setPosition(QPointF(0.0, height));
+            height += line.height();
         }
+        textLayout.endLayout();
+
+        actualSize = textLayout.boundingRect().size();
+        textLayout.draw(p, topLeftPosition);
     } else {
         QTextDocument document;
         document.setDefaultFont(font);
         document.setDocumentMargin(0.0);
+        if (textWidth >= 0.0)
+            document.setTextWidth(textWidth);
         document.setHtml(text);
 
-        QPointF adjustedPos = pos - QPointF(0, QFontMetricsF(font).ascent());
-        QRectF rect = maximumSize.isValid() ? QRectF(adjustedPos, maximumSize) : QRectF();
         document.adjustSize();
         p->save();
-        p->translate(adjustedPos);
-        document.drawContents(p, rect);        
+        p->translate(topLeftPosition);
+        document.drawContents(p);
         p->restore();
+
         actualSize = document.size();
-        needsClipRect = maximumSize.isValid()
-                        && (actualSize.width() > maximumSize.width()
-                            || actualSize.height() > maximumSize.height());
     }
 }
 

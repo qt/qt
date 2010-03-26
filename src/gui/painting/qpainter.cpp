@@ -5762,19 +5762,24 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, const QPointF *posit
 
 /*!
 
-    \fn void QPainter::drawStaticText(const QPoint &position, const QStaticText &staticText)
+    \fn void QPainter::drawStaticText(const QPoint &topLeftPosition, const QStaticText &staticText)
     \since 4.7
     \overload
 
-    Draws the \a staticText at the \a position.
+    Draws the \a staticText at the \a topLeftPosition.
+
+    \note The y-position is used as the top of the font.
+
 */
 
 /*!
-    \fn void QPainter::drawStaticText(int x, int y, const QStaticText &staticText)
+    \fn void QPainter::drawStaticText(int left, int top, const QStaticText &staticText)
     \since 4.7
     \overload
 
-    Draws the \a staticText at coordinates \a x and \a y.
+    Draws the \a staticText at coordinates \a left and \a top.
+
+    \note The y-position is used as the top of the font.
 */
 
 /*!
@@ -5802,7 +5807,7 @@ void QPainter::drawText(const QPointF &p, const QString &str)
 /*!
     \since 4.7
 
-    Draws the given \a staticText at the given \a position.
+    Draws the given \a staticText at the given \a topLeftPosition.
 
     The text will be drawn using the font and the transformation set on the painter. If the
     font and/or transformation set on the painter are different from the ones used to initialize
@@ -5810,15 +5815,17 @@ void QPainter::drawText(const QPointF &p, const QString &str)
     QStaticText::prepare() to initialize \a staticText with the font and transformation with which
     it will later be drawn.
 
-    If \a position is not the same as when \a staticText was initialized, or when it was last drawn,
-    then there will be a slight overhead when translating the text to its new position.
+    If \a topLeftPosition is not the same as when \a staticText was initialized, or when it was
+    last drawn, then there will be a slight overhead when translating the text to its new position.
 
-    \note If the painter's transformation is not affine, then \a staticText will be drawn using regular
-    calls to drawText(), losing any potential performance improvement.
+    \note If the painter's transformation is not affine, then \a staticText will be drawn using
+    regular calls to drawText(), losing any potential for performance improvement.
+
+    \note The y-position is used as the top of the font.
 
     \sa QStaticText
 */
-void QPainter::drawStaticText(const QPointF &position, const QStaticText &staticText)
+void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText &staticText)
 {
     Q_D(QPainter);
     if (!d->engine || staticText.text().isEmpty() || pen().style() == Qt::NoPen)
@@ -5830,13 +5837,13 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     // If we don't have an extended paint engine, or if the painter is projected,
     // we go through standard code path
     if (d->extended == 0 || !d->state->matrix.isAffine()) {
-        staticText_d->paintText(position, this);
+        staticText_d->paintText(topLeftPosition, this);
         return;
     }
 
     // Don't recalculate entire layout because of translation, rather add the dx and dy
     // into the position to move each text item the correct distance.
-    QPointF transformedPosition = position * d->state->matrix;
+    QPointF transformedPosition = topLeftPosition * d->state->matrix;
     QTransform matrix = d->state->matrix;
 
     // The translation has been applied to transformedPosition. Remove translation
@@ -5861,14 +5868,6 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     if (staticText_d->matrix != d->state->matrix) {
         staticText_d->matrix = d->state->matrix;
         staticTextNeedsReinit = true;
-    }
-
-    bool restoreWhenFinished = false;
-    if (staticText_d->needsClipRect) {
-        save();
-        setClipRect(QRectF(position, staticText_d->maximumSize));
-
-        restoreWhenFinished = true;
     }
 
     if (font() != staticText_d->font) {
@@ -5909,9 +5908,6 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     }
     if (currentColor != oldPen.color())
         setPen(oldPen);
-
-    if (restoreWhenFinished)
-        restore();
 
     if (matrix.isTranslating())
         d->state->matrix = matrix;
