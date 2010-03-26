@@ -45,21 +45,19 @@
 #include <QTimer>
 #include <QFrame>
 #include <QPointer>
-
-QT_BEGIN_NAMESPACE
-class QLabel;
-QT_END_NAMESPACE
+#include <QLabel>
 
 class TetrixBoard : public QFrame
 {
     Q_OBJECT
     Q_PROPERTY(QObject* timer READ getTimer)
-    Q_PROPERTY(QWidget* nextPieceLabel WRITE setNextPieceLabel)
+    Q_PROPERTY(QWidget* nextPieceLabel READ nextPieceLabel WRITE setNextPieceLabel)
 
 public:
     TetrixBoard(QWidget *parent = 0);
 
     void setNextPieceLabel(QWidget *label);
+    QLabel *nextPieceLabel() const;
     void setBoardWidth(int width);
     void setBoardHeight(int height);
     QSize minimumSizeHint() const;
@@ -95,7 +93,7 @@ private:
     int squareHeight() { return contentsRect().height() / BoardHeight; }
 
     QTimer *timer;
-    QPointer<QLabel> nextPieceLabel;
+    QPointer<QLabel> nextPieceLbl;
     QImage image;
 };
 

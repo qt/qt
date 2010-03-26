@@ -53,6 +53,7 @@
 #include <qurl.h>
 #include "qlabel_p.h"
 #include "private/qstylesheetstyle_p.h"
+#include <qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -661,7 +662,9 @@ QSize QLabelPrivate::sizeForWidth(int w) const
             } else {
                 control->setTextWidth(-1);
             }
-            br = QRect(QPoint(0, 0), control->size().toSize());
+
+            QSizeF controlSize = control->size();
+            br = QRect(QPoint(0, 0), QSize(qCeil(controlSize.width()), qCeil(controlSize.height())));
 
             // restore state
             control->setTextWidth(oldTextWidth);
