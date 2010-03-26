@@ -79,6 +79,8 @@ private slots:
     void projectedPainter();
     void rotatedScaledAndTranslatedPainter();
     void transformationChanged();    
+
+    void plainTextVsRichText();
 };
 
 void tst_QStaticText::init()
@@ -480,6 +482,40 @@ void tst_QStaticText::transformationChanged()
     if (!supportsTransformations())
       QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
+}
+
+void tst_QStaticText::plainTextVsRichText()
+{
+    QPixmap imagePlainText(1000, 1000);
+    imagePlainText.fill(Qt::white);
+    {
+        QPainter p(&imagePlainText);
+
+        QStaticText staticText;
+        staticText.setText("FOObar");
+        staticText.setTextFormat(Qt::PlainText);
+
+        p.drawStaticText(10, 10, staticText);
+    }
+
+    QPixmap imageRichText(1000, 1000);
+    imageRichText.fill(Qt::white);
+    {
+        QPainter p(&imageRichText);
+
+        QStaticText staticText;
+        staticText.setText("<html><body>FOObar</body></html>");
+        staticText.setTextFormat(Qt::RichText);
+
+        p.drawStaticText(10, 10, staticText);
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imagePlainText.save("plainTextVsRichText_imagePlainText.png");
+    imageRichText.save("plainTextVsRichText_imageRichText.png");
+#endif
+
+    QCOMPARE(imagePlainText, imageRichText);
 }
 
 QTEST_MAIN(tst_QStaticText)
