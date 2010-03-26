@@ -307,7 +307,7 @@ void QDirectFBPixmapData::fromImage(const QImage &img,
         imageFormat = screen->pixelFormat();
     }
     QImage image;
-    if (flags != Qt::AutoColor) {
+    if ((flags & ~Qt::NoOpaqueDetection) != Qt::AutoColor) {
         image = img.convertToFormat(imageFormat, flags);
         flags = Qt::AutoColor;
     } else if (img.format() == QImage::Format_RGB32) {
