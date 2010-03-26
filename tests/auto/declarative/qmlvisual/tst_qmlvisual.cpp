@@ -97,13 +97,21 @@ void tst_qmlvisual::visual_data()
     QTest::addColumn<QString>("testdata");
 
     QStringList files;
-    files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
+    if (qgetenv("RUN_ALL") != "")
+        files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
+    else {
+        //these are tests we think are stable and useful enough to be run by the CI system
+        files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/parentAnimation/parentAnimation.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/reanchor/reanchor.qml";
+    }
+
 
     foreach (const QString &file, files) {
         QString testdata = toTestScript(file);
         if (testdata.isEmpty())
             continue;
-        
+
         QTest::newRow(file.toLatin1().constData()) << file << testdata;
     }
 }
