@@ -693,6 +693,19 @@ it in two steps, like this:
     myProperty: 10
 \endcode
 
+If a default value is not supplied or set later in the file, each type has a
+default value for when none is explictly set. Below are the default values 
+of some of the types. For the remaining types the default values are undefined.
+
+\table
+\header \o QML Type \o Default Value
+\row \o bool \o false
+\row \o int \o 0
+\row \o double, real \o 0.0
+\row \o string, url \o "" (an empty string)
+\row \o color \o #000000 (black)
+\endtable
+
 If specified, the optional "default" attribute marks the new property as the
 types default property, overriding any existing default property.  Using the
 default attribute twice in the same type block is an error.
