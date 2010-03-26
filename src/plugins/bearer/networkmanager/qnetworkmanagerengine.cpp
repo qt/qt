@@ -602,7 +602,11 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
     ptr->isValid = true;
     ptr->id = QString::number(qHash(objectPath.path()));
     ptr->type = QNetworkConfiguration::InternetAccessPoint;
-    ptr->purpose = QNetworkConfiguration::PublicPurpose;
+    if(accessPoint->flags() == NM_802_11_AP_FLAGS_PRIVACY) {
+        ptr->purpose = QNetworkConfiguration::PrivatePurpose;
+    } else {
+        ptr->purpose = QNetworkConfiguration::PublicPurpose;
+    }
     ptr->state = QNetworkConfiguration::Undefined;
     ptr->bearer = QLatin1String("WLAN");
 
@@ -718,6 +722,7 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
 
     if (connectionType == QLatin1String("802-3-ethernet")) {
         cpPriv->bearer = QLatin1String("Ethernet");
+        cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
 
         foreach (const QDBusObjectPath &devicePath, interface->getDevices()) {
             QNetworkManagerInterfaceDevice device(devicePath.path());
@@ -734,7 +739,12 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
         cpPriv->bearer = QLatin1String("WLAN");
 
         const QString connectionSsid = map.value("802-11-wireless").value("ssid").toString();
-
+        const QString connectionSecurity = map.value("802-11-wireless").value("security").toString();
+        if(!connectionSecurity.isEmpty()) {
+            cpPriv->purpose = QNetworkConfiguration::PrivatePurpose;
+        } else {
+            cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
+        }
         for (int i = 0; i < accessPoints.count(); ++i) {
             if (connectionSsid == accessPoints.at(i)->ssid()) {
                 cpPriv->state |= QNetworkConfiguration::Discovered;
