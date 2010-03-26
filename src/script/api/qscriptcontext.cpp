@@ -161,6 +161,7 @@ QScriptContext::QScriptContext()
 QScriptValue QScriptContext::throwValue(const QScriptValue &value)
 {
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
+    QScript::APIShim shim(QScript::scriptEngineFromExec(frame));
     JSC::JSValue jscValue = QScript::scriptEngineFromExec(frame)->scriptValueToJSCValue(value);
     frame->setException(jscValue);
     return value;
@@ -183,6 +184,7 @@ QScriptValue QScriptContext::throwValue(const QScriptValue &value)
 QScriptValue QScriptContext::throwError(Error error, const QString &text)
 {
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
+    QScript::APIShim shim(QScript::scriptEngineFromExec(frame));
     JSC::ErrorType jscError = JSC::GeneralError;
     switch (error) {
     case UnknownError:
@@ -218,6 +220,7 @@ QScriptValue QScriptContext::throwError(Error error, const QString &text)
 QScriptValue QScriptContext::throwError(const QString &text)
 {
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
+    QScript::APIShim shim(QScript::scriptEngineFromExec(frame));
     JSC::JSObject *result = JSC::throwError(frame, JSC::GeneralError, text);
     return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(result);
 }
@@ -265,6 +268,7 @@ QScriptValue QScriptContext::argument(int index) const
 QScriptValue QScriptContext::callee() const
 {
     const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
+    QScript::APIShim shim(QScript::scriptEngineFromExec(frame));
     return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(frame->callee());
 }
 
@@ -286,6 +290,7 @@ QScriptValue QScriptContext::callee() const
 QScriptValue QScriptContext::argumentsObject() const
 {
     JSC::CallFrame *frame = const_cast<JSC::ExecState*>(QScriptEnginePrivate::frameForContext(this));
+    QScript::APIShim shim(QScript::scriptEngineFromExec(frame));
 
     if (frame == frame->lexicalGlobalObject()->globalExec()) {
         // <global> context doesn't have arguments. return an empty object
@@ -322,6 +327,7 @@ QScriptValue QScriptContext::argumentsObject() const
 bool QScriptContext::isCalledAsConstructor() const
 {
     JSC::CallFrame *frame = const_cast<JSC::ExecState*>(QScriptEnginePrivate::frameForContext(this));
+    QScript::APIShim shim(QScript::scriptEngineFromExec(frame));
 
     //For native functions, look up flags.
     uint flags = QScriptEnginePrivate::contextFlags(frame);
@@ -355,6 +361,7 @@ bool QScriptContext::isCalledAsConstructor() const
 QScriptContext *QScriptContext::parentContext() const
 {
     const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
+    QScript::APIShim shim(QScript::scriptEngineFromExec(frame));
     JSC::CallFrame *callerFrame = frame->callerFrame()->removeHostCallFrameFlag();
     return QScriptEnginePrivate::contextForFrame(callerFrame);
 }
@@ -412,6 +419,7 @@ void QScriptContext::setReturnValue(const QScriptValue &result)
 QScriptValue QScriptContext::activationObject() const
 {
     JSC::CallFrame *frame = const_cast<JSC::ExecState*>(QScriptEnginePrivate::frameForContext(this));
+    QScript::APIShim shim(QScript::scriptEngineFromExec(frame));
     JSC::JSObject *result = 0;
 
     uint flags = QScriptEnginePrivate::contextFlags(frame);
@@ -477,6 +485,7 @@ void QScriptContext::setActivationObject(const QScriptValue &activation)
     }
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
     QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(frame);
+    QScript::APIShim shim(engine);
     JSC::JSObject *object = JSC::asObject(engine->scriptValueToJSCValue(activation));
     if (object == engine->originalGlobalObjectProxy)
         object = engine->originalGlobalObject();
@@ -521,6 +530,7 @@ QScriptValue QScriptContext::thisObject() const
 {
     JSC::CallFrame *frame = const_cast<JSC::ExecState*>(QScriptEnginePrivate::frameForContext(this));
     QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(frame);
+    QScript::APIShim shim(engine);
     JSC::JSValue result = engine->thisForContext(frame);
     if (!result || result.isNull())
         result = frame->globalThisValue();
@@ -536,6 +546,7 @@ QScriptValue QScriptContext::thisObject() const
 void QScriptContext::setThisObject(const QScriptValue &thisObject)
 {
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
+    QScript::APIShim shim(QScript::scriptEngineFromExec(frame));
     if (!thisObject.isObject())
         return;
     if (thisObject.engine() != engine()) {
@@ -662,6 +673,7 @@ QScriptValueList QScriptContext::scopeChain() const
     activationObject(); //ensure the creation of the normal scope for native context
     const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
     QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(frame);
+    QScript::APIShim shim(engine);
     QScriptValueList result;
     JSC::ScopeChainNode *node = frame->scopeChain();
     JSC::ScopeChainIterator it(node);
@@ -700,6 +712,7 @@ void QScriptContext::pushScope(const QScriptValue &object)
     }
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
     QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(frame);
+    QScript::APIShim shim(engine);
     JSC::JSObject *jscObject = JSC::asObject(engine->scriptValueToJSCValue(object));
     if (jscObject == engine->originalGlobalObjectProxy)
         jscObject = engine->originalGlobalObject();
@@ -733,6 +746,7 @@ QScriptValue QScriptContext::popScope()
     JSC::ScopeChainNode *scope = frame->scopeChain();
     Q_ASSERT(scope != 0);
     QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(frame);
+    QScript::APIShim shim(engine);
     QScriptValue result = engine->scriptValueFromJSCValue(scope->object);
     if (!scope->next) {
         // We cannot have a null scope chain, so just zap the object pointer.

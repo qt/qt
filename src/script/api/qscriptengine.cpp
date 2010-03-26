@@ -1899,6 +1899,7 @@ QScriptEngine::~QScriptEngine()
 QScriptValue QScriptEngine::globalObject() const
 {
     Q_D(const QScriptEngine);
+    QScript::APIShim shim(const_cast<QScriptEnginePrivate*>(d));
     JSC::JSObject *result = d->globalObject();
     return const_cast<QScriptEnginePrivate*>(d)->scriptValueFromJSCValue(result);
 }
@@ -1920,6 +1921,7 @@ void QScriptEngine::setGlobalObject(const QScriptValue &object)
     Q_D(QScriptEngine);
     if (!object.isObject())
         return;
+    QScript::APIShim shim(d);
     JSC::JSObject *jscObject = JSC::asObject(d->scriptValueToJSCValue(object));
     d->setGlobalObject(jscObject);
 }
@@ -1976,6 +1978,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
                                         int length)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
@@ -1999,6 +2002,7 @@ extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
 QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newRegExp(d->currentFrame, regexp));
 }
 
@@ -2017,6 +2021,7 @@ QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
 QScriptValue QScriptEngine::newVariant(const QVariant &value)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newVariant(value));
 }
 
@@ -2050,6 +2055,7 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
                                        const QVariant &value)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::JSValue jsObject = d->scriptValueToJSCValue(object);
     return d->scriptValueFromJSCValue(d->newVariant(jsObject, value));
 }
@@ -2081,6 +2087,7 @@ QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership
                                        const QObjectWrapOptions &options)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::JSValue jscQObject = d->newQObject(object, ownership, options);
     return d->scriptValueFromJSCValue(jscQObject);
 }
@@ -2117,8 +2124,10 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
                                        ValueOwnership ownership,
                                        const QObjectWrapOptions &options)
 {
+    Q_D(QScriptEngine);
     if (!scriptObject.isObject())
         return newQObject(qtObject, ownership, options);
+    QScript::APIShim shim(d);
     JSC::JSObject *jscObject = JSC::asObject(QScriptValuePrivate::get(scriptObject)->jscValue);
     if (!jscObject->inherits(&QScriptObject::info)) {
         qWarning("QScriptEngine::newQObject(): changing class of non-QScriptObject not supported");
@@ -2149,6 +2158,7 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
 QScriptValue QScriptEngine::newObject()
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newObject());
 }
 
@@ -2170,6 +2180,7 @@ QScriptValue QScriptEngine::newObject(QScriptClass *scriptClass,
                                       const QScriptValue &data)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::ExecState* exec = d->currentFrame;
     QScriptObject *result = new (exec) QScriptObject(d->scriptObjectStructure);
     result->setDelegate(new QScript::ClassObjectDelegate(scriptClass));
@@ -2237,6 +2248,7 @@ QScriptValue QScriptEngine::newActivationObject()
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, int length)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
@@ -2254,6 +2266,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, in
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWithArgWrapper(exec, /*length=*/0, JSC::Identifier(exec, ""), fun, arg);
     QScriptValue result = d->scriptValueFromJSCValue(function);
@@ -2272,6 +2285,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature 
 QScriptValue QScriptEngine::newArray(uint length)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newArray(d->currentFrame, length));
 }
 
@@ -2285,6 +2299,7 @@ QScriptValue QScriptEngine::newArray(uint length)
 QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &flags)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newRegExp(d->currentFrame, pattern, flags));
 }
 
@@ -2296,6 +2311,7 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
 QScriptValue QScriptEngine::newDate(qsreal value)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newDate(d->currentFrame, value));
 }
 
@@ -2307,6 +2323,7 @@ QScriptValue QScriptEngine::newDate(qsreal value)
 QScriptValue QScriptEngine::newDate(const QDateTime &value)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newDate(d->currentFrame, value));
 }
 
@@ -2330,6 +2347,7 @@ QScriptValue QScriptEngine::newQMetaObject(
     const QMetaObject *metaObject, const QScriptValue &ctor)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::JSValue jscCtor = d->scriptValueToJSCValue(ctor);
     JSC::JSValue jscQMetaObject = d->newQMetaObject(metaObject, jscCtor);
     return d->scriptValueFromJSCValue(jscQMetaObject);
@@ -2582,6 +2600,7 @@ QScriptContext *QScriptEngine::currentContext() const
 QScriptContext *QScriptEngine::pushContext()
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
 
     JSC::CallFrame* newFrame = d->pushContext(d->currentFrame, d->currentFrame->globalData().dynamicGlobalObject,
                                               JSC::ArgList(), /*callee = */0);
@@ -2673,6 +2692,7 @@ void QScriptEngine::popContext()
     if (agent())
         agent()->contextPop();
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     if (d->currentFrame->returnPC() != 0 || d->currentFrame->codeBlock() != 0
         || !currentContext()->parentContext()) {
         qWarning("QScriptEngine::popContext() doesn't match with pushContext()");
@@ -2868,6 +2888,7 @@ void QScriptEngine::setDefaultPrototype(int metaTypeId, const QScriptValue &prot
 QScriptValue QScriptEngine::create(int type, const void *ptr)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->create(d->currentFrame, type, ptr));
 }
 
@@ -3277,6 +3298,7 @@ bool QScriptEnginePrivate::hasDemarshalFunction(int type) const
 bool QScriptEngine::convert(const QScriptValue &value, int type, void *ptr)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return QScriptEnginePrivate::convertValue(d->currentFrame, d->scriptValueToJSCValue(value), type, ptr);
 }
 
@@ -3309,6 +3331,7 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf,
                                        const QScriptValue &prototype)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     QScriptTypeInfo *info = d->m_typeInfos.value(type);
     if (!info) {
         info = new QScriptTypeInfo();
@@ -3341,6 +3364,7 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf,
 void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue jscObject = d->scriptValueToJSCValue(object);
     JSC::JSGlobalObject *glob = d->originalGlobalObject();
@@ -3374,6 +3398,7 @@ QScriptValue QScriptEngine::importExtension(const QString &extension)
     Q_UNUSED(extension);
 #else
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     if (d->importedExtensions.contains(extension))
         return undefinedValue(); // already imported
 
@@ -4014,6 +4039,7 @@ bool qScriptConnect(QObject *sender, const char *signal,
     if (receiver.isObject() && (receiver.engine() != function.engine()))
         return false;
     QScriptEnginePrivate *engine = QScriptEnginePrivate::get(function.engine());
+    QScript::APIShim shim(engine);
     JSC::JSValue jscReceiver = engine->scriptValueToJSCValue(receiver);
     JSC::JSValue jscFunction = engine->scriptValueToJSCValue(function);
     return engine->scriptConnect(sender, signal, jscReceiver, jscFunction,
@@ -4040,6 +4066,7 @@ bool qScriptDisconnect(QObject *sender, const char *signal,
     if (receiver.isObject() && (receiver.engine() != function.engine()))
         return false;
     QScriptEnginePrivate *engine = QScriptEnginePrivate::get(function.engine());
+    QScript::APIShim shim(engine);
     JSC::JSValue jscReceiver = engine->scriptValueToJSCValue(receiver);
     JSC::JSValue jscFunction = engine->scriptValueToJSCValue(function);
     return engine->scriptDisconnect(sender, signal, jscReceiver, jscFunction);
@@ -4145,6 +4172,7 @@ QScriptString QScriptEngine::toStringHandle(const QString &str)
 QScriptValue QScriptEngine::toObject(const QScriptValue &value)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::JSValue jscValue = d->scriptValueToJSCValue(value);
     if (!jscValue || jscValue.isUndefined() || jscValue.isNull())
         return QScriptValue();
