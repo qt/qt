@@ -164,7 +164,8 @@ private:
         DurationChange,
         StatusChange,
         EndOfMedia,
-        PositionChange
+        PositionChange,
+        VideoOutputChange
     };
 
     enum GraphStatus
