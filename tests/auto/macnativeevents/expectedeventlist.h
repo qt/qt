@@ -51,6 +51,7 @@ class ExpectedEventList : public QObject
 {
     QList<QEvent *> eventList;
     QBasicTimer timer;
+    bool debug;
     int eventCount;
     void timerEvent(QTimerEvent *);
 

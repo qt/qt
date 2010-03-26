@@ -49,6 +49,7 @@ ExpectedEventList::ExpectedEventList(QObject *target)
     : QObject(target), eventCount(0)
 {
     target->installEventFilter(this);
+    debug = !qgetenv("NATIVEDEBUG").isEmpty();
 }
 
 ExpectedEventList::~ExpectedEventList()
@@ -92,10 +93,10 @@ bool ExpectedEventList::waitForAllEvents(int maxEventWaitTime)
     return false;
 }
 
-void ExpectedEventList::compareMouseEvents(QEvent *expected, QEvent *received)
+void ExpectedEventList::compareMouseEvents(QEvent *received, QEvent *expected)
 {
-    QMouseEvent *e1 = static_cast<QMouseEvent *>(expected);
-    QMouseEvent *e2 = static_cast<QMouseEvent *>(received);
+    QMouseEvent *e1 = static_cast<QMouseEvent *>(received);
+    QMouseEvent *e2 = static_cast<QMouseEvent *>(expected);
     if (e1->pos() == e2->pos()
             && (e1->globalPos() == e2->globalPos())
             && (e1->button() == e2->button())
@@ -104,14 +105,18 @@ void ExpectedEventList::compareMouseEvents(QEvent *expected, QEvent *received)
         return; // equal
 
     int eventListNr = eventCount - eventList.size();
-    qWarning() << "Expected event" << eventListNr << "about to fail:";
-    qWarning() << "Expected:" << e1;
-    qWarning() << "Received:" << e2;
-    QCOMPARE(e1->pos(), e2->pos());
-    QCOMPARE(e1->globalPos(), e2->globalPos());
-    QCOMPARE(e1->button(), e2->button());
-    QCOMPARE(e1->buttons(), e2->buttons());
-    QCOMPARE(e1->modifiers(), e2->modifiers());
+    if (!debug) {
+        qWarning() << "Expected event" << eventListNr << "differs from received event:";
+        QCOMPARE(e1->pos(), e2->pos());
+        QCOMPARE(e1->globalPos(), e2->globalPos());
+        QCOMPARE(e1->button(), e2->button());
+        QCOMPARE(e1->buttons(), e2->buttons());
+        QCOMPARE(e1->modifiers(), e2->modifiers());
+    } else {
+        qWarning() << "*** FAIL *** : Expected event" << eventListNr << "differs from received event:";
+        qWarning() << "Received:" << e1 << e1->globalPos();
+        qWarning() << "Expected:" << e2 << e2->globalPos();
+    }
 }
 
 void ExpectedEventList::compareKeyEvents(QEvent *event1, QEvent *event2)
@@ -124,6 +129,8 @@ void ExpectedEventList::compareKeyEvents(QEvent *event1, QEvent *event2)
 
 bool ExpectedEventList::eventFilter(QObject *, QEvent *received)
 {
+    if (debug)
+        qDebug() << received;
     if (eventList.isEmpty())
         return false;
 
@@ -139,7 +146,7 @@ bool ExpectedEventList::eventFilter(QObject *, QEvent *received)
             case QEvent::NonClientAreaMouseButtonRelease:
             case QEvent::NonClientAreaMouseButtonDblClick:
             case QEvent::NonClientAreaMouseMove: {
-                compareMouseEvents(expected, received);
+                compareMouseEvents(received, expected);
                 break;
             }
             case QEvent::KeyPress: {

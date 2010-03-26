@@ -47,6 +47,9 @@ NativeEventList::NativeEventList(int defaultWaitMs)
     , wait(false)
     , defaultWaitMs(defaultWaitMs)
 {
+    QString multiplier = qgetenv("NATIVEDEBUG");
+    if (!multiplier.isEmpty())
+        setTimeMultiplier(multiplier.toFloat());
 }
 
 NativeEventList::~NativeEventList()
@@ -103,5 +106,10 @@ void NativeEventList::stop()
 {
     wait = false;
     QAbstractEventDispatcher::instance()->interrupt();
+}
+
+void NativeEventList::setTimeMultiplier(float multiplier)
+{
+    playbackMultiplier = multiplier;
 }
 

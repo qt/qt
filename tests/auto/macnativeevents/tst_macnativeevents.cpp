@@ -61,6 +61,10 @@ private slots:
     void testMouseLeftDoubleClick();
     void stressTestMouseLeftDoubleClick();
     void testMouseDragInside();
+    void testMouseDragOutside();
+    void testMouseDragToNonClientArea();
+    void testDragWindow();
+    void testMouseEnter();
 };
 
 void tst_MacNativeEvents::testMouseMoveLocation()
@@ -77,7 +81,7 @@ void tst_MacNativeEvents::testMouseMoveLocation()
     expected.append(new QMouseEvent(QEvent::MouseMove, w.mapFromGlobal(p), p, Qt::NoButton, Qt::NoButton, Qt::NoModifier));
 
     native.play();
-    QVERIFY2(expected.waitForAllEvents(500), "the test did not receive all expected events!");
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
 }
 
 void tst_MacNativeEvents::testPushButtonPressRelease()
@@ -177,6 +181,107 @@ void tst_MacNativeEvents::testMouseDragInside()
     native.play();
     QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
 }
+
+void tst_MacNativeEvents::testMouseDragOutside()
+{
+    // Check that if we drag the mouse from inside the
+    // widget, and release it outside, we still get mouse move
+    // and release events when the mouse is outside the widget.
+    QWidget w;
+    w.show();
+    QPoint inside1 = w.geometry().center();
+    QPoint inside2 = inside1 - QPoint(10, 0);
+    QPoint outside1 = w.geometry().topLeft() - QPoint(50, 0);
+    QPoint outside2 = outside1 - QPoint(10, 0);
+
+    NativeEventList native;
+    native.append(new QNativeMouseButtonEvent(inside1, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseDragEvent(inside2, Qt::LeftButton, Qt::NoModifier));
+    native.append(new QNativeMouseDragEvent(outside1, Qt::LeftButton, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(outside2, Qt::LeftButton, 0, Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QMouseEvent(QEvent::MouseButtonPress, w.mapFromGlobal(inside1), inside1, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseMove, w.mapFromGlobal(inside2), inside2, Qt::NoButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseMove, w.mapFromGlobal(outside1), outside1, Qt::NoButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseButtonRelease, w.mapFromGlobal(outside2), outside2, Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+}
+
+void tst_MacNativeEvents::testMouseDragToNonClientArea()
+{
+    // Check that if we drag the mouse from inside the
+    // widget, and release it on the title bar, we still get mouse move
+    // and release events when the mouse is on the title bar
+    QWidget w;
+    w.show();
+    QPoint inside1 = w.geometry().center();
+    QPoint inside2 = inside1 - QPoint(10, 0);
+    QPoint titlebar1 = w.geometry().topLeft() - QPoint(-100, 10);
+    QPoint titlebar2 = titlebar1 - QPoint(10, 0);
+
+    NativeEventList native;
+    native.append(new QNativeMouseButtonEvent(inside1, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseDragEvent(inside2, Qt::LeftButton, Qt::NoModifier));
+    native.append(new QNativeMouseDragEvent(titlebar1, Qt::LeftButton, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(titlebar2, Qt::LeftButton, 0, Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QMouseEvent(QEvent::MouseButtonPress, w.mapFromGlobal(inside1), inside1, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseMove, w.mapFromGlobal(inside2), inside2, Qt::NoButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseMove, w.mapFromGlobal(titlebar1), titlebar1, Qt::NoButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::MouseButtonRelease, w.mapFromGlobal(titlebar2), titlebar2, Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+}
+
+void tst_MacNativeEvents::testDragWindow()
+{
+    // Check that if we drag the mouse from inside the
+    // widgets title bar, we get a move event on the window
+    QWidget w;
+    w.show();
+    QPoint titlebar = w.geometry().topLeft() - QPoint(-100, 10);
+    QPoint moveTo = titlebar + QPoint(100, 0);
+
+    NativeEventList native;
+    native.append(new QNativeMouseButtonEvent(titlebar, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseDragEvent(moveTo, Qt::LeftButton, Qt::NoModifier));
+    native.append(500, new QNativeMouseButtonEvent(moveTo, Qt::LeftButton, 0, Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QMouseEvent(QEvent::NonClientAreaMouseButtonPress, w.mapFromGlobal(titlebar), titlebar, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier));
+    expected.append(new QMouseEvent(QEvent::NonClientAreaMouseButtonRelease, w.mapFromGlobal(titlebar), moveTo, Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+}
+
+void tst_MacNativeEvents::testMouseEnter()
+{
+    // When a mouse enters a widget, both a mouse enter events and a
+    // mouse move event should be sendt. Lets test this:
+    QWidget w;
+    w.setMouseTracking(true);
+    w.show();
+    QPoint outside = w.geometry().topLeft() - QPoint(50, 0);
+    QPoint inside = w.geometry().center();
+
+    NativeEventList native;
+    native.append(new QNativeMouseMoveEvent(outside, Qt::NoModifier));
+    native.append(new QNativeMouseMoveEvent(inside, Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QEvent(QEvent::Enter));
+    expected.append(new QMouseEvent(QEvent::MouseMove, w.mapFromGlobal(inside), inside, Qt::NoButton, Qt::NoButton, Qt::NoModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+}
+
 
 #include "tst_macnativeevents.moc"
 

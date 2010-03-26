@@ -61,7 +61,7 @@ class NativeEventList : public QObject
 
     void play(Playback playback = WaitUntilFinished);
     void stop();
-    float playbackMultiplier;
+    void setTimeMultiplier(float multiplier);
 
 signals:
     void done();
@@ -73,6 +73,7 @@ private:
     void waitNextEvent();
 
     QList<QPair<int, QNativeEvent *> > eventList;
+    float playbackMultiplier;
     int currIndex;
     bool wait;
     int defaultWaitMs;
