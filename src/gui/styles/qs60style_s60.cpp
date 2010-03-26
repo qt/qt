@@ -859,11 +859,9 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
     User::LeaveIfError(bitmapDev->CreateContext(bitmapGc));
     CleanupStack::PushL(bitmapGc);
 
-#ifndef Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
     frame->LockHeap();
     memset(frame->DataAddress(), 0, frame->SizeInPixels().iWidth * frame->SizeInPixels().iHeight * 4);  // 4: argb bytes
     frame->UnlockHeap();
-#endif
 
     const TRect outerRect(TPoint(0, 0), targetSize);
     const TRect innerRect = innerRectFromElement(frameElement, outerRect);
