@@ -71,8 +71,9 @@ public:
         if (targetType == TypeExe) {
             generatePkg = true;
         } else {
-            foreach(QString item, this->project->values("DEPLOYMENT")) {
-                if (!this->project->values(item + ".sources").isEmpty()) {
+            const QStringList deployments = this->project->values("DEPLOYMENT");
+            for (int i = 0; i < deployments.count(); ++i) {
+                if (!this->project->values(deployments.at(i) + ".sources").isEmpty()) {
                     generatePkg = true;
                     break;
                 }
