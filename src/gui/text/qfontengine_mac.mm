@@ -306,8 +306,8 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
                 outAdvances_y[idx] = QFixed::fromReal(tmpPoints[i + 1].y - tmpPoints[i].y);
                 
                 if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
-                    outAdvances_x[idx] = outAdvances_x[idx].ceil();
-                    outAdvances_y[idx] = outAdvances_y[idx].ceil();
+                    outAdvances_x[idx] = outAdvances_x[idx].round();
+                    outAdvances_y[idx] = outAdvances_y[idx].round();
                 }
             }
             CGSize lastGlyphAdvance;
@@ -316,7 +316,7 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
             outGlyphs[rtl ? 0 : (glyphCount - 1)] = tmpGlyphs[glyphCount - 1] | fontIndex;
             outAdvances_x[rtl ? 0 : (glyphCount - 1)] =
                     (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-                    ? QFixed::fromReal(lastGlyphAdvance.width).ceil()
+                    ? QFixed::fromReal(lastGlyphAdvance.width).round()
                     : QFixed::fromReal(lastGlyphAdvance.width);
         }
         outGlyphs += glyphCount;
@@ -389,7 +389,7 @@ glyph_metrics_t QCoreTextFontEngine::boundingBox(const QGlyphLayout &glyphs)
     QFixed w;
     for (int i = 0; i < glyphs.numGlyphs; ++i) {
         w += (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-             ? glyphs.effectiveAdvance(i).ceil()
+             ? glyphs.effectiveAdvance(i).round()
              : glyphs.effectiveAdvance(i);
     }
     return glyph_metrics_t(0, -(ascent()), w, ascent()+descent(), w, 0);
@@ -409,8 +409,8 @@ glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
     ret.yoff = QFixed::fromReal(advances[0].height);
 
     if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
-        ret.xoff = ret.xoff.ceil();
-        ret.yoff = ret.yoff.ceil();
+        ret.xoff = ret.xoff.round();
+        ret.yoff = ret.yoff.round();
     }
 
     return ret;
@@ -419,14 +419,14 @@ glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
 QFixed QCoreTextFontEngine::ascent() const
 {
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? QFixed::fromReal(CTFontGetAscent(ctfont)).ceil()
+            ? QFixed::fromReal(CTFontGetAscent(ctfont)).round()
             : QFixed::fromReal(CTFontGetAscent(ctfont));
 }
 QFixed QCoreTextFontEngine::descent() const
 {
     QFixed d = QFixed::fromReal(CTFontGetDescent(ctfont));
     if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-        d = d.ceil();
+        d = d.round();
 
     // subtract a pixel to even out the historical +1 in QFontMetrics::height().
     // Fix in Qt 5.
@@ -435,20 +435,20 @@ QFixed QCoreTextFontEngine::descent() const
 QFixed QCoreTextFontEngine::leading() const
 {
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? QFixed::fromReal(CTFontGetLeading(ctfont)).ceil()
+            ? QFixed::fromReal(CTFontGetLeading(ctfont)).round()
             : QFixed::fromReal(CTFontGetLeading(ctfont));
 }
 QFixed QCoreTextFontEngine::xHeight() const
 {
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? QFixed::fromReal(CTFontGetXHeight(ctfont)).ceil()
+            ? QFixed::fromReal(CTFontGetXHeight(ctfont)).round()
             : QFixed::fromReal(CTFontGetXHeight(ctfont));
 }
 QFixed QCoreTextFontEngine::averageCharWidth() const
 {
     // ### Need to implement properly and get the information from the OS/2 Table.
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? QFontEngine::averageCharWidth().ceil()
+            ? QFontEngine::averageCharWidth().round()
             : QFontEngine::averageCharWidth();
 }
 
@@ -888,8 +888,8 @@ static OSStatus atsuPostLayoutCallback(ATSULayoutOperationSelector selector, ATS
         QFixed xAdvance = FixedToQFixed(layoutData[glyphIdx + 1].realPos - layoutData[glyphIdx].realPos);
 
         if (nfo->styleStrategy & QFont::ForceIntegerMetrics) {
-            yAdvance = yAdvance.ceil();
-            xAdvance = xAdvance.ceil();
+            yAdvance = yAdvance.round();
+            xAdvance = xAdvance.round();
         }
 
         if (glyphId != 0xffff || i == 0) {
@@ -1403,8 +1403,8 @@ void QFontEngineMac::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
         glyphs->advances_y[i] = QFixed::fromReal(metrics[i].deviceAdvance.y);
 
         if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
-            glyphs->advances_x[i] = glyphs->advances_x[i].ceil();
-            glyphs->advances_y[i] = glyphs->advances_y[i].ceil();
+            glyphs->advances_x[i] = glyphs->advances_x[i].round();
+            glyphs->advances_y[i] = glyphs->advances_y[i].round();
         }
     }
 }
@@ -1414,7 +1414,7 @@ glyph_metrics_t QFontEngineMac::boundingBox(const QGlyphLayout &glyphs)
     QFixed w;
     for (int i = 0; i < glyphs.numGlyphs; ++i) {
         w += (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-             ? glyphs.effectiveAdvance(i).ceil()
+             ? glyphs.effectiveAdvance(i).round()
              : glyphs.effectiveAdvance(i);
     }
     return glyph_metrics_t(0, -(ascent()), w, ascent()+descent(), w, 0);
@@ -1444,8 +1444,8 @@ glyph_metrics_t QFontEngineMac::boundingBox(glyph_t glyph)
     if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
         gm.x = gm.x.floor();
         gm.y = gm.y.floor();
-        gm.xoff = gm.xoff.ceil();
-        gm.yoff = gm.yoff.ceil();
+        gm.xoff = gm.xoff.round();
+        gm.yoff = gm.yoff.round();
     }
 
     return gm;
@@ -1454,7 +1454,7 @@ glyph_metrics_t QFontEngineMac::boundingBox(glyph_t glyph)
 QFixed QFontEngineMac::ascent() const
 {
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? m_ascent.ceil()
+            ? m_ascent.round()
             : m_ascent;
 }
 
@@ -1463,35 +1463,35 @@ QFixed QFontEngineMac::descent() const
     // subtract a pixel to even out the historical +1 in QFontMetrics::height().
     // Fix in Qt 5.
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? m_descent.ceil() - 1
+            ? m_descent.round() - 1
             : m_descent;
 }
 
 QFixed QFontEngineMac::leading() const
 {
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? m_leading.ceil()
+            ? m_leading.round()
             : m_leading;
 }
 
 qreal QFontEngineMac::maxCharWidth() const
 {
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? qCeil(m_maxCharWidth)
+            ? qRound(m_maxCharWidth)
             : m_maxCharWidth;
 }
 
 QFixed QFontEngineMac::xHeight() const
 {
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? m_xHeight.ceil()
+            ? m_xHeight.round()
             : m_xHeight;
 }
 
 QFixed QFontEngineMac::averageCharWidth() const
 {
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? m_averageCharWidth.ceil()
+            ? m_averageCharWidth.round()
             : m_averageCharWidth;
 }
 
