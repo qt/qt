@@ -256,6 +256,7 @@ void Ui3Reader::createFormDecl(const QDomElement &e)
     d.option().headerProtection = false;
     d.option().copyrightHeader = false;
     d.option().extractImages = m_extractImages;
+    d.option().limitXPM_LineLength = (m_options & LimitXPM_LineLength) ? 1 : 0;
     d.option().qrcOutputFile = m_qrcOutputFile;
     d.option().implicitIncludes = (m_options & ImplicitIncludes) ? 1 : 0;
     if (trmacro.size())

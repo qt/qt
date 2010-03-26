@@ -68,7 +68,8 @@ typedef QList<QPair<int, Color> > ColorGroup;
 class Ui3Reader
 {
 public:
-    enum Options { CustomWidgetForwardDeclarations = 0x1, ImplicitIncludes = 0x2, PreserveLayoutNames = 0x4 };
+    enum Options { CustomWidgetForwardDeclarations = 0x1, ImplicitIncludes = 0x2,
+                   PreserveLayoutNames = 0x4, LimitXPM_LineLength = 0x8 };
 
     explicit Ui3Reader(QTextStream &stream, unsigned options);
     ~Ui3Reader();
