@@ -428,20 +428,21 @@ void QDeclarativeTextInput::setFocusOnPress(bool b)
 }
 
 /*!
-    \qmlproperty QValidator* TextInput::validator
+    \qmlproperty Validator TextInput::validator
 
-    Allows you to set a QValidator on the TextInput. When a validator is set
+    Allows you to set a validator on the TextInput. When a validator is set
     the TextInput will only accept input which leaves the text property in
     an acceptable or intermediate state. The accepted signal will only be sent
     if the text is in an acceptable state when enter is pressed.
 
-    Currently supported validators are QIntValidator, QDoubleValidator and
-    QRegExpValidator. For details, refer to their C++ documentation and remember
+    Currently supported validators are IntValidator, DoubleValidator and
+    RegExpValidator. For details, refer to their C++ documentation (QIntValidator,
+    QDoubleValidator, and QRegExpValidator) and remember
     that all Q_PROPERTIES are accessible from Qml. A brief usage guide follows:
 
-    QIntValidator and QDoubleValidator both are controllable through two properties,
-    top and bottom. The difference is that for QIntValidator the top and bottom properties
-    should be integers, and for QDoubleValidator they should be doubles. QRegExpValidator
+    IntValidator and DoubleValidator both are controllable through two properties,
+    top and bottom. The difference is that for IntValidator the top and bottom properties
+    should be integers, and for DoubleValidator they should be doubles. RegExpValidator
     has a single string property, regExp, which should be set to the regular expression to
     be used for validation. An example of using validators is shown below, which allows
     input of integers between 11 and 31 into the text input:
@@ -449,7 +450,7 @@ void QDeclarativeTextInput::setFocusOnPress(bool b)
     \code
     import Qt 4.6
     TextInput{
-        validator: QIntValidator{bottom: 11; top: 31;}
+        validator: IntValidator{bottom: 11; top: 31;}
         focus: true
     }
     \endcode

@@ -23,3 +23,18 @@ MinehuntCore_sources.path = $$[QT_INSTALL_DEMOS]/declarative/minehunt/MinehuntCo
 
 INSTALLS = sources MinehuntCore_sources target
 
+symbian:{
+    load(data_caging_paths)
+    TARGET.EPOCALLOWDLLDATA = 1
+    TARGET.CAPABILITY = CAP_GENERAL_DLL
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
+    
+    importFiles.sources = minehunt.dll \
+    MinehuntCore/Explosion.qml \
+    MinehuntCore/pics \
+    MinehuntCore/qmldir
+    importFiles.path = $$QT_IMPORTS_BASE_DIR/MinehuntCore 
+    DEPLOYMENT = importFiles
+}
+ 
+INSTALLS = sources MinehuntCore_sources target
