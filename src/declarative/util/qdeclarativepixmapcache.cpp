@@ -60,11 +60,6 @@
 #include <private/qobject_p.h>
 #include <QSslError>
 
-#ifdef Q_OS_LINUX
-#include <pthread.h>
-#include <linux/sched.h>
-#endif
-
 // Maximum number of simultaneous image requests to send.
 static const int maxImageRequestCount = 8;
 
@@ -364,7 +359,7 @@ void QDeclarativeImageRequestHandler::networkRequestDone()
 QDeclarativeImageReader::QDeclarativeImageReader(QDeclarativeEngine *eng)
     : QThread(eng), engine(eng), handler(0)
 {
-    start(QThread::LowPriority);
+    start(QThread::IdlePriority);
 }
 
 QDeclarativeImageReader::~QDeclarativeImageReader()
@@ -417,14 +412,6 @@ void QDeclarativeImageReader::cancel(QDeclarativePixmapReply *reply)
 
 void QDeclarativeImageReader::run()
 {
-#if defined(Q_OS_LINUX) && defined(SCHED_IDLE)
-    struct sched_param param;
-    int policy;
-
-    pthread_getschedparam(pthread_self(), &policy, &param);
-    pthread_setschedparam(pthread_self(), SCHED_IDLE, &param);
-#endif
-
     handler = new QDeclarativeImageRequestHandler(this, engine);
 
     exec();
