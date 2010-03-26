@@ -2988,19 +2988,19 @@ static void convert_Indexed8_to_X32(QImageData *dest, const QImageData *src, Qt:
         colorTable.resize(256);
         for (int i=0; i<256; ++i)
             colorTable[i] = qRgb(i, i, i);
-
     }
 
     int w = src->width;
     const uchar *src_data = src->data;
     uchar *dest_data = dest->data;
+    int tableSize = colorTable.size() - 1;
     for (int y = 0; y < src->height; y++) {
         uint *p = (uint *)dest_data;
         const uchar *b = src_data;
         uint *end = p + w;
 
         while (p < end)
-            *p++ = colorTable.at(*b++);
+            *p++ = colorTable.at(qMin<int>(tableSize, *b++));
 
         src_data += src->bytes_per_line;
         dest_data += dest->bytes_per_line;
