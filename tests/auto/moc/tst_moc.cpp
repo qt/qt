@@ -1312,6 +1312,15 @@ public slots:
         QString const returnConstString2( QString const s) { return s; }
 };
 
+class QTBUG9354_constInName: public QObject
+{ Q_OBJECT
+public slots:
+    void slotChooseScientificConst0(struct science_constant const &) {};
+    void foo(struct science_const const &) {};
+    void foo(struct constconst const &) {};
+    void foo(struct constconst *) {};
+    void foo(struct const_ *) {};
+};
 
 QTEST_APPLESS_MAIN(tst_Moc)
 #include "tst_moc.moc"

@@ -287,7 +287,8 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
         }
 
         // cv qualifers can appear after the type as well
-        if (t != e && (e - t >= 5 && strncmp("const", t, 5) == 0)) {
+        if (!is_ident_char(c) && t != e && (e - t >= 5 && strncmp("const", t, 5) == 0)
+            && (e - t == 5 || !is_ident_char(t[5]))) {
             t += 5;
             while (t != e && is_space(*t))
                 ++t;

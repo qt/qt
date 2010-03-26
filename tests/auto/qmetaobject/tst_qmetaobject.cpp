@@ -740,6 +740,14 @@ void tst_QMetaObject::normalizedType_data()
     QTest::newRow("template7") << "QList<QList<int> >" << "QList<QList<int> >";
     QTest::newRow("value1") << "const QString &" << "QString";
     QTest::newRow("value2") << "QString const &" << "QString";
+    QTest::newRow("constInName1") << "constconst" << "constconst";
+    QTest::newRow("constInName2") << "constconst*" << "constconst*";
+    QTest::newRow("constInName3") << "const constconst&" << "constconst";
+    QTest::newRow("constInName4") << "constconst const*const" << "constconst*const";
+    QTest::newRow("class") << "const class foo&" << "foo";
+    QTest::newRow("struct") << "const struct foo*" << "const foo*";
+    QTest::newRow("struct2") << "struct foo const*" << "const foo*";
+    QTest::newRow("enum") << "enum foo" << "foo";
 }
 
 void tst_QMetaObject::normalizedType()
