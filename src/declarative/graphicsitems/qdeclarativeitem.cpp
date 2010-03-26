@@ -2587,10 +2587,6 @@ QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
         emit parentChanged(parentItem());
         d->parentNotifier.notify();
         break;
-    case ItemChildAddedChange:
-    case ItemChildRemovedChange:
-        emit childrenChanged();
-        break;
     case ItemVisibleHasChanged: {
             for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
                 const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
