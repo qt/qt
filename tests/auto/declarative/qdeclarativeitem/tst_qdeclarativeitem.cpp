@@ -61,6 +61,8 @@ private slots:
     void mapCoordinates();
     void mapCoordinates_data();
     void propertyChanges();
+    void transforms();
+    void transforms_data();
 
 private:
     template<typename T>
@@ -400,6 +402,25 @@ void tst_QDeclarativeItem::mapCoordinates_data()
 
     for (int i=-20; i<=20; i+=10)
         QTest::newRow(QTest::toString(i)) << i << i;
+}
+
+void tst_QDeclarativeItem::transforms_data()
+{
+    QTest::addColumn<QByteArray>("qml");
+    QTest::addColumn<QMatrix>("matrix");
+    QTest::newRow("translate") << QByteArray("import Qt 4.6\nItem { transform: Translate { x: 10; y: 20 } }") << QMatrix(1,0,0,1,10,20);
+    QTest::newRow("rotation") << QByteArray("import Qt 4.6\nItem { transform: Rotation { angle: 90 } }") << QMatrix(0,1,-1,0,0,0);
+    QTest::newRow("scale") << QByteArray("import Qt 4.6\nItem { transform: Scale { xScale: 1.5; yScale: -2  } }") << QMatrix(1.5,0,0,-2,0,0);
+}
+
+void tst_QDeclarativeItem::transforms()
+{
+    QFETCH(QByteArray, qml);
+    QFETCH(QMatrix, matrix);
+    QDeclarativeComponent component(&engine);
+    component.setData(qml, QUrl::fromLocalFile(""));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QCOMPARE(item->sceneMatrix(), matrix);
 }
 
 void tst_QDeclarativeItem::propertyChanges()
