@@ -272,7 +272,6 @@ Shaper::Shaper(FT_Face face, HB_Script script, const QString &str)
 }
 
 
-#if defined(Q_WS_X11)
 static bool decomposedShaping(FT_Face face, HB_Script script, const QChar &ch)
 {
     QString uc = QString().append(ch);
@@ -318,7 +317,6 @@ static bool decomposedShaping(FT_Face face, HB_Script script, const QChar &ch)
     qDebug("    decomposed glyph result = %s", str.toLatin1().constData());
     return false;
 }
-#endif
 
 struct ShapeTable {
     unsigned short unicode[16];
@@ -382,6 +380,44 @@ void tst_QScriptEngine::greek()
                 continue;
             QVERIFY( decomposedShaping(face, HB_Script_Greek, QChar(uc)) );
         }
+        FT_Done_Face(face);
+    } else {
+        QSKIP("couln't find DejaVu Sans", SkipAll);
+    }
+
+
+    face = loadFace("SBL_grk.ttf");
+    if (face) {
+        for (int uc = 0x1f00; uc <= 0x1fff; ++uc) {
+            QString str;
+            str.append(uc);
+            if (str.normalized(QString::NormalizationForm_D).normalized(QString::NormalizationForm_C) != str) {
+                //qDebug() << "skipping" << hex << uc;
+                continue;
+            }
+            if (uc == 0x1fc1 || uc == 0x1fed)
+                continue;
+            QVERIFY( decomposedShaping(face, HB_Script_Greek, QChar(uc)) );
+
+        }
+
+        const ShapeTable shape_table [] = {
+            { { 0x3b1, 0x300, 0x313, 0x0 },
+              { 0xb8, 0x3d3, 0x3c7, 0x0 } },
+            { { 0x3b1, 0x313, 0x300, 0x0 },
+              { 0xd4, 0x0 } },
+
+            { {0}, {0} }
+        };
+
+
+        const ShapeTable *s = shape_table;
+        while (s->unicode[0]) {
+            QVERIFY( shaping(face, s, HB_Script_Greek) );
+            ++s;
+        }
+
+        FT_Done_Face(face);
     } else {
         QSKIP("couln't find DejaVu Sans", SkipAll);
     }
