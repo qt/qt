@@ -94,6 +94,7 @@ completely new applications.  QML is fully \l {Extending QML in C++}{extensible 
 \o \l {qdeclarativefocus.html}{Keyboard Focus}
 \o \l {Extending types from QML}
 \o \l {Dynamic Object Creation}
+\o \l {qmlruntime.html}{The Qt Declarative Runtime}
 \endlist
 
 \section1 Reference:

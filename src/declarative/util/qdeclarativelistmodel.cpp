@@ -365,7 +365,7 @@ void QDeclarativeListModel::clear()
 
     if (!m_isWorkerCopy) {
         emit itemsRemoved(0, cleared);
-        emit countChanged(0);
+        emit countChanged();
     }
 }
 
@@ -390,7 +390,7 @@ void QDeclarativeListModel::remove(int index)
 
     if (!m_isWorkerCopy) {
         emit itemsRemoved(index, 1);
-        emit countChanged(this->count());
+        emit countChanged();
     }
 }
 
@@ -424,7 +424,7 @@ void QDeclarativeListModel::insert(int index, const QScriptValue& valuemap)
     bool ok = m_flat ?  m_flat->insert(index, valuemap) : m_nested->insert(index, valuemap);
     if (ok && !m_isWorkerCopy) {
         emit itemsInserted(index, 1);
-        emit countChanged(this->count());
+        emit countChanged();
     }
 }
 

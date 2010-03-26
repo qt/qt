@@ -564,10 +564,10 @@ void tst_qdeclarativestates::anchorChanges()
 
     rect->setState("right");
     QCOMPARE(innerRect->x(), qreal(150));
-    QCOMPARE(aChanges->reset(), QString("left"));
+    QCOMPARE(aChanges->anchors()->left().anchorLine, QDeclarativeAnchorLine::Invalid);  //### was reset (how do we distinguish from not set at all)
     QCOMPARE(aChanges->object(), qobject_cast<QDeclarativeItem*>(innerRect));
-    QCOMPARE(aChanges->right().item, rect->right().item);
-    QCOMPARE(aChanges->right().anchorLine, rect->right().anchorLine);
+    QCOMPARE(aChanges->anchors()->right().item, rect->right().item);
+    QCOMPARE(aChanges->anchors()->right().anchorLine, rect->right().anchorLine);
 
     rect->setState("");
     QCOMPARE(innerRect->x(), qreal(5));
@@ -623,14 +623,14 @@ void tst_qdeclarativestates::anchorChanges3()
 
     rect->setState("reanchored");
     QCOMPARE(aChanges->object(), qobject_cast<QDeclarativeItem*>(innerRect));
-    QCOMPARE(aChanges->left().item, leftGuideline->left().item);
-    QCOMPARE(aChanges->left().anchorLine, leftGuideline->left().anchorLine);
-    QCOMPARE(aChanges->right().item, rect->right().item);
-    QCOMPARE(aChanges->right().anchorLine, rect->right().anchorLine);
-    QCOMPARE(aChanges->top().item, rect->top().item);
-    QCOMPARE(aChanges->top().anchorLine, rect->top().anchorLine);
-    QCOMPARE(aChanges->bottom().item, bottomGuideline->bottom().item);
-    QCOMPARE(aChanges->bottom().anchorLine, bottomGuideline->bottom().anchorLine);
+    QCOMPARE(aChanges->anchors()->left().item, leftGuideline->left().item);
+    QCOMPARE(aChanges->anchors()->left().anchorLine, leftGuideline->left().anchorLine);
+    QCOMPARE(aChanges->anchors()->right().item, rect->right().item);
+    QCOMPARE(aChanges->anchors()->right().anchorLine, rect->right().anchorLine);
+    QCOMPARE(aChanges->anchors()->top().item, rect->top().item);
+    QCOMPARE(aChanges->anchors()->top().anchorLine, rect->top().anchorLine);
+    QCOMPARE(aChanges->anchors()->bottom().item, bottomGuideline->bottom().item);
+    QCOMPARE(aChanges->anchors()->bottom().anchorLine, bottomGuideline->bottom().anchorLine);
 
     QCOMPARE(innerRect->x(), qreal(10));
     QCOMPARE(innerRect->y(), qreal(0));
@@ -673,10 +673,10 @@ void tst_qdeclarativestates::anchorChanges4()
 
     rect->setState("reanchored");
     QCOMPARE(aChanges->object(), qobject_cast<QDeclarativeItem*>(innerRect));
-    QCOMPARE(aChanges->horizontalCenter().item, bottomGuideline->horizontalCenter().item);
-    QCOMPARE(aChanges->horizontalCenter().anchorLine, bottomGuideline->horizontalCenter().anchorLine);
-    QCOMPARE(aChanges->verticalCenter().item, leftGuideline->verticalCenter().item);
-    QCOMPARE(aChanges->verticalCenter().anchorLine, leftGuideline->verticalCenter().anchorLine);
+    QCOMPARE(aChanges->anchors()->horizontalCenter().item, bottomGuideline->horizontalCenter().item);
+    QCOMPARE(aChanges->anchors()->horizontalCenter().anchorLine, bottomGuideline->horizontalCenter().anchorLine);
+    QCOMPARE(aChanges->anchors()->verticalCenter().item, leftGuideline->verticalCenter().item);
+    QCOMPARE(aChanges->anchors()->verticalCenter().anchorLine, leftGuideline->verticalCenter().anchorLine);
 
     delete rect;
 }
@@ -708,10 +708,10 @@ void tst_qdeclarativestates::anchorChanges5()
 
     rect->setState("reanchored");
     QCOMPARE(aChanges->object(), qobject_cast<QDeclarativeItem*>(innerRect));
-    QCOMPARE(aChanges->horizontalCenter().item, bottomGuideline->horizontalCenter().item);
-    QCOMPARE(aChanges->horizontalCenter().anchorLine, bottomGuideline->horizontalCenter().anchorLine);
-    QCOMPARE(aChanges->baseline().item, leftGuideline->baseline().item);
-    QCOMPARE(aChanges->baseline().anchorLine, leftGuideline->baseline().anchorLine);
+    QCOMPARE(aChanges->anchors()->horizontalCenter().item, bottomGuideline->horizontalCenter().item);
+    QCOMPARE(aChanges->anchors()->horizontalCenter().anchorLine, bottomGuideline->horizontalCenter().anchorLine);
+    QCOMPARE(aChanges->anchors()->baseline().item, leftGuideline->baseline().item);
+    QCOMPARE(aChanges->anchors()->baseline().anchorLine, leftGuideline->baseline().anchorLine);
 
     delete rect;
 }

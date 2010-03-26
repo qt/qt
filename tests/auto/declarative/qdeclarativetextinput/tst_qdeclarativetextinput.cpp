@@ -463,7 +463,6 @@ void tst_qdeclarativetextinput::validators()
     QVERIFY(strInput->hasFocus() == true);
     QTest::keyPress(canvas, Qt::Key_1);
     QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
-    QEXPECT_FAIL("","Will not work until QTBUG-8025 is resolved", Abort);
     QCOMPARE(strInput->text(), QLatin1String(""));
     QCOMPARE(strInput->hasAcceptableInput(), false);
     QTest::keyPress(canvas, Qt::Key_A);

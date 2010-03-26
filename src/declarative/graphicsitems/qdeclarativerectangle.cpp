@@ -470,7 +470,7 @@ void QDeclarativeRectangle::drawRect(QPainter &p)
 QRectF QDeclarativeRectangle::boundingRect() const
 {
     Q_D(const QDeclarativeRectangle);
-    return QRectF(-d->paintmargin, -d->paintmargin, d->width+d->paintmargin*2, d->height+d->paintmargin*2);
+    return QRectF(-d->paintmargin, -d->paintmargin, d->width()+d->paintmargin*2, d->height()+d->paintmargin*2);
 }
 
 QT_END_NAMESPACE

@@ -147,12 +147,13 @@ public:
     supports WAVE and AU files.
     \row
     \o Mac OS X
-    \o NSSound is used. All formats that NSSound supports, including QuickTime formats, 
+    \o NSSound is used. All formats that NSSound supports, including QuickTime formats,
     are supported by Qt for Mac OS X.
     \row
     \o Qt for Embedded Linux
     \o A built-in mixing sound server is used, accessing \c /dev/dsp
     directly. Only the WAVE format is supported.
+    \row
     \o Symbian
     \o CMdaAudioPlayerUtility is used. All formats that Symbian OS or devices support
     are supported also by Qt.
