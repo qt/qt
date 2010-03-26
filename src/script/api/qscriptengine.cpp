@@ -915,7 +915,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
-    JSC::setCurrentIdentifierTable(globalData->identifierTable);
+    QScript::APIShim shim(this);
 
     //disconnect all loadedScripts and generate all jsc::debugger::scriptUnload events
     QHash<intptr_t,QScript::UStringSourceProviderWithFeedback*>::const_iterator it;
