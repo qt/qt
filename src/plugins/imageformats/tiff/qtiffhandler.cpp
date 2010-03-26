@@ -385,8 +385,8 @@ static bool checkGrayscale(const QVector<QRgb> &colorTable)
 
     const bool increasing = (colorTable.at(0) == 0xff000000);
     for (int i = 0; i < 256; ++i) {
-        if (increasing && colorTable.at(i) != qRgb(i, i, i)
-            || !increasing && colorTable.at(i) != qRgb(255 - i, 255 - i, 255 - i))
+        if ((increasing && colorTable.at(i) != qRgb(i, i, i))
+            || (!increasing && colorTable.at(i) != qRgb(255 - i, 255 - i, 255 - i)))
             return false;
     }
     return true;

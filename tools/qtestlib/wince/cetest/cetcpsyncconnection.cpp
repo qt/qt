@@ -198,3 +198,24 @@ bool CeTcpSyncConnection::fileCreationTime(const QString &fileName, FILETIME* de
     file.remove();
     return result;
 }
+
+bool CeTcpSyncConnection::resetDevice()
+{
+    qWarning("CeTcpSyncConnection::resetDevice not implemented");
+    return false;
+}
+
+bool CeTcpSyncConnection::toggleDevicePower(int *returnValue)
+{
+    Q_UNUSED(returnValue);
+    qWarning("CeTcpSyncConnection::toggleDevicePower not implemented");
+    return false;
+}
+
+bool CeTcpSyncConnection::setDeviceAwake(bool activate, int *returnValue)
+{
+    Q_UNUSED(activate);
+    Q_UNUSED(returnValue);
+    qWarning("CeTcpSyncConnection::setDeviceAwake not implemented");
+    return false;
+}

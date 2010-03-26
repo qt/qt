@@ -328,7 +328,7 @@ int QFontMetrics::height() const
 {
     QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
     Q_ASSERT(engine != 0);
-    return qRound(engine->ascent() + engine->descent()) + 1;
+    return qRound(engine->ascent()) + qRound(engine->descent()) + 1;
 }
 
 /*!
@@ -356,7 +356,7 @@ int QFontMetrics::lineSpacing() const
 {
     QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
     Q_ASSERT(engine != 0);
-    return qRound(engine->leading() + engine->ascent() + engine->descent()) + 1;
+    return qRound(engine->leading()) + qRound(engine->ascent()) + qRound(engine->descent()) + 1;
 }
 
 /*!

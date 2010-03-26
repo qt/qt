@@ -97,6 +97,8 @@ protected:
             case Qt::MaximumSize:
                 sh = QSizeF(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
                 break;
+            default:
+                break;
         }
          return sh;
     }
@@ -166,15 +168,6 @@ private:
     QPixmap scaled;
 };
 
-
-static QGraphicsProxyWidget *createItem(const QString &name = "Unnamed")
-{
-    QGraphicsProxyWidget *w = new QGraphicsProxyWidget;
-    w->setWidget(new QPushButton(name));
-    w->setData(0, name);
-    w->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    return w;
-}
 
 int main(int argc, char **argv)
 {

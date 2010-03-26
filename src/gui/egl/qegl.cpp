@@ -528,6 +528,9 @@ QEglProperties QEglContext::configProperties() const
     return QEglProperties(config());
 }
 
+_eglCreateImageKHR eglCreateImageKHR = 0;
+_eglDestroyImageKHR eglDestroyImageKHR = 0;
+
 EGLDisplay QEgl::display()
 {
     static EGLDisplay dpy = EGL_NO_DISPLAY;
@@ -548,6 +551,12 @@ EGLDisplay QEgl::display()
         if (!eglInitialize(dpy, NULL, NULL)) {
             qWarning() << "QEgl::display(): Cannot initialize EGL display:" << QEgl::errorString();
             return EGL_NO_DISPLAY;
+        }
+
+        // Resolve the egl extension function pointers:
+        if (QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_base")) {
+            eglCreateImageKHR = (_eglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
+            eglDestroyImageKHR = (_eglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
         }
     }
 

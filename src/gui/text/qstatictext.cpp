@@ -553,12 +553,14 @@ void QStaticTextPrivate::paintText(const QPointF &pos, QPainter *p)
     } else {
         QTextDocument document;
         document.setDefaultFont(font);
+        document.setDocumentMargin(0.0);
         document.setHtml(text);
 
-        QRectF rect = maximumSize.isValid() ? QRectF(pos, maximumSize) : QRectF();
+        QPointF adjustedPos = pos - QPointF(0, QFontMetricsF(font).ascent());
+        QRectF rect = maximumSize.isValid() ? QRectF(adjustedPos, maximumSize) : QRectF();
         document.adjustSize();
         p->save();
-        p->translate(pos);
+        p->translate(adjustedPos);
         document.drawContents(p, rect);        
         p->restore();
         actualSize = document.size();
