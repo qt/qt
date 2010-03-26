@@ -75,6 +75,9 @@ public:
     bool createDirectory(const QString&, bool deleteBefore=false);
 
     bool execute(QString program, QString arguments = QString(), int timeout = -1, int *returnValue = NULL);
+    bool resetDevice();
+    bool toggleDevicePower(int *returnValue = NULL);
+    bool setDeviceAwake(bool activate, int *returnValue = NULL);
 private:
     bool connected;
 };
