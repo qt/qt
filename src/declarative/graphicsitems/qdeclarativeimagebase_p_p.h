@@ -68,6 +68,7 @@ public:
     QDeclarativeImageBasePrivate()
       : status(QDeclarativeImageBase::Null),
         progress(0.0),
+        sourcewidth(0), sourceheight(0),
         pendingPixmapCache(false),
         async(false)
     {
@@ -78,6 +79,7 @@ public:
     QDeclarativeImageBase::Status status;
     QUrl url;
     qreal progress;
+    int sourcewidth, sourceheight;
     bool pendingPixmapCache : 1;
     bool async : 1;
 };

@@ -83,7 +83,43 @@ QT_BEGIN_NAMESPACE
     You can assign any number of Transform elements to an Item. Each Transform is applied in order,
     one at a time, to the Item it's assigned to.
 
-    \sa Rotation, Scale
+    \sa Rotation, Scale, Translate
+*/
+
+/*!
+    \qmlclass Translate QGraphicsTranslate
+    \since 4.7
+    \brief The Translate object provides a way to move an Item without changing its x or y.
+
+    The Translate object independent control over position in addition to the Item's x and y properties.
+
+    The following example moves the X axis of the Rectangle, relative to its interior point 25, 25:
+    \qml
+    Row {
+        Rectangle {
+            width: 100; height: 100
+            color: "blue"
+            transform: Translate { y: 20 }
+        }
+        Rectangle {
+            width: 100; height: 100
+            color: "red"
+            transform: Translate { y: -20 }
+        }
+    }
+    \endqml
+*/
+
+/*!
+    \qmlproperty real Translate::x
+
+    The translation along the X axis.
+*/
+
+/*!
+    \qmlproperty real Translate::yTranslate
+
+    The translation along the Y axis.
 */
 
 /*!

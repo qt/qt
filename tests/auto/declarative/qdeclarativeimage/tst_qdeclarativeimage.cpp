@@ -82,6 +82,8 @@ private slots:
     void resized();
     void smooth();
     void pixmap();
+    void svg();
+    void big();
 
 private:
     QDeclarativeEngine engine;
@@ -111,24 +113,29 @@ void tst_qdeclarativeimage::noSource()
 void tst_qdeclarativeimage::imageSource_data()
 {
     QTest::addColumn<QString>("source");
+    QTest::addColumn<qreal>("width");
+    QTest::addColumn<qreal>("height");
     QTest::addColumn<bool>("remote");
     QTest::addColumn<bool>("async");
     QTest::addColumn<QString>("error");
 
-    QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << false << false << "";
-    QTest::newRow("local async") << QUrl::fromLocalFile(SRCDIR "/data/colors1.png").toString() << false << true << "";
-    QTest::newRow("local not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() << false
+    QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << 120.0 << 120.0 << false << false << "";
+    QTest::newRow("local async") << QUrl::fromLocalFile(SRCDIR "/data/colors1.png").toString() << 120.0 << 120.0 << false << true << "";
+    QTest::newRow("local not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() << 0.0 << 0.0 << false
         << false << "Cannot open  QUrl( \"" + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() + "\" )  ";
-    QTest::newRow("local async not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString() << false
+    QTest::newRow("local async not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString() << 0.0 << 0.0 << false
         << true << "\"Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString() + "\" ";
-    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << false << "";
-    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true << false
+    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << 120.0 << 120.0 << true << false << "";
+    QTest::newRow("remote svg") << SERVER_ADDR "/heart.svg" << 550.0 << 500.0 << true << false << "";
+    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << 0.0 << 0.0 << true << false
         << "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
 }
 
 void tst_qdeclarativeimage::imageSource()
 {
     QFETCH(QString, source);
+    QFETCH(qreal, width);
+    QFETCH(qreal, height);
     QFETCH(bool, remote);
     QFETCH(bool, async);
     QFETCH(QString, error);
@@ -156,8 +163,8 @@ void tst_qdeclarativeimage::imageSource()
 
     if (error.isEmpty()) {
         TRY_WAIT(obj->status() == QDeclarativeImage::Ready);
-        QCOMPARE(obj->width(), 120.);
-        QCOMPARE(obj->height(), 120.);
+        QCOMPARE(obj->width(), width);
+        QCOMPARE(obj->height(), height);
         QCOMPARE(obj->fillMode(), QDeclarativeImage::Stretch);
         QCOMPARE(obj->progress(), 1.0);
     } else {
@@ -247,6 +254,48 @@ void tst_qdeclarativeimage::pixmap()
 
     delete obj;
 }
+
+void tst_qdeclarativeimage::svg()
+{
+    QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/heart.svg\"; sourceWidth: 300; sourceHeight: 300 }";
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->pixmap().width(), 300);
+    QCOMPARE(obj->pixmap().height(), 300);
+    QCOMPARE(obj->width(), 550.0);
+    QCOMPARE(obj->height(), 500.0);
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart.png"));
+
+    obj->setSourceWidth(200);
+    obj->setSourceHeight(200);
+
+    QCOMPARE(obj->pixmap().width(), 200);
+    QCOMPARE(obj->pixmap().height(), 200);
+    QCOMPARE(obj->width(), 550.0);
+    QCOMPARE(obj->height(), 500.0);
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200.png"));
+
+    delete obj;
+}
+
+void tst_qdeclarativeimage::big()
+{
+    QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/big.jpeg\"; sourceWidth: 256; sourceHeight: 256 }";
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->pixmap().width(), 256);
+    QCOMPARE(obj->pixmap().height(), 256);
+    QCOMPARE(obj->width(), 10240.0);
+    QCOMPARE(obj->height(), 10240.0);
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/big256.png"));
+
+    delete obj;
+}
+
 
 QTEST_MAIN(tst_qdeclarativeimage)
 

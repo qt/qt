@@ -69,6 +69,7 @@
 #include "qdeclarativepathview_p.h"
 #include "qdeclarativerectangle_p.h"
 #include "qdeclarativerepeater_p.h"
+#include "qdeclarativetranslate_p.h"
 #include "qdeclarativetext_p.h"
 #include "qdeclarativetextedit_p.h"
 #include "qdeclarativetextinput_p.h"
@@ -123,6 +124,7 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeRepeater>("Qt",4,6,"Repeater");
     qmlRegisterType<QGraphicsRotation>("Qt",4,6,"Rotation");
     qmlRegisterType<QDeclarativeRow>("Qt",4,6,"Row");
+    qmlRegisterType<QDeclarativeTranslate>("Qt",4,6,"Translate");
     qmlRegisterType<QGraphicsScale>("Qt",4,6,"Scale");
     qmlRegisterType<QDeclarativeText>("Qt",4,6,"Text");
     qmlRegisterType<QDeclarativeTextEdit>("Qt",4,6,"TextEdit");

@@ -39,72 +39,54 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEPIXMAPCACHE_H
-#define QDECLARATIVEPIXMAPCACHE_H
+#ifndef QDECLARATIVETRANSLATE_H
+#define QDECLARATIVETRANSLATE_H
 
-#include <QtCore/QString>
-#include <QtGui/QPixmap>
-#include <QtCore/qurl.h>
+#include "qdeclarativeitem.h"
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QDeclarativeEngine;
-class QNetworkReply;
-class QDeclarativeImageReader;
 
-class QDeclarativePixmapReplyPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativePixmapReply : public QObject
+class QDeclarativeTranslatePrivate;
+
+class Q_GUI_EXPORT QDeclarativeTranslate : public QGraphicsTransform
 {
     Q_OBJECT
+
+    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY positionChanged)
+    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY positionChanged)
+    Q_PROPERTY(qreal z READ z WRITE setZ NOTIFY positionChanged)
+
 public:
-    ~QDeclarativePixmapReply();
+    QDeclarativeTranslate(QObject *parent = 0);
+    ~QDeclarativeTranslate();
 
-    enum Status { Ready, Error, Unrequested, Loading };
-    Status status() const;
+    qreal x() const;
+    void setX(qreal);
 
-    const QUrl &url() const;
-    int forcedWidth() const;
-    int forcedHeight() const;
-    QSize implicitSize() const;
+    qreal y() const;
+    void setY(qreal);
+
+    qreal z() const;
+    void setZ(qreal);
+
+    void applyTo(QMatrix4x4 *matrix) const;
 
 Q_SIGNALS:
-    void finished();
-    void downloadProgress(qint64, qint64);
-
-protected:
-    bool event(QEvent *event);
+    void positionChanged();
 
 private:
-    void addRef();
-    bool release(bool defer=false);
-    bool isLoading() const;
-    void setLoading();
-
-private:
-    QDeclarativePixmapReply(QDeclarativeImageReader *reader, const QUrl &url, int req_width, int req_height);
-    Q_DISABLE_COPY(QDeclarativePixmapReply)
-    Q_DECLARE_PRIVATE(QDeclarativePixmapReply)
-    friend class QDeclarativeImageRequestHandler;
-    friend class QDeclarativeImageReader;
-    friend class QDeclarativePixmapCache;
+    Q_DECLARE_PRIVATE(QDeclarativeTranslate)
+    Q_DISABLE_COPY(QDeclarativeTranslate)
 };
-
-class Q_DECLARATIVE_EXPORT QDeclarativePixmapCache
-{
-public:
-    static QDeclarativePixmapReply::Status get(const QUrl& url, QPixmap *pixmap, QSize *impsize, bool async=false, int req_width=0, int req_height=0);
-    static QDeclarativePixmapReply *request(QDeclarativeEngine *, const QUrl& url, int req_width=0, int req_height=0);
-    static void cancel(const QUrl& url, QObject *obj);
-    static int pendingRequests();
-};
-
-
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QDeclarativeTranslate)
+
 QT_END_HEADER
 
-#endif // QDECLARATIVEPIXMAPCACHE_H
+#endif
