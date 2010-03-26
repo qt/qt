@@ -657,23 +657,33 @@ static int qCocoaViewCount = 0;
 {
     if (!qwidget)
         return;
-
     if (qwidgetprivate->data.in_destructor)
         return;
-    QEvent enterEvent(QEvent::Enter);
-    NSPoint windowPoint = [event locationInWindow];
-    NSPoint globalPoint = [[event window] convertBaseToScreen:windowPoint];
-    NSPoint viewPoint = [self convertPoint:windowPoint fromView:nil];
+
     if (!qAppInstance()->activeModalWidget() || QApplicationPrivate::tryModalHelper(qwidget, 0)) {
+        QEvent enterEvent(QEvent::Enter);
+        NSPoint windowPoint = [event locationInWindow];
+        NSPoint globalPoint = [[event window] convertBaseToScreen:windowPoint];
+        NSPoint viewPoint = [self convertPoint:windowPoint fromView:nil];
         QApplication::sendEvent(qwidget, &enterEvent);
         qt_mouseover = qwidget;
 
-        // Update cursor and dispatch hover events.
+        // Update cursor icon:
         qt_mac_update_cursor_at_global_pos(flipPoint(globalPoint).toPoint());
-        if (qwidget->testAttribute(Qt::WA_Hover) &&
-            (!qAppInstance()->activePopupWidget() || qAppInstance()->activePopupWidget() == qwidget->window())) {
-            QHoverEvent he(QEvent::HoverEnter, QPoint(viewPoint.x, viewPoint.y), QPoint(-1, -1));
-            QApplicationPrivate::instance()->notify_helper(qwidget, &he);
+
+        // Send mouse move and hover events as well:
+        if (!qAppInstance()->activePopupWidget() || qAppInstance()->activePopupWidget() == qwidget->window()) {
+            if (qwidget->testAttribute(Qt::WA_MouseTracking)) {
+                NSEvent *mouseEvent = [NSEvent mouseEventWithType:NSMouseMoved
+                    location:windowPoint modifierFlags:[event modifierFlags] timestamp:[event timestamp]
+                    windowNumber:[event windowNumber] context:[event context] eventNumber:[event eventNumber]
+                    clickCount:0 pressure:0];
+                qt_mac_handleMouseEvent(self, mouseEvent, QEvent::MouseMove, Qt::NoButton);
+            }
+            if (qwidget->testAttribute(Qt::WA_Hover)) {
+                QHoverEvent he(QEvent::HoverEnter, QPoint(viewPoint.x, viewPoint.y), QPoint(-1, -1));
+                QApplicationPrivate::instance()->notify_helper(qwidget, &he);
+            }
         }
     }
 }
