@@ -12,5 +12,5 @@ Rectangle {
 
     Binding { target: screen; property: "text"; value: s1.text; objectName: "binding1" }
     Binding { target: screen; property: "color"; value: r1.color }
-    Binding { target: screen; property: "color"; when: screen.changeColor == true; value: r2.color }
+    Binding { target: screen; property: "color"; when: screen.changeColor == true; value: r2.color; objectName: "binding3" }
 }

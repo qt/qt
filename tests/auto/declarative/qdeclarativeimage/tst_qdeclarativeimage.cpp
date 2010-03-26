@@ -156,6 +156,9 @@ void tst_qdeclarativeimage::imageSource()
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
     QVERIFY(obj != 0);
 
+    if (async)
+        QVERIFY(obj->asynchronous() == true);
+    
     if (remote || async)
         TRY_WAIT(obj->status() == QDeclarativeImage::Loading);
 

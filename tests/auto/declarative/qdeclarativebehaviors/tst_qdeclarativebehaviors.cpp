@@ -82,6 +82,8 @@ void tst_qdeclarativebehaviors::simpleBehavior()
     QTest::qWait(200);
     qreal x = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
+
+    delete rect;
 }
 
 void tst_qdeclarativebehaviors::scriptTriggered()
@@ -95,6 +97,8 @@ void tst_qdeclarativebehaviors::scriptTriggered()
     QTest::qWait(200);
     qreal x = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
+
+    delete rect;
 }
 
 void tst_qdeclarativebehaviors::cppTriggered()
@@ -111,6 +115,8 @@ void tst_qdeclarativebehaviors::cppTriggered()
     QTest::qWait(200);
     qreal x = innerRect->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
+
+    delete rect;
 }
 
 void tst_qdeclarativebehaviors::loop()
@@ -122,6 +128,8 @@ void tst_qdeclarativebehaviors::loop()
 
     //don't crash
     rect->setState("moved");
+
+    delete rect;
 }
 
 void tst_qdeclarativebehaviors::colorBehavior()
@@ -135,6 +143,8 @@ void tst_qdeclarativebehaviors::colorBehavior()
     QTest::qWait(200);
     QColor color = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->color();
     QVERIFY(color != QColor("red") && color != QColor("green"));  //i.e. the behavior has been triggered
+
+    delete rect;
 }
 
 void tst_qdeclarativebehaviors::parentBehavior()
@@ -152,6 +162,8 @@ void tst_qdeclarativebehaviors::parentBehavior()
     QTest::qWait(600);
     parent = rect->findChild<QDeclarativeRectangle*>("MyRect")->parentItem();
     QVERIFY(parent == newParent);
+
+    delete rect;
 }
 
 void tst_qdeclarativebehaviors::replaceBinding()
@@ -186,6 +198,8 @@ void tst_qdeclarativebehaviors::replaceBinding()
     rect->setProperty("basex", 20);
     QTest::qWait(600);
     QCOMPARE(innerRect->x(), (qreal)20);
+
+    delete rect;
 }
 
 void tst_qdeclarativebehaviors::group()
@@ -200,6 +214,8 @@ void tst_qdeclarativebehaviors::group()
         QTest::qWait(200);
         qreal x = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x();
         QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
+
+        delete rect;
     }
 
     {
@@ -212,6 +228,8 @@ void tst_qdeclarativebehaviors::group()
         QTest::qWait(200);
         qreal x = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x();
         QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
+
+        delete rect;
     }
 }
 
@@ -225,6 +243,8 @@ void tst_qdeclarativebehaviors::emptyBehavior()
     rect->setState("moved");
     qreal x = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x();
     QCOMPARE(x, qreal(200));    //should change immediately
+
+    delete rect;
 }
 
 void tst_qdeclarativebehaviors::explicitSelection()
@@ -239,6 +259,8 @@ void tst_qdeclarativebehaviors::explicitSelection()
         QTest::qWait(200);
         qreal x = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x();
         QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
+
+        delete rect;
     }
 }
 
@@ -253,6 +275,8 @@ void tst_qdeclarativebehaviors::nonSelectingBehavior()
         rect->setState("moved");
         qreal x = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x();
         QCOMPARE(x, qreal(200));    //should change immediately
+
+        delete rect;
     }
 }
 
@@ -266,6 +290,8 @@ void tst_qdeclarativebehaviors::reassignedAnimation()
     QCOMPARE(qobject_cast<QDeclarativeNumberAnimation*>(
                  qobject_cast<QDeclarativeBehavior*>(
                      rect->findChild<QDeclarativeBehavior*>("MyBehavior"))->animation())->duration(), 200);
+
+    delete rect;
 }
 
 void tst_qdeclarativebehaviors::disabled()
@@ -279,6 +305,8 @@ void tst_qdeclarativebehaviors::disabled()
     rect->setState("moved");
     qreal x = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x();
     QCOMPARE(x, qreal(200));    //should change immediately
+
+    delete rect;
 }
 
 void tst_qdeclarativebehaviors::dontStart()
@@ -294,6 +322,8 @@ void tst_qdeclarativebehaviors::dontStart()
     QDeclarativeAbstractAnimation *myAnim = rect->findChild<QDeclarativeAbstractAnimation*>("MyAnim");
     QVERIFY(myAnim && myAnim->qtAnimation());
     QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
+
+    delete rect;
 }
 
 QTEST_MAIN(tst_qdeclarativebehaviors)
