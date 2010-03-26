@@ -2767,6 +2767,19 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
         return;
     }
 #else
+
+     if (d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
+        QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
+        //qDebug() << "Paint Engine is OpenGL2";
+        if (eng->isNativePaintingActive() == false) {
+            //qDebug() << "No usage of begin/endNativePainting()";
+            QRectF src = QRectF(0, 0, target.width(), target.height());
+            QSize size = QSize(target.width(), target.height());
+            eng->drawTexture(target, textureId, size, src);
+            return;
+        }
+     }
+
     const bool wasEnabled = glIsEnabled(GL_TEXTURE_2D);
     GLint oldTexture;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
@@ -2817,6 +2830,7 @@ void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum text
     Q_UNUSED(textureTarget);
     qWarning("drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget) not supported with OpenGL ES, use rect version instead");
 #else
+
     const bool wasEnabled = glIsEnabled(GL_TEXTURE_2D);
     GLint oldTexture;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
@@ -2829,6 +2843,19 @@ void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum text
 
     glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_WIDTH, &textureWidth);
     glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT, &textureHeight);
+
+    if (d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
+        QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
+        //qDebug() << "Paint Engine is OpenGL2";
+        if (eng->isNativePaintingActive() == false) {
+            //qDebug() << "No usage of begin/endNativePainting()";
+            QRectF dest = QRectF(point, QSizeF(textureWidth, textureHeight));
+            QRectF src = QRectF(0, 0, textureWidth, textureHeight);
+            QSize size = QSize(textureWidth, textureHeight);
+            eng->drawTexture(dest, textureId, size, src);
+            return;
+        }
+    }
 
     qDrawTextureRect(QRectF(point, QSizeF(textureWidth, textureHeight)), textureWidth, textureHeight, textureTarget);
 

@@ -154,8 +154,10 @@ public:
 
     void setRenderTextActive(bool);
 
+    bool isNativePaintingActive();
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
+    bool nativePaintingActive;
 };
 
 
