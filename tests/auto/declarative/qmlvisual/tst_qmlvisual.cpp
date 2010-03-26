@@ -50,11 +50,11 @@
 enum Mode { Record, RecordNoVisuals, Play, TestVisuals, RemoveVisuals, UpdateVisuals, UpdatePlatformVisuals, Test };
 
 static QString testdir;
-class tst_visual : public QObject
+class tst_qmlvisual : public QObject
 {
     Q_OBJECT
 public:
-    tst_visual();
+    tst_qmlvisual();
 
     static QString toTestScript(const QString &, Mode=Test);
     static QString viewer();
@@ -69,12 +69,12 @@ private:
 };
 
 
-tst_visual::tst_visual() 
+tst_qmlvisual::tst_qmlvisual()
 {
     qmlruntime = viewer();
 }
 
-QString tst_visual::viewer()
+QString tst_qmlvisual::viewer()
 {
     QString binaries = QLibraryInfo::location(QLibraryInfo::BinariesPath);
 
@@ -91,7 +91,7 @@ QString tst_visual::viewer()
     return qmlruntime;
 }
 
-void tst_visual::visual_data()
+void tst_qmlvisual::visual_data()
 {
     QTest::addColumn<QString>("file");
     QTest::addColumn<QString>("testdata");
@@ -108,7 +108,7 @@ void tst_visual::visual_data()
     }
 }
 
-void tst_visual::visual()
+void tst_qmlvisual::visual()
 {
     QFETCH(QString, file);
     QFETCH(QString, testdata);
@@ -126,7 +126,7 @@ void tst_visual::visual()
     QCOMPARE(p.exitCode(), 0);
 }
 
-QString tst_visual::toTestScript(const QString &file, Mode mode)
+QString tst_qmlvisual::toTestScript(const QString &file, Mode mode)
 {
     if (!file.endsWith(".qml"))
         return QString();
@@ -176,7 +176,7 @@ QString tst_visual::toTestScript(const QString &file, Mode mode)
     return testdata;
 }
 
-QStringList tst_visual::findQmlFiles(const QDir &d)
+QStringList tst_qmlvisual::findQmlFiles(const QDir &d)
 {
     QStringList rv;
 
@@ -206,7 +206,7 @@ void action(Mode mode, const QString &file)
 {
     Q_ASSERT(mode != Test);
 
-    QString testdata = tst_visual::toTestScript(file,mode);
+    QString testdata = tst_qmlvisual::toTestScript(file,mode);
 
     QStringList arguments;
     switch (mode) {
@@ -248,7 +248,7 @@ void action(Mode mode, const QString &file)
     if (!arguments.isEmpty()) {
         QProcess p;
         p.setProcessChannelMode(QProcess::ForwardedChannels);
-        p.start(tst_visual::viewer(), arguments);
+        p.start(tst_qmlvisual::viewer(), arguments);
         p.waitForFinished();
     }
 }
@@ -257,7 +257,7 @@ void usage()
 {
     fprintf(stderr, "\n");
     fprintf(stderr, "QML related options\n");
-    fprintf(stderr, " -listtests                  : list all the tests seen by tst_visual, and then exit immediately\n");
+    fprintf(stderr, " -listtests                  : list all the tests seen by tst_qmlvisual, and then exit immediately\n");
     fprintf(stderr, " -record file                : record new test data for file\n");
     fprintf(stderr, " -recordnovisuals file       : record new test data for file, but ignore visuals\n");
     fprintf(stderr, " -play file                  : playback test data for file, printing errors\n");
@@ -268,12 +268,12 @@ void usage()
         "Visual tests are recordings of manual interactions with a QML test,\n"
         "that can then be run automatically. To record a new test, run:\n"
         "\n"
-        "  tst_visual -record yourtestdir/yourtest.qml\n"
+        "  tst_qmlvisual -record yourtestdir/yourtest.qml\n"
         "\n"
         "This records everything you do (try to keep it short).\n"
         "To play back a test, run:\n"
         "\n"
-        "  tst_visual -play yourtestdir/yourtest.qml\n"
+        "  tst_qmlvisual -play yourtestdir/yourtest.qml\n"
         "\n"
         "Your test may include QML code to test itself, reporting any error to an\n"
         "'error' property on the root object - the test will fail if this property\n"
@@ -282,7 +282,7 @@ void usage()
         "If your test changes slightly but is still correct (check with -play), you\n"
         "can update the visuals by running:\n"
         "\n"
-        "  tst_visual -updatevisuals yourtestdir/yourtest.qml\n"
+        "  tst_qmlvisual -updatevisuals yourtestdir/yourtest.qml\n"
         "\n"
         "If your test includes platform-sensitive visuals (eg. text in system fonts),\n"
         "you should create platform-specific visuals, using -updateplatformvisuals\n"
@@ -339,7 +339,7 @@ int main(int argc, char **argv)
         }
 
         if (arg == "-listtests") {
-            QStringList list = tst_visual::findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
+            QStringList list = tst_qmlvisual::findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
             foreach (QString test, list) {
                 qWarning() << qPrintable(test);
             }
@@ -348,7 +348,7 @@ int main(int argc, char **argv)
     }
 
     if (mode == Test || showHelp) {
-        tst_visual tc;
+        tst_qmlvisual tc;
         return QTest::qExec(&tc, newArgc, newArgv);
     } else {
         if (!file.endsWith(QLatin1String(".qml"))) {
@@ -367,4 +367,4 @@ int main(int argc, char **argv)
     }
 }
 
-#include "tst_visual.moc"
+#include "tst_qmlvisual.moc"
