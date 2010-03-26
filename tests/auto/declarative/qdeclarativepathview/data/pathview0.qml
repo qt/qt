@@ -48,7 +48,6 @@ Rectangle {
         height: 320
         model: testModel
         delegate: delegate
-        snapPosition: 0.0001
         highlight: Rectangle {
             width: 60
             height: 20

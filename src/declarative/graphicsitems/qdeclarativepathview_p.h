@@ -61,10 +61,13 @@ class Q_DECLARATIVE_EXPORT QDeclarativePathView : public QDeclarativeItem
     Q_PROPERTY(QDeclarativePath *path READ path WRITE setPath NOTIFY pathChanged)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(qreal offset READ offset WRITE setOffset NOTIFY offsetChanged)
-    Q_PROPERTY(qreal snapPosition READ snapPosition WRITE setSnapPosition NOTIFY snapPositionChanged)
 
     Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight NOTIFY highlightChanged)
     Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightItemChanged)
+
+    Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin NOTIFY preferredHighlightBeginChanged)
+    Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd NOTIFY preferredHighlightEndChanged)
+    Q_PROPERTY(HighlightRangeMode highlightRangeMode READ highlightRangeMode WRITE setHighlightRangeMode NOTIFY highlightRangeModeChanged)
 
     Q_PROPERTY(qreal dragMargin READ dragMargin WRITE setDragMargin NOTIFY dragMarginChanged)
     Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration NOTIFY flickDecelerationChanged)
@@ -73,6 +76,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativePathView : public QDeclarativeItem
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
     Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount NOTIFY pathItemCountChanged)
+
+    Q_ENUMS(HighlightRangeMode);
 
 public:
     QDeclarativePathView(QDeclarativeItem *parent=0);
@@ -90,12 +95,19 @@ public:
     qreal offset() const;
     void setOffset(qreal offset);
 
-    qreal snapPosition() const;
-    void setSnapPosition(qreal pos);
-
     QDeclarativeComponent *highlight() const;
     void setHighlight(QDeclarativeComponent *highlight);
     QDeclarativeItem *highlightItem();
+
+    enum HighlightRangeMode { NoHighlightRange, ApplyRange, StrictlyEnforceRange };
+    HighlightRangeMode highlightRangeMode() const;
+    void setHighlightRangeMode(HighlightRangeMode mode);
+
+    qreal preferredHighlightBegin() const;
+    void setPreferredHighlightBegin(qreal);
+
+    qreal preferredHighlightEnd() const;
+    void setPreferredHighlightEnd(qreal);
 
     qreal dragMargin() const;
     void setDragMargin(qreal margin);
@@ -122,6 +134,9 @@ Q_SIGNALS:
     void modelChanged();
     void countChanged();
     void pathChanged();
+    void preferredHighlightBeginChanged();
+    void preferredHighlightEndChanged();
+    void highlightRangeModeChanged();
     void dragMarginChanged();
     void snapPositionChanged();
     void delegateChanged();
