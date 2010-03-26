@@ -10,6 +10,7 @@ vendorinfo = \
     ":\"Nokia, Qt\"" \
     " "
 
-default_deployment.pkg_prerules += vendorinfo
+examples_deployment.pkg_prerules += vendorinfo
+DEPLOYMENT += examples_deployment
 
 isEmpty(ICON):ICON = $$QT_SOURCE_TREE/src/s60installs/qt.svg
