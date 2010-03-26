@@ -126,9 +126,10 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     QMAKE_CLEAN += $${symbianObjdir}/$${TARGET}.def
 
     linux-armcc: {
-        QMAKE_LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
+        LIBS += usrt2_2.lib dfpaeabi.dso dfprvct2_2.dso drtaeabi.dso scppnwdl.dso drtrvct2_2.dso h_t__uf.l\\(switch8.o\\)
+        LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
     } else :linux-gcce {
-        QMAKE_LIBS += \
+        LIBS += \
             -l:edll.lib \
             -l:usrt2_2.lib \
             -l:dfpaeabi.dso \
@@ -170,6 +171,7 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
     QMAKE_CLEAN += $${symbianDestdir}/$${TARGET}
 
     linux-armcc: {
+        QMAKE_LIBS += usrt2_2.lib dfpaeabi.dso dfprvct2_2.dso drtaeabi.dso scppnwdl.dso drtrvct2_2.dso h_t__uf.l\\(switch8.o\\)
         QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
         contains(CONFIG, "qt"):contains(QT, "core") { #if linking with QtCore
             QMAKE_LIBS += -lqtmain$${QT_LIBINFIX}.lib
