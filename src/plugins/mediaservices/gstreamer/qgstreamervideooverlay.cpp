@@ -192,21 +192,36 @@ void QGstreamerVideoOverlay::surfaceFormatChanged()
 
 void QGstreamerVideoOverlay::setScaledDisplayRect()
 {
+    QRect formatViewport = m_surface->surfaceFormat().viewport();
+
     switch (m_aspectRatioMode) {
     case Qt::KeepAspectRatio:
         {
-            QSize size = m_surface->surfaceFormat().viewport().size();
-
+            QSize size = m_surface->surfaceFormat().sizeHint();
             size.scale(m_displayRect.size(), Qt::KeepAspectRatio);
 
             QRect rect(QPoint(0, 0), size);
             rect.moveCenter(m_displayRect.center());
 
             m_surface->setDisplayRect(rect);
+            m_surface->setViewport(formatViewport);
         }
         break;
     case Qt::IgnoreAspectRatio:
         m_surface->setDisplayRect(m_displayRect);
+        m_surface->setViewport(formatViewport);
+        break;
+    case Qt::KeepAspectRatioByExpanding:
+        {
+            QSize size = m_displayRect.size();
+            size.scale(m_surface->surfaceFormat().sizeHint(), Qt::KeepAspectRatio);
+
+            QRect viewport(QPoint(0, 0), size);
+            viewport.moveCenter(formatViewport.center());
+
+            m_surface->setDisplayRect(m_displayRect);
+            m_surface->setViewport(viewport);
+        }
         break;
     };
 }

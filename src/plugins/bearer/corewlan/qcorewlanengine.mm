@@ -271,7 +271,7 @@ void QCoreWlanEngine::connectToId(const QString &id)
                         SecKeychainAttributeList attributeList = {3,attributes};
 
                         SecKeychainSearchRef searchRef;
-                        OSErr result = SecKeychainSearchCreateFromAttributes(NULL, kSecGenericPasswordItemClass, &attributeList, &searchRef);
+                        SecKeychainSearchCreateFromAttributes(NULL, kSecGenericPasswordItemClass, &attributeList, &searchRef);
 
                         NSString *password = @"";
                         SecKeychainItemRef searchItem;
@@ -429,7 +429,14 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
                         state = QNetworkConfiguration::Undefined;
                     }
                 }
-                found.append(foundNetwork(id, networkSsid, state, interfaceName));
+                QNetworkConfiguration::Purpose purpose = QNetworkConfiguration::UnknownPurpose;
+                if([[apNetwork securityMode] intValue] == kCWSecurityModeOpen) {
+                    purpose = QNetworkConfiguration::PublicPurpose;
+                } else {
+                    purpose = QNetworkConfiguration::PrivatePurpose;
+                }
+
+                found.append(foundNetwork(id, networkSsid, state, interfaceName, purpose));
 
             } //end row
         } //end error
@@ -470,13 +477,13 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
                 state = QNetworkConfiguration::Defined;
             }
 
-            found.append(foundNetwork(id, networkName, state, interfaceName));
+            found.append(foundNetwork(id, networkName, state, interfaceName, QNetworkConfiguration::UnknownPurpose));
         }
     }
     return found;
 }
 
-QStringList QCoreWlanEngine::foundNetwork(const QString &id, const QString &name, const QNetworkConfiguration::StateFlags state, const QString &interfaceName)
+QStringList QCoreWlanEngine::foundNetwork(const QString &id, const QString &name, const QNetworkConfiguration::StateFlags state, const QString &interfaceName, const QNetworkConfiguration::Purpose purpose)
 {
     QStringList found;
     QMutexLocker locker(&mutex);
@@ -507,6 +514,10 @@ QStringList QCoreWlanEngine::foundNetwork(const QString &id, const QString &name
             changed = true;
         }
 
+        if (ptr->purpose != purpose) {
+            ptr->purpose = purpose;
+            changed = true;
+        }
         ptr->mutex.unlock();
 
         if (changed) {
@@ -524,6 +535,7 @@ QStringList QCoreWlanEngine::foundNetwork(const QString &id, const QString &name
         ptr->state = state;
         ptr->type = QNetworkConfiguration::InternetAccessPoint;
         ptr->bearer = QLatin1String("WLAN");
+        ptr->purpose = purpose;
 
         accessPointConfigurations.insert(ptr->id, ptr);
         configurationInterface.insert(ptr->id, interfaceName);

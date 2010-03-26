@@ -102,7 +102,7 @@ protected:
     void getUserConfigurations();
     QString getNetworkNameFromSsid(const QString &ssid);
     QString getSsidFromNetworkName(const QString &name);
-    QStringList foundNetwork(const QString &id, const QString &ssid, const QNetworkConfiguration::StateFlags state, const QString &interfaceName);
+    QStringList foundNetwork(const QString &id, const QString &ssid, const QNetworkConfiguration::StateFlags state, const QString &interfaceName, const QNetworkConfiguration::Purpose purpose);
 };
 
 QT_END_NAMESPACE
