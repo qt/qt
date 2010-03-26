@@ -7,7 +7,7 @@ Rectangle {
         id: rect
         color: "#00ff00"
         y: 200; width: 60; height: 20
-        y: SequentialAnimation {
+        SequentialAnimation on y {
             loops: Animation.Infinite
             NumberAnimation {
                 to: 20; duration: 500
@@ -26,7 +26,7 @@ Rectangle {
         color: "#ff0000"
         x: rect.width; width: rect.width; height: 20
         y: 200
-        y: SpringFollow { source: rect.y; velocity: 200 }
+        SpringFollow on y { source: rect.y; velocity: 200 }
     }
 
     // Spring
@@ -34,13 +34,13 @@ Rectangle {
         color: "#ff0000"
         x: rect.width * 2; width: rect.width/2; height: 20
         y: 200
-        y: SpringFollow { source: rect.y; spring: 1.0; damping: 0.2 }
+        SpringFollow on y { source: rect.y; spring: 1.0; damping: 0.2 }
     }
     Rectangle {
         color: "#880000"
         x: rect.width * 2.5; width: rect.width/2; height: 20
         y: 200
-        y: SpringFollow { source: rect.y; spring: 1.0; damping: 0.2; mass: 3.0 } // "heavier" object
+        SpringFollow on y { source: rect.y; spring: 1.0; damping: 0.2; mass: 3.0 } // "heavier" object
     }
 
     // Follow mouse
@@ -52,8 +52,8 @@ Rectangle {
             width: 20; height: 20
             radius: 10
             color: "#0000ff"
-            x: SpringFollow { id: f1; source: mouseRegion.mouseX-10; spring: 1.0; damping: 0.05; epsilon: 0.25 }
-            y: SpringFollow { id: f2; source: mouseRegion.mouseY-10; spring: 1.0; damping: 0.05; epsilon: 0.25 }
+            SpringFollow on x { id: f1; source: mouseRegion.mouseX-10; spring: 1.0; damping: 0.05; epsilon: 0.25 }
+            SpringFollow on y { id: f2; source: mouseRegion.mouseY-10; spring: 1.0; damping: 0.05; epsilon: 0.25 }
             states: [
                 State {
                     name: "following"

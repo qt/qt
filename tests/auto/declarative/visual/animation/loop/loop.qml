@@ -13,7 +13,7 @@ Rectangle {
            to 100, jumps to 200, animates smoothly to 400, animates smoothly
            back to 100, jumps to 200, and so on.
         */
-        x: SequentialAnimation {
+        SequentialAnimation on x {
             loops: Animation.Infinite
             NumberAnimation { to: 100; duration: 1000 }
             NumberAnimation { from: 200; to: 400; duration: 1000 }

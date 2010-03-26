@@ -1,4 +1,14 @@
 import Qt 4.6
+
+/*
+This test shows a green rectangle moving and growing from the upper-left corner
+of the black rectangle to the same position as the red rectangle (it should end up
+the same height as the red rect and twice as wide). There should be no odd jumps or clipping seen.
+
+The test shows one full transition (to the red and back), then several partial transitions, and
+then a final full transition.
+*/
+
 Rectangle {
     width: 800;
     height: 480;

@@ -49,8 +49,8 @@ Rectangle {
             Rectangle {
                 color: "transparent"; border.color: "white"; border.width: 8; z: 3000
                 height: 100; width: 100; x: 4; y: 4
-                x: EaseFollow { source: gridView.currentItem.x; velocity: 500 }
-                y: EaseFollow { source: gridView.currentItem.y; velocity: 500 }
+                EaseFollow on x { source: gridView.currentItem.x; velocity: 500 }
+                EaseFollow on y { source: gridView.currentItem.y; velocity: 500 }
             }
         ]
     }

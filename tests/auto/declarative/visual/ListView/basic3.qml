@@ -5,7 +5,7 @@ Rectangle {
     width: 200
     height: 300
     id: page
-    Listmodel {
+    ListModel {
         id: model
         ListElement {
             name: "January"

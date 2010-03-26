@@ -6,9 +6,9 @@ Rectangle {
     height: 200
     color: "black"
 
-    VisualDatamodel {
+    VisualDataModel {
         id: model
-        model: Listmodel {
+        model: ListModel {
             ListElement { itemColor: "red" }
             ListElement { itemColor: "green" }
             ListElement { itemColor: "blue" }

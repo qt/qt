@@ -7,9 +7,9 @@ import org.webkit 1.0
 WebView {
     width: 200
     height: 250
-    x: Behavior { NumberAnimation { } }
-    y: Behavior { NumberAnimation { } }
-    scale: Behavior { NumberAnimation { } }
+    Behavior on x { NumberAnimation { } }
+    Behavior on y { NumberAnimation { } }
+    Behavior on scale { NumberAnimation { } }
     url: "zooming.html"
     preferredWidth: width
     preferredHeight: height
