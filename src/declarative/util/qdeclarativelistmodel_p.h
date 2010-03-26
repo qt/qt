@@ -91,7 +91,7 @@ public:
     QDeclarativeListModelWorkerAgent *agent();
 
 Q_SIGNALS:
-    void countChanged(int);
+    void countChanged();
 
 private:
     friend class QDeclarativeListModelParser;

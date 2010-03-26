@@ -656,7 +656,7 @@ case $rule_number: {
     } else if (AST::UiQualifiedId *qualifiedId = reparseAsQualifiedId(sym(2).Expression)) {
         QString text;
         for (AST::UiQualifiedId *q = qualifiedId; q; q = q->next) {
-	   text += q->name->asString();
+           text += q->name->asString();
            if (q->next) text += QLatin1String(".");
         }
         node = makeAstNode<AST::UiImport>(driver->nodePool(), qualifiedId);
@@ -1109,6 +1109,9 @@ case $rule_number: {
     diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, location(lexer), lexer->errorMessage()));
     return false; // ### remove me
   }
+
+  loc(1).length = lexer->tokenLength();
+
   AST::RegExpLiteral *node = makeAstNode<AST::RegExpLiteral> (driver->nodePool(), lexer->pattern, lexer->flags);
   node->literalToken = loc(1);
   sym(1).Node = node;
@@ -1126,6 +1129,9 @@ case $rule_number: {
     diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, location(lexer), lexer->errorMessage()));
     return false;
   }
+
+  loc(1).length = lexer->tokenLength();
+
   AST::RegExpLiteral *node = makeAstNode<AST::RegExpLiteral> (driver->nodePool(), lexer->pattern, lexer->flags);
   node->literalToken = loc(1);
   sym(1).Node = node;

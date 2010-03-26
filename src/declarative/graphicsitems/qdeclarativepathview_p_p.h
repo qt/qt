@@ -74,18 +74,25 @@ class QDeclarativePathViewPrivate : public QDeclarativeItemPrivate
 
 public:
     QDeclarativePathViewPrivate()
-      : path(0), currentIndex(0), startPc(0), lastDist(0)
-        , lastElapsed(0), stealMouse(false), ownModel(false), activeItem(0)
-        , snapPos(0), dragMargin(0), moveOffset(this, &QDeclarativePathViewPrivate::setOffset)
-        , firstIndex(0), pathItems(-1), pathOffset(0), requestedIndex(-1)
-        , moveReason(Other), attType(0)
+      : path(0), currentIndex(0), currentItemOffset(0.0), startPc(0), lastDist(0)
+        , lastElapsed(0), mappedRange(1.0)
+        , stealMouse(false), ownModel(false), interactive(true), haveHighlightRange(true)
+        , autoHighlight(true), highlightUp(false), dragMargin(0), deceleration(100)
+        , moveOffset(this, &QDeclarativePathViewPrivate::setOffset)
+        , moveHighlight(this, &QDeclarativePathViewPrivate::setHighlightPosition)
+        , firstIndex(-1), pathItems(-1), requestedIndex(-1)
+        , moveReason(Other), attType(0), highlightComponent(0), highlightItem(0)
+        , highlightPosition(0)
+        , highlightRangeStart(0), highlightRangeEnd(0)
+        , highlightRangeMode(QDeclarativePathView::StrictlyEnforceRange)
+        , highlightMoveSpeed(1.0)
     {
     }
 
     void init()
     {
         Q_Q(QDeclarativePathView);
-        _offset = 0;
+        offset = 0;
         q->setAcceptedMouseButtons(Qt::LeftButton);
         q->setFlag(QGraphicsItem::ItemIsFocusScope);
         q->setFiltersChildEvents(true);
@@ -96,7 +103,11 @@ public:
     void releaseItem(QDeclarativeItem *item);
     QDeclarativePathViewAttached *attached(QDeclarativeItem *item);
     void clear();
-
+    void updateMappedRange();
+    qreal positionOfIndex(qreal index) const;
+    void createHighlight();
+    void updateHighlight();
+    void setHighlightPosition(qreal pos);
     bool isValid() const {
         return model && model->count() > 0 && model->isValid() && path;
     }
@@ -113,30 +124,42 @@ public:
 
     QDeclarativePath *path;
     int currentIndex;
+    qreal currentItemOffset;
     qreal startPc;
     QPointF startPoint;
     qreal lastDist;
     int lastElapsed;
-    qreal _offset;
+    qreal offset;
+    qreal mappedRange;
     bool stealMouse : 1;
     bool ownModel : 1;
+    bool interactive : 1;
+    bool haveHighlightRange : 1;
+    bool autoHighlight : 1;
+    bool highlightUp : 1;
     QTime lastPosTime;
     QPointF lastPos;
-    QDeclarativeItem *activeItem;
-    qreal snapPos;
     qreal dragMargin;
+    qreal deceleration;
     QDeclarativeTimeLine tl;
     QDeclarativeTimeLineValueProxy<QDeclarativePathViewPrivate> moveOffset;
     int firstIndex;
     int pathItems;
-    int pathOffset;
     int requestedIndex;
     QList<QDeclarativeItem *> items;
     QDeclarativeGuard<QDeclarativeVisualModel> model;
     QVariant modelVariant;
-    enum MovementReason { Other, Key, Mouse };
+    enum MovementReason { Other, SetIndex, Mouse };
     MovementReason moveReason;
     QDeclarativeOpenMetaObjectType *attType;
+    QDeclarativeComponent *highlightComponent;
+    QDeclarativeItem *highlightItem;
+    QDeclarativeTimeLineValueProxy<QDeclarativePathViewPrivate> moveHighlight;
+    qreal highlightPosition;
+    qreal highlightRangeStart;
+    qreal highlightRangeEnd;
+    QDeclarativePathView::HighlightRangeMode highlightRangeMode;
+    qreal highlightMoveSpeed;
 };
 
 QT_END_NAMESPACE

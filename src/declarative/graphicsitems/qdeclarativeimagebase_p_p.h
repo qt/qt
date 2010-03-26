@@ -78,6 +78,7 @@ public:
     QDeclarativeImageBase::Status status;
     QUrl url;
     qreal progress;
+    QSize sourcesize;
     bool pendingPixmapCache : 1;
     bool async : 1;
 };

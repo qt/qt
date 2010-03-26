@@ -8,4 +8,4 @@ SUBDIRS += \
            qdeclarativeimage \
            qdeclarativemetaproperty \
            script \
-           qdeclarativetime
+           qmltime

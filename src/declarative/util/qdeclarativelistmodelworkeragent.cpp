@@ -229,7 +229,7 @@ bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
             }
 
             if (cc)
-                emit m_orig->countChanged(m_copy->count());
+                emit m_orig->countChanged();
         }
     }
 

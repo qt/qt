@@ -9,14 +9,13 @@ Item {
 
     Column{
         TextInput { id: intInput;
-            validator: QIntValidator{top: 11; bottom: 2}
+            validator: IntValidator{top: 11; bottom: 2}
         }
         TextInput { id: dblInput;
-            validator: QDoubleValidator{top: 12.12; bottom: 2.93; decimals: 2; notation: QDoubleValidator.StandardNotation}
+            validator: DoubleValidator{top: 12.12; bottom: 2.93; decimals: 2; notation: DoubleValidator.StandardNotation}
         }
         TextInput { id: strInput;
-            //Requires QTBUG-8025 to be implemented first
-            //validator: QRegExpValidator { regExp: /[a-zA-z]{2,4}/;}
+            validator: RegExpValidator { regExp: /[a-zA-z]{2,4}/ }
         }
     }
         

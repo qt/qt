@@ -1404,7 +1404,6 @@ void QMenuBarPrivate::handleReparent()
     if (!menuBarAction) {
         if (newParent) {
             menuBarAction = QSoftKeyManager::createAction(QSoftKeyManager::MenuSoftKey, newParent);
-            menuBarAction->setVisible(false);
             newParent->addAction(menuBarAction);
         }
     } else {

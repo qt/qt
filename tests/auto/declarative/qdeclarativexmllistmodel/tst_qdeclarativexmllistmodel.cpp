@@ -69,6 +69,8 @@ private slots:
     void roles();
     void roleErrors();
     void uniqueRoleNames();
+    void status();
+    void data();
     void reload();
     void useKeys();
     void useKeys_data();
@@ -243,6 +245,47 @@ void tst_qdeclarativexmllistmodel::uniqueRoleNames()
 
     QList<int> roles = model->roles();
     QCOMPARE(roles.count(), 1);
+
+    delete model;
+}
+
+void tst_qdeclarativexmllistmodel::status()
+{
+    QDeclarativeXmlListModel *model;
+    model = new QDeclarativeXmlListModel;
+    QCOMPARE(model->status(), QDeclarativeXmlListModel::Null);
+
+    model->setXml("<data></data>");
+    QCOMPARE(model->status(), QDeclarativeXmlListModel::Ready);
+    delete model;
+
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
+    model = qobject_cast<QDeclarativeXmlListModel*>(component.create());    
+    QVERIFY(model != 0);
+    QCOMPARE(model->status(), QDeclarativeXmlListModel::Loading);
+
+    QTRY_COMPARE(model->count(), 9);
+    QCOMPARE(model->status(), QDeclarativeXmlListModel::Ready);
+
+    delete model;
+}
+
+void tst_qdeclarativexmllistmodel::data()
+{
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
+    QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());    
+    QVERIFY(model != 0);
+
+    QHash<int,QVariant> blank;
+    for (int i=0; i<model->roles().count(); i++)
+        blank.insert(model->roles()[i], QVariant());
+    for (int i=0; i<9; i++)  {
+        QCOMPARE(model->data(i, model->roles()), blank);
+        for (int j=0; j<model->roles().count(); j++) {
+            QCOMPARE(model->data(i, j), QVariant());
+        }
+    }
+    QTRY_COMPARE(model->count(), 9);
 
     delete model;
 }

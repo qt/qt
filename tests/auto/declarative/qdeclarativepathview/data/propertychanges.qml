@@ -17,7 +17,8 @@ Rectangle {
     }
 
     PathView {
-        snapPosition: 0.1
+        preferredHighlightBegin: 0.1
+        preferredHighlightEnd: 0.1
         dragMargin: 5.0
         id: pathView
         objectName: "pathView"

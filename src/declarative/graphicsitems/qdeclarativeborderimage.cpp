@@ -217,7 +217,8 @@ void QDeclarativeBorderImage::load()
                                      thisSciRequestFinished, Qt::DirectConnection);
             }
         } else {
-            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, d->async);
+            QSize impsize;
+            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, &impsize, d->async);
             if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
                 QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->url);
                 d->pendingPixmapCache = true;
@@ -226,8 +227,8 @@ void QDeclarativeBorderImage::load()
                         this, SLOT(requestProgress(qint64,qint64)));
             } else {
                 //### should be unified with requestFinished
-                setImplicitWidth(d->pix.width());
-                setImplicitHeight(d->pix.height());
+                setImplicitWidth(impsize.width());
+                setImplicitHeight(impsize.height());
 
                 if (d->pix.isNull())
                     d->status = Error;
@@ -336,7 +337,8 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
         d->verticalTileMode = sci.verticalTileRule();
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->sciurl, &d->pix, d->async);
+        QSize impsize;
+        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->sciurl, &d->pix, &impsize, d->async);
         if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
             QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->sciurl);
             d->sciPendingPixmapCache = true;
@@ -362,8 +364,8 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
                                  thisRequestProgress, Qt::DirectConnection);
         } else {
             //### should be unified with requestFinished
-            setImplicitWidth(d->pix.width());
-            setImplicitHeight(d->pix.height());
+            setImplicitWidth(impsize.width());
+            setImplicitHeight(impsize.height());
 
             if (d->pix.isNull())
                 d->status = Error;
@@ -381,16 +383,17 @@ void QDeclarativeBorderImage::requestFinished()
 {
     Q_D(QDeclarativeBorderImage);
 
+    QSize impsize;
     if (d->url.path().endsWith(QLatin1String(".sci"))) {
         d->sciPendingPixmapCache = false;
-        QDeclarativePixmapCache::get(d->sciurl, &d->pix, d->async);
+        QDeclarativePixmapCache::get(d->sciurl, &d->pix, &impsize, d->async);
     } else {
         d->pendingPixmapCache = false;
-        if (QDeclarativePixmapCache::get(d->url, &d->pix, d->async) != QDeclarativePixmapReply::Ready)
+        if (QDeclarativePixmapCache::get(d->url, &d->pix, &impsize, d->async) != QDeclarativePixmapReply::Ready)
             d->status = Error;
     }
-    setImplicitWidth(d->pix.width());
-    setImplicitHeight(d->pix.height());
+    setImplicitWidth(impsize.width());
+    setImplicitHeight(impsize.height());
 
     if (d->status == Loading)
         d->status = Ready;
@@ -444,7 +447,7 @@ void QDeclarativeBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem 
     const QDeclarativeScaleGrid *border = d->getScaleGrid();
     QMargins margins(border->left(), border->top(), border->right(), border->bottom());
     QTileRules rules((Qt::TileRule)d->horizontalTileMode, (Qt::TileRule)d->verticalTileMode);
-    qDrawBorderPixmap(p, QRect(0, 0, (int)d->width, (int)d->height), margins, d->pix, d->pix.rect(), margins, rules);
+    qDrawBorderPixmap(p, QRect(0, 0, (int)d->width(), (int)d->height()), margins, d->pix, d->pix.rect(), margins, rules);
     if (d->smooth) {
         p->setRenderHint(QPainter::Antialiasing, oldAA);
         p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);

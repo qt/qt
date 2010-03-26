@@ -670,8 +670,8 @@ bool QAudioInputPrivate::open()
     }
 
     // Allocate buffer
-    periodSizeBytes = (numberOfFrames * streamFormat.mSampleRate / deviceFormat.mSampleRate) *
-                        streamFormat.mBytesPerFrame;
+    periodSizeBytes = numberOfFrames * streamFormat.mBytesPerFrame;
+
     if (internalBufferSize < periodSizeBytes * 2)
         internalBufferSize = periodSizeBytes * 2;
     else
