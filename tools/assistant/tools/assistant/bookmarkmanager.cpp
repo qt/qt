@@ -363,8 +363,9 @@ void BookmarkManager::refeshBookmarkMenu()
 
     bookmarkMenu->addAction(tr("Manage Bookmarks..."), this,
         SLOT(manageBookmarks()));
-    bookmarkMenu->addAction(tr("Add Bookmark..."), this, SLOT(addBookmark()),
-        QKeySequence(tr("Ctrl+D")));
+    bookmarkMenu->addAction(QIcon::fromTheme("bookmark-new"),
+                            tr("Add Bookmark..."), this, SLOT(addBookmark()),
+                            QKeySequence(tr("Ctrl+D")));
     bookmarkMenu->addSeparator();
 
     const QModelIndex &root = bookmarkModel->index(0, 0, QModelIndex());

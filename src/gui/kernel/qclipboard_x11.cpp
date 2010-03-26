@@ -65,7 +65,6 @@
 #include "qapplication.h"
 #include "qdesktopwidget.h"
 #include "qbitmap.h"
-#include "qdatetime.h"
 #include "qiodevice.h"
 #include "qbuffer.h"
 #include "qtextcodec.h"
@@ -76,6 +75,7 @@
 #include "qt_x11_p.h"
 #include "qx11info_x11.h"
 #include "qimagewriter.h"
+#include "qelapsedtimer.h"
 #include "qvariant.h"
 #include "qdnd_p.h"
 #include <private/qwidget_p.h>
@@ -516,8 +516,9 @@ static Bool checkForClipboardEvents(Display *, XEvent *e, XPointer)
 
 bool QX11Data::clipboardWaitForEvent(Window win, int type, XEvent *event, int timeout)
 {
-    QTime started = QTime::currentTime();
-    QTime now = started;
+    QElapsedTimer started;
+    started.start();
+    QElapsedTimer now = started;
 
     if (QAbstractEventDispatcher::instance()->inherits("QtMotif")
         || QApplication::clipboard()->property("useEventLoopWhenWaiting").toBool()) {
@@ -545,9 +546,7 @@ bool QX11Data::clipboardWaitForEvent(Window win, int type, XEvent *event, int ti
             XSync(X11->display, false);
             usleep(50000);
 
-            now = QTime::currentTime();
-            if (started > now)                        // crossed midnight
-                started = now;
+            now.start();
 
             QEventLoop::ProcessEventsFlags flags(QEventLoop::ExcludeUserInputEvents
                                                  | QEventLoop::ExcludeSocketNotifiers
@@ -576,9 +575,7 @@ bool QX11Data::clipboardWaitForEvent(Window win, int type, XEvent *event, int ti
             if (XCheckIfEvent(X11->display, &e, checkForClipboardEvents, 0))
                 qApp->x11ProcessEvent(&e);
 
-            now = QTime::currentTime();
-            if ( started > now )                        // crossed midnight
-                started = now;
+            now.start();
 
             XFlush(X11->display);
 

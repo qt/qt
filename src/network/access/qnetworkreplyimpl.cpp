@@ -232,9 +232,19 @@ void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
     }
 }
 
-void QNetworkReplyImplPrivate::_q_networkSessionOnline()
+void QNetworkReplyImplPrivate::_q_networkSessionConnected()
 {
     Q_Q(QNetworkReplyImpl);
+
+    if (manager.isNull())
+        return;
+
+    QNetworkSession *session = manager->d_func()->networkSession;
+    if (!session)
+        return;
+
+    if (session->state() != QNetworkSession::Connected)
+        return;
 
     switch (state) {
     case QNetworkReplyImplPrivate::Buffering:
@@ -308,11 +318,15 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
 
         // for HTTP, we want to send out the request as fast as possible to the network, without
         // invoking methods in a QueuedConnection
+#ifndef QT_NO_HTTP
         if (qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
             _q_startOperation();
         } else {
             QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
         }
+#else
+        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+#endif // QT_NO_HTTP
     }
 
     q->QIODevice::open(QIODevice::ReadOnly);
@@ -862,11 +876,15 @@ bool QNetworkReplyImplPrivate::migrateBackend()
         backend->setResumeOffset(bytesDownloaded);
     }
 
+#ifndef QT_NO_HTTP
     if (qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
         _q_startOperation();
     } else {
         QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
     }
+#else
+    QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+#endif // QT_NO_HTTP
 
     return true;
 }

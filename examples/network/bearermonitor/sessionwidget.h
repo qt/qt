@@ -53,7 +53,7 @@ class SessionWidget : public QWidget, public Ui_SessionWidget
     Q_OBJECT
 
 public:
-    SessionWidget(const QNetworkConfiguration &config, QWidget *parent = 0);
+    explicit SessionWidget(const QNetworkConfiguration &config, QWidget *parent = 0);
     ~SessionWidget();
 
     void timerEvent(QTimerEvent *);

@@ -49,7 +49,7 @@
 #include "qdebug.h"
 #include "qhash.h"
 #include "qqueue.h"
-#include "qdatetime.h"
+#include "qelapsedtimer.h"
 #include "qmutex.h"
 #include "qthread.h"
 #include "qcoreapplication.h"
@@ -308,7 +308,7 @@ struct QSocks5BindData : public QSocks5Data
     quint16 localPort;
     QHostAddress peerAddress;
     quint16 peerPort;
-    QDateTime timeStamp;
+    QElapsedTimer timeStamp;
 };
 
 struct QSocks5RevivedDatagram
@@ -369,7 +369,7 @@ void QSocks5BindStore::add(int socketDescriptor, QSocks5BindData *bindData)
     if (store.contains(socketDescriptor)) {
         // qDebug() << "delete it";
     }
-    bindData->timeStamp = QDateTime::currentDateTime();
+    bindData->timeStamp.start();
     store.insert(socketDescriptor, bindData);
     // start sweep timer if not started
     if (sweepTimerId == -1)
@@ -412,7 +412,7 @@ void QSocks5BindStore::timerEvent(QTimerEvent * event)
         QMutableHashIterator<int, QSocks5BindData *> it(store);
         while (it.hasNext()) {
             it.next();
-            if (it.value()->timeStamp.secsTo(QDateTime::currentDateTime()) > 350) {
+            if (it.value()->timeStamp.hasExpired(350000)) {
                 QSOCKS5_DEBUG << "QSocks5BindStore removing JJJJ";
                 it.remove();
             }
@@ -1355,7 +1355,7 @@ bool QSocks5SocketEngine::bind(const QHostAddress &address, quint16 port)
     }
 
     int msecs = SOCKS5_BLOCKING_BIND_TIMEOUT;
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
     d->data->controlSocket->connectToHost(d->proxyInfo.hostName(), d->proxyInfo.port());
     if (!d->waitForConnected(msecs, 0) ||
@@ -1455,7 +1455,7 @@ void QSocks5SocketEngine::close()
     if (d->data && d->data->controlSocket) {
         if (d->data->controlSocket->state() == QAbstractSocket::ConnectedState) {
             int msecs = 100;
-            QTime stopWatch;
+            QElapsedTimer stopWatch;
             stopWatch.start();
             while (!d->data->controlSocket->bytesToWrite()) {
                if (!d->data->controlSocket->waitForBytesWritten(qt_timeout_value(msecs, stopWatch.elapsed())))
@@ -1674,7 +1674,7 @@ bool QSocks5SocketEnginePrivate::waitForConnected(int msecs, bool *timedOut)
         mode == BindMode ? BindSuccess :
         UdpAssociateSuccess;
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     while (socks5State != wantedState) {
@@ -1699,7 +1699,7 @@ bool QSocks5SocketEngine::waitForRead(int msecs, bool *timedOut)
 
     d->readNotificationActivated = false;
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     // are we connected yet?
@@ -1749,7 +1749,7 @@ bool QSocks5SocketEngine::waitForWrite(int msecs, bool *timedOut)
     Q_D(QSocks5SocketEngine);
     QSOCKS5_DEBUG << "waitForWrite" << msecs;
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     // are we connected yet?

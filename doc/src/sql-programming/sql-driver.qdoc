@@ -192,6 +192,73 @@
     built in release mode only. If you are expecting a debug version
     to be built as well, don't use the \c{"-o Makefile"} option.
 
+    \section3 How to build the MySQL driver for MinGW users
+
+    The following steps have been used successfully for WinXP SP3. In
+    this example, Qt 4.6.2 is shown.
+
+    \list
+
+    \o Download the following components:
+    \list
+    \o \c{MinGW-5.1.6.exe}
+    \o \c{mingw-utils-0.3.tar.gz}
+    \o Qt sources, e.g. \c{qt-everywhere-opensource-src-4.6.2.zip}
+    \o \c{mysql-5.1.35-win32.msi}
+    \endlist
+
+    \o Install \c{MinGW-5.1.6.exe} in, e.g. \c{C:\MinGW}.
+
+    \o Extract \c{mingw-utils-0.3.tar.gz} into, e.g. \c{C:\MinGW}.
+
+    \o Add the path for \c{MinGW-5.1.6.exe} to your \c{PATH} variable,
+       e.g. \c{C:\MinGW\bin;}
+
+    \o Extract the Qt sources, (\c{qt-everywhere-opensource-src-4.6.2.zip}),
+     into, e.g. \c{C:\Qt}.
+
+    \o Add the path for the eventual Qt binary to your \c{PATH} variable,
+       e.g. \c{C:\Qt\4.6.2\bin;}.
+
+    \o Install MySQL (\c{mysql-5.1.35-win32.msi}), customizing the
+       components. Select only the headers and libraries. Install in,
+       e.g. \c{C:\MySQL\MySQL51}.
+
+    \o Open the DOS prompt, go to \c{C:\MySQL\MySQL51\lib\opt}, and run
+       the following commands:
+       \list 
+       \o \c{reimp -d libmysql.lib} 
+       \o \c{dlltool -k -d libmysql.def -l libmysql.a}
+       \endlist
+
+    \o Open the DOS prompt, go to \c{C:\Qt\4.6.2} and run the following commands:
+    \list
+       \o \c{configure.exe -debug-and-release -platform win32-g++ -qt-sql-mysql
+         -l mysql -I C:\MySQL\MySQL51\include -L C:\MySQL\MySQL51\lib\opt}
+       \o \c{mingw32-make sub-src}
+    \endlist
+    This step takes a long time.
+
+    \o Open the DOS prompt, go to
+        \c{C:\Qt\4.6.2\src\plugins\sqldrivers\mysql} and run the
+        following command: 
+	\list
+        \o \c{qmake "INCLUDEPATH+=C:\MySQL\MySQL51\include" "LIBS+=-L. mysql" mysql.pro}
+	\endlist
+
+    \o Now the following libraries are ready in \c{C:\Qt\4.6.2\plugins\sqldrivers}.
+    \list
+       \o \c{libqsqlmysql4.a}
+       \o \c{libqsqlmysqld4.a}
+       \o \c{qsqlmysql4.dll}
+       \o \c{qsqlmysqld4.dll}
+    \endlist
+    To use the SDK and QtCreator directly, copy these libraries to
+    your \c{C:\Qt\...\qt\plugins\sqldrivers\}, and copy
+    \c{C:\MySQL\MySQL51\lib\opt\libmysql.dll} to your \c{C:\Qt\...\qt\bin\}.
+
+    \endlist
+
     \target QOCI
     \section2 QOCI for the Oracle Call Interface (OCI)
 

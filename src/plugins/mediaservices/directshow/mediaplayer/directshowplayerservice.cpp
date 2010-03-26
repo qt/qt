@@ -191,6 +191,8 @@ void DirectShowPlayerService::load(const QMediaContent &media, QIODevice *stream
     m_atEnd = false;
     m_metaDataControl->updateGraph(0, 0);
 
+    QCoreApplication::postEvent(this, new QEvent(QEvent::Type(VideoOutputChange)));
+
     if (m_resources.isEmpty() && !stream) {
         m_pendingTasks = 0;
         m_graphStatus = NoMedia;
@@ -463,6 +465,8 @@ void DirectShowPlayerService::doRender(QMutexLocker *locker)
 
             QCoreApplication::postEvent(this, new QEvent(QEvent::Type(Error)));
         }
+
+        QCoreApplication::postEvent(this, new QEvent(QEvent::Type(VideoOutputChange)));
 
         m_executedTasks |= Render;
     }
@@ -1144,6 +1148,9 @@ void DirectShowPlayerService::customEvent(QEvent *event)
         QMutexLocker locker(&m_mutex);
 
         m_playerControl->updatePosition(m_position);
+    } else if (event->type() == QEvent::Type(VideoOutputChange)) {
+        if (m_videoWindowControl)
+            m_videoWindowControl->updateNativeSize();
     } else {
         QMediaService::customEvent(event);
     }
