@@ -15,6 +15,12 @@
     along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#import <QTKit/QTMovie.h>
+#ifdef QUICKTIME_C_API_AVAILABLE
+    #include <QuickTime/QuickTime.h>
+    #undef check // avoid name clash;
+#endif
+
 #include "backendinfo.h"
 #include "backendheader.h"
 
@@ -22,12 +28,6 @@
 #include <AudioUnit/AudioUnit.h>
 #include <CoreServices/CoreServices.h>
 
-#import <QTKit/QTMovie.h>
-
-#ifdef QUICKTIME_C_API_AVAILABLE
-    #include <QuickTime/QuickTime.h>
-    #undef check // avoid name clash;
-#endif
 
 QT_BEGIN_NAMESPACE
 
