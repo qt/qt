@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qcore_unix_p.h"
+#include "qelapsedtimer.h"
 
 #ifndef Q_OS_VXWORKS
 # if !defined(Q_OS_HPUX) || defined(__ia64)
@@ -56,74 +57,12 @@
 #include <mach/mach_time.h>
 #endif
 
-#if !defined(QT_NO_CLOCK_MONOTONIC)
-# if defined(QT_BOOTSTRAPPED)
-#  define QT_NO_CLOCK_MONOTONIC
-# endif
-#endif
-
 QT_BEGIN_NAMESPACE
-
-bool qt_gettime_is_monotonic()
-{
-#if (_POSIX_MONOTONIC_CLOCK-0 > 0) || defined(Q_OS_MAC)
-    return true;
-#else
-    static int returnValue = 0;
-
-    if (returnValue == 0) {
-#  if (_POSIX_MONOTONIC_CLOCK-0 < 0)
-        returnValue = -1;
-#  elif (_POSIX_MONOTONIC_CLOCK == 0)
-        // detect if the system support monotonic timers
-        long x = sysconf(_SC_MONOTONIC_CLOCK);
-        returnValue = (x >= 200112L) ? 1 : -1;
-#  endif
-    }
-
-    return returnValue != -1;
-#endif
-}
-
-timeval qt_gettime()
-{
-    timeval tv;
-#if defined(Q_OS_MAC)
-    static mach_timebase_info_data_t info = {0,0};
-    if (info.denom == 0)
-        mach_timebase_info(&info);
-
-    uint64_t cpu_time = mach_absolute_time();
-    uint64_t nsecs = cpu_time * (info.numer / info.denom);
-    tv.tv_sec = nsecs / 1000000000ull;
-    tv.tv_usec = (nsecs / 1000) - (tv.tv_sec * 1000000);
-    return tv;
-#elif (_POSIX_MONOTONIC_CLOCK-0 > 0)
-    timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    tv.tv_sec = ts.tv_sec;
-    tv.tv_usec = ts.tv_nsec / 1000;
-    return tv;
-#else
-#  if !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
-    if (qt_gettime_is_monotonic()) {
-        timespec ts;
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        tv.tv_sec = ts.tv_sec;
-        tv.tv_usec = ts.tv_nsec / 1000;
-        return tv;
-    }
-#  endif
-    // use gettimeofday
-    ::gettimeofday(&tv, 0);
-    return tv;
-#endif
-}
 
 static inline bool time_update(struct timeval *tv, const struct timeval &start,
                                const struct timeval &timeout)
 {
-    if (!qt_gettime_is_monotonic()) {
+    if (!QElapsedTimer::isMonotonic()) {
         // we cannot recalculate the timeout without a monotonic clock as the time may have changed
         return false;
     }

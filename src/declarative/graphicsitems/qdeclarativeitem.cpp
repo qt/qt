@@ -1263,12 +1263,12 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::childrenRectChanged()
+    \fn void QDeclarativeItem::childrenRectChanged(const QRectF &)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::baselineOffsetChanged()
+    \fn void QDeclarativeItem::baselineOffsetChanged(qreal)
     \internal
 */
 
@@ -1278,17 +1278,17 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::parentChanged()
+    \fn void QDeclarativeItem::parentChanged(QDeclarativeItem *)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::smoothChanged()
+    \fn void QDeclarativeItem::smoothChanged(bool)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::clipChanged()
+    \fn void QDeclarativeItem::clipChanged(bool)
     \internal
 */
 
@@ -1302,12 +1302,12 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::focusChanged()
+    \fn void QDeclarativeItem::focusChanged(bool)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::wantsFocusChanged()
+    \fn void QDeclarativeItem::wantsFocusChanged(bool)
     \internal
 */
 
@@ -1575,7 +1575,7 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     Item {
         Text {}
         Rectangle {}
-        Script {}
+        Timer {}
     }
     \endqml
 
@@ -1587,7 +1587,7 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
             Rectangle {}
         ]
         resources: [
-            Script {}
+            Timer {}
         ]
     }
     \endqml
@@ -2356,13 +2356,11 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItem::transitions()
   example:
 
   \qml
-    Script {
-        function toggle() {
-            if (button.state == 'On')
-                button.state = 'Off';
-            else
-                button.state = 'On';
-        }
+    function toggle() {
+        if (button.state == 'On')
+            button.state = 'Off';
+        else
+            button.state = 'On';
     }
   \endqml
 

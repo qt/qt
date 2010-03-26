@@ -57,7 +57,6 @@
 
 #include <QtCore/qshareddata.h>
 #include <QtCore/qmutex.h>
-#include <QtNetwork/QNetworkInterface>
 
 QT_BEGIN_NAMESPACE
 
@@ -72,7 +71,7 @@ public:
     {
     }
 
-    ~QNetworkConfigurationPrivate()
+    virtual ~QNetworkConfigurationPrivate()
     {
         //release pointers to member configurations
         serviceNetworkMembers.clear(); 

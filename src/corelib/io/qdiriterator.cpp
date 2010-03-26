@@ -287,7 +287,11 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
     const bool dotOrDotDot = fileName[0] == QLatin1Char('.')
                              && ((fileNameSize == 1)
                                  ||(fileNameSize == 2 && fileName[1] == QLatin1Char('.')));
-    if ((filters & QDir::NoDotAndDotDot) && dotOrDotDot)
+    if ((filters & QDir::NoDot) && dotOrDotDot && fileNameSize == 1)
+        return false;
+    if ((filters & QDir::NoDotDot) && dotOrDotDot && fileNameSize == 2)
+        return false;
+    if ((filters & QDir::NoDotAndDotDot) && dotOrDotDot) // ### Qt5 remove (NoDotAndDotDot == NoDot|NoDotDot)
         return false;
 
     // name filter

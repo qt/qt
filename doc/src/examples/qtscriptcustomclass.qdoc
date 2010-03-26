@@ -120,6 +120,8 @@
     this ByteArrayClass object, so that the constructor, when it is invoked, can extract the
     pointer and use it to create a new \c{ByteArray} object.
 
+    \snippet examples/script/customclass/bytearrayclass.cpp 10
+
     \snippet examples/script/customclass/bytearrayclass.cpp 1
 
     The newInstance() function isn't part of the QScriptClass API; its purpose is to offer
@@ -127,6 +129,11 @@
     QByteArray as the internal data of the new object, and return the new object.
     QScriptEngine::newObject() will call the prototype() function of our class, ensuring that
     the prototype of the new object will be the standard \c{ByteArray} prototype.
+
+    QScriptEngine::reportAdditionalMemoryCost() is called to inform the script engine of the
+    memory occupied by the QByteArray. This gives the garbage collector a hint that it should
+    perhaps trigger more frequently, possibly freeing up memory associated with large ByteArray
+    objects that are no longer in use.
 
     \snippet examples/script/customclass/bytearrayclass.cpp 2
 
@@ -158,6 +165,12 @@
     is being set, we resize the underlying QByteArray to the given length. Otherwise, we grab the
     array index that was calculated in the queryProperty() function, enlarge the array if necessary,
     and write the given value to the array.
+
+    \snippet examples/script/customclass/bytearrayclass.cpp 9
+
+    The resize() function is a helper function that resizes the QByteArray to a new size, and,
+    if the new size is greater than the old, reports the additional memory cost to the script
+    engine.
 
     \snippet examples/script/customclass/bytearrayclass.cpp 6
 
