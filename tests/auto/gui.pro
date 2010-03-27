@@ -78,7 +78,6 @@ SUBDIRS=\
     qgraphicswidget \
     qgridlayout \
     qgroupbox \
-    qguard \
     qguivariant \
     qheaderview \
     qhelpcontentmodel \
