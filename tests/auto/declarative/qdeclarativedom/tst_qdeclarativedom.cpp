@@ -340,6 +340,7 @@ void tst_qdeclarativedom::loadImports()
                      "Item {}";
 
     QDeclarativeEngine engine;
+    engine.addImportPath(SRCDIR "/data");
     QDeclarativeDomDocument document;
     QVERIFY(document.load(&engine, qml, QUrl::fromLocalFile(SRCDIR "/data/dummy.qml")));
 

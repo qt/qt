@@ -1248,7 +1248,6 @@ void tst_qdeclarativeecmascript::regExpBug()
     QDeclarativeComponent component(&engine, TEST_FILE("regExp.qml"));
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
-    QEXPECT_FAIL("", "QTBUG-9367", Continue);
     QCOMPARE(object->regExp().pattern(), QLatin1String("[a-zA-z]"));
 }
 

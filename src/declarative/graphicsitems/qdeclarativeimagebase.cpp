@@ -152,7 +152,7 @@ void QDeclarativeImageBase::load()
     } else {
         d->status = Loading;
         int reqwidth = d->sourcesize.width();
-        int reqheight = d->sourcesize.width();
+        int reqheight = d->sourcesize.height();
         QSize impsize;
         QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, &impsize, d->async, reqwidth, reqheight);
         if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {

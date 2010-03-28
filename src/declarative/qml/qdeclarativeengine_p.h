@@ -225,7 +225,7 @@ public:
     mutable QDeclarativeNetworkAccessManagerFactory *networkAccessManagerFactory;
 
     QHash<QString,QDeclarativeImageProvider*> imageProviders;
-    QImage getImageFromProvider(const QUrl &url);
+    QImage getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
 
     mutable QMutex mutex;
 

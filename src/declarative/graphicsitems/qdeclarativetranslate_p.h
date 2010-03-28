@@ -52,7 +52,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativeTranslatePrivate;
 
-class Q_GUI_EXPORT QDeclarativeTranslate : public QGraphicsTransform
+class Q_DECLARATIVE_EXPORT QDeclarativeTranslate : public QGraphicsTransform
 {
     Q_OBJECT
 

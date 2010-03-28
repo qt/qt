@@ -1391,7 +1391,11 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
     } else {
         [item setTitle: qt_mac_QStringToNSString(finalString)];
     }
-    [item setTitle:qt_mac_QStringToNSString(qt_mac_removeMnemonics(text))];
+
+    if (action->action->menuRole() == QAction::AboutRole || action->action->menuRole() == QAction::QuitRole)
+        [item setTitle:qt_mac_QStringToNSString(text)];
+    else
+        [item setTitle:qt_mac_QStringToNSString(qt_mac_removeMnemonics(text))];
 
     // Cocoa Enabled
     [item setEnabled: action->action->isEnabled()];

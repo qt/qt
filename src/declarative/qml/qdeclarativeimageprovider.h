@@ -54,7 +54,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeImageProvider
 {
 public:
     virtual ~QDeclarativeImageProvider();
-    virtual QImage request(const QString &id) = 0;
+    virtual QImage request(const QString &id, QSize *size, const QSize& requested_size) = 0;
 };
 
 QT_END_NAMESPACE
