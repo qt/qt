@@ -255,7 +255,9 @@ bool QDeclarativeImageRequestHandler::event(QEvent *event)
             // fetch
             if (url.scheme() == QLatin1String("image")) {
                 // Use QmlImageProvider
-                QImage image = QDeclarativeEnginePrivate::get(engine)->getImageFromProvider(url);
+                QSize read_impsize;
+                QImage image = QDeclarativeEnginePrivate::get(engine)->getImageFromProvider(url, &read_impsize, QSize(runningJob->forcedWidth(),runningJob->forcedHeight()));
+                qmlOriginalSizes()->insert(url, read_impsize);
                 QDeclarativeImageReaderEvent::ReadError errorCode = QDeclarativeImageReaderEvent::NoError;
                 QString errorStr;
                 if (image.isNull()) {

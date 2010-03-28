@@ -580,13 +580,13 @@ void QDeclarativeEngine::removeImageProvider(const QString &providerId)
     delete d->imageProviders.take(providerId);
 }
 
-QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url)
+QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size)
 {
     QMutexLocker locker(&mutex);
     QImage image;
     QDeclarativeImageProvider *provider = imageProviders.value(url.host());
     if (provider)
-        image = provider->request(url.path().mid(1));
+        image = provider->request(url.path().mid(1), size, req_size);
     return image;
 }
 
