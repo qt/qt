@@ -62,7 +62,7 @@ MouseArea {
 
 becomes
 
-Import “foo.js” as Foo
+import “foo.js” as Foo
 MouseArea {
     onClicked: Foo.foo()
 }
