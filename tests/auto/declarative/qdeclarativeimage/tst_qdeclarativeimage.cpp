@@ -155,7 +155,7 @@ void tst_qdeclarativeimage::imageSource()
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
     QVERIFY(obj != 0);
-    
+
     if (remote || async)
         TRY_WAIT(obj->status() == QDeclarativeImage::Loading);
 
@@ -266,7 +266,11 @@ void tst_qdeclarativeimage::svg()
     QCOMPARE(obj->pixmap().height(), 300);
     QCOMPARE(obj->width(), 550.0);
     QCOMPARE(obj->height(), 500.0);
+#if defined(Q_OS_MAC)
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-mac.png"));
+#else
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart.png"));
+#endif
 
     obj->setSourceSize(QSize(200,200));
 
@@ -274,8 +278,11 @@ void tst_qdeclarativeimage::svg()
     QCOMPARE(obj->pixmap().height(), 200);
     QCOMPARE(obj->width(), 550.0);
     QCOMPARE(obj->height(), 500.0);
+#if defined(Q_OS_MAC)
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-mac.png"));
+#else
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200.png"));
-
+#endif
     delete obj;
 }
 
