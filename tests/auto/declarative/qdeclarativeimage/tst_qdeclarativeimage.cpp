@@ -281,6 +281,9 @@ void tst_qdeclarativeimage::svg()
 
 void tst_qdeclarativeimage::big()
 {
+    // If the JPEG loader does not implement scaling efficiently, it would
+    // have to build a 400 MB image. That would be a bug in the JPEG loader.
+
     QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/big.jpeg\"; sourceSize.width: 256; sourceSize.height: 256 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
