@@ -78,6 +78,7 @@ public:
     void clearComponentCache();
 
     void addImportPath(const QString& dir);
+    QStringList importPathList() const;
     bool importExtension(const QString &fileName, const QString &uri);
 
     void setNetworkAccessManagerFactory(QDeclarativeNetworkAccessManagerFactory *);
