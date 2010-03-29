@@ -97,12 +97,12 @@ void tst_qmlvisual::visual_data()
     QTest::addColumn<QString>("testdata");
 
     QStringList files;
-    if (qgetenv("RUN_ALL") != "")
+    if (qgetenv("QMLVISUAL_ALL") != "")
         files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
     else {
         //these are tests we think are stable and useful enough to be run by the CI system
-        files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/parentAnimation/parentAnimation.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation-visual.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/parentAnimation/parentAnimation-visual.qml";
         files << QT_TEST_SOURCE_DIR "/animation/reanchor/reanchor.qml";
     }
 
@@ -124,7 +124,7 @@ void tst_qmlvisual::visual()
     QStringList arguments;
     arguments << "-script" << testdata
               << "-scriptopts" << "play,testimages,testerror,exitoncomplete,exitonfailure" 
-              << file;
+              << file << "-graphicssystem" << "raster";
     QProcess p;
     p.start(qmlruntime, arguments);
     QVERIFY(p.waitForFinished());
