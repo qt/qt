@@ -43,7 +43,6 @@
     \page qmlruntime.html
     \title Qt Declarative UI Runtime
     \ingroup qttools
-    \keyword qmlviewer
 
     This page documents the \e{Declarative UI Runtime} for the Qt GUI
     toolkit, and the \c qml executable which can be used to run apps
@@ -141,8 +140,8 @@
     import QDeclarativeViewer 1.0 as QDeclarativeViewer
     
     Item {
-        QDeclarativeViewer.Screen { id: qmlviewerScreen }
-        state: (qmlviewerScreen.orientation == QDeclarativeViewer.Screen.Landscape) ? 'landscape' : ''
+        QDeclarativeViewer.Screen { id: viewerScreen }
+        state: (viewerScreen.orientation == QDeclarativeViewer.Screen.Landscape) ? 'landscape' : ''
     }
 \endcode
 
