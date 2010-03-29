@@ -117,7 +117,7 @@ public:
     virtual void componentComplete();
 
 Q_SIGNALS:
-    void statusChanged(Status);
+    void statusChanged(QDeclarativeXmlListModel::Status);
     void progressChanged(qreal progress);
     void countChanged();
     void sourceChanged();
@@ -135,6 +135,7 @@ public Q_SLOTS:
 private Q_SLOTS:
     void requestFinished();
     void requestProgress(qint64,qint64);
+    void dataCleared();
     void queryCompleted(const QDeclarativeXmlQueryResult &);
 
 private:

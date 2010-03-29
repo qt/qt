@@ -63,7 +63,7 @@ capabilities are described more fully in:
 \o \l {Qt Linguist Manual}
 \endlist
 
-You can test a translation with the \l{qml runtime} using the -translation option.
+You can test a translation with the \l {Qt Declarative UI Runtime}{qml} tool using the -translation option.
 
 \section1 Example
 
@@ -86,9 +86,9 @@ lupdate hello.qml -ts hello.ts
 \endcode
 
 Then we open \c hello.ts in \l{Qt Linguist Manual} {Linguist}, provide
-a translation and create the release file \c hello.qm.
+a translation and create the release file \c hello.qml.
 
-Finally, we can test the translation in the \l{qml runtime}:
+Finally, we can test the translation:
 \code
 qml -translation hello.qm hello.qml
 \endcode

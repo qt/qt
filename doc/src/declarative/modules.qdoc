@@ -165,7 +165,6 @@ current file is implicitly loaded. This is the exact same as if you had added 'i
 every QML file. The effect of this is that you can automatically use types defined in C++ plugins
 or QML files if they reside in the same directory.
 
-
 */
 
 /*

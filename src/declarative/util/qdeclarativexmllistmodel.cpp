@@ -57,6 +57,7 @@
 #include <QBuffer>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QTimer>
 
 #include <private/qobject_p.h>
 
@@ -66,6 +67,8 @@ QT_BEGIN_NAMESPACE
 
 
 typedef QPair<int, int> QDeclarativeXmlListRange;
+
+#define XMLLISTMODEL_CLEAR_ID 0
 
 /*!
     \qmlclass XmlRole QDeclarativeXmlListModelRole
@@ -127,9 +130,10 @@ class QDeclarativeXmlQuery : public QThread
     Q_OBJECT
 public:
     QDeclarativeXmlQuery(QObject *parent=0)
-        : QThread(parent), m_quit(false), m_abortQueryId(-1), m_queryIds(0) {
+        : QThread(parent), m_quit(false), m_abortQueryId(-1), m_queryIds(XMLLISTMODEL_CLEAR_ID + 1) {
         qRegisterMetaType<QDeclarativeXmlQueryResult>("QDeclarativeXmlQueryResult");
     }
+
     ~QDeclarativeXmlQuery() {
         m_mutex.lock();
         m_quit = true;
@@ -586,7 +590,8 @@ void QDeclarativeXmlListModel::setSource(const QUrl &src)
     Q_D(QDeclarativeXmlListModel);
     if (d->src != src) {
         d->src = src;
-        reload();
+        if (d->xml.isEmpty())   // src is only used if d->xml is not set
+            reload();
         emit sourceChanged();
    }
 }
@@ -663,23 +668,13 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
 
 /*!
     \qmlproperty enum XmlListModel::status
+    Specifies the model loading status, which can be one of the following:
 
-    This property holds the status of data source loading.  It can be one of:
     \list
-    \o Null - no data source has been set
-    \o Ready - the data source has been loaded
-    \o Loading - the data source is currently being loaded
-    \o Error - an error occurred while loading the data source
-    \endlist
-
-    Note that a change in the status property does not cause anything to happen
-    (although it reflects what has happened to the XmlListModel internally). If you wish
-    to react to the change in status you need to do it yourself, for example in one
-    of the following ways:
-    \list
-    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: xmlListModel.status = XmlListModel.Ready;}
-    \o Do something inside the onStatusChanged signal handler, e.g. XmlListModel{id: xmlListModel; onStatusChanged: if(xmlListModel.status == XmlListModel.Ready) console.log('Loaded');}
-    \o Bind to the status variable somewhere, e.g. Text{text: if(xmlListModel.status!=XmlListModel.Ready){'Not Loaded';}else{'Loaded';}}
+    \o Null - No XML data has been set for this model.
+    \o Ready - The XML data has been loaded into the model.
+    \o Loading - The model is in the process of reading and loading XML data.
+    \o Error - An error occurred while the model was loading.
     \endlist
 
     \sa progress
@@ -694,10 +689,17 @@ QDeclarativeXmlListModel::Status QDeclarativeXmlListModel::status() const
 /*!
     \qmlproperty real XmlListModel::progress
 
-    This property holds the progress of data source loading, from 0.0 (nothing loaded)
-    to 1.0 (finished).
+    This indicates the current progress of the downloading of the XML data
+    source. This value ranges from 0.0 (no data downloaded) to
+    1.0 (all data downloaded). If the XML data is not from a remote source,
+    the progress becomes 1.0 as soon as the data is read.
 
-    \sa status
+    Note that when the progress is 1.0, the XML data has been downloaded, but 
+    it is yet to be loaded into the model at this point. Use the status
+    property to find out when the XML data has been read and loaded into
+    the model.
+
+    \sa status, source
 */
 qreal QDeclarativeXmlListModel::progress() const
 {
@@ -741,27 +743,8 @@ void QDeclarativeXmlListModel::reload()
     globalXmlQuery()->abort(d->queryId);
     d->queryId = -1;
 
-    int count = d->size;
-    if (count < 0)
+    if (d->size < 0)
         d->size = 0;
-    bool hasKeys = false;
-    for (int i=0; i<d->roleObjects.count(); i++) {
-        if (d->roleObjects[i]->isKey()) {
-            hasKeys = true;
-            break;
-        }
-    }
-    if (!hasKeys) {
-        d->data.clear();
-        d->size = 0;
-        if (count > 0) {
-            emit itemsRemoved(0, count);
-            emit countChanged();
-        }
-    }
-
-    if (d->src.isEmpty() && d->xml.isEmpty())
-        return;
 
     if (d->reply) {
         d->reply->abort();
@@ -772,9 +755,19 @@ void QDeclarativeXmlListModel::reload()
     if (!d->xml.isEmpty()) {
         d->queryId = globalXmlQuery()->doQuery(d->query, d->namespaces, d->xml.toUtf8(), &d->roleObjects, d->keyRoleResultsCache);
         d->progress = 1.0;
-        d->status = Ready;
+        d->status = Loading;
         emit progressChanged(d->progress);
         emit statusChanged(d->status);
+        return;
+    }
+
+    if (d->src.isEmpty()) {
+        d->queryId = XMLLISTMODEL_CLEAR_ID;
+        d->progress = 1.0;
+        d->status = Loading;
+        emit progressChanged(d->progress);
+        emit statusChanged(d->status);
+        QTimer::singleShot(0, this, SLOT(dataCleared()));
         return;
     }
 
@@ -813,18 +806,33 @@ void QDeclarativeXmlListModel::requestFinished()
         disconnect(d->reply, 0, this, 0);
         d->reply->deleteLater();
         d->reply = 0;
+
+        int count = this->count();
+        d->data.clear();
+        d->size = 0;
+        if (count > 0) {
+            emit itemsRemoved(0, count);
+            emit countChanged();
+        }
+
         d->status = Error;
+        d->queryId = -1;
+        emit statusChanged(d->status);
     } else {
-        d->status = Ready;
         QByteArray data = d->reply->readAll();
-        d->queryId = globalXmlQuery()->doQuery(d->query, d->namespaces, data, &d->roleObjects, d->keyRoleResultsCache);
+        if (data.isEmpty()) {
+            d->queryId = XMLLISTMODEL_CLEAR_ID;
+            QTimer::singleShot(0, this, SLOT(dataCleared()));
+        } else {
+            d->queryId = globalXmlQuery()->doQuery(d->query, d->namespaces, data, &d->roleObjects, d->keyRoleResultsCache);
+        }
         disconnect(d->reply, 0, this, 0);
         d->reply->deleteLater();
         d->reply = 0;
+
+        d->progress = 1.0;
+        emit progressChanged(d->progress);
     }
-    d->progress = 1.0;
-    emit progressChanged(d->progress);
-    emit statusChanged(d->status);
 }
 
 void QDeclarativeXmlListModel::requestProgress(qint64 received, qint64 total)
@@ -836,23 +844,58 @@ void QDeclarativeXmlListModel::requestProgress(qint64 received, qint64 total)
     }
 }
 
+void QDeclarativeXmlListModel::dataCleared()
+{
+    Q_D(QDeclarativeXmlListModel);
+    QDeclarativeXmlQueryResult r;
+    r.queryId = XMLLISTMODEL_CLEAR_ID;
+    r.size = 0;
+    r.removed << qMakePair(0, count());
+    r.keyRoleResultsCache = d->keyRoleResultsCache;
+    queryCompleted(r);
+}
+
 void QDeclarativeXmlListModel::queryCompleted(const QDeclarativeXmlQueryResult &result)
 {
     Q_D(QDeclarativeXmlListModel);
     if (result.queryId != d->queryId)
         return;
+
+    int origCount = d->size;
     bool sizeChanged = result.size != d->size;
+
     d->size = result.size;
     d->data = result.data;
     d->keyRoleResultsCache = result.keyRoleResultsCache;
+    d->status = Ready;
+    d->queryId = -1;
 
-    for (int i=0; i<result.removed.count(); i++)
-        emit itemsRemoved(result.removed[i].first, result.removed[i].second);
-    for (int i=0; i<result.inserted.count(); i++)
-        emit itemsInserted(result.inserted[i].first, result.inserted[i].second);
+    bool hasKeys = false;
+    for (int i=0; i<d->roleObjects.count(); i++) {
+        if (d->roleObjects[i]->isKey()) {
+            hasKeys = true;
+            break;
+        }
+    }
+    if (!hasKeys) {
+        if (!(origCount == 0 && d->size == 0)) {
+            emit itemsRemoved(0, origCount);
+            emit itemsInserted(0, d->size);
+            emit countChanged();
+        }
 
-    if (sizeChanged)
-        emit countChanged();
+    } else {
+
+        for (int i=0; i<result.removed.count(); i++)
+            emit itemsRemoved(result.removed[i].first, result.removed[i].second);
+        for (int i=0; i<result.inserted.count(); i++)
+            emit itemsInserted(result.inserted[i].first, result.inserted[i].second);
+
+        if (sizeChanged)
+            emit countChanged();
+    }
+
+    emit statusChanged(d->status);
 }
 
 QT_END_NAMESPACE

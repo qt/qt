@@ -155,6 +155,9 @@ void tst_qdeclarativeimage::imageSource()
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
     QVERIFY(obj != 0);
+
+    if (async)
+        QVERIFY(obj->asynchronous() == true);
     
     if (remote || async)
         TRY_WAIT(obj->status() == QDeclarativeImage::Loading);
@@ -257,7 +260,8 @@ void tst_qdeclarativeimage::pixmap()
 
 void tst_qdeclarativeimage::svg()
 {
-    QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/heart.svg\"; sourceSize.width: 300; sourceSize.height: 300 }";
+    QString src = QUrl::fromLocalFile(SRCDIR "/data/heart.svg").toString();
+    QString componentStr = "import Qt 4.6\nImage { source: \"" + src + "\"; sourceSize.width: 300; sourceSize.height: 300 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -266,7 +270,13 @@ void tst_qdeclarativeimage::svg()
     QCOMPARE(obj->pixmap().height(), 300);
     QCOMPARE(obj->width(), 550.0);
     QCOMPARE(obj->height(), 500.0);
+#if defined(Q_OS_MAC)
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-mac.png"));
+#elif defined(Q_OS_WIN32)
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-win32.png"));
+#else
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart.png"));
+#endif
 
     obj->setSourceSize(QSize(200,200));
 
@@ -274,8 +284,13 @@ void tst_qdeclarativeimage::svg()
     QCOMPARE(obj->pixmap().height(), 200);
     QCOMPARE(obj->width(), 550.0);
     QCOMPARE(obj->height(), 500.0);
+#if defined(Q_OS_MAC)
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-mac.png"));
+#elif defined(Q_OS_WIN32)
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-win32.png"));
+#else
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200.png"));
-
+#endif
     delete obj;
 }
 
@@ -284,7 +299,9 @@ void tst_qdeclarativeimage::big()
     // If the JPEG loader does not implement scaling efficiently, it would
     // have to build a 400 MB image. That would be a bug in the JPEG loader.
 
-    QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/big.jpeg\"; sourceSize.width: 256; sourceSize.height: 256 }";
+    QString src = QUrl::fromLocalFile(SRCDIR "/data/big.jpeg").toString();
+    QString componentStr = "import Qt 4.6\nImage { source: \"" + src + "\"; sourceSize.width: 256; sourceSize.height: 256 }";
+
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());

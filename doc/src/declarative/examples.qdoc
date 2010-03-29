@@ -51,7 +51,7 @@ sub-directory that show how to use various aspects of QML. In addition, the
 applications. These demos are intended to show integrated functionality
 rather than being instructive on specifice elements.
 
-To run the examples and demos, use the included \l {qml runtime}
+To run the examples and demos, use the included \l {Qt Declarative UI Runtime}{qml}
 application. It has some useful options, revealed by:
 
 \code
@@ -60,10 +60,6 @@ application. It has some useful options, revealed by:
 
 For example, from your build directory, run:
 
-\code
-    bin/qml $QTDIR/demos/declarative/flickr/flickr-desktop.qml
-\endcode
-or
 \code
     bin/qml $QTDIR/demos/declarative/samegame/samegame.qml
 \endcode
