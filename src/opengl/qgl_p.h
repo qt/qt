@@ -578,7 +578,7 @@ inline GLenum qt_gl_preferredTextureTarget()
 }
 
 // One resource per group of shared contexts.
-class Q_AUTOTEST_EXPORT QGLContextResource
+class Q_OPENGL_EXPORT QGLContextResource
 {
 public:
     typedef void (*FreeFunc)(void *);
