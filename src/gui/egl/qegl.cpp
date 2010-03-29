@@ -528,8 +528,10 @@ QEglProperties QEglContext::configProperties() const
     return QEglProperties(config());
 }
 
+#if !defined(EGL_KHR_image) || !defined(EGL_KHR_image_base)
 _eglCreateImageKHR eglCreateImageKHR = 0;
 _eglDestroyImageKHR eglDestroyImageKHR = 0;
+#endif
 
 EGLDisplay QEgl::display()
 {
