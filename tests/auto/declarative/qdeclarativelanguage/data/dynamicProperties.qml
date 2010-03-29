@@ -10,5 +10,4 @@ QtObject {
     property url urlProperty: "main.qml"
     property date dateProperty: "1945-09-02"
     property var varProperty: "Hello World!"
-    property variant variantProperty: 12
 }

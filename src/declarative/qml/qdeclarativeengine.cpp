@@ -1306,13 +1306,14 @@ QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine
 QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &val)
 {
     if (val.userType() == qMetaTypeId<QDeclarativeListReference>()) {
-        QDeclarativeListReferencePrivate *p = QDeclarativeListReferencePrivate::get((QDeclarativeListReference*)val.constData());
+        QDeclarativeListReferencePrivate *p = 
+            QDeclarativeListReferencePrivate::get((QDeclarativeListReference*)val.constData());
         if (p->object) {
             return listClass->newList(p->property, p->propertyType);
         } else {
             return scriptEngine.nullValue();
         }
-    }
+    } 
 
     bool objOk;
     QObject *obj = QDeclarativeMetaType::toQObject(val, &objOk);
@@ -1809,18 +1810,7 @@ QUrl QDeclarativeEnginePrivate::Imports::baseUrl() const
   Adds \a path as a directory where installed QML components are
   defined in a URL-based directory structure.
 
-  For example, if you add \c /opt/MyApp/lib/imports and then load QML
-  that imports \c com.mycompany.Feature, then QDeclarativeEngine will look
-  in \c /opt/MyApp/lib/imports/com/mycompany/Feature/ for the components
-  provided by that module. A \c qmldir file is required for definiting the
-  type version mapping and possibly declarative extensions plugins.
-
-  The engine searches in the base directory of the qml file, then
-  the paths added via addImportPath(), then in the directory containing the
-  application executable (QCoreApplication::applicationDirPath()),
-  then the paths specified in the \c QML_IMPORT_PATH environment variable, then the
-  builtin \c ImportsPath from QLibraryInfo.
-
+  \sa importPathList()
 */
 void QDeclarativeEngine::addImportPath(const QString& path)
 {
@@ -1828,6 +1818,31 @@ void QDeclarativeEngine::addImportPath(const QString& path)
         qDebug() << "QDeclarativeEngine::addImportPath" << path;
     Q_D(QDeclarativeEngine);
     d->fileImportPath.prepend(path);
+}
+
+
+/*!
+  Returns the list of directories with the engine searches for
+  installed modules.
+
+  For example, if \c /opt/MyApp/lib/imports is in the path, then QML that
+  imports \c com.mycompany.Feature will cause the QDeclarativeEngine to look
+  in \c /opt/MyApp/lib/imports/com/mycompany/Feature/ for the components
+  provided by that module. A \c qmldir file is required for defining the
+  type version mapping and possibly declarative extensions plugins.
+
+  In addition to this list,
+  the engine searches in the directory containing the
+  application executable (QCoreApplication::applicationDirPath()),
+  then the paths specified in the \c QML_IMPORT_PATH environment variable, then the
+  builtin \c ImportsPath from QLibraryInfo.
+
+  \sa addImportPath()
+*/
+QStringList QDeclarativeEngine::importPathList() const
+{
+    Q_D(const QDeclarativeEngine);
+    return d->fileImportPath;
 }
 
 /*!

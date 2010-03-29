@@ -58,6 +58,10 @@
 #include <QtCore/QMetaObject>
 #include <QtCore/QBitArray>
 #include <QtCore/QPair>
+#include <QtGui/QColor>
+#include <QtCore/QDate>
+#include <QtCore/qlist.h>
+#include <QtCore/qdebug.h>
 
 #include <private/qobject_p.h>
 
@@ -106,6 +110,7 @@ struct QDeclarativeVMEMetaData
     }
 };
 
+class QDeclarativeVMEVariant;
 class QDeclarativeRefCount;
 class QDeclarativeVMEMetaObject : public QAbstractDynamicMetaObject
 {
@@ -116,6 +121,9 @@ public:
 
     void registerInterceptor(int index, int valueIndex, QDeclarativePropertyValueInterceptor *interceptor);
     QScriptValue vmeMethod(int index);
+    QScriptValue vmeProperty(int index);
+    void setVMEProperty(int index, const QScriptValue &);
+
 protected:
     virtual int metaCall(QMetaObject::Call _c, int _id, void **_a);
 
@@ -128,13 +136,18 @@ private:
     int propOffset;
     int methodOffset;
 
-    QVariant *data;
+    QDeclarativeVMEVariant *data;
+
     QBitArray aConnected;
     QBitArray aInterceptors;
     QHash<int, QPair<int, QDeclarativePropertyValueInterceptor*> > interceptors;
 
     QScriptValue *methods;
     QScriptValue method(int);
+
+    QScriptValue readVarProperty(int);
+    QVariant readVarPropertyAsVariant(int);
+    void writeVarProperty(int, const QScriptValue &);
 
     QAbstractDynamicMetaObject *parent;
 
@@ -145,7 +158,7 @@ private:
         List(int lpi) : notifyIndex(lpi) {}
         int notifyIndex;
     };
-    QList<List *> listProperties;
+    QList<List> listProperties;
 
     static void list_append(QDeclarativeListProperty<QObject> *, QObject *);
     static int list_count(QDeclarativeListProperty<QObject> *);

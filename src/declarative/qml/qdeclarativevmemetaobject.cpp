@@ -47,19 +47,340 @@
 #include "qdeclarativeexpression_p.h"
 #include "qdeclarativecontext_p.h"
 
-#include <QColor>
-#include <QDate>
-#include <QtCore/qlist.h>
-#include <QtCore/qdebug.h>
+Q_DECLARE_METATYPE(QScriptValue);
 
 QT_BEGIN_NAMESPACE
+
+class QDeclarativeVMEVariant
+{
+public:
+    inline QDeclarativeVMEVariant();
+    inline ~QDeclarativeVMEVariant();
+
+    inline const void *dataPtr() const;
+    inline void *dataPtr();
+    inline int dataType() const;
+
+    inline QObject *asQObject();
+    inline const QVariant &asQVariant();
+    inline int asInt();
+    inline bool asBool();
+    inline double asDouble();
+    inline const QString &asQString();
+    inline const QUrl &asQUrl();
+    inline const QColor &asQColor();
+    inline const QTime &asQTime();
+    inline const QDate &asQDate();
+    inline const QDateTime &asQDateTime();
+    inline const QScriptValue &asQScriptValue();
+
+    inline void setValue(QObject *);
+    inline void setValue(const QVariant &);
+    inline void setValue(int);
+    inline void setValue(bool);
+    inline void setValue(double);
+    inline void setValue(const QString &);
+    inline void setValue(const QUrl &);
+    inline void setValue(const QColor &);
+    inline void setValue(const QTime &);
+    inline void setValue(const QDate &);
+    inline void setValue(const QDateTime &);
+    inline void setValue(const QScriptValue &);
+
+private:
+    int type;
+    void *data[4]; // Large enough to hold all types
+
+    inline void cleanup();
+};
+
+QDeclarativeVMEVariant::QDeclarativeVMEVariant()
+: type(QVariant::Invalid)
+{
+}
+
+QDeclarativeVMEVariant::~QDeclarativeVMEVariant()
+{
+    cleanup();
+}
+
+void QDeclarativeVMEVariant::cleanup()
+{
+    if (type == QVariant::Invalid) {
+    } else if (type == QMetaType::QObjectStar ||
+               type == QMetaType::Int ||
+               type == QMetaType::Bool ||
+               type == QMetaType::Double) {
+        type = QVariant::Invalid;
+    } else if (type == QMetaType::QString) {
+        ((QString *)dataPtr())->~QString();
+        type = QVariant::Invalid;
+    } else if (type == QMetaType::QUrl) {
+        ((QUrl *)dataPtr())->~QUrl();
+        type = QVariant::Invalid;
+    } else if (type == QMetaType::QColor) {
+        ((QColor *)dataPtr())->~QColor();
+        type = QVariant::Invalid;
+    } else if (type == QMetaType::QTime) {
+        ((QTime *)dataPtr())->~QTime();
+        type = QVariant::Invalid;
+    } else if (type == QMetaType::QDate) {
+        ((QDate *)dataPtr())->~QDate();
+        type = QVariant::Invalid;
+    } else if (type == QMetaType::QDateTime) {
+        ((QDateTime *)dataPtr())->~QDateTime();
+        type = QVariant::Invalid;
+    } else if (type == qMetaTypeId<QVariant>()) {
+        ((QVariant *)dataPtr())->~QVariant();
+        type = QVariant::Invalid;
+    } else if (type == qMetaTypeId<QScriptValue>()) {
+        ((QScriptValue *)dataPtr())->~QScriptValue();
+        type = QVariant::Invalid;
+    }
+
+}
+
+int QDeclarativeVMEVariant::dataType() const
+{
+    return type;
+}
+
+const void *QDeclarativeVMEVariant::dataPtr() const
+{
+    return &data;
+}
+
+void *QDeclarativeVMEVariant::dataPtr() 
+{
+    return &data;
+}
+
+QObject *QDeclarativeVMEVariant::asQObject() 
+{
+    if (type != QMetaType::QObjectStar) 
+        setValue((QObject *)0);
+
+    return *(QObject **)(dataPtr());
+}
+
+const QVariant &QDeclarativeVMEVariant::asQVariant() 
+{
+    if (type != QMetaType::QVariant)
+        setValue(QVariant());
+
+    return *(QVariant *)(dataPtr());
+}
+
+int QDeclarativeVMEVariant::asInt() 
+{
+    if (type != QMetaType::Int)
+        setValue(int(0));
+
+    return *(int *)(dataPtr());
+}
+
+bool QDeclarativeVMEVariant::asBool() 
+{
+    if (type != QMetaType::Bool)
+        setValue(bool(false));
+
+    return *(bool *)(dataPtr());
+}
+
+double QDeclarativeVMEVariant::asDouble() 
+{
+    if (type != QMetaType::Double)
+        setValue(double(0));
+
+    return *(double *)(dataPtr());
+}
+
+const QString &QDeclarativeVMEVariant::asQString() 
+{
+    if (type != QMetaType::QString)
+        setValue(QString());
+
+    return *(QString *)(dataPtr());
+}
+
+const QUrl &QDeclarativeVMEVariant::asQUrl() 
+{
+    if (type != QMetaType::QUrl)
+        setValue(QUrl());
+
+    return *(QUrl *)(dataPtr());
+}
+
+const QColor &QDeclarativeVMEVariant::asQColor() 
+{
+    if (type != QMetaType::QColor)
+        setValue(QColor());
+
+    return *(QColor *)(dataPtr());
+}
+
+const QTime &QDeclarativeVMEVariant::asQTime() 
+{
+    if (type != QMetaType::QTime)
+        setValue(QTime());
+
+    return *(QTime *)(dataPtr());
+}
+
+const QDate &QDeclarativeVMEVariant::asQDate() 
+{
+    if (type != QMetaType::QDate)
+        setValue(QDate());
+
+    return *(QDate *)(dataPtr());
+}
+
+const QDateTime &QDeclarativeVMEVariant::asQDateTime() 
+{
+    if (type != QMetaType::QDateTime)
+        setValue(QDateTime());
+
+    return *(QDateTime *)(dataPtr());
+}
+
+const QScriptValue &QDeclarativeVMEVariant::asQScriptValue() 
+{
+    if (type != qMetaTypeId<QScriptValue>())
+        setValue(QScriptValue());
+
+    return *(QScriptValue *)(dataPtr());
+}
+
+void QDeclarativeVMEVariant::setValue(QObject *v)
+{
+    if (type != QMetaType::QObjectStar) {
+        cleanup();
+        type = QMetaType::QObjectStar;
+    }
+    *(QObject **)(dataPtr()) = v;
+}
+
+void QDeclarativeVMEVariant::setValue(const QVariant &v)
+{
+    if (type != qMetaTypeId<QVariant>()) {
+        cleanup();
+        type = qMetaTypeId<QVariant>();
+        new (dataPtr()) QVariant(v);
+    } else {
+        *(QVariant *)(dataPtr()) = v;
+    }
+}
+
+void QDeclarativeVMEVariant::setValue(int v)
+{
+    if (type != QMetaType::Int) {
+        cleanup();
+        type = QMetaType::Int;
+    }
+    *(int *)(dataPtr()) = v;
+}
+
+void QDeclarativeVMEVariant::setValue(bool v)
+{
+    if (type != QMetaType::Bool) {
+        cleanup();
+        type = QMetaType::Bool;
+    }
+    *(bool *)(dataPtr()) = v;
+}
+
+void QDeclarativeVMEVariant::setValue(double v)
+{
+    if (type != QMetaType::Double) {
+        cleanup();
+        type = QMetaType::Double;
+    }
+    *(double *)(dataPtr()) = v;
+}
+
+void QDeclarativeVMEVariant::setValue(const QString &v)
+{
+    if (type != QMetaType::QString) {
+        cleanup();
+        type = QMetaType::QString;
+        new (dataPtr()) QString(v);
+    } else {
+        *(QString *)(dataPtr()) = v;
+    }
+}
+
+void QDeclarativeVMEVariant::setValue(const QUrl &v)
+{
+    if (type != QMetaType::QUrl) {
+        cleanup();
+        type = QMetaType::QUrl;
+        new (dataPtr()) QUrl(v);
+    } else {
+        *(QUrl *)(dataPtr()) = v;
+    }
+}
+
+void QDeclarativeVMEVariant::setValue(const QColor &v)
+{
+    if (type != QMetaType::QColor) {
+        cleanup();
+        type = QMetaType::QColor;
+        new (dataPtr()) QColor(v);
+    } else {
+        *(QColor *)(dataPtr()) = v;
+    }
+}
+
+void QDeclarativeVMEVariant::setValue(const QTime &v)
+{
+    if (type != QMetaType::QTime) {
+        cleanup();
+        type = QMetaType::QTime;
+        new (dataPtr()) QTime(v);
+    } else {
+        *(QTime *)(dataPtr()) = v;
+    }
+}
+
+void QDeclarativeVMEVariant::setValue(const QDate &v)
+{
+    if (type != QMetaType::QDate) {
+        cleanup();
+        type = QMetaType::QDate;
+        new (dataPtr()) QDate(v);
+    } else {
+        *(QDate *)(dataPtr()) = v;
+    }
+}
+
+void QDeclarativeVMEVariant::setValue(const QDateTime &v)
+{
+    if (type != QMetaType::QDateTime) {
+        cleanup();
+        type = QMetaType::QDateTime;
+        new (dataPtr()) QDateTime(v);
+    } else {
+        *(QDateTime *)(dataPtr()) = v;
+    }
+}
+
+void QDeclarativeVMEVariant::setValue(const QScriptValue &v)
+{
+    if (type != qMetaTypeId<QScriptValue>()) {
+        cleanup();
+        type = qMetaTypeId<QScriptValue>();
+        new (dataPtr()) QScriptValue(v);
+    } else {
+        *(QScriptValue *)(dataPtr()) = v;
+    }
+}
 
 QDeclarativeVMEMetaObject::QDeclarativeVMEMetaObject(QObject *obj,
                                                      const QMetaObject *other, 
                                                      const QDeclarativeVMEMetaData *meta,
                                                      QDeclarativeCompiledData *cdata)
 : object(obj), compiledData(cdata), ctxt(QDeclarativeDeclarativeData::get(obj)->outerContext), 
-  metaData(meta), methods(0), parent(0)
+  metaData(meta), data(0), methods(0), parent(0)
 {
     compiledData->addref();
 
@@ -74,20 +395,18 @@ QDeclarativeVMEMetaObject::QDeclarativeVMEMetaObject(QObject *obj,
     propOffset = QAbstractDynamicMetaObject::propertyOffset();
     methodOffset = QAbstractDynamicMetaObject::methodOffset();
 
-    data = new QVariant[metaData->propertyCount];
-    aConnected.resize(metaData->aliasCount);
+    data = new QDeclarativeVMEVariant[metaData->propertyCount];
 
+    aConnected.resize(metaData->aliasCount);
     int list_type = qMetaTypeId<QDeclarativeListProperty<QObject> >();
+
     // ### Optimize
     for (int ii = 0; ii < metaData->propertyCount; ++ii) {
         int t = (metaData->propertyData() + ii)->propertyType;
         if (t == list_type) {
-            listProperties.append(new List(methodOffset + ii));
-            data[ii] = QVariant::fromValue(QDeclarativeListProperty<QObject>(obj, listProperties.last(), list_append,
-                                                                    list_count, list_at, list_clear));
-        } else if (t != -1) {
-            data[ii] = QVariant((QVariant::Type)t);
-        }
+            listProperties.append(List(methodOffset + ii));
+            data[ii].setValue(listProperties.count() - 1);
+        } 
     }
 }
 
@@ -95,7 +414,6 @@ QDeclarativeVMEMetaObject::~QDeclarativeVMEMetaObject()
 {
     compiledData->release();
     delete parent;
-    qDeleteAll(listProperties);
     delete [] data;
     delete [] methods;
 }
@@ -145,11 +463,10 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                 if (t == -1) {
 
                     if (c == QMetaObject::ReadProperty) {
-                        *reinterpret_cast<QVariant *>(a[0]) = data[id];
+                        *reinterpret_cast<QVariant *>(a[0]) = readVarPropertyAsVariant(id);
                     } else if (c == QMetaObject::WriteProperty) {
-                        needActivate = 
-                            (data[id] != *reinterpret_cast<QVariant *>(a[0]));
-                        data[id] = *reinterpret_cast<QVariant *>(a[0]);
+                        needActivate = (data[id].asQVariant() != *reinterpret_cast<QVariant *>(a[0]));
+                        data[id].setValue(*reinterpret_cast<QVariant *>(a[0]));
                     }
 
                 } else {
@@ -157,42 +474,86 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                     if (c == QMetaObject::ReadProperty) {
                         switch(t) {
                         case QVariant::Int:
-                            *reinterpret_cast<int *>(a[0]) = data[id].toInt();
+                            *reinterpret_cast<int *>(a[0]) = data[id].asInt();
                             break;
                         case QVariant::Bool:
-                            *reinterpret_cast<bool *>(a[0]) = data[id].toBool();
+                            *reinterpret_cast<bool *>(a[0]) = data[id].asBool();
                             break;
                         case QVariant::Double:
-                            *reinterpret_cast<double *>(a[0]) = data[id].toDouble();
+                            *reinterpret_cast<double *>(a[0]) = data[id].asDouble();
                             break;
                         case QVariant::String:
-                            *reinterpret_cast<QString *>(a[0]) = data[id].toString();
+                            *reinterpret_cast<QString *>(a[0]) = data[id].asQString();
                             break;
                         case QVariant::Url:
-                            *reinterpret_cast<QUrl *>(a[0]) = data[id].toUrl();
+                            *reinterpret_cast<QUrl *>(a[0]) = data[id].asQUrl();
                             break;
                         case QVariant::Color:
-                            *reinterpret_cast<QColor *>(a[0]) = data[id].value<QColor>();
+                            *reinterpret_cast<QColor *>(a[0]) = data[id].asQColor();
                             break;
                         case QVariant::Date:
-                            *reinterpret_cast<QDate *>(a[0]) = data[id].toDate();
+                            *reinterpret_cast<QDate *>(a[0]) = data[id].asQDate();
+                            break;
+                        case QVariant::DateTime:
+                            *reinterpret_cast<QDateTime *>(a[0]) = data[id].asQDateTime();
                             break;
                         case QMetaType::QObjectStar:
-                            *reinterpret_cast<QObject **>(a[0]) = data[id].value<QObject*>();
+                            *reinterpret_cast<QObject **>(a[0]) = data[id].asQObject();
                             break;
                         default:
                             break;
                         }
                         if (t == qMetaTypeId<QDeclarativeListProperty<QObject> >()) {
+                            int listIndex = data[id].asInt();
+                            const List *list = &listProperties.at(listIndex);
                             *reinterpret_cast<QDeclarativeListProperty<QObject> *>(a[0]) = 
-                                data[id].value<QDeclarativeListProperty<QObject> >();
+                                QDeclarativeListProperty<QObject>(object, (void *)list,
+                                                                  list_append, list_count, list_at, 
+                                                                  list_clear);
                         }
 
                     } else if (c == QMetaObject::WriteProperty) {
 
-                        QVariant value = QVariant((QVariant::Type)data[id].type(), a[0]); 
-                        needActivate = (data[id] != value);
-                        data[id] = value;
+                        switch(t) {
+                        case QVariant::Int:
+                            needActivate = *reinterpret_cast<int *>(a[0]) != data[id].asInt();
+                            data[id].setValue(*reinterpret_cast<int *>(a[0]));
+                            break;
+                        case QVariant::Bool:
+                            needActivate = *reinterpret_cast<bool *>(a[0]) != data[id].asBool();
+                            data[id].setValue(*reinterpret_cast<bool *>(a[0]));
+                            break;
+                        case QVariant::Double:
+                            needActivate = *reinterpret_cast<double *>(a[0]) != data[id].asDouble();
+                            data[id].setValue(*reinterpret_cast<double *>(a[0]));
+                            break;
+                        case QVariant::String:
+                            needActivate = *reinterpret_cast<QString *>(a[0]) != data[id].asQString();
+                            data[id].setValue(*reinterpret_cast<QString *>(a[0]));
+                            break;
+                        case QVariant::Url:
+                            needActivate = *reinterpret_cast<QUrl *>(a[0]) != data[id].asQUrl();
+                            data[id].setValue(*reinterpret_cast<QUrl *>(a[0]));
+                            break;
+                        case QVariant::Color:
+                            needActivate = *reinterpret_cast<QColor *>(a[0]) != data[id].asQColor();
+                            data[id].setValue(*reinterpret_cast<QColor *>(a[0]));
+                            break;
+                        case QVariant::Date:
+                            needActivate = *reinterpret_cast<QDate *>(a[0]) != data[id].asQDate();
+                            data[id].setValue(*reinterpret_cast<QDate *>(a[0]));
+                            break;
+                        case QVariant::DateTime:
+                            needActivate = *reinterpret_cast<QDateTime *>(a[0]) != data[id].asQDateTime();
+                            data[id].setValue(*reinterpret_cast<QDateTime *>(a[0]));
+                            break;
+                        case QMetaType::QObjectStar:
+                            needActivate = *reinterpret_cast<QObject **>(a[0]) != data[id].asQObject();
+                            data[id].setValue(*reinterpret_cast<QObject **>(a[0]));
+                            break;
+                        default:
+                            break;
+                        }
                     }
 
                 }
@@ -316,6 +677,28 @@ QScriptValue QDeclarativeVMEMetaObject::method(int index)
     return methods[index];
 }
 
+QScriptValue QDeclarativeVMEMetaObject::readVarProperty(int id)
+{
+    if (data[id].dataType() == qMetaTypeId<QScriptValue>())
+        return data[id].asQScriptValue();
+    else
+        return QDeclarativeEnginePrivate::get(ctxt->engine)->scriptValueFromVariant(data[id].asQVariant());
+}
+
+QVariant QDeclarativeVMEMetaObject::readVarPropertyAsVariant(int id)
+{
+    if (data[id].dataType() == qMetaTypeId<QScriptValue>())
+        return QDeclarativeEnginePrivate::get(ctxt->engine)->scriptValueToVariant(data[id].asQScriptValue());
+    else
+        return data[id].asQVariant();
+}
+
+void QDeclarativeVMEMetaObject::writeVarProperty(int id, const QScriptValue &value)
+{
+    data[id].setValue(value);
+    activate(object, methodOffset + id, 0);
+}
+
 void QDeclarativeVMEMetaObject::listChanged(int id)
 {
     activate(object, methodOffset + id, 0);
@@ -362,6 +745,24 @@ QScriptValue QDeclarativeVMEMetaObject::vmeMethod(int index)
     int plainSignals = metaData->signalCount + metaData->propertyCount + metaData->aliasCount;
     Q_ASSERT(index >= (methodOffset + plainSignals) && index < (methodOffset + plainSignals + metaData->methodCount));
     return method(index - methodOffset - plainSignals);
+}
+
+QScriptValue QDeclarativeVMEMetaObject::vmeProperty(int index)
+{
+    if (index < propOffset) {
+        Q_ASSERT(parent);
+        return static_cast<QDeclarativeVMEMetaObject *>(parent)->vmeProperty(index);
+    }
+    return readVarProperty(index - propOffset);
+}
+
+void QDeclarativeVMEMetaObject::setVMEProperty(int index, const QScriptValue &v)
+{
+    if (index < propOffset) {
+        Q_ASSERT(parent);
+        static_cast<QDeclarativeVMEMetaObject *>(parent)->setVMEProperty(index, v);
+    }
+    return writeVarProperty(index - propOffset, v);
 }
 
 QT_END_NAMESPACE

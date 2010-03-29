@@ -586,7 +586,6 @@ void tst_qdeclarativelanguage::dynamicProperties()
     QCOMPARE(object->property("colorProperty"), QVariant(QColor("red")));
     QCOMPARE(object->property("dateProperty"), QVariant(QDate(1945, 9, 2)));
     QCOMPARE(object->property("varProperty"), QVariant("Hello World!"));
-    QCOMPARE(object->property("variantProperty"), QVariant(12));
 }
 
 // Test that nested types can use dynamic properties

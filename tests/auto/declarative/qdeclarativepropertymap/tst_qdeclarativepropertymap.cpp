@@ -59,6 +59,8 @@ private slots:
     void clear();
     void changed();
     void count();
+
+    void crashBug();
 };
 
 void tst_QDeclarativePropertyMap::insert()
@@ -123,7 +125,7 @@ void tst_QDeclarativePropertyMap::clear()
 void tst_QDeclarativePropertyMap::changed()
 {
     QDeclarativePropertyMap map;
-    QSignalSpy spy(&map, SIGNAL(valueChanged(const QString&)));
+    QSignalSpy spy(&map, SIGNAL(valueChanged(const QString&, const QVariant&)));
     map.insert(QLatin1String("key1"),100);
     map.insert(QLatin1String("key2"),200);
     QCOMPARE(spy.count(), 0);
@@ -144,7 +146,9 @@ void tst_QDeclarativePropertyMap::changed()
     QCOMPARE(txt->text(), QString('X'));
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.count(), 2);
     QCOMPARE(arguments.at(0).toString(),QLatin1String("key1"));
+    QCOMPARE(arguments.at(1).value<QVariant>(),QVariant("Hello World"));
     QCOMPARE(map.value(QLatin1String("key1")), QVariant("Hello World"));
 }
 
@@ -164,6 +168,20 @@ void tst_QDeclarativePropertyMap::count()
     map.clear(QLatin1String("key3"));
     QCOMPARE(map.count(), 3);
     QCOMPARE(map.size(), map.count());
+}
+
+void tst_QDeclarativePropertyMap::crashBug()
+{
+    QDeclarativePropertyMap map;
+
+    QDeclarativeEngine engine;
+    QDeclarativeContext context(&engine);
+    context.setContextProperty("map", &map);
+
+    QDeclarativeComponent c(&engine);
+    c.setData("import Qt 4.6\nBinding { target: map; property: \"myProp\"; value: 10 + 23 }",QUrl());
+    QObject *obj = c.create(&context);
+    delete obj;
 }
 
 QTEST_MAIN(tst_QDeclarativePropertyMap)

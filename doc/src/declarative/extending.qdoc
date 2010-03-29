@@ -654,9 +654,8 @@ declaring a new property, and the corresponding C++ type.
 \row \o string \o QString
 \row \o url \o QUrl
 \row \o color \o QColor
-\row \o date \o QDate
+\row \o date \o QDateTime
 \row \o var \o QVariant
-\row \o variant \o QVariant
 \endtable
 
 QML supports two methods for adding a new property to a type: a new property

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,52 +39,61 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEPROPERTYMAP_H
-#define QDECLARATIVEPROPERTYMAP_H
+#include <QtDeclarative/QDeclarativeExtensionPlugin>
+#include <QtDeclarative/qdeclarative.h>
+#include <QtGui/QGraphicsProxyWidget>
+#include <QtGui/QPushButton>
+#include <QDebug>
 
-#include <QtCore/QObject>
-#include <QtCore/QHash>
-#include <QtCore/QStringList>
-#include <QtCore/QVariant>
+class MyPushButton : public QGraphicsProxyWidget
+{
+    Q_OBJECT
+    Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
 
-QT_BEGIN_HEADER
+public:
+    MyPushButton(QGraphicsItem* parent = 0)
+        : QGraphicsProxyWidget(parent)
+    {
+        widget = new QPushButton("MyPushButton");
+        widget->setAttribute(Qt::WA_NoSystemBackground);
+        setWidget(widget);
 
-QT_BEGIN_NAMESPACE
+        QObject::connect(widget, SIGNAL(clicked(bool)), this, SIGNAL(clicked(bool)));
+    }
 
-QT_MODULE(Declarative)
+    QString text() const
+    {
+        return widget->text();
+    }
 
-class QDeclarativePropertyMapPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativePropertyMap : public QObject
+    void setText(const QString& text)
+    {
+        if (text != widget->text()) {
+            widget->setText(text);
+            emit textChanged();
+        }
+    }
+
+Q_SIGNALS:
+    void clicked(bool);
+    void textChanged();
+
+private:
+    QPushButton *widget;
+};
+
+class MyWidgetsPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
 public:
-    QDeclarativePropertyMap(QObject *parent = 0);
-    virtual ~QDeclarativePropertyMap();
-
-    QVariant value(const QString &key) const;
-    void insert(const QString &key, const QVariant &value);
-    void clear(const QString &key);
-
-    Q_INVOKABLE QStringList keys() const;
-
-    int count() const;
-    int size() const;
-    bool isEmpty() const;
-    bool contains(const QString &key) const;
-
-    QVariant &operator[](const QString &key);
-    const QVariant operator[](const QString &key) const;
-
-Q_SIGNALS:
-    void valueChanged(const QString &key, const QVariant &value);
-
-private:
-    Q_DECLARE_PRIVATE(QDeclarativePropertyMap)
-    Q_DISABLE_COPY(QDeclarativePropertyMap)
+    void registerTypes(const char *uri)
+    {
+        qmlRegisterType<MyPushButton>(uri, 1, 0, "MyPushButton");
+    }
 };
 
-QT_END_NAMESPACE
+#include "mywidgets.moc"
 
-QT_END_HEADER
+QML_DECLARE_TYPE(MyPushButton)
 
-#endif
+Q_EXPORT_PLUGIN2(mywidgetsplugin, MyWidgetsPlugin);
