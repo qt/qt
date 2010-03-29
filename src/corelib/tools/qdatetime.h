@@ -230,10 +230,12 @@ public:
     QDate date() const;
     QTime time() const;
     Qt::TimeSpec timeSpec() const;
+    qint64 toMsecsSinceEpoch() const;
     uint toTime_t() const;
     void setDate(const QDate &date);
     void setTime(const QTime &time);
     void setTimeSpec(Qt::TimeSpec spec);
+    void setMsecsSinceEpoch(qint64 msecs);
     void setTime_t(uint secsSince1Jan1970UTC);
 #ifndef QT_NO_DATESTRING
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
@@ -267,6 +269,7 @@ public:
     static QDateTime fromString(const QString &s, const QString &format);
 #endif
     static QDateTime fromTime_t(uint secsSince1Jan1970UTC);
+    static QDateTime fromMsecsSinceEpoch(qint64 msecs);
     static qint64 currentMsecsSinceEpoch();
 
 #ifdef QT3_SUPPORT
