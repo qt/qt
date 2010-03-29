@@ -67,8 +67,28 @@ QT_BEGIN_NAMESPACE
 
 class QGLContext;
 
+class QVideoSurfacePainter
+{
+public:
+    virtual ~QVideoSurfacePainter();
 
-class QVideoSurfacePainter;
+    virtual QList<QVideoFrame::PixelFormat> supportedPixelFormats(
+            QAbstractVideoBuffer::HandleType handleType) const = 0;
+
+    virtual bool isFormatSupported(
+            const QVideoSurfaceFormat &format, QVideoSurfaceFormat *similar) const = 0;
+
+    virtual QAbstractVideoSurface::Error start(const QVideoSurfaceFormat &format) = 0;
+    virtual void stop() = 0;
+
+    virtual QAbstractVideoSurface::Error setCurrentFrame(const QVideoFrame &frame) = 0;
+
+    virtual QAbstractVideoSurface::Error paint(
+            const QRectF &target, QPainter *painter, const QRectF &source) = 0;
+
+    virtual void updateColors(int brightness, int contrast, int hue, int saturation) = 0;
+};
+
 class Q_MULTIMEDIA_EXPORT QPainterVideoSurface : public QAbstractVideoSurface
 {
     Q_OBJECT

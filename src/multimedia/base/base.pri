@@ -60,4 +60,10 @@ SOURCES += \
     $$PWD/qpaintervideosurface.cpp \
     $$PWD/qmediatimerange.cpp
 
-    
+mac {
+    HEADERS += $$PWD/qpaintervideosurface_mac_p.h
+    OBJECTIVE_SOURCES += $$PWD/qpaintervideosurface_mac.mm
+
+    LIBS += -framework AppKit -framework QuartzCore -framework QTKit
+
+}

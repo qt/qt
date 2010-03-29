@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtMultimedia module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,56 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef QT7MOVIEVIEWRENDERER_H
-#define QT7MOVIEVIEWRENDERER_H
+#ifndef QPAINTERVIDEOSURFACE_MAC_P_H
+#define QPAINTERVIDEOSURFACE_MAC_P_H
 
-#include <QtCore/qobject.h>
-#include <QtCore/qmutex.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <QtMultimedia/qvideowindowcontrol.h>
-#include <QtMultimedia/qmediaplayer.h>
-
-#include <QtGui/qmacdefines_mac.h>
-#include "qt7videooutputcontrol.h"
+#include "qpaintervideosurface_p.h"
+#include <QtMultimedia/qvideosurfaceformat.h>
 #include <QtMultimedia/qvideoframe.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
-class QVideoFrame;
-class QT7PlayerSession;
-class QT7PlayerService;
-
-class QT7MovieViewRenderer : public QT7VideoRendererControl
+class QVideoSurfaceCoreGraphicsPainter : public QVideoSurfacePainter
 {
 public:
-    QT7MovieViewRenderer(QObject *parent = 0);
-    ~QT7MovieViewRenderer();
+    QVideoSurfaceCoreGraphicsPainter(bool glSupported);
+    ~QVideoSurfaceCoreGraphicsPainter();
 
-    void setEnabled(bool);
-    void setMovie(void *movie);
-    void updateNaturalSize(const QSize &newSize);
+    QList<QVideoFrame::PixelFormat> supportedPixelFormats(
+            QAbstractVideoBuffer::HandleType handleType) const;
 
-    QAbstractVideoSurface *surface() const;
-    void setSurface(QAbstractVideoSurface *surface);
+    bool isFormatSupported(
+            const QVideoSurfaceFormat &format, QVideoSurfaceFormat *similar) const;
 
-    void renderFrame(const QVideoFrame &);
+    QAbstractVideoSurface::Error start(const QVideoSurfaceFormat &format);
+    void stop();
 
-protected:
-    bool event(QEvent *event);
+    QAbstractVideoSurface::Error setCurrentFrame(const QVideoFrame &frame);
+
+    QAbstractVideoSurface::Error paint(
+            const QRectF &target, QPainter *painter, const QRectF &source);
+
+    void updateColors(int brightness, int contrast, int hue, int saturation);
 
 private:
-    void setupVideoOutput();
-
-    void *m_movie;
-    void *m_movieView;
-    QSize m_nativeSize;
-    QAbstractVideoSurface *m_surface;
-    QVideoFrame m_currentFrame;
-    bool m_pendingRenderEvent;
-    QMutex m_mutex;
+    void* ciContext;
+    QList<QVideoFrame::PixelFormat> m_imagePixelFormats;
+    QVideoFrame m_frame;
+    QSize m_imageSize;
+    QImage::Format m_imageFormat;
+    QVector<QAbstractVideoBuffer::HandleType> m_supportedHandles;
+    QVideoSurfaceFormat::Direction m_scanLineDirection;
 };
 
 QT_END_NAMESPACE

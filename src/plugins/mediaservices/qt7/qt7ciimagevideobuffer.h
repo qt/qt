@@ -39,57 +39,49 @@
 **
 ****************************************************************************/
 
-#ifndef QT7MOVIEVIEWRENDERER_H
-#define QT7MOVIEVIEWRENDERER_H
+#ifndef QT7CIIMAGEVIDEOBUFFER_H
+#define QT7CIIMAGEVIDEOBUFFER_H
 
-#include <QtCore/qobject.h>
-#include <QtCore/qmutex.h>
+#include "qt7backend.h"
+#import <QTKit/QTKit.h>
 
-#include <QtMultimedia/qvideowindowcontrol.h>
-#include <QtMultimedia/qmediaplayer.h>
+#include <QtCore/qvariant.h>
+#include <QtMultimedia/qabstractvideobuffer.h>
 
-#include <QtGui/qmacdefines_mac.h>
-#include "qt7videooutputcontrol.h"
-#include <QtMultimedia/qvideoframe.h>
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
-class QVideoFrame;
-class QT7PlayerSession;
-class QT7PlayerService;
-
-class QT7MovieViewRenderer : public QT7VideoRendererControl
+class QT7CIImageVideoBuffer : public QAbstractVideoBuffer
 {
 public:
-    QT7MovieViewRenderer(QObject *parent = 0);
-    ~QT7MovieViewRenderer();
+    QT7CIImageVideoBuffer(CIImage *image);
 
-    void setEnabled(bool);
-    void setMovie(void *movie);
-    void updateNaturalSize(const QSize &newSize);
+    virtual ~QT7CIImageVideoBuffer();
 
-    QAbstractVideoSurface *surface() const;
-    void setSurface(QAbstractVideoSurface *surface);
-
-    void renderFrame(const QVideoFrame &);
-
-protected:
-    bool event(QEvent *event);
+    MapMode mapMode() const;
+    uchar *map(MapMode mode, int *numBytes, int *bytesPerLine);
+    void unmap();
+    QVariant handle() const;
 
 private:
-    void setupVideoOutput();
-
-    void *m_movie;
-    void *m_movieView;
-    QSize m_nativeSize;
-    QAbstractVideoSurface *m_surface;
-    QVideoFrame m_currentFrame;
-    bool m_pendingRenderEvent;
-    QMutex m_mutex;
+    CIImage *m_image;
+    NSBitmapImageRep *m_buffer;
+    MapMode m_mode;
 };
+
 
 QT_END_NAMESPACE
 

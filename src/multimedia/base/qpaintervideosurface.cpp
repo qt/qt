@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qpaintervideosurface_p.h"
+#include "qpaintervideosurface_mac_p.h"
 
 #include <qmath.h>
 
@@ -55,28 +56,6 @@
 
 
 QT_BEGIN_NAMESPACE
-
-class QVideoSurfacePainter
-{
-public:
-    virtual ~QVideoSurfacePainter();
-
-    virtual QList<QVideoFrame::PixelFormat> supportedPixelFormats(
-            QAbstractVideoBuffer::HandleType handleType) const = 0;
-
-    virtual bool isFormatSupported(
-            const QVideoSurfaceFormat &format, QVideoSurfaceFormat *similar) const = 0;
-
-    virtual QAbstractVideoSurface::Error start(const QVideoSurfaceFormat &format) = 0;
-    virtual void stop() = 0;
-
-    virtual QAbstractVideoSurface::Error setCurrentFrame(const QVideoFrame &frame) = 0;
-
-    virtual QAbstractVideoSurface::Error paint(
-            const QRectF &target, QPainter *painter, const QRectF &source) = 0;
-
-    virtual void updateColors(int brightness, int contrast, int hue, int saturation) = 0;
-};
 
 QVideoSurfacePainter::~QVideoSurfacePainter()
 {
@@ -1543,6 +1522,14 @@ void QPainterVideoSurface::setShaderType(ShaderType type)
 void QPainterVideoSurface::createPainter()
 {
     Q_ASSERT(!m_painter);
+
+#ifdef Q_WS_MAC
+    if (m_glContext)
+        m_glContext->makeCurrent();
+
+    m_painter = new QVideoSurfaceCoreGraphicsPainter(m_glContext != 0);
+    return;
+#endif
 
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
     switch (m_shaderType) {
