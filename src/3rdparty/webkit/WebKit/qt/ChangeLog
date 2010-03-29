@@ -1,3 +1,87 @@
+2010-03-22  Jakub Wieczorek  <jwieczorek@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Don't construct a QLineEdit every time when painting a text field
+        https://bugs.webkit.org/show_bug.cgi?id=36373
+
+        Add a simple benchmark covering this area.
+
+        * tests/benchmarks/painting/tst_painting.cpp:
+        (tst_Painting::textAreas):
+
+2010-03-22  Yi Shen  <shenyi2006@gmail.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=35933  
+        [Qt] [Symbian] Can not backward select (highlight) text using virtual keyboard
+        Make sure the selection start index is smaller than the selection end index.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::inputMethodEvent):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::inputMethods):
+
+2010-03-25  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] QtLauncher crashes on Mac OS and Linux when exiting with QGraphicsView mode enabled
+        https://bugs.webkit.org/show_bug.cgi?id=35251
+
+        Followed the way QWebView registers for the signal QWebPage::destroyed(), to prevent
+        QGraphicsWebView from referencing QWebPage after it was deleted.        
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::_q_pageDestroyed):
+        (QGraphicsWebView::setPage):
+        * Api/qgraphicswebview.h:
+
+2010-03-23  David Leong  <david.leong@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        Build fix for Symbian Def file.
+
+        * symbian/eabi/QtWebKitu.def:
+
+2010-03-18  Joe Ligman  <joseph.ligman@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] New API scrollRecursively has several problems.
+        https://bugs.webkit.org/show_bug.cgi?id=35873
+
+        Remove scrollRecursively from the Qt 4.7 API
+        Update the internal API to accept a hit test position 
+        for nested scrolling
+
+        * Api/qwebframe.cpp:
+        (webframe_scrollOverflow):
+        (qtwebkit_webframe_scrollRecursively):
+        * Api/qwebframe.h:
+        * Api/qwebframe_p.h:
+        * tests/qwebframe/tst_qwebframe.cpp:
+
+2009-12-18  Joe Ligman  <joseph.ligman@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Add new API to QWebFrame to scrollRecursively starting with any css overflow 
+        then checking current frame and then ancestors
+        https://bugs.webkit.org/show_bug.cgi?id=32668
+
+        * Api/qwebframe.cpp:
+        (QWebFramePrivate::scrollOverflow):
+        (QWebFrame::scrollRecursively):
+        * Api/qwebframe.h:
+        * Api/qwebframe_p.h:
+        * tests/qwebframe/qwebframe.qrc:
+        * tests/qwebframe/testiframe.html: Added.
+        * tests/qwebframe/testiframe2.html: Added.
+        * tests/qwebframe/tst_qwebframe.cpp:
+
 2010-03-21  Kristian Amlie  <kristian.amlie@nokia.com>
 
         Reviewed by Simon Hausmann.
