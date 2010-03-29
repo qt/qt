@@ -69,6 +69,7 @@ public:
     inline const QString &asQString();
     inline const QUrl &asQUrl();
     inline const QColor &asQColor();
+    inline const QTime &asQTime();
     inline const QDate &asQDate();
     inline const QDateTime &asQDateTime();
     inline const QScriptValue &asQScriptValue();
@@ -81,6 +82,7 @@ public:
     inline void setValue(const QString &);
     inline void setValue(const QUrl &);
     inline void setValue(const QColor &);
+    inline void setValue(const QTime &);
     inline void setValue(const QDate &);
     inline void setValue(const QDateTime &);
     inline void setValue(const QScriptValue &);
@@ -118,6 +120,9 @@ void QDeclarativeVMEVariant::cleanup()
         type = QVariant::Invalid;
     } else if (type == QMetaType::QColor) {
         ((QColor *)dataPtr())->~QColor();
+        type = QVariant::Invalid;
+    } else if (type == QMetaType::QTime) {
+        ((QTime *)dataPtr())->~QTime();
         type = QVariant::Invalid;
     } else if (type == QMetaType::QDate) {
         ((QDate *)dataPtr())->~QDate();
@@ -212,6 +217,14 @@ const QColor &QDeclarativeVMEVariant::asQColor()
         setValue(QColor());
 
     return *(QColor *)(dataPtr());
+}
+
+const QTime &QDeclarativeVMEVariant::asQTime() 
+{
+    if (type != QMetaType::QTime)
+        setValue(QTime());
+
+    return *(QTime *)(dataPtr());
 }
 
 const QDate &QDeclarativeVMEVariant::asQDate() 
@@ -315,6 +328,17 @@ void QDeclarativeVMEVariant::setValue(const QColor &v)
         new (dataPtr()) QColor(v);
     } else {
         *(QColor *)(dataPtr()) = v;
+    }
+}
+
+void QDeclarativeVMEVariant::setValue(const QTime &v)
+{
+    if (type != QMetaType::QTime) {
+        cleanup();
+        type = QMetaType::QTime;
+        new (dataPtr()) QTime(v);
+    } else {
+        *(QTime *)(dataPtr()) = v;
     }
 }
 

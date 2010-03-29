@@ -2428,9 +2428,17 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
             propertyType = QVariant::Color;
             type = "QColor";
             break;
+        case Object::DynamicProperty::Time:
+            propertyType = QVariant::Time;
+            type = "QTime";
+            break;
         case Object::DynamicProperty::Date:
             propertyType = QVariant::Date;
             type = "QDate";
+            break;
+        case Object::DynamicProperty::DateTime:
+            propertyType = QVariant::DateTime;
+            type = "QDateTime";
             break;
         }
 
