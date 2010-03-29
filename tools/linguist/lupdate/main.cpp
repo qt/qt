@@ -634,6 +634,7 @@ int main(int argc, char **argv)
                         sourceFiles << fn;
 
                         if (!fn.endsWith(QLatin1String(".java"))
+                            && !fn.endsWith(QLatin1String(".jui"))
                             && !fn.endsWith(QLatin1String(".ui"))
                             && !fn.endsWith(QLatin1String(".js"))
                             && !fn.endsWith(QLatin1String(".qs"))
