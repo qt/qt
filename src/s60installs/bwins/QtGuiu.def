@@ -12601,4 +12601,5 @@ EXPORTS
 	?setPixelFormat@QEglProperties@@QAEXW4Format@QImage@@@Z @ 12600 NONAME ABSENT ; void QEglProperties::setPixelFormat(enum QImage::Format)
 	?currentContext@QEglContext@@CAPAV1@W4API@QEgl@@@Z @ 12601 NONAME ABSENT ; class QEglContext * QEglContext::currentContext(enum QEgl::API)
 	?errorString@QEglContext@@SA?AVQString@@H@Z @ 12602 NONAME ABSENT ; class QString QEglContext::errorString(int)
+	?removeAllApplicationFonts@QFontDatabase@@SA_NXZ @12603 ; NONAME ; bool QFontDatabase::removeAllApplicationFonts()
 
