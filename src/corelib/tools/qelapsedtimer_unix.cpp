@@ -74,7 +74,7 @@ bool QElapsedTimer::isMonotonic()
     static int returnValue = 0;
 
     if (returnValue == 0) {
-#  if (_POSIX_MONOTONIC_CLOCK-0 < 0)
+#  if (_POSIX_MONOTONIC_CLOCK-0 < 0) || !defined(_SC_MONOTONIC_CLOCK)
         returnValue = -1;
 #  elif (_POSIX_MONOTONIC_CLOCK == 0)
         // detect if the system support monotonic timers
