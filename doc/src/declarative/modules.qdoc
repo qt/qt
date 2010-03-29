@@ -155,7 +155,7 @@ Installed plugins and QML files can both contribute types to the same module.
 The specification of types to versions is given by a special file, \c qmldir which must
 exist in the module directory. The syntax is described below.
 
-The \c -L option to the \l {qmlviewer}{runtime} application also adds paths to the import path.
+The \c -L option to the \l {Qt Declarative UI Runtime}{qml} application also adds paths to the import path.
 
 
 \section2 Local QML Files
