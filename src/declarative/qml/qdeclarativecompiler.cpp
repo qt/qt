@@ -80,7 +80,7 @@
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
-DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATISTICS_DUMP);
+DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATS);
 DEFINE_BOOL_CONFIG_OPTION(bindingsDump, QML_BINDINGS_DUMP);
 
 using namespace QDeclarativeParser;
@@ -617,6 +617,7 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
 void QDeclarativeCompiler::compileTree(Object *tree)
 {
     compileState.root = tree;
+    componentStat.lineNumber = tree->location.start.line;
 
     if (!buildObject(tree, BindingContext()) || !completeComponentBuild())
         return;
@@ -2784,7 +2785,7 @@ bool QDeclarativeCompiler::completeComponentBuild()
         if (index != -1) {
             binding.dataType = BindingReference::Experimental;
             binding.compiledIndex = index;
-            componentStat.optimizedBindings++;
+            componentStat.optimizedBindings.append(iter.key()->location);
             continue;
         } 
 
@@ -2818,7 +2819,7 @@ bool QDeclarativeCompiler::completeComponentBuild()
             QByteArray((const char *)expression.constData(), 
                        expression.length() * sizeof(QChar));
 
-        componentStat.scriptBindings++;
+        componentStat.scriptBindings.append(iter.key()->location);
     }
 
     if (bindingCompiler.isValid()) {
@@ -2840,8 +2841,44 @@ void QDeclarativeCompiler::dumpStats()
         qWarning().nospace() << "    Component Line " << stat.lineNumber;
         qWarning().nospace() << "        Total Objects:      " << stat.objects;
         qWarning().nospace() << "        IDs Used:           " << stat.ids;
-        qWarning().nospace() << "        Optimized Bindings: " << stat.optimizedBindings;
-        qWarning().nospace() << "        QScript Bindings:   " << stat.scriptBindings;
+        qWarning().nospace() << "        Optimized Bindings: " << stat.optimizedBindings.count();
+
+        {
+        QByteArray output;
+        for (int ii = 0; ii < stat.optimizedBindings.count(); ++ii) {
+            if (0 == (ii % 10)) {
+                if (ii) output.append("\n");
+                output.append("            ");
+            }
+
+            output.append("(");
+            output.append(QByteArray::number(stat.optimizedBindings.at(ii).start.line));
+            output.append(":");
+            output.append(QByteArray::number(stat.optimizedBindings.at(ii).start.column));
+            output.append(") ");
+        }
+        if (!output.isEmpty())
+            qWarning().nospace() << output.constData();
+        }
+
+        qWarning().nospace() << "        QScript Bindings:   " << stat.scriptBindings.count();
+        {
+        QByteArray output;
+        for (int ii = 0; ii < stat.scriptBindings.count(); ++ii) {
+            if (0 == (ii % 10)) {
+                if (ii) output.append("\n");
+                output.append("            ");
+            }
+
+            output.append("(");
+            output.append(QByteArray::number(stat.scriptBindings.at(ii).start.line));
+            output.append(":");
+            output.append(QByteArray::number(stat.scriptBindings.at(ii).start.column));
+            output.append(") ");
+        }
+        if (!output.isEmpty())
+            qWarning().nospace() << output.constData();
+        }
     }
 }
 
