@@ -11805,7 +11805,7 @@ EXPORTS
 	_ZN24QImagePixmapCleanupHooks34executePixmapDataModificationHooksEP11QPixmapData @ 11804 NONAME
 	_ZN9QS60Style10timerEventEP11QTimerEvent @ 11805 NONAME
 	_ZN9QS60Style11eventFilterEP7QObjectP6QEvent @ 11806 NONAME
-	_Z14qt_draw_glyphsP8QPainterPKjPK7QPointFi @ 11807 NONAME
+	_ZN13QFontDatabase25removeAllApplicationFontsEv @ 11807 NONAME
 	_ZN10QZipReader5closeEv @ 11808 NONAME
 	_ZN10QZipReader8FileInfoC1ERKS0_ @ 11809 NONAME
 	_ZN10QZipReader8FileInfoC1Ev @ 11810 NONAME
@@ -11926,4 +11926,5 @@ EXPORTS
 	_ZTI26QAbstractScrollAreaPrivate @ 11925 NONAME
 	_ZTV20QGraphicsViewPrivate @ 11926 NONAME
 	_ZTV26QAbstractScrollAreaPrivate @ 11927 NONAME
+	_Z14qt_draw_glyphsP8QPainterPKjPK7QPointFi @ 11928 NONAME
 
