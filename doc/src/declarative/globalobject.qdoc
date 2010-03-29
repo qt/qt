@@ -301,4 +301,9 @@ When a database is first created, an INI file is also created specifying its cha
 
 This data can be used by application tools.
 
+\section1 Logging
+
+\c console.log() and \c console.debug() can be used to print information
+to the console. See \l{Debugging QML} for more information.
+
 */
