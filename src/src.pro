@@ -24,7 +24,7 @@ contains(QT_CONFIG, xmlpatterns): SRC_SUBDIRS += src_xmlpatterns
 contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
 contains(QT_CONFIG, svg): SRC_SUBDIRS += src_svg
 contains(QT_CONFIG, webkit)  {
-    #exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): SRC_SUBDIRS += src_javascriptcore
+    exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): SRC_SUBDIRS += src_javascriptcore
     SRC_SUBDIRS += src_webkit
 }
 contains(QT_CONFIG, script): SRC_SUBDIRS += src_script
@@ -122,7 +122,7 @@ src_declarative.target = sub-declarative
       contains(QT_CONFIG, xmlpatterns): src_webkit.depends += src_xmlpatterns
       contains(QT_CONFIG, declarative):src_declarative.depends += src_webkit
       src_imports.depends += src_webkit
-      #exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): src_webkit.depends += src_javascriptcore
+      exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): src_webkit.depends += src_javascriptcore
    }
    contains(QT_CONFIG, qt3support): src_plugins.depends += src_qt3support
    contains(QT_CONFIG, dbus):{
