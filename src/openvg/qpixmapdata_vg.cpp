@@ -487,7 +487,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
 
         pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
 
-        if (eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
+        if (eglGetError() != EGL_SUCCESS || !(QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_pixmap")) || !vgCreateEGLImageTargetKHR) {
             cleanup();
             driver.Close();
             return;
@@ -606,7 +606,7 @@ void* QVGPixmapData::toNativeType(NativeType type)
 
         pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
 
-        if (eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
+        if (eglGetError() != EGL_SUCCESS || !(QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_pixmap")) || !vgCreateEGLImageTargetKHR) {
             driver.Close();
             return 0;
         }
