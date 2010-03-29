@@ -77,8 +77,10 @@ public:
 
     void clearComponentCache();
 
-    void addImportPath(const QString& dir);
     QStringList importPathList() const;
+    void setImportPathList(const QStringList &paths);
+    void addImportPath(const QString& dir);
+
     bool importExtension(const QString &fileName, const QString &uri);
 
     void setNetworkAccessManagerFactory(QDeclarativeNetworkAccessManagerFactory *);
