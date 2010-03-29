@@ -162,7 +162,10 @@ void MMF::DsaVideoPlayer::prepareCompleted()
 void MMF::DsaVideoPlayer::handleVideoWindowChanged()
 {
     if (!m_window) {
-        m_window = QApplication::activeWindow()->effectiveWinId()->DrawableWindow();
+        if (QWidget *window = QApplication::activeWindow())
+            m_window = window->effectiveWinId()->DrawableWindow();
+        else
+            m_window = 0;
         m_videoScreenRect = TRect();
     }
 
@@ -212,6 +215,9 @@ void MMF::DsaVideoPlayer::handleParametersChanged(VideoParameters parameters)
 {
     TRACE_CONTEXT(DsaVideoPlayer::handleParametersChanged, EVideoInternal);
     TRACE_ENTRY_0();
+
+    if (!m_window)
+        return;
 
 #ifndef QT_NO_DEBUG
     getDsaRegion(m_wsSession, *m_window);

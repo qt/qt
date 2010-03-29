@@ -233,6 +233,15 @@ struct QWExtra {
     uint activated : 1; // RWindowBase::Activated has been called
 
     /**
+     * If this bit is set, each native widget receives the signals from the
+     * Symbian control immediately before and immediately after draw ops are
+     * sent to the window server for this control:
+     *      void beginNativePaintEvent(const QRect &paintRect);
+     *      void endNativePaintEvent(const QRect &paintRect);
+     */
+    uint receiveNativePaintEvents : 1;
+
+    /**
      * Defines the behaviour of QSymbianControl::Draw.
      */
     enum NativePaintMode {
@@ -257,16 +266,7 @@ struct QWExtra {
         Default = Blit
     };
 
-    NativePaintMode nativePaintMode : 2;
-
-    /**
-     * If this bit is set, each native widget receives the signals from the
-     * Symbian control immediately before and immediately after draw ops are
-     * sent to the window server for this control:
-     *      void beginNativePaintEvent(const QRect &paintRect);
-     *      void endNativePaintEvent(const QRect &paintRect);
-     */
-    uint receiveNativePaintEvents : 1;
+    NativePaintMode nativePaintMode;
 
 #endif
 };
