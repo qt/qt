@@ -510,11 +510,6 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-bool QGL2PaintEngineEx::isNativePaintingActive()
-{
-    return nativePaintingActive;
-}
-
 void QGL2PaintEngineEx::beginNativePainting()
 {
     Q_D(QGL2PaintEngineEx);

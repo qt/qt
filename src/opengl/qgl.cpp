@@ -2771,9 +2771,9 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
      if (d_ptr->active_engine && 
          d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
          QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
-         if (eng->isNativePaintingActive() == false) {
-            QRectF src = QRectF(0, 0, target.width(), target.height());
-            QSize size = QSize(target.width(), target.height());
+         if (!eng->isNativePaintingActive()) {
+            QRectF src(0, 0, target.width(), target.height());
+            QSize size(target.width(), target.height());
             eng->drawTexture(target, textureId, size, src);
             return;
         }
@@ -2846,10 +2846,10 @@ void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum text
     if (d_ptr->active_engine && 
         d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
         QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
-        if (eng->isNativePaintingActive() == false) {
-            QRectF dest = QRectF(point, QSizeF(textureWidth, textureHeight));
-            QRectF src = QRectF(0, 0, textureWidth, textureHeight);
-            QSize size = QSize(textureWidth, textureHeight);
+        if (!eng->isNativePaintingActive()) {
+            QRectF dest(point, QSizeF(textureWidth, textureHeight));
+            QRectF src(0, 0, textureWidth, textureHeight);
+            QSize size(textureWidth, textureHeight);
             eng->drawTexture(dest, textureId, size, src);
             return;
         }

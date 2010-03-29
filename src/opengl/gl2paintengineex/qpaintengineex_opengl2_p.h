@@ -154,12 +154,15 @@ public:
 
     void setRenderTextActive(bool);
 
-    bool isNativePaintingActive();
+    bool isNativePaintingActive() const;
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
     bool nativePaintingActive;
 };
 
+inline bool QGL2PaintEngineEx::isNativePaintingActive() const { 
+    return nativePaintingActive; 
+}
 
 class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate
 {
