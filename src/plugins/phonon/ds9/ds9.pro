@@ -7,7 +7,7 @@ LIBS += -lstrmiids -ldmoguids -luuid -lmsdmo -lole32 -loleaut32
 TARGET = phonon_ds9
 
 DEFINES += PHONON_MAKE_QT_ONLY_BACKEND
-PHONON_DS9_DI = $$QT_SOURCE_TREE/src/3rdparty/phonon/ds9
+PHONON_DS9_DIR = $$QT_SOURCE_TREE/src/3rdparty/phonon/ds9
 
 # Input
 HEADERS += \
