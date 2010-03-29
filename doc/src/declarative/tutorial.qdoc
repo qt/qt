@@ -114,11 +114,11 @@ In this case, we specify that our text element should be horizontally centered i
 
 \section2 Viewing the example
 
-To view what you have created, run the qmlviewer (located in the \c bin directory) with your filename as the first argument.
+To view what you have created, run the \l{qml runtime} (located in the \c bin directory) with your filename as the first argument.
 For example, to run the provided completed Tutorial 1 example from the install location, you would type:
 
 \code
-bin/qmlviewer $QTDIR/examples/declarative/tutorials/helloworld/tutorial1.qml
+bin/qml $QTDIR/examples/declarative/tutorials/helloworld/tutorial1.qml
 \endcode
 */
 

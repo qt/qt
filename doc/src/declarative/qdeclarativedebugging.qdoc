@@ -60,7 +60,7 @@ Rectangle {
 \section1 Debugging Transitions
 
 When a transition doesn't look quite right, it can be helpful to view it in slow
-motion to see what is happening more clearly. \l {qmlviewer} provides a 
+motion to see what is happening more clearly. The \l{qml runtime} provides a 
 "Slow Down Animations" menu option to facilitate this.
 
 
@@ -108,10 +108,10 @@ To start the debugger, open a QML project and click the "QML Inspect" mode, then
 \section2 Standalone qmldebugger tool
 
 To run the standalone \c qmldebugger tool, set an environment variable \c QML_DEBUG_SERVER_PORT
-to an available port number and run the \c qmlviewer. For example:
+to an available port number and run the \l{qml runtime}. For example:
 
 \code
-    QML_DEBUG_SERVER_PORT=3768 qmlviewer myqmlfile.qml
+    QML_DEBUG_SERVER_PORT=3768 qml myqmlfile.qml
 \endcode
 
 Then in another process, start the \c qmldebugger tool, enter the port number into the corresponding spinbox
