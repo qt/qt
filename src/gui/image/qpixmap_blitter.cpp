@@ -5,10 +5,13 @@
 
 #include <private/qapplication_p.h>
 #include <private/qgraphicssystem_p.h>
+#include <private/qblittable_p.h>
 
 #include <private/qdrawhelper_p.h>
 
 #ifndef QT_NO_BLITTABLE
+QT_BEGIN_NAMESPACE
+
 static int global_ser_no = 0;
 
 QBlittablePixmapData::QBlittablePixmapData(QPixmapData::PixelType type)
@@ -34,7 +37,7 @@ QBlittable *QBlittablePixmapData::blittable() const
 {
     if (!m_blittable) {
         QBlittablePixmapData *that = const_cast<QBlittablePixmapData *>(this);
-        that->m_blittable = QApplicationPrivate::graphicsSystem()->createBlittable(QRect(0,0,w,h));
+        that->m_blittable = QApplicationPrivate::graphicsSystem()->createBlittable(QSize(w,h));
     }
 
     return m_blittable;
@@ -42,7 +45,7 @@ QBlittable *QBlittablePixmapData::blittable() const
 
 void QBlittablePixmapData::setBlittable(QBlittable *blittable)
 {
-    resize(blittable->rect().width(),blittable->rect().height());
+    resize(blittable->size().width(),blittable->size().height());
     m_blittable = blittable;
 }
 
@@ -259,6 +262,8 @@ QRectF QBlittablePixmapData::clipAndTransformRect(const QRectF &rect) const
     }
     return transformationRect;
 }
+
+QT_END_NAMESPACE
 #endif //QT_BLITTER_RASTEROVERLAY
 
 #endif //QT_NO_BLITTABLE

@@ -5,45 +5,11 @@
 #include "private/qpaintengine_raster_p.h"
 
 #ifndef QT_NO_BLITTABLE
+QT_BEGIN_NAMESPACE
 
-class QBlittablePrivate;
 class QBlitterPaintEnginePrivate;
 class QBlittablePixmapData;
-
-class Q_GUI_EXPORT QBlittable
-{
-    Q_DECLARE_PRIVATE(QBlittable);
-public:
-    enum Capability {
-
-        SolidRectCapability             = 0x0001,
-        SourcePixmapCapability          = 0x0002,
-        SourceOverPixmapCapability      = 0x0004,
-        SourceOverScaledPixmapCapability = 0x0008,
-
-        // Internal ones
-        OutlineCapability               = 0x0001000,
-    };
-    Q_DECLARE_FLAGS (Capabilities, Capability);
-
-    QBlittable(const QRect &rect, Capabilities caps);
-    virtual ~QBlittable();
-
-    Capabilities capabilities() const;
-    QRect rect() const;
-
-    virtual void fillRect(const QRectF &rect, const QColor &color) = 0;
-    virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect) = 0;
-
-    QImage *lock();
-    void unlock();
-
-protected:
-    virtual QImage *doLock() = 0;
-    virtual void doUnlock() = 0;
-    QBlittablePrivate *d_ptr;
-};
-
+class QBlittable;
 
 class Q_GUI_EXPORT QBlitterPaintEngine : public QPaintEngineEx
 {
@@ -101,5 +67,7 @@ private:
 
 };
 
+QT_END_NAMESPACE
 #endif //QT_NO_BLITTABLE
 #endif // QPAINTENGINE_BLITTER_P_H
+

@@ -89,12 +89,16 @@ SOURCES += \
                 painting/qpaintengine_raster.cpp        \
                 painting/qdrawhelper.cpp                \
                 painting/qimagescale.cpp                \
-                painting/qgrayraster.c
+                painting/qgrayraster.c                  \
+                painting/qpaintengine_blitter.cpp       \
+                painting/qblittable.cpp                 \
 
         HEADERS +=                                      \
                 painting/qpaintengine_raster_p.h        \
                 painting/qrasterdefs_p.h                \
-                painting/qgrayraster_p.h
+                painting/qgrayraster_p.h                \
+                painting/qpaintengine_blitter_p.h       \
+                painting/qblittable_p.h                 \
 
 win32 {
         HEADERS += painting/qprintengine_win_p.h
@@ -121,12 +125,14 @@ embedded {
         painting/qgraphicssystemfactory_p.h \
         painting/qgraphicssystemplugin_p.h \
         painting/qwindowsurface_raster_p.h \
+        painting/qwindowsurface_rasterblittable_p.h \
 
     SOURCES += \
         painting/qgraphicssystem_raster.cpp \
         painting/qgraphicssystemfactory.cpp \
         painting/qgraphicssystemplugin.cpp \
         painting/qwindowsurface_raster.cpp \
+        painting/qwindowsurface_rasterblittable.cpp \
 }
 
 unix:x11 {

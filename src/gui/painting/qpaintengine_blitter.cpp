@@ -1,10 +1,13 @@
 #include "private/qpaintengine_blitter_p.h"
+
+#include "private/qblittable_p.h"
 #include "private/qpaintengine_raster_p.h"
 #include "private/qpainter_p.h"
 #include "private/qapplication_p.h"
 #include "private/qpixmap_blitter_p.h"
 
 #ifndef QT_NO_BLITTABLE
+QT_BEGIN_NAMESPACE
 
 #define STATE_XFORM_SCALE       0x00000001
 #define STATE_XFORM_COMPLEX     0x00000002
@@ -617,60 +620,6 @@ inline QRasterPaintEngine *QBlitterPaintEngine::raster() const
     return d->raster;
 }
 
-class QBlittablePrivate
-{
-public:
-    QBlittablePrivate(const QRect &rect, QBlittable::Capabilities caps)
-        : caps(caps), m_rect(rect), locked(false), cachedImg(0)
-    {}
-    QBlittable::Capabilities caps;
-    QRect m_rect;
-    bool locked;
-    QImage *cachedImg;
-};
-
-
-QBlittable::QBlittable(const QRect &rect, Capabilities caps)
-    : d_ptr(new QBlittablePrivate(rect,caps))
-{
-}
-
-QBlittable::~QBlittable()
-{
-    delete d_ptr;
-}
-
-
-QBlittable::Capabilities QBlittable::capabilities() const
-{
-    Q_D(const QBlittable);
-    return d->caps;
-}
-
-QRect QBlittable::rect() const
-{
-    Q_D(const QBlittable);
-    return d->m_rect;
-}
-
-QImage *QBlittable::lock()
-{
-    Q_D(QBlittable);
-    if (!d->locked) {
-        d->cachedImg = doLock();
-        d->locked = true;
-    }
-
-    return d->cachedImg;
-}
-
-void QBlittable::unlock()
-{
-    Q_D(QBlittable);
-    if (d->locked) {
-        doUnlock();
-        d->locked = false;
-    }
-}
-
+QT_END_NAMESPACE
 #endif //QT_NO_BLITTABLE
+

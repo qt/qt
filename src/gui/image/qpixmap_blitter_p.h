@@ -5,6 +5,8 @@
 #include <private/qpaintengine_blitter_p.h>
 
 #ifndef QT_NO_BLITTABLE
+QT_BEGIN_NAMESPACE
+
 class Q_GUI_EXPORT  QBlittablePixmapData : public QPixmapData
 {
 //     Q_DECLARE_PRIVATE(QBlittablePixmapData);
@@ -117,5 +119,6 @@ inline void QBlittablePixmapData::unmarkRasterOverlay(const QRectF &rect)
 #endif
 }
 
+QT_END_NAMESPACE
 #endif // QT_NO_BLITTABLE
 #endif // QPIXMAP_BLITTER_P_H
