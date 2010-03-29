@@ -42,159 +42,99 @@
 /*!
 \page qdeclarativemodules.html
 \title Modules
-\section1 QML Modules.
-QUERY: Is a directory with no qmldir really a module? Assumed NO.
+\section1 QML Modules
 
-A \bold module is a collection of QML types. These types can be defined in QML, or in C++
-through a QDeclarativeExtensionPlugin. They can then be collected into a directory to comprise
-a module.
+A \bold {QML module} is a collection of QML types. They allow you to organize your QML content
+into independent units. Modules have an optional versioning mechanism that allows for independent
+upgradability of the modules.
 
-Additionally a module can also be a collection of types which was compiled into your application, see \l{Extending QML in C++}.
+There are two types of modules:
+location modules (defined by a URL),
+and
+installed modules (defined by a URI).
 
-While a directory containing types can be used to organize QML components, QML modules also contain a \c qmldir file.
-This file provides a manifest of all types available in the module,
-and allows versioned imports (among other things). A directory containing only QML files or plugins behaves similarly
-to a module, but a QML module requires a \c qmldir file (unless it is written in C++ and compiled into your application).
+Location modules types are defined in QML files and \l{QDeclarativeExtensionPlugin}{QML C++ plugins}
+in a directory refered to directly by
+the location URL, either on the local filesystem, or as a network resource. The URL that locates them
+can be relative, in which case they actual URL is resolved by the QML file containing the import.
+When importing a location module, a quoted URL is used:
+
+\code
+import "https://qml.nokia.com/qml/example" 1.0
+import "https://qml.nokia.com/qml/example" as NokiaExample
+import "mymodule" 1.0
+import "mymodule"
+\endcode
+
+Installed modules can \e only be on the local file system or in application C++ code. Again they
+are defined in QML files and \l{QDeclarativeExtensionPlugin}{QML C++ plugins} in a directory,
+but the directory is indirectly referred to by the URI. The mapping to actual content is either
+by application C++ code registering a C++ type to a module URI (see \l{Extending QML in C++}),
+or in the referenced subdirectory of a path on the QDeclarativeEngine::importPathList().
+When importing a location module, an un-quoted URI is used:
+
+\code
+import com.nokia.qml.mymodule 1.0
+import com.nokia.qml.mymodule as MyModule
+\endcode
+
+
+For either type of module, a \c qmldir file in the module directory defines the content of the module. This file is
+optional for location modules, but only for local filesystem content or a single remote content with a namespace.
+The second exception is explained in more detail in the section below on Namespaces.
+
 
 \section2 The \c qmldir File
 
-QML modules containing installed files and remote content require a file \c qmldir which specifies the
-mapping from all type names to versioned QML files. It is a list of lines of the form:
+Installed QML modules and remote content without a namespace require a file \c qmldir which
+specifies the mapping from all type names to versioned QML files. It is a list of lines of the form:
 
 \code
 # <Comment>
-<TypeName> <InitialVersion> <File>
+<TypeName> [<InitialVersion>] <File>
+internal <Name> <File>
 plugin <Name> [<Path>]
 \endcode
 
 # <Comment> lines are ignored, and can be used for comments.
 
 <TypeName> <InitialVersion> <File> lines are used to add QML files as types.
-<TypeName> is the type being made available; <InitialVersion> is a version
+<TypeName> is the type being made available; the optional <InitialVersion> is a version
 number like \c 4.0; <File> is the (relative)
 file name of the QML file defining the type. 
 
-plugin <Name> [<Path>] lines are used to add plugins (QDeclarativeExtensionPlugin subclasses
-written in C++) to the module. The line starts with the keyword 'plugin'; <Name> is the
-name of the library; <Path> is an optional argument specifying the full path to the directory
-containing the plugin file, if it is omitted then the directory is assumed to be the same as
-the directory of the qmldir file. Note that <Name> is not usually the same as the file name
-of the plugin binary, which is platform dependent e.g. the library MyAppTypes would produce a libMyAppTypes.so on linux and MyAppTypes.dll on windows. 
-
-The same type can be provided by different files in different versions, in which
-case later earlier versions (eg. 1.2) must precede earlier versions (eg. 1.0),
-since the \e first name-version match is used.
-
 Installed files do not need to import the module of which they are a part, as they can refer
-to the other QML files in the module as relative (local) files.
-If the module is imported from a remote location, those files must nevertheless be listed in
-the \c qmldir file. Internal files can be marked with the \c internal keyword, to ensure
-they are not visible outside the module:
+to the other QML files in the module as relative (local) files, but
+if the module is imported from a remote location, those files must nevertheless be listed in
+the \c qmldir file. Types which you do not wish to export to users of your module
+may be marked with the \c internal keyword:
 
 \code
 internal <TypeName> <File>
 \endcode
 
-Installed and remote files \e must be referred to by version information described above,
+\c plugin <Name> [<Path>] lines are used to add \l{QDeclarativeExtensionPlugin}{QML C++ plugins}
+to the module. <Name> is the
+name of the library. <Path> is an optional argument specifying the full path to the directory
+containing the plugin file; if it is omitted then the directory is assumed to be the same as
+the directory of the \c qmldir file. Note that <Name> is not usually the same as the file name
+of the plugin binary, which is platform dependent; e.g. the library MyAppTypes would produce
+a libMyAppTypes.so on Linux and MyAppTypes.dll on Windows. 
+
+The same type can be provided by different files in different versions, in which
+case later earlier versions (eg. 1.2) must precede earlier versions (eg. 1.0),
+since the \e first name-version match is used and a request for a version of a type
+can be fulfilled by one defined in an earlier version of the module.
+
+Installed and remote files without a namespace \e must be referred to by version information described above,
 local files \e may have it.
 
 The versioning system ensures that a given QML file will work regardless of the version
 of installed software, since a versioned import \e only imports types for that version,
 leaving other identifiers available, even if the actual installed version might otherwise
-use those identifiers.
+provide those identifiers.
 
-\section1 Importing Modules
-
-To use types from a module it must be imported using the \c import statement. Successive
-import statements override earlier import statements, however, since imports have version
-qualifiers, changes in modules do not alter the semantics of imports.
-
-While it is possible to import some modules without specifying a version this is only advisable
-during prototyping, where version numbers mean very little. The rest of the time it is recommended that
-you take advantage of the versioning capabilities of the language.
-
-You can import a directory in the same way that you import a module, except that you cannot specify a version
-number. This will import all the types in that directory as QML files or as part of plugins.
-
-Types \link adding-types defined in C++\endlink can be from types your application defines, standard QML types,
-or types defined in plugins. To use any such types, you must import
-the module defining them.  For example, to use types from Qt, import it:
-
-\code
-import Qt 4.6
-\endcode
-
-This makes available all types in Qt that were available in Qt 4.6, regardless of the
-actual version of Qt executing the QML. So even if Qt 4.7 adds a type that would conflict
-with a type you defined while using 4.6, that type is not imported, so there is no conflict.
-
-Types defined by plugins are made using QDeclarativeExtensionPlugin.  Installed plugins and QML files
-can both contribute types to the same module.
-
-
-\section1 Importing Types Defined in QML
-
-When importing types \link components defined using QML\endlink, the syntax depends
-on whether or not the types are installed on the system.
-
-
-\section2 Installed QML Files
-
-To import types defined in QML files that are installed on the system running the
-QML, a URI import is used:
-
-\code
-import com.nokia.Example 1.0
-\endcode
-
-Files imported in this way are found on the paths added by QDeclarativeEngine::addImportPath(),
-which by default only inludes \c $QTDIR/qml, so the above would make available those types
-defined in \c $QTDIR/qml/com/nokia/Example which are specified as being in version 1.0.
-Installed plugins and QML files can both contribute types to the same module.
-
-The specification of types to versions is given by a special file, \c qmldir which must
-exist in the module directory. The syntax is described below.
-
-The \c -L option to the \l {qmlviewer}{runtime} application also adds paths to the import path.
-
-
-\section2 Local QML Files
-
-To import types defined in QML files in directories relative to the file importing them,
-a quoted import directory is used:
-
-\code
-import "path"
-\endcode
-
-This allows all components defined in the directory \c path to be used in
-the component where this statement appears. Because no version number is specified,
-all types in the directory will be imported.
-
-In this case, and only this case, it is not necessary for the directory to include
-a \c qmldir file, nor is it necessary to provide a version qualifier. The basis of this is
-that the files in the subdirectory are assumed to be packaged with the importer, and therefore
-they form a single versioned unit. It is however recommended that you add a qmldir file and create
-a QML module, as this provides additional options such as more flexible versioning. If the directory
-is a module then you can use a version qualifier, like below
-
-\code
-import "path" 1.0
-\endcode
-
-
-\section2 Remote QML Files
-
-To import types defined in QML file at arbitrary network locations, a quoted absolute URL is used:
-
-\code
-import "http://url/.../" 1.0
-\endcode
-
-This works the same as for relative directory imports, except that the target location contain a QML module (\e must
-include a \c qmldir file), and a version qualifier must be given.
-
-\section1 Namespaces - Named Imports
+\section2 Namespaces - Named Imports
 
 When importing content it by default imports types into the global namespace.
 You may choose to import the module into another namespace, either to allow identically-named
@@ -220,13 +160,9 @@ import Qt 4.6 as Nokia
 import Ovi 1.0 as Nokia
 \endcode
 
-There is one special module, called Qt, which contains all of the types that are part of
-Qt Declarative. While it still needs to be imported, this module can be used in all QML
-files.
-
-While import statements are need to make any types available in QML, the directory of the
+While import statements are needed to make any types available in QML, the directory of the
 current file is implicitly loaded. This is the exact same as if you had added 'import "."' to
-every QML file. The effect of this is that you can automatically use Types defined in C++ plugins
+every QML file. The effect of this is that you can automatically use types defined in C++ plugins
 or QML files if they reside in the same directory.
 
 
@@ -234,6 +170,6 @@ or QML files if they reside in the same directory.
 
 /*
 
-See original requirement QT-558.
+Original requirement is QT-558.
 
 */
