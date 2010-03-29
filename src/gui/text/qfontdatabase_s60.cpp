@@ -332,6 +332,11 @@ bool QFontDatabase::removeApplicationFont(int handle)
     return false;
 }
 
+bool QFontDatabase::removeAllApplicationFonts()
+{
+    return false;
+}
+
 bool QFontDatabase::supportsThreadedFontRendering()
 {
     return false;
