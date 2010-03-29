@@ -108,7 +108,15 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
                                                         const QModelIndex &index) const
 {
     QStyleOptionMenuItem menuOption;
-    menuOption.palette = option.palette.resolve(QApplication::palette("QMenu"));
+
+    QPalette resolvedpalette = option.palette.resolve(QApplication::palette("QMenu"));
+    QVariant value = index.data(Qt::ForegroundRole);
+    if (qVariantCanConvert<QBrush>(value)) {
+        resolvedpalette.setBrush(QPalette::WindowText, qvariant_cast<QBrush>(value));
+        resolvedpalette.setBrush(QPalette::ButtonText, qvariant_cast<QBrush>(value));
+        resolvedpalette.setBrush(QPalette::Text, qvariant_cast<QBrush>(value));
+    }
+    menuOption.palette = resolvedpalette;
     menuOption.state = QStyle::State_None;
     if (mCombo->window()->isActiveWindow())
         menuOption.state = QStyle::State_Active;
