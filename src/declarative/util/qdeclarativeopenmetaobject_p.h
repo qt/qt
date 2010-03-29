@@ -90,6 +90,7 @@ public:
     QVariant value(int) const;
     void setValue(int, const QVariant &);
     QVariant &operator[](const QByteArray &);
+    QVariant &operator[](int);
 
     int count() const;
     QByteArray name(int) const;
@@ -109,6 +110,7 @@ protected:
 
     virtual void propertyRead(int);
     virtual void propertyWrite(int);
+    virtual void propertyWritten(int);
     virtual void propertyCreated(int, QMetaPropertyBuilder &);
 
     QAbstractDynamicMetaObject *parent() const;
