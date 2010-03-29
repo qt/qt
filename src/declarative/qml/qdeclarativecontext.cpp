@@ -71,31 +71,30 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     Contexts allow data to be exposed to the QML components instantiated by the
     QML engine.
 
-    Each QDeclarativeContext contains a set of properties, distinct from
-    its QObject properties, that allow data to be
-    explicitly bound to a context by name.  The context properties are defined or
-    updated by calling QDeclarativeContext::setContextProperty().  The following example shows
-    a Qt model being bound to a context and then accessed from a QML file.
+    Each QDeclarativeContext contains a set of properties, distinct from its QObject 
+    properties, that allow data to be explicitly bound to a context by name.  The 
+    context properties are defined and updated by calling 
+    QDeclarativeContext::setContextProperty().  The following example shows a Qt model 
+    being bound to a context and then accessed from a QML file.
 
     \code
     QDeclarativeEngine engine;
-    QDeclarativeContext context(engine.rootContext());
-    context.setContextProperty("myModel", modelData);
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    context->setContextProperty("myModel", modelData);
 
     QDeclarativeComponent component(&engine, "ListView { model=myModel }");
-    component.create(&context);
+    component.create(context);
     \endcode
 
-    To simplify binding and maintaining larger data sets, QObject's can be
-    added to a QDeclarativeContext.  These objects are known as the context's default
-    objects.  In this case all the properties of the QObject are
-    made available by name in the context, as though they were all individually
-    added by calling QDeclarativeContext::setContextProperty().  Changes to the property's
-    values are detected through the property's notify signal.  This method is
-    also slightly more faster than manually adding property values.
+    To simplify binding and maintaining larger data sets, a context object can be set
+    on a QDeclarativeContext.  All the properties of the context object are available
+    by name in the context, as though they were all individually added through calls
+    to QDeclarativeContext::setContextProperty().  Changes to the property's values are 
+    detected through the property's notify signal.  Setting a context object is both 
+    faster and easier than manually adding and maintaing context property values.
 
-    The following example has the same effect as the one above, but it is
-    achieved using a default object.
+    The following example has the same effect as the previous one, but it uses a context
+    object.
 
     \code
     class MyDataSet : ... {
@@ -104,46 +103,42 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
         ...
     };
 
-    MyDataSet myDataSet;
+    MyDataSet *myDataSet = new MyDataSet;
     QDeclarativeEngine engine;
-    QDeclarativeContext context(engine.rootContext());
-    context.setContextObject(&myDataSet);
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    context->setContextObject(myDataSet);
 
     QDeclarativeComponent component(&engine, "ListView { model=myModel }");
-    component.create(&context);
+    component.create(context);
     \endcode
 
-    Default objects added first take precedence over those added later.  All properties 
-    added explicitly by QDeclarativeContext::setContextProperty() take precedence over default 
-    object properties.
+    All properties added explicitly by QDeclarativeContext::setContextProperty() take 
+    precedence over context object's properties.
 
-    Contexts are hierarchal, with the \l {QDeclarativeEngine::rootContext()}{root context}
-    being created by the QDeclarativeEngine.  A component instantiated in a given context
-    has access to that context's data, as well as the data defined by its
-    ancestor contexts.  Data values (including those added implicitly by the
-    default objects) in a context override those in ancestor contexts.  Data
-    that should be available to all components instantiated by the QDeclarativeEngine
-    should be added to the \l {QDeclarativeEngine::rootContext()}{root context}.
+    Contexts form a hierarchy.  The root of this heirarchy is the QDeclarativeEngine's
+    \l {QDeclarativeEngine::rootContext()}{root context}.  A component instance can 
+    access the data in its own context, as well as all its ancestor contexts.  Data
+    can be made available to all instances by modifying the 
+    \l {QDeclarativeEngine::rootContext()}{root context}.
 
-    In the following example,
+    The following example defines two contexts - \c context1 and \c context2.  The
+    second context overrides the "b" context property inherited from the first with a
+    new value.
 
     \code
     QDeclarativeEngine engine;
-    QDeclarativeContext context1(engine.rootContext());
-    QDeclarativeContext context2(&context1);
-    QDeclarativeContext context3(&context2);
+    QDeclarativeContext *context1 = new QDeclarativeContext(engine.rootContext());
+    QDeclarativeContext *context2 = new QDeclarativeContext(context1);
 
-    context1.setContextProperty("a", 12);
-    context2.setContextProperty("b", 13);
-    context3.setContextProperty("a", 14);
-    context3.setContextProperty("c", 14);
+    context1->setContextProperty("a", 12);
+    context1->setContextProperty("b", 12);
+
+    context2->setContextProperty("b", 15);
     \endcode
 
-    a QML component instantiated in context1 would have access to the "a" data,
-    a QML component instantiated in context2 would have access to the "a" and
-    "b" data, and a QML component instantiated in context3 would have access to
-    the "a", "b" and "c" data - although its "a" data would return 14, unlike
-    that in context1 or context2.
+    While QML objects instantiated in a context are not strictly owned by that 
+    context, their bindings are.  If a context is destroyed, the property bindings of 
+    outstanding QML objects will stop evaluating.
 */
 
 /*! \internal */
