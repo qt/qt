@@ -28,8 +28,9 @@
 #include "phononnamespace_p.h"
 
 #include <QtGui/QAction>
-
-#define PHONON_INTERFACENAME VideoWidgetInterface
+#define IFACES4 VideoWidgetInterface44
+#define IFACES0 VideoWidgetInterface, IFACES4
+#define PHONON_INTERFACENAME IFACES0
 
 QT_BEGIN_NAMESPACE
 
@@ -47,6 +48,8 @@ VideoWidget::VideoWidget(QWidget *parent)
     d->createBackendObject();
     setMouseTracking(true);
 }
+
+
 
 VideoWidget::VideoWidget(VideoWidgetPrivate &dd, QWidget *parent)
     : QWidget(parent),
@@ -97,6 +100,15 @@ PHONON_INTERFACE_SETTER(setHue, hue, qreal)
 
 PHONON_INTERFACE_GETTER(qreal, saturation, d->saturation)
 PHONON_INTERFACE_SETTER(setSaturation, saturation, qreal)
+
+
+QImage VideoWidget::snapshot() const {
+    K_D(const VideoWidget);
+    ConstIface<IFACES4> iface(d);
+    if(iface) return iface->snapshot();
+    return QImage(); // TODO not implemented in VideoInterface
+}
+
 
 void VideoWidget::setFullScreen(bool newFullScreen)
 {

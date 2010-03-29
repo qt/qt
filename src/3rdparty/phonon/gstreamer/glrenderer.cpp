@@ -266,7 +266,7 @@ GLRenderWidgetImplementation::GLRenderWidgetImplementation(VideoWidget*videoWidg
     palette.setColor(QPalette::Background, Qt::black);
     setPalette(palette);
     setAutoFillBackground(true);
-    // Videowidget allways have this property to allow hiding the mouse cursor
+    // Videowidget always have this property to allow hiding the mouse cursor
     setMouseTracking(true);
 }
 

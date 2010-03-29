@@ -29,10 +29,8 @@ namespace Phonon
     namespace DS9
     {
         static WAVEFORMATEX g_defaultWaveFormat = {WAVE_FORMAT_PCM, 2, 44100, 176400, 4, 16, 0};
-        static VIDEOINFOHEADER2 g_defaultVideoInfo = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 0, 0, 0, 0, 0, 0, 0, {0}, 0, {sizeof(BITMAPINFOHEADER), 1, 1, 1, 0, 0, 0, 0, 0, 0, 0} };
-
-        static const AM_MEDIA_TYPE g_fakeAudioType = {MEDIATYPE_Audio, MEDIASUBTYPE_PCM, 0, 0, 2, FORMAT_WaveFormatEx, 0, sizeof(WAVEFORMATEX), reinterpret_cast<BYTE*>(&g_defaultWaveFormat)};
-        static const AM_MEDIA_TYPE g_fakeVideoType = {MEDIATYPE_Video, MEDIASUBTYPE_RGB32, TRUE, FALSE, 0, FORMAT_VideoInfo2, 0, sizeof(VIDEOINFOHEADER2), reinterpret_cast<BYTE*>(&g_defaultVideoInfo)};
+        static BITMAPINFOHEADER g_defautBitmapHeader = { sizeof(BITMAPINFOHEADER), 1, 1, 1, 0, 0, 0, 0, 0, 0, 0};
+        static VIDEOINFOHEADER2 g_defaultVideoInfo = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
         class FakePin : public QPin
         {
@@ -130,12 +128,36 @@ namespace Phonon
 
         void FakeSource::createFakeAudioPin()
         {
-            new FakePin(this, g_fakeAudioType);
+            AM_MEDIA_TYPE mt;
+            qMemSet(&mt, 0, sizeof(AM_MEDIA_TYPE));
+            mt.majortype = MEDIATYPE_Audio;
+            mt.subtype = MEDIASUBTYPE_PCM;
+            mt.formattype = FORMAT_WaveFormatEx;
+            mt.lSampleSize = 2;
+
+            //fake the format (stereo 44.1 khz stereo 16 bits)
+            mt.cbFormat = sizeof(WAVEFORMATEX);
+            mt.pbFormat = reinterpret_cast<BYTE*>(&g_defaultWaveFormat);
+
+            new FakePin(this, mt);
         }
 
         void FakeSource::createFakeVideoPin()
         {
-            new FakePin(this, g_fakeVideoType);
+            AM_MEDIA_TYPE mt;
+            qMemSet(&mt, 0, sizeof(AM_MEDIA_TYPE));
+            mt.majortype = MEDIATYPE_Video;
+            mt.subtype = MEDIASUBTYPE_RGB32;
+            mt.formattype = FORMAT_VideoInfo2;
+            mt.bFixedSizeSamples = 1;
+
+            g_defaultVideoInfo.bmiHeader = g_defautBitmapHeader;
+
+            //fake the format
+            mt.cbFormat = sizeof(VIDEOINFOHEADER2);
+            mt.pbFormat = reinterpret_cast<BYTE*>(&g_defaultVideoInfo);
+
+            new FakePin(this, mt);
         }
 
     }

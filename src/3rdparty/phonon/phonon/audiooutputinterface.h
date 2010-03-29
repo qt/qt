@@ -64,7 +64,7 @@ class AudioOutputInterface40
          * A value of 0.0 means muted, 1.0 means unchanged, 2.0 means double voltage (i.e. all
          * samples are multiplied by 2).
          *
-         * Everytime the volume in the backend changes it should emit volumeChanged(qreal), also
+         * Every time the volume in the backend changes it should emit volumeChanged(qreal), also
          * inside this function.
          */
         virtual void setVolume(qreal) = 0;

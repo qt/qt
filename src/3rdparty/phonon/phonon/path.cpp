@@ -310,8 +310,8 @@ bool PathPrivate::executeTransaction( const QList<QObjectPair> &disconnections, 
     if (!transaction)
         return false;
 
-    QList<QObjectPair>::const_iterator it = disconnections.constBegin();
-    for(;it != disconnections.constEnd();++it) {
+    QList<QObjectPair>::const_iterator it = disconnections.begin();
+    for(;it != disconnections.end();++it) {
         const QObjectPair &pair = *it;
         if (!backend->disconnectNodes(pair.first, pair.second)) {
 
@@ -327,8 +327,8 @@ bool PathPrivate::executeTransaction( const QList<QObjectPair> &disconnections, 
         }
     }
 
-    for(it = connections.constBegin(); it != connections.constEnd(); ++it) {
-        const QObjectPair pair = *it;
+    for(it = connections.begin(); it != connections.end();++it) {
+        const QObjectPair &pair = *it;
         if (!backend->connectNodes(pair.first, pair.second)) {
             //Error: a connection failed
             QList<QObjectPair>::const_iterator it2 = connections.begin();
