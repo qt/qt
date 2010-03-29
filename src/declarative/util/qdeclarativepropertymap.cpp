@@ -55,7 +55,7 @@ public:
     QDeclarativePropertyMapMetaObject(QDeclarativePropertyMap *obj, QDeclarativePropertyMapPrivate *objPriv);
 
 protected:
-    virtual void propertyWrite(int index);
+    virtual void propertyWritten(int index);
 
 private:
     QDeclarativePropertyMap *map;
@@ -68,13 +68,13 @@ class QDeclarativePropertyMapPrivate : public QObjectPrivate
 public:
     QDeclarativePropertyMapMetaObject *mo;
     QStringList keys;
-    void emitChanged(const QString &key);
+    void emitChanged(const QString &key, const QVariant &value);
 };
 
-void QDeclarativePropertyMapPrivate::emitChanged(const QString &key)
+void QDeclarativePropertyMapPrivate::emitChanged(const QString &key, const QVariant &value)
 {
     Q_Q(QDeclarativePropertyMap);
-    emit q->valueChanged(key);
+    emit q->valueChanged(key, value);
 }
 
 QDeclarativePropertyMapMetaObject::QDeclarativePropertyMapMetaObject(QDeclarativePropertyMap *obj, QDeclarativePropertyMapPrivate *objPriv) : QDeclarativeOpenMetaObject(obj)
@@ -83,14 +83,14 @@ QDeclarativePropertyMapMetaObject::QDeclarativePropertyMapMetaObject(QDeclarativ
     priv = objPriv;
 }
 
-void QDeclarativePropertyMapMetaObject::propertyWrite(int index)
+void QDeclarativePropertyMapMetaObject::propertyWritten(int index)
 {
-    priv->emitChanged(QString::fromUtf8(name(index)));
+    priv->emitChanged(QString::fromUtf8(name(index)), operator[](index));
 }
 
 /*!
     \class QDeclarativePropertyMap
-  \since 4.7
+    \since 4.7
     \brief The QDeclarativePropertyMap class allows you to set key-value pairs that can be used in bindings.
 
     QDeclarativePropertyMap provides a convenient way to expose domain data to the UI layer.
@@ -268,9 +268,9 @@ const QVariant QDeclarativePropertyMap::operator[](const QString &key) const
 }
 
 /*!
-    \fn void QDeclarativePropertyMap::valueChanged(const QString &key)
+    \fn void QDeclarativePropertyMap::valueChanged(const QString &key, const QVariant &value)
     This signal is emitted whenever one of the values in the map is changed. \a key
-    is the key corresponding to the value that was changed.
+    is the key corresponding to the \a value that was changed.
 
     \note valueChanged() is \bold NOT emitted when changes are made by calling insert()
     or clear() - it is only emitted when a value is updated from QML.

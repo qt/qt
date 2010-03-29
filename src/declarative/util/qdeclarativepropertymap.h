@@ -76,7 +76,7 @@ public:
     const QVariant operator[](const QString &key) const;
 
 Q_SIGNALS:
-    void valueChanged(const QString &key);
+    void valueChanged(const QString &key, const QVariant &value);
 
 private:
     Q_DECLARE_PRIVATE(QDeclarativePropertyMap)
