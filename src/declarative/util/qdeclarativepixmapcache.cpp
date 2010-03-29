@@ -179,8 +179,16 @@ static bool readImage(const QUrl& url, QIODevice *dev, QImage *image, QString *e
     bool scaled = false;
     if (req_width > 0 || req_height > 0) {
         QSize s = imgio.size();
-        if (req_width && (force_scale || req_width < s.width())) { s.setWidth(req_width); scaled = true; }
-        if (req_height && (force_scale || req_height < s.height())) { s.setHeight(req_height); scaled = true; }
+        if (req_width && (force_scale || req_width < s.width())) {
+            if (req_height <= 0)
+                s.setHeight(s.height()*req_width/s.width());
+            s.setWidth(req_width); scaled = true;
+        }
+        if (req_height && (force_scale || req_height < s.height())) {
+            if (req_width <= 0)
+                s.setWidth(s.width()*req_height/s.height());
+            s.setHeight(req_height); scaled = true;
+        }
         if (scaled) { imgio.setScaledSize(s); }
     }
 
@@ -596,7 +604,7 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
     QDeclarativePixmapReply::Status status = QDeclarativePixmapReply::Unrequested;
     QByteArray key = url.toEncoded(QUrl::FormattingOption(0x100));
 
-    if (req_width > 0 && req_height > 0) {
+    if (req_width > 0 || req_height > 0) {
         key += ':';
         key += QByteArray::number(req_width);
         key += 'x';
