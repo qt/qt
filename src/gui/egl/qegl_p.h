@@ -110,7 +110,7 @@ QT_BEGIN_NAMESPACE
 #define EGLAPIENTRY
 #endif
 
-#if !defined(EGL_KHR_image) || !defined(EGL_KHR_image_base)
+#if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_base)
 
 typedef void *EGLImageKHR;
 #define EGL_NO_IMAGE_KHR            ((EGLImageKHR)0)
@@ -123,9 +123,9 @@ typedef EGLBoolean (EGLAPIENTRY *_eglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
 extern Q_GUI_EXPORT _eglCreateImageKHR eglCreateImageKHR;
 extern Q_GUI_EXPORT _eglDestroyImageKHR eglDestroyImageKHR;
 
-#endif // !defined(EGL_KHR_image) || !defined(EGL_KHR_image_base)
+#endif // !defined(EGL_KHR_image) && !defined(EGL_KHR_image_base)
 
-#if !defined(EGL_KHR_image) || !defined(EGL_KHR_image_pixmap)
+#if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_pixmap)
 #define EGL_NATIVE_PIXMAP_KHR       0x30B0
 #endif
 
