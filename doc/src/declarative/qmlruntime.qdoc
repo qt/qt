@@ -43,7 +43,6 @@
     \page qmlruntime.html
     \title Qt Declarative UI Runtime
     \ingroup qttools
-    \keyword qmlviewer
 
     This page documents the \e{Declarative UI Runtime} for the Qt GUI
     toolkit, and the \c qml executable which can be used to run apps
@@ -57,12 +56,20 @@
     installed in a production environment, assuming that it is not already
     present in the system. It is generally packaged alongside Qt.
 
-    To deploy an application using the QML runtime, you have two options. You can either write your
-    own Qt application including a QDeclarative view and deploy it the same as
-    any other Qt application (not discussed further on this page). Alternatively you can write a main QML file for
-    your application, and run your application using the \c qml executable. If a qml file
-    is passed as an argument to the \c qml executable, it will automatically run it.
+    To deploy an application using the QML runtime, you have two options:
 
+    \list
+    \o Write your own Qt application including a QDeclarative view and deploy it the same as
+    any other Qt application (not discussed further on this page), or
+    \o Write a main QML file for your application, and run your application using the included \c qml tool.
+    \endlist
+
+    To run an application with the \c qml tool, pass the filename as an argument:
+
+    \code
+    qml myQmlFile.qml
+    \endcode
+    
     Deploying a QML application via the \c qml executable allows for QML only deployments, but can also
     include custom C++ modules just as easily. Below is an example of how you might structure
     a complex application deployed via the qml runtime, it is a listing of the files that would
@@ -141,8 +148,8 @@
     import QDeclarativeViewer 1.0 as QDeclarativeViewer
     
     Item {
-        QDeclarativeViewer.Screen { id: qmlviewerScreen }
-        state: (qmlviewerScreen.orientation == QDeclarativeViewer.Screen.Landscape) ? 'landscape' : ''
+        QDeclarativeViewer.Screen { id: viewerScreen }
+        state: (viewerScreen.orientation == QDeclarativeViewer.Screen.Landscape) ? 'landscape' : ''
     }
 \endcode
 
