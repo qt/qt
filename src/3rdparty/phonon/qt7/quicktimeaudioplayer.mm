@@ -15,6 +15,8 @@
     along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#import <QTKit/QTMovie.h>
+
 #include "quicktimeaudioplayer.h"
 #include "quicktimevideoplayer.h"
 #include "audiograph.h"

@@ -77,6 +77,7 @@ void AudioNode::createAndConnectAUNodes()
     // AudioComponentDescription only exists on 10.6+. More fun than we need to
     // deal with at the moment, so we'll take the "deprecated" warning instead.
     err = AUGraphNewNode(m_audioGraph->audioGraphRef(), &description, 0, 0, &m_auNode);
+        
     BACKEND_ASSERT2(err != kAUGraphErr_OutputNodeErr, "A MediaObject can only be connected to one audio output device.", FATAL_ERROR)
     BACKEND_ASSERT2(err == noErr, "Could not create new AUNode.", FATAL_ERROR)
 }

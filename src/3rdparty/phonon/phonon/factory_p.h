@@ -122,6 +122,13 @@ namespace Factory
 #endif //QT_NO_PHONON_VIDEO
 
     /**
+    * Create a new backend object for a AudioDataOutput.
+    *
+    * \return a pointer to the AudioDataOutput the backend provides.
+    */
+    PHONON_EXPORT QObject *createAudioDataOutput(QObject *parent = 0);
+
+    /**
      * \return a pointer to the backend interface.
      */
     PHONON_EXPORT QObject *backend(bool createWhenNull = true);

@@ -55,6 +55,7 @@ class MediaObject : public QObject, public MediaObjectInterface
         , public MediaNode
 {
     friend class Stream;
+    friend class AudioDataOutput;
     Q_OBJECT
     Q_INTERFACES(Phonon::MediaObjectInterface
 #ifndef QT_NO_PHONON_MEDIACONTROLLER
@@ -144,12 +145,8 @@ public:
     void handleBusMessage(const Message &msg);
     void handleEndOfStream();
     void addMissingCodecName(const QString &codec) { m_missingCodecs.append(codec); }
-    void invalidateGraph() {
-        m_resetNeeded = true;
-        if (m_state == Phonon::PlayingState || m_state == Phonon::PausedState) {
-            changeState(Phonon::StoppedState);
-        }
-    }
+    void invalidateGraph();
+
     static void cb_newpad (GstElement *decodebin, GstPad *pad, gboolean last, gpointer data);
     static void cb_pad_added (GstElement *decodebin, GstPad *pad, gpointer data);
     static void cb_unknown_type (GstElement *decodebin, GstPad *pad, GstCaps *caps, gpointer data);
@@ -236,6 +233,7 @@ private:
     int _iface_availableTitles() const;
     int _iface_currentTitle() const;
     void _iface_setCurrentTitle(int title);
+    void setTrack(int title);
 
     bool m_resumeState;
     State m_oldState;
@@ -250,6 +248,7 @@ private:
     MediaSource m_nextSource;
     qint32 m_prefinishMark;
     qint32 m_transitionTime;
+	bool m_isStream;
 
     qint64 m_posAtSeek;
 
@@ -285,6 +284,7 @@ private:
     bool m_autoplayTitles;
     int m_availableTitles;
     int m_currentTitle;
+    int m_pendingTitle;
 };
 }
 } //namespace Phonon::Gstreamer
