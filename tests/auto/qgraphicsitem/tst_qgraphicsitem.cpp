@@ -6825,6 +6825,9 @@ void tst_QGraphicsItem::cacheMode()
     QTRY_COMPARE(tester->repaints, 4);
     QCOMPARE(testerChild->repaints, 4);
     QCOMPARE(testerChild2->repaints, 3);
+    tester->resetTransform();
+    testerChild->resetTransform();
+    testerChild2->resetTransform();
 
     // Explicit update causes a repaint.
     tester->update(0, 0, 5, 5);
@@ -6898,23 +6901,24 @@ void tst_QGraphicsItem::cacheMode()
     // because the parent is rotated with a perspective.
     testerChild->setPos(1, 1);
     QTest::qWait(25);
-    QTRY_COMPARE(tester->repaints, 10);
+    QTRY_COMPARE(tester->repaints, 11);
     QCOMPARE(testerChild->repaints, 10);
     QCOMPARE(testerChild2->repaints, 5);
+    tester->resetTransform();
 
     // Make a huge item
     tester->setGeometry(QRectF(-4000, -4000, 8000, 8000));
     QTest::qWait(25);
-    QTRY_COMPARE(tester->repaints, 11);
-    QCOMPARE(testerChild->repaints, 10);
+    QTRY_COMPARE(tester->repaints, 12);
+    QCOMPARE(testerChild->repaints, 11);
     QCOMPARE(testerChild2->repaints, 5);
 
     // Move the large item - will cause a repaint as the
     // cache is clipped.
     tester->setPos(5, 0);
     QTest::qWait(25);
-    QTRY_COMPARE(tester->repaints, 12);
-    QCOMPARE(testerChild->repaints, 10);
+    QTRY_COMPARE(tester->repaints, 13);
+    QCOMPARE(testerChild->repaints, 11);
     QCOMPARE(testerChild2->repaints, 5);
 
     // Hiding and showing should invalidate the cache
@@ -6922,8 +6926,8 @@ void tst_QGraphicsItem::cacheMode()
     QTest::qWait(25);
     tester->show();
     QTest::qWait(25);
-    QTRY_COMPARE(tester->repaints, 13);
-    QCOMPARE(testerChild->repaints, 11);
+    QTRY_COMPARE(tester->repaints, 14);
+    QCOMPARE(testerChild->repaints, 12);
     QCOMPARE(testerChild2->repaints, 6);
 }
 
