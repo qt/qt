@@ -58,6 +58,28 @@ QT_BEGIN_NAMESPACE
 
 // TODO: Put channel specific stuff here so it does not polute qhttpnetworkconnection.cpp
 
+QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
+    : socket(0)
+    , state(IdleState)
+    , reply(0)
+    , written(0)
+    , bytesTotal(0)
+    , resendCurrent(false)
+    , lastStatus(0)
+    , pendingEncrypt(false)
+    , reconnectAttempts(2)
+    , authMehtod(QAuthenticatorPrivate::None)
+    , proxyAuthMehtod(QAuthenticatorPrivate::None)
+#ifndef QT_NO_OPENSSL
+    , ignoreAllSslErrors(false)
+#endif
+    , pipeliningSupported(PipeliningSupportUnknown)
+    , connection(0)
+{
+    // Inlining this function in the header leads to compiler error on
+    // release-armv5, on at least timebox 9.2 and 10.1.
+}
+
 void QHttpNetworkConnectionChannel::init()
 {
 #ifndef QT_NO_OPENSSL
@@ -865,7 +887,14 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
 void QHttpNetworkConnectionChannel::_q_connected()
 {
     // improve performance since we get the request sent by the kernel ASAP
-    socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    //socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    // We have this commented out now. It did not have the effect we wanted. If we want to
+    // do this properly, Qt has to combine multiple HTTP requests into one buffer
+    // and send this to the kernel in one syscall and then the kernel immediately sends
+    // it as one TCP packet because of TCP_NODELAY.
+    // However, this code is currently not in Qt, so we rely on the kernel combining
+    // the requests into one TCP packet.
+
     // not sure yet if it helps, but it makes sense
     socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
@@ -932,7 +961,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         errorCode = QNetworkReply::UnknownNetworkError;
         break;
     }
-    QPointer<QObject> that = connection;
+    QPointer<QHttpNetworkConnection> that = connection;
     QString errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
     if (send2Reply) {
         if (reply) {
@@ -987,7 +1016,15 @@ void QHttpNetworkConnectionChannel::_q_encryptedBytesWritten(qint64 bytes)
         sendRequest();
     // otherwise we do nothing
 }
+
 #endif
+
+void QHttpNetworkConnectionChannel::setConnection(QHttpNetworkConnection *c)
+{
+    // Inlining this function in the header leads to compiler error on
+    // release-armv5, on at least timebox 9.2 and 10.1.
+    connection = c;
+}
 
 QT_END_NAMESPACE
 

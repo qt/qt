@@ -180,17 +180,36 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, Deployment
     tw << headerComment.arg(wrapperPkgFilename).arg(dateStr);
 
     // Construct QStringList from pkg_prerules since we need search it before printed to file
+    // Note: Though there can't be more than one language or header line, use stringlists
+    // in case user wants comments to go with the rules.
     QStringList rawPkgPreRules;
+    QStringList languageRules;
+    QStringList headerRules;
     foreach(QString deploymentItem, project->values("DEPLOYMENT")) {
         foreach(QString pkgrulesItem, project->values(deploymentItem + ".pkg_prerules")) {
             QStringList pkgrulesValue = project->values(pkgrulesItem);
             // If there is no stringlist defined for a rule, use rule name directly
             // This is convenience for defining single line mmp statements
             if (pkgrulesValue.isEmpty()) {
-                rawPkgPreRules << pkgrulesItem;
+                if (pkgrulesItem.startsWith("&"))
+                    languageRules << pkgrulesItem;
+                else if (pkgrulesItem.startsWith("#"))
+                    headerRules << pkgrulesItem;
+                else
+                    rawPkgPreRules << pkgrulesItem;
             } else {
-                foreach(QString pkgrule, pkgrulesValue) {
-                    rawPkgPreRules << pkgrule;
+                if (containsStartWithItem('&', pkgrulesValue)) {
+                    foreach(QString pkgrule, pkgrulesValue) {
+                        languageRules << pkgrule;
+                    }
+                } else if (containsStartWithItem('#', pkgrulesValue)) {
+                    foreach(QString pkgrule, pkgrulesValue) {
+                        headerRules << pkgrule;
+                    }
+                } else {
+                    foreach(QString pkgrule, pkgrulesValue) {
+                        rawPkgPreRules << pkgrule;
+                    }
                 }
             }
         }
@@ -198,16 +217,16 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, Deployment
 
     // Apply some defaults if specific data does not exist in PKG pre-rules
 
-    if (!containsStartWithItem('&', rawPkgPreRules)) {
+    if (languageRules.isEmpty()) {
         // language, (*** hardcoded to english atm, should be parsed from TRANSLATIONS)
-        QString languageCode = "; Language\n&EN\n\n";
-        t << languageCode;
-        tw << languageCode;
-    } else {
+        languageRules << "; Language\n&EN\n\n";
+    } else if (headerRules.isEmpty()) {
         // In case user defines langs, he must take care also about SIS header
-        if (!containsStartWithItem('#', rawPkgPreRules))
-            fprintf(stderr, "Warning: If language is defined with DEPLOYMENT pkg_prerules, also the SIS header must be defined\n");
+        fprintf(stderr, "Warning: If language is defined with DEPLOYMENT pkg_prerules, also the SIS header must be defined\n");
     }
+
+    t << languageRules.join("\n") << endl;
+    tw << languageRules.join("\n") << endl;
 
     // name of application, UID and version
     QString applicationVersion = project->first("VERSION").isEmpty() ? "1,0,0" : project->first("VERSION").replace('.', ',');
@@ -222,9 +241,11 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, Deployment
     } else {
         tw << installerSisHeader << endl;
     }
-    if (!containsStartWithItem('#', rawPkgPreRules)) {
+
+    if (headerRules.isEmpty())
         t << sisHeader.arg(visualTarget).arg(uid3).arg(applicationVersion);
-    }
+    else
+        t << headerRules.join("\n") << endl;
 
     // Localized vendor name
     QString vendorName;

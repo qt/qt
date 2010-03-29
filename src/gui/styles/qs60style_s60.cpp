@@ -755,7 +755,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
 
             if (drawn)
                 result = fromFbsBitmap(background, NULL, flags, targetSize);
-            // if drawing fails in skin server, just ignore the background (probably OOM occured)
+            // if drawing fails in skin server, just ignore the background (probably OOM case)
 
             CleanupStack::PopAndDestroy(4, background); //background, dev, gc, bgContext
     //        QS60WindowSurface::lockBitmapHeap();
@@ -787,7 +787,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
 
             const int currentFrame = QS60StylePrivate::currentAnimationFrame(part);
             if (constructedFromTheme && aknAnimation && aknAnimation->BitmapAnimData()->FrameArray().Count() > 0) {
-                //Animation was created succesfully and contains frames, just fetch current frame
+                //Animation was created successfully and contains frames, just fetch current frame
                 if(currentFrame >= aknAnimation->BitmapAnimData()->FrameArray().Count())
                     User::Leave(KErrOverflow);
                 const CBitmapFrameData* frameData = aknAnimation->BitmapAnimData()->FrameArray().At(currentFrame);
@@ -859,11 +859,9 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
     User::LeaveIfError(bitmapDev->CreateContext(bitmapGc));
     CleanupStack::PushL(bitmapGc);
 
-#ifndef Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
     frame->LockHeap();
     memset(frame->DataAddress(), 0, frame->SizeInPixels().iWidth * frame->SizeInPixels().iHeight * 4);  // 4: argb bytes
     frame->UnlockHeap();
-#endif
 
     const TRect outerRect(TPoint(0, 0), targetSize);
     const TRect innerRect = innerRectFromElement(frameElement, outerRect);
@@ -978,21 +976,25 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
 TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameElements frameElement, const TRect &outerRect)
 {
-    TInt widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
-    TInt heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight);
+    TInt widthShrink = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth);
+    TInt heightShrink = QS60StylePrivate::pixelMetric(PM_FrameCornerHeight);
     switch(frameElement) {
         case QS60StylePrivate::SF_PanelBackground:
             // panel should have slightly slimmer border to enable thin line of background graphics between closest component
-            widthShrink = widthShrink-2;
-            heightShrink = heightShrink-2;
+            widthShrink = widthShrink - 2;
+            heightShrink = heightShrink - 2;
             break;
         case QS60StylePrivate::SF_ToolTip:
-            widthShrink = widthShrink>>1;
-            heightShrink = heightShrink>>1;
+            widthShrink = widthShrink >> 1;
+            heightShrink = heightShrink >> 1;
             break;
         case QS60StylePrivate::SF_ListHighlight:
-            widthShrink = widthShrink-2;
-            heightShrink = heightShrink-2;
+            widthShrink = widthShrink - 2;
+            heightShrink = heightShrink - 2;
+            break;
+        case QS60StylePrivate::SF_PopupBackground:
+            widthShrink = widthShrink + 5;
+            heightShrink = heightShrink + 5;
             break;
         default:
             break;
@@ -1096,7 +1098,7 @@ void QS60StylePrivate::setActiveLayout()
         activeLayoutIndex += (!landscape) ? 1 : 0;
     }
 
-    m_pmPointer = data[activeLayoutIndex];
+    setCurrentLayout(activeLayoutIndex);
 }
 
 Q_GLOBAL_STATIC(QList<QS60StyleAnimation *>, m_animations)

@@ -324,6 +324,14 @@ void QGraphicsWidget::resize(const QSizeF &size)
 */
 
 /*!
+
+  \fn QGraphicsWidget::geometryChanged()
+
+  This signal gets emitted whenever the geometry of the item changes
+  \internal
+*/
+
+/*!
     \property QGraphicsWidget::geometry
     \brief the geometry of the widget
 
@@ -334,7 +342,7 @@ void QGraphicsWidget::resize(const QSizeF &size)
     A side effect of calling this function is that the widget will receive
     a move event and a resize event. Also, if the widget has a layout
     assigned, the layout will activate.
-    
+
     \sa geometry(), resize()
 */
 void QGraphicsWidget::setGeometry(const QRectF &rect)
@@ -391,6 +399,10 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
         QGraphicsSceneResizeEvent re;
         re.setOldSize(oldSize);
         re.setNewSize(newGeom.size());
+        if (oldSize.width() != newGeom.size().width())
+            emit widthChanged();
+        if (oldSize.height() != newGeom.size().height())
+            emit heightChanged();
         QApplication::sendEvent(this, &re);
     }
 }
@@ -568,7 +580,7 @@ void QGraphicsWidget::getWindowFrameMargins(qreal *left, qreal *top, qreal *righ
 void QGraphicsWidget::unsetWindowFrameMargins()
 {
     Q_D(QGraphicsWidget);
-    if ((d->windowFlags & Qt::Window) && (d->windowFlags & Qt::WindowType_Mask) != Qt::Popup && 
+    if ((d->windowFlags & Qt::Window) && (d->windowFlags & Qt::WindowType_Mask) != Qt::Popup &&
          (d->windowFlags & Qt::WindowType_Mask) != Qt::ToolTip && !(d->windowFlags & Qt::FramelessWindowHint)) {
         QStyleOptionTitleBar bar;
         d->initStyleOptionTitleBar(&bar);
@@ -1175,7 +1187,7 @@ bool QGraphicsWidget::sceneEvent(QEvent *event)
 
     Returns true if \a event has been recognized and processed; otherwise,
     returns false.
-    
+
     \sa event()
 */
 bool QGraphicsWidget::windowFrameEvent(QEvent *event)
@@ -1232,7 +1244,7 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
     const QRectF r = windowFrameRect();
     if (!r.contains(pos))
         return Qt::NoSection;
-    
+
     const qreal left = r.left();
     const qreal top = r.top();
     const qreal right = r.right();
@@ -2358,5 +2370,5 @@ void QGraphicsWidget::dumpFocusChain()
 #endif
 
 QT_END_NAMESPACE
-        
+
 #endif //QT_NO_GRAPHICSVIEW

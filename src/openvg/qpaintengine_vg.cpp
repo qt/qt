@@ -537,7 +537,7 @@ void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
     // adds 0.5 to each co-ordinate.
     QTransform viewport2(1.0f, 0.0f, 0.0f,
                          0.0f, -1.0f, 0.0f,
-                         0.0f, devh, 1.0f);
+                         0.0f, devh + 1, 1.0f);
     imageTransform = transform * viewport2;
 
     // Calculate the scaling factor to use for turning cosmetic pens

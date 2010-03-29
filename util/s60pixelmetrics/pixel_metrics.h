@@ -185,7 +185,9 @@ NONSHARABLE_CLASS( QStyle )
             // Bold line width
             PM_Custom_BoldLineWidth,
             // Thin line width
-            PM_Custom_ThinLineWidth
+            PM_Custom_ThinLineWidth,
+            // Height of a popup info messagebox
+            PM_Custom_MessageBoxHeight
         };
 
     };

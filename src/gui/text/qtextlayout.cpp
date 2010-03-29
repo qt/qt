@@ -1702,9 +1702,9 @@ namespace {
             if (currentPosition <= 0)
                 return;
 
-            glyph_metrics_t gi = fontEngine->boundingBox(currentGlyph());
-            if (gi.isValid())
-                rightBearing = qMin(QFixed(), gi.xoff - gi.x - gi.width);
+            qreal rb;
+            fontEngine->getGlyphBearings(currentGlyph(), 0, &rb);
+            rightBearing = qMin(QFixed(), QFixed::fromReal(rb));
         }
 
         inline void resetRightBearing()

@@ -60,13 +60,8 @@
 QT_BEGIN_NAMESPACE
 
 const int MAX_NON_CUSTOM_PIXELMETRICS = 92;
-const int CUSTOMVALUESCOUNT = 4;
-enum {
-    PM_Custom_FrameCornerWidth = MAX_NON_CUSTOM_PIXELMETRICS,
-    PM_Custom_FrameCornerHeight,
-    PM_Custom_BoldLineWidth,
-    PM_Custom_ThinLineWidth
-    };
+const int CUSTOMVALUESCOUNT = 5;
+
 const int MAX_PIXELMETRICS = MAX_NON_CUSTOM_PIXELMETRICS + CUSTOMVALUESCOUNT;
 
 typedef struct {
@@ -416,7 +411,7 @@ public:
         SE_TabBarTabWestActive,
         SE_TabBarTabWestInactive,
         SE_ListHighlight,
-        SE_OptionsMenu,
+        SE_PopupBackground,
         SE_SettingsList,
         SE_TableItem,
         SE_TableHeaderItem,
@@ -425,7 +420,7 @@ public:
         SE_ToolBarButton,
         SE_ToolBarButtonPressed,
         SE_PanelBackground,
-        SE_ScrollBarHandlePressedHorizontal, //only for 5.0+
+        SE_ScrollBarHandlePressedHorizontal,
         SE_ScrollBarHandlePressedVertical,
         SE_ButtonInactive,
         SE_Editor,
@@ -437,7 +432,7 @@ public:
         SF_ButtonPressed,
         SF_FrameLineEdit,
         SF_ListHighlight,
-        SF_OptionsMenu,
+        SF_PopupBackground,
         SF_SettingsList,
         SF_TableItem,
         SF_TableHeaderItem,
