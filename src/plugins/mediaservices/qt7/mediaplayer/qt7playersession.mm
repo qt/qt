@@ -128,25 +128,25 @@
 - (void) processEOS:(NSNotification *)notification
 {
     Q_UNUSED(notification);
-    m_session->processEOS();
+    QMetaObject::invokeMethod(m_session, "processEOS", Qt::AutoConnection);
 }
 
 - (void) processLoadStateChange:(NSNotification *)notification
 {
     Q_UNUSED(notification);
-    m_session->processLoadStateChange();
+    QMetaObject::invokeMethod(m_session, "processLoadStateChange", Qt::AutoConnection);
 }
 
 - (void) processVolumeChange:(NSNotification *)notification
 {
     Q_UNUSED(notification);
-    m_session->processVolumeChange();
+    QMetaObject::invokeMethod(m_session, "processVolumeChange", Qt::AutoConnection);
 }
 
 - (void) processNaturalSizeChange :(NSNotification *)notification
 {
     Q_UNUSED(notification);
-    m_session->processNaturalSizeChange();
+    QMetaObject::invokeMethod(m_session, "processNaturalSizeChange", Qt::AutoConnection);
 }
 
 @end
