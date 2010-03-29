@@ -41,6 +41,7 @@
 
 #include "qdeclarativepropertymap.h"
 
+#include <private/qmetaobjectbuilder_p.h>
 #include "qdeclarativeopenmetaobject_p.h"
 
 #include <QDebug>
@@ -56,6 +57,7 @@ public:
 
 protected:
     virtual void propertyWritten(int index);
+    virtual void propertyCreated(int, QMetaPropertyBuilder &);
 
 private:
     QDeclarativePropertyMap *map;
@@ -86,6 +88,11 @@ QDeclarativePropertyMapMetaObject::QDeclarativePropertyMapMetaObject(QDeclarativ
 void QDeclarativePropertyMapMetaObject::propertyWritten(int index)
 {
     priv->emitChanged(QString::fromUtf8(name(index)), operator[](index));
+}
+
+void QDeclarativePropertyMapMetaObject::propertyCreated(int, QMetaPropertyBuilder &b)
+{
+    priv->keys.append(QString::fromUtf8(b.name()));
 }
 
 /*!
@@ -172,8 +179,6 @@ QVariant QDeclarativePropertyMap::value(const QString &key) const
 void QDeclarativePropertyMap::insert(const QString &key, const QVariant &value)
 {
     Q_D(QDeclarativePropertyMap);
-    if (!d->keys.contains(key))
-        d->keys.append(key);
     d->mo->setValue(key.toUtf8(), value);
 }
 
@@ -249,10 +254,8 @@ QVariant &QDeclarativePropertyMap::operator[](const QString &key)
     //### optimize
     Q_D(QDeclarativePropertyMap);
     QByteArray utf8key = key.toUtf8();
-    if (!d->keys.contains(key)) {
-        d->keys.append(key);
+    if (!d->keys.contains(key))
         d->mo->setValue(utf8key, QVariant());   //force creation -- needed below
-    }
 
     return (*(d->mo))[utf8key];
 }
