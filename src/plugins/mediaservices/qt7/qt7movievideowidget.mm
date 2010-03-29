@@ -73,7 +73,8 @@ public:
 
     void initializeGL()
     {
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        QColor bgColor = palette().color(QPalette::Background);
+        glClearColor(bgColor.redF(), bgColor.greenF(), bgColor.blueF(), bgColor.alphaF());
     }
 
     void resizeGL(int w, int h)
