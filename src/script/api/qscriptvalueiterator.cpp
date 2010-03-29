@@ -85,6 +85,17 @@ public:
         : initialized(false)
     {}
 
+    ~QScriptValueIteratorPrivate()
+    {
+        if (!initialized)
+            return;
+        QScriptEnginePrivate *eng_p = engine();
+        if (!eng_p)
+            return;
+        QScript::APIShim shim(eng_p);
+        propertyNames.clear(); //destroying the identifiers need to be done under the APIShim guard
+    }
+
     QScriptValuePrivate *object() const
     {
         return QScriptValuePrivate::get(objectValue);
