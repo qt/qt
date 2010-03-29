@@ -97,19 +97,19 @@ static inline QPair<long, long> do_gettime()
 #if (_POSIX_MONOTONIC_CLOCK-0 > 0)
     timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    return qMakePair(ts.tv_sec, ts.tv_nsec);
+    return qMakePair<long,long>(ts.tv_sec, ts.tv_nsec);
 #else
 #  if !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
     if (QElapsedTimer::isMonotonic()) {
         timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
-        return qMakePair(ts.tv_sec, ts.tv_nsec);
+        return qMakePair<long,long>(ts.tv_sec, ts.tv_nsec);
     }
 #  endif
     // use gettimeofday
     timeval tv;
     ::gettimeofday(&tv, 0);
-    return qMakePair(tv.tv_sec, tv.tv_usec);
+    return qMakePair<long,long>(tv.tv_sec, tv.tv_usec);
 #endif
 }
 
