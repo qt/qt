@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -40,10 +40,19 @@
 ****************************************************************************/
 
 #include <pulse/pulseaudio.h>
+#include <pulse/glib-mainloop.h>
 
-int main(int ,char **)
+#if !defined(PA_API_VERSION) || PA_API_VERSION-0 != 12
+# error "Incompatible PulseAudio API version"
+#endif
+#if !PA_CHECK_VERSION(0,9,0)
+# error "PulseAudio version too old"
+#endif
+
+int main(int, char **)
 {
-    pa_threaded_mainloop *mainloop = pa_threaded_mainloop_new();
-    return 0;
+    const char *headers = pa_get_headers_version();
+    const char *library = pa_get_library_version();
+    pa_glib_mainloop_new(0);
+    return (headers - library) * 0;
 }
-
