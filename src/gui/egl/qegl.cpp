@@ -556,10 +556,12 @@ EGLDisplay QEgl::display()
         }
 
         // Resolve the egl extension function pointers:
+#if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_base)
         if (QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_base")) {
             eglCreateImageKHR = (_eglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
             eglDestroyImageKHR = (_eglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
         }
+#endif
     }
 
     return dpy;
