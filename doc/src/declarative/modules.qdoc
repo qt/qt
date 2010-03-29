@@ -70,7 +70,7 @@ Installed modules can \e only be on the local file system or in application C++ 
 are defined in QML files and \l{QDeclarativeExtensionPlugin}{QML C++ plugins} in a directory,
 but the directory is indirectly referred to by the URI. The mapping to actual content is either
 by application C++ code registering a C++ type to a module URI (see \l{Extending QML in C++}),
-or in the referenced subdirectory of a path on the QDeclarativeEngine::importPathList().
+or in the referenced subdirectory of a path on the import path (see below).
 When importing a location module, an un-quoted URI is used:
 
 \code
@@ -83,6 +83,13 @@ For either type of module, a \c qmldir file in the module directory defines the 
 optional for location modules, but only for local filesystem content or a single remote content with a namespace.
 The second exception is explained in more detail in the section below on Namespaces.
 
+\seciont2 The Import Path
+
+Installed modules are searched for on the import path.
+The \c -L option to the \l {Qt Declarative UI Runtime}{qml} runtime adds paths to the import path.
+
+From C++, the path is available via \l QDeclarativeEngine::importPathList() and can be prepended to
+using \l QDeclarativeEngine::addImportPath().
 
 \section2 The \c qmldir File
 
