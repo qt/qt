@@ -396,6 +396,7 @@ QDeclarativeVMEMetaObject::QDeclarativeVMEMetaObject(QObject *obj,
     methodOffset = QAbstractDynamicMetaObject::methodOffset();
 
     data = new QDeclarativeVMEVariant[metaData->propertyCount];
+
     aConnected.resize(metaData->aliasCount);
     int list_type = qMetaTypeId<QDeclarativeListProperty<QObject> >();
 
@@ -403,7 +404,7 @@ QDeclarativeVMEMetaObject::QDeclarativeVMEMetaObject(QObject *obj,
     for (int ii = 0; ii < metaData->propertyCount; ++ii) {
         int t = (metaData->propertyData() + ii)->propertyType;
         if (t == list_type) {
-            listProperties.append(new List(methodOffset + ii));
+            listProperties.append(List(methodOffset + ii));
             data[ii].setValue(listProperties.count() - 1);
         } 
     }
@@ -413,7 +414,6 @@ QDeclarativeVMEMetaObject::~QDeclarativeVMEMetaObject()
 {
     compiledData->release();
     delete parent;
-    qDeleteAll(listProperties);
     delete [] data;
     delete [] methods;
 }
@@ -505,7 +505,7 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                         }
                         if (t == qMetaTypeId<QDeclarativeListProperty<QObject> >()) {
                             int listIndex = data[id].asInt();
-                            const List *list = listProperties.at(listIndex);
+                            const List *list = &listProperties.at(listIndex);
                             *reinterpret_cast<QDeclarativeListProperty<QObject> *>(a[0]) = 
                                 QDeclarativeListProperty<QObject>(object, (void *)list,
                                                                   list_append, list_count, list_at, 

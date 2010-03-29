@@ -158,7 +158,7 @@ private:
         List(int lpi) : notifyIndex(lpi) {}
         int notifyIndex;
     };
-    QList<List *> listProperties;
+    QList<List> listProperties;
 
     static void list_append(QDeclarativeListProperty<QObject> *, QObject *);
     static int list_count(QDeclarativeListProperty<QObject> *);
