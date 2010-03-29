@@ -117,6 +117,7 @@ void QGstreamerVideoInputDeviceControl::update()
     m_names.clear();
     m_descriptions.clear();
 
+#ifdef QMEDIA_GSTREAMER_CAPTURE
     QDir devDir("/dev");
     devDir.setFilter(QDir::System);
 
@@ -157,6 +158,7 @@ void QGstreamerVideoInputDeviceControl::update()
         }
         ::close(fd);
     }
+#endif
 }
 
 QT_END_NAMESPACE
