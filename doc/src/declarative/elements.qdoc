@@ -179,6 +179,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l Column
 \o \l Row
 \o \l Grid
+\o \l Flow
 \endlist
 
 \o

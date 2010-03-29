@@ -820,6 +820,9 @@ public:
 QDeclarativeFlow::QDeclarativeFlow(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(*(new QDeclarativeFlowPrivate), Both, parent)
 {
+    Q_D(QDeclarativeFlow);
+    // Flow layout requires relayout if its own size changes too.
+    d->addItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
 }
 
 /*!

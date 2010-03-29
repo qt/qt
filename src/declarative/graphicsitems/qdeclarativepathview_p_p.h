@@ -124,6 +124,7 @@ public:
 
     QDeclarativePath *path;
     int currentIndex;
+    QDeclarativeGuard<QDeclarativeItem> currentItem;
     qreal currentItemOffset;
     qreal startPc;
     QPointF startPoint;

@@ -1438,10 +1438,6 @@ QDeclarativeItem::~QDeclarativeItem()
 */
 void QDeclarativeItem::setParentItem(QDeclarativeItem *parent)
 {
-    QDeclarativeItem *oldParent = parentItem();
-    if (parent == oldParent || !parent) return;
-
-    QObject::setParent(parent);
     QGraphicsObject::setParentItem(parent);
 }
 

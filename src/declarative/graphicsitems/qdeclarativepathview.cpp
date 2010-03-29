@@ -501,6 +501,7 @@ void QDeclarativePathView::setCurrentIndex(int idx)
                 }
             }
         }
+        d->currentItem = 0;
         d->moveReason = QDeclarativePathViewPrivate::SetIndex;
         d->currentIndex = idx;
         if (d->model->count()) {
@@ -508,9 +509,9 @@ void QDeclarativePathView::setCurrentIndex(int idx)
                 d->snapToCurrent();
             int itemIndex = (idx - d->firstIndex + d->model->count()) % d->model->count();
             if (itemIndex < d->items.count()) {
-                QDeclarativeItem *item = d->items.at(itemIndex);
-                item->setFocus(true);
-                if (QDeclarativePathViewAttached *att = d->attached(item))
+                d->currentItem = d->items.at(itemIndex);
+                d->currentItem->setFocus(true);
+                if (QDeclarativePathViewAttached *att = d->attached(d->currentItem))
                     att->setIsCurrentItem(true);
             }
             d->currentItemOffset = d->positionOfIndex(d->currentIndex);
@@ -1083,6 +1084,7 @@ void QDeclarativePathView::refill()
                     att->setIsCurrentItem(true);
                 currentVisible = true;
                 d->currentItemOffset = pos;
+                d->currentItem = item;
             }
             if (d->items.count() == 0)
                 d->firstIndex = idx;
@@ -1109,6 +1111,7 @@ void QDeclarativePathView::refill()
                     att->setIsCurrentItem(true);
                 currentVisible = true;
                 d->currentItemOffset = pos;
+                d->currentItem = item;
             }
             d->items.prepend(item);
             d->updateItem(item, pos);
@@ -1161,15 +1164,32 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
     if (!d->isValid() || !isComponentComplete())
         return;
 
+    // fix current
+    bool currentChanged = false;
+    if (d->currentIndex >= modelIndex + count) {
+        d->currentIndex -= count;
+        currentChanged = true;
+    } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
+        // current item has been removed.
+        d->currentIndex = qMin(modelIndex, d->model->count()-1);
+        if (d->currentItem) {
+            if (QDeclarativePathViewAttached *att = d->attached(d->currentItem))
+                att->setIsCurrentItem(true);
+        }
+        currentChanged = true;
+    }
+
     QList<QDeclarativeItem *> removedItems = d->items;
     d->items.clear();
     if (d->offset >= d->model->count())
         d->offset = d->model->count() - 1;
-    //XXX update currentIndex
+
     d->regenerate();
     while (removedItems.count())
         d->releaseItem(removedItems.takeLast());
     d->updateCurrent();
+    if (currentChanged)
+        emit currentIndexChanged();
     emit countChanged();
 }
 
@@ -1181,10 +1201,17 @@ void QDeclarativePathView::itemsMoved(int from, int to, int count)
 
     QList<QDeclarativeItem *> removedItems = d->items;
     d->items.clear();
-    //XXX update currentIndex
     d->regenerate();
     while (removedItems.count())
         d->releaseItem(removedItems.takeLast());
+
+    // Fix current index
+    if (d->currentIndex >= 0 && d->currentItem) {
+        int oldCurrent = d->currentIndex;
+        d->currentIndex = d->model->indexOf(d->currentItem, this);
+        if (oldCurrent != d->currentIndex)
+            emit currentIndexChanged();
+    }
     d->updateCurrent();
 }
 
@@ -1247,11 +1274,12 @@ void QDeclarativePathViewPrivate::updateCurrent()
             }
         }
         currentIndex = idx;
+        currentItem = 0;
         itemIndex = (idx - firstIndex + model->count()) % model->count();
         if (itemIndex < items.count()) {
-            QDeclarativeItem *item = items.at(itemIndex);
-            item->setFocus(true);
-            if (QDeclarativePathViewAttached *att = attached(item))
+            currentItem = items.at(itemIndex);
+            currentItem->setFocus(true);
+            if (QDeclarativePathViewAttached *att = attached(currentItem))
                 att->setIsCurrentItem(true);
         }
         emit q->currentIndexChanged();

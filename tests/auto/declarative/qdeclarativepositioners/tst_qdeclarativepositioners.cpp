@@ -65,6 +65,8 @@ private slots:
     void test_grid_animated();
     void test_propertychanges();
     void test_repeater();
+    void test_flow();
+    void test_flow_resize();
 private:
     QDeclarativeView *createView(const QString &filename);
 };
@@ -439,6 +441,64 @@ void tst_QDeclarativePositioners::test_repeater()
     QCOMPARE(two->y(), 0.0);
     QCOMPARE(three->x(), 100.0);
     QCOMPARE(three->y(), 0.0);
+}
+
+void tst_QDeclarativePositioners::test_flow()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/flowtest.qml");
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 0.0);
+    QCOMPARE(three->y(), 50.0);
+    QCOMPARE(four->x(), 0.0);
+    QCOMPARE(four->y(), 70.0);
+    QCOMPARE(five->x(), 50.0);
+    QCOMPARE(five->y(), 70.0);
+}
+
+void tst_QDeclarativePositioners::test_flow_resize()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/flowtest.qml");
+
+    QDeclarativeItem *root = qobject_cast<QDeclarativeItem*>(canvas->rootObject());
+    QVERIFY(root);
+    root->setWidth(125);
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 70.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 0.0);
+    QCOMPARE(four->y(), 50.0);
+    QCOMPARE(five->x(), 50.0);
+    QCOMPARE(five->y(), 50.0);
 }
 
 QDeclarativeView *tst_QDeclarativePositioners::createView(const QString &filename)
