@@ -361,7 +361,7 @@ public:
     quint32 gpm;
     int screen;
     QHash<QPixmapData*, QPixmap> boundPixmaps;
-    QGLTexture *bindTextureFromNativePixmap(QPixmapData*, const qint64 key,
+    QGLTexture *bindTextureFromNativePixmap(QPixmap*, const qint64 key,
                                             QGLContext::BindOptions options);
     static void destroyGlSurfaceForPixmap(QPixmapData*);
     static void unbindPixmapFromTexture(QPixmapData*);

@@ -421,7 +421,7 @@ void QtResourceViewPrivate::filterOutResources()
     // 3) we hide these items which has pathToVisible value false.
 
     const bool matchAll = m_filterPattern.isEmpty();
-    const QString root(QLatin1Char(':'));
+    const QString root(QLatin1String(":/"));
 
     QQueue<QString> pathQueue;
     pathQueue.enqueue(root);
