@@ -299,10 +299,6 @@ void QT7MovieViewRenderer::setupVideoOutput()
     }
 }
 
-void QT7MovieViewRenderer::setEnabled(bool)
-{
-}
-
 void QT7MovieViewRenderer::setMovie(void *movie)
 {
     if (movie == m_movie)

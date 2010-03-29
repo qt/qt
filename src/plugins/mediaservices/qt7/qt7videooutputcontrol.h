@@ -67,7 +67,6 @@ class QT7PlayerService;
 class QT7VideoOutput {
 public:
     virtual ~QT7VideoOutput() {}
-    virtual void setEnabled(bool enabled) = 0;
     virtual void setMovie(void *movie) = 0;
     virtual void updateNaturalSize(const QSize &newSize) = 0;
 };

@@ -279,10 +279,6 @@ void QT7MovieVideoWidget::setupVideoOutput()
     m_displayLink->start();
 }
 
-void QT7MovieVideoWidget::setEnabled(bool)
-{
-}
-
 void QT7MovieVideoWidget::setMovie(void *movie)
 {
     if (m_movie == movie)

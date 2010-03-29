@@ -368,10 +368,6 @@ void QT7MovieRenderer::setupVideoOutput()
 
 }
 
-void QT7MovieRenderer::setEnabled(bool)
-{
-}
-
 void QT7MovieRenderer::setMovie(void *movie)
 {
 //    qDebug() << "QT7MovieRenderer::setMovie" << movie;
