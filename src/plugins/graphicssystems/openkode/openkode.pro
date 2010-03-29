@@ -11,4 +11,4 @@ INSTALLS += target
 
 # openkode specific stuff
 INCLUDEPATH += $(OPENKODE_DIR)/include
-LIBS += $${QMAKE_RPATH}/$(OPENKODE_DIR)/lib-target -L$(OPENKODE_DIR)/lib-target -lKD -lEGL -lGLESv2_CM
+LIBS += $${QMAKE_RPATH}/$(OPENKODE_DIR)/lib-target -L$(OPENKODE_DIR)/lib-target -lKD -lEGL -lGLESv2

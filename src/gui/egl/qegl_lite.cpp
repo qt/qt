@@ -42,7 +42,7 @@
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qwidget.h>
-#include "qegl_p.h"
+#include "qeglcontext_p.h"
 
 #if !defined(QT_NO_EGL)
 
@@ -52,18 +52,25 @@
 
 QT_BEGIN_NAMESPACE
 
-EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
+EGLNativeDisplayType QEgl::nativeDisplay()
 {
-    Q_UNUSED(device);
-    Q_UNUSED(properties);
+    return EGLNativeDisplayType(EGL_DEFAULT_DISPLAY);
+}
+
+EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)
+{
+    return (EGLNativeWindowType)(widget->winId());
+}
+
+EGLNativePixmapType QEgl::nativePixmap(QPixmap* pixmap)
+{
     return 0;
 }
 
-EGLDisplay QEglContext::getDisplay(QPaintDevice *device)
-{
-    Q_UNUSED(device);
-    return eglGetDisplay(EGLNativeDisplayType(EGL_DEFAULT_DISPLAY));
-}
+//EGLDisplay QEglContext::display()
+//{
+//    return eglGetDisplay(EGLNativeDisplayType(EGL_DEFAULT_DISPLAY));
+//}
 
 static QGraphicsSystemScreen *screenForDevice(QPaintDevice *device)
 {

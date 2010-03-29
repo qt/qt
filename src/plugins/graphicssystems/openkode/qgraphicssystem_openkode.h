@@ -45,7 +45,7 @@
 #include <QtCore/qsemaphore.h>
 
 #include <QtGui/private/qgraphicssystem_p.h>
-#include <QtGui/private/qegl_p.h>
+#include <QtGui/private/qeglcontext_p.h>
 
 # include <GLES2/gl2.h>
 

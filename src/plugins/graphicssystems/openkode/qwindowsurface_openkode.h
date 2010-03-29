@@ -43,7 +43,7 @@
 #define QWINDOWSURFACE_OPENKODE_H
 
 #include <QtGui/private/qwindowsurface_p.h>
-#include <QtGui/private/qegl_p.h>
+#include <QtGui/private/qeglcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -68,6 +68,7 @@ private:
     QOpenKODEGraphicsSystemScreen *mScreen;
     QImage mImage;
     struct KDWindow *kdWindow;
+    EGLSurface *mSurface;
     QEglContext mContext;
 
     void createWindow(QWidget *window);

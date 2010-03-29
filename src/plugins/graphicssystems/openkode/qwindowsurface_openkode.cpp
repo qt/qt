@@ -51,12 +51,13 @@ QT_BEGIN_NAMESPACE
 QOpenKODEWindowSurface::QOpenKODEWindowSurface
         (QOpenKODEGraphicsSystemScreen *screen, QWidget *window)
     : QWindowSurface(window),
-      mScreen(screen)
+      mScreen(screen),
+      mSurface(0)
 {
     qDebug() << "QOpenKODEWindowSurface::QOpenKODEWindowSurface:" << window << window->width() << "x" << window->height()
             << "pos" << window->x() << "x" << window->y();
 
-    if (!mContext.openDisplay(0)) {
+    if (!mContext.display()) {
         qWarning("qEglContext: Unable to open display!");
         return;
     }
@@ -76,6 +77,7 @@ QOpenKODEWindowSurface::QOpenKODEWindowSurface
 
 void QOpenKODEWindowSurface::createWindow(QWidget *window)
 {
+    qDebug() << "createWindow";
     kdWindow = kdCreateWindow(mContext.display(), mContext.config(), KD_NULL);
 
     if (!kdWindow) {
@@ -89,17 +91,17 @@ void QOpenKODEWindowSurface::createWindow(QWidget *window)
         return;
     }
 
-    const KDboolean windowExclusive[] = { false };
-    if (kdSetWindowPropertybv(kdWindow, KD_WINDOWPROPERTY_DESKTOP_EXCLUSIVE_NV, windowExclusive)) {
-        qErrnoWarning(kdGetError(), "Could not set exclusive bit");
-        return;
-    }
+    //const KDboolean windowExclusive[] = { false };
+    //if (kdSetWindowPropertybv(kdWindow, KD_WINDOWPROPERTY_DESKTOP_EXCLUSIVE_NV, windowExclusive)) {
+    //    qErrnoWarning(kdGetError(), "Could not set exclusive bit");
+    //    //return;
+    //}
 
-    const KDint windowPos[2] = { window->x(), window->y() };
-    if (kdSetWindowPropertyiv(kdWindow, KD_WINDOWPROPERTY_DESKTOP_OFFSET_NV, windowPos)) {
-        qErrnoWarning(kdGetError(), "Could not set native window position");
-        return;
-    }
+    //const KDint windowPos[2] = { window->x(), window->y() };
+    //if (kdSetWindowPropertyiv(kdWindow, KD_WINDOWPROPERTY_DESKTOP_OFFSET_NV, windowPos)) {
+    //    qErrnoWarning(kdGetError(), "Could not set native window position");
+    //    //return;
+    //}
 
     EGLNativeWindowType nativeWindow;
 
@@ -107,24 +109,29 @@ void QOpenKODEWindowSurface::createWindow(QWidget *window)
         qErrnoWarning(kdGetError(), "Could not realize native window");
         return;
     }
+    qDebug() << "kdRealizeWindow" << nativeWindow;
 
     // Create an EGL window surface for the native window
     EGLint windowAttrs[3] = { EGL_NONE };
-    EGLSurface eglSurface = eglCreateWindowSurface(mContext.display(),
+    qDebug() << "doing createwindowsurface";
+    *mSurface = eglCreateWindowSurface(mContext.display(),
                                         mContext.config(),
                                         nativeWindow,
                                         windowAttrs);
-    if (!eglSurface) {
+    qDebug() << "create windowsurface";
+    if (!mSurface) {
         qWarning("EGL couldn't create window surface: 0x%x", eglGetError());
         return;
     }
 
-    mContext.setSurface(eglSurface);
-
+    qDebug() << "making context";
     if (!mContext.createContext()) {
         qDebug() << "Unable to create context!";
         return;
     }
+
+    qDebug() << "about to make current";
+    mContext.makeCurrent(mSurface);
 }
 
 QOpenKODEWindowSurface::~QOpenKODEWindowSurface()
@@ -133,19 +140,20 @@ QOpenKODEWindowSurface::~QOpenKODEWindowSurface()
 
 QPaintDevice *QOpenKODEWindowSurface::paintDevice()
 {
-    //qDebug() << "QOpenKODEWindowSurface::paintDevice";
+    qDebug() << "QOpenKODEWindowSurface::paintDevice";
     return &mImage;
 }
 
 // ### TODO - this updates the entire toplevel, should only update the region
-void QOpenKODEWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+void QOpenKODEWindowSurface::flush(QWidget *, const QRegion &region, const QPoint &offset)
 {
+    qDebug() << "in flush";
     if (!offset.isNull()) {
         qWarning("Offset flushing not supported yet");
         return;
     }
 
-    if (!mContext.makeCurrent()) {
+    if (!mContext.makeCurrent(mSurface)) {
         qWarning("EGL couldn't make context/surface current: 0x%x", eglGetError());
         return;
     }
@@ -222,8 +230,8 @@ void QOpenKODEWindowSurface::flush(QWidget *widget, const QRegion &region, const
     if (texId)
         glDeleteTextures(1, &texId);
 
-    mContext.swapBuffers();
     mContext.doneCurrent();
+    mContext.swapBuffers(mSurface);
 }
 
 void QOpenKODEWindowSurface::setGeometry(const QRect &rect)
@@ -233,9 +241,10 @@ void QOpenKODEWindowSurface::setGeometry(const QRect &rect)
     if (mImage.size() != rect.size())
         mImage = QImage(rect.size(), mScreen->format());
 
-    mContext.destroySurface();
+    mContext.destroySurface(mSurface);
     kdDestroyWindow(kdWindow);
     createWindow(window());
+    qDebug() << "set geometry workded";
 }
 
 bool QOpenKODEWindowSurface::scroll(const QRegion &area, int dx, int dy)

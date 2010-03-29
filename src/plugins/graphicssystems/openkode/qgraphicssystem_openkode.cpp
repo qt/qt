@@ -92,7 +92,7 @@ QOpenKODEGraphicsSystemScreen::QOpenKODEGraphicsSystemScreen()
     }
 
     // Once we've set up the desktop and display we don't need them anymore
-//    kdReleaseDisplayNV(kdDisplay); TODO!!!
+    kdReleaseDisplayNV(kdDisplay);
     kdReleaseDesktopNV(kdDesktop);
 
     const int defaultDpi = 72;
@@ -102,12 +102,6 @@ QOpenKODEGraphicsSystemScreen::QOpenKODEGraphicsSystemScreen()
     mDepth = 24;
     mFormat = QImage::Format_RGB888;
 
-    if (!mContext.openDisplay(0)) {
-        qWarning("qEglContext: Unable to open display!");
-        return;
-    }
-
-    qDebug() << " - QEglContext::openDisplay OK";
 
     QEglProperties properties;
     properties.setPixelFormat(QImage::Format_RGB888);
@@ -116,6 +110,11 @@ QOpenKODEGraphicsSystemScreen::QOpenKODEGraphicsSystemScreen()
 
     if (!mContext.chooseConfig(properties, QEgl::BestPixelFormat)) {
         qWarning("qEglContext: Unable to choose config!");
+        return;
+    }
+
+    if (!mContext.display()) {
+        qWarning("qEglContext: Unable to open display!");
         return;
     }
 
