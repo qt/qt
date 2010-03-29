@@ -535,8 +535,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         // { "time", Object::DynamicProperty::Time, "QTime" },
         // { "date", Object::DynamicProperty::Date, "QDate" },
         { "date", Object::DynamicProperty::DateTime, "QDateTime" },
-        { "var", Object::DynamicProperty::Variant, "QVariant" },
-        { "variant", Object::DynamicProperty::Variant, "QVariant" }
+        { "var", Object::DynamicProperty::Variant, "QVariant" }
     };
     const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) /
                                          sizeof(propTypeNameToTypes[0]);
