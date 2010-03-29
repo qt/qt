@@ -7,7 +7,7 @@ LIBS += -lstrmiids -ldmoguids -luuid -lmsdmo -lole32 -loleaut32
 TARGET = phonon_ds9
 
 DEFINES += PHONON_MAKE_QT_ONLY_BACKEND
-PHONON_DS9_DIR = $$QT_SOURCE_TREE/src/3rdparty/phonon/ds9
+PHONON_DS9_DI = $$QT_SOURCE_TREE/src/3rdparty/phonon/ds9
 
 # Input
 HEADERS += \
@@ -50,15 +50,6 @@ SOURCES += \
            $$PHONON_DS9_DIR/qasyncreader.cpp \
            $$PHONON_DS9_DIR/qaudiocdreader.cpp \
            $$PHONON_DS9_DIR/qmeminputpin.cpp
-
-#the EVR renderer (only available on desktop)
-!wince*:SOURCES += $$PHONON_DS9_DIR/videorenderer_evr.cpp \
-                   $$PHONON_DS9_DIR/videorenderer_vmr9.cpp
-!wince*:HEADERS += $$PHONON_DS9_DIR/qevr9.h \
-                   $$PHONON_DS9_DIR/videorenderer_evr.h \
-                   $$PHONON_DS9_DIR/videorenderer_vmr9.h
-wince*:SOURCES  += $$PHONON_DS9_DIR/videorenderer_default.cpp
-wince*:HEADERS  += $$PHONON_DS9_DIR/videorenderer_default.h
 
 target.path = $$[QT_INSTALL_PLUGINS]/phonon_backend
 INSTALLS += target

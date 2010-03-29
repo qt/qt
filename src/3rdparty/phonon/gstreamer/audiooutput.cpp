@@ -125,6 +125,7 @@ void AudioOutput::setVolume(qreal newVolume)
 bool AudioOutput::setOutputDevice(int newDevice)
 {
     m_backend->logMessage(Q_FUNC_INFO + QString::number(newDevice), Backend::Info, this);
+
     if (newDevice == m_device)
         return true;
 
@@ -135,20 +136,11 @@ bool AudioOutput::setOutputDevice(int newDevice)
     }
 
     bool success = false;
-    const QList<AudioDevice> deviceList = m_backend->deviceManager()->audioOutputDevices();
-    int deviceIdx = -1;
-    for (int i=0; i<deviceList.size(); i++) {
-        if (deviceList.at(i).id == newDevice) {
-            deviceIdx = i;
-            break;
-        }
-    }
-
-    if (m_audioSink && deviceIdx >= 0) {
+    if (m_audioSink &&  newDevice >= 0) {
         // Save previous state
         GstState oldState = GST_STATE(m_audioSink);
         const QByteArray oldDeviceValue = GstHelper::property(m_audioSink, "device");
-        const QByteArray deviceId = deviceList.at(deviceIdx).gstId;
+        const QByteArray deviceId = m_backend->deviceManager()->gstId(newDevice);
         m_device = newDevice;
 
         // We test if the device can be opened by checking if it can go from NULL to READY state
@@ -170,7 +162,7 @@ bool AudioOutput::setOutputDevice(int newDevice)
                                   deviceId, Backend::Info, this);
         }
 
-        // Note the stopped state should not really be neccessary, but seems to be required to 
+        // Note the stopped state should not really be necessary, but seems to be required to
         // properly reset after changing the audio state
         if (root()) {
             QMetaObject::invokeMethod(root(), "setState", Qt::QueuedConnection, Q_ARG(State, StoppedState));

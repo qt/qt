@@ -25,10 +25,6 @@
 
 #include "medianode.h"
 
-#if QT_ALLOW_QUICKTIME
-    #include <QuickTime/QuickTime.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 namespace Phonon
@@ -42,10 +38,7 @@ namespace QT7
     class MediaObjectAudioNode;
 
     class MediaObject : public MediaNode,
-        public Phonon::MediaObjectInterface
-#ifndef QT_NO_PHONON_MEDIACONTROLLER
-        , public Phonon::AddonInterface
-#endif
+        public Phonon::MediaObjectInterface, public Phonon::AddonInterface
     {
         Q_OBJECT
         Q_INTERFACES(Phonon::MediaObjectInterface Phonon::AddonInterface)
@@ -99,10 +92,6 @@ namespace QT7
 
 		int videoOutputCount();
 
-#if QT_ALLOW_QUICKTIME
-        void displayLinkEvent();
-#endif
-
     signals:
         void stateChanged(Phonon::State,Phonon::State);
         void tick(qint64);
@@ -115,16 +104,6 @@ namespace QT7
         void totalTimeChanged(qint64);
         void metaDataChanged(QMultiMap<QString,QString>);
         void currentSourceChanged(const MediaSource &newSource);
-
-        // Add-on interface:
-        void availableSubtitlesChanged();
-        void availableAudioChannelsChanged();
-        void titleChanged(int);
-        void availableTitlesChanged(int);
-        void chapterChanged(int);
-        void availableChaptersChanged(int);
-        void angleChanged(int);
-        void availableAnglesChanged(int);
 
     protected:
         void mediaNodeEvent(const MediaNodeEvent *event);
@@ -139,14 +118,7 @@ namespace QT7
         QuickTimeVideoPlayer *m_nextVideoPlayer;
         QuickTimeAudioPlayer *m_nextAudioPlayer;
         MediaObjectAudioNode *m_mediaObjectAudioNode;
-
-#if QT_ALLOW_QUICKTIME
-        CVDisplayLinkRef m_displayLink;
-        QMutex m_displayLinkMutex;
-        bool m_pendingDisplayLinkEvent;
-        void startDisplayLink();
-        void stopDisplayLink();
-#endif
+        QuickTimeMetaData *m_metaData;
 
         qint32 m_tickInterval;
         qint32 m_transitionTime;
@@ -155,14 +127,12 @@ namespace QT7
         float m_percentageLoaded;
 
         int m_tickTimer;
-        int m_videoTimer;
-        int m_audioTimer;
+        int m_bufferTimer;
         int m_rapidTimer;
 
         bool m_waitNextSwap;
         int m_swapTimeLeft;
         QTime m_swapTime;
-        bool m_autoplayTitles;
 
         void synchAudioVideo();
         void updateCurrentTime();
@@ -171,7 +141,8 @@ namespace QT7
         void pause_internal();
         void play_internal();
         void setupAudioSystem();
-        void restartAudioVideoTimers();
+        void updateTimer(int &timer, int interval);
+        void bufferAudioVideo();
         void updateRapidly();
         void updateCrossFade();
         void updateAudioBuffers();
@@ -183,7 +154,6 @@ namespace QT7
 		void inspectVideoGraphRecursive(MediaNode *node, int &effectCount, int &outputCount);
         void inspectGraph();
         bool isCrossFading();
-        void setCurrentTrack(int track);
 
         QString m_errorString;
         Phonon::ErrorType m_errorType;

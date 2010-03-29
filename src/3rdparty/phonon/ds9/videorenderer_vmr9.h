@@ -19,6 +19,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #define PHONON_VIDEORENDERER_VMR9_H
 
 #include "abstractvideorenderer.h"
+#include "compointer.h"
 
 QT_BEGIN_NAMESPACE
 
