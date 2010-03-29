@@ -1,6 +1,6 @@
 #include <qimage.h>
 
-#include <private/qpaintengine_blitter_p.h>
+#include <private/qblittable_p.h>
 
 
 class QImageBlittable : public QBlittable
