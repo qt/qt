@@ -480,9 +480,12 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                             break;
                         }
                         if (t == qMetaTypeId<QDeclarativeListProperty<QObject> >()) {
+                            int listIndex = data[id].asInt();
+                            const List *list = listProperties.at(listIndex);
                             *reinterpret_cast<QDeclarativeListProperty<QObject> *>(a[0]) = 
-                                QDeclarativeListProperty<QObject>(object, (void *)&listProperties.at(data[id].asInt()), 
-                                                                  list_append, list_count, list_at, list_clear);
+                                QDeclarativeListProperty<QObject>(object, (void *)list,
+                                                                  list_append, list_count, list_at, 
+                                                                  list_clear);
                         }
 
                     } else if (c == QMetaObject::WriteProperty) {
