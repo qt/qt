@@ -44,7 +44,7 @@
 #include "qdeclarativeflickable_p_p.h"
 #include "qdeclarativevisualitemmodel_p.h"
 
-#include "qdeclarativeeasefollow_p_p.h"
+#include "qdeclarativesmoothedanimation_p_p.h"
 #include <qdeclarativeexpression.h>
 #include <qdeclarativeengine.h>
 #include <qdeclarativeguard_p.h>

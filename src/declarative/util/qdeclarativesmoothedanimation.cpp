@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeeasefollow_p.h"
-#include "qdeclarativeeasefollow_p_p.h"
+#include "qdeclarativesmoothedanimation_p.h"
+#include "qdeclarativesmoothedanimation_p_p.h"
 
 #include "qdeclarativeanimation_p_p.h"
 
@@ -52,7 +52,6 @@
 #include <QtCore/qdebug.h>
 
 #include <math.h>
-#include <QTimer>
 
 #define DELAY_STOP_TIMER_INTERVAL 32
 

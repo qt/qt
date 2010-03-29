@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEEASEFOLLOW_H
-#define QDECLARATIVEEASEFOLLOW_H
+#ifndef QDECLARATIVESMOOTHEDANIMATION_H
+#define QDECLARATIVESMOOTHEDANIMATION_H
 
 #include <qdeclarative.h>
 #include "qdeclarativeanimation_p.h"
@@ -101,4 +101,4 @@ QML_DECLARE_TYPE(QDeclarativeSmoothedAnimation);
 
 QT_END_HEADER
 
-#endif // QDECLARATIVEEASEFOLLOW_H
+#endif // QDECLARATIVESMOOTHEDANIMATION_H

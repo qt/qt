@@ -44,7 +44,6 @@
 
 #include <qdeclarativestate_p.h>
 #include <qdeclarativeopenmetaobject_p.h>
-#include <qdeclarativeeasefollow_p.h>
 #include <QDebug>
 #include <QEvent>
 #include <qlistmodelinterface_p.h>

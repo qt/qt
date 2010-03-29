@@ -41,16 +41,16 @@
 #include <qtest.h>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
-#include <private/qdeclarativeeasefollow_p.h>
+#include <private/qdeclarativesmoothedanimation_p.h>
 #include <private/qdeclarativerectangle_p.h>
 #include <private/qdeclarativevaluetype_p.h>
 #include "../../../shared/util.h"
 
-class tst_qdeclarativeeasefollow : public QObject
+class tst_qdeclarativesmoothedanimation : public QObject
 {
     Q_OBJECT
 public:
-    tst_qdeclarativeeasefollow();
+    tst_qdeclarativesmoothedanimation();
 
 private slots:
     void defaultValues();
@@ -64,14 +64,14 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qdeclarativeeasefollow::tst_qdeclarativeeasefollow()
+tst_qdeclarativesmoothedanimation::tst_qdeclarativesmoothedanimation()
 {
 }
 
-void tst_qdeclarativeeasefollow::defaultValues()
+void tst_qdeclarativesmoothedanimation::defaultValues()
 {
     QDeclarativeEngine engine;
-    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollow1.qml"));
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/smoothedanimation1.qml"));
     QDeclarativeSmoothedAnimation *obj = qobject_cast<QDeclarativeSmoothedAnimation*>(c.create());
 
     QVERIFY(obj != 0);
@@ -85,10 +85,10 @@ void tst_qdeclarativeeasefollow::defaultValues()
     delete obj;
 }
 
-void tst_qdeclarativeeasefollow::values()
+void tst_qdeclarativesmoothedanimation::values()
 {
     QDeclarativeEngine engine;
-    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollow2.qml"));
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/smoothedanimation2.qml"));
     QDeclarativeSmoothedAnimation *obj = qobject_cast<QDeclarativeSmoothedAnimation*>(c.create());
 
     QVERIFY(obj != 0);
@@ -102,10 +102,10 @@ void tst_qdeclarativeeasefollow::values()
     delete obj;
 }
 
-void tst_qdeclarativeeasefollow::disabled()
+void tst_qdeclarativesmoothedanimation::disabled()
 {
     QDeclarativeEngine engine;
-    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollow3.qml"));
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/smoothedanimation3.qml"));
     QDeclarativeSmoothedAnimation *obj = qobject_cast<QDeclarativeSmoothedAnimation*>(c.create());
 
     QVERIFY(obj != 0);
@@ -118,7 +118,7 @@ void tst_qdeclarativeeasefollow::disabled()
     delete obj;
 }
 
-void tst_qdeclarativeeasefollow::simpleAnimation()
+void tst_qdeclarativesmoothedanimation::simpleAnimation()
 {
     QDeclarativeRectangle rect;
     QDeclarativeSmoothedAnimation animation;
@@ -144,11 +144,11 @@ void tst_qdeclarativeeasefollow::simpleAnimation()
     QCOMPARE(rect.x(), qreal(100));
 }
 
-void tst_qdeclarativeeasefollow::valueSource()
+void tst_qdeclarativesmoothedanimation::valueSource()
 {
     QDeclarativeEngine engine;
 
-    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollowValueSource.qml"));
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/smoothedanimationValueSource.qml"));
 
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
     QVERIFY(rect);
@@ -174,11 +174,11 @@ void tst_qdeclarativeeasefollow::valueSource()
     QTRY_COMPARE(theRect->y(), qreal(200));
 }
 
-void tst_qdeclarativeeasefollow::behavior()
+void tst_qdeclarativesmoothedanimation::behavior()
 {
     QDeclarativeEngine engine;
 
-    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollowBehavior.qml"));
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/smoothedanimationBehavior.qml"));
 
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
     QVERIFY(rect);
@@ -202,6 +202,6 @@ void tst_qdeclarativeeasefollow::behavior()
     QTRY_COMPARE(theRect->y(), qreal(200));
 }
 
-QTEST_MAIN(tst_qdeclarativeeasefollow)
+QTEST_MAIN(tst_qdeclarativesmoothedanimation)
 
-#include "tst_qdeclarativeeasefollow.moc"
+#include "tst_qdeclarativesmoothedanimation.moc"

@@ -45,7 +45,7 @@
 #include "qdeclarativebehavior_p.h"
 #include "qdeclarativebind_p.h"
 #include "qdeclarativeconnections_p.h"
-#include "qdeclarativeeasefollow_p.h"
+#include "qdeclarativesmoothedanimation_p.h"
 #include "qdeclarativefontloader_p.h"
 #include "qdeclarativelistaccessor_p.h"
 #include "qdeclarativelistmodel_p.h"
