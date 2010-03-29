@@ -1193,7 +1193,7 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
     emit countChanged();
 }
 
-void QDeclarativePathView::itemsMoved(int from, int to, int count)
+void QDeclarativePathView::itemsMoved(int /*from*/, int /*to*/, int /*count*/)
 {
     Q_D(QDeclarativePathView);
     if (!d->isValid() || !isComponentComplete())
