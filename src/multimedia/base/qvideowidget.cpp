@@ -259,6 +259,7 @@ void QRendererVideoWidgetBackend::formatChanged(const QVideoSurfaceFormat &forma
     updateRects();
 
     m_widget->updateGeometry();
+    m_widget->update();
 }
 
 void QRendererVideoWidgetBackend::frameChanged()
@@ -521,6 +522,7 @@ void QVideoWidgetPrivate::_q_fullScreenChanged(bool fullScreen)
 void QVideoWidgetPrivate::_q_dimensionsChanged()
 {
     q_func()->updateGeometry();
+    q_func()->update();
 }
 
 /*!
