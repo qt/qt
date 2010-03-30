@@ -464,6 +464,7 @@ void QDeclarativeRectangle::drawRect(QPainter &p)
     filtering at the beginning of the animation and reenable it at the conclusion.
 
     \image rect-smooth.png
+    On this image, smooth is turned off on the top half and on on the bottom half.
 */
 
 QRectF QDeclarativeRectangle::boundingRect() const

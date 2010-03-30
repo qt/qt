@@ -38,10 +38,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSRangeException);
 
 static const HashTableValue JSRangeExceptionTableValues[5] =
 {
-    { "code", DontDelete|ReadOnly, (intptr_t)jsRangeExceptionCode, (intptr_t)0 },
-    { "name", DontDelete|ReadOnly, (intptr_t)jsRangeExceptionName, (intptr_t)0 },
-    { "message", DontDelete|ReadOnly, (intptr_t)jsRangeExceptionMessage, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsRangeExceptionConstructor, (intptr_t)0 },
+    { "code", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeExceptionCode), (intptr_t)0 },
+    { "name", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeExceptionName), (intptr_t)0 },
+    { "message", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeExceptionMessage), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeExceptionConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -56,8 +56,8 @@ static JSC_CONST_HASHTABLE HashTable JSRangeExceptionTable =
 
 static const HashTableValue JSRangeExceptionConstructorTableValues[3] =
 {
-    { "BAD_BOUNDARYPOINTS_ERR", DontDelete|ReadOnly, (intptr_t)jsRangeExceptionBAD_BOUNDARYPOINTS_ERR, (intptr_t)0 },
-    { "INVALID_NODE_TYPE_ERR", DontDelete|ReadOnly, (intptr_t)jsRangeExceptionINVALID_NODE_TYPE_ERR, (intptr_t)0 },
+    { "BAD_BOUNDARYPOINTS_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeExceptionBAD_BOUNDARYPOINTS_ERR), (intptr_t)0 },
+    { "INVALID_NODE_TYPE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeExceptionINVALID_NODE_TYPE_ERR), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -82,7 +82,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -105,9 +105,9 @@ bool JSRangeExceptionConstructor::getOwnPropertyDescriptor(ExecState* exec, cons
 
 static const HashTableValue JSRangeExceptionPrototypeTableValues[4] =
 {
-    { "BAD_BOUNDARYPOINTS_ERR", DontDelete|ReadOnly, (intptr_t)jsRangeExceptionBAD_BOUNDARYPOINTS_ERR, (intptr_t)0 },
-    { "INVALID_NODE_TYPE_ERR", DontDelete|ReadOnly, (intptr_t)jsRangeExceptionINVALID_NODE_TYPE_ERR, (intptr_t)0 },
-    { "toString", DontDelete|DontEnum|Function, (intptr_t)jsRangeExceptionPrototypeFunctionToString, (intptr_t)0 },
+    { "BAD_BOUNDARYPOINTS_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeExceptionBAD_BOUNDARYPOINTS_ERR), (intptr_t)0 },
+    { "INVALID_NODE_TYPE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeExceptionINVALID_NODE_TYPE_ERR), (intptr_t)0 },
+    { "toString", DontDelete|DontEnum|Function, (intptr_t)static_cast<NativeFunction>(jsRangeExceptionPrototypeFunctionToString), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -163,33 +163,36 @@ bool JSRangeException::getOwnPropertyDescriptor(ExecState* exec, const Identifie
     return getStaticValueDescriptor<JSRangeException, Base>(exec, &JSRangeExceptionTable, this, propertyName, descriptor);
 }
 
-JSValue jsRangeExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeExceptionCode(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSRangeException* castedThis = static_cast<JSRangeException*>(asObject(slot.slotBase()));
+    JSRangeException* castedThis = static_cast<JSRangeException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     RangeException* imp = static_cast<RangeException*>(castedThis->impl());
-    return jsNumber(exec, imp->code());
+    JSValue result = jsNumber(exec, imp->code());
+    return result;
 }
 
-JSValue jsRangeExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeExceptionName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSRangeException* castedThis = static_cast<JSRangeException*>(asObject(slot.slotBase()));
+    JSRangeException* castedThis = static_cast<JSRangeException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     RangeException* imp = static_cast<RangeException*>(castedThis->impl());
-    return jsString(exec, imp->name());
+    JSValue result = jsString(exec, imp->name());
+    return result;
 }
 
-JSValue jsRangeExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeExceptionMessage(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSRangeException* castedThis = static_cast<JSRangeException*>(asObject(slot.slotBase()));
+    JSRangeException* castedThis = static_cast<JSRangeException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     RangeException* imp = static_cast<RangeException*>(castedThis->impl());
-    return jsString(exec, imp->message());
+    JSValue result = jsString(exec, imp->message());
+    return result;
 }
 
-JSValue jsRangeExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeExceptionConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSRangeException* domObject = static_cast<JSRangeException*>(asObject(slot.slotBase()));
+    JSRangeException* domObject = static_cast<JSRangeException*>(asObject(slotBase));
     return JSRangeException::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSRangeException::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -212,12 +215,12 @@ JSValue JSC_HOST_CALL jsRangeExceptionPrototypeFunctionToString(ExecState* exec,
 
 // Constant getters
 
-JSValue jsRangeExceptionBAD_BOUNDARYPOINTS_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsRangeExceptionBAD_BOUNDARYPOINTS_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsRangeExceptionINVALID_NODE_TYPE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsRangeExceptionINVALID_NODE_TYPE_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }

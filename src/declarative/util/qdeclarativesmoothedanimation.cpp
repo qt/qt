@@ -69,6 +69,7 @@ QSmoothedAnimation::QSmoothedAnimation(QObject *parent)
 
 void QSmoothedAnimation::restart()
 {
+    initialVelocity = trackVelocity;
     if (state() != QAbstractAnimation::Running)
         start();
     else
@@ -224,6 +225,7 @@ void QSmoothedAnimation::init()
                 QDeclarativePropertyPrivate::write(target, to,
                                                    QDeclarativePropertyPrivate::BypassInterceptor
                                                    | QDeclarativePropertyPrivate::DontRemoveBinding);
+                stop();
                 return;
             case QDeclarativeSmoothedAnimation::Immediate:
                 initialVelocity = 0;
@@ -248,13 +250,14 @@ void QSmoothedAnimation::init()
 /*!
     \qmlclass SmoothedAnimation QDeclarativeSmoothedAnimation
     \since 4.7
+    \inherits NumberAnimation
     \brief The SmoothedAnimation element allows a property to smoothly track a value.
 
-    The SmoothedAnimation smoothly animates a property's value to a set target value
+    The SmoothedAnimation animates a property's value to a set target value
     using an ease in/out quad easing curve.  If the animation is restarted
     with a different target value, the easing curves used to animate to the old
-    and the new target values are spliced together to avoid any obvious visual
-    glitches.
+    and the new target values are smoothly spliced together to avoid any obvious
+    visual glitches by maintaining the current velocity.
 
     The property animation is configured by setting the velocity at which the
     animation should occur, or the duration that the animation should take.
@@ -270,7 +273,7 @@ void QSmoothedAnimation::init()
 
     The follow example shows one rectangle tracking the position of another.
 \code
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     width: 800; height: 600; color: "blue"
@@ -343,17 +346,14 @@ void QDeclarativeSmoothedAnimation::transition(QDeclarativeStateActions &actions
     QSet<QAbstractAnimation*> anims;
     for (int i = 0; i < d->actions->size(); i++) {
         QSmoothedAnimation *ease;
-        qreal trackVelocity;
         bool needsRestart;
         if (!d->activeAnimations.contains((*d->actions)[i].property)) {
             ease = new QSmoothedAnimation();
             d->wrapperGroup->addAnimation(ease);
             d->activeAnimations.insert((*d->actions)[i].property, ease);
-            trackVelocity = 0.0;
             needsRestart = false;
         } else {
             ease = d->activeAnimations.value((*d->actions)[i].property);
-            trackVelocity = ease->trackVelocity;
             needsRestart = true;
         }
 
@@ -366,8 +366,7 @@ void QDeclarativeSmoothedAnimation::transition(QDeclarativeStateActions &actions
         ease->velocity = d->anim->velocity;
         ease->userDuration = d->anim->userDuration;
 
-        ease->trackVelocity = trackVelocity;
-        ease->initialVelocity = trackVelocity;
+        ease->initialVelocity = ease->trackVelocity;
 
         if (needsRestart)
             ease->init();
@@ -458,14 +457,14 @@ void QDeclarativeSmoothedAnimation::setVelocity(qreal v)
 }
 
 /*!
-\qmlproperty qreal SmoothedAnimation::maximumEasingTime
+    \qmlproperty qreal SmoothedAnimation::maximumEasingTime
 
-This property specifies the maximum time, in msecs, an "eases" during the follow should take.
-Setting this property causes the velocity to "level out" after at a time.  Setting
-a negative value reverts to the normal mode of easing over the entire animation
-duration.
+    This property specifies the maximum time, in msecs, an "eases" during the follow should take.
+    Setting this property causes the velocity to "level out" after at a time.  Setting
+    a negative value reverts to the normal mode of easing over the entire animation
+    duration.
 
-The default value is -1.
+    The default value is -1.
 */
 int QDeclarativeSmoothedAnimation::maximumEasingTime() const
 {

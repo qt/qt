@@ -1,6 +1,4 @@
 /*
- * This file is part of the CSS implementation for KDE.
- *
  * Copyright (C) 1999-2003 Lars Knoll (knoll@kde.org)
  *               1999 Waldo Bastian (bastian@kde.org)
  * Copyright (C) 2004, 2006, 2007, 2008 Apple Inc. All rights reserved.
@@ -176,6 +174,7 @@ namespace WebCore {
             PseudoMediaControlsVolumeSliderContainer,
             PseudoMediaControlsCurrentTimeDisplay,
             PseudoMediaControlsTimeRemainingDisplay,
+            PseudoMediaControlsToggleClosedCaptions,
             PseudoMediaControlsTimeline,
             PseudoMediaControlsVolumeSlider,
             PseudoMediaControlsSeekBackButton,
@@ -184,7 +183,9 @@ namespace WebCore {
             PseudoMediaControlsReturnToRealtimeButton,
             PseudoMediaControlsStatusDisplay,
             PseudoMediaControlsFullscreenButton,
-            PseudoInputListButton
+            PseudoInputListButton,
+            PseudoInnerSpinButton,
+            PseudoOuterSpinButton,
         };
 
         PseudoType pseudoType() const
@@ -211,6 +212,13 @@ namespace WebCore {
         bool parseNth();
         bool matchNth(int count);
 
+        bool matchesPseudoElement() const 
+        { 
+            if (m_pseudoType == PseudoUnknown)
+                extractPseudoType();
+            return m_match == PseudoElement;
+        }
+
         Relation relation() const { return static_cast<Relation>(m_relation); }
 
         bool isLastInSelectorList() const { return m_isLastInSelectorList; }
@@ -230,7 +238,7 @@ namespace WebCore {
 
         void extractPseudoType() const;
 
-        struct RareData {
+        struct RareData : Noncopyable {
             RareData(CSSSelector* tagHistory)
                 : m_tagHistory(tagHistory)
                 , m_simpleSelector(0)

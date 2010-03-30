@@ -38,7 +38,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDOMParser);
 
 static const HashTableValue JSDOMParserTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsDOMParserConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMParserConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -109,7 +109,7 @@ bool JSDOMParserConstructor::getOwnPropertyDescriptor(ExecState* exec, const Ide
 
 static const HashTableValue JSDOMParserPrototypeTableValues[2] =
 {
-    { "parseFromString", DontDelete|Function, (intptr_t)jsDOMParserPrototypeFunctionParseFromString, (intptr_t)2 },
+    { "parseFromString", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsDOMParserPrototypeFunctionParseFromString), (intptr_t)2 },
     { 0, 0, 0, 0 }
 };
 
@@ -165,9 +165,9 @@ bool JSDOMParser::getOwnPropertyDescriptor(ExecState* exec, const Identifier& pr
     return getStaticValueDescriptor<JSDOMParser, Base>(exec, &JSDOMParserTable, this, propertyName, descriptor);
 }
 
-JSValue jsDOMParserConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMParserConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSDOMParser* domObject = static_cast<JSDOMParser*>(asObject(slot.slotBase()));
+    JSDOMParser* domObject = static_cast<JSDOMParser*>(asObject(slotBase));
     return JSDOMParser::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSDOMParser::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

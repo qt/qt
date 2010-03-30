@@ -49,7 +49,7 @@ stored on a disk or network resource, but can also be constructed directly from 
 Here is a simple QML document:
 
 \code
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     width: 240; height: 320; 
@@ -83,7 +83,7 @@ modifies the document prior to presentation to the QML runtime. \c import statem
 do not "include" code in the document, but instead instruct the QML runtime on how to 
 resolve type references found in the document.  Any type reference present in a QML 
 document - such as \c Rectangle and \c ListView - including those made within an 
-\l {JavaScript Block} or \l {Property Binding}s, are \e resolved based exclusively on the 
+\l {Inline JavaScript}{JavaScript block} or \l {Property Binding}s, are \e resolved based exclusively on the 
 import statements.  QML does not import any modules by default, so at least one \c import
 statement must be present or no elements will be available!
 
@@ -103,7 +103,7 @@ instantiated four times, each with a different value for its \c text property.
 <table><tr><td>
 \endraw
 \code
-import Qt 4.6
+import Qt 4.7
 
 BorderImage {
     property alias text: textElement.text
@@ -152,7 +152,7 @@ These final two examples are behaviorally identical to the original document.
 \row
 \o
 \code
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     width: 240; height: 320; 
@@ -170,7 +170,7 @@ Rectangle {
 \endcode
 \o
 \code
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     width: 240; height: 320; 

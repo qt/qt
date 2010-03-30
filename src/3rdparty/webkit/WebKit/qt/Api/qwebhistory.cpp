@@ -33,7 +33,7 @@
 
 enum {
     InitialHistoryVersion = 1,
-    DefaultHistoryVersion = InitialHistoryVersion
+    DefaultHistoryVersion = 2
 };
 
 /*!
@@ -524,7 +524,7 @@ QDataStream& operator>>(QDataStream& source, QWebHistory& history)
 
     source >> version;
 
-    if (version == 1) {
+    if (version <= 2) {
         int count;
         int currentIndex;
         source >> count >> currentIndex;

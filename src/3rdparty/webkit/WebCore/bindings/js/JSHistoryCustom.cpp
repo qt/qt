@@ -38,17 +38,17 @@ using namespace JSC;
 
 namespace WebCore {
 
-static JSValue nonCachingStaticBackFunctionGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot&)
+static JSValue nonCachingStaticBackFunctionGetter(ExecState* exec, JSValue, const Identifier& propertyName)
 {
     return new (exec) NativeFunctionWrapper(exec, exec->lexicalGlobalObject()->prototypeFunctionStructure(), 0, propertyName, jsHistoryPrototypeFunctionBack);
 }
 
-static JSValue nonCachingStaticForwardFunctionGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot&)
+static JSValue nonCachingStaticForwardFunctionGetter(ExecState* exec, JSValue, const Identifier& propertyName)
 {
     return new (exec) NativeFunctionWrapper(exec, exec->lexicalGlobalObject()->prototypeFunctionStructure(), 0, propertyName, jsHistoryPrototypeFunctionForward);
 }
 
-static JSValue nonCachingStaticGoFunctionGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot&)
+static JSValue nonCachingStaticGoFunctionGetter(ExecState* exec, JSValue, const Identifier& propertyName)
 {
     return new (exec) NativeFunctionWrapper(exec, exec->lexicalGlobalObject()->prototypeFunctionStructure(), 1, propertyName, jsHistoryPrototypeFunctionGo);
 }
@@ -95,15 +95,15 @@ bool JSHistory::getOwnPropertySlotDelegate(ExecState* exec, const Identifier& pr
 
 bool JSHistory::getOwnPropertyDescriptorDelegate(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
 {
-    // When accessing History cross-domain, functions are always the native built-in ones.
-    // See JSDOMWindow::getOwnPropertySlotDelegate for additional details.
-    
-    // Our custom code is only needed to implement the Window cross-domain scheme, so if access is
-    // allowed, return false so the normal lookup will take place.
-    String message;
-    if (allowsAccessFromFrame(exec, impl()->frame(), message))
-        return false;
-    
+    if (!impl()->frame()) {
+        descriptor.setUndefined();
+        return true;
+    }
+
+    // Throw out all cross domain access
+    if (!allowsAccessFromFrame(exec, impl()->frame()))
+        return true;
+
     // Check for the few functions that we allow, even when called cross-domain.
     const HashEntry* entry = JSHistoryPrototype::s_info.propHashTable(exec)->entry(exec, propertyName);
     if (entry) {
@@ -133,8 +133,7 @@ bool JSHistory::getOwnPropertyDescriptorDelegate(ExecState* exec, const Identifi
             return true;
         }
     }
-    
-    printErrorMessageForFrame(impl()->frame(), message);
+
     descriptor.setUndefined();
     return true;
 }
@@ -155,12 +154,60 @@ bool JSHistory::deleteProperty(ExecState* exec, const Identifier& propertyName)
     return Base::deleteProperty(exec, propertyName);
 }
 
-void JSHistory::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSHistory::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     // Only allow the history object to enumerated by frames in the same origin.
     if (!allowsAccessFromFrame(exec, impl()->frame()))
         return;
-    Base::getOwnPropertyNames(exec, propertyNames);
+    Base::getOwnPropertyNames(exec, propertyNames, mode);
+}
+
+JSValue JSHistory::pushState(ExecState* exec, const ArgList& args)
+{
+    RefPtr<SerializedScriptValue> historyState = SerializedScriptValue::create(exec, args.at(0));
+    if (exec->hadException())
+        return jsUndefined();
+
+    String title = valueToStringWithUndefinedOrNullCheck(exec, args.at(1));
+    if (exec->hadException())
+        return jsUndefined();
+        
+    String url;
+    if (args.size() > 2) {
+        url = valueToStringWithUndefinedOrNullCheck(exec, args.at(2));
+        if (exec->hadException())
+            return jsUndefined();
+    }
+
+    ExceptionCode ec = 0;
+    impl()->stateObjectAdded(historyState.release(), title, url, History::StateObjectPush, ec);
+    setDOMException(exec, ec);
+
+    return jsUndefined();
+}
+
+JSValue JSHistory::replaceState(ExecState* exec, const ArgList& args)
+{
+    RefPtr<SerializedScriptValue> historyState = SerializedScriptValue::create(exec, args.at(0));
+    if (exec->hadException())
+        return jsUndefined();
+
+    String title = valueToStringWithUndefinedOrNullCheck(exec, args.at(1));
+    if (exec->hadException())
+        return jsUndefined();
+        
+    String url;
+    if (args.size() > 2) {
+        url = valueToStringWithUndefinedOrNullCheck(exec, args.at(2));
+        if (exec->hadException())
+            return jsUndefined();
+    }
+
+    ExceptionCode ec = 0;
+    impl()->stateObjectAdded(historyState.release(), title, url, History::StateObjectReplace, ec);
+    setDOMException(exec, ec);
+
+    return jsUndefined();
 }
 
 } // namespace WebCore

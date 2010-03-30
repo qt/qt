@@ -31,9 +31,10 @@ using namespace JSC;
 
 namespace WebCore {
 
-JSEventListener::JSEventListener(JSObject* function, bool isAttribute, DOMWrapperWorld* isolatedWorld)
+JSEventListener::JSEventListener(JSObject* function, JSObject* wrapper, bool isAttribute, DOMWrapperWorld* isolatedWorld)
     : EventListener(JSEventListenerType)
     , m_jsFunction(function)
+    , m_wrapper(wrapper)
     , m_isAttribute(isAttribute)
     , m_isolatedWorld(isolatedWorld)
 {
@@ -43,9 +44,10 @@ JSEventListener::~JSEventListener()
 {
 }
 
-JSObject* JSEventListener::jsFunction(ScriptExecutionContext*) const
+JSObject* JSEventListener::initializeJSFunction(ScriptExecutionContext*) const
 {
-    return m_jsFunction;
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 void JSEventListener::markJSFunction(MarkStack& markStack)
@@ -81,18 +83,13 @@ void JSEventListener::handleEvent(ScriptExecutionContext* scriptExecutionContext
             return;
         // FIXME: Is this check needed for other contexts?
         ScriptController* script = frame->script();
-        if (!script->isEnabled() || script->isPaused())
+        if (!script->canExecuteScripts(AboutToExecuteScript) || script->isPaused())
             return;
     }
 
     ExecState* exec = globalObject->globalExec();
+    JSValue handleEventFunction = jsFunction->get(exec, Identifier(exec, "handleEvent"));
 
-    JSValue handleEventFunction;
-    {
-        // Switch worlds, just in case handleEvent is a getter and causes JS execution!
-        EnterDOMWrapperWorld worldEntry(exec, m_isolatedWorld.get());
-        handleEventFunction = jsFunction->get(exec, Identifier(exec, "handleEvent"));
-    }
     CallData callData;
     CallType callType = handleEventFunction.getCallData(callData);
     if (callType == CallTypeNone) {
@@ -114,8 +111,8 @@ void JSEventListener::handleEvent(ScriptExecutionContext* scriptExecutionContext
 
         globalData->timeoutChecker.start();
         JSValue retval = handleEventFunction
-            ? callInWorld(exec, handleEventFunction, callType, callData, jsFunction, args, m_isolatedWorld.get())
-            : callInWorld(exec, jsFunction, callType, callData, toJS(exec, globalObject, event->currentTarget()), args, m_isolatedWorld.get());
+            ? JSC::call(exec, handleEventFunction, callType, callData, jsFunction, args)
+            : JSC::call(exec, jsFunction, callType, callData, toJS(exec, globalObject, event->currentTarget()), args);
         globalData->timeoutChecker.stop();
 
         globalObject->setCurrentEvent(savedEvent);
@@ -132,8 +129,6 @@ void JSEventListener::handleEvent(ScriptExecutionContext* scriptExecutionContext
             }
         }
 
-        if (scriptExecutionContext->isDocument())
-            Document::updateStyleForAllDocuments();
         deref();
     }
 }
@@ -166,7 +161,7 @@ bool JSEventListener::reportError(ScriptExecutionContext* context, const String&
     JSValue thisValue = globalObject->toThisObject(exec);
 
     globalData->timeoutChecker.start();
-    JSValue returnValue = callInWorld(exec, jsFunction, callType, callData, thisValue, args, m_isolatedWorld.get());
+    JSValue returnValue = JSC::call(exec, jsFunction, callType, callData, thisValue, args);
     globalData->timeoutChecker.stop();
 
     // If an error occurs while handling the script error, it should be bubbled up.

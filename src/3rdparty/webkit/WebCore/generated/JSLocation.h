@@ -21,7 +21,6 @@
 #ifndef JSLocation_h
 #define JSLocation_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -47,11 +46,11 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
-    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties);
     virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction, unsigned attributes);
 
     // Custom attributes
@@ -90,7 +89,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     bool putDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::JSValue, JSC::PutPropertySlot&);
@@ -108,21 +107,21 @@ JSC::JSValue JSC_HOST_CALL jsLocationPrototypeFunctionReload(JSC::ExecState*, JS
 JSC::JSValue JSC_HOST_CALL jsLocationPrototypeFunctionToString(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsLocationHref(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsLocationHref(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSLocationHref(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsLocationProtocol(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsLocationProtocol(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSLocationProtocol(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsLocationHost(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsLocationHost(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSLocationHost(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsLocationHostname(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsLocationHostname(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSLocationHostname(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsLocationPort(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsLocationPort(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSLocationPort(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsLocationPathname(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsLocationPathname(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSLocationPathname(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsLocationSearch(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsLocationSearch(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSLocationSearch(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsLocationHash(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsLocationHash(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSLocationHash(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 
 } // namespace WebCore

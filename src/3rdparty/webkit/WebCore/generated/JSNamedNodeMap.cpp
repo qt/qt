@@ -40,8 +40,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSNamedNodeMap);
 
 static const HashTableValue JSNamedNodeMapTableValues[3] =
 {
-    { "length", DontDelete|ReadOnly, (intptr_t)jsNamedNodeMapLength, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsNamedNodeMapConstructor, (intptr_t)0 },
+    { "length", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNamedNodeMapLength), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNamedNodeMapConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -103,13 +103,13 @@ bool JSNamedNodeMapConstructor::getOwnPropertyDescriptor(ExecState* exec, const 
 
 static const HashTableValue JSNamedNodeMapPrototypeTableValues[8] =
 {
-    { "getNamedItem", DontDelete|Function, (intptr_t)jsNamedNodeMapPrototypeFunctionGetNamedItem, (intptr_t)1 },
-    { "setNamedItem", DontDelete|Function, (intptr_t)jsNamedNodeMapPrototypeFunctionSetNamedItem, (intptr_t)1 },
-    { "removeNamedItem", DontDelete|Function, (intptr_t)jsNamedNodeMapPrototypeFunctionRemoveNamedItem, (intptr_t)1 },
-    { "item", DontDelete|Function, (intptr_t)jsNamedNodeMapPrototypeFunctionItem, (intptr_t)1 },
-    { "getNamedItemNS", DontDelete|Function, (intptr_t)jsNamedNodeMapPrototypeFunctionGetNamedItemNS, (intptr_t)2 },
-    { "setNamedItemNS", DontDelete|Function, (intptr_t)jsNamedNodeMapPrototypeFunctionSetNamedItemNS, (intptr_t)1 },
-    { "removeNamedItemNS", DontDelete|Function, (intptr_t)jsNamedNodeMapPrototypeFunctionRemoveNamedItemNS, (intptr_t)2 },
+    { "getNamedItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsNamedNodeMapPrototypeFunctionGetNamedItem), (intptr_t)1 },
+    { "setNamedItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsNamedNodeMapPrototypeFunctionSetNamedItem), (intptr_t)1 },
+    { "removeNamedItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsNamedNodeMapPrototypeFunctionRemoveNamedItem), (intptr_t)1 },
+    { "item", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsNamedNodeMapPrototypeFunctionItem), (intptr_t)1 },
+    { "getNamedItemNS", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsNamedNodeMapPrototypeFunctionGetNamedItemNS), (intptr_t)2 },
+    { "setNamedItemNS", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsNamedNodeMapPrototypeFunctionSetNamedItemNS), (intptr_t)1 },
+    { "removeNamedItemNS", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsNamedNodeMapPrototypeFunctionRemoveNamedItemNS), (intptr_t)2 },
     { 0, 0, 0, 0 }
 };
 
@@ -218,24 +218,25 @@ bool JSNamedNodeMap::getOwnPropertySlot(ExecState* exec, unsigned propertyName, 
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValue jsNamedNodeMapLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNamedNodeMapLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNamedNodeMap* castedThis = static_cast<JSNamedNodeMap*>(asObject(slot.slotBase()));
+    JSNamedNodeMap* castedThis = static_cast<JSNamedNodeMap*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     NamedNodeMap* imp = static_cast<NamedNodeMap*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
-JSValue jsNamedNodeMapConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNamedNodeMapConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNamedNodeMap* domObject = static_cast<JSNamedNodeMap*>(asObject(slot.slotBase()));
+    JSNamedNodeMap* domObject = static_cast<JSNamedNodeMap*>(asObject(slotBase));
     return JSNamedNodeMap::getConstructor(exec, domObject->globalObject());
 }
-void JSNamedNodeMap::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSNamedNodeMap::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<NamedNodeMap*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSNamedNodeMap::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -352,10 +353,10 @@ JSValue JSC_HOST_CALL jsNamedNodeMapPrototypeFunctionRemoveNamedItemNS(ExecState
 }
 
 
-JSValue JSNamedNodeMap::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue JSNamedNodeMap::indexGetter(ExecState* exec, JSValue slotBase, unsigned index)
 {
-    JSNamedNodeMap* thisObj = static_cast<JSNamedNodeMap*>(asObject(slot.slotBase()));
-    return toJS(exec, thisObj->globalObject(), static_cast<NamedNodeMap*>(thisObj->impl())->item(slot.index()));
+    JSNamedNodeMap* thisObj = static_cast<JSNamedNodeMap*>(asObject(slotBase));
+    return toJS(exec, thisObj->globalObject(), static_cast<NamedNodeMap*>(thisObj->impl())->item(index));
 }
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, NamedNodeMap* object)
 {

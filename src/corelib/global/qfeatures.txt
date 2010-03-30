@@ -1360,6 +1360,15 @@ Requires: PROPERTIES
 Name: ActiveQt
 SeeAlso: ???
 
+# D-Bus
+
+Feature: DBUS
+Description: Provides classes for D-Bus.
+Section: D-Bus
+Requires: PROPERTIES
+Name: QtDBus module
+SeeAlso: ???
+
 # Phonon
 
 Feature: PHONON_PLATFORMPLUGIN

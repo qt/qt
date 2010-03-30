@@ -111,7 +111,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
     // depending on if the pen is cosmetic or not.
     //
     // The curvyness value of PI/14 was based on,
-    // arcLength=2*PI*r/4=PI/2 and splitting length into somewhere
+    // arcLength = 2*PI*r/4 = PI*r/2 and splitting length into somewhere
     // between 3 and 8 where 5 seemed to be give pretty good results
     // hence: Q_PI/14. Lower divisors will give more detail at the
     // direct cost of performance.
@@ -144,11 +144,17 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
     m_cos_theta = qFastCos(Q_PI / m_roundness);
 
     const qreal *endPts = pts + (count<<1);
-    const qreal *startPts;
+    const qreal *startPts = 0;
 
     Qt::PenCapStyle cap = m_cap_style;
 
     if (!types) {
+        // skip duplicate points
+        while((pts + 2) < endPts && pts[0] == pts[2] && pts[1] == pts[3])
+            pts += 2;
+        if ((pts + 2) == endPts)
+            return;
+
         startPts = pts;
 
         bool endsAtStart = startPts[0] == *(endPts-2) && startPts[1] == *(endPts-1);
@@ -161,15 +167,17 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
         lineTo(pts);
         pts += 2;
         while (pts < endPts) {
-            join(pts);
-            lineTo(pts);
+            if (m_cx != pts[0] || m_cy != pts[1]) {
+                join(pts);
+                lineTo(pts);
+            }
             pts += 2;
         }
 
         endCapOrJoinClosed(startPts, pts-2, path.hasImplicitClose(), endsAtStart);
 
     } else {
-        bool endsAtStart;
+        bool endsAtStart = false;
         while (pts < endPts) {
             switch (*types) {
             case QPainterPath::MoveToElement: {
@@ -487,6 +495,8 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
     const QPainterPath::ElementType *types = path.elements();
     int count = path.elementCount();
 
+    bool cosmetic = pen.isCosmetic();
+
     m_points.reset();
     m_types.reset();
 
@@ -495,10 +505,26 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
         width = 1;
 
     m_dash_stroker.setDashPattern(pen.dashPattern());
-    m_dash_stroker.setStrokeWidth(pen.isCosmetic() ? width * m_inv_scale : width);
+    m_dash_stroker.setStrokeWidth(cosmetic ? width * m_inv_scale : width);
     m_dash_stroker.setMiterLimit(pen.miterLimit());
     m_dash_stroker.setClipRect(clip);
-    qreal curvyness = sqrt(width) * m_inv_scale / 8;
+
+    float curvynessAdd, curvynessMul, roundness = 0;
+
+    // simplfy pens that are thin in device size (2px wide or less)
+    if (width < 2.5 && (cosmetic || m_inv_scale == 1)) {
+        curvynessAdd = 0.5;
+        curvynessMul = CURVE_FLATNESS / m_inv_scale;
+        roundness = 1;
+    } else if (cosmetic) {
+        curvynessAdd= width / 2;
+        curvynessMul= CURVE_FLATNESS;
+        roundness = qMax<int>(4, width * CURVE_FLATNESS);
+    } else {
+        curvynessAdd = width * m_inv_scale;
+        curvynessMul = CURVE_FLATNESS / m_inv_scale;
+        roundness = qMax<int>(4, width * curvynessMul);
+    }
 
     if (count < 2)
         return;
@@ -533,9 +559,11 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
                                                 *(((const QPointF *) pts) + 1),
                                                 *(((const QPointF *) pts) + 2));
                 QRectF bounds = b.bounds();
-                int threshold = qMin<float>(64, qMax(bounds.width(), bounds.height()) * curvyness);
+                float rad = qMax(bounds.width(), bounds.height());
+                int threshold = qMin<float>(64, (rad + curvynessAdd) * curvynessMul);
                 if (threshold < 4)
                     threshold = 4;
+
                 qreal threshold_minus_1 = threshold - 1;
                 for (int i=0; i<threshold; ++i) {
                     QPointF pt = b.pointAt(i / threshold_minus_1);

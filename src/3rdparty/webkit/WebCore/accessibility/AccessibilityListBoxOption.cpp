@@ -34,12 +34,12 @@
 #include "Element.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
-#include "HTMLOptionElement.h"
 #include "HTMLOptGroupElement.h"
+#include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
 #include "IntRect.h"
-#include "RenderObject.h"
 #include "RenderListBox.h"
+#include "RenderObject.h"
 
 using namespace std;
 
@@ -105,6 +105,22 @@ IntRect AccessibilityListBoxOption::elementRect() const
     return rect;
 }
 
+bool AccessibilityListBoxOption::accessibilityIsIgnored() const
+{
+    if (!m_optionElement)
+        return true;
+    
+    if (equalIgnoringCase(getAttribute(m_optionElement, aria_hiddenAttr), "true"))
+        return true;
+    
+    return parentObject()->accessibilityIsIgnored();
+}
+    
+String AccessibilityListBoxOption::language() const
+{
+    return AccessibilityObject::language(m_optionElement);
+}
+
 bool AccessibilityListBoxOption::canSetSelectedAttribute() const
 {
     if (!m_optionElement)
@@ -127,6 +143,10 @@ String AccessibilityListBoxOption::stringValue() const
 {
     if (!m_optionElement)
         return String();
+    
+    const AtomicString& ariaLabel = getAttribute(m_optionElement, aria_labelAttr);
+    if (!ariaLabel.isNull())
+        return ariaLabel;
     
     if (m_optionElement->hasTagName(optionTag))
         return static_cast<HTMLOptionElement*>(m_optionElement)->text();

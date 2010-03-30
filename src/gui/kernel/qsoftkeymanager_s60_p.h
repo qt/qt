@@ -78,6 +78,7 @@ public:
     bool handleCommand(int command);
 
 private:
+    void tryDisplayMenuBarL();
     bool skipCbaUpdate();
     void ensureCbaVisibilityAndResponsiviness(CEikButtonGroupContainer &cba);
     void clearSoftkeys(CEikButtonGroupContainer &cba);

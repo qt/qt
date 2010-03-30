@@ -68,6 +68,7 @@ private slots:
     void reassignedAnimation();
     void disabled();
     void dontStart();
+    void startup();
 };
 
 void tst_qdeclarativebehaviors::simpleBehavior()
@@ -322,6 +323,21 @@ void tst_qdeclarativebehaviors::dontStart()
     QDeclarativeAbstractAnimation *myAnim = rect->findChild<QDeclarativeAbstractAnimation*>("MyAnim");
     QVERIFY(myAnim && myAnim->qtAnimation());
     QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
+
+    delete rect;
+}
+
+void tst_qdeclarativebehaviors::startup()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/startup.qml"));
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect);
+
+    QDeclarativeRectangle *innerRect = rect->findChild<QDeclarativeRectangle*>("innerRect");
+    QVERIFY(innerRect);
+
+    QCOMPARE(innerRect->x(), qreal(100));    //should be set immediately
 
     delete rect;
 }

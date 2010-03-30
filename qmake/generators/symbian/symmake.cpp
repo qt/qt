@@ -68,12 +68,8 @@
 #define MMP_TARGET "TARGET"
 #define MMP_TARGETTYPE "TARGETTYPE"
 #define MMP_SECUREID "SECUREID"
-#define MMP_OPTION_CW "OPTION CW"
-#define MMP_OPTION_ARMCC "OPTION ARMCC"
-#define MMP_OPTION_GCCE "OPTION GCCE"
-#define MMP_LINKEROPTION_CW "LINKEROPTION CW"
-#define MMP_LINKEROPTION_ARMCC "LINKEROPTION ARMCC"
-#define MMP_LINKEROPTION_GCCE "LINKEROPTION GCCE"
+#define MMP_OPTION "OPTION"
+#define MMP_LINKEROPTION "LINKEROPTION"
 #define MMP_CAPABILITY "CAPABILITY"
 #define MMP_EPOCALLOWDLLDATA "EPOCALLOWDLLDATA"
 #define MMP_EPOCHEAPSIZE "EPOCHEAPSIZE"
@@ -83,6 +79,10 @@
 #define MMP_VERSION "VERSION"
 #define MMP_START_RESOURCE "START RESOURCE"
 #define MMP_END_RESOURCE "END"
+
+#define VAR_CXXFLAGS "QMAKE_CXXFLAGS"
+#define VAR_CFLAGS "QMAKE_CFLAGS"
+#define VAR_LFLAGS "QMAKE_LFLAGS"
 
 QString SymbianMakefileGenerator::fixPathForMmp(const QString& origPath, const QDir& parentDir)
 {
@@ -426,9 +426,7 @@ void SymbianMakefileGenerator::initMmpVariables()
 
     overridableMmpKeywords << QLatin1String(MMP_TARGETTYPE) << QLatin1String(MMP_EPOCHEAPSIZE);
     restrictableMmpKeywords << QLatin1String(MMP_TARGET) << QLatin1String(MMP_SECUREID)
-       << QLatin1String(MMP_OPTION_CW) << QLatin1String(MMP_OPTION_ARMCC)
-       << QLatin1String(MMP_OPTION_GCCE) << QLatin1String(MMP_LINKEROPTION_CW)
-       << QLatin1String(MMP_LINKEROPTION_ARMCC) << QLatin1String(MMP_LINKEROPTION_GCCE)
+       << QLatin1String(MMP_OPTION) << QLatin1String(MMP_LINKEROPTION)
        << QLatin1String(MMP_CAPABILITY) << QLatin1String(MMP_EPOCALLOWDLLDATA)
        << QLatin1String(MMP_EPOCSTACKSIZE) << QLatin1String(MMP_UID)
        << QLatin1String(MMP_VENDORID) << QLatin1String(MMP_VERSION);
@@ -778,119 +776,64 @@ void SymbianMakefileGenerator::writeMmpFileCapabilityPart(QTextStream& t)
     t << endl << endl;
 }
 
-void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
+void SymbianMakefileGenerator::writeMmpFileConditionalOptions(QTextStream& t,
+                                                              const QString &optionType,
+                                                              const QString &optionTag,
+                                                              const QString &variableBase)
 {
-    QString cw, armcc, gcce;
-    QString cwlink, armlink, gccelink;
-
-    if (0 != project->values("QMAKE_CXXFLAGS.CW").size()) {
-        cw.append(project->values("QMAKE_CXXFLAGS.CW").join(" "));
-        cw.append(" ");
-    }
-
-    if (0 != project->values("QMAKE_CXXFLAGS.ARMCC").size()) {
-        armcc.append(project->values("QMAKE_CXXFLAGS.ARMCC").join(" "));
-        armcc.append(" ");
-    }
-
-    if (0 != project->values("QMAKE_CXXFLAGS.GCCE").size()) {
-        gcce.append(project->values("QMAKE_CXXFLAGS.GCCE").join(" "));
-        gcce.append(" ");
-    }
-
-    if (0 != project->values("QMAKE_CFLAGS.CW").size()) {
-        cw.append(project->values("QMAKE_CFLAGS.CW").join(" "));
-        cw.append(" ");
-    }
-
-    if (0 != project->values("QMAKE_CFLAGS.ARMCC").size()) {
-        armcc.append(project->values("QMAKE_CFLAGS.ARMCC").join(" "));
-        armcc.append(" ");
-    }
-
-    if (0 != project->values("QMAKE_CFLAGS.GCCE").size()) {
-        gcce.append(project->values("QMAKE_CXXFLAGS.GCCE").join(" "));
-        gcce.append(" ");
-    }
-
-    if (0 != project->values("QMAKE_CXXFLAGS").size()) {
-        cw.append(project->values("QMAKE_CXXFLAGS").join(" "));
-        cw.append(" ");
-        armcc.append(project->values("QMAKE_CXXFLAGS").join(" "));
-        armcc.append(" ");
-        gcce.append(project->values("QMAKE_CXXFLAGS").join(" "));
-        gcce.append(" ");
-    }
-
-    if (0 != project->values("QMAKE_CFLAGS").size()) {
-        cw.append(project->values("QMAKE_CFLAGS").join(" "));
-        cw.append(" ");
-        armcc.append(project->values("QMAKE_CFLAGS").join(" "));
-        armcc.append(" ");
-        gcce.append(project->values("QMAKE_CFLAGS").join(" "));
-        gcce.append(" ");
-    }
-
-    if (0 != project->values("QMAKE_LFLAGS.CW").size()) {
-        cwlink.append(project->values("QMAKE_LFLAGS.CW").join(" "));
-        cwlink.append(" ");
-    }
-
-    if (0 != project->values("QMAKE_LFLAGS.ARMCC").size()) {
-        armlink.append(project->values("QMAKE_LFLAGS.ARMCC").join(" "));
-        armlink.append(" ");
-    }
-
-    if (0 != project->values("QMAKE_LFLAGS.GCCE").size()) {
-        gccelink.append(project->values("QMAKE_LFLAGS.GCCE").join(" "));
-        gccelink.append(" ");
-    }
-
-    if (0 != project->values("QMAKE_LFLAGS").size()) {
-        cwlink.append(project->values("QMAKE_LFLAGS").join(" "));
-        cwlink.append(" ");
-        armlink.append(project->values("QMAKE_LFLAGS").join(" "));
-        armlink.append(" ");
-        gccelink.append(project->values("QMAKE_LFLAGS").join(" "));
-        gccelink.append(" ");
-    }
-
-    if (!cw.isEmpty() && cw[cw.size()-1] == ' ')
-        cw.chop(1);
-    if (!armcc.isEmpty() && armcc[armcc.size()-1] == ' ')
-        armcc.chop(1);
-    if (!gcce.isEmpty() && gcce[gcce.size()-1] == ' ')
-        gcce.chop(1);
-    if (!cwlink.isEmpty() && cwlink[cwlink.size()-1] == ' ')
-        cwlink.chop(1);
-    if (!armlink.isEmpty() && armlink[armlink.size()-1] == ' ')
-        armlink.chop(1);
-    if (!gccelink.isEmpty() && gccelink[gccelink.size()-1] == ' ')
-        gccelink.chop(1);
-
-    if (!cw.isEmpty())
-        t << MMP_OPTION_CW " " << cw <<  endl;
-    if (!armcc.isEmpty())
-        t << MMP_OPTION_ARMCC " " << armcc <<  endl;
-
-    foreach(QString armccVersion, project->values("VERSION_FLAGS.ARMCC")) {
-        QStringList currentValues = project->values("QMAKE_CXXFLAGS." + armccVersion);
+    foreach(QString compilerVersion, project->values("VERSION_FLAGS." + optionTag)) {
+        QStringList currentValues = project->values(variableBase + "." + compilerVersion);
         if (currentValues.size()) {
-            t << "#if defined(" << armccVersion << ")" << endl;
-            t << MMP_OPTION_ARMCC " " << currentValues.join(" ") <<  endl;
+            t << "#if defined(" << compilerVersion << ")" << endl;
+            t << optionType << " " << optionTag << " " << currentValues.join(" ") <<  endl;
             t << "#endif" << endl;
         }
     }
+}
 
-    if (!gcce.isEmpty())
-        t << MMP_OPTION_GCCE " " << gcce <<  endl;
+void SymbianMakefileGenerator::writeMmpFileSimpleOption(QTextStream& t,
+                                                        const QString &optionType,
+                                                        const QString &optionTag,
+                                                        const QString &options)
+{
+    QString trimmedOptions = options.trimmed();
+    if (!trimmedOptions.isEmpty())
+        t << optionType << " " << optionTag << " " << trimmedOptions << endl;
+}
 
-    if (!cwlink.isEmpty())
-        t << MMP_LINKEROPTION_CW " " << cwlink <<  endl;
-    if (!armlink.isEmpty())
-        t << MMP_LINKEROPTION_ARMCC " " << armlink <<  endl;
-    if (!gccelink.isEmpty())
-        t << MMP_LINKEROPTION_GCCE " " << gccelink <<  endl;
+void SymbianMakefileGenerator::appendMmpFileOptions(QString &options, const QStringList &list)
+{
+    if (list.size()) {
+        options.append(list.join(" "));
+        options.append(" ");
+    }
+}
+
+void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
+{
+    QStringList keywords =  project->values("MMP_OPTION_KEYWORDS");
+    QStringList commonCxxFlags = project->values(VAR_CXXFLAGS);
+    QStringList commonCFlags = project->values(VAR_CFLAGS);
+    QStringList commonLFlags = project->values(VAR_LFLAGS);
+
+    foreach(QString item, keywords) {
+        QString compilerOption;
+        QString linkerOption;
+
+        appendMmpFileOptions(compilerOption, project->values(VAR_CXXFLAGS "." + item));
+        appendMmpFileOptions(compilerOption, project->values(VAR_CFLAGS "." + item));
+        appendMmpFileOptions(compilerOption, commonCxxFlags);
+        appendMmpFileOptions(compilerOption, commonCFlags);
+
+        appendMmpFileOptions(linkerOption, project->values(VAR_LFLAGS "."  + item));
+        appendMmpFileOptions(linkerOption, commonLFlags);
+
+        writeMmpFileSimpleOption(t, MMP_OPTION, item, compilerOption);
+        writeMmpFileSimpleOption(t, MMP_LINKEROPTION, item, linkerOption);
+
+        writeMmpFileConditionalOptions(t, MMP_OPTION, item, VAR_CXXFLAGS);
+        writeMmpFileConditionalOptions(t, MMP_LINKEROPTION, item, VAR_LFLAGS);
+    }
 
     t << endl;
 }

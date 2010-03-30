@@ -64,8 +64,6 @@ class QTabWidget;
 class QStackedWidget;
 class QToolBox;
 class QToolBar;
-class QTreeView;
-class QTableView;
 class QDesignerDockWidget;
 class QLayoutWidget;
 class QWizardPage;
@@ -138,8 +136,6 @@ protected:
     DomWidget *saveWidget(QWidget *widget, QDesignerContainerExtension *container, DomWidget *ui_parentWidget);
     DomWidget *saveWidget(QToolBar *toolBar, DomWidget *ui_parentWidget);
     DomWidget *saveWidget(QDesignerDockWidget *dockWidget, DomWidget *ui_parentWidget);
-    DomWidget *saveWidget(QTreeView *treeView, DomWidget *ui_parentWidget);
-    DomWidget *saveWidget(QTableView *tableView, DomWidget *ui_parentWidget);
     DomWidget *saveWidget(QWizardPage *wizardPage, DomWidget *ui_parentWidget);
 
     virtual DomCustomWidgets *saveCustomWidgets();

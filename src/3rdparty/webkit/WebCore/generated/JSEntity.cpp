@@ -35,10 +35,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSEntity);
 
 static const HashTableValue JSEntityTableValues[5] =
 {
-    { "publicId", DontDelete|ReadOnly, (intptr_t)jsEntityPublicId, (intptr_t)0 },
-    { "systemId", DontDelete|ReadOnly, (intptr_t)jsEntitySystemId, (intptr_t)0 },
-    { "notationName", DontDelete|ReadOnly, (intptr_t)jsEntityNotationName, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsEntityConstructor, (intptr_t)0 },
+    { "publicId", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsEntityPublicId), (intptr_t)0 },
+    { "systemId", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsEntitySystemId), (intptr_t)0 },
+    { "notationName", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsEntityNotationName), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsEntityConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -139,33 +139,36 @@ bool JSEntity::getOwnPropertyDescriptor(ExecState* exec, const Identifier& prope
     return getStaticValueDescriptor<JSEntity, Base>(exec, &JSEntityTable, this, propertyName, descriptor);
 }
 
-JSValue jsEntityPublicId(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEntityPublicId(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSEntity* castedThis = static_cast<JSEntity*>(asObject(slot.slotBase()));
+    JSEntity* castedThis = static_cast<JSEntity*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Entity* imp = static_cast<Entity*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->publicId());
+    JSValue result = jsStringOrNull(exec, imp->publicId());
+    return result;
 }
 
-JSValue jsEntitySystemId(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEntitySystemId(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSEntity* castedThis = static_cast<JSEntity*>(asObject(slot.slotBase()));
+    JSEntity* castedThis = static_cast<JSEntity*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Entity* imp = static_cast<Entity*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->systemId());
+    JSValue result = jsStringOrNull(exec, imp->systemId());
+    return result;
 }
 
-JSValue jsEntityNotationName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEntityNotationName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSEntity* castedThis = static_cast<JSEntity*>(asObject(slot.slotBase()));
+    JSEntity* castedThis = static_cast<JSEntity*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Entity* imp = static_cast<Entity*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->notationName());
+    JSValue result = jsStringOrNull(exec, imp->notationName());
+    return result;
 }
 
-JSValue jsEntityConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEntityConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSEntity* domObject = static_cast<JSEntity*>(asObject(slot.slotBase()));
+    JSEntity* domObject = static_cast<JSEntity*>(asObject(slotBase));
     return JSEntity::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSEntity::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

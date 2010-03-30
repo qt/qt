@@ -23,8 +23,6 @@
 #ifndef JSAPIValueWrapper_h
 #define JSAPIValueWrapper_h
 
-#include <wtf/Platform.h>
-
 #include "JSCell.h"
 #include "CallFrame.h"
 
@@ -39,7 +37,7 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(CompoundType, OverridesMarkChildren | OverridesGetPropertyNames));
+            return Structure::create(prototype, TypeInfo(CompoundType, OverridesMarkChildren | OverridesGetPropertyNames), AnonymousSlotCount);
         }
 
         

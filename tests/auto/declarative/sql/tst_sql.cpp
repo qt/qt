@@ -197,11 +197,13 @@ void tst_sql::testQml()
 
     QString qml=
         "import Qt 4.6\n"
-        "Text { Script { source: \""+jsfile+"\" } text: test() }";
+        "import \""+jsfile+"\" as JS\n"
+        "Text { text: JS.test() }";
 
     engine->setOfflineStoragePath(dbDir());
     QDeclarativeComponent component(engine);
     component.setData(qml.toUtf8(), QUrl::fromLocalFile(SRCDIR "/empty.qml")); // just a file for relative local imports
+    QVERIFY(!component.isError());
     QDeclarativeText *text = qobject_cast<QDeclarativeText*>(component.create());
     QVERIFY(text != 0);
     QCOMPARE(text->text(),QString("passed"));

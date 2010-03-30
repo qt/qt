@@ -21,7 +21,6 @@
 #ifndef JSNodeFilter_h
 #define JSNodeFilter_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -43,7 +42,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -73,7 +72,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSNodeFilterPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -85,25 +84,25 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsNodeFilterPrototypeFunctionAcceptNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsNodeFilterConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsNodeFilterConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 // Constants
 
-JSC::JSValue jsNodeFilterFILTER_ACCEPT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterFILTER_REJECT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterFILTER_SKIP(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_ALL(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_ELEMENT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_ATTRIBUTE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_TEXT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_CDATA_SECTION(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_ENTITY_REFERENCE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_ENTITY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_PROCESSING_INSTRUCTION(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_COMMENT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_DOCUMENT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_DOCUMENT_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_DOCUMENT_FRAGMENT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeFilterSHOW_NOTATION(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsNodeFilterFILTER_ACCEPT(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterFILTER_REJECT(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterFILTER_SKIP(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_ALL(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_ELEMENT(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_ATTRIBUTE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_TEXT(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_CDATA_SECTION(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_ENTITY_REFERENCE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_ENTITY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_PROCESSING_INSTRUCTION(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_COMMENT(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_DOCUMENT(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_DOCUMENT_TYPE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_DOCUMENT_FRAGMENT(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeFilterSHOW_NOTATION(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

@@ -233,8 +233,8 @@ static void initializeMediaTypeMaps()
     static const TypeExtensionPair pairs[] = {
     
         // Ogg
-        { "application/ogg", "ogg" },
         { "application/ogg", "ogx" },
+        { "audio/ogg", "ogg" },
         { "audio/ogg", "oga" },
         { "video/ogg", "ogv" },
 

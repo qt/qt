@@ -578,6 +578,11 @@ void tst_QDeclarativeGridView::moved()
         QCOMPARE(number->text(), model.number(i));
     }
 
+    // ensure content position is stable
+    gridview->setContentY(0);
+    model.moveItem(10, 0);
+    QVERIFY(gridview->contentY() == 0);
+
     delete canvas;
 }
 

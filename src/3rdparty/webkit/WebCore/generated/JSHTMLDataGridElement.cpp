@@ -39,12 +39,12 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLDataGridElement);
 
 static const HashTableValue JSHTMLDataGridElementTableValues[7] =
 {
-    { "dataSource", DontDelete, (intptr_t)jsHTMLDataGridElementDataSource, (intptr_t)setJSHTMLDataGridElementDataSource },
-    { "columns", DontDelete|ReadOnly, (intptr_t)jsHTMLDataGridElementColumns, (intptr_t)0 },
-    { "autofocus", DontDelete, (intptr_t)jsHTMLDataGridElementAutofocus, (intptr_t)setJSHTMLDataGridElementAutofocus },
-    { "disabled", DontDelete, (intptr_t)jsHTMLDataGridElementDisabled, (intptr_t)setJSHTMLDataGridElementDisabled },
-    { "multiple", DontDelete, (intptr_t)jsHTMLDataGridElementMultiple, (intptr_t)setJSHTMLDataGridElementMultiple },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLDataGridElementConstructor, (intptr_t)0 },
+    { "dataSource", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridElementDataSource), (intptr_t)setJSHTMLDataGridElementDataSource },
+    { "columns", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridElementColumns), (intptr_t)0 },
+    { "autofocus", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridElementAutofocus), (intptr_t)setJSHTMLDataGridElementAutofocus },
+    { "disabled", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridElementDisabled), (intptr_t)setJSHTMLDataGridElementDisabled },
+    { "multiple", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridElementMultiple), (intptr_t)setJSHTMLDataGridElementMultiple },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -83,7 +83,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -145,47 +145,51 @@ bool JSHTMLDataGridElement::getOwnPropertyDescriptor(ExecState* exec, const Iden
     return getStaticValueDescriptor<JSHTMLDataGridElement, Base>(exec, &JSHTMLDataGridElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLDataGridElementDataSource(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridElementDataSource(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slotBase));
     return castedThis->dataSource(exec);
 }
 
-JSValue jsHTMLDataGridElementColumns(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridElementColumns(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->columns()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->columns()));
+    return result;
 }
 
-JSValue jsHTMLDataGridElementAutofocus(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridElementAutofocus(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(castedThis->impl());
-    return jsBoolean(imp->autofocus());
+    JSValue result = jsBoolean(imp->autofocus());
+    return result;
 }
 
-JSValue jsHTMLDataGridElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridElementDisabled(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(castedThis->impl());
-    return jsBoolean(imp->disabled());
+    JSValue result = jsBoolean(imp->disabled());
+    return result;
 }
 
-JSValue jsHTMLDataGridElementMultiple(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridElementMultiple(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridElement* castedThis = static_cast<JSHTMLDataGridElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(castedThis->impl());
-    return jsBoolean(imp->multiple());
+    JSValue result = jsBoolean(imp->multiple());
+    return result;
 }
 
-JSValue jsHTMLDataGridElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridElement* domObject = static_cast<JSHTMLDataGridElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridElement* domObject = static_cast<JSHTMLDataGridElement*>(asObject(slotBase));
     return JSHTMLDataGridElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLDataGridElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -200,19 +204,22 @@ void setJSHTMLDataGridElementDataSource(ExecState* exec, JSObject* thisObject, J
 
 void setJSHTMLDataGridElementAutofocus(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(static_cast<JSHTMLDataGridElement*>(thisObject)->impl());
+    JSHTMLDataGridElement* castedThisObj = static_cast<JSHTMLDataGridElement*>(thisObject);
+    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(castedThisObj->impl());
     imp->setAutofocus(value.toBoolean(exec));
 }
 
 void setJSHTMLDataGridElementDisabled(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(static_cast<JSHTMLDataGridElement*>(thisObject)->impl());
+    JSHTMLDataGridElement* castedThisObj = static_cast<JSHTMLDataGridElement*>(thisObject);
+    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(castedThisObj->impl());
     imp->setDisabled(value.toBoolean(exec));
 }
 
 void setJSHTMLDataGridElementMultiple(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(static_cast<JSHTMLDataGridElement*>(thisObject)->impl());
+    JSHTMLDataGridElement* castedThisObj = static_cast<JSHTMLDataGridElement*>(thisObject);
+    HTMLDataGridElement* imp = static_cast<HTMLDataGridElement*>(castedThisObj->impl());
     imp->setMultiple(value.toBoolean(exec));
 }
 

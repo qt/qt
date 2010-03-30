@@ -1,7 +1,7 @@
 import Test 1.0
 
 MyTypeObject {
-    property var object
+    property variant object
     object: MyTypeObject {
         rect.x: 19
         rect.y: 33

@@ -42,6 +42,8 @@
 #include "private/qdeclarativeanimatedimage_p.h"
 #include "private/qdeclarativeanimatedimage_p_p.h"
 
+#ifndef QT_NO_MOVIE
+
 #include <qdeclarativeengine.h>
 
 #include <QMovie>
@@ -312,7 +314,7 @@ void QDeclarativeAnimatedImage::playingStatusChanged()
 void QDeclarativeAnimatedImage::componentComplete()
 {
     Q_D(QDeclarativeAnimatedImage);
-    QDeclarativeImage::componentComplete();
+    QDeclarativeItem::componentComplete(); // NOT QDeclarativeImage
     if (!d->reply) {
         setCurrentFrame(d->preset_currentframe);
         d->preset_currentframe = 0;
@@ -320,3 +322,5 @@ void QDeclarativeAnimatedImage::componentComplete()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_MOVIE

@@ -659,6 +659,7 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
 #endif
         windowSurface = context->createSurface(widget, &surfaceProps);
         isPaintingActive = false;
+        needToSwap = true;
     }
 #else
     if (context && size != newSize) {
@@ -710,20 +711,21 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
             needToSwap = false;
         }
 #endif
-#if !defined(QVG_NO_PRESERVED_SWAP)
-        // Try to force the surface back buffer to preserve its contents.
-        if (needToSwap) {
-            eglGetError();  // Clear error state first.
-            eglSurfaceAttrib(QEgl::display(), surface,
-                             EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
-            if (eglGetError() != EGL_SUCCESS) {
-                qWarning("QVG: could not enable preserved swap");
-            }
-        }
-#endif
         windowSurface = surface;
         isPaintingActive = false;
     }
+
+#if !defined(QVG_NO_PRESERVED_SWAP)
+    // Try to force the surface back buffer to preserve its contents.
+    if (needToSwap) {
+        eglGetError();  // Clear error state first.
+        eglSurfaceAttrib(QEgl::display(), windowSurface,
+                EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+        if (eglGetError() != EGL_SUCCESS) {
+            qWarning("QVG: could not enable preserved swap");
+        }
+    }
+#endif
     return context;
 }
 

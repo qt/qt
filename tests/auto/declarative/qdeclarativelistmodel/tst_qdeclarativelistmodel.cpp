@@ -337,7 +337,6 @@ void tst_QDeclarativeListModel::dynamic_worker()
     }
 
     delete item;
-    QTest::ignoreMessage(QtWarningMsg, "QThread: Destroyed while thread is still running");
     qApp->processEvents();
 }
 
@@ -367,7 +366,6 @@ void tst_QDeclarativeListModel::convertNestedToFlat_fail()
     QCOMPARE(model.count(), 2);
 
     delete item;
-    QTest::ignoreMessage(QtWarningMsg, "QThread: Destroyed while thread is still running");
     qApp->processEvents();
 }
 
@@ -427,7 +425,6 @@ void tst_QDeclarativeListModel::convertNestedToFlat_ok()
     QCOMPARE(model.count(), count+1);
 
     delete item;
-    QTest::ignoreMessage(QtWarningMsg, "QThread: Destroyed while thread is still running");
     qApp->processEvents();
 }
 
@@ -528,7 +525,11 @@ void tst_QDeclarativeListModel::error_data()
 
     QTest::newRow("default properties not allowed in ListElement")
         << "import Qt 4.6\nListModel { ListElement { Item { } } }"
-        << "QTBUG-6082 ListElement should not allow child objects";
+        << "ListElement: cannot contain nested elements";
+
+    QTest::newRow("QML elements not allowed in ListElement")
+        << "import Qt 4.6\nListModel { ListElement { a: Item { } } }"
+        << "ListElement: cannot contain nested elements";
 }
 
 void tst_QDeclarativeListModel::error()
@@ -543,8 +544,6 @@ void tst_QDeclarativeListModel::error()
     if (error.isEmpty()) {
         QVERIFY(!component.isError());
     } else {
-        if (error.startsWith(QLatin1String("QTBUG-")))
-            QEXPECT_FAIL("",error.toLatin1(),Abort);
         QVERIFY(component.isError());
         QList<QDeclarativeError> errors = component.errors();
         QCOMPARE(errors.count(),1);

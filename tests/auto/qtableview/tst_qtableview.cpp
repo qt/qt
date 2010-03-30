@@ -3035,6 +3035,14 @@ void tst_QTableView::spans_data()
       << QPoint(0, 0)
       << 1
       << 1;
+
+    QTest::newRow("QTBUG-9631: remove one span")
+      << 10 << 10
+      << (SpanList() << QRect(1, 1, 2, 1) << QRect(2, 2, 2, 2) << QRect(1, 1, 1, 1))
+      << false
+      << QPoint(1, 1)
+      << 1
+      << 1;
 }
 
 void tst_QTableView::spans()

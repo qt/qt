@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2007 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -37,8 +35,6 @@ SVGScriptElement::SVGScriptElement(const QualifiedName& tagName, Document* doc, 
     : SVGElement(tagName, doc)
     , SVGURIReference()
     , SVGExternalResourcesRequired()
-    , m_href(this, XLinkNames::hrefAttr) 
-    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
     , m_data(this, this)
 {
     m_data.setCreatedByParser(createdByParser);
@@ -86,6 +82,22 @@ void SVGScriptElement::svgAttributeChanged(const QualifiedName& attrName)
             sendSVGLoadEventIfPossible();
         }
     }
+}
+
+void SVGScriptElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName()) {
+        synchronizeExternalResourcesRequired();
+        synchronizeHref();
+        return;
+    }
+
+    if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
+        synchronizeExternalResourcesRequired();
+    else if (SVGURIReference::isKnownAttribute(attrName))
+        synchronizeHref();
 }
 
 void SVGScriptElement::insertedIntoDocument()
@@ -178,6 +190,11 @@ String SVGScriptElement::languageAttributeValue() const
 }
 
 String SVGScriptElement::forAttributeValue() const
+{
+    return String();
+}
+
+String SVGScriptElement::eventAttributeValue() const
 {
     return String();
 }

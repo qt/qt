@@ -153,6 +153,7 @@ class HtmlGenerator : public PageGenerator
                                  Doc::SectioningUnit sectioningUnit,
                                  int numColumns, 
                                  const Node *relative = 0);
+    void generateTableOfContents(const Node *node, CodeMarker *marker);
     QString generateListOfAllMemberFile(const InnerNode *inner, CodeMarker *marker);
     QString generateLowStatusMemberFile(const InnerNode *inner, 
                                         CodeMarker *marker,

@@ -35,18 +35,66 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGNumber);
 
 /* Hash table */
 
-static const HashTableValue JSSVGNumberTableValues[2] =
+static const HashTableValue JSSVGNumberTableValues[3] =
 {
-    { "value", DontDelete, (intptr_t)jsSVGNumberValue, (intptr_t)setJSSVGNumberValue },
+    { "value", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGNumberValue), (intptr_t)setJSSVGNumberValue },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGNumberConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGNumberTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSSVGNumberTableValues, 0 };
+    { 3, JSSVGNumberTableValues, 0 };
 #else
-    { 2, 1, JSSVGNumberTableValues, 0 };
+    { 4, 3, JSSVGNumberTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGNumberConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGNumberConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGNumberConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGNumberConstructorTableValues, 0 };
+#endif
+
+class JSSVGNumberConstructor : public DOMConstructorObject {
+public:
+    JSSVGNumberConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGNumberConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGNumberPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGNumberConstructor::s_info = { "SVGNumberConstructor", 0, &JSSVGNumberConstructorTable, 0 };
+
+bool JSSVGNumberConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGNumberConstructor, DOMObject>(exec, &JSSVGNumberConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGNumberConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGNumberConstructor, DOMObject>(exec, &JSSVGNumberConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -71,8 +119,8 @@ JSObject* JSSVGNumberPrototype::self(ExecState* exec, JSGlobalObject* globalObje
 
 const ClassInfo JSSVGNumber::s_info = { "SVGNumber", 0, &JSSVGNumberTable, 0 };
 
-JSSVGNumber::JSSVGNumber(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<float> > impl, SVGElement* context)
-    : DOMObjectWithSVGContext(structure, globalObject, context)
+JSSVGNumber::JSSVGNumber(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<float> > impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -80,6 +128,7 @@ JSSVGNumber::JSSVGNumber(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 JSSVGNumber::~JSSVGNumber()
 {
     forgetDOMObject(this, impl());
+    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGNumber::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -97,14 +146,20 @@ bool JSSVGNumber::getOwnPropertyDescriptor(ExecState* exec, const Identifier& pr
     return getStaticValueDescriptor<JSSVGNumber, Base>(exec, &JSSVGNumberTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGNumberValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGNumberValue(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGNumber* castedThis = static_cast<JSSVGNumber*>(asObject(slot.slotBase()));
+    JSSVGNumber* castedThis = static_cast<JSSVGNumber*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     float imp(*castedThis->impl());
-    return jsNumber(exec, imp);
+    JSValue result =  jsNumber(exec, imp);
+    return result;
 }
 
+JSValue jsSVGNumberConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGNumber* domObject = static_cast<JSSVGNumber*>(asObject(slotBase));
+    return JSSVGNumber::getConstructor(exec, domObject->globalObject());
+}
 void JSSVGNumber::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGNumber, Base>(exec, propertyName, value, &JSSVGNumberTable, this, slot);
@@ -112,9 +167,16 @@ void JSSVGNumber::put(ExecState* exec, const Identifier& propertyName, JSValue v
 
 void setJSSVGNumberValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    float imp(*static_cast<JSSVGNumber*>(thisObject)->impl());
-    imp = value.toFloat(exec);
-        static_cast<JSSVGNumber*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGNumber*>(thisObject)->context());
+    JSSVGNumber* castedThisObj = static_cast<JSSVGNumber*>(thisObject);
+    JSSVGPODTypeWrapper<float> * imp = static_cast<JSSVGPODTypeWrapper<float> *>(castedThisObj->impl());
+    float podImp(*imp);
+    podImp = value.toFloat(exec);
+    imp->commitChange(podImp, castedThisObj);
+}
+
+JSValue JSSVGNumber::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGNumberConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, JSSVGPODTypeWrapper<float>* object, SVGElement* context)

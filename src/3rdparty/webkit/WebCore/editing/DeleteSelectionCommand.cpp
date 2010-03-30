@@ -121,7 +121,7 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
     else if (end.node()->hasTagName(hrTag))
         end = Position(end.node(), 1);
     
-    // FIXME: This is only used so that moveParagraphs can avoid the bugs in special element expanion.
+    // FIXME: This is only used so that moveParagraphs can avoid the bugs in special element expansion.
     if (!m_expandForSpecialElements)
         return;
     
@@ -161,6 +161,20 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
     }
 }
 
+void DeleteSelectionCommand::setStartingSelectionOnSmartDelete(const Position& start, const Position& end)
+{
+    VisiblePosition newBase;
+    VisiblePosition newExtent;
+    if (startingSelection().isBaseFirst()) {
+        newBase = start;
+        newExtent = end;
+    } else {
+        newBase = end;
+        newExtent = start;        
+    }
+    setStartingSelection(VisibleSelection(newBase, newExtent));            
+}
+    
 void DeleteSelectionCommand::initializePositionData()
 {
     Position start, end;
@@ -230,6 +244,8 @@ void DeleteSelectionCommand::initializePositionData()
             m_upstreamStart = pos.upstream();
             m_downstreamStart = pos.downstream();
             m_leadingWhitespace = m_upstreamStart.leadingWhitespacePosition(visiblePos.affinity());
+
+            setStartingSelectionOnSmartDelete(m_upstreamStart, m_upstreamEnd);
         }
         
         // trailing whitespace is only considered for smart delete if there is no leading
@@ -241,6 +257,8 @@ void DeleteSelectionCommand::initializePositionData()
             m_upstreamEnd = pos.upstream();
             m_downstreamEnd = pos.downstream();
             m_trailingWhitespace = m_downstreamEnd.trailingWhitespacePosition(VP_DEFAULT_AFFINITY);
+
+            setStartingSelectionOnSmartDelete(m_downstreamStart, m_downstreamEnd);
         }
     }
     
@@ -589,9 +607,18 @@ void DeleteSelectionCommand::mergeParagraphs()
     // The rule for merging into an empty block is: only do so if its farther to the right.
     // FIXME: Consider RTL.
     if (!m_startsAtEmptyLine && isStartOfParagraph(mergeDestination) && startOfParagraphToMove.absoluteCaretBounds().x() > mergeDestination.absoluteCaretBounds().x()) {
-        ASSERT(mergeDestination.deepEquivalent().downstream().node()->hasTagName(brTag));
-        removeNodeAndPruneAncestors(mergeDestination.deepEquivalent().downstream().node());
-        m_endingPosition = startOfParagraphToMove.deepEquivalent();
+        if (mergeDestination.deepEquivalent().downstream().node()->hasTagName(brTag)) {
+            removeNodeAndPruneAncestors(mergeDestination.deepEquivalent().downstream().node());
+            m_endingPosition = startOfParagraphToMove.deepEquivalent();
+            return;
+        }
+    }
+    
+    // Block images, tables and horizontal rules cannot be made inline with content at mergeDestination.  If there is 
+    // any (!isStartOfParagraph(mergeDestination)), don't merge, just move the caret to just before the selection we deleted.
+    // See https://bugs.webkit.org/show_bug.cgi?id=25439
+    if (isRenderedAsNonInlineTableImageOrHR(startOfParagraphToMove.deepEquivalent().node()) && !isStartOfParagraph(mergeDestination)) {
+        m_endingPosition = m_upstreamStart;
         return;
     }
     

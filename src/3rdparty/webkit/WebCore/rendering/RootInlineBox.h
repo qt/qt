@@ -1,6 +1,4 @@
 /*
- * This file is part of the line box implementation for KDE.
- *
  * Copyright (C) 2003, 2006, 2007, 2008 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -51,8 +49,8 @@ public:
 
     void detachEllipsisBox(RenderArena*);
 
-    RootInlineBox* nextRootBox() const { return static_cast<RootInlineBox*>(m_nextLine); }
-    RootInlineBox* prevRootBox() const { return static_cast<RootInlineBox*>(m_prevLine); }
+    RootInlineBox* nextRootBox() const { return static_cast<RootInlineBox*>(m_nextLineBox); }
+    RootInlineBox* prevRootBox() const { return static_cast<RootInlineBox*>(m_prevLineBox); }
 
     virtual void adjustPosition(int dx, int dy);
 

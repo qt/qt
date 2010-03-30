@@ -292,6 +292,27 @@ static void indexesFromRange(const QItemSelectionRange &range, QModelIndexList &
 }
 
 /*!
+    Returns true if the selection range contains no selectable item
+    \since 4.7
+*/
+
+bool QItemSelectionRange::isEmpty() const
+{
+    if (!isValid() || !model())
+        return true;
+
+    for (int column = left(); column <= right(); ++column) {
+        for (int row = top(); row <= bottom(); ++row) {
+            QModelIndex index = model()->index(row, column, parent());
+            Qt::ItemFlags flags = model()->flags(index);
+            if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled))
+                return false;
+        }
+    }
+    return true;
+}
+
+/*!
     Returns the list of model index items stored in the selection.
 */
 

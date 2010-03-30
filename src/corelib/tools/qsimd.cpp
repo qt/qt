@@ -42,6 +42,10 @@
 #include "qsimd_p.h"
 #include <QByteArray>
 
+#if defined(Q_OS_WINCE)
+#include <windows.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 uint qDetectCPUFeatures()

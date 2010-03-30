@@ -96,6 +96,7 @@ public:
     void setDeviceKeys(bool);
     void setNetworkCacheSize(int size);
     void addLibraryPath(const QString& lib);
+    void addPluginPath(const QString& plugin);
     void setUseGL(bool use);
     void setUseNativeFileBrowser(bool);
 

@@ -35,39 +35,34 @@ WebInspector.MetricsSidebarPane = function()
 WebInspector.MetricsSidebarPane.prototype = {
     update: function(node)
     {
-        var body = this.bodyElement;
-
-        body.removeChildren();
-
         if (node)
             this.node = node;
         else
             node = this.node;
 
-        if (!node || !node.ownerDocument.defaultView)
+        if (!node || !node.ownerDocument.defaultView || node.nodeType !== Node.ELEMENT_NODE) {
+            this.bodyElement.removeChildren();
             return;
-
-        if (node.nodeType !== Node.ELEMENT_NODE)
-            return;
+        }
 
         var self = this;
         var callback = function(stylePayload) {
             if (!stylePayload)
                 return;
             var style = WebInspector.CSSStyleDeclaration.parseStyle(stylePayload);
-            self._update(node, body, style);
+            self._update(style);
         };
-        InjectedScriptAccess.getComputedStyle(node.id, callback);
+        InspectorBackend.getComputedStyle(WebInspector.Callback.wrap(callback), node.id);
 
         var inlineStyleCallback = function(stylePayload) {
             if (!stylePayload)
                 return;
             self._inlineStyleId = stylePayload.id;
         };
-        InjectedScriptAccess.getInlineStyle(node.id, inlineStyleCallback);
+        InspectorBackend.getInlineStyle(WebInspector.Callback.wrap(inlineStyleCallback), node.id);
     },
 
-    _update: function(node, body, style)
+    _update: function(style)
     {
         var metricsElement = document.createElement("div");
         metricsElement.className = "metrics";
@@ -169,7 +164,8 @@ WebInspector.MetricsSidebarPane.prototype = {
         }
 
         metricsElement.appendChild(previousBox);
-        body.appendChild(metricsElement);
+        this.bodyElement.removeChildren();
+        this.bodyElement.appendChild(metricsElement);
     },
 
     startEditing: function(targetElement, box, styleProperty)
@@ -189,6 +185,11 @@ WebInspector.MetricsSidebarPane.prototype = {
 
     editingCommitted: function(element, userInput, previousContent, context)
     {
+        if (!this._inlineStyleId) {
+            // Element has no renderer.
+            return this.editingCancelled(element, context); // nothing changed, so cancel
+        }
+
         if (userInput === previousContent)
             return this.editingCancelled(element, context); // nothing changed, so cancel
 
@@ -208,7 +209,8 @@ WebInspector.MetricsSidebarPane.prototype = {
             self.dispatchEventToListeners("metrics edited");
             self.update();
         };
-        InjectedScriptAccess.setStyleProperty(this._inlineStyleId, context.styleProperty, userInput, callback);
+
+        InspectorBackend.setStyleProperty(WebInspector.Callback.wrap(callback), this._inlineStyleId, context.styleProperty, userInput);
     }
 }
 

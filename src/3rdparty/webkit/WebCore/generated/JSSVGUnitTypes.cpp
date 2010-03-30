@@ -37,7 +37,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGUnitTypes);
 
 static const HashTableValue JSSVGUnitTypesTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGUnitTypesConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGUnitTypesConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -52,9 +52,9 @@ static JSC_CONST_HASHTABLE HashTable JSSVGUnitTypesTable =
 
 static const HashTableValue JSSVGUnitTypesConstructorTableValues[4] =
 {
-    { "SVG_UNIT_TYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGUnitTypesSVG_UNIT_TYPE_UNKNOWN, (intptr_t)0 },
-    { "SVG_UNIT_TYPE_USERSPACEONUSE", DontDelete|ReadOnly, (intptr_t)jsSVGUnitTypesSVG_UNIT_TYPE_USERSPACEONUSE, (intptr_t)0 },
-    { "SVG_UNIT_TYPE_OBJECTBOUNDINGBOX", DontDelete|ReadOnly, (intptr_t)jsSVGUnitTypesSVG_UNIT_TYPE_OBJECTBOUNDINGBOX, (intptr_t)0 },
+    { "SVG_UNIT_TYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGUnitTypesSVG_UNIT_TYPE_UNKNOWN), (intptr_t)0 },
+    { "SVG_UNIT_TYPE_USERSPACEONUSE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGUnitTypesSVG_UNIT_TYPE_USERSPACEONUSE), (intptr_t)0 },
+    { "SVG_UNIT_TYPE_OBJECTBOUNDINGBOX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGUnitTypesSVG_UNIT_TYPE_OBJECTBOUNDINGBOX), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -102,9 +102,9 @@ bool JSSVGUnitTypesConstructor::getOwnPropertyDescriptor(ExecState* exec, const 
 
 static const HashTableValue JSSVGUnitTypesPrototypeTableValues[4] =
 {
-    { "SVG_UNIT_TYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGUnitTypesSVG_UNIT_TYPE_UNKNOWN, (intptr_t)0 },
-    { "SVG_UNIT_TYPE_USERSPACEONUSE", DontDelete|ReadOnly, (intptr_t)jsSVGUnitTypesSVG_UNIT_TYPE_USERSPACEONUSE, (intptr_t)0 },
-    { "SVG_UNIT_TYPE_OBJECTBOUNDINGBOX", DontDelete|ReadOnly, (intptr_t)jsSVGUnitTypesSVG_UNIT_TYPE_OBJECTBOUNDINGBOX, (intptr_t)0 },
+    { "SVG_UNIT_TYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGUnitTypesSVG_UNIT_TYPE_UNKNOWN), (intptr_t)0 },
+    { "SVG_UNIT_TYPE_USERSPACEONUSE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGUnitTypesSVG_UNIT_TYPE_USERSPACEONUSE), (intptr_t)0 },
+    { "SVG_UNIT_TYPE_OBJECTBOUNDINGBOX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGUnitTypesSVG_UNIT_TYPE_OBJECTBOUNDINGBOX), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -134,8 +134,8 @@ bool JSSVGUnitTypesPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSSVGUnitTypes::s_info = { "SVGUnitTypes", 0, &JSSVGUnitTypesTable, 0 };
 
-JSSVGUnitTypes::JSSVGUnitTypes(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGUnitTypes> impl, SVGElement* context)
-    : DOMObjectWithSVGContext(structure, globalObject, context)
+JSSVGUnitTypes::JSSVGUnitTypes(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGUnitTypes> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -143,6 +143,7 @@ JSSVGUnitTypes::JSSVGUnitTypes(NonNullPassRefPtr<Structure> structure, JSDOMGlob
 JSSVGUnitTypes::~JSSVGUnitTypes()
 {
     forgetDOMObject(this, impl());
+    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGUnitTypes::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -160,10 +161,10 @@ bool JSSVGUnitTypes::getOwnPropertyDescriptor(ExecState* exec, const Identifier&
     return getStaticValueDescriptor<JSSVGUnitTypes, Base>(exec, &JSSVGUnitTypesTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGUnitTypesConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUnitTypesConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    UNUSED_PARAM(slot);
-    return JSSVGUnitTypes::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
+    JSSVGUnitTypes* domObject = static_cast<JSSVGUnitTypes*>(asObject(slotBase));
+    return JSSVGUnitTypes::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSSVGUnitTypes::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
@@ -172,17 +173,17 @@ JSValue JSSVGUnitTypes::getConstructor(ExecState* exec, JSGlobalObject* globalOb
 
 // Constant getters
 
-JSValue jsSVGUnitTypesSVG_UNIT_TYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGUnitTypesSVG_UNIT_TYPE_UNKNOWN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsSVGUnitTypesSVG_UNIT_TYPE_USERSPACEONUSE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGUnitTypesSVG_UNIT_TYPE_USERSPACEONUSE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsSVGUnitTypesSVG_UNIT_TYPE_OBJECTBOUNDINGBOX(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGUnitTypesSVG_UNIT_TYPE_OBJECTBOUNDINGBOX(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }

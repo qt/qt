@@ -108,7 +108,8 @@ exampledirs             = $QTDIR/doc/src \
                           $QTDIR/src/3rdparty/webkit/WebKit/qt/docs
 imagedirs               = $QTDIR/doc/src/images \
                           $QTDIR/examples \
-                          $QTDIR/doc/src/declarative/pics
+                          $QTDIR/doc/src/declarative/pics \
+			  $QTDIR/doc/src/template/images
 outputdir               = $QTDIR/doc/html
 tagfile                 = $QTDIR/doc/html/qt.tags
 base                    = file:$QTDIR/doc/html

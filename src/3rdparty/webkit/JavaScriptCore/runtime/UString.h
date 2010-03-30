@@ -24,13 +24,13 @@
 #define UString_h
 
 #include "Collector.h"
+#include "UStringImpl.h"
 #include <stdint.h>
 #include <string.h>
 #include <wtf/Assertions.h>
 #include <wtf/CrossThreadRefCounted.h>
 #include <wtf/OwnFastMallocPtr.h>
 #include <wtf/PassRefPtr.h>
-#include <wtf/PtrAndFlags.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 #include <wtf/unicode/Unicode.h>
@@ -40,8 +40,6 @@ namespace JSC {
     using WTF::PlacementNewAdoptType;
     using WTF::PlacementNewAdopt;
 
-    class IdentifierTable;
-  
     class CString {
     public:
         CString()
@@ -71,182 +69,25 @@ namespace JSC {
         char* m_data;
     };
 
+    bool operator==(const CString&, const CString&);
+
     typedef Vector<char, 32> CStringBuffer;
 
     class UString {
         friend class JIT;
 
     public:
-        typedef CrossThreadRefCounted<OwnFastMallocPtr<UChar> > SharedUChar;
-        struct BaseString;
-        struct Rep : Noncopyable {
-            friend class JIT;
-
-            static PassRefPtr<Rep> create(UChar* buffer, int length)
-            {
-                return adoptRef(new BaseString(buffer, length));
-            }
-
-            static PassRefPtr<Rep> createEmptyBuffer(size_t size)
-            {
-                // Guard against integer overflow
-                if (size < (std::numeric_limits<size_t>::max() / sizeof(UChar))) {
-                    void* buf = 0;
-                    if (tryFastMalloc(size * sizeof(UChar)).getValue(buf))
-                        return adoptRef(new BaseString(static_cast<UChar*>(buf), 0, size));
-                }
-                return adoptRef(new BaseString(0, 0, 0));
-            }
-
-            static PassRefPtr<Rep> createCopying(const UChar*, int);
-            static PassRefPtr<Rep> create(PassRefPtr<Rep> base, int offset, int length);
-
-            // Constructs a string from a UTF-8 string, using strict conversion (see comments in UTF8.h).
-            // Returns UString::Rep::null for null input or conversion failure.
-            static PassRefPtr<Rep> createFromUTF8(const char*);
-
-            // Uses SharedUChar to have joint ownership over the UChar*.
-            static PassRefPtr<Rep> create(UChar*, int, PassRefPtr<SharedUChar>);
-
-            SharedUChar* sharedBuffer();
-            void destroy();
-
-            bool baseIsSelf() const { return m_identifierTableAndFlags.isFlagSet(BaseStringFlag); }
-            UChar* data() const;
-            int size() const { return len; }
-
-            unsigned hash() const { if (_hash == 0) _hash = computeHash(data(), len); return _hash; }
-            unsigned computedHash() const { ASSERT(_hash); return _hash; } // fast path for Identifiers
-
-            static unsigned computeHash(const UChar*, int length);
-            static unsigned computeHash(const char*, int length);
-            static unsigned computeHash(const char* s) { return computeHash(s, strlen(s)); }
-
-            IdentifierTable* identifierTable() const { return m_identifierTableAndFlags.get(); }
-            void setIdentifierTable(IdentifierTable* table) { ASSERT(!isStatic()); m_identifierTableAndFlags.set(table); }
-
-            bool isStatic() const { return m_identifierTableAndFlags.isFlagSet(StaticFlag); }
-            void setStatic(bool);
-            void setBaseString(PassRefPtr<BaseString>);
-            BaseString* baseString();
-            const BaseString* baseString() const;
-
-            Rep* ref() { ++rc; return this; }
-            ALWAYS_INLINE void deref() { if (--rc == 0) destroy(); }
-
-            void checkConsistency() const;
-            enum UStringFlags {
-                StaticFlag,
-                BaseStringFlag
-            };
-
-            // unshared data
-            int offset;
-            int len;
-            int rc; // For null and empty static strings, this field does not reflect a correct count, because ref/deref are not thread-safe. A special case in destroy() guarantees that these do not get deleted.
-            mutable unsigned _hash;
-            PtrAndFlags<IdentifierTable, UStringFlags> m_identifierTableAndFlags;
-
-            static BaseString& null() { return *nullBaseString; }
-            static BaseString& empty() { return *emptyBaseString; }
-
-            bool reserveCapacity(int capacity);
-
-        protected:
-            // Constructor for use by BaseString subclass; they use the union with m_baseString for another purpose.
-            Rep(int length)
-                : offset(0)
-                , len(length)
-                , rc(1)
-                , _hash(0)
-                , m_baseString(0)
-            {
-            }
-
-            Rep(PassRefPtr<BaseString> base, int offsetInBase, int length)
-                : offset(offsetInBase)
-                , len(length)
-                , rc(1)
-                , _hash(0)
-                , m_baseString(base.releaseRef())
-            {
-                checkConsistency();
-            }
-
-            union {
-                // If !baseIsSelf()
-                BaseString* m_baseString;
-                // If baseIsSelf()
-                SharedUChar* m_sharedBuffer;
-            };
-
-        private:
-            // For SmallStringStorage which allocates an array and does initialization manually.
-            Rep() { }
-
-            friend class SmallStringsStorage;
-            friend void initializeUString();
-            JS_EXPORTDATA static BaseString* nullBaseString;
-            JS_EXPORTDATA static BaseString* emptyBaseString;
-        };
-
-
-        struct BaseString : public Rep {
-            bool isShared() { return rc != 1 || isBufferReadOnly(); }
-            void setSharedBuffer(PassRefPtr<SharedUChar>);
-
-            bool isBufferReadOnly()
-            {
-                if (!m_sharedBuffer)
-                    return false;
-                return slowIsBufferReadOnly();
-            }
-
-            // potentially shared data.
-            UChar* buf;
-            int preCapacity;
-            int usedPreCapacity;
-            int capacity;
-            int usedCapacity;
-
-            size_t reportedCost;
-
-        private:
-            BaseString(UChar* buffer, int length, int additionalCapacity = 0)
-                : Rep(length)
-                , buf(buffer)
-                , preCapacity(0)
-                , usedPreCapacity(0)
-                , capacity(length + additionalCapacity)
-                , usedCapacity(length)
-                , reportedCost(0)
-            {
-                m_identifierTableAndFlags.setFlag(BaseStringFlag);
-                checkConsistency();
-            }
-
-            SharedUChar* sharedBuffer();
-            bool slowIsBufferReadOnly();
-
-            friend struct Rep;
-            friend class SmallStringsStorage;
-            friend void initializeUString();
-        };
-
+        typedef UStringImpl Rep;
+    
     public:
         UString();
-        UString(const char*);
-        UString(const UChar*, int length);
-        UString(UChar*, int length, bool copy);
+        UString(const char*); // Constructor for null-terminated string.
+        UString(const char*, unsigned length);
+        UString(const UChar*, unsigned length);
+        UString(const Vector<UChar>& buffer);
 
         UString(const UString& s)
             : m_rep(s.m_rep)
-        {
-        }
-
-        UString(const Vector<UChar>& buffer);
-
-        ~UString()
         {
         }
 
@@ -256,37 +97,21 @@ namespace JSC {
         {
         }
 
+        ~UString()
+        {
+        }
+
+        template<size_t inlineCapacity>
+        static PassRefPtr<UStringImpl> adopt(Vector<UChar, inlineCapacity>& vector)
+        {
+            return Rep::adopt(vector);
+        }
+
         static UString from(int);
         static UString from(long long);
-        static UString from(unsigned int);
+        static UString from(unsigned);
         static UString from(long);
         static UString from(double);
-
-        struct Range {
-        public:
-            Range(int pos, int len)
-                : position(pos)
-                , length(len)
-            {
-            }
-
-            Range()
-            {
-            }
-
-            int position;
-            int length;
-        };
-
-        UString spliceSubstringsWithSeparators(const Range* substringRanges, int rangeCount, const UString* separators, int separatorCount) const;
-
-        UString replaceRange(int rangeStart, int RangeEnd, const UString& replacement) const;
-
-        UString& append(const UString&);
-        UString& append(const char*);
-        UString& append(UChar);
-        UString& append(char c) { return append(static_cast<UChar>(static_cast<unsigned char>(c))); }
-        UString& append(const UChar*, int size);
 
         bool getCString(CStringBuffer&) const;
 
@@ -304,21 +129,16 @@ namespace JSC {
          */
         CString UTF8String(bool strict = false) const;
 
-        UString& operator=(const char*c);
+        const UChar* data() const { return m_rep->characters(); }
 
-        UString& operator+=(const UString& s) { return append(s); }
-        UString& operator+=(const char* s) { return append(s); }
-
-        const UChar* data() const { return m_rep->data(); }
-
-        bool isNull() const { return (m_rep == &Rep::null()); }
-        bool isEmpty() const { return (!m_rep->len); }
+        bool isNull() const { return m_rep == s_nullRep; }
+        bool isEmpty() const { return !m_rep->length(); }
 
         bool is8Bit() const;
 
-        int size() const { return m_rep->size(); }
+        unsigned size() const { return m_rep->length(); }
 
-        UChar operator[](int pos) const;
+        UChar operator[](unsigned pos) const;
 
         double toDouble(bool tolerateTrailingJunk, bool tolerateEmptyString) const;
         double toDouble(bool tolerateTrailingJunk) const;
@@ -330,17 +150,17 @@ namespace JSC {
 
         unsigned toArrayIndex(bool* ok = 0) const;
 
-        int find(const UString& f, int pos = 0) const;
-        int find(UChar, int pos = 0) const;
-        int rfind(const UString& f, int pos) const;
-        int rfind(UChar, int pos) const;
+        static const unsigned NotFound = 0xFFFFFFFFu;
+        unsigned find(const UString& f, unsigned pos = 0) const;
+        unsigned find(UChar, unsigned pos = 0) const;
+        unsigned rfind(const UString& f, unsigned pos) const;
+        unsigned rfind(UChar, unsigned pos) const;
 
-        UString substr(int pos = 0, int len = -1) const;
+        UString substr(unsigned pos = 0, unsigned len = 0xFFFFFFFF) const;
 
-        static const UString& null() { return *nullUString; }
+        static const UString& null() { return *s_nullUString; }
 
         Rep* rep() const { return m_rep.get(); }
-        static Rep* nullRep();
 
         UString(PassRefPtr<Rep> r)
             : m_rep(r)
@@ -348,38 +168,21 @@ namespace JSC {
             ASSERT(m_rep);
         }
 
-        size_t cost() const;
-
-        // Attempt to grow this string such that it can grow to a total length of 'capacity'
-        // without reallocation.  This may fail a number of reasons - if the BasicString is
-        // shared and another string is using part of the capacity beyond our end point, if
-        // the realloc fails, or if this string is empty and has no storage.
-        //
-        // This method returns a boolean indicating success.
-        bool reserveCapacity(int capacity)
-        {
-            return m_rep->reserveCapacity(capacity);
-        }
+        size_t cost() const { return m_rep->cost(); }
 
     private:
-        void expandCapacity(int requiredLength);
-        void expandPreCapacity(int requiredPreCap);
-        void makeNull();
-
         RefPtr<Rep> m_rep;
-        static UString* nullUString;
+
+        JS_EXPORTDATA static Rep* s_nullRep;
+        static UString* s_nullUString;
 
         friend void initializeUString();
         friend bool operator==(const UString&, const UString&);
-        friend PassRefPtr<Rep> concatenate(Rep*, Rep*); // returns 0 if out of memory
     };
-    PassRefPtr<UString::Rep> concatenate(UString::Rep*, UString::Rep*);
-    PassRefPtr<UString::Rep> concatenate(UString::Rep*, int);
-    PassRefPtr<UString::Rep> concatenate(UString::Rep*, double);
 
-    inline bool operator==(const UString& s1, const UString& s2)
+    ALWAYS_INLINE bool operator==(const UString& s1, const UString& s2)
     {
-        int size = s1.size();
+        unsigned size = s1.size();
         switch (size) {
         case 0:
             return !s2.size();
@@ -423,74 +226,10 @@ namespace JSC {
         return !JSC::operator==(s1, s2);
     }
 
-    bool operator==(const CString&, const CString&);
-
-    inline UString operator+(const UString& s1, const UString& s2)
-    {
-        RefPtr<UString::Rep> result = concatenate(s1.rep(), s2.rep());
-        return UString(result ? result.release() : UString::nullRep());
-    }
-
     int compare(const UString&, const UString&);
 
-    bool equal(const UString::Rep*, const UString::Rep*);
-
-    inline PassRefPtr<UString::Rep> UString::Rep::create(PassRefPtr<UString::Rep> rep, int offset, int length)
-    {
-        ASSERT(rep);
-        rep->checkConsistency();
-
-        int repOffset = rep->offset;
-
-        PassRefPtr<BaseString> base = rep->baseString();
-
-        ASSERT(-(offset + repOffset) <= base->usedPreCapacity);
-        ASSERT(offset + repOffset + length <= base->usedCapacity);
-
-        // Steal the single reference this Rep was created with.
-        return adoptRef(new Rep(base, repOffset + offset, length));
-    }
-
-    inline UChar* UString::Rep::data() const
-    {
-        const BaseString* base = baseString();
-        return base->buf + base->preCapacity + offset;
-    }
-
-    inline void UString::Rep::setStatic(bool v)
-    {
-        ASSERT(!identifierTable());
-        if (v)
-            m_identifierTableAndFlags.setFlag(StaticFlag);
-        else
-            m_identifierTableAndFlags.clearFlag(StaticFlag);
-    }
-
-    inline void UString::Rep::setBaseString(PassRefPtr<BaseString> base)
-    {
-        ASSERT(base != this);
-        ASSERT(!baseIsSelf());
-        m_baseString = base.releaseRef();
-    }
-
-    inline UString::BaseString* UString::Rep::baseString()
-    {
-        return !baseIsSelf() ? m_baseString : reinterpret_cast<BaseString*>(this) ;
-    }
-
-    inline const UString::BaseString* UString::Rep::baseString() const
-    {
-        return const_cast<Rep*>(this)->baseString();
-    }
-
-#ifdef NDEBUG
-    inline void UString::Rep::checkConsistency() const
-    {
-    }
-#endif
-
     inline UString::UString()
-        : m_rep(&Rep::null())
+        : m_rep(s_nullRep)
     {
     }
 
@@ -507,33 +246,408 @@ namespace JSC {
     // We'd rather not do shared substring append for small strings, since
     // this runs too much risk of a tiny initial string holding down a
     // huge buffer.
-    // FIXME: this should be size_t but that would cause warnings until we
-    // fix UString sizes to be size_t instead of int
-    static const int minShareSize = Heap::minExtraCostSize / sizeof(UChar);
-
-    inline size_t UString::cost() const
-    {
-        BaseString* base = m_rep->baseString();
-        size_t capacity = (base->capacity + base->preCapacity) * sizeof(UChar);
-        size_t reportedCost = base->reportedCost;
-        ASSERT(capacity >= reportedCost);
-
-        size_t capacityDelta = capacity - reportedCost;
-
-        if (capacityDelta < static_cast<size_t>(minShareSize))
-            return 0;
-
-        base->reportedCost = capacity;
-
-        return capacityDelta;
-    }
+    static const unsigned minShareSize = Heap::minExtraCost / sizeof(UChar);
 
     struct IdentifierRepHash : PtrHash<RefPtr<JSC::UString::Rep> > {
-        static unsigned hash(const RefPtr<JSC::UString::Rep>& key) { return key->computedHash(); }
-        static unsigned hash(JSC::UString::Rep* key) { return key->computedHash(); }
+        static unsigned hash(const RefPtr<JSC::UString::Rep>& key) { return key->existingHash(); }
+        static unsigned hash(JSC::UString::Rep* key) { return key->existingHash(); }
     };
 
     void initializeUString();
+
+    template<typename StringType>
+    class StringTypeAdapter {
+    };
+
+    template<>
+    class StringTypeAdapter<char*> {
+    public:
+        StringTypeAdapter<char*>(char* buffer)
+            : m_buffer((unsigned char*)buffer)
+            , m_length(strlen(buffer))
+        {
+        }
+
+        unsigned length() { return m_length; }
+
+        void writeTo(UChar* destination)
+        {
+            for (unsigned i = 0; i < m_length; ++i)
+                destination[i] = m_buffer[i];
+        }
+
+    private:
+        const unsigned char* m_buffer;
+        unsigned m_length;
+    };
+
+    template<>
+    class StringTypeAdapter<const char*> {
+    public:
+        StringTypeAdapter<const char*>(const char* buffer)
+            : m_buffer((unsigned char*)buffer)
+            , m_length(strlen(buffer))
+        {
+        }
+
+        unsigned length() { return m_length; }
+
+        void writeTo(UChar* destination)
+        {
+            for (unsigned i = 0; i < m_length; ++i)
+                destination[i] = m_buffer[i];
+        }
+
+    private:
+        const unsigned char* m_buffer;
+        unsigned m_length;
+    };
+
+    template<>
+    class StringTypeAdapter<UString> {
+    public:
+        StringTypeAdapter<UString>(UString& string)
+            : m_data(string.data())
+            , m_length(string.size())
+        {
+        }
+
+        unsigned length() { return m_length; }
+
+        void writeTo(UChar* destination)
+        {
+            for (unsigned i = 0; i < m_length; ++i)
+                destination[i] = m_data[i];
+        }
+
+    private:
+        const UChar* m_data;
+        unsigned m_length;
+    };
+
+    inline void sumWithOverflow(unsigned& total, unsigned addend, bool& overflow)
+    {
+        unsigned oldTotal = total;
+        total = oldTotal + addend;
+        if (total < oldTotal)
+            overflow = true;
+    }
+
+    template<typename StringType1, typename StringType2>
+    PassRefPtr<UStringImpl> tryMakeString(StringType1 string1, StringType2 string2)
+    {
+        StringTypeAdapter<StringType1> adapter1(string1);
+        StringTypeAdapter<StringType2> adapter2(string2);
+
+        UChar* buffer;
+        bool overflow = false;
+        unsigned length = adapter1.length();
+        sumWithOverflow(length, adapter2.length(), overflow);
+        if (overflow)
+            return 0;
+        PassRefPtr<UStringImpl> resultImpl = UStringImpl::tryCreateUninitialized(length, buffer);
+        if (!resultImpl)
+            return 0;
+
+        UChar* result = buffer;
+        adapter1.writeTo(result);
+        result += adapter1.length();
+        adapter2.writeTo(result);
+
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2, typename StringType3>
+    PassRefPtr<UStringImpl> tryMakeString(StringType1 string1, StringType2 string2, StringType3 string3)
+    {
+        StringTypeAdapter<StringType1> adapter1(string1);
+        StringTypeAdapter<StringType2> adapter2(string2);
+        StringTypeAdapter<StringType3> adapter3(string3);
+
+        UChar* buffer;
+        bool overflow = false;
+        unsigned length = adapter1.length();
+        sumWithOverflow(length, adapter2.length(), overflow);
+        sumWithOverflow(length, adapter3.length(), overflow);
+        if (overflow)
+            return 0;
+        PassRefPtr<UStringImpl> resultImpl = UStringImpl::tryCreateUninitialized(length, buffer);
+        if (!resultImpl)
+            return 0;
+
+        UChar* result = buffer;
+        adapter1.writeTo(result);
+        result += adapter1.length();
+        adapter2.writeTo(result);
+        result += adapter2.length();
+        adapter3.writeTo(result);
+
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2, typename StringType3, typename StringType4>
+    PassRefPtr<UStringImpl> tryMakeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4)
+    {
+        StringTypeAdapter<StringType1> adapter1(string1);
+        StringTypeAdapter<StringType2> adapter2(string2);
+        StringTypeAdapter<StringType3> adapter3(string3);
+        StringTypeAdapter<StringType4> adapter4(string4);
+
+        UChar* buffer;
+        bool overflow = false;
+        unsigned length = adapter1.length();
+        sumWithOverflow(length, adapter2.length(), overflow);
+        sumWithOverflow(length, adapter3.length(), overflow);
+        sumWithOverflow(length, adapter4.length(), overflow);
+        if (overflow)
+            return 0;
+        PassRefPtr<UStringImpl> resultImpl = UStringImpl::tryCreateUninitialized(length, buffer);
+        if (!resultImpl)
+            return 0;
+
+        UChar* result = buffer;
+        adapter1.writeTo(result);
+        result += adapter1.length();
+        adapter2.writeTo(result);
+        result += adapter2.length();
+        adapter3.writeTo(result);
+        result += adapter3.length();
+        adapter4.writeTo(result);
+
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2, typename StringType3, typename StringType4, typename StringType5>
+    PassRefPtr<UStringImpl> tryMakeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5)
+    {
+        StringTypeAdapter<StringType1> adapter1(string1);
+        StringTypeAdapter<StringType2> adapter2(string2);
+        StringTypeAdapter<StringType3> adapter3(string3);
+        StringTypeAdapter<StringType4> adapter4(string4);
+        StringTypeAdapter<StringType5> adapter5(string5);
+
+        UChar* buffer;
+        bool overflow = false;
+        unsigned length = adapter1.length();
+        sumWithOverflow(length, adapter2.length(), overflow);
+        sumWithOverflow(length, adapter3.length(), overflow);
+        sumWithOverflow(length, adapter4.length(), overflow);
+        sumWithOverflow(length, adapter5.length(), overflow);
+        if (overflow)
+            return 0;
+        PassRefPtr<UStringImpl> resultImpl = UStringImpl::tryCreateUninitialized(length, buffer);
+        if (!resultImpl)
+            return 0;
+
+        UChar* result = buffer;
+        adapter1.writeTo(result);
+        result += adapter1.length();
+        adapter2.writeTo(result);
+        result += adapter2.length();
+        adapter3.writeTo(result);
+        result += adapter3.length();
+        adapter4.writeTo(result);
+        result += adapter4.length();
+        adapter5.writeTo(result);
+
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2, typename StringType3, typename StringType4, typename StringType5, typename StringType6>
+    PassRefPtr<UStringImpl> tryMakeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5, StringType6 string6)
+    {
+        StringTypeAdapter<StringType1> adapter1(string1);
+        StringTypeAdapter<StringType2> adapter2(string2);
+        StringTypeAdapter<StringType3> adapter3(string3);
+        StringTypeAdapter<StringType4> adapter4(string4);
+        StringTypeAdapter<StringType5> adapter5(string5);
+        StringTypeAdapter<StringType6> adapter6(string6);
+
+        UChar* buffer;
+        bool overflow = false;
+        unsigned length = adapter1.length();
+        sumWithOverflow(length, adapter2.length(), overflow);
+        sumWithOverflow(length, adapter3.length(), overflow);
+        sumWithOverflow(length, adapter4.length(), overflow);
+        sumWithOverflow(length, adapter5.length(), overflow);
+        sumWithOverflow(length, adapter6.length(), overflow);
+        if (overflow)
+            return 0;
+        PassRefPtr<UStringImpl> resultImpl = UStringImpl::tryCreateUninitialized(length, buffer);
+        if (!resultImpl)
+            return 0;
+
+        UChar* result = buffer;
+        adapter1.writeTo(result);
+        result += adapter1.length();
+        adapter2.writeTo(result);
+        result += adapter2.length();
+        adapter3.writeTo(result);
+        result += adapter3.length();
+        adapter4.writeTo(result);
+        result += adapter4.length();
+        adapter5.writeTo(result);
+        result += adapter5.length();
+        adapter6.writeTo(result);
+
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2, typename StringType3, typename StringType4, typename StringType5, typename StringType6, typename StringType7>
+    PassRefPtr<UStringImpl> tryMakeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5, StringType6 string6, StringType7 string7)
+    {
+        StringTypeAdapter<StringType1> adapter1(string1);
+        StringTypeAdapter<StringType2> adapter2(string2);
+        StringTypeAdapter<StringType3> adapter3(string3);
+        StringTypeAdapter<StringType4> adapter4(string4);
+        StringTypeAdapter<StringType5> adapter5(string5);
+        StringTypeAdapter<StringType6> adapter6(string6);
+        StringTypeAdapter<StringType7> adapter7(string7);
+
+        UChar* buffer;
+        bool overflow = false;
+        unsigned length = adapter1.length();
+        sumWithOverflow(length, adapter2.length(), overflow);
+        sumWithOverflow(length, adapter3.length(), overflow);
+        sumWithOverflow(length, adapter4.length(), overflow);
+        sumWithOverflow(length, adapter5.length(), overflow);
+        sumWithOverflow(length, adapter6.length(), overflow);
+        sumWithOverflow(length, adapter7.length(), overflow);
+        if (overflow)
+            return 0;
+        PassRefPtr<UStringImpl> resultImpl = UStringImpl::tryCreateUninitialized(length, buffer);
+        if (!resultImpl)
+            return 0;
+
+        UChar* result = buffer;
+        adapter1.writeTo(result);
+        result += adapter1.length();
+        adapter2.writeTo(result);
+        result += adapter2.length();
+        adapter3.writeTo(result);
+        result += adapter3.length();
+        adapter4.writeTo(result);
+        result += adapter4.length();
+        adapter5.writeTo(result);
+        result += adapter5.length();
+        adapter6.writeTo(result);
+        result += adapter6.length();
+        adapter7.writeTo(result);
+
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2, typename StringType3, typename StringType4, typename StringType5, typename StringType6, typename StringType7, typename StringType8>
+    PassRefPtr<UStringImpl> tryMakeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5, StringType6 string6, StringType7 string7, StringType8 string8)
+    {
+        StringTypeAdapter<StringType1> adapter1(string1);
+        StringTypeAdapter<StringType2> adapter2(string2);
+        StringTypeAdapter<StringType3> adapter3(string3);
+        StringTypeAdapter<StringType4> adapter4(string4);
+        StringTypeAdapter<StringType5> adapter5(string5);
+        StringTypeAdapter<StringType6> adapter6(string6);
+        StringTypeAdapter<StringType7> adapter7(string7);
+        StringTypeAdapter<StringType8> adapter8(string8);
+
+        UChar* buffer;
+        bool overflow = false;
+        unsigned length = adapter1.length();
+        sumWithOverflow(length, adapter2.length(), overflow);
+        sumWithOverflow(length, adapter3.length(), overflow);
+        sumWithOverflow(length, adapter4.length(), overflow);
+        sumWithOverflow(length, adapter5.length(), overflow);
+        sumWithOverflow(length, adapter6.length(), overflow);
+        sumWithOverflow(length, adapter7.length(), overflow);
+        sumWithOverflow(length, adapter8.length(), overflow);
+        if (overflow)
+            return 0;
+        PassRefPtr<UStringImpl> resultImpl = UStringImpl::tryCreateUninitialized(length, buffer);
+        if (!resultImpl)
+            return 0;
+
+        UChar* result = buffer;
+        adapter1.writeTo(result);
+        result += adapter1.length();
+        adapter2.writeTo(result);
+        result += adapter2.length();
+        adapter3.writeTo(result);
+        result += adapter3.length();
+        adapter4.writeTo(result);
+        result += adapter4.length();
+        adapter5.writeTo(result);
+        result += adapter5.length();
+        adapter6.writeTo(result);
+        result += adapter6.length();
+        adapter7.writeTo(result);
+        result += adapter7.length();
+        adapter8.writeTo(result);
+
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2>
+    UString makeString(StringType1 string1, StringType2 string2)
+    {
+        PassRefPtr<UStringImpl> resultImpl = tryMakeString(string1, string2);
+        if (!resultImpl)
+            CRASH();
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2, typename StringType3>
+    UString makeString(StringType1 string1, StringType2 string2, StringType3 string3)
+    {
+        PassRefPtr<UStringImpl> resultImpl = tryMakeString(string1, string2, string3);
+        if (!resultImpl)
+            CRASH();
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2, typename StringType3, typename StringType4>
+    UString makeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4)
+    {
+        PassRefPtr<UStringImpl> resultImpl = tryMakeString(string1, string2, string3, string4);
+        if (!resultImpl)
+            CRASH();
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2, typename StringType3, typename StringType4, typename StringType5>
+    UString makeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5)
+    {
+        PassRefPtr<UStringImpl> resultImpl = tryMakeString(string1, string2, string3, string4, string5);
+        if (!resultImpl)
+            CRASH();
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2, typename StringType3, typename StringType4, typename StringType5, typename StringType6>
+    UString makeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5, StringType6 string6)
+    {
+        PassRefPtr<UStringImpl> resultImpl = tryMakeString(string1, string2, string3, string4, string5, string6);
+        if (!resultImpl)
+            CRASH();
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2, typename StringType3, typename StringType4, typename StringType5, typename StringType6, typename StringType7>
+    UString makeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5, StringType6 string6, StringType7 string7)
+    {
+        PassRefPtr<UStringImpl> resultImpl = tryMakeString(string1, string2, string3, string4, string5, string6, string7);
+        if (!resultImpl)
+            CRASH();
+        return resultImpl;
+    }
+
+    template<typename StringType1, typename StringType2, typename StringType3, typename StringType4, typename StringType5, typename StringType6, typename StringType7, typename StringType8>
+    UString makeString(StringType1 string1, StringType2 string2, StringType3 string3, StringType4 string4, StringType5 string5, StringType6 string6, StringType7 string7, StringType8 string8)
+    {
+        PassRefPtr<UStringImpl> resultImpl = tryMakeString(string1, string2, string3, string4, string5, string6, string7, string8);
+        if (!resultImpl)
+            CRASH();
+        return resultImpl;
+    }
+
 } // namespace JSC
 
 namespace WTF {

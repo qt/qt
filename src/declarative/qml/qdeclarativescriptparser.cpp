@@ -488,8 +488,8 @@ bool ProcessAST::visit(AST::UiImport *node)
     } else if (import.type == QDeclarativeScriptParser::Import::Script) {
         QDeclarativeError error;
         error.setDescription(QCoreApplication::translate("QDeclarativeParser","Script import requires a qualifier"));
-        error.setLine(node->importIdToken.startLine);
-        error.setColumn(node->importIdToken.startColumn);
+        error.setLine(node->fileNameToken.startLine);
+        error.setColumn(node->fileNameToken.startColumn);
         _parser->_errors << error;
         return false;
     }
@@ -535,7 +535,8 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         // { "time", Object::DynamicProperty::Time, "QTime" },
         // { "date", Object::DynamicProperty::Date, "QDate" },
         { "date", Object::DynamicProperty::DateTime, "QDateTime" },
-        { "var", Object::DynamicProperty::Variant, "QVariant" }
+        { "var", Object::DynamicProperty::Variant, "QVariant" },
+        { "variant", Object::DynamicProperty::Variant, "QVariant" }
     };
     const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) /
                                          sizeof(propTypeNameToTypes[0]);
@@ -563,7 +564,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
                 _parser->_errors << error;
                 return false;
             }
-
+            
             signal.parameterTypes << qtType;
             signal.parameterNames << p->name->asString().toUtf8();
             p = p->finish();
@@ -645,6 +646,11 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         property.name = name.toUtf8();
         property.location = location(node->firstSourceLocation(),
                                      node->lastSourceLocation());
+
+        if (memberType == QLatin1String("var")) 
+            qWarning().nospace() << qPrintable(_parser->_scriptFile) << ":" << property.location.start.line << ":" 
+                                 << property.location.start.column << ": var type has been replaced by variant.  "
+                                 << "Support will be removed entirely shortly.";
 
         if (node->expression) { // default value
             property.defaultValue = new Property;
@@ -828,6 +834,7 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
         if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
 
             Object::DynamicSlot slot;
+            slot.location = location(funDecl->firstSourceLocation(), funDecl->lastSourceLocation());
 
             AST::FormalParameterList *f = funDecl->formals;
             while (f) {
@@ -908,6 +915,7 @@ bool QDeclarativeScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
     clear();
 
     const QString fileName = url.toString();
+    _scriptFile = fileName;
 
     QTextStream stream(qmldata, QIODevice::ReadOnly);
     stream.setCodec("UTF-8");

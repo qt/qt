@@ -38,11 +38,11 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLStyleElement);
 
 static const HashTableValue JSHTMLStyleElementTableValues[6] =
 {
-    { "disabled", DontDelete, (intptr_t)jsHTMLStyleElementDisabled, (intptr_t)setJSHTMLStyleElementDisabled },
-    { "media", DontDelete, (intptr_t)jsHTMLStyleElementMedia, (intptr_t)setJSHTMLStyleElementMedia },
-    { "type", DontDelete, (intptr_t)jsHTMLStyleElementType, (intptr_t)setJSHTMLStyleElementType },
-    { "sheet", DontDelete|ReadOnly, (intptr_t)jsHTMLStyleElementSheet, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLStyleElementConstructor, (intptr_t)0 },
+    { "disabled", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLStyleElementDisabled), (intptr_t)setJSHTMLStyleElementDisabled },
+    { "media", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLStyleElementMedia), (intptr_t)setJSHTMLStyleElementMedia },
+    { "type", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLStyleElementType), (intptr_t)setJSHTMLStyleElementType },
+    { "sheet", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLStyleElementSheet), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLStyleElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -143,41 +143,45 @@ bool JSHTMLStyleElement::getOwnPropertyDescriptor(ExecState* exec, const Identif
     return getStaticValueDescriptor<JSHTMLStyleElement, Base>(exec, &JSHTMLStyleElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLStyleElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLStyleElementDisabled(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
+    JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThis->impl());
-    return jsBoolean(imp->disabled());
+    JSValue result = jsBoolean(imp->disabled());
+    return result;
 }
 
-JSValue jsHTMLStyleElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLStyleElementMedia(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
+    JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThis->impl());
-    return jsString(exec, imp->media());
+    JSValue result = jsString(exec, imp->media());
+    return result;
 }
 
-JSValue jsHTMLStyleElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLStyleElementType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
+    JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
-JSValue jsHTMLStyleElementSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLStyleElementSheet(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
+    JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->sheet()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->sheet()));
+    return result;
 }
 
-JSValue jsHTMLStyleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLStyleElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLStyleElement* domObject = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
+    JSHTMLStyleElement* domObject = static_cast<JSHTMLStyleElement*>(asObject(slotBase));
     return JSHTMLStyleElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLStyleElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -187,19 +191,22 @@ void JSHTMLStyleElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLStyleElementDisabled(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(thisObject)->impl());
+    JSHTMLStyleElement* castedThisObj = static_cast<JSHTMLStyleElement*>(thisObject);
+    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThisObj->impl());
     imp->setDisabled(value.toBoolean(exec));
 }
 
 void setJSHTMLStyleElementMedia(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(thisObject)->impl());
+    JSHTMLStyleElement* castedThisObj = static_cast<JSHTMLStyleElement*>(thisObject);
+    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThisObj->impl());
     imp->setMedia(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLStyleElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(thisObject)->impl());
+    JSHTMLStyleElement* castedThisObj = static_cast<JSHTMLStyleElement*>(thisObject);
+    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThisObj->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 

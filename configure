@@ -630,6 +630,7 @@ MIN_DBUS_1_VERSION=0.93
 CFG_CONFIGURE_EXIT_ON_ERROR=yes
 CFG_PROFILE=no
 CFG_EXCEPTIONS=unspecified
+CFG_GUI=auto # (yes|no|auto)
 CFG_SCRIPT=auto # (yes|no|auto)
 CFG_SCRIPTTOOLS=auto # (yes|no|auto)
 CFG_XMLPATTERNS=auto # (yes|no|auto)
@@ -680,10 +681,10 @@ CFG_NOBUILD_PARTS=""
 CFG_RELEASE_QMAKE=no
 CFG_PHONON=auto
 CFG_PHONON_BACKEND=yes
-CFG_MULTIMEDIA=yes
-CFG_MEDIASERVICE=yes
+CFG_MULTIMEDIA=auto
+CFG_MEDIASERVICE=auto
 CFG_AUDIO_BACKEND=auto
-CFG_SVG=yes
+CFG_SVG=auto
 CFG_DECLARATIVE=auto
 CFG_WEBKIT=auto # (yes|no|auto)
 CFG_JAVASCRIPTCORE_JIT=auto
@@ -1813,6 +1814,17 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    gui)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
+            CFG_GUI="yes"
+        else
+            if [ "$VAL" = "no" ]; then
+                CFG_GUI="no"
+            else
+                UNKNOWN_OPT=yes
+            fi
+        fi
+        ;;
     qdbus|dbus)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "linked" ]; then
             CFG_DBUS="$VAL"
@@ -2170,6 +2182,10 @@ if [ "$CFG_QCONFIG" != "full" ] && [ "$CFG_QT3SUPPORT" = "yes" ]; then
     echo "Warning: '-qconfig $CFG_QCONFIG' will disable the qt3support library."
     CFG_QT3SUPPORT="no"
 fi
+if [ "$CFG_GUI" = "no" ]; then
+    echo "Warning: -no-gui will disable the qt3support library."
+    CFG_QT3SUPPORT="no"
+fi
 
 # update QT_CONFIG to show our current predefined configuration
 case "$CFG_QCONFIG" in
@@ -2314,6 +2330,17 @@ if [ "$OPT_SHADOW" = "yes" ]; then
         echo "perl \"$relpath/bin/syncqt\" -outdir \"$outpath\" \"\$@\"" >>"$outpath/bin/syncqt"
         chmod 755 "$outpath/bin/syncqt"
     fi
+
+    for i in createpackage patch_capabilities; do
+        rm -f "$outpath/bin/$i"
+        if [ -x "$relpath/bin/$i" ]; then
+            mkdir -p "$outpath/bin"
+            echo "#!/bin/sh" >"$outpath/bin/$i"
+            echo "QTDIR=\"$relpath\"; export QTDIR" >>"$outpath/bin/$i"
+            echo "\"$relpath/bin/$i\" \"\$@\"" >>"$outpath/bin/$i"
+            chmod 755 "$outpath/bin/$i"
+        fi
+    done
 
     # symlink the mkspecs directory
     mkdir -p "$outpath/mkspecs"
@@ -3359,7 +3386,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-system-libmng] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg] [-make <part>]
         [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
-        [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked]
+        [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked] [-no-gui]
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
@@ -3628,6 +3655,8 @@ Additional options:
 
  *  -no-optimized-qmake ... Do not build qmake optimized.
     -optimized-qmake ...... Build qmake optimized.
+
+    -no-gui ............ Don't build the Qt GUI library
 
  $NSN  -no-nis ............ Do not compile NIS support.
  $NSY  -nis ............... Compile NIS support.
@@ -5074,6 +5103,15 @@ if [ "$CFG_DBUS" != "no" ]; then
     fi
 fi
 
+if [ "$CFG_MULTIMEDIA" = "auto" ]; then
+    CFG_MULTIMEDIA="$CFG_GUI"
+fi
+
+if [ "$CFG_MULTIMEDIA" = "yes" ] && [ "$CFG_GUI" = "no" ]; then
+    echo "QtMultimedia requested, but it can't be built without QtGui"
+    exit 1
+fi
+
 # Generate a CRC of the namespace for using in constants for the Carbon port.
 # This should mean that you really *can* load two Qt's and have our custom
 # Carbon events work.
@@ -5126,28 +5164,56 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         fi
     fi
 
+    if [ "$CFG_GUI" = "no" ]; then
+        if [ "$CFG_PHONON" = "auto" ]; then
+            CFG_PHONON=no
+        fi
+        if [ "$CFG_PHONON" != "no" ]; then
+            echo "Phonon enabled, but GUI disabled."
+            echo " You might need to either enable the GUI or disable Phonon"
+            exit 1
+        fi
+    fi
+
+    if [ "$CFG_GUI" = "no" ]; then
+        if [ "$CFG_MEDIASERVICE" = "auto" ]; then
+            CFG_MEDIASERVICE=no
+        fi
+        if [ "$CFG_MEDIASERVICE" != "no" ]; then
+            echo "Mediaservice enabled, but GUI disabled."
+            echo " You might need to either enable the GUI or disable Mediaservice"
+            exit 1
+        fi
+    elif [ "$CFG_MEDIASERVICE" = "auto" ]; then
+        CFG_MEDIASERVICE=yes
+    fi
+
     # Auto-detect GStreamer support (needed for both Phonon & QtMultimedia)
-    if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ]; then
-            QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-            QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-        fi
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/gstreamer "GStreamer" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER $X11TESTS_FLAGS; then
-            CFG_GSTREAMER=yes
-            QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
-            QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
-        else
-            if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                echo "Gstreamer support cannot be enabled due to functionality tests!"
-                echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                echo " If you believe this message is in error you may use the continue"
-                echo " switch (-continue) to $0 to continue."
-                exit 101
-            else
-                CFG_GSTREAMER=no
+    if [ "$CFG_PHONON" = "yes" -o "$CFG_MULTIMEDIA" = "yes" ]; then
+        if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
+            if [ -n "$PKG_CONFIG" ]; then
+                QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
+                QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
             fi
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/gstreamer "GStreamer" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER $X11TESTS_FLAGS; then
+                CFG_GSTREAMER=yes
+                QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
+                QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
+            else
+                if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                    echo "Gstreamer support cannot be enabled due to functionality tests!"
+                    echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                    echo " If you believe this message is in error you may use the continue"
+                    echo " switch (-continue) to $0 to continue."
+                    exit 101
+                else
+                    CFG_GSTREAMER=no
+                fi
+            fi
+        elif [ "$CFG_GLIB" = "no" ]; then
+            CFG_GSTREAMER=no
         fi
-    elif [ "$CFG_GLIB" = "no" ]; then
+    else
         CFG_GSTREAMER=no
     fi
 
@@ -5251,6 +5317,16 @@ if [ "$PLATFORM_X11" = "yes" ]; then
     fi
 
     # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
+    if [ "$CFG_GUI" = "no" ]; then
+        if [ "$CFG_OPENGL" = "auto" ]; then
+            CFG_OPENGL=no
+        fi
+        if [ "$CFG_OPENGL" != "no" ]; then
+            echo "OpenGL enabled, but GUI disabled."
+            echo " You might need to either enable the GUI or disable OpenGL"
+            exit 1
+        fi
+    fi
     if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
             CFG_OPENGL=desktop
@@ -5616,6 +5692,16 @@ fi
 if [ "$PLATFORM_QWS" = "yes" ]; then
 
     # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
+    if [ "$CFG_GUI" = "no" ]; then
+        if [ "$CFG_OPENGL" = "auto" ]; then
+            CFG_OPENGL=no
+        fi
+        if [ "$CFG_OPENGL" != "no" ]; then
+            echo "OpenGL enabled, but GUI disabled."
+            echo " You might need to either enable the GUI or disable OpenGL"
+            exit 1
+        fi
+    fi
     if [ "$CFG_OPENGL" = "yes" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es2
@@ -6418,6 +6504,15 @@ elif [ "$CFG_LIBFREETYPE" = "system" ]; then
 else
     QT_CONFIG="$QT_CONFIG freetype"
 fi
+if [ "$CFG_GUI" = "auto" ]; then
+    CFG_GUI="yes"
+fi
+if [ "$CFG_GUI" = "no" ]; then
+    QT_CONFIG="$QT_CONFIG no-gui"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GUI"
+fi
+
 
 if [ "x$PLATFORM_MAC" = "xyes" ] && [ "$XPLATFORM" != "win32-g++" ]; then
     #On Mac we implicitly link against libz, so we
@@ -6694,6 +6789,12 @@ EOF
 	;;
 esac
 
+if [ "$CFG_GUI" = "no" ]; then
+    # WebKit requires QtGui
+    canBuildWebKit="no"
+fi
+
+
 CFG_CONCURRENT="yes"
 if [ "$canBuildQtConcurrent" = "no" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CONCURRENT"
@@ -6726,6 +6827,15 @@ fi
 
 if [ "$CFG_AUDIO_BACKEND" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG audio-backend"
+fi
+
+if [ "$CFG_SVG" = "auto" ]; then
+    CFG_SVG=$CFG_GUI
+fi
+
+if [ "$CFG_SVG" = "yes" ] && [ "$CFG_GUI" = "no" ]; then
+    echo "QtSvg requested, but it can't be built without QtGui"
+    exit 1
 fi
 
 if [ "$CFG_SVG" = "yes" ]; then
@@ -6775,13 +6885,13 @@ fi
 
 
 if [ "$CFG_DECLARATIVE" = "yes" ]; then
-    if [ "$CFG_SCRIPT" = "no" ]; then
-        echo "Error: QtDeclarative was requested, but it can't be built due to QtScript being disabled."
+    if [ "$CFG_SCRIPT" = "no" -o "$CFG_GUI" = "no" ]; then
+        echo "Error: QtDeclarative was requested, but it can't be built due to QtScript or QtGui being disabled."
         exit 1
     fi
 fi
 if [ "$CFG_DECLARATIVE" = "auto" ]; then
-    if [ "$CFG_SCRIPT" = "no" ]; then
+    if [ "$CFG_SCRIPT" = "no" -o "$CFG_GUI" = "no" ]; then
             CFG_DECLARATIVE=no
     else
             CFG_DECLARATIVE=yes
@@ -6899,7 +7009,7 @@ esac
 #     minimal-config small-config medium-config large-config full-config
 #
 #   Different edition modules:
-#     network canvas table xml opengl sql
+#     gui network canvas table xml opengl sql
 #
 # Things that do not affect the Qt API/ABI:
 #     stl
@@ -7666,6 +7776,7 @@ echo "Qt 3 compatibility ..... $CFG_QT3SUPPORT"
 [ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module .......... yes (run-time)"
 [ "$CFG_DBUS" = "linked" ] && echo "QtDBus module .......... yes (linked)"
 echo "QtConcurrent code ...... $CFG_CONCURRENT"
+echo "QtGui module ........... $CFG_GUI"
 echo "QtScript module ........ $CFG_SCRIPT"
 echo "QtScriptTools module ... $CFG_SCRIPTTOOLS"
 echo "QtXmlPatterns module ... $CFG_XMLPATTERNS"

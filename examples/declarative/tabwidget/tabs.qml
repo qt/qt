@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 TabWidget {
     id: tabs
@@ -13,7 +13,7 @@ TabWidget {
             Text {
                 anchors.centerIn: parent; horizontalAlignment: Qt.AlignHCenter
                 text: "Roses are red"; font.pixelSize: 20
-                wrap: true; width: parent.width - 20
+                wrapMode: Text.WordWrap; width: parent.width - 20
             }
         }
     }
@@ -27,7 +27,7 @@ TabWidget {
             Text {
                 anchors.centerIn: parent; horizontalAlignment: Qt.AlignHCenter
                 text: "Flower stems are green"; font.pixelSize: 20
-                wrap: true; width: parent.width - 20
+                wrapMode: Text.WordWrap; width: parent.width - 20
             }
         }
     }
@@ -41,7 +41,7 @@ TabWidget {
             Text {
                 anchors.centerIn: parent; horizontalAlignment: Qt.AlignHCenter
                 text: "Violets are blue"; font.pixelSize: 20
-                wrap: true; width: parent.width - 20
+                wrapMode: Text.WordWrap; width: parent.width - 20
             }
         }
     }

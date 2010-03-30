@@ -724,7 +724,7 @@
     causes an application to perform an action. There are two kinds of
     keyboard accelerators: Alt key and Ctrl key accelerators.
 
-    \section3 Alt Key Accellerators
+    \section3 Alt Key Accelerators
 
     Alt key accelerators are used in menu selection and on buttons.
     The underlined character in a menu item or button label signifies

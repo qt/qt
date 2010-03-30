@@ -71,6 +71,8 @@
 
 #include <qdbusmessage.h>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 class QDBusMessage;
@@ -331,4 +333,5 @@ extern QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTree
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_DBUS
 #endif

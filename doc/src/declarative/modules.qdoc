@@ -86,7 +86,7 @@ The second exception is explained in more detail in the section below on Namespa
 \section2 The Import Path
 
 Installed modules are searched for on the import path.
-The \c -L option to the \l {Qt Declarative UI Runtime}{qml} runtime adds paths to the import path.
+The \c -I option to the \l {Qt Declarative UI Runtime}{qml} runtime adds paths to the import path.
 
 From C++, the path is available via \l QDeclarativeEngine::importPathList() and can be prepended to
 using \l QDeclarativeEngine::addImportPath().
@@ -114,19 +114,7 @@ Installed files do not need to import the module of which they are a part, as th
 to the other QML files in the module as relative (local) files, but
 if the module is imported from a remote location, those files must nevertheless be listed in
 the \c qmldir file. Types which you do not wish to export to users of your module
-may be marked with the \c internal keyword:
-
-\code
-internal <TypeName> <File>
-\endcode
-
-\c plugin <Name> [<Path>] lines are used to add \l{QDeclarativeExtensionPlugin}{QML C++ plugins}
-to the module. <Name> is the
-name of the library. <Path> is an optional argument specifying the full path to the directory
-containing the plugin file; if it is omitted then the directory is assumed to be the same as
-the directory of the \c qmldir file. Note that <Name> is not usually the same as the file name
-of the plugin binary, which is platform dependent; e.g. the library MyAppTypes would produce
-a libMyAppTypes.so on Linux and MyAppTypes.dll on Windows. 
+may be marked with the \c internal keyword: \c internal <TypeName> <File>.
 
 The same type can be provided by different files in different versions, in which
 case later earlier versions (eg. 1.2) must precede earlier versions (eg. 1.0),
@@ -141,6 +129,23 @@ of installed software, since a versioned import \e only imports types for that v
 leaving other identifiers available, even if the actual installed version might otherwise
 provide those identifiers.
 
+\c plugin <Name> [<Path>] lines are used to add \l{QDeclarativeExtensionPlugin}{QML C++ plugins}
+to the module. 
+
+<Name> is the name of the library.  It is usually not the same as the file name
+of the plugin binary, which is platform dependent; e.g. the library MyAppTypes would produce
+a libMyAppTypes.so on Linux and MyAppTypes.dll on Windows. 
+By default the engine searches for the plugin library in the directory containing the \c qmldir
+file.  The \c -P option to the \l {Qt Declarative UI Runtime}{qml} runtime adds paths to the 
+plugin search path. 
+From C++, the path is available via \l QDeclarativeEngine::pluginPathList() and can be prepended to
+using \l QDeclarativeEngine::addPluginPath().
+
+<Path> is an optional argument specifying either an absolute path to the directory containing the
+plugin file, or a relative path from the directory containing the \c qmldir file to the directory 
+containing the plugin file.
+
+
 \section2 Namespaces - Named Imports
 
 When importing content it by default imports types into the global namespace.
@@ -150,10 +155,10 @@ types to be referenced, or purely for readability.
 To import a module into a namespace:
 
 \code
-import Qt 4.6 as TheQtLibrary
+import Qt 4.7 as TheQtLibrary
 \endcode
 
-Types from Qt 4.6 may then be used, but only by qualifying them with the namespace:
+Types from the Qt 4.7 module may then be used, but only by qualifying them with the namespace:
 
 \code
 TheQtLibrary.Rectangle { ... }
@@ -163,7 +168,7 @@ Multiple modules can be imported into the same namespace in the same way that mu
 modules can be imported into the global namespace:
 
 \code
-import Qt 4.6 as Nokia
+import Qt 4.7 as Nokia
 import Ovi 1.0 as Nokia
 \endcode
 

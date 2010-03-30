@@ -73,7 +73,9 @@ private slots:
 
     void sendRequestSoftwareInputPanelEvent();
     void setHAlignClearCache();
+    void focusOutClearSelection();
 
+    void echoMode();
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -112,6 +114,8 @@ void tst_qdeclarativetextinput::text()
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->text(), QString(""));
+
+        delete textinputObject;
     }
 
     for (int i = 0; i < standard.size(); i++)
@@ -123,6 +127,8 @@ void tst_qdeclarativetextinput::text()
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->text(), standard.at(i));
+
+        delete textinputObject;
     }
 
 }
@@ -137,6 +143,8 @@ void tst_qdeclarativetextinput::width()
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->width(), 1.);//1 for the cursor
+
+        delete textinputObject;
     }
 
     for (int i = 0; i < standard.size(); i++)
@@ -152,6 +160,8 @@ void tst_qdeclarativetextinput::width()
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->width(), qreal(metricWidth) + 1.);//1 for the cursor
+
+        delete textinputObject;
     }
 }
 
@@ -168,6 +178,8 @@ void tst_qdeclarativetextinput::font()
         QCOMPARE(textinputObject->font().pointSize(), 40);
         QCOMPARE(textinputObject->font().bold(), false);
         QCOMPARE(textinputObject->font().italic(), false);
+
+        delete textinputObject;
     }
 
     { 
@@ -179,6 +191,8 @@ void tst_qdeclarativetextinput::font()
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->font().bold(), true);
         QCOMPARE(textinputObject->font().italic(), false);
+
+        delete textinputObject;
     }
 
     { 
@@ -190,6 +204,8 @@ void tst_qdeclarativetextinput::font()
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->font().italic(), true);
         QCOMPARE(textinputObject->font().bold(), false);
+
+        delete textinputObject;
     }
  
     { 
@@ -202,6 +218,8 @@ void tst_qdeclarativetextinput::font()
         QCOMPARE(textinputObject->font().family(), QString("Helvetica"));
         QCOMPARE(textinputObject->font().bold(), false);
         QCOMPARE(textinputObject->font().italic(), false);
+
+        delete textinputObject;
     }
 
     { 
@@ -212,6 +230,8 @@ void tst_qdeclarativetextinput::font()
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->font().family(), QString(""));
+
+        delete textinputObject;
     }
 }
 
@@ -226,6 +246,8 @@ void tst_qdeclarativetextinput::color()
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->color(), QColor(colorStrings.at(i)));
+
+        delete textinputObject;
     }
 
     //test selection color
@@ -237,6 +259,8 @@ void tst_qdeclarativetextinput::color()
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->selectionColor(), QColor(colorStrings.at(i)));
+
+        delete textinputObject;
     }
 
     //test selected text color
@@ -248,6 +272,8 @@ void tst_qdeclarativetextinput::color()
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->selectedTextColor(), QColor(colorStrings.at(i)));
+
+        delete textinputObject;
     }
 
     {
@@ -262,6 +288,8 @@ void tst_qdeclarativetextinput::color()
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->color(), testColor);
+
+        delete textinputObject;
     }
 }
 
@@ -344,6 +372,8 @@ void tst_qdeclarativetextinput::selection()
     QVERIFY(textinputObject->selectedText().size() == 10);
     textinputObject->setSelectionEnd(100);
     QVERIFY(textinputObject->selectedText().size() == 10);
+
+    delete textinputObject;
 }
 
 void tst_qdeclarativetextinput::maxLength()
@@ -371,6 +401,8 @@ void tst_qdeclarativetextinput::maxLength()
         QTest::keyPress(canvas, Qt::Key_A);
         QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
     }
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextinput::masks()
@@ -393,6 +425,8 @@ void tst_qdeclarativetextinput::masks()
         QTest::keyPress(canvas, Qt::Key_A);
         QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
     }
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextinput::validators()
@@ -485,6 +519,8 @@ void tst_qdeclarativetextinput::validators()
     QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
     QCOMPARE(strInput->text(), QLatin1String("aaaa"));
     QCOMPARE(strInput->hasAcceptableInput(), true);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextinput::inputMethodHints()
@@ -499,6 +535,8 @@ void tst_qdeclarativetextinput::inputMethodHints()
     QVERIFY(textinputObject->inputMethodHints() & Qt::ImhNoPredictiveText);
     textinputObject->setInputMethodHints(Qt::ImhUppercaseOnly);
     QVERIFY(textinputObject->inputMethodHints() & Qt::ImhUppercaseOnly);
+
+    delete canvas;
 }
 
 /*
@@ -536,6 +574,8 @@ void tst_qdeclarativetextinput::navigation()
     QVERIFY(input->hasFocus() == false);
     simulateKey(canvas, Qt::Key_Left);
     QVERIFY(input->hasFocus() == true);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextinput::cursorDelegate()
@@ -563,6 +603,8 @@ void tst_qdeclarativetextinput::cursorDelegate()
     //Test Delegate gets deleted
     textInputObject->setCursorDelegate(0);
     QVERIFY(!textInputObject->findChild<QDeclarativeItem*>("cursorInstance"));
+
+    delete view;
 }
 
 void tst_qdeclarativetextinput::readOnly()
@@ -585,6 +627,46 @@ void tst_qdeclarativetextinput::readOnly()
     simulateKey(canvas, Qt::Key_Space);
     simulateKey(canvas, Qt::Key_Escape);
     QCOMPARE(input->text(), initial);
+
+    delete canvas;
+}
+
+void tst_qdeclarativetextinput::echoMode()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/echoMode.qml");
+    canvas->show();
+    canvas->setFocus();
+
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeTextInput *input = qobject_cast<QDeclarativeTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
+
+    QVERIFY(input != 0);
+    QTRY_VERIFY(input->hasFocus() == true);
+    QString initial = input->text();
+    QCOMPARE(initial, QLatin1String("ABCDefgh"));
+    QCOMPARE(input->echoMode(), QDeclarativeTextInput::Normal);
+    QCOMPARE(input->displayText(), input->text());
+    input->setEchoMode(QDeclarativeTextInput::NoEcho);
+    QCOMPARE(input->text(), initial);
+    QCOMPARE(input->displayText(), QLatin1String(""));
+    QCOMPARE(input->passwordCharacter(), QLatin1String("*"));
+    input->setEchoMode(QDeclarativeTextInput::Password);
+    QCOMPARE(input->text(), initial);
+    QCOMPARE(input->displayText(), QLatin1String("********"));
+    input->setPasswordCharacter(QChar('Q'));
+    QCOMPARE(input->passwordCharacter(), QLatin1String("Q"));
+    QCOMPARE(input->text(), initial);
+    QCOMPARE(input->displayText(), QLatin1String("QQQQQQQQ"));
+    input->setEchoMode(QDeclarativeTextInput::PasswordEchoOnEdit);
+    QCOMPARE(input->text(), initial);
+    QCOMPARE(input->displayText(), QLatin1String("QQQQQQQQ"));
+    QTest::keyPress(canvas, Qt::Key_A);//Clearing previous entry is part of PasswordEchoOnEdit
+    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QCOMPARE(input->text(), QLatin1String("a"));
+    QCOMPARE(input->displayText(), QLatin1String("a"));
+    input->setFocus(false);
+    QCOMPARE(input->displayText(), QLatin1String("Q"));
 }
 
 void tst_qdeclarativetextinput::simulateKey(QDeclarativeView *view, int key)
@@ -681,6 +763,29 @@ void tst_qdeclarativetextinput::setHAlignClearCache()
     QApplication::processEvents();
     //Changing the alignment should trigger a repaint
     QCOMPARE(input.nbPaint, 2);
+}
+
+void tst_qdeclarativetextinput::focusOutClearSelection()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QDeclarativeTextInput input;
+    QDeclarativeTextInput input2;
+    input.setText(QLatin1String("Hello world"));
+    input.setFocus(true);
+    scene.addItem(&input2);
+    scene.addItem(&input);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    input.setSelectionStart(2);
+    input.setSelectionEnd(5);
+    //The selection should work
+    QTRY_COMPARE(input.selectedText(), QLatin1String("llo"));
+    input2.setFocus(true);
+    QApplication::processEvents();
+    //The input lost the focus selection should be cleared
+    QTRY_COMPARE(input.selectedText(), QLatin1String(""));
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)

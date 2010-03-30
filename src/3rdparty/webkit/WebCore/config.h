@@ -25,7 +25,7 @@
 
 #include <wtf/Platform.h>
 
-#if PLATFORM(WIN_OS) && !defined(BUILDING_WX__) && !COMPILER(GCC)
+#if OS(WINDOWS) && !defined(BUILDING_WX__) && !COMPILER(GCC)
 #if defined(BUILDING_JavaScriptCore) || defined(BUILDING_WTF)
 #define JS_EXPORTDATA __declspec(dllexport)
 #else
@@ -36,8 +36,10 @@
 #else
 #define WEBKIT_EXPORTDATA __declspec(dllimport)
 #endif
+#define JS_EXPORTCLASS JS_EXPORTDATA
 #else
 #define JS_EXPORTDATA
+#define JS_EXPORTCLASS
 #define WEBKIT_EXPORTDATA
 #endif
 
@@ -47,7 +49,7 @@
 #define HAVE_FUNC_USLEEP 1
 #endif /* __APPLE__ */
 
-#if PLATFORM(WIN_OS)
+#if OS(WINDOWS)
 
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
@@ -73,7 +75,36 @@
 #endif
 #endif
 
-#endif /* PLATFORM(WIN_OS) */
+#endif /* OS(WINDOWS) */
+
+#if PLATFORM(ANDROID)
+#define WEBCORE_NAVIGATOR_VENDOR "Google Inc."
+// This must be defined before we include FastMalloc.h, below.
+#define USE_SYSTEM_MALLOC 1
+#define LOG_DISABLED 1
+#include <wtf/Assertions.h>
+// Central place to set which optional features Android uses.
+#define ENABLE_CHANNEL_MESSAGING 1
+#define ENABLE_DOM_STORAGE 1
+#undef ENABLE_FTPDIR  // Enabled by default in Platform.h
+#define ENABLE_FTPDIR 0
+#ifndef ENABLE_SVG
+#define ENABLE_SVG 0
+#endif
+#define ENABLE_VIDEO 1
+#define ENABLE_WORKERS 1
+#define ENABLE_XBL 0
+#define ENABLE_XHTMLMP 0
+#define ENABLE_XPATH 0
+#define ENABLE_XSLT 0
+#define ENABLE_ARCHIVE 0
+#define ENABLE_OFFLINE_WEB_APPLICATIONS 1
+#undef ENABLE_GEOLOCATION  // Disabled by default in Platform.h
+#define ENABLE_GEOLOCATION 1
+#undef ENABLE_INSPECTOR  // Enabled by default in Platform.h
+#define ENABLE_INSPECTOR 0
+#define ENABLE_EVENT_SOURCE 0
+#endif /* PLATFORM(ANDROID) */
 
 #ifdef __cplusplus
 
@@ -103,7 +134,7 @@
 
 #if COMPILER(MSVC)
 #define SKIP_STATIC_CONSTRUCTORS_ON_MSVC 1
-#else
+#elif !COMPILER(WINSCW)
 #define SKIP_STATIC_CONSTRUCTORS_ON_GCC 1
 #endif
 
@@ -141,12 +172,7 @@
 #define WTF_USE_NEW_THEME 1
 #endif // PLATFORM(MAC)
 
-#if PLATFORM(SYMBIAN)
-#undef WIN32
-#undef _WIN32
-#if COMPILER(WINSCW)
-#undef SKIP_STATIC_CONSTRUCTORS_ON_GCC
-#endif
+#if OS(SYMBIAN)
 #define USE_SYSTEM_MALLOC 1
 #define U_HAVE_INT8_T 0
 #define U_HAVE_INT16_T 0
@@ -161,10 +187,10 @@
 
 #if PLATFORM(CHROMIUM)
 
-#if !PLATFORM(DARWIN)
+#if !OS(DARWIN)
 // Define SKIA on non-Mac.
 #define WTF_PLATFORM_SKIA 1
-#endif /* !PLATFORM(DARWIN) */
+#endif /* !OS(DARWIN) */
 
 // Chromium uses this file instead of JavaScriptCore/config.h to compile
 // JavaScriptCore/wtf (chromium doesn't compile the rest of JSC). Therefore,

@@ -29,16 +29,23 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <html>
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href="audits.css">
     <link rel="stylesheet" type="text/css" href="inspector.css">
     <link rel="stylesheet" type="text/css" href="inspectorSyntaxHighlight.css">
+    <link rel="stylesheet" type="text/css" href="popover.css">
+    <link rel="stylesheet" type="text/css" href="textViewer.css">
     <script type="text/javascript" src="utilities.js"></script>
     <script type="text/javascript" src="treeoutline.js"></script>
     <script type="text/javascript" src="inspector.js"></script>
-    <script type="text/javascript" src="InspectorControllerStub.js"></script>
+    <script type="text/javascript" src="InspectorBackendStub.js"></script>
+    <script type="text/javascript" src="InspectorFrontendHostStub.js"></script>
     <script type="text/javascript" src="Object.js"></script>
+    <script type="text/javascript" src="Settings.js"></script>
+    <script type="text/javascript" src="Checkbox.js"></script>
+    <script type="text/javascript" src="ContextMenu.js"></script>
     <script type="text/javascript" src="KeyboardShortcut.js"></script>
     <script type="text/javascript" src="TextPrompt.js"></script>
-    <script type="text/javascript" src="Popup.js"></script>
+    <script type="text/javascript" src="Popover.js"></script>
     <script type="text/javascript" src="Placard.js"></script>
     <script type="text/javascript" src="View.js"></script>
     <script type="text/javascript" src="Callback.js"></script>
@@ -46,6 +53,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="ChangesView.js"></script>
     <script type="text/javascript" src="ConsoleView.js"></script>
     <script type="text/javascript" src="Panel.js"></script>
+    <script type="text/javascript" src="TimelineGrid.js"></script>    
     <script type="text/javascript" src="AbstractTimelinePanel.js"></script>
     <script type="text/javascript" src="Resource.js"></script>
     <script type="text/javascript" src="ResourceCategory.js"></script>
@@ -53,13 +61,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="DOMStorage.js"></script>
     <script type="text/javascript" src="DOMStorageItemsView.js"></script>
     <script type="text/javascript" src="DataGrid.js"></script>
-    <script type="text/javascript" src="DOMStorageDataGrid.js"></script>
     <script type="text/javascript" src="CookieItemsView.js"></script>
     <script type="text/javascript" src="Script.js"></script>
     <script type="text/javascript" src="Breakpoint.js"></script>
     <script type="text/javascript" src="SidebarPane.js"></script>
     <script type="text/javascript" src="ElementsTreeOutline.js"></script>
     <script type="text/javascript" src="SidebarTreeElement.js"></script>
+    <script type="text/javascript" src="Section.js"></script>
     <script type="text/javascript" src="PropertiesSection.js"></script>
     <script type="text/javascript" src="ObjectProxy.js"></script>
     <script type="text/javascript" src="ObjectPropertiesSection.js"></script>
@@ -67,21 +75,38 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="CallStackSidebarPane.js"></script>
     <script type="text/javascript" src="ScopeChainSidebarPane.js"></script>
     <script type="text/javascript" src="WatchExpressionsSidebarPane.js"></script>
+    <script type="text/javascript" src="WorkersSidebarPane.js"></script>
     <script type="text/javascript" src="MetricsSidebarPane.js"></script>
     <script type="text/javascript" src="PropertiesSidebarPane.js"></script>
     <script type="text/javascript" src="EventListenersSidebarPane.js"></script>
     <script type="text/javascript" src="Color.js"></script>
     <script type="text/javascript" src="StylesSidebarPane.js"></script>
     <script type="text/javascript" src="PanelEnablerView.js"></script>
+    <script type="text/javascript" src="WelcomeView.js"></script>
     <script type="text/javascript" src="StatusBarButton.js"></script>
     <script type="text/javascript" src="SummaryBar.js"></script>
     <script type="text/javascript" src="ElementsPanel.js"></script>
     <script type="text/javascript" src="ResourcesPanel.js"></script>
+    <script type="text/javascript" src="InjectedFakeWorker.js"></script>
     <script type="text/javascript" src="ScriptsPanel.js"></script>
     <script type="text/javascript" src="StoragePanel.js"></script>
     <script type="text/javascript" src="ProfilesPanel.js"></script>
+    <script type="text/javascript" src="ConsolePanel.js"></script>
+    <script type="text/javascript" src="AuditsPanel.js"></script>
+    <script type="text/javascript" src="AuditResultView.js"></script>
+    <script type="text/javascript" src="AuditLauncherView.js"></script>
+    <script type="text/javascript" src="AuditRules.js"></script>
+    <script type="text/javascript" src="AuditCategories.js"></script>
     <script type="text/javascript" src="ResourceView.js"></script>
     <script type="text/javascript" src="SourceFrame.js"></script>
+    <script type="text/javascript" src="DOMSyntaxHighlighter.js"></script>
+    <script type="text/javascript" src="TextEditorModel.js"></script>
+    <script type="text/javascript" src="TextEditorHighlighter.js"></script>
+    <script type="text/javascript" src="TextViewer.js"></script>
+    <script type="text/javascript" src="SourceTokenizer.js"></script>
+    <script type="text/javascript" src="SourceCSSTokenizer.js"></script>
+    <script type="text/javascript" src="SourceHTMLTokenizer.js"></script>
+    <script type="text/javascript" src="SourceJavaScriptTokenizer.js"></script>
     <script type="text/javascript" src="SourceView.js"></script>
     <script type="text/javascript" src="FontView.js"></script>
     <script type="text/javascript" src="ImageView.js"></script>
@@ -97,6 +122,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="InjectedScriptAccess.js"></script>
     <script type="text/javascript" src="TimelineAgent.js"></script>
     <script type="text/javascript" src="TimelinePanel.js"></script>
+    <script type="text/javascript" src="TimelineOverviewPane.js"></script>
     <script type="text/javascript" src="TestController.js"></script>
 </head>
 <body class="detached">
@@ -108,11 +134,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <div class="toolbar-item close-right"><button id="close-button-right"></button></div>
     </div>
     <div id="main">
-        <div id="main-panels" tabindex="0" spellcheck="false"></div>
-        <div id="main-status-bar" class="status-bar"><div id="anchored-status-bar-items"><button id="dock-status-bar-item" class="status-bar-item toggled"><div class="glyph"></div><div class="glyph shadow"></div></button><button id="console-status-bar-item" class="status-bar-item"><div class="glyph"></div><div class="glyph shadow"></div></button><button id="changes-status-bar-item" class="status-bar-item hidden"></button><div id="count-items"><div id="changes-count" class="hidden"></div><div id="error-warning-count" class="hidden"></div></div></div></div>
+        <div id="main-panels" spellcheck="false"></div>
+        <div id="main-status-bar" class="status-bar"><div id="anchored-status-bar-items"><button id="dock-status-bar-item" class="status-bar-item"><div class="glyph"></div><div class="glyph shadow"></div></button><button id="console-status-bar-item" class="status-bar-item"><div class="glyph"></div><div class="glyph shadow"></div></button><button id="changes-status-bar-item" class="status-bar-item hidden"></button><div id="count-items"><div id="changes-count" class="hidden"></div><div id="error-warning-count" class="hidden"></div></div></div></div>
     </div>
     <div id="drawer">
-        <div id="console-view"><div id="console-messages"><div id="console-prompt" spellcheck="false"><br></div></div></div>
+        <div id="console-view"><div id="console-messages" class="monospace"><div id="console-prompt" spellcheck="false"><br></div></div></div>
         <div id="drawer-status-bar" class="status-bar"><div id="other-drawer-status-bar-items"><button id="clear-console-status-bar-item" class="status-bar-item"><div class="glyph"></div><div class="glyph shadow"></div></button><div id="console-filter" class="scope-bar status-bar-item"></div></div></div>
     </div>
 </body>

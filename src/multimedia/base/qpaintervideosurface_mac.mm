@@ -53,6 +53,7 @@
 
 #include <QuartzCore/CIContext.h>
 #include <CGLCurrent.h>
+#include <gl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -147,11 +148,19 @@ QAbstractVideoSurface::Error QVideoSurfaceCoreGraphicsPainter::paint(
                         CGContextTranslateCTM(cgContext, 0, dRect.origin.y + CGRectGetMaxY(dRect));
                         CGContextScaleCTM(cgContext, 1, -1);
 
+#if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_4)
+    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_4) {
                         CGContextDrawImage(cgContext, dRect, [bitmap CGImage]);
+    }
+#endif
 
                         CGContextRestoreGState(cgContext);
                     } else {
+#if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_4)
+    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_4) {
                         CGContextDrawImage(cgContext, dRect, [bitmap CGImage]);
+    }
+#endif
                     }
 
                     [bitmap release];

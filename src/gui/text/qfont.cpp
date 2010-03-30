@@ -1286,9 +1286,11 @@ QFont::StyleHint QFont::styleHint() const
     \value PreferAntialias antialias if possible.
     \value OpenGLCompatible forces the use of OpenGL compatible
            fonts.
-    \value NoFontMerging If a font does not contain a character requested
-           to draw then Qt automatically chooses a similar looking for that contains
-           the character. This flag disables this feature.
+    \value NoFontMerging If the font selected for a certain writing system
+           does not contain a character requested to draw, then Qt automatically chooses a similar
+           looking font that contains the character. The NoFontMerging flag disables this feature.
+           Please note that enabling this flag will not prevent Qt from automatically picking a
+           suitable font when the selected font does not support the writing system of the text.
 
     Any of these may be OR-ed with one of these flags:
 
@@ -2614,8 +2616,10 @@ void QFontCache::cleanup()
     } QT_CATCH (const std::bad_alloc &) {
         // no cache - just ignore
     }
-    if (cache && cache->hasLocalData())
+    if (cache && cache->hasLocalData()) {
+        cache->localData()->clear();
         cache->setLocalData(0);
+        }
 }
 #endif // QT_NO_THREAD
 

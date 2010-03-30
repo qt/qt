@@ -6,7 +6,7 @@ Rectangle {
     Text {
         id: theText
         width: 40
-        wrap: true
+        wrapMode: Text.WordWrap
         text: "a text string that is longer than 40 pixels"
     }
 

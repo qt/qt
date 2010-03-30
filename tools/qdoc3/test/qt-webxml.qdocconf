@@ -2,7 +2,8 @@ include(qt.qdocconf)
 
 quotinginformation      = true
 imagedirs               = $QTDIR/doc/src/images \
-                          $QTDIR/examples
+                          $QTDIR/examples \
+			  $QTDIR/doc/src/template/images
 
 outputdir               = $QTDIR/doc/webxml
 outputformats           = WebXML

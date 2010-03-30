@@ -34,26 +34,74 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLOptionsCollection);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLOptionsCollectionTableValues[3] =
+static const HashTableValue JSHTMLOptionsCollectionTableValues[4] =
 {
-    { "selectedIndex", DontDelete, (intptr_t)jsHTMLOptionsCollectionSelectedIndex, (intptr_t)setJSHTMLOptionsCollectionSelectedIndex },
-    { "length", DontDelete, (intptr_t)jsHTMLOptionsCollectionLength, (intptr_t)setJSHTMLOptionsCollectionLength },
+    { "selectedIndex", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLOptionsCollectionSelectedIndex), (intptr_t)setJSHTMLOptionsCollectionSelectedIndex },
+    { "length", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLOptionsCollectionLength), (intptr_t)setJSHTMLOptionsCollectionLength },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLOptionsCollectionConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSHTMLOptionsCollectionTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 3, JSHTMLOptionsCollectionTableValues, 0 };
+    { 15, JSHTMLOptionsCollectionTableValues, 0 };
 #else
-    { 4, 3, JSHTMLOptionsCollectionTableValues, 0 };
+    { 9, 7, JSHTMLOptionsCollectionTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSHTMLOptionsCollectionConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSHTMLOptionsCollectionConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSHTMLOptionsCollectionConstructorTableValues, 0 };
+#else
+    { 1, 0, JSHTMLOptionsCollectionConstructorTableValues, 0 };
+#endif
+
+class JSHTMLOptionsCollectionConstructor : public DOMConstructorObject {
+public:
+    JSHTMLOptionsCollectionConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLOptionsCollectionConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSHTMLOptionsCollectionPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSHTMLOptionsCollectionConstructor::s_info = { "HTMLOptionsCollectionConstructor", 0, &JSHTMLOptionsCollectionConstructorTable, 0 };
+
+bool JSHTMLOptionsCollectionConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSHTMLOptionsCollectionConstructor, DOMObject>(exec, &JSHTMLOptionsCollectionConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLOptionsCollectionConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLOptionsCollectionConstructor, DOMObject>(exec, &JSHTMLOptionsCollectionConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
 static const HashTableValue JSHTMLOptionsCollectionPrototypeTableValues[3] =
 {
-    { "add", DontDelete|Function, (intptr_t)jsHTMLOptionsCollectionPrototypeFunctionAdd, (intptr_t)2 },
-    { "remove", DontDelete|Function, (intptr_t)jsHTMLOptionsCollectionPrototypeFunctionRemove, (intptr_t)1 },
+    { "add", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLOptionsCollectionPrototypeFunctionAdd), (intptr_t)2 },
+    { "remove", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLOptionsCollectionPrototypeFunctionRemove), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -103,20 +151,26 @@ bool JSHTMLOptionsCollection::getOwnPropertyDescriptor(ExecState* exec, const Id
     return getStaticValueDescriptor<JSHTMLOptionsCollection, Base>(exec, &JSHTMLOptionsCollectionTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLOptionsCollectionSelectedIndex(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptionsCollectionSelectedIndex(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLOptionsCollection* castedThis = static_cast<JSHTMLOptionsCollection*>(asObject(slot.slotBase()));
+    JSHTMLOptionsCollection* castedThis = static_cast<JSHTMLOptionsCollection*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLOptionsCollection* imp = static_cast<HTMLOptionsCollection*>(castedThis->impl());
-    return jsNumber(exec, imp->selectedIndex());
+    JSValue result = jsNumber(exec, imp->selectedIndex());
+    return result;
 }
 
-JSValue jsHTMLOptionsCollectionLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLOptionsCollectionLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLOptionsCollection* castedThis = static_cast<JSHTMLOptionsCollection*>(asObject(slot.slotBase()));
+    JSHTMLOptionsCollection* castedThis = static_cast<JSHTMLOptionsCollection*>(asObject(slotBase));
     return castedThis->length(exec);
 }
 
+JSValue jsHTMLOptionsCollectionConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSHTMLOptionsCollection* domObject = static_cast<JSHTMLOptionsCollection*>(asObject(slotBase));
+    return JSHTMLOptionsCollection::getConstructor(exec, domObject->globalObject());
+}
 void JSHTMLOptionsCollection::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     bool ok;
@@ -136,13 +190,19 @@ void JSHTMLOptionsCollection::put(ExecState* exec, unsigned propertyName, JSValu
 
 void setJSHTMLOptionsCollectionSelectedIndex(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLOptionsCollection* imp = static_cast<HTMLOptionsCollection*>(static_cast<JSHTMLOptionsCollection*>(thisObject)->impl());
+    JSHTMLOptionsCollection* castedThisObj = static_cast<JSHTMLOptionsCollection*>(thisObject);
+    HTMLOptionsCollection* imp = static_cast<HTMLOptionsCollection*>(castedThisObj->impl());
     imp->setSelectedIndex(value.toInt32(exec));
 }
 
 void setJSHTMLOptionsCollectionLength(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     static_cast<JSHTMLOptionsCollection*>(thisObject)->setLength(exec, value);
+}
+
+JSValue JSHTMLOptionsCollection::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSHTMLOptionsCollectionConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsHTMLOptionsCollectionPrototypeFunctionAdd(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

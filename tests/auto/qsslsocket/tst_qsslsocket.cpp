@@ -1286,7 +1286,7 @@ void tst_QSslSocket::setReadBufferSize_task_250027()
     connect(socket, SIGNAL(readyRead()), &setReadBufferSize_task_250027_handler, SLOT(readyReadSlot()));
 
     // provoke a response by sending a request
-    socket->write("GET /gif/fluke.gif HTTP/1.0\n"); // this file is 27 KB
+    socket->write("GET /qtest/fluke.gif HTTP/1.0\n"); // this file is 27 KB
     socket->write("Host: ");
     socket->write(QtNetworkSettings::serverName().toLocal8Bit().constData());
     socket->write("\n");
@@ -1750,7 +1750,7 @@ void tst_QSslSocket::readFromClosedSocket()
     socket->waitForConnected();
     socket->waitForEncrypted();
     // provoke a response by sending a request
-    socket->write("GET /gif/fluke.gif HTTP/1.1\n");
+    socket->write("GET /qtest/fluke.gif HTTP/1.1\n");
     socket->write("Host: ");
     socket->write(QtNetworkSettings::serverName().toLocal8Bit().constData());
     socket->write("\n");

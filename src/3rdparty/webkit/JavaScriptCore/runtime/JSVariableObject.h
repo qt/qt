@@ -49,18 +49,16 @@ namespace JSC {
         virtual void putWithAttributes(ExecState*, const Identifier&, JSValue, unsigned attributes) = 0;
 
         virtual bool deleteProperty(ExecState*, const Identifier&);
-        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&);
+        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
         
         virtual bool isVariableObject() const;
         virtual bool isDynamicScope() const = 0;
-
-        virtual bool getPropertyAttributes(ExecState*, const Identifier& propertyName, unsigned& attributes) const;
 
         Register& registerAt(int index) const { return d->registers[index]; }
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount);
         }
         
     protected:

@@ -39,8 +39,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSText);
 
 static const HashTableValue JSTextTableValues[3] =
 {
-    { "wholeText", DontDelete|ReadOnly, (intptr_t)jsTextWholeText, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsTextConstructor, (intptr_t)0 },
+    { "wholeText", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTextWholeText), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTextConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -102,8 +102,8 @@ bool JSTextConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifi
 
 static const HashTableValue JSTextPrototypeTableValues[3] =
 {
-    { "splitText", DontDelete|Function, (intptr_t)jsTextPrototypeFunctionSplitText, (intptr_t)1 },
-    { "replaceWholeText", DontDelete|Function, (intptr_t)jsTextPrototypeFunctionReplaceWholeText, (intptr_t)1 },
+    { "splitText", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsTextPrototypeFunctionSplitText), (intptr_t)1 },
+    { "replaceWholeText", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsTextPrototypeFunctionReplaceWholeText), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -153,17 +153,18 @@ bool JSText::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propert
     return getStaticValueDescriptor<JSText, Base>(exec, &JSTextTable, this, propertyName, descriptor);
 }
 
-JSValue jsTextWholeText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTextWholeText(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSText* castedThis = static_cast<JSText*>(asObject(slot.slotBase()));
+    JSText* castedThis = static_cast<JSText*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Text* imp = static_cast<Text*>(castedThis->impl());
-    return jsString(exec, imp->wholeText());
+    JSValue result = jsString(exec, imp->wholeText());
+    return result;
 }
 
-JSValue jsTextConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTextConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSText* domObject = static_cast<JSText*>(asObject(slot.slotBase()));
+    JSText* domObject = static_cast<JSText*>(asObject(slotBase));
     return JSText::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSText::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

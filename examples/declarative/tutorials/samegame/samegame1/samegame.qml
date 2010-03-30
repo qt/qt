@@ -1,5 +1,5 @@
 //![0]
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     id: screen
@@ -24,7 +24,7 @@ Rectangle {
         anchors.bottom: screen.bottom
 
         Button {
-            id: btnA; text: "New Game"; onClicked: console.log("Starting a new game...");
+            text: "New Game"; onClicked: console.log("Starting a new game...");
             anchors.left: parent.left; anchors.leftMargin: 3
             anchors.verticalCenter: parent.verticalCenter
         }
