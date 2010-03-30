@@ -155,7 +155,7 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
             Exit();
             break;
         case ECmdSwitchOutput:
-		    {
+            {
             HBufC* buffer = HBufC::NewLC( 100 );
             TPtr bufferPtr = buffer->Des();
             TBool last = ETrue;
@@ -166,7 +166,7 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
             else
                 bufferPtr.Append(_L("screen."));
             ShowL( *buffer, last );
-			}
+            }
             break;
         case ECmdStatus:
             {
@@ -323,7 +323,7 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
             TInt myValue = KErrNotFound;
             for (;;)
                 {
-                if (index==QStyle::PM_Custom_ThinLineWidth)
+                if (index==QStyle::PM_Custom_MessageBoxHeight)
                     {
                     last = ETrue;
                     }
@@ -655,6 +655,9 @@ void CPixelMetricsMapperAppUi::ShowSingleValueL(TInt& aPixelMetric, TInt& aValue
             break;
         case QStyle::PM_Custom_BoldLineWidth:
             bufferPtr.Append(_L("C_BoldLineWidth: "));
+            break;
+        case QStyle::PM_Custom_MessageBoxHeight:
+            bufferPtr.Append(_L("C_MsgBoxHeight: "));
             break;
         default:
             bufferPtr.Append(_L("Default: "));

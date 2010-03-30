@@ -27,6 +27,7 @@
 #include <QStyle>
 
 QT_BEGIN_NAMESPACE
+class QLineEdit;
 class QPainter;
 class QWidget;
 QT_END_NAMESPACE
@@ -140,6 +141,8 @@ private:
     void setButtonPadding(RenderStyle*) const;
     void setPopupPadding(RenderStyle*) const;
 
+    int findFrameLineWidth(QStyle* style) const;
+
     QStyle* fallbackStyle() const;
 
     Page* m_page;
@@ -150,6 +153,7 @@ private:
     QString m_buttonFontFamily;
 
     QStyle* m_fallbackStyle;
+    mutable QLineEdit* m_lineEdit;
 };
 
 class StylePainter {
