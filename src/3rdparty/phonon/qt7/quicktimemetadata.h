@@ -38,8 +38,10 @@ namespace QT7
     class QuickTimeMetaData
     {
         public:
-            QuickTimeMetaData(QuickTimeVideoPlayer *videoPlayer);
-            void update();
+            QuickTimeMetaData();
+            virtual ~QuickTimeMetaData();
+
+            void setVideo(QuickTimeVideoPlayer *videoPlayer);
             QMultiMap<QString, QString> metaData();
 
         private:
@@ -47,8 +49,6 @@ namespace QT7
             bool m_movieChanged;
             QuickTimeVideoPlayer *m_videoPlayer;
             void readMetaData();
-            void guessMetaDataForCD();
-            void readMetaDataFromMovie();
 
 #ifdef QUICKTIME_C_API_AVAILABLE
             QString stripCopyRightSymbol(const QString &key);

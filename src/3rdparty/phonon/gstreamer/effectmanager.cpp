@@ -54,7 +54,7 @@ EffectManager::EffectManager(Backend *backend)
             // "volume" not needed
             // "equalizer-nbands" not really useful at the moment
 
-            // These plugins simply dont work or have major stability issues:
+            // These plugins simply don't work or have major stability issues:
             // "iir" Does not seem to do much at the moment
             // "audioinvert" Only works for some streams, should be invesigated
             // "lpwsinc" Crashes for large values of filter kernel

@@ -25,6 +25,7 @@ HEADERS += \
     qt7movieviewrenderer.h \
     qt7serviceplugin.h \
     qt7movierenderer.h \
+    qt7ciimagevideobuffer.h \
     qcvdisplaylink.h
 
 OBJECTIVE_SOURCES += \
@@ -35,6 +36,7 @@ OBJECTIVE_SOURCES += \
     qt7movieviewrenderer.mm \
     qt7movierenderer.mm \
     qt7videooutputcontrol.mm \
+    qt7ciimagevideobuffer.mm \
     qcvdisplaylink.mm
 
 include(mediaplayer/mediaplayer.pri)

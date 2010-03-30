@@ -31,7 +31,7 @@ namespace Phonon
     {
         struct CDROM_TOC;
         struct WaveStructure;
-        EXTERN_C const IID IID_ITitleInterface;
+        extern const IID IID_ITitleInterface;
 
         //interface for the Titles
         struct ITitleInterface : public IUnknown

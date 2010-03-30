@@ -36,19 +36,17 @@ namespace Phonon
         //these mediatypes define a stream, its type will be autodetected by DirectShow
         static QVector<AM_MEDIA_TYPE> getMediaTypes()
         {
-            //the order here is important because otherwise,
-            //directshow might not be able to detect the stream type correctly
-
-            AM_MEDIA_TYPE mt = { MEDIATYPE_Stream, MEDIASUBTYPE_Avi, TRUE, FALSE, 1, GUID_NULL, 0, 0, 0};
+            AM_MEDIA_TYPE mt = { MEDIATYPE_Stream, MEDIASUBTYPE_NULL, TRUE, FALSE, 1, GUID_NULL, 0, 0, 0};
 
             QVector<AM_MEDIA_TYPE> ret;
+            //normal auto-detect stream
+            mt.subtype = MEDIASUBTYPE_NULL;
+            ret << mt;
             //AVI stream
+            mt.subtype = MEDIASUBTYPE_Avi;
             ret << mt;
             //WAVE stream
             mt.subtype = MEDIASUBTYPE_WAVE;
-            ret << mt;
-            //normal auto-detect stream (must be at the end!)
-            mt.subtype = MEDIASUBTYPE_NULL;
             ret << mt;
             return ret;
         }
@@ -66,6 +64,7 @@ namespace Phonon
               //for Phonon::StreamInterface
               void writeData(const QByteArray &data)
               {
+                  QWriteLocker locker(&m_lock);
                   m_pos += data.size();
                   m_buffer += data;
               }
@@ -76,14 +75,46 @@ namespace Phonon
 
               void setStreamSize(qint64 newSize)
               {
-                  QMutexLocker locker(&m_mutex);
+                  QWriteLocker locker(&m_lock);
                   m_size = newSize;
+              }
+
+              qint64 streamSize() const
+              {
+                  QReadLocker locker(&m_lock);
+                  return m_size;
               }
 
               void setStreamSeekable(bool s)
               {
-                  QMutexLocker locker(&m_mutex);
+                  QWriteLocker locker(&m_lock);
                   m_seekable = s;
+              }
+
+              bool streamSeekable() const
+              {
+                  QReadLocker locker(&m_lock);
+                  return m_seekable;
+              }
+
+              void setCurrentPos(qint64 pos)
+              {
+                  QWriteLocker locker(&m_lock);
+                  m_pos = pos;
+                  seekStream(pos);
+                  m_buffer.clear();
+              }
+
+              qint64 currentPos() const
+              {
+                  QReadLocker locker(&m_lock);
+                  return m_pos;
+              }
+
+              int currentBufferSize() const
+              {
+                  QReadLocker locker(&m_lock);
+                  return m_buffer.size();
               }
 
               //virtual pure members
@@ -91,7 +122,7 @@ namespace Phonon
               //implementation from IAsyncReader
               STDMETHODIMP Length(LONGLONG *total, LONGLONG *available)
               {
-                  QMutexLocker locker(&m_mutex);
+                  QReadLocker locker(&m_lock);
                   if (total) {
                       *total = m_size;
                   }
@@ -106,42 +137,44 @@ namespace Phonon
 
               HRESULT read(LONGLONG pos, LONG length, BYTE *buffer, LONG *actual)
               {
-                  Q_ASSERT(!m_mutex.tryLock());
+                  QMutexLocker locker(&m_mutexRead);
+
                   if (m_mediaGraph->isStopping()) {
                       return VFW_E_WRONG_STATE;
                   }
 
-                  if(m_size != 1 && pos + length > m_size) {
+                  if(streamSize() != 1 && pos + length > streamSize()) {
                       //it tries to read outside of the boundaries
                       return E_FAIL;
                   }
 
-                  if (m_pos - m_buffer.size() != pos) {
-                      if (!m_seekable) {
+                  if (currentPos() - currentBufferSize() != pos) {
+                      if (!streamSeekable()) {
                           return S_FALSE;
                       }
-                      m_pos = pos;
-                      seekStream(pos);
-                      m_buffer.clear();
+                      setCurrentPos(pos);
                   }
 
-                  int oldSize = m_buffer.size();
-                  while (m_buffer.size() < int(length)) {
+                  int oldSize = currentBufferSize();
+                  while (currentBufferSize() < int(length)) {
                       needData();
                       if (m_mediaGraph->isStopping()) {
                           return VFW_E_WRONG_STATE;
                       }
 
-                      if (oldSize == m_buffer.size()) {
+                      if (oldSize == currentBufferSize()) {
                           break; //we didn't get any data
                       }
-                      oldSize = m_buffer.size();
+                      oldSize = currentBufferSize();
                   }
 
-                  int bytesRead = qMin(m_buffer.size(), int(length));
-                  qMemCopy(buffer, m_buffer.data(), bytesRead);
-                  //truncate the buffer
-                  m_buffer = m_buffer.mid(bytesRead);
+                  DWORD bytesRead = qMin(currentBufferSize(), int(length));
+                  {
+                      QWriteLocker locker(&m_lock);
+                      qMemCopy(buffer, m_buffer.data(), bytesRead);
+                      //truncate the buffer
+                      m_buffer = m_buffer.mid(bytesRead);
+                  }
 
                   if (actual) {
                       *actual = bytesRead; //initialization
@@ -157,6 +190,7 @@ namespace Phonon
             qint64 m_pos;
             qint64 m_size;
 
+            QMutex m_mutexRead;
             const MediaGraph *m_mediaGraph;
         };
 
@@ -170,6 +204,14 @@ namespace Phonon
         IODeviceReader::~IODeviceReader()
         {
         }
+
+        STDMETHODIMP IODeviceReader::Stop()
+        {
+            HRESULT hr = QBaseFilter::Stop();
+            m_streamReader->enoughData(); //this asks to cancel any blocked call to needData
+            return hr;
+        }
+
     }
 }
 
