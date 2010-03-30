@@ -239,10 +239,10 @@ void tst_QStaticText::setFont()
     imageDrawText.fill(Qt::white);
     {
         QPainter p(&imageDrawText);
-        p.drawText(0, 0 + QFontMetrics(p.font()).ascent(), "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(QRectF(0, 0, 1000, 1000), 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
 
         p.setFont(font);
-        p.drawText(11, 120 + QFontMetrics(p.font()).ascent(), "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(QRectF(11, 120, 1000, 1000), 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
     }
 
     QPixmap imageDrawStaticText(1000, 1000);
@@ -342,7 +342,7 @@ void tst_QStaticText::rotatedPainter()
     {
         QPainter p(&imageDrawText);
         p.rotate(30.0);
-        p.drawText(0, 0 + QFontMetricsF(p.font()).ascent(), "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(QRectF(0, 0, 1000, 100), 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
     }
 
     QPixmap imageDrawStaticText(1000, 1000);
@@ -469,10 +469,10 @@ void tst_QStaticText::transformationChanged()
         p.rotate(33.0);
         p.scale(0.5, 0.7);
 
-        p.drawText(0, 0 + QFontMetricsF(p.font()).ascent(), "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(QRectF(0, 0, 1000, 1000), 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
 
         p.scale(7.0, 5.0);
-        p.drawText(0, 0 + QFontMetricsF(p.font()).ascent(), "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(QRectF(0, 0, 1000, 1000), 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
     }
 
     QPixmap imageDrawStaticText(1000, 1000);
