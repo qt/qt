@@ -654,9 +654,8 @@ declaring a new property, and the corresponding C++ type.
 \row \o string \o QString
 \row \o url \o QUrl
 \row \o color \o QColor
-\row \o date \o QDate
+\row \o date \o QDateTime
 \row \o var \o QVariant
-\row \o variant \o QVariant
 \endtable
 
 QML supports two methods for adding a new property to a type: a new property
@@ -692,6 +691,19 @@ it in two steps, like this:
     property int myProperty
     myProperty: 10
 \endcode
+
+If a default value is not supplied or set later in the file, each type has a
+default value for when none is explictly set. Below are the default values 
+of some of the types. For the remaining types the default values are undefined.
+
+\table
+\header \o QML Type \o Default Value
+\row \o bool \o false
+\row \o int \o 0
+\row \o double, real \o 0.0
+\row \o string, url \o "" (an empty string)
+\row \o color \o #000000 (black)
+\endtable
 
 If specified, the optional "default" attribute marks the new property as the
 types default property, overriding any existing default property.  Using the

@@ -43,6 +43,7 @@
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativeimageprovider.h>
 #include <private/qdeclarativeimage_p.h>
+#include <QImageReader>
 
 // QDeclarativeImageProvider::request() is run in an idle thread where possible
 // Be generous in our timeout.
@@ -76,28 +77,35 @@ private:
 class TestProvider : public QDeclarativeImageProvider
 {
 public:
-    QImage request(const QString &id) {
-        QImage image;
-        image.load(SRCDIR "/data/" + id);
-        return image;
+    QImage request(const QString &id, QSize *size, const QSize& requested_size) {
+        QImageReader io(SRCDIR "/data/" + id);
+        if (size) *size = io.size();
+        if (requested_size.isValid())
+            io.setScaledSize(requested_size);
+        return io.read();
     }
 };
 
 void tst_qdeclarativeimageprovider::imageSource_data()
 {
     QTest::addColumn<QString>("source");
+    QTest::addColumn<QString>("properties");
+    QTest::addColumn<QSize>("size");
     QTest::addColumn<QString>("error");
 
-    QTest::newRow("exists") << "image://test/exists.png" << "";
-    QTest::newRow("missing") << "image://test/no-such-file.png"
+    QTest::newRow("exists") << "image://test/exists.png" << "" << QSize(100,100) << "";
+    QTest::newRow("scaled") << "image://test/exists.png" << "sourceSize: \"80x30\"" << QSize(80,30) << "";
+    QTest::newRow("missing") << "image://test/no-such-file.png" << "" << QSize()
         << "\"Failed to get image from provider: image://test/no-such-file.png\" ";
-    QTest::newRow("unknown provider") << "image://bogus/exists.png"
+    QTest::newRow("unknown provider") << "image://bogus/exists.png" << "" << QSize()
         << "\"Failed to get image from provider: image://bogus/exists.png\" ";
 }
     
 void tst_qdeclarativeimageprovider::imageSource()
 {
     QFETCH(QString, source);
+    QFETCH(QString, properties);
+    QFETCH(QSize, size);
     QFETCH(QString, error);
 
     if (!error.isEmpty())
@@ -106,7 +114,7 @@ void tst_qdeclarativeimageprovider::imageSource()
     engine.addImageProvider("test", new TestProvider);
     QVERIFY(engine.imageProvider("test") != 0);
 
-    QString componentStr = "import Qt 4.6\nImage { source: \"" + source + "\" }";
+    QString componentStr = "import Qt 4.6\nImage { source: \"" + source + "\"; " + properties + " }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -118,8 +126,10 @@ void tst_qdeclarativeimageprovider::imageSource()
 
     if (error.isEmpty()) {
         TRY_WAIT(obj->status() == QDeclarativeImage::Ready);
-        QCOMPARE(obj->width(), 100.);
-        QCOMPARE(obj->height(), 100.);
+        QCOMPARE(obj->width(), 100.0);
+        QCOMPARE(obj->height(), 100.0);
+        QCOMPARE(obj->pixmap().width(), size.width());
+        QCOMPARE(obj->pixmap().height(), size.height());
         QCOMPARE(obj->fillMode(), QDeclarativeImage::Stretch);
         QCOMPARE(obj->progress(), 1.0);
     } else {

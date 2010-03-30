@@ -160,7 +160,7 @@ Bindings have access to the scope object's properties without qualification.
 In the previous example, the binding accesses the \l Item's \c parent property
 directly, without needing any form of object prefix.  QML introduces a more 
 structured, object-oriented approach to JavaScript, and consequently does not 
-require (although it does support) use of the implicit \c this property.
+require the use of the JavaScript \c this property.
 
 Care must be used when accessing \l {Attached Properties} from bindings due
 to their interaction with the scope object.  Conceptually attached properties

@@ -54,8 +54,12 @@ QT_MODULE(Declarative)
 
 class QObject;
 struct QMetaObject;
+
+#ifndef QDECLARATIVELISTPROPERTY
+#define QDECLARATIVELISTPROPERTY
 template<typename T>
-struct QDeclarativeListProperty {
+class QDeclarativeListProperty {
+public:
     typedef void (*AppendFunction)(QDeclarativeListProperty<T> *, T*);
     typedef int (*CountFunction)(QDeclarativeListProperty<T> *);
     typedef T *(*AtFunction)(QDeclarativeListProperty<T> *, int);
@@ -106,6 +110,7 @@ private:
         return ((QList<T *> *)p->data)->clear();
     }
 };
+#endif
 
 class QDeclarativeEngine;
 class QDeclarativeListReferencePrivate;

@@ -523,7 +523,7 @@ public:
 
     In addition, QDoubleValidator is always guaranteed to accept a number
     formatted according to the "C" locale. QDoubleValidator will not accept
-    numbers with thousand-seperators.
+    numbers with thousand-separators.
 
     \sa QIntValidator, QRegExpValidator, {Line Edits Example}
 */

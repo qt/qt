@@ -623,6 +623,8 @@ void QDeclarativeParticlesPrivate::updateOpacity(QDeclarativeParticle &p, int ag
     \brief The Particles object generates and moves particles.
     \inherits Item
 
+    Particles are available in the Qt.labs.particles 1.0 module.
+
     This element provides preliminary support for particles in QML,
     and may be heavily changed or removed in later versions.
 
@@ -640,6 +642,9 @@ void QDeclarativeParticlesPrivate::updateOpacity(QDeclarativeParticle &p, int ag
     snow, the lower one has particles expelled up like a fountain.
 
     \qml
+import Qt 4.6
+import Qt.labs.particles 1.0
+
 Rectangle {
     width: 240
     height: 320

@@ -178,10 +178,16 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 #endif
         foreach (const QString &path, QString::fromLatin1(envImportPath).split(pathSep, QString::SkipEmptyParts)) {
             QString canonicalPath = QDir(path).canonicalPath();
-            if (!canonicalPath.isEmpty() && !environmentImportPath.contains(canonicalPath))
-                environmentImportPath.append(canonicalPath);
+            if (!canonicalPath.isEmpty() && !fileImportPath.contains(canonicalPath))
+                fileImportPath.append(canonicalPath);
         }
     }
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
+    QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
+    if (!builtinPath.isEmpty())
+        fileImportPath += builtinPath;
+#endif
+
 }
 
 QUrl QDeclarativeScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
@@ -580,13 +586,13 @@ void QDeclarativeEngine::removeImageProvider(const QString &providerId)
     delete d->imageProviders.take(providerId);
 }
 
-QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url)
+QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size)
 {
     QMutexLocker locker(&mutex);
     QImage image;
     QDeclarativeImageProvider *provider = imageProviders.value(url.host());
     if (provider)
-        image = provider->request(url.path().mid(1));
+        image = provider->request(url.path().mid(1), size, req_size);
     return image;
 }
 
@@ -1306,13 +1312,14 @@ QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine
 QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &val)
 {
     if (val.userType() == qMetaTypeId<QDeclarativeListReference>()) {
-        QDeclarativeListReferencePrivate *p = QDeclarativeListReferencePrivate::get((QDeclarativeListReference*)val.constData());
+        QDeclarativeListReferencePrivate *p = 
+            QDeclarativeListReferencePrivate::get((QDeclarativeListReference*)val.constData());
         if (p->object) {
             return listClass->newList(p->property, p->propertyType);
         } else {
             return scriptEngine.nullValue();
         }
-    }
+    } 
 
     bool objOk;
     QObject *obj = QDeclarativeMetaType::toQObject(val, &objOk);
@@ -1405,7 +1412,9 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
                 foreach (const QDeclarativeDirParser::Component &c, qmldircomponents) {
                     if (c.typeName == typeName) {
                         typeWasDeclaredInQmldir = true;
-                        if (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion)) {
+
+                        // importing version -1 means import ALL versions
+                        if ((vmaj == -1) || (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion))) {
                             QUrl candidate = url.resolved(QUrl(c.fileName));
                             if (c.internal && base) {
                                 if (base->resolved(QUrl(c.fileName)) != candidate)
@@ -1492,29 +1501,7 @@ public:
         if (dir.endsWith(QLatin1Char('/')) || dir.endsWith(QLatin1Char('\\')))
             dir.chop(1);
 
-        QStringList paths;
-
-        if (!base.isEmpty()) {
-            QString baseDir = QFileInfo(toLocalFileOrQrc(base)).path();
-            paths += baseDir;
-        }
-
-        QString applicationDirPath = QCoreApplication::applicationDirPath();
-        if (!applicationDirPath.isEmpty())
-            paths += applicationDirPath;
-
-        paths += QDeclarativeEnginePrivate::get(engine)->environmentImportPath;
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
-        QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
-#else
-        QString builtinPath;
-#endif
-        if (!builtinPath.isEmpty())
-            paths += builtinPath;
-
-        // add fileImportPath last, this is *not* search order.
-        paths += QDeclarativeEnginePrivate::get(engine)->fileImportPath;
-
+        QStringList paths = QDeclarativeEnginePrivate::get(engine)->fileImportPath;
         qSort(paths.begin(), paths.end(), greaterThan); // Ensure subdirs preceed their parents.
 
         QString stableRelativePath = dir;
@@ -1554,28 +1541,8 @@ public:
             QString dir;            
 
 
-            // user import paths
-            QStringList paths;
-            // base..
-            QString localFileOrQrc = toLocalFileOrQrc(base);
-            QString localFileOrQrcPath = QFileInfo(localFileOrQrc).path();
-            paths += localFileOrQrcPath;
-            paths += QDeclarativeEnginePrivate::get(engine)->fileImportPath;
-
-            QString applicationDirPath = QCoreApplication::applicationDirPath();
-            if (!applicationDirPath.isEmpty())
-                paths += applicationDirPath;
-
-            paths += QDeclarativeEnginePrivate::get(engine)->environmentImportPath;
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
-            QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
-#else
-            QString builtinPath;
-#endif
-            if (!builtinPath.isEmpty())
-                paths += builtinPath;
-
-            foreach (const QString &p, paths) {
+            foreach (const QString &p,
+                     QDeclarativeEnginePrivate::get(engine)->fileImportPath) {
                 dir = p+QLatin1Char('/')+url;
 
                 QFileInfo fi(dir+QLatin1String("/qmldir"));
@@ -1807,18 +1774,9 @@ QUrl QDeclarativeEnginePrivate::Imports::baseUrl() const
   Adds \a path as a directory where installed QML components are
   defined in a URL-based directory structure.
 
-  For example, if you add \c /opt/MyApp/lib/imports and then load QML
-  that imports \c com.mycompany.Feature, then QDeclarativeEngine will look
-  in \c /opt/MyApp/lib/imports/com/mycompany/Feature/ for the components
-  provided by that module. A \c qmldir file is required for definiting the
-  type version mapping and possibly declarative extensions plugins.
+  The newly added \a path will be first in the importPathList().
 
-  The engine searches in the base directory of the qml file, then
-  the paths added via addImportPath(), then in the directory containing the
-  application executable (QCoreApplication::applicationDirPath()),
-  then the paths specified in the \c QML_IMPORT_PATH environment variable, then the
-  builtin \c ImportsPath from QLibraryInfo.
-
+  \sa setImportPathList()
 */
 void QDeclarativeEngine::addImportPath(const QString& path)
 {
@@ -1826,6 +1784,43 @@ void QDeclarativeEngine::addImportPath(const QString& path)
         qDebug() << "QDeclarativeEngine::addImportPath" << path;
     Q_D(QDeclarativeEngine);
     d->fileImportPath.prepend(path);
+}
+
+
+/*!
+  Returns the list of directories where the engine searches for
+  installed modules.
+
+  For example, if \c /opt/MyApp/lib/imports is in the path, then QML that
+  imports \c com.mycompany.Feature will cause the QDeclarativeEngine to look
+  in \c /opt/MyApp/lib/imports/com/mycompany/Feature/ for the components
+  provided by that module. A \c qmldir file is required for defining the
+  type version mapping and possibly declarative extensions plugins.
+
+  By default, the list contains the paths specified in the \c QML_IMPORT_PATH environment
+  variable, then the builtin \c ImportsPath from QLibraryInfo.
+
+  \sa addImportPath() setImportPathList()
+*/
+QStringList QDeclarativeEngine::importPathList() const
+{
+    Q_D(const QDeclarativeEngine);
+    return d->fileImportPath;
+}
+
+/*!
+  Sets the list of directories where the engine searches for
+  installed modules.
+
+  By default, the list contains the paths specified in the \c QML_IMPORT_PATH environment
+  variable, then the builtin \c ImportsPath from QLibraryInfo.
+
+  \sa importPathList() addImportPath()
+  */
+void QDeclarativeEngine::setImportPathList(const QStringList &paths)
+{
+    Q_D(QDeclarativeEngine);
+    d->fileImportPath = paths;
 }
 
 /*!

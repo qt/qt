@@ -18,4 +18,15 @@ target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 qmldir.files += $$QT_BUILD_TREE/imports/$$TARGETPATH/qmldir
 qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
+symbian:{
+    load(data_caging_paths)
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
+    
+    importFiles.sources = widgets.dll \
+    qmldir
+    importFiles.path = $$QT_IMPORTS_BASE_DIR/$$TARGETPATH
+    
+    DEPLOYMENT = importFiles
+}
+
 INSTALLS += target qmldir

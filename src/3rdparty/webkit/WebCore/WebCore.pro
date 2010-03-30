@@ -6,9 +6,12 @@ symbian: {
     TARGET.EPOCALLOWDLLDATA=1
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000 // Min 128kB, Max 32MB
     TARGET.CAPABILITY = All -Tcb
-    TARGET.UID3 = 0x200267C2
-
-    webkitlibs.sources = $$QMAKE_LIBDIR_QT/QtWebKit.dll
+    isEmpty(QT_LIBINFIX) {
+        TARGET.UID3 = 0x200267C2
+    } else {
+        TARGET.UID3 = 0xE00267C2
+    }
+    webkitlibs.sources = QtWebKit$${QT_LIBINFIX}.dll
     webkitlibs.path = /sys/bin
     vendorinfo = \
         "; Localised Vendor name" \
@@ -163,6 +166,10 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
     !contains(DEFINES, ENABLE_SVG_USE=.): DEFINES += ENABLE_SVG_USE=1
 } else {
     DEFINES += ENABLE_SVG_FONTS=0 ENABLE_SVG_FOREIGN_OBJECT=0 ENABLE_SVG_ANIMATION=0 ENABLE_SVG_AS_IMAGE=0 ENABLE_SVG_USE=0
+}
+
+mameo5|symbian|embedded {
+    DEFINES += ENABLE_FAST_MOBILE_SCROLLING=1
 }
 
 # HTML5 ruby support

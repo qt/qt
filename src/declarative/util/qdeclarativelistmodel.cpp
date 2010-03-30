@@ -365,7 +365,7 @@ void QDeclarativeListModel::clear()
 
     if (!m_isWorkerCopy) {
         emit itemsRemoved(0, cleared);
-        emit countChanged(0);
+        emit countChanged();
     }
 }
 
@@ -390,7 +390,7 @@ void QDeclarativeListModel::remove(int index)
 
     if (!m_isWorkerCopy) {
         emit itemsRemoved(index, 1);
-        emit countChanged(this->count());
+        emit countChanged();
     }
 }
 
@@ -424,7 +424,7 @@ void QDeclarativeListModel::insert(int index, const QScriptValue& valuemap)
     bool ok = m_flat ?  m_flat->insert(index, valuemap) : m_nested->insert(index, valuemap);
     if (ok && !m_isWorkerCopy) {
         emit itemsInserted(index, 1);
-        emit countChanged(this->count());
+        emit countChanged();
     }
 }
 
@@ -1250,14 +1250,9 @@ ModelNode::ModelNode()
 
 ModelNode::~ModelNode()
 {
+    qDeleteAll(properties.values());
+
     ModelNode *node;
-
-    QList<ModelNode *> nodeValues = properties.values();
-    for (int ii = 0; ii < nodeValues.count(); ++ii) {
-        node = nodeValues[ii];
-        if (node) { delete node; node = 0; }
-    }
-
     for (int ii = 0; ii < values.count(); ++ii) {
         node = qvariant_cast<ModelNode *>(values.at(ii));
         if (node) { delete node; node = 0; }
@@ -1279,7 +1274,9 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap) {
         } else {
             value->values << v.toVariant();
         }
-        properties.insert(it.name(),value);
+        if (properties.contains(it.name()))
+            delete properties[it.name()];
+        properties.insert(it.name(), value);
     }
 }
 

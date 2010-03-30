@@ -84,6 +84,8 @@ protected:
     void setError(QFile::FileError err, const QString &errorString);
     void setError(QFile::FileError err, int errNum);
 
+    mutable qint64 cachedSize;
+
 private:
     static QFile::EncoderFn encoder;
     static QFile::DecoderFn decoder;
