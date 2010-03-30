@@ -584,6 +584,11 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
         textLayout.draw(p, topLeftPosition);
     } else {
         QTextDocument document;
+        QColor color = p->pen().color();
+        document.setDefaultStyleSheet(QString::fromLatin1("body { color: #%1%2%3 }")
+                                      .arg(QString::number(color.red(), 16), 2, QLatin1Char('0'))
+                                      .arg(QString::number(color.green(), 16), 2, QLatin1Char('0'))
+                                      .arg(QString::number(color.blue(), 16), 2, QLatin1Char('0')));
         document.setDefaultFont(font);
         document.setDocumentMargin(0.0);
         if (textWidth >= 0.0)
