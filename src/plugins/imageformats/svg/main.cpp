@@ -62,26 +62,18 @@ public:
 
 QStringList QSvgPlugin::keys() const
 {
-    return QStringList() << QLatin1String("svg");
+    return QStringList() << QLatin1String("svg") << QLatin1String("svgz");
 }
 
 QImageIOPlugin::Capabilities QSvgPlugin::capabilities(QIODevice *device, const QByteArray &format) const
 {
-    //### canRead disabled for now because it's hard to detect
-    //    whether the file is actually svg without parsing it
-    //if (device->isReadable() && QSvgIOHandler::canRead(device))
-
-    if (format == "svg")
+    if (format == "svg" || format == "svgz")
         return Capabilities(CanRead);
-    else
-        return 0;
-
-
-    if (!device->isOpen())
+    if (!format.isEmpty())
         return 0;
 
     Capabilities cap;
-    if (device->isReadable())
+    if (device->isReadable() && QSvgIOHandler::canRead(device))
         cap |= CanRead;
     return cap;
 }
