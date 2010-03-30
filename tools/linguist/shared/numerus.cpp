@@ -64,7 +64,7 @@ static const uchar icelandicRules[] =
 static const uchar irishStyleRules[] =
     { Q_EQ, 1, Q_NEWRULE,
       Q_EQ, 2 };
-static const uchar slovakRules[] =
+static const uchar slovakStyleRules[] =
     { Q_EQ, 1, Q_NEWRULE,
       Q_BETWEEN, 2, 4 };
 static const uchar macedonianRules[] =
@@ -114,7 +114,7 @@ static const char * const frenchStyleForms[] = { "Singular", "Plural", 0 };
 static const char * const icelandicForms[] = { "Singular", "Plural", 0 };
 static const char * const latvianForms[] = { "Singular", "Plural", "Nullar", 0 };
 static const char * const irishStyleForms[] = { "Singular", "Dual", "Plural", 0 };
-static const char * const slovakForms[] = { "Singular", "Paucal", "Plural", 0 };
+static const char * const slovakStyleForms[] = { "Singular", "Paucal", "Plural", 0 };
 static const char * const macedonianForms[] = { "Singular", "Dual", "Plural", 0 };
 static const char * const lithuanianForms[] = { "Singular", "Paucal", "Plural", 0 };
 static const char * const russianStyleForms[] = { "Singular", "Dual", "Plural", 0 };
@@ -279,7 +279,7 @@ static const QLocale::Language irishStyleLanguages[] = {
     QLocale::Sanskrit,
     EOL
 };
-static const QLocale::Language slovakLanguages[] = { QLocale::Slovak, QLocale::Czech, EOL };
+static const QLocale::Language slovakStyleLanguages[] = { QLocale::Slovak, QLocale::Czech, EOL };
 static const QLocale::Language macedonianLanguage[] = { QLocale::Macedonian, EOL };
 static const QLocale::Language lithuanianLanguage[] = { QLocale::Lithuanian, EOL };
 static const QLocale::Language russianStyleLanguages[] = {
@@ -333,7 +333,7 @@ static const NumerusTableEntry numerusTable[] = {
       "nplurals=2; plural=(n%10==1 && n%100!=11 ? 0 : 1);" },
     { irishStyleRules, sizeof(irishStyleRules), irishStyleForms, irishStyleLanguages, 0,
       "nplurals=3; plural=(n==1 ? 0 : n==2 ? 1 : 2);" },
-    { slovakRules, sizeof(slovakRules), slovakForms, slovakLanguages, 0,
+    { slovakStyleRules, sizeof(slovakStyleRules), slovakStyleForms, slovakStyleLanguages, 0,
       "nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);" },
     { macedonianRules, sizeof(macedonianRules), macedonianForms, macedonianLanguage, 0,
       "nplurals=3; plural=(n%100==1 ? 0 : n%100==2 ? 1 : 2);" },
