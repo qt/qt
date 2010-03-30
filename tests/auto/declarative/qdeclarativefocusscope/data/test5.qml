@@ -14,12 +14,13 @@ Rectangle {
         Keys.onReturnPressed: console.log("Error - FocusScope")
 
         Rectangle {
+            objectName: "item0"
             height: 120
             width: 420
 
             color: "transparent"
             border.width: 5
-            border.color: myScope.wantsFocus?"blue":"black"
+            //border.color: myScope.wantsFocus?"blue":"black"
 
             Rectangle {
                 x: 10; y: 10
@@ -29,7 +30,7 @@ Rectangle {
             }
 
             TextEdit {
-                id: item1
+                id: item1; objectName: "item1"
                 x: 20; y: 20
                 width: 90; height: 90
                 color: "white"
@@ -42,7 +43,7 @@ Rectangle {
             }
 
             Rectangle {
-                id: item2
+                id: item2; objectName: "item2"
                 x: 310; y: 10
                 width: 100; height: 100; color: "green"
                 border.width: 5
@@ -69,7 +70,7 @@ Rectangle {
     }
 
     TextEdit {
-        id: item3
+        id: item3; objectName: "item3"
         x: 20; y: 310
         width: 90; height: 90
         color: "white"
