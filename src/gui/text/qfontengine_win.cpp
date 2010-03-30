@@ -654,6 +654,7 @@ static const ushort char_table[] = {
 
 static const int char_table_entries = sizeof(char_table)/sizeof(ushort);
 
+#ifndef Q_CC_MINGW
 void QFontEngineWin::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qreal *rightBearing)
 {
     HDC hdc = shared_dc();
@@ -678,6 +679,7 @@ void QFontEngineWin::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qreal *
     }
 #endif
 }
+#endif // Q_CC_MINGW
 
 qreal QFontEngineWin::minLeftBearing() const
 {
