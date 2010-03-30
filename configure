@@ -5213,6 +5213,29 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
     elif [ "$CFG_GLIB" = "no" ]; then
         CFG_ICD=no
     fi
+
+    # Auto-detect PulseAudio support
+    if [ "$CFG_PULSEAUDIO" != "no" ]; then
+        if [ -n "$PKG_CONFIG" ]; then
+            QT_CFLAGS_PULSEAUDIO=`$PKG_CONFIG --cflags libpulse '>=' 0.9.10 libpulse-mainloop-glib 2>/dev/null`
+            QT_LIBS_PULSEAUDIO=`$PKG_CONFIG --libs libpulse '>=' 0.9.10 libpulse-mainloop-glib 2>/dev/null`
+        fi
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/pulseaudio "PulseAudio" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_PULSEAUDIO $QT_LIBS_PULSEAUDIO $X11TESTS_FLAGS; then
+            CFG_PULSEAUDIO=yes
+            QMakeVar set QT_CFLAGS_PULSEAUDIO "$QT_CFLAGS_PULSEAUDIO"
+            QMakeVar set QT_LIBS_PULSEAUDIO "$QT_LIBS_PULSEAUDIO"
+        else
+            if [ "$CFG_PULSEAUDIO" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                echo "PulseAudio support cannot be enabled due to functionality tests!"
+                echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                echo " If you believe this message is in error you may use the continue"
+                echo " switch (-continue) to $0 to continue."
+                exit 101
+            else
+		CFG_PULSEAUDIO=no
+            fi
+        fi
+    fi
 fi # X11/QWS
 
 # x11
@@ -6033,14 +6056,6 @@ if [ "$CFG_ALSA" = "auto" ]; then
         CFG_ALSA=yes
     else
         CFG_ALSA=no
-    fi
-fi
-
-if [ "$CFG_PULSEAUDIO" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/pulseaudio "pulseaudio" $L_FLAGS $I_FLAGS $l_FLAGS; then
-        CFG_PULSEAUDIO=yes
-    else
-        CFG_PULSEAUDIO=no
     fi
 fi
 
@@ -7700,6 +7715,7 @@ echo "CUPS support ........... $CFG_CUPS"
 echo "Iconv support .......... $CFG_ICONV"
 echo "Glib support ........... $CFG_GLIB"
 echo "GStreamer support ...... $CFG_GSTREAMER"
+echo "PulseAudio support ..... $CFG_PULSEAUDIO"
 echo "Large File support ..... $CFG_LARGEFILE"
 echo "GIF support ............ $CFG_GIF"
 if [ "$CFG_TIFF" = "no" ]; then
@@ -7807,7 +7823,6 @@ elif [ "$CFG_OPENSSL" = "linked" ]; then
 fi
 echo "OpenSSL support ........ $CFG_OPENSSL $OPENSSL_LINKAGE"
 echo "Alsa support ........... $CFG_ALSA"
-echo "Pulse Audio support .... $CFG_PULSEAUDIO"
 if [ "$PLATFORM_MAC" = "yes" ]; then
     echo "CoreWlan support ....... $CFG_COREWLAN"
 fi

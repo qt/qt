@@ -22,6 +22,7 @@ HEADERS += \
            $$PHONON_DS9_DIR/mediaobject.h \
            $$PHONON_DS9_DIR/videowidget.h \
            $$PHONON_DS9_DIR/videorenderer_soft.h \
+           $$PHONON_DS9_DIR/videorenderer_vmr9.h \
            $$PHONON_DS9_DIR/volumeeffect.h \
            $$PHONON_DS9_DIR/qbasefilter.h \
            $$PHONON_DS9_DIR/qpin.h \
@@ -44,21 +45,13 @@ SOURCES += \
            $$PHONON_DS9_DIR/mediaobject.cpp \
            $$PHONON_DS9_DIR/videowidget.cpp \
            $$PHONON_DS9_DIR/videorenderer_soft.cpp \
+           $$PHONON_DS9_DIR/videorenderer_vmr9.cpp \
            $$PHONON_DS9_DIR/volumeeffect.cpp \
            $$PHONON_DS9_DIR/qbasefilter.cpp \
            $$PHONON_DS9_DIR/qpin.cpp \
            $$PHONON_DS9_DIR/qasyncreader.cpp \
            $$PHONON_DS9_DIR/qaudiocdreader.cpp \
            $$PHONON_DS9_DIR/qmeminputpin.cpp
-
-#the EVR renderer (only available on desktop)
-!wince*:SOURCES += $$PHONON_DS9_DIR/videorenderer_evr.cpp \
-                   $$PHONON_DS9_DIR/videorenderer_vmr9.cpp
-!wince*:HEADERS += $$PHONON_DS9_DIR/qevr9.h \
-                   $$PHONON_DS9_DIR/videorenderer_evr.h \
-                   $$PHONON_DS9_DIR/videorenderer_vmr9.h
-wince*:SOURCES  += $$PHONON_DS9_DIR/videorenderer_default.cpp
-wince*:HEADERS  += $$PHONON_DS9_DIR/videorenderer_default.h
 
 target.path = $$[QT_INSTALL_PLUGINS]/phonon_backend
 INSTALLS += target
