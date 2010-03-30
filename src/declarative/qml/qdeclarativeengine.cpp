@@ -1463,13 +1463,14 @@ public:
 
     QDeclarativeDirComponents importExtension(const QString &absoluteFilePath, const QString &uri, QDeclarativeEngine *engine) {
         QFile file(absoluteFilePath);
-        QString dir = QFileInfo(file).path();
         QString filecontent;
         if (file.open(QFile::ReadOnly)) {
             filecontent = QString::fromUtf8(file.readAll());
             if (qmlImportTrace())
                 qDebug() << "QDeclarativeEngine::add: loaded" << absoluteFilePath;
         }
+        QDir dir = QFileInfo(file).dir();
+
         QDeclarativeDirParser qmldirParser;
         qmldirParser.setSource(filecontent);
         qmldirParser.parse();
@@ -1479,9 +1480,13 @@ public:
 
 
             foreach (const QDeclarativeDirParser::Plugin &plugin, qmldirParser.plugins()) {
-                QDir pluginDir(dir + QDir::separator() + plugin.path);
-                if (dir.startsWith(QLatin1Char(':')))
+
+                QDir pluginDir = dir.absoluteFilePath(plugin.path);
+
+                // hack for resources, should probably go away
+                if (absoluteFilePath.startsWith(QLatin1Char(':')))
                     pluginDir = QDir(QCoreApplication::applicationDirPath());
+
                 QString resolvedFilePath =
                         QDeclarativeEnginePrivate::get(engine)
                         ->resolvePlugin(pluginDir,
