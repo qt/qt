@@ -143,7 +143,7 @@ bool FactoryPrivate::createBackend()
              * sophisticated, so we make sure the Helix backend is attempted
              * to be loaded first, and the MMF backend is used for backup. */
             {
-                const int helix = plugins.indexof(QLatin1String("hxphonon"));
+                const int helix = plugins.indexOf(QLatin1String("hxphonon"));
                 if (helix != -1)
                     plugins.move(helix, 0);
             }
