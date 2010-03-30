@@ -2178,6 +2178,45 @@ void tst_QTextCodec::moreToFromUnicode_data() {
         koi8_u_ba.append(x);
     }
     QTest::newRow("KOI8-U") << QByteArray("KOI8-U") << koi8_u_ba;
+
+
+    QByteArray big5_ba;
+    for (unsigned char u=0xa1; u<=0xf9; u++) {
+        if (u==0xc8) {
+            continue;
+        }
+        for (unsigned char v=0x40; v<=0x7e; v++) {
+            big5_ba.append(u);
+            big5_ba.append(v);
+        }
+        unsigned char v_up;
+        switch (u) {
+            case 0xa3: v_up=0xbf; break;
+            case 0xc7: v_up=0xfc; break;
+            case 0xf9: v_up=0xd5; break;
+            default: v_up=0xfe;
+        }
+
+        for (unsigned char v=0xa1; v<=v_up; v++) {
+            if (u==0xa2 && (v==0xcc || v==0xce)) {
+                continue;
+            }
+            big5_ba.append(u);
+            big5_ba.append(v);
+        }
+    }
+
+    QTest::newRow("BIG5") << QByteArray("BIG5") << big5_ba;
+
+    QByteArray gb2312_ba;
+    for (unsigned char u=0xa1; u<=0xf7; u++) {
+        for (unsigned char v=0xa1; v<=0xfe; v++) {
+            gb2312_ba.append(u);
+            gb2312_ba.append(v);
+        }
+    }
+
+    QTest::newRow("GB2312") << QByteArray("GB2312") << gb2312_ba;
 }
 
 void tst_QTextCodec::moreToFromUnicode()
