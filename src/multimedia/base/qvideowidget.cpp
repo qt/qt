@@ -617,7 +617,6 @@ void QVideoWidget::setMediaObject(QMediaObject *object)
         QVideoWidgetControl *widgetControl = qobject_cast<QVideoWidgetControl *>(
                 d->service->control(QVideoWidgetControl_iid));
 
-        widgetControl = 0;
         if (widgetControl != 0) {
             d->widgetBackend = new QVideoWidgetControlBackend(widgetControl, this);
         } else {
