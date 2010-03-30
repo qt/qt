@@ -696,7 +696,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                 QList<Section> sections;
                 QList<Section>::ConstIterator s;
                 for (int i=0; i<LastSinceType; ++i)
-                    sections.append(Section(sinceTitle(i),QString(),QString()));
+                    sections.append(Section(sinceTitle(i),QString(),QString(),QString()));
 
                 NodeMultiMap::const_iterator n = nsmap.value().constBegin();
                 while (n != nsmap.value().constEnd()) {
@@ -1356,8 +1356,10 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
 
     if (!inner->doc().isEmpty()) {
         out() << "<hr />\n"
+              << "<div class=\"descr\"/>\n"
               << "<h2>" << "Detailed Description" << "</h2>\n";
         generateBody(inner, marker);
+        out() << "</div>\n";
         generateAlsoList(inner, marker);
     }
 
@@ -1365,6 +1367,8 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     s = sections.begin();
     while (s != sections.end()) {
         out() << "<hr />\n";
+        if (!(*s).divClass.isEmpty())
+            out() << "<div class=\"" << (*s).divClass << "\"/>\n";
         out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
 
         NodeList::ConstIterator m = (*s).members.begin();
@@ -1414,6 +1418,8 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
             }
             ++m;
         }
+        if (!(*s).divClass.isEmpty())
+            out() << "</div>\n";
         ++s;
     }
     generateFooter(inner);
