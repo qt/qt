@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativemetatype_p.h"
+#include "private/qdeclarativemetatype_p.h"
 
-#include "qdeclarativeproxymetaobject_p.h"
-#include "qdeclarativecustomparser_p.h"
-#include "qdeclarativeguard_p.h"
+#include "private/qdeclarativeproxymetaobject_p.h"
+#include "private/qdeclarativecustomparser_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>

@@ -39,45 +39,46 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeitemsmodule_p.h"
+#include "private/qdeclarativeitemsmodule_p.h"
 
 #include <QtGui/qaction.h>
 #include <QtGui/qvalidator.h>
 #include <QtGui/qgraphicseffect.h>
 
-#include "qdeclarativeevents_p_p.h"
-#include "qdeclarativeeffects_p.h"
-#include "qdeclarativescalegrid_p_p.h"
-#include "qdeclarativeanimatedimage_p.h"
-#include "qdeclarativeborderimage_p.h"
-#include "qdeclarativepositioners_p.h"
-#include "qdeclarativemousearea_p.h"
-#include "qdeclarativeflickable_p.h"
-#include "qdeclarativeflickable_p_p.h"
-#include "qdeclarativeflipable_p.h"
-#include "qdeclarativefocuspanel_p.h"
-#include "qdeclarativefocusscope_p.h"
-#include "qdeclarativegraphicsobjectcontainer_p.h"
-#include "qdeclarativegridview_p.h"
-#include "qdeclarativeimage_p.h"
-#include "qdeclarativeitem_p.h"
-#include "qdeclarativelayoutitem_p.h"
-#include "qdeclarativelistview_p.h"
-#include "qdeclarativeloader_p.h"
-#include "qdeclarativemousearea_p.h"
-#include "qdeclarativepath_p.h"
-#include "qdeclarativepathview_p.h"
-#include "qdeclarativerectangle_p.h"
-#include "qdeclarativerepeater_p.h"
-#include "qdeclarativetext_p.h"
-#include "qdeclarativetextedit_p.h"
-#include "qdeclarativetextinput_p.h"
-#include "qdeclarativevisualitemmodel_p.h"
+#include "private/qdeclarativeevents_p_p.h"
+#include "private/qdeclarativeeffects_p.h"
+#include "private/qdeclarativescalegrid_p_p.h"
+#include "private/qdeclarativeanimatedimage_p.h"
+#include "private/qdeclarativeborderimage_p.h"
+#include "private/qdeclarativepositioners_p.h"
+#include "private/qdeclarativemousearea_p.h"
+#include "private/qdeclarativeflickable_p.h"
+#include "private/qdeclarativeflickable_p_p.h"
+#include "private/qdeclarativeflipable_p.h"
+#include "private/qdeclarativefocuspanel_p.h"
+#include "private/qdeclarativefocusscope_p.h"
+#include "private/qdeclarativegraphicsobjectcontainer_p.h"
+#include "private/qdeclarativegridview_p.h"
+#include "private/qdeclarativeimage_p.h"
+#include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativelayoutitem_p.h"
+#include "private/qdeclarativelistview_p.h"
+#include "private/qdeclarativeloader_p.h"
+#include "private/qdeclarativemousearea_p.h"
+#include "private/qdeclarativepath_p.h"
+#include "private/qdeclarativepathview_p.h"
+#include "private/qdeclarativerectangle_p.h"
+#include "private/qdeclarativerepeater_p.h"
+#include "private/qdeclarativetranslate_p.h"
+#include "private/qdeclarativetext_p.h"
+#include "private/qdeclarativetextedit_p.h"
+#include "private/qdeclarativetextinput_p.h"
+#include "private/qdeclarativevisualitemmodel_p.h"
 #ifdef QT_WEBKIT_LIB
-#include "qdeclarativewebview_p.h"
-#include "qdeclarativewebview_p_p.h"
+#include "private/qdeclarativewebview_p.h"
+#include "private/qdeclarativewebview_p_p.h"
 #endif
-#include "qdeclarativeanchors_p.h"
+#include "private/qdeclarativeanchors_p.h"
 
 void QDeclarativeItemModule::defineModule()
 {
@@ -114,22 +115,21 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePathPercent>("Qt",4,6,"PathPercent");
     qmlRegisterType<QDeclarativePathQuad>("Qt",4,6,"PathQuad");
     qmlRegisterType<QDeclarativePathView>("Qt",4,6,"PathView");
-    qmlRegisterType<QDeclarativePen>("Qt",4,6,"Pen");
-    qmlRegisterType<QIntValidator>("Qt",4,6,"QIntValidator");
+    qmlRegisterType<QIntValidator>("Qt",4,6,"IntValidator");
 #if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
-    qmlRegisterType<QDoubleValidator>("Qt",4,7,"QDoubleValidator");
-    qmlRegisterType<QRegExpValidator>("Qt",4,7,"QRegExpValidator");
+    qmlRegisterType<QDoubleValidator>("Qt",4,7,"DoubleValidator");
+    qmlRegisterType<QRegExpValidator>("Qt",4,7,"RegExpValidator");
 #endif
     qmlRegisterType<QDeclarativeRectangle>("Qt",4,6,"Rectangle");
     qmlRegisterType<QDeclarativeRepeater>("Qt",4,6,"Repeater");
     qmlRegisterType<QGraphicsRotation>("Qt",4,6,"Rotation");
     qmlRegisterType<QDeclarativeRow>("Qt",4,6,"Row");
+    qmlRegisterType<QDeclarativeTranslate>("Qt",4,6,"Translate");
     qmlRegisterType<QGraphicsScale>("Qt",4,6,"Scale");
     qmlRegisterType<QDeclarativeText>("Qt",4,6,"Text");
     qmlRegisterType<QDeclarativeTextEdit>("Qt",4,6,"TextEdit");
     qmlRegisterType<QDeclarativeTextInput>("Qt",4,6,"TextInput");
     qmlRegisterType<QDeclarativeViewSection>("Qt",4,6,"ViewSection");
-    qmlRegisterType<QDeclarativeFlickableVisibleArea>("Qt",4,6,"VisibleArea");
     qmlRegisterType<QDeclarativeVisualDataModel>("Qt",4,6,"VisualDataModel");
     qmlRegisterType<QDeclarativeVisualItemModel>("Qt",4,6,"VisualItemModel");
 
@@ -146,6 +146,8 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QValidator>();
     qmlRegisterType<QDeclarativeVisualModel>();
     qmlRegisterType<QAction>();
+    qmlRegisterType<QDeclarativePen>();
+    qmlRegisterType<QDeclarativeFlickableVisibleArea>();
 #ifdef QT_WEBKIT_LIB
     qmlRegisterType<QDeclarativeWebSettings>();
 #endif

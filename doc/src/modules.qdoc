@@ -493,6 +493,14 @@
 
     \snippet doc/src/snippets/code/doc_src_qtxmlpatterns.qdoc 1
 
+    \section1 Further Reading
+
+    General overviews of XQuery and XSchema can be found in the
+    \l{Using XML Technologies} document.
+
+    An introduction to the XQuery language can be found in
+    \l{A Short Path to XQuery}.
+
     \section1 License Information
 
     The XML Schema implementation provided by this module contains the \c xml.xsd file
@@ -810,6 +818,8 @@
     \brief The QAxContainer module is a Windows-only extension for
     accessing ActiveX controls and COM objects.
 
+    QAxServer is part of the \l{ActiveQt Framework}.
+
     \section1 License Information
 
     The QAxContainer module is not covered by the \l{GNU General Public License (GPL)},
@@ -859,6 +869,8 @@
 
     \brief The QAxServer module is a Windows-only static library that
     you can use to turn a standard Qt binary into a COM server. 
+
+    QAxServer is part of the \l{ActiveQt Framework}.
 
     \section1 License Information
 

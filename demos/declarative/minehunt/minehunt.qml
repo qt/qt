@@ -1,5 +1,5 @@
 import Qt 4.6
-import MinehuntCore 1.0
+import "MinehuntCore" 1.0
 
 Item {
     id: field

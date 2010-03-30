@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativepackage_p.h"
+#include "private/qdeclarativepackage_p.h"
 
 #include <private/qobject_p.h>
 #include <private/qdeclarativeguard_p.h>

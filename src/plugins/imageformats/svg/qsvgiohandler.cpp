@@ -48,6 +48,7 @@
 #include "qpixmap.h"
 #include "qpainter.h"
 #include "qvariant.h"
+#include "qbuffer.h"
 #include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
@@ -55,67 +56,54 @@ QT_BEGIN_NAMESPACE
 class QSvgIOHandlerPrivate
 {
 public:
-    QSvgIOHandlerPrivate()
-        : r(new QSvgRenderer()), loaded(false)
+    QSvgIOHandlerPrivate(QSvgIOHandler *qq)
+        : q(qq), loaded(false), readDone(false), backColor(Qt::transparent)
     {}
-    ~QSvgIOHandlerPrivate()
-    {
-        delete r;
-    }
 
     bool load(QIODevice *device);
-    static bool findSvgTag(QIODevice *device);
 
-    QSvgRenderer *r;
-    QSize         defaultSize;
-    QSize         currentSize;
-    bool          loaded;
+    QSvgIOHandler   *q;
+    QSvgRenderer     r;
+    QXmlStreamReader xmlReader;
+    QSize            defaultSize;
+    QRect            clipRect;
+    QSize            scaledSize;
+    QRect            scaledClipRect;
+    bool             loaded;
+    bool             readDone;
+    QColor           backColor;
 };
+
 
 bool QSvgIOHandlerPrivate::load(QIODevice *device)
 {
     if (loaded)
         return true;
+    if (q->format().isEmpty())
+        q->canRead();
 
-    if (r->load(device->readAll())) {
-        defaultSize = QSize(r->viewBox().width(), r->viewBox().height());
-        if (currentSize.isEmpty())
-            currentSize = defaultSize;
+    bool res = false;
+    QBuffer *buf = qobject_cast<QBuffer *>(device);
+    if (buf) {
+        res = r.load(buf->data());
+    } else if (q->format() == "svgz") {
+        res = r.load(device->readAll());   // ### can't stream svgz
+    } else {
+        xmlReader.setDevice(device);
+        res = r.load(&xmlReader);   //### doesn't leave pos() correctly
     }
-    loaded = r->isValid();
+
+    if (res) {
+        defaultSize = QSize(r.viewBox().width(), r.viewBox().height());
+        loaded = true;
+    }
 
     return loaded;
 }
 
-bool QSvgIOHandlerPrivate::findSvgTag(QIODevice *device)
-{
-    qint64 pos = device->pos();
-    device->seek(0);
-    char buffer[256];
-    const char svg_tag[] = "<svg";
-
-    while (1) {
-        int size = device->read(buffer, 256);
-        for (int i=0; i<size - 5; ++i) {
-            if (!memcmp(buffer + i, svg_tag, 4)) {
-                if (buffer[i+4] == ' ' || buffer[i+4] == '\t'
-                    || buffer[i+4] == '\n' || buffer[i+4] == '\r')
-                {
-                    device->seek(pos);
-                    return true;
-                }
-            }
-        }
-        if (device->atEnd())
-            break;
-        device->seek(device->pos()-4);
-    }
-    device->seek(pos);
-    return false;
-}
 
 QSvgIOHandler::QSvgIOHandler()
-    : d(new QSvgIOHandlerPrivate())
+    : d(new QSvgIOHandlerPrivate(this))
 {
 
 }
@@ -129,7 +117,20 @@ QSvgIOHandler::~QSvgIOHandler()
 
 bool QSvgIOHandler::canRead() const
 {
-    return QSvgIOHandlerPrivate::findSvgTag(device());
+    if (!device())
+        return false;
+    if (d->loaded && !d->readDone)
+        return true;        // Will happen if we have been asked for the size
+
+    QByteArray buf = device()->peek(8);
+    if (buf.startsWith("\x1f\x8b")) {
+        setFormat("svgz");
+        return true;
+    } else if (buf.contains("<?xml") || buf.contains("<svg")) {
+        setFormat("svg");
+        return true;
+    }
+    return false;
 }
 
 
@@ -141,14 +142,41 @@ QByteArray QSvgIOHandler::name() const
 
 bool QSvgIOHandler::read(QImage *image)
 {
-    if (d->load(device())) {
-        *image = QImage(d->currentSize, QImage::Format_ARGB32_Premultiplied);
-        if (!d->currentSize.isEmpty()) {
-            image->fill(0x00000000);
+    if (!d->readDone && d->load(device())) {
+        bool xform = (d->clipRect.isValid() || d->scaledSize.isValid() || d->scaledClipRect.isValid());
+        QSize finalSize = d->defaultSize;
+        QRectF bounds;
+        if (xform && !d->defaultSize.isEmpty()) {
+            bounds = QRectF(QPointF(0,0), QSizeF(d->defaultSize));
+            QPoint tr1, tr2;
+            QSizeF sc(1, 1);
+            if (d->clipRect.isValid()) {
+                tr1 = -d->clipRect.topLeft();
+                finalSize = d->clipRect.size();
+            }
+            if (d->scaledSize.isValid()) {
+                sc = QSizeF(qreal(d->scaledSize.width()) / finalSize.width(),
+                            qreal(d->scaledSize.height()) / finalSize.height());
+                finalSize = d->scaledSize;
+            }
+            if (d->scaledClipRect.isValid()) {
+                tr2 = -d->scaledClipRect.topLeft();
+                finalSize = d->scaledClipRect.size();
+            }
+            QTransform t;
+            t.translate(tr2.x(), tr2.y());
+            t.scale(sc.width(), sc.height());
+            t.translate(tr1.x(), tr1.y());
+            bounds = t.mapRect(bounds);
+        }
+        *image = QImage(finalSize, QImage::Format_ARGB32_Premultiplied);
+        if (!finalSize.isEmpty()) {
+            image->fill(d->backColor.rgba());
             QPainter p(image);
-            d->r->render(&p);
+            d->r.render(&p, bounds);
             p.end();
         }
+        d->readDone = true;
         return true;
     }
 
@@ -166,8 +194,17 @@ QVariant QSvgIOHandler::option(ImageOption option) const
         d->load(device());
         return d->defaultSize;
         break;
+    case ClipRect:
+        return d->clipRect;
+        break;
     case ScaledSize:
-        return d->currentSize;
+        return d->scaledSize;
+        break;
+    case ScaledClipRect:
+        return d->scaledClipRect;
+        break;
+    case BackgroundColor:
+        return d->backColor;
         break;
     default:
         break;
@@ -179,12 +216,17 @@ QVariant QSvgIOHandler::option(ImageOption option) const
 void QSvgIOHandler::setOption(ImageOption option, const QVariant & value)
 {
     switch(option) {
-    case Size:
-        d->defaultSize = value.toSize();
-        d->currentSize = value.toSize();
+    case ClipRect:
+        d->clipRect = value.toRect();
         break;
     case ScaledSize:
-        d->currentSize = value.toSize();
+        d->scaledSize = value.toSize();
+        break;
+    case ScaledClipRect:
+        d->scaledClipRect = value.toRect();
+        break;
+    case BackgroundColor:
+        d->backColor = value.value<QColor>();
         break;
     default:
         break;
@@ -198,7 +240,10 @@ bool QSvgIOHandler::supportsOption(ImageOption option) const
     {
     case ImageFormat:
     case Size:
+    case ClipRect:
     case ScaledSize:
+    case ScaledClipRect:
+    case BackgroundColor:
         return true;
     default:
         break;
@@ -206,9 +251,11 @@ bool QSvgIOHandler::supportsOption(ImageOption option) const
     return false;
 }
 
+
 bool QSvgIOHandler::canRead(QIODevice *device)
 {
-    return QSvgIOHandlerPrivate::findSvgTag(device);
+    QByteArray buf = device->peek(8);
+    return buf.startsWith("\x1f\x8b") || buf.contains("<?xml") || buf.contains("<svg");
 }
 
 QT_END_NAMESPACE

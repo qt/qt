@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativepainteditem_p.h"
-#include "qdeclarativepainteditem_p_p.h"
+#include "private/qdeclarativepainteditem_p.h"
+#include "private/qdeclarativepainteditem_p_p.h"
 
 #include <QDebug>
 #include <QPen>
@@ -211,8 +211,8 @@ QDeclarativePaintedItem::~QDeclarativePaintedItem()
 */
 void QDeclarativePaintedItem::init()
 {
-    connect(this,SIGNAL(widthChanged(qreal)),this,SLOT(clearCache()));
-    connect(this,SIGNAL(heightChanged(qreal)),this,SLOT(clearCache()));
+    connect(this,SIGNAL(widthChanged()),this,SLOT(clearCache()));
+    connect(this,SIGNAL(heightChanged()),this,SLOT(clearCache()));
     connect(this,SIGNAL(visibleChanged()),this,SLOT(clearCache()));
 }
 

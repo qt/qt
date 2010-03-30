@@ -111,6 +111,8 @@ private slots:
     void fontPropagationSceneChange();
     void geometry_data();
     void geometry();
+    void width();
+    void height();
     void getContentsMargins_data();
     void getContentsMargins();
     void initStyleOption_data();
@@ -776,6 +778,32 @@ void tst_QGraphicsWidget::geometry()
     QCOMPARE(widget.geometry(), QRectF(pos, size));
 }
 
+void tst_QGraphicsWidget::width()
+{
+    QGraphicsWidget w;
+    QCOMPARE(w.property("width").toReal(), qreal(0));
+    QSignalSpy spy(&w, SIGNAL(widthChanged()));
+    w.setProperty("width", qreal(50));
+    QCOMPARE(w.property("width").toReal(), qreal(50));
+    QCOMPARE(spy.count(), 1);
+    //calling old school setGeometry should work too
+    w.setGeometry(0, 0, 200, 200);
+    QCOMPARE(spy.count(), 2);
+}
+
+void tst_QGraphicsWidget::height()
+{
+    QGraphicsWidget w;
+    QCOMPARE(w.property("height").toReal(), qreal(0));
+    QSignalSpy spy(&w, SIGNAL(heightChanged()));
+    w.setProperty("height", qreal(50));
+    QCOMPARE(w.property("height").toReal(), qreal(50));
+    QCOMPARE(spy.count(), 1);
+    //calling old school setGeometry should work too
+    w.setGeometry(0, 0, 200, 200);
+    QCOMPARE(spy.count(), 2);
+}
+
 void tst_QGraphicsWidget::getContentsMargins_data()
 {
     QTest::addColumn<qreal>("left");
@@ -915,6 +943,7 @@ void tst_QGraphicsWidget::layout()
         layout->addItem(item);
         children.append(item);
     }
+    QSignalSpy spy(&widget, SIGNAL(layoutChanged()));
     widget.setLayout(layout);
 
     QTRY_COMPARE(widget.layout(), static_cast<QGraphicsLayout*>(layout));
@@ -923,7 +952,7 @@ void tst_QGraphicsWidget::layout()
         QCOMPARE(item->parentWidget(), (QGraphicsWidget *)&widget);
         QVERIFY(item->geometry() != QRectF(0, 0, -1, -1));
     }
-
+    QCOMPARE(spy.count(), 1);
     // don't crash
     widget.setLayout(0);
 }

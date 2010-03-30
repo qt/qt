@@ -114,10 +114,12 @@ void WriteIconData::acceptImages(DomImages *images)
 
 void WriteIconData::acceptImage(DomImage *image)
 {
-    writeImage(output, option.indent, image);
+    // Limit line length when writing code.
+    writeImage(output, option.indent, true, image);
 }
 
-void WriteIconData::writeImage(QTextStream &output, const QString &indent, DomImage *image)
+void WriteIconData::writeImage(QTextStream &output, const QString &indent,
+                               bool limitXPM_LineLength, const DomImage *image)
 {
     QString img = image->attributeName() + QLatin1String("_data");
     QString data = image->elementData()->text();
@@ -133,7 +135,8 @@ void WriteIconData::writeImage(QTextStream &output, const QString &indent, DomIm
         int a = 0;
         int column = 0;
         bool inQuote = false;
-        output << indent << "static const char* const " << img << "[] = { \n";
+        output << indent << "/* XPM */\n"
+               << indent << "static const char* const " << img << "[] = { \n";
         while (baunzip[a] != '\"')
             a++;
         for (; a < (int) length; a++) {
@@ -144,7 +147,8 @@ void WriteIconData::writeImage(QTextStream &output, const QString &indent, DomIm
                 inQuote = !inQuote;
             }
 
-            if (column++ >= 511 && inQuote) {
+            column++;
+            if (limitXPM_LineLength && column >= 512 && inQuote) {
                 output << "\"\n\""; // be nice with MSVC & Co.
                 column = 1;
             }

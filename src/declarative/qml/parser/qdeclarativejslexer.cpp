@@ -43,11 +43,11 @@
 #include <config.h>
 #endif
 
-#include "qdeclarativejslexer_p.h"
+#include "private/qdeclarativejslexer_p.h"
 
-#include "qdeclarativejsglobal_p.h"
-#include "qdeclarativejsengine_p.h"
-#include "qdeclarativejsgrammar_p.h"
+#include "private/qdeclarativejsglobal_p.h"
+#include "private/qdeclarativejsengine_p.h"
+#include "private/qdeclarativejsgrammar_p.h"
 
 #include <QtCore/qcoreapplication.h>
 

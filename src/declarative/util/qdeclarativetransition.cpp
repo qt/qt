@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativestate_p.h"
-#include "qdeclarativestategroup_p.h"
-#include "qdeclarativestate_p_p.h"
-#include "qdeclarativestateoperations_p.h"
-#include "qdeclarativeanimation_p.h"
-#include "qdeclarativeanimation_p_p.h"
-#include "qdeclarativetransitionmanager_p_p.h"
+#include "private/qdeclarativestate_p.h"
+#include "private/qdeclarativestategroup_p.h"
+#include "private/qdeclarativestate_p_p.h"
+#include "private/qdeclarativestateoperations_p.h"
+#include "private/qdeclarativeanimation_p.h"
+#include "private/qdeclarativeanimation_p_p.h"
+#include "private/qdeclarativetransitionmanager_p_p.h"
 
 #include <QParallelAnimationGroup>
 
@@ -116,9 +116,9 @@ void QDeclarativeTransitionPrivate::append_animation(QDeclarativeListProperty<QD
 void ParallelAnimationWrapper::updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
 {
     QParallelAnimationGroup::updateState(newState, oldState);
-    if (newState == Stopped &&
-        ((direction() == QAbstractAnimation::Forward && currentLoopTime() == duration()) ||
-         (direction() == QAbstractAnimation::Backward && currentLoopTime() == 0)))
+    if (newState == Stopped && (duration() == -1
+        || (direction() == QAbstractAnimation::Forward && currentLoopTime() == duration())
+        || (direction() == QAbstractAnimation::Backward && currentLoopTime() == 0)))
     {
         trans->complete();
     }

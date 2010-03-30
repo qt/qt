@@ -91,9 +91,6 @@ namespace QTest {
             QApplicationGuiServer
         };
 
-        bool isDebugMode() const;
-        void setDebugMode(bool enable);
-
         QList<QByteArray> qmakeSettings() const;
         void setQmakeSettings(const QList<QByteArray> &settings);
 

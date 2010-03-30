@@ -41,6 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/private/qdeclarativeitem_p.h>
 #include <QtDeclarative/private/qdeclarativetext_p.h>
+#include <QtDeclarative/private/qdeclarativeengine_p.h>
 #include <QtDeclarative/private/qdeclarativelistmodel_p.h>
 #include <QtDeclarative/private/qdeclarativeexpression_p.h>
 #include <QDeclarativeComponent>
@@ -77,6 +78,7 @@ private slots:
     void convertNestedToFlat_ok_data();
     void error_data();
     void error();
+    void set();
 };
 
 QScriptValue tst_QDeclarativeListModel::nestedListValue(QScriptEngine *eng) const
@@ -193,7 +195,7 @@ void tst_QDeclarativeListModel::dynamic_data()
 
     QTest::newRow("clear1") << "{append({'foo':456});clear();count}" << 0 << "";
     QTest::newRow("clear2") << "{append({'foo':123});append({'foo':456});clear();count}" << 0 << "";
-    QTest::newRow("clear2") << "{append({'foo':123});clear();get(0).foo}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
+    QTest::newRow("clear3") << "{append({'foo':123});clear();get(0).foo}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
 
     QTest::newRow("remove1") << "{append({'foo':123});remove(0);count}" << 0 << "";
     QTest::newRow("remove2a") << "{append({'foo':123});append({'foo':456});remove(0);count}" << 1 << "";
@@ -290,8 +292,6 @@ void tst_QDeclarativeListModel::dynamic_worker_data()
 
 void tst_QDeclarativeListModel::dynamic_worker()
 {
-    QSKIP("", SkipAll);
-
     QFETCH(QString, script);
     QFETCH(int, result);
     QFETCH(QString, warning);
@@ -324,6 +324,7 @@ void tst_QDeclarativeListModel::dynamic_worker()
         // changes are reflected in the list model in the main thread
         if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
             QTest::ignoreMessage(QtWarningMsg, "QML ListModel (unknown location) Cannot add nested list values when modifying or after modification from a worker script");
+
         QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", 
                 Q_ARG(QVariant, operations.mid(0, operations.length()-1))));
         waitForWorker(item);
@@ -342,7 +343,6 @@ void tst_QDeclarativeListModel::dynamic_worker()
 
 void tst_QDeclarativeListModel::convertNestedToFlat_fail()
 {
-    QSKIP("", SkipAll);
     // If a model has nested data, it cannot be used at all from a worker script
 
     QFETCH(QString, script);
@@ -368,7 +368,7 @@ void tst_QDeclarativeListModel::convertNestedToFlat_fail()
 
     delete item;
     QTest::ignoreMessage(QtWarningMsg, "QThread: Destroyed while thread is still running");
-    qApp->processEvents(); 
+    qApp->processEvents();
 }
 
 void tst_QDeclarativeListModel::convertNestedToFlat_fail_data()
@@ -387,7 +387,6 @@ void tst_QDeclarativeListModel::convertNestedToFlat_fail_data()
 
 void tst_QDeclarativeListModel::convertNestedToFlat_ok()
 {
-    QSKIP("", SkipAll);
     // If a model only has plain data, it can be modified from a worker script. However,
     // once the model is used from a worker script, it no longer accepts nested data
 
@@ -429,7 +428,7 @@ void tst_QDeclarativeListModel::convertNestedToFlat_ok()
 
     delete item;
     QTest::ignoreMessage(QtWarningMsg, "QThread: Destroyed while thread is still running");
-    qApp->processEvents(); 
+    qApp->processEvents();
 }
 
 void tst_QDeclarativeListModel::convertNestedToFlat_ok_data()
@@ -552,6 +551,30 @@ void tst_QDeclarativeListModel::error()
         QCOMPARE(errors.at(0).description(),error);
     }
 }
+
+void tst_QDeclarativeListModel::set()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeListModel model;
+    QDeclarativeEngine::setContextForObject(&model,engine.rootContext());
+    engine.rootContext()->setContextObject(&model);
+    QScriptEngine *seng = QDeclarativeEnginePrivate::getScriptEngine(&engine);
+
+    QScriptValue sv = seng->newObject();
+    sv.setProperty("test", QScriptValue(false));
+    model.append(sv);
+
+    sv.setProperty("test", QScriptValue(true));
+    model.set(0, sv);
+    QCOMPARE(model.get(0).property("test").toBool(), true); // triggers creation of model cache
+    QCOMPARE(model.data(0, model.roles()[0]), qVariantFromValue(true)); 
+
+    sv.setProperty("test", QScriptValue(false));
+    model.set(0, sv);
+    QCOMPARE(model.get(0).property("test").toBool(), false); // tests model cache is updated
+    QCOMPARE(model.data(0, model.roles()[0]), qVariantFromValue(false)); 
+}
+
 
 QTEST_MAIN(tst_QDeclarativeListModel)
 

@@ -76,7 +76,7 @@ QML_DECLARE_TYPE(ShoeDescription);
 class Person : public QObject {
 Q_OBJECT
 Q_PROPERTY(QString name READ name WRITE setName)
-Q_PROPERTY(ShoeDescription *shoe READ shoe);
+Q_PROPERTY(ShoeDescription *shoe READ shoe)
 public:
     Person(QObject *parent = 0);
 

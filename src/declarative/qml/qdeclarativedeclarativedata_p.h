@@ -55,7 +55,7 @@
 
 #include <QtScript/qscriptvalue.h>
 #include <private/qobject_p.h>
-#include "qdeclarativeguard_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 QT_BEGIN_NAMESPACE
 

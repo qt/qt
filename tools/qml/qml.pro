@@ -15,13 +15,13 @@ contains(QT_CONFIG, opengl) {
 # Input
 HEADERS += qmlruntime.h \
            proxysettings.h \
-           qfxtester.h \
+           qdeclarativetester.h \
            deviceorientation.h \
            qdeclarativefolderlistmodel.h
 SOURCES += main.cpp \
            qmlruntime.cpp \
            proxysettings.cpp \
-           qfxtester.cpp \
+           qdeclarativetester.cpp \
            qdeclarativefolderlistmodel.cpp
 RESOURCES = qmlruntime.qrc
 maemo5 {

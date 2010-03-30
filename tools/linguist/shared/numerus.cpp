@@ -64,7 +64,7 @@ static const uchar icelandicRules[] =
 static const uchar irishStyleRules[] =
     { Q_EQ, 1, Q_NEWRULE,
       Q_EQ, 2 };
-static const uchar slovakRules[] =
+static const uchar slovakStyleRules[] =
     { Q_EQ, 1, Q_NEWRULE,
       Q_BETWEEN, 2, 4 };
 static const uchar macedonianRules[] =
@@ -100,7 +100,7 @@ static const uchar arabicRules[] =
       Q_EQ, 1, Q_NEWRULE,
       Q_EQ, 2, Q_NEWRULE,
       Q_MOD_100 | Q_BETWEEN, 3, 10, Q_NEWRULE,
-      Q_MOD_100 | Q_NOT | Q_BETWEEN, 0, 2 };
+      Q_MOD_100 | Q_GEQ, 11 };
 static const uchar tagalogRules[] =
     { Q_LEQ, 1, Q_NEWRULE,
       Q_MOD_10 | Q_EQ, 4, Q_OR, Q_MOD_10 | Q_EQ, 6, Q_OR, Q_MOD_10 | Q_EQ, 9 };
@@ -114,7 +114,7 @@ static const char * const frenchStyleForms[] = { "Singular", "Plural", 0 };
 static const char * const icelandicForms[] = { "Singular", "Plural", 0 };
 static const char * const latvianForms[] = { "Singular", "Plural", "Nullar", 0 };
 static const char * const irishStyleForms[] = { "Singular", "Dual", "Plural", 0 };
-static const char * const slovakForms[] = { "Singular", "Paucal", "Plural", 0 };
+static const char * const slovakStyleForms[] = { "Singular", "Paucal", "Plural", 0 };
 static const char * const macedonianForms[] = { "Singular", "Dual", "Plural", 0 };
 static const char * const lithuanianForms[] = { "Singular", "Paucal", "Plural", 0 };
 static const char * const russianStyleForms[] = { "Singular", "Dual", "Plural", 0 };
@@ -279,7 +279,7 @@ static const QLocale::Language irishStyleLanguages[] = {
     QLocale::Sanskrit,
     EOL
 };
-static const QLocale::Language slovakLanguages[] = { QLocale::Slovak, QLocale::Czech, EOL };
+static const QLocale::Language slovakStyleLanguages[] = { QLocale::Slovak, QLocale::Czech, EOL };
 static const QLocale::Language macedonianLanguage[] = { QLocale::Macedonian, EOL };
 static const QLocale::Language lithuanianLanguage[] = { QLocale::Lithuanian, EOL };
 static const QLocale::Language russianStyleLanguages[] = {
@@ -318,28 +318,45 @@ struct NumerusTableEntry {
     const char * const *forms;
     const QLocale::Language *languages;
     const QLocale::Country *countries;
+    const char * const gettextRules;
 };
 
 static const NumerusTableEntry numerusTable[] = {
-    { 0, 0, japaneseStyleForms, japaneseStyleLanguages, 0 },
-    { englishStyleRules, sizeof(englishStyleRules), englishStyleForms, englishStyleLanguages, 0 },
+    { 0, 0, japaneseStyleForms, japaneseStyleLanguages, 0, "nplurals=1; plural=0;" },
+    { englishStyleRules, sizeof(englishStyleRules), englishStyleForms, englishStyleLanguages, 0,
+      "nplurals=2; plural=(n != 1);" },
     { frenchStyleRules, sizeof(frenchStyleRules), frenchStyleForms, frenchStyleLanguages,
-      frenchStyleCountries },
-    { latvianRules, sizeof(latvianRules), latvianForms, latvianLanguage, 0 },
-    { icelandicRules, sizeof(icelandicRules), icelandicForms, icelandicLanguage, 0 },
-    { irishStyleRules, sizeof(irishStyleRules), irishStyleForms, irishStyleLanguages, 0 },
-    { slovakRules, sizeof(slovakRules), slovakForms, slovakLanguages, 0 },
-    { macedonianRules, sizeof(macedonianRules), macedonianForms, macedonianLanguage, 0 },
-    { lithuanianRules, sizeof(lithuanianRules), lithuanianForms, lithuanianLanguage, 0 },
-    { russianStyleRules, sizeof(russianStyleRules), russianStyleForms, russianStyleLanguages, 0 },
-    { polishRules, sizeof(polishRules), polishForms, polishLanguage, 0 },
-    { romanianRules, sizeof(romanianRules), romanianForms, romanianLanguages, 0 },
-    { slovenianRules, sizeof(slovenianRules), slovenianForms, slovenianLanguage, 0 },
-    { malteseRules, sizeof(malteseRules), malteseForms, malteseLanguage, 0 },
-    { welshRules, sizeof(welshRules), welshForms, welshLanguage, 0 },
-    { arabicRules, sizeof(arabicRules), arabicForms, arabicLanguage, 0 },
-    { tagalogRules, sizeof(tagalogRules), tagalogForms, tagalogLanguage, 0 },
-    { catalanRules, sizeof(catalanRules), catalanForms, catalanLanguage, 0 }
+      frenchStyleCountries, "nplurals=2; plural=(n > 1);" },
+    { latvianRules, sizeof(latvianRules), latvianForms, latvianLanguage, 0,
+      "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);" },
+    { icelandicRules, sizeof(icelandicRules), icelandicForms, icelandicLanguage, 0,
+      "nplurals=2; plural=(n%10==1 && n%100!=11 ? 0 : 1);" },
+    { irishStyleRules, sizeof(irishStyleRules), irishStyleForms, irishStyleLanguages, 0,
+      "nplurals=3; plural=(n==1 ? 0 : n==2 ? 1 : 2);" },
+    { slovakStyleRules, sizeof(slovakStyleRules), slovakStyleForms, slovakStyleLanguages, 0,
+      "nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);" },
+    { macedonianRules, sizeof(macedonianRules), macedonianForms, macedonianLanguage, 0,
+      "nplurals=3; plural=(n%100==1 ? 0 : n%100==2 ? 1 : 2);" },
+    { lithuanianRules, sizeof(lithuanianRules), lithuanianForms, lithuanianLanguage, 0,
+      "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);" },
+    { russianStyleRules, sizeof(russianStyleRules), russianStyleForms, russianStyleLanguages, 0,
+      "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);" },
+    { polishRules, sizeof(polishRules), polishForms, polishLanguage, 0,
+      "nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);" },
+    { romanianRules, sizeof(romanianRules), romanianForms, romanianLanguages, 0,
+      "nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2);" },
+    { slovenianRules, sizeof(slovenianRules), slovenianForms, slovenianLanguage, 0,
+      "nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3);" },
+    { malteseRules, sizeof(malteseRules), malteseForms, malteseLanguage, 0,
+      "nplurals=4; plural=(n==1 ? 0 : (n==0 || (n%100>=1 && n%100<=10)) ? 1 : (n%100>=11 && n%100<=19) ? 2 : 3);" },
+    { welshRules, sizeof(welshRules), welshForms, welshLanguage, 0,
+      "nplurals=5; plural=(n==0 ? 0 : n==1 ? 1 : (n>=2 && n<=5) ? 2 : n==6 ? 3 : 4);" },
+    { arabicRules, sizeof(arabicRules), arabicForms, arabicLanguage, 0,
+      "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : (n%100>=3 && n%100<=10) ? 3 : n%100>=11 ? 4 : 5);" },
+    { tagalogRules, sizeof(tagalogRules), tagalogForms, tagalogLanguage, 0,
+      "nplurals=3; plural=(n==1 ? 0 : (n%10==4 || n%10==6 || n%10== 9) ? 1 : 2);" },
+    { catalanRules, sizeof(catalanRules), catalanForms, catalanLanguage, 0,
+      "nplurals=3; plural=(n==1 ? 0 : (n==11 || n/1000==11 || n/1000000==11 || n/1000000000==11) ? 1 : 2);" },
 };
 
 static const int NumerusTableSize = sizeof(numerusTable) / sizeof(numerusTable[0]);
@@ -352,7 +369,7 @@ static const uchar magic[MagicLength] = {
 };
 
 bool getNumerusInfo(QLocale::Language language, QLocale::Country country,
-                           QByteArray *rules, QStringList *forms)
+                    QByteArray *rules, QStringList *forms, const char **gettextRules)
 {
     while (true) {
         for (int i = 0; i < NumerusTableSize; ++i) {
@@ -365,6 +382,8 @@ bool getNumerusInfo(QLocale::Language language, QLocale::Country country,
                         *rules = QByteArray::fromRawData(reinterpret_cast<const char *>(entry.rules),
                                                     entry.rulesSize);
                     }
+                    if (gettextRules)
+                        *gettextRules = entry.gettextRules;
                     if (forms) {
                         forms->clear();
                         for (int k = 0; entry.forms[k]; ++k)

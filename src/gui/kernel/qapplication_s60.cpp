@@ -1004,16 +1004,32 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
     // else { We don't touch the active window unless we were explicitly activated or deactivated }
 }
 
+void QSymbianControl::handleClientAreaChange()
+{
+    const bool cbaVisibilityHint = qwidget->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+    if (qwidget->isFullScreen() && !cbaVisibilityHint) {
+        SetExtentToWholeScreen();
+    } else if (qwidget->isMaximized() || (qwidget->isFullScreen() && cbaVisibilityHint)) {
+        TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+        SetExtent(r.iTl, r.Size());
+    } else if (!qwidget->isMinimized()) { // Normal geometry
+        if (!qwidget->testAttribute(Qt::WA_Resized)) {
+            qwidget->adjustSize();
+            qwidget->setAttribute(Qt::WA_Resized, false); //not a user resize
+        }
+        if (!qwidget->testAttribute(Qt::WA_Moved) && qwidget->windowType() != Qt::Dialog) {
+            TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+            SetPosition(r.iTl);
+            qwidget->setAttribute(Qt::WA_Moved, false); // not really an explicit position
+        }
+    }
+}
+
 void QSymbianControl::HandleResourceChange(int resourceType)
 {
     switch (resourceType) {
     case KInternalStatusPaneChange:
-        if (qwidget->isFullScreen()) {
-            SetExtentToWholeScreen();
-        } else if (qwidget->isMaximized()) {
-            TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
-            SetExtent(r.iTl, r.Size());
-        }
+        handleClientAreaChange();
         if (IsFocused() && IsVisible()) {
             qwidget->d_func()->setWindowIcon_sys(true);
             qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
@@ -1025,22 +1041,7 @@ void QSymbianControl::HandleResourceChange(int resourceType)
 #ifdef Q_WS_S60
     case KEikDynamicLayoutVariantSwitch:
     {
-        if (qwidget->isFullScreen()) {
-            SetExtentToWholeScreen();
-        } else if (qwidget->isMaximized()) {
-            TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
-            SetExtent(r.iTl, r.Size());
-        } else if (!qwidget->isMinimized()){ // Normal geometry
-            if (!qwidget->testAttribute(Qt::WA_Resized)) {
-                qwidget->adjustSize();
-                qwidget->setAttribute(Qt::WA_Resized, false); //not a user resize
-            }
-            if (!qwidget->testAttribute(Qt::WA_Moved) && qwidget->windowType() != Qt::Dialog) {
-                TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
-                SetPosition(r.iTl);
-                qwidget->setAttribute(Qt::WA_Moved, false); // not really an explicit position
-            }
-        }
+        handleClientAreaChange();
         break;
     }
 #endif

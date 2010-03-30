@@ -121,6 +121,10 @@ public:
 
     A WebView renders web content based on a URL.
 
+    This type is made available by importing the \c org.webkit module:
+
+    \bold{import org.webkit 1.0}
+
     If the width and height of the item is not set, they will
     dynamically adjust to a size appropriate for the content.
     This width may be large for typical online web pages.
@@ -1213,6 +1217,14 @@ QString QDeclarativeWebPage::chooseFile(QWebFrame *originatingFrame, const QStri
     Q_UNUSED(oldFile)
     return oldFile;
 }
+
+/*!
+    \qmlsignal WebView::alert(message)
+
+    This signal is emitted when the web engine sends a JavaScript alert. The \a message is the text
+    to be displayed in the alert to the user.
+*/
+
 
 void QDeclarativeWebPage::javaScriptAlert(QWebFrame *originatingFrame, const QString& msg)
 {

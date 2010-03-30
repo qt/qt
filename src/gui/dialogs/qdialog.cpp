@@ -69,7 +69,6 @@ extern bool qt_wince_is_smartphone(); //is defined in qguifunctions_wce.cpp
 #   include "qfontdialog.h"
 #   include "qcolordialog.h"
 #   include "qwizard.h"
-#   include "qmenubar.h"
 #endif
 
 #if defined(Q_WS_S60)
@@ -259,7 +258,7 @@ QT_BEGIN_NAMESPACE
 
 QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
     : QWidget(*new QDialogPrivate, parent,
-              f | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : 0))
+              f | ((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : Qt::WindowType(0)))
 {
 #ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
@@ -296,7 +295,7 @@ QDialog::QDialog(QWidget *parent, const char *name, bool modal, Qt::WindowFlags 
   \internal
 */
 QDialog::QDialog(QDialogPrivate &dd, QWidget *parent, Qt::WindowFlags f)
-    : QWidget(dd, parent, f | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : 0))
+    : QWidget(dd, parent, f | ((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : Qt::WindowType(0)))
 {
 #ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
@@ -529,12 +528,6 @@ int QDialog::exec()
 #endif //Q_WS_WINCE_WM
 
 #ifdef Q_OS_SYMBIAN
-#ifndef QT_NO_MENUBAR
-    QMenuBar *menuBar = 0;
-    if (!findChild<QMenuBar *>())
-        menuBar = new QMenuBar(this);
-#endif
-
     if (qobject_cast<QFileDialog *>(this) || qobject_cast<QFontDialog *>(this) ||
         qobject_cast<QColorDialog *>(this) || qobject_cast<QWizard *>(this))
         showMaximized();
@@ -566,13 +559,6 @@ int QDialog::exec()
         delete menuBar;
 #endif //QT_NO_MENUBAR
 #endif //Q_WS_WINCE_WM
-#ifdef Q_OS_SYMBIAN
-#ifndef QT_NO_MENUBAR
-    else if (menuBar)
-        delete menuBar;
-#endif //QT_NO_MENUBAR
-#endif //Q_OS_SYMBIAN
-
     return res;
 }
 

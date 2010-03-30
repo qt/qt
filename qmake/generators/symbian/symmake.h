@@ -90,8 +90,7 @@ protected:
     void writeHeader(QTextStream &t);
     void writeBldInfContent(QTextStream& t,
                             bool addDeploymentExtension,
-                            const QString &iconFile,
-                            DeploymentList &depList);
+                            const QString &iconFile);
 
     static bool removeDuplicatedStrings(QStringList& stringList);
 

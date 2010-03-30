@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativemousearea_p.h"
-#include "qdeclarativemousearea_p_p.h"
+#include "private/qdeclarativemousearea_p.h"
+#include "private/qdeclarativemousearea_p_p.h"
 
-#include "qdeclarativeevents_p_p.h"
+#include "private/qdeclarativeevents_p_p.h"
 
 #include <QGraphicsSceneMouseEvent>
 
@@ -639,8 +639,8 @@ bool QDeclarativeMouseArea::setPressed(bool p)
         d->pressed = p;
         QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, isclick, d->longPress);
         if (d->pressed) {
-            emit positionChanged(&me);
             emit pressed(&me);
+            emit positionChanged(&me);
         } else {
             emit released(&me);
             if (isclick)

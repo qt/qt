@@ -39,16 +39,16 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeobjectscriptclass_p.h"
+#include "private/qdeclarativeobjectscriptclass_p.h"
 
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativedeclarativedata_p.h"
-#include "qdeclarativetypenamescriptclass_p.h"
-#include "qdeclarativelistscriptclass_p.h"
-#include "qdeclarativebinding_p.h"
-#include "qdeclarativeguard_p.h"
-#include "qdeclarativevmemetaobject_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativetypenamescriptclass_p.h"
+#include "private/qdeclarativelistscriptclass_p.h"
+#include "private/qdeclarativebinding_p.h"
+#include "private/qdeclarativeguard_p.h"
+#include "private/qdeclarativevmemetaobject_p.h"
 
 #include <QtCore/qtimer.h>
 #include <QtCore/qvarlengtharray.h>

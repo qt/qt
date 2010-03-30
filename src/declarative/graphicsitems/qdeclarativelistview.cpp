@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativelistview_p.h"
+#include "private/qdeclarativelistview_p.h"
 
-#include "qdeclarativeflickable_p_p.h"
-#include "qdeclarativevisualitemmodel_p.h"
+#include "private/qdeclarativeflickable_p_p.h"
+#include "private/qdeclarativevisualitemmodel_p.h"
 
-#include <qdeclarativeeasefollow_p.h>
+#include "private/qdeclarativesmoothedanimation_p_p.h"
 #include <qdeclarativeexpression.h>
 #include <qdeclarativeengine.h>
 #include <qdeclarativeguard_p.h>
@@ -305,7 +305,7 @@ public:
             if (item->index == -1)
                 continue;
             qreal itemTop = item->position();
-            if (item->index == model->count()-1 || (itemTop+item->size()/2 >= pos))
+            if (itemTop+item->size()/2 >= pos && itemTop <= pos)
                 return item->position();
         }
         if (visibleItems.count()) {
@@ -455,8 +455,8 @@ public:
     enum MovementReason { Other, SetIndex, Mouse };
     MovementReason moveReason;
     int buffer;
-    QDeclarativeEaseFollow *highlightPosAnimator;
-    QDeclarativeEaseFollow *highlightSizeAnimator;
+    QSmoothedAnimation *highlightPosAnimator;
+    QSmoothedAnimation *highlightSizeAnimator;
     QDeclarativeViewSection *sectionCriteria;
     QString currentSection;
     static const int sectionCacheSize = 3;
@@ -541,7 +541,7 @@ FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
         listItem->item->setZValue(1);
         // complete
         model->completeItem();
-        listItem->item->setParent(q->viewport());
+        listItem->item->setParentItem(q->viewport());
         QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
         itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
         if (sectionCriteria && sectionCriteria->delegate()) {
@@ -562,7 +562,7 @@ void QDeclarativeListViewPrivate::releaseItem(FxListItem *item)
         return;
     if (trackedItem == item) {
         const char *notifier1 = orient == QDeclarativeListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
-        const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged(qreal)) : SIGNAL(widthChanged(qreal));
+        const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
         QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
         QObject::disconnect(trackedItem->item, notifier2, q, SLOT(trackedPositionChanged()));
         trackedItem = 0;
@@ -763,7 +763,7 @@ void QDeclarativeListViewPrivate::updateTrackedItem()
     FxListItem *oldTracked = trackedItem;
 
     const char *notifier1 = orient == QDeclarativeListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
-    const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged(qreal)) : SIGNAL(widthChanged(qreal));
+    const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
 
     if (trackedItem && item != trackedItem) {
         QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
@@ -803,7 +803,7 @@ void QDeclarativeListViewPrivate::createHighlight()
             QDeclarativeContext *highlightContext = new QDeclarativeContext(qmlContext(q));
             QObject *nobj = highlightComponent->create(highlightContext);
             if (nobj) {
-                highlightContext->setParent(nobj);
+                QDeclarative_setParent_noEvent(highlightContext, nobj);
                 item = qobject_cast<QDeclarativeItem *>(nobj);
                 if (!item)
                     delete nobj;
@@ -814,7 +814,8 @@ void QDeclarativeListViewPrivate::createHighlight()
             item = new QDeclarativeItem;
         }
         if (item) {
-            item->setParent(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->viewport());
+            item->setParentItem(q->viewport());
             highlight = new FxListItem(item, q);
             if (currentItem && autoHighlight) {
                 if (orient == QDeclarativeListView::Vertical) {
@@ -824,15 +825,15 @@ void QDeclarativeListViewPrivate::createHighlight()
                 }
             }
             const QLatin1String posProp(orient == QDeclarativeListView::Vertical ? "y" : "x");
-            highlightPosAnimator = new QDeclarativeEaseFollow(q);
-            highlightPosAnimator->setTarget(QDeclarativeProperty(highlight->item, posProp));
-            highlightPosAnimator->setVelocity(highlightMoveSpeed);
-            highlightPosAnimator->setEnabled(autoHighlight);
+            highlightPosAnimator = new QSmoothedAnimation(q);
+            highlightPosAnimator->target = QDeclarativeProperty(highlight->item, posProp);
+            highlightPosAnimator->velocity = highlightMoveSpeed;
+            highlightPosAnimator->restart();
             const QLatin1String sizeProp(orient == QDeclarativeListView::Vertical ? "height" : "width");
-            highlightSizeAnimator = new QDeclarativeEaseFollow(q);
-            highlightSizeAnimator->setVelocity(highlightResizeSpeed);
-            highlightSizeAnimator->setTarget(QDeclarativeProperty(highlight->item, sizeProp));
-            highlightSizeAnimator->setEnabled(autoHighlight);
+            highlightSizeAnimator = new QSmoothedAnimation(q);
+            highlightSizeAnimator->velocity = highlightResizeSpeed;
+            highlightSizeAnimator->target = QDeclarativeProperty(highlight->item, sizeProp);
+            highlightSizeAnimator->restart();
             changed = true;
         }
     }
@@ -846,8 +847,8 @@ void QDeclarativeListViewPrivate::updateHighlight()
         createHighlight();
     if (currentItem && autoHighlight && highlight && !moving) {
         // auto-update highlight
-        highlightPosAnimator->setSourceValue(currentItem->position());
-        highlightSizeAnimator->setSourceValue(currentItem->size());
+        highlightPosAnimator->to = currentItem->position();
+        highlightSizeAnimator->to = currentItem->size();
         if (orient == QDeclarativeListView::Vertical) {
             if (highlight->item->width() == 0)
                 highlight->item->setWidth(currentItem->item->width());
@@ -855,6 +856,8 @@ void QDeclarativeListViewPrivate::updateHighlight()
             if (highlight->item->height() == 0)
                 highlight->item->setHeight(currentItem->item->height());
         }
+        highlightPosAnimator->restart();
+        highlightSizeAnimator->restart();
     }
     updateTrackedItem();
 }
@@ -880,13 +883,14 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
                 context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
                 QObject *nobj = sectionCriteria->delegate()->create(context);
                 if (nobj) {
-                    context->setParent(nobj);
+                    QDeclarative_setParent_noEvent(context, nobj);
                     listItem->section = qobject_cast<QDeclarativeItem *>(nobj);
                     if (!listItem->section) {
                         delete nobj;
                     } else {
                         listItem->section->setZValue(1);
-                        listItem->section->setParent(q->viewport());
+                        QDeclarative_setParent_noEvent(listItem->section, q->viewport());
+                        listItem->section->setParentItem(q->viewport());
                     }
                 } else {
                     delete context;
@@ -1002,7 +1006,7 @@ void QDeclarativeListViewPrivate::updateFooter()
         QDeclarativeContext *context = new QDeclarativeContext(qmlContext(q));
         QObject *nobj = footerComponent->create(context);
         if (nobj) {
-            context->setParent(nobj);
+            QDeclarative_setParent_noEvent(context, nobj);
             item = qobject_cast<QDeclarativeItem *>(nobj);
             if (!item)
                 delete nobj;
@@ -1010,7 +1014,8 @@ void QDeclarativeListViewPrivate::updateFooter()
             delete context;
         }
         if (item) {
-            item->setParent(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->viewport());
+            item->setParentItem(q->viewport());
             item->setZValue(1);
             footer = new FxListItem(item, q);
         }
@@ -1039,7 +1044,7 @@ void QDeclarativeListViewPrivate::updateHeader()
         QDeclarativeContext *context = new QDeclarativeContext(qmlContext(q));
         QObject *nobj = headerComponent->create(context);
         if (nobj) {
-            context->setParent(nobj);
+            QDeclarative_setParent_noEvent(context, nobj);
             item = qobject_cast<QDeclarativeItem *>(nobj);
             if (!item)
                 delete nobj;
@@ -1047,7 +1052,8 @@ void QDeclarativeListViewPrivate::updateHeader()
             delete context;
         }
         if (item) {
-            item->setParent(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->viewport());
+            item->setParentItem(q->viewport());
             item->setZValue(1);
             header = new FxListItem(item, q);
             if (visibleItems.isEmpty())
@@ -1147,7 +1153,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                 maxDistance = qAbs(minExtent - data.move.value());
             }
         }
-        if (snapMode != QDeclarativeListView::SnapToItem && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
+        if (snapMode == QDeclarativeListView::NoSnap && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
             data.flickTarget = minExtent;
     } else {
         if (data.move.value() > maxExtent) {
@@ -1158,10 +1164,10 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                 maxDistance = qAbs(maxExtent - data.move.value());
             }
         }
-        if (snapMode != QDeclarativeListView::SnapToItem && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
+        if (snapMode == QDeclarativeListView::NoSnap && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
             data.flickTarget = maxExtent;
     }
-    if ((maxDistance > 0 || overShoot) && (snapMode != QDeclarativeListView::NoSnap || highlightRange == QDeclarativeListView::StrictlyEnforceRange)) {
+    if (maxDistance > 0 || overShoot) {
         // These modes require the list to stop exactly on an item boundary.
         // The initial flick will estimate the boundary to stop on.
         // Since list items can have variable sizes, the boundary will be
@@ -1177,18 +1183,35 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             // the initial flick - estimate boundary
             qreal accel = deceleration;
             qreal v2 = v * v;
-            if (maxDistance > 0.0 && v2 / (2.0f * maxDistance) < accel) {
-                // + averageSize/4 to encourage moving at least one item in the flick direction
-                qreal dist = v2 / (accel * 2.0) + averageSize/4;
-                if (v > 0)
-                    dist = -dist;
+            overshootDist = 0.0;
+            // + averageSize/4 to encourage moving at least one item in the flick direction
+            qreal dist = v2 / (accel * 2.0) + averageSize/4;
+            if (maxDistance > 0)
+                dist = qMin(dist, maxDistance);
+            if (v > 0)
+                dist = -dist;
+            if ((maxDistance > 0.0 && v2 / (2.0f * maxDistance) < accel) || snapMode == QDeclarativeListView::SnapOneItem) {
                 data.flickTarget = -snapPosAt(-(data.move.value() - highlightRangeStart) + dist) + highlightRangeStart;
+                if (overShoot) {
+                    if (data.flickTarget >= minExtent) {
+                        overshootDist = overShootDistance(v, vSize);
+                        data.flickTarget += overshootDist;
+                    } else if (data.flickTarget <= maxExtent) {
+                        overshootDist = overShootDistance(v, vSize);
+                        data.flickTarget -= overshootDist;
+                    }
+                }
                 dist = -data.flickTarget + data.move.value();
                 accel = v2 / (2.0f * qAbs(dist));
-                overshootDist = 0.0;
-            } else {
-                data.flickTarget = velocity > 0 ? minExtent : maxExtent;
-                overshootDist = overShoot ? overShootDistance(v, vSize) : 0;
+            } else if (overShoot) {
+                data.flickTarget = data.move.value() - dist;
+                if (data.flickTarget >= minExtent) {
+                    overshootDist = overShootDistance(v, vSize);
+                    data.flickTarget += overshootDist;
+                } else if (data.flickTarget <= maxExtent) {
+                    overshootDist = overShootDistance(v, vSize);
+                    data.flickTarget -= overshootDist;
+                }
             }
             timeline.reset(data.move);
             timeline.accel(data.move, v, accel, maxDistance + overshootDist);
@@ -1600,10 +1623,6 @@ void QDeclarativeListView::setHighlightFollowsCurrentItem(bool autoHighlight)
     Q_D(QDeclarativeListView);
     if (d->autoHighlight != autoHighlight) {
         d->autoHighlight = autoHighlight;
-        if (d->highlightPosAnimator) {
-            d->highlightPosAnimator->setEnabled(d->autoHighlight);
-            d->highlightSizeAnimator->setEnabled(d->autoHighlight);
-        }
         d->updateHighlight();
         emit highlightFollowsCurrentItemChanged();
     }
@@ -1863,7 +1882,7 @@ void QDeclarativeListView::setHighlightMoveSpeed(qreal speed)
     if (d->highlightMoveSpeed != speed) {
         d->highlightMoveSpeed = speed;
         if (d->highlightPosAnimator)
-            d->highlightPosAnimator->setVelocity(d->highlightMoveSpeed);
+            d->highlightPosAnimator->velocity = d->highlightMoveSpeed;
         emit highlightMoveSpeedChanged();
     }
 }
@@ -1880,7 +1899,7 @@ void QDeclarativeListView::setHighlightResizeSpeed(qreal speed)
     if (d->highlightResizeSpeed != speed) {
         d->highlightResizeSpeed = speed;
         if (d->highlightSizeAnimator)
-            d->highlightSizeAnimator->setVelocity(d->highlightResizeSpeed);
+            d->highlightSizeAnimator->velocity = d->highlightResizeSpeed;
         emit highlightResizeSpeedChanged();
     }
 }
@@ -2124,9 +2143,6 @@ qreal QDeclarativeListView::maxXExtent() const
 void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeListView);
-    QDeclarativeFlickable::keyPressEvent(event);
-    if (event->isAccepted())
-        return;
 
     if (d->model && d->model->count() && d->interactive) {
         if ((d->orient == QDeclarativeListView::Horizontal && event->key() == Qt::Key_Left)
@@ -2151,6 +2167,9 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
             }
         }
     }
+    QDeclarativeFlickable::keyPressEvent(event);
+    if (event->isAccepted())
+        return;
     event->ignore();
 }
 
@@ -2379,6 +2398,8 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
             if (d->currentItem)
                 d->currentItem->index = d->currentIndex;
             emit currentIndexChanged();
+        } else if (d->currentIndex < 0) {
+            d->updateCurrent(0);
         }
         emit countChanged();
         return;
@@ -2741,7 +2762,6 @@ void QDeclarativeListView::destroyingItem(QDeclarativeItem *item)
 void QDeclarativeListView::animStopped()
 {
     Q_D(QDeclarativeListView);
-    d->moveReason = QDeclarativeListViewPrivate::Other;
     d->bufferMode = QDeclarativeListViewPrivate::NoBuffer;
 }
 

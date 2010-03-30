@@ -39,33 +39,33 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativecompiler_p.h"
+#include "private/qdeclarativecompiler_p.h"
 
-#include "qdeclarativecompositetypedata_p.h"
-#include "qdeclarativeparser_p.h"
-#include "qdeclarativescriptparser_p.h"
+#include "private/qdeclarativecompositetypedata_p.h"
+#include "private/qdeclarativeparser_p.h"
+#include "private/qdeclarativescriptparser_p.h"
 #include "qdeclarativepropertyvaluesource.h"
 #include "qdeclarativecomponent.h"
-#include "qmetaobjectbuilder_p.h"
-#include "qdeclarativestringconverters_p.h"
-#include "qdeclarativeengine_p.h"
+#include "private/qmetaobjectbuilder_p.h"
+#include "private/qdeclarativestringconverters_p.h"
+#include "private/qdeclarativeengine_p.h"
 #include "qdeclarativeengine.h"
 #include "qdeclarativecontext.h"
-#include "qdeclarativemetatype_p.h"
-#include "qdeclarativecustomparser_p_p.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativecomponent_p.h"
+#include "private/qdeclarativemetatype_p.h"
+#include "private/qdeclarativecustomparser_p_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativecomponent_p.h"
 #include "parser/qdeclarativejsast_p.h"
-#include "qdeclarativevmemetaobject_p.h"
-#include "qdeclarativeexpression_p.h"
-#include "qdeclarativeproperty_p.h"
-#include "qdeclarativerewrite_p.h"
+#include "private/qdeclarativevmemetaobject_p.h"
+#include "private/qdeclarativeexpression_p.h"
+#include "private/qdeclarativeproperty_p.h"
+#include "private/qdeclarativerewrite_p.h"
 #include "qdeclarativescriptstring.h"
-#include "qdeclarativeglobal_p.h"
-#include "qdeclarativescriptparser_p.h"
-#include "qdeclarativebinding_p.h"
-#include "qdeclarativecompiledbindings_p.h"
-#include "qdeclarativeglobalscriptclass_p.h"
+#include "private/qdeclarativeglobal_p.h"
+#include "private/qdeclarativescriptparser_p.h"
+#include "private/qdeclarativebinding_p.h"
+#include "private/qdeclarativecompiledbindings_p.h"
+#include "private/qdeclarativeglobalscriptclass_p.h"
 
 #include <QCoreApplication>
 #include <QColor>
@@ -80,7 +80,7 @@
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
-DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATISTICS_DUMP);
+DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATS);
 DEFINE_BOOL_CONFIG_OPTION(bindingsDump, QML_BINDINGS_DUMP);
 
 using namespace QDeclarativeParser;
@@ -617,6 +617,7 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
 void QDeclarativeCompiler::compileTree(Object *tree)
 {
     compileState.root = tree;
+    componentStat.lineNumber = tree->location.start.line;
 
     if (!buildObject(tree, BindingContext()) || !completeComponentBuild())
         return;
@@ -2428,9 +2429,17 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
             propertyType = QVariant::Color;
             type = "QColor";
             break;
+        case Object::DynamicProperty::Time:
+            propertyType = QVariant::Time;
+            type = "QTime";
+            break;
         case Object::DynamicProperty::Date:
             propertyType = QVariant::Date;
             type = "QDate";
+            break;
+        case Object::DynamicProperty::DateTime:
+            propertyType = QVariant::DateTime;
+            type = "QDateTime";
             break;
         }
 
@@ -2776,7 +2785,7 @@ bool QDeclarativeCompiler::completeComponentBuild()
         if (index != -1) {
             binding.dataType = BindingReference::Experimental;
             binding.compiledIndex = index;
-            componentStat.optimizedBindings++;
+            componentStat.optimizedBindings.append(iter.key()->location);
             continue;
         } 
 
@@ -2810,7 +2819,7 @@ bool QDeclarativeCompiler::completeComponentBuild()
             QByteArray((const char *)expression.constData(), 
                        expression.length() * sizeof(QChar));
 
-        componentStat.scriptBindings++;
+        componentStat.scriptBindings.append(iter.key()->location);
     }
 
     if (bindingCompiler.isValid()) {
@@ -2832,8 +2841,44 @@ void QDeclarativeCompiler::dumpStats()
         qWarning().nospace() << "    Component Line " << stat.lineNumber;
         qWarning().nospace() << "        Total Objects:      " << stat.objects;
         qWarning().nospace() << "        IDs Used:           " << stat.ids;
-        qWarning().nospace() << "        Optimized Bindings: " << stat.optimizedBindings;
-        qWarning().nospace() << "        QScript Bindings:   " << stat.scriptBindings;
+        qWarning().nospace() << "        Optimized Bindings: " << stat.optimizedBindings.count();
+
+        {
+        QByteArray output;
+        for (int ii = 0; ii < stat.optimizedBindings.count(); ++ii) {
+            if (0 == (ii % 10)) {
+                if (ii) output.append("\n");
+                output.append("            ");
+            }
+
+            output.append("(");
+            output.append(QByteArray::number(stat.optimizedBindings.at(ii).start.line));
+            output.append(":");
+            output.append(QByteArray::number(stat.optimizedBindings.at(ii).start.column));
+            output.append(") ");
+        }
+        if (!output.isEmpty())
+            qWarning().nospace() << output.constData();
+        }
+
+        qWarning().nospace() << "        QScript Bindings:   " << stat.scriptBindings.count();
+        {
+        QByteArray output;
+        for (int ii = 0; ii < stat.scriptBindings.count(); ++ii) {
+            if (0 == (ii % 10)) {
+                if (ii) output.append("\n");
+                output.append("            ");
+            }
+
+            output.append("(");
+            output.append(QByteArray::number(stat.scriptBindings.at(ii).start.line));
+            output.append(":");
+            output.append(QByteArray::number(stat.scriptBindings.at(ii).start.column));
+            output.append(") ");
+        }
+        if (!output.isEmpty())
+            qWarning().nospace() << output.constData();
+        }
     }
 }
 

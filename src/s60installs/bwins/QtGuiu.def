@@ -3961,7 +3961,7 @@ EXPORTS
 	?drawPixmap@QPainter@@QAEXHHABVQPixmap@@HHHH@Z @ 3960 NONAME ; void QPainter::drawPixmap(int, int, class QPixmap const &, int, int, int, int)
 	?drawPixmap@QPainter@@QAEXHHHHABVQPixmap@@@Z @ 3961 NONAME ; void QPainter::drawPixmap(int, int, int, int, class QPixmap const &)
 	?drawPixmap@QPainter@@QAEXHHHHABVQPixmap@@HHHH@Z @ 3962 NONAME ; void QPainter::drawPixmap(int, int, int, int, class QPixmap const &, int, int, int, int)
-	?drawPixmaps@QPaintEngineEx@@UAEXPBUData@QDrawPixmaps@@HABVQPixmap@@V?$QFlags@W4DrawingHint@QDrawPixmaps@@@@@Z @ 3963 NONAME ABSENT ; void QPaintEngineEx::drawPixmaps(struct QDrawPixmaps::Data const *, int, class QPixmap const &, class QFlags<enum QDrawPixmaps::DrawingHint>)
+	?drawPixmaps@QPaintEngineEx@@UAEXPBUData@QDrawPixmaps@@HABVQPixmap@@V?$QFlags@W4DrawingHint@QDrawPixmaps@@@@@Z @ 3963 NONAME ; void QPaintEngineEx::drawPixmaps(struct QDrawPixmaps::Data const *, int, class QPixmap const &, class QFlags<enum QDrawPixmaps::DrawingHint>)
 	?drawPoint@QPainter@@QAEXABVQPoint@@@Z @ 3964 NONAME ; void QPainter::drawPoint(class QPoint const &)
 	?drawPoint@QPainter@@QAEXABVQPointF@@@Z @ 3965 NONAME ; void QPainter::drawPoint(class QPointF const &)
 	?drawPoint@QPainter@@QAEXHH@Z @ 3966 NONAME ; void QPainter::drawPoint(int, int)
@@ -7291,7 +7291,7 @@ EXPORTS
 	?polishEvent@QGraphicsWidget@@MAEXXZ @ 7290 NONAME ; void QGraphicsWidget::polishEvent(void)
 	?polygon@QGraphicsPolygonItem@@QBE?AVQPolygonF@@XZ @ 7291 NONAME ; class QPolygonF QGraphicsPolygonItem::polygon(void) const
 	?polygonFlags@QVectorPath@@SAIW4PolygonDrawMode@QPaintEngine@@@Z @ 7292 NONAME ; unsigned int QVectorPath::polygonFlags(enum QPaintEngine::PolygonDrawMode)
-	?populate@QTextureGlyphCache@@QAEXABVQTextItemInt@@ABV?$QVarLengthArray@I$0BAA@@@ABV?$QVarLengthArray@UQFixedPoint@@$0BAA@@@@Z @ 7293 NONAME ABSENT ; void QTextureGlyphCache::populate(class QTextItemInt const &, class QVarLengthArray<unsigned int, 256> const &, class QVarLengthArray<struct QFixedPoint, 256> const &)
+	?populate@QTextureGlyphCache@@QAEXABVQTextItemInt@@ABV?$QVarLengthArray@I$0BAA@@@ABV?$QVarLengthArray@UQFixedPoint@@$0BAA@@@@Z @ 7293 NONAME ; void QTextureGlyphCache::populate(class QTextItemInt const &, class QVarLengthArray<unsigned int, 256> const &, class QVarLengthArray<struct QFixedPoint, 256> const &)
 	?popup@QCompleter@@QBEPAVQAbstractItemView@@XZ @ 7294 NONAME ; class QAbstractItemView * QCompleter::popup(void) const
 	?popup@QMenu@@QAEXABVQPoint@@PAVQAction@@@Z @ 7295 NONAME ; void QMenu::popup(class QPoint const &, class QAction *)
 	?popupMode@QToolButton@@QBE?AW4ToolButtonPopupMode@1@XZ @ 7296 NONAME ; enum QToolButton::ToolButtonPopupMode QToolButton::popupMode(void) const
@@ -7389,7 +7389,7 @@ EXPORTS
 	?qAlpha@@YAHI@Z @ 7388 NONAME ; int qAlpha(unsigned int)
 	?qBlue@@YAHI@Z @ 7389 NONAME ; int qBlue(unsigned int)
 	?qDrawBorderPixmap@@YAXPAVQPainter@@ABVQRect@@ABVQMargins@@ABVQPixmap@@12ABUQTileRules@@V?$QFlags@W4DrawingHint@QDrawBorderPixmap@@@@@Z @ 7390 NONAME ; void qDrawBorderPixmap(class QPainter *, class QRect const &, class QMargins const &, class QPixmap const &, class QRect const &, class QMargins const &, struct QTileRules const &, class QFlags<enum QDrawBorderPixmap::DrawingHint>)
-	?qDrawPixmaps@@YAXPAVQPainter@@PBUData@QDrawPixmaps@@HABVQPixmap@@V?$QFlags@W4DrawingHint@QDrawPixmaps@@@@@Z @ 7391 NONAME ABSENT ; void qDrawPixmaps(class QPainter *, struct QDrawPixmaps::Data const *, int, class QPixmap const &, class QFlags<enum QDrawPixmaps::DrawingHint>)
+	?qDrawPixmaps@@YAXPAVQPainter@@PBUData@QDrawPixmaps@@HABVQPixmap@@V?$QFlags@W4DrawingHint@QDrawPixmaps@@@@@Z @ 7391 NONAME ; void qDrawPixmaps(class QPainter *, struct QDrawPixmaps::Data const *, int, class QPixmap const &, class QFlags<enum QDrawPixmaps::DrawingHint>)
 	?qDrawPlainRect@@YAXPAVQPainter@@ABVQRect@@ABVQColor@@HPBVQBrush@@@Z @ 7392 NONAME ; void qDrawPlainRect(class QPainter *, class QRect const &, class QColor const &, int, class QBrush const *)
 	?qDrawPlainRect@@YAXPAVQPainter@@HHHHABVQColor@@HPBVQBrush@@@Z @ 7393 NONAME ; void qDrawPlainRect(class QPainter *, int, int, int, int, class QColor const &, int, class QBrush const *)
 	?qDrawShadeLine@@YAXPAVQPainter@@ABVQPoint@@1ABVQPalette@@_NHH@Z @ 7394 NONAME ; void qDrawShadeLine(class QPainter *, class QPoint const &, class QPoint const &, class QPalette const &, bool, int, int)
@@ -12601,7 +12601,7 @@ EXPORTS
 	?setPixelFormat@QEglProperties@@QAEXW4Format@QImage@@@Z @ 12600 NONAME ABSENT ; void QEglProperties::setPixelFormat(enum QImage::Format)
 	?currentContext@QEglContext@@CAPAV1@W4API@QEgl@@@Z @ 12601 NONAME ABSENT ; class QEglContext * QEglContext::currentContext(enum QEgl::API)
 	?errorString@QEglContext@@SA?AVQString@@H@Z @ 12602 NONAME ABSENT ; class QString QEglContext::errorString(int)
-	??0FileInfo@QZipReader@@QAE@ABU01@@Z @ 12603 NONAME ; QZipReader::FileInfo::FileInfo(struct QZipReader::FileInfo const &)
+	?removeAllApplicationFonts@QFontDatabase@@SA_NXZ @12603 ; NONAME ; bool QFontDatabase::removeAllApplicationFonts()
 	??0FileInfo@QZipReader@@QAE@XZ @ 12604 NONAME ; QZipReader::FileInfo::FileInfo(void)
 	??0QAbstractScrollAreaPrivate@@QAE@XZ @ 12605 NONAME ; QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate(void)
 	??0QGraphicsViewPrivate@@QAE@XZ @ 12606 NONAME ; QGraphicsViewPrivate::QGraphicsViewPrivate(void)
@@ -12722,4 +12722,5 @@ EXPORTS
 	?verticalScroll@QGraphicsViewPrivate@@QBE_JXZ @ 12721 NONAME ; long long QGraphicsViewPrivate::verticalScroll(void) const
 	?viewportEvent@QAbstractScrollAreaPrivate@@QAE_NPAVQEvent@@@Z @ 12722 NONAME ; bool QAbstractScrollAreaPrivate::viewportEvent(class QEvent *)
 	?visibilityChanged@QToolBar@@IAEX_N@Z @ 12723 NONAME ; void QToolBar::visibilityChanged(bool)
+	??0FileInfo@QZipReader@@QAE@ABU01@@Z @ 12724 NONAME ; QZipReader::FileInfo::FileInfo(struct QZipReader::FileInfo const &)
 

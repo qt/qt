@@ -5,7 +5,8 @@ unix:!mac {
         DEFINES += QT_MULTIMEDIA_PULSEAUDIO
         HEADERS += $$PWD/qsoundeffect_pulse_p.h
         SOURCES += $$PWD/qsoundeffect_pulse_p.cpp
-        LIBS += -lpulse
+        QMAKE_CXXFLAGS += $$QT_CFLAGS_PULSEAUDIO
+        LIBS += $$QT_LIBS_PULSEAUDIO
     } else {
         DEFINES += QT_MULTIMEDIA_QMEDIAPLAYER
         HEADERS += $$PWD/qsoundeffect_qmedia_p.h

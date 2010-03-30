@@ -212,6 +212,7 @@ private:
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
 #endif
+    void handleClientAreaChange();
 
 private:
     static QSymbianControl *lastFocusedControl;

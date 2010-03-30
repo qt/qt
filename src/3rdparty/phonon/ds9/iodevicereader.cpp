@@ -107,6 +107,9 @@ namespace Phonon
               HRESULT read(LONGLONG pos, LONG length, BYTE *buffer, LONG *actual)
               {
                   Q_ASSERT(!m_mutex.tryLock());
+                  if (m_mediaGraph->isStopping()) {
+                      return VFW_E_WRONG_STATE;
+                  }
 
                   if(m_size != 1 && pos + length > m_size) {
                       //it tries to read outside of the boundaries

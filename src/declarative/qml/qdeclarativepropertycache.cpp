@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativepropertycache_p.h"
+#include "private/qdeclarativepropertycache_p.h"
 
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativebinding_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativebinding_p.h"
 #include <QtCore/qdebug.h>
 
 Q_DECLARE_METATYPE(QScriptValue);

@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarative.h"
-#include "qdeclarativerefcount_p.h"
+#include "private/qdeclarativerefcount_p.h"
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
@@ -203,7 +203,7 @@ namespace QDeclarativeParser
             DynamicProperty();
             DynamicProperty(const DynamicProperty &);
 
-            enum Type { Variant, Int, Bool, Real, String, Url, Color, Date, Alias, Custom, CustomList };
+            enum Type { Variant, Int, Bool, Real, String, Url, Color, Time, Date, DateTime, Alias, Custom, CustomList };
 
             bool isDefaultProperty;
             Type type;
@@ -237,7 +237,7 @@ namespace QDeclarativeParser
         QList<DynamicSlot> dynamicSlots;
     };
 
-    class Variant 
+    class Q_DECLARATIVE_EXPORT Variant 
     {
     public:
         enum Type {

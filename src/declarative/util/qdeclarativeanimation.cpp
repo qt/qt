@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeanimation_p.h"
-#include "qdeclarativeanimation_p_p.h"
+#include "private/qdeclarativeanimation_p.h"
+#include "private/qdeclarativeanimation_p_p.h"
 
-#include "qdeclarativebehavior_p.h"
-#include "qdeclarativestateoperations_p.h"
+#include "private/qdeclarativebehavior_p.h"
+#include "private/qdeclarativestateoperations_p.h"
 
 #include <qdeclarativepropertyvaluesource.h>
 #include <qdeclarative.h>
@@ -1078,13 +1078,24 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
 QDeclarativeNumberAnimation::QDeclarativeNumberAnimation(QObject *parent)
 : QDeclarativePropertyAnimation(parent)
 {
-    Q_D(QDeclarativePropertyAnimation);
-    d->interpolatorType = QMetaType::QReal;
-    d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
+    init();
+}
+
+QDeclarativeNumberAnimation::QDeclarativeNumberAnimation(QDeclarativePropertyAnimationPrivate &dd, QObject *parent)
+: QDeclarativePropertyAnimation(dd, parent)
+{
+    init();
 }
 
 QDeclarativeNumberAnimation::~QDeclarativeNumberAnimation()
 {
+}
+
+void QDeclarativeNumberAnimation::init()
+{
+    Q_D(QDeclarativePropertyAnimation);
+    d->interpolatorType = QMetaType::QReal;
+    d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
 }
 
 /*!
@@ -2237,8 +2248,10 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
         }
         d->va->setAnimValue(data, QAbstractAnimation::DeleteWhenStopped);
         d->va->setFromSourcedValue(&data->fromSourced);
+        d->actions = &data->actions;
     } else {
         delete data;
+        d->actions = 0;
     }
 }
 

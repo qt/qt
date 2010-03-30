@@ -39,6 +39,11 @@
 **
 ****************************************************************************/
 
+#if _WIN32_WINNT < 0x0500
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0500
+#endif
+
 #include "qfontengine_p.h"
 #include "qtextengine_p.h"
 #include <qglobal.h>
@@ -649,6 +654,32 @@ static const ushort char_table[] = {
 
 static const int char_table_entries = sizeof(char_table)/sizeof(ushort);
 
+#ifndef Q_CC_MINGW
+void QFontEngineWin::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qreal *rightBearing)
+{
+    HDC hdc = shared_dc();
+    SelectObject(hdc, hfont);
+
+#ifndef Q_WS_WINCE
+    if (ttf)
+#endif
+
+    {
+        ABC abcWidths;
+        GetCharABCWidthsI(hdc, glyph, 1, 0, &abcWidths);
+        if (leftBearing)
+            *leftBearing = abcWidths.abcA;
+        if (rightBearing)
+            *rightBearing = abcWidths.abcC;
+    }
+
+#ifndef Q_WS_WINCE
+    else {
+        QFontEngine::getGlyphBearings(glyph, leftBearing, rightBearing);
+    }
+#endif
+}
+#endif // Q_CC_MINGW
 
 qreal QFontEngineWin::minLeftBearing() const
 {

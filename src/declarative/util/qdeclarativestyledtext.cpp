@@ -45,7 +45,7 @@
 #include <QTextLayout>
 #include <QDebug>
 #include <qmath.h>
-#include "qdeclarativestyledtext_p.h"
+#include "private/qdeclarativestyledtext_p.h"
 
 /*
     QDeclarativeStyledText supports few tags:

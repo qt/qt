@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativespringfollow_p.h"
+#include "private/qdeclarativespringfollow_p.h"
 
-#include "qdeclarativeanimation_p_p.h"
+#include "private/qdeclarativeanimation_p_p.h"
 
 #include <QtCore/qdebug.h>
 
@@ -242,8 +242,6 @@ void QDeclarativeSpringFollowPrivate::stop()
         SpringFollow on y { source: rect1.y; velocity: 200 }
     }
     \endcode
-
-    \sa EaseFollow
 */
 
 QDeclarativeSpringFollow::QDeclarativeSpringFollow(QObject *parent)

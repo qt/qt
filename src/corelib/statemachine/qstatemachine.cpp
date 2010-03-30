@@ -1175,6 +1175,16 @@ void QStateMachinePrivate::removeStartState()
     _startState = 0;
 }
 
+void QStateMachinePrivate::clearHistory()
+{
+    Q_Q(QStateMachine);
+    QList<QHistoryState*> historyStates = qFindChildren<QHistoryState*>(q);
+    for (int i = 0; i < historyStates.size(); ++i) {
+        QHistoryState *h = historyStates.at(i);
+        QHistoryStatePrivate::get(h)->configuration.clear();
+    }
+}
+
 void QStateMachinePrivate::_q_start()
 {
     Q_Q(QStateMachine);
@@ -1186,6 +1196,7 @@ void QStateMachinePrivate::_q_start()
     internalEventQueue.clear();
     qDeleteAll(externalEventQueue);
     externalEventQueue.clear();
+    clearHistory();
 
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": starting";

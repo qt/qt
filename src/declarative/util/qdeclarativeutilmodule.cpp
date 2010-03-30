@@ -39,36 +39,36 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeutilmodule_p.h"
-#include "qdeclarativeanimation_p.h"
-#include "qdeclarativeanimation_p_p.h"
-#include "qdeclarativebehavior_p.h"
-#include "qdeclarativebind_p.h"
-#include "qdeclarativeconnections_p.h"
-#include "qdeclarativeeasefollow_p.h"
-#include "qdeclarativefontloader_p.h"
-#include "qdeclarativelistaccessor_p.h"
-#include "qdeclarativelistmodel_p.h"
-#include "qdeclarativenullablevalue_p_p.h"
-#include "qdeclarativeopenmetaobject_p.h"
-#include "qdeclarativepackage_p.h"
-#include "qdeclarativepixmapcache_p.h"
-#include "qdeclarativepropertychanges_p.h"
+#include "private/qdeclarativeutilmodule_p.h"
+#include "private/qdeclarativeanimation_p.h"
+#include "private/qdeclarativeanimation_p_p.h"
+#include "private/qdeclarativebehavior_p.h"
+#include "private/qdeclarativebind_p.h"
+#include "private/qdeclarativeconnections_p.h"
+#include "private/qdeclarativesmoothedanimation_p.h"
+#include "private/qdeclarativefontloader_p.h"
+#include "private/qdeclarativelistaccessor_p.h"
+#include "private/qdeclarativelistmodel_p.h"
+#include "private/qdeclarativenullablevalue_p_p.h"
+#include "private/qdeclarativeopenmetaobject_p.h"
+#include "private/qdeclarativepackage_p.h"
+#include "private/qdeclarativepixmapcache_p.h"
+#include "private/qdeclarativepropertychanges_p.h"
 #include "qdeclarativepropertymap.h"
-#include "qdeclarativespringfollow_p.h"
-#include "qdeclarativestategroup_p.h"
-#include "qdeclarativestateoperations_p.h"
-#include "qdeclarativestate_p.h"
-#include "qdeclarativestate_p_p.h"
-#include "qdeclarativestyledtext_p.h"
-#include "qdeclarativesystempalette_p.h"
-#include "qdeclarativetimeline_p_p.h"
-#include "qdeclarativetimer_p.h"
-#include "qdeclarativetransitionmanager_p_p.h"
-#include "qdeclarativetransition_p.h"
+#include "private/qdeclarativespringfollow_p.h"
+#include "private/qdeclarativestategroup_p.h"
+#include "private/qdeclarativestateoperations_p.h"
+#include "private/qdeclarativestate_p.h"
+#include "private/qdeclarativestate_p_p.h"
+#include "private/qdeclarativestyledtext_p.h"
+#include "private/qdeclarativesystempalette_p.h"
+#include "private/qdeclarativetimeline_p_p.h"
+#include "private/qdeclarativetimer_p.h"
+#include "private/qdeclarativetransitionmanager_p_p.h"
+#include "private/qdeclarativetransition_p.h"
 #include "qdeclarativeview.h"
 #ifndef QT_NO_XMLPATTERNS
-#include "qdeclarativexmllistmodel_p.h"
+#include "private/qdeclarativexmllistmodel_p.h"
 #endif
 
 template<typename T>
@@ -111,7 +111,7 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterType<QDeclarativeBind>("Qt",4,6,"Binding");
     qmlRegisterType<QDeclarativeColorAnimation>("Qt",4,6,"ColorAnimation");
     qmlRegisterType<QDeclarativeConnections>("Qt",4,6,"Connections");
-    qmlRegisterType<QDeclarativeEaseFollow>("Qt",4,6,"EaseFollow");
+    qmlRegisterType<QDeclarativeSmoothedAnimation>("Qt",4,6,"SmoothedAnimation");
     qmlRegisterType<QDeclarativeFontLoader>("Qt",4,6,"FontLoader");
     qmlRegisterType<QDeclarativeListElement>("Qt",4,6,"ListElement");
     qmlRegisterType<QDeclarativeNumberAnimation>("Qt",4,6,"NumberAnimation");
@@ -140,6 +140,7 @@ void QDeclarativeUtilModule::defineModule()
 
     qmlRegisterType<QDeclarativeAnchors>();
     qmlRegisterType<QDeclarativeStateOperation>();
+    qmlRegisterType<QDeclarativeAnchorSet>();
 
     qmlRegisterTypeEnums<QDeclarativeAbstractAnimation>("Animation");
 

@@ -586,7 +586,6 @@ void tst_qdeclarativelanguage::dynamicProperties()
     QCOMPARE(object->property("colorProperty"), QVariant(QColor("red")));
     QCOMPARE(object->property("dateProperty"), QVariant(QDate(1945, 9, 2)));
     QCOMPARE(object->property("varProperty"), QVariant("Hello World!"));
-    QCOMPARE(object->property("variantProperty"), QVariant(12));
 }
 
 // Test that nested types can use dynamic properties
@@ -1066,7 +1065,6 @@ void tst_qdeclarativelanguage::defaultPropertyListOrder()
 void tst_qdeclarativelanguage::declaredPropertyValues()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("declaredPropertyValues.qml"));
-    QEXPECT_FAIL("", "QTBUG-7860", Abort);
     VERIFY_ERRORS(0);
 }
 
@@ -1359,6 +1357,13 @@ void tst_qdeclarativelanguage::importsOrder_data()
            "import com.nokia.installedtest 1.5\n"
            "Rectangle.Image {}"
         << "QDeclarativeImage";
+    QTest::newRow("local last 1") <<
+           "LocalLast {}"
+        << "QDeclarativeText";
+    QTest::newRow("local last 2") <<
+           "import com.nokia.installedtest 1.0\n"
+           "LocalLast {}"
+        << "QDeclarativeRectangle"; // i.e. from com.nokia.installedtest, not data/LocalLast.qml
 }
 
 void tst_qdeclarativelanguage::importsOrder()

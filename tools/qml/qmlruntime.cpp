@@ -95,7 +95,7 @@
 #include <QGLWidget>
 #endif
 
-#include <qfxtester.h>
+#include <qdeclarativetester.h>
 
 #if defined (Q_OS_SYMBIAN)
 #define SYMBIAN_NETWORK_INIT
@@ -995,8 +995,22 @@ void QDeclarativeViewer::statusChanged()
     if (canvas->status() == QDeclarativeView::Error && tester)
         tester->executefailure();
 
-    if (canvas->status() == QDeclarativeView::Ready)
-        resize(sizeHint());
+    if (canvas->status() == QDeclarativeView::Ready) {
+        if (!skin) {
+            canvas->updateGeometry();
+            if (mb)
+                mb->updateGeometry();
+            if (!isFullScreen() && !isMaximized())
+                resize(sizeHint());
+        } else {
+            if (scaleSkin)
+                canvas->resize(canvas->sizeHint());
+            else {
+                canvas->setFixedSize(skin->standardScreenSize());
+                canvas->resize(skin->standardScreenSize());
+            }
+        }
+    }
 }
 
 void QDeclarativeViewer::launch(const QString& file_or_url)
@@ -1076,21 +1090,6 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
     canvas->setSource(url);
 
     qWarning() << "Wall startup time:" << t.elapsed();
-
-    if (!skin) {
-        canvas->updateGeometry();
-        if (mb)
-            mb->updateGeometry();
-        if (!isFullScreen() && !isMaximized())
-            resize(sizeHint());
-    } else {
-        if (scaleSkin)
-            canvas->resize(canvas->sizeHint());
-        else {
-            canvas->setFixedSize(skin->standardScreenSize());
-            canvas->resize(skin->standardScreenSize());
-        }
-    }
 
 #ifdef QTOPIA
     show();

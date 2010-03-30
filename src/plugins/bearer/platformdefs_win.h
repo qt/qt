@@ -47,6 +47,8 @@
 #undef interface
 #include <winioctl.h>
 
+QT_BEGIN_NAMESPACE
+
 #ifndef NS_NLA
 
 #define NS_NLA 15
@@ -130,5 +132,7 @@ enum NDIS_PHYSICAL_MEDIUM {
 
 #define IOCTL_NDIS_QUERY_GLOBAL_STATS \
     CTL_CODE(FILE_DEVICE_PHYSICAL_NETCARD, 0, METHOD_OUT_DIRECT, FILE_ANY_ACCESS)
+
+QT_END_NAMESPACE
 
 #endif

@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativebind_p.h"
+#include "private/qdeclarativebind_p.h"
 
-#include "qdeclarativenullablevalue_p_p.h"
+#include "private/qdeclarativenullablevalue_p_p.h"
 
 #include <qdeclarativeengine.h>
 #include <qdeclarativecontext.h>

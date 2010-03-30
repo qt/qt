@@ -197,7 +197,7 @@
     \a i must be a valid index position in the array (i.e., 0 <= \a i
     < size()).
 
-    \sa data()
+    \sa data(), at()
 */
 
 /*! \fn const T &QVarLengthArray::operator[](int i) const
@@ -271,4 +271,34 @@
 /*! \fn QVarLengthArray::QVarLengthArray(const QVarLengthArray<T, Prealloc> &other)
     Constructs a copy of \a other.
  */
+
+/*! \fn const T &QVarLengthArray::at(int i) const
+
+    Returns a reference to the item at index position \a i.
+
+    \a i must be a valid index position in the array (i.e., 0 <= \a i
+    < size()).
+
+    \sa value(), operator[]()
+*/
+
+/*! \fn T QVarLengthArray::value(int i) const
+
+    Returns the value at index position \a i.
+
+    If the index \a i is out of bounds, the function returns
+    a \l{default-constructed value}. If you are certain that
+    \a i is within bounds, you can use at() instead, which is slightly
+    faster.
+
+    \sa at(), operator[]()
+*/
+
+/*! \fn T QVarLengthArray::value(int i, const T &defaultValue) const
+
+    \overload
+
+    If the index \a i is out of bounds, the function returns
+    \a defaultValue.
+*/
 

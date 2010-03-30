@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativepositioners_p.h"
-#include "qdeclarativepositioners_p_p.h"
+#include "private/qdeclarativepositioners_p.h"
+#include "private/qdeclarativepositioners_p_p.h"
 
 #include <qdeclarative.h>
 #include <qdeclarativestate_p.h>
@@ -237,21 +237,13 @@ void QDeclarativeBasePositioner::prePositioning()
             positionedItems.append(*item);
         }
     }
-    doPositioning();
+    QSizeF contentSize;
+    doPositioning(&contentSize);
     if(d->addTransition || d->moveTransition)
         finishApplyTransitions();
     //Set implicit size to the size of its children
-    qreal h = 0.0f;
-    qreal w = 0.0f;
-    for (int i = 0; i < positionedItems.count(); ++i) {
-        const PositionedItem &posItem = positionedItems.at(i);
-        if (posItem.isVisible) {
-            h = qMax(h, posItem.item->y() + posItem.item->height());
-            w = qMax(w, posItem.item->x() + posItem.item->width());
-        }
-    }
-    setImplicitHeight(h);
-    setImplicitWidth(w);
+    setImplicitHeight(contentSize.height());
+    setImplicitWidth(contentSize.width());
 }
 
 void QDeclarativeBasePositioner::positionX(int x, const PositionedItem &target)
@@ -423,7 +415,7 @@ static inline bool isInvisible(QDeclarativeItem *child)
     return child->opacity() == 0.0 || !child->isVisible() || !child->width() || !child->height();
 }
 
-void QDeclarativeColumn::doPositioning()
+void QDeclarativeColumn::doPositioning(QSizeF *contentSize)
 {
     int voffset = 0;
 
@@ -435,9 +427,13 @@ void QDeclarativeColumn::doPositioning()
         if(child.item->y() != voffset)
             positionY(voffset, child);
 
+        contentSize->setWidth(qMax(contentSize->width(), child.item->width()));
+
         voffset += child.item->height();
         voffset += spacing();
     }
+
+    contentSize->setHeight(voffset - spacing());
 }
 
 /*!
@@ -534,7 +530,7 @@ QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
 {
 }
 
-void QDeclarativeRow::doPositioning()
+void QDeclarativeRow::doPositioning(QSizeF *contentSize)
 {
     int hoffset = 0;
 
@@ -546,9 +542,13 @@ void QDeclarativeRow::doPositioning()
         if(child.item->x() != hoffset)
             positionX(hoffset, child);
 
+        contentSize->setHeight(qMax(contentSize->height(), child.item->height()));
+
         hoffset += child.item->width();
         hoffset += spacing();
     }
+
+    contentSize->setWidth(hoffset - spacing());
 }
 
 
@@ -602,7 +602,9 @@ Grid {
     \qmlproperty Transition Grid::add
     This property holds the transition to apply when adding an item to the positioner.
     The transition is only applied to the added item(s).
-    Positioner transitions will only affect the position (x,y) of items.
+    Positioner transitions will only affect the position (x,y) of items,
+    as that is all the positioners affect. To animate other property change
+    you will have to do so based on how you have changed those properties.
 
     Added can mean that either the object has been created or
     reparented, and thus is now a child or the positioner, or that the
@@ -696,7 +698,7 @@ void QDeclarativeGrid::setRows(const int rows)
     emit rowsChanged();
 }
 
-void QDeclarativeGrid::doPositioning()
+void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
 {
     int c=_columns,r=_rows;//Actual number of rows/columns
     int numVisible = positionedItems.count();
@@ -743,6 +745,10 @@ void QDeclarativeGrid::doPositioning()
             positionX(xoffset, child);
             positionY(yoffset, child);
         }
+
+        contentSize->setWidth(qMax(contentSize->width(), xoffset + child.item->width()));
+        contentSize->setHeight(yoffset + maxRowHeight[curRow]);
+
         xoffset+=maxColWidth[curCol]+spacing();
         curCol++;
         curCol%=c;
@@ -818,6 +824,9 @@ public:
 QDeclarativeFlow::QDeclarativeFlow(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(*(new QDeclarativeFlowPrivate), Both, parent)
 {
+    Q_D(QDeclarativeFlow);
+    // Flow layout requires relayout if its own size changes too.
+    d->addItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
 }
 
 /*!
@@ -849,7 +858,7 @@ void QDeclarativeFlow::setFlow(Flow flow)
     }
 }
 
-void QDeclarativeFlow::doPositioning()
+void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
 {
     Q_D(QDeclarativeFlow);
 
@@ -880,6 +889,9 @@ void QDeclarativeFlow::doPositioning()
             positionX(hoffset, child);
             positionY(voffset, child);
         }
+
+        contentSize->setWidth(qMax(contentSize->width(), hoffset + child.item->width()));
+        contentSize->setHeight(qMax(contentSize->height(), voffset + child.item->height()));
 
         if (d->flow == LeftToRight)  {
             hoffset += child.item->width();

@@ -244,7 +244,7 @@ var initialPosition = { rootObject.x, rootObject.y }
 
 This restriction exists as the QML environment is not yet fully established.  
 To run code after the environment setup has completed, refer to 
-\l {Running Script at Startup}.
+\l {Running JavaScript at Startup}.
 
 \endlist
 

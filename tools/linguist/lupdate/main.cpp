@@ -409,7 +409,7 @@ static void processProjects(
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
-    m_defaultExtensions = QLatin1String("ui,c,c++,cc,cpp,cxx,ch,h,h++,hh,hpp,hxx");
+    m_defaultExtensions = QLatin1String("java,jui,ui,c,c++,cc,cpp,cxx,ch,h,h++,hh,hpp,hxx,js,qs,qml");
 
     QStringList args = app.arguments();
     QStringList tsFileNames;
@@ -634,6 +634,7 @@ int main(int argc, char **argv)
                         sourceFiles << fn;
 
                         if (!fn.endsWith(QLatin1String(".java"))
+                            && !fn.endsWith(QLatin1String(".jui"))
                             && !fn.endsWith(QLatin1String(".ui"))
                             && !fn.endsWith(QLatin1String(".js"))
                             && !fn.endsWith(QLatin1String(".qs"))

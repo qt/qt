@@ -124,11 +124,10 @@ class QODBCDriverPrivate
 public:
     enum DefaultCase{Lower, Mixed, Upper, Sensitive};
     QODBCDriverPrivate()
-    : hEnv(0), hDbc(0), useSchema(false), disconnectCount(0), isMySqlServer(false),
-           isMSSqlServer(false), hasSQLFetchScroll(true), hasMultiResultSets(false),
-           isQuoteInitialized(false), quote(QLatin1Char('"'))
+    : hEnv(0), hDbc(0), unicode(false), useSchema(false), disconnectCount(0), isMySqlServer(false),
+           isMSSqlServer(false), isFreeTDSDriver(false), hasSQLFetchScroll(true),
+           hasMultiResultSets(false), isQuoteInitialized(false), quote(QLatin1Char('"'))
     {
-        unicode = false;
     }
 
     SQLHANDLE hEnv;
@@ -139,6 +138,7 @@ public:
     int disconnectCount;
     bool isMySqlServer;
     bool isMSSqlServer;
+    bool isFreeTDSDriver;
     bool hasSQLFetchScroll;
     bool hasMultiResultSets;
 
@@ -165,7 +165,10 @@ public:
     QODBCPrivate(QODBCDriverPrivate *dpp)
     : hStmt(0), useSchema(false), hasSQLFetchScroll(true), driverPrivate(dpp), userForwardOnly(false)
     {
-        unicode = false;
+        unicode = dpp->unicode;
+        useSchema = dpp->useSchema;
+        disconnectCount = dpp->disconnectCount;
+        hasSQLFetchScroll = dpp->hasSQLFetchScroll;
     }
 
     inline void clearValues()
@@ -340,7 +343,9 @@ static QVariant::Type qDecodeODBCType(SQLSMALLINT sqltype, const T* p, bool isSi
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:
+#if (ODBCVER >= 0x0350)
     case SQL_GUID:
+#endif
     case SQL_LONGVARCHAR:
         type = QVariant::String;
         break;
@@ -365,44 +370,88 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
     } else {
         colSize++; // make sure there is room for more than the 0 termination
     }
-    r = SQLGetData(hStmt,
-                    column+1,
-                    SQL_C_TCHAR,
-                    NULL,
-                    0,
-                    &lengthIndicator);
-    if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && lengthIndicator > 0)
-        colSize = lengthIndicator/sizeof(SQLTCHAR) + 1;
-    QVarLengthArray<SQLTCHAR> buf(colSize);
-    while (true) {
+    if(unicode) {
         r = SQLGetData(hStmt,
                         column+1,
                         SQL_C_TCHAR,
-                        (SQLPOINTER)buf.data(),
-                        colSize*sizeof(SQLTCHAR),
+                        NULL,
+                        0,
                         &lengthIndicator);
-        if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
-            if (lengthIndicator == SQL_NULL_DATA || lengthIndicator == SQL_NO_TOTAL) {
+        if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && lengthIndicator > 0)
+            colSize = lengthIndicator/sizeof(SQLTCHAR) + 1;
+        QVarLengthArray<SQLTCHAR> buf(colSize);
+        memset(buf.data(), 0, colSize*sizeof(SQLTCHAR));
+        while (true) {
+            r = SQLGetData(hStmt,
+                            column+1,
+                            SQL_C_TCHAR,
+                            (SQLPOINTER)buf.data(),
+                            colSize*sizeof(SQLTCHAR),
+                            &lengthIndicator);
+            if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
+                if (lengthIndicator == SQL_NULL_DATA || lengthIndicator == SQL_NO_TOTAL) {
+                    fieldVal.clear();
+                    break;
+                }
+                // if SQL_SUCCESS_WITH_INFO is returned, indicating that
+                // more data can be fetched, the length indicator does NOT
+                // contain the number of bytes returned - it contains the
+                // total number of bytes that CAN be fetched
+                // colSize-1: remove 0 termination when there is more data to fetch
+                int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator/sizeof(SQLTCHAR);
+                    fieldVal += fromSQLTCHAR(buf, rSize);
+                if (lengthIndicator < (unsigned int)colSize*sizeof(SQLTCHAR)) {
+                    // workaround for Drivermanagers that don't return SQL_NO_DATA
+                    break;
+                }
+            } else if (r == SQL_NO_DATA) {
+                break;
+            } else {
+                qWarning() << "qGetStringData: Error while fetching data (" << qWarnODBCHandle(SQL_HANDLE_STMT, hStmt) << ')';
                 fieldVal.clear();
                 break;
             }
-            // if SQL_SUCCESS_WITH_INFO is returned, indicating that
-            // more data can be fetched, the length indicator does NOT
-            // contain the number of bytes returned - it contains the
-            // total number of bytes that CAN be fetched
-            // colSize-1: remove 0 termination when there is more data to fetch
-            int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator/sizeof(SQLTCHAR);
-                fieldVal += fromSQLTCHAR(buf, rSize);
-            if (lengthIndicator < (unsigned int)colSize*sizeof(SQLTCHAR)) {
-                // workaround for Drivermanagers that don't return SQL_NO_DATA
+        }
+    } else {
+        r = SQLGetData(hStmt,
+                        column+1,
+                        SQL_C_CHAR,
+                        NULL,
+                        0,
+                        &lengthIndicator);
+        if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && lengthIndicator > 0)
+            colSize = lengthIndicator + 1;
+        QVarLengthArray<SQLCHAR> buf(colSize);
+        while (true) {
+            r = SQLGetData(hStmt,
+                            column+1,
+                            SQL_C_CHAR,
+                            (SQLPOINTER)buf.data(),
+                            colSize,
+                            &lengthIndicator);
+            if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
+                if (lengthIndicator == SQL_NULL_DATA || lengthIndicator == SQL_NO_TOTAL) {
+                    fieldVal.clear();
+                    break;
+                }
+                // if SQL_SUCCESS_WITH_INFO is returned, indicating that
+                // more data can be fetched, the length indicator does NOT
+                // contain the number of bytes returned - it contains the
+                // total number of bytes that CAN be fetched
+                // colSize-1: remove 0 termination when there is more data to fetch
+                int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator;
+                    fieldVal += QString::fromUtf8((const char *)buf.constData(), rSize);
+                if (lengthIndicator < (unsigned int)colSize) {
+                    // workaround for Drivermanagers that don't return SQL_NO_DATA
+                    break;
+                }
+            } else if (r == SQL_NO_DATA) {
+                break;
+            } else {
+                qWarning() << "qGetStringData: Error while fetching data (" << qWarnODBCHandle(SQL_HANDLE_STMT, hStmt) << ')';
+                fieldVal.clear();
                 break;
             }
-        } else if (r == SQL_NO_DATA) {
-            break;
-        } else {
-            qWarning() << "qGetStringData: Error while fetching data (" << qWarnODBCHandle(SQL_HANDLE_STMT, hStmt) << ')';
-            fieldVal.clear();
-            break;
         }
     }
     return fieldVal;
@@ -847,10 +896,6 @@ QODBCResult::QODBCResult(const QODBCDriver * db, QODBCDriverPrivate* p)
 : QSqlResult(db)
 {
     d = new QODBCPrivate(p);
-    d->unicode = p->unicode;
-    d->useSchema = p->useSchema;
-    d->disconnectCount = p->disconnectCount;
-    d->hasSQLFetchScroll = p->hasSQLFetchScroll;
 }
 
 QODBCResult::~QODBCResult()
@@ -1825,6 +1870,7 @@ bool QODBCDriver::open(const QString & db,
 
     SQLSMALLINT cb;
     QVarLengthArray<SQLTCHAR> connOut(1024);
+    memset(connOut.data(), 0, connOut.size() * sizeof(SQLTCHAR));
     r = SQLDriverConnect(d->hDbc,
                           NULL,
 #ifdef UNICODE
@@ -1917,6 +1963,7 @@ void QODBCDriverPrivate::checkUnicode()
                     NULL);
     if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && (fFunc & SQL_CVT_WCHAR)) {
         unicode = true;
+        return;
     }
 
     r = SQLGetInfo(hDbc,
@@ -1926,6 +1973,7 @@ void QODBCDriverPrivate::checkUnicode()
                     NULL);
     if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && (fFunc & SQL_CVT_WVARCHAR)) {
         unicode = true;
+        return;
     }
 
     r = SQLGetInfo(hDbc,
@@ -1935,7 +1983,25 @@ void QODBCDriverPrivate::checkUnicode()
                     NULL);
     if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && (fFunc & SQL_CVT_WLONGVARCHAR)) {
         unicode = true;
+        return;
     }
+    SQLHANDLE hStmt;
+    r = SQLAllocHandle(SQL_HANDLE_STMT,
+                                  hDbc,
+                                  &hStmt);
+
+    r = SQLExecDirect(hStmt, toSQLTCHAR(QLatin1String("select 'test'")).data(), SQL_NTS);
+    if(r == SQL_SUCCESS) {
+        r = SQLFetch(hStmt);
+        if(r == SQL_SUCCESS) {
+            QVarLengthArray<SQLWCHAR> buffer(10);
+            r = SQLGetData(hStmt, 1, SQL_C_WCHAR, buffer.data(), buffer.size() * sizeof(SQLWCHAR), NULL);
+            if(r == SQL_SUCCESS && fromSQLTCHAR(buffer) == QLatin1String("test")) {
+                unicode = true;
+            }
+        }
+    }
+    r = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 }
 
 bool QODBCDriverPrivate::checkDriver() const
@@ -2026,6 +2092,21 @@ void QODBCDriverPrivate::checkSqlServer()
 #endif
         isMySqlServer = serverType.contains(QLatin1String("mysql"), Qt::CaseInsensitive);
         isMSSqlServer = serverType.contains(QLatin1String("Microsoft SQL Server"), Qt::CaseInsensitive);
+    }
+    r = SQLGetInfo(hDbc,
+                   SQL_DRIVER_NAME,
+                   serverString.data(),
+                   serverString.size() * sizeof(SQLTCHAR),
+                   &t);
+    if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
+        QString serverType;
+#ifdef UNICODE
+        serverType = fromSQLTCHAR(serverString, t/sizeof(SQLTCHAR));
+#else
+        serverType = QString::fromUtf8((const char *)serverString.constData(), t);
+#endif
+        isFreeTDSDriver = serverType.contains(QLatin1String("tdsodbc"), Qt::CaseInsensitive);
+        unicode = isFreeTDSDriver == false;
     }
 }
 

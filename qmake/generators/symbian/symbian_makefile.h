@@ -66,13 +66,13 @@ public:
 
         // Generate pkg files if there are any actual files to deploy
         bool generatePkg = false;
-        DeploymentList depList;
 
         if (targetType == TypeExe) {
             generatePkg = true;
         } else {
-            foreach(QString item, this->project->values("DEPLOYMENT")) {
-                if (!this->project->values(item + ".sources").isEmpty()) {
+            const QStringList deployments = this->project->values("DEPLOYMENT");
+            for (int i = 0; i < deployments.count(); ++i) {
+                if (!this->project->values(deployments.at(i) + ".sources").isEmpty()) {
                     generatePkg = true;
                     break;
                 }
@@ -80,7 +80,7 @@ public:
         }
 
         if (generatePkg) {
-            generatePkgFile(iconFile, depList, false);
+            generatePkgFile(iconFile, false);
         }
 
         // Get the application translations and convert to symbian OS lang code, i.e. decical number

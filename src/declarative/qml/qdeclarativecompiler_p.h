@@ -55,14 +55,14 @@
 
 #include "qdeclarative.h"
 #include "qdeclarativeerror.h"
-#include "qdeclarativeinstruction_p.h"
-#include "qdeclarativecompositetypemanager_p.h"
-#include "qdeclarativeparser_p.h"
-#include "qdeclarativeengine_p.h"
-#include "qbitfield_p.h"
-#include "qdeclarativepropertycache_p.h"
-#include "qdeclarativeintegercache_p.h"
-#include "qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativeinstruction_p.h"
+#include "private/qdeclarativecompositetypemanager_p.h"
+#include "private/qdeclarativeparser_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qbitfield_p.h"
+#include "private/qdeclarativepropertycache_p.h"
+#include "private/qdeclarativeintegercache_p.h"
+#include "private/qdeclarativetypenamecache_p.h"
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qset.h>
@@ -318,14 +318,13 @@ private:
 
     struct ComponentStat
     {
-        ComponentStat() 
-            : ids(0), scriptBindings(0), optimizedBindings(0), objects(0) {}
+        ComponentStat() : ids(0), objects(0) {}
 
         int lineNumber;
 
         int ids;
-        int scriptBindings;
-        int optimizedBindings;
+        QList<QDeclarativeParser::LocationSpan> scriptBindings;
+        QList<QDeclarativeParser::LocationSpan> optimizedBindings;
         int objects;
     };
     ComponentStat componentStat;

@@ -1,5 +1,8 @@
 msgid ""
 msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 msgid "untranslated one"
 msgstr "translated"
@@ -9,7 +12,6 @@ msgstr "translated"
 msgid "untranslated two"
 msgstr "translated"
 
-#, fuzzy
 #| msgid "old untranslated"
 msgid "untranslated two b"
 msgstr ""
@@ -20,7 +22,6 @@ msgstr ""
 msgid "untranslated three"
 msgstr "translated"
 
-#, fuzzy
 #| msgid "old untranslated"
 #| msgid_plural "old untranslated plural"
 msgid "untranslated three b"
@@ -31,7 +32,6 @@ msgstr ""
 msgid "untranslated four"
 msgstr "translated"
 
-#, fuzzy
 #| msgid_plural "old untranslated only plural"
 msgid "untranslated four b"
 msgstr ""

@@ -46,7 +46,7 @@
 #include <qbasictimer.h>
 #include <qapplication.h>
 
-// Implements a "Time" class with hour and minute properties
+// Implements a "TimeModel" class with hour and minute properties
 // that change on-the-minute yet efficiently sleep the rest
 // of the time.
 
@@ -97,14 +97,14 @@ private:
     QBasicTimer timer;
 };
 
-class Time : public QObject
+class TimeModel : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int hour READ hour NOTIFY timeChanged)
     Q_PROPERTY(int minute READ minute NOTIFY timeChanged)
 
 public:
-    Time(QObject *parent=0) : QObject(parent)
+    TimeModel(QObject *parent=0) : QObject(parent)
     {
         if (++instances == 1) {
             if (!timer)
@@ -114,7 +114,7 @@ public:
         }
     }
 
-    ~Time()
+    ~TimeModel()
     {
         if (--instances == 0) {
             timer->stop();
@@ -133,12 +133,8 @@ private:
     static int instances;
 };
 
-int Time::instances=0;
-MinuteTimer *Time::timer=0;
-
-
-QML_DECLARE_TYPE(Time);
-
+int TimeModel::instances=0;
+MinuteTimer *TimeModel::timer=0;
 
 class QExampleQmlPlugin : public QDeclarativeExtensionPlugin
 {
@@ -147,7 +143,7 @@ public:
     void registerTypes(const char *uri)
     {
         Q_ASSERT(uri == QLatin1String("com.nokia.TimeExample"));
-        qmlRegisterType<Time>(uri, 1, 0, "Time");
+        qmlRegisterType<TimeModel>(uri, 1, 0, "Time");
     }
 };
 

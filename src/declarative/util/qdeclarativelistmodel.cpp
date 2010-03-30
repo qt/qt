@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativelistmodel_p_p.h"
-#include "qdeclarativelistmodelworkeragent_p.h"
-#include "qdeclarativeopenmetaobject_p.h"
+#include "private/qdeclarativelistmodel_p_p.h"
+#include "private/qdeclarativelistmodelworkeragent_p.h"
+#include "private/qdeclarativeopenmetaobject_p.h"
 
 #include <qdeclarativecustomparser_p.h>
 #include <qdeclarativeparser_p.h>
@@ -365,7 +365,7 @@ void QDeclarativeListModel::clear()
 
     if (!m_isWorkerCopy) {
         emit itemsRemoved(0, cleared);
-        emit countChanged(0);
+        emit countChanged();
     }
 }
 
@@ -390,7 +390,7 @@ void QDeclarativeListModel::remove(int index)
 
     if (!m_isWorkerCopy) {
         emit itemsRemoved(index, 1);
-        emit countChanged(this->count());
+        emit countChanged();
     }
 }
 
@@ -424,7 +424,7 @@ void QDeclarativeListModel::insert(int index, const QScriptValue& valuemap)
     bool ok = m_flat ?  m_flat->insert(index, valuemap) : m_nested->insert(index, valuemap);
     if (ok && !m_isWorkerCopy) {
         emit itemsInserted(index, 1);
-        emit countChanged(this->count());
+        emit countChanged();
     }
 }
 
@@ -532,7 +532,7 @@ QScriptValue QDeclarativeListModel::get(int index) const
     \qmlmethod ListModel::set(int index, jsobject dict)
 
     Changes the item at \a index in the list model with the
-    values in \a dict. Properties not appearing in \a valuemap
+    values in \a dict. Properties not appearing in \a dict
     are left unchanged.
 
     \code
@@ -1250,14 +1250,9 @@ ModelNode::ModelNode()
 
 ModelNode::~ModelNode()
 {
+    qDeleteAll(properties.values());
+
     ModelNode *node;
-
-    QList<ModelNode *> nodeValues = properties.values();
-    for (int ii = 0; ii < nodeValues.count(); ++ii) {
-        node = nodeValues[ii];
-        if (node) { delete node; node = 0; }
-    }
-
     for (int ii = 0; ii < values.count(); ++ii) {
         node = qvariant_cast<ModelNode *>(values.at(ii));
         if (node) { delete node; node = 0; }
@@ -1278,8 +1273,12 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap) {
             value->setListValue(v);
         } else {
             value->values << v.toVariant();
+            if (objectCache)
+                objectCache->setValue(it.name().toUtf8(), value->values.last());
         }
-        properties.insert(it.name(),value);
+        if (properties.contains(it.name()))
+            delete properties[it.name()];
+        properties.insert(it.name(), value);
     }
 }
 

@@ -162,7 +162,10 @@ void MMF::DsaVideoPlayer::prepareCompleted()
 void MMF::DsaVideoPlayer::handleVideoWindowChanged()
 {
     if (!m_window) {
-        m_window = QApplication::activeWindow()->effectiveWinId()->DrawableWindow();
+        if (QWidget *window = QApplication::activeWindow())
+            m_window = window->effectiveWinId()->DrawableWindow();
+        else
+            m_window = 0;
         m_videoScreenRect = TRect();
     }
 
@@ -187,6 +190,9 @@ public:
 
 void getDsaRegion(RWsSession &session, const RWindowBase &window)
 {
+    // Dump complete window tree
+    session.LogCommand(RWsSession::ELoggingStatusDump);
+
     RDirectScreenAccess dsa(session);
     TInt err = dsa.Construct();
     CDummyAO ao;
@@ -211,7 +217,10 @@ void getDsaRegion(RWsSession &session, const RWindowBase &window)
 void MMF::DsaVideoPlayer::handleParametersChanged(VideoParameters parameters)
 {
     TRACE_CONTEXT(DsaVideoPlayer::handleParametersChanged, EVideoInternal);
-    TRACE_ENTRY_0();
+    TRACE_ENTRY("parameters 0x%x", parameters);
+
+    if (!m_window)
+        return;
 
 #ifndef QT_NO_DEBUG
     getDsaRegion(m_wsSession, *m_window);
@@ -259,17 +268,32 @@ void MMF::DsaVideoPlayer::handleParametersChanged(VideoParameters parameters)
 
 void MMF::DsaVideoPlayer::startDirectScreenAccess()
 {
+    TRACE_CONTEXT(DsaVideoPlayer::startDirectScreenAccess, EVideoInternal);
+    TRACE_ENTRY("dsaActive %d", m_dsaActive);
+
+    int err = KErrNone;
+
     if (!m_dsaActive) {
-        TRAPD(err, m_player->StartDirectScreenAccessL());
+        TRAP(err, m_player->StartDirectScreenAccessL());
         if (KErrNone == err)
             m_dsaActive = true;
         else
             setError(tr("Video display error"), err);
     }
+
+    if (m_videoOutput)
+        m_videoOutput->dump();
+
+    TRACE_EXIT("error %d", err);
 }
 
 bool MMF::DsaVideoPlayer::stopDirectScreenAccess()
 {
+    TRACE_CONTEXT(DsaVideoPlayer::stopDirectScreenAccess, EVideoInternal);
+    TRACE_ENTRY("dsaActive %d", m_dsaActive);
+
+    int err = KErrNone;
+
     const bool dsaWasActive = m_dsaActive;
     if (m_dsaActive) {
         TRAPD(err, m_player->StopDirectScreenAccessL());
@@ -278,6 +302,9 @@ bool MMF::DsaVideoPlayer::stopDirectScreenAccess()
         else
             setError(tr("Video display error"), err);
     }
+
+    TRACE_EXIT("error %d", err);
+
     return dsaWasActive;
 }
 

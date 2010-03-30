@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativegridview_p.h"
+#include "private/qdeclarativegridview_p.h"
 
-#include "qdeclarativevisualitemmodel_p.h"
-#include "qdeclarativeflickable_p_p.h"
+#include "private/qdeclarativevisualitemmodel_p.h"
+#include "private/qdeclarativeflickable_p_p.h"
 
-#include <qdeclarativeeasefollow_p.h>
+#include "private/qdeclarativesmoothedanimation_p_p.h"
 #include <qdeclarativeguard_p.h>
 
 #include <qlistmodelinterface_p.h>
@@ -324,8 +324,8 @@ public:
     enum MovementReason { Other, SetIndex, Mouse };
     MovementReason moveReason;
     int buffer;
-    QDeclarativeEaseFollow *highlightXAnimator;
-    QDeclarativeEaseFollow *highlightYAnimator;
+    QSmoothedAnimation *highlightXAnimator;
+    QSmoothedAnimation *highlightYAnimator;
     enum BufferMode { NoBuffer = 0x00, BufferBefore = 0x01, BufferAfter = 0x02 };
     BufferMode bufferMode;
     QDeclarativeGridView::SnapMode snapMode;
@@ -372,7 +372,7 @@ FxGridItem *QDeclarativeGridViewPrivate::createItem(int modelIndex)
         listItem->item->setZValue(1);
         // complete
         model->completeItem();
-        listItem->item->setParent(q->viewport());
+        listItem->item->setParentItem(q->viewport());
         unrequestedItems.remove(listItem->item);
     }
     requestedIndex = -1;
@@ -644,7 +644,7 @@ void QDeclarativeGridViewPrivate::createHighlight()
             QDeclarativeContext *highlightContext = new QDeclarativeContext(qmlContext(q));
             QObject *nobj = highlightComponent->create(highlightContext);
             if (nobj) {
-                highlightContext->setParent(nobj);
+                QDeclarative_setParent_noEvent(highlightContext, nobj);
                 item = qobject_cast<QDeclarativeItem *>(nobj);
                 if (!item)
                     delete nobj;
@@ -653,19 +653,21 @@ void QDeclarativeGridViewPrivate::createHighlight()
             }
         } else {
             item = new QDeclarativeItem;
-            item->setParent(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->viewport());
+            item->setParentItem(q->viewport());
         }
         if (item) {
-            item->setParent(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->viewport());
+            item->setParentItem(q->viewport());
             highlight = new FxGridItem(item, q);
-            highlightXAnimator = new QDeclarativeEaseFollow(q);
-            highlightXAnimator->setTarget(QDeclarativeProperty(highlight->item, QLatin1String("x")));
-            highlightXAnimator->setDuration(150);
-            highlightXAnimator->setEnabled(autoHighlight);
-            highlightYAnimator = new QDeclarativeEaseFollow(q);
-            highlightYAnimator->setTarget(QDeclarativeProperty(highlight->item, QLatin1String("y")));
-            highlightYAnimator->setDuration(150);
-            highlightYAnimator->setEnabled(autoHighlight);
+            highlightXAnimator = new QSmoothedAnimation(q);
+            highlightXAnimator->target = QDeclarativeProperty(highlight->item, QLatin1String("x"));
+            highlightXAnimator->userDuration = 150;
+            highlightYAnimator = new QSmoothedAnimation(q);
+            highlightYAnimator->target = QDeclarativeProperty(highlight->item, QLatin1String("y"));
+            highlightYAnimator->userDuration = 150;
+            highlightXAnimator->restart();
+            highlightYAnimator->restart();
             changed = true;
         }
     }
@@ -679,10 +681,12 @@ void QDeclarativeGridViewPrivate::updateHighlight()
         createHighlight();
     if (currentItem && autoHighlight && highlight && !moving) {
         // auto-update highlight
-        highlightXAnimator->setSourceValue(currentItem->item->x());
-        highlightYAnimator->setSourceValue(currentItem->item->y());
+        highlightXAnimator->to = currentItem->item->x();
+        highlightYAnimator->to = currentItem->item->y();
         highlight->item->setWidth(currentItem->item->width());
         highlight->item->setHeight(currentItem->item->height());
+        highlightXAnimator->restart();
+        highlightYAnimator->restart();
     }
     updateTrackedItem();
 }
@@ -811,7 +815,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         if (snapMode != QDeclarativeGridView::SnapToRow && highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
             data.flickTarget = maxExtent;
     }
-    if ((maxDistance > 0 || overShoot) && (snapMode != QDeclarativeGridView::NoSnap || highlightRange == QDeclarativeGridView::StrictlyEnforceRange)) {
+    if (maxDistance > 0 || overShoot) {
         // This mode requires the grid to stop exactly on a row boundary.
         qreal v = velocity;
         if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
@@ -1188,10 +1192,6 @@ void QDeclarativeGridView::setHighlightFollowsCurrentItem(bool autoHighlight)
     Q_D(QDeclarativeGridView);
     if (d->autoHighlight != autoHighlight) {
         d->autoHighlight = autoHighlight;
-        if (d->highlightXAnimator) {
-            d->highlightXAnimator->setEnabled(d->autoHighlight);
-            d->highlightYAnimator->setEnabled(d->autoHighlight);
-        }
         d->updateHighlight();
     }
 }
@@ -1482,9 +1482,9 @@ void QDeclarativeGridView::viewportMoved()
                 d->updateCurrent(idx);
                 if (d->currentItem && d->currentItem->colPos() != d->highlight->colPos() && d->autoHighlight) {
                     if (d->flow == LeftToRight)
-                        d->highlightXAnimator->setSourceValue(d->currentItem->item->x());
+                        d->highlightXAnimator->to = d->currentItem->item->x();
                     else
-                        d->highlightYAnimator->setSourceValue(d->currentItem->item->y());
+                        d->highlightYAnimator->to = d->currentItem->item->y();
                 }
             }
         }
@@ -1552,9 +1552,6 @@ qreal QDeclarativeGridView::maxXExtent() const
 void QDeclarativeGridView::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeGridView);
-    QDeclarativeFlickable::keyPressEvent(event);
-    if (event->isAccepted())
-        return;
     if (d->model && d->model->count() && d->interactive) {
         d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
         int oldCurrent = currentIndex();
@@ -1580,6 +1577,9 @@ void QDeclarativeGridView::keyPressEvent(QKeyEvent *event)
         }
     }
     d->moveReason = QDeclarativeGridViewPrivate::Other;
+    QDeclarativeFlickable::keyPressEvent(event);
+    if (event->isAccepted())
+        return;
     event->ignore();
 }
 
@@ -1856,6 +1856,8 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
             if (d->currentItem)
                 d->currentItem->index = d->currentIndex;
             emit currentIndexChanged();
+        } else if (d->currentIndex < 0) {
+            d->updateCurrent(0);
         }
         emit countChanged();
         return;
@@ -2180,7 +2182,6 @@ void QDeclarativeGridView::modelReset()
 void QDeclarativeGridView::createdItem(int index, QDeclarativeItem *item)
 {
     Q_D(QDeclarativeGridView);
-    item->setParentItem(this);
     if (d->requestedIndex != index) {
         item->setParentItem(this);
         d->unrequestedItems.insert(item, index);

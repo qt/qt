@@ -114,11 +114,11 @@ In this case, we specify that our text element should be horizontally centered i
 
 \section2 Viewing the example
 
-To view what you have created, run the qmlviewer (located in the \c bin directory) with your filename as the first argument.
+To view what you have created, run the \l{Qt Declarative UI Runtime}{qml} tool (located in the \c bin directory) with your filename as the first argument.
 For example, to run the provided completed Tutorial 1 example from the install location, you would type:
 
 \code
-bin/qmlviewer $QTDIR/examples/declarative/tutorials/helloworld/tutorial1.qml
+bin/qml $QTDIR/examples/declarative/tutorials/helloworld/tutorial1.qml
 \endcode
 */
 
@@ -155,13 +155,13 @@ An \l Item is the most basic visual element in QML and is often used as a contai
 
 \snippet examples/declarative/tutorials/helloworld/Cell.qml 4
 
-We declare a \c color property. This property is accessible from  \e outside our component, this allows us
+We declare a \c cellColor property. This property is accessible from  \e outside our component, this allows us
 to instantiate the cells with different colors.
 This property is just an alias to an existing property - the color of the rectangle that compose the cell (see \l{intro-properties}{Properties}).
 
 \snippet examples/declarative/tutorials/helloworld/Cell.qml 5
 
-We want our component to also have a signal that we call \e clicked with a \e color parameter.
+We want our component to also have a signal that we call \e clicked with a \e cellColor parameter of type \e color.
 We will use this signal to change the color of the text in the main QML file later.
 
 \snippet examples/declarative/tutorials/helloworld/Cell.qml 2
@@ -189,7 +189,7 @@ We create the color picker by putting 6 cells with different colors in a grid.
 
 \snippet examples/declarative/tutorials/helloworld/tutorial2.qml 1
 
-When the \e clicked signal of our cell is triggered, we want to set the color of the text to the color passed as a parameter.
+When the \e clicked signal of our cell is triggered, we want to set the color of the text to the \e cellColor passed as a parameter.
 We can react to any signal of our component through a property of the name \e 'onSignalName' (see \l{Signal Handlers}).
 */
 

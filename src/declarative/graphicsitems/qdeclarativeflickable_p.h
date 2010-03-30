@@ -82,7 +82,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeFlickable : public QDeclarativeItem
     Q_PROPERTY(QDeclarativeFlickableVisibleArea *visibleArea READ visibleArea CONSTANT)
 
     Q_PROPERTY(QDeclarativeListProperty<QObject> flickableData READ flickableData)
-    Q_PROPERTY(QDeclarativeListProperty<QDeclarativeItem> flickableChildren READ flickableChildren)
+    Q_PROPERTY(QDeclarativeListProperty<QGraphicsObject> flickableChildren READ flickableChildren)
     Q_CLASSINFO("DefaultProperty", "flickableData")
 
     Q_ENUMS(FlickDirection)
@@ -92,7 +92,7 @@ public:
     ~QDeclarativeFlickable();
 
     QDeclarativeListProperty<QObject> flickableData();
-    QDeclarativeListProperty<QDeclarativeItem> flickableChildren();
+    QDeclarativeListProperty<QGraphicsObject> flickableChildren();
 
     bool overShoot() const;
     void setOverShoot(bool);

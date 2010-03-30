@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeanchors_p_p.h"
+#include "private/qdeclarativeanchors_p_p.h"
 
 #include "qdeclarativeitem.h"
-#include "qdeclarativeitem_p.h"
+#include "private/qdeclarativeitem_p.h"
 
 #include <qdeclarativeinfo.h>
 
@@ -1059,7 +1059,7 @@ bool QDeclarativeAnchorsPrivate::checkVAnchorValid(QDeclarativeAnchorLine anchor
     return true;
 }
 
-#include <moc_qdeclarativeanchors_p.cpp>
-
 QT_END_NAMESPACE
+
+#include <moc_qdeclarativeanchors_p.cpp>
 
