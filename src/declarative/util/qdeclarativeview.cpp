@@ -157,6 +157,7 @@ void QDeclarativeViewPrivate::execute()
 {
     delete root;
     delete component;
+    initialSize = QSize();
     component = new QDeclarativeComponent(&engine, source, q);
 
     if (!component->isLoading()) {
