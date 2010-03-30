@@ -562,7 +562,7 @@ void QDeclarativeListViewPrivate::releaseItem(FxListItem *item)
         return;
     if (trackedItem == item) {
         const char *notifier1 = orient == QDeclarativeListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
-        const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged(qreal)) : SIGNAL(widthChanged(qreal));
+        const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
         QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
         QObject::disconnect(trackedItem->item, notifier2, q, SLOT(trackedPositionChanged()));
         trackedItem = 0;
@@ -763,7 +763,7 @@ void QDeclarativeListViewPrivate::updateTrackedItem()
     FxListItem *oldTracked = trackedItem;
 
     const char *notifier1 = orient == QDeclarativeListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
-    const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged(qreal)) : SIGNAL(widthChanged(qreal));
+    const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
 
     if (trackedItem && item != trackedItem) {
         QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
@@ -2124,9 +2124,6 @@ qreal QDeclarativeListView::maxXExtent() const
 void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeListView);
-    QDeclarativeFlickable::keyPressEvent(event);
-    if (event->isAccepted())
-        return;
 
     if (d->model && d->model->count() && d->interactive) {
         if ((d->orient == QDeclarativeListView::Horizontal && event->key() == Qt::Key_Left)
@@ -2151,6 +2148,9 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
             }
         }
     }
+    QDeclarativeFlickable::keyPressEvent(event);
+    if (event->isAccepted())
+        return;
     event->ignore();
 }
 

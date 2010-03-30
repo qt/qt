@@ -74,7 +74,8 @@ class QGraphicsItemPrivate;
 #ifndef QDECLARATIVELISTPROPERTY
 #define QDECLARATIVELISTPROPERTY
 template<typename T>
-struct QDeclarativeListProperty {
+class QDeclarativeListProperty {
+public:
     typedef void (*AppendFunction)(QDeclarativeListProperty<T> *, T*);
     typedef int (*CountFunction)(QDeclarativeListProperty<T> *);
     typedef T *(*AtFunction)(QDeclarativeListProperty<T> *, int);
@@ -276,6 +277,7 @@ public:
 
     virtual void setPosHelper(const QPointF &pos);
     void setTransformHelper(const QTransform &transform);
+    void prependGraphicsTransform(QGraphicsTransform *t);
     void appendGraphicsTransform(QGraphicsTransform *t);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);

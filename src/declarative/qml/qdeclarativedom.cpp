@@ -480,8 +480,14 @@ int QDeclarativeDomDynamicProperty::propertyType() const
             case QDeclarativeParser::Object::DynamicProperty::Color:
                 return QMetaType::type("QColor");
 
+            case QDeclarativeParser::Object::DynamicProperty::Time:
+                return QMetaType::type("QTime");
+
             case QDeclarativeParser::Object::DynamicProperty::Date:
                 return QMetaType::type("QDate");
+
+            case QDeclarativeParser::Object::DynamicProperty::DateTime:
+                return QMetaType::type("QDateTime");
 
             case QDeclarativeParser::Object::DynamicProperty::Int:
                 return QMetaType::type("int");

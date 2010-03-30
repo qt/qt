@@ -47,14 +47,11 @@
 #include <qdeclarativecontext.h>
 #include <qdeclarativeinfo.h>
 #include <qdeclarativeproperty_p.h>
-
-#include <QtCore/qparallelanimationgroup.h>
+#include <qdeclarativeguard_p.h>
 
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
-
-
 
 class QDeclarativeBehaviorPrivate : public QObjectPrivate
 {
@@ -64,7 +61,7 @@ public:
 
     QDeclarativeProperty property;
     QVariant currentValue;
-    QDeclarativeAbstractAnimation *animation;
+    QDeclarativeGuard<QDeclarativeAbstractAnimation> animation;
     bool enabled;
 };
 
@@ -176,11 +173,10 @@ void QDeclarativeBehavior::write(const QVariant &value)
     actions << action;
 
     QList<QDeclarativeProperty> after;
-    if (d->animation)
-        d->animation->transition(actions, after, QDeclarativeAbstractAnimation::Forward);
+    d->animation->transition(actions, after, QDeclarativeAbstractAnimation::Forward);
     d->animation->qtAnimation()->start();
     if (!after.contains(d->property))
-        QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
+        QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);    
 }
 
 void QDeclarativeBehavior::setTarget(const QDeclarativeProperty &property)

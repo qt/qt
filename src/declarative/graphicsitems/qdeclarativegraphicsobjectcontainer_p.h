@@ -82,7 +82,6 @@ private:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QGraphicsObject)
 QML_DECLARE_TYPE(QDeclarativeGraphicsObjectContainer)
 
 QT_END_HEADER

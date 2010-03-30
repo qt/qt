@@ -203,7 +203,7 @@ namespace QDeclarativeParser
             DynamicProperty();
             DynamicProperty(const DynamicProperty &);
 
-            enum Type { Variant, Int, Bool, Real, String, Url, Color, Date, Alias, Custom, CustomList };
+            enum Type { Variant, Int, Bool, Real, String, Url, Color, Time, Date, DateTime, Alias, Custom, CustomList };
 
             bool isDefaultProperty;
             Type type;

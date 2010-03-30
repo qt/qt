@@ -602,7 +602,9 @@ Grid {
     \qmlproperty Transition Grid::add
     This property holds the transition to apply when adding an item to the positioner.
     The transition is only applied to the added item(s).
-    Positioner transitions will only affect the position (x,y) of items.
+    Positioner transitions will only affect the position (x,y) of items,
+    as that is all the positioners affect. To animate other property change
+    you will have to do so based on how you have changed those properties.
 
     Added can mean that either the object has been created or
     reparented, and thus is now a child or the positioner, or that the
@@ -818,6 +820,9 @@ public:
 QDeclarativeFlow::QDeclarativeFlow(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(*(new QDeclarativeFlowPrivate), Both, parent)
 {
+    Q_D(QDeclarativeFlow);
+    // Flow layout requires relayout if its own size changes too.
+    d->addItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
 }
 
 /*!

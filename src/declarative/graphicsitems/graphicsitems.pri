@@ -39,6 +39,7 @@ HEADERS += \
     $$PWD/qdeclarativerepeater_p.h \
     $$PWD/qdeclarativerepeater_p_p.h \
     $$PWD/qdeclarativescalegrid_p_p.h \
+    $$PWD/qdeclarativetranslate_p.h \
     $$PWD/qdeclarativetextinput_p.h \
     $$PWD/qdeclarativetextinput_p_p.h \
     $$PWD/qdeclarativetextedit_p.h \
@@ -75,6 +76,7 @@ SOURCES += \
     $$PWD/qdeclarativerectangle.cpp \
     $$PWD/qdeclarativerepeater.cpp \
     $$PWD/qdeclarativescalegrid.cpp \
+    $$PWD/qdeclarativetranslate.cpp \
     $$PWD/qdeclarativetextinput.cpp \
     $$PWD/qdeclarativetext.cpp \
     $$PWD/qdeclarativetextedit.cpp \
