@@ -42,6 +42,7 @@
 #include "qdeclarativetextinput_p.h"
 #include "qdeclarativetextinput_p_p.h"
 
+#include <private/qdeclarativeglobal_p.h>
 #include <qdeclarativeinfo.h>
 
 #include <QValidator>
@@ -619,6 +620,7 @@ void QDeclarativeTextInput::createCursor()
         return;
     }
 
+    QDeclarative_setParent_noEvent(d->cursorItem, this);
     d->cursorItem->setParentItem(this);
     d->cursorItem->setX(d->control->cursorToX());
     d->cursorItem->setHeight(d->control->height());

@@ -41,6 +41,7 @@
 
 #include "qdeclarative.h"
 #include "qmlruntime.h"
+#include "qdeclarativeengine.h"
 #include <QWidget>
 #include <QDir>
 #include <QApplication>
@@ -100,7 +101,8 @@ void usage()
     qWarning("  -dragthreshold <size> .................... set mouse drag threshold size");
     qWarning("  -netcache <size> ......................... set disk cache to size bytes");
     qWarning("  -translation <translationfile> ........... set the language to run in");
-    qWarning("  -L <directory> ........................... prepend to the library search path");
+    qWarning("  -L <directory> ........................... prepend to the library search path,");
+    qWarning("                                             display path if <directory> is empty");
     qWarning("  -opengl .................................. use a QGLWidget for the viewport");
     qWarning("  -script <path> ........................... set the script to use");
     qWarning("  -scriptopts <options>|help ............... set the script options to use");
@@ -238,7 +240,12 @@ int main(int argc, char ** argv)
         } else if (arg == "-qmlbrowser") {
             useNativeFileBrowser = false;
         } else if (arg == "-L") {
-            if (lastArg) usage();
+            if (lastArg) {
+                QDeclarativeEngine tmpEngine;
+                QString paths = tmpEngine.importPathList().join(QLatin1String(":"));
+                fprintf(stderr, "Current search path: %s\n", paths.toLocal8Bit().constData());
+                return 0;
+            }
             libraries << QString(argv[++i]);
         } else if (arg == "-script") {
             if (lastArg) usage();

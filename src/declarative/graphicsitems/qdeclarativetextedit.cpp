@@ -43,6 +43,7 @@
 #include "qdeclarativetextedit_p_p.h"
 
 #include "qdeclarativeevents_p_p.h"
+#include <private/qdeclarativeglobal_p.h>
 
 #include <QTextLayout>
 #include <QTextLine>
@@ -485,6 +486,7 @@ void QDeclarativeTextEdit::loadCursorDelegate()
                 this, SLOT(moveCursorDelegate()));
         d->control->setCursorWidth(0);
         dirtyCache(cursorRect());
+        QDeclarative_setParent_noEvent(d->cursor, this);
         d->cursor->setParentItem(this);
         d->cursor->setHeight(QFontMetrics(d->font).height());
         moveCursorDelegate();
