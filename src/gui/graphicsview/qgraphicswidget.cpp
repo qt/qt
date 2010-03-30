@@ -807,6 +807,7 @@ void QGraphicsWidget::setLayout(QGraphicsLayout *l)
     l->setParentLayoutItem(this);
     l->d_func()->reparentChildItems(this);
     l->invalidate();
+    emit layoutChanged();
 }
 
 /*!

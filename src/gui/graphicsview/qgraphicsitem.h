@@ -139,7 +139,13 @@ public:
         ItemZValueHasChanged,
         ItemOpacityChange,
         ItemOpacityHasChanged,
-        ItemScenePositionHasChanged
+        ItemScenePositionHasChanged,
+        ItemRotationChange,
+        ItemRotationHasChanged,
+        ItemScaleChange,
+        ItemScaleHasChanged,
+        ItemTransformOriginPointChange,
+        ItemTransformOriginPointHasChanged
     };
 
     enum CacheMode {

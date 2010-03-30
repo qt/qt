@@ -13,7 +13,8 @@ DEFINES        += QT_BUILD_QMAKE QT_BOOTSTRAPPED QT_NO_CODECS QT_LITE_UNICODE QT
                   QT_NO_STL QT_NO_COMPRESS QT_NO_DATASTREAM  \
                   QT_NO_TEXTCODEC QT_NO_UNICODETABLES QT_NO_THREAD \
                   QT_NO_SYSTEMLOCALE QT_NO_GEOM_VARIANT \
-                  QT_NODLL QT_NO_QOBJECT
+                  QT_NODLL QT_NO_QOBJECT \
+                  QT_BUILD_QMAKE_NO_GENERATORS
 
 INCLUDEPATH = \
               $$QT_SOURCE_TREE/tools/qtestlib/ce/cetest \
@@ -36,8 +37,6 @@ HEADERS += \
 SOURCES += \
         remoteconnection.cpp \
         deployment.cpp \
-        symbian/epocroot.cpp \
-		windows/registry.cpp \
         main.cpp
 
 LIBS += ole32.lib advapi32.lib
