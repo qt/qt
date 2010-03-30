@@ -52,7 +52,7 @@
 #include <QtDebug>
 
 #include <QuartzCore/CIContext.h>
-
+#include <CGLCurrent.h>
 
 QT_BEGIN_NAMESPACE
 
