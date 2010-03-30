@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qwindowspipewriter_p.h"
+#include <string.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -101,9 +102,7 @@ qint64 QWindowsPipeWriter::write(const char *ptr, qint64 maxlen)
 void QWindowsPipeWriter::run()
 {
     OVERLAPPED overl;
-    overl.Internal = 0;
-    overl.InternalHigh = 0;
-    overl.Pointer = 0;
+    memset(&overl, 0, sizeof overl);
     overl.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
     forever {
         lock.lock();
