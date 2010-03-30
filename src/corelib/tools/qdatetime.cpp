@@ -2315,7 +2315,7 @@ void QDateTime::setTimeSpec(Qt::TimeSpec spec)
     }
 }
 
-qint64 toMsecsSinceEpoch_helper(qint64 jd, int msecs)
+qint64 toMSecsSinceEpoch_helper(qint64 jd, int msecs)
 {
     int days = jd - julianDayFromGregorianDate(1970, 1, 1);
     qint64 retval = (qlonglong(days) * MSECS_PER_DAY) + msecs;
@@ -2335,15 +2335,15 @@ qint64 toMsecsSinceEpoch_helper(qint64 jd, int msecs)
     this object is not valid. However, for all valid dates, this function
     returns a unique value.
 
-    \sa toTime_t(), setMsecsSinceEpoch()
+    \sa toTime_t(), setMSecsSinceEpoch()
 */
-qint64 QDateTime::toMsecsSinceEpoch() const
+qint64 QDateTime::toMSecsSinceEpoch() const
 {
     QDate utcDate;
     QTime utcTime;
     d->getUTC(utcDate, utcTime);
 
-    return toMsecsSinceEpoch_helper(utcDate.jd, utcTime.ds());
+    return toMSecsSinceEpoch_helper(utcDate.jd, utcTime.ds());
 }
 
 /*!
@@ -2363,14 +2363,14 @@ qint64 QDateTime::toMsecsSinceEpoch() const
     2106-02-07T06:28:14, this function returns -1 cast to an unsigned integer
     (i.e., 0xFFFFFFFF).
 
-    To get an extended range, use toMsecsSinceEpoch().
+    To get an extended range, use toMSecsSinceEpoch().
 
-    \sa toMsecsSinceEpoch(), setTime_t()
+    \sa toMSecsSinceEpoch(), setTime_t()
 */
 
 uint QDateTime::toTime_t() const
 {
-    qint64 retval = toMsecsSinceEpoch() / 1000;
+    qint64 retval = toMSecsSinceEpoch() / 1000;
     if (quint64(retval) >= Q_UINT64_C(0xFFFFFFFF))
         return uint(-1);
     return uint(retval);
@@ -2388,9 +2388,9 @@ uint QDateTime::toTime_t() const
     valid range of QDateTime, both negative and positive. The behavior of
     this function is undefined for those values.
 
-    \sa toMsecsSinceEpoch(), setTime_t()
+    \sa toMSecsSinceEpoch(), setTime_t()
 */
-void QDateTime::setMsecsSinceEpoch(qint64 msecs)
+void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 {
     detach();
 
@@ -2878,7 +2878,7 @@ bool QDateTime::operator<(const QDateTime &other) const
 */
 
 /*!
-    \fn qint64 QDateTime::currentMsecsSinceEpoch()
+    \fn qint64 QDateTime::currentMSecsSinceEpoch()
     \since 4.7
 
     Returns the number of milliseconds since 1970-01-01T00:00:00 Universal
@@ -2941,7 +2941,7 @@ QDateTime QDateTime::currentDateTimeUtc()
     return QDateTime(d, t, Qt::UTC);
 }
 
-qint64 QDateTime::currentMsecsSinceEpoch()
+qint64 QDateTime::currentMSecsSinceEpoch()
 {
     QDate d;
     QTime t;
@@ -3005,7 +3005,7 @@ QDateTime QDateTime::currentDateTimeUtc()
     return QDateTime(d, ct, Qt::UTC);
 }
 
-qint64 QDateTime::currentMsecsSinceEpoch()
+qint64 QDateTime::currentMSecsSinceEpoch()
 {
     QDate d;
     QTime ct;
@@ -3122,7 +3122,7 @@ QDateTime QDateTime::currentDateTimeUtc()
     return dt;
 }
 
-qint64 QDateTime::currentMsecsSinceEpoch()
+qint64 QDateTime::currentMSecsSinceEpoch()
 {
     // posix compliant system
     // we have milliseconds
@@ -3166,10 +3166,10 @@ QDateTime QDateTime::fromTime_t(uint seconds)
 
   \sa toTime_t(), setTime_t()
 */
-QDateTime QDateTime::fromMsecsSinceEpoch(qint64 msecs)
+QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs)
 {
     QDateTime d;
-    d.setMsecsSinceEpoch(msecs);
+    d.setMSecsSinceEpoch(msecs);
     return d;
 }
 
@@ -3928,7 +3928,7 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
     QDate fakeDate = adjustDate(date);
 
     // won't overflow because of fakeDate
-    time_t secsSince1Jan1970UTC = toMsecsSinceEpoch_helper(fakeDate.toJulianDay(), QTime().msecsTo(time)) / 1000;
+    time_t secsSince1Jan1970UTC = toMSecsSinceEpoch_helper(fakeDate.toJulianDay(), QTime().msecsTo(time)) / 1000;
     tm *brokenDown = 0;
 
 #if defined(Q_OS_WINCE)

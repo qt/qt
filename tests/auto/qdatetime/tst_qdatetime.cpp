@@ -83,8 +83,8 @@ private slots:
     void setTime();
     void setTimeSpec();
     void setTime_t();
-    void setMsecsSinceEpoch_data();
-    void setMsecsSinceEpoch();
+    void setMSecsSinceEpoch_data();
+    void setMSecsSinceEpoch();
     void toString_enumformat();
     void toString_strformat_data();
     void toString_strformat();
@@ -439,7 +439,7 @@ void tst_QDateTime::setTime_t()
     }
 }
 
-void tst_QDateTime::setMsecsSinceEpoch_data()
+void tst_QDateTime::setMSecsSinceEpoch_data()
 {
     QTest::addColumn<qint64>("msecs");
     QTest::addColumn<QDateTime>("utc");
@@ -479,7 +479,7 @@ void tst_QDateTime::setMsecsSinceEpoch_data()
             << QDateTime(QDate::fromJulianDay(0x7fffffff), QTime(23, 59, 59, 999));
 }
 
-void tst_QDateTime::setMsecsSinceEpoch()
+void tst_QDateTime::setMSecsSinceEpoch()
 {
     QFETCH(qint64, msecs);
     QFETCH(QDateTime, utc);
@@ -487,14 +487,14 @@ void tst_QDateTime::setMsecsSinceEpoch()
 
     QDateTime dt;
     dt.setTimeSpec(Qt::UTC);
-    dt.setMsecsSinceEpoch(msecs);
+    dt.setMSecsSinceEpoch(msecs);
 
     QCOMPARE(dt, utc);
     if (europeanTimeZone) {
         QCOMPARE(dt.toLocalTime(), european);
     }
 
-    QCOMPARE(dt.toMsecsSinceEpoch(), msecs);
+    QCOMPARE(dt.toMSecsSinceEpoch(), msecs);
 
     if (quint64(msecs / 1000) < 0xFFFFFFFF) {
         QCOMPARE(qint64(dt.toTime_t()), msecs / 1000);
@@ -999,7 +999,7 @@ void tst_QDateTime::currentDateTimeUtc2()
     do {
         local = QDateTime::currentDateTime();
         utc = QDateTime::currentDateTimeUtc();
-        msec = QDateTime::currentMsecsSinceEpoch();
+        msec = QDateTime::currentMSecsSinceEpoch();
         ok = local.time().msec() == utc.time().msec()
             && utc.time().msec() == (msec % 1000);
     } while (--i && !ok);
@@ -1020,8 +1020,8 @@ void tst_QDateTime::currentDateTimeUtc2()
     // and finally, the time_t should equal our number
     QCOMPARE(qint64(utc.toTime_t()), msec / 1000);
     QCOMPARE(qint64(local.toTime_t()), msec / 1000);
-    QCOMPARE(utc.toMsecsSinceEpoch(), msec);
-    QCOMPARE(local.toMsecsSinceEpoch(), msec);
+    QCOMPARE(utc.toMSecsSinceEpoch(), msec);
+    QCOMPARE(local.toMSecsSinceEpoch(), msec);
 }
 
 void tst_QDateTime::toTime_t_data()
