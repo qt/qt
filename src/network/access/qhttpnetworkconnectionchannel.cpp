@@ -648,7 +648,8 @@ void QHttpNetworkConnectionChannel::allDone()
             close();
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     } else if (alreadyPipelinedRequests.isEmpty()) {
-        QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+        if (qobject_cast<QHttpNetworkConnection*>(connection))
+            QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     }
 }
 
@@ -753,7 +754,8 @@ void QHttpNetworkConnectionChannel::handleStatus()
         }
         break;
     default:
-        QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+        if (qobject_cast<QHttpNetworkConnection*>(connection))
+            QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     }
 }
 
@@ -801,7 +803,8 @@ void QHttpNetworkConnectionChannel::closeAndResendCurrentRequest()
     requeueCurrentlyPipelinedRequests();
     close();
     resendCurrent = true;
-    QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+    if (qobject_cast<QHttpNetworkConnection*>(connection))
+        QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
 }
 
 bool QHttpNetworkConnectionChannel::isSocketBusy() const

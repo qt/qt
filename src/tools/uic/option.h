@@ -61,6 +61,7 @@ struct Option
     unsigned int autoConnection : 1;
     unsigned int dependencies : 1;
     unsigned int extractImages : 1;
+    unsigned int limitXPM_LineLength : 1;
     unsigned int implicitIncludes: 1;
     Generator generator;
 
@@ -85,6 +86,7 @@ struct Option
           autoConnection(1),
           dependencies(0),
           extractImages(0),
+          limitXPM_LineLength(0),
           implicitIncludes(1),
           generator(CppGenerator),
           prefix(QLatin1String("Ui_"))
