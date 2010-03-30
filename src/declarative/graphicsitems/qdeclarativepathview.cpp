@@ -44,7 +44,6 @@
 
 #include <qdeclarativestate_p.h>
 #include <qdeclarativeopenmetaobject_p.h>
-#include <qdeclarativeeasefollow_p.h>
 #include <QDebug>
 #include <QEvent>
 #include <qlistmodelinterface_p.h>
@@ -188,7 +187,7 @@ void QDeclarativePathViewPrivate::createHighlight()
         QDeclarativeContext *highlightContext = new QDeclarativeContext(qmlContext(q));
         QObject *nobj = highlightComponent->create(highlightContext);
         if (nobj) {
-            highlightContext->setParent(nobj);
+            QDeclarative_setParent_noEvent(highlightContext, nobj);
             item = qobject_cast<QDeclarativeItem *>(nobj);
             if (!item)
                 delete nobj;
@@ -199,7 +198,8 @@ void QDeclarativePathViewPrivate::createHighlight()
         item = new QDeclarativeItem;
     }
     if (item) {
-        item->setParent(q);
+        QDeclarative_setParent_noEvent(item, q);
+        item->setParentItem(q);
         highlightItem = item;
         changed = true;
     }
@@ -1193,7 +1193,7 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
     emit countChanged();
 }
 
-void QDeclarativePathView::itemsMoved(int from, int to, int count)
+void QDeclarativePathView::itemsMoved(int /*from*/, int /*to*/, int /*count*/)
 {
     Q_D(QDeclarativePathView);
     if (!d->isValid() || !isComponentComplete())

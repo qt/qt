@@ -15,26 +15,31 @@ Rectangle {
 
     Rectangle {
         width: 50; height: 20; y: 60; color: "red"
-        EaseFollow on x { source: rect.x; velocity: 400 }
+        x: rect.x
+        Behavior on x { SmoothedAnimation { velocity: 400 } }
     }
 
     Rectangle {
         width: 50; height: 20; y: 90; color: "yellow"
-        EaseFollow on x { source: rect.x; velocity: 300; reversingMode: EaseFollow.Immediate }
+        x: rect.x
+        Behavior on x { SmoothedAnimation { velocity: 300; reversingMode: SmoothedAnimation.Immediate } }
     }
 
     Rectangle {
         width: 50; height: 20; y: 120; color: "green"
-        EaseFollow on x { source: rect.x; reversingMode: EaseFollow.Sync }
+        x: rect.x
+        Behavior on x { SmoothedAnimation { reversingMode: SmoothedAnimation.Sync } }
     }
 
     Rectangle {
         width: 50; height: 20; y: 150; color: "purple"
-        EaseFollow on x { source: rect.x; maximumEasingTime: 200 }
+        x: rect.x
+        Behavior on x { SmoothedAnimation { maximumEasingTime: 200 } }
     }
 
     Rectangle {
         width: 50; height: 20; y: 180; color: "blue"
-        EaseFollow on x { source: rect.x; duration: 300 }
+        x: rect.x
+        Behavior on x { SmoothedAnimation { duration: 300 } }
     }
 }

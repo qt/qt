@@ -98,7 +98,7 @@ Rectangle {
         },
         Component {
             id: invalidHl
-            EaseFollow {}
+            SmoothedAnimation {}
         }
     ]
     ListView {

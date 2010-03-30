@@ -301,12 +301,8 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
             item = qobject_cast<QGraphicsObject *>(obj);
             if (item) {
                 QDeclarative_setParent_noEvent(ctxt, obj);
-                if (QDeclarativeItem* qmlItem = qobject_cast<QDeclarativeItem *>(item)) {
-                    qmlItem->setParentItem(q);
-                } else {
-                    item->setParentItem(q);
-                    item->setParent(q);
-                }
+                QDeclarative_setParent_noEvent(item, q);
+                item->setParentItem(q);
 //                item->setFocus(true);
                 initResize();
             } else {

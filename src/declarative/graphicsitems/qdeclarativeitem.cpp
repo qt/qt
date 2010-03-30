@@ -1442,14 +1442,6 @@ void QDeclarativeItem::setParentItem(QDeclarativeItem *parent)
 }
 
 /*!
-    \fn void QDeclarativeItem::setParent(QDeclarativeItem *parent)
-    \overload
-    Sets both the parent object and parent item to \a parent. This
-    function avoids the programming error of calling setParent()
-    when you mean setParentItem().
-*/
-
-/*!
     Returns the QDeclarativeItem parent of this item.
 */
 QDeclarativeItem *QDeclarativeItem::parentItem() const
@@ -1651,7 +1643,7 @@ QRectF QDeclarativeItem::childrenRect()
     Q_D(QDeclarativeItem);
     if (!d->_contents) {
         d->_contents = new QDeclarativeContents;
-        d->_contents->setParent(this);
+        QDeclarative_setParent_noEvent(d->_contents, this);
         d->_contents->setItem(this);
     }
     return d->_contents->rectF();
