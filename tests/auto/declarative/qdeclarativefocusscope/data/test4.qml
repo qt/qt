@@ -9,25 +9,25 @@ Rectangle {
 
     FocusScope {
         id: myScope
-        focus: true
 
         Keys.onDigit9Pressed: console.log("Error - FocusScope")
 
         Rectangle {
+            objectName: "item0"
             height: 120
             width: 420
 
             color: "transparent"
             border.width: 5
-            border.color: myScope.wantsFocus?"blue":"black"
+            //border.color: myScope.wantsFocus?"blue":"black"
 
             Rectangle {
-                id: item1
+                id: item1; objectName: "item1"
                 x: 10; y: 10
                 width: 100; height: 100; color: "green"
                 border.width: 5
                 border.color: wantsFocus?"blue":"black"
-                Keys.onDigit9Pressed: console.log("Top Left");
+                Keys.onDigit9Pressed: console.log("Error - Top Left");
                 KeyNavigation.right: item2
                 focus: true
 
@@ -38,13 +38,13 @@ Rectangle {
             }
 
             Rectangle {
-                id: item2
+                id: item2; objectName: "item2"
                 x: 310; y: 10
                 width: 100; height: 100; color: "green"
                 border.width: 5
                 border.color: wantsFocus?"blue":"black"
                 KeyNavigation.left: item1
-                Keys.onDigit9Pressed: console.log("Top Right");
+                Keys.onDigit9Pressed: console.log("Error - Top Right");
 
                 Rectangle {
                     width: 50; height: 50; anchors.centerIn: parent
@@ -55,16 +55,16 @@ Rectangle {
         KeyNavigation.down: item3
     }
 
-    Text { x:100; y:170; text: "Blue border indicates scoped focus\nBlack border indicates NOT scoped focus\nRed box indicates active focus\nUse arrow keys to navigate\nPress \"9\" to print currently focused item" }
+    Text { x:100; y:170; text: "There should be no blue borders, or red squares.\nPressing \"9\" should do nothing.\nArrow keys should have no effect." }
 
     Rectangle {
-        id: item3
+        id: item3; objectName: "item3"
         x: 10; y: 300
         width: 100; height: 100; color: "green"
         border.width: 5
         border.color: wantsFocus?"blue":"black"
 
-        Keys.onDigit9Pressed: console.log("Bottom Left");
+        Keys.onDigit9Pressed: console.log("Error - Bottom Left");
         KeyNavigation.up: myScope
 
         Rectangle {

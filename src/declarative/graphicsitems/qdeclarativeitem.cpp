@@ -1510,11 +1510,19 @@ QDeclarativeAnchors *QDeclarativeItem::anchors()
 
 void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
 {
-    QGraphicsObject *i = qobject_cast<QGraphicsObject *>(o);
-    if (i) {
-        i->setParentItem(static_cast<QDeclarativeItem *>(prop->object));
+    if (!o)
+        return;
+
+    QDeclarativeItem *that = static_cast<QDeclarativeItem *>(prop->object);
+
+    // This test is measurably (albeit only slightly) faster than qobject_cast<>()
+    const QMetaObject *mo = o->metaObject();
+    while (mo && mo != &QGraphicsObject::staticMetaObject) mo = mo->d.superdata;
+
+    if (mo) {
+        QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(o))->setParentItemHelper(that, 0, 0);
     } else {
-        o->setParent(static_cast<QDeclarativeItem *>(prop->object));
+        o->setParent(that);
     }
 }
 

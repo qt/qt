@@ -23,6 +23,7 @@ SUBDIRS += \
            qdeclarativeborderimage \ # Cover
            qdeclarativeflickable   \ # Cover
            qdeclarativeflipable    \ # Cover
+           qdeclarativefocusscope  \ # Cover
            qdeclarativegridview \    # Cover
            qdeclarativeitem \        # Cover
            qdeclarativelistview \    # Cover
