@@ -630,6 +630,9 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
                 transl.remove(QRegExp(QLatin1String("\\bX-Language:[^\n]*\n")));
                 if (!translator.languageCode().isEmpty())
                     transl += QLatin1String("X-Language: ") + translator.languageCode() + QLatin1Char('\n');
+                transl.remove(QRegExp(QLatin1String("\\bX-Source-Language:[^\n]*\n")));
+                if (!translator.sourceLanguageCode().isEmpty())
+                    transl += QLatin1String("X-Source-Language: ") + translator.sourceLanguageCode() + QLatin1Char('\n');
             }
             out << poEscapedString(prefix, QLatin1String("msgstr"), noWrap, transl);
         } else {
