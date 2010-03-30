@@ -154,7 +154,7 @@ protected:
     bool m_loaded;
     bool m_muted;
     int m_position;
-    qreal m_volume;
+    qreal m_vol;
     qreal m_playbackRate;
     QMediaService *m_mediaService;
     QMediaPlayerControl *m_playerControl;

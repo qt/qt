@@ -391,7 +391,7 @@ quint64 QNetworkSessionPrivateImpl::getStatistics(bool sent) const
 	return 0;
     }
 
-    foreach (Maemo::IcdStatisticsResult res, stats_results) {
+    foreach (const Maemo::IcdStatisticsResult &res, stats_results) {
 	if (res.params.network_attrs & ICD_NW_ATTR_IAPNAME) {
 	    /* network_id is the IAP UUID */
 	    if (QString(res.params.network_id.data()) == activeConfig.identifier()) {
@@ -1110,7 +1110,7 @@ void QNetworkSessionPrivateImpl::reject()
 {
 }
 
-
+#ifndef QT_NO_NETWORKINTERFACE
 QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
 {
     if (!publicConfig.isValid() || state != QNetworkSession::Connected)
@@ -1121,7 +1121,7 @@ QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
 
     return QNetworkInterface::interfaceFromName(currentNetworkInterface);
 }
-
+#endif
 
 void QNetworkSessionPrivateImpl::setSessionProperty(const QString& key, const QVariant& value)
 {

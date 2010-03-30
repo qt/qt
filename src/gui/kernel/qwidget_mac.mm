@@ -3933,7 +3933,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget *w)
     widget, either by scrolling its contents or repainting, depending on the WA_StaticContents
     flag
 */
-static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newRect)
+static void qt_mac_update_widget_position(QWidget *q, QRect oldRect, QRect newRect)
 {
 #ifndef QT_MAC_USE_COCOA
     HIRect bounds = CGRectMake(newRect.x(), newRect.y(),
@@ -4067,7 +4067,8 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
     QRect xrect = data.crect;
 
     QRect parentWRect;
-    if (q->isWindow() && topData()->embedded) {
+    bool isEmbeddedWindow = (q->isWindow() && topData()->embedded);
+    if (isEmbeddedWindow) {
 #ifndef QT_MAC_USE_COCOA
         HIViewRef parentView = HIViewGetSuperview(qt_mac_nativeview_for(q));
 #else
@@ -4092,7 +4093,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
 
     if (parentWRect.isValid()) {
         // parent is clipped, and we have to clip to the same limit as parent
-        if (!parentWRect.contains(xrect)) {
+        if (!parentWRect.contains(xrect) && !isEmbeddedWindow) {
             xrect &= parentWRect;
             wrect = xrect;
             //translate from parent's to my Qt coord sys
@@ -4194,7 +4195,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
         }
     }
 
-    qt_mac_update_widget_posisiton(q, oldRect, xrect);
+    qt_mac_update_widget_position(q, oldRect, xrect);
 
     if  (jump)
         q->update();

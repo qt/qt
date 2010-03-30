@@ -81,7 +81,7 @@ class QDeclarativeBinding_Id;
 class QDeclarativeCompiledBindings;
 class QDeclarativeContextData;
 
-class Q_DECLARATIVE_EXPORT QDeclarativeContextPrivate : public QObjectPrivate
+class QDeclarativeContextPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeContext)
 public:
@@ -141,6 +141,8 @@ public:
 
     // Any script blocks that exist on this context
     QList<QScriptValue> scripts;
+    QList<QScriptValue> importedScripts;
+    void addImportedScript(const QDeclarativeParser::Object::ScriptBlock &script);
     void addScript(const QDeclarativeParser::Object::ScriptBlock &script, QObject *scopeObject);
 
     // Context base url
@@ -188,6 +190,8 @@ public:
     // Linked contexts. this owns linkedContext.
     QDeclarativeContextData *linkedContext;
 
+    QString findObjectId(const QObject *obj) const;
+
     static QDeclarativeContextData *get(QDeclarativeContext *context) {
         return QDeclarativeContextPrivate::get(context)->data;
     }
@@ -209,8 +213,11 @@ public:
 
     inline operator QDeclarativeContextData*() const { return m_contextData; }
     inline QDeclarativeContextData* operator->() const { return m_contextData; }
+    inline QDeclarativeGuardedContextData &operator=(QDeclarativeContextData *d);
 
 private:
+    QDeclarativeGuardedContextData &operator=(const QDeclarativeGuardedContextData &);
+    QDeclarativeGuardedContextData(const QDeclarativeGuardedContextData &);
     friend class QDeclarativeContextData;
 
     inline void clear();
@@ -263,6 +270,13 @@ void QDeclarativeGuardedContextData::clear()
         m_next = 0;
         m_prev = 0;
     }
+}
+
+QDeclarativeGuardedContextData &
+QDeclarativeGuardedContextData::operator=(QDeclarativeContextData *d)
+{
+    setContextData(d);
+    return *this;
 }
 
 QT_END_NAMESPACE

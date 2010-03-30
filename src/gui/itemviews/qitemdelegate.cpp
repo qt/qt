@@ -1023,7 +1023,7 @@ QPixmap QItemDelegate::decoration(const QStyleOptionViewItem &option, const QVar
 // hacky but faster version of "QString::sprintf("%d-%d", i, enabled)"
 static QString qPixmapSerial(quint64 i, bool enabled)
 {
-    ushort arr[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '-', '0' + enabled };
+    ushort arr[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '-', ushort('0' + enabled) };
     ushort *ptr = &arr[16];
 
     while (i > 0) {

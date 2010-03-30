@@ -98,6 +98,13 @@ struct QDeclarativeMetaTypeData
     typedef QHash<int, QDeclarativeMetaType::StringConverter> StringConverters;
     StringConverters stringConverters;
 
+    struct ModuleInfo {
+        ModuleInfo(int maj, int min) : vmajor(maj), vminor(min) {}
+        int vmajor, vminor;
+    };
+    typedef QHash<QByteArray, ModuleInfo> ModuleInfoHash;
+    ModuleInfoHash modules;
+
     QBitArray objects;
     QBitArray interfaces;
     QBitArray lists;
@@ -441,7 +448,28 @@ int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &t
     data->objects.setBit(type.typeId, true);
     if (type.listId) data->lists.setBit(type.listId, true);
 
+    if (type.uri) {
+        QByteArray mod(type.uri);
+        QDeclarativeMetaTypeData::ModuleInfoHash::Iterator it = data->modules.find(mod);
+        if (it == data->modules.end()
+                || ((*it).vmajor < type.versionMajor || ((*it).vmajor == type.versionMajor && (*it).vminor < type.versionMinor))) {
+            data->modules.insert(mod, QDeclarativeMetaTypeData::ModuleInfo(type.versionMajor,type.versionMinor));
+        }
+    }
+
     return index;
+}
+
+/*
+    Have any types been registered for \a module with at least versionMajor.versionMinor.
+*/
+bool QDeclarativeMetaType::isModule(const QByteArray &module, int versionMajor, int versionMinor)
+{
+    QDeclarativeMetaTypeData *data = metaTypeData();
+    QDeclarativeMetaTypeData::ModuleInfoHash::Iterator it = data->modules.find(module);
+    return it != data->modules.end()
+        && ((*it).vmajor > versionMajor ||
+                ((*it).vmajor == versionMajor && (*it).vminor >= versionMinor));
 }
 
 QObject *QDeclarativeMetaType::toQObject(const QVariant &v, bool *ok)

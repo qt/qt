@@ -130,9 +130,17 @@ QVideoSurfaceFormat DirectShowMediaType::formatFromType(const AM_MEDIA_TYPE &typ
                 if (header->AvgTimePerFrame > 0)
                     format.setFrameRate(10000 /header->AvgTimePerFrame);
 
-                format.setScanLineDirection(header->bmiHeader.biHeight < 0
-                        ? QVideoSurfaceFormat::TopToBottom
-                        : QVideoSurfaceFormat::BottomToTop);
+                switch (qt_typeLookup[i].pixelFormat) {
+                    case QVideoFrame::Format_RGB32:
+                    case QVideoFrame::Format_BGR24:
+                    case QVideoFrame::Format_RGB565:
+                    case QVideoFrame::Format_RGB555:
+                        if (header->bmiHeader.biHeight >= 0)
+                            format.setScanLineDirection(QVideoSurfaceFormat::BottomToTop);
+                        break;
+                    default:
+                        break;
+                }
 
                 return format;
             } else if (IsEqualGUID(type.formattype, FORMAT_VideoInfo2)) {
@@ -145,9 +153,17 @@ QVideoSurfaceFormat DirectShowMediaType::formatFromType(const AM_MEDIA_TYPE &typ
                 if (header->AvgTimePerFrame > 0)
                     format.setFrameRate(10000 / header->AvgTimePerFrame);
 
-                format.setScanLineDirection(header->bmiHeader.biHeight < 0
-                        ? QVideoSurfaceFormat::TopToBottom
-                        : QVideoSurfaceFormat::BottomToTop);
+                switch (qt_typeLookup[i].pixelFormat) {
+                    case QVideoFrame::Format_RGB32:
+                    case QVideoFrame::Format_BGR24:
+                    case QVideoFrame::Format_RGB565:
+                    case QVideoFrame::Format_RGB555:
+                        if (header->bmiHeader.biHeight >= 0)
+                            format.setScanLineDirection(QVideoSurfaceFormat::BottomToTop);
+                        break;
+                    default:
+                        break;
+                }
 
                 return format;
             }

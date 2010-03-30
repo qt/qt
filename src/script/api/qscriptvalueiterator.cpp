@@ -100,6 +100,7 @@ public:
         if (initialized)
             return;
         QScriptEnginePrivate *eng_p = engine();
+        QScript::APIShim shim(eng_p);
         JSC::ExecState *exec = eng_p->globalExec();
         JSC::PropertyNameArray propertyNamesArray(exec);
         JSC::asObject(object()->jscValue)->getOwnPropertyNames(exec, propertyNamesArray, JSC::IncludeDontEnumProperties);

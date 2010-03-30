@@ -769,6 +769,8 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             GtkArrowType type = GTK_ARROW_UP;
             QRect r = header->rect;
             QImage arrow;
+            // This sorting indicator inversion is intentional, and follows the GNOME HIG.
+            // See http://library.gnome.org/devel/hig-book/stable/controls-lists.html.en#controls-lists-sortable
             if (header->sortIndicator & QStyleOptionHeader::SortUp)
                 type = GTK_ARROW_UP;
             else if (header->sortIndicator & QStyleOptionHeader::SortDown)

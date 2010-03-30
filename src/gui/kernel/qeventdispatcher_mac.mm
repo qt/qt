@@ -829,6 +829,8 @@ NSModalSession QEventDispatcherMacPrivate::currentModalSession()
 
             ensureNSAppInitialized();
             QBoolBlocker block1(blockSendPostedEvents, true);
+            info.nswindow = window;
+            [(NSWindow*) info.nswindow retain];
             info.session = [NSApp beginModalSessionForWindow:window];
         }
         currentModalSessionCached = info.session;
@@ -903,8 +905,10 @@ void QEventDispatcherMacPrivate::cleanupModalSessions()
         }
         cocoaModalSessionStack.remove(i);
         currentModalSessionCached = 0;
-        if (info.session)
+        if (info.session) {
             [NSApp endModalSession:info.session];
+            [(NSWindow *)info.nswindow release];
+        }
     }
 
     updateChildrenWorksWhenModal();
@@ -920,7 +924,7 @@ void QEventDispatcherMacPrivate::beginModalSession(QWidget *widget)
     // currentModalSession). A QCocoaModalSessionInfo is considered pending to be stopped if
     // the widget pointer is zero, and the session pointer is non-zero (it will be fully
     // stopped in cleanupModalSessions()).
-    QCocoaModalSessionInfo info = {widget, 0};
+    QCocoaModalSessionInfo info = {widget, 0, 0};
     cocoaModalSessionStack.push(info);
     updateChildrenWorksWhenModal();
     currentModalSessionCached = 0;

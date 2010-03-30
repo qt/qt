@@ -126,7 +126,9 @@ void QFSFileEnginePrivate::init()
     fileAttrib = INVALID_FILE_ATTRIBUTES;
     fileHandle = INVALID_HANDLE_VALUE;
     mapHandle = INVALID_HANDLE_VALUE;
+#ifndef Q_OS_WINCE
     cachedFd = -1;
+#endif
 #endif
 }
 

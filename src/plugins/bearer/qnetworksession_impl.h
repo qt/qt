@@ -83,7 +83,9 @@ public:
     //notification hooks to discover future state changes.
     void syncStateWithInterface();
 
+#ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface currentInterface() const;
+#endif
     QVariant sessionProperty(const QString& key) const;
     void setSessionProperty(const QString& key, const QVariant& value);
 

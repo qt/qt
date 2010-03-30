@@ -54,6 +54,8 @@
 #include <QtDeclarative/qdeclarativescriptstring.h>
 #include <QtDeclarative/qdeclarativeproperty.h>
 
+#include <private/qdeclarativecustomparser_p.h>
+
 QVariant myCustomVariantTypeConverter(const QString &data);
 
 class MyInterface 
@@ -559,6 +561,20 @@ namespace MyNamespace {
 }
 QML_DECLARE_TYPE(MyNamespace::MyNamespacedType);
 QML_DECLARE_TYPE(MyNamespace::MySecondNamespacedType);
+
+class MyCustomParserType : public QObject
+{
+    Q_OBJECT
+};
+
+class MyCustomParserTypeParser : public QDeclarativeCustomParser
+{
+public:
+    QByteArray compile(const QList<QDeclarativeCustomParserProperty> &) { return QByteArray(); }
+    void setCustomData(QObject *, const QByteArray &) {}
+};
+
+QML_DECLARE_TYPE(MyCustomParserType);
 
 void registerTypes();
 

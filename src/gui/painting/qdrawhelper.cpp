@@ -3884,8 +3884,8 @@ inline void interpolate_pixel_unaligned_2(DST *dest, const SRC *src,
 template <class DST, class SRC>
 inline void interpolate_pixel_2(DST *dest, const SRC *src, quint16 alpha)
 {
-    Q_ASSERT((long(dest) & 0x3) == 0);
-    Q_ASSERT((long(src) & 0x3) == 0);
+    Q_ASSERT((quintptr(dest) & 0x3) == 0);
+    Q_ASSERT((quintptr(src) & 0x3) == 0);
 
     const quint16 a = eff_alpha_2(alpha, dest);
     const quint16 ia = eff_ialpha_2(alpha, dest);
@@ -3958,8 +3958,8 @@ template <class DST, class SRC>
 inline void interpolate_pixel_2(DST *dest, quint8 a,
                                 const SRC *src, quint8 b)
 {
-    Q_ASSERT((long(dest) & 0x3) == 0);
-    Q_ASSERT((long(src) & 0x3) == 0);
+    Q_ASSERT((quintptr(dest) & 0x3) == 0);
+    Q_ASSERT((quintptr(src) & 0x3) == 0);
 
     Q_ASSERT(!SRC::hasAlpha());
 
@@ -4007,8 +4007,8 @@ inline void interpolate_pixel_2(qrgb444 *dest, quint8 a,
 template <class DST, class SRC>
 inline void interpolate_pixel_4(DST *dest, const SRC *src, quint32 alpha)
 {
-    Q_ASSERT((long(dest) & 0x3) == 0);
-    Q_ASSERT((long(src) & 0x3) == 0);
+    Q_ASSERT((quintptr(dest) & 0x3) == 0);
+    Q_ASSERT((quintptr(src) & 0x3) == 0);
 
     const quint32 a = eff_alpha_4(alpha, dest);
     const quint32 ia = eff_ialpha_4(alpha, dest);
@@ -4411,7 +4411,7 @@ void QT_FASTCALL blendUntransformed_dest16(DST *dest, const SRC *src,
 {
     Q_ASSERT(sizeof(DST) == 2);
     Q_ASSERT(sizeof(SRC) == 2);
-    Q_ASSERT((long(dest) & 0x3) == (long(src) & 0x3));
+    Q_ASSERT((quintptr(dest) & 0x3) == (quintptr(src) & 0x3));
     Q_ASSERT(coverage > 0);
 
     const int align = quintptr(dest) & 0x3;
@@ -4479,8 +4479,8 @@ void QT_FASTCALL blendUntransformed_dest16(DST *dest, const SRC *src,
         }
 
         while (length >= 2) {
-            Q_ASSERT((long(dest) & 3) == 0);
-            Q_ASSERT((long(src) & 3) == 0);
+            Q_ASSERT((quintptr(dest) & 3) == 0);
+            Q_ASSERT((quintptr(src) & 3) == 0);
 
             const quint16 a = alpha_2(src);
             if (a == 0xffff) {
@@ -4511,7 +4511,7 @@ template <class DST, class SRC>
 void QT_FASTCALL blendUntransformed_dest24(DST *dest, const SRC *src,
                                            quint8 coverage, int length)
 {
-    Q_ASSERT((long(dest) & 0x3) == (long(src) & 0x3));
+    Q_ASSERT((quintptr(dest) & 0x3) == (quintptr(src) & 0x3));
     Q_ASSERT(sizeof(DST) == 3);
     Q_ASSERT(coverage > 0);
 

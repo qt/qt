@@ -248,7 +248,7 @@ QFileSystemWatcherEngine *QFileSystemWatcherPrivate::createNativeEngine()
         eng = QDnotifyFileSystemWatcherEngine::create();
     return eng;
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_MAC)
-#  if defined(Q_OS_MAC) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
+#  if 0 && defined(Q_OS_MAC) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5)
         return QFSEventsFileSystemWatcherEngine::create();
     else

@@ -13,7 +13,6 @@ SUBDIRS += \
            qdeclarativedebugclient \         # Cover
            qdeclarativedebugservice \        # Cover
            qdeclarativedom \                 # Cover
-           qdeclarativeeasefollow \          # Cover
            qdeclarativeecmascript \          # Cover
            qdeclarativeengine     \          # Cover
            qdeclarativeerror \               # Cover
@@ -47,6 +46,7 @@ SUBDIRS += \
            qdeclarativepixmapcache \         # Cover
            qdeclarativepropertymap \         # Cover
            qdeclarativeqt \                  # Cover
+           qdeclarativesmoothedanimation \   # Cover
            qdeclarativespringfollow \        # Cover
            qdeclarativestates \              # Cover
            qdeclarativesystempalette \       # Cover
@@ -59,7 +59,8 @@ SUBDIRS += \
            qdeclarativexmlhttprequest \      # Cover
            qdeclarativeimageprovider \       # Cover
            qdeclarativestyledtext \          # Cover
-           sql                      # Cover
+           sql \                      # Cover
+           qmlvisual
 
 contains(QT_CONFIG, webkit) {
     SUBDIRS += \

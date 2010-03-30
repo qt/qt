@@ -148,7 +148,7 @@ QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
         }
 
         default:
-            qWarning("QSettings: unknown data %d type in windows registry", dataType);
+            qWarning("QSettings: unknown data %u type in windows registry", quint32(dataType));
             break;
     }
 

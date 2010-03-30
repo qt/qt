@@ -90,6 +90,8 @@ public:
     int saturation() const;
     void setSaturation(int saturation);
 
+    void updateNativeSize();
+
 private:
     void setProcAmpValues();
     float scaleProcAmpValue(
@@ -98,6 +100,8 @@ private:
     IBaseFilter *m_filter;
     WId m_windowId;
     DWORD m_dirtyValues;
+    Qt::AspectRatioMode m_aspectRatioMode;
+    QRect m_displayRect;
     int m_brightness;
     int m_contrast;
     int m_hue;

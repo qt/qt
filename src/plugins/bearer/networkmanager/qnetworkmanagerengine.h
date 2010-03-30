@@ -70,6 +70,8 @@ public:
     QNetworkManagerEngine(QObject *parent = 0);
     ~QNetworkManagerEngine();
 
+    Q_INVOKABLE void init();
+
     bool networkManagerAvailable() const;
 
     QString getInterfaceFromId(const QString &id);

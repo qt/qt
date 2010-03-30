@@ -353,10 +353,6 @@ void QDeclarativeExpressionPrivate::exceptionToError(QScriptEngine *scriptEngine
 
 QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUndefined)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::BindValueQt> perfqt;
-#endif
-
     QDeclarativeExpressionData *data = this->data;
     QDeclarativeEngine *engine = data->context()->engine;
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
@@ -465,10 +461,6 @@ QVariant QDeclarativeExpressionPrivate::value(QObject *secondaryScope, bool *isU
 
     if (data->expression.isEmpty())
         return rv;
-
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::BindValue> perf;
-#endif
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(q->engine());
 

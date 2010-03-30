@@ -41,9 +41,6 @@
 
 #include "qdeclarativeview.h"
 
-#include "qperformancelog_p_p.h"
-#include "qfxperf_p_p.h"
-
 #include <qdeclarative.h>
 #include <qdeclarativeitem.h>
 #include <qdeclarativeengine.h>
@@ -132,6 +129,7 @@ class QDeclarativeViewPrivate
 public:
     QDeclarativeViewPrivate(QDeclarativeView *view)
         : q(view), root(0), component(0), resizeMode(QDeclarativeView::SizeViewToRootObject) {}
+    ~QDeclarativeViewPrivate() { delete root; }
 
     void execute();
 
@@ -159,6 +157,7 @@ void QDeclarativeViewPrivate::execute()
 {
     delete root;
     delete component;
+    initialSize = QSize();
     component = new QDeclarativeComponent(&engine, source, q);
 
     if (!component->isLoading()) {
@@ -251,13 +250,6 @@ QDeclarativeView::QDeclarativeView(const QUrl &source, QWidget *parent)
 
 void QDeclarativeViewPrivate::init()
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    {
-        QDeclarativePerfTimer<QDeclarativePerf::FontDatabase> perf;
-        QFontDatabase database;
-    }
-#endif
-
     q->setScene(&scene);
 
     q->setOptimizationFlags(QGraphicsView::DontSavePainterState);
@@ -280,7 +272,7 @@ void QDeclarativeViewPrivate::init()
  */
 QDeclarativeView::~QDeclarativeView()
 {
-    delete d->root;
+    delete d;
 }
 
 /*! \property QDeclarativeView::source
@@ -298,7 +290,6 @@ QDeclarativeView::~QDeclarativeView()
 void QDeclarativeView::setSource(const QUrl& url)
 {
     d->source = url;
-    d->engine.setBaseUrl(url);
     d->execute();
 }
 
@@ -455,12 +446,10 @@ void QDeclarativeView::setRootObject(QObject *obj)
     if (QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(obj)) {
         d->scene.addItem(item);
 
-        QPerformanceLog::displayData();
-        QPerformanceLog::clear();
         d->root = item;
         d->qmlRoot = item;
-        connect(item, SIGNAL(widthChanged(qreal)), this, SLOT(sizeChanged()));
-        connect(item, SIGNAL(heightChanged(qreal)), this, SLOT(sizeChanged()));
+        connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
+        connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
         if (d->initialSize.height() <= 0 && d->qmlRoot->width() > 0)
             d->initialSize.setWidth(d->qmlRoot->width());
         if (d->initialSize.height() <= 0 && d->qmlRoot->height() > 0)

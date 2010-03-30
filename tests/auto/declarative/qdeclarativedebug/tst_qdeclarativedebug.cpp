@@ -153,7 +153,7 @@ QDeclarativeDebugPropertyReference tst_QDeclarativeDebug::findProperty(const QLi
 void tst_QDeclarativeDebug::waitForQuery(QDeclarativeDebugQuery *query)
 {
     QVERIFY(query);
-    QCOMPARE(query->parent(), this);
+    QCOMPARE(query->parent(), qobject_cast<QObject*>(this));
     QVERIFY(query->state() == QDeclarativeDebugQuery::Waiting);
     if (!QDeclarativeDebugTest::waitForSignal(query, SIGNAL(stateChanged(QDeclarativeDebugQuery::State))))
         QFAIL("query timed out");

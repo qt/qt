@@ -73,6 +73,7 @@ public:
     inline int count() const;
     void add(const QString &, int);
     int value(const QString &);
+    QString findId(int value) const;
     inline int value(const QScriptDeclarativeClass::Identifier &id) const;
 
 protected:

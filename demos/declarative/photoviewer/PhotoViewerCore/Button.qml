@@ -4,6 +4,7 @@ Item {
     id: container
 
     property alias label: labelText.text
+    property string tint: ""
     signal clicked
 
     width: labelText.width + 70 ; height: labelText.height + 18
@@ -15,6 +16,11 @@ Item {
     }
 
     Image { anchors.fill: parent; source: "images/cardboard.png"; smooth: true }
+
+    Rectangle {
+        anchors.fill: container; color: container.tint; visible: container.tint != ""
+        opacity: 0.1; smooth: true
+    }
 
     Text { id: labelText; font.pixelSize: 15; anchors.centerIn: parent; smooth: true }
 

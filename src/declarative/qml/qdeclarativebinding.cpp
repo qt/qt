@@ -49,8 +49,6 @@
 #include "qdeclarativedeclarativedata_p.h"
 #include "qdeclarativestringconverters_p.h"
 
-#include <qfxperf_p_p.h>
-
 #include <QVariant>
 #include <QtCore/qdebug.h>
 
@@ -126,9 +124,6 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 {
     Q_D(QDeclarativeBinding);
 
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::BindableValueUpdate> bu;
-#endif
     QDeclarativeBindingData *data = d->bindingData();
 
     if (!data->enabled)

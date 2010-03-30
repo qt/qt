@@ -7,7 +7,7 @@ Item {
     property bool incorrectArgCount2: false
     property bool emptyArg: false
     property bool noParent: false
-    property bool notReady: false
+    property bool notAvailable: false
     property bool runtimeError: false
     property bool errors: false
 
@@ -20,7 +20,7 @@ Item {
         emptyArg = (createQmlObject("", root) == null);
         errors = (createQmlObject("import Qt 4.6\nQtObject{\nproperty int test: 13\nproperty int test: 13\n}", root, "main.qml") == null);
         noParent = (createQmlObject("import Qt 4.6\nQtObject{\nproperty int test: 13}", 0) == null);
-        notReady = (createQmlObject("import Qt 4.6\nQtObject{\nBlah{}\n}", root, "http://www.example.com/main.qml") == null);
+        notAvailable = (createQmlObject("import Qt 4.6\nQtObject{Blah{}}", root) == null);
         runtimeError = (createQmlObject("import Qt 4.6\nQtObject{property int test\nonTestChanged: QtObject{}\n}", root) == null);
 
         var o = createQmlObject("import Qt 4.6\nQtObject{\nproperty int test: 13\n}", root);

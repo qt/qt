@@ -165,6 +165,9 @@ public:
     void setPixmap(WizardPixmap which, const QPixmap &pixmap);
     QPixmap pixmap(WizardPixmap which) const;
 
+    void setSideWidget(QWidget *widget);
+    QWidget *sideWidget() const;
+
     void setDefaultProperty(const char *className, const char *property,
                             const char *changedSignal);
 
@@ -175,6 +178,8 @@ Q_SIGNALS:
     void currentIdChanged(int id);
     void helpRequested();
     void customButtonClicked(int which);
+    void pageAdded(int id);
+    void pageRemoved(int id);
 
 public Q_SLOTS:
     void back();

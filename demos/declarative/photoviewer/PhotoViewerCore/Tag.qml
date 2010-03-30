@@ -7,18 +7,23 @@ Flipable {
     property alias backLabel: backButton.label
 
     property int angle: 0
+    property int randomAngle: Math.random() * (2 * 6 + 1) - 6
     property bool flipped: false
 
     signal frontClicked
     signal backClicked
+    signal tagChanged(string tag)
 
-    front: Button {
-        id: frontButton; anchors.centerIn: parent; anchors.verticalCenterOffset: -20
+    front: EditableButton {
+        id: frontButton; rotation: flipable.randomAngle
+        anchors { centerIn: parent; verticalCenterOffset: -20 }
         onClicked: flipable.frontClicked()
+        onLabelChanged: flipable.tagChanged(label)
     }
 
     back: Button {
-        id: backButton; anchors.centerIn: parent; anchors.verticalCenterOffset: -20
+        id: backButton; tint: "red"; rotation: flipable.randomAngle
+        anchors { centerIn: parent; verticalCenterOffset: -20 }
         onClicked: flipable.backClicked()
     }
 

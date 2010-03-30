@@ -230,11 +230,13 @@ Type Moc::parseType()
         }
     }
     while (test(CONST) || test(VOLATILE) || test(SIGNED) || test(UNSIGNED)
-           || test(STAR) || test(AND)) {
+           || test(STAR) || test(AND) || test(ANDAND)) {
         type.name += ' ';
         type.name += lexem();
         if (lookup(0) == AND)
             type.referenceType = Type::Reference;
+        else if (lookup(0) == ANDAND)
+            type.referenceType = Type::RValueReference;
         else if (lookup(0) == STAR)
             type.referenceType = Type::Pointer;
     }

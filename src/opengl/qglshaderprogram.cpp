@@ -1290,7 +1290,8 @@ void QGLShaderProgram::setAttributeValue(int location, const QColor& value)
     Q_D(QGLShaderProgram);
     Q_UNUSED(d);
     if (location != -1) {
-        GLfloat values[4] = {value.redF(), value.greenF(), value.blueF(), value.alphaF()};
+        GLfloat values[4] = {GLfloat(value.redF()), GLfloat(value.greenF()),
+                             GLfloat(value.blueF()), GLfloat(value.alphaF())};
         glVertexAttrib4fv(location, values);
     }
 }
@@ -2025,7 +2026,8 @@ void QGLShaderProgram::setUniformValue(int location, const QColor& color)
     Q_D(QGLShaderProgram);
     Q_UNUSED(d);
     if (location != -1) {
-        GLfloat values[4] = {color.redF(), color.greenF(), color.blueF(), color.alphaF()};
+        GLfloat values[4] = {GLfloat(color.redF()), GLfloat(color.greenF()),
+                             GLfloat(color.blueF()), GLfloat(color.alphaF())};
         glUniform4fv(location, 1, values);
     }
 }
@@ -2054,7 +2056,7 @@ void QGLShaderProgram::setUniformValue(int location, const QPoint& point)
     Q_D(QGLShaderProgram);
     Q_UNUSED(d);
     if (location != -1) {
-        GLfloat values[4] = {point.x(), point.y()};
+        GLfloat values[4] = {GLfloat(point.x()), GLfloat(point.y())};
         glUniform2fv(location, 1, values);
     }
 }
@@ -2083,7 +2085,7 @@ void QGLShaderProgram::setUniformValue(int location, const QPointF& point)
     Q_D(QGLShaderProgram);
     Q_UNUSED(d);
     if (location != -1) {
-        GLfloat values[4] = {point.x(), point.y()};
+        GLfloat values[4] = {GLfloat(point.x()), GLfloat(point.y())};
         glUniform2fv(location, 1, values);
     }
 }
@@ -2112,7 +2114,7 @@ void QGLShaderProgram::setUniformValue(int location, const QSize& size)
     Q_D(QGLShaderProgram);
     Q_UNUSED(d);
     if (location != -1) {
-        GLfloat values[4] = {size.width(), size.width()};
+        GLfloat values[4] = {GLfloat(size.width()), GLfloat(size.width())};
         glUniform2fv(location, 1, values);
     }
 }
@@ -2141,7 +2143,7 @@ void QGLShaderProgram::setUniformValue(int location, const QSizeF& size)
     Q_D(QGLShaderProgram);
     Q_UNUSED(d);
     if (location != -1) {
-        GLfloat values[4] = {size.width(), size.height()};
+        GLfloat values[4] = {GLfloat(size.width()), GLfloat(size.height())};
         glUniform2fv(location, 1, values);
     }
 }
@@ -2562,9 +2564,9 @@ void QGLShaderProgram::setUniformValue(int location, const QTransform& value)
     Q_UNUSED(d);
     if (location != -1) {
         GLfloat mat[3][3] = {
-            {value.m11(), value.m12(), value.m13()},
-            {value.m21(), value.m22(), value.m23()},
-            {value.m31(), value.m32(), value.m33()}
+            {GLfloat(value.m11()), GLfloat(value.m12()), GLfloat(value.m13())},
+            {GLfloat(value.m21()), GLfloat(value.m22()), GLfloat(value.m23())},
+            {GLfloat(value.m31()), GLfloat(value.m32()), GLfloat(value.m33())}
         };
         glUniformMatrix3fv(location, 1, GL_FALSE, mat[0]);
     }

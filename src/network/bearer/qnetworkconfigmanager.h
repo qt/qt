@@ -64,7 +64,8 @@ public:
          SystemSessionSupport = 0x00000004,
          ApplicationLevelRoaming = 0x00000008,
          ForcedRoaming = 0x00000010,
-         DataStatistics = 0x00000020
+         DataStatistics = 0x00000020,
+         NetworkSessionRequired = 0x00000040
     };
 
     Q_DECLARE_FLAGS(Capabilities, Capability)

@@ -1886,7 +1886,7 @@ bool Configure::findFile( const QString &fileName )
     const QString file = fileName.toLower();
     const QString pathEnvVar = QString::fromLocal8Bit(getenv("PATH"));
     const QString mingwPath = dictionary["QMAKESPEC"].endsWith("-g++") ?
-        findFileInPaths("mingw32-g++.exe", pathEnvVar) : QString();
+        findFileInPaths("g++.exe", pathEnvVar) : QString();
 
     QString paths;
     if (file.endsWith(".h")) {
@@ -1978,7 +1978,7 @@ bool Configure::checkAvailability(const QString &part)
 {
     bool available = false;
     if (part == "STYLE_WINDOWSXP")
-        available = (findFile("uxtheme.h"));
+        available = findFile("uxtheme.h");
 
     else if (part == "ZLIB")
         available = findFile("zlib.h");
@@ -3508,14 +3508,15 @@ void Configure::buildQmake()
         args += makefile;
 
         cout << "Creating qmake..." << endl;
-        int exitCode = 0;
-        if( exitCode = Environment::execute(args, QStringList(), QStringList()) ) {
+        int exitCode = Environment::execute(args, QStringList(), QStringList());
+        if( exitCode ) {
             args.clear();
             args += dictionary[ "MAKE" ];
             args += "-f";
             args += makefile;
             args += "clean";
-            if( exitCode = Environment::execute(args, QStringList(), QStringList())) {
+            exitCode = Environment::execute(args, QStringList(), QStringList());
+            if(exitCode) {
                 cout << "Cleaning qmake failed, return code " << exitCode << endl << endl;
                 dictionary[ "DONE" ] = "error";
             } else {
@@ -3523,7 +3524,8 @@ void Configure::buildQmake()
                 args += dictionary[ "MAKE" ];
                 args += "-f";
                 args += makefile;
-                if (exitCode = Environment::execute(args, QStringList(), QStringList())) {
+                exitCode = Environment::execute(args, QStringList(), QStringList());
+                if (exitCode) {
                     cout << "Building qmake failed, return code " << exitCode << endl << endl;
                     dictionary[ "DONE" ] = "error";
                 }
@@ -3567,8 +3569,8 @@ void Configure::buildHostTools()
 
         QDir().mkpath(toolBuildPath);
         QDir::setCurrent(toolSourcePath);
-        int exitCode = 0;
-        if (exitCode = Environment::execute(args, QStringList(), QStringList())) {
+        int exitCode = Environment::execute(args, QStringList(), QStringList());
+        if (exitCode) {
             cout << "qmake failed, return code " << exitCode << endl << endl;
             dictionary["DONE"] = "error";
             break;
@@ -3578,18 +3580,21 @@ void Configure::buildHostTools()
         args.clear();
         args += dictionary["MAKE"];
         QDir::setCurrent(toolBuildPath);
-        if (exitCode = Environment::execute(args, QStringList(), QStringList())) {
+        exitCode = Environment::execute(args, QStringList(), QStringList());
+        if (exitCode) {
             args.clear();
             args += dictionary["MAKE"];
             args += "clean";
-            if(exitCode = Environment::execute(args, QStringList(), QStringList())) {
+            exitCode = Environment::execute(args, QStringList(), QStringList());
+            if(exitCode) {
                 cout << "Cleaning " << hostToolsDirs.at(i) << " failed, return code " << exitCode << endl << endl;
                 dictionary["DONE"] = "error";
                 break;
             } else {
                 args.clear();
                 args += dictionary["MAKE"];
-                if (exitCode = Environment::execute(args, QStringList(), QStringList())) {
+                exitCode = Environment::execute(args, QStringList(), QStringList());
+                if (exitCode) {
                     cout << "Building " << hostToolsDirs.at(i) << " failed, return code " << exitCode << endl << endl;
                     dictionary["DONE"] = "error";
                     break;

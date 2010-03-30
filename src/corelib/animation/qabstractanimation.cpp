@@ -170,6 +170,7 @@ QUnifiedTimer::QUnifiedTimer() :
     currentAnimationIdx(0), consistentTiming(false), slowMode(false),
     isPauseTimerActive(false), runningLeafAnimations(0)
 {
+    time.invalidate();
 }
 
 QUnifiedTimer *QUnifiedTimer::instance()

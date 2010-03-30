@@ -514,7 +514,7 @@ bool QDBusMarshaller::appendCrossMarshalling(QDBusDemarshaller *demarshaller)
             void* data;
             q_dbus_message_iter_get_fixed_array(&sub,&data,&len);
 
-            char signature[2] = { element, 0 };
+            char signature[2] = { char(element), 0 };
             q_dbus_message_iter_open_container(&iterator, DBUS_TYPE_ARRAY, signature, &sub);
             q_dbus_message_iter_append_fixed_array(&sub, element, &data, len);
             q_dbus_message_iter_close_container(&iterator, &sub);

@@ -111,7 +111,7 @@ class QDeclarativeParticleMotionWander : public QDeclarativeParticleMotion
     Q_OBJECT
 public:
     QDeclarativeParticleMotionWander()
-        : QDeclarativeParticleMotion(), particles(0), _xvariance(0), _yvariance(0) {}
+        : QDeclarativeParticleMotion(), particles(0), _xvariance(0), _yvariance(0), _pace(100) {}
 
     virtual void advance(QDeclarativeParticle &, int interval);
     virtual void created(QDeclarativeParticle &);

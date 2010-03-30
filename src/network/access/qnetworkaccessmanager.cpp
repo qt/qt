@@ -173,40 +173,58 @@ static void ensureInitialized()
 */
 
 /*!
-    \property QNetworkAccessManager::networkAccess
-    \brief states whether network access is enabled or disabled through this network access
-    manager.
+    \enum QNetworkAccessManager::NetworkAccessibility
+
+    Indicates whether the network is accessible via this network access manager.
+
+    \value UnknownAccessibility     The network accessibility cannot be determined.
+    \value NotAccessible            The network is not currently accessible, either because there
+                                    is currently no network coverage or network access has been
+                                    explicitly disabled by a call to setNetworkAccessible().
+    \value Accessible               The network is accessible.
+
+    \sa networkAccessible
+*/
+
+/*!
+    \property QNetworkAccessManager::networkAccessible
+    \brief whether the network is currently accessible via this network access manager.
 
     \since 4.7
 
-    Network access is enabled by default.
+    If the network is \l {NotAccessible}{not accessible} the network access manager will not
+    process any new network requests, all such requests will fail with an error.  Requests with
+    URLs with the file:// scheme will still be processed.
 
-    When network access is disabled the network access manager will not process any new network
-    requests, all such requests will fail with an error. Requests with URLs with the file:// scheme
-    will still be processed.
+    By default the value of this property reflects the physical state of the device.  Applications
+    may override it to disable all network requests via this network access manager by calling
 
-    This property can be used to enable and disable network access for all clients of a single
-    network access manager instance.
+    \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 4
+
+    Network requests can be reenabled again by calling
+
+    \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 5
+
+    \note Calling setNetworkAccessible() does not change the network state.
 */
 
 /*!
-    \fn void QNetworkAccessManager::networkAccessChanged(bool enabled)
+    \fn void QNetworkAccessManager::networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible)
 
-    This signal is emitted when the value of the \l networkAccess property changes. If \a enabled
-    is true new requests that access the network will be processed; otherwise new network requests
-    that require network access will fail with an error.
+    This signal is emitted when the value of the \l networkAccessible property changes.
+    \a accessible is the new network accessibility.
 */
 
 /*!
-    \fn void QNetworkAccessManager::networkSessionOnline()
+    \fn void QNetworkAccessManager::networkSessionConnected()
 
     \since 4.7
 
     \internal
 
-    This signal is emitted when the status of the network session changes into a usable state.
-    It is used to signal QNetworkReply's to start or migrate their network operation once the
-    network session has been opened / roamed.
+    This signal is emitted when the status of the network session changes into a usable (Connected)
+    state. It is used to signal to QNetworkReplys to start or migrate their network operation once
+    the network session has been opened or finished roaming.
 */
 
 /*!
@@ -792,30 +810,42 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
 /*!
     \since 4.7
 
-    Enables network access via this QNetworkAccessManager if \a enabled is true; otherwise disables
-    access.
+    Overrides the reported network accessibility.  If \a accessible is NotAccessible the reported
+    network accessiblity will always be NotAccessible.  Otherwise the reported network
+    accessibility will reflect the actual device state.
 */
-void QNetworkAccessManager::setNetworkAccessEnabled(bool enabled)
+void QNetworkAccessManager::setNetworkAccessible(QNetworkAccessManager::NetworkAccessibility accessible)
 {
     Q_D(QNetworkAccessManager);
 
-    if (d->networkAccessEnabled != enabled) {
-        d->networkAccessEnabled = enabled;
-        emit networkAccessChanged(enabled);
+    if (d->networkAccessible != accessible) {
+        NetworkAccessibility previous = networkAccessible();
+        d->networkAccessible = accessible;
+        NetworkAccessibility current = networkAccessible();
+        if (previous != current)
+            emit networkAccessibleChanged(current);
     }
 }
 
 /*!
     \since 4.7
 
-    Returns true if network access via this QNetworkAccessManager is enabled; otherwise returns
-    false.
+    Returns the current network accessibility.
 */
-bool QNetworkAccessManager::networkAccessEnabled() const
+QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccessible() const
 {
     Q_D(const QNetworkAccessManager);
 
-    return d->networkAccessEnabled;
+    if (d->networkSession) {
+        // d->online holds online/offline state of this network session.
+        if (d->online)
+            return d->networkAccessible;
+        else
+            return NotAccessible;
+    } else {
+        // Network accessibility is either disabled or unknown.
+        return (d->networkAccessible == NotAccessible) ? NotAccessible : UnknownAccessibility;
+    }
 }
 
 /*!
@@ -875,20 +905,22 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 
     // Return a disabled network reply if network access is disabled.
     // Except if the scheme is empty or file://.
-    if (!d->networkAccessEnabled && !(req.url().scheme() == QLatin1String("file") ||
+    if (!d->networkAccessible && !(req.url().scheme() == QLatin1String("file") ||
                                       req.url().scheme().isEmpty())) {
         return new QDisabledNetworkReply(this, req, op);
     }
 
-#ifdef QT_QNAM_DEFAULT_NETWORK_SESSION
     if (!d->networkSession && (d->initializeSession || !d->networkConfiguration.isEmpty())) {
         QNetworkConfigurationManager manager;
-        if (d->networkConfiguration.isEmpty())
-            d->createSession(manager.defaultConfiguration());
-        else
+        if (!d->networkConfiguration.isEmpty()) {
             d->createSession(manager.configurationFromIdentifier(d->networkConfiguration));
+        } else {
+            if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired)
+                d->createSession(manager.defaultConfiguration());
+            else
+                d->initializeSession = false;
+        }
     }
-#endif
 
     if (d->networkSession)
         d->networkSession->setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), -1);
@@ -909,8 +941,10 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     // first step: create the reply
     QUrl url = request.url();
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
-    if (req.url().scheme() != QLatin1String("file") && !req.url().scheme().isEmpty())
-        connect(this, SIGNAL(networkSessionOnline()), reply, SLOT(_q_networkSessionOnline()));
+    if (req.url().scheme() != QLatin1String("file") && !req.url().scheme().isEmpty()) {
+        connect(this, SIGNAL(networkSessionConnected()),
+                reply, SLOT(_q_networkSessionConnected()));
+    }
     QNetworkReplyImplPrivate *priv = reply->d_func();
     priv->manager = this;
 
@@ -1208,28 +1242,37 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 {
     Q_Q(QNetworkAccessManager);
 
-#ifdef QT_QNAM_DEFAULT_NETWORK_SESSION
     initializeSession = false;
-#endif
 
     if (networkSession)
         delete networkSession;
 
     if (!config.isValid()) {
         networkSession = 0;
+        online = false;
+
+        if (networkAccessible == QNetworkAccessManager::NotAccessible)
+            emit q->networkAccessibleChanged(QNetworkAccessManager::NotAccessible);
+        else
+            emit q->networkAccessibleChanged(QNetworkAccessManager::UnknownAccessibility);
+
         return;
     }
 
     networkSession = new QNetworkSession(config, q);
 
-    QObject::connect(networkSession, SIGNAL(opened()), q, SIGNAL(networkSessionOnline()));
+    QObject::connect(networkSession, SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
     QObject::connect(networkSession, SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
+    QObject::connect(networkSession, SIGNAL(stateChanged(QNetworkSession::State)),
+                     q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
     QObject::connect(networkSession, SIGNAL(newConfigurationActivated()),
                      q, SLOT(_q_networkSessionNewConfigurationActivated()));
     QObject::connect(networkSession,
                      SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)),
                      q,
                      SLOT(_q_networkSessionPreferredConfigurationChanged(QNetworkConfiguration,bool)));
+
+    _q_networkSessionStateChanged(networkSession->state());
 }
 
 void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
@@ -1249,7 +1292,7 @@ void QNetworkAccessManagerPrivate::_q_networkSessionNewConfigurationActivated()
     if (networkSession) {
         networkSession->accept();
 
-        emit q->networkSessionOnline();
+        emit q->networkSessionConnected();
     }
 }
 
@@ -1257,6 +1300,23 @@ void QNetworkAccessManagerPrivate::_q_networkSessionPreferredConfigurationChange
 {
     if (networkSession)
         networkSession->migrate();
+}
+
+void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession::State state)
+{
+    Q_Q(QNetworkAccessManager);
+
+    if (online) {
+        if (state != QNetworkSession::Connected && state != QNetworkSession::Roaming) {
+            online = false;
+            emit q->networkAccessibleChanged(QNetworkAccessManager::NotAccessible);
+        }
+    } else {
+        if (state == QNetworkSession::Connected || state == QNetworkSession::Roaming) {
+            online = true;
+            emit q->networkAccessibleChanged(networkAccessible);
+        }
+    }
 }
 
 QT_END_NAMESPACE

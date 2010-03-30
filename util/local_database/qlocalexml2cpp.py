@@ -128,13 +128,13 @@ def loadDefaultMap(doc):
 
 def fixedCountryName(name, dupes):
     if name in dupes:
-        return name + "Country"
-    return name
+        return name.replace(" ", "") + "Country"
+    return name.replace(" ", "")
 
 def fixedLanguageName(name, dupes):
     if name in dupes:
-        return name + "Language"
-    return name
+        return name.replace(" ", "") + "Language"
+    return name.replace(" ", "")
 
 def findDupes(country_map, language_map):
     country_set = set([ v[0] for a, v in country_map.iteritems() ])
@@ -227,7 +227,11 @@ def loadLocaleMap(doc, language_map, country_map):
     while locale_elt:
         locale = Locale(locale_elt)
         language_id = languageNameToId(locale.language, language_map)
+        if language_id == -1:
+            sys.stderr.write("Cannot find a language id for %s\n" % locale.language)
         country_id = countryNameToId(locale.country, country_map)
+        if country_id == -1:
+            sys.stderr.write("Cannot find a country id for %s\n" % locale.country)
         result[(language_id, country_id)] = locale
 
         locale_elt = nextSiblingElt(locale_elt, "locale")

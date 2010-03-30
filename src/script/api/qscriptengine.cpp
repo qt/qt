@@ -260,6 +260,22 @@ QT_BEGIN_NAMESPACE
   whether an engine is currently running a script by calling
   isEvaluating().
 
+  \section1 Garbage Collection
+
+  Qt Script objects may be garbage collected when they are no longer
+  referenced. There is no guarantee as to when automatic garbage
+  collection will take place.
+
+  The collectGarbage() function can be called to explicitly request
+  garbage collection.
+
+  The reportAdditionalMemoryCost() function can be called to indicate
+  that a Qt Script object occupies memory that isn't managed by the
+  scripting environment. Reporting the additional cost makes it more
+  likely that the garbage collector will be triggered. This can be
+  useful, for example, when many custom, native Qt Script objects are
+  allocated.
+
   \section1 Core Debugging/Tracing Facilities
 
   Since Qt 4.4, you can be notified of events pertaining to script
@@ -292,6 +308,7 @@ QT_BEGIN_NAMESPACE
     \value ExcludeSuperClassProperties The script object will not expose properties inherited from the superclass.
     \value ExcludeSuperClassContents Shorthand form for ExcludeSuperClassMethods | ExcludeSuperClassProperties
     \value ExcludeDeleteLater The script object will not expose the QObject::deleteLater() slot.
+    \value ExcludeSlots The script object will not expose the QObject's slots.
     \value AutoCreateDynamicProperties Properties that don't already exist in the QObject will be created as dynamic properties of that object, rather than as properties of the script object.
     \value PreferExistingWrapperObject If a wrapper object with the requested configuration already exists, return that object.
     \value SkipMethodsInEnumeration Don't include methods (signals and slots) when enumerating the object's properties.
@@ -1192,6 +1209,12 @@ void QScriptEnginePrivate::collectGarbage()
     globalData->heap.collectAllGarbage();
 }
 
+void QScriptEnginePrivate::reportAdditionalMemoryCost(int size)
+{
+    if (size > 0)
+        globalData->heap.reportExtraMemoryCost(size);
+}
+
 QScript::TimeoutCheckerProxy *QScriptEnginePrivate::timeoutChecker() const
 {
     return static_cast<QScript::TimeoutCheckerProxy*>(globalData->timeoutChecker);
@@ -1989,7 +2012,7 @@ QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
   prototype; otherwise, the prototype will be the Object prototype
   object.
 
-  \sa setDefaultPrototype(), QScriptValue::toVariant()
+  \sa setDefaultPrototype(), QScriptValue::toVariant(), reportAdditionalMemoryCost()
 */
 QScriptValue QScriptEngine::newVariant(const QVariant &value)
 {
@@ -2020,6 +2043,8 @@ QScriptValue QScriptEngine::newVariant(const QVariant &value)
   true), you can pass QScriptContext::thisObject() (the default
   constructed script object) to this function to initialize the new
   object.
+
+  \sa reportAdditionalMemoryCost()
 */
 QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
                                        const QVariant &value)
@@ -2050,7 +2075,7 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
   wrapper object (either by script code or C++) will result in a
   script exception.
 
-  \sa QScriptValue::toQObject()
+  \sa QScriptValue::toQObject(), reportAdditionalMemoryCost()
 */
 QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership,
                                        const QObjectWrapOptions &options)
@@ -2084,6 +2109,8 @@ QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership
   (QScriptContext::isCalledAsConstructor() returns true), you can pass
   QScriptContext::thisObject() (the default constructed script object)
   to this function to initialize the new object.
+
+  \sa reportAdditionalMemoryCost()
 */
 QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
                                        QObject *qtObject,
@@ -2137,7 +2164,7 @@ QScriptValue QScriptEngine::newObject()
   \a data, if specified, is set as the internal data of the
   new object (using QScriptValue::setData()).
 
-  \sa QScriptValue::scriptClass()
+  \sa QScriptValue::scriptClass(), reportAdditionalMemoryCost()
 */
 QScriptValue QScriptEngine::newObject(QScriptClass *scriptClass,
                                       const QScriptValue &data)
@@ -3843,11 +3870,40 @@ QStringList QScriptEngine::importedExtensions() const
   been created). However, you can call this function to explicitly
   request that garbage collection should be performed as soon as
   possible.
+
+  \sa reportAdditionalMemoryCost()
 */
 void QScriptEngine::collectGarbage()
 {
     Q_D(QScriptEngine);
     d->collectGarbage();
+}
+
+/*!
+  \since 4.7
+
+  Reports an additional memory cost of the given \a size, measured in
+  bytes, to the garbage collector.
+
+  This function can be called to indicate that a Qt Script object has
+  memory associated with it that isn't managed by Qt Script itself.
+  Reporting the additional cost makes it more likely that the garbage
+  collector will be triggered.
+
+  Note that if the additional memory is shared with objects outside
+  the scripting environment, the cost should not be reported, since
+  collecting the Qt Script object would not cause the memory to be
+  freed anyway.
+
+  Negative \a size values are ignored, i.e. this function can't be
+  used to report that the additional memory has been deallocated.
+
+  \sa collectGarbage()
+*/
+void QScriptEngine::reportAdditionalMemoryCost(int size)
+{
+    Q_D(QScriptEngine);
+    d->reportAdditionalMemoryCost(size);
 }
 
 /*!

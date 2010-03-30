@@ -227,6 +227,33 @@ QSize QSplitterHandle::sizeHint() const
 /*!
     \reimp
 */
+void QSplitterHandle::resizeEvent(QResizeEvent *event)
+{
+    Q_D(const QSplitterHandle);
+
+    // When splitters are only 1 pixel large we increase the
+    // actual grab area to five pixels
+
+    // Note that QSplitter uses contentsRect for layouting
+    // and ensures that handles are drawn on top of widgets
+    // We simply use the contents margins for draggin and only
+    // paint the mask area
+    bool useTinyMode = (d->s->handleWidth() == 1);
+    setAttribute(Qt::WA_MouseNoMask, useTinyMode);
+    if (useTinyMode) {
+        if (orientation() == Qt::Horizontal)
+            setContentsMargins(2, 0, 2, 0);
+        else
+            setContentsMargins(0, 2, 0, 2);
+        setMask(QRegion(contentsRect()));
+    }
+
+    QWidget::resizeEvent(event);
+}
+
+/*!
+    \reimp
+*/
 bool QSplitterHandle::event(QEvent *event)
 {
     Q_D(QSplitterHandle);
@@ -301,7 +328,7 @@ void QSplitterHandle::paintEvent(QPaintEvent *)
     Q_D(QSplitterHandle);
     QPainter p(this);
     QStyleOption opt(0);
-    opt.rect = rect();
+    opt.rect = contentsRect();
     opt.palette = palette();
     if (orientation() == Qt::Horizontal)
         opt.state = QStyle::State_Horizontal;
@@ -1662,6 +1689,9 @@ void QSplitter::setSizes(const QList<int> &list)
 
     By default, this property contains a value that depends on the user's platform
     and style preferences.
+
+    If you set handleWidth to 1, the actual grab area will grow to overlap a
+    few pixels of it's respective widgets.
 */
 
 int QSplitter::handleWidth() const

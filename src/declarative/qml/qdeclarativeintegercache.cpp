@@ -64,6 +64,16 @@ void QDeclarativeIntegerCache::clear()
     engine = 0;
 }
 
+QString QDeclarativeIntegerCache::findId(int value) const
+{
+    for (StringCache::ConstIterator iter = stringCache.begin();
+            iter != stringCache.end(); ++iter) {
+        if (iter.value() && iter.value()->value == value)
+            return iter.key();
+    }
+    return QString();
+}
+
 void QDeclarativeIntegerCache::add(const QString &id, int value)
 {
     Q_ASSERT(!stringCache.contains(id));

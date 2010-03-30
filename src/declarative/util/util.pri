@@ -3,14 +3,12 @@ INCLUDEPATH += $$PWD
 SOURCES += \
     $$PWD/qdeclarativeutilmodule.cpp\
     $$PWD/qdeclarativeview.cpp \
-    $$PWD/qfxperf.cpp \
-    $$PWD/qperformancelog.cpp \
     $$PWD/qdeclarativeconnections.cpp \
     $$PWD/qdeclarativepackage.cpp \
     $$PWD/qdeclarativeanimation.cpp \
     $$PWD/qdeclarativesystempalette.cpp \
     $$PWD/qdeclarativespringfollow.cpp \
-    $$PWD/qdeclarativeeasefollow.cpp \
+    $$PWD/qdeclarativesmoothedanimation.cpp \
     $$PWD/qdeclarativestate.cpp\
     $$PWD/qdeclarativetransitionmanager.cpp \
     $$PWD/qdeclarativestateoperations.cpp \
@@ -33,15 +31,14 @@ SOURCES += \
 HEADERS += \
     $$PWD/qdeclarativeutilmodule_p.h\
     $$PWD/qdeclarativeview.h \
-    $$PWD/qfxperf_p_p.h \
-    $$PWD/qperformancelog_p_p.h \
     $$PWD/qdeclarativeconnections_p.h \
     $$PWD/qdeclarativepackage_p.h \
     $$PWD/qdeclarativeanimation_p.h \
     $$PWD/qdeclarativeanimation_p_p.h \
     $$PWD/qdeclarativesystempalette_p.h \
     $$PWD/qdeclarativespringfollow_p.h \
-    $$PWD/qdeclarativeeasefollow_p.h \
+    $$PWD/qdeclarativesmoothedanimation_p.h \
+    $$PWD/qdeclarativesmoothedanimation_p_p.h \
     $$PWD/qdeclarativestate_p.h\
     $$PWD/qdeclarativestateoperations_p.h \
     $$PWD/qdeclarativepropertychanges_p.h \

@@ -44,7 +44,6 @@
 #include <private/qdeclarativeitem_p.h>
 
 #include <private/qdeclarativepixmapcache_p.h>
-#include <private/qfxperf_p_p.h>
 #include <QtCore/QAbstractAnimation>
 
 #include <QPainter>
@@ -567,9 +566,6 @@ void QDeclarativeParticlesPrivate::tick(int time)
 
 void QDeclarativeParticlesPrivate::createParticle(int time)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::CreateParticle> x;
-#endif
     Q_Q(QDeclarativeParticles);
     QDeclarativeParticle p(time);
     p.x = q->x() + q->width() * qreal(qrand()) / RAND_MAX - image.width()/2.0;
@@ -627,6 +623,8 @@ void QDeclarativeParticlesPrivate::updateOpacity(QDeclarativeParticle &p, int ag
     \brief The Particles object generates and moves particles.
     \inherits Item
 
+    Particles are available in the Qt.labs.particles 1.0 module.
+
     This element provides preliminary support for particles in QML,
     and may be heavily changed or removed in later versions.
 
@@ -644,6 +642,9 @@ void QDeclarativeParticlesPrivate::updateOpacity(QDeclarativeParticle &p, int ag
     snow, the lower one has particles expelled up like a fountain.
 
     \qml
+import Qt 4.6
+import Qt.labs.particles 1.0
+
 Rectangle {
     width: 240
     height: 320

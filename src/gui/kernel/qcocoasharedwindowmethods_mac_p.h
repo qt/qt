@@ -132,26 +132,6 @@ QT_END_NAMESPACE
     [super toggleToolbarShown:sender];
 }
 
-/*
-    The methods keyDown, keyUp, and flagsChanged... These really shouldn't ever
-    get hit. We automatically say we can be first responder if we are a window.
-    So, the handling should get handled by the view. This is here more as a
-    last resort (i.e., this is code that can potentially be removed).
- */
-- (void)keyDown:(NSEvent *)theEvent
-{
-    bool keyOK = qt_dispatchKeyEvent(theEvent, [self QT_MANGLE_NAMESPACE(qt_qwidget)]);
-    if (!keyOK)
-        [super keyDown:theEvent];
-}
-
-- (void)keyUp:(NSEvent *)theEvent
-{
-    bool keyOK = qt_dispatchKeyEvent(theEvent, [self QT_MANGLE_NAMESPACE(qt_qwidget)]);
-    if (!keyOK)
-        [super keyUp:theEvent];
-}
-
 - (void)flagsChanged:(NSEvent *)theEvent
 {
     qt_dispatchModifiersChanged(theEvent, [self QT_MANGLE_NAMESPACE(qt_qwidget)]);

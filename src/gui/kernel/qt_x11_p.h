@@ -632,6 +632,8 @@ struct QX11Data
 
         _NET_SYSTEM_TRAY_VISUAL,
 
+        _NET_ACTIVE_WINDOW,
+
         // Property formats
         COMPOUND_TEXT,
         TEXT,

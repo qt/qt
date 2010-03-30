@@ -47,6 +47,13 @@ SessionWidget::SessionWidget(const QNetworkConfiguration &config, QWidget *paren
 {
     setupUi(this);
 
+#ifdef QT_NO_NETWORKINTERFACE
+    interfaceName->setVisible(false);
+    interfaceNameLabel->setVisible(false);
+    interfaceGuid->setVisible(false);
+    interfaceGuidLabel->setVisible(false);
+#endif
+
     session = new QNetworkSession(config, this);
 
     connect(session, SIGNAL(stateChanged(QNetworkSession::State)),
@@ -102,8 +109,10 @@ void SessionWidget::updateSession()
         bearer->setText(c.bearerName());
     }
 
+#ifndef QT_NO_NETWORKINTERFACE
     interfaceName->setText(session->interface().humanReadableName());
     interfaceGuid->setText(session->interface().name());
+#endif
 }
 
 void SessionWidget::openSession()

@@ -57,6 +57,7 @@
 #include "qnetworkconfiguration_p.h"
 
 #include <QtCore/qmutex.h>
+#include <QtCore/qset.h>
 
 QT_BEGIN_NAMESPACE
 

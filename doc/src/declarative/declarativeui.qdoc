@@ -83,7 +83,7 @@ completely new applications.  QML is fully \l {Extending QML in C++}{extensible 
 \list
 \o \l {QML Documents}
 \o \l {Property Binding}
-\o \l {JavaScript Blocks}
+\o \l {Integrating JavaScript}
 \o \l {QML Scope}
 \o \l {Network Transparency}
 \o \l {Data Models}
@@ -94,6 +94,7 @@ completely new applications.  QML is fully \l {Extending QML in C++}{extensible 
 \o \l {qdeclarativefocus.html}{Keyboard Focus}
 \o \l {Extending types from QML}
 \o \l {Dynamic Object Creation}
+\o \l {qmlruntime.html}{The Qt Declarative Runtime}
 \endlist
 
 \section1 Reference:
@@ -102,6 +103,7 @@ completely new applications.  QML is fully \l {Extending QML in C++}{extensible 
 \o \l {QML Global Object}
 \o \l {Extending QML in C++}
 \o \l {QML Internationalization}
+\o \l {QML Security}
 \o \l {QtDeclarative Module}
 \o \l {Debugging QML}
 \endlist

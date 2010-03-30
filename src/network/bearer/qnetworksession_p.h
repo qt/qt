@@ -56,8 +56,6 @@
 #include "qnetworksession.h"
 #include "qnetworkconfiguration_p.h"
 
-#include <QNetworkInterface>
-
 QT_BEGIN_NAMESPACE
 
 class Q_NETWORK_EXPORT QNetworkSessionPrivate : public QObject
@@ -82,7 +80,9 @@ public:
     //notification hooks to discover future state changes.
     virtual void syncStateWithInterface() = 0;
 
+#ifndef QT_NO_NETWORKINTERFACE
     virtual QNetworkInterface currentInterface() const = 0;
+#endif
     virtual QVariant sessionProperty(const QString& key) const = 0;
     virtual void setSessionProperty(const QString& key, const QVariant& value) = 0;
 

@@ -61,11 +61,21 @@ class ColorImageProvider : public QDeclarativeImageProvider
 {
 public:
     // This is run in a low priority thread.
-    QImage request(const QString &id) {
-        QImage image(100, 50, QImage::Format_RGB32);
+    QImage request(const QString &id, QSize *size, const QSize &req_size)
+    {
+        if (size) *size = QSize(100,50);
+        QImage image(
+                req_size.width() > 0 ? req_size.width() : 100,
+                req_size.height() > 0 ? req_size.height() : 50,
+                QImage::Format_RGB32);
         image.fill(QColor(id).rgba());
         QPainter p(&image);
+        QFont f = p.font();
+        f.setPixelSize(30);
+        p.setFont(f);
         p.setPen(Qt::black);
+        if (req_size.isValid())
+            p.scale(req_size.width()/100.0, req_size.height()/50.0);
         p.drawText(QRectF(0,0,100,50),Qt::AlignCenter,id);
         return image;
     }

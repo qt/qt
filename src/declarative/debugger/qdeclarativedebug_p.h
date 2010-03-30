@@ -230,6 +230,7 @@ public:
 
     int debugId() const;
     QString className() const;
+    QString idString() const;
     QString name() const;
 
     QDeclarativeDebugFileReference source() const;
@@ -242,6 +243,7 @@ private:
     friend class QDeclarativeEngineDebugPrivate;
     int m_debugId;
     QString m_class;
+    QString m_idString;
     QString m_name;
     QDeclarativeDebugFileReference m_source;
     int m_contextDebugId;

@@ -240,10 +240,19 @@ QDeclarativeContextScriptClass::property(Object *object, const Identifier &name)
 
     } else if (lastData) {
 
-        if (lastData->type)
+        if (lastData->type) {
             return Value(scriptEngine, ep->typeNameClass->newObject(bindContext->contextObject, lastData->type));
-        else
-            return Value(scriptEngine, ep->typeNameClass->newObject(bindContext->contextObject, lastData->typeNamespace));
+        } else if (lastData->typeNamespace) {
+            return Value(scriptEngine, ep->typeNameClass->newObject(bindContext->contextObject, 
+                                                                    lastData->typeNamespace));
+        } else {
+            int index = lastData->importedScriptIndex;
+            if (index < bindContext->importedScripts.count()) {
+                return Value(scriptEngine, bindContext->importedScripts.at(index));
+            } else {
+                return Value();
+            }
+        }
 
     } else if (lastPropertyIndex != -1) {
 
@@ -265,7 +274,6 @@ QDeclarativeContextScriptClass::property(Object *object, const Identifier &name)
             if (ep->captureProperties) 
                 ep->capturedProperties << QDeclarativeEnginePrivate::CapturedProperty(bindContext->asQDeclarativeContext(), -1, lastPropertyIndex + cp->notifyIndex);
         }
-
 
         return Value(scriptEngine, rv);
 

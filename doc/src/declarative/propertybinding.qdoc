@@ -67,10 +67,8 @@ expression!  Here are some examples of more complex bindings:
 
 \code
 Rectangle {
-    Script {
-        function calculateMyHeight() {
-            return Math.max(otherItem.height, thirdItem.height);
-        }
+    function calculateMyHeight() {
+        return Math.max(otherItem.height, thirdItem.height);
     }
 
     anchors.centerIn: parent

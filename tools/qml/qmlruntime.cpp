@@ -51,7 +51,6 @@
 #include <qdeclarativeengine.h>
 #include <qdeclarativenetworkaccessmanagerfactory.h>
 #include "qdeclarative.h"
-#include <private/qperformancelog_p_p.h>
 #include <private/qabstractanimation_p.h>
 #include <QAbstractAnimation>
 #include "deviceskin.h"
@@ -996,8 +995,22 @@ void QDeclarativeViewer::statusChanged()
     if (canvas->status() == QDeclarativeView::Error && tester)
         tester->executefailure();
 
-    if (canvas->status() == QDeclarativeView::Ready)
-        resize(sizeHint());
+    if (canvas->status() == QDeclarativeView::Ready) {
+        if (!skin) {
+            canvas->updateGeometry();
+            if (mb)
+                mb->updateGeometry();
+            if (!isFullScreen() && !isMaximized())
+                resize(sizeHint());
+        } else {
+            if (scaleSkin)
+                canvas->resize(canvas->sizeHint());
+            else {
+                canvas->setFixedSize(skin->standardScreenSize());
+                canvas->resize(skin->standardScreenSize());
+            }
+        }
+    }
 }
 
 void QDeclarativeViewer::launch(const QString& file_or_url)
@@ -1077,21 +1090,6 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
     canvas->setSource(url);
 
     qWarning() << "Wall startup time:" << t.elapsed();
-
-    if (!skin) {
-        canvas->updateGeometry();
-        if (mb)
-            mb->updateGeometry();
-        if (!isFullScreen() && !isMaximized())
-            resize(sizeHint());
-    } else {
-        if (scaleSkin)
-            canvas->resize(canvas->sizeHint());
-        else {
-            canvas->setFixedSize(skin->standardScreenSize());
-            canvas->resize(skin->standardScreenSize());
-        }
-    }
 
 #ifdef QTOPIA
     show();
@@ -1221,7 +1219,6 @@ void QDeclarativeViewer::keyPressEvent(QKeyEvent *event)
                  << "F5 - reload QML\n"
                  << "F6 - show object tree\n"
                  << "F7 - show timing\n"
-                 << "F8 - show performance (if available)\n"
                  << "F9 - toggle video recording\n"
                  << "F10 - toggle orientation\n"
                  << "device keys: 0=quit, 1..8=F1..F8"
@@ -1233,9 +1230,6 @@ void QDeclarativeViewer::keyPressEvent(QKeyEvent *event)
         takeSnapShot();
     } else if (event->key() == Qt::Key_F5 || (event->key() == Qt::Key_5 && devicemode)) {
         reload();
-    } else if (event->key() == Qt::Key_F8 || (event->key() == Qt::Key_8 && devicemode)) {
-        QPerformanceLog::displayData();
-        QPerformanceLog::clear();
     } else if (event->key() == Qt::Key_F9 || (event->key() == Qt::Key_9 && devicemode)) {
         toggleRecording();
     } else if (event->key() == Qt::Key_F10) {

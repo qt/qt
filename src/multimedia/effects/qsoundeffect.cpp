@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty int SoundEffect::loopCount
+    \qmlproperty int SoundEffect::loops
 
     This property provides a way to control the number of times to repeat the sound on each play().
 */
@@ -104,7 +104,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlsignal SoundEffect::loopCountChanged()
+    \qmlsignal SoundEffect::loopsChanged()
 
     This handler is called when the number of loops has changes.
 */
@@ -150,18 +150,18 @@ void QSoundEffect::setSource(const QUrl &url)
     emit sourceChanged();
 }
 
-int QSoundEffect::loopCount() const
+int QSoundEffect::loops() const
 {
     return d->loopCount();
 }
 
-void QSoundEffect::setLoopCount(int loopCount)
+void QSoundEffect::setLoops(int loopCount)
 {
     if (d->loopCount() == loopCount)
         return;
 
     d->setLoopCount(loopCount);
-    emit loopCountChanged();
+    emit loopsChanged();
 }
 
 int QSoundEffect::volume() const

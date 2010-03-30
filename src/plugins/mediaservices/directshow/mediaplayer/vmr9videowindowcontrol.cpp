@@ -51,6 +51,7 @@ Vmr9VideoWindowControl::Vmr9VideoWindowControl(QObject *parent)
     , m_filter(com_new<IBaseFilter>(CLSID_VideoMixingRenderer9, IID_IBaseFilter))
     , m_windowId(0)
     , m_dirtyValues(0)
+    , m_aspectRatioMode(Qt::KeepAspectRatio)
     , m_brightness(0)
     , m_contrast(0)
     , m_hue(0)
@@ -90,33 +91,30 @@ void Vmr9VideoWindowControl::setWinId(WId id)
 
 QRect Vmr9VideoWindowControl::displayRect() const
 {
-    QRect rect;
-
-    if (IVMRWindowlessControl9 *control = com_cast<IVMRWindowlessControl9>(
-            m_filter, IID_IVMRWindowlessControl9)) {
-        RECT sourceRect;
-        RECT displayRect;
-
-        if (control->GetVideoPosition(&sourceRect, &displayRect) == S_OK) {
-            rect = QRect(
-                    displayRect.left,
-                    displayRect.bottom,
-                    displayRect.right - displayRect.left,
-                    displayRect.bottom - displayRect.top);
-        }
-        control->Release();
-    }
-    return rect;
+    return m_displayRect;
 }
 
 void Vmr9VideoWindowControl::setDisplayRect(const QRect &rect)
 {
+    m_displayRect = rect;
+
     if (IVMRWindowlessControl9 *control = com_cast<IVMRWindowlessControl9>(
             m_filter, IID_IVMRWindowlessControl9)) {
         RECT sourceRect = { 0, 0, 0, 0 };
         RECT displayRect = { rect.left(), rect.top(), rect.right(), rect.bottom() };
 
         control->GetNativeVideoSize(&sourceRect.right, &sourceRect.bottom, 0, 0);
+
+        if (m_aspectRatioMode == Qt::KeepAspectRatioByExpanding) {
+            QSize clippedSize = rect.size();
+            clippedSize.scale(sourceRect.right, sourceRect.bottom, Qt::KeepAspectRatio);
+
+            sourceRect.left = (sourceRect.right - clippedSize.width()) / 2;
+            sourceRect.top = (sourceRect.bottom - clippedSize.height()) / 2;
+            sourceRect.right = sourceRect.left + clippedSize.width();
+            sourceRect.bottom = sourceRect.top + clippedSize.height();
+        }
+
         control->SetVideoPosition(&sourceRect, &displayRect);
         control->Release();
     }
@@ -134,7 +132,6 @@ void Vmr9VideoWindowControl::setFullScreen(bool fullScreen)
 
 void Vmr9VideoWindowControl::repaint()
 {
-
     if (QWidget *widget = QWidget::find(m_windowId)) {
         HDC dc = widget->getDC();
         if (IVMRWindowlessControl9 *control = com_cast<IVMRWindowlessControl9>(
@@ -164,21 +161,13 @@ QSize Vmr9VideoWindowControl::nativeSize() const
 
 Qt::AspectRatioMode Vmr9VideoWindowControl::aspectRatioMode() const
 {
-    Qt::AspectRatioMode mode = Qt::KeepAspectRatio;
-
-    if (IVMRWindowlessControl9 *control = com_cast<IVMRWindowlessControl9>(
-            m_filter, IID_IVMRWindowlessControl9)) {
-        DWORD arMode;
-
-        if (control->GetAspectRatioMode(&arMode) == S_OK && arMode == VMR9ARMode_None)
-            mode = Qt::IgnoreAspectRatio;
-        control->Release();
-    }
-    return mode;
+    return m_aspectRatioMode;
 }
 
 void Vmr9VideoWindowControl::setAspectRatioMode(Qt::AspectRatioMode mode)
 {
+    m_aspectRatioMode = mode;
+
     if (IVMRWindowlessControl9 *control = com_cast<IVMRWindowlessControl9>(
             m_filter, IID_IVMRWindowlessControl9)) {
         switch (mode) {
@@ -188,10 +177,15 @@ void Vmr9VideoWindowControl::setAspectRatioMode(Qt::AspectRatioMode mode)
         case Qt::KeepAspectRatio:
             control->SetAspectRatioMode(VMR9ARMode_LetterBox);
             break;
+        case Qt::KeepAspectRatioByExpanding:
+            control->SetAspectRatioMode(VMR9ARMode_LetterBox);
+            break;
         default:
             break;
         }
         control->Release();
+
+        setDisplayRect(m_displayRect);
     }
 }
 
@@ -257,6 +251,13 @@ void Vmr9VideoWindowControl::setSaturation(int saturation)
     setProcAmpValues();
 
     emit saturationChanged(saturation);
+}
+
+void Vmr9VideoWindowControl::updateNativeSize()
+{
+    setDisplayRect(m_displayRect);
+
+    emit nativeSizeChanged();
 }
 
 void Vmr9VideoWindowControl::setProcAmpValues()

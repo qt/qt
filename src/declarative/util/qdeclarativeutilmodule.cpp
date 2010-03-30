@@ -40,13 +40,12 @@
 ****************************************************************************/
 
 #include "qdeclarativeutilmodule_p.h"
-#include "qfxperf_p_p.h"
 #include "qdeclarativeanimation_p.h"
 #include "qdeclarativeanimation_p_p.h"
 #include "qdeclarativebehavior_p.h"
 #include "qdeclarativebind_p.h"
 #include "qdeclarativeconnections_p.h"
-#include "qdeclarativeeasefollow_p.h"
+#include "qdeclarativesmoothedanimation_p.h"
 #include "qdeclarativefontloader_p.h"
 #include "qdeclarativelistaccessor_p.h"
 #include "qdeclarativelistmodel_p.h"
@@ -71,7 +70,38 @@
 #ifndef QT_NO_XMLPATTERNS
 #include "qdeclarativexmllistmodel_p.h"
 #endif
-#include "qperformancelog_p_p.h"
+
+template<typename T>
+int qmlRegisterTypeEnums(const char *qmlName)
+{
+    QByteArray name(T::staticMetaObject.className());
+
+    QByteArray pointerName(name + '*');
+    QByteArray listName("QDeclarativeListProperty<" + name + ">");
+
+    QDeclarativePrivate::RegisterType type = {
+        0,
+
+        qRegisterMetaType<T *>(pointerName.constData()),
+        qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
+        0, 0,
+
+        "Qt", 4, 6, qmlName, &T::staticMetaObject,
+
+        QDeclarativePrivate::attachedPropertiesFunc<T>(),
+        QDeclarativePrivate::attachedPropertiesMetaObject<T>(),
+
+        QDeclarativePrivate::StaticCastSelector<T,QDeclarativeParserStatus>::cast(),
+        QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueSource>::cast(),
+        QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueInterceptor>::cast(),
+
+        0, 0,
+
+        0
+    };
+
+    return QDeclarativePrivate::registerType(type);
+}
 
 void QDeclarativeUtilModule::defineModule()
 {
@@ -81,13 +111,12 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterType<QDeclarativeBind>("Qt",4,6,"Binding");
     qmlRegisterType<QDeclarativeColorAnimation>("Qt",4,6,"ColorAnimation");
     qmlRegisterType<QDeclarativeConnections>("Qt",4,6,"Connections");
-    qmlRegisterType<QDeclarativeEaseFollow>("Qt",4,6,"EaseFollow");
+    qmlRegisterType<QDeclarativeSmoothedAnimation>("Qt",4,6,"SmoothedAnimation");
     qmlRegisterType<QDeclarativeFontLoader>("Qt",4,6,"FontLoader");
     qmlRegisterType<QDeclarativeListElement>("Qt",4,6,"ListElement");
     qmlRegisterType<QDeclarativeNumberAnimation>("Qt",4,6,"NumberAnimation");
     qmlRegisterType<QDeclarativePackage>("Qt",4,6,"Package");
     qmlRegisterType<QDeclarativeParallelAnimation>("Qt",4,6,"ParallelAnimation");
-    qmlRegisterType<QDeclarativeParentAction>("Qt",4,6,"ParentAction");
     qmlRegisterType<QDeclarativeParentAnimation>("Qt",4,6,"ParentAnimation");
     qmlRegisterType<QDeclarativeParentChange>("Qt",4,6,"ParentChange");
     qmlRegisterType<QDeclarativePauseAnimation>("Qt",4,6,"PauseAnimation");
@@ -110,8 +139,10 @@ void QDeclarativeUtilModule::defineModule()
 #endif
 
     qmlRegisterType<QDeclarativeAnchors>();
-    qmlRegisterType<QDeclarativeAbstractAnimation>();
     qmlRegisterType<QDeclarativeStateOperation>();
+    qmlRegisterType<QDeclarativeAnchorSet>();
+
+    qmlRegisterTypeEnums<QDeclarativeAbstractAnimation>("Animation");
 
     qmlRegisterCustomType<QDeclarativeListModel>("Qt", 4,6, "ListModel", "QDeclarativeListModel",
                                                  new QDeclarativeListModelParser);

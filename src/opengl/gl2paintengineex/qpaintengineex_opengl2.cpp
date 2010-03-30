@@ -529,10 +529,10 @@ void QGL2PaintEngineEx::beginNativePainting()
 
     float mv_matrix[4][4] =
     {
-        { mtx.m11(), mtx.m12(),     0, mtx.m13() },
-        { mtx.m21(), mtx.m22(),     0, mtx.m23() },
-        {         0,         0,     1,         0 },
-        {  mtx.dx(),  mtx.dy(),     0, mtx.m33() }
+        { float(mtx.m11()), float(mtx.m12()),     0, float(mtx.m13()) },
+        { float(mtx.m21()), float(mtx.m22()),     0, float(mtx.m23()) },
+        {                0,                0,     1,                0 },
+        {  float(mtx.dx()),  float(mtx.dy()),     0, float(mtx.m33()) }
     };
 
     const QSize sz = d->device->size();

@@ -5104,8 +5104,19 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
     const char *c = cformat;
     for (;;) {
         // Copy non-escape chars to result
+#ifndef QT_NO_TEXTCODEC
+        int i = 0;
+        while (*(c + i) != '\0' && *(c + i) != '%')
+            ++i;
+        if (codecForCStrings)
+            result.append(codecForCStrings->toUnicode(c, i));
+        else
+            result.append(fromLatin1(c, i));
+        c += i;
+#else
         while (*c != '\0' && *c != '%')
             result.append(QLatin1Char(*c++));
+#endif
 
         if (*c == '\0')
             break;

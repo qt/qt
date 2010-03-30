@@ -111,6 +111,8 @@ private slots:
     void fontPropagationSceneChange();
     void geometry_data();
     void geometry();
+    void width();
+    void height();
     void getContentsMargins_data();
     void getContentsMargins();
     void initStyleOption_data();
@@ -774,6 +776,32 @@ void tst_QGraphicsWidget::geometry()
     if (!size.isNull())
         QCOMPARE(spy.count(), 1);
     QCOMPARE(widget.geometry(), QRectF(pos, size));
+}
+
+void tst_QGraphicsWidget::width()
+{
+    QGraphicsWidget w;
+    QCOMPARE(w.property("width").toReal(), qreal(0));
+    QSignalSpy spy(&w, SIGNAL(widthChanged()));
+    w.setProperty("width", qreal(50));
+    QCOMPARE(w.property("width").toReal(), qreal(50));
+    QCOMPARE(spy.count(), 1);
+    //calling old school setGeometry should work too
+    w.setGeometry(0, 0, 200, 200);
+    QCOMPARE(spy.count(), 2);
+}
+
+void tst_QGraphicsWidget::height()
+{
+    QGraphicsWidget w;
+    QCOMPARE(w.property("height").toReal(), qreal(0));
+    QSignalSpy spy(&w, SIGNAL(heightChanged()));
+    w.setProperty("height", qreal(50));
+    QCOMPARE(w.property("height").toReal(), qreal(50));
+    QCOMPARE(spy.count(), 1);
+    //calling old school setGeometry should work too
+    w.setGeometry(0, 0, 200, 200);
+    QCOMPARE(spy.count(), 2);
 }
 
 void tst_QGraphicsWidget::getContentsMargins_data()

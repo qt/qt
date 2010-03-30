@@ -116,7 +116,7 @@ QDeclarativeVideo::~QDeclarativeVideo()
 */
 
 /*!
-    \qmlproperty url Audio:autoLoad
+    \qmlproperty url Video::autoLoad
 
     This property indicates if loading of media should begin immediately.
 

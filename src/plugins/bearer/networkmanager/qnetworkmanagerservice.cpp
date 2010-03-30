@@ -353,9 +353,9 @@ QString QNetworkManagerInterfaceDevice::udi() const
     return d->connectionInterface->property("Udi").toString();
 }
 
-QNetworkInterface QNetworkManagerInterfaceDevice::networkInterface() const
+QString QNetworkManagerInterfaceDevice::networkInterface() const
 {
-    return QNetworkInterface::interfaceFromName(d->connectionInterface->property("Interface").toString());
+    return d->connectionInterface->property("Interface").toString();
 }
 
 quint32 QNetworkManagerInterfaceDevice::ip4Address() const

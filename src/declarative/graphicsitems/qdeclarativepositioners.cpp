@@ -46,7 +46,6 @@
 #include <qdeclarativestate_p.h>
 #include <qdeclarativestategroup_p.h>
 #include <qdeclarativestateoperations_p.h>
-#include <qfxperf_p_p.h>
 #include <QtCore/qmath.h>
 
 #include <QDebug>
@@ -164,9 +163,6 @@ void QDeclarativeBasePositioner::componentComplete()
 {
     Q_D(QDeclarativeBasePositioner);
     QDeclarativeItem::componentComplete();
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::BasepositionerComponentComplete> cc;
-#endif
     positionedItems.reserve(d->QGraphicsItemPrivate::children.count());
     prePositioning();
 }
@@ -225,19 +221,20 @@ void QDeclarativeBasePositioner::prePositioning()
             d->watchChanges(child);
             positionedItems.append(posItem);
             item = &positionedItems[positionedItems.count()-1];
+            item->isNew = true;
+            if (child->opacity() <= 0.0 || !child->isVisible())
+                item->isVisible = false;
         } else {
             item = &oldItems[wIdx];
+            if (child->opacity() <= 0.0 || !child->isVisible()) {
+                item->isVisible = false;
+            } else if (!item->isVisible) {
+                item->isVisible = true;
+                item->isNew = true;
+            } else {
+                item->isNew = false;
+            }
             positionedItems.append(*item);
-        }
-        if (child->opacity() <= 0.0 || !child->isVisible()) {
-            item->isVisible = false;
-            continue;
-        }
-        if (!item->isVisible) {
-            item->isVisible = true;
-            item->isNew = true;
-        } else {
-            item->isNew = false;
         }
     }
     doPositioning();
@@ -261,11 +258,14 @@ void QDeclarativeBasePositioner::positionX(int x, const PositionedItem &target)
 {
     Q_D(QDeclarativeBasePositioner);
     if(d->type == Horizontal || d->type == Both){
-        if(!d->addTransition && !d->moveTransition){
-            target.item->setX(x);
-        }else{
-            if(target.isNew)
+        if (target.isNew) {
+            if (!d->addTransition)
+                target.item->setX(x);
+            else
                 d->addActions << QDeclarativeAction(target.item, QLatin1String("x"), QVariant(x));
+        } else if (x != target.item->x()) {
+            if (!d->moveTransition)
+                target.item->setX(x);
             else
                 d->moveActions << QDeclarativeAction(target.item, QLatin1String("x"), QVariant(x));
         }
@@ -276,11 +276,14 @@ void QDeclarativeBasePositioner::positionY(int y, const PositionedItem &target)
 {
     Q_D(QDeclarativeBasePositioner);
     if(d->type == Vertical || d->type == Both){
-        if(!d->addTransition && !d->moveTransition){
-            target.item->setY(y);
-        }else{
-            if(target.isNew)
+        if (target.isNew) {
+            if (!d->addTransition)
+                target.item->setY(y);
+            else
                 d->addActions << QDeclarativeAction(target.item, QLatin1String("y"), QVariant(y));
+        } else if (y != target.item->y()) {
+            if (!d->moveTransition)
+                target.item->setY(y);
             else
                 d->moveActions << QDeclarativeAction(target.item, QLatin1String("y"), QVariant(y));
         }
@@ -382,7 +385,7 @@ Column {
     move: Transition {
         NumberAnimation {
             properties: "y"
-            easing: "easeOutBounce"
+            easing.type: "OutBounce"
         }
     }
 }
@@ -599,7 +602,9 @@ Grid {
     \qmlproperty Transition Grid::add
     This property holds the transition to apply when adding an item to the positioner.
     The transition is only applied to the added item(s).
-    Positioner transitions will only affect the position (x,y) of items.
+    Positioner transitions will only affect the position (x,y) of items,
+    as that is all the positioners affect. To animate other property change
+    you will have to do so based on how you have changed those properties.
 
     Added can mean that either the object has been created or
     reparented, and thus is now a child or the positioner, or that the
@@ -815,6 +820,9 @@ public:
 QDeclarativeFlow::QDeclarativeFlow(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(*(new QDeclarativeFlowPrivate), Both, parent)
 {
+    Q_D(QDeclarativeFlow);
+    // Flow layout requires relayout if its own size changes too.
+    d->addItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
 }
 
 /*!

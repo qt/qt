@@ -53,11 +53,15 @@
 #include <QtCore/qnumeric.h>
 #include <private/qdeclarativeanchors_p_p.h>
 #include <private/qdeclarativeglobal_p.h>
+#include <private/qdeclarativefastproperties_p.h>
 
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(qmlExperimental, QML_EXPERIMENTAL);
 DEFINE_BOOL_CONFIG_OPTION(qmlDisableOptimizer, QML_DISABLE_OPTIMIZER);
+DEFINE_BOOL_CONFIG_OPTION(qmlDisableFastProperties, QML_DISABLE_FAST_PROPERTIES);
+
+Q_GLOBAL_STATIC(QDeclarativeFastProperties, fastProperties);
 
 using namespace QDeclarativeJS;
 
@@ -334,6 +338,8 @@ struct Instr {
         Subscribe,               // subscribe
         SubscribeId,             // subscribe
 
+        FetchAndSubscribe,       // fetchAndSubscribe
+
         LoadId,                  // load
         LoadScope,               // load
         LoadRoot,                // load
@@ -428,6 +434,14 @@ struct Instr {
             quint8 exceptionId;
             quint32 index;
         } store;
+        struct {
+            quint8 type;
+            qint8 output;
+            qint8 objectReg;
+            quint8 exceptionId;
+            quint16 subscription;
+            quint16 function;
+        } fetchAndSubscribe;
         struct {
             quint8 type;
             qint8 output;
@@ -937,6 +951,9 @@ static void dumpInstruction(const Instr *instr)
     case Instr::SubscribeId:
         qWarning().nospace() << "SubscribeId" << "\t\t" << instr->subscribe.offset << "\t" << instr->subscribe.reg << "\t" << instr->subscribe.index;
         break;
+    case Instr::FetchAndSubscribe:
+        qWarning().nospace() << "FetchAndSubscribe" << "\t" << instr->fetchAndSubscribe.output << "\t" << instr->fetchAndSubscribe.objectReg << "\t" << instr->fetchAndSubscribe.subscription;
+        break;
     case Instr::LoadId:
         qWarning().nospace() << "LoadId" << "\t\t\t" << instr->load.index << "\t" << instr->load.reg;
         break;
@@ -1070,6 +1087,8 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
                                               QDeclarativeContextData *context, QDeclarativeDelayedError *error,
                                               QObject *scope, QObject *output)
 {
+    Q_Q(QDeclarativeCompiledBindings);
+
     error->removeError();
 
     Register registers[32];
@@ -1081,6 +1100,7 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
     instr += instrIndex;
     const char *data = program->data();
 
+    // return;
 #ifdef COMPILEDBINDINGS_DEBUG
     qWarning().nospace() << "Begin binding run";
 #endif
@@ -1104,6 +1124,32 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         const Register &object = registers[instr->subscribe.reg];
         if (!object.isUndefined()) o = object.getQObject();
         subscribe(o, instr->subscribe.index, instr->subscribe.offset);
+    }
+        break;
+
+    case Instr::FetchAndSubscribe:
+    {
+        const Register &input = registers[instr->fetchAndSubscribe.objectReg];
+        Register &output = registers[instr->fetchAndSubscribe.output];
+
+        if (input.isUndefined()) {
+            throwException(instr->fetchAndSubscribe.exceptionId, error, program, context);
+            return;
+        }
+
+        QObject *object = input.getQObject();
+        if (!object) {
+            output.setUndefined();
+        } else {
+            int subIdx = instr->fetchAndSubscribe.subscription;
+            QDeclarativeCompiledBindingsPrivate::Subscription *sub = 0;
+            if (subIdx != -1) {
+                sub = (subscriptions + subIdx);
+                sub->target = q;
+                sub->targetMethod = methodCount + subIdx; 
+            }
+            fastProperties()->accessor(instr->fetchAndSubscribe.function)(object, output.typeDataPtr(), sub);
+        }
     }
         break;
 
@@ -2376,29 +2422,41 @@ bool QDeclarativeBindingCompilerPrivate::buildName(QStringList &name,
     return true;
 }
 
-
 bool QDeclarativeBindingCompilerPrivate::fetch(Result &rv, const QMetaObject *mo, int reg, 
-                                      int idx, const QStringList &subName, QDeclarativeJS::AST::ExpressionNode *node)
+                                               int idx, const QStringList &subName, 
+                                               QDeclarativeJS::AST::ExpressionNode *node)
 {
     QMetaProperty prop = mo->property(idx);
     rv.metaObject = 0;
     rv.type = 0;
 
-    if (subscription(subName, &rv) && prop.hasNotifySignal() && prop.notifySignalIndex() != -1) {
-        Instr sub;
-        sub.common.type = Instr::Subscribe;
-        sub.subscribe.offset = subscriptionIndex(subName);
-        sub.subscribe.reg = reg;
-        sub.subscribe.index = prop.notifySignalIndex();
-        bytecode << sub;
-    }
+    int fastFetchIndex = fastProperties()->accessorIndexForProperty(mo, idx);
 
     Instr fetch;
-    fetch.common.type = Instr::Fetch;
-    fetch.fetch.objectReg = reg;
-    fetch.fetch.index = idx;
-    fetch.fetch.output = reg;
-    fetch.fetch.exceptionId = exceptionId(node);
+
+    if (!qmlDisableFastProperties() && fastFetchIndex != -1) {
+        fetch.common.type = Instr::FetchAndSubscribe;
+        fetch.fetchAndSubscribe.objectReg = reg;
+        fetch.fetchAndSubscribe.output = reg;
+        fetch.fetchAndSubscribe.function = fastFetchIndex;
+        fetch.fetchAndSubscribe.subscription = subscriptionIndex(subName);
+        fetch.fetchAndSubscribe.exceptionId = exceptionId(node);
+    } else {
+        if (subscription(subName, &rv) && prop.hasNotifySignal() && prop.notifySignalIndex() != -1) {
+            Instr sub;
+            sub.common.type = Instr::Subscribe;
+            sub.subscribe.offset = subscriptionIndex(subName);
+            sub.subscribe.reg = reg;
+            sub.subscribe.index = prop.notifySignalIndex();
+            bytecode << sub;
+        }
+
+        fetch.common.type = Instr::Fetch;
+        fetch.fetch.objectReg = reg;
+        fetch.fetch.index = idx;
+        fetch.fetch.output = reg;
+        fetch.fetch.exceptionId = exceptionId(node);
+    }
 
     rv.type = prop.userType();
     rv.metaObject = engine->metaObjectForType(rv.type);

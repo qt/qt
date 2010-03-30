@@ -1,10 +1,12 @@
 import Qt 4.6
+import "calculator.js" as CalcEngine
 
 Rectangle {
     width: 320; height: 270; color: palette.window
 
+    function doOp(operation) { CalcEngine.doOperation(operation); }
+
     SystemPalette { id: palette }
-    Script { source: "calculator.js" }
 
     Column {
         x: 2; spacing: 10;

@@ -49,8 +49,6 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qmutex.h>
 
-#include <QtNetwork/qnetworkinterface.h>
-
 QT_BEGIN_NAMESPACE
 
 static QBearerEngineImpl *getEngineFromId(const QString &id)
@@ -218,6 +216,7 @@ void QNetworkSessionPrivateImpl::reject()
 {
 }
 
+#ifndef QT_NO_NETWORKINTERFACE
 QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
 {
     if (!publicConfig.isValid() || !engine || state != QNetworkSession::Connected)
@@ -229,6 +228,7 @@ QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
         return QNetworkInterface();
     return QNetworkInterface::interfaceFromName(interface);
 }
+#endif
 
 QVariant QNetworkSessionPrivateImpl::sessionProperty(const QString &key) const
 {

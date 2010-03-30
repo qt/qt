@@ -69,7 +69,6 @@ public:
     explicit QDeclarativeWebPage(QDeclarativeWebView *parent);
     ~QDeclarativeWebPage();
 protected:
-    QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
     QWebPage *createWindow(WebWindowType type);
     void javaScriptConsoleMessage(const QString& message, int lineNumber, const QString& sourceID);
     QString chooseFile(QWebFrame *originatingFrame, const QString& oldFile);

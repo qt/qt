@@ -41,6 +41,16 @@ Third party components
 *                          Library                                         *
 ****************************************************************************
 
+QtCore
+------
+
+QtGui
+-----
+
+ - QAbstractItemView
+    * Fixed a bug that would cause keyboard searches not to behave
+      properly when used within 400 milliseconds of midnight.
+
  - QPrinter
     * Obsoleted the slightly confusing setNumCopies() and numCopies()
       functions, and replaced them with setCopyCount(), copyCount() and

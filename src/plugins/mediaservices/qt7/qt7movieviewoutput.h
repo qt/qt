@@ -100,6 +100,7 @@ private:
 
     void *m_movie;
     void *m_movieView;
+    bool m_layouted;
 
     WId m_winId;
     QRect m_displayRect;

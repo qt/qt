@@ -23,6 +23,21 @@
         <source>Show All</source>
         <translation>顯示全部</translation>
     </message>
+    <message>
+        <location line="+1"/>
+        <source>Preferences...</source>
+        <translation>偏好設定⋯</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quit %1</source>
+        <translation>結束 %1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>About %1</source>
+        <translation>關於 %1</translation>
+    </message>
 </context>
 <context>
     <name>AudioOutput</name>

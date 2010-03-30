@@ -405,7 +405,9 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     generateIndex(fileBase, projectUrl, projectDescription);
     generatePageIndex(outputDir() + "/" + fileBase + ".pageindex", marker);
 
+    //qDebug() << "start helpProjectWriter->generate(myTree)";
     helpProjectWriter->generate(myTree);
+    //qDebug() << "end helpProjectWriter->generate(myTree)";
 }
 
 void HtmlGenerator::startText(const Node * /* relative */,

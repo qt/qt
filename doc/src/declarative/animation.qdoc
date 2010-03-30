@@ -72,7 +72,7 @@ Rectangle {
         x: 60-img.width/2
         y: 0
         SequentialAnimation on y {
-            repeat: true
+            loops: Animation.Infinite
             NumberAnimation { to: 200-img.height; easing.type: "OutBounce"; duration: 2000 }
             PauseAnimation { duration: 1000 }
             NumberAnimation { to: 0; easing.type: "OutQuad"; duration: 1000 }

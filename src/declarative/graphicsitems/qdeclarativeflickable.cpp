@@ -137,7 +137,8 @@ QDeclarativeFlickablePrivate::QDeclarativeFlickablePrivate()
 void QDeclarativeFlickablePrivate::init()
 {
     Q_Q(QDeclarativeFlickable);
-    viewport->setParent(q);
+    QDeclarative_setParent_noEvent(viewport, q);
+    viewport->setParentItem(q);
     static int timelineUpdatedIdx = -1;
     static int timelineCompletedIdx = -1;
     static int flickableTickedIdx = -1;
@@ -990,10 +991,10 @@ QDeclarativeListProperty<QObject> QDeclarativeFlickable::flickableData()
     return QDeclarativeListProperty<QObject>(this, (void *)d, QDeclarativeFlickablePrivate::data_append);
 }
 
-QDeclarativeListProperty<QDeclarativeItem> QDeclarativeFlickable::flickableChildren()
+QDeclarativeListProperty<QGraphicsObject> QDeclarativeFlickable::flickableChildren()
 {
     Q_D(QDeclarativeFlickable);
-    return d->viewport->fxChildren();
+    return QGraphicsItemPrivate::get(d->viewport)->childrenList();
 }
 
 /*!

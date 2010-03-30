@@ -79,6 +79,8 @@ private slots:
 
     void nonExistingFile();
 
+    void removeFileAndUnWatch();
+
     void cleanup();
 private:
     QStringList do_force_engines;
@@ -530,6 +532,29 @@ void tst_QFileSystemWatcher::nonExistingFile()
     QFileSystemWatcher watcher;
     watcher.addPath("file_that_does_not_exist.txt");
     QVERIFY(true);
+}
+
+void tst_QFileSystemWatcher::removeFileAndUnWatch()
+{
+    static const char * const filename = "foo.txt";
+    QFileSystemWatcher watcher;
+
+    {
+        QFile testFile(filename);
+        testFile.open(QIODevice::WriteOnly);
+        testFile.close();
+    }
+    watcher.addPath(filename);
+
+    QFile::remove(filename);
+    watcher.removePath(filename);
+
+    {
+        QFile testFile(filename);
+        testFile.open(QIODevice::WriteOnly);
+        testFile.close();
+    }
+    watcher.addPath(filename);
 }
 
 QTEST_MAIN(tst_QFileSystemWatcher)

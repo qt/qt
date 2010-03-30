@@ -24,6 +24,7 @@ SUBDIRS=\
    qdebug \
    qdiriterator \
    qeasingcurve \
+   qelapsedtimer \
    qevent \
    qexplicitlyshareddatapointer \
    qfileinfo \

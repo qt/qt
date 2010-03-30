@@ -68,16 +68,16 @@ QDeclarativeEngineDebugServer::QDeclarativeEngineDebugServer(QObject *parent)
 QDataStream &operator<<(QDataStream &ds, 
                         const QDeclarativeEngineDebugServer::QDeclarativeObjectData &data)
 {
-    ds << data.url << data.lineNumber << data.columnNumber << data.objectName
-       << data.objectType << data.objectId << data.contextId;
+    ds << data.url << data.lineNumber << data.columnNumber << data.idString
+       << data.objectName << data.objectType << data.objectId << data.contextId;
     return ds;
 }
 
 QDataStream &operator>>(QDataStream &ds, 
                         QDeclarativeEngineDebugServer::QDeclarativeObjectData &data)
 {
-    ds >> data.url >> data.lineNumber >> data.columnNumber >> data.objectName
-       >> data.objectType >> data.objectId >> data.contextId;
+    ds >> data.url >> data.lineNumber >> data.columnNumber >> data.idString
+       >> data.objectName >> data.objectType >> data.objectId >> data.contextId;
     return ds;
 }
 
@@ -273,6 +273,13 @@ QDeclarativeEngineDebugServer::objectData(QObject *object)
     } else {
         rv.lineNumber = -1;
         rv.columnNumber = -1;
+    }
+
+    QDeclarativeContext *context = qmlContext(object);
+    if (context) {
+        QDeclarativeContextData *cdata = QDeclarativeContextData::get(context);
+        if (cdata)
+            rv.idString = cdata->findObjectId(object);
     }
 
     rv.objectName = object->objectName();

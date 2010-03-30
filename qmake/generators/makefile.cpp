@@ -1245,7 +1245,8 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                 }
                 if(!dirstr.endsWith(Option::dir_sep))
                     dirstr += Option::dir_sep;
-                if(exists(wild)) { //real file
+                bool is_target = (wild == fileFixify(var("TARGET"), FileFixifyAbsolute));
+                if(is_target || exists(wild)) { //real file or target
                     QString file = wild;
                     QFileInfo fi(fileInfo(wild));
                     if(!target.isEmpty())
@@ -1259,7 +1260,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                     QString cmd;
                     if (fi.isDir())
                        cmd = "-$(INSTALL_DIR)";
-                    else if (fi.isExecutable())
+                    else if (is_target || fi.isExecutable())
                        cmd = "-$(INSTALL_PROGRAM)";
                     else
                        cmd = "-$(INSTALL_FILE)";

@@ -77,23 +77,25 @@ SOURCES +=                                           \
 
 # Test for whether the build environment supports video rendering to graphics
 # surfaces.
-exists($${EPOCROOT}epoc32/include/platform/videoplayer2.h) {
-    HEADERS +=                                       \
-           $$PHONON_MMF_DIR/videooutput_surface.h    \
-           $$PHONON_MMF_DIR/videoplayer_surface.h
-    SOURCES +=                                       \
-           $$PHONON_MMF_DIR/videooutput_surface.cpp  \
-           $$PHONON_MMF_DIR/videoplayer_surface.cpp
-    DEFINES += PHONON_MMF_VIDEO_SURFACES
-} else {
-    HEADERS +=                                       \
-           $$PHONON_MMF_DIR/ancestormovemonitor.h    \
-           $$PHONON_MMF_DIR/videooutput_dsa.h        \
-           $$PHONON_MMF_DIR/videoplayer_dsa.h
-    SOURCES +=                                       \
-           $$PHONON_MMF_DIR/ancestormovemonitor.cpp  \
-           $$PHONON_MMF_DIR/videooutput_dsa.cpp      \
-           $$PHONON_MMF_DIR/videoplayer_dsa.cpp      \
+symbian {
+    exists($${EPOCROOT}epoc32/include/platform/videoplayer2.h) {
+        HEADERS +=                                       \
+               $$PHONON_MMF_DIR/videooutput_surface.h    \
+               $$PHONON_MMF_DIR/videoplayer_surface.h
+        SOURCES +=                                       \
+               $$PHONON_MMF_DIR/videooutput_surface.cpp  \
+               $$PHONON_MMF_DIR/videoplayer_surface.cpp
+        DEFINES += PHONON_MMF_VIDEO_SURFACES
+    } else {
+        HEADERS +=                                       \
+               $$PHONON_MMF_DIR/ancestormovemonitor.h    \
+               $$PHONON_MMF_DIR/videooutput_dsa.h        \
+               $$PHONON_MMF_DIR/videoplayer_dsa.h
+        SOURCES +=                                       \
+               $$PHONON_MMF_DIR/ancestormovemonitor.cpp  \
+               $$PHONON_MMF_DIR/videooutput_dsa.cpp      \
+               $$PHONON_MMF_DIR/videoplayer_dsa.cpp      \
+    }
 }
 
 LIBS += -lcone

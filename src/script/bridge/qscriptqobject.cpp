@@ -151,7 +151,8 @@ private:
 static bool hasMethodAccess(const QMetaMethod &method, int index, const QScriptEngine::QObjectWrapOptions &opt)
 {
     return (method.access() != QMetaMethod::Private)
-        && ((index != 2) || !(opt & QScriptEngine::ExcludeDeleteLater));
+        && ((index != 2) || !(opt & QScriptEngine::ExcludeDeleteLater))
+        && (!(opt & QScriptEngine::ExcludeSlots) || (method.methodType() != QMetaMethod::Slot));
 }
 
 static bool isEnumerableMetaProperty(const QMetaProperty &prop,
@@ -2073,6 +2074,7 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     JSC::JSValue slot;
     JSC::JSValue senderWrapper;
     int signalIndex = -1;
+    QScript::APIShim shim(engine);
     for (int i = 0; i < connections.size(); ++i) {
         const QVector<QObjectConnection> &cs = connections.at(i);
         for (int j = 0; j < cs.size(); ++j) {

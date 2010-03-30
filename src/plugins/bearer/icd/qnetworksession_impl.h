@@ -56,11 +56,6 @@
 #include <QtNetwork/private/qnetworksession_p.h>
 #include <QtNetwork/qnetworkconfigmanager.h>
 
-//#include "qnetworkconfigmanager_maemo_p.h"
-//#include "qnetworksession.h"
-
-//#include <qnetworksession.h>
-//#include <QNetworkInterface>
 #include <QtCore/qdatetime.h>
 
 #include <icd/dbus_api.h>
@@ -90,7 +85,9 @@ public:
     //notification hooks to discover future state changes.
     void syncStateWithInterface();
 
+#ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface currentInterface() const;
+#endif
     QVariant sessionProperty(const QString& key) const;
     void setSessionProperty(const QString& key, const QVariant& value);
 

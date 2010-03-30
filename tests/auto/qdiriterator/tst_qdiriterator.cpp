@@ -198,6 +198,54 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
 #endif
                    "entrylist/writable").split(',');
 
+    QTest::newRow("NoDot")
+        << QString("entrylist") << QDirIterator::IteratorFlags(0)
+        << QDir::Filters(QDir::AllEntries | QDir::NoDot) << QStringList("*")
+        << QString(
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+                   "entrylist/..,"
+#endif
+                   "entrylist/file,"
+#ifndef Q_NO_SYMLINKS
+                   "entrylist/linktofile.lnk,"
+#endif
+                   "entrylist/directory,"
+#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+                   "entrylist/linktodirectory.lnk,"
+#endif
+                   "entrylist/writable").split(',');
+
+    QTest::newRow("NoDotDot")
+        << QString("entrylist") << QDirIterator::IteratorFlags(0)
+        << QDir::Filters(QDir::AllEntries | QDir::NoDotDot) << QStringList("*")
+        << QString(
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+                  "entrylist/.,"
+#endif
+                   "entrylist/file,"
+#ifndef Q_NO_SYMLINKS
+                   "entrylist/linktofile.lnk,"
+#endif
+                   "entrylist/directory,"
+#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+                   "entrylist/linktodirectory.lnk,"
+#endif
+                   "entrylist/writable").split(',');
+
+    QTest::newRow("NoDotAndDotDot")
+        << QString("entrylist") << QDirIterator::IteratorFlags(0)
+        << QDir::Filters(QDir::AllEntries | QDir::NoDotAndDotDot) << QStringList("*")
+        << QString(
+                   "entrylist/file,"
+#ifndef Q_NO_SYMLINKS
+                   "entrylist/linktofile.lnk,"
+#endif
+                   "entrylist/directory,"
+#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+                   "entrylist/linktodirectory.lnk,"
+#endif
+                   "entrylist/writable").split(',');
+
     QTest::newRow("QDir::Subdirectories | QDir::FollowSymlinks")
         << QString("entrylist") << QDirIterator::IteratorFlags(QDirIterator::Subdirectories | QDirIterator::FollowSymlinks)
         << QDir::Filters(QDir::NoFilter) << QStringList("*")

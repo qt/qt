@@ -305,7 +305,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object()
         QCOMPARE(prop.isDesignable(), true);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::Normal);
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
@@ -404,7 +404,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isDesignable(), true);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::Normal);
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
@@ -452,7 +452,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
@@ -499,7 +499,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
@@ -597,7 +597,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_context()
         QCOMPARE(prop.isDesignable(), true);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::Normal);
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
@@ -696,7 +696,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isDesignable(), true);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::Normal);
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
@@ -744,7 +744,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
@@ -791,7 +791,7 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
@@ -1254,7 +1254,7 @@ void tst_qdeclarativeproperty::writeObjectToList()
     QDeclarativeProperty prop(container, "children");
     prop.write(qVariantFromValue(object));
     QCOMPARE(list.count(), 1);
-    QCOMPARE(list.at(0), object);
+    QCOMPARE(list.at(0), qobject_cast<QObject*>(object));
 }
 
 Q_DECLARE_METATYPE(QList<QObject *>);

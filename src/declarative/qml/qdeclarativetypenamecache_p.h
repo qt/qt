@@ -73,8 +73,10 @@ public:
         inline ~Data();
         QDeclarativeType *type;
         QDeclarativeTypeNameCache *typeNamespace;
+        int importedScriptIndex;
     };
 
+    void add(const QString &, int);
     void add(const QString &, QDeclarativeType *);
     void add(const QString &, QDeclarativeTypeNameCache *);
 
@@ -97,7 +99,7 @@ private:
 };
 
 QDeclarativeTypeNameCache::Data::Data()
-: type(0), typeNamespace(0)
+: type(0), typeNamespace(0), importedScriptIndex(-1)
 {
 }
 

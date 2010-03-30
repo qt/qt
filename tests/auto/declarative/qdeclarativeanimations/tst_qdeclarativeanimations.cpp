@@ -180,7 +180,7 @@ void tst_qdeclarativeanimations::simpleRotation()
     QVERIFY(animation.target() == &rect);
     QVERIFY(animation.property() == "rotation");
     QVERIFY(animation.to() == 270);
-    QVERIFY(animation.direction() == QDeclarativeRotationAnimation::Shortest);
+    QVERIFY(animation.direction() == QDeclarativeRotationAnimation::Numerical);
     animation.start();
     QVERIFY(animation.isRunning());
     QTest::qWait(animation.duration());
@@ -193,7 +193,7 @@ void tst_qdeclarativeanimations::simpleRotation()
     QVERIFY(animation.isPaused());
     animation.setCurrentTime(125);
     QVERIFY(animation.currentTime() == 125);
-    QCOMPARE(rect.rotation(), qreal(-45));
+    QCOMPARE(rect.rotation(), qreal(135));
 }
 
 void tst_qdeclarativeanimations::alwaysRunToEnd()
@@ -204,9 +204,9 @@ void tst_qdeclarativeanimations::alwaysRunToEnd()
     animation.setProperty("x");
     animation.setTo(200);
     animation.setDuration(1000);
-    animation.setRepeat(true);
+    animation.setLoops(-1);
     animation.setAlwaysRunToEnd(true);
-    QVERIFY(animation.repeat() == true);
+    QVERIFY(animation.loops() == -1);
     QVERIFY(animation.alwaysRunToEnd() == true);
     animation.start();
     QTest::qWait(1500);

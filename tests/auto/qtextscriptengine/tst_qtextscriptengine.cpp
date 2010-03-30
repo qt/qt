@@ -99,6 +99,7 @@ private slots:
     void kannada();
     void malayalam();
     void sinhala();
+    void greek();
 
     void khmer();
     void linearB();
@@ -992,6 +993,80 @@ void tst_QTextScriptEngine::linearB()
 	} else {
 	    QSKIP("couln't find Penuturesu", SkipAll);
 	}
+    }
+#else
+    QSKIP("X11 specific test", SkipAll);
+#endif
+}
+
+#if defined(Q_WS_X11)
+static bool decomposedShaping( const QFont &f, const QChar &ch)
+{
+    QString str = QString().append(ch);
+    QTextLayout layout(str, f);
+    QTextEngine *e = layout.d;
+    e->itemize();
+    e->shape(0);
+
+    QTextLayout decomposed(str.normalized(QString::NormalizationForm_D), f);
+    QTextEngine *de = decomposed.d;
+    de->itemize();
+    de->shape(0);
+
+    if( e->layoutData->items[0].num_glyphs != de->layoutData->items[0].num_glyphs )
+        goto error;
+
+    for (int i = 0; i < e->layoutData->items[0].num_glyphs; ++i) {
+        if ((e->layoutData->glyphLayout.glyphs[i] & 0xffffff) != (de->layoutData->glyphLayout.glyphs[i] & 0xffffff))
+            goto error;
+    }
+    return true;
+ error:
+    qDebug("%s: decomposedShaping of char %4x failed, nglyphs=%d, decomposed nglyphs %d",
+           f.family().toLatin1().constData(),
+           ch.unicode(),
+           e->layoutData->items[0].num_glyphs,
+           de->layoutData->items[0].num_glyphs);
+
+    str = "";
+    int i = 0;
+    while (i < e->layoutData->items[0].num_glyphs) {
+        str += QString("%1 ").arg(e->layoutData->glyphLayout.glyphs[i], 4, 16);
+        ++i;
+    }
+    qDebug("    composed glyph result   = %s", str.toLatin1().constData());
+    str = "";
+    i = 0;
+    while (i < de->layoutData->items[0].num_glyphs) {
+        str += QString("%1 ").arg(de->layoutData->glyphLayout.glyphs[i], 4, 16);
+        ++i;
+    }
+    qDebug("    decomposed glyph result = %s", str.toLatin1().constData());
+    return false;
+}
+#endif
+
+
+void tst_QTextScriptEngine::greek()
+{
+#if defined(Q_WS_X11)
+    {
+        if (QFontDatabase().families(QFontDatabase::Any).contains("DejaVu Sans")) {
+            QFont f("DejaVu Sans");
+            for (int uc = 0x1f00; uc <= 0x1fff; ++uc) {
+                QString str;
+                str.append(uc);
+                if (str.normalized(QString::NormalizationForm_D).normalized(QString::NormalizationForm_C) != str) {
+                    //qDebug() << "skipping" << hex << uc;
+                    continue;
+                }
+                if (uc == 0x1fc1 || uc == 0x1fed)
+                    continue;
+                QVERIFY( decomposedShaping(f, QChar(uc)) );
+            }
+        } else {
+            QSKIP("couln't find DejaVu Sans", SkipAll);
+        }
     }
 #else
     QSKIP("X11 specific test", SkipAll);

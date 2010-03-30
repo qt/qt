@@ -16,6 +16,7 @@ SUBDIRS=\
     qhttpnetworkreply \
     qhttpsocketengine \
     qnativesocketengine \
+    qnetworkaccessmanager \
     qnetworkaddressentry \
     qnetworkconfiguration \
     qnetworkconfigurationmanager \

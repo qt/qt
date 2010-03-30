@@ -193,7 +193,7 @@ void tst_QDeclarativeListModel::dynamic_data()
 
     QTest::newRow("clear1") << "{append({'foo':456});clear();count}" << 0 << "";
     QTest::newRow("clear2") << "{append({'foo':123});append({'foo':456});clear();count}" << 0 << "";
-    QTest::newRow("clear2") << "{append({'foo':123});clear();get(0).foo}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
+    QTest::newRow("clear3") << "{append({'foo':123});clear();get(0).foo}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
 
     QTest::newRow("remove1") << "{append({'foo':123});remove(0);count}" << 0 << "";
     QTest::newRow("remove2a") << "{append({'foo':123});append({'foo':456});remove(0);count}" << 1 << "";
@@ -290,8 +290,6 @@ void tst_QDeclarativeListModel::dynamic_worker_data()
 
 void tst_QDeclarativeListModel::dynamic_worker()
 {
-    QSKIP("Skip, awaiting imminent fixes", SkipAll);
-
     QFETCH(QString, script);
     QFETCH(int, result);
     QFETCH(QString, warning);
@@ -324,6 +322,7 @@ void tst_QDeclarativeListModel::dynamic_worker()
         // changes are reflected in the list model in the main thread
         if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
             QTest::ignoreMessage(QtWarningMsg, "QML ListModel (unknown location) Cannot add nested list values when modifying or after modification from a worker script");
+
         QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", 
                 Q_ARG(QVariant, operations.mid(0, operations.length()-1))));
         waitForWorker(item);
@@ -342,7 +341,6 @@ void tst_QDeclarativeListModel::dynamic_worker()
 
 void tst_QDeclarativeListModel::convertNestedToFlat_fail()
 {
-    QSKIP("Skip, awaiting imminent fixes", SkipAll);
     // If a model has nested data, it cannot be used at all from a worker script
 
     QFETCH(QString, script);
@@ -368,7 +366,7 @@ void tst_QDeclarativeListModel::convertNestedToFlat_fail()
 
     delete item;
     QTest::ignoreMessage(QtWarningMsg, "QThread: Destroyed while thread is still running");
-    qApp->processEvents(); 
+    qApp->processEvents();
 }
 
 void tst_QDeclarativeListModel::convertNestedToFlat_fail_data()
@@ -389,8 +387,6 @@ void tst_QDeclarativeListModel::convertNestedToFlat_ok()
 {
     // If a model only has plain data, it can be modified from a worker script. However,
     // once the model is used from a worker script, it no longer accepts nested data
-
-    QSKIP("Skip, awaiting imminent fixes", SkipAll);
 
     QFETCH(QString, script);
 
@@ -430,7 +426,7 @@ void tst_QDeclarativeListModel::convertNestedToFlat_ok()
 
     delete item;
     QTest::ignoreMessage(QtWarningMsg, "QThread: Destroyed while thread is still running");
-    qApp->processEvents(); 
+    qApp->processEvents();
 }
 
 void tst_QDeclarativeListModel::convertNestedToFlat_ok_data()

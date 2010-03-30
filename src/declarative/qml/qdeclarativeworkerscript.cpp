@@ -201,11 +201,11 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::sendMessage(QScriptContext *
     if (!script) 
         return engine->undefinedValue();
 
-    p->m_lock.lock();
+    QMutexLocker(&p->m_lock);
+
     if (script->owner) 
         QCoreApplication::postEvent(script->owner, 
                                     new WorkerDataEvent(0, scriptValueToVariant(ctxt->argument(0))));
-    p->m_lock.unlock();
 
     return engine->undefinedValue();
 }
@@ -437,8 +437,12 @@ QDeclarativeWorkerScriptEngine::QDeclarativeWorkerScriptEngine(QDeclarativeEngin
 
 QDeclarativeWorkerScriptEngine::~QDeclarativeWorkerScriptEngine()
 {
+    d->m_lock.lock();
     qDeleteAll(d->workers);
-    delete d; d = 0;
+    d->workers.clear();
+    d->m_lock.unlock();
+
+    d->deleteLater();
 }
 
 QDeclarativeWorkerScriptEnginePrivate::WorkerScript::WorkerScript()

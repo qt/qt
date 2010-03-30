@@ -67,8 +67,6 @@
 #include "qdeclarativecompiledbindings_p.h"
 #include "qdeclarativeglobalscriptclass_p.h"
 
-#include <qfxperf_p_p.h>
-
 #include <QCoreApplication>
 #include <QColor>
 #include <QDebug>
@@ -77,11 +75,12 @@
 #include <QRectF>
 #include <QAtomicInt>
 #include <QtCore/qdebug.h>
+#include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
-DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATISTICS_DUMP);
+DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATS);
 DEFINE_BOOL_CONFIG_OPTION(bindingsDump, QML_BINDINGS_DUMP);
 
 using namespace QDeclarativeParser;
@@ -438,7 +437,7 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             bool ok;
             QPointF point =
                 QDeclarativeStringConverters::pointFFromString(string, &ok);
-            float data[] = { point.x(), point.y() };
+            float data[] = { float(point.x()), float(point.y()) };
             int index = output->indexForFloat(data, 2);
             if (type == QVariant::PointF)
                 instr.type = QDeclarativeInstruction::StorePointF;
@@ -453,7 +452,7 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             {
             bool ok;
             QSizeF size = QDeclarativeStringConverters::sizeFFromString(string, &ok);
-            float data[] = { size.width(), size.height() };
+            float data[] = { float(size.width()), float(size.height()) };
             int index = output->indexForFloat(data, 2);
             if (type == QVariant::SizeF)
                 instr.type = QDeclarativeInstruction::StoreSizeF;
@@ -468,8 +467,8 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             {
             bool ok;
             QRectF rect = QDeclarativeStringConverters::rectFFromString(string, &ok);
-            float data[] = { rect.x(), rect.y(),
-                             rect.width(), rect.height() };
+            float data[] = { float(rect.x()), float(rect.y()),
+                             float(rect.width()), float(rect.height()) };
             int index = output->indexForFloat(data, 4);
             if (type == QVariant::RectF)
                 instr.type = QDeclarativeInstruction::StoreRectF;
@@ -492,7 +491,7 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             bool ok;
             QVector3D vector =
                 QDeclarativeStringConverters::vector3DFromString(string, &ok);
-            float data[] = { vector.x(), vector.y(), vector.z() };
+            float data[] = { float(vector.x()), float(vector.y()), float(vector.z()) };
             int index = output->indexForFloat(data, 3);
             instr.type = QDeclarativeInstruction::StoreVector3D;
             instr.storeRealPair.propertyIndex = prop.propertyIndex();
@@ -543,12 +542,9 @@ void QDeclarativeCompiler::reset(QDeclarativeCompiledData *data)
     on a successful compiler.
 */
 bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
-                          QDeclarativeCompositeTypeData *unit,
-                          QDeclarativeCompiledData *out)
+                                   QDeclarativeCompositeTypeData *unit,
+                                   QDeclarativeCompiledData *out)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::Compilation> pc;
-#endif
     exceptions.clear();
 
     Q_ASSERT(out);
@@ -621,6 +617,7 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
 void QDeclarativeCompiler::compileTree(Object *tree)
 {
     compileState.root = tree;
+    componentStat.lineNumber = tree->location.start.line;
 
     if (!buildObject(tree, BindingContext()) || !completeComponentBuild())
         return;
@@ -637,6 +634,37 @@ void QDeclarativeCompiler::compileTree(Object *tree)
         init.init.compiledBinding = output->indexForByteArray(compileState.compiledBindingData);
     output->bytecode << init;
 
+    // Build global import scripts
+    QHash<QString, Object::ScriptBlock> importedScripts;
+    QStringList importedScriptIndexes;
+
+    for (int ii = 0; ii < unit->scripts.count(); ++ii) {
+        QString scriptCode = QString::fromUtf8(unit->scripts.at(ii).resource->data);
+        Object::ScriptBlock::Pragmas pragmas = QDeclarativeScriptParser::extractPragmas(scriptCode);
+
+        if (!scriptCode.isEmpty()) {
+            Object::ScriptBlock &scriptBlock = importedScripts[unit->scripts.at(ii).qualifier];
+
+            scriptBlock.codes.append(scriptCode);
+            scriptBlock.lineNumbers.append(1);
+            scriptBlock.files.append(unit->scripts.at(ii).resource->url);
+            scriptBlock.pragmas.append(pragmas);
+        }
+    }
+
+    for (QHash<QString, Object::ScriptBlock>::Iterator iter = importedScripts.begin(); 
+         iter != importedScripts.end(); ++iter) {
+
+        importedScriptIndexes.append(iter.key());
+
+        QDeclarativeInstruction import;
+        import.type = QDeclarativeInstruction::StoreImportedScript;
+        import.line = 0;
+        import.storeScript.value = output->scripts.count();
+        output->scripts << *iter;
+        output->bytecode << import;
+    }
+
     genObject(tree);
 
     QDeclarativeInstruction def;
@@ -645,7 +673,13 @@ void QDeclarativeCompiler::compileTree(Object *tree)
     output->bytecode << def;
 
     output->imports = unit->imports;
-    output->importCache = output->imports.cache(engine);
+
+    output->importCache = new QDeclarativeTypeNameCache(engine);
+
+    for (int ii = 0; ii < importedScriptIndexes.count(); ++ii) 
+        output->importCache->add(importedScriptIndexes.at(ii), ii);
+
+    output->imports.cache(output->importCache, engine);
 
     Q_ASSERT(tree->metatype);
 
@@ -1157,6 +1191,8 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
 
 bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclarativeParser::Object *script)
 {
+    qWarning().nospace() << qPrintable(output->url.toString()) << ":" << obj->location.start.line << ":" << obj->location.start.column << ": Script blocks have been deprecated.  Support will be removed entirely shortly.";
+
     Object::ScriptBlock scriptBlock;
 
     if (script->properties.count() == 1 && 
@@ -1188,6 +1224,7 @@ bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclara
                 scriptBlock.codes.append(scriptCode);
                 scriptBlock.files.append(sourceUrl);
                 scriptBlock.lineNumbers.append(lineNumber);
+                scriptBlock.pragmas.append(Object::ScriptBlock::None);
             }
         }
 
@@ -1230,6 +1267,7 @@ bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclara
             scriptBlock.codes.append(scriptCode);
             scriptBlock.files.append(sourceUrl);
             scriptBlock.lineNumbers.append(lineNumber);
+            scriptBlock.pragmas.append(Object::ScriptBlock::None);
         }
     }
 
@@ -1331,7 +1369,6 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
                                        const BindingContext &ctxt)
 {
     Q_ASSERT(obj->metaObject());
-    Q_ASSERT(!prop->isEmpty());
 
     QByteArray name = prop->name;
     Q_ASSERT(name.startsWith("on"));
@@ -1350,7 +1387,7 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
     }  else {
 
         if (prop->value || prop->values.count() != 1)
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Incorrectly specified signal"));
+            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Incorrectly specified signal assignment"));
 
         prop->index = sigIdx;
         obj->addSignalProperty(prop);
@@ -2094,7 +2131,7 @@ bool QDeclarativeCompiler::buildPropertyOnAssignment(QDeclarativeParser::Propert
             buildDynamicMeta(baseObj, ForceCreation);
         v->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
     } else {
-        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","\"%1\" cannot operate on \"%2\"").arg(v->object->typeName.constData()).arg(prop->name.constData()));
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","\"%1\" cannot operate on \"%2\"").arg(QString::fromUtf8(v->object->typeName)).arg(QString::fromUtf8(prop->name.constData())));
     }
 
     return true;
@@ -2392,9 +2429,17 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
             propertyType = QVariant::Color;
             type = "QColor";
             break;
+        case Object::DynamicProperty::Time:
+            propertyType = QVariant::Time;
+            type = "QTime";
+            break;
         case Object::DynamicProperty::Date:
             propertyType = QVariant::Date;
             type = "QDate";
+            break;
+        case Object::DynamicProperty::DateTime:
+            propertyType = QVariant::DateTime;
+            type = "QDateTime";
             break;
         }
 
@@ -2740,7 +2785,7 @@ bool QDeclarativeCompiler::completeComponentBuild()
         if (index != -1) {
             binding.dataType = BindingReference::Experimental;
             binding.compiledIndex = index;
-            componentStat.optimizedBindings++;
+            componentStat.optimizedBindings.append(iter.key()->location);
             continue;
         } 
 
@@ -2774,7 +2819,7 @@ bool QDeclarativeCompiler::completeComponentBuild()
             QByteArray((const char *)expression.constData(), 
                        expression.length() * sizeof(QChar));
 
-        componentStat.scriptBindings++;
+        componentStat.scriptBindings.append(iter.key()->location);
     }
 
     if (bindingCompiler.isValid()) {
@@ -2796,8 +2841,44 @@ void QDeclarativeCompiler::dumpStats()
         qWarning().nospace() << "    Component Line " << stat.lineNumber;
         qWarning().nospace() << "        Total Objects:      " << stat.objects;
         qWarning().nospace() << "        IDs Used:           " << stat.ids;
-        qWarning().nospace() << "        Optimized Bindings: " << stat.optimizedBindings;
-        qWarning().nospace() << "        QScript Bindings:   " << stat.scriptBindings;
+        qWarning().nospace() << "        Optimized Bindings: " << stat.optimizedBindings.count();
+
+        {
+        QByteArray output;
+        for (int ii = 0; ii < stat.optimizedBindings.count(); ++ii) {
+            if (0 == (ii % 10)) {
+                if (ii) output.append("\n");
+                output.append("            ");
+            }
+
+            output.append("(");
+            output.append(QByteArray::number(stat.optimizedBindings.at(ii).start.line));
+            output.append(":");
+            output.append(QByteArray::number(stat.optimizedBindings.at(ii).start.column));
+            output.append(") ");
+        }
+        if (!output.isEmpty())
+            qWarning().nospace() << output.constData();
+        }
+
+        qWarning().nospace() << "        QScript Bindings:   " << stat.scriptBindings.count();
+        {
+        QByteArray output;
+        for (int ii = 0; ii < stat.scriptBindings.count(); ++ii) {
+            if (0 == (ii % 10)) {
+                if (ii) output.append("\n");
+                output.append("            ");
+            }
+
+            output.append("(");
+            output.append(QByteArray::number(stat.scriptBindings.at(ii).start.line));
+            output.append(":");
+            output.append(QByteArray::number(stat.scriptBindings.at(ii).start.column));
+            output.append(") ");
+        }
+        if (!output.isEmpty())
+            qWarning().nospace() << output.constData();
+        }
     }
 }
 

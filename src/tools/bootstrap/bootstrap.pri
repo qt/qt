@@ -51,7 +51,7 @@ hpux-acc*|hpuxi-acc* {
     }
     LIBS += -lbootstrap
 }
-!contains(QT_CONFIG, zlib):!contains(QT_CONFIG, no-zlib) {
+!contains(QT_CONFIG, zlib):!contains(QT_CONFIG, no-zlib):!cross_compile {
    unix:LIBS += -lz
 #  win32:LIBS += libz.lib
 }
