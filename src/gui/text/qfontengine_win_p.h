@@ -106,7 +106,9 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &xform);
     virtual QImage alphaRGBMapForGlyph(glyph_t t, int margin, const QTransform &xform);
 
+#ifndef Q_CC_MINGW
     virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0);
+#endif
 
     int getGlyphIndexes(const QChar *ch, int numChars, QGlyphLayout *glyphs, bool mirrored) const;
     void getCMap();
