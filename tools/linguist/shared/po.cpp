@@ -692,6 +692,13 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
     return ok;
 }
 
+static bool savePOT(const Translator &translator, QIODevice &dev, ConversionData &cd)
+{
+    Translator ttor = translator;
+    ttor.dropTranslations();
+    return savePO(ttor, dev, cd);
+}
+
 int initPO()
 {
     Translator::FileFormat format;
@@ -701,6 +708,13 @@ int initPO()
     format.saver = &savePO;
     format.fileType = Translator::FileFormat::TranslationSource;
     format.priority = 1;
+    Translator::registerFileFormat(format);
+    format.extension = QLatin1String("pot");
+    format.description = QObject::tr("GNU Gettext localization template files");
+    format.loader = &loadPO;
+    format.saver = &savePOT;
+    format.fileType = Translator::FileFormat::TranslationSource;
+    format.priority = -1;
     Translator::registerFileFormat(format);
     return 1;
 }
