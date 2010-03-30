@@ -58,7 +58,8 @@ struct QMetaObject;
 #ifndef QDECLARATIVELISTPROPERTY
 #define QDECLARATIVELISTPROPERTY
 template<typename T>
-struct QDeclarativeListProperty {
+class QDeclarativeListProperty {
+public:
     typedef void (*AppendFunction)(QDeclarativeListProperty<T> *, T*);
     typedef int (*CountFunction)(QDeclarativeListProperty<T> *);
     typedef T *(*AtFunction)(QDeclarativeListProperty<T> *, int);

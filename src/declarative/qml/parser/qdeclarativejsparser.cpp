@@ -273,11 +273,6 @@ case 20: {
         node = makeAstNode<AST::UiImport>(driver->nodePool(), importIdLiteral->value);
         node->fileNameToken = loc(2);
     } else if (AST::UiQualifiedId *qualifiedId = reparseAsQualifiedId(sym(2).Expression)) {
-        QString text;
-        for (AST::UiQualifiedId *q = qualifiedId; q; q = q->next) {
-           text += q->name->asString();
-           if (q->next) text += QLatin1String(".");
-        }
         node = makeAstNode<AST::UiImport>(driver->nodePool(), qualifiedId);
         node->fileNameToken = loc(2);
     }

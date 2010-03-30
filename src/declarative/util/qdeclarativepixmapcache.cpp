@@ -114,7 +114,7 @@ private:
     QList<QDeclarativePixmapReply*> cancelled;
     QDeclarativeEngine *engine;
     QDeclarativeImageRequestHandler *handler;
-    QWaitCondition started;
+    QObject *eventLoopQuitHack;
     QMutex mutex;
 
     static QHash<QDeclarativeEngine *,QDeclarativeImageReader*> readers;
@@ -179,8 +179,16 @@ static bool readImage(const QUrl& url, QIODevice *dev, QImage *image, QString *e
     bool scaled = false;
     if (req_width > 0 || req_height > 0) {
         QSize s = imgio.size();
-        if (req_width && (force_scale || req_width < s.width())) { s.setWidth(req_width); scaled = true; }
-        if (req_height && (force_scale || req_height < s.height())) { s.setHeight(req_height); scaled = true; }
+        if (req_width && (force_scale || req_width < s.width())) {
+            if (req_height <= 0)
+                s.setHeight(s.height()*req_width/s.width());
+            s.setWidth(req_width); scaled = true;
+        }
+        if (req_height && (force_scale || req_height < s.height())) {
+            if (req_width <= 0)
+                s.setWidth(s.width()*req_height/s.height());
+            s.setHeight(req_height); scaled = true;
+        }
         if (scaled) { imgio.setScaledSize(s); }
     }
 
@@ -362,6 +370,9 @@ void QDeclarativeImageRequestHandler::networkRequestDone()
 QDeclarativeImageReader::QDeclarativeImageReader(QDeclarativeEngine *eng)
     : QThread(eng), engine(eng), handler(0)
 {
+    eventLoopQuitHack = new QObject;
+    eventLoopQuitHack->moveToThread(this);
+    connect(eventLoopQuitHack, SIGNAL(destroyed(QObject*)), SLOT(quit()), Qt::DirectConnection);
     start(QThread::IdlePriority);
 }
 
@@ -371,15 +382,8 @@ QDeclarativeImageReader::~QDeclarativeImageReader()
     readers.remove(engine);
     readerMutex.unlock();
 
-    if (isRunning()) {
-        quit();
-        while (!wait(100)) {
-            // It is possible to for the quit to happen before exec()
-            // Need to wait until the event loop starts so that we
-            // can stop it.  Particularly likely with an idle thread.
-            quit();
-        }
-    }
+    eventLoopQuitHack->deleteLater();
+    wait();
 }
 
 QDeclarativeImageReader *QDeclarativeImageReader::instance(QDeclarativeEngine *engine)
@@ -388,7 +392,6 @@ QDeclarativeImageReader *QDeclarativeImageReader::instance(QDeclarativeEngine *e
     QDeclarativeImageReader *reader = readers.value(engine);
     if (!reader) {
         reader = new QDeclarativeImageReader(engine);
-        reader->started.wait(&readerMutex);
         readers.insert(engine, reader);
     }
     readerMutex.unlock();
@@ -425,7 +428,6 @@ void QDeclarativeImageReader::run()
 {
     readerMutex.lock();
     handler = new QDeclarativeImageRequestHandler(this, engine);
-    started.wakeAll();
     readerMutex.unlock();
 
     exec();
@@ -596,7 +598,7 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
     QDeclarativePixmapReply::Status status = QDeclarativePixmapReply::Unrequested;
     QByteArray key = url.toEncoded(QUrl::FormattingOption(0x100));
 
-    if (req_width > 0 && req_height > 0) {
+    if (req_width > 0 || req_height > 0) {
         key += ':';
         key += QByteArray::number(req_width);
         key += 'x';

@@ -43,7 +43,7 @@
 #include "qdeclarativerepeater_p_p.h"
 
 #include "qdeclarativevisualitemmodel_p.h"
-
+#include <private/qdeclarativeglobal_p.h>
 #include <qdeclarativelistaccessor_p.h>
 
 #include <qlistmodelinterface_p.h>
@@ -283,7 +283,6 @@ void QDeclarativeRepeater::clear()
     Q_D(QDeclarativeRepeater);
     if (d->model) {
         foreach (QDeclarativeItem *item, d->deletables) {
-            item->setParentItem(this);
             d->model->release(item);
         }
     }
@@ -307,7 +306,8 @@ void QDeclarativeRepeater::regenerate()
     for (int ii = 0; ii < count(); ++ii) {
         QDeclarativeItem *item = d->model->item(ii);
         if (item) {
-            item->setParent(parentItem());
+            QDeclarative_setParent_noEvent(item, parentItem());
+            item->setParentItem(parentItem());
             item->stackBefore(this);
             d->deletables << item;
         }
@@ -323,7 +323,8 @@ void QDeclarativeRepeater::itemsInserted(int index, int count)
         int modelIndex = index + i;
         QDeclarativeItem *item = d->model->item(modelIndex);
         if (item) {
-            item->setParent(parentItem());
+            QDeclarative_setParent_noEvent(item, parentItem());
+            item->setParentItem(parentItem());
             if (modelIndex < d->deletables.count())
                 item->stackBefore(d->deletables.at(modelIndex));
             else
@@ -341,7 +342,6 @@ void QDeclarativeRepeater::itemsRemoved(int index, int count)
     while (count--) {
         QDeclarativeItem *item = d->deletables.takeAt(index);
         if (item) {
-            item->setParentItem(this);
             d->model->release(item);
         }
     }

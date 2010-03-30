@@ -13,7 +13,6 @@ SUBDIRS += \
            qdeclarativedebugclient \         # Cover
            qdeclarativedebugservice \        # Cover
            qdeclarativedom \                 # Cover
-           qdeclarativeeasefollow \          # Cover
            qdeclarativeecmascript \          # Cover
            qdeclarativeengine     \          # Cover
            qdeclarativeerror \               # Cover
@@ -24,6 +23,7 @@ SUBDIRS += \
            qdeclarativeborderimage \ # Cover
            qdeclarativeflickable   \ # Cover
            qdeclarativeflipable    \ # Cover
+           qdeclarativefocusscope  \ # Cover
            qdeclarativegridview \    # Cover
            qdeclarativeitem \        # Cover
            qdeclarativelistview \    # Cover
@@ -47,6 +47,7 @@ SUBDIRS += \
            qdeclarativepixmapcache \         # Cover
            qdeclarativepropertymap \         # Cover
            qdeclarativeqt \                  # Cover
+           qdeclarativesmoothedanimation \   # Cover
            qdeclarativespringfollow \        # Cover
            qdeclarativestates \              # Cover
            qdeclarativesystempalette \       # Cover
