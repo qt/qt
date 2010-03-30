@@ -124,6 +124,10 @@ void tst_qmlvisual::visual()
     arguments << "-script" << testdata
               << "-scriptopts" << "play,testimages,testerror,exitoncomplete,exitonfailure" 
               << file << "-graphicssystem" << "raster";
+#ifdef Q_WS_QWS
+    arguments << "-qws";
+#endif
+
     QProcess p;
     p.start(qmlruntime, arguments);
     QVERIFY(p.waitForFinished());
