@@ -77,11 +77,11 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l PauseAnimation
 \o \l ParentAnimation
 \o \l AnchorAnimation
+\o \l SmoothedAnimation
 \o \l PropertyAction
 \o \l ScriptAction
 \o \l Transition
 \o \l SpringFollow
-\o \l EaseFollow
 \o \l Behavior
 \endlist
 

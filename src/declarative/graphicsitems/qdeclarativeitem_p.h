@@ -63,6 +63,7 @@
 #include <private/qdeclarativestate_p.h>
 #include <private/qdeclarativenullablevalue_p_p.h>
 #include <private/qdeclarativenotifier_p.h>
+#include <private/qdeclarativeglobal_p.h>
 
 #include <qdeclarative.h>
 #include <qdeclarativecontext.h>
@@ -129,9 +130,10 @@ public:
     void init(QDeclarativeItem *parent)
     {
         Q_Q(QDeclarativeItem);
-
-        if (parent)
+        if (parent) {
+            QDeclarative_setParent_noEvent(q, parent);
             q->setParentItem(parent);
+        }
         _baselineOffset.invalidate();
         mouseSetsFocus = false;
     }

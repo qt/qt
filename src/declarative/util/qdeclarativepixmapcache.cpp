@@ -114,7 +114,7 @@ private:
     QList<QDeclarativePixmapReply*> cancelled;
     QDeclarativeEngine *engine;
     QDeclarativeImageRequestHandler *handler;
-    QWaitCondition started;
+    QObject *eventLoopQuitHack;
     QMutex mutex;
 
     static QHash<QDeclarativeEngine *,QDeclarativeImageReader*> readers;
@@ -370,6 +370,9 @@ void QDeclarativeImageRequestHandler::networkRequestDone()
 QDeclarativeImageReader::QDeclarativeImageReader(QDeclarativeEngine *eng)
     : QThread(eng), engine(eng), handler(0)
 {
+    eventLoopQuitHack = new QObject;
+    eventLoopQuitHack->moveToThread(this);
+    connect(eventLoopQuitHack, SIGNAL(destroyed(QObject*)), SLOT(quit()), Qt::DirectConnection);
     start(QThread::IdlePriority);
 }
 
@@ -379,15 +382,8 @@ QDeclarativeImageReader::~QDeclarativeImageReader()
     readers.remove(engine);
     readerMutex.unlock();
 
-    if (isRunning()) {
-        quit();
-        while (!wait(100)) {
-            // It is possible to for the quit to happen before exec()
-            // Need to wait until the event loop starts so that we
-            // can stop it.  Particularly likely with an idle thread.
-            quit();
-        }
-    }
+    eventLoopQuitHack->deleteLater();
+    wait();
 }
 
 QDeclarativeImageReader *QDeclarativeImageReader::instance(QDeclarativeEngine *engine)
@@ -396,7 +392,6 @@ QDeclarativeImageReader *QDeclarativeImageReader::instance(QDeclarativeEngine *e
     QDeclarativeImageReader *reader = readers.value(engine);
     if (!reader) {
         reader = new QDeclarativeImageReader(engine);
-        reader->started.wait(&readerMutex);
         readers.insert(engine, reader);
     }
     readerMutex.unlock();
@@ -433,7 +428,6 @@ void QDeclarativeImageReader::run()
 {
     readerMutex.lock();
     handler = new QDeclarativeImageRequestHandler(this, engine);
-    started.wakeAll();
     readerMutex.unlock();
 
     exec();
