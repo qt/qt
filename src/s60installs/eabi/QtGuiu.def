@@ -11805,4 +11805,5 @@ EXPORTS
 	_ZN24QImagePixmapCleanupHooks34executePixmapDataModificationHooksEP11QPixmapData @ 11804 NONAME
 	_ZN9QS60Style10timerEventEP11QTimerEvent @ 11805 NONAME
 	_ZN9QS60Style11eventFilterEP7QObjectP6QEvent @ 11806 NONAME
+	_ZN13QFontDatabase25removeAllApplicationFontsEv @ 11807 NONAME
 

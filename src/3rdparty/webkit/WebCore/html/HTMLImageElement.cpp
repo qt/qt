@@ -209,6 +209,30 @@ void HTMLImageElement::removedFromDocument()
     HTMLElement::removedFromDocument();
 }
 
+void HTMLImageElement::insertedIntoTree(bool deep)
+{
+    if (!m_form) {
+        // m_form can be non-null if it was set in constructor.
+        for (Node* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
+            if (ancestor->hasTagName(formTag)) {
+                m_form = static_cast<HTMLFormElement*>(ancestor);
+                m_form->registerImgElement(this);
+                break;
+            }
+        }
+    }
+
+    HTMLElement::insertedIntoTree(deep);
+}
+
+void HTMLImageElement::removedFromTree(bool deep)
+{
+    if (m_form)
+        m_form->removeImgElement(this);
+    m_form = 0;
+    HTMLElement::removedFromTree(deep);
+}
+
 int HTMLImageElement::width(bool ignorePendingStylesheets) const
 {
     if (!renderer()) {

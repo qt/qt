@@ -2626,14 +2626,22 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             const int frameThickness = spinbox->frame ? pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget) : 0;
             const int buttonMargin = spinbox->frame ? 2 : 0;
             const int buttonContentWidth = QS60StylePrivate::pixelMetric(PM_ButtonIconSize) + 2 * buttonMargin;
+            // Spinbox buttons should be no larger than one fourth of total width.
+            // Thus, side-by-side buttons would take half of the total width.
+            const int maxSize = qMax(spinbox->rect.width() / 4, buttonContentWidth);
             QSize buttonSize;
-            buttonSize.setHeight(qMax(8, spinbox->rect.height() - frameThickness));
+            buttonSize.setHeight(qMin(maxSize, qMax(8, spinbox->rect.height() - frameThickness)));
             //width should at least be equal to height
             buttonSize.setWidth(qMax(buttonSize.height(), buttonContentWidth));
             buttonSize = buttonSize.expandedTo(QApplication::globalStrut());
 
-            const int y = frameThickness + spinbox->rect.y();
-            const int x = spinbox->rect.x() + spinbox->rect.width() - frameThickness - 2 * buttonSize.width();
+            // Normally spinbuttons should be side-by-side, but if spinbox grows very big
+            // and spinbuttons reach their maximum size, they can be deployed one top of the other.
+            const bool sideBySide = (buttonSize.height() * 2 < spinbox->rect.height()) ? false : true;
+            const int y = frameThickness + spinbox->rect.y() +  
+                          (spinbox->rect.height() - (sideBySide ? 1 : 2) * buttonSize.height()) / 2;
+            const int x = spinbox->rect.x() + 
+                          spinbox->rect.width() - frameThickness - (sideBySide ? 2 : 1) * buttonSize.width();
 
             switch (scontrol) {
                 case SC_SpinBoxUp:
@@ -2644,7 +2652,9 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 case SC_SpinBoxDown:
                     if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
                         return QRect();
-                    ret = QRect(x + buttonSize.width(), y, buttonSize.width(), buttonSize.height());
+                    ret = QRect(x + (sideBySide ? buttonSize.width() : 0), 
+                                y + (sideBySide ? 0 : buttonSize.height()), 
+                                buttonSize.width(), buttonSize.height());
                     break;
                 case SC_SpinBoxEditField:
                     if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
@@ -2787,11 +2797,10 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             break;
         case SE_LineEditContents: {
                 // in S60 the input text box doesn't start from line Edit's TL, but
-                // a bit indented.
-                QRect lineEditRect = opt->rect;
-                const int adjustment = opt->rect.height() >> 2;
-                lineEditRect.adjust(adjustment, 0, 0, 0);
-                ret = lineEditRect;
+                // a bit indented (8 pixels).
+                const int KLineEditDefaultIndention = 8;
+                ret = visualRect(
+                    opt->direction, opt->rect, opt->rect.adjusted(KLineEditDefaultIndention, 0, 0, 0));
             }
             break;
         case SE_TabBarTearIndicator:
