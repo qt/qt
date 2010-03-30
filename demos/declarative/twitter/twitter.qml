@@ -1,5 +1,5 @@
 import Qt 4.6
-import TwitterCore 1.0 as Twitter
+import "TwitterCore" 1.0 as Twitter
 
 Item {
     id: screen; width: 320; height: 480

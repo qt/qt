@@ -62,6 +62,8 @@
 
 #include <private/qdeclarativestate_p.h>
 #include <private/qdeclarativenullablevalue_p_p.h>
+#include <private/qdeclarativenotifier_p.h>
+
 #include <qdeclarative.h>
 #include <qdeclarativecontext.h>
 
@@ -114,7 +116,7 @@ public:
       widthValid(false), heightValid(false),
       _componentComplete(true), _keepMouse(false),
       smooth(false), keyHandler(0),
-      width(0), height(0), implicitWidth(0), implicitHeight(0)
+      mWidth(0), mHeight(0), implicitWidth(0), implicitHeight(0)
     {
         QGraphicsItemPrivate::acceptedMouseButtons = 0;
         QGraphicsItemPrivate::flags = QGraphicsItem::GraphicsItemFlags(
@@ -136,6 +138,16 @@ public:
 
     QString _id;
 
+    // Private Properties
+    qreal width() const;
+    void setWidth(qreal);
+    void resetWidth();
+
+    qreal height() const;
+    void setHeight(qreal);
+    void resetHeight();
+
+
     // data property
     static void data_append(QDeclarativeListProperty<QObject> *, QObject *);
 
@@ -144,16 +156,15 @@ public:
     static void resources_append(QDeclarativeListProperty<QObject> *, QObject *);
     static int resources_count(QDeclarativeListProperty<QObject> *);
 
-    // children property
-    static QDeclarativeItem *children_at(QDeclarativeListProperty<QDeclarativeItem> *, int);
-    static void children_append(QDeclarativeListProperty<QDeclarativeItem> *, QDeclarativeItem *);
-    static int children_count(QDeclarativeListProperty<QDeclarativeItem> *);
-
     // transform property
     static int transform_count(QDeclarativeListProperty<QGraphicsTransform> *list);
     static void transform_append(QDeclarativeListProperty<QGraphicsTransform> *list, QGraphicsTransform *);
     static QGraphicsTransform *transform_at(QDeclarativeListProperty<QGraphicsTransform> *list, int);
     static void transform_clear(QDeclarativeListProperty<QGraphicsTransform> *list);
+
+    // Accelerated property accessors
+    QDeclarativeNotifier parentNotifier;
+    static void parentProperty(QObject *o, void *rv, QDeclarativeNotifierEndpoint *e);
 
     QDeclarativeAnchors *anchors() {
         if (!_anchors) {
@@ -222,8 +233,8 @@ public:
 
     QDeclarativeItemKeyFilter *keyHandler;
 
-    qreal width;
-    qreal height;
+    qreal mWidth;
+    qreal mHeight;
     qreal implicitWidth;
     qreal implicitHeight;
 
@@ -232,9 +243,9 @@ public:
     virtual void setPosHelper(const QPointF &pos)
     {
         Q_Q(QDeclarativeItem);
-        QRectF oldGeometry(this->pos.x(), this->pos.y(), width, height);
+        QRectF oldGeometry(this->pos.x(), this->pos.y(), mWidth, mHeight);
         QGraphicsItemPrivate::setPosHelper(pos);
-        q->geometryChanged(QRectF(this->pos.x(), this->pos.y(), width, height), oldGeometry);
+        q->geometryChanged(QRectF(this->pos.x(), this->pos.y(), mWidth, mHeight), oldGeometry);
     }
 
     // Reimplemented from QGraphicsItemPrivate

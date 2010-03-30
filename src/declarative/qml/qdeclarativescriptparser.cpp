@@ -528,9 +528,14 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         { "string", Object::DynamicProperty::String, "QString" },
         { "url", Object::DynamicProperty::Url, "QUrl" },
         { "color", Object::DynamicProperty::Color, "QColor" },
-        { "date", Object::DynamicProperty::Date, "QDate" },
-        { "var", Object::DynamicProperty::Variant, "QVariant" },
-        { "variant", Object::DynamicProperty::Variant, "QVariant" }
+        // Internally QTime, QDate and QDateTime are all supported.
+        // To be more consistent with JavaScript we expose only
+        // QDateTime as it matches closely with the Date JS type.
+        // We also call it "date" to match.
+        // { "time", Object::DynamicProperty::Time, "QTime" },
+        // { "date", Object::DynamicProperty::Date, "QDate" },
+        { "date", Object::DynamicProperty::DateTime, "QDateTime" },
+        { "var", Object::DynamicProperty::Variant, "QVariant" }
     };
     const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) /
                                          sizeof(propTypeNameToTypes[0]);

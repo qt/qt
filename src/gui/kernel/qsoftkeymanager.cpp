@@ -115,6 +115,8 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
         break;
     }
     action->setSoftKeyRole(softKeyRole);
+    action->setVisible(false);
+    setForceEnabledInSoftkeys(action);
     return action;
 }
 
@@ -168,14 +170,25 @@ bool QSoftKeyManager::appendSoftkeys(const QWidget &source, int level)
 {
     Q_D(QSoftKeyManager);
     bool ret = false;
-    QList<QAction*> actions = source.actions();
-    for (int i = 0; i < actions.count(); ++i) {
-        if (actions.at(i)->softKeyRole() != QAction::NoSoftKey) {
-            d->requestedSoftKeyActions.insert(level, actions.at(i));
+    foreach(QAction *action, source.actions()) {
+        if (action->softKeyRole() != QAction::NoSoftKey
+            && (action->isVisible() || isForceEnabledInSofkeys(action))) {
+            d->requestedSoftKeyActions.insert(level, action);
             ret = true;
         }
     }
     return ret;
+}
+
+
+static bool isChildOf(const QWidget *c, const QWidget *p)
+{
+    while (c) {
+        if (c == p)
+            return true;
+        c = c->parentWidget();
+    }
+    return false;
 }
 
 QWidget *QSoftKeyManager::softkeySource(QWidget *previousSource, bool& recursiveMerging)
@@ -184,9 +197,28 @@ QWidget *QSoftKeyManager::softkeySource(QWidget *previousSource, bool& recursive
     QWidget *source = NULL;
     if (!previousSource) {
         // Initial source is primarily focuswidget and secondarily activeWindow
-        source = QApplication::focusWidget();
-        if (!source)
-            source = QApplication::activeWindow();
+        QWidget *focus = QApplication::focusWidget();
+        QWidget *popup = QApplication::activePopupWidget();
+        if (popup) {
+            if (isChildOf(focus, popup))
+                source = focus;
+            else
+                source = popup;
+        }
+        if (!source) {
+            QWidget *modal = QApplication::activeModalWidget();
+            if (modal) {
+                if (isChildOf(focus, modal))
+                    source = focus;
+                else
+                    source = modal;
+            }
+        }
+        if (!source) {
+            source = focus;
+            if (!source)
+                source = QApplication::activeWindow();
+        }
     } else {
         // Softkey merging is based on four criterias
         // 1. Implicit merging is used whenever focus widget does not specify any softkeys
@@ -218,6 +250,20 @@ bool QSoftKeyManager::handleUpdateSoftKeys()
 
     d->updateSoftKeys_sys();
     return true;
+}
+
+void QSoftKeyManager::setForceEnabledInSoftkeys(QAction *action)
+{
+    action->setProperty(FORCE_ENABLED_PROPERTY, QVariant(true));
+}
+
+bool QSoftKeyManager::isForceEnabledInSofkeys(QAction *action)
+{
+    bool ret = false;
+    QVariant property = action->property(FORCE_ENABLED_PROPERTY);
+    if (property.isValid() && property.toBool())
+        ret = true;
+    return ret;
 }
 
 bool QSoftKeyManager::event(QEvent *e)

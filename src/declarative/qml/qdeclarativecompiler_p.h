@@ -318,14 +318,13 @@ private:
 
     struct ComponentStat
     {
-        ComponentStat() 
-            : ids(0), scriptBindings(0), optimizedBindings(0), objects(0) {}
+        ComponentStat() : ids(0), objects(0) {}
 
         int lineNumber;
 
         int ids;
-        int scriptBindings;
-        int optimizedBindings;
+        QList<QDeclarativeParser::LocationSpan> scriptBindings;
+        QList<QDeclarativeParser::LocationSpan> optimizedBindings;
         int objects;
     };
     ComponentStat componentStat;

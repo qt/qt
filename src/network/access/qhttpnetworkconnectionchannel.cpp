@@ -865,7 +865,14 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
 void QHttpNetworkConnectionChannel::_q_connected()
 {
     // improve performance since we get the request sent by the kernel ASAP
-    socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    //socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    // We have this commented out now. It did not have the effect we wanted. If we want to
+    // do this properly, Qt has to combine multiple HTTP requests into one buffer
+    // and send this to the kernel in one syscall and then the kernel immediately sends
+    // it as one TCP packet because of TCP_NODELAY.
+    // However, this code is currently not in Qt, so we rely on the kernel combining
+    // the requests into one TCP packet.
+
     // not sure yet if it helps, but it makes sense
     socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 

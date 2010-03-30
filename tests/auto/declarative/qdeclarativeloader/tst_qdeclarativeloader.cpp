@@ -129,6 +129,10 @@ void tst_QDeclarativeLoader::component()
     QCOMPARE(loader->status(), QDeclarativeLoader::Ready);
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
 
+    QDeclarativeComponent *c = qobject_cast<QDeclarativeComponent*>(item->QGraphicsObject::children().at(0));
+    QVERIFY(c);
+    QCOMPARE(loader->sourceComponent(), c);
+
     delete loader;
 }
 
