@@ -3398,6 +3398,9 @@ QRect QGtkStyle::subElementRect(SubElement element, const QStyleOption *option, 
     Q_D(const QGtkStyle);
 
     QRect r = QCleanlooksStyle::subElementRect(element, option, widget);
+    if (!d->isThemeAvailable())
+        return r;
+
     switch (element) {
     case SE_ProgressBarLabel:
     case SE_ProgressBarContents:
