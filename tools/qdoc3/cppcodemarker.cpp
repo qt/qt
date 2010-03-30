@@ -482,55 +482,66 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
         if (style == Summary) {
 	    FastSection privateFunctions(classe,
                                          "Private Functions",
+                                         "",
                                          "private function",
 				         "private functions");
-	    FastSection privateSlots(classe, "Private Slots", "private slot", "private slots");
-	    FastSection privateTypes(classe, "Private Types", "private type", "private types");
+	    FastSection privateSlots(classe, "Private Slots", "", "private slot", "private slots");
+	    FastSection privateTypes(classe, "Private Types", "", "private type", "private types");
 	    FastSection protectedFunctions(classe,
                                            "Protected Functions",
+                                           "",
                                            "protected function",
 				           "protected functions");
 	    FastSection protectedSlots(classe,
                                        "Protected Slots",
+                                       "",
                                        "protected slot",
                                        "protected slots");
 	    FastSection protectedTypes(classe,
                                        "Protected Types",
+                                       "",
                                        "protected type",
                                        "protected types");
 	    FastSection protectedVariables(classe,
                                            "Protected Variables",
+                                           "",
                                            "protected type",
                                            "protected variables");
 	    FastSection publicFunctions(classe,
                                         "Public Functions",
+                                        "",
                                         "public function",
                                         "public functions");
-	    FastSection publicSignals(classe, "Signals", "signal", "signals");
-	    FastSection publicSlots(classe, "Public Slots", "public slot", "public slots");
-	    FastSection publicTypes(classe, "Public Types", "public type", "public types");
+	    FastSection publicSignals(classe, "Signals", "", "signal", "signals");
+	    FastSection publicSlots(classe, "Public Slots", "", "public slot", "public slots");
+	    FastSection publicTypes(classe, "Public Types", "", "public type", "public types");
 	    FastSection publicVariables(classe,
                                         "Public Variables",
-                                        "public type",
+                                        "",
+                                        "public variable",
                                         "public variables");
-	    FastSection properties(classe, "Properties", "property", "properties");
+	    FastSection properties(classe, "Properties", "", "property", "properties");
 	    FastSection relatedNonMembers(classe,
                                           "Related Non-Members",
+                                          "",
                                           "related non-member",
                                           "related non-members");
 	    FastSection staticPrivateMembers(classe,
                                              "Static Private Members",
+                                             "",
                                              "static private member",
 					     "static private members");
 	    FastSection staticProtectedMembers(classe,
                                                "Static Protected Members",
+                                               "",
 					       "static protected member",
                                                "static protected members");
 	    FastSection staticPublicMembers(classe,
                                             "Static Public Members",
+                                            "",
                                             "static public member",
 					    "static public members");
-            FastSection macros(inner, "Macros", "macro", "macros");
+            FastSection macros(inner, "Macros", "", "macro", "macros");
 
 	    NodeList::ConstIterator r = classe->relatedNodes().begin();
             while (r != classe->relatedNodes().end()) {
@@ -666,12 +677,12 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
             append(sections, macros);
         }
         else if (style == Detailed) {
-	    FastSection memberFunctions(classe,"Member Function Documentation");
-	    FastSection memberTypes(classe,"Member Type Documentation");
-	    FastSection memberVariables(classe,"Member Variable Documentation");
-	    FastSection properties(classe,"Property Documentation");
-	    FastSection relatedNonMembers(classe,"Related Non-Members");
-	    FastSection macros(classe,"Macro Documentation");
+	    FastSection memberFunctions(classe,"Member Function Documentation","func","member","members");
+	    FastSection memberTypes(classe,"Member Type Documentation","types","member","members");
+	    FastSection memberVariables(classe,"Member Variable Documentation","vars","member","members");
+	    FastSection properties(classe,"Property Documentation","prop","member","members");
+	    FastSection relatedNonMembers(classe,"Related Non-Members","relnonmem","member","members");
+	    FastSection macros(classe,"Macro Documentation","macros","member","members");
 
 	    NodeList::ConstIterator r = classe->relatedNodes().begin();
             while (r != classe->relatedNodes().end()) {
@@ -717,7 +728,7 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
 	    append(sections, macros);
         }
         else {
-	    FastSection all(classe);
+	    FastSection all(classe,"","","member","members");
 
 	    QStack<const ClassNode *> stack;
 	    stack.push(classe);
@@ -747,25 +758,29 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
         if (style == Summary || style == Detailed) {
 	    FastSection namespaces(inner,
                                    "Namespaces",
+                                   style == Detailed ? "nmspace" : "",
                                    "namespace",
                                    "namespaces");
             FastSection classes(inner,
                                 "Classes",
+                                style == Detailed ? "classes" : "",
                                 "class",
                                 "classes");
             FastSection types(inner,
-                              style == Summary ?
-                              "Types" : "Type Documentation",
+                              style == Summary ? "Types" : "Type Documentation",
+                              style == Detailed ? "types" : "",
                               "type",
 			      "types");
             FastSection functions(inner,
                                   style == Summary ?
                                   "Functions" : "Function Documentation",
+                                  style == Detailed ? "func" : "",
 			          "function",
                                   "functions");
             FastSection macros(inner,
                                style == Summary ?
                                "Macros" : "Macro Documentation",
+                               style == Detailed ? "macros" : "",
                                "macro",
                                "macros");
 
@@ -1116,26 +1131,32 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
         if (style == Summary) {
 	    FastSection qmlproperties(qmlClassNode,
                                       "Properties",
+                                      "",
                                       "property",
                                       "properties");
 	    FastSection qmlattachedproperties(qmlClassNode,
                                               "Attached Properties",
+                                              "",
                                               "property",
                                               "properties");
 	    FastSection qmlsignals(qmlClassNode,
-                                "Signals",
-                                "signal",
-                                "signals");
+                                   "Signals",
+                                   "",
+                                   "signal",
+                                   "signals");
 	    FastSection qmlattachedsignals(qmlClassNode,
                                            "Attached Signals",
+                                           "",
                                            "signal",
                                            "signals");
 	    FastSection qmlmethods(qmlClassNode,
                                    "Methods",
+                                   "",
                                    "method",
                                    "methods");
 	    FastSection qmlattachedmethods(qmlClassNode,
                                            "Attached Methods",
+                                           "",
                                            "method",
                                            "methods");
 
@@ -1179,12 +1200,15 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
 	    append(sections,qmlattachedmethods);
         }
         else if (style == Detailed) {
-            FastSection qmlproperties(qmlClassNode, "Property Documentation");
-	    FastSection qmlattachedproperties(qmlClassNode,"Attached Property Documentation");
-            FastSection qmlsignals(qmlClassNode,"Signal Documentation");
-	    FastSection qmlattachedsignals(qmlClassNode,"Attached Signal Documentation");
-            FastSection qmlmethods(qmlClassNode,"Method Documentation");
-	    FastSection qmlattachedmethods(qmlClassNode,"Attached Method Documentation");
+            FastSection qmlproperties(qmlClassNode, "Property Documentation","qmlprop","member","members");
+	    FastSection qmlattachedproperties(qmlClassNode,"Attached Property Documentation","qmlattprop",
+                                              "member","members");
+            FastSection qmlsignals(qmlClassNode,"Signal Documentation","qmlsig","member","members");
+	    FastSection qmlattachedsignals(qmlClassNode,"Attached Signal Documentation","qmlattsig",
+                                           "member","members");
+            FastSection qmlmethods(qmlClassNode,"Method Documentation","qmlmeth","member","members");
+	    FastSection qmlattachedmethods(qmlClassNode,"Attached Method Documentation","qmlattmeth",
+                                           "member","members");
 	    NodeList::ConstIterator c = qmlClassNode->childNodes().begin();
 	    while (c != qmlClassNode->childNodes().end()) {
                 if ((*c)->subType() == Node::QmlPropertyGroup) {

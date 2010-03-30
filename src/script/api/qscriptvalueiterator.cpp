@@ -139,6 +139,12 @@ QScriptValueIterator::QScriptValueIterator(const QScriptValue &object)
 */
 QScriptValueIterator::~QScriptValueIterator()
 {
+    Q_D(QScriptValueIterator);
+    if (d && d->engine()) {
+        // Make sure identifiers are removed from the correct engine.
+        QScript::APIShim shim(d->engine());
+        d->propertyNames.clear();
+    }
 }
 
 /*!

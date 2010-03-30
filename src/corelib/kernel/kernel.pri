@@ -33,7 +33,6 @@ HEADERS += \
         kernel/qsystemsemaphore.h \
         kernel/qsystemsemaphore_p.h \
         kernel/qfunctions_p.h \
-        kernel/qguard_p.h \
         kernel/qmath.h
 
 SOURCES += \
