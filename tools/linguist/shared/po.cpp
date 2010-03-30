@@ -580,6 +580,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                                     QRegExp(QLatin1String("[, ]")), QString::SkipEmptyParts);
                     if (flags.removeOne(QLatin1String("fuzzy")))
                         item.isFuzzy = true;
+                    flags.removeOne(QLatin1String("qt-format"));
                     TranslatorMessage::ExtraData::const_iterator it =
                             item.extra.find(QLatin1String("po-flags"));
                     if (it != item.extra.end())
@@ -673,6 +674,8 @@ static void addPoHeader(Translator::ExtraData &headers, QStringList &hdrOrder,
 
 bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
+    QString str_format = QLatin1String("-format");
+
     bool ok = true;
     QTextStream out(&dev);
     out.setCodec(cd.m_outputCodec.isEmpty() ? QByteArray("UTF-8") : cd.m_outputCodec);
@@ -732,15 +735,35 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
         }
 
         bool noWrap = false;
+        bool skipFormat = false;
         QStringList flags;
         if (msg.type() == TranslatorMessage::Unfinished && msg.isTranslated())
             flags.append(QLatin1String("fuzzy"));
         TranslatorMessage::ExtraData::const_iterator itr =
                 msg.extras().find(QLatin1String("po-flags"));
         if (itr != msg.extras().end()) {
-            if (itr->split(QLatin1String(", ")).contains(QLatin1String("no-wrap")))
+            QStringList atoms = itr->split(QLatin1String(", "));
+            foreach (const QString &atom, atoms)
+                if (atom.endsWith(str_format)) {
+                    skipFormat = true;
+                    break;
+                }
+            if (atoms.contains(QLatin1String("no-wrap")))
                 noWrap = true;
             flags.append(*itr);
+        }
+        if (!skipFormat) {
+            QString source = msg.sourceText();
+            // This is fuzzy logic, as we don't know whether the string is
+            // actually used with QString::arg().
+            for (int off = 0; (off = source.indexOf(QLatin1Char('%'), off)) >= 0; ) {
+                if (++off >= source.length())
+                    break;
+                if (source.at(off) == QLatin1Char('n') || source.at(off).isDigit()) {
+                    flags.append(QLatin1String("qt-format"));
+                    break;
+                }
+            }
         }
         if (!flags.isEmpty())
             out << "#, " << flags.join(QLatin1String(", ")) << '\n';
