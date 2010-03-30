@@ -101,11 +101,17 @@ void MMF::DsaVideoOutput::ancestorMoved()
 
 void MMF::DsaVideoOutput::beginNativePaintEvent(const QRect & /*controlRect*/)
 {
+    TRACE_CONTEXT(DsaVideoOutput::beginNativePaintEvent, EVideoInternal);
+    TRACE_ENTRY_0();
+
     emit beginVideoWindowNativePaint();
 }
 
 void MMF::DsaVideoOutput::endNativePaintEvent(const QRect & /*controlRect*/)
 {
+    TRACE_CONTEXT(DsaVideoOutput::endNativePaintEvent, EVideoInternal);
+    TRACE_ENTRY_0();
+
     // Ensure that draw ops are executed into the WSERV output framebuffer
     CCoeEnv::Static()->WsSession().Flush();
 
