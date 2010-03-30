@@ -100,7 +100,7 @@ static const uchar arabicRules[] =
       Q_EQ, 1, Q_NEWRULE,
       Q_EQ, 2, Q_NEWRULE,
       Q_MOD_100 | Q_BETWEEN, 3, 10, Q_NEWRULE,
-      Q_MOD_100 | Q_NOT | Q_BETWEEN, 0, 2 };
+      Q_MOD_100 | Q_GEQ, 11 };
 static const uchar tagalogRules[] =
     { Q_LEQ, 1, Q_NEWRULE,
       Q_MOD_10 | Q_EQ, 4, Q_OR, Q_MOD_10 | Q_EQ, 6, Q_OR, Q_MOD_10 | Q_EQ, 9 };
