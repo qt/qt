@@ -9,6 +9,10 @@ CONFIG(debug, debug|release) {
     OBJECTS_DIR = obj/release
 }
 
+symbian {
+    LIBS += -lhal
+}
+
 INCLUDEPATH = \
     $$PWD \
     $$PWD/.. \
@@ -23,6 +27,7 @@ INCLUDEPATH = \
     $$PWD/runtime \
     $$PWD/wrec \
     $$PWD/wtf \
+    $$PWD/wtf/symbian \
     $$PWD/wtf/unicode \
     $$PWD/yarr \
     $$PWD/API \
@@ -243,6 +248,7 @@ SOURCES += \
     profiler/TreeProfile.cpp \
     wtf/DateMath.cpp \
     wtf/FastMalloc.cpp \
+    wtf/symbian/BlockAllocatorSymbian.cpp \
     wtf/Threading.cpp \
     wtf/qt/MainThreadQt.cpp
 

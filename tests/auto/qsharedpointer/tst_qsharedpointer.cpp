@@ -1717,11 +1717,11 @@ void tst_QSharedPointer::invalidConstructs()
 #endif
 
     QTest::QExternalTest test;
-    test.setDebugMode(true);
     test.setQtModules(QTest::QExternalTest::QtCore);
     test.setExtraProgramSources(QStringList() << SRCDIR "forwarddeclared.cpp");
     test.setProgramHeader(
         "#define QT_SHAREDPOINTER_TRACK_POINTERS\n"
+        "#define QT_DEBUG\n"
         "#include <QtCore/qsharedpointer.h>\n"
         "#include <QtCore/qcoreapplication.h>\n"
         "\n"
