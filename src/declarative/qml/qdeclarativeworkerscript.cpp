@@ -437,8 +437,12 @@ QDeclarativeWorkerScriptEngine::QDeclarativeWorkerScriptEngine(QDeclarativeEngin
 
 QDeclarativeWorkerScriptEngine::~QDeclarativeWorkerScriptEngine()
 {
+    d->m_lock.lock();
     qDeleteAll(d->workers);
-    delete d; d = 0;
+    d->workers.clear();
+    d->m_lock.unlock();
+
+    d->deleteLater();
 }
 
 QDeclarativeWorkerScriptEnginePrivate::WorkerScript::WorkerScript()
