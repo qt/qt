@@ -415,7 +415,7 @@ void InnerNode::normalizeOverloads()
 
 /*!
  */
-void InnerNode::removeFromRelated() 
+void InnerNode::removeFromRelated()
 {
     while (!related.isEmpty()) {
         Node *p = static_cast<Node *>(related.takeFirst());
@@ -456,7 +456,7 @@ const Node *InnerNode::findNode(const QString& name, Type type) const
 }
 
 /*!
-  Find the function node in this node that has the given \a name. 
+  Find the function node in this node that has the given \a name.
  */
 const FunctionNode *InnerNode::findFunctionNode(const QString& name) const
 {
@@ -973,7 +973,7 @@ Parameter::Parameter(const Parameter& p)
 
 /*!
   Assigning Parameter \a p to this Parameter copies the
-  strings across. 
+  strings across.
  */
 Parameter& Parameter::operator=(const Parameter& p)
 {
@@ -1319,7 +1319,7 @@ void QmlClassNode::clear()
  */
 QString QmlClassNode::fileBase() const
 {
-#if 0    
+#if 0
     if (Node::fileBase() == "item")
         qDebug() << "FILEBASE: qmlitem" << name();
     return "qml_" + Node::fileBase();
@@ -1368,7 +1368,7 @@ QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
 
 /*!
   Constructor for the Qml property group node. \a parent is
-  always a QmlClassNode. 
+  always a QmlClassNode.
  */
 QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent,
                                    const QString& name,

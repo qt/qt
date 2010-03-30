@@ -146,7 +146,7 @@ static void locking_function(int mode, int lockNumber, const char *, int)
 }
 static unsigned long id_function()
 {
-    return (unsigned long)QThread::currentThreadId();
+    return (quintptr)QThread::currentThreadId();
 }
 } // extern "C"
 

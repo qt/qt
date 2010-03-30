@@ -1507,6 +1507,7 @@ QMakeProject::read(uchar cmd)
 
 void QMakeProject::validateModes()
 {
+#if !defined(QT_BUILD_QMAKE_NO_GENERATORS)
     if (Option::host_mode == Option::HOST_UNKNOWN_MODE
         || Option::target_mode == Option::TARG_UNKNOWN_MODE) {
         Option::HOST_MODE host_mode;
@@ -1543,6 +1544,7 @@ void QMakeProject::validateModes()
             }
         }
     }
+#endif // !defined(QT_BUILD_QMAKE_NO_GENERATORS)
 }
 
 bool

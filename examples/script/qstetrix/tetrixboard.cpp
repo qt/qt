@@ -54,7 +54,12 @@ TetrixBoard::TetrixBoard(QWidget *parent)
 
 void TetrixBoard::setNextPieceLabel(QWidget *label)
 {
-    nextPieceLabel = qobject_cast<QLabel*>(label);
+    nextPieceLbl = qobject_cast<QLabel*>(label);
+}
+
+QLabel *TetrixBoard::nextPieceLabel() const
+{ 
+    return nextPieceLbl;
 }
 
 QObject *TetrixBoard::getTimer()
@@ -82,16 +87,16 @@ void TetrixBoard::keyPressEvent(QKeyEvent *event)
 
 void TetrixBoard::showNextPiece(int width, int height)
 {
-    if (!nextPieceLabel)
+    if (!nextPieceLabel())
         return;
 
     QPixmap pixmap(width * squareWidth(), height * squareHeight());
     QPainter painter(&pixmap);
-    painter.fillRect(pixmap.rect(), nextPieceLabel->palette().background());
+    painter.fillRect(pixmap.rect(), nextPieceLabel()->palette().background());
 
     emit paintNextPieceRequested(&painter);
 
-    nextPieceLabel->setPixmap(pixmap);
+    nextPieceLabel()->setPixmap(pixmap);
 }
 
 void TetrixBoard::drawPauseScreen(QPainter *painter)

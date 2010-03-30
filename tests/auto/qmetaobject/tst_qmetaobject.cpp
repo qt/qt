@@ -706,6 +706,12 @@ void tst_QMetaObject::normalizedSignature_data()
     QTest::newRow("const6") << "void foo(QList<const int>)" << "void foo(QList<const int>)";
     QTest::newRow("const7") << "void foo(QList<const int*>)" << "void foo(QList<const int*>)";
     QTest::newRow("const8") << "void foo(QList<int const*>)" << "void foo(QList<const int*>)";
+    QTest::newRow("const9") << "void foo(const Foo<Bar>)" << "void foo(Foo<Bar>)";
+    QTest::newRow("const10") << "void foo(Foo<Bar>const)" << "void foo(Foo<Bar>)";
+    QTest::newRow("const11") << "void foo(Foo<Bar> *const)" << "void foo(Foo<Bar>*const)";
+    QTest::newRow("const12") << "void foo(Foo<Bar>const*const *const)" << "void foo(Foo<Bar>*const*const)";
+    QTest::newRow("const13") << "void foo(const Foo<Bar>&)" << "void foo(Foo<Bar>)";
+    QTest::newRow("const14") << "void foo(Foo<Bar>const&)" << "void foo(Foo<Bar>)";
 }
 
 void tst_QMetaObject::normalizedSignature()
@@ -734,6 +740,14 @@ void tst_QMetaObject::normalizedType_data()
     QTest::newRow("template7") << "QList<QList<int> >" << "QList<QList<int> >";
     QTest::newRow("value1") << "const QString &" << "QString";
     QTest::newRow("value2") << "QString const &" << "QString";
+    QTest::newRow("constInName1") << "constconst" << "constconst";
+    QTest::newRow("constInName2") << "constconst*" << "constconst*";
+    QTest::newRow("constInName3") << "const constconst&" << "constconst";
+    QTest::newRow("constInName4") << "constconst const*const" << "constconst*const";
+    QTest::newRow("class") << "const class foo&" << "foo";
+    QTest::newRow("struct") << "const struct foo*" << "const foo*";
+    QTest::newRow("struct2") << "struct foo const*" << "const foo*";
+    QTest::newRow("enum") << "enum foo" << "foo";
 }
 
 void tst_QMetaObject::normalizedType()
