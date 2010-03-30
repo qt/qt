@@ -78,6 +78,7 @@ public:
         DoNotBufferUploadDataAttribute,
         HttpPipeliningAllowedAttribute,
         HttpPipeliningWasUsedAttribute,
+        CustomVerbAttribute,
 
         User = 1000,
         UserMax = 32767
@@ -87,6 +88,12 @@ public:
         PreferNetwork,
         PreferCache,
         AlwaysCache
+    };
+
+    enum Priority {
+        HighPriority = 1,
+        NormalPriority = 3,
+        LowPriority = 5
     };
 
     explicit QNetworkRequest(const QUrl &url = QUrl());
@@ -122,6 +129,9 @@ public:
 
     void setOriginatingObject(QObject *object);
     QObject *originatingObject() const;
+
+    Priority priority() const;
+    void setPriority(Priority priority);
 
 private:
     QSharedDataPointer<QNetworkRequestPrivate> d;

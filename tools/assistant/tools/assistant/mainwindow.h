@@ -48,6 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 class QAction;
+class QFileSystemWatcher;
 class QLineEdit;
 class QComboBox;
 class QMenu;
@@ -57,8 +58,6 @@ class QHelpEngineCore;
 class QHelpEngine;
 class CentralWidget;
 class ContentWindow;
-class BookmarkManager;
-class BookmarkWidget;
 class CmdLineParser;
 class QtDocInstaller;
 
@@ -76,10 +75,6 @@ public:
     static QString defaultHelpCollectionFileName();
 
 public:
-    void hideContents();
-    void hideIndex();
-    void hideBookmarks();
-    void hideSearch();
     void setIndexString(const QString &str);
     void expandTOC(int depth);
     bool usesDefaultCollection() const;
@@ -88,18 +83,20 @@ signals:
     void initDone();
 
 public slots:
-    void showContents();
-    void showIndex();
-    void showBookmarks();
-    void showSearch();
+    void setContentsVisible(bool visible);
+    void setIndexVisible(bool visible);
+    void setBookmarksVisible(bool visible);
+    void setSearchVisible(bool visible);
     void showSearchWidget();
     void syncContents();
     void activateCurrentCentralWidgetTab();
     void currentFilterChanged(const QString &filter);
 
 private slots:
+    void showContents();
+    void showIndex();
+    void showSearch();
     void insertLastPages();
-    void addBookmark();
     void gotoAddress();
     void showPreferences();
     void showNewAddress();
@@ -108,7 +105,6 @@ private slots:
     void updateNavigationItems();
     void updateTabCloseAction();
     void showNewAddress(const QUrl &url);
-    void addNewBookmark(const QString &title, const QString &url);
     void showTopicChooser(const QMap<QString, QUrl> &links, const QString &keyword);
     void updateApplicationFont();
     void filterDocumentation(const QString &customFilter);
@@ -116,12 +112,13 @@ private slots:
     void lookForNewQtDocumentation();
     void indexingStarted();
     void indexingFinished();
-    void displayInstallationError(const QString &errorMessage);
-    void qtDocumentationInstalled(bool newDocsInstalled);
+    void qtDocumentationInstalled();
+    void registerDocumentation(const QString &component,
+        const QString &absFileName);
+    void resetQtDocInfo(const QString &component);
     void checkInitState();
-
-    void updateBookmarkMenu();
-    void showBookmark(QAction *action);
+    void documentationRemoved(const QString &namespaceName);
+    void documentationUpdated(const QString &namespaceName);
 
 private:
     bool initHelpDB();
@@ -132,14 +129,21 @@ private:
     void setupFilterToolbar();
     void setupAddressToolbar();
     QMenu *toolBarMenu();
-    QWidget *setupBookmarkWidget();
+    void hideContents();
+    void hideIndex();
+    void hideSearch();
 
-    QHelpEngine *m_helpEngine;
+private slots:
+    void showBookmarksDockWidget();
+    void hideBookmarksDockWidget();
+
+private:
+    QWidget *m_bookmarkWidget;
+
+private:
     CentralWidget *m_centralWidget;
     IndexWindow *m_indexWindow;
     ContentWindow *m_contentWindow;
-    BookmarkWidget *m_bookmarkWidget;
-    BookmarkManager *m_bookmarkManager;
     QLineEdit *m_addressLineEdit;
     QComboBox *m_filterCombo;
 
@@ -161,8 +165,6 @@ private:
 
     QMenu *m_viewMenu;
     QMenu *m_toolBarMenu;
-    QMenu *m_bookmarkMenu;
-    QAction *m_bookmarkMenuAction;
 
     CmdLineParser *m_cmdLine;
 

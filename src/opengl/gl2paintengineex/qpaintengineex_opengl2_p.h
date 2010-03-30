@@ -125,7 +125,8 @@ public:
 
     virtual void drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
     virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
-    virtual void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
+    virtual void drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
+                                     QPainter::PixmapFragmentHints hints);
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
                            Qt::ImageConversionFlags flags = Qt::AutoColor);
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
@@ -133,6 +134,7 @@ public:
     virtual void stroke(const QVectorPath &path, const QPen &pen);
     virtual void clip(const QVectorPath &path, Qt::ClipOperation op);
 
+    virtual void drawStaticTextItem(QStaticTextItem *textItem);
 
     Type type() const { return OpenGL2; }
 
@@ -173,9 +175,11 @@ public:
             width(0), height(0),
             ctx(0),
             useSystemClip(true),
+            elementIndicesVBOId(0),
             snapToPixelGrid(false),
             addOffset(false),
-            inverseScale(1)
+            inverseScale(1),
+            lastMaskTextureUsed(0)
     { }
 
     ~QGL2PaintEngineExPrivate();
@@ -193,8 +197,10 @@ public:
     void fill(const QVectorPath &path);
     void stroke(const QVectorPath &path, const QPen &pen);
     void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
-    void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
-    void drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType, const QTextItemInt &ti);
+    void drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
+                             QPainter::PixmapFragmentHints hints);
+    void drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType, QStaticTextItem *staticTextItem,
+                          bool includeMatrixInCache);
 
     // Calls glVertexAttributePointer if the pointer has changed
     inline void setVertexAttributePointer(unsigned int arrayIndex, const GLfloat *pointer);
@@ -253,6 +259,7 @@ public:
     bool brushTextureDirty;
     bool brushUniformsDirty;
     bool opacityUniformDirty;
+    bool matrixUniformDirty;
 
     bool stencilClean; // Has the stencil not been used for clipping so far?
     bool useSystemClip;
@@ -265,6 +272,8 @@ public:
 
     QGL2PEXVertexArray vertexCoordinateArray;
     QGL2PEXVertexArray textureCoordinateArray;
+    QVector<GLushort> elementIndices;
+    GLuint elementIndicesVBOId;
     QDataBuffer<GLfloat> opacityArray;
     GLfloat staticVertexCoordinateArray[8];
     GLfloat staticTextureCoordinateArray[8];
@@ -275,9 +284,11 @@ public:
     GLfloat inverseScale;
 
     GLuint lastTextureUsed;
+    GLuint lastMaskTextureUsed;
 
     bool needsSync;
     bool multisamplingAlwaysEnabled;
+    bool deviceHasAlpha;
 
     GLfloat depthRange[2];
 
@@ -293,6 +304,7 @@ public:
 
     QSet<QVectorPath::CacheEntry *> pathCaches;
     QVector<GLuint> unusedVBOSToClean;
+    QVector<GLuint> unusedIBOSToClean;
 
     const GLfloat *vertexAttribPointers[3];
 };

@@ -62,12 +62,16 @@ class QNetworkReply;
 class QNetworkProxy;
 class QNetworkProxyFactory;
 class QSslError;
+class QNetworkConfiguration;
 
 class QNetworkReplyImplPrivate;
 class QNetworkAccessManagerPrivate;
 class Q_NETWORK_EXPORT QNetworkAccessManager: public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(NetworkAccessibility networkAccessible READ networkAccessible WRITE setNetworkAccessible NOTIFY networkAccessibleChanged)
+
 public:
     enum Operation {
         HeadOperation = 1,
@@ -75,8 +79,15 @@ public:
         PutOperation,
         PostOperation,
         DeleteOperation,
+        CustomOperation,
 
         UnknownOperation = 0
+    };
+
+    enum NetworkAccessibility {
+        UnknownAccessibility = -1,
+        NotAccessible = 0,
+        Accessible = 1
     };
 
     explicit QNetworkAccessManager(QObject *parent = 0);
@@ -102,6 +113,14 @@ public:
     QNetworkReply *put(const QNetworkRequest &request, QIODevice *data);
     QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
     QNetworkReply *deleteResource(const QNetworkRequest &request);
+    QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = 0);
+
+    void setConfiguration(const QNetworkConfiguration &config);
+    QNetworkConfiguration configuration() const;
+    QNetworkConfiguration activeConfiguration() const;
+
+    void setNetworkAccessible(NetworkAccessibility accessible);
+    NetworkAccessibility networkAccessible() const;
 
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY
@@ -113,6 +132,10 @@ Q_SIGNALS:
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 #endif
 
+    void networkSessionConnected();
+
+    void networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
+
 protected:
     virtual QNetworkReply *createRequest(Operation op, const QNetworkRequest &request,
                                          QIODevice *outgoingData = 0);
@@ -122,6 +145,10 @@ private:
     Q_DECLARE_PRIVATE(QNetworkAccessManager)
     Q_PRIVATE_SLOT(d_func(), void _q_replyFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_replySslErrors(QList<QSslError>))
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionClosed())
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionNewConfigurationActivated())
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionPreferredConfigurationChanged(QNetworkConfiguration,bool))
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionStateChanged(QNetworkSession::State))
 };
 
 QT_END_NAMESPACE

@@ -50,7 +50,7 @@ namespace Phonon
         {
             ushort b[256];
             waveOutGetErrorText(error, (LPWSTR)b, 256);
-            return QString::fromUtf16(b);
+            return QString((const QChar *)b);
         }
 
         class WorkerThread : public QThread
@@ -70,7 +70,7 @@ namespace Phonon
         }
 
 
-        void CALLBACK MediaObject::WaveOutCallBack(HWAVEOUT m_hWaveOut, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2)
+        void QT_WIN_CALLBACK MediaObject::WaveOutCallBack(HWAVEOUT m_hWaveOut, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2)
         {
             Q_UNUSED(m_hWaveOut);
             Q_UNUSED(dwInstance);

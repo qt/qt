@@ -37,7 +37,7 @@ ASSERT_CLASS_FITS_IN_CELL(ArrayConstructor);
     
 static JSValue JSC_HOST_CALL arrayConstructorIsArray(ExecState*, JSObject*, JSValue, const ArgList&);
 
-ArrayConstructor::ArrayConstructor(ExecState* exec, PassRefPtr<Structure> structure, ArrayPrototype* arrayPrototype, Structure* prototypeFunctionStructure)
+ArrayConstructor::ArrayConstructor(ExecState* exec, NonNullPassRefPtr<Structure> structure, ArrayPrototype* arrayPrototype, Structure* prototypeFunctionStructure)
     : InternalFunction(&exec->globalData(), structure, Identifier(exec, arrayPrototype->classInfo()->className))
 {
     // ECMA 15.4.3.1 Array.prototype
@@ -50,7 +50,7 @@ ArrayConstructor::ArrayConstructor(ExecState* exec, PassRefPtr<Structure> struct
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 1, exec->propertyNames().isArray, arrayConstructorIsArray), DontEnum);
 }
 
-static JSObject* constructArrayWithSizeQuirk(ExecState* exec, const ArgList& args)
+static inline JSObject* constructArrayWithSizeQuirk(ExecState* exec, const ArgList& args)
 {
     // a single numeric argument denotes the array size (!)
     if (args.size() == 1 && args.at(0).isNumber()) {

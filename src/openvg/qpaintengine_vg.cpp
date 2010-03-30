@@ -45,15 +45,15 @@
 #include "qvgcompositionhelper_p.h"
 #include "qvgimagepool_p.h"
 #if !defined(QT_NO_EGL)
-#include <QtGui/private/qegl_p.h>
+#include <QtGui/private/qeglcontext_p.h>
 #include "qwindowsurface_vgegl_p.h"
 #endif
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qdrawhelper_p.h>
-#include <QtGui/private/qtextureglyphcache_p.h>
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qpainterpath_p.h>
+#include <QtGui/private/qstatictext_p.h>
 #include <QDebug>
 #include <QSet>
 
@@ -86,15 +86,14 @@ public:
     QVGFontGlyphCache();
     ~QVGFontGlyphCache();
 
-    void cacheGlyphs(QVGPaintEnginePrivate *d,
-                     const QTextItemInt &ti,
-                     const QVarLengthArray<glyph_t> &glyphs);
-    void setScaleFromText(const QTextItemInt &ti);
+    void cacheGlyphs(QVGPaintEnginePrivate *d, QFontEngine *fontEngine, const glyph_t *g, int count);
+
+    void setScaleFromText(const QFont &font, QFontEngine *fontEngine);
 
     VGFont font;
     VGfloat scaleX;
     VGfloat scaleY;
-    
+
     uint cachedGlyphsMask[256 / 32];
     QSet<glyph_t> cachedGlyphs;
 };
@@ -985,16 +984,13 @@ static QImage colorizeBitmap(const QImage &image, const QColor &color)
     int height = sourceImage.height();
     int width = sourceImage.width();
     for (int y=0; y<height; ++y) {
-        uchar *source = sourceImage.scanLine(y);
+        const uchar *source = sourceImage.constScanLine(y);
         QRgb *target = reinterpret_cast<QRgb *>(dest.scanLine(y));
         for (int x=0; x < width; ++x)
             target[x] = (source[x>>3] >> (x&7)) & 1 ? fg : bg;
     }
     return dest;
 }
-
-// defined in qpixmapdata_vg.cpp.
-const uchar *qt_vg_imageBits(const QImage& image);
 
 static VGImage toVGImage
     (const QImage & image, Qt::ImageConversionFlags flags = Qt::AutoColor)
@@ -1029,7 +1025,7 @@ static VGImage toVGImage
         break;
     }
 
-    const uchar *pixels = qt_vg_imageBits(img);
+    const uchar *pixels = img.constBits();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (format, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
@@ -1073,7 +1069,7 @@ static VGImage toVGImageSubRect
         break;
     }
 
-    const uchar *pixels = qt_vg_imageBits(img) + bpp * sr.x() +
+    const uchar *pixels = img.constBits() + bpp * sr.x() +
                           img.bytesPerLine() * sr.y();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
@@ -1095,7 +1091,7 @@ static VGImage toVGImageWithOpacity(const QImage & image, qreal opacity)
     painter.drawImage(0, 0, image);
     painter.end();
 
-    const uchar *pixels = qt_vg_imageBits(img);
+    const uchar *pixels = img.constBits();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
@@ -1117,7 +1113,7 @@ static VGImage toVGImageWithOpacitySubRect
     painter.drawImage(QPoint(0, 0), image, sr);
     painter.end();
 
-    const uchar *pixels = qt_vg_imageBits(img);
+    const uchar *pixels = img.constBits();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
@@ -3045,9 +3041,8 @@ void QVGPaintEngine::drawTiledPixmap
 // (i.e. no opacity), no rotation or scaling, and drawing the full
 // pixmap rather than parts of the pixmap.  Even having just one of
 // these conditions will improve performance.
-void QVGPaintEngine::drawPixmaps
-    (const QDrawPixmaps::Data *drawingData, int dataCount,
-     const QPixmap &pixmap, QFlags<QDrawPixmaps::DrawingHint> hints)
+void QVGPaintEngine::drawPixmapFragments(const QPainter::PixmapFragment *drawingData, int dataCount,
+                                         const QPixmap &pixmap, QFlags<QPainter::PixmapFragmentHint> hints)
 {
 #if !defined(QT_SHIVAVG)
     Q_D(QVGPaintEngine);
@@ -3058,7 +3053,7 @@ void QVGPaintEngine::drawPixmaps
     if (!pd)
         return; // null QPixmap
     if (pd->classId() != QPixmapData::OpenVGClass || !d->simpleTransform) {
-        QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
+        QPaintEngineEx::drawPixmapFragments(drawingData, dataCount, pixmap, hints);
         return;
     }
 
@@ -3082,7 +3077,7 @@ void QVGPaintEngine::drawPixmaps
     QVarLengthArray<QRect> cachedSources;
 
     // Select the opacity paint object.
-    if ((hints & QDrawPixmaps::OpaqueHint) != 0 && d->opacity == 1.0f) {
+    if ((hints & QPainter::OpaqueHint) != 0 && d->opacity == 1.0f) {
         d->setImageMode(VG_DRAW_IMAGE_NORMAL);
     }  else {
         hints = 0;
@@ -3094,12 +3089,13 @@ void QVGPaintEngine::drawPixmaps
 
     for (int i = 0; i < dataCount; ++i) {
         QTransform transform(d->imageTransform);
-        transform.translate(drawingData[i].point.x(), drawingData[i].point.y());
+        transform.translate(drawingData[i].x, drawingData[i].y);
         transform.rotate(drawingData[i].rotation);
 
         VGImage child;
         QSize imageSize = vgpd->size();
-        QRectF sr = drawingData[i].source;
+        QRectF sr(drawingData[i].sourceLeft, drawingData[i].sourceTop,
+                  drawingData[i].width, drawingData[i].height);
         if (sr.topLeft().isNull() && sr.size() == imageSize) {
             child = vgImg;
         } else {
@@ -3128,7 +3124,7 @@ void QVGPaintEngine::drawPixmaps
         transform.scale(scaleX, scaleY);
         d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
 
-        if ((hints & QDrawPixmaps::OpaqueHint) == 0) {
+        if ((hints & QPainter::OpaqueHint) == 0) {
             qreal opacity = d->opacity * drawingData[i].opacity;
             if (opacity != 1.0f) {
                 if (d->paintOpacity != opacity) {
@@ -3154,7 +3150,7 @@ void QVGPaintEngine::drawPixmaps
     for (int i = 0; i < cachedImages.size(); ++i)
         vgDestroyImage(cachedImages[i]);
 #else
-    QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
+    QPaintEngineEx::drawPixmapFragments(drawingData, dataCount, pixmap, hints);
 #endif
 }
 
@@ -3194,22 +3190,20 @@ QVGFontGlyphCache::~QVGFontGlyphCache()
         vgDestroyFont(font);
 }
 
-void QVGFontGlyphCache::setScaleFromText(const QTextItemInt &ti)
+void QVGFontGlyphCache::setScaleFromText(const QFont &font, QFontEngine *fontEngine)
 {
-    QFontInfo fi(ti.font());
+    QFontInfo fi(font);
     qreal pixelSize = fi.pixelSize();
-    qreal emSquare = ti.fontEngine->properties().emSquare.toReal();
+    qreal emSquare = fontEngine->properties().emSquare.toReal();
     scaleX = scaleY = static_cast<VGfloat>(pixelSize / emSquare);
 }
 
-void QVGFontGlyphCache::cacheGlyphs
-        (QVGPaintEnginePrivate *d, const QTextItemInt &ti,
-         const QVarLengthArray<glyph_t> &glyphs)
+void QVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
+                                    QFontEngine *fontEngine,
+                                    const glyph_t *g, int count)
 {
     VGfloat origin[2];
     VGfloat escapement[2];
-    const glyph_t *g = glyphs.constData();
-    int count = glyphs.size();
     glyph_metrics_t metrics;
     // Some Qt font engines don't set yoff in getUnscaledGlyph().
     // Zero the metric structure so that everything has a default value.
@@ -3228,21 +3222,21 @@ void QVGFontGlyphCache::cacheGlyphs
         }
 #if !defined(QVG_NO_IMAGE_GLYPHS)
         Q_UNUSED(d);
-        QImage scaledImage = ti.fontEngine->alphaMapForGlyph(glyph);
+        QImage scaledImage = fontEngine->alphaMapForGlyph(glyph);
         VGImage vgImage = VG_INVALID_HANDLE;
-        metrics = ti.fontEngine->boundingBox(glyph);
+        metrics = fontEngine->boundingBox(glyph);
         if (!scaledImage.isNull()) {  // Not a space character
             if (scaledImage.format() == QImage::Format_Indexed8) {
                 vgImage = vgCreateImage(VG_A_8, scaledImage.width(), scaledImage.height(), VG_IMAGE_QUALITY_FASTER);
-                vgImageSubData(vgImage, qt_vg_imageBits(scaledImage), scaledImage.bytesPerLine(), VG_A_8, 0, 0, scaledImage.width(), scaledImage.height());
+                vgImageSubData(vgImage, scaledImage.constBits(), scaledImage.bytesPerLine(), VG_A_8, 0, 0, scaledImage.width(), scaledImage.height());
             } else if (scaledImage.format() == QImage::Format_Mono) {
                 QImage img = scaledImage.convertToFormat(QImage::Format_Indexed8);
                 vgImage = vgCreateImage(VG_A_8, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
-                vgImageSubData(vgImage, qt_vg_imageBits(img), img.bytesPerLine(), VG_A_8, 0, 0, img.width(), img.height());
+                vgImageSubData(vgImage, img.constBits(), img.bytesPerLine(), VG_A_8, 0, 0, img.width(), img.height());
             } else {
                 QImage img = scaledImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
                 vgImage = vgCreateImage(VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
-                vgImageSubData(vgImage, qt_vg_imageBits(img), img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0, img.width(), img.height());
+                vgImageSubData(vgImage, img.constBits(), img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0, img.width(), img.height());
             }
         }
         origin[0] = -metrics.x.toReal() + 0.5f;
@@ -3254,7 +3248,7 @@ void QVGFontGlyphCache::cacheGlyphs
 #else
         // Calculate the path for the glyph and cache it.
         QPainterPath path;
-        ti.fontEngine->getUnscaledGlyph(glyph, &path, &metrics);
+        fontEngine->getUnscaledGlyph(glyph, &path, &metrics);
         VGPath vgPath;
         if (!path.isEmpty()) {
             vgPath = d->painterPathToVGPath(path);
@@ -3286,7 +3280,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
         QPaintEngineEx::drawTextItem(p, textItem);
         return;
     }
- 
+
     // Get the glyphs and positions associated with the text item.
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
@@ -3295,8 +3289,29 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     ti.fontEngine->getGlyphPositions
         (ti.glyphs, matrix, ti.flags, glyphs, positions);
 
+    if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, p))
+        QPaintEngineEx::drawTextItem(p, textItem);
+#else
+    // OpenGL 1.0 does not have support for VGFont and glyphs,
+    // so fall back to the default Qt path stroking algorithm.
+    QPaintEngineEx::drawTextItem(p, textItem);
+#endif
+}
+
+void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
+{
+    drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->font, textItem->fontEngine,
+                     QPointF(0, 0));
+}
+
+ bool QVGPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
+                                       QFontEngine *fontEngine, const QPointF &p)
+ {
+#if !defined(QVG_NO_DRAW_GLYPHS)
+    Q_D(QVGPaintEngine);
+
     // Find the glyph cache for this font.
-    QVGFontCache::ConstIterator it = d->fontCache.constFind(ti.fontEngine);
+    QVGFontCache::ConstIterator it = d->fontCache.constFind(fontEngine);
     QVGFontGlyphCache *glyphCache;
     if (it != d->fontCache.constEnd()) {
         glyphCache = it.value();
@@ -3305,14 +3320,13 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
         if (glyphCache->font == VG_INVALID_HANDLE) {
             qWarning("QVGPaintEngine::drawTextItem: OpenVG fonts are not supported by the OpenVG engine");
             delete glyphCache;
-            QPaintEngineEx::drawTextItem(p, textItem);
-            return;
+            return false;
         }
-        glyphCache->setScaleFromText(ti);
-        d->fontCache.insert(ti.fontEngine, glyphCache);
+        glyphCache->setScaleFromText(font, fontEngine);
+        d->fontCache.insert(fontEngine, glyphCache);
         if (!d->fontEngineCleaner)
             d->fontEngineCleaner = new QVGFontEngineCleaner(d);
-        QObject::connect(ti.fontEngine, SIGNAL(destroyed()),
+        QObject::connect(fontEngine, SIGNAL(destroyed()),
                          d->fontEngineCleaner, SLOT(fontEngineDestroyed()));
     }
 
@@ -3325,7 +3339,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, glyphTransform);
 
     // Add the glyphs from the text item into the glyph cache.
-    glyphCache->cacheGlyphs(d, ti, glyphs);
+    glyphCache->cacheGlyphs(d, fontEngine, glyphs, numGlyphs);
 
     // Set the glyph drawing origin.
     VGfloat origin[2];
@@ -3344,12 +3358,17 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     // Draw the glyphs.  We need to fill with the brush associated with
     // the Qt pen, not the Qt brush.
     d->ensureBrush(state()->pen.brush());
-    vgDrawGlyphs(glyphCache->font, glyphs.size(), (VGuint*)glyphs.data(),
+    vgDrawGlyphs(glyphCache->font, numGlyphs, (VGuint*)glyphs,
                  NULL, NULL, VG_FILL_PATH, VG_TRUE);
+
+    return true;
 #else
-    // OpenGL 1.0 does not have support for VGFont and glyphs,
-    // so fall back to the default Qt path stroking algorithm.
-    QPaintEngineEx::drawTextItem(p, textItem);
+    Q_UNUSED(numGlyphs);
+    Q_UNUSED(glyphs);
+    Q_UNUSED(font);
+    Q_UNUSED(fontEngine);
+    Q_UNUSED(p);
+    return false;
 #endif
 }
 
@@ -3710,7 +3729,7 @@ void QVGCompositionHelper::drawCursorPixmap
         if (vgImage == VG_INVALID_HANDLE)
             return;
         vgImageSubData
-            (vgImage, qt_vg_imageBits(img) + img.bytesPerLine() * (img.height() - 1),
+            (vgImage, img.constBits() + img.bytesPerLine() * (img.height() - 1),
              -(img.bytesPerLine()), VG_sARGB_8888_PRE, 0, 0,
              img.width(), img.height());
 

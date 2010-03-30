@@ -44,6 +44,7 @@
 #include "QtTest/private/qtestlog_p.h"
 #include "QtTest/private/qplaintestlogger_p.h"
 #include "QtTest/private/qbenchmark_p.h"
+#include "QtTest/private/qbenchmarkmetric_p.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -324,7 +325,6 @@ namespace QTest {
             QTestResult::currentTestObjectName(),
             result.context.slotName.toAscii().data());
 
-
         char bufTag[1024];
         bufTag[0] = 0;
         QByteArray tag = result.context.tag.toAscii();
@@ -340,32 +340,43 @@ namespace QTest {
         char fill[1024];
         QTest::qt_snprintf(fill, sizeof(fill), fillFormat, "");
 
-
-        QByteArray unitText = QBenchmarkGlobalData::current->measurer->unitText().toAscii();
+        const char * unitText = QTest::benchmarkMetricUnit(result.metric);
 
         qreal valuePerIteration = qreal(result.value) / qreal(result.iterations);
         char resultBuffer[100] = "";
         formatResult(resultBuffer, 100, valuePerIteration, countSignificantDigits(result.value));
 
-        QByteArray iterationText = "per iteration";
-
         char buf2[1024];
+        QTest::qt_snprintf(
+            buf2, sizeof(buf2), "%s %s",
+            resultBuffer,
+            unitText);
+
+        char buf2_[1024];
+        QByteArray iterationText = " per iteration";
         Q_ASSERT(result.iterations > 0);
         QTest::qt_snprintf(
-            buf2, sizeof(buf2), "%s %s %s",
-            resultBuffer,
-            unitText.data(),
+            buf2_,
+            sizeof(buf2_), "%s",
             iterationText.data());
 
         char buf3[1024];
         Q_ASSERT(result.iterations > 0);
+        formatResult(resultBuffer, 100, result.value, countSignificantDigits(result.value));
         QTest::qt_snprintf(
-            buf3, sizeof(buf3), " (total: %s, iterations: %d)\n",
-            QByteArray::number(result.value).constData(), // no 64-bit qt_snprintf support
+            buf3, sizeof(buf3), " (total: %s, iterations: %d)",
+            resultBuffer,
             result.iterations);
 
         char buf[1024];
-        QTest::qt_snprintf(buf, sizeof(buf), "%s%s%s%s%s", buf1, bufTag, fill, buf2, buf3);
+
+        if (result.setByMacro) {
+            QTest::qt_snprintf(
+                buf, sizeof(buf), "%s%s%s%s%s%s\n", buf1, bufTag, fill, buf2, buf2_, buf3);
+        } else {
+            QTest::qt_snprintf(buf, sizeof(buf), "%s%s%s%s\n", buf1, bufTag, fill, buf2);
+        }
+
         memcpy(buf, bmtag, strlen(bmtag));
         outputMessage(buf);
     }

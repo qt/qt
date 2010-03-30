@@ -107,6 +107,7 @@ private slots:
     void saveAndRestore();
 
     void drawBorderPixmap();
+    void drawPixmapFragments();
 
     void drawLine_data();
     void drawLine();
@@ -992,6 +993,49 @@ void tst_QPainter::drawBorderPixmap()
     p.setTransform(QTransform(-1,0,0,-1,173.5,153.5));
     qDrawBorderPixmap(&p, QRect(0,0,75,105), QMargins(39,39,39,39), src, QRect(0,0,79,79), QMargins(39,39,39,39),
                        QTileRules(Qt::StretchTile,Qt::StretchTile), 0);
+}
+
+void tst_QPainter::drawPixmapFragments()
+{
+    QPixmap origPixmap(20, 20);
+    QPixmap resPixmap(20, 20);
+    QPainter::PixmapFragment fragments[4] = { {15, 15,  0,  0, 10, 10, 1, 1, 0, 1},
+                                              { 5, 15, 10,  0, 10, 10, 1, 1, 0, 1},
+                                              {15,  5,  0, 10, 10, 10, 1, 1, 0, 1},
+                                              { 5,  5, 10, 10, 10, 10, 1, 1, 0, 1} };
+    {
+        QPainter p(&origPixmap);
+        p.fillRect(0, 0, 10, 10, Qt::red);
+        p.fillRect(10, 0, 10, 10, Qt::green);
+        p.fillRect(0, 10, 10, 10, Qt::blue);
+        p.fillRect(10, 10, 10, 10, Qt::yellow);
+    }
+    {
+        QPainter p(&resPixmap);
+        p.drawPixmapFragments(fragments, 4, origPixmap);
+    }
+
+    QImage origImage = origPixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+    QImage resImage = resPixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+
+    QVERIFY(resImage.size() == resPixmap.size());
+    QVERIFY(resImage.pixel(5, 5) == origImage.pixel(15, 15));
+    QVERIFY(resImage.pixel(5, 15) == origImage.pixel(15, 5));
+    QVERIFY(resImage.pixel(15, 5) == origImage.pixel(5, 15));
+    QVERIFY(resImage.pixel(15, 15) == origImage.pixel(5, 5));
+
+
+    QPainter::PixmapFragment fragment = QPainter::PixmapFragment::create(QPointF(20, 20), QRectF(30, 30, 2, 2));
+    QVERIFY(fragment.x == 20);
+    QVERIFY(fragment.y == 20);
+    QVERIFY(fragment.sourceLeft == 30);
+    QVERIFY(fragment.sourceTop == 30);
+    QVERIFY(fragment.width == 2);
+    QVERIFY(fragment.height == 2);
+    QVERIFY(fragment.scaleX == 1);
+    QVERIFY(fragment.scaleY == 1);
+    QVERIFY(fragment.rotation == 0);
+    QVERIFY(fragment.opacity == 1);
 }
 
 void tst_QPainter::drawLine_data()
@@ -3443,8 +3487,8 @@ bool verifyOutlineFillConsistency(const QImage &img, QRgb outside, QRgb inside, 
                 if ((dx == 0) == (dy == 0))
                     continue;
                 QRgb neighbor = img.pixel(p.x() + dx, p.y() + dy);
-                if (pixel == inside && neighbor == outside ||
-                    pixel == outside && neighbor == inside)
+                if ((pixel == inside && neighbor == outside) ||
+                    (pixel == outside && neighbor == inside))
                     return false;
             }
         }

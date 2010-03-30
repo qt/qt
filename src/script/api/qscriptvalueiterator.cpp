@@ -84,28 +84,50 @@ public:
     QScriptValueIteratorPrivate()
         : initialized(false)
     {}
+
+    ~QScriptValueIteratorPrivate()
+    {
+        if (!initialized)
+            return;
+        QScriptEnginePrivate *eng_p = engine();
+        if (!eng_p)
+            return;
+        QScript::APIShim shim(eng_p);
+        propertyNames.clear(); //destroying the identifiers need to be done under the APIShim guard
+    }
+
+    QScriptValuePrivate *object() const
+    {
+        return QScriptValuePrivate::get(objectValue);
+    }
+
+    QScriptEnginePrivate *engine() const
+    {
+        return QScriptEnginePrivate::get(objectValue.engine());
+    }
+
     void ensureInitialized()
     {
         if (initialized)
             return;
-        QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(object.engine());
+        QScriptEnginePrivate *eng_p = engine();
+        QScript::APIShim shim(eng_p);
         JSC::ExecState *exec = eng_p->globalExec();
         JSC::PropertyNameArray propertyNamesArray(exec);
-        propertyNamesArray.setShouldCache(false);
-        JSC::asObject(QScriptValuePrivate::get(object)->jscValue)->getOwnPropertyNames(exec, propertyNamesArray, /*includeNonEnumerable=*/true);
+        JSC::asObject(object()->jscValue)->getOwnPropertyNames(exec, propertyNamesArray, JSC::IncludeDontEnumProperties);
 
         JSC::PropertyNameArray::const_iterator propertyNamesIt = propertyNamesArray.begin();
         for(; propertyNamesIt != propertyNamesArray.end(); ++propertyNamesIt) {
-            propertyNames.append(propertyNamesIt->ustring());
+            propertyNames.append(*propertyNamesIt);
         }
         it = propertyNames.begin();
         initialized = true;
     }
 
-    QScriptValue object;
-    QLinkedList<JSC::UString> propertyNames;
-    QLinkedList<JSC::UString>::iterator it;
-    QLinkedList<JSC::UString>::iterator current;
+    QScriptValue objectValue;
+    QLinkedList<JSC::Identifier> propertyNames;
+    QLinkedList<JSC::Identifier>::iterator it;
+    QLinkedList<JSC::Identifier>::iterator current;
     bool initialized;
 };
 
@@ -119,7 +141,7 @@ QScriptValueIterator::QScriptValueIterator(const QScriptValue &object)
 {
     if (object.isObject()) {
         d_ptr.reset(new QScriptValueIteratorPrivate());
-        d_ptr->object = object;
+        d_ptr->objectValue = object;
     }
 }
 
@@ -240,9 +262,9 @@ void QScriptValueIterator::toBack()
 QString QScriptValueIterator::name() const
 {
     Q_D(const QScriptValueIterator);
-    if (!d || !d->initialized)
+    if (!d || !d->initialized || !d->engine())
         return QString();
-    return *d->current;
+    return d->current->ustring();
 }
 
 /*!
@@ -254,9 +276,9 @@ QString QScriptValueIterator::name() const
 QScriptString QScriptValueIterator::scriptName() const
 {
     Q_D(const QScriptValueIterator);
-    if (!d || !d->initialized)
+    if (!d || !d->initialized || !d->engine())
         return QScriptString();
-    return d->object.engine()->toStringHandle(name());
+    return d->engine()->toStringHandle(*d->current);
 }
 
 /*!
@@ -268,9 +290,11 @@ QScriptString QScriptValueIterator::scriptName() const
 QScriptValue QScriptValueIterator::value() const
 {
     Q_D(const QScriptValueIterator);
-    if (!d || !d->initialized)
+    if (!d || !d->initialized || !d->engine())
         return QScriptValue();
-    return d->object.property(name());
+    QScript::APIShim shim(d->engine());
+    JSC::JSValue jsValue = d->object()->property(*d->current);
+    return d->engine()->scriptValueFromJSCValue(jsValue);
 }
 
 /*!
@@ -282,9 +306,11 @@ QScriptValue QScriptValueIterator::value() const
 void QScriptValueIterator::setValue(const QScriptValue &value)
 {
     Q_D(QScriptValueIterator);
-    if (!d || !d->initialized)
+    if (!d || !d->initialized || !d->engine())
         return;
-    d->object.setProperty(name(), value);
+    QScript::APIShim shim(d->engine());
+    JSC::JSValue jsValue = d->engine()->scriptValueToJSCValue(value);
+    d->object()->setProperty(*d->current, jsValue);
 }
 
 /*!
@@ -296,9 +322,10 @@ void QScriptValueIterator::setValue(const QScriptValue &value)
 QScriptValue::PropertyFlags QScriptValueIterator::flags() const
 {
     Q_D(const QScriptValueIterator);
-    if (!d || !d->initialized)
+    if (!d || !d->initialized || !d->engine())
         return 0;
-    return d->object.propertyFlags(name());
+    QScript::APIShim shim(d->engine());
+    return d->object()->propertyFlags(*d->current);
 }
 
 /*!
@@ -310,9 +337,10 @@ QScriptValue::PropertyFlags QScriptValueIterator::flags() const
 void QScriptValueIterator::remove()
 {
     Q_D(QScriptValueIterator);
-    if (!d || !d->initialized)
+    if (!d || !d->initialized || !d->engine())
         return;
-    d->object.setProperty(name(), QScriptValue());
+    QScript::APIShim shim(d->engine());
+    d->object()->setProperty(*d->current, JSC::JSValue());
     d->propertyNames.erase(d->current);
 }
 
@@ -326,7 +354,7 @@ QScriptValueIterator& QScriptValueIterator::operator=(QScriptValue &object)
     d_ptr.reset();
     if (object.isObject()) {
         d_ptr.reset(new QScriptValueIteratorPrivate());
-        d_ptr->object = object;
+        d_ptr->objectValue = object;
     }
     return *this;
 }

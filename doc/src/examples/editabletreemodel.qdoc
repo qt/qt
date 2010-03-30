@@ -223,7 +223,7 @@
     corresponding \c TreeItem, and return model indexes that correspond to
     its parents and children. 
 
-    In the diagram, we show how the model's \l{TreeModel::parent()}{parent()}
+    In the diagram, we show how the model's \l{TreeModel::parent}{parent()}
     implementation obtains the model index corresponding to the parent of
     an item supplied by the caller, using the items shown in a
     \l{Relations-between-internal-items}{previous diagram}.

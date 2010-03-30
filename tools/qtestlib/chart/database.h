@@ -43,6 +43,9 @@
 
 #include <QtCore>
 #include <QtSql>
+#include <QtCore/qglobal.h>
+
+QT_BEGIN_NAMESPACE
 
 extern QString resultsTable;
 QSqlDatabase openDataBase(const QString &databaseFile = "database");
@@ -56,6 +59,7 @@ void execQuery(QSqlQuery query, bool warnOnFail = true);
 void execQuery(const QString &spec, bool warnOnFail = true);
 void printDataBase();
 void displayTable(const QString &table);
+
 
 class TempTable
 {
@@ -95,5 +99,7 @@ public:
     QSqlDatabase db;
 };
 
+QT_END_NAMESPACE
 
 #endif
+

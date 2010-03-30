@@ -47,16 +47,47 @@ class QScriptContext;
 class Q_SCRIPT_EXPORT QScriptDeclarativeClass
 {
 public:
+#define QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE
+    class Q_SCRIPT_EXPORT Value
+    {
+    public:
+        Value();
+        Value(const Value &);
+
+        Value(QScriptContext *, int);
+        Value(QScriptContext *, uint);
+        Value(QScriptContext *, bool);
+        Value(QScriptContext *, double);
+        Value(QScriptContext *, float);
+        Value(QScriptContext *, const QString &);
+        Value(QScriptContext *, const QScriptValue &);
+        Value(QScriptEngine *, int);
+        Value(QScriptEngine *, uint);
+        Value(QScriptEngine *, bool);
+        Value(QScriptEngine *, double);
+        Value(QScriptEngine *, float);
+        Value(QScriptEngine *, const QString &);
+        Value(QScriptEngine *, const QScriptValue &);
+        ~Value();
+
+        QScriptValue toScriptValue(QScriptEngine *) const;
+    private:
+        char dummy[8];
+    };
+
     typedef void* Identifier;
 
     struct Object { virtual ~Object() {} };
 
     static QScriptValue newObject(QScriptEngine *, QScriptDeclarativeClass *, Object *);
+    static Value newObjectValue(QScriptEngine *, QScriptDeclarativeClass *, Object *);
     static QScriptDeclarativeClass *scriptClass(const QScriptValue &);
     static Object *object(const QScriptValue &);
 
     static QScriptValue function(const QScriptValue &, const Identifier &);
     static QScriptValue property(const QScriptValue &, const Identifier &);
+    static Value functionValue(const QScriptValue &, const Identifier &);
+    static Value propertyValue(const QScriptValue &, const Identifier &);
 
     static QScriptValue scopeChainValue(QScriptContext *, int index);
     static QScriptContext *pushCleanContext(QScriptEngine *);
@@ -73,7 +104,8 @@ public:
 
     private:
         friend class QScriptDeclarativeClass;
-        PersistentIdentifier(bool) : identifier(0), d(0) {}
+        PersistentIdentifier(QScriptEnginePrivate *e) : identifier(0), engine(e), d(0) {}
+        QScriptEnginePrivate *engine;
         void *d;
     };
 
@@ -81,6 +113,9 @@ public:
     virtual ~QScriptDeclarativeClass();
 
     QScriptEngine *engine() const;
+
+    bool supportsCall() const;
+    void setSupportsCall(bool);
 
     PersistentIdentifier createPersistentIdentifier(const QString &);
     PersistentIdentifier createPersistentIdentifier(const Identifier &);
@@ -91,9 +126,11 @@ public:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
 
-    virtual QScriptValue property(Object *, const Identifier &);
+    virtual Value property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
     virtual QScriptValue::PropertyFlags propertyFlags(Object *, const Identifier &);
+    virtual Value call(Object *, QScriptContext *);
+    virtual bool compare(Object *, Object *);
 
     virtual QStringList propertyNames(Object *);
 

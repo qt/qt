@@ -712,7 +712,15 @@ bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::Keyb
             offset_accumulated = 0;
 
         offset_accumulated += stepsToScrollF;
+#ifndef Q_WS_MAC
+        // Dont't scroll more than one page in any case:
         stepsToScroll = qBound(-pageStep, int(offset_accumulated), pageStep);
+#else
+        // Native UI-elements on Mac can scroll hundreds of lines at a time as
+        // a result of acceleration. So keep the same behaviour in Qt, and
+        // dont restrict stepsToScroll to certain maximum (pageStep): 
+        stepsToScroll = int(offset_accumulated);
+#endif
         offset_accumulated -= int(offset_accumulated);
         if (stepsToScroll == 0)
             return false;
@@ -756,12 +764,12 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
     SliderAction action = SliderNoAction;
 #ifdef QT_KEYPAD_NAVIGATION
     if (ev->isAutoRepeat()) {
-        if (d->firstRepeat.isNull())
-            d->firstRepeat = QTime::currentTime();
+        if (!d->firstRepeat.isValid())
+            d->firstRepeat.start();
         else if (1 == d->repeatMultiplier) {
             // This is the interval in milli seconds which one key repetition
             // takes.
-            const int repeatMSecs = d->firstRepeat.msecsTo(QTime::currentTime());
+            const int repeatMSecs = d->firstRepeat.elapsed();
 
             /**
              * The time it takes to currently navigate the whole slider.
@@ -779,8 +787,8 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
         }
 
     }
-    else if (!d->firstRepeat.isNull()) {
-        d->firstRepeat = QTime();
+    else if (!d->firstRepeat.isValid()) {
+        d->firstRepeat.invalidate();
         d->repeatMultiplier = 1;
     }
 

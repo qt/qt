@@ -39,6 +39,33 @@
  * other provisions required by the MPL or the GPL, as the case may be.
  * If you do not delete the provisions above, a recipient may use your
  * version of this file under any of the LGPL, the MPL or the GPL.
+
+ * Copyright 2006-2008 the V8 project authors. All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials provided
+ *       with the distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -61,11 +88,7 @@
 #include <errno.h>
 #endif
 
-#if PLATFORM(DARWIN)
-#include <notify.h>
-#endif
-
-#if PLATFORM(WINCE)
+#if OS(WINCE)
 extern "C" size_t strftime(char * const s, const size_t maxsize, const char * const format, const struct tm * const t);
 extern "C" struct tm * localtime(const time_t *timer);
 #endif
@@ -78,7 +101,13 @@ extern "C" struct tm * localtime(const time_t *timer);
 #include <sys/timeb.h>
 #endif
 
+#if USE(JSC)
+#include "CallFrame.h"
+#endif
+
 #define NaN std::numeric_limits<double>::quiet_NaN()
+
+using namespace WTF;
 
 namespace WTF {
 
@@ -91,6 +120,10 @@ static const double secondsPerYear = 24.0 * 60.0 * 60.0 * 365.0;
 static const double usecPerSec = 1000000.0;
 
 static const double maxUnixTime = 2145859200.0; // 12/31/2037
+// ECMAScript asks not to support for a date of which total
+// millisecond value is larger than the following value.
+// See 15.9.1.14 of ECMA-262 5th edition.
+static const double maxECMAScriptTime = 8.64E15;
 
 // Day of year for the first day of each month, where index 0 is January, and day 0 is January 1.
 // First for non-leap years, then for leap years.
@@ -139,7 +172,7 @@ static inline double msToDays(double ms)
     return floor(ms / msPerDay);
 }
 
-static inline int msToYear(double ms)
+int msToYear(double ms)
 {
     int approxYear = static_cast<int>(floor(ms / (msPerDay * 365.2425)) + 1970);
     double msFromApproxYearTo1970 = msPerDay * daysFrom1970ToYear(approxYear);
@@ -150,7 +183,7 @@ static inline int msToYear(double ms)
     return approxYear;
 }
 
-static inline int dayInYear(double ms, int year)
+int dayInYear(double ms, int year)
 {
     return static_cast<int>(msToDays(ms) - daysFrom1970ToYear(year));
 }
@@ -196,7 +229,7 @@ static inline int msToHours(double ms)
     return static_cast<int>(result);
 }
 
-static inline int monthFromDayInYear(int dayInYear, bool leapYear)
+int monthFromDayInYear(int dayInYear, bool leapYear)
 {
     const int d = dayInYear;
     int step;
@@ -234,7 +267,7 @@ static inline bool checkMonth(int dayInYear, int& startDayOfThisMonth, int& star
     return (dayInYear <= startDayOfNextMonth);
 }
 
-static inline int dayInMonthFromDayInYear(int dayInYear, bool leapYear)
+int dayInMonthFromDayInYear(int dayInYear, bool leapYear)
 {
     const int d = dayInYear;
     int step;
@@ -277,7 +310,7 @@ static inline double timeToMS(double hour, double min, double sec, double ms)
     return (((hour * minutesPerHour + min) * secondsPerMinute + sec) * msPerSecond + ms);
 }
 
-static int dateToDayInYear(int year, int month, int day)
+double dateToDaysFrom1970(int year, int month, int day)
 {
     year += month / 12;
 
@@ -287,32 +320,11 @@ static int dateToDayInYear(int year, int month, int day)
         --year;
     }
 
-    int yearday = static_cast<int>(floor(daysFrom1970ToYear(year)));
+    double yearday = floor(daysFrom1970ToYear(year));
+    ASSERT((year >= 1970 && yearday >= 0) || (year < 1970 && yearday < 0));
     int monthday = monthToDayInYear(month, isLeapYear(year));
 
     return yearday + monthday + day - 1;
-}
-
-double getCurrentUTCTime()
-{
-    return floor(getCurrentUTCTimeWithMicroseconds());
-}
-
-// Returns current time in milliseconds since 1 Jan 1970.
-double getCurrentUTCTimeWithMicroseconds()
-{
-    return currentTime() * 1000.0; 
-}
-
-void getLocalTime(const time_t* localTime, struct tm* localTM)
-{
-#if COMPILER(MSVC7) || COMPILER(MINGW) || PLATFORM(WINCE)
-    *localTM = *localtime(localTime);
-#elif COMPILER(MSVC)
-    localtime_s(localTM, localTime);
-#else
-    localtime_r(localTime, localTM);
-#endif
 }
 
 // There is a hard limit at 2038 that we currently do not have a workaround
@@ -328,7 +340,7 @@ static inline int minimumYearForDST()
     // greater than the max year minus 27 (2010), we want to use the max year
     // minus 27 instead, to ensure there is a range of 28 years that all years
     // can map to.
-    return std::min(msToYear(getCurrentUTCTime()), maximumYearForDST() - 27) ;
+    return std::min(msToYear(jsCurrentTime()), maximumYearForDST() - 27) ;
 }
 
 /*
@@ -367,7 +379,11 @@ int equivalentYearForDST(int year)
 
 static int32_t calculateUTCOffset()
 {
+#if PLATFORM(BREWMP)
+    time_t localTime = static_cast<time_t>(currentTime());
+#else
     time_t localTime = time(0);
+#endif
     tm localt;
     getLocalTime(&localTime, &localt);
 
@@ -399,44 +415,10 @@ static int32_t calculateUTCOffset()
     return static_cast<int32_t>(utcOffset * 1000);
 }
 
-#if PLATFORM(DARWIN)
-static int32_t s_cachedUTCOffset; // In milliseconds. An assumption here is that access to an int32_t variable is atomic on platforms that take this code path.
-static bool s_haveCachedUTCOffset;
-static int s_notificationToken;
-#endif
-
 /*
- * Get the difference in milliseconds between this time zone and UTC (GMT)
- * NOT including DST.
+ * Get the DST offset for the time passed in.
  */
-double getUTCOffset()
-{
-#if PLATFORM(DARWIN)
-    if (s_haveCachedUTCOffset) {
-        int notified;
-        uint32_t status = notify_check(s_notificationToken, &notified);
-        if (status == NOTIFY_STATUS_OK && !notified)
-            return s_cachedUTCOffset;
-    }
-#endif
-
-    int32_t utcOffset = calculateUTCOffset();
-
-#if PLATFORM(DARWIN)
-    // Theoretically, it is possible that several threads will be executing this code at once, in which case we will have a race condition,
-    // and a newer value may be overwritten. In practice, time zones don't change that often.
-    s_cachedUTCOffset = utcOffset;
-#endif
-
-    return utcOffset;
-}
-
-/*
- * Get the DST offset for the time passed in.  Takes
- * seconds (not milliseconds) and cannot handle dates before 1970
- * on some OS'
- */
-static double getDSTOffsetSimple(double localTimeSeconds, double utcOffset)
+static double calculateDSTOffsetSimple(double localTimeSeconds, double utcOffset)
 {
     if (localTimeSeconds > maxUnixTime)
         localTimeSeconds = maxUnixTime;
@@ -465,9 +447,9 @@ static double getDSTOffsetSimple(double localTimeSeconds, double utcOffset)
 }
 
 // Get the DST offset, given a time in UTC
-static double getDSTOffset(double ms, double utcOffset)
+static double calculateDSTOffset(double ms, double utcOffset)
 {
-    // On Mac OS X, the call to localtime (see getDSTOffsetSimple) will return historically accurate
+    // On Mac OS X, the call to localtime (see calculateDSTOffsetSimple) will return historically accurate
     // DST information (e.g. New Zealand did not have DST from 1946 to 1974) however the JavaScript
     // standard explicitly dictates that historical information should not be considered when
     // determining DST. For this reason we shift away from years that localtime can handle but would
@@ -479,70 +461,22 @@ static double getDSTOffset(double ms, double utcOffset)
         int dayInYearLocal = dayInYear(ms, year);
         int dayInMonth = dayInMonthFromDayInYear(dayInYearLocal, leapYear);
         int month = monthFromDayInYear(dayInYearLocal, leapYear);
-        int day = dateToDayInYear(equivalentYear, month, dayInMonth);
+        double day = dateToDaysFrom1970(equivalentYear, month, dayInMonth);
         ms = (day * msPerDay) + msToMilliseconds(ms);
     }
 
-    return getDSTOffsetSimple(ms / msPerSecond, utcOffset);
-}
-
-double gregorianDateTimeToMS(const GregorianDateTime& t, double milliSeconds, bool inputIsUTC)
-{
-    int day = dateToDayInYear(t.year + 1900, t.month, t.monthDay);
-    double ms = timeToMS(t.hour, t.minute, t.second, milliSeconds);
-    double result = (day * msPerDay) + ms;
-
-    if (!inputIsUTC) { // convert to UTC
-        double utcOffset = getUTCOffset();
-        result -= utcOffset;
-        result -= getDSTOffset(result, utcOffset);
-    }
-
-    return result;
-}
-
-void msToGregorianDateTime(double ms, bool outputIsUTC, GregorianDateTime& tm)
-{
-    // input is UTC
-    double dstOff = 0.0;
-    const double utcOff = getUTCOffset();
-
-    if (!outputIsUTC) {  // convert to local time
-        dstOff = getDSTOffset(ms, utcOff);
-        ms += dstOff + utcOff;
-    }
-
-    const int year = msToYear(ms);
-    tm.second   =  msToSeconds(ms);
-    tm.minute   =  msToMinutes(ms);
-    tm.hour     =  msToHours(ms);
-    tm.weekDay  =  msToWeekDay(ms);
-    tm.yearDay  =  dayInYear(ms, year);
-    tm.monthDay =  dayInMonthFromDayInYear(tm.yearDay, isLeapYear(year));
-    tm.month    =  monthFromDayInYear(tm.yearDay, isLeapYear(year));
-    tm.year     =  year - 1900;
-    tm.isDST    =  dstOff != 0.0;
-
-    tm.utcOffset = outputIsUTC ? 0 : static_cast<long>((dstOff + utcOff) / msPerSecond);
-    tm.timeZone = NULL;
+    return calculateDSTOffsetSimple(ms / msPerSecond, utcOffset);
 }
 
 void initializeDates()
 {
 #ifndef NDEBUG
     static bool alreadyInitialized;
-    ASSERT(!alreadyInitialized++);
+    ASSERT(!alreadyInitialized);
+    alreadyInitialized = true;
 #endif
 
     equivalentYearForDST(2000); // Need to call once to initialize a static used in this function.
-#if PLATFORM(DARWIN)
-    // Register for a notification whenever the time zone changes.
-    uint32_t status = notify_register_check("com.apple.system.timezone", &s_notificationToken);
-    if (status == NOTIFY_STATUS_OK) {
-        s_cachedUTCOffset = calculateUTCOffset();
-        s_haveCachedUTCOffset = true;
-    }
-#endif
 }
 
 static inline double ymdhmsToSeconds(long year, int mon, int day, int hour, int minute, int second)
@@ -558,7 +492,7 @@ static inline double ymdhmsToSeconds(long year, int mon, int day, int hour, int 
 // We follow the recommendation of RFC 2822 to consider all
 // obsolete time zones not listed here equivalent to "-0000".
 static const struct KnownZone {
-#if !PLATFORM(WIN_OS)
+#if !OS(WINDOWS)
     const
 #endif
         char tzName[4];
@@ -623,8 +557,12 @@ static bool parseLong(const char* string, char** stopPosition, int base, long* r
     return true;
 }
 
-double parseDateFromNullTerminatedCharacters(const char* dateString)
+// Odd case where 'exec' is allowed to be 0, to accomodate a caller in WebCore.
+static double parseDateFromNullTerminatedCharacters(const char* dateString, bool& haveTZ, int& offset)
 {
+    haveTZ = false;
+    offset = 0;
+
     // This parses a date in the form:
     //     Tuesday, 09-Nov-99 23:12:40 GMT
     // or
@@ -825,9 +763,6 @@ double parseDateFromNullTerminatedCharacters(const char* dateString)
         }
     }
 
-    bool haveTZ = false;
-    int offset = 0;
-
     // Don't fail if the time zone is missing. 
     // Some websites omit the time zone (4275206).
     if (*dateString) {
@@ -890,33 +825,172 @@ double parseDateFromNullTerminatedCharacters(const char* dateString)
         else
             year += 1900;
     }
+    
+    return ymdhmsToSeconds(year, month + 1, day, hour, minute, second) * msPerSecond;
+}
+
+double parseDateFromNullTerminatedCharacters(const char* dateString)
+{
+    bool haveTZ;
+    int offset;
+    double ms = parseDateFromNullTerminatedCharacters(dateString, haveTZ, offset);
+    if (isnan(ms))
+        return NaN;
 
     // fall back to local timezone
     if (!haveTZ) {
-        GregorianDateTime t;
-        t.monthDay = day;
-        t.month = month;
-        t.year = year - 1900;
-        t.isDST = -1;
-        t.second = second;
-        t.minute = minute;
-        t.hour = hour;
-
-        // Use our gregorianDateTimeToMS() rather than mktime() as the latter can't handle the full year range.
-        return gregorianDateTimeToMS(t, 0, false);
+        double utcOffset = calculateUTCOffset();
+        double dstOffset = calculateDSTOffset(ms, utcOffset);
+        offset = static_cast<int>((utcOffset + dstOffset) / msPerMinute);
     }
-
-    return (ymdhmsToSeconds(year, month + 1, day, hour, minute, second) - (offset * 60.0)) * msPerSecond;
+    return ms - (offset * msPerMinute);
 }
 
 double timeClip(double t)
 {
     if (!isfinite(t))
         return NaN;
-    if (fabs(t) > 8.64E15)
+    if (fabs(t) > maxECMAScriptTime)
         return NaN;
     return trunc(t);
 }
-
-
 } // namespace WTF
+
+#if USE(JSC)
+namespace JSC {
+
+// Get the DST offset for the time passed in.
+//
+// NOTE: The implementation relies on the fact that no time zones have
+// more than one daylight savings offset change per month.
+// If this function is called with NaN it returns NaN.
+static double getDSTOffset(ExecState* exec, double ms, double utcOffset)
+{
+    DSTOffsetCache& cache = exec->globalData().dstOffsetCache;
+    double start = cache.start;
+    double end = cache.end;
+
+    if (start <= ms) {
+        // If the time fits in the cached interval, return the cached offset.
+        if (ms <= end) return cache.offset;
+
+        // Compute a possible new interval end.
+        double newEnd = end + cache.increment;
+
+        if (ms <= newEnd) {
+            double endOffset = calculateDSTOffset(newEnd, utcOffset);
+            if (cache.offset == endOffset) {
+                // If the offset at the end of the new interval still matches
+                // the offset in the cache, we grow the cached time interval
+                // and return the offset.
+                cache.end = newEnd;
+                cache.increment = msPerMonth;
+                return endOffset;
+            } else {
+                double offset = calculateDSTOffset(ms, utcOffset);
+                if (offset == endOffset) {
+                    // The offset at the given time is equal to the offset at the
+                    // new end of the interval, so that means that we've just skipped
+                    // the point in time where the DST offset change occurred. Updated
+                    // the interval to reflect this and reset the increment.
+                    cache.start = ms;
+                    cache.end = newEnd;
+                    cache.increment = msPerMonth;
+                } else {
+                    // The interval contains a DST offset change and the given time is
+                    // before it. Adjust the increment to avoid a linear search for
+                    // the offset change point and change the end of the interval.
+                    cache.increment /= 3;
+                    cache.end = ms;
+                }
+                // Update the offset in the cache and return it.
+                cache.offset = offset;
+                return offset;
+            }
+        }
+    }
+
+    // Compute the DST offset for the time and shrink the cache interval
+    // to only contain the time. This allows fast repeated DST offset
+    // computations for the same time.
+    double offset = calculateDSTOffset(ms, utcOffset);
+    cache.offset = offset;
+    cache.start = ms;
+    cache.end = ms;
+    cache.increment = msPerMonth;
+    return offset;
+}
+
+/*
+ * Get the difference in milliseconds between this time zone and UTC (GMT)
+ * NOT including DST.
+ */
+double getUTCOffset(ExecState* exec)
+{
+    double utcOffset = exec->globalData().cachedUTCOffset;
+    if (!isnan(utcOffset))
+        return utcOffset;
+    exec->globalData().cachedUTCOffset = calculateUTCOffset();
+    return exec->globalData().cachedUTCOffset;
+}
+
+double gregorianDateTimeToMS(ExecState* exec, const GregorianDateTime& t, double milliSeconds, bool inputIsUTC)
+{
+    double day = dateToDaysFrom1970(t.year + 1900, t.month, t.monthDay);
+    double ms = timeToMS(t.hour, t.minute, t.second, milliSeconds);
+    double result = (day * WTF::msPerDay) + ms;
+
+    if (!inputIsUTC) { // convert to UTC
+        double utcOffset = getUTCOffset(exec);
+        result -= utcOffset;
+        result -= getDSTOffset(exec, result, utcOffset);
+    }
+
+    return result;
+}
+
+// input is UTC
+void msToGregorianDateTime(ExecState* exec, double ms, bool outputIsUTC, GregorianDateTime& tm)
+{
+    double dstOff = 0.0;
+    double utcOff = 0.0;
+    if (!outputIsUTC) {
+        utcOff = getUTCOffset(exec);
+        dstOff = getDSTOffset(exec, ms, utcOff);
+        ms += dstOff + utcOff;
+    }
+
+    const int year = msToYear(ms);
+    tm.second   =  msToSeconds(ms);
+    tm.minute   =  msToMinutes(ms);
+    tm.hour     =  msToHours(ms);
+    tm.weekDay  =  msToWeekDay(ms);
+    tm.yearDay  =  dayInYear(ms, year);
+    tm.monthDay =  dayInMonthFromDayInYear(tm.yearDay, isLeapYear(year));
+    tm.month    =  monthFromDayInYear(tm.yearDay, isLeapYear(year));
+    tm.year     =  year - 1900;
+    tm.isDST    =  dstOff != 0.0;
+    tm.utcOffset = static_cast<long>((dstOff + utcOff) / WTF::msPerSecond);
+    tm.timeZone = NULL;
+}
+
+double parseDateFromNullTerminatedCharacters(ExecState* exec, const char* dateString)
+{
+    ASSERT(exec);
+    bool haveTZ;
+    int offset;
+    double ms = WTF::parseDateFromNullTerminatedCharacters(dateString, haveTZ, offset);
+    if (isnan(ms))
+        return NaN;
+
+    // fall back to local timezone
+    if (!haveTZ) {
+        double utcOffset = getUTCOffset(exec);
+        double dstOffset = getDSTOffset(exec, ms, utcOffset);
+        offset = static_cast<int>((utcOffset + dstOffset) / WTF::msPerMinute);
+    }
+    return ms - (offset * WTF::msPerMinute);
+}
+
+} // namespace JSC
+#endif // USE(JSC)

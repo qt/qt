@@ -56,6 +56,10 @@
 #include <QtCore/qglobal.h>
 #if !defined(QT_NO_STYLE_GTK)
 
+#include <QtCore/qstring.h>
+#include <QtCore/qstringbuilder.h>
+#include <QtCore/qcoreapplication.h>
+
 #include <QtGui/QFileDialog>
 
 #include <QtGui/QGtkStyle>
@@ -71,6 +75,54 @@ typedef unsigned long XID;
 #define Q_GTK_IS_WIDGET(widget) widget && GTK_CHECK_TYPE ((widget), QGtkStylePrivate::gtk_widget_get_type())
 
 #define QLS(x) QLatin1String(x)
+
+QT_BEGIN_NAMESPACE
+
+// ### Qt 4.7 - merge with QLatin1Literal
+class QHashableLatin1Literal
+{
+public:
+    int size() const { return m_size; }
+    const char *data() const { return m_data; }
+
+    template <int N>
+        QHashableLatin1Literal(const char (&str)[N])
+        : m_size(N - 1), m_data(str) {}
+
+    QHashableLatin1Literal(const QHashableLatin1Literal &other)
+        : m_size(other.m_size), m_data(other.m_data)
+    {}
+
+    QHashableLatin1Literal &operator=(const QHashableLatin1Literal &other)
+    {
+        if (this == &other)
+            return *this;
+        *const_cast<int *>(&m_size) = other.m_size;
+        *const_cast<char **>(&m_data) = const_cast<char *>(other.m_data);
+        return *this;
+    }
+
+    QString toString() const { return QString::fromLatin1(m_data, m_size); }
+
+    static QHashableLatin1Literal fromData(const char *str)
+    {
+        return QHashableLatin1Literal(str, qstrlen(str));
+    }
+
+private:
+    QHashableLatin1Literal(const char *str, int length)
+        : m_size(length), m_data(str)
+    {}
+
+    const int m_size;
+    const char *m_data;
+};
+
+bool operator==(const QHashableLatin1Literal &l1, const QHashableLatin1Literal &l2);
+inline bool operator!=(const QHashableLatin1Literal &l1, const QHashableLatin1Literal &l2) { return !operator==(l1, l2); }
+uint qHash(const QHashableLatin1Literal &key);
+
+QT_END_NAMESPACE
 
 class GConf;
 class GConfClient;
@@ -252,7 +304,6 @@ typedef char* (*Ptr_gnome_icon_lookup_sync)  (
         GnomeIconLookupFlags flags,
         GnomeIconLookupResultFlags *result);
 
-
 class QGtkStylePrivate : public QCleanlooksStylePrivate
 {
     Q_DECLARE_PUBLIC(QGtkStyle)
@@ -262,8 +313,8 @@ public:
 
     QGtkStyleFilter filter;
 
-    static GtkWidget* gtkWidget(const QString &path);
-    static GtkStyle* gtkStyle(const QString &path = QLatin1String("GtkWindow"));
+    static GtkWidget* gtkWidget(const QHashableLatin1Literal &path);
+    static GtkStyle* gtkStyle(const QHashableLatin1Literal &path = QHashableLatin1Literal("GtkWindow"));
 
     virtual void resolveGtk() const;
     virtual void initGtkMenu() const;
@@ -418,17 +469,25 @@ public:
     static Ptr_gnome_icon_lookup_sync gnome_icon_lookup_sync;
     static Ptr_gnome_vfs_init gnome_vfs_init;
 
-    virtual QPalette gtkWidgetPalette(const QString &gtkWidgetName) const;
+    virtual QPalette gtkWidgetPalette(const QHashableLatin1Literal &gtkWidgetName) const;
 
 protected:
-    typedef QHash<QString, GtkWidget*> WidgetMap;
+    typedef QHash<QHashableLatin1Literal, GtkWidget*> WidgetMap;
+
+    static inline void destroyWidgetMap()
+    {
+        cleanupGtkWidgets();
+        delete widgetMap;
+        widgetMap = 0;
+    }
 
     static inline WidgetMap *gtkWidgetMap()
     {
-        static WidgetMap *map = 0;
-        if (!map)
-            map = new WidgetMap();
-        return map;
+        if (!widgetMap) {
+            widgetMap = new WidgetMap();
+            qAddPostRoutine(destroyWidgetMap);
+        }
+        return widgetMap;
     }
 
     static QStringList extract_filter(const QString &rawFilter);
@@ -443,6 +502,7 @@ protected:
 
 private:
     static QList<QGtkStylePrivate *> instances;
+    static WidgetMap *widgetMap;
     friend class QGtkStyleUpdateScheduler;
 };
 

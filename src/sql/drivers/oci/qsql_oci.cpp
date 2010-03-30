@@ -56,6 +56,12 @@
 #include <qvector.h>
 #include <qdebug.h>
 
+// This is needed for oracle oci when compiling with mingw-w64 headers
+#if defined(__MINGW64_VERSION_MAJOR) && defined(_WIN64)
+#define _int64 __int64
+#endif
+
+
 #include <oci.h>
 #ifdef max
 #undef max
@@ -364,8 +370,8 @@ static void qOraOutValue(QVariant &value, QList<QByteArray> &storage)
         value = qMakeDate(storage.takeFirst());
         break;
     case QVariant::String:
-        value = QString::fromUtf16(
-                reinterpret_cast<const ushort *>(storage.takeFirst().constData()));
+        value = QString(
+                reinterpret_cast<const QChar *>(storage.takeFirst().constData()));
         break;
     default:
         break; //nothing
@@ -454,7 +460,7 @@ QString qOraWarn(OCIError *err, int *errorCode)
                 OCI_HTYPE_ERROR);
     if (errorCode)
         *errorCode = errcode;
-    return QString::fromUtf16(reinterpret_cast<const ushort *>(errbuf));
+    return QString(reinterpret_cast<const QChar *>(errbuf));
 }
 
 void qOraWarning(const char* msg, OCIError *err)
@@ -989,8 +995,7 @@ int QOCICols::readPiecewise(QVector<QVariant> &values, int index)
         } else {
             if (isStringField) {
                 QString str = values.at(fieldNum + index).toString();
-                str += QString::fromUtf16(reinterpret_cast<const ushort *>(col),
-                                          chunkSize / 2);
+                str += QString(reinterpret_cast<const QChar *>(col), chunkSize / 2);
                 values[fieldNum + index] = str;
                 fieldInf[fieldNum].ind = 0;
             } else {
@@ -1457,7 +1462,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
                     break;
 
                 case SQLT_STR:
-                    (*list)[r] =  QString::fromUtf16(reinterpret_cast<ushort *>(data
+                    (*list)[r] =  QString(reinterpret_cast<const QChar *>(data
                                                                 + r * columns[i].maxLen));
                     break;
 
@@ -1608,7 +1613,7 @@ void QOCICols::getValues(QVector<QVariant> &v, int index)
             }
             // else fall through
         case QVariant::String:
-            v[index + i] = QString::fromUtf16(reinterpret_cast<const ushort *>(fld.data));
+            v[index + i] = QString(reinterpret_cast<const QChar *>(fld.data));
             break;
         case QVariant::ByteArray:
             if (fld.len > 0)
@@ -2102,7 +2107,7 @@ bool QOCIDriver::open(const QString & db,
         qWarning("QOCIDriver::open: could not get Oracle server version.");
     } else {
         QString versionStr;
-        versionStr = QString::fromUtf16(reinterpret_cast<ushort *>(vertxt));
+        versionStr = QString(reinterpret_cast<const QChar *>(vertxt));
         QRegExp vers(QLatin1String("([0-9]+)\\.[0-9\\.]+[0-9]"));
         if (vers.indexIn(versionStr) >= 0)
             d->serverVersion = vers.cap(1).toInt();

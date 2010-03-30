@@ -433,10 +433,8 @@ void BrowserMainWindow::setupMenu()
 
     QMenu *toolsMenu = menuBar()->addMenu(tr("&Tools"));
     toolsMenu->addAction(tr("Web &Search"), this, SLOT(slotWebSearch()), QKeySequence(tr("Ctrl+K", "Web Search")));
-#ifndef Q_CC_MINGW
     a = toolsMenu->addAction(tr("Enable Web &Inspector"), this, SLOT(slotToggleInspector(bool)));
     a->setCheckable(true);
-#endif
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("About &Qt"), qApp, SLOT(aboutQt()));

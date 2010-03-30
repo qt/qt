@@ -266,6 +266,11 @@ QLibraryInfo::location(LibraryLocation loc)
             path = QT_CONFIGURE_PLUGINS_PATH;
             break;
 #endif
+#ifdef QT_CONFIGURE_IMPORTS_PATH
+        case ImportsPath:
+            path = QT_CONFIGURE_IMPORTS_PATH;
+            break;
+#endif
 #ifdef QT_CONFIGURE_DATA_PATH
         case DataPath:
             path = QT_CONFIGURE_DATA_PATH;
@@ -439,7 +444,7 @@ QLibraryInfo::location(LibraryLocation loc)
                     QCFType<CFURLRef> urlRef = CFBundleCopyBundleURL(bundleRef);
                     if (urlRef) {
                         QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
-                        return QDir::cleanPath(path + QLatin1String("/Contents/") + ret);
+                        return QDir::cleanPath(QString(path) + QLatin1String("/Contents/") + ret);
                     }
                 }
 #endif
@@ -470,6 +475,7 @@ QLibraryInfo::location(LibraryLocation loc)
     \value LibrariesPath The location of installed librarires.
     \value BinariesPath The location of installed Qt binaries (tools and applications).
     \value PluginsPath The location of installed Qt plugins.
+    \value ImportsPath The location of installed QML extensions to import.
     \value DataPath The location of general Qt data.
     \value TranslationsPath The location of translation information for Qt strings.
     \value SettingsPath The location for Qt settings.

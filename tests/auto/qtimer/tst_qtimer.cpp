@@ -85,6 +85,7 @@ private slots:
     void timerFiresOnlyOncePerProcessEvents();
     void timerIdPersistsAfterThreadExit();
     void cancelLongTimer();
+    void singleShotStaticFunctionZeroTimeout();
 };
 
 class TimerHelper : public QObject
@@ -609,6 +610,17 @@ void tst_QTimer::cancelLongTimer()
     QVERIFY(timer.isActive()); //if the timer completes immediately with an error, then this will fail
     timer.stop();
     QVERIFY(!timer.isActive());
+}
+
+void tst_QTimer::singleShotStaticFunctionZeroTimeout()
+{
+    TimerHelper helper;
+
+    QTimer::singleShot(0, &helper, SLOT(timeout()));
+    QTest::qWait(500);
+    QCOMPARE(helper.count, 1);
+    QTest::qWait(500);
+    QCOMPARE(helper.count, 1);
 }
 
 QTEST_MAIN(tst_QTimer)

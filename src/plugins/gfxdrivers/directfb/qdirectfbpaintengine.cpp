@@ -175,7 +175,7 @@ enum PaintOperation {
     DRAW_PATH = 0x0040, DRAW_POINTS = 0x0080, DRAW_ELLIPSE = 0x0100,
     DRAW_POLYGON = 0x0200, DRAW_TEXT = 0x0400, FILL_PATH = 0x0800,
     FILL_RECT = 0x1000, DRAW_COLORSPANS = 0x2000, DRAW_ROUNDED_RECT = 0x4000,
-    ALL = 0xffff
+    DRAW_STATICTEXT = 0x8000, ALL = 0xffff
 };
 
 #ifdef QT_DEBUG
@@ -795,6 +795,14 @@ void QDirectFBPaintEngine::drawRoundedRect(const QRectF &rect, qreal xrad, qreal
     Q_D(QDirectFBPaintEngine);
     d->lock();
     QRasterPaintEngine::drawRoundedRect(rect, xrad, yrad, mode);
+}
+
+void QDirectFBPaintEngine::drawStaticTextItem(QStaticTextItem *item)
+{
+    RASTERFALLBACK(DRAW_STATICTEXT, item, VOID_ARG(), VOID_ARG());
+    Q_D(QDirectFBPaintEngine);
+    d->lock();
+    QRasterPaintEngine::drawStaticTextItem(item);
 }
 
 void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)

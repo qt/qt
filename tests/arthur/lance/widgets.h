@@ -236,7 +236,12 @@ public:
         }
 
         if (m_render_view.isNull()) {
-            m_render_view = T::window()->windowSurface()->grabWidget(this);
+
+            if (T::window()->windowSurface())
+                m_render_view = T::window()->windowSurface()->grabWidget(this);
+            else
+                m_render_view = QPixmap::grabWidget(this);
+
             m_render_view.save("renderView.png");
         }
     }

@@ -82,14 +82,14 @@ QString LinguistGenerator::format()
     return "Linguist";
 }
 
-QString LinguistGenerator::fileExtension(const Node * /* node */)
+QString LinguistGenerator::fileExtension(const Node * /* node */) const
 {
     return "ts";
 }
 
 void LinguistGenerator::generateClassLikeNode(const InnerNode *inner, CodeMarker *marker)
 {
-    out().setCodec("utf-8");
+    out().setCodec("UTF-8");
 
     QDomDocument document("TS");
     QDomElement documentElement = document.createElement("TS");
@@ -100,7 +100,7 @@ void LinguistGenerator::generateClassLikeNode(const InnerNode *inner, CodeMarker
         documentElement.appendChild(element);
 
     QDomProcessingInstruction process = document.createProcessingInstruction(
-        "xml", QString("version=\"1.0\" encoding=\"%1\"").arg("utf-8"));
+        "xml", QString("version=\"1.0\" encoding=\"%1\"").arg("UTF-8"));
     document.appendChild(process);
     document.appendChild(documentElement);
 

@@ -1,11 +1,14 @@
 /*
-  Configuration defines by Trolltech.
+  Configuration defines for Qt.
 */
 
 #include <qglobal.h>
 #if defined(Q_OS_WINCE)
 # include <qfunctions_wince.h>
 #endif
+
+/* Define if building universal (internal helper macro) */
+/* #undef AC_APPLE_UNIVERSAL_BUILD */
 
 /* Support CCITT Group 3 & 4 algorithms */
 #define CCITT_SUPPORT 1
@@ -47,19 +50,16 @@
 #define HAVE_IEEEFP 1
 
 /* Define to 1 if the system has the type `int16'. */
-/* #undef HAVE_INT16 */
 #ifdef Q_OS_AIX
 #define HAVE_INT16 1
 #endif
 
 /* Define to 1 if the system has the type `int32'. */
-/* #undef HAVE_INT32 */
 #ifdef Q_OS_AIX
 #define HAVE_INT32 1
 #endif
 
 /* Define to 1 if the system has the type `int8'. */
-/* #undef HAVE_INT8 */
 #ifdef Q_OS_AIX
 #define HAVE_INT8 1
 #endif
@@ -67,8 +67,14 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 /* #undef HAVE_INTTYPES_H */
 
+/* Define to 1 if you have the <io.h> header file. */
+/* #undef HAVE_IO_H */
+
 /* Define to 1 if you have the `isascii' function. */
 /* #undef HAVE_ISASCII */
+
+/* Define to 1 if you have the `jbg_newlen' function. */
+/* #undef HAVE_JBG_NEWLEN */
 
 /* Define to 1 if you have the `lfind' function. */
 /* #undef HAVE_LFIND */
@@ -107,6 +113,9 @@
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_VXWORKS)
 #define HAVE_SEARCH_H 1
 #endif
+
+/* Define to 1 if you have the `setmode' function. */
+/* #undef HAVE_SETMODE */
 
 /* Define to 1 if you have the `sqrt' function. */
 /* #undef HAVE_SQRT */
@@ -155,9 +164,6 @@
 
 /* Define to 1 if you have the <windows.h> header file. */
 /* #undef HAVE_WINDOWS_H */
-#ifdef Q_OS_WIN
-#define TIF_PLATFORM_CONSOLE
-#endif
 
 /* Native cpu byte order: 1 if big-endian (Motorola) or 0 if little-endian
    (Intel) */
@@ -169,6 +175,9 @@
 
 /* Set the native cpu bit order (FILLORDER_LSB2MSB or FILLORDER_MSB2LSB) */
 #define HOST_FILLORDER FILLORDER_LSB2MSB
+
+/* Support ISO JBIG compression (requires JBIG-KIT library) */
+/* #undef JBIG_SUPPORT */
 
 /* Support JPEG compression (requires IJG JPEG library) */
 /* #undef JPEG_SUPPORT */
@@ -192,8 +201,7 @@
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 /* #undef NO_MINUS_C_MINUS_O */
 
-/* Support Old JPEG compresson (read contrib/ojpeg/README first! Compilation
-   fails with unpatched IJG JPEG library) */
+/* Support Old JPEG compresson (read-only) */
 /* #undef OJPEG_SUPPORT */
 
 /* Name of package */
@@ -211,8 +219,11 @@
 /* Define to the one symbol short name of this package. */
 /* #undef PACKAGE_TARNAME */
 
+/* Define to the home page for this package. */
+/* #undef PACKAGE_URL */
+
 /* Define to the version of this package. */
-/* #undef PACKAGE_VERSION */
+#define PACKAGE_VERSION "3.9.2"
 
 /* Support Macintosh PackBits algorithm */
 #define PACKBITS_SUPPORT 1
@@ -224,15 +235,27 @@
    your system. */
 /* #undef PTHREAD_CREATE_JOINABLE */
 
-/* The size of a `int', as computed by sizeof. */
+/* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT 4
 
-/* The size of a `long', as computed by sizeof. */
+/* The size of `long', as computed by sizeof. */
 #if (QT_POINTER_SIZE == 8) && !defined(Q_OS_WIN64)
 #define SIZEOF_LONG 8
 #else
 #define SIZEOF_LONG 4
 #endif
+
+/* The size of `signed long', as computed by sizeof. */
+/* #undef SIZEOF_SIGNED_LONG */
+
+/* The size of `signed long long', as computed by sizeof. */
+/* #undef SIZEOF_SIGNED_LONG_LONG */
+
+/* The size of `unsigned long', as computed by sizeof. */
+/* #undef SIZEOF_UNSIGNED_LONG */
+
+/* The size of `unsigned long long', as computed by sizeof. */
+/* #undef SIZEOF_UNSIGNED_LONG_LONG */
 
 /* Define to 1 if you have the ANSI C header files. */
 /* #undef STDC_HEADERS */
@@ -250,6 +273,18 @@
 /* Support ThunderScan 4-bit RLE algorithm */
 #define THUNDER_SUPPORT 1
 
+/* Signed 64-bit type formatter */
+/* #undef TIFF_INT64_FORMAT */
+
+/* Signed 64-bit type */
+#define TIFF_INT64_T qint64
+
+/* Unsigned 64-bit type formatter */
+/* #undef TIFF_UINT64_FORMAT */
+
+/* Unsigned 64-bit type */
+#define TIFF_UINT64_T quint64
+
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 /* #undef TIME_WITH_SYS_TIME */
 
@@ -259,12 +294,10 @@
 /* Version number of package */
 /* #undef VERSION */
 
-/* Define to 1 if your processor stores words with the most significant byte
-   first (like Motorola and SPARC, unlike Intel and VAX). */
+/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
+   significant byte first (like Motorola and SPARC, unlike Intel). */
 #if (Q_BYTE_ORDER == Q_BIG_ENDIAN)
 #define WORDS_BIGENDIAN 1
-#else
-/* #undef WORDS_BIGENDIAN */
 #endif
 
 /* Define to 1 if the X Window System is missing or not being used. */
@@ -291,8 +324,12 @@
 #endif
 #endif
 
-/* Define to `long' if <sys/types.h> does not define. */
+/* Define to `long int' if <sys/types.h> does not define. */
 /* #undef off_t */
 
-/* Define to `unsigned' if <sys/types.h> does not define. */
+/* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
+
+#ifdef Q_OS_WIN
+#define TIF_PLATFORM_CONSOLE
+#endif

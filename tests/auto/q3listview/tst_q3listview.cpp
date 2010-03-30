@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include <iostream>
 
 #include <QtTest/QtTest>
 
@@ -87,6 +88,8 @@ public slots:
 private slots:
     void getSetCheck();
     void sortchild();
+    void sortchild2(); // item -> item -> 3 items
+    void sortchild3(); // item -> 3 items
     void takeItem_data();
     void takeItem();
     void selections_mouseClick_data();
@@ -262,7 +265,7 @@ void tst_Q3ListView::sortchild()
     QVERIFY( item == item1 );
 
     listview->setSorting( 0, FALSE );
-
+    
     item = listview->firstChild();
     QVERIFY( item == item1 );
     item = item->itemBelow();
@@ -290,6 +293,127 @@ void tst_Q3ListView::sortchild()
 
     delete listview;
 }
+
+void tst_Q3ListView::sortchild2()
+{
+    Q3ListView* listview = new Q3ListView( 0 );
+
+    listview->addColumn( "" );
+
+    Q3ListViewItem* item1 = new Q3ListViewItem( listview, "zzz" );
+    Q3ListViewItem* item2 = new Q3ListViewItem( listview, "hhh" );
+    Q3ListViewItem* item3 = new Q3ListViewItem( listview, "bbb" );
+    Q3ListViewItem* item4 = new Q3ListViewItem( listview, "jjj" );
+    Q3ListViewItem* item5 = new Q3ListViewItem( listview, "ddd" );
+    Q3ListViewItem* item6 = new Q3ListViewItem( listview, "lll" );
+
+    Q3ListViewItem* item31 = new Q3ListViewItem( item3, "bbb-level2" );
+
+    Q3ListViewItem* item31b = new Q3ListViewItem( item31, "234" );
+    Q3ListViewItem* item31c = new Q3ListViewItem( item31, "345" );
+    Q3ListViewItem* item31a = new Q3ListViewItem( item31, "123" );
+
+    listview->setOpen( item3, TRUE );
+    listview->setOpen( item31, TRUE );
+
+    listview->setSorting( 0, TRUE );
+    listview->show();
+
+    Q3ListViewItem *item = listview->firstChild();
+    QVERIFY( item == item3 );
+    item = item->itemBelow();
+    QVERIFY( item == item31 );
+    item = item->itemBelow();
+    QVERIFY( item == item31a );
+    item = item->itemBelow();
+    QVERIFY( item == item31b );
+    item = item->itemBelow();
+    QVERIFY( item == item31c );
+    item = item->itemBelow();
+    QVERIFY( item == item5 );
+    item = item->itemBelow();
+    QVERIFY( item == item2 );
+    item = item->itemBelow();
+    QVERIFY( item == item4 );
+    item = item->itemBelow();
+    QVERIFY( item == item6 );
+    item = item->itemBelow();
+    QVERIFY( item == item1 );
+
+    listview->setSorting( 0, FALSE );
+
+    item = listview->firstChild();
+    QVERIFY( item == item1 );
+    item = item->itemBelow();
+    QVERIFY( item == item6 );
+    item = item->itemBelow();
+    QVERIFY( item == item4 );
+    item = item->itemBelow();
+    QVERIFY( item == item2 );
+    item = item->itemBelow();
+    QVERIFY( item == item5 );
+    item = item->itemBelow();
+    QVERIFY( item == item3 );
+    item = item->itemBelow();
+    QVERIFY( item == item31 );
+    item = item->itemBelow();
+    QVERIFY( item == item31c );
+    item = item->itemBelow();
+    QVERIFY( item == item31b );
+    item = item->itemBelow();
+    QVERIFY( item == item31a );
+
+    item = listview->firstChild();
+    item->moveItem( item->itemBelow() );
+
+    listview->setSorting( 0, FALSE );
+    QVERIFY( item == listview->firstChild() );
+
+    delete listview;
+}
+
+void tst_Q3ListView::sortchild3()
+{
+    Q3ListView* listview = new Q3ListView( 0 );
+
+    listview->addColumn( "" );
+
+    Q3ListViewItem* item3 = new Q3ListViewItem( listview, "bbb" );
+
+
+    Q3ListViewItem* item31b = new Q3ListViewItem( item3, "234" );
+    Q3ListViewItem* item31c = new Q3ListViewItem( item3, "345" );
+    Q3ListViewItem* item31a = new Q3ListViewItem( item3, "123" );
+
+    listview->setOpen( item3, TRUE );
+
+    listview->setSorting( 0, TRUE );
+    listview->show();
+
+    Q3ListViewItem *item = listview->firstChild();
+    QVERIFY( item == item3 );
+    item = item->itemBelow();
+    QVERIFY( item == item31a );
+    item = item->itemBelow();
+    QVERIFY( item == item31b );
+    item = item->itemBelow();
+    QVERIFY( item == item31c );
+    item = item->itemBelow();
+
+    listview->setSorting( 0, FALSE );
+
+    item = listview->firstChild();
+    QVERIFY( item == item3 );
+    item = item->itemBelow();
+    QVERIFY( item == item31c );
+    item = item->itemBelow();
+    QVERIFY( item == item31b );
+    item = item->itemBelow();
+    QVERIFY( item == item31a );
+
+    delete listview;
+}
+
 
 void tst_Q3ListView::takeItem_data()
 {

@@ -201,6 +201,9 @@ private slots:
     void noWrapBackgrounds();
     void preserveCharFormatAfterUnchangingSetPosition();
     void twoSameInputMethodEvents();
+#ifndef QT_NO_CONTEXTMENU
+    void taskQTBUG_7902_contextMenuCrash();
+#endif
 
 private:
     void createSelection();
@@ -2201,6 +2204,25 @@ void tst_QTextEdit::twoSameInputMethodEvents()
     QApplication::sendEvent(ed, &event);
     QCOMPARE(ed->document()->firstBlock().layout()->lineCount(), 1);
 }
+
+#ifndef QT_NO_CONTEXTMENU
+void tst_QTextEdit::taskQTBUG_7902_contextMenuCrash()
+{
+    QTextEdit *w = new QTextEdit;
+    w->show();
+    QTest::qWaitForWindowShown(w);
+
+    QTimer ti;
+    w->connect(&ti, SIGNAL(timeout()), w, SLOT(deleteLater()));
+    ti.start(200);
+
+    QContextMenuEvent *cme = new QContextMenuEvent(QContextMenuEvent::Mouse, w->rect().center());
+    qApp->postEvent(w->viewport(), cme);
+
+    QTest::qWait(300);
+    // No crash, it's allright.
+}
+#endif
 
 QTEST_MAIN(tst_QTextEdit)
 #include "tst_qtextedit.moc"

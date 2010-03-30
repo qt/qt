@@ -671,14 +671,9 @@ namespace QTest {
 
         make.setProcessChannelMode(channelMode);
 
-#if defined(Q_OS_WIN) && !defined(Q_CC_MINGW)
-        make.start(QLatin1String("nmake.exe"), args);
-        make.waitForStarted();
-#else
         static const char makes[] =
-# ifdef Q_CC_MINGW
-            "mingw32-make.exe\0"
-# endif
+            "nmake.exe\0" //for visual c++
+            "mingw32-make.exe\0" //for mingw
             "gmake\0"
             "make\0";
         for (const char *p = makes; *p; p += strlen(p) + 1) {
@@ -686,7 +681,6 @@ namespace QTest {
             if (make.waitForStarted())
                 break;
         }
-#endif
 
         if (make.state() != QProcess::Running) {
             exitCode = 255;

@@ -72,6 +72,7 @@
 #include <QtGui/QStatusBar>
 #include <QtGui/QMenu>
 #include <QtGui/QAction>
+#include <QtGui/QLabel>
 
 QT_BEGIN_NAMESPACE
 
@@ -181,7 +182,17 @@ void FormWindowBase::reloadProperties()
         QMapIterator<int, bool> itIndex(itSheet.value());
         while (itIndex.hasNext()) {
             const int index = itIndex.next().key();
-            sheet->setProperty(index, sheet->property(index));
+            const QVariant newValue = sheet->property(index);
+            if (qobject_cast<QLabel *>(sheet->object()) && sheet->propertyName(index) == QLatin1String("text")) {
+                const PropertySheetStringValue newString = qVariantValue<PropertySheetStringValue>(newValue);
+                // optimize a bit, reset only if the text value might contain a reference to qt resources
+                // (however reloading of icons other than taken from resources might not work here)
+                if (newString.value().contains(QLatin1String(":/"))) {
+                    const QVariant resetValue = qVariantFromValue(PropertySheetStringValue());
+                    sheet->setProperty(index, resetValue);
+                }
+            }
+            sheet->setProperty(index, newValue);
         }
         if (QTabWidget *tabWidget = qobject_cast<QTabWidget *>(sheet->object())) {
             const int count = tabWidget->count();

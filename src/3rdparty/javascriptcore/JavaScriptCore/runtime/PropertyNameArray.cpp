@@ -21,13 +21,16 @@
 #include "config.h"
 #include "PropertyNameArray.h"
 
+#include "Structure.h"
+#include "StructureChain.h"
+
 namespace JSC {
 
 static const size_t setThreshold = 20;
 
 void PropertyNameArray::add(UString::Rep* identifier)
 {
-    ASSERT(identifier == &UString::Rep::null() || identifier == &UString::Rep::empty() || identifier->identifierTable());
+    ASSERT(identifier == &UString::Rep::null() || identifier == &UString::Rep::empty() || identifier->isIdentifier());
 
     size_t size = m_data->propertyNameVector().size();
     if (size < setThreshold) {
@@ -44,7 +47,7 @@ void PropertyNameArray::add(UString::Rep* identifier)
             return;
     }
 
-    m_data->propertyNameVector().append(Identifier(m_globalData, identifier));
+    addKnownUnique(identifier);
 }
 
 } // namespace JSC

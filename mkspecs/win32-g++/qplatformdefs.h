@@ -133,21 +133,16 @@ typedef enum {
 # define QT_OPEN_BINARY		_O_BINARY
 #endif
 
-#define QT_FOPEN                ::fopen
+#include "../common/c89/qplatformdefs.h"
+
 #ifdef QT_LARGEFILE_SUPPORT
+#undef QT_FSEEK
+#undef QT_FTELL
+#undef QT_OFF_T
+
 #define QT_FSEEK                ::fseeko64
 #define QT_FTELL                ::ftello64
-#else
-#define QT_FSEEK                ::fseek
-#define QT_FTELL                ::ftell
-#endif
-#define QT_FGETPOS              ::fgetpos
-#define QT_FSETPOS              ::fsetpos
-#define QT_FPOS_T               fpos_t
-#ifdef QT_LARGEFILE_SUPPORT
 #define QT_OFF_T                off64_t
-#else
-#define QT_OFF_T                long
 #endif
 
 #define QT_SIGNAL_ARGS		int

@@ -67,7 +67,9 @@
     IBOutlet NSMenuItem *aboutQtItem;
     IBOutlet NSMenuItem *hideItem;
     NSMenuItem *lastAppSpecificItem;
-
+    NSMenuItem *servicesItem;
+    NSMenuItem *hideAllOthersItem;
+    NSMenuItem *showAllItem;
 }
 - (void)ensureAppMenuInMenu:(NSMenu *)menu;
 - (void)removeActionsFromAppMenu;
@@ -85,6 +87,7 @@
 - (IBAction)unhideAllApplications:(id)sender;
 - (IBAction)hide:(id)sender;
 - (IBAction)qtDispatcherToQAction:(id)sender;
+- (void)qtUpdateMenubar;
 @end
 
 #endif // QT_MAC_USE_COCOA

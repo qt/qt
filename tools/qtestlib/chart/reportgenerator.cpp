@@ -41,6 +41,7 @@
 #include "reportgenerator.h"
 
 // Report generator file utility functions
+QT_BEGIN_NAMESPACE
 
 QList<QByteArray> readLines(const QString &fileName)
 {
@@ -559,3 +560,4 @@ QByteArray ReportGenerator::printColors(const QString &tableName, const QString 
     return colors;
 }
 
+QT_END_NAMESPACE

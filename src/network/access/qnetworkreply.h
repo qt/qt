@@ -77,6 +77,7 @@ public:
         TimeoutError,
         OperationCanceledError,
         SslHandshakeFailedError,
+        TemporaryNetworkFailureError,
         UnknownNetworkError = 99,
 
         // proxy errors (101-199):
@@ -127,6 +128,9 @@ public:
     bool hasRawHeader(const QByteArray &headerName) const;
     QList<QByteArray> rawHeaderList() const;
     QByteArray rawHeader(const QByteArray &headerName) const;
+
+    typedef QPair<QByteArray, QByteArray> RawHeaderPair;
+    const QList<RawHeaderPair>& rawHeaderPairs() const;
 
     // attributes
     QVariant attribute(QNetworkRequest::Attribute code) const;

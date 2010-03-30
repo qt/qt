@@ -121,6 +121,7 @@ private slots:
     void castWithPrototypeChain();
     void castWithMultipleInheritance();
     void collectGarbage();
+    void reportAdditionalMemoryCost();
     void gcWithNestedDataStructure();
     void processEventsWhileRunning();
     void throwErrorFromProcessEvents();
@@ -156,9 +157,11 @@ private slots:
     void nativeFunctionScopes();
     void evaluateProgram();
     void collectGarbageAfterConnect();
+    void promoteThisObjectToQObjectInConstructor();
 
     void qRegExpInport_data();
     void qRegExpInport();
+    void reentrency();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -2368,6 +2371,24 @@ void tst_QScriptEngine::collectGarbage()
     QVERIFY(ptr == 0);
 }
 
+void tst_QScriptEngine::reportAdditionalMemoryCost()
+{
+    QScriptEngine eng;
+    for (int x = 0; x < 1000; ++x) {
+        eng.reportAdditionalMemoryCost(0);
+        eng.reportAdditionalMemoryCost(10);
+        eng.reportAdditionalMemoryCost(1000);
+        eng.reportAdditionalMemoryCost(10000);
+        eng.reportAdditionalMemoryCost(100000);
+        eng.reportAdditionalMemoryCost(1000000);
+        eng.reportAdditionalMemoryCost(10000000);
+        eng.reportAdditionalMemoryCost(-1);
+        eng.reportAdditionalMemoryCost(-1000);
+        QScriptValue obj = eng.newObject();
+        eng.collectGarbage();
+    }
+}
+
 void tst_QScriptEngine::gcWithNestedDataStructure()
 {
     QScriptEngine eng;
@@ -4486,6 +4507,25 @@ void tst_QScriptEngine::collectGarbageAfterConnect()
     QVERIFY(widget == 0);
 }
 
+static QScriptValue constructQObjectFromThisObject(QScriptContext *ctx, QScriptEngine *eng)
+{
+    Q_ASSERT(ctx->isCalledAsConstructor());
+    return eng->newQObject(ctx->thisObject(), new QObject, QScriptEngine::ScriptOwnership);
+}
+
+void tst_QScriptEngine::promoteThisObjectToQObjectInConstructor()
+{
+    QScriptEngine engine;
+    QScriptValue ctor = engine.newFunction(constructQObjectFromThisObject);
+    engine.globalObject().setProperty("Ctor", ctor);
+    QScriptValue object = engine.evaluate("new Ctor");
+    QVERIFY(!object.isError());
+    QVERIFY(object.isQObject());
+    QVERIFY(object.toQObject() != 0);
+    QVERIFY(object.property("objectName").isString());
+    QVERIFY(object.property("deleteLater").isFunction());
+}
+
 static QRegExp minimal(QRegExp r) { r.setMinimal(true); return r; }
 
 void tst_QScriptEngine::qRegExpInport_data()
@@ -4536,6 +4576,26 @@ void tst_QScriptEngine::qRegExpInport()
     for (int i = 0; i <= rx.captureCount(); i++)  {
         QCOMPARE(result.property(i).toString(), rx.cap(i));
     }
+}
+
+static QScriptValue createAnotherEngine(QScriptContext *, QScriptEngine *)
+{
+    QScriptEngine eng;
+    eng.evaluate("function foo(x, y) { return x + y; }" );
+    eng.evaluate("hello = 5; world = 6" );
+    return eng.evaluate("foo(hello,world)").toInt32();
+}
+
+
+void tst_QScriptEngine::reentrency()
+{
+    QScriptEngine eng;
+    eng.globalObject().setProperty("foo", eng.newFunction(createAnotherEngine));
+    eng.evaluate("function bar() { return foo(); }  hello = 9; function getHello() { return hello; }");
+    QCOMPARE(eng.evaluate("foo() + getHello() + foo()").toInt32(), 5+6 + 9 + 5+6);
+    QCOMPARE(eng.evaluate("foo").call().toInt32(), 5+6);
+    QCOMPARE(eng.evaluate("hello").toInt32(), 9);
+    QCOMPARE(eng.evaluate("foo() + hello").toInt32(), 5+6+9);
 }
 
 QTEST_MAIN(tst_QScriptEngine)

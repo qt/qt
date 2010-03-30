@@ -62,7 +62,6 @@ QPixmapData *QGLGraphicsSystem::createPixmapData(QPixmapData::PixelType type) co
     if (type == QPixmapData::PixmapType && QX11GLPixmapData::hasX11GLPixmaps())
         return new QX11GLPixmapData();
 #endif
-
     return new QGLPixmapData(type);
 }
 

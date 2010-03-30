@@ -431,7 +431,9 @@ void QVariantAnimation::registerInterpolator(QVariantAnimation::Interpolator fun
 {
     // will override any existing interpolators
     QInterpolatorVector *interpolators = registeredInterpolators();
+#ifndef QT_NO_THREAD
     QMutexLocker locker(QMutexPool::globalInstanceGet(interpolators));
+#endif
     if (int(interpolationType) >= interpolators->count())
         interpolators->resize(int(interpolationType) + 1);
     interpolators->replace(interpolationType, func);
@@ -446,7 +448,9 @@ template<typename T> static inline QVariantAnimation::Interpolator castToInterpo
 QVariantAnimation::Interpolator QVariantAnimationPrivate::getInterpolator(int interpolationType)
 {
     QInterpolatorVector *interpolators = registeredInterpolators();
+#ifndef QT_NO_THREAD
     QMutexLocker locker(QMutexPool::globalInstanceGet(interpolators));
+#endif
     QVariantAnimation::Interpolator ret = 0;
     if (interpolationType < interpolators->count()) {
         ret = interpolators->at(interpolationType);

@@ -157,6 +157,7 @@ private slots:
     void invokeQueuedMetaMember();
     void invokeCustomTypes();
     void invokeMetaConstructor();
+    void invokeTypedefTypes();
     void qtMetaObjectInheritance();
     void normalizedSignature_data();
     void normalizedSignature();
@@ -513,6 +514,19 @@ void tst_QMetaObject::invokeMetaMember()
     QVERIFY(QMetaObject::invokeMethod(&obj, "sig1", Q_RETURN_ARG(QString, exp), Q_ARG(QString, "hehe")));
     QCOMPARE(exp, QString("yessir"));
     QCOMPARE(obj.slotResult, QString("sl1:hehe"));
+
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::doesNotExist()");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "doesNotExist"));
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::sl1(QString)(QString)");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "sl1(QString)", Q_ARG(QString, "arg")));
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::sl3(QString)");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "sl3", Q_ARG(QString, "arg")));
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::sl1(QString,QString,QString)");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "sl1", Q_ARG(QString, "arg"), Q_ARG(QString, "arg"), Q_ARG(QString, "arg")));
+
+    //should not have changed since last test.
+    QCOMPARE(exp, QString("yessir"));
+    QCOMPARE(obj.slotResult, QString("sl1:hehe"));
 }
 
 void tst_QMetaObject::invokeQueuedMetaMember()
@@ -585,6 +599,8 @@ struct MyType
     int i1, i2, i3;
 };
 
+typedef QString CustomString;
+
 class QtTestCustomObject: public QObject
 {
     Q_OBJECT
@@ -593,6 +609,9 @@ public:
 
 public slots:
     void sl1(MyType myType);
+
+signals:
+    void sig_custom(const CustomString &string);
 
 public:
     int sum;
@@ -651,6 +670,20 @@ void tst_QMetaObject::invokeMetaConstructor()
     }
 }
 
+void tst_QMetaObject::invokeTypedefTypes()
+{
+    qRegisterMetaType<CustomString>("CustomString");
+    QtTestCustomObject obj;
+    QSignalSpy spy(&obj, SIGNAL(sig_custom(CustomString)));
+
+    QCOMPARE(spy.count(), 0);
+    CustomString arg("hello");
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sig_custom", Q_ARG(CustomString, arg)));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).count(), 1);
+    QCOMPARE(spy.at(0).at(0), QVariant(arg));
+}
+
 void tst_QMetaObject::normalizedSignature_data()
 {
     QTest::addColumn<QString>("signature");
@@ -664,7 +697,7 @@ void tst_QMetaObject::normalizedSignature_data()
     QTest::newRow("const rettype") << "const QString *foo()" << "const QString*foo()";
     QTest::newRow("const ref") << "const QString &foo()" << "const QString&foo()";
     QTest::newRow("reference") << "QString &foo()" << "QString&foo()";
-    QTest::newRow("const2") << "void foo(QString const *)" << "void foo(const QString*)";
+    QTest::newRow("const1") << "void foo(QString const *)" << "void foo(const QString*)";
     QTest::newRow("const2") << "void foo(QString * const)" << "void foo(QString*const)";
     QTest::newRow("const3") << "void foo(QString const &)" << "void foo(QString)";
     QTest::newRow("const4") << "void foo(const int)" << "void foo(int)";
@@ -672,7 +705,13 @@ void tst_QMetaObject::normalizedSignature_data()
                             << "void foo(int,int,int,int)";
     QTest::newRow("const6") << "void foo(QList<const int>)" << "void foo(QList<const int>)";
     QTest::newRow("const7") << "void foo(QList<const int*>)" << "void foo(QList<const int*>)";
-    QTest::newRow("const7") << "void foo(QList<int const*>)" << "void foo(QList<const int*>)";
+    QTest::newRow("const8") << "void foo(QList<int const*>)" << "void foo(QList<const int*>)";
+    QTest::newRow("const9") << "void foo(const Foo<Bar>)" << "void foo(Foo<Bar>)";
+    QTest::newRow("const10") << "void foo(Foo<Bar>const)" << "void foo(Foo<Bar>)";
+    QTest::newRow("const11") << "void foo(Foo<Bar> *const)" << "void foo(Foo<Bar>*const)";
+    QTest::newRow("const12") << "void foo(Foo<Bar>const*const *const)" << "void foo(Foo<Bar>*const*const)";
+    QTest::newRow("const13") << "void foo(const Foo<Bar>&)" << "void foo(Foo<Bar>)";
+    QTest::newRow("const14") << "void foo(Foo<Bar>const&)" << "void foo(Foo<Bar>)";
 }
 
 void tst_QMetaObject::normalizedSignature()
@@ -701,6 +740,14 @@ void tst_QMetaObject::normalizedType_data()
     QTest::newRow("template7") << "QList<QList<int> >" << "QList<QList<int> >";
     QTest::newRow("value1") << "const QString &" << "QString";
     QTest::newRow("value2") << "QString const &" << "QString";
+    QTest::newRow("constInName1") << "constconst" << "constconst";
+    QTest::newRow("constInName2") << "constconst*" << "constconst*";
+    QTest::newRow("constInName3") << "const constconst&" << "constconst";
+    QTest::newRow("constInName4") << "constconst const*const" << "constconst*const";
+    QTest::newRow("class") << "const class foo&" << "foo";
+    QTest::newRow("struct") << "const struct foo*" << "const foo*";
+    QTest::newRow("struct2") << "struct foo const*" << "const foo*";
+    QTest::newRow("enum") << "enum foo" << "foo";
 }
 
 void tst_QMetaObject::normalizedType()

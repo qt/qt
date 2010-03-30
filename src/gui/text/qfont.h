@@ -76,17 +76,18 @@ public:
     };
 
     enum StyleStrategy {
-        PreferDefault    = 0x0001,
-        PreferBitmap     = 0x0002,
-        PreferDevice     = 0x0004,
-        PreferOutline    = 0x0008,
-        ForceOutline     = 0x0010,
-        PreferMatch      = 0x0020,
-        PreferQuality    = 0x0040,
-        PreferAntialias  = 0x0080,
-        NoAntialias      = 0x0100,
-        OpenGLCompatible = 0x0200,
-        NoFontMerging    = 0x8000
+        PreferDefault       = 0x0001,
+        PreferBitmap        = 0x0002,
+        PreferDevice        = 0x0004,
+        PreferOutline       = 0x0008,
+        ForceOutline        = 0x0010,
+        PreferMatch         = 0x0020,
+        PreferQuality       = 0x0040,
+        PreferAntialias     = 0x0080,
+        NoAntialias         = 0x0100,
+        OpenGLCompatible    = 0x0200,
+        ForceIntegerMetrics = 0x0400,
+        NoFontMerging       = 0x8000
     };
 
     enum Weight {
@@ -291,6 +292,7 @@ private:
     friend class QFontMetricsF;
     friend class QFontInfo;
     friend class QPainter;
+    friend class QPainterPrivate;
     friend class QPSPrintEngineFont;
     friend class QApplication;
     friend class QWidget;

@@ -137,6 +137,10 @@ private slots:
     void drives_data();
     void drives();
     void dirsBeforeFiles();
+
+    void roleNames_data();
+    void roleNames();
+
 protected:
     bool createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount = 0, const QStringList &intial_dirs = QStringList(), const QString &baseDir = QDir::temp().absolutePath());
 
@@ -236,6 +240,26 @@ void tst_QFileSystemModel::rootPath()
     QCOMPARE(model->rootPath(), QString(QDir::homePath()));
     QCOMPARE(rootChanged.count(), oldRootPath == model->rootPath() ? 0 : 1);
     QCOMPARE(model->rootDirectory().absolutePath(), QDir::homePath());
+
+    model->setRootPath(QDir::rootPath());
+    int oldCount = rootChanged.count();
+    oldRootPath = model->rootPath();
+    root = model->setRootPath(QDir::homePath() + QLatin1String("/."));
+    QTRY_VERIFY(model->rowCount(root) >= 0);
+    QCOMPARE(model->rootPath(), QDir::homePath());
+    QCOMPARE(rootChanged.count(), oldRootPath == model->rootPath() ? oldCount : oldCount + 1);
+    QCOMPARE(model->rootDirectory().absolutePath(), QDir::homePath());
+
+    QDir newdir = QDir::home();
+    if (newdir.cdUp()) {
+        oldCount = rootChanged.count();
+        oldRootPath = model->rootPath();
+        root = model->setRootPath(QDir::homePath() + QLatin1String("/.."));
+        QTRY_VERIFY(model->rowCount(root) >= 0);
+        QCOMPARE(model->rootPath(), newdir.path());
+        QCOMPARE(rootChanged.count(), oldCount + 1);
+        QCOMPARE(model->rootDirectory().absolutePath(), newdir.path());
+    }
 }
 
 void tst_QFileSystemModel::naturalCompare_data()
@@ -994,6 +1018,31 @@ void tst_QFileSystemModel::dirsBeforeFiles()
                 model->fileInfo(model->index(i, 0, root)).fileName());
 #endif
     }
+}
+
+void tst_QFileSystemModel::roleNames_data()
+{
+    QTest::addColumn<int>("role");
+    QTest::addColumn<QByteArray>("roleName");
+    QTest::newRow("decoration") << int(Qt::DecorationRole) << QByteArray("decoration");
+    QTest::newRow("display") << int(Qt::DisplayRole) << QByteArray("display");
+    QTest::newRow("fileIcon") << int(QFileSystemModel::FileIconRole) << QByteArray("fileIcon");
+    QTest::newRow("filePath") << int(QFileSystemModel::FilePathRole) << QByteArray("filePath");
+    QTest::newRow("fileName") << int(QFileSystemModel::FileNameRole) << QByteArray("fileName");
+    QTest::newRow("filePermissions") << int(QFileSystemModel::FilePermissions) << QByteArray("filePermissions");
+}
+
+void tst_QFileSystemModel::roleNames()
+{
+    QFileSystemModel model;
+    QHash<int, QByteArray> roles = model.roleNames();
+
+    QFETCH(int, role);
+    QVERIFY(roles.contains(role));
+
+    QFETCH(QByteArray, roleName);
+    QList<QByteArray> values = roles.values(role);
+    QVERIFY(values.contains(roleName));
 }
 
 QTEST_MAIN(tst_QFileSystemModel)

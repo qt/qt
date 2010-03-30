@@ -42,6 +42,7 @@
 /*!
     \namespace Qt
     \inmodule QtCore
+    \target Qt Namespace
 
     \brief The Qt namespace contains miscellaneous identifiers
     used throughout the Qt library.
@@ -184,6 +185,7 @@
     left-handed mice.)
     \value RightButton     The right button.
     \value MidButton       The middle button.
+    \value MiddleButton    The middle button.
     \value XButton1        The first X button.
     \value XButton2        The second X button.
 
@@ -1254,6 +1256,10 @@
     window boundary (widget without parent or dialog) is found.
     This attribute currently has effect only on Symbian platforms
 
+    \value WA_X11DoNotAcceptFocus Asks the window manager to not give focus
+    to this top level window. This attribute has no effect on non-X11
+    platforms.
+
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys
@@ -1638,6 +1644,8 @@
     \value Key_LaunchD On X11 this key is mapped to XF86XK_LaunchB key for legacy reasons.
     \value Key_LaunchE On X11 this key is mapped to XF86XK_LaunchC key for legacy reasons.
     \value Key_LaunchF On X11 this key is mapped to XF86XK_LaunchD key for legacy reasons.
+    \value Key_LaunchG On X11 this key is mapped to XF86XK_LaunchE key for legacy reasons.
+    \value Key_LaunchH On X11 this key is mapped to XF86XK_LaunchF key for legacy reasons.
     \value Key_MonBrightnessUp
     \value Key_MonBrightnessDown
     \value Key_KeyboardLightOnOff
@@ -2516,6 +2524,15 @@
                           operations that allow the user to interact with
                           the application while they are performed in the
                           background.
+    \value DragMoveCursor
+                          A cursor that is usually used when dragging an item.
+    \value DragCopyCursor
+                          A cursor that is usually used when dragging an item
+                          to copy it.
+    \value DragLinkCursor
+                          A cursor that is usually used when dragging an item
+                          to make a link to it.
+
     \value BitmapCursor
     \omitvalue LastCursor
     \omitvalue CustomCursor
@@ -2975,6 +2992,11 @@
     the widget always gets the full gesture sequence starting with a gesture in
     the Qt::GestureStarted state and ending with a gesture in the
     Qt::GestureFinished or Qt::GestureCanceled states.
+
+    \value IgnoredGesturesPropagateToParent Since Qt 4.7, this flag allows you
+    to fine-tune gesture event propagation. By setting the flag when
+    \l{QGraphicsObject::grabGesture()}{grabbing} a gesture all ignored partial
+    gestures will propagate to their parent items.
 
     \sa QWidget::grabGesture(), QGraphicsObject::grabGesture()
 */

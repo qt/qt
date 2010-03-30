@@ -42,6 +42,7 @@
 #include "qpixmapdata_vg_p.h"
 #include "qpaintengine_vg_p.h"
 #include <QtGui/private/qdrawhelper_p.h>
+#include <QtGui/private/qegl_p.h>
 #include "qvg_p.h"
 #include "qvgimagepool_p.h"
 
@@ -51,8 +52,6 @@
 #endif
 #ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
 #include <sgresource/sgimage.h>
-typedef EGLImageKHR (*pfnEglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, EGLint*);
-typedef EGLBoolean (*pfnEglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
 typedef VGImage (*pfnVgCreateEGLImageTargetKHR)(VGeglImageKHR);
 #endif // QT_SYMBIAN_SUPPORTS_SGIMAGE
 
@@ -233,14 +232,6 @@ QPaintEngine* QVGPixmapData::paintEngine() const
     return source.paintEngine();
 }
 
-// This function works around QImage::bits() making a deep copy if the
-// QImage is not const.  We force it to be const and then get the bits.
-// XXX: Should add a QImage::constBits() in the future to replace this.
-const uchar *qt_vg_imageBits(const QImage& image)
-{
-    return image.bits();
-}
-
 VGImage QVGPixmapData::toVGImage()
 {
     if (!isValid())
@@ -273,7 +264,7 @@ VGImage QVGPixmapData::toVGImage()
     if (!source.isNull() && recreate) {
         vgImageSubData
             (vgImage,
-             qt_vg_imageBits(source), source.bytesPerLine(),
+             source.constBits(), source.bytesPerLine(),
              VG_sARGB_8888_PRE, 0, 0, w, h);
     }
 
@@ -496,18 +487,16 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
             return;
         }
 
-        pfnEglCreateImageKHR eglCreateImageKHR = (pfnEglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
-        pfnEglDestroyImageKHR eglDestroyImageKHR = (pfnEglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
         pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
 
-        if (eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
+        if (eglGetError() != EGL_SUCCESS || !(QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_pixmap")) || !vgCreateEGLImageTargetKHR) {
             cleanup();
             driver.Close();
             return;
         }
 
         const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
-        EGLImageKHR eglImage = eglCreateImageKHR(QEglContext::display(),
+        EGLImageKHR eglImage = eglCreateImageKHR(QEgl::display(),
                 EGL_NO_CONTEXT,
                 EGL_NATIVE_PIXMAP_KHR,
                 (EGLClientBuffer)sgImage,
@@ -522,7 +511,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         vgImage = vgCreateEGLImageTargetKHR(eglImage);
         if (vgGetError() != VG_NO_ERROR) {
             cleanup();
-            eglDestroyImageKHR(QEglContext::display(), eglImage);
+            eglDestroyImageKHR(QEgl::display(), eglImage);
             driver.Close();
             return;
         }
@@ -536,7 +525,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         prevSize = QSize(w, h);
         setSerialNumber(++qt_vg_pixmap_serial);
         // release stuff
-        eglDestroyImageKHR(QEglContext::display(), eglImage);
+        eglDestroyImageKHR(QEgl::display(), eglImage);
         driver.Close();
 #endif
     } else if (type == QPixmapData::FbsBitmap) {
@@ -614,17 +603,15 @@ void* QVGPixmapData::toNativeType(NativeType type)
             return 0;
         }
 
-        pfnEglCreateImageKHR eglCreateImageKHR = (pfnEglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
-        pfnEglDestroyImageKHR eglDestroyImageKHR = (pfnEglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
         pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
 
-        if (eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
+        if (eglGetError() != EGL_SUCCESS || !(QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_pixmap")) || !vgCreateEGLImageTargetKHR) {
             driver.Close();
             return 0;
         }
 
         const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
-        EGLImageKHR eglImage = eglCreateImageKHR(QEglContext::display(),
+        EGLImageKHR eglImage = eglCreateImageKHR(QEgl::display(),
                 EGL_NO_CONTEXT,
                 EGL_NATIVE_PIXMAP_KHR,
                 (EGLClientBuffer)sgImage,
@@ -637,7 +624,7 @@ void* QVGPixmapData::toNativeType(NativeType type)
 
         VGImage dstVgImage = vgCreateEGLImageTargetKHR(eglImage);
         if (vgGetError() != VG_NO_ERROR) {
-            eglDestroyImageKHR(QEglContext::display(), eglImage);
+            eglDestroyImageKHR(QEgl::display(), eglImage);
             sgImage->Close();
             driver.Close();
             return 0;
@@ -653,7 +640,7 @@ void* QVGPixmapData::toNativeType(NativeType type)
         }
         // release stuff
         vgDestroyImage(dstVgImage);
-        eglDestroyImageKHR(QEglContext::display(), eglImage);
+        eglDestroyImageKHR(QEgl::display(), eglImage);
         driver.Close();
         return reinterpret_cast<void*>(sgImage);
 #endif
@@ -663,7 +650,7 @@ void* QVGPixmapData::toNativeType(NativeType type)
         if (bitmap) {
             if (bitmap->Create(TSize(source.width(), source.height()),
                               EColor16MAP) == KErrNone) {
-                const uchar *sptr = qt_vg_imageBits(source);
+                const uchar *sptr = source.constBits();
                 bitmap->BeginDataAccess();
 
                 uchar *dptr = (uchar*)bitmap->DataAddress();

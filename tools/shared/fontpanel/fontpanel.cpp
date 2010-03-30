@@ -96,8 +96,12 @@ QFont FontPanel::selectedFont() const
     const QString family = rc.family();
     rc.setPointSize(pointSize());
     const QString styleDescription = styleString();
-    rc.setItalic(m_fontDatabase.italic(family, styleDescription));
-
+    if (styleDescription.contains(QLatin1String("Italic")))
+        rc.setStyle(QFont::StyleItalic);
+    else if (styleDescription.contains(QLatin1String("Oblique")))
+        rc.setStyle(QFont::StyleOblique);
+    else
+        rc.setStyle(QFont::StyleNormal);
     rc.setBold(m_fontDatabase.bold(family, styleDescription));
 
     // Weight < 0 asserts...

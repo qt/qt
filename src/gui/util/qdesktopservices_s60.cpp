@@ -415,11 +415,11 @@ QString QDesktopServices::storageLocation(StandardLocation type)
         //return QDir::homePath(); break;
         break;
     case DataLocation:
-        CEikonEnv::Static()->FsSession().PrivatePath(path);
+        qt_s60GetRFs().PrivatePath(path);
         path.Insert(0, writableExeDrive().Name());
         break;
     case CacheLocation:
-        CEikonEnv::Static()->FsSession().PrivatePath(path);
+        qt_s60GetRFs().PrivatePath(path);
         path.Insert(0, writableExeDrive().Name());
         path.Append(KCacheSubDir);
         break;

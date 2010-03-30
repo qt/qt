@@ -1145,13 +1145,29 @@ void QTextCursor::setPosition(int pos, MoveMode m)
     Returns the absolute position of the cursor within the document.
     The cursor is positioned between characters.
 
-    \sa setPosition() movePosition() anchor()
+    \sa setPosition() movePosition() anchor() positionInBlock()
 */
 int QTextCursor::position() const
 {
     if (!d || !d->priv)
         return -1;
     return d->position;
+}
+
+/*!
+    \since 4.7
+    Returns the relative position of the cursor within the block.
+    The cursor is positioned between characters.
+
+    This is equivalent to \c{ position() - block().position()}.
+
+    \sa position()
+*/
+int QTextCursor::positionInBlock() const
+{
+    if (!d || !d->priv)
+        return 0;
+    return d->position - d->block().position();
 }
 
 /*!
@@ -2414,9 +2430,17 @@ int QTextCursor::blockNumber() const
     return d->block().blockNumber();
 }
 
+
 /*!
     \since 4.2
     Returns the position of the cursor within its containing line.
+
+    Note that this is the column number relative to a wrapped line,
+    not relative to the block (i.e. the paragraph).
+
+    You probably want to call positionInBlock() instead.
+
+    \sa positionInBlock()
 */
 int QTextCursor::columnNumber() const
 {

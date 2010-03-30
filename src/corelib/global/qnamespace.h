@@ -146,7 +146,8 @@ public:
         NoButton         = 0x00000000,
         LeftButton       = 0x00000001,
         RightButton      = 0x00000002,
-        MidButton        = 0x00000004,
+        MidButton        = 0x00000004, // ### Qt 5: remove me
+        MiddleButton     = MidButton,
         XButton1         = 0x00000008,
         XButton2         = 0x00000010,
         MouseButtonMask  = 0x000000ff
@@ -501,6 +502,17 @@ public:
 
         WA_MergeSoftkeys =  124,
         WA_MergeSoftkeysRecursively =  125,
+
+#if 0 // these values are reserved for Maemo5 - do not re-use them
+        WA_Maemo5NonComposited = 126,
+        WA_Maemo5StackedWindow = 127,
+        WA_Maemo5PortraitOrientation = 128,
+        WA_Maemo5LandscapeOrientation = 129,
+        WA_Maemo5AutoOrientation = 130,
+        WA_Maemo5ShowProgressIndicator = 131,
+#endif
+
+        WA_X11DoNotAcceptFocus = 132,
 
         // Add new attributes before this line
         WA_AttributeCount
@@ -1051,6 +1063,9 @@ public:
         Key_Suspend = 0x0100010c,
         Key_ContrastAdjust = 0x0100010d,
 
+        Key_LaunchG  = 0x0100010e,
+        Key_LaunchH  = 0x0100010f,
+
         Key_MediaLast = 0x0100ffff,
 
         // Keypad navigation keys
@@ -1237,7 +1252,10 @@ public:
         BusyCursor,
         OpenHandCursor,
         ClosedHandCursor,
-        LastCursor = ClosedHandCursor,
+        DragCopyCursor,
+        DragMoveCursor,
+        DragLinkCursor,
+        LastCursor = DragLinkCursor,
         BitmapCursor = 24,
         CustomCursor = 25
 
@@ -1724,7 +1742,8 @@ public:
     enum GestureFlag
     {
         DontStartGestureOnChildren = 0x01,
-        ReceivePartialGestures     = 0x02
+        ReceivePartialGestures     = 0x02,
+        IgnoredGesturesPropagateToParent = 0x04
     };
     Q_DECLARE_FLAGS(GestureFlags, GestureFlag)
 

@@ -68,7 +68,7 @@ void tst_QDoubleValidator::validateThouSep_data()
     QTest::addColumn<QString>("value");
     QTest::addColumn<QValidator::State>("result");
 
-    QTest::newRow("1,000C") << "C" << QString("1,000") << INV;
+    QTest::newRow("1,000C") << "C" << QString("1,000") << ACC;
     QTest::newRow("1.000C") << "C" << QString("1.000") << ACC;
 
     QTest::newRow("1,000de") << "de" << QString("1,000") << ACC;
@@ -160,9 +160,9 @@ void tst_QDoubleValidator::validate_data()
     QTest::newRow("data_de0")  << "de" << 0.0 << 100.0 << 1 << QString("50,0") << ACC << ACC;
     QTest::newRow("data_de1")  << "de" << 00.0 << 100.0 << 1 << QString("500,0") << ITM << ITM;
     QTest::newRow("data_de1a")  << "de" << 00.0 << 100.0 << 1 << QString("5001,0") << ITM << INV;
-    QTest::newRow("data_de0C")  << "de" << 0.0 << 100.0 << 1 << QString("50.0") << ACC << ACC;
-    QTest::newRow("data_de1C")  << "de" << 00.0 << 100.0 << 1 << QString("500.0") << ITM << ITM;
-    QTest::newRow("data_de1aC")  << "de" << 00.0 << 100.0 << 1 << QString("5001.0") << ITM << INV;
+    QTest::newRow("data_de0C")  << "de" << 0.0 << 100.0 << 1 << QString("50,0") << ACC << ACC;
+    QTest::newRow("data_de1C")  << "de" << 00.0 << 100.0 << 1 << QString("500,0") << ITM << ITM;
+    QTest::newRow("data_de1aC")  << "de" << 00.0 << 100.0 << 1 << QString("5001,0") << ITM << INV;
     QTest::newRow("data_de2")  << "de" << 00.0 << 100.0 << 1 << QString("-35,0") << INV << INV;
     QTest::newRow("data_de3")  << "de" << 00.0 << 100.0 << 1 << QString("a") << INV << INV;
     QTest::newRow("data_de4")  << "de" << 0.0 << 100.0 << 1 << QString("-") << INV << INV;
@@ -172,7 +172,7 @@ void tst_QDoubleValidator::validate_data()
     QTest::newRow("data_de8")  << "de" << -100.0 << 100.0 << 1 << QString("-100") << ACC << ACC;
     QTest::newRow("data_de9")  << "de" << -100.0 << -10.0 << 1 << QString("10") << ITM << ITM;
     QTest::newRow("data_de10") << "de" << 0.3 << 0.5 << 5 << QString("0,34567") << ACC << ACC;
-    QTest::newRow("data_de11") << "de" << -0.3 << -0.5 << 5 << QString("-0,345678") << INV << INV;
+    QTest::newRow("data_de11") << "de" << -0.3 << -0.5 << 5 << QString("-0,345678") << ITM << INV;
     QTest::newRow("data_de12") << "de" << -0.32 << 0.32 << 1 << QString("0") << ACC << ACC;
     QTest::newRow("data_de13") << "de" << 0.0 << 100.0 << 1 << QString("3456a") << INV << INV;
     QTest::newRow("data_de14") << "de" << -100.0 << 100.0 << 1 << QString("-3456a") << INV << INV;

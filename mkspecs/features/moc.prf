@@ -22,7 +22,7 @@ win32:count($$list($$INCPATH), 40, >) {
     if(contains(TEMPLATE, "vc.*")|contains(TEMPLATE_PREFIX, "vc")) {
         # the VCPROJ generator will replace the \r\h with the coded \r\n: &#x0d;&#x0a;
         # No other generator understands the \h
-        if(win32-msvc.net|win32-msvc2*|wince*msvc*): EOC = $$escape_expand(\r\h)
+        if(win32-msvc2*|wince*msvc*): EOC = $$escape_expand(\r\h)
         else: EOC = $$escape_expand(\\)$$escape_expand(\n\t)
     }
 

@@ -99,6 +99,9 @@ public:
     // we return true since HTTP needs to send PUT/POST data again after having authenticated
     bool needsResetableUploadData() { return true; }
 
+    bool canResume() const;
+    void setResumeOffset(quint64 offset);
+
 private slots:
     void replyReadyRead();
     void replyFinished();
@@ -119,6 +122,8 @@ private:
     bool pendingIgnoreAllSslErrors;
     QList<QSslError> pendingIgnoreSslErrorsList;
 #endif
+
+    quint64 resumeOffset;
 
     void disconnectFromHttp();
     void setupConnection();

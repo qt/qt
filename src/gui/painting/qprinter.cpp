@@ -158,27 +158,6 @@ QSizeF qt_printerPaperSize(QPrinter::Orientation orientation,
                   (qt_paperSizes[paperSize][height_index] * 72 / 25.4) / multiplier);
 }
 
-
-// returns the actual num copies set on a printer, not
-// the number that is documented in QPrinter::numCopies()
-int qt_printerRealNumCopies(QPaintEngine *engine)
-{
-    int numCopies = 1;
-    if (engine->type() == QPaintEngine::PostScript
-        || engine->type() == QPaintEngine::Pdf)
-    {
-        QPdfBaseEngine *base = static_cast<QPdfBaseEngine *>(engine);
-        numCopies = base->d_func()->copies;
-    }
-#ifdef Q_WS_WIN
-    else if (engine->type() == QPaintEngine::Windows) {
-        QWin32PrintEngine *base = static_cast<QWin32PrintEngine *>(engine);
-        numCopies = base->d_func()->num_copies;
-    }
-#endif
-    return numCopies;
-}
-
 void QPrinterPrivate::createDefaultEngines()
 {
     QPrinter::OutputFormat realOutputFormat = outputFormat;
@@ -302,7 +281,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   printer to provide, in dots per inch (DPI).
   \i setFullPage() tells QPrinter whether you want to deal with the
   full page or just with the part the printer can draw on.
-  \i setNumCopies() tells QPrinter how many copies of the document
+  \i setCopyCount() tells QPrinter how many copies of the document
   it should print.
   \endlist
 
@@ -403,6 +382,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
     \value AllPages All pages should be printed.
     \value Selection Only the selection should be printed.
     \value PageRange The specified page range should be printed.
+    \value CurrentPage Only the current page should be printed.
 
     \sa QAbstractPrintDialog::PrintRange
 */
@@ -592,6 +572,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   \value AllPages All the pages should be printed.
   \value Selection Only the selection should be printed.
   \value PageRange Print according to the from page and to page options.
+  \value CurrentPage Only the current page should be printed.
 
   \sa setPrintRange(), printRange()
 */
@@ -607,6 +588,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   \value PrintSelection Describes if printing selections should be enabled.
   \value PrintPageRange Describes if printing page ranges (from, to) should
   be enabled
+  \value PrintCurrentPage if Print Current Page option should be enabled
 
   \sa setOptionEnabled(), isOptionEnabled()
 */
@@ -748,7 +730,6 @@ void QPrinter::setOutputFormat(OutputFormat format)
     d->outputFormat = format;
 
     QPrintEngine *oldPrintEngine = d->printEngine;
-    QPaintEngine *oldPaintEngine = d->paintEngine; // same as the above - shouldn't be deleted
     const bool def_engine = d->use_default_engine;
     d->printEngine = 0;
 
@@ -761,7 +742,7 @@ void QPrinter::setOutputFormat(OutputFormat format)
             // PPK_NumberOfCopies need special treatmeant since it in most cases
             // will return 1, disregarding the actual value that was set
             if (key == QPrintEngine::PPK_NumberOfCopies)
-                prop = QVariant(qt_printerRealNumCopies(oldPaintEngine));
+                prop = QVariant(copyCount());
             else
                 prop = oldPrintEngine->property(key);
             if (prop.isValid())
@@ -1263,6 +1244,7 @@ QPrinter::ColorMode QPrinter::colorMode() const
 
 
 /*!
+  \obsolete
   Returns the number of copies to be printed. The default value is 1.
 
   On Windows, Mac OS X and X11 systems that support CUPS, this will always
@@ -1275,6 +1257,8 @@ QPrinter::ColorMode QPrinter::colorMode() const
   buffering up the copies and in those cases the application must make an
   explicit call to the print code for each copy.
 
+  Use copyCount() in conjunction with supportsMultipleCopies() instead.
+
   \sa setNumCopies(), actualNumCopies()
 */
 
@@ -1286,6 +1270,7 @@ int QPrinter::numCopies() const
 
 
 /*!
+    \obsolete
     \since 4.6
 
     Returns the number of copies that will be printed. The default
@@ -1294,21 +1279,25 @@ int QPrinter::numCopies() const
     This function always returns the actual value specified in the print
     dialog or using setNumCopies().
 
+    Use copyCount() instead.
+
     \sa setNumCopies(), numCopies()
 */
 int QPrinter::actualNumCopies() const
 {
-    Q_D(const QPrinter);
-    return qt_printerRealNumCopies(d->paintEngine);
+    return copyCount();
 }
 
 
 
 /*!
+  \obsolete
   Sets the number of copies to be printed to \a numCopies.
 
   The printer driver reads this setting and prints the specified
   number of copies.
+
+  Use setCopyCount() instead.
 
   \sa numCopies()
 */
@@ -1321,6 +1310,58 @@ void QPrinter::setNumCopies(int numCopies)
     d->addToManualSetList(QPrintEngine::PPK_NumberOfCopies);
 }
 
+/*!
+    \since 4.7
+
+    Sets the number of copies to be printed to \a count.
+
+    The printer driver reads this setting and prints the specified number of
+    copies.
+
+    \sa copyCount(), supportsMultipleCopies()
+*/
+
+void QPrinter::setCopyCount(int count)
+{
+    Q_D(QPrinter);
+    ABORT_IF_ACTIVE("QPrinter::setCopyCount;");
+    d->printEngine->setProperty(QPrintEngine::PPK_CopyCount, count);
+    d->addToManualSetList(QPrintEngine::PPK_CopyCount);
+}
+
+/*!
+    \since 4.7
+
+    Returns the number of copies that will be printed. The default value is 1.
+
+    \sa setCopyCount(), supportsMultipleCopies()
+*/
+
+int QPrinter::copyCount() const
+{
+    Q_D(const QPrinter);
+    return d->printEngine->property(QPrintEngine::PPK_CopyCount).toInt();
+}
+
+/*!
+    \since 4.7
+
+    Returns true if the printer supports printing multiple copies of the same
+    document in one job; otherwise false is returned.
+
+    On most systems this function will return true. However, on X11 systems
+    that do not support CUPS, this function will return false. That means the
+    application has to handle the number of copies by printing the same
+    document the required number of times.
+
+    \sa setCopyCount(), copyCount()
+*/
+
+bool QPrinter::supportsMultipleCopies() const
+{
+    Q_D(const QPrinter);
+    return d->printEngine->property(QPrintEngine::PPK_SupportsMultipleCopies).toBool();
+}
 
 /*!
     \since 4.1
@@ -2262,8 +2303,8 @@ bool QPrinter::isOptionEnabled( PrinterOption option ) const
     \value PPK_FullPage A boolean describing if the printer should be
     full page or not.
 
-    \value PPK_NumberOfCopies An integer specifying the number of
-    copies
+    \value PPK_NumberOfCopies Obsolete. An integer specifying the number of
+    copies. Use PPK_CopyCount instead.
 
     \value PPK_Orientation Specifies a QPrinter::Orientation value.
 
@@ -2309,6 +2350,11 @@ bool QPrinter::isOptionEnabled( PrinterOption option ) const
 
     \value PPK_PageMargins A QList<QVariant> containing the left, top,
     right and bottom margin values.
+
+    \value PPK_CopyCount An integer specifying the number of copies to print.
+
+    \value PPK_SupportsMultipleCopies A boolean value indicating whether or not
+    the printer supports printing multiple copies in one job.
 
     \value PPK_CustomBase Basis for extension.
 */

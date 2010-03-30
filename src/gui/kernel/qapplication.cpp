@@ -122,15 +122,19 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 static void initResources()
 {
 #if defined(Q_WS_WINCE)
+    Q_INIT_RESOURCE_EXTERN(qstyle_wince)
     Q_INIT_RESOURCE(qstyle_wince);
 #elif defined(Q_OS_SYMBIAN)
+    Q_INIT_RESOURCE_EXTERN(qstyle_s60)
     Q_INIT_RESOURCE(qstyle_s60);
 #else
+    Q_INIT_RESOURCE_EXTERN(qstyle)
     Q_INIT_RESOURCE(qstyle);
 #endif
-
+    Q_INIT_RESOURCE_EXTERN(qmessagebox)
     Q_INIT_RESOURCE(qmessagebox);
 #if !defined(QT_NO_PRINTDIALOG)
+    Q_INIT_RESOURCE_EXTERN(qprintdialog)
     Q_INIT_RESOURCE(qprintdialog);
 #endif
 
@@ -181,6 +185,15 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
 
     gestureManager = 0;
     gestureWidget = 0;
+
+#if defined(Q_WS_X11) || defined(Q_WS_WIN)
+    move_cursor = 0;
+    copy_cursor = 0;
+    link_cursor = 0;
+#endif
+#if defined(Q_WS_WIN)
+    ignore_cursor = 0;
+#endif
 
     if (!self)
         self = this;
@@ -485,9 +498,7 @@ inline bool QApplicationPrivate::isAlien(QWidget *widget)
 {
     if (!widget)
         return false;
-#if defined(Q_WS_MAC) // Fake alien behavior on the Mac :)
-    return !widget->isWindow() && widget->window()->testAttribute(Qt::WA_DontShowOnScreen);
-#elif defined(Q_WS_QWS)
+#if defined(Q_WS_QWS)
     return !widget->isWindow()
 # ifdef Q_BACKINGSTORE_SUBSURFACES
         && !(widget->d_func()->maybeTopData() && widget->d_func()->maybeTopData()->windowSurface)
@@ -1032,6 +1043,15 @@ QApplication::~QApplication()
 #ifndef QT_NO_CLIPBOARD
     delete qt_clipboard;
     qt_clipboard = 0;
+#endif
+
+#if defined(Q_WS_X11) || defined(Q_WS_WIN)
+    delete d->move_cursor; d->move_cursor = 0;
+    delete d->copy_cursor; d->copy_cursor = 0;
+    delete d->link_cursor; d->link_cursor = 0;
+#endif
+#if defined(Q_WS_WIN)
+    delete d->ignore_cursor; d->ignore_cursor = 0;
 #endif
 
     delete QWidgetPrivate::mapper;
@@ -2291,6 +2311,22 @@ static bool qt_detectRTLLanguage()
                          " languages or to 'RTL' in right-to-left languages (such as Hebrew"
                          " and Arabic) to get proper widget layout.") == QLatin1String("RTL"));
 }
+#if defined(Q_WS_MAC)
+static const char *application_menu_strings[] = {
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Services"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide %1"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide Others"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Show All"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Preferences..."),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Quit %1"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","About %1")
+    };
+QString qt_mac_applicationmenu_string(int type)
+{
+    return qApp->translate("MAC_APPLICATION_MENU",
+                           application_menu_strings[type]);
+}
+#endif
 #endif
 
 /*!\reimp
@@ -2318,6 +2354,9 @@ bool QApplication::event(QEvent *e)
     } else if(e->type() == QEvent::LanguageChange) {
 #ifndef QT_NO_TRANSLATION
         setLayoutDirection(qt_detectRTLLanguage()?Qt::RightToLeft:Qt::LeftToRight);
+#endif
+#if defined(QT_MAC_USE_COCOA)
+        qt_mac_post_retranslateAppMenu();
 #endif
         QWidgetList list = topLevelWidgets();
         for (int i = 0; i < list.size(); ++i) {
@@ -2993,7 +3032,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     return result;
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_MAC)
 /*
     This function should only be called when the widget changes visibility, i.e.
     when the \a widget is shown, hidden or deleted. This function does nothing
@@ -3053,7 +3092,7 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
     sendMouseEvent(widgetUnderCursor, &e, widgetUnderCursor, tlw, &qt_button_down, qt_last_mouse_receiver);
 #endif // QT_NO_CURSOR
 }
-#endif // Q_WS_WIN || Q_WS_X11
+#endif // Q_WS_WIN || Q_WS_X11 || Q_WS_MAC
 
 /*!
     Returns the desktop widget (also called the root window).
@@ -5248,10 +5287,20 @@ QInputContext *QApplication::inputContext() const
             qic = QInputContextFactory::create(QLatin1String("xim"), that);
         that->d_func()->inputContext = qic;
     }
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
     if (!d->inputContext) {
         QApplication *that = const_cast<QApplication *>(this);
-        that->d_func()->inputContext = QInputContextFactory::create(QString::fromLatin1("coefep"), that);
+        const QStringList keys = QInputContextFactory::keys();
+        // Try hbim and coefep first, then try others.
+        if (keys.contains("hbim")) {
+            that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("hbim"), that);
+        } else if (keys.contains("coefep")) {
+            that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("coefep"), that);
+        } else {
+            for (int c = 0; c < keys.size() && !d->inputContext; ++c) {
+                that->d_func()->inputContext = QInputContextFactory::create(keys[c], that);
+            }
+        }
     }
 #endif
     return d->inputContext;
@@ -5689,6 +5738,228 @@ QGestureManager* QGestureManager::instance()
     if (!qAppPriv->gestureManager)
         qAppPriv->gestureManager = new QGestureManager(qApp);
     return qAppPriv->gestureManager;
+}
+
+// These pixmaps approximate the images in the Windows User Interface Guidelines.
+
+// XPM
+
+static const char * const move_xpm[] = {
+"11 20 3 1",
+".        c None",
+#if defined(Q_WS_WIN)
+"a        c #000000",
+"X        c #FFFFFF", // Windows cursor is traditionally white
+#else
+"a        c #FFFFFF",
+"X        c #000000", // X11 cursor is traditionally black
+#endif
+"aa.........",
+"aXa........",
+"aXXa.......",
+"aXXXa......",
+"aXXXXa.....",
+"aXXXXXa....",
+"aXXXXXXa...",
+"aXXXXXXXa..",
+"aXXXXXXXXa.",
+"aXXXXXXXXXa",
+"aXXXXXXaaaa",
+"aXXXaXXa...",
+"aXXaaXXa...",
+"aXa..aXXa..",
+"aa...aXXa..",
+"a.....aXXa.",
+"......aXXa.",
+".......aXXa",
+".......aXXa",
+"........aa."};
+
+#ifdef Q_WS_WIN
+/* XPM */
+static const char * const ignore_xpm[] = {
+"24 30 3 1",
+".        c None",
+"a        c #000000",
+"X        c #FFFFFF",
+"aa......................",
+"aXa.....................",
+"aXXa....................",
+"aXXXa...................",
+"aXXXXa..................",
+"aXXXXXa.................",
+"aXXXXXXa................",
+"aXXXXXXXa...............",
+"aXXXXXXXXa..............",
+"aXXXXXXXXXa.............",
+"aXXXXXXaaaa.............",
+"aXXXaXXa................",
+"aXXaaXXa................",
+"aXa..aXXa...............",
+"aa...aXXa...............",
+"a.....aXXa..............",
+"......aXXa.....XXXX.....",
+".......aXXa..XXaaaaXX...",
+".......aXXa.XaaaaaaaaX..",
+"........aa.XaaaXXXXaaaX.",
+"...........XaaaaX..XaaX.",
+"..........XaaXaaaX..XaaX",
+"..........XaaXXaaaX.XaaX",
+"..........XaaX.XaaaXXaaX",
+"..........XaaX..XaaaXaaX",
+"...........XaaX..XaaaaX.",
+"...........XaaaXXXXaaaX.",
+"............XaaaaaaaaX..",
+".............XXaaaaXX...",
+"...............XXXX....."};
+#endif
+
+/* XPM */
+static const char * const copy_xpm[] = {
+"24 30 3 1",
+".        c None",
+"a        c #000000",
+"X        c #FFFFFF",
+#if defined(Q_WS_WIN) // Windows cursor is traditionally white
+"aa......................",
+"aXa.....................",
+"aXXa....................",
+"aXXXa...................",
+"aXXXXa..................",
+"aXXXXXa.................",
+"aXXXXXXa................",
+"aXXXXXXXa...............",
+"aXXXXXXXXa..............",
+"aXXXXXXXXXa.............",
+"aXXXXXXaaaa.............",
+"aXXXaXXa................",
+"aXXaaXXa................",
+"aXa..aXXa...............",
+"aa...aXXa...............",
+"a.....aXXa..............",
+"......aXXa..............",
+".......aXXa.............",
+".......aXXa.............",
+"........aa...aaaaaaaaaaa",
+#else
+"XX......................",
+"XaX.....................",
+"XaaX....................",
+"XaaaX...................",
+"XaaaaX..................",
+"XaaaaaX.................",
+"XaaaaaaX................",
+"XaaaaaaaX...............",
+"XaaaaaaaaX..............",
+"XaaaaaaaaaX.............",
+"XaaaaaaXXXX.............",
+"XaaaXaaX................",
+"XaaXXaaX................",
+"XaX..XaaX...............",
+"XX...XaaX...............",
+"X.....XaaX..............",
+"......XaaX..............",
+".......XaaX.............",
+".......XaaX.............",
+"........XX...aaaaaaaaaaa",
+#endif
+".............aXXXXXXXXXa",
+".............aXXXXXXXXXa",
+".............aXXXXaXXXXa",
+".............aXXXXaXXXXa",
+".............aXXaaaaaXXa",
+".............aXXXXaXXXXa",
+".............aXXXXaXXXXa",
+".............aXXXXXXXXXa",
+".............aXXXXXXXXXa",
+".............aaaaaaaaaaa"};
+
+/* XPM */
+static const char * const link_xpm[] = {
+"24 30 3 1",
+".        c None",
+"a        c #000000",
+"X        c #FFFFFF",
+#if defined(Q_WS_WIN) // Windows cursor is traditionally white
+"aa......................",
+"aXa.....................",
+"aXXa....................",
+"aXXXa...................",
+"aXXXXa..................",
+"aXXXXXa.................",
+"aXXXXXXa................",
+"aXXXXXXXa...............",
+"aXXXXXXXXa..............",
+"aXXXXXXXXXa.............",
+"aXXXXXXaaaa.............",
+"aXXXaXXa................",
+"aXXaaXXa................",
+"aXa..aXXa...............",
+"aa...aXXa...............",
+"a.....aXXa..............",
+"......aXXa..............",
+".......aXXa.............",
+".......aXXa.............",
+"........aa...aaaaaaaaaaa",
+#else
+"XX......................",
+"XaX.....................",
+"XaaX....................",
+"XaaaX...................",
+"XaaaaX..................",
+"XaaaaaX.................",
+"XaaaaaaX................",
+"XaaaaaaaX...............",
+"XaaaaaaaaX..............",
+"XaaaaaaaaaX.............",
+"XaaaaaaXXXX.............",
+"XaaaXaaX................",
+"XaaXXaaX................",
+"XaX..XaaX...............",
+"XX...XaaX...............",
+"X.....XaaX..............",
+"......XaaX..............",
+".......XaaX.............",
+".......XaaX.............",
+"........XX...aaaaaaaaaaa",
+#endif
+".............aXXXXXXXXXa",
+".............aXXXaaaaXXa",
+".............aXXXXaaaXXa",
+".............aXXXaaaaXXa",
+".............aXXaaaXaXXa",
+".............aXXaaXXXXXa",
+".............aXXaXXXXXXa",
+".............aXXXaXXXXXa",
+".............aXXXXXXXXXa",
+".............aaaaaaaaaaa"};
+
+QPixmap QApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
+{
+    if (!move_cursor) {
+        move_cursor = new QPixmap((const char **)move_xpm);
+        copy_cursor = new QPixmap((const char **)copy_xpm);
+        link_cursor = new QPixmap((const char **)link_xpm);
+#ifdef Q_WS_WIN
+        ignore_cursor = new QPixmap((const char **)ignore_xpm);
+#endif
+    }
+
+    switch (cshape) {
+    case Qt::DragMoveCursor:
+        return *move_cursor;
+    case Qt::DragCopyCursor:
+        return *copy_cursor;
+    case Qt::DragLinkCursor:
+        return *link_cursor;
+#ifdef Q_WS_WIN
+    case Qt::ForbiddenCursor:
+        return *ignore_cursor;
+#endif
+    default:
+        break;
+    }
+    return QPixmap();
 }
 
 QT_END_NAMESPACE

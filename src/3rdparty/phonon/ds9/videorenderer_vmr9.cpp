@@ -169,7 +169,6 @@ namespace Phonon
             Q_ASSERT(SUCCEEDED(hr));
             ComPointer<IVMRWindowlessControl9> windowlessControl(m_filter, IID_IVMRWindowlessControl9);
             windowlessControl->SetVideoClippingWindow(reinterpret_cast<HWND>(target->winId()));
-            windowlessControl->SetAspectRatioMode(VMR9ARMode_None); //we're in control of the size
         }
 
         QImage VideoRendererVMR9::snapshot() const

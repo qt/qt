@@ -617,7 +617,9 @@ QThread::Priority QThread::priority() const
 {
     Q_D(const QThread);
     QMutexLocker locker(&d->mutex);
-    return d->priority;
+
+    // mask off the high bits that are used for flags
+    return Priority(d->priority & 0xffff);
 }
 
 /*!

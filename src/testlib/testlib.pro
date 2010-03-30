@@ -47,6 +47,7 @@ SOURCES = qtestcase.cpp \
     qbenchmarkmeasurement.cpp \
     qbenchmarkvalgrind.cpp \
     qbenchmarkevent.cpp \
+    qbenchmarkmetric.cpp \
     qtestelement.cpp \
     qtestelementattribute.cpp \
     qtestbasicstreamer.cpp \

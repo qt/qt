@@ -187,7 +187,7 @@ void ManGenerator::generateFakeNode( const FakeNode *fake, CodeMarker *marker )
     generateFooter();
 }
 
-QString ManGenerator::fileExtension(const Node * /* node */)
+QString ManGenerator::fileExtension(const Node * /* node */) const
 {
     return "3qt";
 }

@@ -161,24 +161,32 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_THREAD
 Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
+#endif
 
 QUnifiedTimer::QUnifiedTimer() :
     QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
     currentAnimationIdx(0), consistentTiming(false), slowMode(false),
     isPauseTimerActive(false), runningLeafAnimations(0)
 {
+    time.invalidate();
 }
 
 QUnifiedTimer *QUnifiedTimer::instance()
 {
     QUnifiedTimer *inst;
+#ifndef QT_NO_THREAD
     if (!unifiedTimer()->hasLocalData()) {
         inst = new QUnifiedTimer;
         unifiedTimer()->setLocalData(inst);
     } else {
         inst = unifiedTimer()->localData();
     }
+#else
+    static QUnifiedTimer unifiedTimer;
+    inst = &unifiedTimer;
+#endif
     return inst;
 }
 
@@ -242,7 +250,7 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
             animationTimer.stop();
             isPauseTimerActive = false;
             // invalidate the start reference time
-            time = QTime();
+            time.invalidate();
         } else {
             restartAnimationTimer();
             if (!time.isValid()) {

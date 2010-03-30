@@ -195,7 +195,7 @@ QSize QRadioButton::sizeHint() const
     ensurePolished();
     QStyleOptionButton opt;
     initStyleOption(&opt);
-    QSize sz = style()->itemTextRect(fontMetrics(), QRect(0, 0, 1, 1), Qt::TextShowMnemonic,
+    QSize sz = style()->itemTextRect(fontMetrics(), QRect(), Qt::TextShowMnemonic,
                                      false, text()).size();
     if (!opt.icon.isNull())
         sz = QSize(sz.width() + opt.iconSize.width() + 4, qMax(sz.height(), opt.iconSize.height()));

@@ -53,7 +53,6 @@ SOURCES += \
            $$PHONON_DS9_DIR/qaudiocdreader.cpp \
            $$PHONON_DS9_DIR/qmeminputpin.cpp
 
-
 target.path = $$[QT_INSTALL_PLUGINS]/phonon_backend
 INSTALLS += target
 

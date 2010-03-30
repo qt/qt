@@ -119,11 +119,8 @@ static JSC::JSValue JSC_HOST_CALL variantProtoFuncToString(JSC::ExecState *exec,
     JSC::JSValue value = variantProtoFuncValueOf(exec, callee, thisValue, args);
     if (value.isObject()) {
         result = v.toString();
-        if (result.isEmpty() && !v.canConvert(QVariant::String)) {
-            result = "QVariant(";
-            result += v.typeName();
-            result += ")";
-        }
+        if (result.isEmpty() && !v.canConvert(QVariant::String))
+            result = QString::fromLatin1("QVariant(%0)").arg(QString::fromLatin1(v.typeName()));
     } else {
         result = value.toString(exec);
     }
@@ -133,7 +130,7 @@ static JSC::JSValue JSC_HOST_CALL variantProtoFuncToString(JSC::ExecState *exec,
 bool QVariantDelegate::compareToObject(QScriptObject *, JSC::ExecState *exec, JSC::JSObject *o2)
 {
     const QVariant &variant1 = value();
-    return variant1 == scriptEngineFromExec(exec)->scriptValueFromJSCValue(o2).toVariant();
+    return variant1 == QScriptEnginePrivate::toVariant(exec, o2);
 }
 
 QVariantPrototype::QVariantPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::Structure> structure,

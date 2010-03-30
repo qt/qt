@@ -8,3 +8,4 @@ deploy.sources += NormalizationTest.txt
 DEPLOYMENT = deploy
 }
 
+DEFINES += SRCDIR=\\\"$$PWD/\\\"

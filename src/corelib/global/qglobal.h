@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.6.3"
+#define QT_VERSION_STR   "4.7.0"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040603
+#define QT_VERSION 0x040700
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -275,7 +275,7 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#ifdef AUTODETECT_COCOA
+#ifdef QT_AUTODETECT_COCOA
 #  ifdef Q_OS_MAC64
 #    define QT_MAC_USE_COCOA 1
 #    define QT_BUILD_KEY QT_BUILD_KEY_COCOA
@@ -672,8 +672,9 @@ namespace QT_NAMESPACE {}
 #      define Q_ALIGNOF(type)   __alignof__(type)
 #      define Q_TYPEOF(expr)    __typeof__(expr)
 #      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
-// using CC 5.9: Warning: attribute visibility is unsupported and will be skipped..
-//#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+#    endif
+#    if __SUNPRO_CC >= 0x550
+#      define Q_DECL_EXPORT     __global
 #    endif
 #    if __SUNPRO_CC < 0x5a0
 #      define Q_NO_TEMPLATE_FRIENDS
@@ -862,6 +863,9 @@ typedef quint64 qulonglong;
 #   define QT_POINTER_SIZE 4
 #  endif
 #endif
+
+#define Q_INIT_RESOURCE_EXTERN(name) \
+    extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();
 
 #define Q_INIT_RESOURCE(name) \
     do { extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();       \
@@ -1058,6 +1062,16 @@ redefine to built-in booleans to make autotests work properly */
 #  endif
 #else
 #  define QT_FASTCALL
+#endif
+
+//defines the type for the WNDPROC on windows
+//the alignment needs to be forced for sse2 to not crash with mingw
+#if defined(Q_WS_WIN)
+#  if defined(Q_CC_MINGW)
+#    define QT_WIN_CALLBACK CALLBACK __attribute__ ((force_align_arg_pointer))
+#  else
+#    define QT_WIN_CALLBACK CALLBACK
+#  endif
 #endif
 
 typedef int QNoImplicitBoolCast;
@@ -1540,6 +1554,7 @@ inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #endif
 
+// ### Qt 5: remove Win9x support macros QT_WA and QT_WA_INLINE.
 #define QT_WA(unicode, ansi) unicode
 #define QT_WA_INLINE(unicode, ansi) (unicode)
 

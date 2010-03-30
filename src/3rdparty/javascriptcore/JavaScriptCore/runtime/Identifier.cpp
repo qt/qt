@@ -28,6 +28,8 @@
 #include <wtf/FastMalloc.h>
 #include <wtf/HashSet.h>
 
+using WTF::ThreadSpecific;
+
 namespace JSC {
 
 typedef HashMap<const char*, RefPtr<UString::Rep>, PtrHash<const char*> > LiteralIdentifierTable;
@@ -38,13 +40,13 @@ public:
     {
         HashSet<UString::Rep*>::iterator end = m_table.end();
         for (HashSet<UString::Rep*>::iterator iter = m_table.begin(); iter != end; ++iter)
-            (*iter)->setIdentifierTable(0);
+            (*iter)->setIsIdentifier(false);
     }
     
     std::pair<HashSet<UString::Rep*>::iterator, bool> add(UString::Rep* value)
     {
         std::pair<HashSet<UString::Rep*>::iterator, bool> result = m_table.add(value);
-        (*result.first)->setIdentifierTable(this);
+        (*result.first)->setIsIdentifier(true);
         return result;
     }
 
@@ -52,7 +54,7 @@ public:
     std::pair<HashSet<UString::Rep*>::iterator, bool> add(U value)
     {
         std::pair<HashSet<UString::Rep*>::iterator, bool> result = m_table.add<U, V>(value);
-        (*result.first)->setIdentifierTable(this);
+        (*result.first)->setIsIdentifier(true);
         return result;
     }
 
@@ -77,7 +79,7 @@ void deleteIdentifierTable(IdentifierTable* table)
 
 bool Identifier::equal(const UString::Rep* r, const char* s)
 {
-    int length = r->len;
+    int length = r->size();
     const UChar* d = r->data();
     for (int i = 0; i != length; ++i)
         if (d[i] != (unsigned char)s[i])
@@ -87,7 +89,7 @@ bool Identifier::equal(const UString::Rep* r, const char* s)
 
 bool Identifier::equal(const UString::Rep* r, const UChar* s, int length)
 {
-    if (r->len != length)
+    if (r->size() != length)
         return false;
     const UChar* d = r->data();
     for (int i = 0; i != length; ++i)
@@ -110,13 +112,11 @@ struct CStringTranslator {
     static void translate(UString::Rep*& location, const char* c, unsigned hash)
     {
         size_t length = strlen(c);
-        UChar* d = static_cast<UChar*>(fastMalloc(sizeof(UChar) * length));
+        UChar* d;
+        UString::Rep* r = UString::Rep::createUninitialized(length, d).releaseRef();
         for (size_t i = 0; i != length; i++)
             d[i] = static_cast<unsigned char>(c[i]); // use unsigned char to zero-extend instead of sign-extend
-        
-        UString::Rep* r = UString::Rep::create(d, static_cast<int>(length)).releaseRef();
-        r->_hash = hash;
-
+        r->setHash(hash);
         location = r;
     }
 };
@@ -175,13 +175,11 @@ struct UCharBufferTranslator {
 
     static void translate(UString::Rep*& location, const UCharBuffer& buf, unsigned hash)
     {
-        UChar* d = static_cast<UChar*>(fastMalloc(sizeof(UChar) * buf.length));
+        UChar* d;
+        UString::Rep* r = UString::Rep::createUninitialized(buf.length, d).releaseRef();
         for (unsigned i = 0; i != buf.length; i++)
             d[i] = buf.s[i];
-        
-        UString::Rep* r = UString::Rep::create(d, buf.length).releaseRef();
-        r->_hash = hash;
-        
+        r->setHash(hash);
         location = r; 
     }
 };
@@ -212,19 +210,19 @@ PassRefPtr<UString::Rep> Identifier::add(ExecState* exec, const UChar* s, int le
 
 PassRefPtr<UString::Rep> Identifier::addSlowCase(JSGlobalData* globalData, UString::Rep* r)
 {
-    ASSERT(!r->identifierTable());
-    if (r->len == 1) {
+    ASSERT(!r->isIdentifier());
+    if (r->size() == 1) {
         UChar c = r->data()[0];
         if (c <= 0xFF)
             r = globalData->smallStrings.singleCharacterStringRep(c);
-            if (r->identifierTable()) {
+            if (r->isIdentifier()) {
 #ifndef NDEBUG
                 checkSameIdentifierTable(globalData, r);
 #endif
                 return r;
             }
     }
-    if (!r->len) {
+    if (!r->size()) {
         UString::Rep::empty().hash();
         return &UString::Rep::empty();
     }
@@ -238,19 +236,19 @@ PassRefPtr<UString::Rep> Identifier::addSlowCase(ExecState* exec, UString::Rep* 
 
 void Identifier::remove(UString::Rep* r)
 {
-    r->identifierTable()->remove(r);
+    currentIdentifierTable()->remove(r);
 }
 
 #ifndef NDEBUG
 
-void Identifier::checkSameIdentifierTable(ExecState* exec, UString::Rep* rep)
+void Identifier::checkSameIdentifierTable(ExecState* exec, UString::Rep*)
 {
-    ASSERT(rep->identifierTable() == exec->globalData().identifierTable);
+    ASSERT_UNUSED(exec, exec->globalData().identifierTable == currentIdentifierTable());
 }
 
-void Identifier::checkSameIdentifierTable(JSGlobalData* globalData, UString::Rep* rep)
+void Identifier::checkSameIdentifierTable(JSGlobalData* globalData, UString::Rep*)
 {
-    ASSERT(rep->identifierTable() == globalData->identifierTable);
+    ASSERT_UNUSED(globalData, globalData->identifierTable == currentIdentifierTable());
 }
 
 #else
@@ -261,6 +259,32 @@ void Identifier::checkSameIdentifierTable(ExecState*, UString::Rep*)
 
 void Identifier::checkSameIdentifierTable(JSGlobalData*, UString::Rep*)
 {
+}
+
+#endif
+
+ThreadSpecific<ThreadIdentifierTableData>* g_identifierTableSpecific = 0;
+
+#if ENABLE(JSC_MULTIPLE_THREADS)
+
+pthread_once_t createIdentifierTableSpecificOnce = PTHREAD_ONCE_INIT;
+static void createIdentifierTableSpecificCallback()
+{
+    ASSERT(!g_identifierTableSpecific);
+    g_identifierTableSpecific = new ThreadSpecific<ThreadIdentifierTableData>();
+}
+void createIdentifierTableSpecific()
+{
+    pthread_once(&createIdentifierTableSpecificOnce, createIdentifierTableSpecificCallback);
+    ASSERT(g_identifierTableSpecific);
+}
+
+#else 
+
+void createIdentifierTableSpecific()
+{
+    ASSERT(!g_identifierTableSpecific);
+    g_identifierTableSpecific = new ThreadSpecific<ThreadIdentifierTableData>();
 }
 
 #endif

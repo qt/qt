@@ -263,14 +263,9 @@ bool QBenchmarkCallgrindMeasurer::needsWarmupIteration()
     return true;
 }
 
-QString QBenchmarkCallgrindMeasurer::unitText()
+QTest::QBenchmarkMetric QBenchmarkCallgrindMeasurer::metricType()
 {
-    return QLatin1String("instr. loads");
-}
-
-QString QBenchmarkCallgrindMeasurer::metricText()
-{
-    return QLatin1String("callgrind");
+    return QTest::InstructionReads;
 }
 
 QT_END_NAMESPACE

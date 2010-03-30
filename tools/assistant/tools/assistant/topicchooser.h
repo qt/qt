@@ -44,9 +44,10 @@
 
 #include "ui_topicchooser.h"
 
-#include <QUrl>
-#include <QMap>
-#include <QString>
+#include <QtCore/QList>
+#include <QtCore/QMap>
+#include <QtCore/QString>
+#include <QtCore/QUrl>
 
 #include <QtGui/QDialog>
 
@@ -64,7 +65,7 @@ public:
     
 private:
     Ui::TopicChooser ui;
-    QMap<QString, QUrl> m_links;
+    QList<QUrl> m_links;
 };
 
 QT_END_NAMESPACE

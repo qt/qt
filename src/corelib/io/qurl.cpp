@@ -167,6 +167,13 @@
     regardless of the Qt::FormattingOptions used.
 */
 
+/*!
+ \fn uint qHash(const QUrl &url)
+ \since 4.7
+ \relates QUrl
+
+ Computes a hash key from the normalized version of \a url.
+ */
 #include "qplatformdefs.h"
 #include "qurl.h"
 #include "private/qunicodetables_p.h"
@@ -3472,8 +3479,12 @@ QString QUrlPrivate::authority(QUrl::FormattingOptions options) const
 
 void QUrlPrivate::setAuthority(const QString &auth)
 {
-    if (auth.isEmpty())
+    if (auth.isEmpty()) {
+        setUserInfo(QString());
+        host.clear();
+        port = -1;
         return;
+    }
 
     // find the port section of the authority by searching from the
     // end towards the beginning for numbers until a ':' is reached.
@@ -6365,7 +6376,7 @@ QUrl QUrl::fromUserInput(const QString &userInput)
         return QUrl::fromLocalFile(trimmedString);
 
     QUrl url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
-    QUrl urlPrepended = QUrl::fromEncoded((QLatin1String("http://") + trimmedString).toUtf8(), QUrl::TolerantMode);
+    QUrl urlPrepended = QUrl::fromEncoded("http://" + trimmedString.toUtf8(), QUrl::TolerantMode);
 
     // Check the most common case of a valid url with scheme and host
     // We check if the port would be valid by adding the scheme to handle the case host:port

@@ -4,25 +4,41 @@ FVISIBILITY_SUPPORT=no
 COMPILER=$1
 VERBOSE=$2
 
+CMDLINE=
+
+
 RunCompileTest() {
     cat >>fvisibility.c << EOF
-__attribute__((visibility("default"))) void blah();
-#if !defined(__GNUC__)
-# error "Visiblility support requires GCC"
-#elif __GNUC__ < 4
-# error "GCC3 with backported visibility patch is known to miscompile Qt"
+#if defined(__GNUC__)
+#   if (__GNUC__ < 4)
+#      error "GCC3 with backported visibility patch is known to miscompile Qt"
+#   endif
+__attribute((visibility("default"))) void blah();
+#elif defined(__SUNPRO_CC)
+#   if (__SUNPRO_CC < 0x0550)
+#      error "SunStudio 8 or later is required for ELF visibility"
+#   endif
+__global void blah();
+#else
+#   error "GCC4+ or SunStudio 8+ are required to support ELF visibility"
 #endif
 EOF
 
     if [ "$VERBOSE" = "yes" ] ; then
-        "$COMPILER" -c -fvisibility=hidden fvisibility.c && FVISIBILITY_SUPPORT=yes
+        "$COMPILER" -c $CMDLINE fvisibility.c && FVISIBILITY_SUPPORT=yes
     else
-        "$COMPILER" -c -fvisibility=hidden fvisibility.c >/dev/null 2>&1 && FVISIBILITY_SUPPORT=yes
+        "$COMPILER" -c $CMDLINE fvisibility.c >/dev/null 2>&1 && FVISIBILITY_SUPPORT=yes
     fi
     rm -f fvisibility.c fvisibility.o
 }
 
+
 case "$COMPILER" in
+gcc|g++)
+    CMDLINE="-fvisibility=hidden"
+    RunCompileTest
+   ;;
+
 aCC*)
     ;;
 
@@ -34,14 +50,17 @@ icpc)
         ;;
     *)
         # the compile test works for the intel compiler because it mimics gcc's behavior
+        CMDLINE="-fvisibility=hidden"
         RunCompileTest
         ;;
     esac
     ;;
 
-    *)
-    RunCompileTest
-    ;;
+CC)
+   # This should be SunStudio.  If not, it'll get caught.
+   CMDLINE="-xldscope=hidden"
+   RunCompileTest
+   ;;
 esac
 
 # done

@@ -52,8 +52,6 @@
 #undef FAR
 #endif
 
-// hw: optimize smoothscaler for returning 24-bit images
-
 // including jpeglib.h seems to be a little messy
 extern "C" {
 // mingw includes rpcndr.h but does not define boolean
@@ -75,433 +73,6 @@ extern "C" {
 }
 
 QT_BEGIN_NAMESPACE
-
-//#define QT_NO_IMAGE_SMOOTHSCALE
-#ifndef QT_NO_IMAGE_SMOOTHSCALE
-class QImageSmoothScalerPrivate;
-class QImageSmoothScaler
-{
-public:
-    QImageSmoothScaler(const int w, const int h, const QImage &src);
-    QImageSmoothScaler(const int srcWidth, const int srcHeight,
-                       const int dstWidth, const int dstHeight);
-
-    virtual ~QImageSmoothScaler(void);
-
-    QImage  scale();
-
-private:
-    QImageSmoothScalerPrivate	*d;
-    virtual QRgb *scanLine(const int line = 0, const QImage *src = 0);
-};
-
-class QImageSmoothScalerPrivate
-{
-public:
-    int	    cols;
-    int	    newcols;
-    int	    rows;
-    int	    newrows;
-    bool    hasAlpha;
-
-    const QImage  *src;
-
-    void setup(const int srcWidth, const int srcHeight, const int dstWidth,
-               const int dstHeight, bool hasAlphaChannel);
-};
-
-QImageSmoothScaler::QImageSmoothScaler(const int w, const int h,
-                                       const QImage &src)
-{
-    d = new QImageSmoothScalerPrivate;
-
-    d->setup(src.width(), src.height(), w, h, src.hasAlphaChannel() );
-    this->d->src = &src;
-}
-
-QImageSmoothScaler::QImageSmoothScaler(const int srcWidth, const int srcHeight,
-                                       const int dstWidth, const int dstHeight)
-{
-    d = new QImageSmoothScalerPrivate;
-    d->setup(srcWidth, srcHeight, dstWidth, dstHeight, 0);
-}
-
-void QImageSmoothScalerPrivate::setup(const int srcWidth, const int srcHeight,
-                                      const int dstWidth, const int dstHeight,
-                                      bool hasAlphaChannel)
-{
-    cols = srcWidth;
-    rows = srcHeight;
-    newcols = dstWidth;
-    newrows = dstHeight;
-    hasAlpha = hasAlphaChannel;
-}
-
-QImageSmoothScaler::~QImageSmoothScaler()
-{
-    delete d;
-}
-
-inline QRgb *QImageSmoothScaler::scanLine(const int line, const QImage *src)
-{
-    return (QRgb*)src->scanLine(line);
-}
-
-/*
-  This function uses code based on pnmscale.c by Jef Poskanzer.
-
-  pnmscale.c - read a portable anymap and scale it
-
-  Copyright (C) 1989, 1991 by Jef Poskanzer.
-
-  Permission to use, copy, modify, and distribute this software and its
-  documentation for any purpose and without fee is hereby granted, provided
-  that the above copyright notice appear in all copies and that both that
-  copyright notice and this permission notice appear in supporting
-  documentation.  This software is provided "as is" without express or
-  implied warranty.
-*/
-
-QImage QImageSmoothScaler::scale()
-{
-    long SCALE;
-    long HALFSCALE;
-    QRgb *xelrow = 0;
-    QRgb *tempxelrow = 0;
-    QRgb *xP;
-    QRgb *nxP;
-    int row, rowsread;
-    int col, needtoreadrow;
-    uchar maxval = 255;
-    qreal xscale, yscale;
-    long sxscale, syscale;
-    long fracrowtofill, fracrowleft;
-    long *as;
-    long *rs;
-    long *gs;
-    long *bs;
-    int rowswritten = 0;
-    QImage dst;
-
-    if (d->cols > 4096) {
-        SCALE = 4096;
-        HALFSCALE = 2048;
-    } else {
-        int fac = 4096;
-        while (d->cols * fac > 4096)
-            fac /= 2;
-
-        SCALE = fac * d->cols;
-        HALFSCALE = fac * d->cols / 2;
-    }
-
-    xscale = (qreal)d->newcols / (qreal)d->cols;
-    yscale = (qreal)d->newrows / (qreal)d->rows;
-    sxscale = (long)(xscale * SCALE);
-    syscale = (long)(yscale * SCALE);
-
-    // shortcut Y scaling if possible
-    if (d->newrows != d->rows)
-        tempxelrow = new QRgb[d->cols];
-
-    if (d->hasAlpha) {
-        as = new long[d->cols];
-        for (col = 0; col < d->cols; ++col)
-            as[col] = HALFSCALE;
-    } else {
-        as = 0;
-    }
-    rs = new long[d->cols];
-    gs = new long[d->cols];
-    bs = new long[d->cols];
-    rowsread = 0;
-    fracrowleft = syscale;
-    needtoreadrow = 1;
-    for (col = 0; col < d->cols; ++col)
-        rs[col] = gs[col] = bs[col] = HALFSCALE;
-    fracrowtofill = SCALE;
-
-    dst = QImage(d->newcols, d->newrows, d->hasAlpha ? QImage::Format_ARGB32 : QImage::Format_RGB32);
-
-    for (row = 0; row < d->newrows; ++row) {
-        // First scale Y from xelrow into tempxelrow.
-        if (d->newrows == d->rows) {
-            // shortcut Y scaling if possible
-            tempxelrow = xelrow = scanLine(rowsread++, d->src);
-        } else {
-            while (fracrowleft < fracrowtofill) {
-                if (needtoreadrow && rowsread < d->rows)
-                    xelrow = scanLine(rowsread++, d->src);
-                for (col = 0, xP = xelrow; col < d->cols; ++col, ++xP) {
-                    if (as) {
-                        as[col] += fracrowleft * qAlpha(*xP);
-                        rs[col] += fracrowleft * qRed(*xP) * qAlpha(*xP) / 255;
-                        gs[col] += fracrowleft * qGreen(*xP) * qAlpha(*xP) / 255;
-                        bs[col] += fracrowleft * qBlue(*xP) * qAlpha(*xP) / 255;
-                    } else {
-                        rs[col] += fracrowleft * qRed(*xP);
-                        gs[col] += fracrowleft * qGreen(*xP);
-                        bs[col] += fracrowleft * qBlue(*xP);
-                    }
-                }
-                fracrowtofill -= fracrowleft;
-                fracrowleft = syscale;
-                needtoreadrow = 1;
-            }
-            // Now fracrowleft is >= fracrowtofill, so we can produce a row.
-            if (needtoreadrow && rowsread < d->rows) {
-                xelrow = scanLine(rowsread++, d->src);
-                needtoreadrow = 0;
-            }
-            for (col = 0, xP = xelrow, nxP = tempxelrow; col < d->cols; ++col, ++xP, ++nxP) {
-                register long a, r, g, b;
-
-                if (as) {
-                    r = rs[col] + fracrowtofill * qRed(*xP) * qAlpha(*xP) / 255;
-                    g = gs[col] + fracrowtofill * qGreen(*xP) * qAlpha(*xP) / 255;
-                    b = bs[col] + fracrowtofill * qBlue(*xP) * qAlpha(*xP) / 255;
-                    a = as[col] + fracrowtofill * qAlpha(*xP);
-                    if (a) {
-                        r = r * 255 / a * SCALE;
-                        g = g * 255 / a * SCALE;
-                        b = b * 255 / a * SCALE;
-                    }
-                } else {
-                    r = rs[col] + fracrowtofill * qRed(*xP);
-                    g = gs[col] + fracrowtofill * qGreen(*xP);
-                    b = bs[col] + fracrowtofill * qBlue(*xP);
-                    a = 0; // unwarn
-                }
-                r /= SCALE;
-                if (r > maxval)
-                    r = maxval;
-                g /= SCALE;
-                if (g > maxval)
-                    g = maxval;
-                b /= SCALE;
-                if (b > maxval)
-                    b = maxval;
-                if (as) {
-                    a /= SCALE;
-                    if (a > maxval)
-                        a = maxval;
-                    *nxP = qRgba((int)r, (int)g, (int)b, (int)a);
-                    as[col] = HALFSCALE;
-                } else {
-                    *nxP = qRgb((int)r, (int)g, (int)b);
-                }
-                rs[col] = gs[col] = bs[col] = HALFSCALE;
-            }
-            fracrowleft -= fracrowtofill;
-            if (fracrowleft == 0) {
-                fracrowleft = syscale;
-                needtoreadrow = 1;
-            }
-            fracrowtofill = SCALE;
-        }
-
-        // Now scale X from tempxelrow into dst and write it out.
-        if (d->newcols == d->cols) {
-            // shortcut X scaling if possible
-            memcpy(dst.scanLine(rowswritten++), tempxelrow, d->newcols * 4);
-        } else {
-            register long a, r, g, b;
-            register long fraccoltofill, fraccolleft = 0;
-            register int needcol;
-
-            nxP = (QRgb *)dst.scanLine(rowswritten++);
-            QRgb *nxPEnd = nxP + d->newcols;
-            fraccoltofill = SCALE;
-            a = r = g = b = HALFSCALE;
-            needcol = 0;
-            for (col = 0, xP = tempxelrow; col < d->cols; ++col, ++xP) {
-                fraccolleft = sxscale;
-                while (fraccolleft >= fraccoltofill) {
-                    if (needcol) {
-                        ++nxP;
-                        a = r = g = b = HALFSCALE;
-                    }
-                    if (as) {
-                        r += fraccoltofill * qRed(*xP) * qAlpha(*xP) / 255;
-                        g += fraccoltofill * qGreen(*xP) * qAlpha(*xP) / 255;
-                        b += fraccoltofill * qBlue(*xP) * qAlpha(*xP) / 255;
-                        a += fraccoltofill * qAlpha(*xP);
-                        if (a) {
-                            r = r * 255 / a * SCALE;
-                            g = g * 255 / a * SCALE;
-                            b = b * 255 / a * SCALE;
-                        }
-                    } else {
-                        r += fraccoltofill * qRed(*xP);
-                        g += fraccoltofill * qGreen(*xP);
-                        b += fraccoltofill * qBlue(*xP);
-                    }
-                    r /= SCALE;
-                    if (r > maxval)
-                        r = maxval;
-                    g /= SCALE;
-                    if (g > maxval)
-                        g = maxval;
-                    b /= SCALE;
-                    if (b > maxval)
-                        b = maxval;
-                    if (as) {
-                        a /= SCALE;
-                        if (a > maxval)
-                            a = maxval;
-                        *nxP = qRgba((int)r, (int)g, (int)b, (int)a);
-                    } else {
-                        *nxP = qRgb((int)r, (int)g, (int)b);
-                    }
-                    fraccolleft -= fraccoltofill;
-                    fraccoltofill = SCALE;
-                    needcol = 1;
-                }
-                if (fraccolleft > 0) {
-                    if (needcol) {
-                        ++nxP;
-                        a = r = g = b = HALFSCALE;
-                        needcol = 0;
-                    }
-                    if (as) {
-                        a += fraccolleft * qAlpha(*xP);
-                        r += fraccolleft * qRed(*xP) * qAlpha(*xP) / 255;
-                        g += fraccolleft * qGreen(*xP) * qAlpha(*xP) / 255;
-                        b += fraccolleft * qBlue(*xP) * qAlpha(*xP) / 255;
-                    } else {
-                        r += fraccolleft * qRed(*xP);
-                        g += fraccolleft * qGreen(*xP);
-                        b += fraccolleft * qBlue(*xP);
-                    }
-                    fraccoltofill -= fraccolleft;
-                }
-            }
-            if (fraccoltofill > 0) {
-                --xP;
-                if (as) {
-                    a += fraccolleft * qAlpha(*xP);
-                    r += fraccoltofill * qRed(*xP) * qAlpha(*xP) / 255;
-                    g += fraccoltofill * qGreen(*xP) * qAlpha(*xP) / 255;
-                    b += fraccoltofill * qBlue(*xP) * qAlpha(*xP) / 255;
-                    if (a) {
-                        r = r * 255 / a * SCALE;
-                        g = g * 255 / a * SCALE;
-                        b = b * 255 / a * SCALE;
-                    }
-                } else {
-                    r += fraccoltofill * qRed(*xP);
-                    g += fraccoltofill * qGreen(*xP);
-                    b += fraccoltofill * qBlue(*xP);
-                }
-            }
-            if (nxP < nxPEnd) {
-                r /= SCALE;
-                if (r > maxval)
-                    r = maxval;
-                g /= SCALE;
-                if (g > maxval)
-                    g = maxval;
-                b /= SCALE;
-                if (b > maxval)
-                    b = maxval;
-                if (as) {
-                    a /= SCALE;
-                    if (a > maxval)
-                        a = maxval;
-                    *nxP = qRgba((int)r, (int)g, (int)b, (int)a);
-                } else {
-                    *nxP = qRgb((int)r, (int)g, (int)b);
-                }
-                while (++nxP != nxPEnd)
-                    nxP[0] = nxP[-1];
-            }
-        }
-    }
-
-    if (d->newrows != d->rows && tempxelrow)// Robust, tempxelrow might be 0 1 day
-        delete [] tempxelrow;
-    if (as)				// Avoid purify complaint
-        delete [] as;
-    if (rs)				// Robust, rs might be 0 one day
-        delete [] rs;
-    if (gs)				// Robust, gs might be 0 one day
-        delete [] gs;
-    if (bs)				// Robust, bs might be 0 one day
-        delete [] bs;
-
-    return dst;
-}
-
-class jpegSmoothScaler : public QImageSmoothScaler
-{
-public:
-    jpegSmoothScaler(struct jpeg_decompress_struct *info, const QSize& dstSize, const QRect& clipRect)
-        : QImageSmoothScaler(clipRect.width(), clipRect.height(),
-                             dstSize.width(), dstSize.height())
-    {
-        cinfo = info;
-        clip = clipRect;
-        imageCache = QImage(info->output_width, 1, QImage::Format_RGB32);
-    }
-
-private:
-    QRect   clip;
-    QImage  imageCache;
-    struct jpeg_decompress_struct *cinfo;
-
-    QRgb *scanLine(const int line = 0, const QImage *src = 0)
-    {
-	QRgb    *out;
-	uchar	*in;
-
-	Q_UNUSED(line);
-	Q_UNUSED(src);
-
-        uchar* data = imageCache.bits();
-
-        // Read ahead if we haven't reached the first clipped scanline yet.
-        while (int(cinfo->output_scanline) < clip.y() &&
-               cinfo->output_scanline < cinfo->output_height)
-	    jpeg_read_scanlines(cinfo, &data, 1);
-
-        // Read the next scanline.  We assume that "line"
-        // will never be >= clip.height().
-	jpeg_read_scanlines(cinfo, &data, 1);
-        if (cinfo->output_scanline == cinfo->output_height)
-            jpeg_finish_decompress(cinfo);
-
-	out = ((QRgb*)data) + clip.x();
-
-	//
-	// The smooth scale algorithm only works on 32-bit images;
-	// convert from (8|24) bits to 32.
-	//
-	if (cinfo->output_components == 1) {
-	    in = data + clip.right();
-	    for (int i = clip.width(); i--; ) {
-		out[i] = qRgb(*in, *in, *in);
-		in--;
-	    }
-        } else if (cinfo->out_color_space == JCS_CMYK) {
-            in = data + clip.right() * 4;
-            for (int i = clip.width(); i--; ) {
-                int k = in[3];
-                out[i] = qRgb(k * in[0] / 255, k * in[1] / 255, k * in[2] / 255);
-                in -= 4;
-            }
-        } else {
-	    in = data + clip.right() * 3;
-	    for (int i = clip.width(); i--; ) {
-		out[i] = qRgb(in[0], in[1], in[2]);
-		in -= 3;
-	    }
-	}
-
-	return out;
-    }
-
-};
-#endif
 
 struct my_error_mgr : public jpeg_error_mgr {
     jmp_buf setjmp_buffer;
@@ -612,82 +183,34 @@ inline my_jpeg_source_mgr::my_jpeg_source_mgr(QIODevice *device)
 }
 
 
-static bool read_jpeg_size(QIODevice *device, int &w, int &h)
+inline static bool read_jpeg_size(int &w, int &h, j_decompress_ptr cinfo)
 {
-    bool rt = false;
-    struct jpeg_decompress_struct cinfo;
+    (void) jpeg_calc_output_dimensions(cinfo);
 
-    struct my_jpeg_source_mgr *iod_src = new my_jpeg_source_mgr(device);
-    struct my_error_mgr jerr;
-
-    jpeg_create_decompress(&cinfo);
-
-    cinfo.src = iod_src;
-
-    cinfo.err = jpeg_std_error(&jerr);
-    jerr.error_exit = my_error_exit;
-
-    if (!setjmp(jerr.setjmp_buffer)) {
-#if defined(Q_OS_UNIXWARE)
-        (void) jpeg_read_header(&cinfo, B_TRUE);
-#else
-        (void) jpeg_read_header(&cinfo, true);
-#endif
-        (void) jpeg_calc_output_dimensions(&cinfo);
-
-        w = cinfo.output_width;
-        h = cinfo.output_height;
-        rt = true;
-    }
-    jpeg_destroy_decompress(&cinfo);
-    delete iod_src;
-    return rt;
+    w = cinfo->output_width;
+    h = cinfo->output_height;
+    return true;
 }
 
 #define HIGH_QUALITY_THRESHOLD 50
 
-static bool read_jpeg_format(QIODevice *device, QImage::Format &format)
+inline static bool read_jpeg_format(QImage::Format &format, j_decompress_ptr cinfo)
 {
-    bool result = false;
-    struct jpeg_decompress_struct cinfo;
 
-    struct my_jpeg_source_mgr *iod_src = new my_jpeg_source_mgr(device);
-    struct my_error_mgr jerr;
-
-    jpeg_create_decompress(&cinfo);
-
-    cinfo.src = iod_src;
-
-    cinfo.err = jpeg_std_error(&jerr);
-    jerr.error_exit = my_error_exit;
-
-    if (!setjmp(jerr.setjmp_buffer)) {
-#if defined(Q_OS_UNIXWARE)
-        (void) jpeg_read_header(&cinfo, B_TRUE);
-#else
-        (void) jpeg_read_header(&cinfo, true);
-#endif
-        // This does not allocate memory for the whole image
-        // or such, so we are safe.
-        (void) jpeg_start_decompress(&cinfo);
-        result = true;
-        switch (cinfo.output_components) {
-        case 1:
-            format = QImage::Format_Indexed8;
-            break;
-        case 3:
-        case 4:
-            format = QImage::Format_RGB32;
-            break;
-        default:
-            result = false;
-            break;
-        }
-        cinfo.output_scanline = cinfo.output_height;
-        (void) jpeg_finish_decompress(&cinfo);
+    bool result = true;
+    switch (cinfo->output_components) {
+    case 1:
+        format = QImage::Format_Indexed8;
+        break;
+    case 3:
+    case 4:
+        format = QImage::Format_RGB32;
+        break;
+    default:
+        result = false;
+        break;
     }
-    jpeg_destroy_decompress(&cinfo);
-    delete iod_src;
+    cinfo->output_scanline = cinfo->output_height;
     return result;
 }
 
@@ -720,29 +243,11 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
     return !dest->isNull();
 }
 
-static bool read_jpeg_image(QIODevice *device, QImage *outImage,
+static bool read_jpeg_image(QImage *outImage,
                             QSize scaledSize, QRect scaledClipRect,
-                            QRect clipRect, int inQuality )
+                            QRect clipRect, int inQuality, j_decompress_ptr info, struct my_error_mgr* err  )
 {
-    struct jpeg_decompress_struct cinfo;
-
-    struct my_jpeg_source_mgr *iod_src = new my_jpeg_source_mgr(device);
-    struct my_error_mgr jerr;
-
-    jpeg_create_decompress(&cinfo);
-
-    cinfo.src = iod_src;
-
-    cinfo.err = jpeg_std_error(&jerr);
-    jerr.error_exit = my_error_exit;
-
-    if (!setjmp(jerr.setjmp_buffer)) {
-#if defined(Q_OS_UNIXWARE)
-        (void) jpeg_read_header(&cinfo, B_TRUE);
-#else
-        (void) jpeg_read_header(&cinfo, true);
-#endif
-
+    if (!setjmp(err->setjmp_buffer)) {
         // -1 means default quality.
         int quality = inQuality;
         if (quality < 0)
@@ -764,16 +269,16 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
             } else if (clipRect.isEmpty()) {
                 // No clipping, but scaling: if we can map back to an
                 // integer pixel boundary, then clip before scaling.
-                if ((cinfo.image_width % scaledSize.width()) == 0 &&
-                        (cinfo.image_height % scaledSize.height()) == 0) {
-                    int x = scaledClipRect.x() * cinfo.image_width /
+                if ((info->image_width % scaledSize.width()) == 0 &&
+                        (info->image_height % scaledSize.height()) == 0) {
+                    int x = scaledClipRect.x() * info->image_width /
                             scaledSize.width();
-                    int y = scaledClipRect.y() * cinfo.image_height /
+                    int y = scaledClipRect.y() * info->image_height /
                             scaledSize.height();
                     int width = (scaledClipRect.right() + 1) *
-                                cinfo.image_width / scaledSize.width() - x;
+                                info->image_width / scaledSize.width() - x;
                     int height = (scaledClipRect.bottom() + 1) *
-                                 cinfo.image_height / scaledSize.height() - y;
+                                 info->image_height / scaledSize.height() - y;
                     clipRect = QRect(x, y, width, height);
                     scaledSize = scaledClipRect.size();
                     scaledClipRect = QRect();
@@ -787,160 +292,148 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
         // Determine the scale factor to pass to libjpeg for quick downscaling.
         if (!scaledSize.isEmpty()) {
             if (clipRect.isEmpty()) {
-                cinfo.scale_denom =
-                    qMin(cinfo.image_width / scaledSize.width(),
-                         cinfo.image_height / scaledSize.height());
+                info->scale_denom =
+                    qMin(info->image_width / scaledSize.width(),
+                         info->image_height / scaledSize.height());
             } else {
-                cinfo.scale_denom =
+                info->scale_denom =
                     qMin(clipRect.width() / scaledSize.width(),
                          clipRect.height() / scaledSize.height());
             }
-            if (cinfo.scale_denom < 2) {
-                cinfo.scale_denom = 1;
-            } else if (cinfo.scale_denom < 4) {
-                cinfo.scale_denom = 2;
-            } else if (cinfo.scale_denom < 8) {
-                cinfo.scale_denom = 4;
+            if (info->scale_denom < 2) {
+                info->scale_denom = 1;
+            } else if (info->scale_denom < 4) {
+                info->scale_denom = 2;
+            } else if (info->scale_denom < 8) {
+                info->scale_denom = 4;
             } else {
-                cinfo.scale_denom = 8;
+                info->scale_denom = 8;
             }
-            cinfo.scale_num = 1;
+            info->scale_num = 1;
             if (!clipRect.isEmpty()) {
                 // Correct the scale factor so that we clip accurately.
                 // It is recommended that the clip rectangle be aligned
                 // on an 8-pixel boundary for best performance.
-                while (cinfo.scale_denom > 1 &&
-                       ((clipRect.x() % cinfo.scale_denom) != 0 ||
-                        (clipRect.y() % cinfo.scale_denom) != 0 ||
-                        (clipRect.width() % cinfo.scale_denom) != 0 ||
-                        (clipRect.height() % cinfo.scale_denom) != 0)) {
-                    cinfo.scale_denom /= 2;
+                while (info->scale_denom > 1 &&
+                       ((clipRect.x() % info->scale_denom) != 0 ||
+                        (clipRect.y() % info->scale_denom) != 0 ||
+                        (clipRect.width() % info->scale_denom) != 0 ||
+                        (clipRect.height() % info->scale_denom) != 0)) {
+                    info->scale_denom /= 2;
                 }
             }
         }
 
         // If high quality not required, use fast decompression
         if( quality < HIGH_QUALITY_THRESHOLD ) {
-            cinfo.dct_method = JDCT_IFAST;
-            cinfo.do_fancy_upsampling = FALSE;
+            info->dct_method = JDCT_IFAST;
+            info->do_fancy_upsampling = FALSE;
         }
 
-        (void) jpeg_calc_output_dimensions(&cinfo);
+        (void) jpeg_calc_output_dimensions(info);
 
         // Determine the clip region to extract.
-        QRect imageRect(0, 0, cinfo.output_width, cinfo.output_height);
+        QRect imageRect(0, 0, info->output_width, info->output_height);
         QRect clip;
         if (clipRect.isEmpty()) {
             clip = imageRect;
-        } else if (cinfo.scale_denom == 1) {
+        } else if (info->scale_denom == info->scale_num) {
             clip = clipRect.intersected(imageRect);
         } else {
             // The scale factor was corrected above to ensure that
             // we don't miss pixels when we scale the clip rectangle.
-            clip = QRect(clipRect.x() / int(cinfo.scale_denom),
-                         clipRect.y() / int(cinfo.scale_denom),
-                         clipRect.width() / int(cinfo.scale_denom),
-                         clipRect.height() / int(cinfo.scale_denom));
+            clip = QRect(clipRect.x() / int(info->scale_denom),
+                         clipRect.y() / int(info->scale_denom),
+                         clipRect.width() / int(info->scale_denom),
+                         clipRect.height() / int(info->scale_denom));
             clip = clip.intersected(imageRect);
         }
 
-#ifndef QT_NO_IMAGE_SMOOTHSCALE
-        if (scaledSize.isValid() && scaledSize != clip.size()
-            && quality >= HIGH_QUALITY_THRESHOLD) {
+        // Allocate memory for the clipped QImage.
+        if (!ensureValidImage(outImage, info, clip.size()))
+            longjmp(err->setjmp_buffer, 1);
 
-            (void) jpeg_start_decompress(&cinfo);
+        // Avoid memcpy() overhead if grayscale with no clipping.
+        bool quickGray = (info->output_components == 1 &&
+                          clip == imageRect);
+        if (!quickGray) {
+            // Ask the jpeg library to allocate a temporary row.
+            // The library will automatically delete it for us later.
+            // The libjpeg docs say we should do this before calling
+            // jpeg_start_decompress().  We can't use "new" here
+            // because we are inside the setjmp() block and an error
+            // in the jpeg input stream would cause a memory leak.
+            JSAMPARRAY rows = (info->mem->alloc_sarray)
+                              ((j_common_ptr)info, JPOOL_IMAGE,
+                               info->output_width * info->output_components, 1);
 
-            jpegSmoothScaler scaler(&cinfo, scaledSize, clip);
-            *outImage = scaler.scale();
-        } else
-#endif
-        {
-            // Allocate memory for the clipped QImage.
-            if (!ensureValidImage(outImage, &cinfo, clip.size()))
-                longjmp(jerr.setjmp_buffer, 1);
+            (void) jpeg_start_decompress(info);
 
-            // Avoid memcpy() overhead if grayscale with no clipping.
-            bool quickGray = (cinfo.output_components == 1 &&
-                              clip == imageRect);
-            if (!quickGray) {
-                // Ask the jpeg library to allocate a temporary row.
-                // The library will automatically delete it for us later.
-                // The libjpeg docs say we should do this before calling
-                // jpeg_start_decompress().  We can't use "new" here
-                // because we are inside the setjmp() block and an error
-                // in the jpeg input stream would cause a memory leak.
-                JSAMPARRAY rows = (cinfo.mem->alloc_sarray)
-                    ((j_common_ptr)&cinfo, JPOOL_IMAGE,
-                     cinfo.output_width * cinfo.output_components, 1);
+            while (info->output_scanline < info->output_height) {
+                int y = int(info->output_scanline) - clip.y();
+                if (y >= clip.height())
+                    break;      // We've read the entire clip region, so abort.
 
-                (void) jpeg_start_decompress(&cinfo);
+                (void) jpeg_read_scanlines(info, rows, 1);
 
-                while (cinfo.output_scanline < cinfo.output_height) {
-                    int y = int(cinfo.output_scanline) - clip.y();
-                    if (y >= clip.height())
-                        break;      // We've read the entire clip region, so abort.
+                if (y < 0)
+                    continue;   // Haven't reached the starting line yet.
 
-                    (void) jpeg_read_scanlines(&cinfo, rows, 1);
-
-                    if (y < 0)
-                        continue;   // Haven't reached the starting line yet.
-
-                    if (cinfo.output_components == 3) {
-                        // Expand 24->32 bpp.
-                        uchar *in = rows[0] + clip.x() * 3;
-                        QRgb *out = (QRgb*)outImage->scanLine(y);
-                        for (int i = 0; i < clip.width(); ++i) {
-                            *out++ = qRgb(in[0], in[1], in[2]);
-                            in += 3;
-                        }
-                    } else if (cinfo.out_color_space == JCS_CMYK) {
-                        // Convert CMYK->RGB.
-                        uchar *in = rows[0] + clip.x() * 4;
-                        QRgb *out = (QRgb*)outImage->scanLine(y);
-                        for (int i = 0; i < clip.width(); ++i) {
-                            int k = in[3];
-                            *out++ = qRgb(k * in[0] / 255, k * in[1] / 255,
-                                          k * in[2] / 255);
-                            in += 4;
-                        }
-                    } else if (cinfo.output_components == 1) {
-                        // Grayscale.
-                        memcpy(outImage->scanLine(y),
-                               rows[0] + clip.x(), clip.width());
+                if (info->output_components == 3) {
+                    // Expand 24->32 bpp.
+                    uchar *in = rows[0] + clip.x() * 3;
+                    QRgb *out = (QRgb*)outImage->scanLine(y);
+                    for (int i = 0; i < clip.width(); ++i) {
+                        *out++ = qRgb(in[0], in[1], in[2]);
+                        in += 3;
                     }
-                }
-            } else {
-                // Load unclipped grayscale data directly into the QImage.
-                (void) jpeg_start_decompress(&cinfo);
-                while (cinfo.output_scanline < cinfo.output_height) {
-                    uchar *row = outImage->scanLine(cinfo.output_scanline);
-                    (void) jpeg_read_scanlines(&cinfo, &row, 1);
+                } else if (info->out_color_space == JCS_CMYK) {
+                    // Convert CMYK->RGB.
+                    uchar *in = rows[0] + clip.x() * 4;
+                    QRgb *out = (QRgb*)outImage->scanLine(y);
+                    for (int i = 0; i < clip.width(); ++i) {
+                        int k = in[3];
+                        *out++ = qRgb(k * in[0] / 255, k * in[1] / 255,
+                                      k * in[2] / 255);
+                        in += 4;
+                    }
+                } else if (info->output_components == 1) {
+                    // Grayscale.
+                    memcpy(outImage->scanLine(y),
+                           rows[0] + clip.x(), clip.width());
                 }
             }
-
-            if (cinfo.output_scanline == cinfo.output_height)
-                (void) jpeg_finish_decompress(&cinfo);
-
-            if (cinfo.density_unit == 1) {
-                outImage->setDotsPerMeterX(int(100. * cinfo.X_density / 2.54));
-                outImage->setDotsPerMeterY(int(100. * cinfo.Y_density / 2.54));
-            } else if (cinfo.density_unit == 2) {
-                outImage->setDotsPerMeterX(int(100. * cinfo.X_density));
-                outImage->setDotsPerMeterY(int(100. * cinfo.Y_density));
+        } else {
+            // Load unclipped grayscale data directly into the QImage.
+            (void) jpeg_start_decompress(info);
+            while (info->output_scanline < info->output_height) {
+                uchar *row = outImage->scanLine(info->output_scanline);
+                (void) jpeg_read_scanlines(info, &row, 1);
             }
-
-            if (scaledSize.isValid() && scaledSize != clip.size())
-                *outImage = outImage->scaled(scaledSize, Qt::IgnoreAspectRatio, Qt::FastTransformation);
         }
+
+        if (info->output_scanline == info->output_height)
+            (void) jpeg_finish_decompress(info);
+
+        if (info->density_unit == 1) {
+            outImage->setDotsPerMeterX(int(100. * info->X_density / 2.54));
+            outImage->setDotsPerMeterY(int(100. * info->Y_density / 2.54));
+        } else if (info->density_unit == 2) {
+            outImage->setDotsPerMeterX(int(100. * info->X_density));
+            outImage->setDotsPerMeterY(int(100. * info->Y_density));
+        }
+
+        if (scaledSize.isValid() && scaledSize != clip.size()) {
+            *outImage = outImage->scaled(scaledSize, Qt::IgnoreAspectRatio, quality >= HIGH_QUALITY_THRESHOLD ? Qt::SmoothTransformation : Qt::FastTransformation);
+        }
+
+        if (!scaledClipRect.isEmpty())
+            *outImage = outImage->copy(scaledClipRect);
+        return !outImage->isNull();
     }
-
-    jpeg_destroy_decompress(&cinfo);
-    delete iod_src;
-    if (!scaledClipRect.isEmpty())
-        *outImage = outImage->copy(scaledClipRect);
-    return !outImage->isNull();
+    else
+        return false;
 }
-
 
 struct my_jpeg_destination_mgr : public jpeg_destination_mgr {
     // Nothing dynamic - cannot rely on destruction over longjump
@@ -1002,11 +495,29 @@ inline my_jpeg_destination_mgr::my_jpeg_destination_mgr(QIODevice *device)
     free_in_buffer = max_buf;
 }
 
+static bool can_write_format(QImage::Format fmt)
+{
+    switch (fmt) {
+    case QImage::Format_Mono:
+    case QImage::Format_MonoLSB:
+    case QImage::Format_Indexed8:
+    case QImage::Format_RGB888:
+    case QImage::Format_RGB32:
+    case QImage::Format_ARGB32:
+    case QImage::Format_ARGB32_Premultiplied:
+        return true;
+        break;
+    default:
+        break;
+    }
+    return false;
+}
 
 static bool write_jpeg_image(const QImage &sourceImage, QIODevice *device, int sourceQuality)
 {
     bool success = false;
-    const QImage image = sourceImage;
+    const QImage image = can_write_format(sourceImage.format()) ?
+                         sourceImage : sourceImage.convertToFormat(QImage::Format_RGB888);
     const QVector<QRgb> cmap = image.colorTable();
 
     struct jpeg_compress_struct cinfo;
@@ -1167,18 +678,124 @@ static bool write_jpeg_image(const QImage &sourceImage, QIODevice *device, int s
     return success;
 }
 
-QJpegHandler::QJpegHandler()
+class QJpegHandlerPrivate
 {
-    quality = 75;
+public:
+    enum State {
+        Ready,
+        ReadHeader,
+        Error
+    };
+
+    QJpegHandlerPrivate(QJpegHandler *qq)
+        : quality(75), iod_src(0), state(Ready), q(qq)
+    {}
+
+    ~QJpegHandlerPrivate()
+    {
+        if(iod_src)
+        {
+            jpeg_destroy_decompress(&info);
+            delete iod_src;
+            iod_src = 0;
+        }
+    }
+
+    bool readJpegHeader(QIODevice*);
+    bool read(QImage *image);
+
+    int quality;
+    QVariant size;
+    QImage::Format format;
+    QSize scaledSize;
+    QRect scaledClipRect;
+    QRect clipRect;
+    struct jpeg_decompress_struct info;
+    struct my_jpeg_source_mgr * iod_src;
+    struct my_error_mgr err;
+
+    State state;
+
+    QJpegHandler *q;
+};
+
+/*!
+    \internal
+*/
+bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
+{
+    if(state == Ready)
+    {
+        state = Error;
+        iod_src = new my_jpeg_source_mgr(device);
+
+        jpeg_create_decompress(&info);
+        info.src = iod_src;
+        info.err = jpeg_std_error(&err);
+        err.error_exit = my_error_exit;
+
+        if (!setjmp(err.setjmp_buffer)) {
+    #if defined(Q_OS_UNIXWARE)
+            (void) jpeg_read_header(&info, B_TRUE);
+    #else
+            (void) jpeg_read_header(&info, true);
+    #endif
+
+            int width = 0;
+            int height = 0;
+            read_jpeg_size(width, height, &info);
+            size = QSize(width, height);
+
+            format = QImage::Format_Invalid;
+            read_jpeg_format(format, &info);
+            state = ReadHeader;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else if(state == Error)
+        return false;
+    return true;
+}
+
+bool QJpegHandlerPrivate::read(QImage *image)
+{
+    if(state == Ready)
+        readJpegHeader(q->device());
+
+    if(state == ReadHeader)
+    {
+        bool success = read_jpeg_image(image, scaledSize, scaledClipRect, clipRect, quality,  &info, &err);
+        state = success ? Ready : Error;
+        return success;
+    }
+
+    return false;
+
+}
+
+QJpegHandler::QJpegHandler()
+    : d(new QJpegHandlerPrivate(this))
+{
+}
+
+QJpegHandler::~QJpegHandler()
+{
+    delete d;
 }
 
 bool QJpegHandler::canRead() const
 {
-    if (canRead(device())) {
+    if(d->state == QJpegHandlerPrivate::Ready) {
+        if (!canRead(device()))
+            return false;
         setFormat("jpeg");
         return true;
     }
-    return false;
+    return d->state != QJpegHandlerPrivate::Error;
 }
 
 bool QJpegHandler::canRead(QIODevice *device)
@@ -1191,7 +808,6 @@ bool QJpegHandler::canRead(QIODevice *device)
     char buffer[2];
     if (device->peek(buffer, 2) != 2)
         return false;
-
     return uchar(buffer[0]) == 0xff && uchar(buffer[1]) == 0xd8;
 }
 
@@ -1199,12 +815,12 @@ bool QJpegHandler::read(QImage *image)
 {
     if (!canRead())
         return false;
-    return read_jpeg_image(device(), image, scaledSize, scaledClipRect, clipRect, quality);
+    return d->read(image);
 }
 
 bool QJpegHandler::write(const QImage &image)
 {
-    return write_jpeg_image(image, device(), quality);
+    return write_jpeg_image(image, device(), d->quality);
 }
 
 bool QJpegHandler::supportsOption(ImageOption option) const
@@ -1219,51 +835,52 @@ bool QJpegHandler::supportsOption(ImageOption option) const
 
 QVariant QJpegHandler::option(ImageOption option) const
 {
-    if (option == Quality) {
-        return quality;
-    } else if  (option == ScaledSize) {
-        return scaledSize;
-    } else if  (option == ScaledClipRect) {
-        return scaledClipRect;
-    } else if  (option == ClipRect) {
-        return clipRect;
-    } else if (option == Size) {
-        if (canRead() && !device()->isSequential()) {
-            qint64 pos = device()->pos();
-            int width = 0;
-            int height = 0;
-            read_jpeg_size(device(), width, height);
-            device()->seek(pos);
-            return QSize(width, height);
-        }
-    } else if (option == ImageFormat) {
-        if (canRead() && !device()->isSequential()) {
-            qint64 pos = device()->pos();
-            QImage::Format format = QImage::Format_Invalid;
-            read_jpeg_format(device(), format);
-            device()->seek(pos);
-            return format;
-        }
-        return QImage::Format_Invalid;
+    switch(option) {
+    case Quality:
+        return d->quality;
+    case ScaledSize:
+        return d->scaledSize;
+    case ScaledClipRect:
+        return d->scaledClipRect;
+    case ClipRect:
+        return d->clipRect;
+    case Size:
+        d->readJpegHeader(device());
+        return d->size;
+    case ImageFormat:
+        d->readJpegHeader(device());
+        return d->format;
+    default:
+        return QVariant();
     }
-    return QVariant();
 }
 
 void QJpegHandler::setOption(ImageOption option, const QVariant &value)
 {
-    if (option == Quality)
-        quality = value.toInt();
-    else if ( option == ScaledSize )
-        scaledSize = value.toSize();
-    else if ( option == ScaledClipRect )
-        scaledClipRect = value.toRect();
-    else if ( option == ClipRect )
-        clipRect = value.toRect();
+    switch(option) {
+    case Quality:
+        d->quality = value.toInt();
+        break;
+    case ScaledSize:
+        d->scaledSize = value.toSize();
+        break;
+    case ScaledClipRect:
+        d->scaledClipRect = value.toRect();
+        break;
+    case ClipRect:
+        d->clipRect = value.toRect();
+        break;
+    default:
+        break;
+    }
 }
 
 QByteArray QJpegHandler::name() const
 {
     return "jpeg";
 }
+
+
+
 
 QT_END_NAMESPACE

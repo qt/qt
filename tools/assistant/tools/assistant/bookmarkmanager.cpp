@@ -38,549 +38,214 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "bookmarkmanager.h"
+#include "bookmarkmanagerwidget.h"
+#include "bookmarkdialog.h"
+#include "bookmarkfiltermodel.h"
+#include "bookmarkitem.h"
+#include "bookmarkmodel.h"
 #include "centralwidget.h"
+#include "helpenginewrapper.h"
 
 #include <QtGui/QMenu>
-#include <QtGui/QIcon>
-#include <QtGui/QStyle>
-#include <QtGui/QLabel>
-#include <QtGui/QLayout>
-#include <QtCore/QEvent>
-#include <QtGui/QComboBox>
 #include <QtGui/QKeyEvent>
-#include <QtGui/QLineEdit>
 #include <QtGui/QMessageBox>
-#include <QtGui/QHeaderView>
-#include <QtGui/QToolButton>
-#include <QtGui/QPushButton>
-#include <QtGui/QApplication>
-#include <QtHelp/QHelpEngineCore>
-#include <QtGui/QDialogButtonBox>
 #include <QtGui/QSortFilterProxyModel>
 
 QT_BEGIN_NAMESPACE
 
-BookmarkDialog::BookmarkDialog(BookmarkManager *manager, const QString &title,
-        const QString &url, QWidget *parent)
-    : QDialog(parent)
-    , m_url(url)
-    , m_title(title)
-    , bookmarkManager(manager)
+// -- BookmarkManager::BookmarkWidget
+
+void BookmarkManager::BookmarkWidget::focusInEvent(QFocusEvent *event)
 {
-    ui.setupUi(this);
+    TRACE_OBJ
+    if (event->reason() != Qt::MouseFocusReason) {
+        ui.lineEdit->selectAll();
+        ui.lineEdit->setFocus();
 
-    installEventFilter(this);
-    ui.treeView->installEventFilter(this);
-    ui.treeView->viewport()->installEventFilter(this);
+        // force the focus in event on bookmark manager
+        emit focusInEvent();
+    }
+}
 
-    ui.bookmarkEdit->setText(title);
-    ui.newFolderButton->setVisible(false);
-    ui.buttonBox->button(QDialogButtonBox::Ok)->setDefault(true);
-    ui.bookmarkFolders->addItems(bookmarkManager->bookmarkFolders());
+// -- BookmarkManager::BookmarkTreeView
 
-    proxyModel = new QSortFilterProxyModel(this);
-    proxyModel->setFilterKeyColumn(0);
-    proxyModel->setDynamicSortFilter(true);
-    proxyModel->setFilterRole(Qt::UserRole + 10);
-    proxyModel->setSourceModel(bookmarkManager->treeBookmarkModel());
-    proxyModel->setFilterRegExp(QRegExp(QLatin1String("Folder"),
-        Qt::CaseSensitive, QRegExp::FixedString));
-    ui.treeView->setModel(proxyModel);
+BookmarkManager::BookmarkTreeView::BookmarkTreeView(QWidget *parent)
+    : QTreeView(parent)
+{
+    TRACE_OBJ
+    setAcceptDrops(true);
+    setDragEnabled(true);
+    setAutoExpandDelay(1000);
+    setUniformRowHeights(true);
+    setDropIndicatorShown(true);
+    setExpandsOnDoubleClick(true);
 
-    ui.treeView->expandAll();
-    ui.treeView->setVisible(false);
-    ui.treeView->header()->setVisible(false);
-    ui.treeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, SIGNAL(expanded(QModelIndex)), this,
+        SLOT(setExpandedData(QModelIndex)));
+    connect(this, SIGNAL(collapsed(QModelIndex)), this,
+        SLOT(setExpandedData(QModelIndex)));
 
-    connect(ui.buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(ui.buttonBox, SIGNAL(accepted()), this, SLOT(addAccepted()));
-    connect(ui.newFolderButton, SIGNAL(clicked()), this, SLOT(addNewFolder()));
-    connect(ui.toolButton, SIGNAL(clicked()), this, SLOT(toolButtonClicked()));
-    connect(ui.bookmarkEdit, SIGNAL(textChanged(QString)), this,
+}
+
+void BookmarkManager::BookmarkTreeView::subclassKeyPressEvent(QKeyEvent *event)
+{
+    TRACE_OBJ
+    QTreeView::keyPressEvent(event);
+}
+
+void BookmarkManager::BookmarkTreeView::setExpandedData(const QModelIndex &index)
+{
+    TRACE_OBJ
+    if (BookmarkModel *treeModel = qobject_cast<BookmarkModel*> (model()))
+        treeModel->setData(index, isExpanded(index), UserRoleExpanded);
+}
+
+// -- BookmarkManager
+
+QMutex BookmarkManager::mutex;
+BookmarkManager* BookmarkManager::bookmarkManager = 0;
+
+// -- public
+
+BookmarkManager* BookmarkManager::instance()
+{
+    TRACE_OBJ
+    if (!bookmarkManager) {
+        QMutexLocker _(&mutex);
+        if (!bookmarkManager)
+            bookmarkManager = new BookmarkManager();
+    }
+    return bookmarkManager;
+}
+
+void BookmarkManager::destroy()
+{
+    TRACE_OBJ
+    delete bookmarkManager;
+    bookmarkManager = 0;
+}
+
+QWidget* BookmarkManager::bookmarkDockWidget() const
+{
+    TRACE_OBJ
+    if (bookmarkWidget)
+        return bookmarkWidget;
+    return 0;
+}
+
+void BookmarkManager::takeBookmarksMenu(QMenu* menu)
+{
+    TRACE_OBJ
+    bookmarkMenu = menu;
+    refeshBookmarkMenu();
+}
+
+// -- public slots
+
+void BookmarkManager::addBookmark(const QString &title, const QString &url)
+{
+    TRACE_OBJ
+    showBookmarkDialog(title.isEmpty() ? tr("Untitled") : title,
+        url.isEmpty() ? QLatin1String("about:blank") : url);
+}
+
+// -- private
+
+BookmarkManager::BookmarkManager()
+    : typeAndSearch(false)
+    , bookmarkMenu(0)
+    , bookmarkModel(new BookmarkModel)
+    , bookmarkWidget(new BookmarkWidget)
+    , bookmarkTreeView(new BookmarkTreeView)
+    , bookmarkManagerWidget(0)
+{
+    TRACE_OBJ
+    bookmarkWidget->installEventFilter(this);
+    connect(bookmarkWidget->ui.add, SIGNAL(clicked()), this,
+        SLOT(addBookmark()));
+    connect(bookmarkWidget->ui.remove, SIGNAL(clicked()), this,
+        SLOT(removeBookmark()));
+    connect(bookmarkWidget->ui.lineEdit, SIGNAL(textChanged(QString)), this,
         SLOT(textChanged(QString)));
+    connect(bookmarkWidget, SIGNAL(focusInEvent()), this, SLOT(focusInEvent()));
 
-    connect(bookmarkManager->treeBookmarkModel(),
-        SIGNAL(itemChanged(QStandardItem*)),
-        this, SLOT(itemChanged(QStandardItem*)));
+    bookmarkTreeView->setModel(bookmarkModel);
+    bookmarkTreeView->installEventFilter(this);
+    bookmarkTreeView->viewport()->installEventFilter(this);
+    bookmarkTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    bookmarkWidget->ui.stackedWidget->addWidget(bookmarkTreeView);
 
-    connect(ui.bookmarkFolders, SIGNAL(currentIndexChanged(QString)), this,
-        SLOT(selectBookmarkFolder(QString)));
-
-    connect(ui.treeView, SIGNAL(customContextMenuRequested(QPoint)), this,
+    connect(bookmarkTreeView, SIGNAL(activated(QModelIndex)), this,
+        SLOT(setSourceFromIndex(QModelIndex)));
+    connect(bookmarkTreeView, SIGNAL(customContextMenuRequested(QPoint)), this,
         SLOT(customContextMenuRequested(QPoint)));
 
-    connect(ui.treeView->selectionModel(), SIGNAL(currentChanged(QModelIndex,
-        QModelIndex)), this, SLOT(currentChanged(QModelIndex)));
+    connect(&HelpEngineWrapper::instance(), SIGNAL(setupFinished()), this,
+        SLOT(setupFinished()));
+    connect(bookmarkModel, SIGNAL(rowsRemoved(QModelIndex, int, int)), this,
+        SLOT(refeshBookmarkMenu()));
+    connect(bookmarkModel, SIGNAL(rowsInserted(QModelIndex, int, int)), this,
+        SLOT(refeshBookmarkMenu()));
+    connect(bookmarkModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)), this,
+        SLOT(refeshBookmarkMenu()));
 }
 
-BookmarkDialog::~BookmarkDialog()
+BookmarkManager::~BookmarkManager()
 {
+    TRACE_OBJ
+    delete bookmarkManagerWidget;
+    HelpEngineWrapper::instance().setBookmarks(bookmarkModel->bookmarks());
+    delete bookmarkModel;
 }
 
-void BookmarkDialog::addAccepted()
+void BookmarkManager::removeItem(const QModelIndex &index)
 {
-    QItemSelectionModel *model = ui.treeView->selectionModel();
-    const QModelIndexList &list = model->selection().indexes();
-
-    QModelIndex index;
-    if (!list.isEmpty())
-        index = proxyModel->mapToSource(list.at(0));
-
-    bookmarkManager->addNewBookmark(index, ui.bookmarkEdit->text(), m_url);
-    accept();
-}
-
-void BookmarkDialog::addNewFolder()
-{
-    QItemSelectionModel *model = ui.treeView->selectionModel();
-    const QModelIndexList &list = model->selection().indexes();
-
-    QModelIndex index;
-    if (!list.isEmpty())
-        index = list.at(0);
-
-    QModelIndex newFolder =
-        bookmarkManager->addNewFolder(proxyModel->mapToSource(index));
-    if (newFolder.isValid()) {
-        ui.treeView->expand(index);
-        const QModelIndex &index = proxyModel->mapFromSource(newFolder);
-        model->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
-
-        ui.bookmarkFolders->clear();
-        ui.bookmarkFolders->addItems(bookmarkManager->bookmarkFolders());
-
-        const QString &name = index.data().toString();
-        ui.bookmarkFolders->setCurrentIndex(ui.bookmarkFolders->findText(name));
-    }
-    ui.treeView->setFocus();
-}
-
-void BookmarkDialog::toolButtonClicked()
-{
-    bool visible = !ui.treeView->isVisible();
-    ui.treeView->setVisible(visible);
-    ui.newFolderButton->setVisible(visible);
-
-    if (visible) {
-        resize(QSize(width(), 400));
-        ui.toolButton->setText(QLatin1String("-"));
-    } else {
-        resize(width(), minimumHeight());
-        ui.toolButton->setText(QLatin1String("+"));
-    }
-}
-
-void BookmarkDialog::itemChanged(QStandardItem *item)
-{
-    if (renameItem != item) {
-        renameItem = item;
-        oldText = item->text();
-        return;
+    TRACE_OBJ
+    QModelIndex current = index;
+    if (typeAndSearch) { // need to map because of proxy
+        current = typeAndSearchModel->mapToSource(current);
+        current = bookmarkFilterModel->mapToSource(current);
+    } else if (!bookmarkModel->parent(index).isValid()) {
+        return;  // check if we should delete the "Bookmarks Menu", bail
     }
 
-    if (item->text() != oldText) {
-        ui.bookmarkFolders->clear();
-        ui.bookmarkFolders->addItems(bookmarkManager->bookmarkFolders());
-
-        QString name = tr("Bookmarks");
-        const QModelIndex &index = ui.treeView->currentIndex();
-        if (index.isValid())
-            name = index.data().toString();
-        ui.bookmarkFolders->setCurrentIndex(ui.bookmarkFolders->findText(name));
+    if (bookmarkModel->hasChildren(current)) {
+        int value = QMessageBox::question(bookmarkTreeView, tr("Remove"),
+            tr("You are going to delete a Folder, this will also<br>"
+            "remove it's content. Are you sure to continue?"),
+            QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
+        if (value == QMessageBox::Cancel)
+            return;
     }
+    bookmarkModel->removeItem(current);
 }
 
-void BookmarkDialog::textChanged(const QString &string)
+bool BookmarkManager::eventFilter(QObject *object, QEvent *event)
 {
-    ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(!string.isEmpty());
-}
+    if (object != bookmarkTreeView && object != bookmarkTreeView->viewport()
+        && object != bookmarkWidget)
+            return QObject::eventFilter(object, event);
 
-void BookmarkDialog::selectBookmarkFolder(const QString &folderName)
-{
-    if (folderName.isEmpty())
-        return;
-
-    if (folderName == tr("Bookmarks")) {
-        ui.treeView->clearSelection();
-        return;
-    }
-
-    QStandardItemModel *model = bookmarkManager->treeBookmarkModel();
-    QList<QStandardItem*> list = model->findItems(folderName,
-        Qt::MatchCaseSensitive | Qt::MatchRecursive, 0);
-    if (!list.isEmpty()) {
-        const QModelIndex &index = model->indexFromItem(list.at(0));
-        QItemSelectionModel *model = ui.treeView->selectionModel();
-        if (model) {
-            model->setCurrentIndex(proxyModel->mapFromSource(index),
-                QItemSelectionModel::ClearAndSelect);
-        }
-    }
-}
-
-void BookmarkDialog::customContextMenuRequested(const QPoint &point)
-{
-    QModelIndex index = ui.treeView->indexAt(point);
-    if (!index.isValid())
-        return;
-
-    QMenu menu(QLatin1String(""), this);
-
-    QAction *removeItem = menu.addAction(tr("Delete Folder"));
-    QAction *renameItem = menu.addAction(tr("Rename Folder"));
-
-    QAction *picked = menu.exec(ui.treeView->mapToGlobal(point));
-    if (!picked)
-        return;
-
-    const QModelIndex &proxyIndex = proxyModel->mapToSource(index);
-    if (picked == removeItem) {
-        bookmarkManager->removeBookmarkItem(ui.treeView, proxyIndex);
-        ui.bookmarkFolders->clear();
-        ui.bookmarkFolders->addItems(bookmarkManager->bookmarkFolders());
-
-        QString name = tr("Bookmarks");
-        index = ui.treeView->currentIndex();
-        if (index.isValid())
-            name = index.data().toString();
-        ui.bookmarkFolders->setCurrentIndex(ui.bookmarkFolders->findText(name));
-    }
-    else if (picked == renameItem) {
-        BookmarkModel *model = bookmarkManager->treeBookmarkModel();
-        if (QStandardItem *item = model->itemFromIndex(proxyIndex)) {
-            item->setEditable(true);
-            ui.treeView->edit(index);
-            item->setEditable(false);
-        }
-    }
-}
-
-void BookmarkDialog::currentChanged(const QModelIndex &current)
-{
-    QString text = tr("Bookmarks");
-    if (current.isValid())
-        text = current.data().toString();
-    ui.bookmarkFolders->setCurrentIndex(ui.bookmarkFolders->findText(text));
-}
-
-bool BookmarkDialog::eventFilter(QObject *object, QEvent *e)
-{
-    if (object != ui.treeView && object != ui.treeView->viewport())
-        return QWidget::eventFilter(object, e);
-
-    if (e->type() == QEvent::KeyPress) {
-        QKeyEvent *ke = static_cast<QKeyEvent*>(e);
+    TRACE_OBJ
+    const bool isWidget = object == bookmarkWidget;
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *ke = static_cast<QKeyEvent*>(event);
         switch (ke->key()) {
             case Qt::Key_F2: {
-                const QModelIndex &index = ui.treeView->currentIndex();
-                const QModelIndex &source = proxyModel->mapToSource(index);
-                QStandardItem *item =
-                    bookmarkManager->treeBookmarkModel()->itemFromIndex(source);
-                if (item) {
-                    item->setEditable(true);
-                    ui.treeView->edit(index);
-                    item->setEditable(false);
-                }
+                renameBookmark(bookmarkTreeView->currentIndex());
             }   break;
 
             case Qt::Key_Delete: {
-                const QModelIndex &index = ui.treeView->currentIndex();
-                bookmarkManager->removeBookmarkItem(ui.treeView,
-                    proxyModel->mapToSource(index));
-                ui.bookmarkFolders->clear();
-                ui.bookmarkFolders->addItems(bookmarkManager->bookmarkFolders());
-
-                QString name = tr("Bookmarks");
-                if (index.isValid())
-                    name = index.data().toString();
-                ui.bookmarkFolders->setCurrentIndex(ui.bookmarkFolders->findText(name));
+                removeItem(bookmarkTreeView->currentIndex());
             }   break;
 
-            default:
-                break;
-        }
-    }
-
-    return QObject::eventFilter(object, e);
-}
-
-
-// #pragma mark -- BookmarkWidget
-
-
-BookmarkWidget::BookmarkWidget(BookmarkManager *manager, QWidget *parent,
-        bool showButtons)
-    : QWidget(parent)
-    , addButton(0)
-    , removeButton(0)
-    , bookmarkManager(manager)
-{
-    setup(showButtons);
-
-    installEventFilter(this);
-    treeView->installEventFilter(this);
-    treeView->viewport()->installEventFilter(this);
-}
-
-BookmarkWidget::~BookmarkWidget()
-{
-}
-
-void BookmarkWidget::removeClicked()
-{
-    const QModelIndex &index = treeView->currentIndex();
-    if (searchField->text().isEmpty()) {
-        bookmarkManager->removeBookmarkItem(treeView,
-            filterBookmarkModel->mapToSource(index));
-    }
-}
-
-void BookmarkWidget::filterChanged()
-{
-    bool searchBookmarks = searchField->text().isEmpty();
-    if (!searchBookmarks) {
-        regExp.setPattern(searchField->text());
-        filterBookmarkModel->setSourceModel(bookmarkManager->listBookmarkModel());
-    } else {
-        regExp.setPattern(QLatin1String(""));
-        filterBookmarkModel->setSourceModel(bookmarkManager->treeBookmarkModel());
-    }
-
-    if (addButton)
-        addButton->setEnabled(searchBookmarks);
-
-    if (removeButton)
-        removeButton->setEnabled(searchBookmarks);
-
-    filterBookmarkModel->setFilterRegExp(regExp);
-
-    const QModelIndex &index = treeView->indexAt(QPoint(1, 1));
-    if (index.isValid())
-        treeView->setCurrentIndex(index);
-
-    if (searchBookmarks)
-        expandItems();
-}
-
-void BookmarkWidget::expand(const QModelIndex &index)
-{
-    const QModelIndex &source = filterBookmarkModel->mapToSource(index);
-    QStandardItem *item =
-        bookmarkManager->treeBookmarkModel()->itemFromIndex(source);
-    if (item)
-        item->setData(treeView->isExpanded(index), Qt::UserRole + 11);
-}
-
-void BookmarkWidget::activated(const QModelIndex &index)
-{
-    if (!index.isValid())
-        return;
-
-    QString data = index.data(Qt::UserRole + 10).toString();
-    if (data != QLatin1String("Folder"))
-        emit requestShowLink(data);
-}
-
-void BookmarkWidget::customContextMenuRequested(const QPoint &point)
-{
-    QModelIndex index = treeView->indexAt(point);
-    if (!index.isValid())
-        return;
-
-    QAction *showItem = 0;
-    QAction *removeItem = 0;
-    QAction *renameItem = 0;
-    QAction *showItemNewTab = 0;
-
-    QMenu menu(QLatin1String(""), this);
-    QString data = index.data(Qt::UserRole + 10).toString();
-    if (data == QLatin1String("Folder")) {
-        removeItem = menu.addAction(tr("Delete Folder"));
-        renameItem = menu.addAction(tr("Rename Folder"));
-    } else {
-        showItem = menu.addAction(tr("Show Bookmark"));
-        showItemNewTab = menu.addAction(tr("Show Bookmark in New Tab"));
-        if (searchField->text().isEmpty()) {
-            menu.addSeparator();
-            removeItem = menu.addAction(tr("Delete Bookmark"));
-            renameItem = menu.addAction(tr("Rename Bookmark"));
-        }
-    }
-
-    QAction *pickedAction = menu.exec(treeView->mapToGlobal(point));
-    if (!pickedAction)
-        return;
-
-    if (pickedAction == showItem) {
-        emit requestShowLink(data);
-    }
-    else if (pickedAction == showItemNewTab) {
-        CentralWidget::instance()->setSourceInNewTab(data);
-    }
-    else if (pickedAction == removeItem) {
-        bookmarkManager->removeBookmarkItem(treeView,
-            filterBookmarkModel->mapToSource(index));
-    }
-    else if (pickedAction == renameItem) {
-        const QModelIndex &source = filterBookmarkModel->mapToSource(index);
-        QStandardItem *item =
-            bookmarkManager->treeBookmarkModel()->itemFromIndex(source);
-        if (item) {
-            item->setEditable(true);
-            treeView->edit(index);
-            item->setEditable(false);
-        }
-    }
-}
-
-void BookmarkWidget::setup(bool showButtons)
-{
-    regExp.setPatternSyntax(QRegExp::FixedString);
-    regExp.setCaseSensitivity(Qt::CaseInsensitive);
-
-    QLayout *vlayout = new QVBoxLayout(this);
-    vlayout->setMargin(4);
-
-    QLabel *label = new QLabel(tr("Filter:"), this);
-    vlayout->addWidget(label);
-
-    searchField = new QLineEdit(this);
-    vlayout->addWidget(searchField);
-    connect(searchField, SIGNAL(textChanged(QString)), this,
-        SLOT(filterChanged()));
-
-    treeView = new TreeView(this);
-    vlayout->addWidget(treeView);
-
-#ifdef Q_OS_MAC
-#   define SYSTEM "mac"
-#else
-#   define SYSTEM "win"
-#endif
-
-    if (showButtons) {
-        QLayout *hlayout = new QHBoxLayout();
-        vlayout->addItem(hlayout);
-
-        hlayout->addItem(new QSpacerItem(40, 20, QSizePolicy::Expanding));
-
-        addButton = new QToolButton(this);
-        addButton->setText(tr("Add"));
-        addButton->setIcon(QIcon(QLatin1String(":/trolltech/assistant/images/"
-            SYSTEM "/addtab.png")));
-        addButton->setAutoRaise(true);
-        addButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-        hlayout->addWidget(addButton);
-        connect(addButton, SIGNAL(clicked()), this, SIGNAL(addBookmark()));
-
-        removeButton = new QToolButton(this);
-        removeButton->setText(tr("Remove"));
-        removeButton->setIcon(QIcon(QLatin1String(":/trolltech/assistant/images/"
-            SYSTEM "/closetab.png")));
-        removeButton->setAutoRaise(true);
-        removeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-        hlayout->addWidget(removeButton);
-        connect(removeButton, SIGNAL(clicked()), this, SLOT(removeClicked()));
-    }
-
-    filterBookmarkModel = new QSortFilterProxyModel(this);
-    treeView->setModel(filterBookmarkModel);
-
-    treeView->setDragEnabled(true);
-    treeView->setAcceptDrops(true);
-    treeView->setAutoExpandDelay(1000);
-    treeView->setDropIndicatorShown(true);
-    treeView->header()->setVisible(false);
-    treeView->setContextMenuPolicy(Qt::CustomContextMenu);
-
-    connect(treeView, SIGNAL(expanded(QModelIndex)), this,
-        SLOT(expand(QModelIndex)));
-    connect(treeView, SIGNAL(collapsed(QModelIndex)), this,
-        SLOT(expand(QModelIndex)));
-    connect(treeView, SIGNAL(activated(QModelIndex)), this,
-        SLOT(activated(QModelIndex)));
-    connect(treeView, SIGNAL(customContextMenuRequested(QPoint)),
-        this, SLOT(customContextMenuRequested(QPoint)));
-
-    filterBookmarkModel->setFilterKeyColumn(0);
-    filterBookmarkModel->setDynamicSortFilter(true);
-    filterBookmarkModel->setSourceModel(bookmarkManager->treeBookmarkModel());
-
-    expandItems();
-}
-
-void BookmarkWidget::expandItems()
-{
-    QStandardItemModel *model = bookmarkManager->treeBookmarkModel();
-    QList<QStandardItem*>list = model->findItems(QLatin1String("*"),
-        Qt::MatchWildcard | Qt::MatchRecursive, 0);
-    foreach (const QStandardItem *item, list) {
-        const QModelIndex &index = model->indexFromItem(item);
-        treeView->setExpanded(filterBookmarkModel->mapFromSource(index),
-            item->data(Qt::UserRole + 11).toBool());
-    }
-}
-
-void BookmarkWidget::focusInEvent(QFocusEvent *e)
-{
-    if (e->reason() != Qt::MouseFocusReason) {
-        searchField->selectAll();
-        searchField->setFocus();
-
-        QModelIndex index = treeView->indexAt(QPoint(1, 1));
-        if (index.isValid())
-            treeView->setCurrentIndex(index);
-
-    }
-}
-
-bool BookmarkWidget::eventFilter(QObject *object, QEvent *e)
-{
-    if (object != this && object != treeView
-        && object != treeView->viewport()) {
-            return QWidget::eventFilter(object, e);
-    }
-
-    if (e->type() == QEvent::KeyPress) {
-        QKeyEvent *ke = static_cast<QKeyEvent*>(e);
-        const bool tree = object == treeView || object == treeView->viewport();
-        switch (ke->key()) {
-            case Qt::Key_F2: {
-                const QModelIndex &index = treeView->currentIndex();
-                const QModelIndex &src = filterBookmarkModel->mapToSource(index);
-                if (tree && searchField->text().isEmpty()) {
-                    if (QStandardItem *item = bookmarkManager->treeBookmarkModel()
-                        ->itemFromIndex(src)) {
-                        item->setEditable(true);
-                        treeView->edit(index);
-                        item->setEditable(false);
-                    }
-                }
-            }   break;
-
-            case Qt::Key_Enter: {
-            case Qt::Key_Return:
-                if (tree) {
-                    const QString &data = treeView->selectionModel()->currentIndex()
-                        .data(Qt::UserRole + 10).toString();
-                    if (!data.isEmpty() && data != QLatin1String("Folder"))
-                        emit requestShowLink(data);
-                }
-            }   break;
-
-            case Qt::Key_Delete: {
-                const QModelIndex &index = treeView->currentIndex();
-                const QModelIndex &src = filterBookmarkModel->mapToSource(index);
-                if (tree && searchField->text().isEmpty())
-                    bookmarkManager->removeBookmarkItem(treeView, src);
-            }   break;
-
-            case Qt::Key_Up: {
+            case Qt::Key_Up: {    // needs event filter on widget
             case Qt::Key_Down:
-                if (!tree)
-                    treeView->subclassKeyPressEvent(ke);
+                if (isWidget)
+                    bookmarkTreeView->subclassKeyPressEvent(ke);
             }   break;
 
             case Qt::Key_Escape: {
@@ -591,324 +256,233 @@ bool BookmarkWidget::eventFilter(QObject *object, QEvent *e)
         }
     }
 
-    if (e->type() == QEvent::MouseButtonRelease) {
-        QMouseEvent *me = static_cast<QMouseEvent*>(e);
-        bool controlPressed = me->modifiers() & Qt::ControlModifier;
-        if(((me->button() == Qt::LeftButton) && controlPressed)
-            || (me->button() == Qt::MidButton)) {
-                const QModelIndex &index = treeView->currentIndex();
-                const QString &data = index.data(Qt::UserRole + 10).toString();
-                if (!data.isEmpty() && data != QLatin1String("Folder"))
-                    CentralWidget::instance()->setSourceInNewTab(data);
+    if (event->type() == QEvent::MouseButtonRelease && !isWidget) {
+        QMouseEvent *me = static_cast<QMouseEvent*>(event);
+        switch (me->button()) {
+            case Qt::LeftButton: {
+                if (me->modifiers() & Qt::ControlModifier)
+                    setSourceFromIndex(bookmarkTreeView->currentIndex(), true);
+            }   break;
+
+            case Qt::MidButton: {
+                setSourceFromIndex(bookmarkTreeView->currentIndex(), true);
+            }   break;
+
+            default: break;
         }
     }
 
-    return QWidget::eventFilter(object, e);
+    return QObject::eventFilter(object, event);
 }
 
-
-// #pragma mark -- BookmarkModel
-
-
-BookmarkModel::BookmarkModel(int rows, int columns, QObject *parent)
-    : QStandardItemModel(rows, columns, parent)
+void BookmarkManager::buildBookmarksMenu(const QModelIndex &index, QMenu* menu)
 {
-}
+    TRACE_OBJ
+    if (!index.isValid())
+        return;
 
-BookmarkModel::~BookmarkModel()
-{
-}
-
-Qt::DropActions BookmarkModel::supportedDropActions() const
-{
-    return Qt::MoveAction;
-}
-
-Qt::ItemFlags BookmarkModel::flags(const QModelIndex &index) const
-{
-    Qt::ItemFlags defaultFlags = QStandardItemModel::flags(index);
-    if ((!index.isValid()) // can only happen for the invisible root item
-        || index.data(Qt::UserRole + 10).toString() == QLatin1String("Folder"))
-        return (Qt::ItemIsDropEnabled | defaultFlags) &~ Qt::ItemIsDragEnabled;
-
-    return (Qt::ItemIsDragEnabled | defaultFlags) &~ Qt::ItemIsDropEnabled;
-}
-
-
-// #pragma mark -- BookmarkManager
-
-
-BookmarkManager::BookmarkManager(QHelpEngineCore *_helpEngine)
-    : treeModel(new BookmarkModel(0, 1, this))
-    , listModel(new BookmarkModel(0, 1, this))
-    , renameItem(0)
-    , helpEngine(_helpEngine)
-{
-    folderIcon = QApplication::style()->standardIcon(QStyle::SP_DirClosedIcon);
-
-    connect(treeModel, SIGNAL(itemChanged(QStandardItem*)), this,
-        SLOT(itemChanged(QStandardItem*)));
-    connect(treeModel, SIGNAL(itemChanged(QStandardItem*)), this,
-        SIGNAL(bookmarksChanged()));
-    connect(treeModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-        this, SIGNAL(bookmarksChanged()));
-}
-
-BookmarkManager::~BookmarkManager()
-{
-    treeModel->clear();
-    listModel->clear();
-}
-
-BookmarkModel* BookmarkManager::treeBookmarkModel()
-{
-    return treeModel;
-}
-
-BookmarkModel* BookmarkManager::listBookmarkModel()
-{
-    return listModel;
-}
-
-void BookmarkManager::saveBookmarks()
-{
-    QByteArray bookmarks;
-    QDataStream stream(&bookmarks, QIODevice::WriteOnly);
-
-    readBookmarksRecursive(treeModel->invisibleRootItem(), stream, 0);
-    helpEngine->setCustomValue(QLatin1String("Bookmarks"), bookmarks);
-}
-
-QStringList BookmarkManager::bookmarkFolders() const
-{
-    QStringList folders(tr("Bookmarks"));
-
-    QList<QStandardItem*>list = treeModel->findItems(QLatin1String("*"),
-        Qt::MatchWildcard | Qt::MatchRecursive, 0);
-
-    QString data;
-    foreach (const QStandardItem *item, list) {
-        data = item->data(Qt::UserRole + 10).toString();
-        if (data == QLatin1String("Folder"))
-            folders << item->data(Qt::DisplayRole).toString();
-    }
-    return folders;
-}
-
-QModelIndex BookmarkManager::addNewFolder(const QModelIndex &index)
-{
-    QStandardItem *item = new QStandardItem(uniqueFolderName());
-    item->setEditable(false);
-    item->setData(false, Qt::UserRole + 11);
-    item->setData(QLatin1String("Folder"), Qt::UserRole + 10);
-    item->setIcon(QApplication::style()->standardIcon(QStyle::SP_DirClosedIcon));
-
-    if (index.isValid()) {
-        treeModel->itemFromIndex(index)->appendRow(item);
+    const QString &text = index.data().toString();
+    const QIcon &icon = qVariantValue<QIcon>(index.data(Qt::DecorationRole));
+    if (index.data(UserRoleFolder).toBool()) {
+        if (QMenu* subMenu = menu->addMenu(icon, text)) {
+            for (int i = 0; i < bookmarkModel->rowCount(index); ++i)
+                buildBookmarksMenu(bookmarkModel->index(i, 0, index), subMenu);
+        }
     } else {
-        treeModel->appendRow(item);
-    }
-    return treeModel->indexFromItem(item);
-}
-
-void BookmarkManager::removeBookmarkItem(QTreeView *treeView,
-    const QModelIndex &index)
-{
-    QStandardItem *item = treeModel->itemFromIndex(index);
-    if (item) {
-        QString data = index.data(Qt::UserRole + 10).toString();
-        if (data == QLatin1String("Folder") && item->rowCount() > 0) {
-            int value = QMessageBox::question(treeView, tr("Remove"),
-                tr("You are going to delete a Folder, this will also<br>"
-                "remove it's content. Are you sure to continue?"),
-                QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
-
-            if (value == QMessageBox::Cancel)
-                return;
-        }
-
-        if (data != QLatin1String("Folder")) {
-            QList<QStandardItem*>itemList = listModel->findItems(item->text());
-            foreach (const QStandardItem *i, itemList) {
-                if (i->data(Qt::UserRole + 10) == data) {
-                    listModel->removeRow(i->row());
-                    break;
-                }
-            }
-        } else {
-            removeBookmarkFolderItems(item);
-        }
-        treeModel->removeRow(item->row(), index.parent());
+        QAction *action = menu->addAction(icon, text);
+        action->setData(index.data(UserRoleUrl).toString());
     }
 }
 
-void BookmarkManager::showBookmarkDialog(QWidget *parent, const QString &name,
-    const QString &url)
+void BookmarkManager::showBookmarkDialog(const QString &name, const QString &url)
 {
-    BookmarkDialog dialog(this, name, url, parent);
+    TRACE_OBJ
+    BookmarkDialog dialog(bookmarkModel, name, url, bookmarkTreeView);
     dialog.exec();
 }
 
-void BookmarkManager::addNewBookmark(const QModelIndex &index,
-    const QString &name, const QString &url)
-{
-    QStandardItem *item = new QStandardItem(name);
-    item->setEditable(false);
-    item->setData(false, Qt::UserRole + 11);
-    item->setData(url, Qt::UserRole + 10);
+// -- private slots
 
-    if (index.isValid())
-        treeModel->itemFromIndex(index)->appendRow(item);
-    else
-        treeModel->appendRow(item);
-    listModel->appendRow(item->clone());
-    emit bookmarksChanged();
+void BookmarkManager::setupFinished()
+{
+    TRACE_OBJ
+    bookmarkModel->setBookmarks(HelpEngineWrapper::instance().bookmarks());
+    bookmarkModel->expandFoldersIfNeeeded(bookmarkTreeView);
+
+    refeshBookmarkMenu();
+
+    bookmarkTreeView->hideColumn(1);
+    bookmarkTreeView->header()->setVisible(false);
+    bookmarkTreeView->header()->setStretchLastSection(true);
+
+    bookmarkFilterModel = new BookmarkFilterModel(this);
+    bookmarkFilterModel->setSourceModel(bookmarkModel);
+    bookmarkFilterModel->filterBookmarkFolders();
+
+    typeAndSearchModel = new QSortFilterProxyModel(this);
+    typeAndSearchModel->setDynamicSortFilter(true);
+    typeAndSearchModel->setSourceModel(bookmarkFilterModel);
 }
 
-void BookmarkManager::fillBookmarkMenu(QMenu *menu)
+void BookmarkManager::addBookmark()
 {
-    if (!menu || !treeModel)
+    TRACE_OBJ
+    if (CentralWidget *widget = CentralWidget::instance())
+        addBookmark(widget->currentTitle(), widget->currentSource().toString());
+}
+
+void BookmarkManager::removeBookmark()
+{
+    TRACE_OBJ
+    removeItem(bookmarkTreeView->currentIndex());
+}
+
+void BookmarkManager::manageBookmarks()
+{
+    TRACE_OBJ
+    if (bookmarkManagerWidget == 0) {
+        bookmarkManagerWidget = new BookmarkManagerWidget(bookmarkModel);
+        connect(bookmarkManagerWidget, SIGNAL(setSource(QUrl)), this,
+            SIGNAL(setSource(QUrl)));
+        connect(bookmarkManagerWidget, SIGNAL(setSourceInNewTab(QUrl))
+            , this, SIGNAL(setSourceInNewTab(QUrl)));
+        connect(bookmarkManagerWidget, SIGNAL(managerWidgetAboutToClose())
+            , this, SLOT(managerWidgetAboutToClose()));
+    }
+    bookmarkManagerWidget->show();
+    bookmarkManagerWidget->raise();
+}
+
+void BookmarkManager::refeshBookmarkMenu()
+{
+    TRACE_OBJ
+    if (!bookmarkMenu)
         return;
 
-    map.clear();
-    fillBookmarkMenu(menu, treeModel->invisibleRootItem());
+    bookmarkMenu->clear();
+
+    bookmarkMenu->addAction(tr("Manage Bookmarks..."), this,
+        SLOT(manageBookmarks()));
+    bookmarkMenu->addAction(QIcon::fromTheme("bookmark-new"),
+                            tr("Add Bookmark..."), this, SLOT(addBookmark()),
+                            QKeySequence(tr("Ctrl+D")));
+    bookmarkMenu->addSeparator();
+
+    const QModelIndex &root = bookmarkModel->index(0, 0, QModelIndex());
+    for (int i = 0; i < bookmarkModel->rowCount(root); ++i)
+        buildBookmarksMenu(bookmarkModel->index(i, 0, root), bookmarkMenu);
+
+    connect(bookmarkMenu, SIGNAL(triggered(QAction*)), this,
+        SLOT(setSourceFromAction(QAction*)));
 }
 
-void BookmarkManager::fillBookmarkMenu(QMenu *menu, QStandardItem *root)
+void BookmarkManager::renameBookmark(const QModelIndex &index)
 {
-    for (int i = 0; i < root->rowCount(); ++i) {
-        QStandardItem *item = root->child(i);
-        if (item && item->data(Qt::UserRole + 10)
-            .toString() == QLatin1String("Folder")) {
-                QMenu* newMenu = menu->addMenu(folderIcon, item->text());
-                if (item->rowCount() > 0)
-                    fillBookmarkMenu(newMenu, item);
-        } else {
-            map.insert(menu->addAction(item->text()), item->index());
-        }
-    }
-}
-
-QUrl BookmarkManager::urlForAction(QAction* action) const
-{
-    if (map.contains(action)) {
-        const QModelIndex &index = map.value(action);
-        if (QStandardItem* item = treeModel->itemFromIndex(index))
-            return QUrl(item->data(Qt::UserRole + 10).toString());
-    }
-    return QUrl();
-}
-
-void BookmarkManager::itemChanged(QStandardItem *item)
-{
-    if (renameItem != item) {
-        renameItem = item;
-        oldText = item->text();
+    // check if we should rename the "Bookmarks Menu", bail
+    if (!typeAndSearch && !bookmarkModel->parent(index).isValid())
         return;
-    }
 
-    if (item->text() != oldText) {
-        if (item->data(Qt::UserRole + 10).toString() != QLatin1String("Folder")) {
-            QList<QStandardItem*>itemList = listModel->findItems(oldText);
-            if (itemList.count() > 0)
-                itemList.at(0)->setText(item->text());
-        }
-    }
+    bookmarkModel->setItemsEditable(true);
+    bookmarkTreeView->edit(index);
+    bookmarkModel->setItemsEditable(false);
 }
 
-void BookmarkManager::setupBookmarkModels()
+void BookmarkManager::setSourceFromAction(QAction *action)
 {
-    treeModel->clear();
-    listModel->clear();
+    TRACE_OBJ
+    const QVariant &data = action->data();
 
-    qint32 depth;
-    bool expanded;
-    QString name, type;
-    QList<int> lastDepths;
-    QList<QStandardItem*> parents;
+    if (data.canConvert<QUrl>())
+        emit setSource(data.toUrl());
+}
 
-    QByteArray ba =
-        helpEngine->customValue(QLatin1String("Bookmarks")).toByteArray();
-    QDataStream stream(ba);
-    while (!stream.atEnd()) {
-        stream >> depth >> name >> type >> expanded;
+void BookmarkManager::setSourceFromIndex(const QModelIndex &index, bool newTab)
+{
+    TRACE_OBJ
+    QAbstractItemModel *base = bookmarkModel;
+    if (typeAndSearch)
+        base = typeAndSearchModel;
 
-        QStandardItem *item = new QStandardItem(name);
-        item->setEditable(false);
-        item->setData(type, Qt::UserRole + 10);
-        item->setData(expanded, Qt::UserRole + 11);
-        if (depth == 0) {
-            parents.clear(); lastDepths.clear();
-            treeModel->appendRow(item);
-            parents << item; lastDepths << depth;
-        } else {
-            if (depth <= lastDepths.last()) {
-                while (depth <= lastDepths.last() && parents.count() > 0) {
-                    parents.pop_back(); lastDepths.pop_back();
-                }
-            }
-            parents.last()->appendRow(item);
-            if (type == QLatin1String("Folder")) {
-                parents << item; lastDepths << depth;
-            }
-        }
+    if (base->data(index, UserRoleFolder).toBool())
+        return;
 
-        if (type == QLatin1String("Folder"))
-            item->setIcon(folderIcon);
+    const QVariant &data = base->data(index, UserRoleUrl);
+    if (data.canConvert<QUrl>()) {
+        if (newTab)
+            emit setSourceInNewTab(data.toUrl());
         else
-            listModel->appendRow(item->clone());
+            emit setSource(data.toUrl());
     }
 }
 
-QString BookmarkManager::uniqueFolderName() const
+void BookmarkManager::customContextMenuRequested(const QPoint &point)
 {
-    QString folderName = tr("New Folder");
-    QList<QStandardItem*> list = treeModel->findItems(folderName,
-        Qt::MatchContains | Qt::MatchRecursive, 0);
-    if (!list.isEmpty()) {
-        QStringList names;
-        foreach (const QStandardItem *item, list)
-            names << item->text();
+    TRACE_OBJ
+    QModelIndex index = bookmarkTreeView->indexAt(point);
+    if (!index.isValid())
+        return;
 
-        for (int i = 1; i <= names.count(); ++i) {
-            folderName = (tr("New Folder") + QLatin1String(" %1")).arg(i);
-            if (!names.contains(folderName))
-                break;
+    // check if we should open the menu on "Bookmarks Menu", bail
+    if (!typeAndSearch && !bookmarkModel->parent(index).isValid())
+        return;
+
+    QAction *remove = 0;
+    QAction *rename = 0;
+    QAction *showItem = 0;
+    QAction *showItemInNewTab = 0;
+
+    QMenu menu(QLatin1String(""));
+    if (!typeAndSearch && bookmarkModel->data(index, UserRoleFolder).toBool()) {
+        remove = menu.addAction(tr("Delete Folder"));
+        rename = menu.addAction(tr("Rename Folder"));
+    } else {
+        showItem = menu.addAction(tr("Show Bookmark"));
+        showItemInNewTab = menu.addAction(tr("Show Bookmark in New Tab"));
+        menu.addSeparator();
+        remove = menu.addAction(tr("Delete Bookmark"));
+        rename = menu.addAction(tr("Rename Bookmark"));
+    }
+
+    QAction *pickedAction = menu.exec(bookmarkTreeView->mapToGlobal(point));
+    if (pickedAction == rename)
+        renameBookmark(index);
+    else if (pickedAction == remove)
+        removeItem(index);
+    else if (pickedAction == showItem || pickedAction == showItemInNewTab)
+        setSourceFromIndex(index, pickedAction == showItemInNewTab);
+}
+
+void BookmarkManager::focusInEvent()
+{
+    TRACE_OBJ
+    const QModelIndex &index = bookmarkTreeView->indexAt(QPoint(2, 2));
+    if (index.isValid())
+        bookmarkTreeView->setCurrentIndex(index);
+}
+
+void BookmarkManager::managerWidgetAboutToClose()
+{
+    delete bookmarkManagerWidget;
+    bookmarkManagerWidget = 0;
+}
+
+void BookmarkManager::textChanged(const QString &text)
+{
+    TRACE_OBJ
+    if (!bookmarkWidget->ui.lineEdit->text().isEmpty()) {
+        if (!typeAndSearch) {
+            typeAndSearch = true;
+            bookmarkTreeView->setItemsExpandable(false);
+            bookmarkTreeView->setRootIsDecorated(false);
+            bookmarkTreeView->setModel(typeAndSearchModel);
         }
-    }
-    return folderName;
-}
-
-void BookmarkManager::removeBookmarkFolderItems(QStandardItem *item)
-{
-    for (int j = 0; j < item->rowCount(); ++j) {
-        QStandardItem *child = item->child(j);
-        if (child->rowCount() > 0)
-            removeBookmarkFolderItems(child);
-
-        QString data = child->data(Qt::UserRole + 10).toString();
-        QList<QStandardItem*>itemList = listModel->findItems(child->text());
-        foreach (const QStandardItem *i, itemList) {
-            if (i->data(Qt::UserRole + 10) == data) {
-                listModel->removeRow(i->row());
-                break;
-            }
-        }
-    }
-}
-
-void BookmarkManager::readBookmarksRecursive(const QStandardItem *item,
-    QDataStream &stream, const qint32 depth) const
-{
-    for (int j = 0; j < item->rowCount(); ++j) {
-        const QStandardItem *child = item->child(j);
-        stream << depth;
-        stream << child->data(Qt::DisplayRole).toString();
-        stream << child->data(Qt::UserRole + 10).toString();
-        stream << child->data(Qt::UserRole + 11).toBool();
-
-        if (child->rowCount() > 0)
-            readBookmarksRecursive(child, stream, (depth +1));
+        typeAndSearchModel->setFilterRegExp(QRegExp(text));
+    } else {
+        typeAndSearch = false;
+        bookmarkTreeView->setModel(bookmarkModel);
+        bookmarkTreeView->setItemsExpandable(true);
+        bookmarkTreeView->setRootIsDecorated(true);
+        bookmarkModel->expandFoldersIfNeeeded(bookmarkTreeView);
     }
 }
 

@@ -46,6 +46,7 @@
 #import <private/qcocoamenuloader_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qapplication_p.h>
+#include <private/qaction_p.h>
 
 #include <QtGui/QMenu>
 
@@ -70,6 +71,7 @@ QT_USE_NAMESPACE
     self = [super init];
     if (self) {
         qmenu = menu;
+        previousAction = 0;
         [self setAutoenablesItems:NO];
         [self setDelegate:self];
     }
@@ -81,13 +83,20 @@ QT_USE_NAMESPACE
     Q_UNUSED(menu);
 
     if (!item) {
-        // ### According to the docs everything will be highlighted. Not sure what we should do in
-        // Qt, so just return.
+        if (previousAction) {
+            qt_mac_clear_status_text(previousAction);
+            previousAction = 0;
+        }
         return;
     }
 
-    if (QAction *action = reinterpret_cast<QAction *>([item tag]))
+    if (QAction *action = reinterpret_cast<QAction *>([item tag])) {
+        QMenu *qtmenu = static_cast<QT_MANGLE_NAMESPACE(QCocoaMenu) *>(menu)->qmenu;
+        previousAction = action;
         action->activate(QAction::Hover);
+        qt_mac_menu_emit_hovered(qtmenu, action);
+        action->showStatusText(0); // 0 widget -> action's parent
+    }
 }
 
 - (void)menuWillOpen:(NSMenu*)menu;
@@ -100,9 +109,13 @@ QT_USE_NAMESPACE
     qt_mac_menu_collapseSeparators(menu, qtmenu->separatorsCollapsible());
 }
 
-- (void)menuWillClose:(NSMenu*)menu;
+- (void)menuDidClose:(NSMenu*)menu;
 {
     qt_mac_emit_menuSignals(((QT_MANGLE_NAMESPACE(QCocoaMenu) *)menu)->qmenu, false);
+    if (previousAction) {
+        qt_mac_clear_status_text(previousAction);
+        previousAction = 0;
+    }
 }
 
 - (BOOL)hasShortcut:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier
@@ -194,6 +207,18 @@ void qt_mac_emit_menuSignals(QMenu *menu, bool show)
     }
     qt_mac_menus_open_count += delta;
 }
+
+void qt_mac_clear_status_text(QAction *action)
+{
+    action->d_func()->showStatusText(0, QString());
+}
+
+void qt_mac_menu_emit_hovered(QMenu *menu, QAction *action)
+{
+    emit menu->hovered(action);
+}
+
+
 QT_END_NAMESPACE
 
 #endif

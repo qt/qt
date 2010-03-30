@@ -596,8 +596,9 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &t)
 {
     QImage i = alphaMapForGlyph(glyph);
     if (t.type() > QTransform::TxTranslate)
-        i = i.transformed(t);
+        i = i.transformed(t).convertToFormat(QImage::Format_Indexed8);
     Q_ASSERT(i.depth() <= 8); // To verify that transformed didn't change the format...
+
     return i;
 }
 
@@ -606,11 +607,14 @@ QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, int /* margin */, const Q
     QImage alphaMask = alphaMapForGlyph(glyph, t);
     QImage rgbMask(alphaMask.width(), alphaMask.height(), QImage::Format_RGB32);
 
+    QVector<QRgb> colorTable = alphaMask.colorTable();
     for (int y=0; y<alphaMask.height(); ++y) {
         uint *dst = (uint *) rgbMask.scanLine(y);
         uchar *src = (uchar *) alphaMask.scanLine(y);
-        for (int x=0; x<alphaMask.width(); ++x)
-            dst[x] = qRgb(src[x], src[x], src[x]);
+        for (int x=0; x<alphaMask.width(); ++x) {
+            int val = qAlpha(colorTable.at(src[x]));
+            dst[x] = qRgb(val, val, val);
+        }
     }
 
     return rgbMask;

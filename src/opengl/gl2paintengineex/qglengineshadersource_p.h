@@ -107,6 +107,14 @@ static const char* const qglslPositionOnlyVertexShader = "\n\
         gl_Position = vec4(transformedPos.xy, 0.0, transformedPos.z); \n\
     }\n";
 
+static const char* const qglslComplexGeometryPositionOnlyVertexShader = "\n\
+    uniform highp mat3 matrix; \n\
+    attribute highp vec2 vertexCoordsArray; \n\
+    void setPosition(void) \n\
+    { \n\
+      gl_Position = vec4(matrix * vec3(vertexCoordsArray, 1), 1);\n\
+    } \n";
+
 static const char* const qglslUntransformedPositionVertexShader = "\n\
     attribute highp   vec4      vertexCoordsArray; \n\
     void setPosition(void) \n\

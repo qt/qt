@@ -273,6 +273,9 @@ void tst_QTabBar::setElideMode()
     if (tabElideMode != -128)
         tabBar.setElideMode(Qt::TextElideMode(tabElideMode));
     QTEST(int(tabBar.elideMode()), "expectedMode");
+    // Make sure style sheet does not override user set mode
+    tabBar.setStyleSheet("QWidget { background-color: #ABA8A6;}");
+    QTEST(int(tabBar.elideMode()), "expectedMode");
 }
 
 void tst_QTabBar::setUsesScrollButtons_data()

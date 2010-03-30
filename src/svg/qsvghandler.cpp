@@ -2962,9 +2962,9 @@ static QSvgNode *createRectNode(QSvgNode *parent,
     if (nry > bounds.height()/2)
         nry = bounds.height()/2;
 
-    if (nrx && !nry)
+    if (!rx.isEmpty() && ry.isEmpty())
         nry = nrx;
-    else if (nry && !nrx)
+    else if (!ry.isEmpty() && rx.isEmpty())
         nrx = nry;
 
     //we draw rounded rect from 0...99

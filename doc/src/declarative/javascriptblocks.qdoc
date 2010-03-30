@@ -1,0 +1,251 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qdeclarativejavascript.html
+\title Integrating JavaScript 
+
+QML encourages building UIs declaratively, using \l {Property Binding} and the 
+composition of existing \l {QML Elements}.  To allow the implementation of more
+advanced behavior, QML integrates tightly with imperative JavaScript code.
+
+The JavaScript environment provided by QML is stricter than that in a webbrowser.
+In QML you cannot add, or modify, members of the JavaScript global object.  It
+is possible to do this accidentally by using a variable without declaring it.  In
+QML this will throw an exception, so all local variables should be explicitly 
+declared.
+
+In addition to the standard JavaScript properties, the \l {QML Global Object} 
+includes a number of helper methods that simplify building UIs and interacting
+with the QML environment.
+
+\section1 Inline JavaScript
+
+Small JavaScript functions can be written inline with other QML declarations.  
+These inline functions are added as methods to the QML element that contains
+them.
+
+\code
+Item {
+    function factorial(a) {
+        a = Integer(a);
+        if (a <= 0)
+            return 1;
+        else
+            return a * factorial(a - 1);
+    }
+
+    MouseRegion {
+        anchors.fill: parent
+        onClicked: print(factorial(10))
+    }
+}
+\endcode
+
+As methods, inline functions on the root element in a QML component can be 
+invoked by callers outside the component.  If this is not desired, the method
+can be added to a non-root element or, preferably, written in an external
+JavaScript file.
+
+\section1 Separate JavaScript files
+
+Large blocks of JavaScript should be written in separate files.  Like element 
+types, external JavaScript files are \c {import}'ed into QML files.
+
+The \c {factorial()} method used in the \l {Inline JavaScript} section could
+be refactored into an external file, and accessed like this.
+
+\code
+import "factorial.js" as MathFunctions
+Item {
+    MouseRegion {
+        anchors.fill: parent
+        onClicked: print(MathFunctions.factorial(10))
+    }
+}
+\endcode
+
+Both relative and absolute JavaScript URLs can be imported.  In the case of a 
+relative URL, the location is resolved relative to the location of the 
+\l {QML Document} that contains the import.  If the script file is not accessible, 
+an error will occur.  If the JavaScript needs to be fetched from a network 
+resource, the QML document will remain in the 
+\l {QDeclarativeComponent::status()}{waiting state} until the script has been 
+downloaded.
+
+Imported JavaScript files are always qualified using the "as" keyword.  The 
+qualifier for JavaScript files must be unique, so there is always a one-to-one
+mapping between qualifiers and JavaScript files.
+
+\section2 Code-Behind Implementation Files
+
+Most JavaScript files imported into a QML file are stateful, logic implementations 
+for the QML file importing them.  In these cases, for QML component instances to 
+behave correctly each instance requires a separate copy of the JavaScript objects 
+and state.
+
+The default behavior when importing JavaScript files is to provide a unique, isolated
+copy for each QML component instance.  The code runs in the same scope as the QML 
+component instance and consequently can can access and manipulate the objects and 
+properties declared.
+
+\section2 Stateless JavaScript libraries
+
+Some JavaScript files act more like libraries - they provide a set of stateless
+helper functions that take input and compute output, but never manipulate QML
+component instances directly.
+
+As it would be wasteful for each QML component instance to have a unique copy of 
+these libraries, the JavaScript programmer can indicate a particular file is a 
+stateless library through the use of a pragma, as shown in the following example.
+
+\code
+// factorial.js
+.pragma library
+
+function factorial(a) {
+    a = Integer(a);
+    if (a <= 0)
+        return 1;
+    else
+        return a * factorial(a - 1);
+}
+\endcode
+
+The pragma declaration must appear before any JavaScript code excluding comments.
+
+As they are shared, stateless library files cannot access QML component instance
+objects or properties directly, although QML values can be passed as function
+parameters.
+
+\section1 Running JavaScript at Startup
+
+It is occasionally necessary to run some imperative code at application (or
+component instance) "startup".  While it is tempting to just include the startup
+script as \e {global code} in an external script file, this can have severe limitations
+as the QML environment may not have been fully established.  For example, some objects 
+might not have been created or some \l {Property Binding}s may not have been run.
+\l {QML Script Restrictions} covers the exact limitations of global script code.
+
+The QML \l Component element provides an \e attached \c onCompleted property that
+can be used to trigger the execution of script code at startup after the
+QML environment has been completely established.
+
+The following QML code shows how to use the \c Component::onCompleted property.
+
+\code
+Rectangle {
+    function startupFunction() {
+        // ... startup code
+    }
+
+    Component.onCompleted: startupFunction();
+}
+\endcode
+
+Any element in a QML file - including nested elements and nested QML component 
+instances - can use this attached property.  If there is more than one onCompleted 
+handler to execute at startup, they are run sequentially in an undefined order.
+
+\section1 QML JavaScript Restrictions 
+
+QML executes standard JavaScript code, with the following restrictions:
+
+\list
+\o JavaScript code cannot modify the global object.
+
+In QML, the global object is constant - existing properties cannot be modified or 
+deleted, and no new properties may be created.
+
+Most JavaScript programs do not intentionally modify the global object.  However, 
+JavaScript's automatic creation of undeclared variables is an implicit modification
+of the global object, and is prohibited in QML.
+
+Assuming that the \c a variable does not exist in the scope chain, the following code 
+is illegal in QML.
+
+\code
+// Illegal modification of undeclared variable
+a = 1;
+for (var ii = 1; ii < 10; ++ii) a = a * ii;
+    console.log("Result: " + a);
+\endcode
+
+It can be trivially modified to this legal code.
+
+\code
+var a = 1;
+for (var ii = 1; ii < 10; ++ii) a = a * ii;
+    console.log("Result: " + a);
+\endcode
+
+Any attempt to modify the global object - either implicitly or explicitly - will 
+cause an exception.  If uncaught, this will result in an warning being printed, 
+that includes the file and line number of the offending code.
+
+\o Global code is run in a reduced scope
+
+During startup, if a QML file includes an external JavaScript file with "global"
+code, it is executed in a scope that contains only the external file itself and
+the global object.  That is, it will not have access to the QML objects and 
+properties it \l {QML Scope}{normally would}.
+
+Global code that only accesses script local variable is permitted.  This is an 
+example of valid global code.
+
+\code
+var colors = [ "red", "blue", "green", "orange", "purple" ];
+\endcode
+
+Global code that accesses QML objects will not run correctly.
+
+\code
+// Invalid global code - the "rootObject" variable is undefined
+var initialPosition = { rootObject.x, rootObject.y }
+\endcode
+
+This restriction exists as the QML environment is not yet fully established.  
+To run code after the environment setup has completed, refer to 
+\l {Running JavaScript at Startup}.
+
+\endlist
+
+*/

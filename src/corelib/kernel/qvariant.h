@@ -60,6 +60,7 @@ class QBitArray;
 class QDataStream;
 class QDate;
 class QDateTime;
+class QEasingCurve;
 class QLine;
 class QLineF;
 class QLocale;
@@ -128,9 +129,10 @@ class Q_CORE_EXPORT QVariant
         LineF = 24,
         Point = 25,
         PointF = 26,
-	RegExp = 27,
+        RegExp = 27,
         Hash = 28,
-        LastCoreType = Hash,
+        EasingCurve = 29,
+        LastCoreType = EasingCurve,
 
         // value 62 is internally reserved
 #ifdef QT3_SUPPORT
@@ -219,6 +221,9 @@ class Q_CORE_EXPORT QVariant
 #ifndef QT_NO_REGEXP
     QVariant(const QRegExp &regExp);
 #endif
+#ifndef QT_BOOTSTRAPPED
+    QVariant(const QEasingCurve &easing);
+#endif
     QVariant(Qt::GlobalColor color);
 
     QVariant& operator=(const QVariant &other);
@@ -279,6 +284,9 @@ class Q_CORE_EXPORT QVariant
     QLocale toLocale() const;
 #ifndef QT_NO_REGEXP
     QRegExp toRegExp() const;
+#endif
+#ifndef QT_BOOTSTRAPPED
+    QEasingCurve toEasingCurve() const;
 #endif
 
 #ifdef QT3_SUPPORT
@@ -581,8 +589,7 @@ template<typename T> inline T qvariant_cast(const QVariant &v)
 
 template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
 {
-    static const int vid = qRegisterMetaType<QVariant>("QVariant");
-    if (vid == v.userType())
+    if (v.userType() == QMetaType::QVariant)
         return *reinterpret_cast<const QVariant *>(v.constData());
     return v;
 }

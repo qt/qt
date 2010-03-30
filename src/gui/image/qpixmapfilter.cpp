@@ -726,7 +726,7 @@ void expblur(QImage &img, qreal radius, bool improvedQuality = false, int transp
 
     int img_height = img.height();
     for (int row = 0; row < img_height; ++row) {
-        for (int i = 0; i <= improvedQuality; ++i)
+        for (int i = 0; i <= int(improvedQuality); ++i)
             qt_blurrow<aprec, zprec, alphaOnly>(img, row, alpha);
     }
 
@@ -759,7 +759,7 @@ void expblur(QImage &img, qreal radius, bool improvedQuality = false, int transp
 
     img_height = temp.height();
     for (int row = 0; row < img_height; ++row) {
-        for (int i = 0; i <= improvedQuality; ++i)
+        for (int i = 0; i <= int(improvedQuality); ++i)
             qt_blurrow<aprec, zprec, alphaOnly>(temp, row, alpha);
     }
 

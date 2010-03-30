@@ -607,11 +607,11 @@ void QPaintEngineEx::clip(const QRect &r, Qt::ClipOperation op)
 {
     qreal right = r.x() + r.width();
     qreal bottom = r.y() + r.height();
-    qreal pts[] = { r.x(), r.y(),
-                    right, r.y(),
+    qreal pts[] = { qreal(r.x()), qreal(r.y()),
+                    right, qreal(r.y()),
                     right, bottom,
-                    r.x(), bottom,
-                    r.x(), r.y() };
+                    qreal(r.x()), bottom,
+                    qreal(r.x()), qreal(r.y()) };
     QVectorPath vp(pts, 5, 0, QVectorPath::RectangleHint);
     clip(vp, op);
 }
@@ -711,11 +711,11 @@ void QPaintEngineEx::drawRects(const QRect *rects, int rectCount)
         // ### Is there a one off here?
         qreal right = r.x() + r.width();
         qreal bottom = r.y() + r.height();
-        qreal pts[] = { r.x(), r.y(),
-                        right, r.y(),
+        qreal pts[] = { qreal(r.x()), qreal(r.y()),
+                        right, qreal(r.y()),
                         right, bottom,
-                        r.x(), bottom,
-                        r.x(), r.y() };
+                        qreal(r.x()), bottom,
+                        qreal(r.x()), qreal(r.y()) };
         QVectorPath vp(pts, 5, 0, QVectorPath::RectangleHint);
         draw(vp);
     }
@@ -893,7 +893,7 @@ void QPaintEngineEx::drawPoints(const QPoint *points, int pointCount)
             for (int i=0; i<count; ++i) {
                 pts[++oset] = points[i].x();
                 pts[++oset] = points[i].y();
-                pts[++oset] = points[i].x() + 1/63;
+                pts[++oset] = points[i].x() + 1/63.;
                 pts[++oset] = points[i].y();
             }
             QVectorPath path(pts, count * 2, qpaintengineex_line_types_16, QVectorPath::LinesHint);
@@ -903,7 +903,8 @@ void QPaintEngineEx::drawPoints(const QPoint *points, int pointCount)
         }
     } else {
         for (int i=0; i<pointCount; ++i) {
-            qreal pts[] = { points[i].x(), points[i].y(), points[i].x() +1/63., points[i].y() };
+            qreal pts[] = { qreal(points[i].x()), qreal(points[i].y()),
+                            qreal(points[i].x() +1/63.), qreal(points[i].y()) };
             QVectorPath path(pts, 2, 0);
             stroke(path, pen);
         }
@@ -970,23 +971,26 @@ void QPaintEngineEx::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, con
     fill(path, brush);
 }
 
-void QPaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints /*hints*/)
+void QPaintEngineEx::drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount,
+                                         const QPixmap &pixmap, QPainter::PixmapFragmentHints /*hints*/)
 {
     qreal oldOpacity = state()->opacity;
     QTransform oldTransform = state()->matrix;
 
-    for (int i = 0; i < dataCount; ++i) {
+    for (int i = 0; i < fragmentCount; ++i) {
         QTransform transform = oldTransform;
-        transform.translate(drawingData[i].point.x(), drawingData[i].point.y());
-        transform.rotate(drawingData[i].rotation);
-        state()->opacity = oldOpacity * drawingData[i].opacity;
+        transform.translate(fragments[i].x, fragments[i].y);
+        transform.rotate(fragments[i].rotation);
+        state()->opacity = oldOpacity * fragments[i].opacity;
         state()->matrix = transform;
         opacityChanged();
         transformChanged();
 
-        qreal w = drawingData[i].scaleX * drawingData[i].source.width();
-        qreal h = drawingData[i].scaleY * drawingData[i].source.height();
-        drawPixmap(QRectF(-0.5 * w, -0.5 * h, w, h), pixmap, drawingData[i].source);
+        qreal w = fragments[i].scaleX * fragments[i].width;
+        qreal h = fragments[i].scaleY * fragments[i].height;
+        QRectF sourceRect(fragments[i].sourceLeft, fragments[i].sourceTop,
+                          fragments[i].width, fragments[i].height);
+        drawPixmap(QRectF(-0.5 * w, -0.5 * h, w, h), pixmap, sourceRect);
     }
 
     state()->opacity = oldOpacity;

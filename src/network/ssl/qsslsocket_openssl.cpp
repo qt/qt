@@ -146,13 +146,14 @@ static void locking_function(int mode, int lockNumber, const char *, int)
 }
 static unsigned long id_function()
 {
-    return (unsigned long)QThread::currentThreadId();
+    return (quintptr)QThread::currentThreadId();
 }
 } // extern "C"
 
 QSslSocketBackendPrivate::QSslSocketBackendPrivate()
     : ssl(0),
       ctx(0),
+      pkey(0),
       readBio(0),
       writeBio(0),
       session(0)
@@ -311,11 +312,14 @@ init_context:
         }
 
         // Load private key
-        EVP_PKEY *pkey = q_EVP_PKEY_new();
+        pkey = q_EVP_PKEY_new();
+        // before we were using EVP_PKEY_assign_R* functions and did not use EVP_PKEY_free.
+        // this lead to a memory leak. Now we use the *_set1_* functions which do not
+        // take ownership of the RSA/DSA key instance because the QSslKey already has ownership.
         if (configuration.privateKey.algorithm() == QSsl::Rsa)
-            q_EVP_PKEY_assign_RSA(pkey, (RSA *)configuration.privateKey.handle());
+            q_EVP_PKEY_set1_RSA(pkey, (RSA *)configuration.privateKey.handle());
         else
-            q_EVP_PKEY_assign_DSA(pkey, (DSA *)configuration.privateKey.handle());
+            q_EVP_PKEY_set1_DSA(pkey, (DSA *)configuration.privateKey.handle());
         if (!q_SSL_CTX_use_PrivateKey(ctx, pkey)) {
             q->setErrorString(QSslSocket::tr("Error loading private key, %1").arg(SSL_ERRORSTR()));
             emit q->error(QAbstractSocket::UnknownSocketError);
@@ -922,6 +926,11 @@ void QSslSocketBackendPrivate::disconnected()
         q_SSL_CTX_free(ctx);
         ctx = 0;
     }
+    if (pkey) {
+        q_EVP_PKEY_free(pkey);
+        pkey = 0;
+    }
+
 }
 
 QSslCipher QSslSocketBackendPrivate::sessionCipher() const

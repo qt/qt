@@ -70,7 +70,8 @@ public:
     bool scroll(const QRegion &area, int dx, int dy);
 
 private:
-    GC      m_GC;
+    GC      m_windowGC;
+    GC      m_pixmapGC;
     QPixmap m_backBuffer;
     QWidget *m_window;
 };

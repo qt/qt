@@ -205,7 +205,7 @@ QByteArray QHelpDBReader::fileData(const QString &virtualFolder,
         "NamespaceTable d WHERE a.Id=b.FileId AND (b.Name=? OR b.Name=?) AND b.FolderId=c.Id "
         "AND c.Name=? AND c.NamespaceId=d.Id AND d.Name=?"));
     m_query->bindValue(0, filePath);
-    m_query->bindValue(1, QLatin1String("./") + filePath);
+    m_query->bindValue(1, QString(QLatin1String("./") + filePath));
     m_query->bindValue(2, virtualFolder);
     m_query->bindValue(3, m_namespace);
     m_query->exec();

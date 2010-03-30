@@ -441,7 +441,7 @@ extern QCursor *qt_grab_cursor();
 #define __export
 #endif
 
-extern "C" LRESULT CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
+extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
 
 class QETWidget : public QWidget                // event translator widget
 {
@@ -1400,8 +1400,7 @@ static bool qt_is_translatable_mouse_event(UINT message)
             ;
 }
 
-extern "C"
-LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     bool result = true;
     QEvent::Type evt_type = QEvent::None;
@@ -1579,6 +1578,10 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
     case WM_XBUTTONDOWN:
+    case WM_LBUTTONDBLCLK:
+    case WM_RBUTTONDBLCLK:
+    case WM_MBUTTONDBLCLK:
+    case WM_XBUTTONDBLCLK:
         if (qt_win_ignoreNextMouseReleaseEvent)
             qt_win_ignoreNextMouseReleaseEvent = false;
         break;
@@ -2279,7 +2282,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
         case WM_GETOBJECT:
             {
                 // Ignoring all requests while starting up
-                if (QApplication::startingUp() || QApplication::closingDown() || (DWORD)lParam != OBJID_CLIENT) {
+                if (QApplication::startingUp() || QApplication::closingDown() || (LONG)lParam != OBJID_CLIENT) {
                     result = false;
                     break;
                 }
@@ -2560,6 +2563,17 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             break;
         }
 #endif // !defined(Q_WS_WINCE) || defined(QT_WINCE_GESTURES)
+#ifndef QT_NO_CURSOR
+        case WM_SETCURSOR: {
+            QCursor *ovr = QApplication::overrideCursor();
+            if (ovr) {
+                SetCursor(ovr->handle());
+                RETURN(TRUE);
+            }
+            result = false;
+            break;
+        }
+#endif
         default:
             result = false;                        // event was not processed
             break;
@@ -2982,7 +2996,10 @@ bool QETWidget::translateMouseEvent(const MSG &msg)
                 // most recent one.
                 msgPtr->lParam = mouseMsg.lParam;
                 msgPtr->wParam = mouseMsg.wParam;
-                msgPtr->pt = mouseMsg.pt;
+                // Extract the x,y coordinates from the lParam as we do in the WndProc
+                msgPtr->pt.x = GET_X_LPARAM(mouseMsg.lParam);
+                msgPtr->pt.y = GET_Y_LPARAM(mouseMsg.lParam);
+                ClientToScreen(msg.hwnd, &(msgPtr->pt));
                 // Remove the mouse move message
                 PeekMessage(&mouseMsg, msg.hwnd, WM_MOUSEMOVE,
                             WM_MOUSEMOVE, PM_REMOVE);

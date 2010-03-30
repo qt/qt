@@ -141,6 +141,8 @@ private:
 #endif
 };
 
+Q_DECLARE_TYPEINFO(QVector3D, Q_MOVABLE_TYPE);
+
 inline QVector3D::QVector3D() : xp(0.0f), yp(0.0f), zp(0.0f) {}
 
 inline QVector3D::QVector3D(qreal xpos, qreal ypos, qreal zpos) : xp(xpos), yp(ypos), zp(zpos) {}

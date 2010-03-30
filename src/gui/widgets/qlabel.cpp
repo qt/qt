@@ -53,6 +53,7 @@
 #include <qurl.h>
 #include "qlabel_p.h"
 #include "private/qstylesheetstyle_p.h"
+#include <qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -661,7 +662,9 @@ QSize QLabelPrivate::sizeForWidth(int w) const
             } else {
                 control->setTextWidth(-1);
             }
-            br = QRect(QPoint(0, 0), control->size().toSize());
+
+            QSizeF controlSize = control->size();
+            br = QRect(QPoint(0, 0), QSize(qCeil(controlSize.width()), qCeil(controlSize.height())));
 
             // restore state
             control->setTextWidth(oldTextWidth);
@@ -781,6 +784,95 @@ Qt::TextInteractionFlags QLabel::textInteractionFlags() const
     return d->textInteractionFlags;
 }
 
+/*!
+    Selects text from position \a start and for \a length characters.
+
+    \sa selectedText()
+
+    \bold{Note:} The textInteractionFlags set on the label need to include
+    either TextSelectableByMouse or TextSelectableByKeyboard.
+
+    \since 4.7
+*/
+void QLabel::setSelection(int start, int length)
+{
+    Q_D(QLabel);
+    if (d->control) {
+        d->ensureTextPopulated();
+        QTextCursor cursor = d->control->textCursor();
+        cursor.setPosition(start);
+        cursor.setPosition(start + length, QTextCursor::KeepAnchor);
+        d->control->setTextCursor(cursor);
+    }
+}
+
+/*!
+    \property QLabel::hasSelectedText
+    \brief whether there is any text selected
+
+    hasSelectedText() returns true if some or all of the text has been
+    selected by the user; otherwise returns false.
+
+    By default, this property is false.
+
+    \sa selectedText()
+
+    \bold{Note:} The textInteractionFlags set on the label need to include
+    either TextSelectableByMouse or TextSelectableByKeyboard.
+
+    \since 4.7
+*/
+bool QLabel::hasSelectedText() const
+{
+    Q_D(const QLabel);
+    if (d->control)
+        return d->control->textCursor().hasSelection();
+    return false;
+}
+
+/*!
+    \property QLabel::selectedText
+    \brief the selected text
+
+    If there is no selected text this property's value is
+    an empty string.
+
+    By default, this property contains an empty string.
+
+    \sa hasSelectedText()
+
+    \bold{Note:} The textInteractionFlags set on the label need to include
+    either TextSelectableByMouse or TextSelectableByKeyboard.
+
+    \since 4.7
+*/
+QString QLabel::selectedText() const
+{
+    Q_D(const QLabel);
+    if (d->control)
+        return d->control->textCursor().selectedText();
+    return QString();
+}
+
+/*!
+    selectionStart() returns the index of the first selected character in the
+    label or -1 if no text is selected.
+
+    \sa selectedText()
+
+    \bold{Note:} The textInteractionFlags set on the label need to include
+    either TextSelectableByMouse or TextSelectableByKeyboard.
+
+    \since 4.7
+*/
+int QLabel::selectionStart() const
+{
+    Q_D(const QLabel);
+    if (d->control && d->control->textCursor().hasSelection())
+        return d->control->textCursor().selectionStart();
+    return -1;
+}
+
 /*!\reimp
 */
 QSize QLabel::sizeHint() const
@@ -862,8 +954,8 @@ void QLabel::contextMenuEvent(QContextMenuEvent *ev)
         return;
     }
     ev->accept();
-    menu->exec(ev->globalPos());
-    delete menu;
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+    menu->popup(ev->globalPos());
 #endif
 }
 

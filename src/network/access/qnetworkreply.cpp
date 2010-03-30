@@ -125,6 +125,11 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     encrypted channel could not be established. The sslErrors() signal
     should have been emitted.
 
+    \value TemporaryNetworkFailureError the connection was broken due
+    to disconnection from the network, however the system has initiated
+    roaming to another access point. The request should be resubmitted
+    and will be processed as soon as the connection is re-established.
+
     \value ProxyConnectionRefusedError the connection to the proxy
     server was refused (the proxy server is not accepting requests)
 
@@ -531,6 +536,21 @@ QByteArray QNetworkReply::rawHeader(const QByteArray &headerName) const
     if (it != d->rawHeaders.constEnd())
         return it->second;
     return QByteArray();
+}
+
+/*! \typedef QNetworkReply::RawHeaderPair
+
+  RawHeaderPair is a QPair<QByteArray, QByteArray> where the first
+  QByteArray is the header name and the second is the header.
+ */
+
+/*!
+  Returns a list of raw header pairs.
+ */
+const QList<QNetworkReply::RawHeaderPair>& QNetworkReply::rawHeaderPairs() const
+{
+    Q_D(const QNetworkReply);
+    return d->rawHeaders;
 }
 
 /*!

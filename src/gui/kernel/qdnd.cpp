@@ -60,203 +60,11 @@
 #include "qdebug.h"
 #include <ctype.h>
 
+#include <private/qapplication_p.h>
+
 #ifndef QT_NO_DRAGANDDROP
 
 QT_BEGIN_NAMESPACE
-
-// These pixmaps approximate the images in the Windows User Interface Guidelines.
-
-// XPM
-
-static const char * const move_xpm[] = {
-"11 20 3 1",
-".        c None",
-#if defined(Q_WS_WIN)
-"a        c #000000",
-"X        c #FFFFFF", // Windows cursor is traditionally white
-#else
-"a        c #FFFFFF",
-"X        c #000000", // X11 cursor is traditionally black
-#endif
-"aa.........",
-"aXa........",
-"aXXa.......",
-"aXXXa......",
-"aXXXXa.....",
-"aXXXXXa....",
-"aXXXXXXa...",
-"aXXXXXXXa..",
-"aXXXXXXXXa.",
-"aXXXXXXXXXa",
-"aXXXXXXaaaa",
-"aXXXaXXa...",
-"aXXaaXXa...",
-"aXa..aXXa..",
-"aa...aXXa..",
-"a.....aXXa.",
-"......aXXa.",
-".......aXXa",
-".......aXXa",
-"........aa."};
-
-#ifdef Q_WS_WIN
-/* XPM */
-static const char * const ignore_xpm[] = {
-"24 30 3 1",
-".        c None",
-"a        c #000000",
-"X        c #FFFFFF",
-"aa......................",
-"aXa.....................",
-"aXXa....................",
-"aXXXa...................",
-"aXXXXa..................",
-"aXXXXXa.................",
-"aXXXXXXa................",
-"aXXXXXXXa...............",
-"aXXXXXXXXa..............",
-"aXXXXXXXXXa.............",
-"aXXXXXXaaaa.............",
-"aXXXaXXa................",
-"aXXaaXXa................",
-"aXa..aXXa...............",
-"aa...aXXa...............",
-"a.....aXXa..............",
-"......aXXa.....XXXX.....",
-".......aXXa..XXaaaaXX...",
-".......aXXa.XaaaaaaaaX..",
-"........aa.XaaaXXXXaaaX.",
-"...........XaaaaX..XaaX.",
-"..........XaaXaaaX..XaaX",
-"..........XaaXXaaaX.XaaX",
-"..........XaaX.XaaaXXaaX",
-"..........XaaX..XaaaXaaX",
-"...........XaaX..XaaaaX.",
-"...........XaaaXXXXaaaX.",
-"............XaaaaaaaaX..",
-".............XXaaaaXX...",
-"...............XXXX....."};
-#endif
-
-/* XPM */
-static const char * const copy_xpm[] = {
-"24 30 3 1",
-".        c None",
-"a        c #000000",
-"X        c #FFFFFF",
-#if defined(Q_WS_WIN) // Windows cursor is traditionally white
-"aa......................",
-"aXa.....................",
-"aXXa....................",
-"aXXXa...................",
-"aXXXXa..................",
-"aXXXXXa.................",
-"aXXXXXXa................",
-"aXXXXXXXa...............",
-"aXXXXXXXXa..............",
-"aXXXXXXXXXa.............",
-"aXXXXXXaaaa.............",
-"aXXXaXXa................",
-"aXXaaXXa................",
-"aXa..aXXa...............",
-"aa...aXXa...............",
-"a.....aXXa..............",
-"......aXXa..............",
-".......aXXa.............",
-".......aXXa.............",
-"........aa...aaaaaaaaaaa",
-#else
-"XX......................",
-"XaX.....................",
-"XaaX....................",
-"XaaaX...................",
-"XaaaaX..................",
-"XaaaaaX.................",
-"XaaaaaaX................",
-"XaaaaaaaX...............",
-"XaaaaaaaaX..............",
-"XaaaaaaaaaX.............",
-"XaaaaaaXXXX.............",
-"XaaaXaaX................",
-"XaaXXaaX................",
-"XaX..XaaX...............",
-"XX...XaaX...............",
-"X.....XaaX..............",
-"......XaaX..............",
-".......XaaX.............",
-".......XaaX.............",
-"........XX...aaaaaaaaaaa",
-#endif
-".............aXXXXXXXXXa",
-".............aXXXXXXXXXa",
-".............aXXXXaXXXXa",
-".............aXXXXaXXXXa",
-".............aXXaaaaaXXa",
-".............aXXXXaXXXXa",
-".............aXXXXaXXXXa",
-".............aXXXXXXXXXa",
-".............aXXXXXXXXXa",
-".............aaaaaaaaaaa"};
-
-/* XPM */
-static const char * const link_xpm[] = {
-"24 30 3 1",
-".        c None",
-"a        c #000000",
-"X        c #FFFFFF",
-#if defined(Q_WS_WIN) // Windows cursor is traditionally white
-"aa......................",
-"aXa.....................",
-"aXXa....................",
-"aXXXa...................",
-"aXXXXa..................",
-"aXXXXXa.................",
-"aXXXXXXa................",
-"aXXXXXXXa...............",
-"aXXXXXXXXa..............",
-"aXXXXXXXXXa.............",
-"aXXXXXXaaaa.............",
-"aXXXaXXa................",
-"aXXaaXXa................",
-"aXa..aXXa...............",
-"aa...aXXa...............",
-"a.....aXXa..............",
-"......aXXa..............",
-".......aXXa.............",
-".......aXXa.............",
-"........aa...aaaaaaaaaaa",
-#else
-"XX......................",
-"XaX.....................",
-"XaaX....................",
-"XaaaX...................",
-"XaaaaX..................",
-"XaaaaaX.................",
-"XaaaaaaX................",
-"XaaaaaaaX...............",
-"XaaaaaaaaX..............",
-"XaaaaaaaaaX.............",
-"XaaaaaaXXXX.............",
-"XaaaXaaX................",
-"XaaXXaaX................",
-"XaX..XaaX...............",
-"XX...XaaX...............",
-"X.....XaaX..............",
-"......XaaX..............",
-".......XaaX.............",
-".......XaaX.............",
-"........XX...aaaaaaaaaaa",
-#endif
-".............aXXXXXXXXXa",
-".............aXXXaaaaXXa",
-".............aXXXXaaaXXa",
-".............aXXXaaaaXXa",
-".............aXXaaaXaXXa",
-".............aXXaaXXXXXa",
-".............aXXaXXXXXXa",
-".............aXXXaXXXXXa",
-".............aXXXXXXXXXa",
-".............aaaaaaaaaaa"};
 
 #ifndef QT_NO_DRAGANDDROP
 
@@ -326,21 +134,8 @@ QDragManager::QDragManager()
 {
     Q_ASSERT(!instance);
 
-#ifdef Q_WS_WIN
-    n_cursor = 4;
-#else
-    n_cursor = 3;
-#endif
-
 #ifdef Q_WS_QWS
     currentActionForOverrideCursor = Qt::IgnoreAction;
-#endif
-    pm_cursor = new QPixmap[n_cursor];
-    pm_cursor[0] = QPixmap((const char **)move_xpm);
-    pm_cursor[1] = QPixmap((const char **)copy_xpm);
-    pm_cursor[2] = QPixmap((const char **)link_xpm);
-#ifdef Q_WS_WIN
-    pm_cursor[3] = QPixmap((const char **)ignore_xpm);
 #endif
     object = 0;
     beingCancelled = false;
@@ -362,7 +157,6 @@ QDragManager::~QDragManager()
         QApplication::restoreOverrideCursor();
 #endif
     instance = 0;
-    delete [] pm_cursor;
     delete dropData;
 }
 
@@ -379,14 +173,14 @@ QPixmap QDragManager::dragCursor(Qt::DropAction action) const
     if (d && d->customCursors.contains(action))
         return d->customCursors[action];
     else if (action == Qt::MoveAction)
-        return pm_cursor[0];
+        return QApplicationPrivate::instance()->getPixmapCursor(Qt::DragMoveCursor);
     else if (action == Qt::CopyAction)
-        return pm_cursor[1];
+        return QApplicationPrivate::instance()->getPixmapCursor(Qt::DragCopyCursor);
     else if (action == Qt::LinkAction)
-        return pm_cursor[2];
+        return QApplicationPrivate::instance()->getPixmapCursor(Qt::DragLinkCursor);
 #ifdef Q_WS_WIN
     else if (action == Qt::IgnoreAction)
-        return pm_cursor[3];
+        return QApplicationPrivate::instance()->getPixmapCursor(Qt::ForbiddenCursor);
 #endif
     return QPixmap();
 }

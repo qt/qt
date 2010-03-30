@@ -36,18 +36,20 @@ namespace JSC {
         virtual const ClassInfo* classInfo() const; 
         static JS_EXPORTDATA const ClassInfo info;
 
-        const UString& name(JSGlobalData*);
-        const UString displayName(JSGlobalData*);
-        const UString calculatedDisplayName(JSGlobalData*);
+        const UString& name(ExecState*);
+        const UString displayName(ExecState*);
+        const UString calculatedDisplayName(ExecState*);
 
         static PassRefPtr<Structure> createStructure(JSValue proto) 
         { 
-            return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance | HasStandardGetOwnPropertySlot | HasDefaultMark)); 
+            return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
         }
 
     protected:
-        InternalFunction(PassRefPtr<Structure> structure) : JSObject(structure) { }
-        InternalFunction(JSGlobalData*, PassRefPtr<Structure>, const Identifier&);
+        static const unsigned StructureFlags = ImplementsHasInstance | JSObject::StructureFlags;
+
+        InternalFunction(NonNullPassRefPtr<Structure> structure) : JSObject(structure) { }
+        InternalFunction(JSGlobalData*, NonNullPassRefPtr<Structure>, const Identifier&);
 
     private:
         virtual CallType getCallData(CallData&) = 0;

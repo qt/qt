@@ -62,9 +62,7 @@ class QtTreePropertyBrowser;
 class QtProperty;
 class QtVariantProperty;
 class QtBrowserItem;
-
 class QStackedWidget;
-class QLabel;
 
 namespace qdesigner_internal {
 
@@ -72,6 +70,7 @@ class StringProperty;
 class DesignerPropertyManager;
 class DesignerEditorFactory;
 class FilterWidget;
+class ElidingLabel;
 
 class QT_PROPERTYEDITOR_EXPORT PropertyEditor: public QDesignerPropertyEditor
 {
@@ -186,7 +185,7 @@ private:
     QAction *m_coloringAction;
     QAction *m_treeAction;
     QAction *m_buttonAction;
-    QLabel *m_classLabel;
+    ElidingLabel *m_classLabel;
 
     bool m_sorting;
     bool m_coloring;

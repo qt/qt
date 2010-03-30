@@ -87,30 +87,28 @@
     \header
         \o {4,1} Qt's Libraries
     \row
-        \o \l {QtAssistant}
         \o \l {QAxContainer}
         \o \l {QAxServer}
         \o \l {QtCore}
-    \row
         \o \l {QtDBus}
+    \row
         \o \l {QtDesigner}
         \o \l {QtGui}
         \o \l {QtHelp}
-    \row
         \o \l {QtNetwork}
+    \row
         \o \l {QtOpenGL}
         \o \l {QtScript}
         \o \l {QtScriptTools}
-    \row
         \o \l {QtSql}
+    \row
         \o \l {QtSvg}
         \o \l {QtWebKit}
         \o \l {QtXml}
-    \row
         \o \l {QtXmlPatterns}
+    \row
         \o \l {Phonon Module}{Phonon}
         \o \l {Qt3Support}
-        \o
     \endtable
 
     Since Qt is not a system library, it has to be redistributed along

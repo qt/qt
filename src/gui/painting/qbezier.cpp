@@ -112,6 +112,11 @@ QPolygonF QBezier::toPolygon() const
     return polygon;
 }
 
+QBezier QBezier::mapBy(const QTransform &transform) const
+{
+    return QBezier::fromPoints(transform.map(pt1()), transform.map(pt2()), transform.map(pt3()), transform.map(pt4()));
+}
+
 //0.5 is really low
 static const qreal flatness = 0.5;
 
@@ -140,6 +145,25 @@ static inline void flattenBezierWithoutInflections(QBezier &bez,
     }
 }
 
+QBezier QBezier::getSubRange(qreal t0, qreal t1) const
+{
+    QBezier result;
+    QBezier temp;
+
+    // cut at t1
+    if (qFuzzyIsNull(t1 - qreal(1.))) {
+        result = *this;
+    } else {
+        temp = *this;
+        temp.parameterSplitLeft(t1, &result);
+    }
+
+    // cut at t0
+    if (!qFuzzyIsNull(t0))
+        result.parameterSplitLeft(t0 / t1, &temp);
+
+    return result;
+}
 
 static inline int quadraticRoots(qreal a, qreal b, qreal c,
                                  qreal *x1, qreal *x2)
@@ -1018,13 +1042,19 @@ int QBezier::stationaryYPoints(qreal &t0, qreal &t1) const
     const qreal b = 2 * y1 - 4 * y2 + 2 * y3;
     const qreal c = -y1 + y2;
 
-    qreal reciprocal = b * b - 4 * a * c;
+    if (qFuzzyIsNull(a)) {
+        if (qFuzzyIsNull(b))
+            return 0;
 
-    QList<qreal> result;
+        t0 = -c / b;
+        return t0 > 0 && t0 < 1;
+    }
+
+    qreal reciprocal = b * b - 4 * a * c;
 
     if (qFuzzyIsNull(reciprocal)) {
         t0 = -b / (2 * a);
-        return 1;
+        return t0 > 0 && t0 < 1;
     } else if (reciprocal > 0) {
         qreal temp = qSqrt(reciprocal);
 

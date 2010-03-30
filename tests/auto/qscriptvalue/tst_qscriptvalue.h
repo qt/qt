@@ -49,6 +49,8 @@
 #include <QtScript/qscriptvalue.h>
 #include <QtTest/QtTest>
 
+#define DEFINE_TEST_VALUE(expr) m_values.insert(QString::fromLatin1(#expr), expr)
+
 Q_DECLARE_METATYPE(QVariant)
 Q_DECLARE_METATYPE(QScriptValue)
 
@@ -89,11 +91,11 @@ private slots:
     void isObject_data();
     void isObject();
 
-//    void isQMetaObject_data();
-//    void isQMetaObject();
+    void isQMetaObject_data();
+    void isQMetaObject();
 
-//    void isQObject_data();
-//    void isQObject();
+    void isQObject_data();
+    void isQObject();
 
     void isRegExp_data();
     void isRegExp();
@@ -107,8 +109,8 @@ private slots:
     void isValid_data();
     void isValid();
 
-//    void isVariant_data();
-//    void isVariant();
+    void isVariant_data();
+    void isVariant();
 
     void toBool_data();
     void toBool();

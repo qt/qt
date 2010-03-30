@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include <QtXml>
 #include <QHash>
 #include <QMap>
+#include <qdebug.h>
 
 #include "atom.h"
 #include "helpprojectwriter.h"
@@ -117,6 +117,11 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     typeHash["property"] = Node::Property;
     typeHash["variable"] = Node::Variable;
     typeHash["target"] = Node::Target;
+#ifdef QDOC_QML
+    typeHash["qmlproperty"] = Node::QmlProperty;
+    typeHash["qmlsignal"] = Node::QmlSignal;
+    typeHash["qmlmethod"] = Node::QmlMethod;
+#endif
 
     QHash<QString, Node::SubType> subTypeHash;
     subTypeHash["example"] = Node::Example;
@@ -128,6 +133,8 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     subTypeHash["externalpage"] = Node::ExternalPage;
 #ifdef QDOC_QML
     subTypeHash["qmlclass"] = Node::QmlClass;
+    subTypeHash["qmlpropertygroup"] = Node::QmlPropertyGroup;
+    subTypeHash["qmlbasictype"] = Node::QmlBasicType;
 #endif
 
     QSet<Node::SubType> allSubTypes = QSet<Node::SubType>::fromList(subTypeHash.values());
@@ -177,7 +184,13 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
 {
     QStringList details;
 
-    if (node->parent() && !node->parent()->name().isEmpty()) {
+    if (node->type() == Node::QmlProperty) {
+        // "name"
+        details << node->name();
+        // "id"
+        details << node->parent()->parent()->name()+"::"+node->name();
+    }
+    else if (node->parent() && !node->parent()->name().isEmpty()) {
         // "name"
         if (node->type() == Node::Enum || node->type() == Node::Typedef)
             details << node->parent()->name()+"::"+node->name();
@@ -185,29 +198,29 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
             details << node->name();
         // "id"
         details << node->parent()->name()+"::"+node->name();
-    } else if (node->type() == Node::Fake) {
+    }
+    else if (node->type() == Node::Fake) {
         const FakeNode *fake = static_cast<const FakeNode *>(node);
-#ifdef QDOC_QML
         if (fake->subType() == Node::QmlClass) {
             details << (QmlClassNode::qmlOnly ? fake->name() : fake->fullTitle());
             details << "QML." + fake->name();
-        } else
-#endif
-        {
+        }
+        else {
             details << fake->fullTitle();
             details << fake->fullTitle();
         }
-    } else {
+    }
+    else {
         details << node->name();
         details << node->name();
     }
     details << tree->fullDocumentLocation(node);
-
     return details;
 }
 
 bool HelpProjectWriter::generateSection(HelpProject &project,
-                        QXmlStreamWriter & /* writer */, const Node *node)
+                                        QXmlStreamWriter & /* writer */,
+                                        const Node *node)
 {
     if (!node->url().isEmpty())
         return false;
@@ -226,9 +239,10 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
     if (node->type() == Node::Fake) {
         const FakeNode *fake = static_cast<const FakeNode *>(node);
         objName = fake->fullTitle();
-    } else
+    }
+    else
         objName = tree->fullDocumentName(node);
-
+    
     // Only add nodes to the set for each subproject if they match a selector.
     // Those that match will be listed in the table of contents.
 
@@ -290,6 +304,9 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
             break;
 
         case Node::Property:
+        case Node::QmlProperty:
+        case Node::QmlSignal:
+        case Node::QmlMethod:
             project.keywords.append(keywordDetails(node));
             break;
 
@@ -400,7 +417,7 @@ void HelpProjectWriter::generateSections(HelpProject &project,
 {
     if (!generateSection(project, writer, node))
         return;
-
+    
     if (node->isInnerNode()) {
         const InnerNode *inner = static_cast<const InnerNode *>(node);
 
@@ -409,8 +426,23 @@ void HelpProjectWriter::generateSections(HelpProject &project,
         foreach (const Node *node, inner->childNodes()) {
             if (node->access() == Node::Private)
                 continue;
-            if (node->type() == Node::Fake)
-                childMap[static_cast<const FakeNode *>(node)->fullTitle()] = node;
+            if (node->type() == Node::Fake) {
+                /*
+                  Don't visit QML property group nodes,
+                  but visit their children, which are all
+                  QML property nodes.
+                 */
+                if (node->subType() == Node::QmlPropertyGroup) {
+                    const InnerNode* inner = static_cast<const InnerNode*>(node);
+                    foreach (const Node* n, inner->childNodes()) {
+                        if (n->access() == Node::Private)
+                            continue;
+                        childMap[tree->fullDocumentName(n)] = n;
+                    }
+                }
+                else
+                    childMap[static_cast<const FakeNode *>(node)->fullTitle()] = node;
+            }
             else {
                 if (node->type() == Node::Function) {
                     const FunctionNode *funcNode = static_cast<const FunctionNode *>(node);

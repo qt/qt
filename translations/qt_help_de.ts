@@ -63,7 +63,7 @@
         <translation>Unbekannter Filter &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location line="+105"/>
+        <location line="+103"/>
         <source>Invalid documentation file &apos;%1&apos;!</source>
         <translation>Ungültige Dokumentationsdatei &apos;%1&apos;.</translation>
     </message>
@@ -78,7 +78,7 @@
         <translation>Die Datenbank &apos;%1&apos; kann nicht zur Optimierung geöffnet werden.</translation>
     </message>
     <message>
-        <location line="-438"/>
+        <location line="-436"/>
         <source>Cannot create directory: %1</source>
         <translation>Das Verzeichnis kann nicht angelegt werden: %1</translation>
     </message>
@@ -88,7 +88,7 @@
         <translation>Die Katalogdatei kann nicht kopiert werden: %1</translation>
     </message>
     <message>
-        <location line="+174"/>
+        <location line="+172"/>
         <source>Cannot register filter %1!</source>
         <translation>Der Filter kann nicht registriert werden: %1</translation>
     </message>
@@ -120,23 +120,20 @@
 <context>
     <name>QHelpEngineCore</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+523"/>
+        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+122"/>
+        <source>Cannot open documentation file %1: %2!</source>
+        <translation>Die Dokumentationsdatei %1 kann nicht geöffnet werden: %2!</translation>
+    </message>
+    <message>
+        <location line="+404"/>
         <source>The specified namespace does not exist!</source>
         <translation>Der angegebene Namensraum existiert nicht.</translation>
     </message>
 </context>
 <context>
-    <name>QHelpEngineCorePrivate</name>
-    <message>
-        <location line="-401"/>
-        <source>Cannot open documentation file %1: %2!</source>
-        <translation>Die Dokumentationsdatei %1 kann nicht geöffnet werden: %2.</translation>
-    </message>
-</context>
-<context>
     <name>QHelpGenerator</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpgenerator.cpp" line="+157"/>
+        <location filename="../tools/assistant/lib/qhelpgenerator.cpp" line="+158"/>
         <source>Invalid help data!</source>
         <translation>Ungültige Hilfe-Daten.</translation>
     </message>
@@ -216,7 +213,7 @@
         <translation>Die Datei %1 kann nicht geöffnet werden. Wird übersprungen.</translation>
     </message>
     <message>
-        <location line="+131"/>
+        <location line="+133"/>
         <source>The filter %1 is already registered!</source>
         <translation>Der Filter %1 ist bereits registriert.</translation>
     </message>
@@ -231,7 +228,7 @@
         <translation>Indizes einfügen...</translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location line="+91"/>
         <source>Insert contents...</source>
         <translation>Inhalt einfügen...</translation>
     </message>
@@ -245,80 +242,31 @@
         <source>Cannot register contents!</source>
         <translation>Inhalt kann nicht registriert werden.</translation>
     </message>
-</context>
-<context>
-    <name>QHelpSearchQueryWidget</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+411"/>
-        <source>Search for:</source>
-        <translation>Suche nach:</translation>
+        <location line="+56"/>
+        <source>File &apos;%1&apos; does not exist.</source>
+        <translation>Die Datei &apos;%1&apos; existiert nicht.</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Previous search</source>
-        <translation>Vorige Suche</translation>
+        <location line="+19"/>
+        <source>File &apos;%1&apos; cannot be opened.</source>
+        <translation>Die Datei &apos;%1&apos; kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Next search</source>
-        <translation>Nächste Suche</translation>
+        <location line="+19"/>
+        <source>File &apos;%1&apos; contains an invalid link to file &apos;%2&apos;</source>
+        <translation>Die Datei &apos;%1&apos; enthält einen ungültigen Verweis auf die Datei &apos;%2&apos;</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Search</source>
-        <translation>Suche</translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Advanced search</source>
-        <translation>Erweiterte Suche</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>words &lt;B&gt;similar&lt;/B&gt; to:</source>
-        <translation>Worte &lt;B&gt;ähnlich&lt;/B&gt; zu:</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>&lt;B&gt;without&lt;/B&gt; the words:</source>
-        <translation>&lt;B&gt;ohne&lt;/B&gt; die Wörter:</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>with &lt;B&gt;exact phrase&lt;/B&gt;:</source>
-        <translation>mit der &lt;B&gt;genauen Wortgruppe&lt;/B&gt;:</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>with &lt;B&gt;all&lt;/B&gt; of the words:</source>
-        <translation>mit &lt;B&gt;allen&lt;/B&gt; Wörtern:</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>with &lt;B&gt;at least one&lt;/B&gt; of the words:</source>
-        <translation>mit &lt;B&gt;irgendeinem&lt;/B&gt; der Wörter:</translation>
+        <location line="+9"/>
+        <source>Invalid links in HTML files.</source>
+        <translation>Es wurden ungültige Verweise in HTML-Dateien gefunden.</translation>
     </message>
 </context>
 <context>
-    <name>QHelpSearchResultWidget</name>
+    <name>QHelpProject</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+235"/>
-        <source>0 - 0 of 0 Hits</source>
-        <translation>0 - 0 von 0 Treffern</translation>
-    </message>
-</context>
-<context>
-    <name>QHelpSearchResultWidgetPrivate</name>
-    <message>
-        <location line="-61"/>
-        <source>%1 - %2 of %3 Hits</source>
-        <translation>%1 - %2 von %3 Treffern</translation>
-    </message>
-</context>
-<context>
-    <name>QObject</name>
-    <message>
-        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+85"/>
+        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+86"/>
         <source>Unknown token.</source>
         <translation>Unbekanntes Token.</translation>
     </message>
@@ -328,39 +276,108 @@
         <translation>Unbekanntes Token. &quot;QtHelpProject&quot; erwartet.</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Error in line %1: %2</source>
         <translation>Fehler in Zeile %1: %2</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+14"/>
         <source>A virtual folder must not contain a &apos;/&apos; character!</source>
         <translation>Ein virtuelles Verzeichnis darf kein &apos;/&apos;-Zeichen enthalten.</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
         <source>A namespace must not contain a &apos;/&apos; character!</source>
         <translation>Ein Namensraum darf kein &apos;/&apos;-Zeichen enthalten.</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+20"/>
         <source>Missing namespace in QtHelpProject.</source>
         <translation>Fehlender Namensraum in QtHelpProject.</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Missing virtual folder in QtHelpProject</source>
         <translation>Fehlendes virtuelles Verzeichnis in QtHelpProject.</translation>
     </message>
     <message>
-        <location line="+88"/>
+        <location line="+89"/>
         <source>Missing attribute in keyword at line %1.</source>
         <translation>Fehlendes Attribut in Schlagwort in Zeile %1.</translation>
     </message>
     <message>
-        <location line="+123"/>
+        <location line="+125"/>
         <source>The input file %1 could not be opened!</source>
         <translation>Die Eingabe-Datei %1 kann nicht geöffnet werden.</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpSearchQueryWidget</name>
+    <message>
+        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+124"/>
+        <source>Search for:</source>
+        <translation>Suche nach:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Previous search</source>
+        <translation>Vorige Suche</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Next search</source>
+        <translation>Nächste Suche</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Search</source>
+        <translation>Suche</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Advanced search</source>
+        <translation>Erweiterte Suche</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>words &lt;B&gt;similar&lt;/B&gt; to:</source>
+        <translation>Worte &lt;B&gt;ähnlich&lt;/B&gt; zu:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&lt;B&gt;without&lt;/B&gt; the words:</source>
+        <translation>&lt;B&gt;ohne&lt;/B&gt; die Wörter:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>with &lt;B&gt;exact phrase&lt;/B&gt;:</source>
+        <translation>mit der &lt;B&gt;genauen Wortgruppe&lt;/B&gt;:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>with &lt;B&gt;all&lt;/B&gt; of the words:</source>
+        <translation>mit &lt;B&gt;allen&lt;/B&gt; Wörtern:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>with &lt;B&gt;at least one&lt;/B&gt; of the words:</source>
+        <translation>mit &lt;B&gt;irgendeinem&lt;/B&gt; der Wörter:</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpSearchResultWidget</name>
+    <message numerus="yes">
+        <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+174"/>
+        <source>%1 - %2 of %n Hits</source>
+        <translation>
+            <numerusform>%1 - %2 - Ein Treffer</numerusform>
+            <numerusform>%1 - %2 von %n Treffern</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+61"/>
+        <source>0 - 0 of 0 Hits</source>
+        <translation>0 - 0 von 0 Treffern</translation>
     </message>
 </context>
 </TS>

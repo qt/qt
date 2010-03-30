@@ -6,6 +6,7 @@ HEADERS +=  \
         io/qbuffer.h \
         io/qdatastream.h \
         io/qdatastream_p.h \
+        io/qdataurl_p.h \
         io/qdebug.h \
         io/qdir.h \
         io/qdiriterator.h \
@@ -34,6 +35,7 @@ SOURCES += \
         io/qabstractfileengine.cpp \
         io/qbuffer.cpp \
         io/qdatastream.cpp \
+        io/qdataurl.cpp \
         io/qdebug.cpp \
         io/qdir.cpp \
         io/qdiriterator.cpp \
@@ -72,7 +74,7 @@ win32 {
             SOURCES += io/qsettings_mac.cpp io/qfilesystemwatcher_fsevents.cpp
         }
 
-        linux-*:{
+        linux-*:!symbian {
             SOURCES += \
                     io/qfilesystemwatcher_inotify.cpp \
                     io/qfilesystemwatcher_dnotify.cpp

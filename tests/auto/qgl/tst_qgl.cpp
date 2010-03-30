@@ -227,12 +227,12 @@ void tst_QGL::getSetCheck()
     QCOMPARE(false, obj1.alpha());
     QVERIFY(!obj1.testOption(QGL::AlphaChannel));
     QVERIFY(obj1.testOption(QGL::NoAlphaChannel));
-    obj1.setAlphaBufferSize(0);
+    obj1.setAlphaBufferSize(1);
     QCOMPARE(true, obj1.alpha());   // setAlphaBufferSize() enables alpha.
-    QCOMPARE(0, obj1.alphaBufferSize());
+    QCOMPARE(1, obj1.alphaBufferSize());
     QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setAlphaBufferSize: Cannot set negative alpha buffer size -2147483648");
     obj1.setAlphaBufferSize(TEST_INT_MIN);
-    QCOMPARE(0, obj1.alphaBufferSize()); // Makes no sense with a negative buffer size
+    QCOMPARE(1, obj1.alphaBufferSize()); // Makes no sense with a negative buffer size
     obj1.setAlphaBufferSize(3);
     QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setAlphaBufferSize: Cannot set negative alpha buffer size -1");
     obj1.setAlphaBufferSize(-1);
@@ -243,11 +243,11 @@ void tst_QGL::getSetCheck()
     // int QGLFormat::stencilBufferSize()
     // void QGLFormat::setStencilBufferSize(int)
     QCOMPARE(-1, obj1.stencilBufferSize());
-    obj1.setStencilBufferSize(0);
-    QCOMPARE(0, obj1.stencilBufferSize());
+    obj1.setStencilBufferSize(1);
+    QCOMPARE(1, obj1.stencilBufferSize());
     QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setStencilBufferSize: Cannot set negative stencil buffer size -2147483648");
     obj1.setStencilBufferSize(TEST_INT_MIN);
-    QCOMPARE(0, obj1.stencilBufferSize()); // Makes no sense with a negative buffer size
+    QCOMPARE(1, obj1.stencilBufferSize()); // Makes no sense with a negative buffer size
     obj1.setStencilBufferSize(3);
     QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setStencilBufferSize: Cannot set negative stencil buffer size -1");
     obj1.setStencilBufferSize(-1);
@@ -352,6 +352,7 @@ void tst_QGL::getSetCheck()
 
     // bool QGLFormat::accum()
     // void QGLFormat::setAccum(bool)
+    obj1.setAccumBufferSize(0);
     QCOMPARE(false, obj1.accum());
     QVERIFY(!obj1.testOption(QGL::AccumBuffer));
     QVERIFY(obj1.testOption(QGL::NoAccumBuffer));
@@ -429,6 +430,26 @@ void tst_QGL::getSetCheck()
     QCOMPARE(TEST_INT_MIN, obj1.plane());
     obj1.setPlane(TEST_INT_MAX);
     QCOMPARE(TEST_INT_MAX, obj1.plane());
+
+    // int QGLFormat::major/minorVersion()
+    // void QGLFormat::setVersion(int, int)
+    QCOMPARE(obj1.majorVersion(), 1);
+    QCOMPARE(obj1.minorVersion(), 0);
+    obj1.setVersion(3, 2);
+    QCOMPARE(obj1.majorVersion(), 3);
+    QCOMPARE(obj1.minorVersion(), 2);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setVersion: Cannot set zero or negative version number 0.1");
+    obj1.setVersion(0, 1);
+    QCOMPARE(obj1.majorVersion(), 3);
+    QCOMPARE(obj1.minorVersion(), 2);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setVersion: Cannot set zero or negative version number 3.-1");
+    obj1.setVersion(3, -1);
+    QCOMPARE(obj1.majorVersion(), 3);
+    QCOMPARE(obj1.minorVersion(), 2);
+    obj1.setVersion(TEST_INT_MAX, TEST_INT_MAX - 1);
+    QCOMPARE(obj1.majorVersion(), TEST_INT_MAX);
+    QCOMPARE(obj1.minorVersion(), TEST_INT_MAX - 1);
+
 
     // operator== and operator!= for QGLFormat
     QGLFormat format1;
@@ -510,6 +531,27 @@ void tst_QGL::getSetCheck()
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setPlane(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setVersion(3, 2);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setVersion(3, 2);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setProfile(QGLFormat::CoreProfile);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setProfile(QGLFormat::CoreProfile);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setOption(QGL::NoDeprecatedFunctions);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setOption(QGL::NoDeprecatedFunctions);
     QVERIFY(format1 == format2);
     QVERIFY(!(format1 != format2));
 
@@ -703,8 +745,6 @@ void tst_QGL::openGLVersionCheck()
 
 #if defined(QT_OPENGL_ES_1)
     QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Common_Version_1_0);
-#elif defined(QT_OPENGL_ES_1_CL)
-    QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_CommonLite_Version_1_0);
 #elif defined(QT_OPENGL_ES_2)
     QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0);
 #else
@@ -939,6 +979,47 @@ void tst_QGL::glWidgetWithAlpha()
     delete w;
 }
 
+
+void qt_opengl_draw_test_pattern(QPainter* painter, int width, int height)
+{
+    QPainterPath intersectingPath;
+    intersectingPath.moveTo(0, 0);
+    intersectingPath.lineTo(100, 0);
+    intersectingPath.lineTo(0, 100);
+    intersectingPath.lineTo(100, 100);
+    intersectingPath.closeSubpath();
+
+    QPainterPath trianglePath;
+    trianglePath.moveTo(50, 0);
+    trianglePath.lineTo(100, 100);
+    trianglePath.lineTo(0, 100);
+    trianglePath.closeSubpath();
+
+    painter->setTransform(QTransform()); // reset xform
+    painter->fillRect(-1, -1, width+2, height+2, Qt::red); // Background
+    painter->translate(14, 14);
+    painter->fillPath(intersectingPath, Qt::blue); // Test stencil buffer works
+    painter->translate(128, 0);
+    painter->setClipPath(trianglePath); // Test depth buffer works
+    painter->setTransform(QTransform()); // reset xform ready for fill
+    painter->fillRect(-1, -1, width+2, height+2, Qt::green);
+}
+
+void qt_opengl_check_test_pattern(const QImage& img)
+{
+    // As we're doing more than trivial painting, we can't just compare to
+    // an image rendered with raster. Instead, we sample at well-defined
+    // test-points:
+    QFUZZY_COMPARE_PIXELS(img.pixel(39, 64), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(img.pixel(89, 64), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(img.pixel(64, 39), QColor(Qt::blue).rgb());
+    QFUZZY_COMPARE_PIXELS(img.pixel(64, 89), QColor(Qt::blue).rgb());
+
+    QFUZZY_COMPARE_PIXELS(img.pixel(167, 39), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(img.pixel(217, 39), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(img.pixel(192, 64), QColor(Qt::green).rgb());
+}
+
 class GLWidget : public QGLWidget
 {
 public:
@@ -953,9 +1034,7 @@ public:
         QPaintEngine* pe = p.paintEngine();
         engineType = pe->type();
 
-        // This test only ensures it's possible to paint onto a QGLWidget. Full
-        // paint engine feature testing is way out of scope!
-        p.fillRect(-1, -1, width()+2, height()+2, Qt::red);
+        qt_opengl_draw_test_pattern(&p, width(), height());
 
         // No p.end() or swap buffers, should be done automatically
     }
@@ -968,7 +1047,7 @@ void tst_QGL::glWidgetRendering()
 #ifdef Q_WS_QWS
     w.setWindowFlags(Qt::FramelessWindowHint);
 #endif
-    w.setGeometry(100, 100, 200, 200);
+    w.resize(256, 128);
     w.show();
 
 #ifdef Q_WS_X11
@@ -979,11 +1058,8 @@ void tst_QGL::glWidgetRendering()
     QVERIFY(w.beginOk);
     QVERIFY(w.engineType == QPaintEngine::OpenGL || w.engineType == QPaintEngine::OpenGL2);
 
-    QImage fb = w.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
-    QImage reference(fb.size(), QImage::Format_RGB32);
-    reference.fill(0xffff0000);
-
-    QFUZZY_COMPARE_IMAGES(fb, reference);
+    QImage fb = w.grabFrameBuffer(false);
+    qt_opengl_check_test_pattern(fb);
 }
 
 void tst_QGL::glFBOSimpleRendering()
@@ -1044,42 +1120,14 @@ void tst_QGL::glFBORendering()
     bool painterBegun = fboPainter.begin(fbo);
     QVERIFY(painterBegun);
 
-    QPainterPath intersectingPath;
-    intersectingPath.moveTo(0, 0);
-    intersectingPath.lineTo(100, 0);
-    intersectingPath.lineTo(0, 100);
-    intersectingPath.lineTo(100, 100);
-    intersectingPath.closeSubpath();
+    qt_opengl_draw_test_pattern(&fboPainter, fbo->width(), fbo->height());
 
-    QPainterPath trianglePath;
-    trianglePath.moveTo(50, 0);
-    trianglePath.lineTo(100, 100);
-    trianglePath.lineTo(0, 100);
-    trianglePath.closeSubpath();
-
-    fboPainter.fillRect(0, 0, fbo->width(), fbo->height(), Qt::red); // Background
-    fboPainter.translate(14, 14);
-    fboPainter.fillPath(intersectingPath, Qt::blue); // Test stencil buffer works
-    fboPainter.translate(128, 0);
-    fboPainter.setClipPath(trianglePath); // Test depth buffer works
-    fboPainter.setTransform(QTransform()); // reset xform
-    fboPainter.fillRect(0, 0, fbo->width(), fbo->height(), Qt::green);
     fboPainter.end();
 
     QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
     delete fbo;
 
-    // As we're doing more than trivial painting, we can't just compare to
-    // an image rendered with raster. Instead, we sample at well-defined
-    // test-points:
-    QFUZZY_COMPARE_PIXELS(fb.pixel(39, 64), QColor(Qt::red).rgb());
-    QFUZZY_COMPARE_PIXELS(fb.pixel(89, 64), QColor(Qt::red).rgb());
-    QFUZZY_COMPARE_PIXELS(fb.pixel(64, 39), QColor(Qt::blue).rgb());
-    QFUZZY_COMPARE_PIXELS(fb.pixel(64, 89), QColor(Qt::blue).rgb());
-
-    QFUZZY_COMPARE_PIXELS(fb.pixel(167, 39), QColor(Qt::red).rgb());
-    QFUZZY_COMPARE_PIXELS(fb.pixel(217, 39), QColor(Qt::red).rgb());
-    QFUZZY_COMPARE_PIXELS(fb.pixel(192, 64), QColor(Qt::green).rgb());
+    qt_opengl_check_test_pattern(fb);
 }
 
 
@@ -1354,8 +1402,8 @@ void tst_QGL::glWidgetRenderPixmap()
     QImage reference(fb.size(), QImage::Format_RGB32);
     reference.fill(0xffff0000);
 
-#ifdef QGL_EGL
-    QSKIP("renderPixmap() not yet supported under EGL", SkipAll);
+#if defined(QGL_EGL) && !defined(Q_WS_X11)
+    QSKIP("renderPixmap() not yet supported under EGL on your platform", SkipAll);
 #endif
 
     QFUZZY_COMPARE_IMAGES(fb, reference);

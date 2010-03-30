@@ -47,6 +47,7 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
+#include <QtCore/QSet>
 #include <QtCore/QVariant>
 #include <QtCore/QDateTime>
 #include <QtCore/QTextCodec>
@@ -189,6 +190,9 @@ bool QHelpGenerator::generate(QHelpDataInterface *helpData,
         cleanupDB();
         return false;
     }
+
+    d->query->exec(QLatin1String("PRAGMA synchronous=OFF"));
+    d->query->exec(QLatin1String("PRAGMA cache_size=3000"));
 
     addProgress(1.0);
     createTables();
@@ -537,7 +541,8 @@ bool QHelpGenerator::insertFiles(const QStringList &files, const QString &rootPa
         }
 
         int fileId = -1;
-        if (!d->fileMap.contains(fileName)) {
+        QMap<QString, int>::Iterator fileMapIt = d->fileMap.find(fileName);
+        if (fileMapIt == d->fileMap.end()) {
             fileDataList.append(qCompress(data));
 
             fileNameData.name = fileName;
@@ -551,18 +556,20 @@ bool QHelpGenerator::insertFiles(const QStringList &files, const QString &rootPa
 
             ++tableFileId;
         } else {
-            fileId = d->fileMap.value(fileName);
+            fileId = fileMapIt.value();
+            QSet<int> &fileFilterSet = d->fileFilterMap[fileId];
+            QSet<int> &tmpFileFilterSet = tmpFileFilterMap[fileId];
             foreach (const int &filter, filterAtts) {
-                if (!d->fileFilterMap.value(fileId).contains(filter)
-                    && !tmpFileFilterMap.value(fileId).contains(filter)) {
-                        d->fileFilterMap[fileId].insert(filter);
-                        tmpFileFilterMap[fileId].insert(filter);
+                if (!fileFilterSet.contains(filter)
+                    && !tmpFileFilterSet.contains(filter)) {
+                    fileFilterSet.insert(filter);
+                    tmpFileFilterSet.insert(filter);
                 }
             }
         }
     }
 
-    if (tmpFileFilterMap.count()) {
+    if (!tmpFileFilterMap.isEmpty()) {
         d->query->exec(QLatin1String("BEGIN"));
         QMap<int, QSet<int> >::const_iterator it = tmpFileFilterMap.constBegin();
         while (it != tmpFileFilterMap.constEnd()) {
@@ -625,8 +632,7 @@ bool QHelpGenerator::registerCustomFilter(const QString &filterName,
     while (d->query->next()) {
         attributeMap.insert(d->query->value(1).toString(),
             d->query->value(0).toInt());
-        if (idsToInsert.contains(d->query->value(1).toString()))
-            idsToInsert.removeAll(d->query->value(1).toString());
+        idsToInsert.removeAll(d->query->value(1).toString());
     }
 
     foreach (const QString &id, idsToInsert) {
@@ -674,7 +680,7 @@ bool QHelpGenerator::registerCustomFilter(const QString &filterName,
     return true;
 }
 
-bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> keywords,
+bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> &keywords,
                                     const QStringList &filterAttributes)
 {
     if (!d->query)
@@ -704,7 +710,17 @@ bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> keywords,
 
     int i = 0;
     d->query->exec(QLatin1String("BEGIN"));
+    QSet<QString> indices;
     foreach (const QHelpDataIndexItem &itm, keywords) {
+
+        /*
+         * Identical ids make no sense and just confuse the Assistant user,
+         * so we ignore all repetitions.
+         */
+        if (indices.contains(itm.identifier))
+            continue;
+        indices.insert(itm.identifier);
+
         pos = itm.reference.indexOf(QLatin1Char('#'));
         fileName = itm.reference.left(pos);
         if (pos > -1)
@@ -716,8 +732,9 @@ bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> keywords,
         if (fName.startsWith(QLatin1String("./")))
             fName = fName.mid(2);
 
-        if (d->fileMap.contains(fName))
-            fileId = d->fileMap.value(fName);
+        QMap<QString, int>::ConstIterator it = d->fileMap.find(fName);
+        if (it != d->fileMap.end())
+            fileId = it.value();
         else
             fileId = 1;
 
@@ -749,7 +766,7 @@ bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> keywords,
     d->query->exec(QLatin1String("COMMIT"));
 
     d->query->exec(QLatin1String("SELECT COUNT(Id) FROM IndexTable"));
-    if (d->query->next() && d->query->value(0).toInt() >= keywords.count())
+    if (d->query->next() && d->query->value(0).toInt() >= indices.count())
         return true;
     return false;
 }
@@ -824,4 +841,68 @@ bool QHelpGenerator::insertMetaData(const QMap<QString, QVariant> &metaData)
     return true;
 }
 
+bool QHelpGenerator::checkLinks(const QHelpDataInterface &helpData)
+{
+    /*
+     * Step 1: Gather the canoncal file paths of all files in the project.
+     *         We use a set, because there will be a lot of look-ups.
+     */
+    QSet<QString> files;
+    foreach (const QHelpDataFilterSection &filterSection, helpData.filterSections()) {
+        foreach (const QString &file, filterSection.files()) {
+            QFileInfo fileInfo(helpData.rootPath() + QDir::separator() + file);
+            const QString &canonicalFileName = fileInfo.canonicalFilePath();
+            if (!fileInfo.exists())
+                emit warning(tr("File '%1' does not exist.").arg(file));
+            else
+                files.insert(canonicalFileName);
+        }
+    }
+
+    /*
+     * Step 2: Check the hypertext and image references of all HTML files.
+     *         Note that we don't parse the files, but simply grep for the
+     *         respective HTML elements. Therefore. contents that are e.g.
+     *         commented out can cause false warning.
+     */
+    bool allLinksOk = true;
+    foreach (const QString &fileName, files) {
+        if (!fileName.endsWith(QLatin1String("html"))
+            && !fileName.endsWith(QLatin1String("htm")))
+            continue;
+        QFile htmlFile(fileName);
+        if (!htmlFile.open(QIODevice::ReadOnly)) {
+            emit warning(tr("File '%1' cannot be opened.").arg(fileName));
+            continue;
+        }
+        const QRegExp linkPattern(QLatin1String("<(?:a href|img src)=\"?([^#\">]+)[#\">]"));
+        QTextStream stream(&htmlFile);
+        const QString codec = QHelpGlobal::codecFromData(htmlFile.read(1000));
+        stream.setCodec(QTextCodec::codecForName(codec.toLatin1().constData()));
+        const QString &content = stream.readAll();
+        QStringList invalidLinks;
+        for (int pos = linkPattern.indexIn(content); pos != -1;
+             pos = linkPattern.indexIn(content, pos + 1)) {
+            const QString& linkedFileName = linkPattern.cap(1);
+            if (linkedFileName.contains(QLatin1String("://")))
+                continue;
+            const QString curDir = QFileInfo(fileName).dir().path();
+            const QString &canonicalLinkedFileName =
+                QFileInfo(curDir + QDir::separator() + linkedFileName).canonicalFilePath();
+            if (!files.contains(canonicalLinkedFileName)
+                && !invalidLinks.contains(canonicalLinkedFileName)) {
+                emit warning(tr("File '%1' contains an invalid link to file '%2'").
+                         arg(fileName).arg(linkedFileName));
+                allLinksOk = false;
+                invalidLinks.append(canonicalLinkedFileName);
+            }
+        }
+    }
+
+    if (!allLinksOk)
+        d->error = tr("Invalid links in HTML files.");
+    return allLinksOk;
+}
+
 QT_END_NAMESPACE
+

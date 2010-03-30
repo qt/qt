@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
     QString basePath;
     bool showHelp = false;
     bool showVersion = false;
+    bool checkLinks = false;
 
     for (int i = 1; i < argc; ++i) {
         arg = QString::fromLocal8Bit(argv[i]);
@@ -66,12 +67,15 @@ int main(int argc, char *argv[])
                 QFileInfo fi(QString::fromLocal8Bit(argv[i]));
                 compressedFile = fi.absoluteFilePath();
             } else {
-                error = QObject::tr("Missing output file name!");
+                error = QCoreApplication::translate("QHelpGenerator",
+                            "Missing output file name!");
             }
         } else if (arg == QLatin1String("-v")) {
             showVersion = true;
         } else if (arg == QLatin1String("-h")) {
             showHelp = true;
+        } else if (arg == QLatin1String("-c")) {
+            checkLinks = true;
         } else {
             QFileInfo fi(arg);
             projectFile = fi.absoluteFilePath();
@@ -80,19 +84,23 @@ int main(int argc, char *argv[])
     }
 
     if (showVersion) {
-        fprintf(stdout, "Qt Help Generator version 1.0 (Qt %s)\n", QT_VERSION_STR);
+        fprintf(stdout, "Qt Help Generator version 1.0 (Qt %s)\n",
+                QT_VERSION_STR);
         return 0;
     }
 
     if (projectFile.isEmpty() && !showHelp)
-        error = QObject::tr("Missing Qt help project file!");
+        error = QCoreApplication::translate("QHelpGenerator",
+                                            "Missing Qt help project file!");
 
-    QString help = QObject::tr("\nUsage:\n\n"
+    QString help = QCoreApplication::translate("QHelpGenerator", "\nUsage:\n\n"
         "qhelpgenerator <help-project-file> [options]\n\n"
         "  -o <compressed-file>   Generates a Qt compressed help\n"
         "                         file called <compressed-file>.\n"
         "                         If this option is not specified\n"
         "                         a default name will be used.\n"
+        "  -c                     Checks whether all links in HTML files\n"
+        "                         point to files in this help project.\n"
         "  -v                     Displays the version of \n"
         "                         qhelpgenerator.\n\n");
 
@@ -111,9 +119,11 @@ int main(int argc, char *argv[])
     }
 
     if (compressedFile.isEmpty()) {
-        QFileInfo fi(projectFile);
-        compressedFile = basePath + QDir::separator()
-            + fi.baseName() + QLatin1String(".qch");
+        if (!checkLinks) {
+            QFileInfo fi(projectFile);
+            compressedFile = basePath + QDir::separator()
+                             + fi.baseName() + QLatin1String(".qch");
+        }
     } else {
         // check if the output dir exists -- create if it doesn't
         QFileInfo fi(compressedFile);
@@ -134,7 +144,11 @@ int main(int argc, char *argv[])
 
     QCoreApplication app(argc, argv);
     HelpGenerator generator;
-    bool success = generator.generate(helpData, compressedFile);
+    bool success = true;
+    if (checkLinks)
+        success = generator.checkLinks(*helpData);
+    if (success && !compressedFile.isEmpty())
+        success = generator.generate(helpData, compressedFile);
     delete helpData;
     if (!success) {
         fprintf(stderr, "%s\n", qPrintable(generator.error()));

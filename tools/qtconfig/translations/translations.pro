@@ -9,6 +9,7 @@ FORMS        = ../mainwindowbase.ui ../paletteeditoradvancedbase.ui ../previewwi
 
 TR_DIR = $$PWD/../../../translations
 TRANSLATIONS = \
+    $$TR_DIR/qtconfig_hu.ts \
     $$TR_DIR/qtconfig_pl.ts \
     $$TR_DIR/qtconfig_ru.ts \
     $$TR_DIR/qtconfig_zh_CN.ts \

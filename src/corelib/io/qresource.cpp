@@ -1411,8 +1411,12 @@ QString QResourceFileEngine::fileName(FileName file) const
     } else if(file == PathName || file == AbsolutePathName) {
         const QString path = (file == AbsolutePathName) ? d->resource.absoluteFilePath() : d->resource.fileName();
 	const int slash = path.lastIndexOf(QLatin1Char('/'));
-	if (slash != -1)
-	    return path.left(slash);
+        if (slash == -1)
+            return QLatin1String(":");
+        else if (slash <= 1)
+            return QLatin1String(":/");
+        return path.left(slash);
+
     } else if(file == CanonicalName || file == CanonicalPathName) {
         const QString absoluteFilePath = d->resource.absoluteFilePath();
         if(file == CanonicalPathName) {

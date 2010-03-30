@@ -70,6 +70,7 @@ QT_MODULE(Gui)
 
 class QPainterState;
 class QPaintEngineExPrivate;
+class QStaticTextItem;
 struct StrokeHandler;
 
 struct QIntRect {
@@ -196,9 +197,12 @@ public:
 
     virtual void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
 
-    virtual void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QFlags<QDrawPixmaps::DrawingHint> hints);
+    virtual void drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
+                                     QFlags<QPainter::PixmapFragmentHint> hints);
 
     virtual void updateState(const QPaintEngineState &state);
+
+    virtual void drawStaticTextItem(QStaticTextItem *) = 0;
 
     virtual void setState(QPainterState *s);
     inline QPainterState *state() { return static_cast<QPainterState *>(QPaintEngine::state); }

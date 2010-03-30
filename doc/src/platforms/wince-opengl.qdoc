@@ -53,7 +53,7 @@ Windows CE window manager.
 
 \section2 Configure
 
-To configure Qt for Windows Mobile 5.0 and OpenGL ES Common Lite support
+To configure Qt for Windows Mobile 5.0 and OpenGL ES Common support
 you can run \c{configure} like this:
 
     \snippet doc/src/snippets/code/doc_src_wince-opengl.qdoc 0
@@ -61,17 +61,12 @@ you can run \c{configure} like this:
 OpenGL ES includes profiles for floating-point and fixed-point arithmetic.
 The floating point profile is called OpenGL ES CM (Common) and the
 fixed-point profile is called OpenGL ES CL (Common Lite).
+The fixed-point profile is no longer supported since Qt 4.7.
 
 You can run \c{configure} with the \c{-opengl-es-cm} option for the Common
-profile or \c{-opengl-es-cl} for the Common Lite profile. In both cases,
-ensure that the \c{lib} and \c{includes} paths include the OpenGL ES
+profile.  Ensure that the \c{lib} and \c{includes} paths include the OpenGL ES
 headers and libararies from your SDK. The OpenGL ES lib should be called
-either \c{libGLES_CM.lib} for the Common profile or \c{libGLES_CL.lib} for
-the Common Lite profile.
-
-The distinction between the Common and Common Lite profiles is important,
-because the Common Lite profile has less functionality and only supports a
-fixed-point vertex format.
+either \c{libGLES_CM.lib} for the Common profile.
 
 To start programming with Qt and OpenGL ES on Windows CE, you can start
 with the \l{Hello GL ES Example}. This example shows how to use QGLWidget

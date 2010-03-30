@@ -55,8 +55,8 @@
 
 #include "qrect.h"
 #include "qpoint.h"
-#include "qdatetime.h"
 #include "qgesture.h"
+#include "qelapsedtimer.h"
 #include "private/qobject_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -69,13 +69,13 @@ public:
     QGesturePrivate()
         : gestureType(Qt::CustomGesture), state(Qt::NoGesture),
           isHotSpotSet(false), gestureCancelPolicy(0)
-
     {
     }
 
     Qt::GestureType gestureType;
     Qt::GestureState state;
     QPointF hotSpot;
+    QPointF sceneHotSpot;
     uint isHotSpotSet : 1;
     uint gestureCancelPolicy : 2;
 };
@@ -148,7 +148,7 @@ public:
     QPoint lastPositions[3];
     bool started;
     qreal speed;
-    QTime time;
+    QElapsedTimer time;
 };
 
 class QTapGesturePrivate : public QGesturePrivate

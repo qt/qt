@@ -44,7 +44,6 @@
 #include "qapplication.h"
 #include "qbitmap.h"
 #include "qcursor.h"
-#include "qdatetime.h"
 #include "qdesktopwidget.h"
 #include "qevent.h"
 #include "qhash.h"
@@ -59,6 +58,7 @@
 #include "qscrollbar.h"
 #include "qstyle.h"
 #include "qstyleoption.h"
+#include "qelapsedtimer.h"
 #include "qtooltip.h"
 #include "qdebug.h"
 #include <private/qwidget_p.h>
@@ -450,10 +450,10 @@ void QWorkspaceTitleBar::mousePressEvent(QMouseEvent *e)
         case QStyle::SC_TitleBarSysMenu:
             if (d->flags & Qt::WindowSystemMenuHint) {
                 d->buttonDown = QStyle::SC_None;
-                static QTime *t = 0;
+                static QElapsedTimer *t = 0;
                 static QWorkspaceTitleBar *tc = 0;
                 if (!t)
-                    t = new QTime;
+                    t = new QElapsedTimer;
                 if (tc != this || t->elapsed() > QApplication::doubleClickInterval()) {
                     emit showOperationMenu();
                     t->start();
@@ -1839,7 +1839,7 @@ bool QWorkspace::event(QEvent *e)
 bool QWorkspace::eventFilter(QObject *o, QEvent * e)
 {
     Q_D(QWorkspace);
-    static QTime* t = 0;
+    static QElapsedTimer* t = 0;
     static QWorkspace* tc = 0;
     if (o == d->maxtools) {
         switch (e->type()) {
@@ -1847,7 +1847,7 @@ bool QWorkspace::eventFilter(QObject *o, QEvent * e)
             {
                 QMenuBar* b = (QMenuBar*)o->parent();
                 if (!t)
-                    t = new QTime;
+                    t = new QElapsedTimer;
                 if (tc != this || t->elapsed() > QApplication::doubleClickInterval()) {
                     if (isRightToLeft()) {
                         QPoint p = b->mapToGlobal(QPoint(b->x() + b->width(), b->y() + b->height()));

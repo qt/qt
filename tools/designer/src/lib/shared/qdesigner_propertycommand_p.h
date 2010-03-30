@@ -58,6 +58,7 @@
 #include <QtCore/QVariant>
 #include <QtCore/QList>
 #include <QtCore/QPair>
+#include <QtCore/QSharedPointer>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,11 +78,12 @@ enum SpecialProperty {
 //Determine special property
 enum SpecialProperty getSpecialProperty(const QString& propertyName);
 
-
 // A helper class for applying properties to objects.
 // Can be used for Set commands (setValue(), restoreOldValue()) or
 // Reset Commands     restoreDefaultValue(), restoreOldValue()).
-class PropertyHelper {
+//
+class QDESIGNER_SHARED_EXPORT PropertyHelper {
+    Q_DISABLE_COPY(PropertyHelper)
 public:
     // A pair of Value and changed flag
     typedef QPair<QVariant, bool> Value;
@@ -92,11 +94,13 @@ public:
                    SpecialProperty specialProperty,
                    QDesignerPropertySheetExtension *sheet,
                    int index);
+    virtual ~PropertyHelper() {}
 
     QObject *object() const { return m_object; }
     SpecialProperty specialProperty() const { return m_specialProperty; }
-    // set a new value
-    Value setValue(QDesignerFormWindowInterface *fw, const QVariant &value, bool changed, unsigned subPropertyMask);
+    // set a new value. Can be overwritten to perform a transformation (see
+    // handling of Arrow key move in FormWindow class).
+    virtual Value setValue(QDesignerFormWindowInterface *fw, const QVariant &value, bool changed, unsigned subPropertyMask);
 
     // restore old value
     Value restoreOldValue(QDesignerFormWindowInterface *fw);
@@ -147,7 +151,7 @@ class QDESIGNER_SHARED_EXPORT PropertyListCommand : public QDesignerFormWindowCo
 public:
     typedef QList<QObject *> ObjectList;
 
-    explicit PropertyListCommand(QDesignerFormWindowInterface *formWindow);
+    explicit PropertyListCommand(QDesignerFormWindowInterface *formWindow, QUndoCommand *parent = 0);
 
     QObject* object(int index = 0) const;
 
@@ -159,8 +163,8 @@ public:
     virtual void undo();
 
 protected:
-    typedef QList<PropertyHelper> PropertyHelperList;
-
+    typedef QSharedPointer<PropertyHelper> PropertyHelperPtr;
+    typedef QList<PropertyHelperPtr> PropertyHelperList;
 
     // add an object
     bool add(QObject *object, const QString &propertyName);
@@ -204,6 +208,10 @@ protected:
     };
     const PropertyDescription &propertyDescription() const { return  m_propertyDescription; }
 
+protected:
+    virtual PropertyHelper *createPropertyHelper(QObject *o, SpecialProperty sp,
+                                                 QDesignerPropertySheetExtension *sheet, int sheetIndex) const;
+
 private:
     PropertyDescription m_propertyDescription;
     PropertyHelperList m_propertyHelperList;
@@ -215,7 +223,7 @@ class QDESIGNER_SHARED_EXPORT SetPropertyCommand: public PropertyListCommand
 public:
     typedef QList<QObject *> ObjectList;
 
-    explicit SetPropertyCommand(QDesignerFormWindowInterface *formWindow);
+    explicit SetPropertyCommand(QDesignerFormWindowInterface *formWindow, QUndoCommand *parent = 0);
 
     bool init(QObject *object, const QString &propertyName, const QVariant &newValue);
     bool init(const ObjectList &list, const QString &propertyName, const QVariant &newValue,
@@ -232,6 +240,10 @@ public:
     bool mergeWith(const QUndoCommand *other);
 
     virtual void redo();
+
+protected:
+    virtual QVariant mergeValue(const QVariant &newValue);
+
 private:
     unsigned subPropertyMask(const QVariant &newValue, QObject *referenceObject);
     void setDescription();

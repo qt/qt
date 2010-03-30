@@ -133,6 +133,7 @@ public:
     void drawImage(const QRectF &r, const QImage &image, const QRectF &sr,
                    Qt::ImageConversionFlags conversionFlags);
     void drawTextItem(const QPointF &p, const QTextItem &ti);
+    void drawStaticTextItem(QStaticTextItem *staticTextItem);
 
     void drawEllipse(const QRectF &rect);
 

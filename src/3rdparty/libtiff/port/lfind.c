@@ -1,4 +1,4 @@
-/* $Id: lfind.c,v 1.3 2005/12/27 15:08:22 dron Exp $ */
+/* $Id: lfind.c,v 1.4 2007/01/15 18:40:39 mloskot Exp $ */
 
 /*
  * Copyright (c) 1989, 1993
@@ -37,7 +37,11 @@ static char sccsid[] = "@(#)lsearch.c	8.1 (Berkeley) 6/4/93";
 __RCSID("$NetBSD: lsearch.c,v 1.2 2005/07/06 15:47:15 drochner Exp $");
 #endif
 
-#include <sys/types.h>
+#ifdef _WIN32_WCE
+# include <wce_types.h>
+#else
+# include <sys/types.h>
+#endif
 
 #ifndef NULL
 # define NULL 0

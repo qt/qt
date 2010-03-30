@@ -119,6 +119,7 @@ private slots:
     void symetricConstructors_data();
     void symetricConstructors();
     void checkMultipleNames();
+    void checkMultipleCodes();
     void mnemonic_data();
     void mnemonic();
     void toString_data();
@@ -133,6 +134,8 @@ private slots:
     void keyBindings();
     void translated_data();
     void translated();
+    void i18nKeys_data();
+    void i18nKeys();
 
 
     void initTestCase();
@@ -263,6 +266,18 @@ void tst_QKeySequence::checkMultipleNames()
     QKeySequence oldK( "Ctrl+Page Up" );
     QKeySequence newK( "Ctrl+PgUp" );
     QVERIFY( oldK == newK );
+}
+
+//TODO: could test third constructor, or test fromString on all constructor-data
+void tst_QKeySequence::checkMultipleCodes()
+{
+    QKeySequence seq1("Alt+d, l");
+    QKeySequence seq2 = QKeySequence::fromString("Alt+d, l");
+    QVERIFY( seq1 == seq2 );
+
+    QKeySequence seq3("Alt+d,l");
+    QKeySequence seq4 = QKeySequence::fromString("Alt+d,l");
+    QVERIFY( seq3 == seq4 );
 }
 
 /*
@@ -556,6 +571,56 @@ void tst_QKeySequence::translated()
     qApp->removeTranslator(qtTranslator);
 }
 
+
+void tst_QKeySequence::i18nKeys_data()
+{
+    QTest::addColumn<int>("keycode");
+    QTest::addColumn<QString>("keystring");
+
+    // Japanese keyboard support
+    QTest::newRow("Kanji") << (int)Qt::Key_Kanji << QString("Kanji");
+    QTest::newRow("Muhenkan") << (int)Qt::Key_Muhenkan << QString("Muhenkan");
+    QTest::newRow("Henkan") << (int)Qt::Key_Henkan << QString("Henkan");
+    QTest::newRow("Romaji") << (int)Qt::Key_Romaji << QString("Romaji");
+    QTest::newRow("Hiragana") << (int)Qt::Key_Hiragana << QString("Hiragana");
+    QTest::newRow("Katakana") << (int)Qt::Key_Katakana << QString("Katakana");
+    QTest::newRow("Hiragana Katakana") << (int)Qt::Key_Hiragana_Katakana << QString("Hiragana Katakana");
+    QTest::newRow("Zenkaku") << (int)Qt::Key_Zenkaku << QString("Zenkaku");
+    QTest::newRow("Hankaku") << (int)Qt::Key_Hankaku << QString("Hankaku");
+    QTest::newRow("Zenkaku Hankaku") << (int)Qt::Key_Zenkaku_Hankaku << QString("Zenkaku Hankaku");
+    QTest::newRow("Touroku") << (int)Qt::Key_Touroku << QString("Touroku");
+    QTest::newRow("Massyo") << (int)Qt::Key_Massyo << QString("Massyo");
+    QTest::newRow("Kana Lock") << (int)Qt::Key_Kana_Lock << QString("Kana Lock");
+    QTest::newRow("Kana Shift") << (int)Qt::Key_Kana_Shift << QString("Kana Shift");
+    QTest::newRow("Eisu Shift") << (int)Qt::Key_Eisu_Shift << QString("Eisu Shift");
+    QTest::newRow("Eisu_toggle") << (int)Qt::Key_Eisu_toggle << QString("Eisu toggle");
+    QTest::newRow("Code input") << (int)Qt::Key_Codeinput << QString("Code input");
+    QTest::newRow("Multiple Candidate") << (int)Qt::Key_MultipleCandidate << QString("Multiple Candidate");
+    QTest::newRow("Previous Candidate") << (int)Qt::Key_PreviousCandidate << QString("Previous Candidate");
+
+    // Korean keyboard support
+    QTest::newRow("Hangul") << (int)Qt::Key_Hangul << QString("Hangul");
+    QTest::newRow("Hangul Start") << (int)Qt::Key_Hangul_Start << QString("Hangul Start");
+    QTest::newRow("Hangul End") << (int)Qt::Key_Hangul_End << QString("Hangul End");
+    QTest::newRow("Hangul Hanja") << (int)Qt::Key_Hangul_Hanja << QString("Hangul Hanja");
+    QTest::newRow("Hangul Jamo") << (int)Qt::Key_Hangul_Jamo << QString("Hangul Jamo");
+    QTest::newRow("Hangul Romaja") << (int)Qt::Key_Hangul_Romaja << QString("Hangul Romaja");
+    QTest::newRow("Hangul Jeonja") << (int)Qt::Key_Hangul_Jeonja << QString("Hangul Jeonja");
+    QTest::newRow("Hangul Banja") << (int)Qt::Key_Hangul_Banja << QString("Hangul Banja");
+    QTest::newRow("Hangul PreHanja") << (int)Qt::Key_Hangul_PreHanja << QString("Hangul PreHanja");
+    QTest::newRow("Hangul PostHanja") << (int)Qt::Key_Hangul_PostHanja << QString("Hangul PostHanja");
+    QTest::newRow("Hangul Special") << (int)Qt::Key_Hangul_Special << QString("Hangul Special");
+}
+
+void tst_QKeySequence::i18nKeys()
+{
+    QFETCH(int, keycode);
+    QFETCH(QString, keystring);
+    QKeySequence seq(keycode);
+
+    QCOMPARE(seq, QKeySequence(keystring));
+    QCOMPARE(seq.toString(), keystring);
+}
 
 QTEST_MAIN(tst_QKeySequence)
 #include "tst_qkeysequence.moc"

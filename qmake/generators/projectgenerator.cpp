@@ -111,7 +111,7 @@ ProjectGenerator::init()
                     add_depend = true;
                     if(dir.right(1) != Option::dir_sep)
                         dir += Option::dir_sep;
-                    if(Option::recursive) {
+                    if(Option::recursive == Option::QMAKE_RECURSIVE_YES) {
                         QStringList files = QDir(dir).entryList(QDir::Files);
                         for(int i = 0; i < (int)files.count(); i++) {
                             if(files[i] != "." && files[i] != "..")
@@ -138,7 +138,7 @@ ProjectGenerator::init()
                     dir = regex.left(s+1);
                     regex = regex.right(regex.length() - (s+1));
                 }
-                if(Option::recursive) {
+                if(Option::recursive == Option::QMAKE_RECURSIVE_YES) {
                     QStringList entries = QDir(dir).entryList(QDir::Dirs);
                     for(int i = 0; i < (int)entries.count(); i++) {
                         if(entries[i] != "." && entries[i] != "..") {
@@ -193,7 +193,7 @@ ProjectGenerator::init()
                                 subdirs.append(nd);
                         }
                     }
-                    if(Option::recursive) {
+                    if(Option::recursive == Option::QMAKE_RECURSIVE_YES) {
                         QStringList dirs = QDir(newdir).entryList(QDir::Dirs);
                         for(int i = 0; i < (int)dirs.count(); i++) {
                             QString nd = fileFixify(newdir + QDir::separator() + dirs[i]);
@@ -230,7 +230,8 @@ ProjectGenerator::init()
                                 }
                             }
                         }
-                        if(Option::recursive && !knownDirs.contains(newdir, Qt::CaseInsensitive))
+                        if(Option::recursive == Option::QMAKE_RECURSIVE_YES
+                           && !knownDirs.contains(newdir, Qt::CaseInsensitive))
                             knownDirs.append(newdir);
                     }
                 }

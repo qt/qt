@@ -106,7 +106,8 @@ private slots:
     void testCustomPageSizes();
     void printDialogCompleter();
 
-    void testActualNumCopies();
+    void testCopyCount();
+    void testCurrentPage();
 
     void taskQTBUG4497_reusePrinterOnDifferentFiles();
 
@@ -455,7 +456,7 @@ void tst_QPrinter::testNonExistentPrinter()
     printer.pageSize();
     printer.orientation();
     printer.fullPage();
-    printer.setNumCopies(1);
+    printer.setCopyCount(1);
     printer.printerName();
 
     // nor metrics
@@ -966,11 +967,11 @@ void tst_QPrinter::printDialogCompleter()
 #endif
 }
 
-void tst_QPrinter::testActualNumCopies()
+void tst_QPrinter::testCopyCount()
 {
     QPrinter p;
-    p.setNumCopies(15);
-    QCOMPARE(p.actualNumCopies(), 15);
+    p.setCopyCount(15);
+    QCOMPARE(p.copyCount(), 15);
 }
 
 static void printPage(QPainter *painter)
@@ -1003,6 +1004,28 @@ void tst_QPrinter::taskQTBUG4497_reusePrinterOnDifferentFiles()
     QVERIFY(file2.open(QIODevice::ReadOnly));
 
     QCOMPARE(file1.readAll(), file2.readAll());
+}
+
+void tst_QPrinter::testCurrentPage()
+{
+    QPrinter printer;
+    printer.setFromTo(1, 10);
+
+    // Test set print range
+    printer.setPrintRange(QPrinter::CurrentPage);
+    QCOMPARE(printer.printRange(), QPrinter::CurrentPage);
+    QCOMPARE(printer.fromPage(), 1);
+    QCOMPARE(printer.toPage(), 10);
+
+    QPrintDialog dialog(&printer);
+
+    // Test default Current Page option to off
+    QCOMPARE(dialog.isOptionEnabled(QPrintDialog::PrintCurrentPage), false);
+
+    // Test enable Current Page option
+    dialog.setOption(QPrintDialog::PrintCurrentPage);
+    QCOMPARE(dialog.isOptionEnabled(QPrintDialog::PrintCurrentPage), true);
+
 }
 
 QTEST_MAIN(tst_QPrinter)

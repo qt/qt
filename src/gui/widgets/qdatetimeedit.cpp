@@ -1175,7 +1175,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
         return; }
     }
     QAbstractSpinBox::keyPressEvent(event);
-    if (select && !(event->modifiers() & Qt::ShiftModifier) && !d->edit->hasSelectedText()) {
+    if (select && !d->edit->hasSelectedText()) {
         if (inserted && d->sectionAt(d->edit->cursorPosition()) == QDateTimeParser::NoSectionIndex) {
             QString str = d->displayText();
             int pos = d->edit->cursorPosition();

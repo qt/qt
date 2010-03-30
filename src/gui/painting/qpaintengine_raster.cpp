@@ -67,6 +67,7 @@
 //   #include <private/qpolygonclipper_p.h>
 //   #include <private/qrasterizer_p.h>
 #include <private/qimage_p.h>
+#include <private/qstatictext_p.h>
 
 #include "qpaintengine_raster_p.h"
 //   #include "qbezier_p.h"
@@ -1724,9 +1725,10 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         if (patternLength > 0) {
             int n = qFloor(dashOffset / patternLength);
             dashOffset -= n * patternLength;
-            while (dashOffset > pattern.at(dashIndex)) {
+            while (dashOffset >= pattern.at(dashIndex)) {
                 dashOffset -= pattern.at(dashIndex);
-                dashIndex = (dashIndex + 1) % pattern.size();
+                if (++dashIndex >= pattern.size())
+                    dashIndex = 0;
                 inDash = !inDash;
             }
         }
@@ -1737,7 +1739,6 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         const QLineF *lines = reinterpret_cast<const QLineF *>(path.points());
 
         for (int i = 0; i < lineCount; ++i) {
-            dashOffset = s->lastPen.dashOffset();
             if (lines[i].p1() == lines[i].p2()) {
                 if (s->lastPen.capStyle() != Qt::FlatCap) {
                     QPointF p = lines[i].p1();
@@ -3002,27 +3003,22 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
         blend(current, spans, &s->penData);
 }
 
-void QRasterPaintEngine::drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti)
+void QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
+                                          const QFixedPoint *positions, QFontEngine *fontEngine)
 {
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
 
-    QVarLengthArray<QFixedPoint> positions;
-    QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix = s->matrix;
-    matrix.translate(p.x(), p.y());
-    ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
-
-    QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0 ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat) : d->glyphCacheType;
+    QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0 ? QFontEngineGlyphCache::Type(fontEngine->glyphFormat) : d->glyphCacheType;
 
     QImageTextureGlyphCache *cache =
-        (QImageTextureGlyphCache *) ti.fontEngine->glyphCache(0, glyphType, s->matrix);
+        static_cast<QImageTextureGlyphCache *>(fontEngine->glyphCache(0, glyphType, s->matrix));
     if (!cache) {
         cache = new QImageTextureGlyphCache(glyphType, s->matrix);
-        ti.fontEngine->setGlyphCache(0, cache);
+        fontEngine->setGlyphCache(0, cache);
     }
 
-    cache->populate(ti, glyphs, positions);
+    cache->populate(fontEngine, numGlyphs, glyphs, positions);
 
     const QImage &image = cache->image();
     int bpl = image.bytesPerLine();
@@ -3040,7 +3036,7 @@ void QRasterPaintEngine::drawCachedGlyphs(const QPointF &p, const QTextItemInt &
     const QFixed offs = QFixed::fromReal(aliasedCoordinateDelta);
 
     const uchar *bits = image.bits();
-    for (int i=0; i<glyphs.size(); ++i) {
+    for (int i=0; i<numGlyphs; ++i) {
         const QTextureGlyphCache::Coord &c = cache->coords.value(glyphs[i]);
         int x = qFloor(positions[i].x + offs) + c.baseLineX - margin;
         int y = qFloor(positions[i].y + offs) - c.baseLineY - margin;
@@ -3218,6 +3214,18 @@ QRasterPaintEnginePrivate::getPenFunc(const QRectF &rect,
 }
 
 /*!
+   \reimp
+*/
+void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
+{
+    ensurePen();
+    ensureState();
+
+    drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
+                     textItem->fontEngine);
+}
+
+/*!
     \reimp
 */
 void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
@@ -3265,7 +3273,17 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         drawCached = false;
 #endif
     if (drawCached) {
-        drawCachedGlyphs(p, ti);
+        QRasterPaintEngineState *s = state();
+
+        QVarLengthArray<QFixedPoint> positions;
+        QVarLengthArray<glyph_t> glyphs;
+
+        QTransform matrix = s->matrix;
+        matrix.translate(p.x(), p.y());
+
+        ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+
+        drawCachedGlyphs(glyphs.size(), glyphs.constData(), positions.constData(), ti.fontEngine);
         return;
     }
 
@@ -3372,7 +3390,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     };
 
     for(int i = 0; i < glyphs.size(); i++) {
-        QFontEngineFT::Glyph *glyph = gset->glyph_data.value(glyphs[i]);
+        QFontEngineFT::Glyph *glyph = gset->getGlyph(glyphs[i]);
 
         if (!glyph || glyph->format != neededFormat) {
             if (!lockedFace)
@@ -3608,13 +3626,14 @@ void QRasterPaintEnginePrivate::rasterizeLine_dashed(QLineF line,
         } else {
             *dashOffset = 0;
             *inDash = !(*inDash);
-            *dashIndex = (*dashIndex + 1) % pattern.size();
+            if (++*dashIndex >= pattern.size())
+                *dashIndex = 0;
             length -= dash;
             l.setLength(dash);
             line.setP1(l.p2());
         }
 
-        if (rasterize && dash != 0)
+        if (rasterize && dash > 0)
             rasterizer->rasterizeLine(l.p1(), l.p2(), width / dash, squareCap);
     }
 }

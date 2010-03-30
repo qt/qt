@@ -155,6 +155,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                               DeploymentList &deploymentList,
                               const QString &testPath,
                               bool deployBinaries,
+                              bool epocBuild,
                               const QString &platform,
                               const QString &build,
                               QStringList& generatedDirs,
@@ -264,7 +265,11 @@ void initProjectDeploySymbian(QMakeProject* project,
                     if (isBinary(info)) {
                         if (deployBinaries) {
                             // Executables and libraries are deployed to \sys\bin
-                            QFileInfo targetPath(epocRoot() + "epoc32/release/" + platform + "/" + build + "/");
+                            QFileInfo targetPath;
+                            if (epocBuild)
+                                targetPath.setFile(epocRoot() + "epoc32/release/" + platform + "/" + build + "/");
+                            else
+                                targetPath.setFile(info.path() + QDir::separator());
                             if(devicePathHasDriveLetter) {
                                 deploymentList.append(CopyItem(
                                     Option::fixPathToLocalOS(targetPath.absolutePath() + "/" + info.fileName(),

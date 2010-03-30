@@ -60,6 +60,8 @@ private slots:
     void length() const;
     void lengthSignature() const;
     void append() const;
+    void prepend() const;
+    void mid() const;
 };
 
 void tst_QList::length() const
@@ -127,6 +129,48 @@ void tst_QList::append() const
     listTotal.append(four);
     QCOMPARE(list1, listTotal);
 
+}
+
+void tst_QList::prepend() const
+{
+    QList<QString *> list;
+    QString *str1 = new QString;
+    list.prepend(str1);
+    QVERIFY(list.size() == 1);
+    QVERIFY(list.at(0) == str1);
+    QString *str2 = new QString;
+    list.prepend(str2);
+    QVERIFY(list.size() == 2);
+    QVERIFY(list.at(0) == str2);
+    QVERIFY(list.at(1) == str1);
+    QString *str3 = new QString;
+    list.prepend(str3);
+    QVERIFY(list.size() == 3);
+    QVERIFY(list.at(0) == str3);
+    QVERIFY(list.at(1) == str2);
+    QVERIFY(list.at(2) == str1);
+    list.removeAll(str2);
+    delete str2;
+    QVERIFY(list.size() == 2);
+    QVERIFY(list.at(0) == str3);
+    QVERIFY(list.at(1) == str1);
+    QString *str4 = new QString;
+    list.prepend(str4);
+    QVERIFY(list.size() == 3);
+    QVERIFY(list.at(0) == str4);
+    QVERIFY(list.at(1) == str3);
+    QVERIFY(list.at(2) == str1);
+    qDeleteAll(list);
+    list.clear();
+}
+
+void tst_QList::mid() const
+{
+    QList<QString> list;
+    list << "foo" << "bar" << "baz" << "bak" << "buck" << "hello" << "kitty";
+
+    QCOMPARE(list.mid(3, 3),
+             QList<QString>() << "bak" << "buck" << "hello");
 }
 
 QTEST_APPLESS_MAIN(tst_QList)

@@ -272,6 +272,7 @@ public:
         // UntransformedPositionVertexShader must be first in the list:
         UntransformedPositionVertexShader,
         PositionOnlyVertexShader,
+        ComplexGeometryPositionOnlyVertexShader,
         PositionWithPatternBrushVertexShader,
         PositionWithLinearGradientBrushVertexShader,
         PositionWithConicalGradientBrushVertexShader,
@@ -400,7 +401,7 @@ public:
 
     bool                useTextureCoords;
     bool                useOpacityAttribute;
-    bool                usePmvMatrix;
+    bool                usePmvMatrixAttribute;
 
     bool operator==(const QGLEngineShaderProg& other) {
         // We don't care about the program
@@ -446,6 +447,7 @@ public:
         InvertedTextureSize,
         BrushTransform,
         BrushTexture,
+        Matrix,
         NumUniforms
     };
 
@@ -474,6 +476,15 @@ public:
 
     void useSimpleProgram();
     void useBlitProgram();
+    void setHasComplexGeometry(bool hasComplexGeometry)
+    {
+        complexGeometry = hasComplexGeometry;
+        shaderProgNeedsChanging = true;
+    }
+    bool hasComplexGeometry() const
+    {
+        return complexGeometry;
+    }
 
     QGLShaderProgram* currentProgram(); // Returns pointer to the shader the manager has chosen
     QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers
@@ -487,6 +498,7 @@ private slots:
 private:
     QGLContext*     ctx;
     bool            shaderProgNeedsChanging;
+    bool            complexGeometry;
 
     // Current state variables which influence the choice of shader:
     QTransform                  brushTransform;

@@ -37,6 +37,8 @@
 
 #include <QtCore/qobjectdefs.h>
 
+#include "RefPtr.h"
+
 namespace JSC
 {
     class EvalExecutable;
@@ -67,7 +69,7 @@ public:
     int firstLineNumber;
 
     QScriptEnginePrivate *engine;
-    JSC::EvalExecutable *_executable;
+    WTF::RefPtr<JSC::EvalExecutable> _executable;
     intptr_t sourceId;
     bool isCompiled;
 };

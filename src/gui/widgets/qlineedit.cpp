@@ -383,8 +383,6 @@ void QLineEdit::setText(const QString& text)
     d->control->setText(text);
 }
 
-// ### Qt 4.7: remove this #if guard
-#if (QT_VERSION >= 0x407000) || defined(Q_WS_MAEMO_5)
 /*!
     \since 4.7
 
@@ -414,7 +412,6 @@ void QLineEdit::setPlaceholderText(const QString& placeholderText)
             update();
     }
 }
-#endif
 
 /*!
     \property QLineEdit::displayText
@@ -542,10 +539,15 @@ void QLineEdit::setEchoMode(EchoMode mode)
     if (mode == (EchoMode)d->control->echoMode())
         return;
     Qt::InputMethodHints imHints = inputMethodHints();
-    if (mode == Password) {
+    if (mode == Password || mode == NoEcho) {
         imHints |= Qt::ImhHiddenText;
     } else {
         imHints &= ~Qt::ImhHiddenText;
+    }
+    if (mode != Normal) {
+        imHints |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    } else {
+        imHints &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
     }
     setInputMethodHints(imHints);
     d->control->setEchoMode(mode);
@@ -1637,12 +1639,8 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
                 if (!hasEditFocus() && !(event->modifiers() & Qt::ControlModifier)) {
                     if (!event->text().isEmpty() && event->text().at(0).isPrint()
                         && !isReadOnly())
-                    {
                         setEditFocus(true);
-#ifndef Q_OS_SYMBIAN
-                        clear();
-#endif
-                    } else {
+                    else {
                         event->ignore();
                         return;
                     }
@@ -1698,12 +1696,8 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
     // commit text as they focus out without interfering with focus
     if (QApplication::keypadNavigationEnabled()
         && hasFocus() && !hasEditFocus()
-        && !e->preeditString().isEmpty()) {
+        && !e->preeditString().isEmpty())
         setEditFocus(true);
-#ifndef Q_OS_SYMBIAN
-        selectAll();        // so text is replaced rather than appended to
-#endif
-    }
 #endif
 
     d->control->processInputMethodEvent(e);
@@ -2046,9 +2040,10 @@ void QLineEdit::dropEvent(QDropEvent* e)
 */
 void QLineEdit::contextMenuEvent(QContextMenuEvent *event)
 {
-    QPointer<QMenu> menu = createStandardContextMenu();
-    menu->exec(event->globalPos());
-    delete menu;
+    if (QMenu *menu = createStandardContextMenu()) {
+        menu->setAttribute(Qt::WA_DeleteOnClose);
+        menu->popup(event->globalPos());
+    }
 }
 
 #if defined(Q_WS_WIN)

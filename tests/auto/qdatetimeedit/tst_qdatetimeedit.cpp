@@ -3357,6 +3357,8 @@ void tst_QDateTimeEdit::keypadAutoAdvance_data()
     QTest::addColumn<Qt::KeyboardModifiers>("modifiers");
     QTest::newRow("None") << (Qt::KeyboardModifiers)Qt::NoModifier;
     QTest::newRow("Keypad") << (Qt::KeyboardModifiers)Qt::KeypadModifier;
+    // QTBUG-7842: Using KeyPad with shift (numlock off)
+    QTest::newRow("Keypad+Shift") << (Qt::KeyboardModifiers)(Qt::KeypadModifier|Qt::ShiftModifier);
 }
 
 

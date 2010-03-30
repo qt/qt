@@ -83,12 +83,14 @@ public:
                   Modified    = 0x080,
                   Hidden      = 0x100,
                   System      = 0x200,
-                 
+
                   AccessMask  = 0x3F0,
 
                   AllDirs       = 0x400,
                   CaseSensitive = 0x800,
-                  NoDotAndDotDot = 0x1000,
+                  NoDotAndDotDot = 0x1000, // ### Qt5 NoDotAndDotDot = NoDot|NoDotDot
+                  NoDot         = 0x2000,
+                  NoDotDot      = 0x4000,
 
                   NoFilter = -1
 #ifdef QT3_SUPPORT
@@ -215,6 +217,7 @@ public:
     static bool match(const QStringList &filters, const QString &fileName);
     static bool match(const QString &filter, const QString &fileName);
 #endif
+
     static QString cleanPath(const QString &path);
     void refresh() const;
 
@@ -246,7 +249,7 @@ public:
     inline QT3_SUPPORT static QString homeDirPath() { return homePath(); }
     inline QT3_SUPPORT static QString rootDirPath() { return rootPath(); }
     inline QT3_SUPPORT static QString cleanDirPath(const QString &name) { return cleanPath(name); }
-#endif
+#endif // QT3_SUPPORT
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDir::Filters)

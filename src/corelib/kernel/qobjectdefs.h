@@ -273,6 +273,14 @@ public:
         : QGenericArgument(aName, static_cast<const void *>(&aData))
         {}
 };
+template <class T>
+class QArgument<T &>: public QGenericArgument
+{
+public:
+    inline QArgument(const char *aName, T &aData)
+        : QGenericArgument(aName, static_cast<const void *>(&aData))
+        {}
+};
 
 
 template <typename T>

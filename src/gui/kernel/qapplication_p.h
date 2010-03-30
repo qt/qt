@@ -459,6 +459,12 @@ public:
     static OSStatus globalEventProcessor(EventHandlerCallRef, EventRef, void *);
     static OSStatus globalAppleEventProcessor(const AppleEvent *, AppleEvent *, long);
     static OSStatus tabletProximityCallback(EventHandlerCallRef, EventRef, void *);
+#ifdef QT_MAC_USE_COCOA
+    static void qt_initAfterNSAppStarted();
+    static void setupAppleEvents();
+    static void updateOverrideCursor();
+    static void disableUsageOfCursorRects(bool disable);
+#endif
     static bool qt_mac_apply_settings();
 #endif
 
@@ -508,12 +514,19 @@ public:
     int symbianResourceChange(const QSymbianEvent *symbianEvent);
 
 #endif
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC)
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
     QGestureManager *gestureManager;
     QWidget *gestureWidget;
+    QPixmap *move_cursor;
+    QPixmap *copy_cursor;
+    QPixmap *link_cursor;
+#if defined(Q_WS_WIN)
+    QPixmap *ignore_cursor;
+#endif
+    QPixmap getPixmapCursor(Qt::CursorShape cshape);
 
     QMap<int, QWeakPointer<QWidget> > widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;

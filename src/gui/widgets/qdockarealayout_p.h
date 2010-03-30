@@ -128,7 +128,7 @@ class Q_AUTOTEST_EXPORT QDockAreaLayoutInfo
 {
 public:
     QDockAreaLayoutInfo();
-    QDockAreaLayoutInfo(int _sep, QInternal::DockPosition _dockPos, Qt::Orientation _o,
+    QDockAreaLayoutInfo(const int *_sep, QInternal::DockPosition _dockPos, Qt::Orientation _o,
                         int tbhape, QMainWindow *window);
 
     QSize minimumSize() const;
@@ -189,7 +189,7 @@ public:
 
     QMainWindowLayout *mainWindowLayout() const;
 
-    int sep;
+    const int *sep;
     mutable QVector<QWidget*> separatorWidgets;
     QInternal::DockPosition dockPos;
     Qt::Orientation o;
@@ -300,6 +300,7 @@ public:
     QSet<QTabBar*> usedTabBars() const;
     QSet<QWidget*> usedSeparatorWidgets() const;
 #endif //QT_NO_TABBAR
+    void styleChangedEvent();
 };
 
 QT_END_NAMESPACE

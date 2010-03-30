@@ -96,7 +96,8 @@ class Node
 #ifdef QDOC_QML
         ExternalPage,
         QmlClass,
-        QmlPropertyGroup
+        QmlPropertyGroup,
+        QmlBasicType
 #else
         ExternalPage
 #endif
@@ -136,6 +137,13 @@ class Node
         AppendixLink */ 
     };
 
+    enum PageType {
+        NoPageType,
+        ApiPage,
+        ArticlePage,
+        ExamplePage
+    };
+
     virtual ~Node();
 
     void setAccess(Access access) { acc = access; }
@@ -149,10 +157,13 @@ class Node
     void setLink(LinkType linkType, const QString &link, const QString &desc);
     void setUrl(const QString &url);
     void setTemplateStuff(const QString &templateStuff) { tpl = templateStuff; }
+    void setPageType(PageType t) { pageTyp = t; }
+    void setPageType(const QString& t);
 
     virtual bool isInnerNode() const = 0;
     virtual bool isReimp() const { return false; }
     virtual bool isFunction() const { return false; }
+    virtual bool isQmlNode() const { return false; }
     Type type() const { return typ; }
     virtual SubType subType() const { return NoSubType; }
     InnerNode *parent() const { return par; }
@@ -172,6 +183,8 @@ class Node
     ThreadSafeness inheritedThreadSafeness() const;
     QString since() const { return sinc; }
     QString templateStuff() const { return tpl; }
+    PageType pageType() const { return pageTyp; }
+    virtual void addPageKeywords(const QString& ) { }
 
     void clearRelated() { rel = 0; }
 
@@ -185,13 +198,15 @@ class Node
 #ifdef Q_WS_WIN
     Type typ;
     Access acc;
-    Status sta;
     ThreadSafeness saf;
+    PageType pageTyp;
+    Status sta;
 #else
     Type typ : 4;
     Access acc : 2;
-    Status sta : 3;
     ThreadSafeness saf : 2;
+    PageType pageTyp : 4;
+    Status sta : 3;
 #endif
     InnerNode *par;
     InnerNode *rel;
@@ -243,6 +258,8 @@ class InnerNode : public Node
 
     QStringList primaryKeys();
     QStringList secondaryKeys();
+    const QStringList& pageKeywords() const { return pageKeywds; }
+    virtual void addPageKeywords(const QString& t) { pageKeywds << t; }
 
  protected:
     InnerNode(Type type, InnerNode *parent, const QString& name);
@@ -255,6 +272,7 @@ class InnerNode : public Node
     void removeChild(Node *child);
     void removeRelated(Node *pseudoChild);
 
+    QStringList pageKeywds;
     QStringList inc;
     NodeList children;
     NodeList enumChildren;
@@ -362,15 +380,30 @@ class QmlClassNode : public FakeNode
     QmlClassNode(InnerNode *parent, 
                  const QString& name, 
                  const ClassNode* cn);
-    virtual ~QmlClassNode() { }
+    virtual ~QmlClassNode();
+    virtual bool isQmlNode() const { return true; }
 
     const ClassNode* classNode() const { return cnode; }
     virtual QString fileBase() const;
+    static void addInheritedBy(const QString& base, Node* sub);
+    static void subclasses(const QString& base, NodeList& subs);
+    static void clear();
 
+ public:
     static bool qmlOnly;
+    static QMultiMap<QString,Node*> inheritedBy;
 
  private:
-    const ClassNode* cnode;
+    const ClassNode*    cnode;
+};
+
+class QmlBasicTypeNode : public FakeNode
+{
+ public:
+    QmlBasicTypeNode(InnerNode *parent, 
+                     const QString& name);
+    virtual ~QmlBasicTypeNode() { }
+    virtual bool isQmlNode() const { return true; }
 };
 
 class QmlPropGroupNode : public FakeNode
@@ -380,6 +413,7 @@ class QmlPropGroupNode : public FakeNode
                      const QString& name,
                      bool attached);
     virtual ~QmlPropGroupNode() { }
+    virtual bool isQmlNode() const { return true; }
 
     const QString& element() const { return parent()->name(); }
     void setDefault() { isdefault = true; }
@@ -411,6 +445,7 @@ class QmlPropertyNode : public LeafNode
     bool isDesignable() const { return fromTrool(des,false); }
     bool isWritable() const { return fromTrool(wri,true); }
     bool isAttached() const { return att; }
+    virtual bool isQmlNode() const { return true; }
 
     const QString& element() const { return static_cast<QmlPropGroupNode*>(parent())->element(); }
 
@@ -579,6 +614,9 @@ class FunctionNode : public LeafNode
     QString signature(bool values = false) const;
     const QString& element() const { return parent()->name(); }
     bool isAttached() const { return att; }
+    virtual bool isQmlNode() const { 
+        return ((type() == QmlSignal) || (type() == QmlMethod)); 
+    }
 
     void debug() const;
 

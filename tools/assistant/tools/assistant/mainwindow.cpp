@@ -38,24 +38,31 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "mainwindow.h"
+
+#include "bookmarkmanager.h"
 #include "centralwidget.h"
-#include "helpviewer.h"
 #include "indexwindow.h"
 #include "topicchooser.h"
 #include "contentwindow.h"
 #include "preferencesdialog.h"
-#include "bookmarkmanager.h"
+#include "helpenginewrapper.h"
 #include "remotecontrol.h"
 #include "cmdlineparser.h"
 #include "aboutdialog.h"
 #include "searchwidget.h"
 #include "qtdocinstaller.h"
 
+// #define TRACING_REQUESTED
+
 #include <QtCore/QDir>
 #include <QtCore/QTimer>
+#include <QtCore/QDateTime>
 #include <QtCore/QDebug>
+#include <QtCore/QFileSystemWatcher>
+#include <QtCore/QPair>
 #include <QtCore/QResource>
 #include <QtCore/QByteArray>
 #include <QtCore/QTextStream>
@@ -76,8 +83,9 @@
 #include <QtGui/QProgressBar>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QToolButton>
+#include <QtGui/QFileDialog>
 
-#include <QtHelp/QHelpEngine>
+#include <QtHelp/QHelpEngineCore>
 #include <QtHelp/QHelpSearchEngine>
 #include <QtHelp/QHelpContentModel>
 #include <QtHelp/QHelpIndexModel>
@@ -86,6 +94,7 @@ QT_BEGIN_NAMESPACE
 
 MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     : QMainWindow(parent)
+    , m_bookmarkWidget(0)
     , m_filterCombo(0)
     , m_toolBarMenu(0)
     , m_cmdLine(cmdLine)
@@ -93,37 +102,53 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     , m_qtDocInstaller(0)
     , m_connectedInitSignals(false)
 {
+    TRACE_OBJ
+
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
 
+    QString collectionFile;
     if (usesDefaultCollection()) {
         MainWindow::collectionFileDirectory(true);
-        m_helpEngine = new QHelpEngine(MainWindow::defaultHelpCollectionFileName(),
-            this);
+        collectionFile = MainWindow::defaultHelpCollectionFileName();
     } else {
-        m_helpEngine = new QHelpEngine(cmdLine->collectionFile(), this);
+        collectionFile = cmdLine->collectionFile();
     }
+    HelpEngineWrapper &helpEngineWrapper =
+        HelpEngineWrapper::instance(collectionFile);
 
-    m_centralWidget = new CentralWidget(m_helpEngine, this);
+    m_centralWidget = new CentralWidget(this);
     setCentralWidget(m_centralWidget);
 
-    m_indexWindow = new IndexWindow(m_helpEngine);
+    m_indexWindow = new IndexWindow(this);
     QDockWidget *indexDock = new QDockWidget(tr("Index"), this);
     indexDock->setObjectName(QLatin1String("IndexWindow"));
     indexDock->setWidget(m_indexWindow);
     addDockWidget(Qt::LeftDockWidgetArea, indexDock);
 
-    m_contentWindow = new ContentWindow(m_helpEngine);
+    m_contentWindow = new ContentWindow;
     QDockWidget *contentDock = new QDockWidget(tr("Contents"), this);
     contentDock->setObjectName(QLatin1String("ContentWindow"));
     contentDock->setWidget(m_contentWindow);
     addDockWidget(Qt::LeftDockWidgetArea, contentDock);
 
-    QDockWidget *bookmarkDock = new QDockWidget(tr("Bookmarks"), this);
-    bookmarkDock->setObjectName(QLatin1String("BookmarkWindow"));
-    bookmarkDock->setWidget(setupBookmarkWidget());
-    addDockWidget(Qt::LeftDockWidgetArea, bookmarkDock);
+    QDockWidget *bookmarkDock = 0;
+    if (BookmarkManager *manager = BookmarkManager::instance()) {
+        bookmarkDock = new QDockWidget(tr("Bookmarks"), this);
+        bookmarkDock->setObjectName(QLatin1String("BookmarkWindow"));
+        bookmarkDock->setWidget(m_bookmarkWidget = manager->bookmarkDockWidget());
+        addDockWidget(Qt::LeftDockWidgetArea, bookmarkDock);
 
-    QHelpSearchEngine *searchEngine = m_helpEngine->searchEngine();
+        connect(manager, SIGNAL(escapePressed()), this,
+            SLOT(activateCurrentCentralWidgetTab()));
+        connect(manager, SIGNAL(setSource(QUrl)), m_centralWidget,
+            SLOT(setSource(QUrl)));
+        connect(manager, SIGNAL(setSourceInNewTab(QUrl)), m_centralWidget,
+            SLOT(setSourceInNewTab(QUrl)));
+        connect(m_centralWidget, SIGNAL(addBookmark(QString, QString)), manager,
+            SLOT(addBookmark(QString, QString)));
+    }
+
+    QHelpSearchEngine *searchEngine = helpEngineWrapper.searchEngine();
     connect(searchEngine, SIGNAL(indexingStarted()), this, SLOT(indexingStarted()));
     connect(searchEngine, SIGNAL(indexingFinished()), this, SLOT(indexingFinished()));
 
@@ -140,18 +165,9 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         setupFilterToolbar();
         setupAddressToolbar();
 
-        m_bookmarkManager->setupBookmarkModels();
-        m_bookmarkMenu->addSeparator();
-        m_bookmarkManager->fillBookmarkMenu(m_bookmarkMenu);
-        connect(m_bookmarkMenu, SIGNAL(triggered(QAction*)), this,
-            SLOT(showBookmark(QAction*)));
-        connect(m_bookmarkManager, SIGNAL(bookmarksChanged()), this,
-            SLOT(updateBookmarkMenu()));
-
-        setWindowTitle(m_helpEngine->customValue(QLatin1String("WindowTitle"),
-            defWindowTitle).toString());
-        QByteArray iconArray = m_helpEngine->customValue(QLatin1String("ApplicationIcon"),
-            QByteArray()).toByteArray();
+        const QString windowTitle = helpEngineWrapper.windowTitle();
+        setWindowTitle(windowTitle.isEmpty() ? defWindowTitle : windowTitle);
+        QByteArray iconArray = helpEngineWrapper.applicationIcon();
         if (iconArray.size() > 0) {
             QPixmap pix;
             pix.loadFromData(iconArray);
@@ -165,29 +181,28 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         // Show the widget here, otherwise the restore geometry and state won't work
         // on x11.
         show();
-        QByteArray ba(m_helpEngine->customValue(QLatin1String("MainWindow")).toByteArray());
+        QByteArray ba(helpEngineWrapper.mainWindow());
         if (!ba.isEmpty())
             restoreState(ba);
 
-        ba = m_helpEngine->customValue(QLatin1String("MainWindowGeometry")).toByteArray();
+        ba = helpEngineWrapper.mainWindowGeometry();
         if (!ba.isEmpty()) {
             restoreGeometry(ba);
         } else {
             tabifyDockWidget(contentDock, indexDock);
-            tabifyDockWidget(indexDock, bookmarkDock);
+            if (bookmarkDock)
+                tabifyDockWidget(indexDock, bookmarkDock);
             contentDock->raise();
             resize(QSize(800, 600));
         }
 
-        if (!m_helpEngine->customValue(QLatin1String("useAppFont")).isValid()) {
-            m_helpEngine->setCustomValue(QLatin1String("useAppFont"), false);
-            m_helpEngine->setCustomValue(QLatin1String("useBrowserFont"), false);
-            m_helpEngine->setCustomValue(QLatin1String("appFont"), qApp->font());
-            m_helpEngine->setCustomValue(QLatin1String("appWritingSystem"),
-                QFontDatabase::Latin);
-            m_helpEngine->setCustomValue(QLatin1String("browserFont"), qApp->font());
-            m_helpEngine->setCustomValue(QLatin1String("browserWritingSystem"),
-                QFontDatabase::Latin);
+        if (!helpEngineWrapper.hasFontSettings()) {
+            helpEngineWrapper.setUseAppFont(false);
+            helpEngineWrapper.setUseBrowserFont(false);
+            helpEngineWrapper.setAppFont(qApp->font());
+            helpEngineWrapper.setAppWritingSystem(QFontDatabase::Latin);
+            helpEngineWrapper.setBrowserFont(qApp->font());
+            helpEngineWrapper.setBrowserWritingSystem(QFontDatabase::Latin);
         } else {
             updateApplicationFont();
         }
@@ -196,7 +211,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
 
         QTimer::singleShot(0, this, SLOT(insertLastPages()));
         if (m_cmdLine->enableRemoteControl())
-            (void)new RemoteControl(this, m_helpEngine);
+            (void)new RemoteControl(this);
 
         if (m_cmdLine->contents() == CmdLineParser::Show)
             showContents();
@@ -209,9 +224,9 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
             hideIndex();
 
         if (m_cmdLine->bookmarks() == CmdLineParser::Show)
-            showBookmarks();
+            showBookmarksDockWidget();
         else if (m_cmdLine->bookmarks() == CmdLineParser::Hide)
-            hideBookmarks();
+            hideBookmarksDockWidget();
 
         if (m_cmdLine->search() == CmdLineParser::Show)
             showSearch();
@@ -223,51 +238,59 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         else if (m_cmdLine->index() == CmdLineParser::Activate)
             showIndex();
         else if (m_cmdLine->bookmarks() == CmdLineParser::Activate)
-            showBookmarks();
+            showBookmarksDockWidget();
 
         if (!m_cmdLine->currentFilter().isEmpty()) {
             const QString &curFilter = m_cmdLine->currentFilter();
-            if (m_helpEngine->customFilters().contains(curFilter))
-                m_helpEngine->setCurrentFilter(curFilter);
+            if (helpEngineWrapper.customFilters().contains(curFilter))
+                helpEngineWrapper.setCurrentFilter(curFilter);
         }
 
         if (usesDefaultCollection())
             QTimer::singleShot(0, this, SLOT(lookForNewQtDocumentation()));
         else
             checkInitState();
+
+        connect(&helpEngineWrapper, SIGNAL(documentationRemoved(QString)),
+                this, SLOT(documentationRemoved(QString)));
+        connect(&helpEngineWrapper, SIGNAL(documentationUpdated(QString)),
+                this, SLOT(documentationUpdated(QString)));
     }
     setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 }
 
 MainWindow::~MainWindow()
 {
+    TRACE_OBJ
     if (m_qtDocInstaller)
         delete m_qtDocInstaller;
 }
 
 bool MainWindow::usesDefaultCollection() const
 {
+    TRACE_OBJ
     return m_cmdLine->collectionFile().isEmpty();
 }
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
-    m_bookmarkManager->saveBookmarks();
-    m_helpEngine->setCustomValue(QLatin1String("MainWindow"), saveState());
-    m_helpEngine->setCustomValue(QLatin1String("MainWindowGeometry"),
-        saveGeometry());
-
+    TRACE_OBJ
+    BookmarkManager::destroy();
+    HelpEngineWrapper::instance().setMainWindow(saveState());
+    HelpEngineWrapper::instance().setMainWindowGeometry(saveGeometry());
     QMainWindow::closeEvent(e);
 }
 
 bool MainWindow::initHelpDB()
 {
-    if (!m_helpEngine->setupData())
+    TRACE_OBJ
+    HelpEngineWrapper &helpEngineWrapper = HelpEngineWrapper::instance();
+    if (!helpEngineWrapper.setupData())
         return false;
 
     bool assistantInternalDocRegistered = false;
     QString intern(QLatin1String("com.trolltech.com.assistantinternal-"));
-    foreach (const QString &ns, m_helpEngine->registeredDocumentations()) {
+    foreach (const QString &ns, helpEngineWrapper.registeredDocumentations()) {
         if (ns.startsWith(intern)) {
             intern = ns;
             assistantInternalDocRegistered = true;
@@ -275,8 +298,7 @@ bool MainWindow::initHelpDB()
         }
     }
 
-    const QString &collectionFile = m_helpEngine->collectionFile();
-
+    const QString &collectionFile = helpEngineWrapper.collectionFile();
     QFileInfo fi(collectionFile);
     QString helpFile;
     QTextStream(&helpFile) << fi.absolutePath() << QDir::separator()
@@ -293,109 +315,78 @@ bool MainWindow::initHelpDB()
 
             file.close();
         }
-        QHelpEngineCore hc(fi.absoluteFilePath());
-        hc.setupData();
-        hc.unregisterDocumentation(intern);
-        hc.registerDocumentation(helpFile);
-        needsSetup = true;
-    }
-
-    const QLatin1String unfiltered("UnfilteredFilterInserted");
-    if (1 != m_helpEngine->customValue(unfiltered).toInt()) {
-        {
-            QHelpEngineCore hc(collectionFile);
-            hc.setupData();
-            hc.addCustomFilter(tr("Unfiltered"), QStringList());
-            hc.setCustomValue(unfiltered, 1);
-        }
-
-        m_helpEngine->blockSignals(true);
-        m_helpEngine->setCurrentFilter(tr("Unfiltered"));
-        m_helpEngine->blockSignals(false);
+        helpEngineWrapper.unregisterDocumentation(intern);
+        helpEngineWrapper.registerDocumentation(helpFile);
         needsSetup = true;
     }
 
     if (needsSetup)
-        m_helpEngine->setupData();
+        helpEngineWrapper.setupData();
     return true;
 }
 
 void MainWindow::lookForNewQtDocumentation()
 {
-    m_qtDocInstaller = new QtDocInstaller(m_helpEngine->collectionFile());
-    connect(m_qtDocInstaller, SIGNAL(errorMessage(QString)), this,
-        SLOT(displayInstallationError(QString)));
-    connect(m_qtDocInstaller, SIGNAL(docsInstalled(bool)), this,
-        SLOT(qtDocumentationInstalled(bool)));
+    TRACE_OBJ
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    QStringList docs;
+    docs << QLatin1String("assistant")
+        << QLatin1String("designer")
+        << QLatin1String("linguist")
+        << QLatin1String("qmake")
+        << QLatin1String("qt");
+    QList<QtDocInstaller::DocInfo> qtDocInfos;
+    foreach (const QString &doc, docs)
+        qtDocInfos.append(QtDocInstaller::DocInfo(doc, helpEngine.qtDocInfo(doc)));
 
-    QString versionKey = QString(QLatin1String("qtVersion%1$$$qt")).
-        arg(QLatin1String(QT_VERSION_STR));
-    if (m_helpEngine->customValue(versionKey, 0).toInt() != 1)
+    m_qtDocInstaller = new QtDocInstaller(qtDocInfos);
+    connect(m_qtDocInstaller, SIGNAL(docsInstalled(bool)), this,
+        SLOT(qtDocumentationInstalled()));
+    connect(m_qtDocInstaller, SIGNAL(qchFileNotFound(QString)), this,
+            SLOT(resetQtDocInfo(QString)));
+    connect(m_qtDocInstaller, SIGNAL(registerDocumentation(QString, QString)),
+            this, SLOT(registerDocumentation(QString, QString)));
+    if (helpEngine.qtDocInfo(QLatin1String("qt")).count() != 2)
         statusBar()->showMessage(tr("Looking for Qt Documentation..."));
     m_qtDocInstaller->installDocs();
 }
 
-void MainWindow::displayInstallationError(const QString &errorMessage)
+void MainWindow::qtDocumentationInstalled()
 {
-    QMessageBox::warning(this, tr("Qt Assistant"), errorMessage);
-}
-
-void MainWindow::qtDocumentationInstalled(bool newDocsInstalled)
-{
-    if (newDocsInstalled)
-        m_helpEngine->setupData();
+    TRACE_OBJ
     statusBar()->clearMessage();
     checkInitState();
 }
 
 void MainWindow::checkInitState()
 {
+    TRACE_OBJ
+    HelpEngineWrapper::instance().initialDocSetupDone();
     if (!m_cmdLine->enableRemoteControl())
         return;
 
-    if (m_helpEngine->contentModel()->isCreatingContents()
-        || m_helpEngine->indexModel()->isCreatingIndex()) {
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    if (helpEngine.contentModel()->isCreatingContents()
+        || helpEngine.indexModel()->isCreatingIndex()) {
         if (!m_connectedInitSignals) {
-            connect(m_helpEngine->contentModel(), SIGNAL(contentsCreated()),
+            connect(helpEngine.contentModel(), SIGNAL(contentsCreated()),
                 this, SLOT(checkInitState()));
-            connect(m_helpEngine->indexModel(), SIGNAL(indexCreated()), this,
+            connect(helpEngine.indexModel(), SIGNAL(indexCreated()), this,
                 SLOT(checkInitState()));
             m_connectedInitSignals = true;
         }
     } else {
         if (m_connectedInitSignals) {
-            disconnect(m_helpEngine->contentModel(), 0, this, 0);
-            disconnect(m_helpEngine->indexModel(), 0, this, 0);
+            disconnect(helpEngine.contentModel(), 0, this, 0);
+            disconnect(helpEngine.indexModel(), 0, this, 0);
         }
         emit initDone();
     }
 }
 
-void MainWindow::updateBookmarkMenu()
-{
-    if (m_bookmarkManager) {
-        m_bookmarkMenu->removeAction(m_bookmarkMenuAction);
-        
-        m_bookmarkMenu->clear();
-        
-        m_bookmarkMenu->addAction(m_bookmarkMenuAction);
-        m_bookmarkMenu->addSeparator();
-        
-        m_bookmarkManager->fillBookmarkMenu(m_bookmarkMenu);
-    }
-}
-
-void MainWindow::showBookmark(QAction *action)
-{
-    if (m_bookmarkManager) {
-        const QUrl &url = m_bookmarkManager->urlForAction(action);
-        if (url.isValid())
-            m_centralWidget->setSource(url);
-    }
-}
-
 void MainWindow::insertLastPages()
 {
+    TRACE_OBJ
     if (m_cmdLine->url().isValid())
         m_centralWidget->setSource(m_cmdLine->url());
     else
@@ -407,6 +398,7 @@ void MainWindow::insertLastPages()
 
 void MainWindow::setupActions()
 {
+    TRACE_OBJ
     QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
 #ifdef Q_OS_MAC
     setUnifiedTitleAndToolBarOnMac(true);
@@ -416,6 +408,11 @@ void MainWindow::setupActions()
 #endif
 
     QMenu *menu = menuBar()->addMenu(tr("&File"));
+
+    m_newTabAction = menu->addAction(tr("New &Tab"), m_centralWidget, SLOT(newTab()));
+    m_newTabAction->setShortcut(QKeySequence::AddTab);
+
+    menu->addSeparator();
 
     m_pageSetupAction = menu->addAction(tr("Page Set&up..."), m_centralWidget,
         SLOT(pageSetup()));
@@ -429,16 +426,18 @@ void MainWindow::setupActions()
 
     menu->addSeparator();
 
-    m_newTabAction = menu->addAction(tr("New &Tab"), m_centralWidget, SLOT(newTab()));
-    m_newTabAction->setShortcut(QKeySequence::AddTab);
-
     m_closeTabAction = menu->addAction(tr("&Close Tab"), m_centralWidget,
         SLOT(closeTab()));
     m_closeTabAction->setShortcuts(QKeySequence::Close);
 
-    QAction *tmp = menu->addAction(tr("&Quit"), this, SLOT(close()));
-    tmp->setShortcut(QKeySequence::Quit);
+    QAction *tmp = menu->addAction(QIcon::fromTheme("application-exit"),
+                                   tr("&Quit"), this, SLOT(close()));
     tmp->setMenuRole(QAction::QuitRole);
+#ifdef Q_OS_WIN
+    tmp->setShortcut(QKeySequence(tr("CTRL+Q")));
+#else
+    tmp->setShortcut(QKeySequence::Quit);
+#endif
 
     menu = menuBar()->addMenu(tr("&Edit"));
     m_copyAction = menu->addAction(tr("&Copy selected Text"), m_centralWidget,
@@ -492,7 +491,7 @@ void MainWindow::setupActions()
         QKeySequence(tr("ALT+C")));
     m_viewMenu->addAction(tr("Index"), this, SLOT(showIndex()),
         QKeySequence(tr("ALT+I")));
-    m_viewMenu->addAction(tr("Bookmarks"), this, SLOT(showBookmarks()),
+    m_viewMenu->addAction(tr("Bookmarks"), this, SLOT(showBookmarksDockWidget()),
         QKeySequence(tr("ALT+O")));
     m_viewMenu->addAction(tr("Search"), this, SLOT(showSearchWidget()),
         QKeySequence(tr("ALT+S")));
@@ -528,16 +527,16 @@ void MainWindow::setupActions()
     tmp->setShortcuts(QList<QKeySequence>() << QKeySequence(tr("Ctrl+Alt+Left"))
         << QKeySequence(Qt::CTRL + Qt::Key_PageUp));
 
-    m_bookmarkMenu = menuBar()->addMenu(tr("&Bookmarks"));
-    m_bookmarkMenuAction = m_bookmarkMenu->addAction(tr("Add Bookmark..."),
-        this, SLOT(addBookmark()));
-    m_bookmarkMenuAction->setShortcut(tr("CTRL+D"));
+    if (BookmarkManager *manager = BookmarkManager::instance())
+        manager->takeBookmarksMenu(menuBar()->addMenu(tr("&Bookmarks")));
 
     menu = menuBar()->addMenu(tr("&Help"));
     m_aboutAction = menu->addAction(tr("About..."), this, SLOT(showAboutDialog()));
     m_aboutAction->setMenuRole(QAction::AboutRole);
 
 #ifdef Q_WS_X11
+    m_newTabAction->setIcon(QIcon::fromTheme("tab-new", m_newTabAction->icon()));
+    m_closeTabAction->setIcon(QIcon::fromTheme("window-close", m_closeTabAction->icon()));
     m_backAction->setIcon(QIcon::fromTheme("go-previous" , m_backAction->icon()));
     m_nextAction->setIcon(QIcon::fromTheme("go-next" , m_nextAction->icon()));
     m_zoomInAction->setIcon(QIcon::fromTheme("zoom-in" , m_zoomInAction->icon()));
@@ -547,7 +546,10 @@ void MainWindow::setupActions()
     m_copyAction->setIcon(QIcon::fromTheme("edit-copy" , m_copyAction->icon()));
     m_findAction->setIcon(QIcon::fromTheme("edit-find" , m_findAction->icon()));
     m_homeAction->setIcon(QIcon::fromTheme("go-home" , m_homeAction->icon()));
+    m_pageSetupAction->setIcon(QIcon::fromTheme("document-page-setup", m_pageSetupAction->icon()));
+    m_printPreviewAction->setIcon(QIcon::fromTheme("document-print-preview", m_printPreviewAction->icon()));
     m_printAction->setIcon(QIcon::fromTheme("document-print" , m_printAction->icon()));
+    m_aboutAction->setIcon(QIcon::fromTheme("help-about", m_aboutAction->icon()));
 #endif
 
     QToolBar *navigationBar = addToolBar(tr("Navigation Toolbar"));
@@ -592,14 +594,6 @@ void MainWindow::setupActions()
         SLOT(updateNavigationItems()));
     connect(m_centralWidget, SIGNAL(highlighted(QString)), statusBar(),
         SLOT(showMessage(QString)));
-    connect(m_centralWidget, SIGNAL(addNewBookmark(QString,QString)), this,
-        SLOT(addNewBookmark(QString,QString)));
-
-    // bookmarks
-    connect(m_bookmarkWidget, SIGNAL(requestShowLink(QUrl)), m_centralWidget,
-        SLOT(setSource(QUrl)));
-    connect(m_bookmarkWidget, SIGNAL(escapePressed()), this,
-        SLOT(activateCurrentCentralWidgetTab()));
 
     // index window
     connect(m_indexWindow, SIGNAL(linkActivated(QUrl)), m_centralWidget,
@@ -624,6 +618,7 @@ void MainWindow::setupActions()
 
 QMenu *MainWindow::toolBarMenu()
 {
+    TRACE_OBJ
     if (!m_toolBarMenu) {
         m_viewMenu->addSeparator();
         m_toolBarMenu = m_viewMenu->addMenu(tr("Toolbars"));
@@ -633,8 +628,9 @@ QMenu *MainWindow::toolBarMenu()
 
 void MainWindow::setupFilterToolbar()
 {
-    if (!m_helpEngine->
-            customValue(QLatin1String("EnableFilterFunctionality"), true).toBool())
+    TRACE_OBJ
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    if (!helpEngine.filterFunctionalityEnabled())
         return;
 
     m_filterCombo = new QComboBox(this);
@@ -647,16 +643,15 @@ void MainWindow::setupFilterToolbar()
         this));
     filterToolBar->addWidget(m_filterCombo);
 
-    const QLatin1String hideFilter("HideFilterFunctionality");
-    if (m_helpEngine->customValue(hideFilter, true).toBool())
+    if (!helpEngine.filterToolbarVisible())
         filterToolBar->hide();
     toolBarMenu()->addAction(filterToolBar->toggleViewAction());
 
-    connect(m_helpEngine, SIGNAL(setupFinished()), this,
-        SLOT(setupFilterCombo()));
+    connect(&helpEngine, SIGNAL(setupFinished()), this,
+        SLOT(setupFilterCombo()), Qt::QueuedConnection);
     connect(m_filterCombo, SIGNAL(activated(QString)), this,
         SLOT(filterDocumentation(QString)));
-    connect(m_helpEngine, SIGNAL(currentFilterChanged(QString)), this,
+    connect(&helpEngine, SIGNAL(currentFilterChanged(QString)), this,
         SLOT(currentFilterChanged(QString)));
 
     setupFilterCombo();
@@ -664,7 +659,9 @@ void MainWindow::setupFilterToolbar()
 
 void MainWindow::setupAddressToolbar()
 {
-    if (!m_helpEngine->customValue(QLatin1String("EnableAddressBar"), true).toBool())
+    TRACE_OBJ
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    if (!helpEngine.addressBarEnabled())
         return;
 
     m_addressLineEdit = new QLineEdit(this);
@@ -676,7 +673,7 @@ void MainWindow::setupAddressToolbar()
         this));
     addressToolBar->addWidget(m_addressLineEdit);
 
-    if (m_helpEngine->customValue(QLatin1String("HideAddressBar"), true).toBool())
+    if (!helpEngine.addressBarVisible())
         addressToolBar->hide();
     toolBarMenu()->addAction(addressToolBar->toggleViewAction());
 
@@ -691,57 +688,53 @@ void MainWindow::setupAddressToolbar()
 
 void MainWindow::updateAboutMenuText()
 {
-    if (m_helpEngine) {
-        QByteArray ba = m_helpEngine->customValue(QLatin1String("AboutMenuTexts"),
-            QByteArray()).toByteArray();
-        if (ba.size() > 0) {
-            QString lang;
-            QString str;
-            QString trStr;
-            QString currentLang = QLocale::system().name();
-            int i = currentLang.indexOf(QLatin1Char('_'));
-            if (i > -1)
-                currentLang = currentLang.left(i);
-            QDataStream s(&ba, QIODevice::ReadOnly);
-            while (!s.atEnd()) {
-                s >> lang;
-                s >> str;
-                if (lang == QLatin1String("default") && trStr.isEmpty()) {
-                    trStr = str;
-                } else if (lang == currentLang) {
-                    trStr = str;
-                    break;
-                }
+    TRACE_OBJ
+    QByteArray ba = HelpEngineWrapper::instance().aboutMenuTexts();
+    if (ba.size() > 0) {
+        QString lang;
+        QString str;
+        QString trStr;
+        QString currentLang = QLocale::system().name();
+        int i = currentLang.indexOf(QLatin1Char('_'));
+        if (i > -1)
+            currentLang = currentLang.left(i);
+        QDataStream s(&ba, QIODevice::ReadOnly);
+        while (!s.atEnd()) {
+            s >> lang;
+            s >> str;
+            if (lang == QLatin1String("default") && trStr.isEmpty()) {
+                trStr = str;
+            } else if (lang == currentLang) {
+                trStr = str;
+                break;
             }
-            if (!trStr.isEmpty())
-                m_aboutAction->setText(trStr);
         }
+        if (!trStr.isEmpty())
+            m_aboutAction->setText(trStr);
     }
 }
 
 void MainWindow::showNewAddress()
 {
+    TRACE_OBJ
     showNewAddress(m_centralWidget->currentSource());
 }
 
 void MainWindow::showNewAddress(const QUrl &url)
 {
+    TRACE_OBJ
     m_addressLineEdit->setText(url.toString());
-}
-
-void MainWindow::addBookmark()
-{
-    addNewBookmark(m_centralWidget->currentTitle(),
-        m_centralWidget->currentSource().toString());
 }
 
 void MainWindow::gotoAddress()
 {
+    TRACE_OBJ
     m_centralWidget->setSource(m_addressLineEdit->text());
 }
 
 void MainWindow::updateNavigationItems()
 {
+    TRACE_OBJ
     bool hasCurrentViewer = m_centralWidget->isHomeAvailable();
     m_copyAction->setEnabled(m_centralWidget->hasSelection());
     m_homeAction->setEnabled(hasCurrentViewer);
@@ -755,12 +748,14 @@ void MainWindow::updateNavigationItems()
 
 void MainWindow::updateTabCloseAction()
 {
+    TRACE_OBJ
     m_closeTabAction->setEnabled(m_centralWidget->enableTabCloseAction());
 }
 
 void MainWindow::showTopicChooser(const QMap<QString, QUrl> &links,
                                   const QString &keyword)
 {
+    TRACE_OBJ
     TopicChooser tc(this, keyword, links);
     if (tc.exec() == QDialog::Accepted) {
         m_centralWidget->setSource(tc.link());
@@ -769,18 +764,18 @@ void MainWindow::showTopicChooser(const QMap<QString, QUrl> &links,
 
 void MainWindow::showPreferences()
 {
-    PreferencesDialog dia(m_helpEngine, this);
-
+    TRACE_OBJ
+    PreferencesDialog dia(this);
     connect(&dia, SIGNAL(updateApplicationFont()), this,
         SLOT(updateApplicationFont()));
     connect(&dia, SIGNAL(updateBrowserFont()), m_centralWidget,
         SLOT(updateBrowserFont()));
-
     dia.showDialog();
 }
 
 void MainWindow::syncContents()
 {
+    TRACE_OBJ
     qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
     const QUrl url = m_centralWidget->currentSource();
     showContents();
@@ -792,40 +787,32 @@ void MainWindow::syncContents()
 
 void MainWindow::copyAvailable(bool yes)
 {
+    TRACE_OBJ
     m_copyAction->setEnabled(yes);
-}
-
-void MainWindow::addNewBookmark(const QString &title, const QString &url)
-{
-    if (url.isEmpty() || url == QLatin1String("about:blank"))
-        return;
-
-    m_bookmarkManager->showBookmarkDialog(this, title, url);
 }
 
 void MainWindow::showAboutDialog()
 {
+    TRACE_OBJ
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     QByteArray contents;
-    if (m_helpEngine) {
-        QByteArray ba = m_helpEngine->customValue(QLatin1String("AboutTexts"),
-            QByteArray()).toByteArray();
-        if (!ba.isEmpty()) {
-            QString lang;
-            QByteArray cba;
-            QString currentLang = QLocale::system().name();
-            int i = currentLang.indexOf(QLatin1Char('_'));
-            if (i > -1)
-                currentLang = currentLang.left(i);
-            QDataStream s(&ba, QIODevice::ReadOnly);
-            while (!s.atEnd()) {
-                s >> lang;
-                s >> cba;
-                if (lang == QLatin1String("default") && contents.isEmpty()) {
-                    contents = cba;
-                } else if (lang == currentLang) {
-                    contents = cba;
-                    break;
-                }
+    QByteArray ba = helpEngine.aboutTexts();
+    if (!ba.isEmpty()) {
+        QString lang;
+        QByteArray cba;
+        QString currentLang = QLocale::system().name();
+        int i = currentLang.indexOf(QLatin1Char('_'));
+        if (i > -1)
+            currentLang = currentLang.left(i);
+        QDataStream s(&ba, QIODevice::ReadOnly);
+        while (!s.atEnd()) {
+            s >> lang;
+            s >> cba;
+            if (lang == QLatin1String("default") && contents.isEmpty()) {
+                contents = cba;
+            } else if (lang == currentLang) {
+                contents = cba;
+                break;
             }
         }
     }
@@ -834,11 +821,8 @@ void MainWindow::showAboutDialog()
 
     QByteArray iconArray;
     if (!contents.isEmpty()) {
-        iconArray = m_helpEngine->customValue(QLatin1String("AboutIcon"),
-            QByteArray()).toByteArray();
-        QByteArray resources =
-            m_helpEngine->customValue(QLatin1String("AboutImages"),
-            QByteArray()).toByteArray();
+        iconArray = helpEngine.aboutIcon();
+        QByteArray resources = helpEngine.aboutImages();
         QPixmap pix;
         pix.loadFromData(iconArray);
         aboutDia.setText(QString::fromUtf8(contents), resources);
@@ -861,50 +845,109 @@ void MainWindow::showAboutDialog()
     aboutDia.exec();
 }
 
+void MainWindow::setContentsVisible(bool visible)
+{
+    TRACE_OBJ
+    if (visible)
+        showContents();
+    else
+        hideContents();
+}
+
 void MainWindow::showContents()
 {
+    TRACE_OBJ
     activateDockWidget(m_contentWindow);
+}
+
+void MainWindow::hideContents()
+{
+    TRACE_OBJ
+    m_contentWindow->parentWidget()->hide();
+}
+
+void MainWindow::setIndexVisible(bool visible)
+{
+    TRACE_OBJ
+    if (visible)
+        showIndex();
+    else
+        hideIndex();
 }
 
 void MainWindow::showIndex()
 {
+    TRACE_OBJ
     activateDockWidget(m_indexWindow);
 }
 
-void MainWindow::showBookmarks()
+void MainWindow::hideIndex()
 {
-    activateDockWidget(m_bookmarkWidget);
+    TRACE_OBJ
+    m_indexWindow->parentWidget()->hide();
+}
+
+void MainWindow::setBookmarksVisible(bool visible)
+{
+    TRACE_OBJ
+    if (visible)
+        showBookmarksDockWidget();
+    else
+        hideBookmarksDockWidget();
+}
+
+void MainWindow::showBookmarksDockWidget()
+{
+    TRACE_OBJ
+    if (m_bookmarkWidget)
+        activateDockWidget(m_bookmarkWidget);
+}
+
+void MainWindow::hideBookmarksDockWidget()
+{
+    TRACE_OBJ
+    if (m_bookmarkWidget)
+        m_bookmarkWidget->parentWidget()->hide();
+}
+
+void MainWindow::setSearchVisible(bool visible)
+{
+    TRACE_OBJ
+    if (visible)
+        showSearch();
+    else
+        hideSearch();
+}
+
+void MainWindow::showSearch()
+{
+    TRACE_OBJ
+    m_centralWidget->activateSearchWidget();
+}
+
+void MainWindow::hideSearch()
+{
+    TRACE_OBJ
+    m_centralWidget->removeSearchWidget();
 }
 
 void MainWindow::activateDockWidget(QWidget *w)
 {
+    TRACE_OBJ
     w->parentWidget()->show();
     w->parentWidget()->raise();
     w->setFocus();
 }
 
-void MainWindow::hideContents()
-{
-    m_contentWindow->parentWidget()->hide();
-}
-
-void MainWindow::hideIndex()
-{
-    m_indexWindow->parentWidget()->hide();
-}
-
-void MainWindow::hideBookmarks()
-{
-    m_bookmarkWidget->parentWidget()->hide();
-}
-
 void MainWindow::setIndexString(const QString &str)
 {
+    TRACE_OBJ
     m_indexWindow->setSearchLineEditText(str);
 }
 
 void MainWindow::activateCurrentBrowser()
 {
+    TRACE_OBJ
     CentralWidget *cw = CentralWidget::instance();
     if (cw) {
         cw->activateTab(true);
@@ -913,40 +956,38 @@ void MainWindow::activateCurrentBrowser()
 
 void MainWindow::activateCurrentCentralWidgetTab()
 {
+    TRACE_OBJ
     m_centralWidget->activateTab();
-}
-
-void MainWindow::showSearch()
-{
-    m_centralWidget->activateSearchWidget();
 }
 
 void MainWindow::showSearchWidget()
 {
+    TRACE_OBJ
     m_centralWidget->activateSearchWidget(true);
-}
-
-void MainWindow::hideSearch()
-{
-    m_centralWidget->removeSearchWidget();
 }
 
 void MainWindow::updateApplicationFont()
 {
+    TRACE_OBJ
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     QFont font = qApp->font();
-    if (m_helpEngine->customValue(QLatin1String("useAppFont")).toBool())
-        font = qVariantValue<QFont>(m_helpEngine->customValue(QLatin1String("appFont")));
+    if (helpEngine.usesAppFont())
+        font = helpEngine.appFont();
 
-    qApp->setFont(font, "QWidget");
+    const QWidgetList &widgets = qApp->allWidgets();
+    foreach (QWidget* widget, widgets)
+        widget->setFont(font);
 }
 
 void MainWindow::setupFilterCombo()
 {
+    TRACE_OBJ
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     QString curFilter = m_filterCombo->currentText();
     if (curFilter.isEmpty())
-        curFilter = m_helpEngine->currentFilter();
+        curFilter = helpEngine.currentFilter();
     m_filterCombo->clear();
-    m_filterCombo->addItems(m_helpEngine->customFilters());
+    m_filterCombo->addItems(helpEngine.customFilters());
     int idx = m_filterCombo->findText(curFilter);
     if (idx < 0)
         idx = 0;
@@ -955,16 +996,20 @@ void MainWindow::setupFilterCombo()
 
 void MainWindow::filterDocumentation(const QString &customFilter)
 {
-    m_helpEngine->setCurrentFilter(customFilter);
+    TRACE_OBJ
+    HelpEngineWrapper::instance().setCurrentFilter(customFilter);
 }
 
 void MainWindow::expandTOC(int depth)
 {
+    TRACE_OBJ
+    Q_ASSERT(depth >= -1);
     m_contentWindow->expandToDepth(depth);
 }
 
 void MainWindow::indexingStarted()
 {
+    TRACE_OBJ
     if (!m_progressWidget) {
         m_progressWidget = new QWidget();
         QLayout* hlayout = new QHBoxLayout(m_progressWidget);
@@ -990,21 +1035,15 @@ void MainWindow::indexingStarted()
 
 void MainWindow::indexingFinished()
 {
+    TRACE_OBJ
     statusBar()->removeWidget(m_progressWidget);
     delete m_progressWidget;
     m_progressWidget = 0;
 }
 
-QWidget* MainWindow::setupBookmarkWidget()
-{
-    m_bookmarkManager = new BookmarkManager(m_helpEngine);
-    m_bookmarkWidget = new BookmarkWidget(m_bookmarkManager, this);
-    connect(m_bookmarkWidget, SIGNAL(addBookmark()), this, SLOT(addBookmark()));
-    return m_bookmarkWidget;
-}
-
 QString MainWindow::collectionFileDirectory(bool createDir, const QString &cacheDir)
 {
+    TRACE_OBJ
     QString collectionPath =
         QDesktopServices::storageLocation(QDesktopServices::DataLocation);
     if (collectionPath.isEmpty()) {
@@ -1030,16 +1069,65 @@ QString MainWindow::collectionFileDirectory(bool createDir, const QString &cache
 
 QString MainWindow::defaultHelpCollectionFileName()
 {
-    return collectionFileDirectory() + QDir::separator() +
+    TRACE_OBJ
+    // forces creation of the default collection file path
+    return collectionFileDirectory(true) + QDir::separator() +
         QString(QLatin1String("qthelpcollection_%1.qhc")).
         arg(QLatin1String(QT_VERSION_STR));
 }
 
 void MainWindow::currentFilterChanged(const QString &filter)
 {
+    TRACE_OBJ
     const int index = m_filterCombo->findText(filter);
     Q_ASSERT(index != -1);
     m_filterCombo->setCurrentIndex(index);
+}
+
+void MainWindow::documentationRemoved(const QString &namespaceName)
+{
+    TRACE_OBJ
+    CentralWidget* widget = CentralWidget::instance();
+    widget->closeOrReloadTabs(widget->currentSourceFileList().
+        keys(namespaceName), false);
+}
+
+void MainWindow::documentationUpdated(const QString &namespaceName)
+{
+    TRACE_OBJ
+    CentralWidget* widget = CentralWidget::instance();
+    widget->closeOrReloadTabs(widget->currentSourceFileList().
+        keys(namespaceName), true);
+}
+
+void MainWindow::resetQtDocInfo(const QString &component)
+{
+    TRACE_OBJ
+    HelpEngineWrapper::instance().setQtDocInfo(component,
+        QStringList(QDateTime().toString(Qt::ISODate)));
+}
+
+void MainWindow::registerDocumentation(const QString &component,
+                                       const QString &absFileName)
+{
+    TRACE_OBJ
+    QString ns = QHelpEngineCore::namespaceName(absFileName);
+    if (ns.isEmpty())
+        return;
+
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    if (helpEngine.registeredDocumentations().contains(ns))
+        helpEngine.unregisterDocumentation(ns);
+    if (!helpEngine.registerDocumentation(absFileName)) {
+        QMessageBox::warning(this, tr("Qt Assistant"),
+            tr("Could not register file '%1': %2").
+            arg(absFileName).arg(helpEngine.error()));
+    } else {
+        QStringList docInfo;
+        docInfo << QFileInfo(absFileName).lastModified().toString(Qt::ISODate)
+                << absFileName;
+        helpEngine.setQtDocInfo(component, docInfo);
+    }
 }
 
 QT_END_NAMESPACE

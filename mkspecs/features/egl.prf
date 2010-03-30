@@ -11,14 +11,6 @@ wince*:contains(QT_CONFIG, opengles1) {
         exists($$p):LIBS_PRIVATE += -L$$p
     }
     DEFINES += QT_GLES_EGL
-} else:wince*:contains(QT_CONFIG, opengles1cl) {
-    INCLUDEPATH += $$QMAKE_INCDIR_OPENGL_ES1CL
-    LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL_ES1CL
-    LIBS += $$QMAKE_LFLAGS_EGL
-    for(p, QMAKE_LIBDIR_OPENGL_ES1CL) {
-        exists($$p):LIBS_PRIVATE += -L$$p
-    }
-    DEFINES += QT_GLES_EGL
 } else {
     INCLUDEPATH += $$QMAKE_INCDIR_EGL
     LIBS_PRIVATE += $$QMAKE_LIBS_EGL

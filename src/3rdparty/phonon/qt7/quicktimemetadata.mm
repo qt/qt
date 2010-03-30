@@ -15,7 +15,8 @@
     along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <QtCore/QFileInfo>
+#import <QTKit/QTMovie.h>
+
 #include "quicktimemetadata.h"
 #include "quicktimevideoplayer.h"
 
@@ -26,14 +27,19 @@ namespace Phonon
 namespace QT7
 {
 
-QuickTimeMetaData::QuickTimeMetaData(QuickTimeVideoPlayer *videoPlayer)
+QuickTimeMetaData::QuickTimeMetaData()
 {
-    m_videoPlayer = videoPlayer;
+    m_videoPlayer = 0;
     m_movieChanged = false;
 }
 
-void QuickTimeMetaData::update()
+QuickTimeMetaData::~QuickTimeMetaData()
 {
+}
+
+void QuickTimeMetaData::setVideo(QuickTimeVideoPlayer *videoPlayer)
+{
+    m_videoPlayer = videoPlayer;
     m_movieChanged = true;
     m_metaData.clear();
 }
@@ -141,22 +147,14 @@ void QuickTimeMetaData::readFormattedData(QTMetaDataRef metaDataRef, OSType form
 
 #endif // QUICKTIME_C_API_AVAILABLE
 
-void QuickTimeMetaData::guessMetaDataForCD()
+void QuickTimeMetaData::readMetaData()
 {
-    QString album = QFileInfo(m_videoPlayer->movieCompactDiscPath()).fileName();
-    QString title = QFileInfo(m_videoPlayer->currentTrackPath()).fileName();
-    title = title.left(title.lastIndexOf('.'));
-    m_metaData.insert(QLatin1String("ALBUM"), album);
-    m_metaData.insert(QLatin1String("TITLE"), title);
-    m_metaData.insert(QLatin1String("TRACKNUMBER"), QString::number(m_videoPlayer->currentTrack()));
-}
-
-void QuickTimeMetaData::readMetaDataFromMovie()
-{
+	if (!m_videoPlayer)
+        return;
     QMultiMap<QString, QString> metaMap;
-
+    
 #ifdef QUICKTIME_C_API_AVAILABLE
-    QTMetaDataRef metaDataRef;
+	QTMetaDataRef metaDataRef;        
 	OSStatus err = QTCopyMovieMetaData([m_videoPlayer->qtMovie() quickTimeMovie], &metaDataRef);
     BACKEND_ASSERT2(err == noErr, "Could not read QuickTime meta data", NORMAL_ERROR)
 
@@ -175,17 +173,6 @@ void QuickTimeMetaData::readMetaDataFromMovie()
     m_metaData.insert(QLatin1String("GENRE"), metaMap.value(QLatin1String("gnre")));
     m_metaData.insert(QLatin1String("TRACKNUMBER"), metaMap.value(QLatin1String("trk")));
     m_metaData.insert(QLatin1String("DESCRIPTION"), metaMap.value(QLatin1String("des")));
-}
-
-void QuickTimeMetaData::readMetaData()
-{
-	if (!m_videoPlayer)
-        return;
-
-    if (m_videoPlayer->mediaSource().type() == Phonon::MediaSource::Disc)
-        guessMetaDataForCD();
-    else
-        readMetaDataFromMovie();
 }
 
 QMultiMap<QString, QString> QuickTimeMetaData::metaData()

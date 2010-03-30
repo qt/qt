@@ -145,7 +145,7 @@ void JavadocGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     HtmlGenerator::generateTree(tree, marker);
 }
 
-QString JavadocGenerator::fileExtension(const Node *node)
+QString JavadocGenerator::fileExtension(const Node *node) const
 {
     if (node->type() == Node::Fake) {
         return "html";

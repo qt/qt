@@ -158,6 +158,7 @@ struct QTLWExtra {
     quint32 newCounterValueLo;
 #endif
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
+    uint hotkeyRegistered: 1; // Hot key from the STARTUPINFO has been registered.
     HICON winIconBig; // internal big Windows icon
     HICON winIconSmall; // internal small Windows icon
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
@@ -385,6 +386,8 @@ public:
     QRegion prepareToRender(const QRegion &region, QWidget::RenderFlags renderFlags);
     void render_helper(QPainter *painter, const QPoint &targetOffset, const QRegion &sourceRegion,
                        QWidget::RenderFlags renderFlags);
+    void render(QPaintDevice *target, const QPoint &targetOffset, const QRegion &sourceRegion,
+                QWidget::RenderFlags renderFlags, bool readyToRender);
     void drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QPoint &offset, int flags,
                     QPainter *sharedPainter = 0, QWidgetBackingStore *backingStore = 0);
 
@@ -677,7 +680,7 @@ public:
     QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
 
     // Bit fields.
-    uint high_attributes[3]; // the low ones are in QWidget::widget_attributes
+    uint high_attributes[4]; // the low ones are in QWidget::widget_attributes
     QPalette::ColorRole fg_role : 8;
     QPalette::ColorRole bg_role : 8;
     uint dirtyOpaqueChildren : 1;
@@ -700,6 +703,7 @@ public:
     void setNetWmWindowTypes();
     void x11UpdateIsOpaque();
     bool isBackgroundInherited() const;
+    void updateX11AcceptFocus();
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()
     uint nativeGesturePanEnabled : 1;
@@ -717,6 +721,7 @@ public:
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;
+    uint hasAlienChildren : 1;
 
     // Each wiget keeps a list of all its child and grandchild OpenGL widgets.
     // This list is used to update the gl context whenever a parent and a granparent
@@ -763,6 +768,8 @@ public:
     void initWindowPtr();
     void finishCreateWindow_sys_Carbon(OSWindowRef windowRef);
 #else
+    void setSubWindowStacking(bool set);
+    void setWindowLevel();
     void finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ windowRef);
     void syncCocoaMask();
     void finishCocoaMaskSetup();

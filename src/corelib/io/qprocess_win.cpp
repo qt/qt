@@ -525,7 +525,7 @@ qint64 QProcessPrivate::readFromStderr(char *data, qint64 maxlen)
 }
 
 
-static BOOL CALLBACK qt_terminateApp(HWND hwnd, LPARAM procId)
+static BOOL QT_WIN_CALLBACK qt_terminateApp(HWND hwnd, LPARAM procId)
 {
     DWORD currentProcId = 0;
     GetWindowThreadProcessId(hwnd, &currentProcId);

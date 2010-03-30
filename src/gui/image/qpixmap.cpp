@@ -1071,6 +1071,9 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
     if (widget->testAttribute(Qt::WA_PendingResizeEvent) || !widget->testAttribute(Qt::WA_WState_Created))
         sendResizeEvents(widget);
 
+    widget->d_func()->prepareToRender(QRegion(),
+        QWidget::DrawWindowBackground | QWidget::DrawChildren | QWidget::IgnoreMask);
+
     QRect r(rect);
     if (r.width() < 0)
         r.setWidth(widget->width() - rect.x());
@@ -1081,8 +1084,8 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
         return QPixmap();
 
     QPixmap res(r.size());
-    widget->render(&res, QPoint(), r,
-                   QWidget::DrawWindowBackground | QWidget::DrawChildren | QWidget::IgnoreMask);
+    widget->d_func()->render(&res, QPoint(), r, QWidget::DrawWindowBackground
+                             | QWidget::DrawChildren | QWidget::IgnoreMask, true);
     return res;
 }
 
@@ -1363,10 +1366,27 @@ void QPixmap::deref()
 */
 
 /*!
-    \fn bool QPixmap::convertFromImage(const QImage &image, Qt::ImageConversionFlags flags)
+    Replaces this pixmap's data with the given \a image using the
+    specified \a flags to control the conversion.  The \a flags
+    argument is a bitwise-OR of the \l{Qt::ImageConversionFlags}.
+    Passing 0 for \a flags sets all the default options. Returns true
+    if the result is that this pixmap is not null.
 
-    Use the static fromImage() function instead.
+    Note: this function was part of Qt 3 support in Qt 4.6 and earlier.
+    It has been promoted to official API status in 4.7 to support updating
+    the pixmap's image without creating a new QPixmap as fromImage() would.
+
+    \sa fromImage()
+    \since 4.7
 */
+bool QPixmap::convertFromImage(const QImage &image, Qt::ImageConversionFlags flags)
+{
+    if (image.isNull() || !data)
+        *this = QPixmap::fromImage(image, flags);
+    else
+        data->fromImage(image, flags);
+    return !isNull();
+}
 
 /*!
     \fn QPixmap QPixmap::xForm(const QMatrix &matrix) const

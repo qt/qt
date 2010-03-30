@@ -172,7 +172,42 @@ void QEmulationPaintEngine::drawTextItem(const QPointF &p, const QTextItem &text
         QRectF rect(p.x(), p.y() - ti.ascent.toReal(), ti.width.toReal(), (ti.ascent + ti.descent + 1).toReal());
         fillBGRect(rect);
     }
+
+    QPainterState *s = state();
+    Qt::BrushStyle style = qbrush_style(s->pen.brush());
+    if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern)
+    {
+        QPen savedPen = s->pen;
+        QGradient g = *s->pen.brush().gradient();
+
+        if (g.coordinateMode() > QGradient::LogicalMode) {
+            QTransform mat = s->pen.brush().transform();
+            if (g.coordinateMode() == QGradient::StretchToDeviceMode) {
+                mat.scale(real_engine->painter()->device()->width(), real_engine->painter()->device()->height());
+            } else if (g.coordinateMode() == QGradient::ObjectBoundingMode) {
+                const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
+                QRectF r(p.x(), p.y() - ti.ascent.toReal(), ti.width.toReal(), (ti.ascent + ti.descent + 1).toReal());
+                mat.translate(r.x(), r.y());
+                mat.scale(r.width(), r.height());
+            }
+            g.setCoordinateMode(QGradient::LogicalMode);
+            QBrush brush(g);
+            brush.setTransform(mat);
+            s->pen.setBrush(brush);
+            penChanged();
+            real_engine->drawTextItem(p, textItem);
+            s->pen = savedPen;
+            penChanged();
+            return;
+        }
+    }
+
     real_engine->drawTextItem(p, textItem);
+}
+
+void QEmulationPaintEngine::drawStaticTextItem(QStaticTextItem *item)
+{
+    real_engine->drawStaticTextItem(item);
 }
 
 void QEmulationPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s)

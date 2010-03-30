@@ -50,6 +50,7 @@
 #include <private/qgraphicssceneindex_p.h>
 #include <math.h>
 #include "../../shared/util.h"
+#include "../qpathclipper/pathcompare.h"
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #include <windows.h>
@@ -3597,7 +3598,7 @@ void tst_QGraphicsScene::task250680_childClip()
 
     QPainterPath path;
     path.addRect(-25, -25, 50, 50);
-    QCOMPARE(rect->clipPath(), path);
+    QVERIFY(QPathCompare::comparePaths(rect->clipPath().simplified(), path));
 
     QCOMPARE(scene.items(QRectF(320, 240, 5, 5)).size(), 2);
     rect->rotate(45);

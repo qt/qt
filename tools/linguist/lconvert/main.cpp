@@ -48,6 +48,8 @@
 
 #include <iostream>
 
+QT_USE_NAMESPACE
+
 static int usage(const QStringList &args)
 {
     Q_UNUSED(args);

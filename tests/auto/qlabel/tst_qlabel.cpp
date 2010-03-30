@@ -119,6 +119,11 @@ private slots:
 
     void mnemonic_data();
     void mnemonic();
+    void selection();
+
+#ifndef QT_NO_CONTEXTMENU
+    void taskQTBUG_7902_contextMenuCrash();
+#endif
 
 private:
     QLabel *testWidget;
@@ -559,6 +564,47 @@ void tst_QLabel::mnemonic()
     QCOMPARE(d->shortcutCursor.selectedText(), expectedShortcutCursor);
 }
 
+void tst_QLabel::selection()
+{
+    QLabel label;
+    label.setText("Hello world");
+
+    label.setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    QVERIFY(!label.hasSelectedText());
+    QCOMPARE(label.selectedText(), QString());
+    QCOMPARE(label.selectionStart(), -1);
+
+    label.setSelection(0, 4);
+    QVERIFY(label.hasSelectedText());
+    QCOMPARE(label.selectedText(), QString::fromLatin1("Hell"));
+    QCOMPARE(label.selectionStart(), 0);
+
+    label.setSelection(6, 5);
+    QVERIFY(label.hasSelectedText());
+    QCOMPARE(label.selectedText(), QString::fromLatin1("world"));
+    QCOMPARE(label.selectionStart(), 6);
+}
+
+#ifndef QT_NO_CONTEXTMENU
+void tst_QLabel::taskQTBUG_7902_contextMenuCrash()
+{
+    QLabel *w = new QLabel("Test or crash?");
+    w->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    w->show();
+    QTest::qWaitForWindowShown(w);
+
+    QTimer ti;
+    w->connect(&ti, SIGNAL(timeout()), w, SLOT(deleteLater()));
+    ti.start(300);
+
+    QContextMenuEvent *cme = new QContextMenuEvent(QContextMenuEvent::Mouse, w->rect().center());
+    qApp->postEvent(w, cme);
+
+    QTest::qWait(350);
+    // No crash, it's allright.
+}
+#endif
 
 QTEST_MAIN(tst_QLabel)
 #include "tst_qlabel.moc"

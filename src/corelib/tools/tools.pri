@@ -33,6 +33,7 @@ HEADERS +=  \
         tools/qsharedpointer.h \
         tools/qsharedpointer_impl.h \
         tools/qset.h \
+        tools/qsimd_p.h \
         tools/qsize.h \
         tools/qstack.h \
         tools/qstring.h \
@@ -41,6 +42,7 @@ HEADERS +=  \
         tools/qstringmatcher.h \
         tools/qtextboundaryfinder.h \
         tools/qtimeline.h \
+        tools/qelapsedtimer.h \
         tools/qunicodetables_p.h \
         tools/qvarlengtharray.h \
         tools/qvector.h \
@@ -55,6 +57,7 @@ SOURCES += \
         tools/qcryptographichash.cpp \
         tools/qdatetime.cpp \
         tools/qeasingcurve.cpp \
+        tools/qelapsedtimer.cpp \
         tools/qhash.cpp \
         tools/qline.cpp \
         tools/qlinkedlist.cpp \
@@ -68,6 +71,7 @@ SOURCES += \
         tools/qregexp.cpp \
         tools/qshareddata.cpp \
         tools/qsharedpointer.cpp \
+        tools/qsimd.cpp \
         tools/qsize.cpp \
         tools/qstring.cpp \
         tools/qstringbuilder.cpp \
@@ -78,6 +82,12 @@ SOURCES += \
         tools/qvsnprintf.cpp
 
 symbian:SOURCES+=tools/qlocale_symbian.cpp
+
+mac:SOURCES += tools/qelapsedtimer_mac.cpp
+else:symbian:SOURCES += tools/qelapsedtimer_symbian.cpp
+else:unix:SOURCES += tools/qelapsedtimer_unix.cpp
+else:win32:SOURCES += tools/qelapsedtimer_win.cpp
+else:SOURCES += tools/qelapsedtimer_generic.cpp
 
 #zlib support
 contains(QT_CONFIG, zlib) {

@@ -73,7 +73,7 @@
 #endif
 #endif
 #ifdef Q_OS_SYMBIAN
-#include "qt_s60_p.h"
+#include <private/qt_s60_p.h>
 #endif
 
 #include <QMutexLocker>
@@ -1297,6 +1297,8 @@ QFont::StyleHint QFont::styleHint() const
     \value PreferQuality prefer the best quality font. The font matcher
            will use the nearest standard point size that the font
            supports.
+    \value ForceIntegerMetrics forces the use of integer values in font engines that support fractional
+           font metrics.
 */
 
 /*!

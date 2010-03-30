@@ -392,6 +392,11 @@ int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive
     \internal
 */
 
+/*! \fn bool QVector::isSharedWith(const QVector<T> &other) const
+
+    \internal
+*/
+
 /*! \fn T *QVector::data()
 
     Returns a pointer to the data stored in the vector. The pointer

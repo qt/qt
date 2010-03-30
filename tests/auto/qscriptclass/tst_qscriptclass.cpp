@@ -704,6 +704,7 @@ void tst_QScriptClass::getAndSetProperty()
         QCOMPARE(obj1.propertyFlags(foo2), foo2Pflags);
         QVERIFY(cls.lastQueryPropertyObject().strictlyEquals(obj1));
         QVERIFY(cls.lastQueryPropertyName() == foo2);
+        QEXPECT_FAIL("", "classObject.getOwnPropertyDescriptor() reads the property value", Continue);
         QVERIFY(!cls.lastPropertyObject().isValid());
         QVERIFY(cls.lastPropertyFlagsObject().strictlyEquals(obj1));
         QVERIFY(cls.lastPropertyFlagsName() == foo2);

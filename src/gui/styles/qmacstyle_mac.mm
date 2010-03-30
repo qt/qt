@@ -237,12 +237,14 @@ void drawTabShape(QPainter *p, const QStyleOptionTabV3 *tabOpt)
 
         // fill body
         if (active) {
-            p->fillRect(rect, QColor(151, 151, 151));
+            int d = (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) ? 16 : 0;
+            p->fillRect(rect, QColor(151 + d, 151 + d, 151 + d));
         } else {
+            int d = (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) ? 9 : 0;
             QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
-            gradient.setColorAt(0, QColor(207, 207, 207));
-            gradient.setColorAt(0.5, QColor(206, 206, 206));
-            gradient.setColorAt(1, QColor(201, 201, 201));
+            gradient.setColorAt(0, QColor(207 + d, 207 + d, 207 + d));
+            gradient.setColorAt(0.5, QColor(206 + d, 206 + d, 206 + d));
+            gradient.setColorAt(1, QColor(201 + d, 201 + d, 201 + d));
             p->fillRect(rect, gradient);
         }
 
@@ -432,13 +434,13 @@ static inline bool isTreeView(const QWidget *widget)
 
 QString qt_mac_removeMnemonics(const QString &original)
 {
-    // copied from qt_format_text (to be bug-for-bug compatible).
     QString returnText(original.size(), 0);
     int finalDest = 0;
     int currPos = 0;
     int l = original.length();
     while (l) {
-        if (original.at(currPos) == QLatin1Char('&')) {
+        if (original.at(currPos) == QLatin1Char('&')
+            && (l == 1 || original.at(currPos + 1) != QLatin1Char('&'))) {
             ++currPos;
             --l;
             if (l == 0)
@@ -3146,6 +3148,18 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         break;
     case PE_PanelLineEdit:
         QWindowsStyle::drawPrimitive(pe, opt, p, w);
+        // Draw the focus frame for widgets other than QLineEdit (e.g. for line edits in Webkit).
+        // Focus frame is drawn outside the rectangle passed in the option-rect.
+        if (const QStyleOptionFrame *panel = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
+            if ((opt->state & State_HasFocus) && !qobject_cast<const QLineEdit*>(w)) {
+                int vmargin = pixelMetric(QStyle::PM_FocusFrameVMargin);
+                int hmargin = pixelMetric(QStyle::PM_FocusFrameHMargin);
+                QStyleOptionFrame focusFrame = *panel;
+                focusFrame.rect = panel->rect.adjusted(-hmargin, -vmargin, hmargin, vmargin);
+                drawControl(CE_FocusFrame, &focusFrame, p, w);
+            }
+        }
+
         break;
     case PE_FrameTabWidget:
         if (const QStyleOptionTabWidgetFrame *twf
@@ -3169,7 +3183,6 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         p->drawLine(opt->rect.topLeft(), opt->rect.bottomLeft());
         } break;
     case PE_FrameStatusBarItem:
-        QCommonStyle::drawPrimitive(pe, opt, p, w);
         break;
     case PE_IndicatorTabClose: {
         bool hover = (opt->state & State_MouseOver);

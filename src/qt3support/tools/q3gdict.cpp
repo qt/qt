@@ -437,7 +437,7 @@ Q3PtrCollection::Item Q3GDict::look_int(long key, Q3PtrCollection::Item d, int o
 Q3PtrCollection::Item Q3GDict::look_ptr(void *key, Q3PtrCollection::Item d, int op)
 {
     Q3PtrBucket *n;
-    int index = (int)((ulong)key % vlen);       // simple hash
+    int index = (int)((quintptr)key % vlen);       // simple hash
     if (op == op_find) {                        // find
         for (n=(Q3PtrBucket*)vec[index]; n;
               n=(Q3PtrBucket*)n->getNext()) {
@@ -650,7 +650,7 @@ Q3PtrBucket *Q3GDict::unlink_ptr(void *key, Q3PtrCollection::Item d)
         return 0;
     Q3PtrBucket *n;
     Q3PtrBucket *prev = 0;
-    int index = (int)((ulong)key % vlen);
+    int index = (int)((quintptr)key % vlen);
     for (n=(Q3PtrBucket *)vec[index]; n; n=(Q3PtrBucket *)n->getNext()) {
         bool found = (n->getKey() == key);
         if (found && d)

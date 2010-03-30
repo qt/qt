@@ -43,8 +43,8 @@
   node.cpp
 */
 
-#include <QtCore>
 #include "node.h"
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -85,12 +85,16 @@ void Node::setDoc(const Doc& doc, bool replace)
 }
 
 /*!
+  Construct a node with the given \a type and having the
+  given \a parent and \a name. The new node is added to the
+  parent's child list.
  */
 Node::Node(Type type, InnerNode *parent, const QString& name)
     : typ(type),
       acc(Public),
-      sta(Commendable),
       saf(UnspecifiedSafeness),
+      pageTyp(NoPageType),
+      sta(Commendable),
       par(parent),
       rel(0),
       nam(name)
@@ -100,6 +104,7 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
 }
 
 /*!
+  Returns the node's URL.
  */
 QString Node::url() const
 {
@@ -107,13 +112,25 @@ QString Node::url() const
 }
 
 /*!
+  Sets the node's URL to \a url
  */
 void Node::setUrl(const QString &url)
 {
     u = url;
 }
 
+void Node::setPageType(const QString& t)
+{
+    if ((t == "API") || (t == "api"))
+        pageTyp = ApiPage;
+    else if (t == "article")
+        pageTyp = ArticlePage;
+    else if (t == "example")
+        pageTyp = ExamplePage;
+}
+
 /*!
+  Sets the pointer to the node that this node relates to.
  */
 void Node::setRelates(InnerNode *pseudoParent)
 {
@@ -190,16 +207,33 @@ InnerNode::~InnerNode()
 }
 
 /*!
+  Find the node in this node's children that has the
+  given \a name. If this node is a QML class node, be
+  sure to also look in the children of its property
+  group nodes. Return the matching node or 0.
  */
 Node *InnerNode::findNode(const QString& name)
 {
     Node *node = childMap.value(name);
     if (node)
         return node;
+    if ((type() == Fake) && (subType() == QmlClass)) {
+        for (int i=0; i<children.size(); ++i) {
+            Node* n = children.at(i);
+            if (n->subType() == QmlPropertyGroup) {
+                node = static_cast<InnerNode*>(n)->findNode(name);
+                if (node)
+                    return node;
+            }
+        }
+    }
     return primaryFunctionMap.value(name);
 }
 
 /*!
+  Same as the other findNode(), but if the node with the
+  specified \a name is not of the specified \a type, return
+  0.
  */
 Node *InnerNode::findNode(const QString& name, Type type)
 {
@@ -381,7 +415,7 @@ void InnerNode::normalizeOverloads()
 
 /*!
  */
-void InnerNode::removeFromRelated() 
+void InnerNode::removeFromRelated()
 {
     while (!related.isEmpty()) {
         Node *p = static_cast<Node *>(related.takeFirst());
@@ -398,7 +432,7 @@ void InnerNode::deleteChildren()
 }
 
 /*!
-  Returns true.
+  Returns true because this is an inner node.
  */
 bool InnerNode::isInnerNode() const
 {
@@ -422,7 +456,7 @@ const Node *InnerNode::findNode(const QString& name, Type type) const
 }
 
 /*!
-  Find the function node in this node that has the given \a name. 
+  Find the function node in this node that has the given \a name.
  */
 const FunctionNode *InnerNode::findFunctionNode(const QString& name) const
 {
@@ -452,6 +486,9 @@ const EnumNode *InnerNode::findEnumNodeForValue(const QString &enumValue) const
 }
 
 /*!
+  Returnds the sequence number of the function node \a func
+  in the list of overloaded functions for a class, such that
+  all the functions have the same name as the \a func.
  */
 int InnerNode::overloadNumber(const FunctionNode *func) const
 {
@@ -465,6 +502,8 @@ int InnerNode::overloadNumber(const FunctionNode *func) const
 }
 
 /*!
+  Returns the number of member functions of a class such that
+  the functions are all named \a funcName.
  */
 int InnerNode::numOverloads(const QString& funcName) const
 {
@@ -477,6 +516,8 @@ int InnerNode::numOverloads(const QString& funcName) const
 }
 
 /*!
+  Returns a node list containing all the member functions of
+  some class such that the functions overload the name \a funcName.
  */
 NodeList InnerNode::overloads(const QString &funcName) const
 {
@@ -490,10 +531,14 @@ NodeList InnerNode::overloads(const QString &funcName) const
 }
 
 /*!
+  Construct an inner node (i.e., not a leaf node) of the
+  given \a type and having the given \a parent and \a name.
  */
 InnerNode::InnerNode(Type type, InnerNode *parent, const QString& name)
     : Node(type, parent, name)
 {
+    if (type == Class)
+        setPageType(ApiPage);
 }
 
 /*!
@@ -547,6 +592,7 @@ bool InnerNode::isSameSignature(const FunctionNode *f1, const FunctionNode *f2)
 }
 
 /*!
+  Adds the \a child to this node's child list.
  */
 void InnerNode::addChild(Node *child)
 {
@@ -564,7 +610,7 @@ void InnerNode::addChild(Node *child)
     else {
         if (child->type() == Enum)
             enumChildren.append(child);
-	childMap.insert(child->name(), child);
+        childMap.insert(child->name(), child);
     }
 }
 
@@ -676,6 +722,8 @@ bool LeafNode::isInnerNode() const
 }
 
 /*!
+  Constructs a leaf node named \a name of the specified
+  \a type. The new leaf node becomes a child of \a parent.
  */
 LeafNode::LeafNode(Type type, InnerNode *parent, const QString& name)
     : Node(type, parent, name)
@@ -687,10 +735,12 @@ LeafNode::LeafNode(Type type, InnerNode *parent, const QString& name)
  */
 
 /*!
+  Constructs a namespace node.
  */
 NamespaceNode::NamespaceNode(InnerNode *parent, const QString& name)
     : InnerNode(Namespace, parent, name)
 {
+    setPageType(ApiPage);
 }
 
 /*!
@@ -698,11 +748,13 @@ NamespaceNode::NamespaceNode(InnerNode *parent, const QString& name)
  */
 
 /*!
+  Constructs a class node. A class node will generate an API page.
  */
 ClassNode::ClassNode(InnerNode *parent, const QString& name)
     : InnerNode(Class, parent, name)
 {
     hidden = false;
+    setPageType(ApiPage);
 }
 
 /*!
@@ -759,11 +811,28 @@ void ClassNode::fixBaseClasses()
 
 /*!
   The type of a FakeNode is Fake, and it has a \a subtype,
-  which specifies the type of FakeNode.
+  which specifies the type of FakeNode. The page type for
+  the page index is set here.
  */
 FakeNode::FakeNode(InnerNode *parent, const QString& name, SubType subtype)
     : InnerNode(Fake, parent, name), sub(subtype)
 {
+    switch (subtype) {
+    case Module:
+    case Page:
+    case Group:
+        setPageType(ArticlePage);
+        break;
+    case QmlClass:
+    case QmlBasicType:
+        setPageType(ApiPage);
+        break;
+    case Example:
+        setPageType(ExamplePage);
+        break;
+    default:
+        break;
+    }
 }
 
 /*!
@@ -904,7 +973,7 @@ Parameter::Parameter(const Parameter& p)
 
 /*!
   Assigning Parameter \a p to this Parameter copies the
-  strings across. 
+  strings across.
  */
 Parameter& Parameter::operator=(const Parameter& p)
 {
@@ -1109,7 +1178,8 @@ QString FunctionNode::signature(bool values) const
  */
 void FunctionNode::debug() const
 {
-    qDebug() << "QML METHOD" << name() << "rt" << rt << "pp" << pp;
+    qDebug("QML METHOD %s rt %s pp %s",
+            qPrintable(name()), qPrintable(rt), qPrintable(pp.join(" ")));
 }
 
 /*!
@@ -1205,9 +1275,14 @@ bool TargetNode::isInnerNode() const
 
 #ifdef QDOC_QML
 bool QmlClassNode::qmlOnly = false;
+QMultiMap<QString,Node*> QmlClassNode::inheritedBy;
 
 /*!
-  Constructor for the Qml class node.
+  Constructs a Qml class node (i.e. a Fake node with the
+  subtype QmlClass. The new node has the given \a parent
+  and \a name and is associated with the C++ class node
+  specified by \a cn which may be null if the the Qml
+  class node is not associated with a C++ class node.
  */
 QmlClassNode::QmlClassNode(InnerNode *parent,
                            const QString& name,
@@ -1218,6 +1293,25 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
 }
 
 /*!
+  I made this so I could print a debug message here.
+ */
+QmlClassNode::~QmlClassNode()
+{
+#ifdef DEBUG_MULTIPLE_QDOCCONF_FILES
+    qDebug() << "Deleting QmlClassNode:" << name();
+#endif
+}
+
+/*!
+  Clear the multimap so that subsequent runs don't try to use
+  nodes from a previous run.
+ */
+void QmlClassNode::clear()
+{
+    inheritedBy.clear();
+}
+
+/*!
   The base file name for this kind of node has "qml_"
   prepended to it.
 
@@ -1225,7 +1319,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
  */
 QString QmlClassNode::fileBase() const
 {
-#if 0    
+#if 0
     if (Node::fileBase() == "item")
         qDebug() << "FILEBASE: qmlitem" << name();
     return "qml_" + Node::fileBase();
@@ -1234,8 +1328,47 @@ QString QmlClassNode::fileBase() const
 }
 
 /*!
+  Record the fact that QML class \a base is inherited by
+  QML class \a sub.
+ */
+void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
+{
+    inheritedBy.insert(base,sub);
+#ifdef DEBUG_MULTIPLE-QDOCCONF_FILES
+    qDebug() << "QmlClassNode::addInheritedBy(): insert" << base << sub->name() << inheritedBy.size();
+#endif
+}
+
+/*!
+  Loads the list \a subs with the nodes of all the subclasses of \a base.
+ */
+void QmlClassNode::subclasses(const QString& base, NodeList& subs)
+{
+    subs.clear();
+    if (inheritedBy.count(base) > 0) {
+        subs = inheritedBy.values(base);
+#ifdef DEBUG_MULTIPLE_QDOCCONF_FILES
+        qDebug() << "QmlClassNode::subclasses():" <<  inheritedBy.count(base) << base
+                 << "subs:" << subs.size() << "total size:" << inheritedBy.size();
+#endif
+    }
+}
+
+/*!
+  Constructs a Qml basic type node (i.e. a Fake node with
+  the subtype QmlBasicType. The new node has the given
+  \a parent and \a name.
+ */
+QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
+                                   const QString& name)
+    : FakeNode(parent, name, QmlBasicType)
+{
+    setTitle(name);
+}
+
+/*!
   Constructor for the Qml property group node. \a parent is
-  always a QmlClassNode. 
+  always a QmlClassNode.
  */
 QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent,
                                    const QString& name,

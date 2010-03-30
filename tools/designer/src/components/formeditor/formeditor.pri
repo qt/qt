@@ -8,6 +8,7 @@ FORMS +=   $$PWD/deviceprofiledialog.ui \
            $$PWD/templateoptionspage.ui
 
 HEADERS += $$PWD/qdesigner_resource.h \
+           $$PWD/qdesignerundostack.h \
            $$PWD/formwindow.h \
            $$PWD/formwindow_widgetstack.h \
            $$PWD/formwindow_dnditem.h \
@@ -41,6 +42,7 @@ HEADERS += $$PWD/qdesigner_resource.h \
            $$PWD/templateoptionspage.h
 
 SOURCES += $$PWD/qdesigner_resource.cpp \
+           $$PWD/qdesignerundostack.cpp \
            $$PWD/formwindow.cpp \
            $$PWD/formwindow_widgetstack.cpp \
            $$PWD/formwindow_dnditem.cpp \

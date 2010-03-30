@@ -911,6 +911,7 @@ void QPlainTextEditPrivate::pageUpDown(QTextCursor::MoveOperation op, QTextCurso
         setTopBlock(block.blockNumber(), line);
 
         if (moveCursor) {
+            cursor.setVisualNavigation(true);
             // move using movePosition to keep the cursor's x
             lastY += verticalOffset();
             bool moved = false;
@@ -1319,6 +1320,26 @@ QTextCursor QPlainTextEdit::textCursor() const
     return d->control->textCursor();
 }
 
+/*!
+    Returns the reference of the anchor at position \a pos, or an
+    empty string if no anchor exists at that point.
+
+    \since 4.7
+ */
+QString QPlainTextEdit::anchorAt(const QPoint &pos) const
+{
+    Q_D(const QPlainTextEdit);
+    int cursorPos = d->control->hitTest(pos + QPoint(d->horizontalOffset(),
+                                                     d->verticalOffset()),
+                                        Qt::ExactHit);
+    if (cursorPos < 0)
+        return QString();
+
+    QTextDocumentPrivate *pieceTable = document()->docHandle();
+    QTextDocumentPrivate::FragmentIterator it = pieceTable->find(cursorPos);
+    QTextCharFormat fmt = pieceTable->formatCollection()->charFormat(it->format);
+    return fmt.anchorHref();
+}
 
 /*!
     Undoes the last operation.
@@ -2393,7 +2414,7 @@ void QPlainTextEdit::setReadOnly(bool ro)
     then the focus policy is also automatically set to Qt::ClickFocus.
 
     The default value depends on whether the QPlainTextEdit is read-only
-    or editable, and whether it is a QTextBrowser or not.
+    or editable.
 */
 
 void QPlainTextEdit::setTextInteractionFlags(Qt::TextInteractionFlags flags)

@@ -208,6 +208,8 @@ private:
     friend class QGraphicsRotation;
 };
 
+Q_DECLARE_TYPEINFO(QMatrix4x4, Q_MOVABLE_TYPE);
+
 inline QMatrix4x4::QMatrix4x4
         (qreal m11, qreal m12, qreal m13, qreal m14,
          qreal m21, qreal m22, qreal m23, qreal m24,

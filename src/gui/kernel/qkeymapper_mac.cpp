@@ -323,6 +323,32 @@ static qt_mac_enum_mapper qt_mac_keyvkey_symbols[] = { //real scan codes
     {   0, QT_MAC_MAP_ENUM(0) }
 };
 
+static qt_mac_enum_mapper qt_mac_private_unicode[] = {
+    { 0xF700, QT_MAC_MAP_ENUM(Qt::Key_Up) },            //NSUpArrowFunctionKey
+    { 0xF701, QT_MAC_MAP_ENUM(Qt::Key_Down) },          //NSDownArrowFunctionKey
+    { 0xF702, QT_MAC_MAP_ENUM(Qt::Key_Left) },          //NSLeftArrowFunctionKey
+    { 0xF703, QT_MAC_MAP_ENUM(Qt::Key_Right) },         //NSRightArrowFunctionKey
+    { 0xF727, QT_MAC_MAP_ENUM(Qt::Key_Insert) },        //NSInsertFunctionKey
+    { 0xF728, QT_MAC_MAP_ENUM(Qt::Key_Delete) },        //NSDeleteFunctionKey
+    { 0xF729, QT_MAC_MAP_ENUM(Qt::Key_Home) },          //NSHomeFunctionKey
+    { 0xF72B, QT_MAC_MAP_ENUM(Qt::Key_End) },           //NSEndFunctionKey
+    { 0xF72C, QT_MAC_MAP_ENUM(Qt::Key_PageUp) },        //NSPageUpFunctionKey
+    { 0xF72D, QT_MAC_MAP_ENUM(Qt::Key_PageDown) },      //NSPageDownFunctionKey
+    { 0xF72F, QT_MAC_MAP_ENUM(Qt::Key_ScrollLock) },    //NSScrollLockFunctionKey
+    { 0xF730, QT_MAC_MAP_ENUM(Qt::Key_Pause) },         //NSPauseFunctionKey
+    { 0xF731, QT_MAC_MAP_ENUM(Qt::Key_SysReq) },        //NSSysReqFunctionKey
+    { 0xF735, QT_MAC_MAP_ENUM(Qt::Key_Menu) },          //NSMenuFunctionKey
+    { 0xF738, QT_MAC_MAP_ENUM(Qt::Key_Print) },         //NSPrintFunctionKey
+    { 0xF73A, QT_MAC_MAP_ENUM(Qt::Key_Clear) },         //NSClearDisplayFunctionKey
+    { 0xF73D, QT_MAC_MAP_ENUM(Qt::Key_Insert) },        //NSInsertCharFunctionKey
+    { 0xF73E, QT_MAC_MAP_ENUM(Qt::Key_Delete) },        //NSDeleteCharFunctionKey
+    { 0xF741, QT_MAC_MAP_ENUM(Qt::Key_Select) },        //NSSelectFunctionKey
+    { 0xF742, QT_MAC_MAP_ENUM(Qt::Key_Execute) },       //NSExecuteFunctionKey
+    { 0xF746, QT_MAC_MAP_ENUM(Qt::Key_Help) },          //NSHelpFunctionKey
+    { 0xF747, QT_MAC_MAP_ENUM(Qt::Key_Mode_switch) },   //NSModeSwitchFunctionKey
+    {   0,    QT_MAC_MAP_ENUM(0) }
+};
+
 static int qt_mac_get_key(int modif, const QChar &key, int virtualKey)
 {
 #ifdef DEBUG_KEY_BINDINGS
@@ -377,6 +403,19 @@ static int qt_mac_get_key(int modif, const QChar &key, int virtualKey)
 #endif
             return qt_mac_keyvkey_symbols[i].qt_code;
         }
+    }
+
+    // check if they belong to key codes in private unicode range
+    if (key >= 0xf700 && key <= 0xf747) {
+        if (key >= 0xf704 && key <= 0xf726) {
+            return Qt::Key_F1 + (key.unicode() - 0xf704) ;
+        }
+        for (int i = 0; qt_mac_private_unicode[i].qt_code; i++) {
+            if (qt_mac_private_unicode[i].mac_code == key) {
+                return qt_mac_private_unicode[i].qt_code;
+            }
+        }
+
     }
 
     //oh well
@@ -847,7 +886,11 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
 }
 
 void
-QKeyMapperPrivate::updateKeyMap(EventHandlerCallRef, EventRef event, void *)
+QKeyMapperPrivate::updateKeyMap(EventHandlerCallRef, EventRef event, void *
+#if defined(QT_MAC_USE_COCOA)
+                                unicodeKey // unicode character from NSEvent (modifiers applied)
+#endif
+                                )
 {
     UInt32 macVirtualKey = 0;
     GetEventParameter(event, kEventParamKeyCode, typeUInt32, 0, sizeof(macVirtualKey), 0, &macVirtualKey);
@@ -875,6 +918,15 @@ QKeyMapperPrivate::updateKeyMap(EventHandlerCallRef, EventRef event, void *)
                     qtkey = unicode.unicode();
                 keyLayout[macVirtualKey]->qtKey[i] = qtkey;
             }
+#ifndef Q_WS_MAC32
+            else {
+                const QChar unicode(*((UniChar *)unicodeKey));
+                int qtkey = qt_mac_get_key(keyModifier, unicode, macVirtualKey);
+                if (qtkey == Qt::Key_unknown)
+                    qtkey = unicode.unicode();
+                keyLayout[macVirtualKey]->qtKey[i] = qtkey;
+            }
+#endif
 #ifdef Q_WS_MAC32            
         } else {
             const UInt32 keyModifier = (qt_mac_get_mac_modifiers(ModsTbl[i]));

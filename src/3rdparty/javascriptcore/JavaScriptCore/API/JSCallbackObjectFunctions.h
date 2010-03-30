@@ -24,6 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
+#include "APIShims.h"
 #include "APICast.h"
 #include "Error.h"
 #include "JSCallbackFunction.h"
@@ -47,7 +48,7 @@ inline JSCallbackObject<Base>* JSCallbackObject<Base>::asCallbackObject(JSValue 
 }
 
 template <class Base>
-JSCallbackObject<Base>::JSCallbackObject(ExecState* exec, PassRefPtr<Structure> structure, JSClassRef jsClass, void* data)
+JSCallbackObject<Base>::JSCallbackObject(ExecState* exec, NonNullPassRefPtr<Structure> structure, JSClassRef jsClass, void* data)
     : Base(structure)
     , m_callbackObjectData(new JSCallbackObjectData(data, jsClass))
 {
@@ -79,7 +80,7 @@ void JSCallbackObject<Base>::init(ExecState* exec)
     
     // initialize from base to derived
     for (int i = static_cast<int>(initRoutines.size()) - 1; i >= 0; i--) {
-        JSLock::DropAllLocks dropAllLocks(exec);
+        APICallbackShim callbackShim(exec);
         JSObjectInitializeCallback initialize = initRoutines[i];
         initialize(toRef(exec), toRef(this));
     }
@@ -117,7 +118,7 @@ bool JSCallbackObject<Base>::getOwnPropertySlot(ExecState* exec, const Identifie
         if (JSObjectHasPropertyCallback hasProperty = jsClass->hasProperty) {
             if (!propertyNameRef)
                 propertyNameRef = OpaqueJSString::create(propertyName.ustring());
-            JSLock::DropAllLocks dropAllLocks(exec);
+            APICallbackShim callbackShim(exec);
             if (hasProperty(ctx, thisRef, propertyNameRef.get())) {
                 slot.setCustom(this, callbackGetter);
                 return true;
@@ -128,16 +129,16 @@ bool JSCallbackObject<Base>::getOwnPropertySlot(ExecState* exec, const Identifie
             JSValueRef exception = 0;
             JSValueRef value;
             {
-                JSLock::DropAllLocks dropAllLocks(exec);
+                APICallbackShim callbackShim(exec);
                 value = getProperty(ctx, thisRef, propertyNameRef.get(), &exception);
             }
-            exec->setException(toJS(exec, exception));
-            if (value) {
-                slot.setValue(toJS(exec, value));
+            if (exception) {
+                exec->setException(toJS(exec, exception));
+                slot.setValue(jsUndefined());
                 return true;
             }
-            if (exception) {
-                slot.setValue(jsUndefined());
+            if (value) {
+                slot.setValue(toJS(exec, value));
                 return true;
             }
         }
@@ -167,6 +168,25 @@ bool JSCallbackObject<Base>::getOwnPropertySlot(ExecState* exec, unsigned proper
 }
 
 template <class Base>
+bool JSCallbackObject<Base>::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    PropertySlot slot;
+    if (getOwnPropertySlot(exec, propertyName, slot)) {
+        // Ideally we should return an access descriptor, but returning a value descriptor is better than nothing.
+        JSValue value = slot.getValue(exec, propertyName);
+        if (!exec->hadException())
+            descriptor.setValue(value);
+        // We don't know whether the property is configurable, but assume it is.
+        descriptor.setConfigurable(true);
+        // We don't know whether the property is enumerable (we could call getOwnPropertyNames() to find out), but assume it isn't.
+        descriptor.setEnumerable(false);
+        return true;
+    }
+
+    return Base::getOwnPropertyDescriptor(exec, propertyName, descriptor);
+}
+
+template <class Base>
 void JSCallbackObject<Base>::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     JSContextRef ctx = toRef(exec);
@@ -181,10 +201,11 @@ void JSCallbackObject<Base>::put(ExecState* exec, const Identifier& propertyName
             JSValueRef exception = 0;
             bool result;
             {
-                JSLock::DropAllLocks dropAllLocks(exec);
+                APICallbackShim callbackShim(exec);
                 result = setProperty(ctx, thisRef, propertyNameRef.get(), valueRef, &exception);
             }
-            exec->setException(toJS(exec, exception));
+            if (exception)
+                exec->setException(toJS(exec, exception));
             if (result || exception)
                 return;
         }
@@ -199,10 +220,11 @@ void JSCallbackObject<Base>::put(ExecState* exec, const Identifier& propertyName
                     JSValueRef exception = 0;
                     bool result;
                     {
-                        JSLock::DropAllLocks dropAllLocks(exec);
+                        APICallbackShim callbackShim(exec);
                         result = setProperty(ctx, thisRef, propertyNameRef.get(), valueRef, &exception);
                     }
-                    exec->setException(toJS(exec, exception));
+                    if (exception)
+                        exec->setException(toJS(exec, exception));
                     if (result || exception)
                         return;
                 } else
@@ -224,7 +246,7 @@ void JSCallbackObject<Base>::put(ExecState* exec, const Identifier& propertyName
 }
 
 template <class Base>
-bool JSCallbackObject<Base>::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
+bool JSCallbackObject<Base>::deleteProperty(ExecState* exec, const Identifier& propertyName)
 {
     JSContextRef ctx = toRef(exec);
     JSObjectRef thisRef = toRef(this);
@@ -237,10 +259,11 @@ bool JSCallbackObject<Base>::deleteProperty(ExecState* exec, const Identifier& p
             JSValueRef exception = 0;
             bool result;
             {
-                JSLock::DropAllLocks dropAllLocks(exec);
+                APICallbackShim callbackShim(exec);
                 result = deleteProperty(ctx, thisRef, propertyNameRef.get(), &exception);
             }
-            exec->setException(toJS(exec, exception));
+            if (exception)
+                exec->setException(toJS(exec, exception));
             if (result || exception)
                 return true;
         }
@@ -262,13 +285,13 @@ bool JSCallbackObject<Base>::deleteProperty(ExecState* exec, const Identifier& p
         }
     }
     
-    return Base::deleteProperty(exec, propertyName, checkDontDelete);
+    return Base::deleteProperty(exec, propertyName);
 }
 
 template <class Base>
-bool JSCallbackObject<Base>::deleteProperty(ExecState* exec, unsigned propertyName, bool checkDontDelete)
+bool JSCallbackObject<Base>::deleteProperty(ExecState* exec, unsigned propertyName)
 {
-    return deleteProperty(exec, Identifier::from(exec, propertyName), checkDontDelete);
+    return deleteProperty(exec, Identifier::from(exec, propertyName));
 }
 
 template <class Base>
@@ -298,10 +321,11 @@ JSObject* JSCallbackObject<Base>::construct(ExecState* exec, JSObject* construct
             JSValueRef exception = 0;
             JSObject* result;
             {
-                JSLock::DropAllLocks dropAllLocks(exec);
+                APICallbackShim callbackShim(exec);
                 result = toJS(callAsConstructor(execRef, constructorRef, argumentCount, arguments.data(), &exception));
             }
-            exec->setException(toJS(exec, exception));
+            if (exception)
+                exec->setException(toJS(exec, exception));
             return result;
         }
     }
@@ -322,10 +346,11 @@ bool JSCallbackObject<Base>::hasInstance(ExecState* exec, JSValue value, JSValue
             JSValueRef exception = 0;
             bool result;
             {
-                JSLock::DropAllLocks dropAllLocks(exec);
+                APICallbackShim callbackShim(exec);
                 result = hasInstance(execRef, thisRef, valueRef, &exception);
             }
-            exec->setException(toJS(exec, exception));
+            if (exception)
+                exec->setException(toJS(exec, exception));
             return result;
         }
     }
@@ -360,10 +385,11 @@ JSValue JSCallbackObject<Base>::call(ExecState* exec, JSObject* functionObject, 
             JSValueRef exception = 0;
             JSValue result;
             {
-                JSLock::DropAllLocks dropAllLocks(exec);
+                APICallbackShim callbackShim(exec);
                 result = toJS(exec, callAsFunction(execRef, functionRef, thisObjRef, argumentCount, arguments.data(), &exception));
             }
-            exec->setException(toJS(exec, exception));
+            if (exception)
+                exec->setException(toJS(exec, exception));
             return result;
         }
     }
@@ -373,14 +399,14 @@ JSValue JSCallbackObject<Base>::call(ExecState* exec, JSObject* functionObject, 
 }
 
 template <class Base>
-void JSCallbackObject<Base>::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void JSCallbackObject<Base>::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     JSContextRef execRef = toRef(exec);
     JSObjectRef thisRef = toRef(this);
     
     for (JSClassRef jsClass = classRef(); jsClass; jsClass = jsClass->parentClass) {
         if (JSObjectGetPropertyNamesCallback getPropertyNames = jsClass->getPropertyNames) {
-            JSLock::DropAllLocks dropAllLocks(exec);
+            APICallbackShim callbackShim(exec);
             getPropertyNames(execRef, thisRef, toRef(&propertyNames));
         }
         
@@ -390,7 +416,7 @@ void JSCallbackObject<Base>::getOwnPropertyNames(ExecState* exec, PropertyNameAr
             for (iterator it = staticValues->begin(); it != end; ++it) {
                 UString::Rep* name = it->first.get();
                 StaticValueEntry* entry = it->second;
-                if (entry->getProperty && !(entry->attributes & kJSPropertyAttributeDontEnum))
+                if (entry->getProperty && (!(entry->attributes & kJSPropertyAttributeDontEnum) || (mode == IncludeDontEnumProperties)))
                     propertyNames.add(Identifier(exec, name));
             }
         }
@@ -401,13 +427,13 @@ void JSCallbackObject<Base>::getOwnPropertyNames(ExecState* exec, PropertyNameAr
             for (iterator it = staticFunctions->begin(); it != end; ++it) {
                 UString::Rep* name = it->first.get();
                 StaticFunctionEntry* entry = it->second;
-                if (!(entry->attributes & kJSPropertyAttributeDontEnum))
+                if (!(entry->attributes & kJSPropertyAttributeDontEnum) || (mode == IncludeDontEnumProperties))
                     propertyNames.add(Identifier(exec, name));
             }
         }
     }
     
-    Base::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
+    Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 template <class Base>
@@ -426,7 +452,7 @@ double JSCallbackObject<Base>::toNumber(ExecState* exec) const
             JSValueRef exception = 0;
             JSValueRef value;
             {
-                JSLock::DropAllLocks dropAllLocks(exec);
+                APICallbackShim callbackShim(exec);
                 value = convertToType(ctx, thisRef, kJSTypeNumber, &exception);
             }
             if (exception) {
@@ -435,7 +461,8 @@ double JSCallbackObject<Base>::toNumber(ExecState* exec) const
             }
 
             double dValue;
-            return toJS(exec, value).getNumber(dValue) ? dValue : NaN;
+            if (value)
+                return toJS(exec, value).getNumber(dValue) ? dValue : NaN;
         }
             
     return Base::toNumber(exec);
@@ -452,14 +479,15 @@ UString JSCallbackObject<Base>::toString(ExecState* exec) const
             JSValueRef exception = 0;
             JSValueRef value;
             {
-                JSLock::DropAllLocks dropAllLocks(exec);
+                APICallbackShim callbackShim(exec);
                 value = convertToType(ctx, thisRef, kJSTypeString, &exception);
             }
             if (exception) {
                 exec->setException(toJS(exec, exception));
                 return "";
             }
-            return toJS(exec, value).getString();
+            if (value)
+                return toJS(exec, value).getString(exec);
         }
             
     return Base::toString(exec);
@@ -504,16 +532,17 @@ JSValue JSCallbackObject<Base>::staticValueGetter(ExecState* exec, const Identif
                     JSValueRef exception = 0;
                     JSValueRef value;
                     {
-                        JSLock::DropAllLocks dropAllLocks(exec);
+                        APICallbackShim callbackShim(exec);
                         value = getProperty(toRef(exec), thisRef, propertyNameRef.get(), &exception);
                     }
-                    exec->setException(toJS(exec, exception));
+                    if (exception) {
+                        exec->setException(toJS(exec, exception));
+                        return jsUndefined();
+                    }
                     if (value)
                         return toJS(exec, value);
-                    if (exception)
-                        return jsUndefined();
                 }
-                    
+
     return throwError(exec, ReferenceError, "Static value property defined with NULL getProperty callback.");
 }
 
@@ -557,14 +586,15 @@ JSValue JSCallbackObject<Base>::callbackGetter(ExecState* exec, const Identifier
             JSValueRef exception = 0;
             JSValueRef value;
             {
-                JSLock::DropAllLocks dropAllLocks(exec);
+                APICallbackShim callbackShim(exec);
                 value = getProperty(toRef(exec), thisRef, propertyNameRef.get(), &exception);
             }
-            exec->setException(toJS(exec, exception));
+            if (exception) {
+                exec->setException(toJS(exec, exception));
+                return jsUndefined();
+            }
             if (value)
                 return toJS(exec, value);
-            if (exception)
-                return jsUndefined();
         }
             
     return throwError(exec, ReferenceError, "hasProperty callback returned true for a property that doesn't exist.");

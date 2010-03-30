@@ -1,0 +1,84 @@
+include(compat.qdocconf)
+include(macros.qdocconf)
+include(qt-cpp-ignore.qdocconf)
+include(qt-html-templates_zh_CN.qdocconf)
+include(qt-defines.qdocconf)
+
+project                 = Qt
+description             = Qt Reference Documentation
+url                     = http://qt.nokia.com/doc/zh_CN/4.7
+
+sourceencoding          = UTF-8
+outputencoding          = UTF-8
+naturallanguage         = zh-Hans
+
+indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
+
+qhp.projects            = Qt
+
+qhp.Qt.file                = qt.qhp
+qhp.Qt.namespace           = com.trolltech.qt.470
+qhp.Qt.virtualFolder       = qdoc
+qhp.Qt.title               = 教程
+qhp.Qt.indexTitle          = 教程
+qhp.Qt.selectors           = fake:example
+
+qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc zh_CN
+qhp.Qt.customFilters.Qt.name = Qt 4.7.0
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.7.0
+
+# Files not referenced in any qdoc file (last four are needed by qtdemo)
+# See also extraimages.HTML
+qhp.Qt.extraFiles          = classic.css \
+                             images/qt-logo.png \
+                             images/taskmenuextension-example.png \
+                             images/coloreditorfactoryimage.png \
+                             images/dynamiclayouts-example.png \
+                             images/stylesheet-coffee-plastique.png
+
+language                = Cpp
+
+sourcedirs              = $QT_SOURCE_TREE/doc/src/zh_CN
+
+excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
+                          $QT_SOURCE_TREE/src/3rdparty/des \
+                          $QT_SOURCE_TREE/src/3rdparty/freetype \
+                          $QT_SOURCE_TREE/src/3rdparty/harfbuzz \
+                          $QT_SOURCE_TREE/src/3rdparty/kdebase \
+                          $QT_SOURCE_TREE/src/3rdparty/libjpeg \
+                          $QT_SOURCE_TREE/src/3rdparty/libmng \
+                          $QT_SOURCE_TREE/src/3rdparty/libpng \
+                          $QT_SOURCE_TREE/src/3rdparty/libtiff \
+                          $QT_SOURCE_TREE/src/3rdparty/md4 \
+                          $QT_SOURCE_TREE/src/3rdparty/md5 \
+                          $QT_SOURCE_TREE/src/3rdparty/patches \
+                          $QT_SOURCE_TREE/src/3rdparty/sha1 \
+                          $QT_SOURCE_TREE/src/3rdparty/sqlite \
+                          $QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore \
+                          $QT_SOURCE_TREE/src/3rdparty/webkit/WebCore \
+                          $QT_SOURCE_TREE/src/3rdparty/wintab \
+                          $QT_SOURCE_TREE/src/3rdparty/zlib \
+                          $QT_SOURCE_TREE/doc/src/snippets \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/gstreamer \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/ds9 \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/qt7 \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/mmf \
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/waveout
+
+sources.fileextensions  = "*.cpp *.qdoc *.mm"
+examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp"
+examples.imageextensions = "*.png"
+
+exampledirs             = $QT_SOURCE_TREE/doc/src \
+                          $QT_SOURCE_TREE/examples \
+                          $QT_SOURCE_TREE/examples/tutorials \
+                          $QT_SOURCE_TREE \
+                          $QT_SOURCE_TREE/qmake/examples \
+                          $QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/docs
+imagedirs               = $QT_SOURCE_TREE/doc/src/images \
+                          $QT_SOURCE_TREE/examples
+outputdir               = $QT_BUILD_TREE/doc/html_zh_CN
+tagfile                 = $QT_BUILD_TREE/doc/html_zh_CN/qt.tags
+base                    = file:$QT_BUILD_TREE/doc/html_zh_CN
+
+HTML.generatemacrefs    = "true"

@@ -44,6 +44,7 @@
 #include <QStandardItemModel>
 #include <QStringListModel>
 #include <QSortFilterProxyModel>
+#include <QTableView>
 
 #include <qabstractitemmodel.h>
 #include <qapplication.h>
@@ -190,6 +191,8 @@ private slots:
     void task236450_hidden();
     void task248050_hideRow();
     void QTBUG6058_reset();
+    void QTBUG7833_sectionClicked();
+    void QTBUG8650_crashOnInsertSections();
 
 protected:
     QHeaderView *view;
@@ -1992,6 +1995,81 @@ void tst_QHeaderView::QTBUG6058_reset()
     QCOMPARE(checkHeaderViewOrder(&view, QVector<int>() << 2 << 0 << 1 << 3 << 4 << 5 ) , 0);
 }
 
+void tst_QHeaderView::QTBUG7833_sectionClicked()
+{
+
+
+
+
+    QTableView tv;
+    QStandardItemModel *sim = new QStandardItemModel(&tv);
+    QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel(&tv);
+    proxyModel->setSourceModel(sim);
+    proxyModel->setDynamicSortFilter(true);
+    proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+
+    QList<QStandardItem *> row;
+    for (int i = 0; i < 12; i++)
+        row.append(new QStandardItem(QString(QLatin1Char('A' + i))));
+    sim->appendRow(row);
+    row.clear();
+    for (int i = 12; i > 0; i--)
+        row.append(new QStandardItem(QString(QLatin1Char('A' + i))));
+    sim->appendRow(row);
+
+    tv.setSortingEnabled(true);
+    tv.horizontalHeader()->setSortIndicatorShown(true);
+    tv.horizontalHeader()->setClickable(true);
+    tv.horizontalHeader()->setStretchLastSection(true);
+    tv.horizontalHeader()->setResizeMode(QHeaderView::Interactive);
+
+    tv.setModel(proxyModel);
+    tv.setColumnHidden(5, true);
+    tv.setColumnHidden(6, true);
+    tv.horizontalHeader()->swapSections(8, 10);
+    tv.sortByColumn(1, Qt::AscendingOrder);
+
+    QSignalSpy clickedSpy(tv.horizontalHeader(), SIGNAL(sectionClicked(int)));
+    QSignalSpy pressedSpy(tv.horizontalHeader(), SIGNAL(sectionPressed(int)));
+
+
+    QTest::mouseClick(tv.horizontalHeader()->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      QPoint(tv.horizontalHeader()->sectionViewportPosition(11) + 5, 5));
+    QCOMPARE(clickedSpy.count(), 1);
+    QCOMPARE(pressedSpy.count(), 1);
+    QCOMPARE(clickedSpy.at(0).at(0).toInt(), 11);
+    QCOMPARE(pressedSpy.at(0).at(0).toInt(), 11);
+
+    QTest::mouseClick(tv.horizontalHeader()->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      QPoint(tv.horizontalHeader()->sectionViewportPosition(8) + 5, 5));
+
+    QCOMPARE(clickedSpy.count(), 2);
+    QCOMPARE(pressedSpy.count(), 2);
+    QCOMPARE(clickedSpy.at(1).at(0).toInt(), 8);
+    QCOMPARE(pressedSpy.at(1).at(0).toInt(), 8);
+
+    QTest::mouseClick(tv.horizontalHeader()->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      QPoint(tv.horizontalHeader()->sectionViewportPosition(0) + 5, 5));
+
+    QCOMPARE(clickedSpy.count(), 3);
+    QCOMPARE(pressedSpy.count(), 3);
+    QCOMPARE(clickedSpy.at(2).at(0).toInt(), 0);
+    QCOMPARE(pressedSpy.at(2).at(0).toInt(), 0);
+}
+
+void tst_QHeaderView::QTBUG8650_crashOnInsertSections()
+{
+    QStringList headerLabels;
+    QHeaderView view(Qt::Horizontal);
+    QStandardItemModel model(2,2);
+    view.setModel(&model);
+    view.moveSection(1, 0);
+    view.hideSection(0);
+
+    QList<QStandardItem *> items;
+    items << new QStandardItem("c");
+    model.insertColumn(0, items);
+}
 
 QTEST_MAIN(tst_QHeaderView)
 #include "tst_qheaderview.moc"

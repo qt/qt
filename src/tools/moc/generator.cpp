@@ -173,7 +173,7 @@ void Generator::generateCode()
     int index = 14;
     fprintf(out, "static const uint qt_meta_data_%s[] = {\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "\n // content:\n");
-    fprintf(out, "    %4d,       // revision\n", 4);
+    fprintf(out, "    %4d,       // revision\n", 5);
     fprintf(out, "    %4d,       // classname\n", strreg(cdef->qualified));
     fprintf(out, "    %4d, %4d, // classinfo\n", cdef->classInfoList.count(), cdef->classInfoList.count() ? index : 0);
     index += cdef->classInfoList.count() * 2;

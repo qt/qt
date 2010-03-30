@@ -41,6 +41,7 @@
 
 #include "qplatformdefs.h"
 #include "qmutex.h"
+#include <qdebug.h>
 
 #ifndef QT_NO_THREAD
 #include "qatomic.h"
@@ -159,8 +160,7 @@ void QMutex::lock()
         if (!isLocked) {
 #ifndef QT_NO_DEBUG
             if (d->owner == self)
-                qWarning("QMutex::lock: Deadlock detected in thread %ld",
-                         long(d->owner));
+                qWarning() << "QMutex::lock: Deadlock detected in thread" << d->owner;
 #endif
 
             // didn't get the lock, wait for it
@@ -197,8 +197,7 @@ void QMutex::lock()
                 if (!isLocked) {
 #ifndef QT_NO_DEBUG
                     if (d->owner == self)
-                        qWarning("QMutex::lock: Deadlock detected in thread %ld",
-                                 long(d->owner));
+                        qWarning() << "QMutex::lock: Deadlock detected in thread" << d->owner;
 #endif
 
                     // didn't get the lock, wait for it

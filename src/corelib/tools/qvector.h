@@ -134,6 +134,7 @@ public:
     inline void detach() { if (d->ref != 1) detach_helper(); }
     inline bool isDetached() const { return d->ref == 1; }
     inline void setSharable(bool sharable) { if (!sharable) detach(); d->sharable = sharable; }
+    inline bool isSharedWith(const QVector<T> &other) const { return d == other.d; }
 
     inline T *data() { detach(); return p->array; }
     inline const T *data() const { return p->array; }
@@ -727,9 +728,10 @@ Q_OUTOFLINE_TEMPLATE QVector<T> QVector<T>::mid(int pos, int length) const
         length = size() - pos;
     if (pos == 0 && length == size())
         return *this;
-    QVector<T> copy;
     if (pos + length > size())
         length = size() - pos;
+    QVector<T> copy;
+    copy.reserve(length);
     for (int i = pos; i < pos + length; ++i)
         copy += at(i);
     return copy;
@@ -739,6 +741,7 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> QVector<T>::toList() const
 {
     QList<T> result;
+    result.reserve(size());
     for (int i = 0; i < size(); ++i)
         result.append(at(i));
     return result;

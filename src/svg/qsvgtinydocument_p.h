@@ -173,9 +173,8 @@ inline bool QSvgTinyDocument::heightPercent() const
 
 inline QRectF QSvgTinyDocument::viewBox() const
 {
-    if (m_viewBox.isNull()) {
-        m_viewBox = transformedBounds(QTransform());
-    }
+    if (m_viewBox.isNull())
+        m_viewBox = transformedBounds();
 
     return m_viewBox;
 }

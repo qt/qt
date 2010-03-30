@@ -268,8 +268,12 @@ QVariant QtopiaPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_FullPage:
         ret = d->fullPage;
         break;
+    case PPK_CopyCount: // fallthrough
     case PPK_NumberOfCopies:
         ret = d->numCopies;
+        break;
+    case PPK_SupportsMultipleCopies:
+        ret = false;
         break;
     case PPK_Orientation:
         ret = d->orientation;
@@ -329,6 +333,7 @@ void QtopiaPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
     case PPK_FullPage:
         d->fullPage = value.toBool();
         break;
+    case PPK_CopyCount: // fallthrough
     case PPK_NumberOfCopies:
         d->numCopies = value.toInt();
         break;

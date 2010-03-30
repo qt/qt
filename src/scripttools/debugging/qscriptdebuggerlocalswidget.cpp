@@ -70,6 +70,8 @@ public:
 
     bool hasChildren(const QModelIndex &parent) const
     {
+        if (!sourceModel())
+            return false;
         QModelIndex sourceParent = mapToSource(parent);
         if (parent.isValid() && !sourceParent.isValid())
             return false;
@@ -184,7 +186,8 @@ void QScriptDebuggerLocalsWidgetPrivate::_q_insertCompletion(const QString &text
 
 void QScriptDebuggerLocalsWidgetPrivate::_q_expandIndex(const QModelIndex &index)
 {
-    view->expand(proxy->mapFromSource(index));
+    if (view->model() == index.model())
+        view->expand(proxy->mapFromSource(index));
 }
 
 class QScriptDebuggerLocalsItemDelegate

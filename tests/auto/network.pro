@@ -16,12 +16,16 @@ SUBDIRS=\
     qhttpnetworkreply \
     qhttpsocketengine \
     qnativesocketengine \
+    qnetworkaccessmanager \
     qnetworkaddressentry \
+    qnetworkconfiguration \
+    qnetworkconfigurationmanager \
     qnetworkcookie \
     qnetworkcookiejar \
     qnetworkinterface \
     qnetworkproxy \
     qnetworkrequest \
+    qnetworksession \
     qobjectperformance \
     qsocketnotifier \
     qsocks5socketengine \

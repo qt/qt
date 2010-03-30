@@ -38,9 +38,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "indexwindow.h"
 #include "centralwidget.h"
+#include "helpenginewrapper.h"
+#include "helpviewer.h"
 #include "topicchooser.h"
 
 #include <QtGui/QLayout>
@@ -51,22 +54,20 @@
 #include <QtGui/QContextMenuEvent>
 #include <QtGui/QListWidgetItem>
 
-#include <QtHelp/QHelpEngine>
 #include <QtHelp/QHelpIndexWidget>
 
 QT_BEGIN_NAMESPACE
 
-IndexWindow::IndexWindow(QHelpEngine *helpEngine, QWidget *parent)
+IndexWindow::IndexWindow(QWidget *parent)
     : QWidget(parent)
-    , m_searchLineEdit(0)
-    , m_indexWidget(0)
-    , m_helpEngine(helpEngine)
+    , m_searchLineEdit(new QLineEdit)
+    , m_indexWidget(HelpEngineWrapper::instance().indexWidget())
 {
+    TRACE_OBJ
     QVBoxLayout *layout = new QVBoxLayout(this);
     QLabel *l = new QLabel(tr("&Look for:"));
     layout->addWidget(l);
 
-    m_searchLineEdit = new QLineEdit();
     l->setBuddy(m_searchLineEdit);
     connect(m_searchLineEdit, SIGNAL(textChanged(QString)), this,
         SLOT(filterIndices(QString)));
@@ -74,11 +75,11 @@ IndexWindow::IndexWindow(QHelpEngine *helpEngine, QWidget *parent)
     layout->setMargin(4);
     layout->addWidget(m_searchLineEdit);
 
-    m_indexWidget = m_helpEngine->indexWidget();
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     m_indexWidget->installEventFilter(this);
-    connect(m_helpEngine->indexModel(), SIGNAL(indexCreationStarted()), this,
+    connect(helpEngine.indexModel(), SIGNAL(indexCreationStarted()), this,
         SLOT(disableSearchLineEdit()));
-    connect(m_helpEngine->indexModel(), SIGNAL(indexCreated()), this,
+    connect(helpEngine.indexModel(), SIGNAL(indexCreated()), this,
         SLOT(enableSearchLineEdit()));
     connect(m_indexWidget, SIGNAL(linkActivated(QUrl,QString)), this,
         SIGNAL(linkActivated(QUrl)));
@@ -93,10 +94,12 @@ IndexWindow::IndexWindow(QHelpEngine *helpEngine, QWidget *parent)
 
 IndexWindow::~IndexWindow()
 {
+    TRACE_OBJ
 }
 
 void IndexWindow::filterIndices(const QString &filter)
 {
+    TRACE_OBJ
     if (filter.contains(QLatin1Char('*')))
         m_indexWidget->filterIndices(filter, filter);
     else
@@ -105,6 +108,7 @@ void IndexWindow::filterIndices(const QString &filter)
 
 bool IndexWindow::eventFilter(QObject *obj, QEvent *e)
 {
+    TRACE_OBJ
     if (obj == m_searchLineEdit && e->type() == QEvent::KeyPress) {
         QKeyEvent *ke = static_cast<QKeyEvent*>(e);
         QModelIndex idx = m_indexWidget->currentIndex();
@@ -170,22 +174,26 @@ bool IndexWindow::eventFilter(QObject *obj, QEvent *e)
 
 void IndexWindow::enableSearchLineEdit()
 {
+    TRACE_OBJ
     m_searchLineEdit->setDisabled(false);
     filterIndices(m_searchLineEdit->text());
 }
 
 void IndexWindow::disableSearchLineEdit()
 {
+    TRACE_OBJ
     m_searchLineEdit->setDisabled(true);
 }
 
 void IndexWindow::setSearchLineEditText(const QString &text)
 {
+    TRACE_OBJ
     m_searchLineEdit->setText(text);
 }
 
 void IndexWindow::focusInEvent(QFocusEvent *e)
 {
+    TRACE_OBJ
     if (e->reason() != Qt::MouseFocusReason) {
         m_searchLineEdit->selectAll();
         m_searchLineEdit->setFocus();
@@ -194,6 +202,7 @@ void IndexWindow::focusInEvent(QFocusEvent *e)
 
 void IndexWindow::open(QHelpIndexWidget* indexWidget, const QModelIndex &index)
 {
+    TRACE_OBJ
     QHelpIndexModel *model = qobject_cast<QHelpIndexModel*>(indexWidget->model());
     if (model) {
         QString keyword = model->data(index, Qt::DisplayRole).toString();
@@ -210,7 +219,7 @@ void IndexWindow::open(QHelpIndexWidget* indexWidget, const QModelIndex &index)
             return;
         }
 
-        if (url.path().endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive))
+        if (!AbstractHelpViewer::canOpenPage(url.path()))
             CentralWidget::instance()->setSource(url);
         else
             CentralWidget::instance()->setSourceInNewTab(url);

@@ -99,5 +99,13 @@ QT_FORWARD_DECLARE_CLASS(QApplicationPrivate)
 - (QApplicationPrivate *)QT_MANGLE_NAMESPACE(qt_qappPrivate);
 - (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader);
 - (int)QT_MANGLE_NAMESPACE(qt_validModesForFontPanel):(NSFontPanel *)fontPanel;
+
+- (void)qt_sendPostedMessage:(NSEvent *)event;
+- (BOOL)qt_sendEvent:(NSEvent *)event;
 @end
+
+@interface QNSApplication : NSApplication {
+}
+@end
+
 #endif

@@ -88,11 +88,15 @@ namespace qdesigner_internal {
 
 struct WidgetBoxCategoryEntry {
     WidgetBoxCategoryEntry();
-    explicit WidgetBoxCategoryEntry(const QDesignerWidgetBoxInterface::Widget &widget, const QIcon &icon, bool editable);
+    explicit WidgetBoxCategoryEntry(const QDesignerWidgetBoxInterface::Widget &widget,
+                                    const QString &filter,
+                                    const QIcon &icon,
+                                    bool editable);
 
     QDesignerWidgetBoxInterface::Widget widget;
     QString toolTip;
     QString whatsThis;
+    QString filter;
     QIcon icon;
     bool editable;
 };
@@ -103,8 +107,11 @@ WidgetBoxCategoryEntry::WidgetBoxCategoryEntry() :
 {
 }
 
-WidgetBoxCategoryEntry::WidgetBoxCategoryEntry(const QDesignerWidgetBoxInterface::Widget &w, const QIcon &i, bool e) :
+WidgetBoxCategoryEntry::WidgetBoxCategoryEntry(const QDesignerWidgetBoxInterface::Widget &w,
+                                               const QString &filterIn,
+                                               const QIcon &i, bool e) :
     widget(w),
+    filter(filterIn),
     icon(i),
     editable(e)
 {
@@ -142,6 +149,7 @@ public:
 private:
     typedef QList<WidgetBoxCategoryEntry> WidgetBoxCategoryEntrys;
 
+    QRegExp m_classNameRegExp;
     QDesignerFormEditorInterface *m_core;
     WidgetBoxCategoryEntrys m_items;
     QListView::ViewMode m_viewMode;
@@ -149,9 +157,11 @@ private:
 
 WidgetBoxCategoryModel::WidgetBoxCategoryModel(QDesignerFormEditorInterface *core, QObject *parent) :
     QAbstractListModel(parent),
+    m_classNameRegExp(QLatin1String("<widget +class *= *\"([^\"]+)\"")),
     m_core(core),
     m_viewMode(QListView::ListMode)
 {
+    Q_ASSERT(m_classNameRegExp.isValid());
 }
 
 QListView::ViewMode WidgetBoxCategoryModel::viewMode() const
@@ -205,8 +215,14 @@ bool WidgetBoxCategoryModel::removeCustomWidgets()
 
 void WidgetBoxCategoryModel::addWidget(const QDesignerWidgetBoxInterface::Widget &widget, const QIcon &icon,bool editable)
 {
-    // build item
-    WidgetBoxCategoryEntry item(widget, icon, editable);
+    // build item. Filter on name + class name if it is different and not a layout.
+    QString filter = widget.name();
+    if (!filter.contains(QLatin1String("Layout")) && m_classNameRegExp.indexIn(widget.domXml()) != -1) {
+        const QString className = m_classNameRegExp.cap(1);
+        if (!filter.contains(className))
+            filter += className;
+    }
+    WidgetBoxCategoryEntry item(widget, filter, icon, editable);
     const QDesignerWidgetDataBaseInterface *db = m_core->widgetDataBase();
     const int dbIndex = db->indexOfClassName(widget.name());
     if (dbIndex != -1) {
@@ -255,7 +271,7 @@ QVariant WidgetBoxCategoryModel::data(const QModelIndex &index, int role) const
     case Qt::WhatsThisRole:
         return QVariant(item.whatsThis);
     case FilterRole:
-        return item.widget.name();
+        return item.filter;
     }
     return QVariant();
 }

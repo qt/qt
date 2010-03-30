@@ -880,6 +880,8 @@
     \o  \l{network/threadedfortuneserver}{Threaded Fortune Server}\raisedaster
     \o  \l{network/torrent}{Torrent}
     \o  \l{network/googlesuggest}{Google Suggest}
+    \o  \l{network/bearercloud}{Bearer Cloud}\raisedaster
+    \o  \l{network/bearermonitor}{Bearer Monitor}
     \endlist
 
     Examples marked with an asterisk (*) are fully documented.
@@ -1218,6 +1220,8 @@
 
     \list
     \o \l{help/simpletextviewer}{Simple Text Viewer}\raisedaster
+    \o \l{help/remotecontrol}{Remote Control}
+    \o \l{help/contextsensitivehelp}{Context-Sensitive Help}
     \endlist
 
     Examples marked with an asterisk (*) are fully documented.

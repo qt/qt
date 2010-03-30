@@ -1065,7 +1065,7 @@ QRect QRenderRule::boxRect(const QRect& cr, int flags) const
             r.adjust(-p[LeftEdge], -p[TopEdge], p[RightEdge], p[BottomEdge]);
         }
     }
-    if (!hasNativeBorder() && (flags & Border)) {
+    if (hasBorder() && (flags & Border)) {
         const int *b = border()->borders;
         r.adjust(-b[LeftEdge], -b[TopEdge], b[RightEdge], b[BottomEdge]);
     }
@@ -1352,6 +1352,12 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorRole fr, QPalette
         if (br != QPalette::NoRole)
             p->setBrush(br, bg->brush);
         p->setBrush(QPalette::Window, bg->brush);
+        if (bg->brush.style() == Qt::SolidPattern) {
+            p->setBrush(QPalette::Light, bg->brush.color().lighter(115));
+            p->setBrush(QPalette::Midlight, bg->brush.color().lighter(107));
+            p->setBrush(QPalette::Dark, bg->brush.color().darker(150));
+            p->setBrush(QPalette::Shadow, bg->brush.color().darker(300));
+        }
     }
 
     if (!hasPalette())
@@ -2535,7 +2541,7 @@ void QStyleSheetStyle::setPalette(QWidget *w)
         int state;
         QPalette::ColorGroup group;
     } map[3] = {
-        { PseudoClass_Active | PseudoClass_Enabled, QPalette::Active },
+        { int(PseudoClass_Active | PseudoClass_Enabled), QPalette::Active },
         { PseudoClass_Disabled, QPalette::Disabled },
         { PseudoClass_Enabled, QPalette::Inactive }
     };
@@ -3451,10 +3457,17 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
     case CE_RadioButton:
     case CE_CheckBox:
-        rule.drawRule(p, opt->rect);
-        ParentStyle::drawControl(ce, opt, p, w);
-        return;
-
+        if (rule.hasBox() || !rule.hasNativeBorder() || rule.hasDrawable() || hasStyleRule(w, PseudoElement_Indicator)) {
+            rule.drawRule(p, opt->rect);
+            ParentStyle::drawControl(ce, opt, p, w);
+            return;
+        } else if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            QStyleOptionButton butOpt(*btn);
+            rule.configurePalette(&butOpt.palette, QPalette::ButtonText, QPalette::Button);
+            baseStyle()->drawControl(ce, &butOpt, p, w);
+            return;
+        }
+        break;
     case CE_RadioButtonLabel:
     case CE_CheckBoxLabel:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {

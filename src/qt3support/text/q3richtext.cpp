@@ -6667,7 +6667,7 @@ Q3TextImage::Q3TextImage(Q3TextDocument *p, const QMap<QString, QString> &attr, 
         imageName = attr[QLatin1String("source")];
 
     if (!imageName.isEmpty()) {
-        imgId = QString::fromLatin1("%1,%2,%3,%4").arg(imageName).arg(width).arg(height).arg((ulong)&factory);
+        imgId = QString::fromLatin1("%1,%2,%3,%4").arg(imageName).arg(width).arg(height).arg((quintptr)&factory);
         if (!pixmap_map)
             pixmap_map = new QMap<QString, QPixmapInt>;
         if (pixmap_map->contains(imgId)) {

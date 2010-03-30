@@ -377,7 +377,8 @@ void QtResourceViewPrivate::createPaths()
     if (!m_resourceModel)
         return;
 
-    const QString root(QLatin1Char(':'));
+    // Resource root up until 4.6 was ':', changed to ":/" as of 4.7
+    const QString root(QLatin1String(":/"));
 
     QMap<QString, QString> contents = m_resourceModel->contents();
     QMapIterator<QString, QString> itContents(contents);
@@ -420,7 +421,7 @@ void QtResourceViewPrivate::filterOutResources()
     // 3) we hide these items which has pathToVisible value false.
 
     const bool matchAll = m_filterPattern.isEmpty();
-    const QString root(QLatin1Char(':'));
+    const QString root(QLatin1String(":/"));
 
     QQueue<QString> pathQueue;
     pathQueue.enqueue(root);
@@ -664,6 +665,8 @@ QString QtResourceView::selectedResource() const
 
 void QtResourceView::selectResource(const QString &resource)
 {
+    if (resource.isEmpty())
+        return;
     QFileInfo fi(resource);
     QDir dir = fi.absoluteDir();
     if (fi.isDir())

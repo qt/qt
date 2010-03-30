@@ -66,6 +66,53 @@ static int grow(int size)
     return x;
 }
 
+/*!
+ *  Detaches the QListData by allocating new memory for a list which will be bigger
+ *  than the copied one and is expected to grow further.
+ *  *idx is the desired insertion point and is clamped to the actual size of the list.
+ *  num is the number of new elements to insert at the insertion point.
+ *  Returns the old (shared) data, it is up to the caller to deref() and free().
+ *  For the new data node_copy needs to be called.
+ *
+ *  \internal
+ */
+QListData::Data *QListData::detach_grow(int *idx, int num)
+{
+    Data *x = d;
+    int l = x->end - x->begin;
+    int nl = l + num;
+    int alloc = grow(nl);
+    Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + alloc * sizeof(void *)));
+    Q_CHECK_PTR(t);
+
+    t->ref = 1;
+    t->sharable = true;
+    t->alloc = alloc;
+    // The space reservation algorithm's optimization is biased towards appending:
+    // Something which looks like an append will put the data at the beginning,
+    // while something which looks like a prepend will put it in the middle
+    // instead of at the end. That's based on the assumption that prepending
+    // is uncommon and even an initial prepend will eventually be followed by
+    // at least some appends.
+    int bg;
+    if (*idx < 0) {
+        *idx = 0;
+        bg = (alloc - nl) >> 1;
+    } else if (*idx > l) {
+        *idx = l;
+        bg = 0;
+    } else if (*idx < (l >> 1)) {
+        bg = (alloc - nl) >> 1;
+    } else {
+        bg = 0;
+    }
+    t->begin = bg;
+    t->end = bg + nl;
+    d = t;
+
+    return x;
+}
+
 #if QT_VERSION >= 0x050000
 #  error "Remove QListData::detach(), it is only required for binary compatibility for 4.0.x to 4.2.x"
 #endif
@@ -125,22 +172,23 @@ QListData::Data *QListData::detach2()
 }
 
 /*!
- *  Detaches the QListData by reallocating new memory.
+ *  Detaches the QListData by allocating new memory for a list which possibly
+ *  has a different size than the copied one.
  *  Returns the old (shared) data, it is up to the caller to deref() and free()
  *  For the new data node_copy needs to be called.
  *
  *  \internal
  */
-QListData::Data *QListData::detach3()
+QListData::Data *QListData::detach(int alloc)
 {
     Data *x = d;
-    Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + x->alloc * sizeof(void *)));
+    Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + alloc * sizeof(void *)));
     Q_CHECK_PTR(t);
 
     t->ref = 1;
     t->sharable = true;
-    t->alloc = x->alloc;
-    if (!t->alloc) {
+    t->alloc = alloc;
+    if (!alloc) {
         t->begin = 0;
         t->end = 0;
     } else {
@@ -150,6 +198,21 @@ QListData::Data *QListData::detach3()
     d = t;
 
     return x;
+}
+
+/*!
+ *  Detaches the QListData by reallocating new memory.
+ *  Returns the old (shared) data, it is up to the caller to deref() and free()
+ *  For the new data node_copy needs to be called.
+ *
+ *  \internal
+ */
+#if QT_VERSION >= 0x050000
+#  error "Remove QListData::detach3(), it is only required for binary compatibility for 4.5.x to 4.6.x"
+#endif
+QListData::Data *QListData::detach3()
+{
+    return detach(d->alloc);
 }
 
 void QListData::realloc(int alloc)
@@ -164,22 +227,30 @@ void QListData::realloc(int alloc)
         d->begin = d->end = 0;
 }
 
+// ensures that enough space is available to append n elements
+void **QListData::append(int n)
+{
+    Q_ASSERT(d->ref == 1);
+    int e = d->end;
+    if (e + n > d->alloc) {
+        int b = d->begin;
+        if (b - n >= 2 * d->alloc / 3) {
+            // we have enough space. Just not at the end -> move it.
+            e -= b;
+            ::memcpy(d->array, d->array + b, e * sizeof(void *));
+            d->begin = 0;
+        } else {
+            realloc(grow(d->alloc + n));
+        }
+    }
+    d->end = e + n;
+    return d->array + e;
+}
+
 // ensures that enough space is available to append one element
 void **QListData::append()
 {
-    Q_ASSERT(d->ref == 1);
-    if (d->end == d->alloc) {
-        int n = d->end - d->begin;
-        if (d->begin > 2 * d->alloc / 3) {
-            // we have enough space. Just not at the end -> move it.
-            ::memcpy(d->array + n, d->array + d->begin, n * sizeof(void *));
-            d->begin = n;
-            d->end = n * 2;
-        } else {
-            realloc(grow(d->alloc + 1));
-        }
-    }
-    return d->array + d->end++;
+    return append(1);
 }
 
 // ensures that enough space is available to append the list
@@ -193,7 +264,7 @@ void **QListData::append(const QListData& l)
     int n = l.d->end - l.d->begin;
     if (n) {
         if (e + n > d->alloc)
-            realloc(grow(e + l.d->end - l.d->begin));
+            realloc(grow(e + n));
         ::memcpy(d->array + d->end, l.d->array + l.d->begin, n*sizeof(void*));
         d->end += n;
     }
@@ -203,15 +274,7 @@ void **QListData::append(const QListData& l)
 // ensures that enough space is available to append the list
 void **QListData::append2(const QListData& l)
 {
-    Q_ASSERT(d->ref == 1);
-    int e = d->end;
-    int n = l.d->end - l.d->begin;
-    if (n) {
-        if (e + n > d->alloc)
-            realloc(grow(e + n));
-        d->end += n;
-    }
-    return d->array + e;
+    return append(l.d->end - l.d->begin);
 }
 
 void **QListData::prepend()
@@ -237,11 +300,11 @@ void **QListData::insert(int i)
     Q_ASSERT(d->ref == 1);
     if (i <= 0)
         return prepend();
-    if (i >= d->end - d->begin)
+    int size = d->end - d->begin;
+    if (i >= size)
         return append();
 
     bool leftward = false;
-    int size = d->end - d->begin;
 
     if (d->begin == 0) {
         if (d->end == d->alloc) {
@@ -599,6 +662,11 @@ void **QListData::erase(void **xi)
     \internal
 */
 
+/*! \fn bool QList::isSharedWith(const QList<T> &other) const
+
+    \internal
+*/
+
 /*! \fn bool QList::isEmpty() const
 
     Returns true if the list contains no items; otherwise returns
@@ -640,6 +708,19 @@ void **QListData::erase(void **xi)
     \overload
 
     Same as at().
+*/
+
+/*! \fn QList::reserve(int alloc)
+
+    Reserve space for \a alloc elements.
+
+    If \a alloc is smaller than the current size of the list, nothing will happen.
+
+    Use this function to avoid repetetive reallocation of QList's internal
+    data if you can predict how many elements will be appended.
+    Note that the reservation applies only to the internal pointer array.
+
+    \since 4.7
 */
 
 /*! \fn void QList::append(const T &value)

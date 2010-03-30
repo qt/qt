@@ -179,7 +179,7 @@ static void cleanupCocoaApplicationDelegate()
 }
 
 // This function will only be called when NSApp is actually running. Before
-// that, the kAEQuitApplication apple event will be sendt to 
+// that, the kAEQuitApplication Apple event will be sent to
 // QApplicationPrivate::globalAppleEventProcessor in qapplication_mac.mm
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
@@ -196,21 +196,18 @@ static void cleanupCocoaApplicationDelegate()
             qAppInstance()->quit();
             startedQuit = false;
         }
+        return NSTerminateNow;
     }
 
     if (qtPrivate->threadData->eventLoops.size() == 0) {
         // INVARIANT: No event loop is executing. This probably
         // means that Qt is used as a plugin, or as a part of a native
-        // Cocoa application. In any case it should be fine to 
+        // Cocoa application. In any case it should be fine to
         // terminate now:
         return NSTerminateNow;
-    } else {
-        // Prevent Cocoa from terminating the application, since this simply
-        // exits the program whithout allowing QApplication::exec() to return.
-        // The call to QApplication::quit() above will instead quit the
-        // application from the Qt side.
-        return NSTerminateCancel;
     }
+
+    return NSTerminateCancel;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
@@ -315,6 +312,13 @@ static void cleanupCocoaApplicationDelegate()
     QUrl url(qt_mac_NSStringToQString(urlString));
     QFileOpenEvent qtEvent(url);
     qt_sendSpontaneousEvent(qAppInstance(), &qtEvent);
+}
+
+- (void)appleEventQuit:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
+{
+    Q_UNUSED(event);
+    Q_UNUSED(replyEvent);
+    [NSApp terminate:self];
 }
 
 @end

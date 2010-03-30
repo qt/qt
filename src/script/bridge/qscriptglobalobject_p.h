@@ -54,17 +54,17 @@ public:
     virtual bool getOwnPropertySlot(JSC::ExecState*,
                                     const JSC::Identifier& propertyName,
                                     JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*,
+                                          const JSC::Identifier& propertyName,
+                                          JSC::PropertyDescriptor&);
     virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
     virtual void putWithAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                                    JSC::JSValue value, unsigned attributes);
     virtual bool deleteProperty(JSC::ExecState*,
-                                const JSC::Identifier& propertyName,
-                                bool checkDontDelete = true);
-    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
-                                       unsigned&) const;
+                                const JSC::Identifier& propertyName);
     virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
-                                     bool includeNonEnumerable = false);
+                                     JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties);
     virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction, unsigned attributes = 0);
     virtual void defineSetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction, unsigned attributes = 0);
     virtual JSC::JSValue lookupGetter(JSC::ExecState*, const JSC::Identifier& propertyName);
@@ -94,19 +94,20 @@ public:
                                     const JSC::Identifier& propertyName,
                                     JSC::PropertySlot& slot)
     { return originalGlobalObject->JSC::JSGlobalObject::getOwnPropertySlot(exec, propertyName, slot); }
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState* exec,
+                                          const JSC::Identifier& propertyName,
+                                          JSC::PropertyDescriptor& descriptor)
+    { return originalGlobalObject->JSC::JSGlobalObject::getOwnPropertyDescriptor(exec, propertyName, descriptor); }
     virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                      JSC::JSValue value, JSC::PutPropertySlot& slot)
     { originalGlobalObject->JSC::JSGlobalObject::put(exec, propertyName, value, slot); }
     virtual void putWithAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSValue value, unsigned attributes)
     { originalGlobalObject->JSC::JSGlobalObject::putWithAttributes(exec, propertyName, value, attributes); }
     virtual bool deleteProperty(JSC::ExecState* exec,
-                                const JSC::Identifier& propertyName, bool checkDontDelete = true)
-    { return originalGlobalObject->JSC::JSGlobalObject::deleteProperty(exec, propertyName, checkDontDelete); }
-    virtual bool getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
-                                       unsigned& attributes) const
-    { return originalGlobalObject->JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes); }
-    virtual void getOwnPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, bool includeNonEnumerable = false)
-    { originalGlobalObject->JSC::JSGlobalObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable); }
+                                const JSC::Identifier& propertyName)
+    { return originalGlobalObject->JSC::JSGlobalObject::deleteProperty(exec, propertyName); }
+    virtual void getOwnPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties)
+    { originalGlobalObject->JSC::JSGlobalObject::getOwnPropertyNames(exec, propertyNames, mode); }
     virtual void defineGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction, unsigned attributes)
     { originalGlobalObject->JSC::JSGlobalObject::defineGetter(exec, propertyName, getterFunction, attributes); }
     virtual void defineSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction, unsigned attributes)

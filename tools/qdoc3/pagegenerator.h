@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QTextCodec;
+
 class ClassNode;
 class InnerNode;
 class NamespaceNode;
@@ -67,14 +69,18 @@ class PageGenerator : public Generator
     virtual void generateTree(const Tree *tree, CodeMarker *marker);
 
  protected:
-    virtual QString fileBase(const Node *node);
-    virtual QString fileExtension(const Node *node) = 0;
-    QString fileName(const Node *node);
+    virtual QString fileBase(const Node *node) const;
+    virtual QString fileExtension(const Node *node) const = 0;
+    QString fileName(const Node *node) const;
     QString outFileName();
     void beginSubPage(const Location& location, const QString& fileName);
     void endSubPage();
     virtual void generateInnerNode(const InnerNode *node, CodeMarker *marker);
     QTextStream& out();
+
+    QString naturalLanguage;
+    QString outputEncoding;
+    QTextCodec *outputCodec;
 
  private:
     QStack<QTextStream *> outStreamStack;

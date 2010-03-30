@@ -60,3 +60,21 @@ connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
 connect(reply, SIGNAL(sslErrors(QList<QSslError>)),
         this, SLOT(slotSslErrors(QList<QSslError>)));
 //! [1]
+
+//! [2]
+QNetworkConfigurationManager manager;
+networkAccessManager->setConfiguration(manager.defaultConfiguration());
+//! [2]
+
+//! [3]
+networkAccessManager->setConfiguration(QNetworkConfiguration());
+//! [3]
+
+//! [4]
+networkAccessManager->setNetworkAccessible(QNetworkAccessManager::NotAccessible);
+//! [4]
+
+//! [5]
+networkAccessManager->setNetworkAccessible(QNetworkAccessManager::Accessible);
+//! [5]
+

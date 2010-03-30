@@ -48,7 +48,7 @@
 #include <private/qapplication_p.h>
 #include <private/qmenu_p.h>
 #include <private/qmenubar_p.h>
-#include <qt_s60_p.h>
+#include <private/qt_s60_p.h>
 #include <QtCore/qlibrary.h>
 
 #ifdef Q_WS_S60

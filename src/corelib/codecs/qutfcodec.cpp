@@ -48,6 +48,19 @@ QT_BEGIN_NAMESPACE
 
 enum { Endian = 0, Data = 1 };
 
+static inline bool isUnicodeNonCharacter(uint ucs4)
+{
+    // Unicode has a couple of "non-characters" that one can use internally,
+    // but are not allowed to be used for text interchange.
+    //
+    // Those are the last two entries each Unicode Plane (U+FFFE, U+FFFF,
+    // U+1FFFE, U+1FFFF, etc.) as well as the entries between U+FDD0 and
+    // U+FDEF (inclusive)
+
+    return (ucs4 & 0xfffe) == 0xfffe
+            || (ucs4 - 0xfdd0U) < 16;
+}
+
 QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::ConverterState *state)
 {
     uchar replacement = '?';
@@ -106,16 +119,17 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
             if (u < 0x0800) {
                 *cursor++ = 0xc0 | ((uchar) (u >> 6));
             } else {
+                // is it one of the Unicode non-characters?
+                if (isUnicodeNonCharacter(u)) {
+                    *cursor++ = replacement;
+                    ++ch;
+                    ++invalid;
+                    continue;
+                }
+
                 if (u > 0xffff) {
-                    // see QString::fromUtf8() and QString::utf8() for explanations
-                    if (u > 0x10fe00 && u < 0x10ff00) {
-                        *cursor++ = (u - 0x10fe00);
-                        ++ch;
-                        continue;
-                    } else {
-                        *cursor++ = 0xf0 | ((uchar) (u >> 18));
-                        *cursor++ = 0x80 | (((uchar) (u >> 12)) & 0x3f);
-                    }
+                    *cursor++ = 0xf0 | ((uchar) (u >> 18));
+                    *cursor++ = 0x80 | (((uchar) (u >> 12)) & 0x3f);
                 } else {
                     *cursor++ = 0xe0 | (((uchar) (u >> 12)) & 0x3f);
                 }
@@ -179,15 +193,16 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
                 --need;
                 if (!need) {
                     // utf-8 bom composes into 0xfeff code point
+                    bool nonCharacter;
                     if (!headerdone && uc == 0xfeff) {
                         // dont do anything, just skip the BOM
-                    } else if (uc > 0xffff && uc < 0x110000) {
+                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && uc > 0xffff && uc < 0x110000) {
                         // surrogate pair
                         Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
                         *qch++ = QChar::highSurrogate(uc);
                         *qch++ = QChar::lowSurrogate(uc);
-                    } else if ((uc < min_uc) || (uc >= 0xd800 && uc <= 0xdfff) || (uc >= 0xfffe)) {
-                        // error: overlong sequence, UTF16 surrogate or BOM
+                    } else if ((uc < min_uc) || (uc >= 0xd800 && uc <= 0xdfff) || nonCharacter || uc >= 0x110000) {
+                        // error: overlong sequence, UTF16 surrogate or non-character
                         *qch++ = replacement;
                         ++invalid;
                     } else {

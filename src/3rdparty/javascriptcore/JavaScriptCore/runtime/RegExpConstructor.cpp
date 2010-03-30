@@ -90,29 +90,7 @@ const ClassInfo RegExpConstructor::info = { "Function", &InternalFunction::info,
 @end
 */
 
-struct RegExpConstructorPrivate : FastAllocBase {
-    // Global search cache / settings
-    RegExpConstructorPrivate()
-        : lastNumSubPatterns(0)
-        , multiline(false)
-        , lastOvectorIndex(0)
-    {
-    }
-
-    const Vector<int, 32>& lastOvector() const { return ovector[lastOvectorIndex]; }
-    Vector<int, 32>& lastOvector() { return ovector[lastOvectorIndex]; }
-    Vector<int, 32>& tempOvector() { return ovector[lastOvectorIndex ? 0 : 1]; }
-    void changeLastOvector() { lastOvectorIndex = lastOvectorIndex ? 0 : 1; }
-
-    UString input;
-    UString lastInput;
-    Vector<int, 32> ovector[2];
-    unsigned lastNumSubPatterns : 30;
-    bool multiline : 1;
-    unsigned lastOvectorIndex : 1;
-};
-
-RegExpConstructor::RegExpConstructor(ExecState* exec, PassRefPtr<Structure> structure, RegExpPrototype* regExpPrototype)
+RegExpConstructor::RegExpConstructor(ExecState* exec, NonNullPassRefPtr<Structure> structure, RegExpPrototype* regExpPrototype)
     : InternalFunction(&exec->globalData(), structure, Identifier(exec, "RegExp"))
     , d(new RegExpConstructorPrivate)
 {
@@ -121,30 +99,6 @@ RegExpConstructor::RegExpConstructor(ExecState* exec, PassRefPtr<Structure> stru
 
     // no. of arguments for constructor
     putDirectWithoutTransition(exec->propertyNames().length, jsNumber(exec, 2), ReadOnly | DontDelete | DontEnum);
-}
-
-/* 
-  To facilitate result caching, exec(), test(), match(), search(), and replace() dipatch regular
-  expression matching through the performMatch function. We use cached results to calculate, 
-  e.g., RegExp.lastMatch and RegExp.leftParen.
-*/
-void RegExpConstructor::performMatch(RegExp* r, const UString& s, int startOffset, int& position, int& length, int** ovector)
-{
-    position = r->match(s, startOffset, &d->tempOvector());
-
-    if (ovector)
-        *ovector = d->tempOvector().data();
-
-    if (position != -1) {
-        ASSERT(!d->tempOvector().isEmpty());
-
-        length = d->tempOvector()[1] - d->tempOvector()[0];
-
-        d->input = s;
-        d->lastInput = s;
-        d->changeLastOvector();
-        d->lastNumSubPatterns = r->numSubpatterns();
-    }
 }
 
 RegExpMatchesArray::RegExpMatchesArray(ExecState* exec, RegExpConstructorPrivate* data)
@@ -178,6 +132,8 @@ void RegExpMatchesArray::fillArrayInstance(ExecState* exec)
         int start = d->lastOvector()[2 * i];
         if (start >= 0)
             JSArray::put(exec, i, jsSubstring(exec, d->lastInput, start, d->lastOvector()[2 * i + 1] - start));
+        else
+            JSArray::put(exec, i, jsUndefined());
     }
 
     PutPropertySlot slot;
@@ -346,7 +302,7 @@ JSObject* constructRegExp(ExecState* exec, const ArgList& args)
 
     RefPtr<RegExp> regExp = RegExp::create(&exec->globalData(), pattern, flags);
     if (!regExp->isValid())
-        return throwError(exec, SyntaxError, UString("Invalid regular expression: ").append(regExp->errorMessage()));
+        return throwError(exec, SyntaxError, makeString("Invalid regular expression: ", regExp->errorMessage()));
     return new (exec) RegExpObject(exec->lexicalGlobalObject()->regExpStructure(), regExp.release());
 }
 

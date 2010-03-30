@@ -94,136 +94,207 @@ public:
         delete [] m_maskData;
     }
 
-    int nextMaskBlank(int pos);
-    int prevMaskBlank(int pos);
+    int nextMaskBlank(int pos)
+    {
+        int c = findInMask(pos, true, false);
+        m_separator |= (c != pos);
+        return (c != -1 ?  c : m_maxLength);
+    }
 
-    bool isUndoAvailable() const;
-    bool isRedoAvailable() const;
-    void clearUndo();
-    bool isModified() const;
-    void setModified(bool modified);
+    int prevMaskBlank(int pos)
+    {
+        int c = findInMask(pos, false, false);
+        m_separator |= (c != pos);
+        return (c != -1 ? c : 0);
+    }
 
-    bool allSelected() const;
-    bool hasSelectedText() const;
+    bool isUndoAvailable() const { return !m_readOnly && m_undoState; }
+    bool isRedoAvailable() const { return !m_readOnly && m_undoState < (int)m_history.size(); }
+    void clearUndo() { m_history.clear(); m_modifiedState = m_undoState = 0; }
 
-    int width() const;
-    int height() const;
-    int ascent() const;
-    qreal naturalTextWidth() const;
+    bool isModified() const { return m_modifiedState != m_undoState; }
+    void setModified(bool modified) { m_modifiedState = modified ? -1 : m_undoState; }
+
+    bool allSelected() const { return !m_text.isEmpty() && m_selstart == 0 && m_selend == (int)m_text.length(); }
+    bool hasSelectedText() const { return !m_text.isEmpty() && m_selend > m_selstart; }
+
+    int width() const { return qRound(m_textLayout.lineAt(0).width()) + 1; }
+    int height() const { return qRound(m_textLayout.lineAt(0).height()) + 1; }
+    int ascent() const { return m_ascent; }
+    qreal naturalTextWidth() const { return m_textLayout.lineAt(0).naturalTextWidth(); }
 
     void setSelection(int start, int length);
 
-    QString selectedText() const;
-    QString textBeforeSelection() const;
-    QString textAfterSelection() const;
+    inline QString selectedText() const { return hasSelectedText() ? m_text.mid(m_selstart, m_selend - m_selstart) : QString(); }
+    QString textBeforeSelection() const { return hasSelectedText() ? m_text.left(m_selstart) : QString(); }
+    QString textAfterSelection() const { return hasSelectedText() ? m_text.mid(m_selend) : QString(); }
 
-    int selectionStart() const;
-    int selectionEnd() const;
-    bool inSelection(int x) const;
+    int selectionStart() const { return hasSelectedText() ? m_selstart : -1; }
+    int selectionEnd() const { return hasSelectedText() ? m_selend : -1; }
+    bool inSelection(int x) const
+    {
+        if (m_selstart >= m_selend)
+            return false;
+        int pos = xToPos(x, QTextLine::CursorOnCharacter);
+        return pos >= m_selstart && pos < m_selend;
+    }
 
-    void removeSelection();
+    void removeSelection()
+    {
+        int priorState = m_undoState;
+        removeSelectedText();
+        finishChange(priorState);
+    }
 
-    int start() const;
-    int end() const;
+    int start() const { return 0; }
+    int end() const { return m_text.length(); }
 
 #ifndef QT_NO_CLIPBOARD
     void copy(QClipboard::Mode mode = QClipboard::Clipboard) const;
-    void paste();
+    void paste(QClipboard::Mode mode = QClipboard::Clipboard);
 #endif
 
-    int cursor() const;
-    int preeditCursor() const;
+    int cursor() const{ return m_cursor; }
+    int preeditCursor() const { return m_preeditCursor; }
 
-    int cursorWidth() const;
-    void setCursorWidth(int value);
+    int cursorWidth() const { return m_cursorWidth; }
+    void setCursorWidth(int value) { m_cursorWidth = value; }
+
 
     void moveCursor(int pos, bool mark = false);
-    void cursorForward(bool mark, int steps);
-    void cursorWordForward(bool mark);
-    void cursorWordBackward(bool mark);
-    void home(bool mark);
-    void end(bool mark);
+    void cursorForward(bool mark, int steps)
+    {
+        int c = m_cursor;
+        if (steps > 0) {
+            while (steps--)
+                c = m_textLayout.nextCursorPosition(c);
+        } else if (steps < 0) {
+            while (steps++)
+                c = m_textLayout.previousCursorPosition(c);
+        }
+        moveCursor(c, mark);
+    }
+
+    void cursorWordForward(bool mark) { moveCursor(m_textLayout.nextCursorPosition(m_cursor, QTextLayout::SkipWords), mark); }
+    void cursorWordBackward(bool mark) { moveCursor(m_textLayout.previousCursorPosition(m_cursor, QTextLayout::SkipWords), mark); }
+
+    void home(bool mark) { moveCursor(0, mark); }
+    void end(bool mark) { moveCursor(text().length(), mark); }
 
     int xToPos(int x, QTextLine::CursorPosition = QTextLine::CursorBetweenCharacters) const;
     QRect cursorRect() const;
 
-    qreal cursorToX(int cursor) const;
-    qreal cursorToX() const;
+    qreal cursorToX(int cursor) const { return m_textLayout.lineAt(0).cursorToX(cursor); }
+    qreal cursorToX() const
+    {
+        int cursor = m_cursor;
+        if (m_preeditCursor != -1)
+            cursor += m_preeditCursor;
+        return cursorToX(cursor);
+    }
 
-    bool isReadOnly() const;
-    void setReadOnly(bool enable);
+    bool isReadOnly() const { return m_readOnly; }
+    void setReadOnly(bool enable) { m_readOnly = enable; }
 
-    QString text() const;
-    void setText(const QString &txt);
-
-    QString displayText() const;
+    QString text() const
+    {
+        QString res = m_maskData ? stripString(m_text) : m_text;
+        return (res.isNull() ? QString::fromLatin1("") : res);
+    }
+    void setText(const QString &txt) { internalSetText(txt, -1, false); }
+    QString displayText() const { return m_textLayout.text(); }
 
     void backspace();
     void del();
-    void deselect();
-    void selectAll();
+    void deselect() { internalDeselect(); finishChange(); }
+    void selectAll() { m_selstart = m_selend = m_cursor = 0; moveCursor(m_text.length(), true); }
+
     void insert(const QString &);
     void clear();
-    void undo();
-    void redo();
+    void undo() { internalUndo(); finishChange(-1, true); }
+    void redo() { internalRedo(); finishChange(); }
     void selectWordAtPos(int);
 
-    uint echoMode() const;
-    void setEchoMode(uint mode);
+    uint echoMode() const { return m_echoMode; }
+    void setEchoMode(uint mode)
+    {
+        m_echoMode = mode;
+        m_passwordEchoEditing = false;
+        updateDisplayText();
+    }
 
-    void setMaxLength(int maxLength);
-    int maxLength() const;
+    int maxLength() const { return m_maxLength; }
+    void setMaxLength(int maxLength)
+    {
+        if (m_maskData)
+            return;
+        m_maxLength = maxLength;
+        setText(m_text);
+    }
 
 #ifndef QT_NO_VALIDATOR
-    const QValidator *validator() const;
-    void setValidator(const QValidator *);
+    const QValidator *validator() const { return m_validator; }
+    void setValidator(const QValidator *v) { m_validator = const_cast<QValidator*>(v); }
 #endif
 
 #ifndef QT_NO_COMPLETER
-    QCompleter *completer() const;
-    void setCompleter(const QCompleter*);
+    QCompleter *completer() const { return m_completer; }
+    /* Note that you must set the widget for the completer seperately */
+    void setCompleter(const QCompleter *c) { m_completer = const_cast<QCompleter*>(c); }
     void complete(int key);
 #endif
 
-    void setCursorPosition(int pos);
-    int cursorPosition() const;
+    int cursorPosition() const { return m_cursor; }
+    void setCursorPosition(int pos) { if (pos <= m_text.length()) moveCursor(qMax(0, pos)); }
 
-    bool hasAcceptableInput() const;
+    bool hasAcceptableInput() const { return hasAcceptableInput(m_text); }
     bool fixup();
 
-    QString inputMask() const;
-    void setInputMask(const QString &mask);
+    QString inputMask() const { return m_maskData ? m_inputMask + QLatin1Char(';') + m_blank : QString(); }
+    void setInputMask(const QString &mask)
+    {
+        parseInputMask(mask);
+        if (m_maskData)
+            moveCursor(nextMaskBlank(0));
+    }
 
     // input methods
 #ifndef QT_NO_IM
-    bool composeMode() const;
-    void setPreeditArea(int cursor, const QString &text);
+    bool composeMode() const { return !m_textLayout.preeditAreaText().isEmpty(); }
+    void setPreeditArea(int cursor, const QString &text) { m_textLayout.setPreeditArea(cursor, text); }
 #endif
 
-    QString preeditAreaText() const;
+    QString preeditAreaText() const { return m_textLayout.preeditAreaText(); }
 
     void updatePasswordEchoEditing(bool editing);
-    bool passwordEchoEditing() const;
+    bool passwordEchoEditing() const { return m_passwordEchoEditing; }
 
-    QChar passwordCharacter() const;
-    void setPasswordCharacter(const QChar &character);
+    QChar passwordCharacter() const { return m_passwordCharacter; }
+    void setPasswordCharacter(const QChar &character) { m_passwordCharacter = character; updateDisplayText(); }
 
-    Qt::LayoutDirection layoutDirection() const;
-    void setLayoutDirection(Qt::LayoutDirection direction);
-    void setFont(const QFont &font);
+    Qt::LayoutDirection layoutDirection() const { return m_layoutDirection; }
+    void setLayoutDirection(Qt::LayoutDirection direction)
+    {
+        if (direction != m_layoutDirection) {
+            m_layoutDirection = direction;
+            updateDisplayText();
+        }
+    }
+
+    void setFont(const QFont &font) { m_textLayout.setFont(font); updateDisplayText(); }
 
     void processInputMethodEvent(QInputMethodEvent *event);
     void processMouseEvent(QMouseEvent* ev);
     void processKeyEvent(QKeyEvent* ev);
 
-    int cursorBlinkPeriod() const;
+    int cursorBlinkPeriod() const { return m_blinkPeriod; }
     void setCursorBlinkPeriod(int msec);
 
-    QString cancelText() const;
-    void setCancelText(const QString &text);
+    QString cancelText() const { return m_cancelText; }
+    void setCancelText(const QString &text) { m_cancelText = text; }
 
-    const QPalette &palette() const;
-    void setPalette(const QPalette &);
+    const QPalette &palette() const { return m_palette; }
+    void setPalette(const QPalette &p) { m_palette = p; }
 
     enum DrawFlags {
         DrawText = 0x01,
@@ -362,406 +433,6 @@ private Q_SLOTS:
     void _q_deleteSelected();
 
 };
-
-inline int QLineControl::nextMaskBlank(int pos)
-{
-    int c = findInMask(pos, true, false);
-    m_separator |= (c != pos);
-    return (c != -1 ?  c : m_maxLength);
-}
-
-inline int QLineControl::prevMaskBlank(int pos)
-{
-    int c = findInMask(pos, false, false);
-    m_separator |= (c != pos);
-    return (c != -1 ? c : 0);
-}
-
-inline bool QLineControl::isUndoAvailable() const
-{ 
-    return !m_readOnly && m_undoState;
-}
-
-inline bool QLineControl::isRedoAvailable() const
-{
-    return !m_readOnly && m_undoState < (int)m_history.size();
-}
-
-inline void QLineControl::clearUndo()
-{
-    m_history.clear();
-    m_modifiedState = m_undoState = 0;
-}
-
-inline bool QLineControl::isModified() const
-{
-    return m_modifiedState != m_undoState;
-}
-
-inline void QLineControl::setModified(bool modified)
-{
-    m_modifiedState = modified ? -1 : m_undoState;
-}
-
-inline bool QLineControl::allSelected() const
-{
-    return !m_text.isEmpty() && m_selstart == 0 && m_selend == (int)m_text.length();
-}
-
-inline bool QLineControl::hasSelectedText() const
-{
-    return !m_text.isEmpty() && m_selend > m_selstart;
-}
-
-inline int QLineControl::width() const
-{
-    return qRound(m_textLayout.lineAt(0).width()) + 1;
-}
-
-inline qreal QLineControl::naturalTextWidth() const
-{
-    return m_textLayout.lineAt(0).naturalTextWidth();
-}
-
-inline int QLineControl::height() const
-{
-    return qRound(m_textLayout.lineAt(0).height()) + 1;
-}
-
-inline int QLineControl::ascent() const
-{
-    return m_ascent;
-}
-
-inline QString QLineControl::selectedText() const
-{
-    if (hasSelectedText())
-        return m_text.mid(m_selstart, m_selend - m_selstart);
-    return QString();
-}
-
-inline QString QLineControl::textBeforeSelection() const
-{
-    if (hasSelectedText())
-        return m_text.left(m_selstart);
-    return QString();
-}
-
-inline QString QLineControl::textAfterSelection() const
-{
-    if (hasSelectedText())
-        return m_text.mid(m_selend);
-    return QString();
-}
-
-inline int QLineControl::selectionStart() const
-{
-    return hasSelectedText() ? m_selstart : -1;
-}
-
-inline int QLineControl::selectionEnd() const
-{
-    return hasSelectedText() ? m_selend : -1;
-}
-
-inline int QLineControl::start() const
-{
-    return 0;
-}
-
-inline int QLineControl::end() const
-{
-    return m_text.length();
-}
-
-inline void QLineControl::removeSelection()
-{
-    int priorState = m_undoState;
-    removeSelectedText();
-    finishChange(priorState);
-}
-
-inline bool QLineControl::inSelection(int x) const
-{
-    if (m_selstart >= m_selend)
-        return false;
-    int pos = xToPos(x, QTextLine::CursorOnCharacter);
-    return pos >= m_selstart && pos < m_selend;
-}
-
-inline int QLineControl::cursor() const
-{
-    return m_cursor;
-}
-
-inline int QLineControl::preeditCursor() const
-{
-    return m_preeditCursor;
-}
-
-inline int QLineControl::cursorWidth() const
-{
-    return m_cursorWidth;
-}
-
-inline void QLineControl::setCursorWidth(int value)
-{
-    m_cursorWidth = value;
-}
-
-inline void QLineControl::cursorForward(bool mark, int steps)
-{
-    int c = m_cursor;
-    if (steps > 0) {
-        while (steps--)
-            c = m_textLayout.nextCursorPosition(c);
-    } else if (steps < 0) {
-        while (steps++)
-            c = m_textLayout.previousCursorPosition(c);
-    }
-    moveCursor(c, mark);
-}
-
-inline void QLineControl::cursorWordForward(bool mark)
-{
-    moveCursor(m_textLayout.nextCursorPosition(m_cursor, QTextLayout::SkipWords), mark);
-}
-
-inline void QLineControl::home(bool mark)
-{
-    moveCursor(0, mark);
-}
-
-inline void QLineControl::end(bool mark)
-{
-    moveCursor(text().length(), mark);
-}
-
-inline void QLineControl::cursorWordBackward(bool mark)
-{
-    moveCursor(m_textLayout.previousCursorPosition(m_cursor, QTextLayout::SkipWords), mark);
-}
-
-inline qreal QLineControl::cursorToX(int cursor) const
-{
-    return m_textLayout.lineAt(0).cursorToX(cursor);
-}
-
-inline qreal QLineControl::cursorToX() const
-{
-    int cursor = m_cursor;
-    if (m_preeditCursor != -1)
-        cursor += m_preeditCursor;
-    return cursorToX(cursor);
-}
-
-inline bool QLineControl::isReadOnly() const
-{
-    return m_readOnly;
-}
-
-inline void QLineControl::setReadOnly(bool enable)
-{ 
-    m_readOnly = enable;
-}
-
-inline QString QLineControl::text() const
-{
-    QString res = m_maskData ? stripString(m_text) : m_text;
-    return (res.isNull() ? QString::fromLatin1("") : res);
-}
-
-inline void QLineControl::setText(const QString &txt)
-{
-    internalSetText(txt, -1, false);
-}
-
-inline QString QLineControl::displayText() const
-{
-    return m_textLayout.text();
-}
-
-inline void QLineControl::deselect()
-{
-    internalDeselect();
-    finishChange();
-}
-
-inline void QLineControl::selectAll()
-{
-    m_selstart = m_selend = m_cursor = 0;
-    moveCursor(m_text.length(), true);
-}
-
-inline void QLineControl::undo()
-{
-    internalUndo();
-    finishChange(-1, true);
-}
-
-inline void QLineControl::redo()
-{
-    internalRedo();
-    finishChange();
-}
-
-inline uint QLineControl::echoMode() const
-{
-    return m_echoMode;
-}
-
-inline void QLineControl::setEchoMode(uint mode)
-{
-    m_echoMode = mode;
-    m_passwordEchoEditing = false;
-    updateDisplayText();
-}
-
-inline void QLineControl::setMaxLength(int maxLength)
-{
-    if (m_maskData)
-        return;
-    m_maxLength = maxLength;
-    setText(m_text);
-}
-
-inline int QLineControl::maxLength() const
-{
-    return m_maxLength;
-}
-
-#ifndef QT_NO_VALIDATOR
-inline const QValidator *QLineControl::validator() const
-{
-    return m_validator;
-}
-
-inline void QLineControl::setValidator(const QValidator *v)
-{
-    m_validator = const_cast<QValidator*>(v);
-}
-#endif
-
-#ifndef QT_NO_COMPLETER
-inline QCompleter *QLineControl::completer() const
-{
-    return m_completer;
-}
-
-/* Note that you must set the widget for the completer seperately */
-inline void QLineControl::setCompleter(const QCompleter* c)
-{
-    m_completer = const_cast<QCompleter*>(c);
-}
-#endif
-
-inline void QLineControl::setCursorPosition(int pos)
-{
-    if (pos < 0)
-        pos = 0;
-    if (pos <= m_text.length())
-        moveCursor(pos);
-}
-
-inline int QLineControl::cursorPosition() const
-{
-    return m_cursor;
-}
-
-inline bool QLineControl::hasAcceptableInput() const
-{
-    return hasAcceptableInput(m_text);
-}
-
-inline QString QLineControl::inputMask() const
-{
-    return m_maskData ? m_inputMask + QLatin1Char(';') + m_blank : QString();
-}
-
-inline void QLineControl::setInputMask(const QString &mask)
-{
-    parseInputMask(mask);
-    if (m_maskData)
-        moveCursor(nextMaskBlank(0));
-}
-
-// input methods
-#ifndef QT_NO_IM
-inline bool QLineControl::composeMode() const
-{
-    return !m_textLayout.preeditAreaText().isEmpty();
-}
-
-inline void QLineControl::setPreeditArea(int cursor, const QString &text)
-{
-    m_textLayout.setPreeditArea(cursor, text);
-}
-#endif
-
-inline QString QLineControl::preeditAreaText() const
-{
-    return m_textLayout.preeditAreaText();
-}
-
-inline bool QLineControl::passwordEchoEditing() const
-{
-    return m_passwordEchoEditing;
-}
-
-inline QChar QLineControl::passwordCharacter() const
-{
-    return m_passwordCharacter;
-}
-
-inline void QLineControl::setPasswordCharacter(const QChar &character)
-{
-    m_passwordCharacter = character;
-    updateDisplayText();
-}
-
-inline Qt::LayoutDirection QLineControl::layoutDirection() const
-{
-    return m_layoutDirection;
-}
-
-inline void QLineControl::setLayoutDirection(Qt::LayoutDirection direction)
-{
-    if (direction != m_layoutDirection) {
-        m_layoutDirection = direction;
-        updateDisplayText();
-    }
-}
-
-inline void QLineControl::setFont(const QFont &font)
-{
-    m_textLayout.setFont(font);
-    updateDisplayText();
-}
-
-inline int QLineControl::cursorBlinkPeriod() const
-{
-    return m_blinkPeriod;
-}
-
-inline QString QLineControl::cancelText() const
-{
-    return m_cancelText;
-}
-
-inline void QLineControl::setCancelText(const QString &text)
-{
-    m_cancelText = text;
-}
-
-inline const QPalette & QLineControl::palette() const
-{
-    return m_palette;
-}
-
-inline void QLineControl::setPalette(const QPalette &p)
-{
-    m_palette = p;
-}
 
 QT_END_NAMESPACE
 

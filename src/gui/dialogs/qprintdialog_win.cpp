@@ -52,7 +52,7 @@
 #include <private/qprintengine_win_p.h>
 #include <private/qprinter_p.h>
 
-#if defined(Q_CC_MINGW) && !defined(PD_NOCURRENTPAGE)
+#if !defined(PD_NOCURRENTPAGE)
 #define PD_NOCURRENTPAGE    0x00800000
 #define PD_RESULT_PRINT	1
 #define PD_RESULT_APPLY	2
@@ -128,17 +128,20 @@ static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWidget *parent,
     if (pd->nMinPage==0 && pd->nMaxPage==0)
         pd->Flags |= PD_NOPAGENUMS;
 
-    // we don't have a 'current page' notion in the QPrinter API yet.
-    // Neither do we support more than one page range, so limit those
-    // options
-    pd->Flags |= PD_NOCURRENTPAGE;
+    // Disable Current Page option if not required as default is Enabled
+    if (!pdlg->isOptionEnabled(QPrintDialog::PrintCurrentPage))
+        pd->Flags |= PD_NOCURRENTPAGE;
+
+    // Default to showing the General tab first
     pd->nStartPage = START_PAGE_GENERAL;
+
+    // We don't support more than one page range in the QPrinter API yet.
     pd->nPageRanges = 1;
     pd->nMaxPageRanges = 1;
 
     if (d->ep->printToFile)
         pd->Flags |= PD_PRINTTOFILE;
-    Q_ASSERT(parent != 0 && parent->testAttribute(Qt::WA_WState_Created));
+    Q_ASSERT(parent);
     pd->hwndOwner = parent->window()->winId();
     pd->lpPageRanges[0].nFromPage = qMax(pdlg->fromPage(), pdlg->minPage());
     pd->lpPageRanges[0].nToPage   = (pdlg->toPage() > 0) ? qMin(pdlg->toPage(), pdlg->maxPage()) : 1;
@@ -153,7 +156,10 @@ static void qt_win_read_back_PRINTDLGEX(PRINTDLGEX *pd, QPrintDialog *pdlg, QPri
     } else if (pd->Flags & PD_PAGENUMS) {
         pdlg->setPrintRange(QPrintDialog::PageRange);
         pdlg->setFromTo(pd->lpPageRanges[0].nFromPage, pd->lpPageRanges[0].nToPage);
-    } else {
+    } else if (pd->Flags & PD_CURRENTPAGE) {
+        pdlg->setPrintRange(QPrintDialog::CurrentPage);
+        pdlg->setFromTo(0, 0);
+    } else { // PD_ALLPAGES
         pdlg->setPrintRange(QPrintDialog::AllPages);
         pdlg->setFromTo(0, 0);
     }

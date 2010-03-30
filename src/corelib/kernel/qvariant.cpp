@@ -46,6 +46,7 @@
 #include "qdebug.h"
 #include "qmap.h"
 #include "qdatetime.h"
+#include "qeasingcurve.h"
 #include "qlist.h"
 #include "qstring.h"
 #include "qstringlist.h"
@@ -144,6 +145,11 @@ static void construct(QVariant::Private *x, const void *copy)
 #ifndef QT_NO_REGEXP
     case QVariant::RegExp:
         v_construct<QRegExp>(x, copy);
+        break;
+#endif
+#ifndef QT_BOOTSTRAPPED
+    case QVariant::EasingCurve:
+        v_construct<QEasingCurve>(x, copy);
         break;
 #endif
     case QVariant::Int:
@@ -259,6 +265,11 @@ static void clear(QVariant::Private *d)
         v_clear<QRegExp>(d);
         break;
 #endif
+#ifndef QT_BOOTSTRAPPED
+    case QVariant::EasingCurve:
+        v_clear<QEasingCurve>(d);
+        break;
+#endif
     case QVariant::LongLong:
     case QVariant::ULongLong:
     case QVariant::Double:
@@ -316,6 +327,9 @@ static bool isNull(const QVariant::Private *d)
         return v_cast<QPoint>(d)->isNull();
     case QVariant::PointF:
         return v_cast<QPointF>(d)->isNull();
+#endif
+#ifndef QT_BOOTSTRAPPED
+    case QVariant::EasingCurve:
 #endif
     case QVariant::Url:
     case QVariant::Locale:
@@ -435,6 +449,10 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
         return *v_cast<QTime>(a) == *v_cast<QTime>(b);
     case QVariant::DateTime:
         return *v_cast<QDateTime>(a) == *v_cast<QDateTime>(b);
+#ifndef QT_BOOTSTRAPPED
+    case QVariant::EasingCurve:
+        return *v_cast<QEasingCurve>(a) == *v_cast<QEasingCurve>(b);
+#endif
     case QVariant::ByteArray:
         return *v_cast<QByteArray>(a) == *v_cast<QByteArray>(b);
     case QVariant::BitArray:
@@ -1101,6 +1119,11 @@ static void streamDebug(QDebug dbg, const QVariant &v)
     case QVariant::DateTime:
         dbg.nospace() << v.toDateTime();
         break;
+#ifndef QT_BOOTSTRAPPED
+    case QVariant::EasingCurve:
+        dbg.nospace() << v.toEasingCurve();
+        break;
+#endif
     case QVariant::ByteArray:
         dbg.nospace() << v.toByteArray();
         break;
@@ -1269,6 +1292,7 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     \value Date  a QDate
     \value DateTime  a QDateTime
     \value Double  a double
+    \value EasingCurve a QEasingCurve
     \value Font  a QFont
     \value Hash a QVariantHash
     \value Icon  a QIcon
@@ -1487,6 +1511,13 @@ QVariant::QVariant(const char *val)
 */
 
 /*!
+    \since 4.7
+  \fn QVariant::QVariant(const QEasingCurve &val)
+
+    Constructs a new variant with an easing curve value, \a val.
+*/
+
+/*!
   \fn QVariant::QVariant(const QByteArray &val)
 
     Constructs a new variant with a bytearray value, \a val.
@@ -1685,6 +1716,10 @@ QVariant::QVariant(const QTime &val)
 { d.is_null = false; d.type = Time; v_construct<QTime>(&d, val); }
 QVariant::QVariant(const QDateTime &val)
 { d.is_null = false; d.type = DateTime; v_construct<QDateTime>(&d, val); }
+#ifndef QT_BOOTSTRAPPED
+QVariant::QVariant(const QEasingCurve &val)
+{ d.is_null = false; d.type = EasingCurve; v_construct<QEasingCurve>(&d, val); }
+#endif
 QVariant::QVariant(const QList<QVariant> &list)
 { d.is_null = false; d.type = List; v_construct<QVariantList>(&d, list); }
 QVariant::QVariant(const QMap<QString, QVariant> &map)
@@ -1874,7 +1909,7 @@ QVariant::Type QVariant::nameToType(const char *name)
 }
 
 #ifndef QT_NO_DATASTREAM
-enum { MapFromThreeCount = 35 };
+enum { MapFromThreeCount = 36 };
 static const ushort map_from_three[MapFromThreeCount] =
 {
     QVariant::Invalid,
@@ -1911,7 +1946,8 @@ static const ushort map_from_three[MapFromThreeCount] =
     QVariant::KeySequence,
     QVariant::Pen,
     QVariant::LongLong,
-    QVariant::ULongLong
+    QVariant::ULongLong,
+    QVariant::EasingCurve
 };
 
 /*!
@@ -2167,6 +2203,22 @@ QDateTime QVariant::toDateTime() const
 {
     return qVariantToHelper<QDateTime>(d, DateTime, handler);
 }
+
+/*!
+    \since 4.7
+    \fn QEasingCurve QVariant::toEasingCurve() const
+
+    Returns the variant as a QEasingCurve if the variant has type() \l
+    EasingCurve; otherwise returns a default easing curve.
+
+    \sa canConvert(), convert()
+*/
+#ifndef QT_BOOTSTRAPPED
+QEasingCurve QVariant::toEasingCurve() const
+{
+    return qVariantToHelper<QEasingCurve>(d, EasingCurve, handler);
+}
+#endif
 
 /*!
     \fn QByteArray QVariant::toByteArray() const
@@ -2609,8 +2661,9 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 
 /*QRegExp*/       0,
 
-/*QHash*/         0
+/*QHash*/         0,
 
+/*QEasingCurve*/  0
 };
 
 /*!

@@ -138,6 +138,8 @@ private:
 #endif
 };
 
+Q_DECLARE_TYPEINFO(QVector4D, Q_MOVABLE_TYPE);
+
 inline QVector4D::QVector4D() : xp(0.0f), yp(0.0f), zp(0.0f), wp(0.0f) {}
 
 inline QVector4D::QVector4D(qreal xpos, qreal ypos, qreal zpos, qreal wpos) : xp(xpos), yp(ypos), zp(zpos), wp(wpos) {}

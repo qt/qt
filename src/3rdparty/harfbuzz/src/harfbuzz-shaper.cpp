@@ -587,7 +587,7 @@ const HB_ScriptEngine HB_ScriptEngines[] = {
     // Common
     { HB_BasicShape, 0},
     // Greek
-    { HB_BasicShape, 0},
+    { HB_GreekShape, 0},
     // Cyrillic
     { HB_BasicShape, 0},
     // Armenian

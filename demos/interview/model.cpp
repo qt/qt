@@ -45,6 +45,7 @@
 
 Model::Model(int rows, int columns, QObject *parent)
     : QAbstractItemModel(parent),
+      services(QPixmap(":/images/services.png")),
       rc(rows), cc(columns),
       tree(new QVector<Node>(rows, Node(0)))
 {
@@ -105,7 +106,6 @@ QVariant Model::data(const QModelIndex &index, int role) const
 
 QVariant Model::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    static QIcon services(QPixmap(":/images/services.png"));
     if (role == Qt::DisplayRole)
         return QString::number(section);
     if (role == Qt::DecorationRole)

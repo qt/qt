@@ -271,6 +271,7 @@ bool QDesignerPropertySheetPrivate::isReloadableProperty(int index) const
 {
     return isResourceProperty(index)
            || propertyType(index) == QDesignerPropertySheet::PropertyStyleSheet
+           || propertyType(index) == QDesignerPropertySheet::PropertyText
            || q->property(index).type() == QVariant::Url;
 }
 
@@ -549,6 +550,7 @@ QDesignerPropertySheet::PropertyType QDesignerPropertySheet::propertyTypeFromNam
         propertyTypeHash.insert(QLatin1String("windowModality"),          PropertyWindowModality);
         propertyTypeHash.insert(QLatin1String("windowModified"),          PropertyWindowModified);
         propertyTypeHash.insert(QLatin1String("styleSheet"),              PropertyStyleSheet);
+        propertyTypeHash.insert(QLatin1String("text"),                    PropertyText);
     }
     return propertyTypeHash.value(name, PropertyNone);
 }
@@ -610,8 +612,9 @@ QDesignerPropertySheet::QDesignerPropertySheet(QObject *object, QObject *parent)
         createFakeProperty(QLatin1String("whatsThis"));
         createFakeProperty(QLatin1String("acceptDrops"));
         createFakeProperty(QLatin1String("dragEnabled"));
-        // windowModality is visible only for the main container, in which case the form windows enables it on loading
+        // windowModality/Opacity is visible only for the main container, in which case the form windows enables it on loading
         setVisible(createFakeProperty(QLatin1String("windowModality")), false);
+        setVisible(createFakeProperty(QLatin1String("windowOpacity"), double(1.0)), false);
         if (qobject_cast<const QToolBar *>(d->m_object)) { // prevent toolbars from being dragged off
             createFakeProperty(QLatin1String("floatable"), QVariant(true));
         } else {
@@ -1451,8 +1454,13 @@ bool QDesignerPropertySheet::isVisible(int index) const
     }
 
     if (isFakeProperty(index)) {
-        if (type == PropertyWindowModality) // Hidden for child widgets
+        switch (type) {
+        case PropertyWindowModality: // Hidden for child widgets
+        case PropertyWindowOpacity:
             return d->m_info.value(index).visible;
+        default:
+            break;
+        }
         return true;
     }
 

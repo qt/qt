@@ -34,7 +34,7 @@ ASSERT_CLASS_FITS_IN_CELL(ErrorPrototype);
 static JSValue JSC_HOST_CALL errorProtoFuncToString(ExecState*, JSObject*, JSValue, const ArgList&);
 
 // ECMA 15.9.4
-ErrorPrototype::ErrorPrototype(ExecState* exec, PassRefPtr<Structure> structure, Structure* prototypeFunctionStructure)
+ErrorPrototype::ErrorPrototype(ExecState* exec, NonNullPassRefPtr<Structure> structure, Structure* prototypeFunctionStructure)
     : ErrorInstance(structure)
 {
     // The constructor will be added later in ErrorConstructor's constructor
@@ -48,21 +48,19 @@ ErrorPrototype::ErrorPrototype(ExecState* exec, PassRefPtr<Structure> structure,
 JSValue JSC_HOST_CALL errorProtoFuncToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
     JSObject* thisObj = thisValue.toThisObject(exec);
+    JSValue name = thisObj->get(exec, exec->propertyNames().name);
+    JSValue message = thisObj->get(exec, exec->propertyNames().message);
 
-    UString s = "Error";
+    // Mozilla-compatible format.
 
-    JSValue v = thisObj->get(exec, exec->propertyNames().name);
-    if (!v.isUndefined())
-        s = v.toString(exec);
-
-    v = thisObj->get(exec, exec->propertyNames().message);
-    if (!v.isUndefined()) {
-        // Mozilla-compatible format.
-        s += ": ";
-        s += v.toString(exec);
+    if (!name.isUndefined()) {
+        if (!message.isUndefined())
+            return jsNontrivialString(exec, makeString(name.toString(exec), ": ", message.toString(exec)));
+        return jsNontrivialString(exec, name.toString(exec));
     }
-
-    return jsNontrivialString(exec, s);
+    if (!message.isUndefined())
+        return jsNontrivialString(exec, makeString("Error: ", message.toString(exec)));
+    return jsNontrivialString(exec, "Error");
 }
 
 } // namespace JSC

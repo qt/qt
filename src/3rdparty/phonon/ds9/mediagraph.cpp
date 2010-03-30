@@ -68,8 +68,6 @@ namespace Phonon
             return ret;
         }
                 
-
-/*
         static HRESULT saveToFile(Graph graph, const QString &filepath)
         {
             const WCHAR wszStreamName[] = L"ActiveMovieGraph";
@@ -105,7 +103,7 @@ namespace Phonon
 
             return hr;
         }
-*/
+
 
         MediaGraph::MediaGraph(MediaObject *mo, short index) :
             m_graph(CLSID_FilterGraph, IID_IGraphBuilder),
@@ -383,8 +381,7 @@ namespace Phonon
 #endif
             if (info.pGraph) {
                 info.pGraph->Release();
-                if (info.pGraph == m_graph)
-                    return m_graph->RemoveFilter(filter);
+                return m_graph->RemoveFilter(filter);
             }
 
             //already removed
@@ -540,11 +537,11 @@ namespace Phonon
                     const QList<OutputPin> outputs = BackendNode::pins(filter, PINDIR_OUTPUT);
                     for(int i = 0; i < outputs.count(); ++i) {
                         const OutputPin &pin = outputs.at(i);
-                        if (HRESULT(VFW_E_NOT_CONNECTED) == pin->ConnectedTo(inPin.pparam())) {
+                        if (VFW_E_NOT_CONNECTED == pin->ConnectedTo(inPin.pparam())) {
                             return SUCCEEDED(pin->Connect(newIn, 0));
                         }
                     }
-                    //we shoud never go here
+                    //we should never go here
                     return false;
                 } else {
                     QAMMediaType type;
@@ -682,6 +679,7 @@ namespace Phonon
  #ifndef QT_NO_PHONON_MEDIACONTROLLER
                } else if (source.discType() == Phonon::Cd) {
                     m_realSource = Filter(new QAudioCDPlayer);
+                    m_result = m_graph->AddFilter(m_realSource, 0);
 
 #endif //QT_NO_PHONON_MEDIACONTROLLER
                 } else {
@@ -811,7 +809,7 @@ namespace Phonon
                 for (int i = 0; i < outputs.count(); ++i) {
                     const OutputPin &out = outputs.at(i);
                     InputPin pin;
-                    if (out->ConnectedTo(pin.pparam()) == HRESULT(VFW_E_NOT_CONNECTED)) {
+                    if (out->ConnectedTo(pin.pparam()) == VFW_E_NOT_CONNECTED) {
                         m_decoderPins += out; //unconnected outputs can be decoded outputs
                     }
                 }
@@ -822,7 +820,7 @@ namespace Phonon
             //let's reestablish the connections
             for (int i = 0; i < connections.count(); ++i) {
                 const GraphConnection &connection = connections.at(i);
-                //check if we shoud transfer the sink node
+                //check if we should transfer the sink node
 
                 grabFilter(connection.input);
                 grabFilter(connection.output);
@@ -1008,27 +1006,27 @@ namespace Phonon
                 BSTR str;
                 HRESULT hr = mediaContent->get_AuthorName(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("ARTIST"), QString::fromWCharArray(str));
+                    ret.insert(QLatin1String("ARTIST"), QString::fromUtf16((const unsigned short*)str));
                     SysFreeString(str);
                 }
                 hr = mediaContent->get_Title(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("TITLE"), QString::fromWCharArray(str));
+                    ret.insert(QLatin1String("TITLE"), QString::fromUtf16((const unsigned short*)str));
                     SysFreeString(str);
                 }
                 hr = mediaContent->get_Description(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("DESCRIPTION"), QString::fromWCharArray(str));
+                    ret.insert(QLatin1String("DESCRIPTION"), QString::fromUtf16((const unsigned short*)str));
                     SysFreeString(str);
                 }
                 hr = mediaContent->get_Copyright(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("COPYRIGHT"), QString::fromWCharArray(str));
+                    ret.insert(QLatin1String("COPYRIGHT"), QString::fromUtf16((const unsigned short*)str));
                     SysFreeString(str);
                 }
                 hr = mediaContent->get_MoreInfoText(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("MOREINFO"), QString::fromWCharArray(str));
+                    ret.insert(QLatin1String("MOREINFO"), QString::fromUtf16((const unsigned short*)str));
                     SysFreeString(str);
                 }
             }

@@ -26,6 +26,7 @@
 #ifndef ExecutableAllocator_h
 #define ExecutableAllocator_h
 
+#include <stddef.h> // for ptrdiff_t
 #include <limits>
 #include <wtf/Assertions.h>
 #include <wtf/PassRefPtr.h>
@@ -33,13 +34,19 @@
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>
 
-#if PLATFORM(IPHONE)
+#if OS(IPHONE_OS)
 #include <libkern/OSCacheControl.h>
 #include <sys/mman.h>
 #endif
 
-#if PLATFORM(SYMBIAN)
+#if OS(SYMBIAN)
 #include <e32std.h>
+#endif
+
+#if OS(WINCE)
+// From pkfuncs.h (private header file from the Platform Builder)
+#define CACHE_SYNC_ALL 0x07F
+extern "C" __declspec(dllimport) void CacheRangeFlush(LPVOID pAddr, DWORD dwLength, DWORD dwFlags);
 #endif
 
 #define JIT_ALLOCATOR_PAGE_SIZE (ExecutableAllocator::pageSize)
@@ -78,6 +85,9 @@ private:
     struct Allocation {
         char* pages;
         size_t size;
+#if OS(SYMBIAN)
+        RChunk* chunk;
+#endif
     };
     typedef Vector<Allocation, 2> AllocationList;
 
@@ -176,22 +186,38 @@ public:
 #endif
 
 
-#if PLATFORM(X86) || PLATFORM(X86_64)
+#if CPU(X86) || CPU(X86_64)
     static void cacheFlush(void*, size_t)
     {
     }
-#elif PLATFORM(ARM_THUMB2) && PLATFORM(IPHONE)
+#elif CPU(ARM_THUMB2) && OS(IPHONE_OS)
     static void cacheFlush(void* code, size_t size)
     {
         sys_dcache_flush(code, size);
         sys_icache_invalidate(code, size);
     }
-#elif PLATFORM(SYMBIAN)
+#elif CPU(ARM_THUMB2) && OS(LINUX)
+    static void cacheFlush(void* code, size_t size)
+    {
+        asm volatile (
+            "push    {r7}\n"
+            "mov     r0, %0\n"
+            "mov     r1, %1\n"
+            "movw    r7, #0x2\n"
+            "movt    r7, #0xf\n"
+            "movs    r2, #0x0\n"
+            "svc     0x0\n"
+            "pop     {r7}\n"
+            :
+            : "r" (code), "r" (reinterpret_cast<char*>(code) + size)
+            : "r0", "r1", "r2");
+    }
+#elif OS(SYMBIAN)
     static void cacheFlush(void* code, size_t size)
     {
         User::IMB_Range(code, static_cast<char*>(code) + size);
     }
-#elif PLATFORM(ARM_TRADITIONAL) && PLATFORM(LINUX)
+#elif CPU(ARM_TRADITIONAL) && OS(LINUX)
     static void cacheFlush(void* code, size_t size)
     {
         asm volatile (
@@ -205,7 +231,12 @@ public:
             "pop     {r7}\n"
             :
             : "r" (code), "r" (reinterpret_cast<char*>(code) + size)
-            : "r0", "r1");
+            : "r0", "r1", "r2");
+    }
+#elif OS(WINCE)
+    static void cacheFlush(void* code, size_t size)
+    {
+        CacheRangeFlush(code, size, CACHE_SYNC_ALL);
     }
 #else
     #error "The cacheFlush support is missing on this platform."

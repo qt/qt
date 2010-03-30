@@ -107,6 +107,12 @@ QT_BEGIN_NAMESPACE
     store or retrieve the clipboard contents in response to timer or
     non-user-input events.
 
+    \i Since there is no standard way to copy and paste files between
+    applications on X11, various MIME types and conventions are currently
+    in use. For instance, Nautilus expects files to be supplied with a
+    \c{x-special/gnome-copied-files} MIME type with data beginning with
+    the cut/copy action, a newline character, and the URL of the file.
+
     \endlist
 
     \section1 Notes for Mac OS X Users

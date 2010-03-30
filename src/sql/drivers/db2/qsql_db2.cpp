@@ -109,7 +109,7 @@ public:
 
 static QString qFromTChar(SQLTCHAR* str)
 {
-    return QString::fromUtf16(str);
+    return QString((const QChar *)str);
 }
 
 // dangerous!! (but fast). Don't use in functions that
@@ -833,7 +833,7 @@ bool QDB2Result::exec()
                 break;
             case QVariant::String:
                 if (bindValueType(i) & QSql::Out)
-                    values[i] = QString::fromUtf16((ushort*)tmpStorage.takeFirst().constData());
+                    values[i] = QString((const QChar *)tmpStorage.takeFirst().constData());
                 break;
             default: {
                 values[i] = QString::fromAscii(tmpStorage.takeFirst().constData());

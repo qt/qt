@@ -65,6 +65,8 @@ class Q_GUI_EXPORT QLabel : public QFrame
     Q_PROPERTY(int indent READ indent WRITE setIndent)
     Q_PROPERTY(bool openExternalLinks READ openExternalLinks WRITE setOpenExternalLinks)
     Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags WRITE setTextInteractionFlags)
+    Q_PROPERTY(bool hasSelectedText READ hasSelectedText)
+    Q_PROPERTY(QString selectedText READ selectedText)
 
 public:
     explicit QLabel(QWidget *parent=0, Qt::WindowFlags f=0);
@@ -110,6 +112,11 @@ public:
 
     void setTextInteractionFlags(Qt::TextInteractionFlags flags);
     Qt::TextInteractionFlags textInteractionFlags() const;
+
+    void setSelection(int, int);
+    bool hasSelectedText() const;
+    QString selectedText() const;
+    int selectionStart() const;
 
 public Q_SLOTS:
     void setText(const QString &);

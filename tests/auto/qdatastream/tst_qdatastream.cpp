@@ -162,6 +162,9 @@ private slots:
     void stream_QIcon_data();
     void stream_QIcon();
 
+    void stream_QEasingCurve_data();
+    void stream_QEasingCurve();
+
     void stream_atEnd_data();
     void stream_atEnd();
 
@@ -243,6 +246,7 @@ private:
     void writeqint64(QDataStream *s);
     void writeQWMatrix(QDataStream *s);
     void writeQIcon(QDataStream *s);
+    void writeQEasingCurve(QDataStream *s);
 
     void readbool(QDataStream *s);
     void readQBool(QDataStream *s);
@@ -272,6 +276,7 @@ private:
     void readqint64(QDataStream *s);
     void readQWMatrix(QDataStream *s);
     void readQIcon(QDataStream *s);
+    void readQEasingCurve(QDataStream *s);
 
 private:
     QString svgFile;
@@ -683,6 +688,70 @@ void tst_QDataStream::readHash(QDataStream *s)
     QCOMPARE(S, test);
     *s >> S;
     QCOMPARE(S, test);
+}
+
+// ************************************
+
+static QEasingCurve QEasingCurveData(int index)
+{
+    QEasingCurve easing;
+
+    switch (index) {
+    case 0:
+        default:
+            break;
+    case 1:
+            easing.setType(QEasingCurve::Linear);
+            break;
+    case 2:
+            easing.setType(QEasingCurve::OutCubic);
+            break;
+    case 3:
+            easing.setType(QEasingCurve::InOutSine);
+            break;
+    case 4:
+            easing.setType(QEasingCurve::InOutElastic);
+            easing.setPeriod(1.5);
+            easing.setAmplitude(2.0);
+            break;
+    case 5:
+            easing.setType(QEasingCurve::OutInBack);
+            break;
+    case 6:
+            easing.setType(QEasingCurve::OutCurve);
+            break;
+    case 7:
+            easing.setType(QEasingCurve::InOutBack);
+            easing.setOvershoot(0.5);
+            break;
+    }
+    return easing;
+}
+#define MAX_EASING_DATA 8
+
+void tst_QDataStream::stream_QEasingCurve_data()
+{
+    stream_data(MAX_EASING_DATA);
+}
+
+void tst_QDataStream::stream_QEasingCurve()
+{
+    STREAM_IMPL(QEasingCurve);
+}
+
+void tst_QDataStream::writeQEasingCurve(QDataStream* s)
+{
+    QEasingCurve test(QEasingCurveData(dataIndex(QTest::currentDataTag())));
+    *s << test;
+}
+
+void tst_QDataStream::readQEasingCurve(QDataStream *s)
+{
+    QEasingCurve S;
+    QEasingCurve expected(QEasingCurveData(dataIndex(QTest::currentDataTag())));
+
+    *s >> S;
+    QCOMPARE(S, expected);
 }
 
 // ************************************

@@ -164,6 +164,7 @@ public:
     inline const char *constData() const;
     inline void detach();
     bool isDetached() const;
+    inline bool isSharedWith(const QByteArray &other) const { return d == other.d; }
     void clear();
 
 #ifdef Q_COMPILER_MANGLES_RETURN_TYPE
@@ -236,6 +237,7 @@ public:
     QByteArray &insert(int i, const QByteArray &a);
     QByteArray &remove(int index, int len);
     QByteArray &replace(int index, int len, const char *s);
+    QByteArray &replace(int index, int len, const char *s, int alen);
     QByteArray &replace(int index, int len, const QByteArray &s);
     QByteArray &replace(char before, const char *after);
     QByteArray &replace(char before, const QByteArray &after);

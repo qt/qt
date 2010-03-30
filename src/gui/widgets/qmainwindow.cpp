@@ -1374,6 +1374,9 @@ bool QMainWindow::event(QEvent *event)
 #endif // QT_NO_STATUSTIP
 
         case QEvent::StyleChange:
+#ifndef QT_NO_DOCKWIDGET
+            d->layout->layoutState.dockAreaLayout.styleChangedEvent();
+#endif
             if (!d->explicitIconSize)
                 setIconSize(QSize());
             break;
@@ -1453,7 +1456,8 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
         return;
 
     // ### Disable the unified toolbar when using anything but the native graphics system.
-    if (windowSurface())
+    // ### Disable when using alien widgets as well
+    if (windowSurface() || testAttribute(Qt::WA_NativeWindow) == false)
         return;
 
     d->useHIToolBar = set;
@@ -1535,11 +1539,15 @@ void QMainWindow::contextMenuEvent(QContextMenuEvent *event)
 
 #ifndef QT_NO_MENU
     QMenu *popup = createPopupMenu();
-    if (popup && !popup->isEmpty()) {
-        popup->exec(event->globalPos());
-        event->accept();
+    if (popup) {
+        if (!popup->isEmpty()) {
+            popup->setAttribute(Qt::WA_DeleteOnClose);
+            popup->popup(event->globalPos());
+            event->accept();
+        } else {
+            delete popup;
+        }
     }
-    delete popup;
 #endif
 }
 #endif // QT_NO_CONTEXTMENU

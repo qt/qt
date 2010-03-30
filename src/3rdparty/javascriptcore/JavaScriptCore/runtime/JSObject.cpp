@@ -42,6 +42,25 @@ namespace JSC {
 
 ASSERT_CLASS_FITS_IN_CELL(JSObject);
 
+static inline void getClassPropertyNames(ExecState* exec, const ClassInfo* classInfo, PropertyNameArray& propertyNames, EnumerationMode mode)
+{
+    // Add properties from the static hashtables of properties
+    for (; classInfo; classInfo = classInfo->parentClass) {
+        const HashTable* table = classInfo->propHashTable(exec);
+        if (!table)
+            continue;
+        table->initializeIfNeeded(exec);
+        ASSERT(table->table);
+
+        int hashSizeMask = table->compactSize - 1;
+        const HashEntry* entry = table->table;
+        for (int i = 0; i <= hashSizeMask; ++i, ++entry) {
+            if (entry->key() && (!(entry->attributes() & DontEnum) || (mode == IncludeDontEnumProperties)))
+                propertyNames.add(entry->key());
+        }
+    }
+}
+
 void JSObject::markChildren(MarkStack& markStack)
 {
 #ifndef NDEBUG
@@ -187,12 +206,12 @@ bool JSObject::hasProperty(ExecState* exec, unsigned propertyName) const
 }
 
 // ECMA 8.6.2.5
-bool JSObject::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
+bool JSObject::deleteProperty(ExecState* exec, const Identifier& propertyName)
 {
     unsigned attributes;
     JSCell* specificValue;
     if (m_structure->get(propertyName, attributes, specificValue) != WTF::notFound) {
-        if ((attributes & DontDelete) && checkDontDelete)
+        if ((attributes & DontDelete))
             return false;
         removeDirect(propertyName);
         return true;
@@ -200,7 +219,7 @@ bool JSObject::deleteProperty(ExecState* exec, const Identifier& propertyName, b
 
     // Look in the static hashtable of properties
     const HashEntry* entry = findPropertyHashEntry(exec, propertyName);
-    if (entry && (entry->attributes() & DontDelete) && checkDontDelete)
+    if (entry && entry->attributes() & DontDelete)
         return false; // this builtin property can't be deleted
 
     // FIXME: Should the code here actually do some deletion?
@@ -213,9 +232,9 @@ bool JSObject::hasOwnProperty(ExecState* exec, const Identifier& propertyName) c
     return const_cast<JSObject*>(this)->getOwnPropertySlot(exec, propertyName, slot);
 }
 
-bool JSObject::deleteProperty(ExecState* exec, unsigned propertyName, bool checkDontDelete)
+bool JSObject::deleteProperty(ExecState* exec, unsigned propertyName)
 {
-    return deleteProperty(exec, Identifier::from(exec, propertyName), checkDontDelete);
+    return deleteProperty(exec, Identifier::from(exec, propertyName));
 }
 
 static ALWAYS_INLINE JSValue callDefaultValueFunction(ExecState* exec, const JSObject* object, const Identifier& propertyName)
@@ -395,26 +414,10 @@ bool JSObject::hasInstance(ExecState* exec, JSValue value, JSValue proto)
 
 bool JSObject::propertyIsEnumerable(ExecState* exec, const Identifier& propertyName) const
 {
-    unsigned attributes;
-    if (!getPropertyAttributes(exec, propertyName, attributes))
+    PropertyDescriptor descriptor;
+    if (!const_cast<JSObject*>(this)->getOwnPropertyDescriptor(exec, propertyName, descriptor))
         return false;
-    return !(attributes & DontEnum);
-}
-
-bool JSObject::getPropertyAttributes(ExecState* exec, const Identifier& propertyName, unsigned& attributes) const
-{
-    JSCell* specificValue;
-    if (m_structure->get(propertyName, attributes, specificValue) != WTF::notFound)
-        return true;
-    
-    // Look in the static hashtable of properties
-    const HashEntry* entry = findPropertyHashEntry(exec, propertyName);
-    if (entry) {
-        attributes = entry->attributes();
-        return true;
-    }
-    
-    return false;
+    return descriptor.enumerable();
 }
 
 bool JSObject::getPropertySpecificValue(ExecState*, const Identifier& propertyName, JSCell*& specificValue) const
@@ -430,14 +433,31 @@ bool JSObject::getPropertySpecificValue(ExecState*, const Identifier& propertyNa
     return false;
 }
 
-void JSObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
-    m_structure->getEnumerablePropertyNames(exec, propertyNames, this);
+    getOwnPropertyNames(exec, propertyNames, mode);
+
+    if (prototype().isNull())
+        return;
+
+    JSObject* prototype = asObject(this->prototype());
+    while(1) {
+        if (prototype->structure()->typeInfo().overridesGetPropertyNames()) {
+            prototype->getPropertyNames(exec, propertyNames, mode);
+            break;
+        }
+        prototype->getOwnPropertyNames(exec, propertyNames, mode);
+        JSValue nextProto = prototype->prototype();
+        if (nextProto.isNull())
+            break;
+        prototype = asObject(nextProto);
+    }
 }
 
-void JSObject::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
+void JSObject::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
-    m_structure->getOwnPropertyNames(exec, propertyNames, this, includeNonEnumerable);
+    m_structure->getPropertyNames(propertyNames, mode);
+    getClassPropertyNames(exec, classInfo(), propertyNames, mode);
 }
 
 bool JSObject::toBoolean(ExecState*) const
@@ -494,12 +514,12 @@ void JSObject::removeDirect(const Identifier& propertyName)
 
 void JSObject::putDirectFunction(ExecState* exec, InternalFunction* function, unsigned attr)
 {
-    putDirectFunction(Identifier(exec, function->name(&exec->globalData())), function, attr);
+    putDirectFunction(Identifier(exec, function->name(exec)), function, attr);
 }
 
 void JSObject::putDirectFunctionWithoutTransition(ExecState* exec, InternalFunction* function, unsigned attr)
 {
-    putDirectFunctionWithoutTransition(Identifier(exec, function->name(&exec->globalData())), function, attr);
+    putDirectFunctionWithoutTransition(Identifier(exec, function->name(exec)), function, attr);
 }
 
 NEVER_INLINE void JSObject::fillGetterPropertySlot(PropertySlot& slot, JSValue* location)
@@ -514,7 +534,7 @@ Structure* JSObject::createInheritorID()
 {
 #ifdef QT_BUILD_SCRIPT_LIB
     // ### QtScript needs the hasOwnProperty() calls etc. for QScriptObject
-    m_inheritorID = Structure::create(this, TypeInfo(ObjectType, ImplementsHasInstance));
+    m_inheritorID = Structure::create(this, TypeInfo(ObjectType, ImplementsHasInstance | JSC::OverridesHasInstance | JSC::OverridesGetOwnPropertySlot | JSC::OverridesMarkChildren | JSC::OverridesGetPropertyNames));
 #else
     m_inheritorID = JSObject::createStructure(this);
 #endif
@@ -524,11 +544,6 @@ Structure* JSObject::createInheritorID()
 void JSObject::allocatePropertyStorage(size_t oldSize, size_t newSize)
 {
     allocatePropertyStorageInline(oldSize, newSize);
-}
-
-JSObject* constructEmptyObject(ExecState* exec)
-{
-    return new (exec) JSObject(exec->lexicalGlobalObject()->emptyObjectStructure());
 }
 
 bool JSObject::getOwnPropertyDescriptor(ExecState*, const Identifier& propertyName, PropertyDescriptor& descriptor)
@@ -581,7 +596,7 @@ bool JSObject::defineOwnProperty(ExecState* exec, const Identifier& propertyName
     if (descriptor.isEmpty())
         return true;
 
-    if (current.equalTo(descriptor))
+    if (current.equalTo(exec, descriptor))
         return true;
 
     // Filter out invalid changes
@@ -627,7 +642,7 @@ bool JSObject::defineOwnProperty(ExecState* exec, const Identifier& propertyName
                 return false;
             }
             if (!current.writable()) {
-                if (descriptor.value() || !JSValue::strictEqual(current.value(), descriptor.value())) {
+                if (descriptor.value() || !JSValue::strictEqual(exec, current.value(), descriptor.value())) {
                     if (throwException)
                         throwError(exec, TypeError, "Attempting to change value of a readonly property.");
                     return false;
@@ -649,12 +664,12 @@ bool JSObject::defineOwnProperty(ExecState* exec, const Identifier& propertyName
     // Changing the accessor functions of an existing accessor property
     ASSERT(descriptor.isAccessorDescriptor());
     if (!current.configurable()) {
-        if (descriptor.setterPresent() && !(current.setter() && JSValue::strictEqual(current.setter(), descriptor.setter()))) {
+        if (descriptor.setterPresent() && !(current.setter() && JSValue::strictEqual(exec, current.setter(), descriptor.setter()))) {
             if (throwException)
                 throwError(exec, TypeError, "Attempting to change the setter of an unconfigurable property.");
             return false;
         }
-        if (descriptor.getterPresent() && !(current.getter() && JSValue::strictEqual(current.getter(), descriptor.getter()))) {
+        if (descriptor.getterPresent() && !(current.getter() && JSValue::strictEqual(exec, current.getter(), descriptor.getter()))) {
             if (throwException)
                 throwError(exec, TypeError, "Attempting to change the getter of an unconfigurable property.");
             return false;

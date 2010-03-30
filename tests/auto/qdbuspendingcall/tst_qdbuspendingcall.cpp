@@ -41,6 +41,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QVariant>
 #include <QtCore/QList>
+#include <QtCore/QThread>
 #include <QtCore/QVector>
 #include <QtTest/QtTest>
 #ifndef QT_NO_DBUS
@@ -90,6 +91,7 @@ private Q_SLOTS:
     void watcher();
     void watcher_error();
     void watcher_waitForFinished();
+    void watcher_waitForFinished_threaded();
     void watcher_waitForFinished_alreadyFinished();
     void watcher_waitForFinished_alreadyFinished_eventLoop();
     void watcher_waitForFinished_error();
@@ -124,7 +126,8 @@ void tst_QDBusPendingCall::finished(QDBusPendingCallWatcher *call)
     slotCalled = FinishCalled;
     ++callCount;
     watchArgument = call;
-    QTestEventLoop::instance().exitLoop();
+    if (QThread::currentThread() == thread())
+        QTestEventLoop::instance().exitLoop();
 }
 
 void tst_QDBusPendingCall::callback(const QStringList &list)
@@ -375,6 +378,56 @@ void tst_QDBusPendingCall::watcher_waitForFinished()
     const QVariantList args2 = ac.reply().arguments();
     QVERIFY(!args2.isEmpty());
     QVERIFY(args2.at(0).toStringList().contains(conn.baseService()));
+}
+
+void tst_QDBusPendingCall::watcher_waitForFinished_threaded()
+{
+    callCount = 0;
+    watchArgument = 0;
+    slotCalled = 0;
+
+    class WorkerThread: public QThread {
+    public:
+        tst_QDBusPendingCall *tst;
+        WorkerThread(tst_QDBusPendingCall *tst) : tst(tst) {}
+        void run()
+        {
+            QDBusPendingCall ac = tst->sendMessage();
+//            QVERIFY(!ac.isFinished());
+//            QVERIFY(!ac.isError());
+//            QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+
+            QDBusPendingCallWatcher watch(ac);
+            tst->connect(&watch, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                         SLOT(finished(QDBusPendingCallWatcher*)), Qt::DirectConnection);
+
+            QTest::qSleep(100);  // don't process events in this thread
+
+//            QVERIFY(!ac.isFinished());
+//            QVERIFY(!ac.isError());
+//            QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+            QCOMPARE(tst->callCount, 0);
+            QCOMPARE(tst->slotCalled, 0);
+
+            watch.waitForFinished();
+            QVERIFY(ac.isFinished());
+            QVERIFY(!ac.isError());
+
+            QCOMPARE(tst->callCount, 1);
+            QCOMPARE(tst->slotCalled, (int)FinishCalled);
+            QCOMPARE(tst->watchArgument, &watch);
+            QVERIFY(!watch.isError());
+
+            const QVariantList args2 = ac.reply().arguments();
+            QVERIFY(!args2.isEmpty());
+            QVERIFY(args2.at(0).toStringList().contains(tst->conn.baseService()));
+        }
+    } thread(this);
+    QTestEventLoop::instance().connect(&thread, SIGNAL(finished()), SLOT(exitLoop()));
+    thread.start();
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!thread.isRunning());
+    QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
 void tst_QDBusPendingCall::watcher_waitForFinished_alreadyFinished()

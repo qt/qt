@@ -43,14 +43,14 @@
   webxmlgenerator.cpp
 */
 
-#include <QtXml>
-
 #include "codemarker.h"
 #include "pagegenerator.h"
 #include "webxmlgenerator.h"
 #include "node.h"
 #include "separator.h"
 #include "tree.h"
+
+#include <QtCore/qxmlstream.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -90,7 +90,7 @@ QString WebXMLGenerator::format()
     return "WebXML";
 }
 
-QString WebXMLGenerator::fileExtension(const Node * /* node */)
+QString WebXMLGenerator::fileExtension(const Node * /* node */) const
 {
     return "xml";
 }

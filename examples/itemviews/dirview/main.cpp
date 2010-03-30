@@ -45,7 +45,8 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    QDirModel model;
+    QFileSystemModel model;
+    model.setRootPath("");
     QTreeView tree;
     tree.setModel(&model);
 

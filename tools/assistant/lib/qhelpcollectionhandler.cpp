@@ -114,6 +114,9 @@ bool QHelpCollectionHandler::openCollectionFile()
         return false;
     }
 
+    m_query.exec(QLatin1String("PRAGMA synchronous=OFF"));
+    m_query.exec(QLatin1String("PRAGMA cache_size=3000"));
+
     m_query.exec(QLatin1String("SELECT COUNT(*) FROM sqlite_master WHERE TYPE=\'table\'"
                                "AND Name=\'NamespaceTable\'"));
     m_query.next();
@@ -162,6 +165,9 @@ bool QHelpCollectionHandler::copyCollectionFile(const QString &fileName)
         emit error(tr("Cannot open collection file: %1").arg(colFile));
         return false;
     }
+
+    copyQuery->exec(QLatin1String("PRAGMA synchronous=OFF"));
+    copyQuery->exec(QLatin1String("PRAGMA cache_size=3000"));
 
     if (!createTables(copyQuery)) {
         emit error(tr("Cannot copy collection file: %1").arg(colFile));
@@ -308,10 +314,8 @@ bool QHelpCollectionHandler::addCustomFilter(const QString &filterName,
     m_query.prepare(QLatin1String("SELECT Id FROM FilterNameTable WHERE Name=?"));
     m_query.bindValue(0, filterName);
     m_query.exec();
-    while (m_query.next()) {
+    if (m_query.next())
         nameId = m_query.value(0).toInt();
-        break;
-    }
 
     m_query.exec(QLatin1String("SELECT Id, Name FROM FilterAttributeTable"));
     QStringList idsToInsert = attributes;
@@ -584,6 +588,8 @@ void QHelpCollectionHandler::optimizeDatabase(const QString &fileName)
         }
 
         QSqlQuery query(db);
+        db.exec(QLatin1String("PRAGMA synchronous=OFF"));
+        db.exec(QLatin1String("PRAGMA cache_size=3000"));
         db.exec(QLatin1String("CREATE INDEX IF NOT EXISTS NameIndex ON IndexTable(Name)"));
         db.exec(QLatin1String("CREATE INDEX IF NOT EXISTS FileNameIndex ON FileNameTable(Name)"));
         db.exec(QLatin1String("CREATE INDEX IF NOT EXISTS FileIdIndex ON FileNameTable(FileId)"));

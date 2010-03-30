@@ -54,6 +54,9 @@
 //
 
 #include "qfileinfo.h"
+#include "qabstractfileengine.h"
+#include "qdatetime.h"
+#include "qatomic.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -65,45 +68,44 @@ public:
 
     void initFileEngine(const QString &);
 
-    enum Access {
-        ReadAccess,
-        WriteAccess,
-        ExecuteAccess
-    };
-    bool hasAccess(Access access) const;
-
     uint getFileFlags(QAbstractFileEngine::FileFlags) const;
     QDateTime &getFileTime(QAbstractFileEngine::FileTime) const;
     QString getFileName(QAbstractFileEngine::FileName) const;
+    QString getFileOwner(QAbstractFileEngine::FileOwner own) const;
 
     enum { CachedFileFlags=0x01, CachedLinkTypeFlag=0x02, CachedBundleTypeFlag=0x04,
            CachedMTime=0x10, CachedCTime=0x20, CachedATime=0x40,
-           CachedSize =0x08 };
+           CachedSize =0x08, CachedPerms=0x80 };
     struct Data {
         inline Data()
-            : ref(1), fileEngine(0), cache_enabled(1), fileSize(0)
-        { clear(); }
+            : ref(1), fileEngine(0),
+              cachedFlags(0), cache_enabled(1), fileFlags(0), fileSize(0)
+        {}
         inline Data(const Data &copy)
             : ref(1), fileEngine(QAbstractFileEngine::create(copy.fileName)),
-              fileName(copy.fileName), cache_enabled(copy.cache_enabled), fileSize(copy.fileSize)
-        { clear(); }
+              fileName(copy.fileName),
+              cachedFlags(0), cache_enabled(copy.cache_enabled), fileFlags(0), fileSize(0)
+        {}
         inline ~Data() { delete fileEngine; }
         inline void clearFlags() {
             fileFlags = 0;
             cachedFlags = 0;
             if (fileEngine)
-                (void)fileEngine->fileFlags(QFSFileEngine::Refresh);
+                (void)fileEngine->fileFlags(QAbstractFileEngine::Refresh);
         }
         inline void clear() {
             clearFlags();
             for (int i = QAbstractFileEngine::NFileNames - 1 ; i >= 0 ; --i)
                 fileNames[i].clear();
+            fileOwners[1].clear();
+            fileOwners[0].clear();
         }
         mutable QAtomicInt ref;
 
         QAbstractFileEngine *fileEngine;
         mutable QString fileName;
         mutable QString fileNames[QAbstractFileEngine::NFileNames];
+        mutable QString fileOwners[2];
 
         mutable uint cachedFlags : 31;
         mutable uint cache_enabled : 1;

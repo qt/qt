@@ -51,6 +51,9 @@
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #endif
+#ifdef Q_OS_WIN32
+#include <QtCore/QVarLengthArray>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -147,6 +150,14 @@ QT_BEGIN_NAMESPACE
 
     This signal is emitted whenever a file with the \a oldName is successfully
     renamed to \a newName.  The file is located in in the directory \a path.
+*/
+
+/*!
+    \since 4.7
+    \fn void QFileSystemModel::directoryLoaded(const QString &path)
+
+    This signal is emitted when the gatherer thread has finished to load the \a path.
+
 */
 
 /*!
@@ -270,53 +281,38 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QM
     return indexNode;
 }
 
-#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN32
 static QString qt_GetLongPathName(const QString &strShortPath)
 {
-    QString longPath;
-    int i = 0;
-    if (strShortPath == QLatin1String(".")
-        || (strShortPath.startsWith(QLatin1String("//")))
-        || (strShortPath.startsWith(QLatin1String("\\\\")))) // unc
+    if (strShortPath.isEmpty()
+        || strShortPath == QLatin1String(".") || strShortPath == QLatin1String(".."))
         return strShortPath;
-    QString::const_iterator it = strShortPath.constBegin();
-    QString::const_iterator constEnd = strShortPath.constEnd();
-    do {
-        bool isSep = (*it == QLatin1Char('\\') || *it == QLatin1Char('/'));
-        if (isSep || it == constEnd) {
-            QString section = (it == constEnd ? strShortPath : strShortPath.left(i));
-            // FindFirstFile does not handle volumes ("C:"), so we have to catch that ourselves.
-            if (section.endsWith(QLatin1Char(':'))) {
-                longPath.append(section.toUpper());
-            } else {
-                HANDLE h;
-#ifndef Q_OS_WINCE
-                //We add the extend length prefix to handle long path
-                QString longSection = QLatin1String("\\\\?\\")+QDir::toNativeSeparators(section);
-#else
-                QString longSection = QDir::toNativeSeparators(section);
-#endif
-                WIN32_FIND_DATA findData;
-                h = ::FindFirstFile((wchar_t*)longSection.utf16(), &findData);
-                if (h != INVALID_HANDLE_VALUE) {
-                    longPath.append(QString::fromWCharArray(findData.cFileName));
-                    ::FindClose(h);
-                } else {
-                    longPath.append(section);
-                    break;
-                }
-            }
-            if (it != constEnd)
-                longPath.append(*it);
-            else
-                break;
-        }
-        ++it;
-        if (isSep && it == constEnd)    // break out if the last character is a separator
-            break;
-        ++i;
-    } while (true);
-    return longPath;
+    if (strShortPath.length() == 2 && strShortPath.endsWith(QLatin1Char(':')))
+        return strShortPath.toUpper();
+    const QString absPath = QDir(strShortPath).absolutePath();
+    if (absPath.startsWith(QLatin1String("//"))
+        || absPath.startsWith(QLatin1String("\\\\"))) // unc
+        return QDir::fromNativeSeparators(absPath);
+    if (absPath.startsWith(QLatin1Char('/')))
+        return QString();
+    const QString inputString = QLatin1String("\\\\?\\") + QDir::toNativeSeparators(absPath);
+    QVarLengthArray<TCHAR, MAX_PATH> buffer(MAX_PATH);
+    DWORD result = ::GetLongPathName((wchar_t*)inputString.utf16(),
+                                     buffer.data(),
+                                     buffer.size());
+    if (result > DWORD(buffer.size())) {
+        buffer.resize(result);
+        result = ::GetLongPathName((wchar_t*)inputString.utf16(),
+                                   buffer.data(),
+                                   buffer.size());
+    }
+    if (result > 4) {
+        QString longPath = QString::fromWCharArray(buffer.data() + 4); // ignoring prefix
+        longPath[0] = longPath.at(0).toUpper(); // capital drive letters
+        return QDir::fromNativeSeparators(longPath);
+    } else {
+        return QDir::fromNativeSeparators(strShortPath);
+    }
 }
 #endif
 
@@ -334,7 +330,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
 
     // Construct the nodes up to the new root path if they need to be built
     QString absolutePath;
-#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN32
     QString longPath = qt_GetLongPathName(path);
 #else
     QString longPath = path;
@@ -673,7 +669,7 @@ QVariant QFileSystemModel::data(const QModelIndex &index, int role) const
     case Qt::EditRole:
     case Qt::DisplayRole:
         switch (index.column()) {
-        case 0: return d->name(index);
+        case 0: return d->displayName(index);
         case 1: return d->size(index);
         case 2: return d->type(index);
         case 3: return d->time(index);
@@ -789,8 +785,20 @@ QString QFileSystemModelPrivate::name(const QModelIndex &index) const
         if (resolvedSymLinks.contains(fullPath))
             return resolvedSymLinks[fullPath];
     }
-    // ### TODO it would be nice to grab the volume name if dirNode->parent == root
     return dirNode->fileName;
+}
+
+/*!
+    \internal
+*/
+QString QFileSystemModelPrivate::displayName(const QModelIndex &index) const
+{
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    QFileSystemNode *dirNode = node(index);
+    if (!dirNode->volumeName.isNull())
+        return dirNode->volumeName + QLatin1String(" (") + name(index) + QLatin1Char(')');
+#endif
+    return name(index);
 }
 
 /*!
@@ -1337,7 +1345,11 @@ QModelIndex QFileSystemModel::setRootPath(const QString &newPath)
 {
     Q_D(QFileSystemModel);
 #ifdef Q_OS_WIN
-    QString longNewPath = QDir::fromNativeSeparators(qt_GetLongPathName(newPath));
+#ifdef Q_OS_WIN32
+    QString longNewPath = qt_GetLongPathName(newPath);
+#else
+    QString longNewPath = QDir::fromNativeSeparators(newPath);
+#endif
 #else
     QString longNewPath = newPath;
 #endif
@@ -1650,6 +1662,18 @@ QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFile
 #ifndef QT_NO_FILESYSTEMWATCHER
     node->populate(info);
 #endif
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    //The parentNode is "" so we are listing the drives
+    if (parentNode->fileName.isEmpty()) {
+        wchar_t name[MAX_PATH + 1];
+        //GetVolumeInformation requires to add trailing backslash
+        const QString nodeName = fileName + QLatin1String("\\");
+        BOOL success = ::GetVolumeInformation((wchar_t *)(nodeName.utf16()),
+                name, MAX_PATH + 1, NULL, 0, NULL, NULL, 0);
+        if (success && name[0])
+            node->volumeName = QString::fromWCharArray(name);
+    }
+#endif
     parentNode->children.insert(fileName, node);
     return node;
 }
@@ -1879,7 +1903,16 @@ void QFileSystemModelPrivate::init()
             q, SLOT(_q_fileSystemChanged(QString,QList<QPair<QString,QFileInfo> >)));
     q->connect(&fileInfoGatherer, SIGNAL(nameResolved(QString,QString)),
             q, SLOT(_q_resolvedName(QString,QString)));
+    q->connect(&fileInfoGatherer, SIGNAL(directoryLoaded(QString)),
+               q, SIGNAL(directoryLoaded(QString)));
     q->connect(&delayedSortTimer, SIGNAL(timeout()), q, SLOT(_q_performDelayedSort()), Qt::QueuedConnection);
+
+    QHash<int, QByteArray> roles = q->roleNames();
+    roles.insertMulti(QFileSystemModel::FileIconRole, "fileIcon"); // == Qt::decoration
+    roles.insert(QFileSystemModel::FilePathRole, "filePath");
+    roles.insert(QFileSystemModel::FileNameRole, "fileName");
+    roles.insert(QFileSystemModel::FilePermissions, "filePermissions");
+    q->setRoleNames(roles);
 }
 
 /*!

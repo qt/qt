@@ -67,8 +67,6 @@ static const char qt_meta_stringdata_Phonon__ObjectDescriptionModel_Visualizatio
 namespace Phonon
 {
 
-#if !defined(Q_CC_MINGW) || __MINGW32_MAJOR_VERSION >= 4
-
 template<> const QMetaObject ObjectDescriptionModel<AudioOutputDeviceType>::staticMetaObject = {
     { &QAbstractListModel::staticMetaObject, qt_meta_stringdata_Phonon__ObjectDescriptionModel_AudioOutputDeviceType,
       qt_meta_data_Phonon__ObjectDescriptionModel, 0 }
@@ -139,7 +137,6 @@ int ObjectDescriptionModel<type>::qt_metacall(QMetaObject::Call _c, int _id, voi
     return QAbstractListModel::qt_metacall(_c, _id, _a);
 }
 */
-#endif
 
 int ObjectDescriptionModelData::rowCount(const QModelIndex &parent) const
 {
@@ -365,8 +362,7 @@ QStringList ObjectDescriptionModelData::mimeTypes(ObjectDescriptionType type) co
     return QStringList(QLatin1String("application/x-phonon-objectdescription") + QString::number(static_cast<int>(type)));
 }
 
-#if !defined(Q_CC_MINGW) || __MINGW32_MAJOR_VERSION >= 4
-#if !defined(Q_CC_MSVC) || _MSC_VER > 1300 || defined(Q_CC_INTEL)
+#if !defined(Q_CC_MSVC) || _MSC_VER > 1300 || defined(Q_CC_INTEL) || defined(Q_CC_MINGW)
 #define INSTANTIATE_META_FUNCTIONS(type) \
 template const QMetaObject *ObjectDescriptionModel<type>::metaObject() const; \
 template void *ObjectDescriptionModel<type>::qt_metacast(const char *)
@@ -384,7 +380,6 @@ INSTANTIATE_META_FUNCTIONS(VideoCodecType);
 INSTANTIATE_META_FUNCTIONS(ContainerFormatType);
 INSTANTIATE_META_FUNCTIONS(VisualizationType);
 */
-#endif //Q_CC_MINGW
 } // namespace Phonon
 
 #endif //QT_NO_PHONON_OBJECTDESCRIPTIONMODEL

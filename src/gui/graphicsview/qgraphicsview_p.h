@@ -65,7 +65,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_AUTOTEST_EXPORT QGraphicsViewPrivate : public QAbstractScrollAreaPrivate
+class Q_GUI_EXPORT QGraphicsViewPrivate : public QAbstractScrollAreaPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsView)
 public:

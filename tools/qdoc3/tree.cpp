@@ -43,7 +43,6 @@
   tree.cpp
 */
 
-#include <QtCore>
 #include <QDomDocument>
 
 #include "atom.h"
@@ -53,6 +52,9 @@
 #include "node.h"
 #include "text.h"
 #include "tree.h"
+
+#include <limits.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -149,6 +151,7 @@ const Node *Tree::findNode(const QStringList &path,
 
             const Node *next =
                 static_cast<const InnerNode*>(node)->findNode(path.at(i));
+            
             if (!next && (findFlags & SearchEnumValues) && i == path.size()-1)
                 next = static_cast<const InnerNode*>(node)->findEnumNodeForValue(path.at(i));
 
@@ -1118,6 +1121,15 @@ bool Tree::generateIndexSection(QXmlStreamWriter &writer,
         case Node::Target:
             nodeName = "target";
             break;
+        case Node::QmlProperty:
+            nodeName = "qmlproperty";
+            break;
+        case Node::QmlSignal:
+            nodeName = "qmlsignal";
+            break;
+        case Node::QmlMethod:
+            nodeName = "qmlmethod";
+            break;
         default:
             return false;
     }
@@ -1207,7 +1219,7 @@ bool Tree::generateIndexSection(QXmlStreamWriter &writer,
     if (fullName != objName)
         writer.writeAttribute("fullname", fullName);
     writer.writeAttribute("href", fullDocumentLocation(node));
-    if (node->type() != Node::Fake)
+    if ((node->type() != Node::Fake) && (!node->isQmlNode()))
         writer.writeAttribute("location", node->location().fileName());
 
     switch (node->type()) {
@@ -1261,6 +1273,12 @@ bool Tree::generateIndexSection(QXmlStreamWriter &writer,
                     break;
                 case Node::ExternalPage:
                     writer.writeAttribute("subtype", "externalpage");
+                    break;
+                case Node::QmlClass:
+                    writer.writeAttribute("subtype", "qmlclass");
+                    break;
+                case Node::QmlBasicType:
+                    writer.writeAttribute("subtype", "qmlbasictype");
                     break;
                 default:
                     break;
@@ -1334,6 +1352,12 @@ bool Tree::generateIndexSection(QXmlStreamWriter &writer,
         }
         break;
 
+    case Node::QmlProperty:
+        {
+            const QmlPropertyNode *qpn = static_cast<const QmlPropertyNode*>(node);
+            writer.writeAttribute("type", qpn->dataType());
+        }
+        break;
     case Node::Property:
         {
             const PropertyNode *propertyNode = static_cast<const PropertyNode*>(node);
@@ -1521,9 +1545,22 @@ void Tree::generateIndexSections(QXmlStreamWriter &writer,
         if (node->isInnerNode()) {
             const InnerNode *inner = static_cast<const InnerNode *>(node);
 
-            // Recurse to write an element for this child node and all its children.
-            foreach (const Node *child, inner->childNodes())
-                generateIndexSections(writer, child, generateInternalNodes);
+            foreach (const Node *child, inner->childNodes()) {
+                /*
+                  Don't generate anything for a QML property group node.
+                  It is just a place holder for a collection of QML property
+                  nodes. Recurse to its children, which are the QML property
+                  nodes.
+                 */
+                if (child->subType() == Node::QmlPropertyGroup) {
+                    const InnerNode *pgn = static_cast<const InnerNode*>(child);
+                    foreach (const Node *c, pgn->childNodes()) {
+                        generateIndexSections(writer, c, generateInternalNodes);
+                    }
+                }
+                else
+                    generateIndexSections(writer, child, generateInternalNodes);
+            }
 
 /*
             foreach (const Node *child, inner->relatedNodes()) {
@@ -1914,7 +1951,8 @@ QString Tree::fullDocumentLocation(const Node *node) const
     }
     else if (node->type() == Node::Fake) {
 #ifdef QDOC_QML
-        if (node->subType() == Node::QmlClass)
+        if ((node->subType() == Node::QmlClass) ||
+            (node->subType() == Node::QmlBasicType))
             return "qml-" + node->fileBase() + ".html";
         else
 #endif
@@ -1927,9 +1965,23 @@ QString Tree::fullDocumentLocation(const Node *node) const
 
     if ((parentNode = node->relates()))
         parentName = fullDocumentLocation(node->relates());
-    else if ((parentNode = node->parent()))
-        parentName = fullDocumentLocation(node->parent());
-
+    else if ((parentNode = node->parent())) {
+        if (parentNode->subType() == Node::QmlPropertyGroup) {
+            parentNode = parentNode->parent();
+            parentName = "qml-" + parentNode->fileBase() + ".html";
+        }
+        else
+            parentName = fullDocumentLocation(node->parent());
+    }
+#if 0
+    if (node->type() == Node::QmlProperty) {
+        qDebug() << "Node::QmlProperty:" << node->name()
+                 << "parentName:" << parentName;
+        if (parentNode)
+            qDebug() << "PARENT NODE" << parentNode->type()
+                     << parentNode->subType() << parentNode->name();
+    }
+#endif
     switch (node->type()) {
         case Node::Class:
         case Node::Namespace:
@@ -1976,6 +2028,15 @@ QString Tree::fullDocumentLocation(const Node *node) const
         case Node::Property:
             anchorRef = "#" + node->name() + "-prop";
             break;
+        case Node::QmlProperty:
+            anchorRef = "#" + node->name() + "-prop";
+            break;
+        case Node::QmlSignal:
+            anchorRef = "#" + node->name() + "-signal";
+            break;
+        case Node::QmlMethod:
+            anchorRef = "#" + node->name() + "-method";
+            break;
         case Node::Variable:
             anchorRef = "#" + node->name() + "-var";
             break;
@@ -2015,6 +2076,8 @@ QString Tree::fullDocumentLocation(const Node *node) const
 }
 
 /*!
+  Construct the full document name for \a node and return the
+  name.
  */
 QString Tree::fullDocumentName(const Node *node) const
 {
@@ -2025,10 +2088,11 @@ QString Tree::fullDocumentName(const Node *node) const
     const Node *n = node;
 
     do {
-        if (!n->name().isEmpty())
+        if (!n->name().isEmpty() &&
+            ((n->type() != Node::Fake) || (n->subType() != Node::QmlPropertyGroup)))
             pieces.insert(0, n->name());
 
-        if (n->type() == Node::Fake)
+        if ((n->type() == Node::Fake) && (n->subType() != Node::QmlPropertyGroup))
             break;
 
         // Examine the parent node if one exists.

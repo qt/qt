@@ -304,7 +304,7 @@ private:
                 last = resultLastToShow > count ? count : resultLastToShow;
             }
         }
-        hitsLabel->setText(tr("%1 - %2 of %3 Hits").arg(first).arg(last).arg(count));
+        hitsLabel->setText(QHelpSearchResultWidget::tr("%1 - %2 of %n Hits", 0, count).arg(first).arg(last));
     }
 
 private:

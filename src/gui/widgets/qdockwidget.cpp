@@ -1010,7 +1010,7 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
 
     if (!floating && parent) {
         QMainWindowLayout *mwlayout = qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
-        if (!mwlayout || mwlayout->dockWidgetArea(q) == Qt::NoDockWidgetArea)
+        if (mwlayout && mwlayout->dockWidgetArea(q) == Qt::NoDockWidgetArea)
             return; // this dockwidget can't be redocked
     }
 

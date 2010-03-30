@@ -141,8 +141,14 @@ public:
         Quit
      };
 
+    enum SequenceFormat {
+        NativeText,
+        PortableText
+    };
+
     QKeySequence();
     QKeySequence(const QString &key);
+    QKeySequence(const QString &key, SequenceFormat format);
     QKeySequence(int k1, int k2 = 0, int k3 = 0, int k4 = 0);
     QKeySequence(const QKeySequence &ks);
     QKeySequence(StandardKey key);
@@ -158,11 +164,6 @@ public:
 #ifdef QT3_SUPPORT
         , Identical = ExactMatch
 #endif
-    };
-
-    enum SequenceFormat {
-        NativeText,
-        PortableText
     };
 
     QString toString(SequenceFormat format = PortableText) const;
@@ -194,6 +195,7 @@ private:
     static int decodeString(const QString &ks);
     static QString encodeString(int key);
     int assign(const QString &str);
+    int assign(const QString &str, SequenceFormat format);
     void setKey(int key, int index);
 
     QKeySequencePrivate *d;

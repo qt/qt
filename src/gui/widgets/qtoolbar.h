@@ -143,6 +143,7 @@ Q_SIGNALS:
     void iconSizeChanged(const QSize &iconSize);
     void toolButtonStyleChanged(Qt::ToolButtonStyle toolButtonStyle);
     void topLevelChanged(bool topLevel);
+    void visibilityChanged(bool visible);
 
 protected:
     void actionEvent(QActionEvent *event);

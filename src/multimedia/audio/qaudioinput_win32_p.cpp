@@ -88,7 +88,7 @@ QAudioInputPrivate::~QAudioInputPrivate()
     DeleteCriticalSection(&waveInCriticalSection);
 }
 
-void CALLBACK QAudioInputPrivate::waveInProc( HWAVEIN hWaveIn, UINT uMsg,
+void QT_WIN_CALLBACK QAudioInputPrivate::waveInProc( HWAVEIN hWaveIn, UINT uMsg,
         DWORD dwInstance, DWORD dwParam1, DWORD dwParam2 )
 {
     Q_UNUSED(dwParam1)
@@ -232,6 +232,11 @@ bool QAudioInputPrivate::open()
     } else {
         period_size = buffer_size/5;
     }
+#ifdef Q_OS_WINCE
+    // For wince reduce size to 40ms for buffer size and 20ms period
+    buffer_size = settings.sampleRate()*settings.channelCount()*(settings.sampleSize()/8)*0.04;
+    period_size = buffer_size/2;
+#endif
     timeStamp.restart();
     elapsedTimeOffset = 0;
     wfx.nSamplesPerSec = settings.frequency();
@@ -252,7 +257,7 @@ bool QAudioInputPrivate::open()
         if(waveInGetDevCaps(ii, &wic, sizeof(WAVEINCAPS))
 	    == MMSYSERR_NOERROR) {
 	    QString tmp;
-	    tmp = QString::fromUtf16((const unsigned short*)wic.szPname);
+	    tmp = QString((const QChar *)wic.szPname);
 	    if(tmp.compare(QLatin1String(m_device)) == 0) {
 	        devId = ii;
 		break;

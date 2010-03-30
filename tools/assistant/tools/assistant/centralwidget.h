@@ -38,78 +38,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #ifndef CENTRALWIDGET_H
 #define CENTRALWIDGET_H
 
 #include <QtCore/QUrl>
-#include <QtCore/QPoint>
-#include <QtCore/QObject>
-
 #include <QtGui/QWidget>
-
-#include "searchwidget.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEvent;
-class QLabel;
-class QAction;
-class QCheckBox;
-class QLineEdit;
-class QTextBrowser;
-class QToolButton;
-
+class FindWidget;
 class HelpViewer;
-class QTabWidget;
-class QHelpEngine;
-class CentralWidget;
-class PrintHelper;
 class MainWindow;
-
 class QHelpSearchEngine;
-
-class FindWidget : public QWidget
-{
-    Q_OBJECT
-
-public:
-    FindWidget(QWidget *parent = 0);
-    ~FindWidget();
-
-signals:
-    void findNext();
-    void findPrevious();
-
-protected:
-    void hideEvent(QHideEvent* event);
-    void showEvent(QShowEvent * event);
-
-private slots:
-    void updateButtons();
-
-private:
-    QToolButton* setupToolButton(const QString &text, const QString &icon);
-
-private:
-    QLineEdit *editFind;
-    QCheckBox *checkCase;
-    QLabel *labelWrapped;
-    QToolButton *toolNext;
-    QToolButton *toolClose;
-    QToolButton *toolPrevious;
-    QCheckBox *checkWholeWords;
-
-    QPalette appPalette;
-    friend class CentralWidget;
-};
+class QTabWidget;
+class SearchWidget;
 
 class CentralWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    CentralWidget(QHelpEngine *engine, MainWindow *parent);
+    CentralWidget(MainWindow *parent);
     ~CentralWidget();
 
     void setupWidget();
@@ -121,12 +70,11 @@ public:
     bool isBackwardAvailable() const;
     QList<QAction*> globalActions() const;
     void setGlobalActions(const QList<QAction*> &actions);
-    HelpViewer *currentHelpViewer() const;
-    void activateTab(bool onlyHelpViewer = false);
 
-    bool searchWidgetAttached() const {
-        return m_searchWidget && m_searchWidget->isAttached();
-    }
+    HelpViewer *viewerAt(int index) const;
+    HelpViewer *currentHelpViewer() const;
+
+    bool searchWidgetAttached() const;
     void createSearchWidget(QHelpSearchEngine *searchEngine);
     void activateSearchWidget(bool updateLastTabPage = false);
     void removeSearchWidget();
@@ -134,6 +82,7 @@ public:
     int availableHelpViewer() const;
     bool enableTabCloseAction() const;
 
+    void closeOrReloadTabs(const QList<int> &indices, bool tryReload);
     void closeTabAt(int index);
     QMap<int, QString> currentSourceFileList() const;
 
@@ -142,11 +91,9 @@ public:
 public slots:
     void zoomIn();
     void zoomOut();
-    void findNext();
     void nextPage();
     void resetZoom();
     void previousPage();
-    void findPrevious();
     void copySelection();
     void showTextSearch();
     void print();
@@ -155,11 +102,16 @@ public slots:
     void updateBrowserFont();
     void setSource(const QUrl &url);
     void setSourceInNewTab(const QUrl &url, qreal zoom = 0.0);
-    void findCurrentText(const QString &text);
     HelpViewer *newEmptyTab();
     void home();
     void forward();
     void backward();
+
+    void activateTab(bool onlyHelpViewer = false);
+
+    void findNext();
+    void findPrevious();
+    void find(const QString &text, bool forward);
 
 signals:
     void currentViewerChanged();
@@ -168,7 +120,7 @@ signals:
     void highlighted(const QString &link);
     void forwardAvailable(bool available);
     void backwardAvailable(bool available);
-    void addNewBookmark(const QString &title, const QString &url);
+    void addBookmark(const QString &title, const QString &url);
 
 protected:
     void keyPressEvent(QKeyEvent *);
@@ -187,25 +139,18 @@ private slots:
 private:
     void connectSignals();
     bool eventFilter(QObject *object, QEvent *e);
-    void find(const QString &ttf, bool forward);
     bool findInWebPage(const QString &ttf, bool forward);
     bool findInTextBrowser(const QString &ttf, bool forward);
     void initPrinter();
     QString quoteTabTitle(const QString &title) const;
     void setLastShownPages();
 
-    void getBrowserFontFor(QWidget* viewer, QFont *font);
-    void setBrowserFontFor(QWidget *widget, const QFont &font);
-
 private:
     int lastTabPage;
-    QString collectionFile;
     QList<QAction*> globalActionList;
 
-    QWidget *findBar;
     QTabWidget *tabWidget;
     FindWidget *findWidget;
-    QHelpEngine *helpEngine;
     QPrinter *printer;
     bool usesDefaultCollection;
 

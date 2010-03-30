@@ -76,6 +76,7 @@ class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
     \value AllPages All pages should be printed.
     \value Selection Only the selection should be printed.
     \value PageRange The specified page range should be printed.
+    \value CurrentPage Only the currently visible page should be printed.
 
     \sa QPrinter::PrintRange
 */
@@ -89,7 +90,9 @@ class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
     \value PrintToFile The print to file option is enabled.
     \value PrintSelection The print selection option is enabled.
     \value PrintPageRange The page range selection option is enabled.
-    \value PrintCollateCopies
+    \value PrintShowPageSize  Show the page size + margins page only if this is enabled.
+    \value PrintCollateCopies The collate copies option is enabled
+    \value PrintCurrentPage The print current page option is enabled
 
     This value is obsolete and does nothing since Qt 4.5:
 
@@ -97,8 +100,6 @@ class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
     would create a sheet by default the dialog was given a parent.
     This is no longer supported in Qt 4.5.  If you want to use sheets, use
     QPrintDialog::open() instead.
-
-    \value PrintShowPageSize  Show the page size + margins page only if this is enabled.
 */
 
 /*!

@@ -93,6 +93,7 @@ private slots:
     void task232634_childrenDeselectionSignal();
     void task260134_layoutChangedWithAllSelected();
     void QTBUG5671_layoutChangedWithAllSelected();
+    void QTBUG2804_layoutChangedTreeSelection();
 
 private:
     QAbstractItemModel *model;
@@ -2326,6 +2327,32 @@ void tst_QItemSelectionModel::QTBUG5671_layoutChangedWithAllSelected()
     foreach(QPersistentModelIndex index, indexList)
         QVERIFY(selection.isSelected(index));
 }
+
+void tst_QItemSelectionModel::QTBUG2804_layoutChangedTreeSelection()
+{
+    QStandardItemModel model;
+    QStandardItem top1("Child1"), top2("Child2"), top3("Child3");
+    QStandardItem sub11("Alpha"), sub12("Beta"), sub13("Gamma"), sub14("Delta"),
+        sub21("Alpha"), sub22("Beta"), sub23("Gamma"), sub24("Delta");
+    top1.appendColumn(QList<QStandardItem*>() << &sub11 << &sub12 << &sub13 << &sub14);
+    top2.appendColumn(QList<QStandardItem*>() << &sub21 << &sub22 << &sub23 << &sub24);
+    model.appendColumn(QList<QStandardItem*>() << &top1 << &top2 << &top3);
+
+    QItemSelectionModel selModel(&model);
+
+    selModel.select(sub11.index(), QItemSelectionModel::Select);
+    selModel.select(sub12.index(), QItemSelectionModel::Select);
+    selModel.select(sub21.index(), QItemSelectionModel::Select);
+    selModel.select(sub23.index(), QItemSelectionModel::Select);
+
+    QModelIndexList list = selModel.selectedIndexes();
+    QCOMPARE(list.count(), 4);
+
+    model.sort(0); //this will provoke a relayout
+
+    QCOMPARE(selModel.selectedIndexes().count(), 4);
+}
+
 
 QTEST_MAIN(tst_QItemSelectionModel)
 #include "tst_qitemselectionmodel.moc"

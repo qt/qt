@@ -13,18 +13,18 @@
     <stop offset="1" stop-color="#0000ff" stop-opacity="1" />
 </radialGradient>
 </defs>
-<g fill="none" stroke="black" vector-effect="non-scaling-stroke" stroke-width="1" fill-rule="evenodd" stroke-linecap="square" stroke-linejoin="bevel" >
+<g fill="none" stroke="black" stroke-width="1" fill-rule="evenodd" stroke-linecap="square" stroke-linejoin="bevel" >
 
 <g fill="url(#gradient1)" stroke="none" transform="matrix(1,0,0,1,0,0)"
-font-family="Sans Serif" font-size="9pt" font-weight="400" font-style="normal" 
+font-family="Sans Serif" font-size="8.25" font-weight="400" font-style="normal" 
 >
-<path fill-rule="evenodd" d="M0,0 L100,0 L100,100 L0,100 L0,0"/>
+<path vector-effect="non-scaling-stroke" fill-rule="evenodd" d="M0,0 L100,0 L100,100 L0,100 L0,0"/>
 </g>
 
 <g fill="url(#gradient2)" stroke="none" transform="matrix(1,0,0,1,0,0)"
-font-family="Sans Serif" font-size="9pt" font-weight="400" font-style="normal" 
+font-family="Sans Serif" font-size="8.25" font-weight="400" font-style="normal" 
 >
-<path fill-rule="evenodd" d="M100,0 L200,0 L200,100 L100,100 L100,0"/>
+<path vector-effect="non-scaling-stroke" fill-rule="evenodd" d="M100,0 L200,0 L200,100 L100,100 L100,0"/>
 </g>
 </g>
 </svg>

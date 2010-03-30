@@ -23,7 +23,6 @@ unix:QMAKE_PKGCONFIG_REQUIRES += QtNetwork \
     QtSql \
     QtXml
 LIBS_PRIVATE += -l$$qclucene
-
 RESOURCES += helpsystem.qrc
 SOURCES += qhelpenginecore.cpp \
     qhelpengine.cpp \
@@ -41,6 +40,7 @@ SOURCES += qhelpenginecore.cpp \
     qhelpsearchindexwriter_default.cpp \
     qhelpsearchindexreader_default.cpp \
     qhelpsearchindexreader.cpp \
+    qclucenefieldnames.cpp \
     qhelp_global.cpp
 
 # access to clucene
@@ -63,7 +63,8 @@ HEADERS += qhelpenginecore.h \
     qhelpsearchindex_default_p.h \
     qhelpsearchindexwriter_default_p.h \
     qhelpsearchindexreader_default_p.h \
-    qhelpsearchindexreader_p.h
+    qhelpsearchindexreader_p.h \
+    qclucenefieldnames_p.h
 
 # access to clucene
 HEADERS += qhelpsearchindexwriter_clucene_p.h \

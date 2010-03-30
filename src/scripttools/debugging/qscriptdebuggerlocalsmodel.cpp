@@ -54,6 +54,7 @@
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qpointer.h>
 #include <QtGui/qbrush.h>
 #include <QtGui/qfont.h>
 
@@ -370,6 +371,7 @@ public:
     {
         if (!m_index.isValid()) {
             // nothing to do, the node has been removed
+            finish();
             return;
         }
         QScriptDebuggerCommandSchedulerFrontend frontend(commandScheduler(), this);
@@ -475,7 +477,7 @@ namespace {
 class InitModelJob : public QScriptDebuggerCommandSchedulerJob
 {
 public:
-    InitModelJob(QScriptDebuggerLocalsModelPrivate *model,
+    InitModelJob(QScriptDebuggerLocalsModel *model,
                  int frameIndex,
                  QScriptDebuggerCommandSchedulerInterface *scheduler)
         : QScriptDebuggerCommandSchedulerJob(scheduler),
@@ -484,6 +486,11 @@ public:
 
     void start()
     {
+        if (!m_model) {
+            // Model has been deleted.
+            finish();
+            return;
+        }
         QScriptDebuggerCommandSchedulerFrontend frontend(commandScheduler(), this);
         frontend.scheduleGetScopeChain(m_frameIndex);
     }
@@ -491,7 +498,13 @@ public:
     void handleResponse(const QScriptDebuggerResponse &response,
                         int)
     {
+        if (!m_model) {
+            // Model has been deleted.
+            finish();
+            return;
+        }
         QScriptDebuggerCommandSchedulerFrontend frontend(commandScheduler(), this);
+        QScriptDebuggerLocalsModelPrivate *model_d = QScriptDebuggerLocalsModelPrivate::get(m_model);
         switch (m_state) {
         case 0: {
             QScriptDebuggerValueList scopeChain = response.resultAsScriptValueList();
@@ -500,23 +513,23 @@ public:
                 QString name = QString::fromLatin1("Scope");
                 if (i > 0)
                     name.append(QString::fromLatin1(" (%0)").arg(i));
-                QModelIndex index = m_model->addTopLevelObject(name, scopeObject);
+                QModelIndex index = model_d->addTopLevelObject(name, scopeObject);
                 if (i == 0)
-                    m_model->emitScopeObjectAvailable(index);
+                    model_d->emitScopeObjectAvailable(index);
             }
             frontend.scheduleGetThisObject(m_frameIndex);
             ++m_state;
         }   break;
         case 1: {
             QScriptDebuggerValue thisObject = response.resultAsScriptValue();
-            m_model->addTopLevelObject(QLatin1String("this"), thisObject);
+            model_d->addTopLevelObject(QLatin1String("this"), thisObject);
             finish();
           } break;
         }
     }
 
 private:
-    QScriptDebuggerLocalsModelPrivate *m_model;
+    QPointer<QScriptDebuggerLocalsModel> m_model;
     int m_frameIndex;
     int m_state;
 };
@@ -527,7 +540,7 @@ void QScriptDebuggerLocalsModel::init(int frameIndex)
 {
     Q_D(QScriptDebuggerLocalsModel);
     d->frameIndex = frameIndex;
-    QScriptDebuggerJob *job = new InitModelJob(d, frameIndex, d->commandScheduler);
+    QScriptDebuggerJob *job = new InitModelJob(this, frameIndex, d->commandScheduler);
     d->jobScheduler->scheduleJob(job);
 }
 
@@ -536,7 +549,7 @@ namespace {
 class SyncModelJob : public QScriptDebuggerCommandSchedulerJob
 {
 public:
-    SyncModelJob(QScriptDebuggerLocalsModelPrivate *model,
+    SyncModelJob(QScriptDebuggerLocalsModel *model,
                  int frameIndex,
                  QScriptDebuggerCommandSchedulerInterface *scheduler)
         : QScriptDebuggerCommandSchedulerJob(scheduler),
@@ -545,6 +558,11 @@ public:
 
     void start()
     {
+        if (!m_model) {
+            // Model has been deleted.
+            finish();
+            return;
+        }
         QScriptDebuggerCommandSchedulerFrontend frontend(commandScheduler(), this);
         frontend.scheduleGetScopeChain(m_frameIndex);
     }
@@ -552,6 +570,11 @@ public:
     void handleResponse(const QScriptDebuggerResponse &response,
                         int)
     {
+        if (!m_model) {
+            // Model has been deleted.
+            finish();
+            return;
+        }
         QScriptDebuggerCommandSchedulerFrontend frontend(commandScheduler(), this);
         switch (m_state) {
         case 0: {
@@ -561,18 +584,19 @@ public:
             ++m_state;
         }   break;
         case 1: {
+            QScriptDebuggerLocalsModelPrivate *model_d = QScriptDebuggerLocalsModelPrivate::get(m_model);
             QScriptDebuggerValue thisObject = response.resultAsScriptValue();
             m_topLevelObjects.append(thisObject);
-            bool equal = (m_topLevelObjects.size() == m_model->invisibleRootNode->children.size());
+            bool equal = (m_topLevelObjects.size() == model_d->invisibleRootNode->children.size());
             for (int i = 0; equal && (i < m_topLevelObjects.size()); ++i) {
                 const QScriptDebuggerValue &object = m_topLevelObjects.at(i);
-                equal = (object == m_model->invisibleRootNode->children.at(i)->property.value());
+                equal = (object == model_d->invisibleRootNode->children.at(i)->property.value());
             }
             if (!equal) {
                 // the scope chain and/or this-object changed, so invalidate the model.
                 // we could try to be more clever, i.e. figure out
                 // exactly which objects were popped/pushed
-                m_model->removeTopLevelNodes();
+                model_d->removeTopLevelNodes();
                 for (int j = 0; j < m_topLevelObjects.size(); ++j) {
                     const QScriptDebuggerValue &object = m_topLevelObjects.at(j);
                     QString name;
@@ -583,12 +607,12 @@ public:
                         if (j > 0)
                             name.append(QString::fromLatin1(" (%0)").arg(j));
                     }
-                    QModelIndex index = m_model->addTopLevelObject(name, object);
+                    QModelIndex index = model_d->addTopLevelObject(name, object);
                     if (j == 0)
-                        m_model->emitScopeObjectAvailable(index);
+                        model_d->emitScopeObjectAvailable(index);
                 }
             } else {
-                m_model->syncTopLevelNodes();
+                model_d->syncTopLevelNodes();
             }
             finish();
           } break;
@@ -596,7 +620,7 @@ public:
     }
 
 private:
-    QScriptDebuggerLocalsModelPrivate *m_model;
+    QPointer<QScriptDebuggerLocalsModel> m_model;
     int m_frameIndex;
     int m_state;
     QScriptDebuggerValueList m_topLevelObjects;
@@ -608,7 +632,7 @@ void QScriptDebuggerLocalsModel::sync(int frameIndex)
 {
     Q_D(QScriptDebuggerLocalsModel);
     d->frameIndex = frameIndex;
-    QScriptDebuggerJob *job = new SyncModelJob(d, frameIndex, d->commandScheduler);
+    QScriptDebuggerJob *job = new SyncModelJob(this, frameIndex, d->commandScheduler);
     d->jobScheduler->scheduleJob(job);
 }
 
@@ -636,6 +660,7 @@ public:
     {
         if (!m_index.isValid()) {
             // nothing to do, the node has been removed
+            finish();
             return;
         }
         QScriptDebuggerCommandSchedulerFrontend frontend(commandScheduler(), this);

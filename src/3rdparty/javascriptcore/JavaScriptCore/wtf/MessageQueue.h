@@ -41,23 +41,31 @@ namespace WTF {
     enum MessageQueueWaitResult {
         MessageQueueTerminated,       // Queue was destroyed while waiting for message.
         MessageQueueTimeout,          // Timeout was specified and it expired.
-        MessageQueueMessageReceived   // A message was successfully received and returned.
+        MessageQueueMessageReceived,  // A message was successfully received and returned.
     };
 
+    // The queue takes ownership of messages and transfer it to the new owner
+    // when messages are fetched from the queue.
+    // Essentially, MessageQueue acts as a queue of OwnPtr<DataType>.
     template<typename DataType>
     class MessageQueue : public Noncopyable {
     public:
         MessageQueue() : m_killed(false) { }
-        
-        void append(const DataType&);
-        bool appendAndCheckEmpty(const DataType&);
-        void prepend(const DataType&);
-        bool waitForMessage(DataType&);
-        template<typename Predicate>
-        MessageQueueWaitResult waitForMessageFilteredWithTimeout(DataType&, Predicate&, double absoluteTime);
-        void kill();
+        ~MessageQueue();
 
-        bool tryGetMessage(DataType&);
+        void append(PassOwnPtr<DataType>);
+        bool appendAndCheckEmpty(PassOwnPtr<DataType>);
+        void prepend(PassOwnPtr<DataType>);
+
+        PassOwnPtr<DataType> waitForMessage();
+        PassOwnPtr<DataType> tryGetMessage();
+        template<typename Predicate>
+        PassOwnPtr<DataType> waitForMessageFilteredWithTimeout(MessageQueueWaitResult&, Predicate&, double absoluteTime);
+
+        template<typename Predicate>
+        void removeIf(Predicate&);
+
+        void kill();
         bool killed() const;
 
         // The result of isEmpty() is only valid if no other thread is manipulating the queue at the same time.
@@ -66,86 +74,115 @@ namespace WTF {
         static double infiniteTime() { return std::numeric_limits<double>::max(); }
 
     private:
-        static bool alwaysTruePredicate(DataType&) { return true; }
+        static bool alwaysTruePredicate(DataType*) { return true; }
 
         mutable Mutex m_mutex;
         ThreadCondition m_condition;
-        Deque<DataType> m_queue;
+        Deque<DataType*> m_queue;
         bool m_killed;
     };
 
     template<typename DataType>
-    inline void MessageQueue<DataType>::append(const DataType& message)
+    MessageQueue<DataType>::~MessageQueue()
+    {
+        deleteAllValues(m_queue);
+    }
+
+    template<typename DataType>
+    inline void MessageQueue<DataType>::append(PassOwnPtr<DataType> message)
     {
         MutexLocker lock(m_mutex);
-        m_queue.append(message);
+        m_queue.append(message.release());
         m_condition.signal();
     }
 
     // Returns true if the queue was empty before the item was added.
     template<typename DataType>
-    inline bool MessageQueue<DataType>::appendAndCheckEmpty(const DataType& message)
+    inline bool MessageQueue<DataType>::appendAndCheckEmpty(PassOwnPtr<DataType> message)
     {
         MutexLocker lock(m_mutex);
         bool wasEmpty = m_queue.isEmpty();
-        m_queue.append(message);
+        m_queue.append(message.release());
         m_condition.signal();
         return wasEmpty;
     }
 
     template<typename DataType>
-    inline void MessageQueue<DataType>::prepend(const DataType& message)
+    inline void MessageQueue<DataType>::prepend(PassOwnPtr<DataType> message)
     {
         MutexLocker lock(m_mutex);
-        m_queue.prepend(message);
+        m_queue.prepend(message.release());
         m_condition.signal();
     }
 
     template<typename DataType>
-    inline bool MessageQueue<DataType>::waitForMessage(DataType& result)
+    inline PassOwnPtr<DataType> MessageQueue<DataType>::waitForMessage()
     {
-        MessageQueueWaitResult exitReason = waitForMessageFilteredWithTimeout(result, MessageQueue<DataType>::alwaysTruePredicate, infiniteTime());
+        MessageQueueWaitResult exitReason; 
+        PassOwnPtr<DataType> result = waitForMessageFilteredWithTimeout(exitReason, MessageQueue<DataType>::alwaysTruePredicate, infiniteTime());
         ASSERT(exitReason == MessageQueueTerminated || exitReason == MessageQueueMessageReceived);
-        return exitReason == MessageQueueMessageReceived;
+        return result;
     }
 
     template<typename DataType>
     template<typename Predicate>
-    inline MessageQueueWaitResult MessageQueue<DataType>::waitForMessageFilteredWithTimeout(DataType& result, Predicate& predicate, double absoluteTime)
+    inline PassOwnPtr<DataType> MessageQueue<DataType>::waitForMessageFilteredWithTimeout(MessageQueueWaitResult& result, Predicate& predicate, double absoluteTime)
     {
         MutexLocker lock(m_mutex);
         bool timedOut = false;
 
-        DequeConstIterator<DataType> found = m_queue.end();
+        DequeConstIterator<DataType*> found = m_queue.end();
         while (!m_killed && !timedOut && (found = m_queue.findIf(predicate)) == m_queue.end())
             timedOut = !m_condition.timedWait(m_mutex, absoluteTime);
 
         ASSERT(!timedOut || absoluteTime != infiniteTime());
 
-        if (m_killed)
-            return MessageQueueTerminated;
+        if (m_killed) {
+            result = MessageQueueTerminated;
+            return 0;
+        }
 
-        if (timedOut)
-            return MessageQueueTimeout;
+        if (timedOut) {
+            result = MessageQueueTimeout;
+            return 0;
+        }
 
         ASSERT(found != m_queue.end());
-        result = *found;
+        DataType* message = *found;
         m_queue.remove(found);
-        return MessageQueueMessageReceived;
+        result = MessageQueueMessageReceived;
+        return message;
     }
 
     template<typename DataType>
-    inline bool MessageQueue<DataType>::tryGetMessage(DataType& result)
+    inline PassOwnPtr<DataType> MessageQueue<DataType>::tryGetMessage()
     {
         MutexLocker lock(m_mutex);
         if (m_killed)
-            return false;
+            return 0;
         if (m_queue.isEmpty())
-            return false;
+            return 0;
 
-        result = m_queue.first();
+        DataType* message = m_queue.first();
         m_queue.removeFirst();
-        return true;
+        return message;
+    }
+
+    template<typename DataType>
+    template<typename Predicate>
+    inline void MessageQueue<DataType>::removeIf(Predicate& predicate)
+    {
+        MutexLocker lock(m_mutex);
+        // See bug 31657 for why this loop looks so weird
+        while (true) {
+            DequeConstIterator<DataType*> found = m_queue.findIf(predicate);
+            if (found == m_queue.end())
+                break;
+
+            DataType* message = *found;
+            m_queue.remove(found);
+            delete message;
+       }
     }
 
     template<typename DataType>

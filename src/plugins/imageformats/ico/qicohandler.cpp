@@ -54,6 +54,9 @@
 #include <QtCore/QFile>
 #include <QtCore/QBuffer>
 #include <qvariant.h>
+
+QT_BEGIN_NAMESPACE
+
 // These next two structs represent how the icon information is stored
 // in an ICO file.
 typedef struct
@@ -891,3 +894,4 @@ bool QtIcoHandler::jumpToNextImage()
     return jumpToImage(m_currentIconIndex + 1);
 }
 
+QT_END_NAMESPACE

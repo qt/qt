@@ -55,6 +55,7 @@
 // We mean it.
 //
 
+#include <QtCore/qdatetime.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qstring.h>
 
@@ -62,7 +63,7 @@ QT_BEGIN_NAMESPACE
 
 class QZipReaderPrivate;
 
-class Q_AUTOTEST_EXPORT QZipReader
+class Q_GUI_EXPORT QZipReader
 {
 public:
     QZipReader(const QString &fileName, QIODevice::OpenMode mode = QIODevice::ReadOnly );
@@ -70,15 +71,18 @@ public:
     explicit QZipReader(QIODevice *device);
     ~QZipReader();
 
+    QIODevice* device() const;
+
     bool isReadable() const;
     bool exists() const;
 
-    struct Q_AUTOTEST_EXPORT FileInfo
+    struct Q_GUI_EXPORT FileInfo
     {
         FileInfo();
         FileInfo(const FileInfo &other);
         ~FileInfo();
         FileInfo &operator=(const FileInfo &other);
+        bool isValid() const;
         QString filePath;
         uint isDir : 1;
         uint isFile : 1;
@@ -86,6 +90,7 @@ public:
         QFile::Permissions permissions;
         uint crc32;
         qint64 size;
+        QDateTime lastModified;
         void *d;
     };
 

@@ -116,7 +116,7 @@ private:
     qint64 totalTimeValue;
     bool pullMode;
     int intervalTime;
-    static void CALLBACK waveOutProc( HWAVEOUT hWaveOut, UINT uMsg,
+    static void QT_WIN_CALLBACK waveOutProc( HWAVEOUT hWaveOut, UINT uMsg,
             DWORD dwInstance, DWORD dwParam1, DWORD dwParam2 );
 
     WAVEHDR* allocateBlocks(int size, int count);

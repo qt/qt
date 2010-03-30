@@ -47,7 +47,7 @@ namespace JSC {
         }
 
         ALWAYS_INLINE void append(JSValue);
-        ALWAYS_INLINE void append(JSCell*);
+        void append(JSCell*);
         
         ALWAYS_INLINE void appendValues(Register* values, size_t count, MarkSetProperties properties = NoNullValues)
         {
@@ -153,7 +153,7 @@ namespace JSC {
                 ASSERT(0 == (size % MarkStack::pageSize()));
                 if (size == m_allocated)
                     return;
-#if PLATFORM(WIN)
+#if OS(WINDOWS) || OS(SYMBIAN) || PLATFORM(BREWMP)
                 // We cannot release a part of a region with VirtualFree.  To get around this,
                 // we'll release the entire region and reallocate the size that we want.
                 releaseStack(m_data, m_allocated);

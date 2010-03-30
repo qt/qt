@@ -204,6 +204,19 @@ bool Arguments::getOwnPropertyDescriptor(ExecState* exec, const Identifier& prop
     return JSObject::getOwnPropertyDescriptor(exec, propertyName, descriptor);
 }
 
+void Arguments::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+{
+    if (mode == IncludeDontEnumProperties) {
+        for (unsigned i = 0; i < d->numArguments; ++i) {
+            if (!d->deletedArguments || !d->deletedArguments[i])
+                propertyNames.add(Identifier(exec, UString::from(i)));
+        }
+        propertyNames.add(exec->propertyNames().callee);
+        propertyNames.add(exec->propertyNames().length);
+    }
+    JSObject::getOwnPropertyNames(exec, propertyNames, mode);
+}
+
 void Arguments::put(ExecState* exec, unsigned i, JSValue value, PutPropertySlot& slot)
 {
     if (i < d->numArguments && (!d->deletedArguments || !d->deletedArguments[i])) {
@@ -244,7 +257,7 @@ void Arguments::put(ExecState* exec, const Identifier& propertyName, JSValue val
     JSObject::put(exec, propertyName, value, slot);
 }
 
-bool Arguments::deleteProperty(ExecState* exec, unsigned i, bool checkDontDelete)
+bool Arguments::deleteProperty(ExecState* exec, unsigned i) 
 {
     if (i < d->numArguments) {
         if (!d->deletedArguments) {
@@ -257,10 +270,10 @@ bool Arguments::deleteProperty(ExecState* exec, unsigned i, bool checkDontDelete
         }
     }
 
-    return JSObject::deleteProperty(exec, Identifier(exec, UString::from(i)), checkDontDelete);
+    return JSObject::deleteProperty(exec, Identifier(exec, UString::from(i)));
 }
 
-bool Arguments::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
+bool Arguments::deleteProperty(ExecState* exec, const Identifier& propertyName) 
 {
     bool isArrayIndex;
     unsigned i = propertyName.toArrayIndex(&isArrayIndex);
@@ -285,17 +298,7 @@ bool Arguments::deleteProperty(ExecState* exec, const Identifier& propertyName, 
         return true;
     }
 
-    return JSObject::deleteProperty(exec, propertyName, checkDontDelete);
-}
-
-bool Arguments::getPropertyAttributes(ExecState* exec, const Identifier& propertyName, unsigned& attributes) const
-{
-    if ((propertyName == exec->propertyNames().length)
-        || (propertyName == exec->propertyNames().callee)) {
-        attributes = DontEnum;
-        return true;
-    }
-    return JSObject::getPropertyAttributes(exec, propertyName, attributes);
+    return JSObject::deleteProperty(exec, propertyName);
 }
 
 } // namespace JSC

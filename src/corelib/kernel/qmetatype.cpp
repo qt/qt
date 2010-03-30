@@ -48,6 +48,7 @@
 #include "qstringlist.h"
 #include "qvector.h"
 #include "qlocale.h"
+#include "qeasingcurve.h"
 
 #ifdef QT_BOOTSTRAPPED
 # ifndef QT_NO_GEOM_VARIANT
@@ -132,6 +133,7 @@ QT_BEGIN_NAMESPACE
     \value Float \c float
     \value QObjectStar QObject *
     \value QWidgetStar QWidget *
+    \value QVariant QVariant
 
     \value QColorGroup QColorGroup
     \value QCursor QCursor
@@ -176,6 +178,7 @@ QT_BEGIN_NAMESPACE
     \value QVector3D QVector3D
     \value QVector4D QVector4D
     \value QQuaternion QQuaternion
+    \value QEasingCurve QEasingCurve
 
     \value User  Base value for user types
 
@@ -223,100 +226,105 @@ QT_BEGIN_NAMESPACE
     \sa Q_DECLARE_METATYPE(), QVariant::setValue(), QVariant::value(), QVariant::fromValue()
 */
 
+#define QT_ADD_STATIC_METATYPE(STR, TP) \
+    { STR, sizeof(STR) - 1, TP }
+
 /* Note: these MUST be in the order of the enums */
-static const struct { const char * typeName; int type; } types[] = {
+static const struct { const char * typeName; int typeNameLength; int type; } types[] = {
 
     /* All Core types */
-    {"void", QMetaType::Void},
-    {"bool", QMetaType::Bool},
-    {"int", QMetaType::Int},
-    {"uint", QMetaType::UInt},
-    {"qlonglong", QMetaType::LongLong},
-    {"qulonglong", QMetaType::ULongLong},
-    {"double", QMetaType::Double},
-    {"QChar", QMetaType::QChar},
-    {"QVariantMap", QMetaType::QVariantMap},
-    {"QVariantList", QMetaType::QVariantList},
-    {"QString", QMetaType::QString},
-    {"QStringList", QMetaType::QStringList},
-    {"QByteArray", QMetaType::QByteArray},
-    {"QBitArray", QMetaType::QBitArray},
-    {"QDate", QMetaType::QDate},
-    {"QTime", QMetaType::QTime},
-    {"QDateTime", QMetaType::QDateTime},
-    {"QUrl", QMetaType::QUrl},
-    {"QLocale", QMetaType::QLocale},
-    {"QRect", QMetaType::QRect},
-    {"QRectF", QMetaType::QRectF},
-    {"QSize", QMetaType::QSize},
-    {"QSizeF", QMetaType::QSizeF},
-    {"QLine", QMetaType::QLine},
-    {"QLineF", QMetaType::QLineF},
-    {"QPoint", QMetaType::QPoint},
-    {"QPointF", QMetaType::QPointF},
-    {"QRegExp", QMetaType::QRegExp},
-    {"QVariantHash", QMetaType::QVariantHash},
+    QT_ADD_STATIC_METATYPE("void", QMetaType::Void),
+    QT_ADD_STATIC_METATYPE("bool", QMetaType::Bool),
+    QT_ADD_STATIC_METATYPE("int", QMetaType::Int),
+    QT_ADD_STATIC_METATYPE("uint", QMetaType::UInt),
+    QT_ADD_STATIC_METATYPE("qlonglong", QMetaType::LongLong),
+    QT_ADD_STATIC_METATYPE("qulonglong", QMetaType::ULongLong),
+    QT_ADD_STATIC_METATYPE("double", QMetaType::Double),
+    QT_ADD_STATIC_METATYPE("QChar", QMetaType::QChar),
+    QT_ADD_STATIC_METATYPE("QVariantMap", QMetaType::QVariantMap),
+    QT_ADD_STATIC_METATYPE("QVariantList", QMetaType::QVariantList),
+    QT_ADD_STATIC_METATYPE("QString", QMetaType::QString),
+    QT_ADD_STATIC_METATYPE("QStringList", QMetaType::QStringList),
+    QT_ADD_STATIC_METATYPE("QByteArray", QMetaType::QByteArray),
+    QT_ADD_STATIC_METATYPE("QBitArray", QMetaType::QBitArray),
+    QT_ADD_STATIC_METATYPE("QDate", QMetaType::QDate),
+    QT_ADD_STATIC_METATYPE("QTime", QMetaType::QTime),
+    QT_ADD_STATIC_METATYPE("QDateTime", QMetaType::QDateTime),
+    QT_ADD_STATIC_METATYPE("QUrl", QMetaType::QUrl),
+    QT_ADD_STATIC_METATYPE("QLocale", QMetaType::QLocale),
+    QT_ADD_STATIC_METATYPE("QRect", QMetaType::QRect),
+    QT_ADD_STATIC_METATYPE("QRectF", QMetaType::QRectF),
+    QT_ADD_STATIC_METATYPE("QSize", QMetaType::QSize),
+    QT_ADD_STATIC_METATYPE("QSizeF", QMetaType::QSizeF),
+    QT_ADD_STATIC_METATYPE("QLine", QMetaType::QLine),
+    QT_ADD_STATIC_METATYPE("QLineF", QMetaType::QLineF),
+    QT_ADD_STATIC_METATYPE("QPoint", QMetaType::QPoint),
+    QT_ADD_STATIC_METATYPE("QPointF", QMetaType::QPointF),
+    QT_ADD_STATIC_METATYPE("QRegExp", QMetaType::QRegExp),
+    QT_ADD_STATIC_METATYPE("QVariantHash", QMetaType::QVariantHash),
+    QT_ADD_STATIC_METATYPE("QEasingCurve", QMetaType::QEasingCurve),
 
     /* All GUI types */
-    {"QColorGroup", 63},
-    {"QFont", QMetaType::QFont},
-    {"QPixmap", QMetaType::QPixmap},
-    {"QBrush", QMetaType::QBrush},
-    {"QColor", QMetaType::QColor},
-    {"QPalette", QMetaType::QPalette},
-    {"QIcon", QMetaType::QIcon},
-    {"QImage", QMetaType::QImage},
-    {"QPolygon", QMetaType::QPolygon},
-    {"QRegion", QMetaType::QRegion},
-    {"QBitmap", QMetaType::QBitmap},
-    {"QCursor", QMetaType::QCursor},
-    {"QSizePolicy", QMetaType::QSizePolicy},
-    {"QKeySequence", QMetaType::QKeySequence},
-    {"QPen", QMetaType::QPen},
-    {"QTextLength", QMetaType::QTextLength},
-    {"QTextFormat", QMetaType::QTextFormat},
-    {"QMatrix", QMetaType::QMatrix},
-    {"QTransform", QMetaType::QTransform},
-    {"QMatrix4x4", QMetaType::QMatrix4x4},
-    {"QVector2D", QMetaType::QVector2D},
-    {"QVector3D", QMetaType::QVector3D},
-    {"QVector4D", QMetaType::QVector4D},
-    {"QQuaternion", QMetaType::QQuaternion},
+    QT_ADD_STATIC_METATYPE("QColorGroup", 63),
+    QT_ADD_STATIC_METATYPE("QFont", QMetaType::QFont),
+    QT_ADD_STATIC_METATYPE("QPixmap", QMetaType::QPixmap),
+    QT_ADD_STATIC_METATYPE("QBrush", QMetaType::QBrush),
+    QT_ADD_STATIC_METATYPE("QColor", QMetaType::QColor),
+    QT_ADD_STATIC_METATYPE("QPalette", QMetaType::QPalette),
+    QT_ADD_STATIC_METATYPE("QIcon", QMetaType::QIcon),
+    QT_ADD_STATIC_METATYPE("QImage", QMetaType::QImage),
+    QT_ADD_STATIC_METATYPE("QPolygon", QMetaType::QPolygon),
+    QT_ADD_STATIC_METATYPE("QRegion", QMetaType::QRegion),
+    QT_ADD_STATIC_METATYPE("QBitmap", QMetaType::QBitmap),
+    QT_ADD_STATIC_METATYPE("QCursor", QMetaType::QCursor),
+    QT_ADD_STATIC_METATYPE("QSizePolicy", QMetaType::QSizePolicy),
+    QT_ADD_STATIC_METATYPE("QKeySequence", QMetaType::QKeySequence),
+    QT_ADD_STATIC_METATYPE("QPen", QMetaType::QPen),
+    QT_ADD_STATIC_METATYPE("QTextLength", QMetaType::QTextLength),
+    QT_ADD_STATIC_METATYPE("QTextFormat", QMetaType::QTextFormat),
+    QT_ADD_STATIC_METATYPE("QMatrix", QMetaType::QMatrix),
+    QT_ADD_STATIC_METATYPE("QTransform", QMetaType::QTransform),
+    QT_ADD_STATIC_METATYPE("QMatrix4x4", QMetaType::QMatrix4x4),
+    QT_ADD_STATIC_METATYPE("QVector2D", QMetaType::QVector2D),
+    QT_ADD_STATIC_METATYPE("QVector3D", QMetaType::QVector3D),
+    QT_ADD_STATIC_METATYPE("QVector4D", QMetaType::QVector4D),
+    QT_ADD_STATIC_METATYPE("QQuaternion", QMetaType::QQuaternion),
 
     /* All Metatype builtins */
-    {"void*", QMetaType::VoidStar},
-    {"long", QMetaType::Long},
-    {"short", QMetaType::Short},
-    {"char", QMetaType::Char},
-    {"ulong", QMetaType::ULong},
-    {"ushort", QMetaType::UShort},
-    {"uchar", QMetaType::UChar},
-    {"float", QMetaType::Float},
-    {"QObject*", QMetaType::QObjectStar},
-    {"QWidget*", QMetaType::QWidgetStar},
+    QT_ADD_STATIC_METATYPE("void*", QMetaType::VoidStar),
+    QT_ADD_STATIC_METATYPE("long", QMetaType::Long),
+    QT_ADD_STATIC_METATYPE("short", QMetaType::Short),
+    QT_ADD_STATIC_METATYPE("char", QMetaType::Char),
+    QT_ADD_STATIC_METATYPE("ulong", QMetaType::ULong),
+    QT_ADD_STATIC_METATYPE("ushort", QMetaType::UShort),
+    QT_ADD_STATIC_METATYPE("uchar", QMetaType::UChar),
+    QT_ADD_STATIC_METATYPE("float", QMetaType::Float),
+    QT_ADD_STATIC_METATYPE("QObject*", QMetaType::QObjectStar),
+    QT_ADD_STATIC_METATYPE("QWidget*", QMetaType::QWidgetStar),
+    QT_ADD_STATIC_METATYPE("QVariant", QMetaType::QVariant),
 
     /* Type aliases - order doesn't matter */
-    {"unsigned long", QMetaType::ULong},
-    {"unsigned int", QMetaType::UInt},
-    {"unsigned short", QMetaType::UShort},
-    {"unsigned char", QMetaType::UChar},
-    {"long long", QMetaType::LongLong},
-    {"unsigned long long", QMetaType::ULongLong},
-    {"qint8", QMetaType::Char},
-    {"quint8", QMetaType::UChar},
-    {"qint16", QMetaType::Short},
-    {"quint16", QMetaType::UShort},
-    {"qint32", QMetaType::Int},
-    {"quint32", QMetaType::UInt},
-    {"qint64", QMetaType::LongLong},
-    {"quint64", QMetaType::ULongLong},
-    {"QList<QVariant>", QMetaType::QVariantList},
-    {"QMap<QString,QVariant>", QMetaType::QVariantMap},
-    {"QHash<QString,QVariant>", QMetaType::QVariantHash},
+    QT_ADD_STATIC_METATYPE("unsigned long", QMetaType::ULong),
+    QT_ADD_STATIC_METATYPE("unsigned int", QMetaType::UInt),
+    QT_ADD_STATIC_METATYPE("unsigned short", QMetaType::UShort),
+    QT_ADD_STATIC_METATYPE("unsigned char", QMetaType::UChar),
+    QT_ADD_STATIC_METATYPE("long long", QMetaType::LongLong),
+    QT_ADD_STATIC_METATYPE("unsigned long long", QMetaType::ULongLong),
+    QT_ADD_STATIC_METATYPE("qint8", QMetaType::Char),
+    QT_ADD_STATIC_METATYPE("quint8", QMetaType::UChar),
+    QT_ADD_STATIC_METATYPE("qint16", QMetaType::Short),
+    QT_ADD_STATIC_METATYPE("quint16", QMetaType::UShort),
+    QT_ADD_STATIC_METATYPE("qint32", QMetaType::Int),
+    QT_ADD_STATIC_METATYPE("quint32", QMetaType::UInt),
+    QT_ADD_STATIC_METATYPE("qint64", QMetaType::LongLong),
+    QT_ADD_STATIC_METATYPE("quint64", QMetaType::ULongLong),
+    QT_ADD_STATIC_METATYPE("QList<QVariant>", QMetaType::QVariantList),
+    QT_ADD_STATIC_METATYPE("QMap<QString,QVariant>", QMetaType::QVariantMap),
+    QT_ADD_STATIC_METATYPE("QHash<QString,QVariant>", QMetaType::QVariantHash),
     // let QMetaTypeId2 figure out the type at compile time
-    {"qreal", QMetaTypeId2<qreal>::MetaType},
+    QT_ADD_STATIC_METATYPE("qreal", QMetaTypeId2<qreal>::MetaType),
 
-    {0, QMetaType::Void}
+    {0, 0, QMetaType::Void}
 };
 
 struct QMetaTypeGuiHelper
@@ -346,6 +354,7 @@ public:
     QMetaType::SaveOperator saveOp;
     QMetaType::LoadOperator loadOp;
 #endif
+    int alias;
 };
 
 Q_DECLARE_TYPEINFO(QCustomTypeInfo, Q_MOVABLE_TYPE);
@@ -361,7 +370,14 @@ void QMetaType::registerStreamOperators(const char *typeName, SaveOperator saveO
     int idx = type(typeName);
     if (!idx)
         return;
+    registerStreamOperators(idx, saveOp, loadOp);
+}
 
+/*! \internal
+*/
+void QMetaType::registerStreamOperators(int idx, SaveOperator saveOp,
+                                        LoadOperator loadOp)
+{
     QVector<QCustomTypeInfo> *ct = customTypes();
     if (!ct)
         return;
@@ -400,24 +416,38 @@ const char *QMetaType::typeName(int type)
 }
 
 /*! \internal
-    Same as QMetaType::type(), but doesn't lock the mutex.
+    Similar to QMetaType::type(), but only looks in the static set of types.
 */
-static int qMetaTypeType_unlocked(const QByteArray &typeName)
+static inline int qMetaTypeStaticType(const char *typeName, int length)
 {
     int i = 0;
-    while (types[i].typeName && strcmp(typeName.constData(), types[i].typeName))
+    while (types[i].typeName && ((length != types[i].typeNameLength)
+                                 || strcmp(typeName, types[i].typeName))) {
         ++i;
-    if (!types[i].type) {
-        const QVector<QCustomTypeInfo> * const ct = customTypes();
-        if (!ct)
-            return 0;
-
-        for (int v = 0; v < ct->count(); ++v) {
-            if (ct->at(v).typeName == typeName)
-                return v + QMetaType::User;
-        }
     }
     return types[i].type;
+}
+
+/*! \internal
+    Similar to QMetaType::type(), but only looks in the custom set of
+    types, and doesn't lock the mutex.
+*/
+static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
+{
+    const QVector<QCustomTypeInfo> * const ct = customTypes();
+    if (!ct)
+        return 0;
+
+    for (int v = 0; v < ct->count(); ++v) {
+        const QCustomTypeInfo &customInfo = ct->at(v);
+        if ((length == customInfo.typeName.size())
+            && !strcmp(typeName, customInfo.typeName.constData())) {
+            if (customInfo.alias >= 0)
+                return customInfo.alias;
+            return v + QMetaType::User;
+        }
+    }
+    return 0;
 }
 
 /*! \internal
@@ -439,18 +469,65 @@ int QMetaType::registerType(const char *typeName, Destructor destructor,
     NS(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
 #endif
 
-    QWriteLocker locker(customTypesLock());
-    int idx = qMetaTypeType_unlocked(normalizedTypeName);
+    int idx = qMetaTypeStaticType(normalizedTypeName.constData(),
+                                  normalizedTypeName.size());
 
     if (!idx) {
-        QCustomTypeInfo inf;
-        inf.typeName = normalizedTypeName;
-        inf.constr = constructor;
-        inf.destr = destructor;
-        idx = ct->size() + User;
-        ct->append(inf);
+        QWriteLocker locker(customTypesLock());
+        idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
+                                           normalizedTypeName.size());
+        if (!idx) {
+            QCustomTypeInfo inf;
+            inf.typeName = normalizedTypeName;
+            inf.constr = constructor;
+            inf.destr = destructor;
+            inf.alias = -1;
+            idx = ct->size() + User;
+            ct->append(inf);
+        }
     }
     return idx;
+}
+
+/*! \internal
+    \since 4.7
+
+    Registers a user type for marshalling, as an alias of another type (typedef)
+*/
+int QMetaType::registerTypedef(const char* typeName, int aliasId)
+{
+    QVector<QCustomTypeInfo> *ct = customTypes();
+    if (!ct || !typeName)
+        return -1;
+
+#ifdef QT_NO_QOBJECT
+    NS(QByteArray) normalizedTypeName = typeName;
+#else
+    NS(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
+#endif
+
+    int idx = qMetaTypeStaticType(normalizedTypeName.constData(),
+                                  normalizedTypeName.size());
+
+    if (idx) {
+        Q_ASSERT(idx == aliasId);
+        return idx;
+    }
+
+    QWriteLocker locker(customTypesLock());
+    idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
+                                           normalizedTypeName.size());
+
+    if (idx)
+        return idx;
+
+    QCustomTypeInfo inf;
+    inf.typeName = normalizedTypeName;
+    inf.alias = aliasId;
+    inf.constr = 0;
+    inf.destr = 0;
+    ct->append(inf);
+    return aliasId;
 }
 
 /*!
@@ -478,6 +555,7 @@ void QMetaType::unregisterType(const char *typeName)
             inf.typeName.clear();
             inf.constr = 0;
             inf.destr = 0;
+            inf.alias = -1;
         }
     }
 }
@@ -507,14 +585,26 @@ bool QMetaType::isRegistered(int type)
 */
 int QMetaType::type(const char *typeName)
 {
-#ifdef QT_NO_QOBJECT
-    const NS(QByteArray) normalizedTypeName = typeName;
-#else
-    const NS(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
+    int length = qstrlen(typeName);
+    if (!length)
+        return 0;
+    int type = qMetaTypeStaticType(typeName, length);
+    if (!type) {
+        QReadLocker locker(customTypesLock());
+        type = qMetaTypeCustomType_unlocked(typeName, length);
+#ifndef QT_NO_QOBJECT
+        if (!type) {
+            const NS(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
+            type = qMetaTypeStaticType(normalizedTypeName.constData(),
+                                       normalizedTypeName.size());
+            if (!type) {
+                type = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
+                                                    normalizedTypeName.size());
+            }
+        }
 #endif
-
-    QReadLocker locker(customTypesLock());
-    return qMetaTypeType_unlocked(normalizedTypeName);
+    }
+    return type;
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -596,6 +686,9 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QVariantList:
         stream << *static_cast<const NS(QVariantList)*>(data);
         break;
+    case QMetaType::QVariant:
+        stream << *static_cast<const NS(QVariant)*>(data);
+        break;
 #endif
     case QMetaType::QByteArray:
         stream << *static_cast<const NS(QByteArray)*>(data);
@@ -657,6 +750,11 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
 #ifndef QT_NO_REGEXP
     case QMetaType::QRegExp:
         stream << *static_cast<const NS(QRegExp)*>(data);
+        break;
+#endif
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QEasingCurve:
+        stream << *static_cast<const NS(QEasingCurve)*>(data);
         break;
 #endif
 #ifdef QT3_SUPPORT
@@ -793,6 +891,9 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::QVariantList:
         stream >> *static_cast< NS(QVariantList)*>(data);
         break;
+    case QMetaType::QVariant:
+        stream >> *static_cast< NS(QVariant)*>(data);
+        break;
 #endif
     case QMetaType::QByteArray:
         stream >> *static_cast< NS(QByteArray)*>(data);
@@ -854,6 +955,11 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
 #ifndef QT_NO_REGEXP
     case QMetaType::QRegExp:
         stream >> *static_cast< NS(QRegExp)*>(data);
+        break;
+#endif
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QEasingCurve:
+        stream >> *static_cast< NS(QEasingCurve)*>(data);
         break;
 #endif
 #ifdef QT3_SUPPORT
@@ -955,6 +1061,8 @@ void *QMetaType::construct(int type, const void *copy)
             return new NS(QVariantHash)(*static_cast<const NS(QVariantHash)*>(copy));
         case QMetaType::QVariantList:
             return new NS(QVariantList)(*static_cast<const NS(QVariantList)*>(copy));
+        case QMetaType::QVariant:
+            return new NS(QVariant)(*static_cast<const NS(QVariant)*>(copy));
 #endif
         case QMetaType::QByteArray:
             return new NS(QByteArray)(*static_cast<const NS(QByteArray)*>(copy));
@@ -999,6 +1107,10 @@ void *QMetaType::construct(int type, const void *copy)
 #ifndef QT_NO_REGEXP
         case QMetaType::QRegExp:
             return new NS(QRegExp)(*static_cast<const NS(QRegExp)*>(copy));
+#endif
+#ifndef QT_BOOTSTRAPPED
+        case QMetaType::QEasingCurve:
+            return new NS(QEasingCurve)(*static_cast<const NS(QEasingCurve)*>(copy));
 #endif
         case QMetaType::Void:
             return 0;
@@ -1046,6 +1158,8 @@ void *QMetaType::construct(int type, const void *copy)
             return new NS(QVariantHash);
         case QMetaType::QVariantList:
             return new NS(QVariantList);
+        case QMetaType::QVariant:
+            return new NS(QVariant);
 #endif
         case QMetaType::QByteArray:
             return new NS(QByteArray);
@@ -1090,6 +1204,10 @@ void *QMetaType::construct(int type, const void *copy)
 #ifndef QT_NO_REGEXP
         case QMetaType::QRegExp:
             return new NS(QRegExp);
+#endif
+#ifndef QT_BOOTSTRAPPED
+        case QMetaType::QEasingCurve:
+            return new NS(QEasingCurve);
 #endif
         case QMetaType::Void:
             return 0;
@@ -1183,6 +1301,9 @@ void QMetaType::destroy(int type, void *data)
     case QMetaType::QVariantList:
         delete static_cast< NS(QVariantList)* >(data);
         break;
+    case QMetaType::QVariant:
+        delete static_cast< NS(QVariant)* >(data);
+        break;
 #endif
     case QMetaType::QByteArray:
         delete static_cast< NS(QByteArray)* >(data);
@@ -1246,6 +1367,11 @@ void QMetaType::destroy(int type, void *data)
         delete static_cast< NS(QRegExp)* >(data);
         break;
 #endif
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QEasingCurve:
+        delete static_cast< NS(QEasingCurve)* >(data);
+        break;
+#endif
     case QMetaType::Void:
         break;
     default: {
@@ -1286,6 +1412,11 @@ void QMetaType::destroy(int type, void *data)
     This example registers the class \c{MyClass}:
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 4
+
+    This function is usefull to register typedefs so they can be used
+    by QMetaProperty, or in QueuedConnections
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 9
 
     \sa qRegisterMetaTypeStreamOperators(), QMetaType::isRegistered(),
         Q_DECLARE_METATYPE()

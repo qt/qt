@@ -477,10 +477,6 @@ void tst_QDom::save()
 
 void tst_QDom::initTestCase()
 {
-#ifdef Q_CC_MINGW
-    QSKIP("Our current test machine, arsia, is too slow for this auto test.", SkipAll);
-#endif
-
     QFile file(SRCDIR "testdata/excludedCodecs.txt");
     QVERIFY(file.open(QIODevice::ReadOnly|QIODevice::Text));
 
@@ -1677,7 +1673,7 @@ void tst_QDom::appendDocumentNode() const
 
     doc.appendChild(elem);
 
-    Q_ASSERT(!xml.isNull());
+    QVERIFY(!xml.isNull());
     const QString expected(QLatin1String("<document>\n<test_elem name=\"value\"/>\n</document>\n"));
 
     elem.appendChild(xml);

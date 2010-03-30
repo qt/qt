@@ -408,6 +408,12 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
 }
 
 /*!
+  \fn QGraphicsWidget::geometryChanged()
+
+  This signal gets emitted whenever the geometry is changed in setGeometry().
+*/
+
+/*!
     \fn QRectF QGraphicsWidget::rect() const
 
     Returns the item's local rect as a QRectF. This function is equivalent
@@ -977,6 +983,36 @@ void QGraphicsWidget::setPalette(const QPalette &palette)
     QPalette naturalPalette = d->naturalWidgetPalette();
     QPalette resolvedPalette = palette.resolve(naturalPalette);
     d->setPalette_helper(resolvedPalette);
+}
+
+/*!
+    \property QGraphicsWidget::autoFillBackground
+    \brief whether the widget background is filled automatically
+    \since 4.7
+
+    If enabled, this property will cause Qt to fill the background of the
+    widget before invoking the paint() method. The color used is defined by the
+    QPalette::Window color role from the widget's \l{QPalette}{palette}.
+
+    In addition, Windows are always filled with QPalette::Window, unless the
+    WA_OpaquePaintEvent or WA_NoSystemBackground attributes are set.
+
+    By default, this property is false.
+
+    \sa Qt::WA_OpaquePaintEvent, Qt::WA_NoSystemBackground,
+*/
+bool QGraphicsWidget::autoFillBackground() const
+{
+    Q_D(const QGraphicsWidget);
+    return d->autoFillBackground;
+}
+void QGraphicsWidget::setAutoFillBackground(bool enabled)
+{
+    Q_D(QGraphicsWidget);
+    if (d->autoFillBackground != enabled) {
+        d->autoFillBackground = enabled;
+        update();
+    }
 }
 
 /*!

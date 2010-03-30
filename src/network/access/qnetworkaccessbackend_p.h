@@ -111,6 +111,7 @@ public:
     //   socket).
 
     virtual void open() = 0;
+    virtual bool start();
     virtual void closeDownstreamChannel() = 0;
     virtual bool waitForDownstreamReadyRead(int msecs) = 0;
 
@@ -160,6 +161,10 @@ public:
     // This will possibly enable buffering of the upload data.
     virtual bool needsResetableUploadData() { return false; }
 
+    // Returns true if backend is able to resume downloads.
+    virtual bool canResume() const { return false; }
+    virtual void setResumeOffset(quint64 offset) { Q_UNUSED(offset); }
+
 protected:
     // Create the device used for reading the upload data
     QNonContiguousByteDevice* createUploadByteDevice();
@@ -190,6 +195,7 @@ private:
     friend class QNetworkAccessManager;
     friend class QNetworkAccessManagerPrivate;
     friend class QNetworkAccessBackendUploadIODevice;
+    friend class QNetworkReplyImplPrivate;
     QNetworkAccessManagerPrivate *manager;
     QNetworkReplyImplPrivate *reply;
 };

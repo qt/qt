@@ -266,7 +266,6 @@ public:
         UngrabMouse = 187,
         GrabKeyboard = 188,
         UngrabKeyboard = 189,
-        CocoaRequestModal = 190,                // Internal for requesting an application modal Cocoa Window
         MacGLClearDrawable = 191,               // Internal Cocoa, the window has changed, so we must clear
 
         StateMachineSignal = 192,

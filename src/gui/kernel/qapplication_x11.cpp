@@ -213,11 +213,8 @@ static const char * x11_atomnames = {
     "_MOTIF_WM_HINTS\0"
 
     "DTWM_IS_RUNNING\0"
-    "KDE_FULL_SESSION\0"
-    "KWIN_RUNNING\0"
-    "KWM_RUNNING\0"
-    "GNOME_BACKGROUND_PROPERTIES\0"
     "ENLIGHTENMENT_DESKTOP\0"
+    "_DT_SAVE_MODE\0"
     "_SGI_DESKS_MANAGER\0"
 
     // EWMH (aka NETWM)
@@ -277,6 +274,8 @@ static const char * x11_atomnames = {
     "_NET_WM_CM_S0\0"
 
     "_NET_SYSTEM_TRAY_VISUAL\0"
+
+    "_NET_ACTIVE_WINDOW\0"
 
     // Property formats
     "COMPOUND_TEXT\0"
@@ -624,6 +623,11 @@ static int (*original_xio_errhandler)(Display *dpy);
 
 static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
 {
+    if (X11->display != dpy) {
+        // only handle X errors for our display
+        return 0;
+    }
+
     switch (err->error_code) {
     case BadAtom:
         if (err->request_code == 20 /* X_GetProperty */
@@ -631,8 +635,6 @@ static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
                 || err->resourceid == XA_RGB_DEFAULT_MAP
                 || err->resourceid == ATOM(_NET_SUPPORTED)
                 || err->resourceid == ATOM(_NET_SUPPORTING_WM_CHECK)
-                || err->resourceid == ATOM(KDE_FULL_SESSION)
-                || err->resourceid == ATOM(KWIN_RUNNING)
                 || err->resourceid == ATOM(XdndProxy)
                 || err->resourceid == ATOM(XdndAware))) {
             // Perhaps we're running under SECURITY reduction? :/
@@ -664,11 +666,6 @@ static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
             }
         }
         if (X11->ignore_badwindow)
-            return 0;
-        break;
-
-    case BadMatch:
-        if (err->request_code == 42 /* X_SetInputFocus */)
             return 0;
         break;
 
@@ -709,6 +706,10 @@ static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
             extensionName = "XInputExtension";
         else if (err->request_code == X11->mitshm_major)
             extensionName = "MIT-SHM";
+#ifndef QT_NO_XKB
+        else if(err->request_code == X11->xkb_major)
+            extensionName = "XKEYBOARD";
+#endif
 
         char minor_str[256];
         if (extensionName) {
@@ -1635,6 +1636,11 @@ void qt_init(QApplicationPrivate *priv, int,
     X11->xinput_eventbase = 0;
     X11->xinput_errorbase = 0;
 
+    X11->use_xkb = false;
+    X11->xkb_major = 0;
+    X11->xkb_eventbase = 0;
+    X11->xkb_errorbase = 0;
+
     // MIT-SHM
     X11->use_mitshm = false;
     X11->use_mitshm_pixmaps = false;
@@ -2108,6 +2114,33 @@ void qt_init(QApplicationPrivate *priv, int,
         }
 #endif // QT_NO_XINPUT
 
+#ifndef QT_NO_XKB
+        int xkblibMajor = XkbMajorVersion;
+        int xkblibMinor = XkbMinorVersion;
+        X11->use_xkb = XkbQueryExtension(X11->display,
+                                         &X11->xkb_major,
+                                         &X11->xkb_eventbase,
+                                         &X11->xkb_errorbase,
+                                         &xkblibMajor,
+                                         &xkblibMinor);
+        if (X11->use_xkb) {
+            // If XKB is detected, set the GrabsUseXKBState option so input method
+            // compositions continue to work (ie. deadkeys)
+            unsigned int state = XkbPCF_GrabsUseXKBStateMask;
+            (void) XkbSetPerClientControls(X11->display, state, &state);
+
+            // select for group change events
+            XkbSelectEventDetails(X11->display,
+                                  XkbUseCoreKbd,
+                                  XkbStateNotify,
+                                  XkbAllStateComponentsMask,
+                                  XkbGroupStateMask);
+
+            // current group state is queried when creating the keymapper, no need to do it here
+        }
+#endif
+
+
 #if !defined(QT_NO_FONTCONFIG)
         int dpi = 0;
         getXDefault("Xft", FC_DPI, &dpi);
@@ -2186,15 +2219,6 @@ void qt_init(QApplicationPrivate *priv, int,
         // initialize key mapper
         QKeyMapper::changeKeyboard();
 
-#ifndef QT_NO_XKB
-        if (qt_keymapper_private()->useXKB) {
-            // If XKB is detected, set the GrabsUseXKBState option so input method
-            // compositions continue to work (ie. deadkeys)
-            unsigned int state = XkbPCF_GrabsUseXKBStateMask;
-            (void) XkbSetPerClientControls(X11->display, state, &state);
-        }
-#endif // QT_NO_XKB
-
         // Misc. initialization
 #if 0 //disabled for now..
         QSegfaultHandler::initialize(priv->argv, priv->argc);
@@ -2227,87 +2251,66 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->desktopEnvironment = DE_UNKNOWN;
         X11->desktopVersion = 0;
 
-        // See if the current window manager is using the freedesktop.org spec to give its name
-        Window windowManagerWindow = XNone;
-        Atom typeReturned;
-        int formatReturned;
-        unsigned long nitemsReturned;
-        unsigned long unused;
-        unsigned char *data = 0;
-        if (XGetWindowProperty(QX11Info::display(), QX11Info::appRootWindow(),
-                           ATOM(_NET_SUPPORTING_WM_CHECK),
-                           0, 1024, False, XA_WINDOW, &typeReturned,
-                           &formatReturned, &nitemsReturned, &unused, &data)
-              == Success) {
-            if (typeReturned == XA_WINDOW && formatReturned == 32)
-                windowManagerWindow = *((Window*) data);
-            if (data)
-                XFree(data);
+        Atom type;
+        int format;
+        unsigned long length, after;
+        uchar *data = 0;
+        int rc;
 
-            if (windowManagerWindow != XNone) {
-                QString wmName;
-                Atom utf8atom = ATOM(UTF8_STRING);
-                if (XGetWindowProperty(QX11Info::display(), windowManagerWindow, ATOM(_NET_WM_NAME),
-                                       0, 1024, False, utf8atom, &typeReturned,
-                                       &formatReturned, &nitemsReturned, &unused, &data)
-                    == Success) {
-                    if (typeReturned == utf8atom && formatReturned == 8)
-                        wmName = QString::fromUtf8((const char*)data);
-                    if (data)
-                        XFree(data);
-                    if (wmName == QLatin1String("KWin"))
-                        X11->desktopEnvironment = DE_KDE;
-                    if (wmName == QLatin1String("Metacity"))
-                        X11->desktopEnvironment = DE_GNOME;
-                }
-            }
-        }
-
-        // Running a different/newer/older window manager?  Try some other things
-        if (X11->desktopEnvironment == DE_UNKNOWN){
-            Atom type;
-            int format;
-            unsigned long length, after;
-            uchar *data = 0;
-
-            QString session = QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"));
-            if (session == QLatin1String("kde")) {
+        do {
+            if (!qgetenv("KDE_FULL_SESSION").isEmpty()) {
                 X11->desktopEnvironment = DE_KDE;
-            } else if (session == QLatin1String("gnome") || session == QLatin1String("xfce")) {
+                X11->desktopVersion = qgetenv("KDE_SESSION_VERSION").toInt();
+                break;
+            }
+
+            if (qgetenv("DESKTOP_SESSION") == "gnome") {
                 X11->desktopEnvironment = DE_GNOME;
-            } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(DTWM_IS_RUNNING),
-                                          0, 1, False, AnyPropertyType, &type, &format, &length,
-                                   &after, &data) == Success && length) {
+                break;
+            }
+
+            // GNOME_DESKTOP_SESSION_ID is deprecated for some reason, but still check it
+            if (!qgetenv("GNOME_DESKTOP_SESSION_ID").isEmpty()) {
+                X11->desktopEnvironment = DE_GNOME;
+                break;
+            }
+
+            rc = XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(_DT_SAVE_MODE),
+                                    0, 2, False, XA_STRING, &type, &format, &length,
+                                    &after, &data);
+            if (rc == Success && length) {
+                if (!strcmp(reinterpret_cast<char *>(data), "xfce4")) {
+                    // Pretend that xfce4 is gnome, as it uses the same libraries.
+                    // The detection above is stolen from xdg-open.
+                    X11->desktopEnvironment = DE_GNOME;
+                    break;
+                }
+
+                // We got the property but it wasn't xfce4. Free data before it gets overwritten.
+                XFree(data);
+                data = 0;
+            }
+
+            rc = XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(DTWM_IS_RUNNING),
+                                    0, 1, False, AnyPropertyType, &type, &format, &length,
+                                    &after, &data);
+            if (rc == Success && length) {
                 // DTWM is running, meaning most likely CDE is running...
                 X11->desktopEnvironment = DE_CDE;
-            } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(),
-                                          ATOM(GNOME_BACKGROUND_PROPERTIES), 0, 1, False, AnyPropertyType,
-                                          &type, &format, &length, &after, &data) == Success && length) {
-                X11->desktopEnvironment = DE_GNOME;
-            } else if (!qgetenv("GNOME_DESKTOP_SESSION_ID").isEmpty()) {
-                X11->desktopEnvironment = DE_GNOME;
-            } else if ((XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(KDE_FULL_SESSION),
-                                           0, 1, False, AnyPropertyType, &type, &format, &length, &after, &data) == Success
-                        && length)
-                       || (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(KWIN_RUNNING),
-                                              0, 1, False, AnyPropertyType, &type, &format, &length,
-                                              &after, &data) == Success
-                           && length)
-                       || (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(KWM_RUNNING),
-                                              0, 1, False, AnyPropertyType, &type, &format, &length,
-                                              &after, &data) == Success && length)) {
-                X11->desktopEnvironment = DE_KDE;
-            } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(_SGI_DESKS_MANAGER),
-                                          0, 1, False, XA_WINDOW, &type, &format, &length, &after, &data) == Success
-                       && length) {
-                X11->desktopEnvironment = DE_4DWM;
+                break;
             }
-            if (data)
-                XFree((char *)data);
-        }
 
-        if (X11->desktopEnvironment == DE_KDE)
-            X11->desktopVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
+            rc = XGetWindowProperty(X11->display, QX11Info::appRootWindow(),
+                                    ATOM(_SGI_DESKS_MANAGER), 0, 1, False, XA_WINDOW,
+                                    &type, &format, &length, &after, &data);
+            if (rc == Success && length) {
+                X11->desktopEnvironment = DE_4DWM;
+                break;
+            }
+        } while(0);
+
+        if (data)
+            XFree((char *)data);
 
 #if !defined(QT_NO_STYLE_GTK)
         if (X11->desktopEnvironment == DE_GNOME) {
@@ -3052,6 +3055,8 @@ int QApplication::x11ClientMessage(QWidget* w, XEvent* event, bool passive_only)
                 if ((ulong) event->xclient.data.l[1] > X11->time)
                     X11->time = event->xclient.data.l[1];
                 QWidget *amw = activeModalWidget();
+                if (amw && amw->testAttribute(Qt::WA_X11DoNotAcceptFocus))
+                    amw = 0;
                 if (amw && !QApplicationPrivate::tryModalHelper(widget, 0)) {
                     QWidget *p = amw->parentWidget();
                     while (p && p != widget)
@@ -3250,6 +3255,24 @@ int QApplication::x11ProcessEvent(XEvent* event)
         QKeyMapper::changeKeyboard();
         return 0;
     }
+#ifndef QT_NO_XKB
+    else if (X11->use_xkb && event->type == X11->xkb_eventbase) {
+        XkbAnyEvent *xkbevent = (XkbAnyEvent *) event;
+        switch (xkbevent->xkb_type) {
+        case XkbStateNotify:
+            {
+                XkbStateNotifyEvent *xkbstateevent = (XkbStateNotifyEvent *) xkbevent;
+                if ((xkbstateevent->changed & XkbGroupStateMask) != 0) {
+                    qt_keymapper_private()->xkb_currentGroup = xkbstateevent->group;
+                    QKeyMapper::changeKeyboard();
+                }
+                break;
+            }
+        default:
+            break;
+        }
+    }
+#endif
 
     if (!widget) {                                // don't know this windows
         QWidget* popup = QApplication::activePopupWidget();

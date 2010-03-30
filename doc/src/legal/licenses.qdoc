@@ -60,7 +60,7 @@
     Qt contains some code that is not provided under the
     \l{GNU General Public License (GPL)},
     \l{GNU Lesser General Public License (LGPL)} or the
-    \l{Qt Commercial Editions}{Qt Commercial License Agreement}, but rather under
+    \l{Qt Commercial Edition}{Qt Commercial License Agreement}, but rather under
     specific licenses from the original authors. Some pieces of code were developed
     by Nokia and others originated from third parties.
     This page lists the licenses used, names the authors, and links
@@ -276,14 +276,14 @@
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:\br
-        * Redistributions of source code must retain the above copyright
-          notice, this list of conditions and the following disclaimer.\br
-        * Redistributions in binary form must reproduce the above copyright
-          notice, this list of conditions and the following disclaimer in the
-          documentation and/or other materials provided with the distribution.\br
-        * Neither the name of Research In Motion Limited nor the
-          names of its contributors may be used to endorse or promote products
-          derived from this software without specific prior written permission.
+    Â  Â  * Redistributions of source code must retain the above copyright
+    Â  Â  Â  notice, this list of conditions and the following disclaimer.\br
+    Â  Â  * Redistributions in binary form must reproduce the above copyright
+    Â  Â  Â  notice, this list of conditions and the following disclaimer in the
+    Â  Â  Â  documentation and/or other materials provided with the distribution.\br
+    Â  Â  * Neither the name of Research In Motion Limited nor the
+    Â  Â  Â  names of its contributors may be used to endorse or promote products
+    Â  Â  Â  derived from this software without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY Research In Motion Limited ''AS IS'' AND ANY
     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED

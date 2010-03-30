@@ -42,60 +42,34 @@
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qwidget.h>
+
 #include "qegl_p.h"
+#include "qeglcontext_p.h"
 
 #include <windows.h>
 
 
 QT_BEGIN_NAMESPACE
 
-EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
-{
-    // Create the native drawable for the paint device.
-    int devType = device->devType();
-    EGLNativePixmapType pixmapDrawable = 0;
-    EGLNativeWindowType windowDrawable = 0;
-    bool ok;
-    if (devType == QInternal::Pixmap) {
-        pixmapDrawable = 0;
-        ok = (pixmapDrawable != 0);
-    } else if (devType == QInternal::Widget) {
-        windowDrawable = (EGLNativeWindowType)(static_cast<QWidget *>(device))->winId();
-        ok = (windowDrawable != 0);
-    } else {
-        ok = false;
-    }
-    if (!ok) {
-        qWarning("QEglContext::createSurface(): Cannot create the native EGL drawable");
-        return EGL_NO_SURFACE;
-    }
-
-    // Create the EGL surface to draw into, based on the native drawable.
-    const int *props;
-    if (properties)
-        props = properties->properties();
-    else
-        props = 0;
-    EGLSurface surf;
-    if (devType == QInternal::Widget)
-        surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, props);
-    else
-        surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, props);
-    if (surf == EGL_NO_SURFACE) {
-        qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
-    }
-    return surf;
-}
-
-EGLNativeDisplayType QEglContext::nativeDisplay()
+EGLNativeDisplayType QEgl::nativeDisplay()
 {
     HDC myDc = GetDC(0);
-
     if (!myDc) {
         qWarning("QEglContext::nativeDisplay(): WinCE display is not open");
         return EGL_DEFAULT_DISPLAY;
     }
     return EGLNativeDisplayType(myDc);
+}
+
+EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)
+{
+    return (EGLNativeWindowType)(widget->winId());
+}
+
+EGLNativePixmapType QEgl::nativePixmap(QPixmap*)
+{
+    qWarning("QEgl: EGL pixmap surfaces not supported on WinCE");
+    return (EGLNativePixmapType)0;
 }
 
 // Set pixel format and other properties based on a paint device.

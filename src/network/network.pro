@@ -17,6 +17,7 @@ unix:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 include(../qbase.pri)
 include(access/access.pri)
+include(bearer/bearer.pri)
 include(kernel/kernel.pri)
 include(socket/socket.pri)
 include(ssl/ssl.pri)

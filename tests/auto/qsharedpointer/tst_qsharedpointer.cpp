@@ -42,6 +42,8 @@
 #define QT_SHAREDPOINTER_TRACK_POINTERS
 #include "qsharedpointer.h"
 #include <QtTest/QtTest>
+#include <QtCore/QHash>
+#include <QtCore/QMap>
 #include <QtCore/QThread>
 #include <QtCore/QVector>
 
@@ -68,6 +70,7 @@ class tst_QSharedPointer: public QObject
 private slots:
     void basics_data();
     void basics();
+    void operators();
     void swap();
     void forwardDeclaration1();
     void forwardDeclaration2();
@@ -94,6 +97,8 @@ private slots:
     void mixTrackingPointerCode();
     void threadStressTest_data();
     void threadStressTest();
+    void map();
+    void hash();
     void validConstructs();
     void invalidConstructs_data();
     void invalidConstructs();
@@ -269,6 +274,35 @@ void tst_QSharedPointer::basics()
     QVERIFY(!refCountData(ptr) || refCountData(ptr)->strongref == 1);
 
     // aData is deleted here
+}
+
+void tst_QSharedPointer::operators()
+{
+    QSharedPointer<char> p1;
+    QSharedPointer<char> p2(new char);
+    qptrdiff diff = p2.data() - p1.data();
+    Q_ASSERT(p1.data() < p2.data());
+    Q_ASSERT(diff > 0);
+
+    // operator-
+    QCOMPARE(p2 - p1.data(), diff);
+    QCOMPARE(p2.data() - p1, diff);
+    QCOMPARE(p2 - p1, diff);
+    QCOMPARE(p1 - p2, -diff);
+    QCOMPARE(p1 - p1, qptrdiff(0));
+    QCOMPARE(p2 - p2, qptrdiff(0));
+
+    // operator<
+    QVERIFY(p1 < p2.data());
+    QVERIFY(p1.data() < p2);
+    QVERIFY(p1 < p2);
+    QVERIFY(!(p2 < p1));
+    QVERIFY(!(p2 < p2));
+    QVERIFY(!(p1 < p1));
+
+    // qHash
+    QCOMPARE(qHash(p1), qHash(p1.data()));
+    QCOMPARE(qHash(p2), qHash(p2.data()));
 }
 
 void tst_QSharedPointer::swap()
@@ -1542,6 +1576,72 @@ void tst_QSharedPointer::threadStressTest()
         QVERIFY(counter >= minValue);
         QVERIFY(counter <= maxValue);
     }
+}
+
+template<typename Container, bool Ordered>
+void hashAndMapTest()
+{
+    typedef typename Container::key_type Key;
+    typedef typename Container::mapped_type Value;
+
+    Container c;
+    QVERIFY(c.isEmpty());
+
+    Key k0;
+    c.insert(k0, Value(0));
+    QVERIFY(!c.isEmpty());
+
+    typename Container::iterator it;
+    it = c.find(k0);
+    QVERIFY(it != c.end());
+    it = c.find(Key());
+    QVERIFY(it != c.end());
+    it = c.find(Key(0));
+    QVERIFY(it != c.end());
+
+    Key k1(new typename Key::value_type(42));
+    it = c.find(k1);
+    QVERIFY(it == c.end());
+
+    c.insert(k1, Value(42));
+    it = c.find(k1);
+    QVERIFY(it != c.end());
+    QVERIFY(it != c.find(Key()));
+
+    if (Ordered) {
+        Q_ASSERT(k0 < k1);
+
+        it = c.begin();
+        QCOMPARE(it.key(), k0);
+        QCOMPARE(it.value(), Value(0));
+
+        ++it;
+        QCOMPARE(it.key(), k1);
+        QCOMPARE(it.value(), Value(42));
+
+        ++it;
+        QVERIFY(it == c.end());
+    }
+
+    c.insertMulti(k1, Value(47));
+    it = c.find(k1);
+    QVERIFY(it != c.end());
+    QCOMPARE(it.key(), k1);
+    ++it;
+    QVERIFY(it != c.end());
+    QCOMPARE(it.key(), k1);
+    ++it;
+    QVERIFY(it == c.end());
+}
+
+void tst_QSharedPointer::map()
+{
+    hashAndMapTest<QMap<QSharedPointer<int>, int>, true>();
+}
+
+void tst_QSharedPointer::hash()
+{
+    hashAndMapTest<QHash<QSharedPointer<int>, int>, false>();
 }
 
 void tst_QSharedPointer::validConstructs()

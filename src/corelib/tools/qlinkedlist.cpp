@@ -197,6 +197,11 @@ QLinkedListData QLinkedListData::shared_null = {
     \internal
 */
 
+/*! \fn bool QLinkedList::isSharedWith(const QLinkedList<T> &other) const
+
+    \internal
+*/
+
 /*! \fn bool QLinkedList::isEmpty() const
 
     Returns true if the list contains no items; otherwise returns

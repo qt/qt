@@ -308,7 +308,7 @@ typedef MMRESULT(WINAPI *ptimeKillEvent)(UINT);
 static ptimeSetEvent qtimeSetEvent = 0;
 static ptimeKillEvent qtimeKillEvent = 0;
 
-LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
+LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
 
 static void resolveTimerAPI()
 {
@@ -349,6 +349,9 @@ public:
     // for controlling when to send posted events
     QAtomicInt serialNumber;
     int lastSerialNumber;
+#ifndef Q_OS_WINCE
+    int lastMessageTime;
+#endif
     QAtomicInt wakeUps;
 
     // timers
@@ -372,7 +375,12 @@ public:
 };
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
-    : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0), getMessageHook(0), serialNumber(0), lastSerialNumber(0), wakeUps(0)
+    : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0), getMessageHook(0),
+      serialNumber(0), lastSerialNumber(0),
+#ifndef Q_OS_WINCE
+      lastMessageTime(0),
+#endif
+      wakeUps(0)
 {
     resolveTimerAPI();
 }
@@ -412,7 +420,7 @@ Q_CORE_EXPORT bool winGetMessage(MSG* msg, HWND hWnd, UINT wMsgFilterMin,
 }
 
 // This function is called by a workerthread
-void WINAPI CALLBACK qt_fast_timer_proc(uint timerId, uint /*reserved*/, DWORD_PTR user, DWORD_PTR /*reserved*/, DWORD_PTR /*reserved*/)
+void WINAPI QT_WIN_CALLBACK qt_fast_timer_proc(uint timerId, uint /*reserved*/, DWORD_PTR user, DWORD_PTR /*reserved*/, DWORD_PTR /*reserved*/)
 {
     if (!timerId) // sanity check
         return;
@@ -421,7 +429,7 @@ void WINAPI CALLBACK qt_fast_timer_proc(uint timerId, uint /*reserved*/, DWORD_P
     QCoreApplication::postEvent(t->dispatcher, new QTimerEvent(t->timerId));
 }
 
-LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
+LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
 {
     if (message == WM_NCCREATE)
         return true;
@@ -487,6 +495,9 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
         int localSerialNumber = d->serialNumber;
         if (localSerialNumber != d->lastSerialNumber) {
             d->lastSerialNumber = localSerialNumber;
+#ifndef Q_OS_WINCE
+            d->lastMessageTime = GetMessageTime();
+#endif
             QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
         }
         return 0;
@@ -495,7 +506,7 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
     return DefWindowProc(hwnd, message, wp, lp);
 }
 
-LRESULT CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
+LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
 {
     if (wp == PM_REMOVE) {
         QEventDispatcherWin32 *q = qobject_cast<QEventDispatcherWin32 *>(QAbstractEventDispatcher::instance());
@@ -503,9 +514,13 @@ LRESULT CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
         if (q) {
             QEventDispatcherWin32Private *d = q->d_func();
             int localSerialNumber = d->serialNumber;
-            if (HIWORD(GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER)) == 0) {
-                // no more input or timer events in the message queue, we can allow posted events to be
-                // sent now
+            if (HIWORD(GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER)) == 0
+#ifndef Q_OS_WINCE
+                || GetMessageTime() - d->lastMessageTime >= 10
+#endif
+                ) {
+                // no more input or timer events in the message queue or more than 10ms has elapsed since
+                // we send posted events, we can allow posted events to be sent now
                 (void) d->wakeUps.fetchAndStoreRelease(0);
                 MSG *msg = (MSG *) lp;
                 if (localSerialNumber != d->lastSerialNumber
@@ -755,6 +770,8 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 
                 if (d->internalHwnd == msg.hwnd && msg.message == WM_QT_SENDPOSTEDEVENTS) {
                     if (seenWM_QT_SENDPOSTEDEVENTS) {
+                        // when calling processEvents() "manually", we only want to send posted
+                        // events once
                         needWM_QT_SENDPOSTEDEVENTS = true;
                         continue;
                     }

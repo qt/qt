@@ -159,6 +159,7 @@ SUBDIRS=\
     qstandarditem \
     qstandarditemmodel \
     qstatemachine \
+    qstatictext \
     qstatusbar \
     qstringlistmodel \
     qstyle \

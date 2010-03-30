@@ -46,7 +46,9 @@
 #include <private/qcocoamenuloader_mac_p.h>
 #include <private/qapplication_p.h>
 #include <private/qt_mac_p.h>
+#include <private/qmenubar_p.h>
 #include <qmenubar.h>
+#include <private/qt_cocoa_helpers_mac_p.h>
 
 QT_FORWARD_DECLARE_CLASS(QCFString)
 QT_FORWARD_DECLARE_CLASS(QString)
@@ -57,6 +59,10 @@ QT_USE_NAMESPACE
 
 - (void)awakeFromNib
 {
+    servicesItem = [[appMenu itemWithTitle:@"Services"] retain];
+    hideAllOthersItem = [[appMenu itemWithTitle:@"Hide Others"] retain];
+    showAllItem = [[appMenu itemWithTitle:@"Show All"] retain];
+
     // Get the names in the nib to match the app name set by Qt.
     NSString *appName = reinterpret_cast<const NSString*>(QCFString::toCFStringRef(qAppName()));
     [quitItem setTitle:[[quitItem title] stringByReplacingOccurrencesOfString:@"NewApplication"
@@ -118,6 +124,10 @@ QT_USE_NAMESPACE
 
 - (void)dealloc
 {
+    [servicesItem release];
+    [hideAllOthersItem release];
+    [showAllItem release];
+
     [lastAppSpecificItem release];
     [theMenu release];
     [appMenu release];
@@ -206,6 +216,25 @@ QT_USE_NAMESPACE
 - (void)hide:(id)sender
 {
     [NSApp hide:sender];
+}
+
+- (void)qtUpdateMenubar
+{
+    QMenuBarPrivate::macUpdateMenuBarImmediatly();
+}
+
+- (void)qtTranslateApplicationMenu
+{
+#ifndef QT_NO_TRANSLATION
+    extern QString qt_mac_applicationmenu_string(int type);
+    [servicesItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(0))];
+    [hideItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(1).arg(qAppName()))];
+    [hideAllOthersItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(2))];
+    [showAllItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(3))];
+    [preferencesItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(4))];
+    [quitItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(5).arg(qAppName()))];
+    [aboutItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(6).arg(qAppName()))];
+#endif
 }
 
 - (IBAction)qtDispatcherToQAction:(id)sender

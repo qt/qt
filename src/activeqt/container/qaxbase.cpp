@@ -1353,10 +1353,8 @@ bool QAxBase::initializeFromFile(IUnknown** ptr)
 
 
 // There seams to be a naming problem in mingw headers
-#ifdef Q_CC_GNU
-#ifndef COAUTHIDENTITY
+#if defined(Q_CC_GNU) && !defined(COAUTHIDENTITY) && !defined(__MINGW64_VERSION_MAJOR)
 #define COAUTHIDENTITY AUTH_IDENTITY
-#endif
 #endif
 
 
@@ -2543,6 +2541,11 @@ void MetaObjectGenerator::readFuncsInfo(ITypeInfo *typeinfo, ushort nFuncs)
                     break;
             }
             if (funcdesc->invkind == INVOKE_PROPERTYPUT) {
+                // remove the typename guessed for property setters
+                // its done only for setter's with more than one parameter.
+                if (funcdesc->cParams - funcdesc->cParamsOpt > 1) {
+                    type.clear();
+                }
                 QByteArray set;
                 if (isupper(prototype.at(0))) {
                     set = "Set";

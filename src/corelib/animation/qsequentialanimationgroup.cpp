@@ -464,12 +464,7 @@ void QSequentialAnimationGroupPrivate::setCurrentAnimation(int index, bool inter
 
 void QSequentialAnimationGroupPrivate::activateCurrentAnimation(bool intermediate)
 {
-    Q_Q(QSequentialAnimationGroup);
-
-    if (!currentAnimation)
-        return;
-
-    if (state == QSequentialAnimationGroup::Stopped)
+    if (!currentAnimation || state == QSequentialAnimationGroup::Stopped)
         return;
 
     currentAnimation->stop();

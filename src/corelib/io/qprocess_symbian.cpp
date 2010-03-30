@@ -66,7 +66,7 @@
 #include "qstring.h"
 #include "qprocess.h"
 #include "qprocess_p.h"
-#include "qeventdispatcher_symbian_p.h"
+#include "private/qeventdispatcher_symbian_p.h"
 
 #include <private/qthread_p.h>
 #include <qmutex.h>
@@ -1008,7 +1008,7 @@ bool QProcessPrivate::waitForDeadChild()
             TExitCategoryName catName = symbianProcess->ExitCategory();
             qDebug() << "QProcessPrivate::waitForDeadChild() dead with exitCode"
                      << exitCode << ", crashed:" << crashed
-                     << ", category:" << QString::fromUtf16(catName.Ptr());
+                     << ", category:" << QString((const QChar *)catName.Ptr());
 #endif
         } else {
             QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForDeadChild() not dead!");

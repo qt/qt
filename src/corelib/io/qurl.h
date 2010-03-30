@@ -46,6 +46,7 @@
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qhash.h>
 
 QT_BEGIN_HEADER
 
@@ -75,6 +76,7 @@ public:
         RemovePath = 0x20,
         RemoveQuery = 0x40,
         RemoveFragment = 0x80,
+        // 0x100: private: normalized
 
         StripTrailingSlash = 0x10000
     };
@@ -267,6 +269,11 @@ public:
     typedef QUrlPrivate * DataPtr;
     inline DataPtr &data_ptr() { return d; }
 };
+
+inline uint qHash(const QUrl &url)
+{
+    return qHash(url.toEncoded(QUrl::FormattingOption(0x100)));
+}
 
 Q_DECLARE_TYPEINFO(QUrl, Q_MOVABLE_TYPE);
 Q_DECLARE_SHARED(QUrl)

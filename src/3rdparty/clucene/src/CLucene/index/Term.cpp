@@ -153,7 +153,10 @@ int32_t Term::compareTo(const Term* other) const
     if (_field == other->_field)
         return _tcscmp(_text, other->_text);
 
-    return _tcscmp(_field, other->_field);
+    int32_t ret = _tcscmp(_field, other->_field);
+    if (ret == 0)
+        ret = _tcscmp(_text, other->_text);
+    return ret;
 }
 
 TCHAR* Term::toString() const

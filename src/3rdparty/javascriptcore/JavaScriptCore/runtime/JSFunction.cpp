@@ -50,13 +50,13 @@ bool JSFunction::isHostFunctionNonInline() const
     return isHostFunction();
 }
 
-JSFunction::JSFunction(PassRefPtr<Structure> structure)
+JSFunction::JSFunction(NonNullPassRefPtr<Structure> structure)
     : Base(structure)
     , m_executable(adoptRef(new VPtrHackExecutable()))
 {
 }
 
-JSFunction::JSFunction(ExecState* exec, PassRefPtr<Structure> structure, int length, const Identifier& name, NativeFunction func)
+JSFunction::JSFunction(ExecState* exec, NonNullPassRefPtr<Structure> structure, int length, const Identifier& name, NativeFunction func)
     : Base(&exec->globalData(), structure, name)
 #if ENABLE(JIT)
     , m_executable(adoptRef(new NativeExecutable(exec)))
@@ -72,7 +72,7 @@ JSFunction::JSFunction(ExecState* exec, PassRefPtr<Structure> structure, int len
 #endif
 }
 
-JSFunction::JSFunction(ExecState* exec, PassRefPtr<FunctionExecutable> executable, ScopeChainNode* scopeChainNode)
+JSFunction::JSFunction(ExecState* exec, NonNullPassRefPtr<FunctionExecutable> executable, ScopeChainNode* scopeChainNode)
     : Base(&exec->globalData(), exec->lexicalGlobalObject()->functionStructure(), executable->name())
     , m_executable(executable)
 {
@@ -81,6 +81,8 @@ JSFunction::JSFunction(ExecState* exec, PassRefPtr<FunctionExecutable> executabl
 
 JSFunction::~JSFunction()
 {
+    ASSERT(vptr() == JSGlobalData::jsFunctionVPtr);
+
     // JIT code for other functions may have had calls linked directly to the code for this function; these links
     // are based on a check for the this pointer value for this JSFunction - which will no longer be valid once
     // this memory is freed and may be reused (potentially for another, different JSFunction).
@@ -206,6 +208,17 @@ bool JSFunction::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
         return Base::getOwnPropertyDescriptor(exec, propertyName, descriptor);
     }
     
+void JSFunction::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+{
+    if (!isHostFunction() && (mode == IncludeDontEnumProperties)) {
+        propertyNames.add(exec->propertyNames().arguments);
+        propertyNames.add(exec->propertyNames().callee);
+        propertyNames.add(exec->propertyNames().caller);
+        propertyNames.add(exec->propertyNames().length);
+    }
+    Base::getOwnPropertyNames(exec, propertyNames, mode);
+}
+
 void JSFunction::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     if (isHostFunction()) {
@@ -217,13 +230,13 @@ void JSFunction::put(ExecState* exec, const Identifier& propertyName, JSValue va
     Base::put(exec, propertyName, value, slot);
 }
 
-bool JSFunction::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
+bool JSFunction::deleteProperty(ExecState* exec, const Identifier& propertyName)
 {
     if (isHostFunction())
-        return Base::deleteProperty(exec, propertyName, checkDontDelete);
+        return Base::deleteProperty(exec, propertyName);
     if (propertyName == exec->propertyNames().arguments || propertyName == exec->propertyNames().length)
         return false;
-    return Base::deleteProperty(exec, propertyName, checkDontDelete);
+    return Base::deleteProperty(exec, propertyName);
 }
 
 // ECMA 13.2.2 [[Construct]]

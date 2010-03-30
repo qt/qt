@@ -38,26 +38,33 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
-#include <QtCore/QLocale>
-#include <QtCore/QTranslator>
 #include <QtCore/QLibraryInfo>
-#include <QtCore/QUrl>
+#include <QtCore/QLocale>
+#include <QtCore/QScopedPointer>
 #include <QtCore/QStringList>
+#include <QtCore/QTranslator>
+#include <QtCore/QUrl>
 
 #include <QtGui/QApplication>
 #include <QtGui/QDesktopServices>
 
-#include <QtHelp/QHelpEngineCore>
+#include <QtHelp/QHelpEngine>
+#include <QtHelp/QHelpSearchEngine>
 
 #include <QtNetwork/QLocalSocket>
 
 #include <QtSql/QSqlDatabase>
 
+#include "../shared/collectionconfiguration.h"
+#include "helpenginewrapper.h"
 #include "mainwindow.h"
 #include "cmdlineparser.h"
+
+// #define TRACING_REQUESTED
 
 QT_USE_NAMESPACE
 
@@ -66,118 +73,57 @@ QT_USE_NAMESPACE
   Q_IMPORT_PLUGIN(qsqlite)
 #endif
 
+namespace {
+
 void
 updateLastPagesOnUnregister(QHelpEngineCore& helpEngine, const QString& nsName)
 {
-    int lastPage = helpEngine.customValue(QLatin1String("LastTabPage")).toInt();
-
-    QLatin1String sep("|");
-    QLatin1String pages("LastShownPages");
-#if !defined(QT_NO_WEBKIT)
-    QLatin1String zoom("LastPagesZoomWebView");
-#else
-    QLatin1String zoom("LastPagesZoomTextBrowser");
-#endif
-
-    QStringList currentPages =
-        helpEngine.customValue(pages).toString().
-        split(QLatin1Char('|'), QString::SkipEmptyParts);
-
+    TRACE_OBJ
+    int lastPage = CollectionConfiguration::lastTabPage(helpEngine);
+    QStringList currentPages = CollectionConfiguration::lastShownPages(helpEngine);
     if (!currentPages.isEmpty()) {
-        QVector<QString>zoomList = helpEngine.customValue(zoom).toString().
-            split(sep, QString::SkipEmptyParts).toVector();
-        if (zoomList.isEmpty())
-            zoomList.fill(QLatin1String("0.0"), currentPages.size());
-        else if(zoomList.count() < currentPages.count()) {
-            zoomList.insert(zoomList.count(),
-                currentPages.count() - zoomList.count(), QLatin1String("0.0"));
-        }
+        QStringList zoomList = CollectionConfiguration::lastZoomFactors(helpEngine);
+        while (zoomList.count() < currentPages.count())
+            zoomList.append(CollectionConfiguration::DefaultZoomFactor);
 
         for (int i = currentPages.count(); --i >= 0;) {
             if (QUrl(currentPages.at(i)).host() == nsName) {
-                zoomList.remove(i);
+                zoomList.removeAt(i);
                 currentPages.removeAt(i);
                 lastPage = (lastPage == (i + 1)) ? 1 : lastPage;
             }
         }
 
-        helpEngine.setCustomValue(pages, currentPages.join(sep));
-        helpEngine.setCustomValue(QLatin1String("LastTabPage"), lastPage);
-        helpEngine.setCustomValue(zoom, QStringList(zoomList.toList()).join(sep));
+        CollectionConfiguration::setLastShownPages(helpEngine, currentPages);
+        CollectionConfiguration::setLastTabPage(helpEngine, lastPage);
+        CollectionConfiguration::setLastZoomFactors(helpEngine, zoomList);
     }
 }
 
 bool
 updateUserCollection(QHelpEngineCore& user, const QHelpEngineCore& caller)
 {
-    const uint callerCollectionCreationTime = caller.
-        customValue(QLatin1String("CreationTime"), 0).toUInt();
-    const uint userCollectionCreationTime = user.
-        customValue(QLatin1String("CreationTime"), 1).toUInt();
-
-    if (callerCollectionCreationTime <= userCollectionCreationTime)
+    TRACE_OBJ
+    if (!CollectionConfiguration::isNewer(caller, user))
         return false;
-
-    user.setCustomValue(QLatin1String("CreationTime"),
-        callerCollectionCreationTime);
-    user.setCustomValue(QLatin1String("WindowTitle"),
-        caller.customValue(QLatin1String("WindowTitle")));
-    user.setCustomValue(QLatin1String("LastShownPages"),
-        caller.customValue(QLatin1String("LastShownPages")));
-#if !defined(QT_NO_WEBKIT)
-    const QLatin1String zoomKey("LastPagesZoomWebView");
-#else
-    const QLatin1String zoomKey("LastPagesZoomTextBrowser");
-#endif
-    user.setCustomValue(zoomKey, caller.customValue(zoomKey));
-    user.setCustomValue(QLatin1String("CurrentFilter"),
-        caller.customValue(QLatin1String("CurrentFilter")));
-    user.setCustomValue(QLatin1String("CacheDirectory"),
-        caller.customValue(QLatin1String("CacheDirectory")));
-    user.setCustomValue(QLatin1String("EnableFilterFunctionality"),
-        caller.customValue(QLatin1String("EnableFilterFunctionality")));
-    user.setCustomValue(QLatin1String("HideFilterFunctionality"),
-        caller.customValue(QLatin1String("HideFilterFunctionality")));
-    user.setCustomValue(QLatin1String("EnableDocumentationManager"),
-        caller.customValue(QLatin1String("EnableDocumentationManager")));
-    user.setCustomValue(QLatin1String("EnableAddressBar"),
-        caller.customValue(QLatin1String("EnableAddressBar")));
-    user.setCustomValue(QLatin1String("HideAddressBar"),
-        caller.customValue(QLatin1String("HideAddressBar")));
-    user.setCustomValue(QLatin1String("ApplicationIcon"),
-        caller.customValue(QLatin1String("ApplicationIcon")));
-    user.setCustomValue(QLatin1String("AboutMenuTexts"),
-        caller.customValue(QLatin1String("AboutMenuTexts")));
-    user.setCustomValue(QLatin1String("AboutIcon"),
-        caller.customValue(QLatin1String("AboutIcon")));
-    user.setCustomValue(QLatin1String("AboutTexts"),
-        caller.customValue(QLatin1String("AboutTexts")));
-    user.setCustomValue(QLatin1String("AboutImages"),
-        caller.customValue(QLatin1String("AboutImages")));
-    user.setCustomValue(QLatin1String("defaultHomepage"),
-        caller.customValue(QLatin1String("defaultHomepage")));
-
+    CollectionConfiguration::copyConfiguration(caller, user);
     return true;
 }
 
-bool
-referencedHelpFilesExistAll(QHelpEngineCore& user, QStringList& nameSpaces)
+void stripNonexistingDocs(QHelpEngineCore& collection)
 {
-    QFileInfo fi;
-    int counter = nameSpaces.count();
-    for (int i = counter; --i >= 0;) {
-        const QString& nameSpace = nameSpaces.at(i);
-        fi.setFile(user.documentationFileName(nameSpace));
-        if (!fi.exists() || !fi.isFile()) {
-            user.unregisterDocumentation(nameSpace);
-            nameSpaces.removeAll(nameSpace);
-        }
+    TRACE_OBJ
+    const QStringList &namespaces = collection.registeredDocumentations();
+    foreach (const QString &ns, namespaces) {
+        QFileInfo fi(collection.documentationFileName(ns));
+        if (!fi.exists() || !fi.isFile())
+            collection.unregisterDocumentation(ns);
     }
-    return (counter != nameSpaces.count()) ? false : true;
 }
 
 QString indexFilesFolder(const QString &collectionFile)
 {
+    TRACE_OBJ
     QString indexFilesFolder = QLatin1String(".fulltextsearch");
     if (!collectionFile.isEmpty()) {
         QFileInfo fi(collectionFile);
@@ -187,192 +133,306 @@ QString indexFilesFolder(const QString &collectionFile)
     return indexFilesFolder;
 }
 
-int main(int argc, char *argv[])
+/*
+ * Returns the expected absolute file path of the cached collection file
+ * correspondinging to the given collection's file.
+ * It may or may not exist yet.
+ */
+QString constructCachedCollectionFilePath(const QHelpEngineCore &collection)
 {
-#ifndef Q_OS_WIN 
-    // First do a quick search for arguments that imply command-line mode.
+    TRACE_OBJ
+    const QString &filePath = collection.collectionFile();
+    const QString &fileName = QFileInfo(filePath).fileName();
+    const QString &cacheDir = CollectionConfiguration::cacheDir(collection);
+    const QString &dir = !cacheDir.isEmpty()
+        && CollectionConfiguration::cacheDirIsRelativeToCollection(collection)
+            ? QFileInfo(filePath).dir().absolutePath()
+                + QDir::separator() + cacheDir
+            : MainWindow::collectionFileDirectory(false, cacheDir);
+    return dir + QDir::separator() + fileName;
+}
+
+bool synchronizeDocs(QHelpEngineCore &collection,
+                     QHelpEngineCore &cachedCollection,
+                     CmdLineParser &cmd)
+{
+    TRACE_OBJ
+    const QDateTime &lastCollectionRegisterTime =
+        CollectionConfiguration::lastRegisterTime(collection);
+    if (!lastCollectionRegisterTime.isValid() || lastCollectionRegisterTime
+        < CollectionConfiguration::lastRegisterTime(cachedCollection))
+        return true;
+
+    const QStringList &docs = collection.registeredDocumentations();
+    const QStringList &cachedDocs = cachedCollection.registeredDocumentations();
+
+    /*
+     * Ensure that the cached collection contains all docs that
+     * the collection contains.
+     */
+    foreach (const QString &doc, docs) {
+        if (!cachedDocs.contains(doc)) {
+            const QString &docFile = collection.documentationFileName(doc);
+            if (!cachedCollection.registerDocumentation(docFile)) {
+                cmd.showMessage(QCoreApplication::translate("Assistant",
+                                    "Error registering documentation file '%1': %2").
+                                arg(docFile).arg(cachedCollection.error()), true);
+                return false;
+            }
+        }
+    }
+
+    CollectionConfiguration::updateLastRegisterTime(cachedCollection);
+
+    return true;
+}
+
+bool removeSearchIndex(const QString &collectionFile)
+{
+    TRACE_OBJ
+    QString path = QFileInfo(collectionFile).path();
+    path += QLatin1Char('/') + indexFilesFolder(collectionFile);
+
+    QLocalSocket localSocket;
+    localSocket.connectToServer(QString(QLatin1String("QtAssistant%1"))
+                                .arg(QLatin1String(QT_VERSION_STR)));
+
+    QDir dir(path); // check if there is no other instance ruinning
+    if (!dir.exists() || localSocket.waitForConnected())
+        return false;
+
+    QStringList lst = dir.entryList(QDir::Files | QDir::Hidden);
+    foreach (const QString &item, lst)
+        dir.remove(item);
+    return true;
+}
+
+bool rebuildSearchIndex(QCoreApplication &app, const QString &collectionFile,
+                        CmdLineParser &cmd)
+{
+    TRACE_OBJ
+    QHelpEngine engine(collectionFile);
+    if (!engine.setupData()) {
+        cmd.showMessage(QCoreApplication::translate("Assistant", "Error: %1")
+                        .arg(engine.error()), true);
+        return false;
+    }
+
+    QHelpSearchEngine * const searchEngine = engine.searchEngine();
+    QObject::connect(searchEngine, SIGNAL(indexingFinished()), &app,
+                     SLOT(quit()));
+    searchEngine->reindexDocumentation();
+    return app.exec() == 0;
+}
+
+bool useGui(int argc, char *argv[])
+{
+    TRACE_OBJ
+    bool gui = true;
+#ifndef Q_OS_WIN
+    // Look for arguments that imply command-line mode.
     const char * cmdModeArgs[] = {
-        "-help", "-register", "-unregister", "-remove-search-index"
+        "-help", "-register", "-unregister", "-remove-search-index",
+        "-rebuild-search-index"
     };
-    bool useGui = true;
     for (int i = 1; i < argc; ++i) {
         for (size_t j = 0; j < sizeof cmdModeArgs/sizeof *cmdModeArgs; ++j) {
             if(strcmp(argv[i], cmdModeArgs[j]) == 0) {
-                useGui = false;
+                gui = false;
                 break;
             }
         }
     }
-    QApplication a(argc, argv, useGui);
 #else
-    QApplication a(argc, argv);
+    Q_UNUSED(argc)
+    Q_UNUSED(argv)
 #endif
+    return gui;
+}
+
+bool registerDocumentation(QHelpEngineCore &collection, CmdLineParser &cmd,
+                           bool printSuccess)
+{
+    TRACE_OBJ
+    if (!collection.registerDocumentation(cmd.helpFile())) {
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                     "Could not register documentation file\n%1\n\nReason:\n%2")
+                     .arg(cmd.helpFile()).arg(collection.error()), true);
+        return false;
+    }
+    if (printSuccess)
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                            "Documentation successfully registered."),
+                        false);
+    CollectionConfiguration::updateLastRegisterTime(collection);
+    return true;
+}
+
+bool unregisterDocumentation(QHelpEngineCore &collection,
+    const QString &namespaceName, CmdLineParser &cmd, bool printSuccess)
+{
+    TRACE_OBJ
+    if (!collection.unregisterDocumentation(namespaceName)) {
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                             "Could not unregister documentation"
+                             " file\n%1\n\nReason:\n%2").
+                        arg(cmd.helpFile()).arg(collection.error()), true);
+        return false;
+    }
+    updateLastPagesOnUnregister(collection, namespaceName);
+    if (printSuccess)
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                            "Documentation successfully unregistered."),
+                        false);
+    return true;
+}
+
+void setupTranslation(const QString &fileName, const QString &dir)
+{
+    QTranslator *translator = new QTranslator(QCoreApplication::instance());
+    if (translator->load(fileName, dir)) {
+        QCoreApplication::installTranslator(translator);
+    } else if (!fileName.endsWith(QLatin1String("en_US"))) {
+        qWarning("Could not load translation file %s in directory %s.",
+                 qPrintable(fileName), qPrintable(dir));
+    }
+}
+
+void setupTranslations()
+{
+    TRACE_OBJ
+    const QString& locale = QLocale::system().name();
+    const QString &resourceDir
+        = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    setupTranslation(QLatin1String("assistant_") + locale, resourceDir);
+    setupTranslation(QLatin1String("qt_") + locale, resourceDir);
+    setupTranslation(QLatin1String("qt_help_") + locale, resourceDir);
+}
+
+} // Anonymous namespace.
+
+int main(int argc, char *argv[])
+{
+    TRACE_OBJ
+    QApplication a(argc, argv, useGui(argc, argv));
     a.addLibraryPath(a.applicationDirPath() + QLatin1String("/plugins"));
 
-    CmdLineParser cmd;
-    CmdLineParser::Result res = cmd.parse(a.arguments());
+    // Parse arguments.
+    CmdLineParser cmd(a.arguments());
+    CmdLineParser::Result res = cmd.parse();
     if (res == CmdLineParser::Help)
         return 0;
     else if (res == CmdLineParser::Error)
         return -1;
 
-    QString cmdCollectionFile = cmd.collectionFile();
-    if (cmd.registerRequest() != CmdLineParser::None) {
-        if (cmdCollectionFile.isEmpty())
-            cmdCollectionFile = MainWindow::defaultHelpCollectionFileName();
-        QHelpEngineCore help(cmdCollectionFile);
-        help.setupData();
-        if (cmd.registerRequest() == CmdLineParser::Register) {
-            if (!help.registerDocumentation(cmd.helpFile())) {
-                cmd.showMessage(
-                    QObject::tr("Could not register documentation file\n%1\n\nReason:\n%2")
-                    .arg(cmd.helpFile()).arg(help.error()), true);
-                return -1;
-            } else {
-                cmd.showMessage(QObject::tr("Documentation successfully registered."),
-                    false);
-            }
-        } else {
-            QString nsName = QHelpEngineCore::namespaceName(cmd.helpFile());
-            if (help.unregisterDocumentation(nsName)) {
-                updateLastPagesOnUnregister(help, nsName);
-                cmd.showMessage(
-                    QObject::tr("Documentation successfully unregistered."),
-                    false);
-            } else {
-                cmd.showMessage(QObject::tr("Could not unregister documentation"
-                    " file\n%1\n\nReason:\n%2").arg(cmd.helpFile()).
-                    arg(help.error()), true);
-                return -1;
-            }
+    /*
+     * Create the collection objects that we need. We always have the
+     * cached collection file. Depending on whether the user specified
+     * one, we also may have an input collection file.
+     */
+    const QString collectionFile = cmd.collectionFile();
+    const bool collectionFileGiven = !collectionFile.isEmpty();
+    QScopedPointer<QHelpEngineCore> collection;
+    if (collectionFileGiven) {
+        collection.reset(new QHelpEngineCore(collectionFile));
+        if (!collection->setupData()) {
+            cmd.showMessage(QCoreApplication::translate("Assistant",
+                                "Error reading collection file '%1': %2.").
+                arg(collectionFile).arg(collection->error()), true);
+            return EXIT_FAILURE;
         }
-        help.setCustomValue(QLatin1String("DocUpdate"), true);
-        return 0;
+    }
+    const QString &cachedCollectionFile = collectionFileGiven
+        ? constructCachedCollectionFilePath(*collection)
+        : MainWindow::defaultHelpCollectionFileName();
+    if (collectionFileGiven && !QFileInfo(cachedCollectionFile).exists()
+        && !collection->copyCollectionFile(cachedCollectionFile)) {
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                            "Error creating collection file '%1': %2.").
+                arg(cachedCollectionFile).arg(collection->error()), true);
+        return EXIT_FAILURE;
+    }
+    QHelpEngineCore cachedCollection(cachedCollectionFile);
+    if (!cachedCollection.setupData()) {
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                            "Error reading collection file '%1': %2").
+                        arg(cachedCollectionFile).
+                        arg(cachedCollection.error()), true);
+        return EXIT_FAILURE;
+    }
+
+    stripNonexistingDocs(cachedCollection);
+    if (collectionFileGiven) {
+        if (CollectionConfiguration::isNewer(*collection, cachedCollection))
+            CollectionConfiguration::copyConfiguration(*collection,
+                                                       cachedCollection);
+        if (!synchronizeDocs(*collection, cachedCollection, cmd))
+            return EXIT_FAILURE;
+    }
+
+    if (cmd.registerRequest() != CmdLineParser::None) {
+        const QStringList &cachedDocs =
+            cachedCollection.registeredDocumentations();
+        const QString &namespaceName =
+            QHelpEngineCore::namespaceName(cmd.helpFile());
+        if (cmd.registerRequest() == CmdLineParser::Register) {
+            if (collectionFileGiven
+                && !registerDocumentation(*collection, cmd, true))
+                return EXIT_FAILURE;
+            if (!cachedDocs.contains(namespaceName)
+                && !registerDocumentation(cachedCollection, cmd, !collectionFileGiven))
+                return EXIT_FAILURE;
+            return EXIT_SUCCESS;
+        }
+        if (cmd.registerRequest() == CmdLineParser::Unregister) {
+            if (collectionFileGiven
+                && !unregisterDocumentation(*collection, namespaceName, cmd, true))
+                return EXIT_FAILURE;
+            if (cachedDocs.contains(namespaceName)
+                && !unregisterDocumentation(cachedCollection, namespaceName,
+                                            cmd, !collectionFileGiven))
+                return EXIT_FAILURE;
+            return EXIT_SUCCESS;
+        }
     }
 
     if (cmd.removeSearchIndex()) {
-        QString file = cmdCollectionFile;
-        if (file.isEmpty())
-            file = MainWindow::defaultHelpCollectionFileName();
-        QString path = QFileInfo(file).path();
-        path += QLatin1Char('/') + indexFilesFolder(file);
-
-        QLocalSocket localSocket;
-        localSocket.connectToServer(QString(QLatin1String("QtAssistant%1"))
-            .arg(QLatin1String(QT_VERSION_STR)));
-
-        QDir dir(path); // check if there is no other instance ruinning
-        if (!localSocket.waitForConnected() && dir.exists()) {
-            QStringList lst = dir.entryList(QDir::Files | QDir::Hidden);
-            foreach (const QString &item, lst)
-                dir.remove(item);
-            return 0;
-        } else {
-            return -1;
-        }
+        return removeSearchIndex(cachedCollectionFile)
+            ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
-    {
-        QSqlDatabase db;
-        QStringList sqlDrivers(db.drivers());
-        if (sqlDrivers.isEmpty()
-            || !sqlDrivers.contains(QLatin1String("QSQLITE"))) {
-            cmd.showMessage(QObject::tr("Cannot load sqlite database driver!"),
-                true);
-            return -1;
-        }
+    if (cmd.rebuildSearchIndex()) {
+        return rebuildSearchIndex(a, cachedCollectionFile, cmd)
+            ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
-    if (!cmdCollectionFile.isEmpty()) {
-        QHelpEngineCore caller(cmdCollectionFile);
-        if (!caller.setupData()) {
-            cmd.showMessage(QObject::tr("The specified collection file could "
-                "not be read!"), true);
-            return -1;
-        }
-
-        QString fileName = QFileInfo(cmdCollectionFile).fileName();
-        QString dir = MainWindow::collectionFileDirectory(false,
-            caller.customValue(QLatin1String("CacheDirectory"),
-            QString()).toString());
-
-        bool collectionFileExists = true;
-        QFileInfo fi(dir + QDir::separator() + fileName);
-        if (!fi.exists()) {
-            collectionFileExists = false;
-            if (!caller.copyCollectionFile(fi.absoluteFilePath())) {
-                cmd.showMessage(caller.error(), true);
-                return -1;
-            }
-        }
-
-        if (collectionFileExists) {
-            QHelpEngineCore user(fi.absoluteFilePath());
-            if (user.setupData()) {
-                // some docs might have been un/registered
-                bool docUpdate = caller.
-                    customValue(QLatin1String("DocUpdate"), false).toBool();
-
-                // update in case the passed collection file changed
-                if (updateUserCollection(user, caller))
-                    docUpdate = true;
-
-                QStringList userDocs = user.registeredDocumentations();
-                // update user collection file, docs might have been (re)moved
-                if (!referencedHelpFilesExistAll(user, userDocs))
-                    docUpdate = true;
-
-                if (docUpdate) {
-                    QStringList callerDocs = caller.registeredDocumentations();
-                    foreach (const QString &doc, callerDocs) {
-                        if (!userDocs.contains(doc)) {
-                            user.registerDocumentation(
-                                caller.documentationFileName(doc));
-                        }
-                    }
-
-                    QLatin1String intern("com.trolltech.com.assistantinternal-");
-                    foreach (const QString &doc, userDocs) {
-                        if (!callerDocs.contains(doc) && !doc.startsWith(intern))
-                            user.unregisterDocumentation(doc);
-                    }
-
-                    caller.setCustomValue(QLatin1String("DocUpdate"), false);
-                }
-            }
-        }
-        cmd.setCollectionFile(fi.absoluteFilePath());
+    if (!QSqlDatabase::isDriverAvailable(QLatin1String("QSQLITE"))) {
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                            "Cannot load sqlite database driver!"),
+                        true);
+        return EXIT_FAILURE;
     }
 
     if (!cmd.currentFilter().isEmpty()) {
-        QString collectionFile;
-        if (cmdCollectionFile.isEmpty()) {
-            MainWindow::collectionFileDirectory(true);
-            cmdCollectionFile = MainWindow::defaultHelpCollectionFileName();
-        }
-
-        QHelpEngineCore user(cmdCollectionFile);
-        if (user.setupData())
-            user.setCurrentFilter(cmd.currentFilter());
+        if (collectionFileGiven)
+            collection->setCurrentFilter(cmd.currentFilter());
+        cachedCollection.setCurrentFilter(cmd.currentFilter());
     }
 
-    const QString& locale = QLocale::system().name();
-    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    setupTranslations();
 
-    QTranslator translator(0);
-    translator.load(QLatin1String("assistant_") + locale, resourceDir);
-    a.installTranslator(&translator);
-
-    QTranslator qtTranslator(0);
-    qtTranslator.load(QLatin1String("qt_") + locale, resourceDir);
-    a.installTranslator(&qtTranslator);
-
-    QTranslator qtHelpTranslator(0);
-    qtHelpTranslator.load(QLatin1String("qt_help_") + locale, resourceDir);
-    a.installTranslator(&qtHelpTranslator);
-
-    MainWindow w(&cmd);
-    w.show();
+    /*
+     * We need to be careful here: The main window has to be deleted before
+     * the help engine wrapper, which has to be deleted before the
+     * QApplication.
+     */
+    if (collectionFileGiven)
+        cmd.setCollectionFile(cachedCollectionFile);
+    MainWindow *w = new MainWindow(&cmd);
+    w->show();
     a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
-    return a.exec();
+    const int retval = a.exec();
+    delete w;
+    HelpEngineWrapper::removeInstance();
+    return retval;
 }

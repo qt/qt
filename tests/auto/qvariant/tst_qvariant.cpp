@@ -2522,15 +2522,23 @@ void tst_QVariant::variant_to()
     QCOMPARE(qVariantFromValue(0.25f).toDouble(), 0.25);
 }
 
+struct Blah { int i; };
+
+QDataStream& operator>>(QDataStream& s, Blah& c)
+{ return (s >> c.i); }
+
+QDataStream& operator<<(QDataStream& s, const Blah& c)
+{ return (s << c.i); }
+
 void tst_QVariant::saveLoadCustomTypes()
 {
     QByteArray data;
 
-    int i = 42;
-    int tp = qRegisterMetaType<int>("Blah");
+    Blah i = { 42 };
+    int tp = qRegisterMetaType<Blah>("Blah");
     QVariant v = QVariant(tp, &i);
 
-    qRegisterMetaTypeStreamOperators<int>("Blah");
+    qRegisterMetaTypeStreamOperators<Blah>("Blah");
 
     QCOMPARE(v.userType(), tp);
     QVERIFY(v.type() == QVariant::UserType);

@@ -473,6 +473,11 @@ void QMapData::dump()
     \internal
 */
 
+/*! \fn bool QMap::isSharedWith(const QMap<Key, T> &other) const
+
+    \internal
+*/
+
 /*! \fn void QMap::setInsertInOrder(bool sharable)
 
     \internal

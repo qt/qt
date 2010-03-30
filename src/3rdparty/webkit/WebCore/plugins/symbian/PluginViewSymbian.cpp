@@ -55,7 +55,7 @@
 #include "qgraphicswebview.h"
 #include <QGraphicsProxyWidget>
 #include <QKeyEvent>
-#include <QPixmap.h>
+#include <QPixmap>
 #include <QRegion>
 #include <QVector>
 #include <QWidget>

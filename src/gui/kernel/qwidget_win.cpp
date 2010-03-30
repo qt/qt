@@ -243,7 +243,7 @@ static QCursor *mouseGrbCur = 0;
 static QWidget *keyboardGrb = 0;
 static HHOOK   journalRec  = 0;
 
-extern "C" LRESULT CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
+extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
 
 #define XCOORD_MAX 16383
 #define WRECT_MAX 16383
@@ -825,7 +825,7 @@ QCursor *qt_grab_cursor()
 
 // The procedure does nothing, but is required for mousegrabbing to work
 #ifndef Q_WS_WINCE
-LRESULT CALLBACK qJournalRecordProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT QT_WIN_CALLBACK qJournalRecordProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     return CallNextHookEx(journalRec, nCode, wParam, lParam);
 }
@@ -1094,6 +1094,21 @@ void QWidgetPrivate::show_sys()
         return;
     }
 
+    if (data.window_flags & Qt::Window) {
+        QTLWExtra *extra = topData();
+        if (!extra->hotkeyRegistered) {
+            // Try to set the hotkey using information from STARTUPINFO
+            STARTUPINFO startupInfo;
+            GetStartupInfo(&startupInfo);
+            // If STARTF_USEHOTKEY is set, hStdInput is the virtual keycode
+            if (startupInfo.dwFlags & 0x00000200) {
+                WPARAM hotKey = (WPARAM)startupInfo.hStdInput;
+                SendMessage(data.winid, WM_SETHOTKEY, hotKey, 0);
+            }
+            extra->hotkeyRegistered = 1;
+        }
+    }
+
     int sm = SW_SHOWNORMAL;
     bool fakedMaximize = false;
     if (q->isWindow()) {
@@ -1141,6 +1156,11 @@ void QWidgetPrivate::show_sys()
             data.window_state |= Qt::WindowMinimized;
         if (IsZoomed(q->internalWinId()))
             data.window_state |= Qt::WindowMaximized;
+        // This is to resolve the problem where popups are opened from the
+        // system tray and not being implicitly activated
+        if (q->windowType() == Qt::Popup &&
+            (!q->parentWidget() || !q->parentWidget()->isActiveWindow()))
+            q->activateWindow();
     }
 
     winSetupGestures();
@@ -1687,6 +1707,7 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
+    extra->topextra->hotkeyRegistered = 0;
     extra->topextra->savedFlags = 0;
     extra->topextra->winIconBig = 0;
     extra->topextra->winIconSmall = 0;

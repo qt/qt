@@ -41,30 +41,16 @@ public:
     UString::Rep* rep(unsigned char character) { return &m_reps[character]; }
 
 private:
-    UChar m_characters[numCharactersToStore];
-    UString::BaseString m_base;
     UString::Rep m_reps[numCharactersToStore];
 };
 
 SmallStringsStorage::SmallStringsStorage()
-    : m_base(m_characters, numCharactersToStore)
 {
-    m_base.rc = numCharactersToStore + 1;
-    // make sure UString doesn't try to reuse the buffer by pretending we have one more character in it
-    m_base.usedCapacity = numCharactersToStore + 1;
-    m_base.capacity = numCharactersToStore + 1;
-    m_base.checkConsistency();
-
-    for (unsigned i = 0; i < numCharactersToStore; ++i)
-        m_characters[i] = i;
-
-    memset(&m_reps, 0, sizeof(m_reps));
+    UChar* characterBuffer = 0;
+    RefPtr<UStringImpl> baseString = UStringImpl::createUninitialized(numCharactersToStore, characterBuffer);
     for (unsigned i = 0; i < numCharactersToStore; ++i) {
-        m_reps[i].offset = i;
-        m_reps[i].len = 1;
-        m_reps[i].rc = 1;
-        m_reps[i].setBaseString(&m_base);
-        m_reps[i].checkConsistency();
+        characterBuffer[i] = i;
+        new (&m_reps[i]) UString::Rep(&characterBuffer[i], 1, PassRefPtr<UStringImpl>(baseString));
     }
 }
 

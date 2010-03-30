@@ -95,6 +95,8 @@ QMakeProperty::value(QString v, bool just_check)
         return QLibraryInfo::location(QLibraryInfo::BinariesPath);
     else if(v == "QT_INSTALL_PLUGINS")
         return QLibraryInfo::location(QLibraryInfo::PluginsPath);
+    else if(v == "QT_INSTALL_IMPORTS")
+        return QLibraryInfo::location(QLibraryInfo::ImportsPath);
     else if(v == "QT_INSTALL_TRANSLATIONS")
         return QLibraryInfo::location(QLibraryInfo::TranslationsPath);
     else if(v == "QT_INSTALL_CONFIGURATION")
@@ -104,7 +106,7 @@ QMakeProperty::value(QString v, bool just_check)
     else if(v == "QT_INSTALL_DEMOS")
         return QLibraryInfo::location(QLibraryInfo::DemosPath);
     else if(v == "QMAKE_MKSPECS")
-        return qmake_mkspec_paths().join(Option::target_mode == Option::TARG_WIN_MODE ? ";" : ":");
+        return qmake_mkspec_paths().join(Option::dirlist_sep);
     else if(v == "QMAKE_VERSION")
         return qmake_version();
 #ifdef QT_VERSION_STR
@@ -191,6 +193,7 @@ QMakeProperty::exec()
             specialProps.append("QT_INSTALL_LIBS");
             specialProps.append("QT_INSTALL_BINS");
             specialProps.append("QT_INSTALL_PLUGINS");
+            specialProps.append("QT_INSTALL_IMPORTS");
             specialProps.append("QT_INSTALL_TRANSLATIONS");
             specialProps.append("QT_INSTALL_CONFIGURATION");
             specialProps.append("QT_INSTALL_EXAMPLES");

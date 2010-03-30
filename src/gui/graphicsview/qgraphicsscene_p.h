@@ -87,7 +87,9 @@ public:
 
     static QGraphicsScenePrivate *get(QGraphicsScene *q);
 
-    static int changedSignalIndex;
+    int changedSignalIndex;
+    int processDirtyItemsIndex;
+    int polishItemsIndex;
 
     QGraphicsScene::ItemIndexMethod indexMethod;
     QGraphicsSceneIndex *index;
@@ -294,13 +296,18 @@ public:
     bool allItemsIgnoreTouchEvents;
     void enableTouchEventsOnViews();
 
+    QList<QGraphicsObject *> cachedTargetItems;
+    QHash<QGraphicsObject *, QSet<QGesture *> > cachedItemGestures;
+    QHash<QGraphicsObject *, QSet<QGesture *> > cachedAlreadyDeliveredGestures;
     QHash<QGesture *, QGraphicsObject *> gestureTargets;
     void gestureEventHandler(QGestureEvent *event);
-    void getGestureTargets(const QSet<QGesture *> &gestures, QWidget *viewport,
-                           QMap<Qt::GestureType, QGesture *> *conflictedGestures,
-                           QList<QList<QGraphicsObject *> > *conflictedItems,
-                           QHash<QGesture *, QGraphicsObject *> *normalGestures);
-    void cancelGesturesForChildren(QGesture *original, QWidget *viewport);
+    void gestureTargetsAtHotSpots(const QSet<QGesture *> &gestures,
+                           Qt::GestureFlag flag,
+                           QHash<QGraphicsObject *, QSet<QGesture *> > *targets,
+                           QSet<QGraphicsObject *> *itemsSet = 0,
+                           QSet<QGesture *> *normal = 0,
+                           QSet<QGesture *> *conflicts = 0);
+    void cancelGesturesForChildren(QGesture *original);
 
     void updateInputMethodSensitivityInViews();
 

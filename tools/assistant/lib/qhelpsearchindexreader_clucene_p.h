@@ -53,10 +53,13 @@
 // We mean it.
 //
 
-#include "qhelpsearchindexreader_p.h"
+#include <QtCore/QList>
+#include <QtCore/QString>
+#include <QtCore/QStringList>
 
 #include "fulltextsearch/qanalyzer_p.h"
 #include "fulltextsearch/qquery_p.h"
+#include "qhelpsearchindexreader_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -73,14 +76,34 @@ public:
 
 private:
     void run();
-    bool defaultQuery(const QString &term, QCLuceneBooleanQuery &booleanQuery,
-        QCLuceneStandardAnalyzer &analyzer);
-    bool buildQuery(QCLuceneBooleanQuery &booleanQuery, const QList<QHelpSearchQuery> &queryList,
-        QCLuceneStandardAnalyzer &analyzer);
-    bool buildTryHarderQuery(QCLuceneBooleanQuery &booleanQuery,
-        const QList<QHelpSearchQuery> &queryList, QCLuceneStandardAnalyzer &analyzer);
     void boostSearchHits(const QHelpEngineCore &engine, QList<QHelpSearchEngine::SearchHit> &hitList,
         const QList<QHelpSearchQuery> &queryList);
+    bool buildQuery(const QList<QHelpSearchQuery> &queries,
+                    const QString &fieldName,
+                    const QStringList &filterAttributes,
+                    QCLuceneBooleanQuery &booleanQuery,
+                    QCLuceneAnalyzer &analyzer);
+    bool buildTryHarderQuery(const QList<QHelpSearchQuery> &queries,
+                             const QString &fieldName,
+                             const QStringList &filterAttributes,
+                             QCLuceneBooleanQuery &booleanQuery,
+                             QCLuceneAnalyzer &analyzer);
+    bool addFuzzyQuery(const QHelpSearchQuery &query, const QString &fieldName,
+                       QCLuceneBooleanQuery &booleanQuery, QCLuceneAnalyzer &analyzer);
+    bool addWithoutQuery(const QHelpSearchQuery &query, const QString &fieldName,
+                         QCLuceneBooleanQuery &booleanQuery);
+    bool addPhraseQuery(const QHelpSearchQuery &query, const QString &fieldName,
+                        QCLuceneBooleanQuery &booleanQuery);
+    bool addAllQuery(const QHelpSearchQuery &query, const QString &fieldName,
+                     QCLuceneBooleanQuery &booleanQuery);
+    bool addDefaultQuery(const QHelpSearchQuery &query, const QString &fieldName,
+                         bool allTermsRequired, QCLuceneBooleanQuery &booleanQuery,
+                         QCLuceneAnalyzer &analyzer);
+    bool addAtLeastQuery(const QHelpSearchQuery &query, const QString &fieldName,
+                         QCLuceneBooleanQuery &booleanQuery, QCLuceneAnalyzer &analyzer);
+    bool addAttributesQuery(const QStringList &filterAttributes,
+               QCLuceneBooleanQuery &booleanQuery, QCLuceneAnalyzer &analyzer);
+    bool isNegativeQuery(const QHelpSearchQuery &query) const;
 };
 
 }   // namespace clucene

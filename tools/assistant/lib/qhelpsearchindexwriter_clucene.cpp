@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qclucenefieldnames_p.h"
 #include "qhelpenginecore.h"
 #include "qhelp_global.h"
 #include "fulltextsearch/qhits_p.h"
@@ -406,17 +407,17 @@ public:
             QString parsedTitle = QHelpGlobal::documentTitle(data);
 
             if(!parsedData.isEmpty()) {
-                document->add(new QCLuceneField(QLatin1String("content"),
+                document->add(new QCLuceneField(ContentField,
                     parsedData,QCLuceneField::INDEX_TOKENIZED));
-                document->add(new QCLuceneField(QLatin1String("path"), fileName,
+                document->add(new QCLuceneField(PathField, fileName,
                     QCLuceneField::STORE_YES | QCLuceneField::INDEX_UNTOKENIZED));
-                document->add(new QCLuceneField(QLatin1String("title"), parsedTitle,
+                document->add(new QCLuceneField(TitleField, parsedTitle,
                     QCLuceneField::STORE_YES | QCLuceneField::INDEX_UNTOKENIZED));
-                document->add(new QCLuceneField(QLatin1String("titleTokenized"), parsedTitle,
+                document->add(new QCLuceneField(TitleTokenizedField, parsedTitle,
                     QCLuceneField::STORE_YES | QCLuceneField::INDEX_TOKENIZED));
-                document->add(new QCLuceneField(QLatin1String("namespace"), namespaceName,
+                document->add(new QCLuceneField(NamespaceField, namespaceName,
                     QCLuceneField::STORE_YES | QCLuceneField::INDEX_UNTOKENIZED));
-                document->add(new QCLuceneField(QLatin1String("attribute"), attributes,
+                document->add(new QCLuceneField(AttributeField, attributes,
                     QCLuceneField::STORE_YES | QCLuceneField::INDEX_TOKENIZED));
                 return true;
             }
@@ -715,9 +716,7 @@ void QHelpSearchIndexWriter::run()
 
                     if (indexMap.contains(namespaceName)) {
                         // make sure we really have content indexed for namespace
-                        // NOTE: Extra variable just for GCC 3.3.5
-                        QLatin1String key("namespace");
-                        QCLuceneTermQuery query(QCLuceneTerm(key, namespaceName));
+                        QCLuceneTermQuery query(QCLuceneTerm(NamespaceField, namespaceName));
                         QCLuceneIndexSearcher indexSearcher(indexPath);
                         QCLuceneHits hits = indexSearcher.search(query);
                         if (hits.length() <= 0)
@@ -851,8 +850,7 @@ void QHelpSearchIndexWriter::removeDocuments(const QString &indexPath,
         return;
 
     QCLuceneIndexReader reader = QCLuceneIndexReader::open(indexPath);
-    reader.deleteDocuments(QCLuceneTerm(QLatin1String("namespace"),
-        namespaceName));
+    reader.deleteDocuments(QCLuceneTerm(NamespaceField, namespaceName));
 
     reader.close();
 }

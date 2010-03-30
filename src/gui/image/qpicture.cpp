@@ -440,36 +440,6 @@ bool QPicture::play(QPainter *painter)
     return true;                                // no end-command
 }
 
-
-//
-// QFakeDevice is used to create fonts with a custom DPI
-//
-class QFakeDevice : public QPaintDevice
-{
-public:
-    QFakeDevice() { dpi_x = qt_defaultDpiX(); dpi_y = qt_defaultDpiY(); }
-    void setDpiX(int dpi) { dpi_x = dpi; }
-    void setDpiY(int dpi) { dpi_y = dpi; }
-    QPaintEngine *paintEngine() const { return 0; }
-    int metric(PaintDeviceMetric m) const
-    {
-        switch(m) {
-            case PdmPhysicalDpiX:
-            case PdmDpiX:
-                return dpi_x;
-            case PdmPhysicalDpiY:
-            case PdmDpiY:
-                return dpi_y;
-            default:
-                return QPaintDevice::metric(m);
-        }
-    }
-
-private:
-    int dpi_x;
-    int dpi_y;
-};
-
 /*!
   \internal
   Iterates over the internal picture data and draws the picture using
@@ -679,13 +649,16 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
 
             if (d->formatMajor >= 9) {
                 s >> dbl;
-                QFont fnt(font);
-                if (dbl != 1.0) {
-                    QFakeDevice fake;
-                    fake.setDpiX(qRound(dbl*qt_defaultDpiX()));
-                    fake.setDpiY(qRound(dbl*qt_defaultDpiY()));
-                    fnt = QFont(font, &fake);
-                }
+                QFont fnt(font, painter->device());
+
+                // Fonts that specify a pixel size should not be scaled - QPicture already
+                // have a matrix set to compensate for the DPI differences between the
+                // default Qt DPI and the actual target device DPI, and we have to take that
+                // into consideration in the case where the font has a pixel size set.
+
+                qreal scale = fnt.pointSize() == -1 ? 1 : painter->device()->logicalDpiY() / (dbl*qt_defaultDpiY());
+                painter->save();
+                painter->scale(1/scale, 1/scale);
 
                 qreal justificationWidth;
                 s >> justificationWidth;
@@ -694,15 +667,16 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
 
                 QSizeF size(1, 1);
                 if (justificationWidth > 0) {
-                    size.setWidth(justificationWidth);
+                    size.setWidth(justificationWidth*scale);
                     flags |= Qt::TextJustificationForced;
                     flags |= Qt::AlignJustify;
                 }
 
                 QFontMetrics fm(fnt);
-                QPointF pt(p.x(), p.y() - fm.ascent());
+                QPointF pt(p.x()*scale, p.y()*scale - fm.ascent());
                 qt_format_text(fnt, QRectF(pt, size), flags, /*opt*/0,
                                str, /*brect=*/0, /*tabstops=*/0, /*...*/0, /*tabarraylen=*/0, painter);
+                painter->restore();
             } else {
                 qt_format_text(font, QRectF(p, QSizeF(1, 1)), Qt::TextSingleLine | Qt::TextDontClip, /*opt*/0,
                                str, /*brect=*/0, /*tabstops=*/0, /*...*/0, /*tabarraylen=*/0, painter);

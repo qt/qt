@@ -248,123 +248,153 @@ static QStringList readList(QStringList &args)
     return retval;
 }
 
-static void placeCall(const QString &service, const QString &path, const QString &interface,
-               const QString &member, QStringList args)
+static int placeCall(const QString &service, const QString &path, const QString &interface,
+               const QString &member, const QStringList& arguments, bool try_prop=true)
 {
     QDBusInterface iface(service, path, interface, connection);
 
     // Don't check whether the interface is valid to allow DBus try to
     // activate the service if possible.
 
+    QList<int> knownIds;
+    bool matchFound = false;
+    QStringList args = arguments;
     QVariantList params;
     if (!args.isEmpty()) {
         const QMetaObject *mo = iface.metaObject();
         QByteArray match = member.toLatin1();
         match += '(';
 
-        int midx = -1;
         for (int i = mo->methodOffset(); i < mo->methodCount(); ++i) {
             QMetaMethod mm = mo->method(i);
             QByteArray signature = mm.signature();
-            if (signature.startsWith(match)) {
-                midx = i;
-                break;
-            }
+            if (signature.startsWith(match))
+                knownIds += i;
          }
 
-        if (midx == -1) {
-            fprintf(stderr, "Cannot find '%s.%s' in object %s at %s\n",
-                    qPrintable(interface), qPrintable(member), qPrintable(path),
-                    qPrintable(service));
-            exit(1);
-        }
 
-        QMetaMethod mm = mo->method(midx);
-        QList<QByteArray> types = mm.parameterTypes();
-        for (int i = 0; i < types.count(); ++i) {
-            if (types.at(i).endsWith('&')) {
-                // reference (and not a reference to const): output argument
-                // we're done with the inputs
-                while (types.count() > i)
-                    types.removeLast();
-                break;
+        while (!matchFound) {
+            args = arguments; // reset
+            params.clear();
+            if (knownIds.isEmpty()) {
+                // Failed to set property after falling back?
+                // Bail out without displaying an error
+                if (!try_prop)
+                    return 1;
+                if (try_prop && args.size() == 1) {
+                    QStringList proparg;
+                    proparg += interface;
+                    proparg += member;
+                    proparg += args.first();
+                    if (!placeCall(service, path, "org.freedesktop.DBus.Properties", "Set", proparg, false))
+                        return 0;
+                }
+                fprintf(stderr, "Cannot find '%s.%s' in object %s at %s\n",
+                        qPrintable(interface), qPrintable(member), qPrintable(path),
+                        qPrintable(service));
+                return 1;
             }
-        }
 
-        for (int i = 0; !args.isEmpty() && i < types.count(); ++i) {
-            int id = QVariant::nameToType(types.at(i));
-            if (id == QVariant::UserType)
-                id = QMetaType::type(types.at(i));
-            Q_ASSERT(id);
-
-            QVariant p;
-            QString argument;
-            if ((id == QVariant::List || id == QVariant::StringList)
-                 && args.at(0) == QLatin1String("("))
-                p = readList(args);
-            else
-                p = argument = args.takeFirst();
-
-            if (id == int(QMetaType::UChar)) {
-                // special case: QVariant::convert doesn't convert to/from
-                // UChar because it can't decide if it's a character or a number
-                p = qVariantFromValue<uchar>(p.toUInt());
-            } else if (id < int(QMetaType::User) && id != int(QVariant::Map)) {
-                p.convert(QVariant::Type(id));
-                if (p.type() == QVariant::Invalid) {
-                    fprintf(stderr, "Could not convert '%s' to type '%s'.\n",
-                            qPrintable(argument), types.at(i).constData());
-                    exit(1);
+            QMetaMethod mm = mo->method(knownIds.takeFirst());
+            QList<QByteArray> types = mm.parameterTypes();
+            for (int i = 0; i < types.count(); ++i) {
+                if (types.at(i).endsWith('&')) {
+                    // reference (and not a reference to const): output argument
+                    // we're done with the inputs
+                    while (types.count() > i)
+                        types.removeLast();
+                    break;
                 }
-            } else if (id == qMetaTypeId<QDBusVariant>()) {
-                QDBusVariant tmp(p);
-                p = qVariantFromValue(tmp);
-            } else if (id == qMetaTypeId<QDBusObjectPath>()) {
-                QDBusObjectPath path(argument);
-                if (path.path().isNull()) {
-                    fprintf(stderr, "Cannot pass argument '%s' because it is not a valid object path.\n",
-                            qPrintable(argument));
-                    exit(1);
-                }
-                p = qVariantFromValue(path);
-            } else if (id == qMetaTypeId<QDBusSignature>()) {
-                QDBusSignature sig(argument);
-                if (sig.signature().isNull()) {
-                    fprintf(stderr, "Cannot pass argument '%s' because it is not a valid signature.\n",
-                            qPrintable(argument));
-                    exit(1);
-                }
-                p = qVariantFromValue(sig);
-            } else {
-                fprintf(stderr, "Sorry, can't pass arg of type '%s'.\n",
-                        types.at(i).constData());
-                exit(1);
             }
-            params += p;
-        }
-        if (params.count() != types.count() || !args.isEmpty()) {
-            fprintf(stderr, "Invalid number of parameters\n");
-            exit(1);
-        }
-    }
+
+            for (int i = 0; !args.isEmpty() && i < types.count(); ++i) {
+                int id = QVariant::nameToType(types.at(i));
+                if (id == QVariant::UserType)
+                    id = QMetaType::type(types.at(i));
+                Q_ASSERT(id);
+
+                QVariant p;
+                QString argument;
+                if ((id == QVariant::List || id == QVariant::StringList)
+                     && args.at(0) == QLatin1String("("))
+                    p = readList(args);
+                else
+                    p = argument = args.takeFirst();
+
+                if (id == int(QMetaType::UChar)) {
+                    // special case: QVariant::convert doesn't convert to/from
+                    // UChar because it can't decide if it's a character or a number
+                    p = qVariantFromValue<uchar>(p.toUInt());
+                } else if (id < int(QMetaType::User) && id != int(QVariant::Map)) {
+                    p.convert(QVariant::Type(id));
+                    if (p.type() == QVariant::Invalid) {
+                        fprintf(stderr, "Could not convert '%s' to type '%s'.\n",
+                                qPrintable(argument), types.at(i).constData());
+                        return 1 ;
+                    }
+                } else if (id == qMetaTypeId<QDBusVariant>()) {
+                    QDBusVariant tmp(p);
+                    p = qVariantFromValue(tmp);
+                } else if (id == qMetaTypeId<QDBusObjectPath>()) {
+                    QDBusObjectPath path(argument);
+                    if (path.path().isNull()) {
+                        fprintf(stderr, "Cannot pass argument '%s' because it is not a valid object path.\n",
+                                qPrintable(argument));
+                        return 1;
+                    }
+                    p = qVariantFromValue(path);
+                } else if (id == qMetaTypeId<QDBusSignature>()) {
+                    QDBusSignature sig(argument);
+                    if (sig.signature().isNull()) {
+                        fprintf(stderr, "Cannot pass argument '%s' because it is not a valid signature.\n",
+                                qPrintable(argument));
+                        return 1;
+                    }
+                    p = qVariantFromValue(sig);
+                } else {
+                    fprintf(stderr, "Sorry, can't pass arg of type '%s'.\n",
+                            types.at(i).constData());
+                    return 1;
+                }
+                params += p;
+            }
+            if (params.count() == types.count() && args.isEmpty())
+                matchFound = true;
+            else if (knownIds.isEmpty()) {
+                fprintf(stderr, "Invalid number of parameters\n");
+                return 1;
+            }
+        } // while (!matchFound)
+    } // if (!args.isEmpty()
 
     QDBusMessage reply = iface.callWithArgumentList(QDBus::Block, member, params);
     if (reply.type() == QDBusMessage::ErrorMessage) {
         QDBusError err = reply;
+        // Failed to retrieve property after falling back?
+        // Bail out without displaying an error
+        if (!try_prop)
+            return 1;
+        if (err.type() == QDBusError::UnknownMethod && try_prop) {
+            QStringList proparg;
+            proparg += interface;
+            proparg += member;
+            if (!placeCall(service, path, "org.freedesktop.DBus.Properties", "Get", proparg, false))
+                return 0;
+        }
         if (err.type() == QDBusError::ServiceUnknown)
             fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
         else
             printf("Error: %s\n%s\n", qPrintable(err.name()), qPrintable(err.message()));
-        exit(2);
+        return 2;
     } else if (reply.type() != QDBusMessage::ReplyMessage) {
         fprintf(stderr, "Invalid reply type %d\n", int(reply.type()));
-        exit(1);
+        return 1;
     }
 
     foreach (QVariant v, reply.arguments())
         printArg(v);
 
-    exit(0);
+    return 0;
 }
 
 static bool globServices(QDBusConnectionInterface *bus, const QString &glob)
@@ -483,6 +513,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    placeCall(service, path, interface, member, args);
+    int ret = placeCall(service, path, interface, member, args);
+    exit(ret);
 }
 

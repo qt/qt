@@ -141,6 +141,8 @@ public:
     bool save(const QString& fileName, const char* format = 0, int quality = -1) const;
     bool save(QIODevice* device, const char* format = 0, int quality = -1) const;
 
+    bool convertFromImage(const QImage &img, Qt::ImageConversionFlags flags = Qt::AutoColor);
+
 #if defined(Q_WS_WIN)
     enum HBitmapFormat {
         NoAlpha,
@@ -224,8 +226,6 @@ public:
     QT3_SUPPORT QPixmap &operator=(const QImage &);
     inline QT3_SUPPORT QImage convertToImage() const { return toImage(); }
     QT3_SUPPORT bool convertFromImage(const QImage &, ColorMode mode);
-    QT3_SUPPORT bool convertFromImage(const QImage &img, Qt::ImageConversionFlags flags = Qt::AutoColor)
-        { (*this) = fromImage(img, flags); return !isNull(); }
     inline QT3_SUPPORT operator QImage() const { return toImage(); }
     inline QT3_SUPPORT QPixmap xForm(const QMatrix &matrix) const { return transformed(QTransform(matrix)); }
     inline QT3_SUPPORT bool selfMask() const { return false; }

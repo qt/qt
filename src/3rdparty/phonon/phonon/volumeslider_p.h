@@ -24,8 +24,8 @@
 #define VOLUMESLIDER_P_H
 
 #include "volumeslider.h"
+#include "swiftslider_p.h"
 #include <QtGui/QBoxLayout>
-#include <QtGui/QSlider>
 #include <QtGui/QLabel>
 #include <QtGui/QPixmap>
 #include <QtGui/QToolButton>
@@ -83,7 +83,7 @@ class VolumeSliderPrivate
 
     private:
         QBoxLayout layout;
-        QSlider slider;
+        SwiftSlider slider;
         QToolButton muteButton;
         QIcon volumeIcon;
         QIcon mutedIcon;

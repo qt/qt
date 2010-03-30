@@ -2,6 +2,44 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="pl">
 <context>
+    <name>MAC_APPLICATION_MENU</name>
+    <message>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="+2316"/>
+        <source>Services</source>
+        <translation>Usługi</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hide %1</source>
+        <translation>Ukryj %1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hide Others</source>
+        <translation>Ukryj pozostałe</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show All</source>
+        <translation>Pokaż wszystko</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Preferences...</source>
+        <translation>Preferencje…</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quit %1</source>
+        <translation>Zakończ %1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>About %1</source>
+        <translation>%1…</translation>
+    </message>
+</context>
+<context>
     <name>CloseButton</name>
     <message>
         <location filename="../src/gui/widgets/qtabbar.cpp" line="+2264"/>

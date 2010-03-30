@@ -68,23 +68,15 @@ namespace JSC {
 
         void* operator new(size_t size, ExecState* exec)
         {
-    #ifdef JAVASCRIPTCORE_BUILDING_ALL_IN_ONE_FILE
-            return exec->heap()->inlineAllocateNumber(size);
-    #else
             return exec->heap()->allocateNumber(size);
-    #endif
         }
 
         void* operator new(size_t size, JSGlobalData* globalData)
         {
-    #ifdef JAVASCRIPTCORE_BUILDING_ALL_IN_ONE_FILE
-            return globalData->heap.inlineAllocateNumber(size);
-    #else
             return globalData->heap.allocateNumber(size);
-    #endif
         }
 
-        static PassRefPtr<Structure> createStructure(JSValue proto) { return Structure::create(proto, TypeInfo(NumberType, NeedsThisConversion | HasDefaultMark)); }
+        static PassRefPtr<Structure> createStructure(JSValue proto) { return Structure::create(proto, TypeInfo(NumberType, OverridesGetOwnPropertySlot | NeedsThisConversion)); }
 
     private:
         JSNumberCell(JSGlobalData* globalData, double value)
@@ -115,6 +107,11 @@ namespace JSC {
     {
         ASSERT(isNumberCell(v));
         return static_cast<JSNumberCell*>(v.asCell());
+    }
+
+    ALWAYS_INLINE JSValue::JSValue(EncodeAsDoubleTag, ExecState* exec, double d)
+    {
+        *this = jsNumberCell(exec, d);
     }
 
     inline JSValue::JSValue(ExecState* exec, double d)
@@ -201,6 +198,11 @@ namespace JSC {
 #endif // USE(JSVALUE32)
 
 #if USE(JSVALUE64)
+    ALWAYS_INLINE JSValue::JSValue(EncodeAsDoubleTag, ExecState*, double d)
+    {
+        *this = JSImmediate::fromNumberOutsideIntegerRange(d);
+    }
+
     inline JSValue::JSValue(ExecState*, double d)
     {
         JSValue v = JSImmediate::from(d);

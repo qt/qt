@@ -47,6 +47,7 @@
 #include <qmatrix.h>
 #include <qdesktopwidget.h>
 #include <qpaintengine.h>
+#include <qtreewidget.h>
 #include <qsplashscreen.h>
 
 #include <private/qpixmapdata_p.h>
@@ -797,13 +798,31 @@ void tst_QPixmap::drawBitmap()
 void tst_QPixmap::grabWidget()
 {
     QWidget widget;
-    widget.setPalette(Qt::green);
+    QImage image(128, 128, QImage::Format_ARGB32_Premultiplied);
+    for (int row = 0; row < image.height(); ++row) {
+        QRgb *line = reinterpret_cast<QRgb *>(image.scanLine(row));
+        for (int col = 0; col < image.width(); ++col)
+            line[col] = qRgb(rand() & 255, row, col);
+    }
+
+    QPalette pal = widget.palette();
+    pal.setBrush(QPalette::Window, QBrush(image));
+    widget.setPalette(pal);
     widget.resize(128, 128);
 
-    QPixmap expected(64, 64);
-    expected.fill(Qt::green);
-
+    QPixmap expected = QPixmap::fromImage(QImage(image.scanLine(64) + 64 * 4, 64, 64, image.bytesPerLine(), image.format()));
     QPixmap actual = QPixmap::grabWidget(&widget, QRect(64, 64, 64, 64));
+    QVERIFY(lenientCompare(actual, expected));
+
+    actual = QPixmap::grabWidget(&widget, 64, 64);
+    QVERIFY(lenientCompare(actual, expected));
+
+    // Make sure a widget that is not yet shown is grabbed correctly.
+    QTreeWidget widget2;
+    actual = QPixmap::grabWidget(&widget2);
+    widget2.show();
+    expected = QPixmap::grabWidget(&widget2);
+
     QVERIFY(lenientCompare(actual, expected));
 }
 

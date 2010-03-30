@@ -46,10 +46,9 @@
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
 
+#include <qfile.h>
 #include <qstack.h>
 #include <qstring.h>
-
-#include <stdio.h>
 
 #include "location.h"
 
@@ -99,7 +98,7 @@ class Tokenizer
 {
  public:
     Tokenizer(const Location& loc, const QByteArray &in);
-    Tokenizer(const Location& loc, FILE *in);
+    Tokenizer(const Location& loc, QFile &file);
 
     ~Tokenizer();
 
@@ -108,8 +107,8 @@ class Tokenizer
     bool parsingFnOrMacro() const { return parsingMacro; }
 
     const Location &location() const { return yyTokLoc; }
-    QString previousLexeme() const { return QString(yyPrevLex); }
-    QString lexeme() const { return QString(yyLex); }
+    QString previousLexeme() const;
+    QString lexeme() const;
     QString version() const { return yyVersion; }
     int braceDepth() const { return yyBraceDepth; }
     int parenDepth() const { return yyParenDepth; }

@@ -75,9 +75,13 @@ public:
 
     void setFrequency(int frequency);
     int frequency() const;
+    void setSampleRate(int sampleRate);
+    int sampleRate() const;
 
     void setChannels(int channels);
     int channels() const;
+    void setChannelCount(int channelCount);
+    int channelCount() const;
 
     void setSampleSize(int sampleSize);
     int sampleSize() const;

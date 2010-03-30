@@ -11,7 +11,7 @@ CONFIG += qdbus
 # Input
 # DBUS_INTERFACES += car.xml
 FORMS += controller.ui
-HEADERS += car_interface_p.h controller.h
+HEADERS += car_interface.h controller.h
 SOURCES += main.cpp car_interface.cpp controller.cpp
 
 # install

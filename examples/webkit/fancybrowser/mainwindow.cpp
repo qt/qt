@@ -45,7 +45,7 @@
 
 //! [1]
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(const QUrl& url)
 {
     progress = 0;
 
@@ -60,7 +60,7 @@ MainWindow::MainWindow()
 
 //! [2]
     view = new QWebView(this);
-    view->load(QUrl("http://www.google.com/ncr"));
+    view->load(url);
     connect(view, SIGNAL(loadFinished(bool)), SLOT(adjustLocation()));
     connect(view, SIGNAL(titleChanged(QString)), SLOT(adjustTitle()));
     connect(view, SIGNAL(loadProgress(int)), SLOT(setProgress(int)));
@@ -77,6 +77,11 @@ MainWindow::MainWindow()
     toolBar->addAction(view->pageAction(QWebPage::Stop));
     toolBar->addWidget(locationEdit);
 //! [2]
+
+    QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
+    QAction* viewSourceAction = new QAction("Page Source", this);
+    connect(viewSourceAction, SIGNAL(triggered()), SLOT(viewSource()));
+    viewMenu->addAction(viewSourceAction);
 
 //! [3]
     QMenu *effectMenu = menuBar()->addMenu(tr("&Effect"));
@@ -99,6 +104,24 @@ MainWindow::MainWindow()
     setUnifiedTitleAndToolBarOnMac(true);
 }
 //! [3]
+
+void MainWindow::viewSource()
+{
+    QNetworkAccessManager* accessManager = view->page()->networkAccessManager();
+    QNetworkRequest request(view->url());
+    QNetworkReply* reply = accessManager->get(request);
+    connect(reply, SIGNAL(finished()), this, SLOT(slotSourceDownloaded()));
+}
+
+void MainWindow::slotSourceDownloaded()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(const_cast<QObject*>(sender()));
+    QTextEdit* textEdit = new QTextEdit(NULL);
+    textEdit->setAttribute(Qt::WA_DeleteOnClose);
+    textEdit->show();
+    textEdit->setPlainText(reply->readAll());
+    reply->deleteLater();
+}
 
 //! [4]
 void MainWindow::adjustLocation()

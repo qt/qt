@@ -1248,7 +1248,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 /*!
     \fn QModelIndex QAbstractItemModel::parent(const QModelIndex &index) const = 0
 
-    Returns the parent of the model item with the given \a index. If the model
+    Returns the parent of the model item with the given \a index. If the item
     has no parent, an invalid QModelIndex is returned.
 
     A common convention used in models that expose tree data structures is that

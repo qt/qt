@@ -143,7 +143,7 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
     if(project->first("TEMPLATE") == "app" ||
        project->first("TEMPLATE") == "lib") {
         if(Option::mkfile::do_stub_makefile) {
-            t << "QMAKE    = "        << (project->isEmpty("QMAKE_QMAKE") ? QString("qmake") : var("QMAKE_QMAKE")) << endl;
+            t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
             QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
             for(QStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
                 t << *it << " ";
@@ -248,8 +248,6 @@ void MingwMakefileGenerator::init()
             project->values("QMAKE_INSTALL_DIR").append("$(COPY_DIR)");
         if(project->values("MAKEFILE").isEmpty())
             project->values("MAKEFILE").append("Makefile");
-        if(project->values("QMAKE_QMAKE").isEmpty())
-            project->values("QMAKE_QMAKE").append("qmake");
         return;
     }
 
@@ -417,7 +415,7 @@ void MingwMakefileGenerator::writeRcFilePart(QTextStream &t)
     if (!rc_file.isEmpty()) {
         t << escapeDependencyPath(var("RES_FILE")) << ": " << rc_file << "\n\t"
           << var("QMAKE_RC") << " -i " << rc_file << " -o " << var("RES_FILE") 
-          << " --include-dir=" << incPathStr << endl << endl;
+          << " --include-dir=" << incPathStr << " $(DEFINES)" << endl << endl;
     }
 }
 

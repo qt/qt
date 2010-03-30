@@ -78,7 +78,7 @@
 
 #include <QtCore/qglobal.h>
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 #include <private/qpaintengineex_opengl2_p.h>
 #endif
 
@@ -387,7 +387,7 @@ bool QGLPixelBuffer::isValid() const
     return !d->invalid;
 }
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_buffer_2_engine)
 #endif
 
@@ -398,7 +398,7 @@ Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_engine)
 /*! \reimp */
 QPaintEngine *QGLPixelBuffer::paintEngine() const
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+#if defined(QT_OPENGL_ES_1)
     return qt_buffer_engine();
 #elif defined(QT_OPENGL_ES_2)
     return qt_buffer_2_engine();

@@ -119,7 +119,7 @@ bool QHelpEngineCorePrivate::setup()
         QHelpDBReader *reader = new QHelpDBReader(absFileName,
             QHelpGlobal::uniquifyConnectionName(info.fileName, this), this);
         if (!reader->init()) {
-            emit q->warning(tr("Cannot open documentation file %1: %2!")
+            emit q->warning(QHelpEngineCore::tr("Cannot open documentation file %1: %2!")
                 .arg(absFileName, reader->errorMessage()));
             continue;
         }
@@ -406,8 +406,9 @@ QStringList QHelpEngineCore::customFilters() const
 
 /*!
     Adds the new custom filter \a filterName. The filter attributes
-    are specified by \a attributes. The function returns false if
-    the filter can not be added, e.g. when the filter already exists.
+    are specified by \a attributes. If the filter already exists,
+    its attribute set is replaced. The function returns true if
+    the operation succeeded, otherwise it returns false.
 
     \sa customFilters(), removeCustomFilter()
 */

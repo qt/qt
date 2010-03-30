@@ -161,6 +161,8 @@ QGestureRecognizer::~QGestureRecognizer()
 
     Reimplement this function to create a custom QGesture-derived gesture
     object if necessary.
+
+    The application takes ownership of the created gesture object.
 */
 QGesture *QGestureRecognizer::create(QObject *target)
 {
@@ -181,6 +183,7 @@ void QGestureRecognizer::reset(QGesture *gesture)
         QGesturePrivate *d = gesture->d_func();
         d->state = Qt::NoGesture;
         d->hotSpot = QPointF();
+        d->sceneHotSpot = QPointF();
         d->isHotSpotSet = false;
     }
 }

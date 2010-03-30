@@ -84,6 +84,47 @@ bool ClassObjectDelegate::getOwnPropertySlot(QScriptObject* object,
     return false;
 }
 
+bool ClassObjectDelegate::getOwnPropertyDescriptor(QScriptObject *object,
+                                                   JSC::ExecState *exec,
+                                                   const JSC::Identifier &propertyName,
+                                                   JSC::PropertyDescriptor &descriptor)
+{
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    QScript::SaveFrameHelper saveFrame(engine, exec);
+    // for compatibility with the old back-end, normal JS properties
+    // are queried first.
+    if (QScriptObjectDelegate::getOwnPropertyDescriptor(object, exec, propertyName, descriptor))
+        return true;
+
+    QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
+    QScriptString scriptName;
+    QScriptStringPrivate scriptName_d(engine, propertyName, QScriptStringPrivate::StackAllocated);
+    QScriptStringPrivate::init(scriptName, &scriptName_d);
+    uint id = 0;
+    QScriptClass::QueryFlags qflags = m_scriptClass->queryProperty(
+        scriptObject, scriptName, QScriptClass::HandlesReadAccess, &id);
+    if (qflags & QScriptClass::HandlesReadAccess) {
+        QScriptValue::PropertyFlags pflags = m_scriptClass->propertyFlags(scriptObject, scriptName, id);
+        unsigned attribs = 0;
+        if (pflags & QScriptValue::ReadOnly)
+            attribs |= JSC::ReadOnly;
+        if (pflags & QScriptValue::SkipInEnumeration)
+            attribs |= JSC::DontEnum;
+        if (pflags & QScriptValue::Undeletable)
+            attribs |= JSC::DontDelete;
+        if (pflags & QScriptValue::PropertyGetter)
+            attribs |= JSC::Getter;
+        if (pflags & QScriptValue::PropertySetter)
+            attribs |= JSC::Setter;
+        attribs |= pflags & QScriptValue::UserRange;
+        // Rather than calling the getter, we could return an access descriptor here.
+        QScriptValue value = m_scriptClass->property(scriptObject, scriptName, id);
+        descriptor.setDescriptor(engine->scriptValueToJSCValue(value), attribs);
+        return true;
+    }
+    return false;
+}
+
 void ClassObjectDelegate::put(QScriptObject* object, JSC::ExecState *exec,
                               const JSC::Identifier &propertyName,
                               JSC::JSValue value, JSC::PutPropertySlot &slot)
@@ -105,8 +146,7 @@ void ClassObjectDelegate::put(QScriptObject* object, JSC::ExecState *exec,
 }
 
 bool ClassObjectDelegate::deleteProperty(QScriptObject* object, JSC::ExecState *exec,
-                                         const JSC::Identifier &propertyName,
-                                         bool checkDontDelete)
+                                         const JSC::Identifier &propertyName)
 {
     // ### avoid duplication of put()
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
@@ -124,44 +164,12 @@ bool ClassObjectDelegate::deleteProperty(QScriptObject* object, JSC::ExecState *
         m_scriptClass->setProperty(scriptObject, scriptName, id, QScriptValue());
         return true;
     }
-    return QScriptObjectDelegate::deleteProperty(object, exec, propertyName, checkDontDelete);
-}
-
-bool ClassObjectDelegate::getPropertyAttributes(const QScriptObject* object, JSC::ExecState *exec,
-                                                const JSC::Identifier &propertyName,
-                                                unsigned &attribs) const
-{
-    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
-    QScript::SaveFrameHelper saveFrame(engine, exec);
-    QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
-    QScriptString scriptName;
-    QScriptStringPrivate scriptName_d(engine, propertyName, QScriptStringPrivate::StackAllocated);
-    QScriptStringPrivate::init(scriptName, &scriptName_d);
-    uint id = 0;
-    QScriptClass::QueryFlags flags = m_scriptClass->queryProperty(
-        scriptObject, scriptName, QScriptClass::HandlesReadAccess, &id);
-    if (flags & QScriptClass::HandlesReadAccess) {
-        QScriptValue::PropertyFlags flags = m_scriptClass->propertyFlags(scriptObject, scriptName, id);
-        attribs = 0;
-        if (flags & QScriptValue::ReadOnly)
-            attribs |= JSC::ReadOnly;
-        if (flags & QScriptValue::SkipInEnumeration)
-            attribs |= JSC::DontEnum;
-        if (flags & QScriptValue::Undeletable)
-            attribs |= JSC::DontDelete;
-        if (flags & QScriptValue::PropertyGetter)
-            attribs |= JSC::Getter;
-        if (flags & QScriptValue::PropertySetter)
-            attribs |= JSC::Setter;
-        attribs |= flags & QScriptValue::UserRange;
-        return true;
-    }
-    return QScriptObjectDelegate::getPropertyAttributes(object, exec, propertyName, attribs);
+    return QScriptObjectDelegate::deleteProperty(object, exec, propertyName);
 }
 
 void ClassObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::ExecState *exec,
                                               JSC::PropertyNameArray &propertyNames,
-                                              bool includeNonEnumerable)
+                                              JSC::EnumerationMode mode)
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScript::SaveFrameHelper saveFrame(engine, exec);
@@ -175,7 +183,7 @@ void ClassObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::ExecSt
         }
         delete it;
     }
-    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, includeNonEnumerable);
+    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, mode);
 }
 
 JSC::CallType ClassObjectDelegate::getCallData(QScriptObject*, JSC::CallData &callData)
@@ -206,7 +214,7 @@ JSC::JSValue JSC_HOST_CALL ClassObjectDelegate::call(JSC::ExecState *exec, JSC::
     QVariant result = scriptClass->extension(QScriptClass::Callable, qVariantFromValue(ctx));
     eng_p->popContext();
     eng_p->currentFrame = oldFrame;
-    return eng_p->jscValueFromVariant(result);
+    return QScriptEnginePrivate::jscValueFromVariant(exec, result);
 }
 
 JSC::ConstructType ClassObjectDelegate::getConstructData(QScriptObject*, JSC::ConstructData &constructData)

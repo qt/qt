@@ -469,12 +469,6 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::UngrabKeyboard:
         return new QEvent(*e);
 
-#ifdef QT_MAC_USE_COCOA
-    case QEvent::CocoaRequestModal:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-#endif
-
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:

@@ -42,6 +42,8 @@
 #ifndef METAMAKEFILE_H
 #define METAMAKEFILE_H
 
+#include <option.h>
+
 #include <qlist.h>
 #include <qstring.h>
 
@@ -64,6 +66,9 @@ public:
 
     static MetaMakefileGenerator *createMetaGenerator(QMakeProject *proj, const QString &name, bool op=true, bool *success = 0);
     static MakefileGenerator *createMakefileGenerator(QMakeProject *proj, bool noIO = false);
+
+    static bool modesForGenerator(const QString &generator,
+                                  Option::HOST_MODE *host_mode, Option::TARG_MODE *target_mode);
 
     inline QMakeProject *projectFile() const { return project; }
 

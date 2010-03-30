@@ -1,4 +1,4 @@
-/* $Id: tif_dir.c,v 1.72 2006/03/15 12:49:35 dron Exp $ */
+/* $Id: tif_dir.c,v 1.75.2.2 2009-01-01 00:10:43 bfriesen Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -74,21 +74,37 @@ void _TIFFsetDoubleArray(double** dpp, double* dp, uint32 n)
 static int
 setExtraSamples(TIFFDirectory* td, va_list ap, uint32* v)
 {
+/* XXX: Unassociated alpha data == 999 is a known Corel Draw bug, see below */
+#define EXTRASAMPLE_COREL_UNASSALPHA 999 
+
 	uint16* va;
 	uint32 i;
 
 	*v = va_arg(ap, uint32);
 	if ((uint16) *v > td->td_samplesperpixel)
-		return (0);
+		return 0;
 	va = va_arg(ap, uint16*);
 	if (*v > 0 && va == NULL)		/* typically missing param */
-		return (0);
-	for (i = 0; i < *v; i++)
-		if (va[i] > EXTRASAMPLE_UNASSALPHA)
-			return (0);
+		return 0;
+	for (i = 0; i < *v; i++) {
+		if (va[i] > EXTRASAMPLE_UNASSALPHA) {
+			/*
+			 * XXX: Corel Draw is known to produce incorrect
+			 * ExtraSamples tags which must be patched here if we
+			 * want to be able to open some of the damaged TIFF
+			 * files: 
+			 */
+			if (va[i] == EXTRASAMPLE_COREL_UNASSALPHA)
+				va[i] = EXTRASAMPLE_UNASSALPHA;
+			else
+				return 0;
+		}
+	}
 	td->td_extrasamples = (uint16) *v;
 	_TIFFsetShortArray(&td->td_sampleinfo, va, td->td_extrasamples);
-	return (1);
+	return 1;
+
+#undef EXTRASAMPLE_COREL_UNASSALPHA
 }
 
 static uint32
@@ -121,7 +137,7 @@ static int
 _TIFFVSetField(TIFF* tif, ttag_t tag, va_list ap)
 {
 	static const char module[] = "_TIFFVSetField";
-	
+
 	TIFFDirectory* td = &tif->tif_dir;
 	int status = 1;
 	uint32 v32, i, v;
@@ -192,14 +208,11 @@ _TIFFVSetField(TIFF* tif, ttag_t tag, va_list ap)
 			goto badvalue;
 		td->td_fillorder = (uint16) v;
 		break;
-		break;
 	case TIFFTAG_ORIENTATION:
 		v = va_arg(ap, uint32);
-		if (v < ORIENTATION_TOPLEFT || ORIENTATION_LEFTBOT < v) {
-			TIFFWarningExt(tif->tif_clientdata, tif->tif_name,
-			    "Bad value %lu for \"%s\" tag ignored",
-			    v, _TIFFFieldWithTag(tif, tag)->field_name);
-		} else
+		if (v < ORIENTATION_TOPLEFT || ORIENTATION_LEFTBOT < v)
+			goto badvalue;
+		else
 			td->td_orientation = (uint16) v;
 		break;
 	case TIFFTAG_SAMPLESPERPIXEL:
@@ -345,8 +358,9 @@ _TIFFVSetField(TIFF* tif, ttag_t tag, va_list ap)
 			_TIFFsetLongArray(&td->td_subifd, va_arg(ap, uint32*),
 			    (long) td->td_nsubifd);
 		} else {
-			TIFFErrorExt(tif->tif_clientdata, module, "%s: Sorry, cannot nest SubIFDs",
-				  tif->tif_name);
+			TIFFErrorExt(tif->tif_clientdata, module,
+				     "%s: Sorry, cannot nest SubIFDs",
+				     tif->tif_name);
 			status = 0;
 		}
 		break;
@@ -374,9 +388,9 @@ _TIFFVSetField(TIFF* tif, ttag_t tag, va_list ap)
 		}
 		break;
         default: {
-            const TIFFFieldInfo* fip = _TIFFFindFieldInfo(tif, tag, TIFF_ANY);
             TIFFTagValue *tv;
             int tv_size, iCustom;
+	    const TIFFFieldInfo* fip = _TIFFFindFieldInfo(tif, tag, TIFF_ANY);
 
             /*
 	     * This can happen if multiple images are open with different
@@ -389,9 +403,9 @@ _TIFFVSetField(TIFF* tif, ttag_t tag, va_list ap)
              */
             if(fip == NULL || fip->field_bit != FIELD_CUSTOM) {
 		TIFFErrorExt(tif->tif_clientdata, module,
-		    "%s: Invalid %stag \"%s\" (not supported by codec)",
-		    tif->tif_name, isPseudoTag(tag) ? "pseudo-" : "",
-		    _TIFFFieldWithTag(tif, tag)->field_name);
+			     "%s: Invalid %stag \"%s\" (not supported by codec)",
+			     tif->tif_name, isPseudoTag(tag) ? "pseudo-" : "",
+			     fip ? fip->field_name : "Unknown");
 		status = 0;
 		break;
             }
@@ -400,16 +414,15 @@ _TIFFVSetField(TIFF* tif, ttag_t tag, va_list ap)
              * Find the existing entry for this custom value.
              */
             tv = NULL;
-            for(iCustom = 0; iCustom < td->td_customValueCount; iCustom++) {
-                if(td->td_customValues[iCustom].info == fip) {
-                    tv = td->td_customValues + iCustom;
-                    if(tv->value != NULL)
-                    {
-                        _TIFFfree(tv->value);
-                        tv->value = NULL;
-                    }
-                    break;
-                }
+            for (iCustom = 0; iCustom < td->td_customValueCount; iCustom++) {
+		    if (td->td_customValues[iCustom].info->field_tag == tag) {
+			    tv = td->td_customValues + iCustom;
+			    if (tv->value != NULL) {
+				    _TIFFfree(tv->value);
+				    tv->value = NULL;
+			    }
+			    break;
+		    }
             }
 
             /*
@@ -432,7 +445,7 @@ _TIFFVSetField(TIFF* tif, ttag_t tag, va_list ap)
 
 		td->td_customValues = new_customValues;
 
-                tv = td->td_customValues + (td->td_customValueCount-1);
+                tv = td->td_customValues + (td->td_customValueCount - 1);
                 tv->info = fip;
                 tv->value = NULL;
                 tv->count = 0;
@@ -468,7 +481,8 @@ _TIFFVSetField(TIFF* tif, ttag_t tag, va_list ap)
 	    if (fip->field_type == TIFF_ASCII)
 		    _TIFFsetString((char **)&tv->value, va_arg(ap, char *));
 	    else {
-                tv->value = _TIFFmalloc(tv_size * tv->count);
+		tv->value = _TIFFCheckMalloc(tif, tv_size, tv->count,
+					     "Tag Value");
 		if (!tv->value) {
 		    status = 0;
 		    goto end;
@@ -571,13 +585,17 @@ end:
 	va_end(ap);
 	return (status);
 badvalue:
-	TIFFErrorExt(tif->tif_clientdata, module, "%s: Bad value %d for \"%s\"",
-		  tif->tif_name, v, _TIFFFieldWithTag(tif, tag)->field_name);
+	TIFFErrorExt(tif->tif_clientdata, module,
+		     "%s: Bad value %d for \"%s\" tag",
+		     tif->tif_name, v,
+		     _TIFFFieldWithTag(tif, tag)->field_name);
 	va_end(ap);
 	return (0);
 badvalue32:
-	TIFFErrorExt(tif->tif_clientdata, module, "%s: Bad value %ld for \"%s\"",
-		   tif->tif_name, v32, _TIFFFieldWithTag(tif, tag)->field_name);
+	TIFFErrorExt(tif->tif_clientdata, module,
+		     "%s: Bad value %u for \"%s\" tag",
+		     tif->tif_name, v32,
+		     _TIFFFieldWithTag(tif, tag)->field_name);
 	va_end(ap);
 	return (0);
 }
@@ -806,21 +824,22 @@ _TIFFVGetField(TIFF* tif, ttag_t tag, va_list ap)
             int           i;
             
             /*
-             * This can happen if multiple images are open with
-             * different codecs which have private tags.  The
-             * global tag information table may then have tags
-             * that are valid for one file but not the other. 
-             * If the client tries to get a tag that is not valid
-             * for the image's codec then we'll arrive here.
+	     * This can happen if multiple images are open with different
+	     * codecs which have private tags.  The global tag information
+	     * table may then have tags that are valid for one file but not
+	     * the other. If the client tries to get a tag that is not valid
+	     * for the image's codec then we'll arrive here.
              */
             if( fip == NULL || fip->field_bit != FIELD_CUSTOM )
             {
-				TIFFErrorExt(tif->tif_clientdata, "_TIFFVGetField",
-                          "%s: Invalid %stag \"%s\" (not supported by codec)",
-                          tif->tif_name, isPseudoTag(tag) ? "pseudo-" : "",
-                          _TIFFFieldWithTag(tif, tag)->field_name);
-                ret_val = 0;
-                break;
+		    TIFFErrorExt(tif->tif_clientdata, "_TIFFVGetField",
+				 "%s: Invalid %stag \"%s\" "
+				 "(not supported by codec)",
+				 tif->tif_name,
+				 isPseudoTag(tag) ? "pseudo-" : "",
+				 fip ? fip->field_name : "Unknown");
+		    ret_val = 0;
+		    break;
             }
 
             /*
@@ -1032,7 +1051,7 @@ TIFFDefaultDirectory(TIFF* tif)
 
 	size_t tiffFieldInfoCount;
 	const TIFFFieldInfo *tiffFieldInfo =
-		_TIFFGetFieldInfo(&tiffFieldInfoCount);
+	    _TIFFGetFieldInfo(&tiffFieldInfoCount);
 	_TIFFSetupFieldInfo(tif, tiffFieldInfo, tiffFieldInfoCount);
 
 	_TIFFmemset(td, 0, sizeof (*td));
@@ -1053,7 +1072,7 @@ TIFFDefaultDirectory(TIFF* tif)
 	td->td_ycbcrsubsampling[1] = 2;
 	td->td_ycbcrpositioning = YCBCRPOSITION_CENTERED;
 	tif->tif_postdecode = _TIFFNoPostDecode;
-        tif->tif_foundfield = NULL;
+	tif->tif_foundfield = NULL;
 	tif->tif_tagmethods.vsetfield = _TIFFVSetField;
 	tif->tif_tagmethods.vgetfield = _TIFFVGetField;
 	tif->tif_tagmethods.printdir = NULL;
@@ -1074,12 +1093,12 @@ TIFFDefaultDirectory(TIFF* tif)
 	 */
 	tif->tif_flags &= ~TIFF_DIRTYDIRECT;
 
-        /*
-         * As per http://bugzilla.remotesensing.org/show_bug.cgi?id=19
-         * we clear the ISTILED flag when setting up a new directory.
-         * Should we also be clearing stuff like INSUBIFD?
-         */
-        tif->tif_flags &= ~TIFF_ISTILED;
+	/*
+	 * As per http://bugzilla.remotesensing.org/show_bug.cgi?id=19
+	 * we clear the ISTILED flag when setting up a new directory.
+	 * Should we also be clearing stuff like INSUBIFD?
+	 */
+	tif->tif_flags &= ~TIFF_ISTILED;
 
 	return (1);
 }
@@ -1087,59 +1106,59 @@ TIFFDefaultDirectory(TIFF* tif)
 static int
 TIFFAdvanceDirectory(TIFF* tif, uint32* nextdir, toff_t* off)
 {
-    static const char module[] = "TIFFAdvanceDirectory";
-    uint16 dircount;
-    if (isMapped(tif))
-    {
-        toff_t poff=*nextdir;
-        if (poff+sizeof(uint16) > tif->tif_size)
-        {
+	static const char module[] = "TIFFAdvanceDirectory";
+	uint16 dircount;
+	if (isMapped(tif))
+	{
+		toff_t poff=*nextdir;
+		if (poff+sizeof(uint16) > tif->tif_size)
+		{
 			TIFFErrorExt(tif->tif_clientdata, module, "%s: Error fetching directory count",
-                      tif->tif_name);
-            return (0);
-        }
-        _TIFFmemcpy(&dircount, tif->tif_base+poff, sizeof (uint16));
-        if (tif->tif_flags & TIFF_SWAB)
-            TIFFSwabShort(&dircount);
-        poff+=sizeof (uint16)+dircount*sizeof (TIFFDirEntry);
-        if (off != NULL)
-            *off = poff;
-        if (((toff_t) (poff+sizeof (uint32))) > tif->tif_size)
-        {
+			    tif->tif_name);
+			return (0);
+		}
+		_TIFFmemcpy(&dircount, tif->tif_base+poff, sizeof (uint16));
+		if (tif->tif_flags & TIFF_SWAB)
+			TIFFSwabShort(&dircount);
+		poff+=sizeof (uint16)+dircount*sizeof (TIFFDirEntry);
+		if (off != NULL)
+			*off = poff;
+		if (((toff_t) (poff+sizeof (uint32))) > tif->tif_size)
+		{
 			TIFFErrorExt(tif->tif_clientdata, module, "%s: Error fetching directory link",
-                      tif->tif_name);
-            return (0);
-        }
-        _TIFFmemcpy(nextdir, tif->tif_base+poff, sizeof (uint32));
-        if (tif->tif_flags & TIFF_SWAB)
-            TIFFSwabLong(nextdir);
-        return (1);
-    }
-    else
-    {
-        if (!SeekOK(tif, *nextdir) ||
-            !ReadOK(tif, &dircount, sizeof (uint16))) {
+			    tif->tif_name);
+			return (0);
+		}
+		_TIFFmemcpy(nextdir, tif->tif_base+poff, sizeof (uint32));
+		if (tif->tif_flags & TIFF_SWAB)
+			TIFFSwabLong(nextdir);
+		return (1);
+	}
+	else
+	{
+		if (!SeekOK(tif, *nextdir) ||
+		    !ReadOK(tif, &dircount, sizeof (uint16))) {
 			TIFFErrorExt(tif->tif_clientdata, module, "%s: Error fetching directory count",
-                      tif->tif_name);
-            return (0);
-        }
-        if (tif->tif_flags & TIFF_SWAB)
-            TIFFSwabShort(&dircount);
-        if (off != NULL)
-            *off = TIFFSeekFile(tif,
-                                dircount*sizeof (TIFFDirEntry), SEEK_CUR);
-        else
-            (void) TIFFSeekFile(tif,
-                                dircount*sizeof (TIFFDirEntry), SEEK_CUR);
-        if (!ReadOK(tif, nextdir, sizeof (uint32))) {
+			    tif->tif_name);
+			return (0);
+		}
+		if (tif->tif_flags & TIFF_SWAB)
+			TIFFSwabShort(&dircount);
+		if (off != NULL)
+			*off = TIFFSeekFile(tif,
+			    dircount*sizeof (TIFFDirEntry), SEEK_CUR);
+		else
+			(void) TIFFSeekFile(tif,
+			    dircount*sizeof (TIFFDirEntry), SEEK_CUR);
+		if (!ReadOK(tif, nextdir, sizeof (uint32))) {
 			TIFFErrorExt(tif->tif_clientdata, module, "%s: Error fetching directory link",
-                      tif->tif_name);
-            return (0);
-        }
-        if (tif->tif_flags & TIFF_SWAB)
-            TIFFSwabLong(nextdir);
-        return (1);
-    }
+			    tif->tif_name);
+			return (0);
+		}
+		if (tif->tif_flags & TIFF_SWAB)
+			TIFFSwabLong(nextdir);
+		return (1);
+	}
 }
 
 /*

@@ -176,7 +176,7 @@ consult the installation instructions provided instead of the ones in
 this document.
 \o \l{Open Source Versions of Qt} is not officially supported for use with
 any version of Visual Studio. Integration with Visual Studio is available
-as part of the \l{Qt Commercial Editions}.
+as part of the \l{Qt Commercial Edition}.
 
 \endlist
 \endtable
@@ -289,6 +289,10 @@ in the \l{Qt for Mac OS X Requirements} document.
 and follow the instructions to install Qt. You can later run the \c{uninstall-qt.py}
 script to uninstall the binary package. The script is located in /Developer/Tools and
 must be run as root.
+
+\note Do not run the iPhone simulator while installing Qt. The
+\l{http://openradar.appspot.com/7214991} 
+{iPhone simulator conflicts with the package installer}.
 
 The following instructions describe how to install Qt from the source package.
 
@@ -740,9 +744,9 @@ If you are using pre-built binaries, follow the instructions given in the
     \l{http://www.microsoft.com/downloads/details.aspx?FamilyId=BB4A75AB-E2D4-4C96-B39D-37BAF6B5B1DC&amp;displaylang=en}{here}
     to avoid runtime conflicts.
 
-    If you are using a source code package of Qt, you must first install Perl so 
+    If you are using a source edition of Qt, you must first install Perl so
     that the syncqt script invoked by configure can be executed. You can download
-    this \l{http://www.activestate/downloads/}{here}.  
+    this \l{http://www.activestate.com/downloads/}{here}.
 
     To build Qt with Phonon on Windows, you require:
 

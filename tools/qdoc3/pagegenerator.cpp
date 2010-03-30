@@ -43,7 +43,6 @@
   pagegenerator.cpp
 */
 
-#include <QtCore>
 #include <qfile.h>
 #include <qfileinfo.h>
 
@@ -77,7 +76,7 @@ void PageGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     generateInnerNode(tree->root(), marker);
 }
 
-QString PageGenerator::fileBase(const Node *node)
+QString PageGenerator::fileBase(const Node *node) const
 {
     if (node->relates())
 	node = node->relates();
@@ -104,7 +103,8 @@ QString PageGenerator::fileBase(const Node *node)
           we prepend "qml-" to the file name of QML element doc
           files.
          */
-        if (p->subType() == Node::QmlClass) {
+        if ((p->subType() == Node::QmlClass) ||
+            (p->subType() == Node::QmlBasicType)) {
             base.prepend("qml-");
         }
 #endif        
@@ -152,7 +152,7 @@ QString PageGenerator::fileBase(const Node *node)
     return res;
 }
 
-QString PageGenerator::fileName(const Node *node)
+QString PageGenerator::fileName(const Node *node) const
 {
     if (!node->url().isEmpty())
         return node->url();
@@ -176,7 +176,7 @@ void PageGenerator::beginSubPage(const Location& location,
 	location.fatal(tr("Cannot open output file '%1'")
 			.arg(outFile->fileName()));
     QTextStream *out = new QTextStream(outFile);
-    out->setCodec("ISO-8859-1");
+    out->setCodec(outputCodec);
     outStreamStack.push(out);
 }
 
@@ -209,6 +209,10 @@ void PageGenerator::generateInnerNode(const InnerNode *node,
         if (fakeNode->subType() == Node::QmlPropertyGroup)
             return;
 #endif            
+        if (fakeNode->subType() == Node::Page) {
+            if (node->count() > 0)
+                qDebug("PAGE %s HAS CHILDREN", qPrintable(fakeNode->title()));
+        }
     }
 
     if (node->parent() != 0) {

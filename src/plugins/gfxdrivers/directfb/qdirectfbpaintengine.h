@@ -109,6 +109,8 @@ public:
     virtual void clip(const QRegion &region, Qt::ClipOperation op);
     virtual void clip(const QRect &rect, Qt::ClipOperation op);
 
+    virtual void drawStaticTextItem(QStaticTextItem *item);
+
     static void initImageCache(int size);
 };
 

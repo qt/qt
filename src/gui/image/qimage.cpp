@@ -480,9 +480,12 @@ bool QImageData::checkForAlphaPixels() const
     \row
     \o Low-level information
     \o
+
     The depth() function returns the depth of the image. The supported
-    depths are 1 (monochrome), 8 and 32 (for more information see the
-    \l {QImage#Image Formats}{Image Formats} section).
+    depths are 1 (monochrome), 8, 16, 24 and 32 bits. The
+    bitPlaneCount() function tells how many of those bits that are
+    used. For more information see the
+    \l {QImage#Image Formats}{Image Formats} section.
 
     The format(), bytesPerLine(), and byteCount() functions provide
     low-level information about the data stored in the image.
@@ -707,7 +710,7 @@ bool QImageData::checkForAlphaPixels() const
                             packed with the less significant bit (LSB) first.
 
     \value Format_Indexed8  The image is stored using 8-bit indexes
-                            into a colormap. 
+                            into a colormap.
 
     \value Format_RGB32     The image is stored using a 32-bit RGB format (0xffRRGGBB).
 
@@ -1580,12 +1583,12 @@ QRect QImage::rect() const
 /*!
     Returns the depth of the image.
 
-    The image depth is the number of bits used to encode a single
+    The image depth is the number of bits used to store a single
     pixel, also called bits per pixel (bpp).
 
     The supported depths are 1, 8, 16, 24 and 32.
 
-    \sa convertToFormat(), {QImage#Image Formats}{Image Formats},
+    \sa bitPlaneCount(), convertToFormat(), {QImage#Image Formats}{Image Formats},
     {QImage#Image Information}{Image Information}
 
 */
@@ -1835,7 +1838,7 @@ void QImage::setColor(int i, QRgb c)
     qAlpha() to access the pixels.
 
     \sa bytesPerLine(), bits(), {QImage#Pixel Manipulation}{Pixel
-    Manipulation}
+    Manipulation}, constScanLine()
 */
 uchar *QImage::scanLine(int i)
 {
@@ -1865,6 +1868,28 @@ const uchar *QImage::scanLine(int i) const
 
 
 /*!
+    Returns a pointer to the pixel data at the scanline with index \a
+    i. The first scanline is at index 0.
+
+    The scanline data is aligned on a 32-bit boundary.
+
+    Note that QImage uses \l{Implicit Data Sharing} {implicit data
+    sharing}, but this function does \e not perform a deep copy of the
+    shared pixel data, because the returned data is const.
+
+    \sa scanLine(), constBits()
+    \since 4.7
+*/
+const uchar *QImage::constScanLine(int i) const
+{
+    if (!d)
+        return 0;
+
+    Q_ASSERT(i >= 0 && i < height());
+    return d->data + i * d->bytes_per_line;
+}
+
+/*!
     Returns a pointer to the first pixel data. This is equivalent to
     scanLine(0).
 
@@ -1873,7 +1898,7 @@ const uchar *QImage::scanLine(int i) const
     data, thus ensuring that this QImage is the only one using the
     current return value.
 
-    \sa scanLine(), byteCount()
+    \sa scanLine(), byteCount(), constBits()
 */
 uchar *QImage::bits()
 {
@@ -1901,6 +1926,20 @@ const uchar *QImage::bits() const
 }
 
 
+/*!
+    Returns a pointer to the first pixel data.
+
+    Note that QImage uses \l{Implicit Data Sharing} {implicit data
+    sharing}, but this function does \e not perform a deep copy of the
+    shared pixel data, because the returned data is const.
+
+    \sa bits(), constScanLine()
+    \since 4.7
+*/
+const uchar *QImage::constBits() const
+{
+    return d ? d->data : 0;
+}
 
 /*!
     \fn void QImage::reset()
@@ -2949,19 +2988,19 @@ static void convert_Indexed8_to_X32(QImageData *dest, const QImageData *src, Qt:
         colorTable.resize(256);
         for (int i=0; i<256; ++i)
             colorTable[i] = qRgb(i, i, i);
-
     }
 
     int w = src->width;
     const uchar *src_data = src->data;
     uchar *dest_data = dest->data;
+    int tableSize = colorTable.size() - 1;
     for (int y = 0; y < src->height; y++) {
         uint *p = (uint *)dest_data;
         const uchar *b = src_data;
         uint *end = p + w;
 
         while (p < end)
-            *p++ = colorTable.at(*b++);
+            *p++ = colorTable.at(qMin<int>(tableSize, *b++));
 
         src_data += src->bytes_per_line;
         dest_data += dest->bytes_per_line;
@@ -5809,6 +5848,48 @@ bool QImage::hasAlphaChannel() const
                  || (d->has_alpha_clut && (d->format == Format_Indexed8
                                            || d->format == Format_Mono
                                            || d->format == Format_MonoLSB)));
+}
+
+
+/*!
+    \since 4.7
+    Returns the number of bit planes in the image.
+
+    The number of bit planes is the number of bits of color and
+    transparency information for each pixel. This is different from
+    (i.e. smaller than) the depth when the image format contains
+    unused bits.
+
+    \sa depth(), format(), {QImage#Image Formats}{Image Formats}
+*/
+int QImage::bitPlaneCount() const
+{
+    if (!d)
+        return 0;
+    int bpc = 0;
+    switch (d->format) {
+    case QImage::Format_Invalid:
+        break;
+    case QImage::Format_RGB32:
+        bpc = 24;
+        break;
+    case QImage::Format_RGB666:
+        bpc = 18;
+        break;
+    case QImage::Format_RGB555:
+        bpc = 15;
+        break;
+    case QImage::Format_ARGB8555_Premultiplied:
+        bpc = 23;
+        break;
+    case QImage::Format_RGB444:
+        bpc = 12;
+        break;
+    default:
+        bpc = depthForFormat(d->format);
+        break;
+    }
+    return bpc;
 }
 
 

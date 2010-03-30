@@ -213,7 +213,7 @@ void QFontEngineWin::getCMap()
         unitsPerEm = otm->otmEMSquare;
         x_height = (int)otm->otmsXHeight;
         loadKerningPairs(designToDevice);
-        _faceId.filename = QString::fromWCharArray((wchar_t *)((char *)otm + (int)otm->otmpFullName)).toLatin1();
+        _faceId.filename = QString::fromWCharArray((wchar_t *)((char *)otm + (quintptr)otm->otmpFullName)).toLatin1();
         lineWidth = otm->otmsUnderscoreSize;
         fsType = otm->otmfsType;
         free(otm);
@@ -1037,8 +1037,8 @@ QFontEngine::Properties QFontEngineWin::properties() const
     Properties p;
     p.emSquare = unitsPerEm;
     p.italicAngle = otm->otmItalicAngle;
-    p.postscriptName = QString::fromWCharArray((wchar_t *)((char *)otm + (int)otm->otmpFamilyName)).toLatin1();
-    p.postscriptName += QString::fromWCharArray((wchar_t *)((char *)otm + (int)otm->otmpStyleName)).toLatin1();
+    p.postscriptName = QString::fromWCharArray((wchar_t *)((char *)otm + (quintptr)otm->otmpFamilyName)).toLatin1();
+    p.postscriptName += QString::fromWCharArray((wchar_t *)((char *)otm + (quintptr)otm->otmpStyleName)).toLatin1();
 #ifndef QT_NO_PRINTER
     p.postscriptName = QPdf::stripSpecialCharacters(p.postscriptName);
 #endif

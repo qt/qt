@@ -1,9 +1,0 @@
-
-INCLUDEPATH = $$QMAKE_INCDIR_QT/QtAssistant $$INCLUDEPATH
-
-mac:!static:contains(QT_CONFIG, qt_framework) {
-    qtAddLibrary(QtAssistant)
-} else {
-    qtAddLibrary(QtAssistantClient)
-}
-QT += network

@@ -534,7 +534,7 @@ PassRefPtr<LabelScope> BytecodeGenerator::newLabelScope(LabelScope::Type type, c
         m_labelScopes.removeLast();
 
     // Allocate new label scope.
-    LabelScope scope(type, name, scopeDepth(), newLabel(), type == LabelScope::Loop ? newLabel() : PassRefPtr<Label>(0)); // Only loops have continue targets.
+    LabelScope scope(type, name, scopeDepth(), newLabel(), type == LabelScope::Loop ? newLabel() : PassRefPtr<Label>()); // Only loops have continue targets.
     m_labelScopes.append(scope);
     return &m_labelScopes.last();
 }
@@ -608,14 +608,15 @@ void ALWAYS_INLINE BytecodeGenerator::rewindUnaryOp()
 
 PassRefPtr<Label> BytecodeGenerator::emitJump(Label* target)
 {
+    size_t begin = instructions().size();
     emitOpcode(target->isForward() ? op_jmp : op_loop);
-    instructions().append(target->offsetFrom(instructions().size()));
+    instructions().append(target->bind(begin, instructions().size()));
     return target;
 }
 
 PassRefPtr<Label> BytecodeGenerator::emitJumpIfTrue(RegisterID* cond, Label* target)
 {
-    if (m_lastOpcodeID == op_less && !target->isForward()) {
+    if (m_lastOpcodeID == op_less) {
         int dstIndex;
         int src1Index;
         int src2Index;
@@ -624,10 +625,12 @@ PassRefPtr<Label> BytecodeGenerator::emitJumpIfTrue(RegisterID* cond, Label* tar
 
         if (cond->index() == dstIndex && cond->isTemporary() && !cond->refCount()) {
             rewindBinaryOp();
-            emitOpcode(op_loop_if_less);
+
+            size_t begin = instructions().size();
+            emitOpcode(target->isForward() ? op_jless : op_loop_if_less);
             instructions().append(src1Index);
             instructions().append(src2Index);
-            instructions().append(target->offsetFrom(instructions().size()));
+            instructions().append(target->bind(begin, instructions().size()));
             return target;
         }
     } else if (m_lastOpcodeID == op_lesseq && !target->isForward()) {
@@ -639,10 +642,12 @@ PassRefPtr<Label> BytecodeGenerator::emitJumpIfTrue(RegisterID* cond, Label* tar
 
         if (cond->index() == dstIndex && cond->isTemporary() && !cond->refCount()) {
             rewindBinaryOp();
+
+            size_t begin = instructions().size();
             emitOpcode(op_loop_if_lesseq);
             instructions().append(src1Index);
             instructions().append(src2Index);
-            instructions().append(target->offsetFrom(instructions().size()));
+            instructions().append(target->bind(begin, instructions().size()));
             return target;
         }
     } else if (m_lastOpcodeID == op_eq_null && target->isForward()) {
@@ -653,9 +658,11 @@ PassRefPtr<Label> BytecodeGenerator::emitJumpIfTrue(RegisterID* cond, Label* tar
 
         if (cond->index() == dstIndex && cond->isTemporary() && !cond->refCount()) {
             rewindUnaryOp();
+
+            size_t begin = instructions().size();
             emitOpcode(op_jeq_null);
             instructions().append(srcIndex);
-            instructions().append(target->offsetFrom(instructions().size()));
+            instructions().append(target->bind(begin, instructions().size()));
             return target;
         }
     } else if (m_lastOpcodeID == op_neq_null && target->isForward()) {
@@ -666,24 +673,26 @@ PassRefPtr<Label> BytecodeGenerator::emitJumpIfTrue(RegisterID* cond, Label* tar
 
         if (cond->index() == dstIndex && cond->isTemporary() && !cond->refCount()) {
             rewindUnaryOp();
+
+            size_t begin = instructions().size();
             emitOpcode(op_jneq_null);
             instructions().append(srcIndex);
-            instructions().append(target->offsetFrom(instructions().size()));
+            instructions().append(target->bind(begin, instructions().size()));
             return target;
         }
     }
 
+    size_t begin = instructions().size();
+
     emitOpcode(target->isForward() ? op_jtrue : op_loop_if_true);
     instructions().append(cond->index());
-    instructions().append(target->offsetFrom(instructions().size()));
+    instructions().append(target->bind(begin, instructions().size()));
     return target;
 }
 
 PassRefPtr<Label> BytecodeGenerator::emitJumpIfFalse(RegisterID* cond, Label* target)
 {
-    ASSERT(target->isForward());
-
-    if (m_lastOpcodeID == op_less) {
+    if (m_lastOpcodeID == op_less && target->isForward()) {
         int dstIndex;
         int src1Index;
         int src2Index;
@@ -692,13 +701,15 @@ PassRefPtr<Label> BytecodeGenerator::emitJumpIfFalse(RegisterID* cond, Label* ta
 
         if (cond->index() == dstIndex && cond->isTemporary() && !cond->refCount()) {
             rewindBinaryOp();
+
+            size_t begin = instructions().size();
             emitOpcode(op_jnless);
             instructions().append(src1Index);
             instructions().append(src2Index);
-            instructions().append(target->offsetFrom(instructions().size()));
+            instructions().append(target->bind(begin, instructions().size()));
             return target;
         }
-    } else if (m_lastOpcodeID == op_lesseq) {
+    } else if (m_lastOpcodeID == op_lesseq && target->isForward()) {
         int dstIndex;
         int src1Index;
         int src2Index;
@@ -707,10 +718,12 @@ PassRefPtr<Label> BytecodeGenerator::emitJumpIfFalse(RegisterID* cond, Label* ta
 
         if (cond->index() == dstIndex && cond->isTemporary() && !cond->refCount()) {
             rewindBinaryOp();
+
+            size_t begin = instructions().size();
             emitOpcode(op_jnlesseq);
             instructions().append(src1Index);
             instructions().append(src2Index);
-            instructions().append(target->offsetFrom(instructions().size()));
+            instructions().append(target->bind(begin, instructions().size()));
             return target;
         }
     } else if (m_lastOpcodeID == op_not) {
@@ -721,12 +734,14 @@ PassRefPtr<Label> BytecodeGenerator::emitJumpIfFalse(RegisterID* cond, Label* ta
 
         if (cond->index() == dstIndex && cond->isTemporary() && !cond->refCount()) {
             rewindUnaryOp();
-            emitOpcode(op_jtrue);
+
+            size_t begin = instructions().size();
+            emitOpcode(target->isForward() ? op_jtrue : op_loop_if_true);
             instructions().append(srcIndex);
-            instructions().append(target->offsetFrom(instructions().size()));
+            instructions().append(target->bind(begin, instructions().size()));
             return target;
         }
-    } else if (m_lastOpcodeID == op_eq_null) {
+    } else if (m_lastOpcodeID == op_eq_null && target->isForward()) {
         int dstIndex;
         int srcIndex;
 
@@ -734,12 +749,14 @@ PassRefPtr<Label> BytecodeGenerator::emitJumpIfFalse(RegisterID* cond, Label* ta
 
         if (cond->index() == dstIndex && cond->isTemporary() && !cond->refCount()) {
             rewindUnaryOp();
+
+            size_t begin = instructions().size();
             emitOpcode(op_jneq_null);
             instructions().append(srcIndex);
-            instructions().append(target->offsetFrom(instructions().size()));
+            instructions().append(target->bind(begin, instructions().size()));
             return target;
         }
-    } else if (m_lastOpcodeID == op_neq_null) {
+    } else if (m_lastOpcodeID == op_neq_null && target->isForward()) {
         int dstIndex;
         int srcIndex;
 
@@ -747,34 +764,41 @@ PassRefPtr<Label> BytecodeGenerator::emitJumpIfFalse(RegisterID* cond, Label* ta
 
         if (cond->index() == dstIndex && cond->isTemporary() && !cond->refCount()) {
             rewindUnaryOp();
+
+            size_t begin = instructions().size();
             emitOpcode(op_jeq_null);
             instructions().append(srcIndex);
-            instructions().append(target->offsetFrom(instructions().size()));
+            instructions().append(target->bind(begin, instructions().size()));
             return target;
         }
     }
 
-    emitOpcode(op_jfalse);
+    size_t begin = instructions().size();
+    emitOpcode(target->isForward() ? op_jfalse : op_loop_if_false);
     instructions().append(cond->index());
-    instructions().append(target->offsetFrom(instructions().size()));
+    instructions().append(target->bind(begin, instructions().size()));
     return target;
 }
 
 PassRefPtr<Label> BytecodeGenerator::emitJumpIfNotFunctionCall(RegisterID* cond, Label* target)
 {
+    size_t begin = instructions().size();
+
     emitOpcode(op_jneq_ptr);
     instructions().append(cond->index());
     instructions().append(m_scopeChain->globalObject()->d()->callFunction);
-    instructions().append(target->offsetFrom(instructions().size()));
+    instructions().append(target->bind(begin, instructions().size()));
     return target;
 }
 
 PassRefPtr<Label> BytecodeGenerator::emitJumpIfNotFunctionApply(RegisterID* cond, Label* target)
 {
+    size_t begin = instructions().size();
+
     emitOpcode(op_jneq_ptr);
     instructions().append(cond->index());
     instructions().append(m_scopeChain->globalObject()->d()->applyFunction);
-    instructions().append(target->offsetFrom(instructions().size()));
+    instructions().append(target->bind(begin, instructions().size()));
     return target;
 }
 
@@ -880,7 +904,7 @@ RegisterID* BytecodeGenerator::emitEqualityOp(OpcodeID opcodeID, RegisterID* dst
             && src1->isTemporary()
             && m_codeBlock->isConstantRegisterIndex(src2->index())
             && m_codeBlock->constantRegister(src2->index()).jsValue().isString()) {
-            const UString& value = asString(m_codeBlock->constantRegister(src2->index()).jsValue())->value();
+            const UString& value = asString(m_codeBlock->constantRegister(src2->index()).jsValue())->tryGetValue();
             if (value == "undefined") {
                 rewindUnaryOp();
                 emitOpcode(op_is_undefined);
@@ -1255,6 +1279,19 @@ RegisterID* BytecodeGenerator::emitDeleteById(RegisterID* dst, RegisterID* base,
 
 RegisterID* BytecodeGenerator::emitGetByVal(RegisterID* dst, RegisterID* base, RegisterID* property)
 {
+    for (size_t i = m_forInContextStack.size(); i > 0; i--) {
+        ForInContext& context = m_forInContextStack[i - 1];
+        if (context.propertyRegister == property) {
+            emitOpcode(op_get_by_pname);
+            instructions().append(dst->index());
+            instructions().append(base->index());
+            instructions().append(property->index());
+            instructions().append(context.expectedSubscriptRegister->index());
+            instructions().append(context.iterRegister->index());
+            instructions().append(context.indexRegister->index());
+            return dst;
+        }
+    }
     emitOpcode(op_get_by_val);
     instructions().append(dst->index());
     instructions().append(base->index());
@@ -1598,7 +1635,7 @@ void BytecodeGenerator::emitPopScope()
     m_dynamicScopeDepth--;
 }
 
-void BytecodeGenerator::emitDebugHook(DebugHookID debugHookID, int firstLine, int lastLine, int column)
+void BytecodeGenerator::emitDebugHook(DebugHookID debugHookID, int firstLine, int lastLine)
 {
     if (!m_shouldEmitDebugHooks)
         return;
@@ -1606,7 +1643,6 @@ void BytecodeGenerator::emitDebugHook(DebugHookID debugHookID, int firstLine, in
     instructions().append(debugHookID);
     instructions().append(firstLine);
     instructions().append(lastLine);
-    instructions().append(column);
 }
 
 void BytecodeGenerator::pushFinallyContext(Label* target, RegisterID* retAddrDst)
@@ -1719,6 +1755,8 @@ PassRefPtr<Label> BytecodeGenerator::emitComplexJumpScopes(Label* target, Contro
         }
 
         if (nNormalScopes) {
+            size_t begin = instructions().size();
+
             // We need to remove a number of dynamic scopes to get to the next
             // finally block
             emitOpcode(op_jmp_scopes);
@@ -1727,14 +1765,14 @@ PassRefPtr<Label> BytecodeGenerator::emitComplexJumpScopes(Label* target, Contro
             // If topScope == bottomScope then there isn't actually a finally block
             // left to emit, so make the jmp_scopes jump directly to the target label
             if (topScope == bottomScope) {
-                instructions().append(target->offsetFrom(instructions().size()));
+                instructions().append(target->bind(begin, instructions().size()));
                 return target;
             }
 
             // Otherwise we just use jmp_scopes to pop a group of scopes and go
             // to the next instruction
             RefPtr<Label> nextInsn = newLabel();
-            instructions().append(nextInsn->offsetFrom(instructions().size()));
+            instructions().append(nextInsn->bind(begin, instructions().size()));
             emitLabel(nextInsn.get());
         }
 
@@ -1759,27 +1797,47 @@ PassRefPtr<Label> BytecodeGenerator::emitJumpScopes(Label* target, int targetSco
     if (m_finallyDepth)
         return emitComplexJumpScopes(target, &m_scopeContextStack.last(), &m_scopeContextStack.last() - scopeDelta);
 
+    size_t begin = instructions().size();
+
     emitOpcode(op_jmp_scopes);
     instructions().append(scopeDelta);
-    instructions().append(target->offsetFrom(instructions().size()));
+    instructions().append(target->bind(begin, instructions().size()));
     return target;
 }
 
-RegisterID* BytecodeGenerator::emitNextPropertyName(RegisterID* dst, RegisterID* iter, Label* target)
+RegisterID* BytecodeGenerator::emitGetPropertyNames(RegisterID* dst, RegisterID* base, RegisterID* i, RegisterID* size, Label* breakTarget)
 {
+    size_t begin = instructions().size();
+
+    emitOpcode(op_get_pnames);
+    instructions().append(dst->index());
+    instructions().append(base->index());
+    instructions().append(i->index());
+    instructions().append(size->index());
+    instructions().append(breakTarget->bind(begin, instructions().size()));
+    return dst;
+}
+
+RegisterID* BytecodeGenerator::emitNextPropertyName(RegisterID* dst, RegisterID* base, RegisterID* i, RegisterID* size, RegisterID* iter, Label* target)
+{
+    size_t begin = instructions().size();
+
     emitOpcode(op_next_pname);
     instructions().append(dst->index());
+    instructions().append(base->index());
+    instructions().append(i->index());
+    instructions().append(size->index());
     instructions().append(iter->index());
-    instructions().append(target->offsetFrom(instructions().size()));
+    instructions().append(target->bind(begin, instructions().size()));
     return dst;
 }
 
 RegisterID* BytecodeGenerator::emitCatch(RegisterID* targetRegister, Label* start, Label* end)
 {
 #if ENABLE(JIT)
-    HandlerInfo info = { start->offsetFrom(0), end->offsetFrom(0), instructions().size(), m_dynamicScopeDepth + m_baseScopeDepth, CodeLocationLabel() };
+    HandlerInfo info = { start->bind(0, 0), end->bind(0, 0), instructions().size(), m_dynamicScopeDepth + m_baseScopeDepth, CodeLocationLabel() };
 #else
-    HandlerInfo info = { start->offsetFrom(0), end->offsetFrom(0), instructions().size(), m_dynamicScopeDepth + m_baseScopeDepth };
+    HandlerInfo info = { start->bind(0, 0), end->bind(0, 0), instructions().size(), m_dynamicScopeDepth + m_baseScopeDepth };
 #endif
 
     m_codeBlock->addExceptionHandler(info);
@@ -1799,9 +1857,11 @@ RegisterID* BytecodeGenerator::emitNewError(RegisterID* dst, ErrorType type, JSV
 
 PassRefPtr<Label> BytecodeGenerator::emitJumpSubroutine(RegisterID* retAddrDst, Label* finally)
 {
+    size_t begin = instructions().size();
+
     emitOpcode(op_jsr);
     instructions().append(retAddrDst->index());
-    instructions().append(finally->offsetFrom(instructions().size()));
+    instructions().append(finally->bind(begin, instructions().size()));
     emitLabel(newLabel().get()); // Record the fact that the next instruction is implicitly labeled, because op_sret will return to it.
     return finally;
 }
@@ -1871,7 +1931,7 @@ static void prepareJumpTableForImmediateSwitch(SimpleJumpTable& jumpTable, int32
         // We're emitting this after the clause labels should have been fixed, so 
         // the labels should not be "forward" references
         ASSERT(!labels[i]->isForward());
-        jumpTable.add(keyForImmediateSwitch(nodes[i], min, max), labels[i]->offsetFrom(switchAddress)); 
+        jumpTable.add(keyForImmediateSwitch(nodes[i], min, max), labels[i]->bind(switchAddress, switchAddress + 3)); 
     }
 }
 
@@ -1897,7 +1957,7 @@ static void prepareJumpTableForCharacterSwitch(SimpleJumpTable& jumpTable, int32
         // We're emitting this after the clause labels should have been fixed, so 
         // the labels should not be "forward" references
         ASSERT(!labels[i]->isForward());
-        jumpTable.add(keyForCharacterSwitch(nodes[i], min, max), labels[i]->offsetFrom(switchAddress)); 
+        jumpTable.add(keyForCharacterSwitch(nodes[i], min, max), labels[i]->bind(switchAddress, switchAddress + 3)); 
     }
 }
 
@@ -1911,7 +1971,7 @@ static void prepareJumpTableForStringSwitch(StringJumpTable& jumpTable, int32_t 
         ASSERT(nodes[i]->isString());
         UString::Rep* clause = static_cast<StringNode*>(nodes[i])->value().ustring().rep();
         OffsetLocation location;
-        location.branchOffset = labels[i]->offsetFrom(switchAddress);
+        location.branchOffset = labels[i]->bind(switchAddress, switchAddress + 3);
         jumpTable.offsetTable.add(clause, location);
     }
 }
@@ -1922,23 +1982,23 @@ void BytecodeGenerator::endSwitch(uint32_t clauseCount, RefPtr<Label>* labels, E
     m_switchContextStack.removeLast();
     if (switchInfo.switchType == SwitchInfo::SwitchImmediate) {
         instructions()[switchInfo.bytecodeOffset + 1] = m_codeBlock->numberOfImmediateSwitchJumpTables();
-        instructions()[switchInfo.bytecodeOffset + 2] = defaultLabel->offsetFrom(switchInfo.bytecodeOffset + 3);
+        instructions()[switchInfo.bytecodeOffset + 2] = defaultLabel->bind(switchInfo.bytecodeOffset, switchInfo.bytecodeOffset + 3);
 
         SimpleJumpTable& jumpTable = m_codeBlock->addImmediateSwitchJumpTable();
-        prepareJumpTableForImmediateSwitch(jumpTable, switchInfo.bytecodeOffset + 3, clauseCount, labels, nodes, min, max);
+        prepareJumpTableForImmediateSwitch(jumpTable, switchInfo.bytecodeOffset, clauseCount, labels, nodes, min, max);
     } else if (switchInfo.switchType == SwitchInfo::SwitchCharacter) {
         instructions()[switchInfo.bytecodeOffset + 1] = m_codeBlock->numberOfCharacterSwitchJumpTables();
-        instructions()[switchInfo.bytecodeOffset + 2] = defaultLabel->offsetFrom(switchInfo.bytecodeOffset + 3);
+        instructions()[switchInfo.bytecodeOffset + 2] = defaultLabel->bind(switchInfo.bytecodeOffset, switchInfo.bytecodeOffset + 3);
         
         SimpleJumpTable& jumpTable = m_codeBlock->addCharacterSwitchJumpTable();
-        prepareJumpTableForCharacterSwitch(jumpTable, switchInfo.bytecodeOffset + 3, clauseCount, labels, nodes, min, max);
+        prepareJumpTableForCharacterSwitch(jumpTable, switchInfo.bytecodeOffset, clauseCount, labels, nodes, min, max);
     } else {
         ASSERT(switchInfo.switchType == SwitchInfo::SwitchString);
         instructions()[switchInfo.bytecodeOffset + 1] = m_codeBlock->numberOfStringSwitchJumpTables();
-        instructions()[switchInfo.bytecodeOffset + 2] = defaultLabel->offsetFrom(switchInfo.bytecodeOffset + 3);
+        instructions()[switchInfo.bytecodeOffset + 2] = defaultLabel->bind(switchInfo.bytecodeOffset, switchInfo.bytecodeOffset + 3);
 
         StringJumpTable& jumpTable = m_codeBlock->addStringSwitchJumpTable();
-        prepareJumpTableForStringSwitch(jumpTable, switchInfo.bytecodeOffset + 3, clauseCount, labels, nodes);
+        prepareJumpTableForStringSwitch(jumpTable, switchInfo.bytecodeOffset, clauseCount, labels, nodes);
     }
 }
 

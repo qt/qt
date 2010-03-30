@@ -122,6 +122,30 @@ typedef bool (APIENTRY *PFNWGLCHOOSEPIXELFORMATARB)(HDC hdc,
 #define WGL_TYPE_COLORINDEX_ARB        0x202C
 #endif
 
+#ifndef WGL_ARB_create_context
+#define WGL_CONTEXT_MAJOR_VERSION_ARB               0x2091
+#define WGL_CONTEXT_MINOR_VERSION_ARB               0x2092
+#define WGL_CONTEXT_LAYER_PLANE_ARB                 0x2093
+#define WGL_CONTEXT_FLAGS_ARB                       0x2094
+#define WGL_CONTEXT_PROFILE_MASK_ARB                0x9126
+#define WGL_CONTEXT_DEBUG_BIT_ARB                   0x0001
+#define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB      0x0002
+#define WGL_CONTEXT_CORE_PROFILE_BIT_ARB            0x0001
+#define WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB   0x0002
+// Error codes returned by GetLastError().
+#define ERROR_INVALID_VERSION_ARB                   0x2095
+#define ERROR_INVALID_PROFILE_ARB                   0x2096
+#endif
+
+#ifndef GL_VERSION_3_2
+#define GL_CONTEXT_PROFILE_MASK                     0x9126
+#define GL_MAJOR_VERSION                            0x821B
+#define GL_MINOR_VERSION                            0x821C
+#define GL_NUM_EXTENSIONS                           0x821D
+#define GL_CONTEXT_FLAGS                            0x821E
+#define GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT      0x0001
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QGLCmapPrivate
@@ -682,8 +706,118 @@ QGLTemporaryContext::~QGLTemporaryContext()
         wglMakeCurrent(d->old_dc, d->old_context);
 }
 
+static bool qgl_create_context(HDC hdc, QGLContextPrivate *d, QGLContextPrivate *shareContext)
+{
+    d->rc = 0;
+
+    typedef HGLRC (APIENTRYP PFNWGLCREATECONTEXTATTRIBSARB)(HDC, HGLRC, const int *);
+    PFNWGLCREATECONTEXTATTRIBSARB wglCreateContextAttribsARB =
+        (PFNWGLCREATECONTEXTATTRIBSARB) wglGetProcAddress("wglCreateContextAttribsARB");
+    if (wglCreateContextAttribsARB) {
+        int attributes[11];
+        int attribIndex = 0;
+        const int major = d->reqFormat.majorVersion();
+        const int minor = d->reqFormat.minorVersion();
+        attributes[attribIndex++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
+        attributes[attribIndex++] = major;
+        attributes[attribIndex++] = WGL_CONTEXT_MINOR_VERSION_ARB;
+        attributes[attribIndex++] = minor;
+
+        if (major >= 3 && !d->reqFormat.testOption(QGL::DeprecatedFunctions)) {
+            attributes[attribIndex++] = WGL_CONTEXT_FLAGS_ARB;
+            attributes[attribIndex++] = WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+        }
+
+        if ((major == 3 && minor >= 2) || major > 3) {
+            switch (d->reqFormat.profile()) {
+            case QGLFormat::NoProfile:
+                break;
+            case QGLFormat::CoreProfile:
+                attributes[attribIndex++] = WGL_CONTEXT_PROFILE_MASK_ARB;
+                attributes[attribIndex++] = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
+                break;
+            case QGLFormat::CompatibilityProfile:
+                attributes[attribIndex++] = WGL_CONTEXT_PROFILE_MASK_ARB;
+                attributes[attribIndex++] = WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+                break;
+            default:
+                qWarning("QGLContext::chooseContext(): Context profile not supported.");
+                return false;
+            }
+        }
+
+        if (d->reqFormat.plane() != 0) {
+            attributes[attribIndex++] = WGL_CONTEXT_LAYER_PLANE_ARB;
+            attributes[attribIndex++] = d->reqFormat.plane();
+        }
+
+        attributes[attribIndex++] = 0; // Terminate list.
+        d->rc = wglCreateContextAttribsARB(hdc, shareContext && shareContext->valid
+                                           ? shareContext->rc : 0, attributes);
+        if (d->rc) {
+            if (shareContext)
+                shareContext->sharing = d->sharing = true;
+            return true;
+        }
+    }
+
+    d->rc = wglCreateLayerContext(hdc, d->reqFormat.plane());
+    if (d->rc && shareContext && shareContext->valid)
+        shareContext->sharing = d->sharing = wglShareLists(shareContext->rc, d->rc);
+    return d->rc != 0;
+}
+
+void QGLContextPrivate::updateFormatVersion()
+{
+    const GLubyte *s = glGetString(GL_VERSION);
+
+    if (!(s && s[0] >= '0' && s[0] <= '9' && s[1] == '.' && s[2] >= '0' && s[2] <= '9')) {
+        if (!s)
+            qWarning("QGLContext::chooseContext(): OpenGL version string is null.");
+        else
+            qWarning("QGLContext::chooseContext(): Unexpected OpenGL version string format.");
+        glFormat.setVersion(0, 0);
+        glFormat.setProfile(QGLFormat::NoProfile);
+        glFormat.setOption(QGL::DeprecatedFunctions);
+        return;
+    }
+
+    int major = s[0] - '0';
+    int minor = s[2] - '0';
+    glFormat.setVersion(major, minor);
+
+    if (major < 3) {
+        glFormat.setProfile(QGLFormat::NoProfile);
+        glFormat.setOption(QGL::DeprecatedFunctions);
+    } else {
+        GLint value = 0;
+        if (major > 3 || minor >= 2)
+            glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
+
+        switch (value) {
+        case WGL_CONTEXT_CORE_PROFILE_BIT_ARB:
+            glFormat.setProfile(QGLFormat::CoreProfile);
+            break;
+        case WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB:
+            glFormat.setProfile(QGLFormat::CompatibilityProfile);
+            break;
+        default:
+            glFormat.setProfile(QGLFormat::NoProfile);
+            break;
+        }
+
+        glGetIntegerv(GL_CONTEXT_FLAGS, &value);
+        if (value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT)
+            glFormat.setOption(QGL::NoDeprecatedFunctions);
+        else
+            glFormat.setOption(QGL::DeprecatedFunctions);
+    }
+}
+
 bool QGLContext::chooseContext(const QGLContext* shareContext)
 {
+    QGLContextPrivate *share = shareContext ? const_cast<QGLContext *>(shareContext)->d_func() : 0;
+
     Q_D(QGLContext);
     // workaround for matrox driver:
     // make a cheap call to opengl to force loading of DLL
@@ -741,8 +875,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
             goto end;
         }
 
-        d->rc = wglCreateLayerContext(myDc, d->glFormat.plane());
-        if (!d->rc) {
+        if (!qgl_create_context(myDc, d, share)) {
             qwglError("QGLContext::chooseContext()", "CreateLayerContext");
             result = false;
             goto end;
@@ -792,16 +925,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
             d->cmap = new QGLCmap(1 << lpfd.cColorBits);
             d->cmap->setEntry(lpfd.crTransparent, qRgb(1, 2, 3));//, QGLCmap::Reserved);
         }
-
-        if (shareContext && shareContext->isValid()) {
-            QGLContext *share = const_cast<QGLContext *>(shareContext);
-            d->sharing = (wglShareLists(shareContext->d_func()->rc, d->rc) != 0);
-            share->d_func()->sharing = d->sharing;
-        }
-
-        goto end;
-    }
-    {
+    } else {
         PIXELFORMATDESCRIPTOR pfd;
         PIXELFORMATDESCRIPTOR realPfd;
         d->pixelFormatId = choosePixelFormat(&pfd, myDc);
@@ -840,15 +964,10 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
             goto end;
         }
 
-        if (!(d->rc = wglCreateLayerContext(myDc, 0))) {
+        if (!qgl_create_context(myDc, d, share)) {
             qwglError("QGLContext::chooseContext()", "wglCreateContext");
             result = false;
             goto end;
-        }
-
-        if (shareContext && shareContext->isValid()) {
-            d->sharing = (wglShareLists(shareContext->d_func()->rc, d->rc) != 0);
-            const_cast<QGLContext *>(shareContext)->d_func()->sharing = d->sharing;
         }
 
         if(!deviceIsPixmap()) {
@@ -865,6 +984,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 end:
     // vblanking
     wglMakeCurrent(myDc, d->rc);
+    if (d->rc)
+        d->updateFormatVersion();
+
     typedef BOOL (APIENTRYP PFNWGLSWAPINTERVALEXT) (int interval);
     typedef int (APIENTRYP PFNWGLGETSWAPINTERVALEXT) (void);
     PFNWGLSWAPINTERVALEXT wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXT) wglGetProcAddress("wglSwapIntervalEXT");
@@ -1158,8 +1280,9 @@ void QGLContext::reset()
 void QGLContext::makeCurrent()
 {
     Q_D(QGLContext);
-    if (d->rc == wglGetCurrentContext() || !d->valid)        // already current
+    if (d->rc == wglGetCurrentContext() || !d->valid)       // already current
         return;
+
     if (d->win) {
         d->dc = GetDC(d->win);
         if (!d->dc) {

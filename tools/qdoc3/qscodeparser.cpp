@@ -151,8 +151,8 @@ void QsCodeParser::parseHeaderFile(const Location& location,
 {
     qsTre = tree;
 
-    FILE *in = fopen(QFile::encodeName(filePath), "r");
-    if (in == 0) {
+    QFile in(filePath);
+    if (!in.open(QIODevice::ReadOnly)) {
 	location.error(tr("Cannot open Qt Script class list '%1'")
 			.arg(filePath));
 	return;
@@ -175,7 +175,7 @@ void QsCodeParser::parseHeaderFile(const Location& location,
 	}
 	tok = fileTokenizer.getToken();
     }
-    fclose(in);
+    in.close();
 }
 
 void QsCodeParser::parseSourceFile(const Location& location,

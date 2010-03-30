@@ -46,11 +46,16 @@
 #ifndef WEBXMLGENERATOR_H
 #define WEBXMLGENERATOR_H
 
+#include <QtCore/qxmlstream.h>
+
 #include "codemarker.h"
 #include "config.h"
 #include "pagegenerator.h"
 
 QT_BEGIN_NAMESPACE
+
+class QXmlStreamReader;
+class QXmlStreamWriter;
 
 class WebXMLGenerator : public PageGenerator
 {
@@ -69,7 +74,7 @@ protected:
                              const Node *relative, CodeMarker *marker );
     virtual void generateClassLikeNode(const InnerNode *inner, CodeMarker *marker);
     virtual void generateFakeNode(const FakeNode *fake, CodeMarker *marker);
-    virtual QString fileExtension(const Node *node);
+    virtual QString fileExtension(const Node *node) const;
 
     virtual const Atom *addAtomElements(QXmlStreamWriter &writer, const Atom *atom,
                                  const Node *relative, CodeMarker *marker);

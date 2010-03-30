@@ -188,31 +188,6 @@ inline void qDrawBorderPixmap(QPainter *painter,
     qDrawBorderPixmap(painter, target, margins, pixmap, pixmap.rect(), margins);
 }
 
-// For internal use only.
-namespace QDrawPixmaps
-{
-    struct Data
-    {
-        QPointF point;
-        QRectF source;
-        qreal scaleX;
-        qreal scaleY;
-        qreal rotation;
-        qreal opacity;
-    };
-
-    enum DrawingHint
-    {
-        OpaqueHint = 0x01
-    };
-
-    Q_DECLARE_FLAGS(DrawingHints, DrawingHint)
-}
-
-// This function is private and may change without notice. Do not use outside Qt!!!
-Q_GUI_EXPORT void qDrawPixmaps(QPainter *painter, const QDrawPixmaps::Data *drawingData,
-                               int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints = 0);
-
 QT_END_NAMESPACE
 
 QT_END_HEADER

@@ -685,6 +685,7 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     case PPK_FullPage:
         d->fullPage = value.toBool();
         break;
+    case PPK_CopyCount: // fallthrough
     case PPK_NumberOfCopies:
         PMSetCopies(d->settings, value.toInt(), false);
         break;
@@ -786,6 +787,15 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         break;
     case PPK_NumberOfCopies:
         ret = 1;
+        break;
+    case PPK_CopyCount: {
+        UInt32 copies = 1;
+        PMGetCopies(d->settings, &copies);
+        ret = (uint) copies;
+        break;
+    }
+    case PPK_SupportsMultipleCopies:
+        ret = true;
         break;
     case PPK_Orientation:
         PMOrientation orientation;

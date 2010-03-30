@@ -269,9 +269,6 @@ static void cleanupCocoaWindowDelegate()
 {
     QWidget *qwidget = m_windowHash->value([notification object]);
     Q_ASSERT(qwidget);
-    if (qwidget->isActiveWindow())
-        return;  // Widget is already active, no need to go through re-activation.
-
     onApplicationWindowChangedActivation(qwidget, true);
 }
 
@@ -288,10 +285,6 @@ static void cleanupCocoaWindowDelegate()
 {
     QWidget *qwidget = m_windowHash->value([notification object]);
     Q_ASSERT(qwidget);
-    if (qwidget->isActiveWindow())
-        return;  // Widget is already active, no need to go through re-activation
-
-
     onApplicationWindowChangedActivation(qwidget, true);
 }
 

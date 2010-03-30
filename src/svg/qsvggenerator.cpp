@@ -310,7 +310,6 @@ public:
     {
         *d_func()->stream << QLatin1String("fill=\"none\" ");
         *d_func()->stream << QLatin1String("stroke=\"black\" ");
-        *d_func()->stream << QLatin1String("vector-effect=\"non-scaling-stroke\" ");
         *d_func()->stream << QLatin1String("stroke-width=\"1\" ");
         *d_func()->stream << QLatin1String("fill-rule=\"evenodd\" ");
         *d_func()->stream << QLatin1String("stroke-linecap=\"square\" ");
@@ -380,13 +379,10 @@ public:
             break;
         }
 
-        if (spen.widthF() == 0) {
-            width = QLatin1String("1");
-            stream() << "vector-effect=\"non-scaling-stroke\" ";
-        }
+        if (spen.widthF() == 0)
+            stream() <<"stroke-width=\"1\" ";
         else
-            width = QString::number(spen.widthF());
-        stream() <<"stroke-width=\""<<width<<"\" ";
+            stream() <<"stroke-width=\"" << spen.widthF() << "\" ";
 
         switch (spen.capStyle()) {
         case Qt::FlatCap:
@@ -983,14 +979,11 @@ void QSvgPaintEngine::drawPath(const QPainterPath &p)
 {
     Q_D(QSvgPaintEngine);
 
-    *d->stream << "<path "
-                  "fill-rule=";
-    if (p.fillRule() == Qt::OddEvenFill)
-        *d->stream << "\"evenodd\" ";
-    else
-        *d->stream << "\"nonzero\" ";
-
-    *d->stream << "d=\"";
+    *d->stream << "<path vector-effect=\""
+               << (state->pen().isCosmetic() ? "non-scaling-stroke" : "none")
+               << "\" fill-rule=\""
+               << (p.fillRule() == Qt::OddEvenFill ? "evenodd" : "nonzero")
+               << "\" d=\"";
 
     for (int i=0; i<p.elementCount(); ++i) {
         const QPainterPath::Element &e = p.elementAt(i);
@@ -1038,7 +1031,9 @@ void QSvgPaintEngine::drawPolygon(const QPointF *points, int pointCount,
         path.lineTo(points[i]);
 
     if (mode == PolylineMode) {
-        stream() << "<polyline fill=\"none\" points=\"";
+        stream() << "<polyline fill=\"none\" vector-effect=\""
+                 << (state->pen().isCosmetic() ? "non-scaling-stroke" : "none")
+                 << "\" points=\"";
         for (int i = 0; i < pointCount; ++i) {
             const QPointF &pt = points[i];
             stream() << pt.x() << ',' << pt.y() << ' ';

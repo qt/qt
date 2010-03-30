@@ -9,7 +9,7 @@ CONFIG += qt \
     uitools
 
 DEFINES += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
-build_all:!build_pass { 
+build_all:!build_pass {
     CONFIG -= build_all
     CONFIG += release
 }
@@ -42,7 +42,7 @@ SOURCES += \
     statistics.cpp \
     translatedialog.cpp \
     translationsettingsdialog.cpp \
-    ../shared/simtexth.cpp 
+    ../shared/simtexth.cpp
 
 HEADERS += \
     batchtranslationdialog.h \
@@ -71,7 +71,7 @@ contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE
 DEFINES += QT_KEYWORDS
 TARGET = linguist
 win32:RC_FILE = linguist.rc
-mac { 
+mac {
     static:CONFIG -= global_init_link_order
     ICON = linguist.icns
     TARGET = Linguist
@@ -100,6 +100,7 @@ TRANSLATIONS = \
     $$TR_DIR/linguist_cs.ts \
     $$TR_DIR/linguist_de.ts \
     $$TR_DIR/linguist_fr.ts \
+    $$TR_DIR/linguist_hu.ts \
     $$TR_DIR/linguist_ja.ts \
     $$TR_DIR/linguist_pl.ts \
     $$TR_DIR/linguist_ru.ts \

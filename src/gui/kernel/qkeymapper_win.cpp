@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 //#define DEBUG_KEYMAPPER
 
 // Implemented elsewhere
-extern "C" LRESULT CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
+extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
 
 extern Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id);
 #ifndef LANG_PASHTO
@@ -619,7 +619,7 @@ void QKeyMapperPrivate::clearMappings()
     /* MAKELCID()'s first argument is a WORD, and GetKeyboardLayout()
      * returns a DWORD. */
 
-    LCID newLCID = MAKELCID((DWORD)GetKeyboardLayout(0), SORT_DEFAULT);
+    LCID newLCID = MAKELCID((quintptr)GetKeyboardLayout(0), SORT_DEFAULT);
 //    keyboardInputLocale = qt_localeFromLCID(newLCID);
 
     bool bidi = false;

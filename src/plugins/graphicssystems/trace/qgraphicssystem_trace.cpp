@@ -82,8 +82,13 @@ QTraceWindowSurface::~QTraceWindowSurface()
         QFile outputFile(QString(QLatin1String("qtgraphics-%0.trace")).arg(winId));
         if (outputFile.open(QIODevice::WriteOnly)) {
             QDataStream out(&outputFile);
-            out.writeBytes("qttrace", 7);
-            out << *buffer << updates;
+            out.setFloatingPointPrecision(QDataStream::SinglePrecision);
+
+            out.writeBytes("qttraceV2", 9);
+
+            uint version = 1;
+
+            out << version << *buffer << updates;
         }
         delete buffer;
     }

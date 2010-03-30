@@ -44,7 +44,6 @@
 */
 
 #include <qglobal.h>
-#include <QtCore>
 #include <stdlib.h>
 #include "apigenerator.h"
 #include "codemarker.h"
@@ -71,6 +70,12 @@
 #include "webxmlgenerator.h"
 #include "tokenizer.h"
 #include "tree.h"
+#include <qdebug.h>
+
+#include "qtranslator.h"
+#ifndef QT_BOOTSTRAPPED
+#  include "qcoreapplication.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -151,7 +156,9 @@ static void printVersion()
  */
 static void processQdocconfFile(const QString &fileName)
 {
+#ifndef QT_NO_TRANSLATION
     QList<QTranslator *> translators;
+#endif
 
     /*
       The Config instance represents the configuration data for qdoc.
@@ -207,6 +214,7 @@ static void processQdocconfFile(const QString &fileName)
     CodeParser::initialize(config);
     Generator::initialize(config);
 
+#ifndef QT_NO_TRANSLATION
     /*
       Load the language translators, if the configuration specifies any.
      */
@@ -221,6 +229,7 @@ static void processQdocconfFile(const QString &fileName)
 	translators.append(translator);
 	++fn;
     }
+#endif
 
     //QSet<QString> outputLanguages = config.getStringSet(CONFIG_OUTPUTLANGUAGES);
 
@@ -337,8 +346,9 @@ static void processQdocconfFile(const QString &fileName)
       Generate the XML tag file, if it was requested.
      */
     QString tagFile = config.getString(CONFIG_TAGFILE);
-    if (!tagFile.isEmpty())
+    if (!tagFile.isEmpty()) {
         tree->generateTagFile(tagFile);
+    }
 
     tree->setVersion("");
     Generator::terminate();
@@ -350,9 +360,16 @@ static void processQdocconfFile(const QString &fileName)
     Location::terminate();
     QDir::setCurrent(prevCurrentDir);
 
-    foreach (QTranslator *translator, translators)
-        delete translator;
+#ifndef QT_NO_TRANSLATION
+    qDeleteAll(translators);
+#endif
+#ifdef DEBUG_SHUTDOWN_CRASH    
+    qDebug() << "main(): Delete tree";
+#endif    
     delete tree;
+#ifdef DEBUG_SHUTDOWN_CRASH    
+    qDebug() << "main(): Tree deleted";
+#endif
 }
 
 QT_END_NAMESPACE
@@ -361,7 +378,9 @@ int main(int argc, char **argv)
 {
     QT_USE_NAMESPACE
 
+#ifndef QT_BOOTSTRAPPED
     QCoreApplication app(argc, argv);
+#endif
     QString cf = "qsauncompress \1 \2";
     PolyArchiveExtractor qsaExtractor(QStringList() << "qsa",cf);
     cf = "tar -C \2 -xf \1";

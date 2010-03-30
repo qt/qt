@@ -73,7 +73,7 @@ void Assistant::showDocumentation(const QString &page)
     QByteArray ba("SetSource ");
     ba.append("qthelp://com.trolltech.examples.simpletextviewer/doc/");
     
-    proc->write(ba + page.toLocal8Bit() + '\0');
+    proc->write(ba + page.toLocal8Bit() + '\n');
 }
 //! [1]
 

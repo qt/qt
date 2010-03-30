@@ -24,11 +24,7 @@
     </tr>
     <tr>
       <th>Latest Stable Release</th>
-      <td><a href="v3.8.2.html">v3.8.2</a></td>
-    </tr>
-    <tr>
-      <th>Latest Development Release</th>
-      <td><a href="v3.8.2.html">v3.8.2</a></td>
+      <td><a href="v3.9.2.html">v3.9.2</a></td>
     </tr>
     <tr>
       <th>Master Download Site</th>
@@ -53,8 +49,12 @@
     <tr>
       <th>Anonymous CVS</th>
       <td><tt>export CVSROOT=:pserver:cvsanon@cvs.maptools.org:/cvs/maptools/cvsroot<br>
-        cvs login # use empty password"<br>
-        cvs checkout libtiff<br></tt></td>
+	cvs login</tt><br>
+	(use empty password)<br>
+	<tt>cvs checkout -r branch-3-9 libtiff<br></tt>
+	to get stable libtiff branch, or<br>
+	<tt>cvs checkout libtiff</tt><br>
+	to get bleeding edge development version of libtiff from CVS HEAD.</td>
     </tr>
   </table>
   <hr>
@@ -65,12 +65,13 @@
     in several different formats.
   </p>
   <p>
-    Included in this software distribution is a library, libtiff, for
-    reading and writing TIFF, a small collection of tools for doing simple
-    manipulations of TIFF images on UNIX systems,
-    and documentation on the library and
-    tools.  A small assortment of TIFF-related software for UNIX
-    that has been contributed by others is also included.
+    Included in this software distribution is a library, libtiff, for reading
+    and writing TIFF, a small collection of tools for doing simple
+    manipulations of TIFF images, and documentation on the
+    library and tools.  Libtiff is a portable software, it was built and
+    tested on various systems: UNIX flavors (Linux, BSD, Solaris, MacOS X),
+    Windows, OpenVMS.  It should be possible to port libtiff and additional
+    tools on other OSes.
   </p>
   <p>
     The library, along with associated tool programs, should handle most of
@@ -80,7 +81,7 @@
     the compression support.
   </p>
   <p>
-    The software was orginally authored and maintained by Sam Leffler.
+    The software was originally authored and maintained by Sam Leffler.
     While he keeps a fatherly eye on the mailing list, he is no longer
     responsible for day to day maintenance.
   </p>
@@ -94,7 +95,8 @@
     The persons responsible for putting up this site and putting together
     versions &gt;= 3.5.1 are
     <a href="http://pobox.com/~warmerdam">Frank Warmerdam</a>,
-    <a href="mailto:dron@ak4719.spb.edu">Andrey Kiselev</a> and Mike Welles.
+    <a href="mailto:dron@ak4719.spb.edu">Andrey Kiselev</a>, Bob Friesenhahn, 
+Joris Van Damme and Lee Howard.
   </p>
   <p>
     The following sections are included in this documentation:
@@ -115,7 +117,7 @@
   </ul>
   <hr>
   <p>
-    Last updated  $Date: 2006/03/23 14:54:01 $.
+    Last updated  $Date: 2009-08-28 16:24:13 $.
   </p>
 </body>
 </html>

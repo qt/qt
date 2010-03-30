@@ -90,6 +90,7 @@ class Q_CORE_EXPORT QDeclarativeData
 public:
     virtual ~QDeclarativeData();
     virtual void destroyed(QObject *) = 0;
+    virtual void parentChanged(QObject *, QObject *) = 0;
 };
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData
@@ -189,8 +190,8 @@ public:
     QList<QObject *> pendingChildInsertedEvents;
 #else
     // preserve binary compatibility with code compiled without Qt 3 support
-    // ### why?
-    QList<QObject *> unused;
+    // keeping the binary layout stable helps the Qt Creator debugger
+    void *unused;
 #endif
 
     QList<QPointer<QObject> > eventFilters;

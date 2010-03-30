@@ -38,6 +38,8 @@
 #define JIT_CLASS_ALIGNMENT
 #endif
 
+#define ASSERT_JIT_OFFSET(actual, expected) ASSERT_WITH_MESSAGE(actual == expected, "JIT Offset \"%s\" should be %d, not %d.\n", #expected, static_cast<int>(actual), static_cast<int>(expected));
+
 #include "CodeBlock.h"
 #include "Interpreter.h"
 #include "JITCode.h"
@@ -190,7 +192,7 @@ namespace JSC {
         // on x86/x86-64 it is ecx for performance reasons, since the
         // MacroAssembler will need to plant register swaps if it is not -
         // however the code will still function correctly.
-#if PLATFORM(X86_64)
+#if CPU(X86_64)
         static const RegisterID returnValueRegister = X86Registers::eax;
         static const RegisterID cachedResultRegister = X86Registers::eax;
         static const RegisterID firstArgumentRegister = X86Registers::edi;
@@ -208,7 +210,7 @@ namespace JSC {
         static const FPRegisterID fpRegT0 = X86Registers::xmm0;
         static const FPRegisterID fpRegT1 = X86Registers::xmm1;
         static const FPRegisterID fpRegT2 = X86Registers::xmm2;
-#elif PLATFORM(X86)
+#elif CPU(X86)
         static const RegisterID returnValueRegister = X86Registers::eax;
         static const RegisterID cachedResultRegister = X86Registers::eax;
         // On x86 we always use fastcall conventions = but on
@@ -226,7 +228,7 @@ namespace JSC {
         static const FPRegisterID fpRegT0 = X86Registers::xmm0;
         static const FPRegisterID fpRegT1 = X86Registers::xmm1;
         static const FPRegisterID fpRegT2 = X86Registers::xmm2;
-#elif PLATFORM(ARM_THUMB2)
+#elif CPU(ARM_THUMB2)
         static const RegisterID returnValueRegister = ARMRegisters::r0;
         static const RegisterID cachedResultRegister = ARMRegisters::r0;
         static const RegisterID firstArgumentRegister = ARMRegisters::r0;
@@ -242,14 +244,13 @@ namespace JSC {
         static const FPRegisterID fpRegT0 = ARMRegisters::d0;
         static const FPRegisterID fpRegT1 = ARMRegisters::d1;
         static const FPRegisterID fpRegT2 = ARMRegisters::d2;
-#elif PLATFORM(ARM_TRADITIONAL)
+#elif CPU(ARM_TRADITIONAL)
         static const RegisterID returnValueRegister = ARMRegisters::r0;
         static const RegisterID cachedResultRegister = ARMRegisters::r0;
         static const RegisterID firstArgumentRegister = ARMRegisters::r0;
 
         static const RegisterID timeoutCheckRegister = ARMRegisters::r5;
         static const RegisterID callFrameRegister = ARMRegisters::r4;
-        static const RegisterID ctiReturnRegister = ARMRegisters::r6;
 
         static const RegisterID regT0 = ARMRegisters::r0;
         static const RegisterID regT1 = ARMRegisters::r1;
@@ -386,6 +387,8 @@ namespace JSC {
 
         Address addressFor(unsigned index, RegisterID base = callFrameRegister);
 
+        void testPrototype(Structure*, JumpList& failureCases);
+
 #if USE(JSVALUE32_64)
         Address tagFor(unsigned index, RegisterID base = callFrameRegister);
         Address payloadFor(unsigned index, RegisterID base = callFrameRegister);
@@ -425,6 +428,7 @@ namespace JSC {
 #endif
         void compileGetDirectOffset(RegisterID base, RegisterID resultTag, RegisterID resultPayload, Structure* structure, size_t cachedOffset);
         void compileGetDirectOffset(JSObject* base, RegisterID temp, RegisterID resultTag, RegisterID resultPayload, size_t cachedOffset);
+        void compileGetDirectOffset(RegisterID base, RegisterID resultTag, RegisterID resultPayload, RegisterID structure, RegisterID offset);
         void compilePutDirectOffset(RegisterID base, RegisterID valueTag, RegisterID valuePayload, Structure* structure, size_t cachedOffset);
 
         // Arithmetic opcode helpers
@@ -432,7 +436,7 @@ namespace JSC {
         void emitSub32Constant(unsigned dst, unsigned op, int32_t constant, ResultType opType);
         void emitBinaryDoubleOp(OpcodeID, unsigned dst, unsigned op1, unsigned op2, OperandTypes, JumpList& notInt32Op1, JumpList& notInt32Op2, bool op1IsInRegisters = true, bool op2IsInRegisters = true);
 
-#if PLATFORM(X86)
+#if CPU(X86)
         // These architecture specific value are used to enable patching - see comment on op_put_by_id.
         static const int patchOffsetPutByIdStructure = 7;
         static const int patchOffsetPutByIdExternalLoad = 13;
@@ -461,6 +465,47 @@ namespace JSC {
         static const int patchOffsetMethodCheckProtoObj = 11;
         static const int patchOffsetMethodCheckProtoStruct = 18;
         static const int patchOffsetMethodCheckPutFunction = 29;
+#elif CPU(ARM_TRADITIONAL)
+        // These architecture specific value are used to enable patching - see comment on op_put_by_id.
+        static const int patchOffsetPutByIdStructure = 4;
+        static const int patchOffsetPutByIdExternalLoad = 16;
+        static const int patchLengthPutByIdExternalLoad = 4;
+        static const int patchOffsetPutByIdPropertyMapOffset1 = 20;
+        static const int patchOffsetPutByIdPropertyMapOffset2 = 28;
+        // These architecture specific value are used to enable patching - see comment on op_get_by_id.
+        static const int patchOffsetGetByIdStructure = 4;
+        static const int patchOffsetGetByIdBranchToSlowCase = 16;
+        static const int patchOffsetGetByIdExternalLoad = 16;
+        static const int patchLengthGetByIdExternalLoad = 4;
+        static const int patchOffsetGetByIdPropertyMapOffset1 = 20;
+        static const int patchOffsetGetByIdPropertyMapOffset2 = 28;
+        static const int patchOffsetGetByIdPutResult = 36;
+#if ENABLE(OPCODE_SAMPLING)
+        #error "OPCODE_SAMPLING is not yet supported"
+#else
+        static const int patchOffsetGetByIdSlowCaseCall = 32;
+#endif
+        static const int patchOffsetOpCallCompareToJump = 12;
+
+        static const int patchOffsetMethodCheckProtoObj = 12;
+        static const int patchOffsetMethodCheckProtoStruct = 20;
+        static const int patchOffsetMethodCheckPutFunction = 32;
+
+        // sequenceOpCall
+        static const int sequenceOpCallInstructionSpace = 12;
+        static const int sequenceOpCallConstantSpace = 2;
+        // sequenceMethodCheck
+        static const int sequenceMethodCheckInstructionSpace = 40;
+        static const int sequenceMethodCheckConstantSpace = 6;
+        // sequenceGetByIdHotPath
+        static const int sequenceGetByIdHotPathInstructionSpace = 36;
+        static const int sequenceGetByIdHotPathConstantSpace = 4;
+        // sequenceGetByIdSlowCase
+        static const int sequenceGetByIdSlowCaseInstructionSpace = 40;
+        static const int sequenceGetByIdSlowCaseConstantSpace = 2;
+        // sequencePutById
+        static const int sequencePutByIdInstructionSpace = 36;
+        static const int sequencePutByIdConstantSpace = 4;
 #else
 #error "JSVALUE32_64 not supported on this platform."
 #endif
@@ -526,9 +571,10 @@ namespace JSC {
 #endif
         void compileGetDirectOffset(RegisterID base, RegisterID result, Structure* structure, size_t cachedOffset);
         void compileGetDirectOffset(JSObject* base, RegisterID temp, RegisterID result, size_t cachedOffset);
+        void compileGetDirectOffset(RegisterID base, RegisterID result, RegisterID structure, RegisterID offset, RegisterID scratch);
         void compilePutDirectOffset(RegisterID base, RegisterID value, Structure* structure, size_t cachedOffset);
 
-#if PLATFORM(X86_64)
+#if CPU(X86_64)
         // These architecture specific value are used to enable patching - see comment on op_put_by_id.
         static const int patchOffsetPutByIdStructure = 10;
         static const int patchOffsetPutByIdExternalLoad = 20;
@@ -542,7 +588,7 @@ namespace JSC {
         static const int patchOffsetGetByIdPropertyMapOffset = 31;
         static const int patchOffsetGetByIdPutResult = 31;
 #if ENABLE(OPCODE_SAMPLING)
-        static const int patchOffsetGetByIdSlowCaseCall = 63;
+        static const int patchOffsetGetByIdSlowCaseCall = 64;
 #else
         static const int patchOffsetGetByIdSlowCaseCall = 41;
 #endif
@@ -551,7 +597,7 @@ namespace JSC {
         static const int patchOffsetMethodCheckProtoObj = 20;
         static const int patchOffsetMethodCheckProtoStruct = 30;
         static const int patchOffsetMethodCheckPutFunction = 50;
-#elif PLATFORM(X86)
+#elif CPU(X86)
         // These architecture specific value are used to enable patching - see comment on op_put_by_id.
         static const int patchOffsetPutByIdStructure = 7;
         static const int patchOffsetPutByIdExternalLoad = 13;
@@ -578,30 +624,30 @@ namespace JSC {
         static const int patchOffsetMethodCheckProtoObj = 11;
         static const int patchOffsetMethodCheckProtoStruct = 18;
         static const int patchOffsetMethodCheckPutFunction = 29;
-#elif PLATFORM(ARM_THUMB2)
+#elif CPU(ARM_THUMB2)
         // These architecture specific value are used to enable patching - see comment on op_put_by_id.
         static const int patchOffsetPutByIdStructure = 10;
-        static const int patchOffsetPutByIdExternalLoad = 20;
+        static const int patchOffsetPutByIdExternalLoad = 26;
         static const int patchLengthPutByIdExternalLoad = 12;
-        static const int patchOffsetPutByIdPropertyMapOffset = 40;
+        static const int patchOffsetPutByIdPropertyMapOffset = 46;
         // These architecture specific value are used to enable patching - see comment on op_get_by_id.
         static const int patchOffsetGetByIdStructure = 10;
-        static const int patchOffsetGetByIdBranchToSlowCase = 20;
-        static const int patchOffsetGetByIdExternalLoad = 20;
+        static const int patchOffsetGetByIdBranchToSlowCase = 26;
+        static const int patchOffsetGetByIdExternalLoad = 26;
         static const int patchLengthGetByIdExternalLoad = 12;
-        static const int patchOffsetGetByIdPropertyMapOffset = 40;
-        static const int patchOffsetGetByIdPutResult = 44;
+        static const int patchOffsetGetByIdPropertyMapOffset = 46;
+        static const int patchOffsetGetByIdPutResult = 50;
 #if ENABLE(OPCODE_SAMPLING)
         static const int patchOffsetGetByIdSlowCaseCall = 0; // FIMXE
 #else
         static const int patchOffsetGetByIdSlowCaseCall = 28;
 #endif
-        static const int patchOffsetOpCallCompareToJump = 10;
+        static const int patchOffsetOpCallCompareToJump = 16;
 
-        static const int patchOffsetMethodCheckProtoObj = 18;
-        static const int patchOffsetMethodCheckProtoStruct = 28;
-        static const int patchOffsetMethodCheckPutFunction = 46;
-#elif PLATFORM(ARM_TRADITIONAL)
+        static const int patchOffsetMethodCheckProtoObj = 24;
+        static const int patchOffsetMethodCheckProtoStruct = 34;
+        static const int patchOffsetMethodCheckPutFunction = 58;
+#elif CPU(ARM_TRADITIONAL)
         // These architecture specific value are used to enable patching - see comment on op_put_by_id.
         static const int patchOffsetPutByIdStructure = 4;
         static const int patchOffsetPutByIdExternalLoad = 16;
@@ -617,17 +663,14 @@ namespace JSC {
 #if ENABLE(OPCODE_SAMPLING)
         #error "OPCODE_SAMPLING is not yet supported"
 #else
-        static const int patchOffsetGetByIdSlowCaseCall = 36;
+        static const int patchOffsetGetByIdSlowCaseCall = 28;
 #endif
         static const int patchOffsetOpCallCompareToJump = 12;
 
         static const int patchOffsetMethodCheckProtoObj = 12;
         static const int patchOffsetMethodCheckProtoStruct = 20;
         static const int patchOffsetMethodCheckPutFunction = 32;
-#endif
-#endif // USE(JSVALUE32_64)
 
-#if PLATFORM(ARM_TRADITIONAL)
         // sequenceOpCall
         static const int sequenceOpCallInstructionSpace = 12;
         static const int sequenceOpCallConstantSpace = 2;
@@ -638,12 +681,13 @@ namespace JSC {
         static const int sequenceGetByIdHotPathInstructionSpace = 28;
         static const int sequenceGetByIdHotPathConstantSpace = 3;
         // sequenceGetByIdSlowCase
-        static const int sequenceGetByIdSlowCaseInstructionSpace = 40;
+        static const int sequenceGetByIdSlowCaseInstructionSpace = 32;
         static const int sequenceGetByIdSlowCaseConstantSpace = 2;
         // sequencePutById
         static const int sequencePutByIdInstructionSpace = 28;
         static const int sequencePutByIdConstantSpace = 3;
 #endif
+#endif // USE(JSVALUE32_64)
 
 #if defined(ASSEMBLER_HAS_CONSTANT_POOL) && ASSEMBLER_HAS_CONSTANT_POOL
 #define BEGIN_UNINTERRUPTED_SEQUENCE(name) beginUninterruptedSequence(name ## InstructionSpace, name ## ConstantSpace)
@@ -680,6 +724,7 @@ namespace JSC {
         void emit_op_eq_null(Instruction*);
         void emit_op_get_by_id(Instruction*);
         void emit_op_get_by_val(Instruction*);
+        void emit_op_get_by_pname(Instruction*);
         void emit_op_get_global_var(Instruction*);
         void emit_op_get_scoped_var(Instruction*);
         void emit_op_init_arguments(Instruction*);
@@ -691,6 +736,7 @@ namespace JSC {
         void emit_op_jneq_null(Instruction*);
         void emit_op_jneq_ptr(Instruction*);
         void emit_op_jnless(Instruction*);
+        void emit_op_jless(Instruction*);
         void emit_op_jnlesseq(Instruction*);
         void emit_op_jsr(Instruction*);
         void emit_op_jtrue(Instruction*);
@@ -699,6 +745,7 @@ namespace JSC {
         void emit_op_loop_if_less(Instruction*);
         void emit_op_loop_if_lesseq(Instruction*);
         void emit_op_loop_if_true(Instruction*);
+        void emit_op_loop_if_false(Instruction*);
         void emit_op_lshift(Instruction*);
         void emit_op_method_check(Instruction*);
         void emit_op_mod(Instruction*);
@@ -713,6 +760,7 @@ namespace JSC {
         void emit_op_new_func_exp(Instruction*);
         void emit_op_new_object(Instruction*);
         void emit_op_new_regexp(Instruction*);
+        void emit_op_get_pnames(Instruction*);
         void emit_op_next_pname(Instruction*);
         void emit_op_not(Instruction*);
         void emit_op_nstricteq(Instruction*);
@@ -768,14 +816,17 @@ namespace JSC {
         void emitSlow_op_eq(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_get_by_id(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_get_by_val(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_get_by_pname(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_instanceof(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_jfalse(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_jnless(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_jless(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_jnlesseq(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_jtrue(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_loop_if_less(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_loop_if_lesseq(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_loop_if_true(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_loop_if_false(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_lshift(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_method_check(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_mod(Instruction*, Vector<SlowCaseEntry>::iterator&);
@@ -903,6 +954,46 @@ namespace JSC {
 #endif
 #endif
     } JIT_CLASS_ALIGNMENT;
+
+    inline void JIT::emit_op_loop(Instruction* currentInstruction)
+    {
+        emitTimeoutCheck();
+        emit_op_jmp(currentInstruction);
+    }
+
+    inline void JIT::emit_op_loop_if_true(Instruction* currentInstruction)
+    {
+        emitTimeoutCheck();
+        emit_op_jtrue(currentInstruction);
+    }
+
+    inline void JIT::emitSlow_op_loop_if_true(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+    {
+        emitSlow_op_jtrue(currentInstruction, iter);
+    }
+
+    inline void JIT::emit_op_loop_if_false(Instruction* currentInstruction)
+    {
+        emitTimeoutCheck();
+        emit_op_jfalse(currentInstruction);
+    }
+
+    inline void JIT::emitSlow_op_loop_if_false(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+    {
+        emitSlow_op_jfalse(currentInstruction, iter);
+    }
+
+    inline void JIT::emit_op_loop_if_less(Instruction* currentInstruction)
+    {
+        emitTimeoutCheck();
+        emit_op_jless(currentInstruction);
+    }
+
+    inline void JIT::emitSlow_op_loop_if_less(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+    {
+        emitSlow_op_jless(currentInstruction, iter);
+    }
+
 } // namespace JSC
 
 #endif // ENABLE(JIT)

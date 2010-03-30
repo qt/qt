@@ -54,17 +54,21 @@ private slots:
     void join() const;
     void join_data() const;
 
-    void split() const;
+    void split_qlist_qbytearray() const;
+    void split_qlist_qbytearray_data() const { return split_data(); }
+
     void split_data() const;
+    void split_qlist_qstring() const;
+    void split_qlist_qstring_data() const { return split_data(); }
 
-    void split_std() const;
-    void split_std_data() const { return split_data(); }
+    void split_stdvector_stdstring() const;
+    void split_stdvector_stdstring_data() const { return split_data(); }
 
-    void split_stdw() const;
-    void split_stdw_data() const { return split_data(); }
+    void split_stdvector_stdwstring() const;
+    void split_stdvector_stdwstring_data() const { return split_data(); }
 
-    void split_ba() const;
-    void split_ba_data() const { return split_data(); }
+    void split_stdlist_stdstring() const;
+    void split_stdlist_stdstring_data() const { return split_data(); }
 
 private:
     static QStringList populateList(const int count, const QString &unit);
@@ -125,7 +129,29 @@ void tst_QStringList::join_data() const
         << QString();
 }
 
-void tst_QStringList::split() const
+void tst_QStringList::split_data() const
+{
+    QTest::addColumn<QString>("input");
+    QString unit = QLatin1String("unit") + QString(100, QLatin1Char('s'));
+    //QTest::newRow("") << populateString(10, unit);
+    QTest::newRow("") << populateString(100, unit);
+    //QTest::newRow("") << populateString(100, unit);
+    //QTest::newRow("") << populateString(1000, unit);
+    //QTest::newRow("") << populateString(10000, unit);
+}
+
+void tst_QStringList::split_qlist_qbytearray() const
+{
+    QFETCH(QString, input);
+    const char splitChar = ':';
+    QByteArray ba = input.toLatin1();
+
+    QBENCHMARK {
+        ba.split(splitChar);
+    }
+}
+
+void tst_QStringList::split_qlist_qstring() const
 {
     QFETCH(QString, input);
     const QChar splitChar = ':';
@@ -135,17 +161,7 @@ void tst_QStringList::split() const
     }
 }
 
-void tst_QStringList::split_data() const
-{
-    QTest::addColumn<QString>("input");
-    QString unit = QLatin1String("unit");
-    QTest::newRow("") << populateString(10, unit);
-    QTest::newRow("") << populateString(100, unit);
-    QTest::newRow("") << populateString(1000, unit);
-    QTest::newRow("") << populateString(10000, unit);
-}
-
-void tst_QStringList::split_std() const
+void tst_QStringList::split_stdvector_stdstring() const
 {
 #ifndef QT_NO_STL
     QFETCH(QString, input);
@@ -163,7 +179,7 @@ void tst_QStringList::split_std() const
 #endif
 }
 
-void tst_QStringList::split_stdw() const
+void tst_QStringList::split_stdvector_stdwstring() const
 {
 #ifndef QT_NO_STL
     QFETCH(QString, input);
@@ -181,14 +197,19 @@ void tst_QStringList::split_stdw() const
 #endif
 }
 
-void tst_QStringList::split_ba() const
+void tst_QStringList::split_stdlist_stdstring() const
 {
     QFETCH(QString, input);
-    const char splitChar = ':';
-    QByteArray ba = input.toLatin1();
+    const char split_char = ':';
+    std::string stdinput = input.toStdString();
 
     QBENCHMARK {
-        ba.split(splitChar);
+        std::istringstream split(stdinput);
+        std::list<std::string> token;
+        for (std::string each;
+             std::getline(split, each, split_char);
+             token.push_back(each))
+            ;
     }
 }
 

@@ -72,8 +72,6 @@
 
 QT_BEGIN_NAMESPACE
 
-extern int qt_printerRealNumCopies(QPaintEngine *);
-
 class QOptionTreeItem;
 class QPPDOptionsModel;
 
@@ -442,7 +440,7 @@ void QPrintDialogPrivate::applyPrinterProperties(QPrinter *p)
     case QPrinter::DuplexShortSide:
         options.duplexShort->setChecked(true); break;
     }
-    options.copies->setValue(qt_printerRealNumCopies(p->paintEngine()));
+    options.copies->setValue(p->copyCount());
     options.collate->setChecked(p->collateCopies());
     options.reverse->setChecked(p->pageOrder() == QPrinter::LastPageFirst);
     top->d->applyPrinterProperties(p);
@@ -507,13 +505,16 @@ void QPrintDialogPrivate::setupPrinter()
     } else if (options.printSelection->isChecked()) {
         p->setPrintRange(QPrinter::Selection);
         p->setFromTo(0,0);
+    } else if (options.printCurrentPage->isChecked()) {
+        p->setPrintRange(QPrinter::CurrentPage);
+        p->setFromTo(0,0);
     } else if (options.printRange->isChecked()) {
         p->setPrintRange(QPrinter::PageRange);
         p->setFromTo(options.from->value(), qMax(options.from->value(), options.to->value()));
     }
 
     // copies
-    p->setNumCopies(options.copies->value());
+    p->setCopyCount(options.copies->value());
     p->setCollateCopies(options.collate->isChecked());
 
     top->d->setupPrinter();
@@ -523,10 +524,12 @@ void QPrintDialogPrivate::updateWidgets()
 {
     Q_Q(QPrintDialog);
     options.gbPrintRange->setVisible(q->isOptionEnabled(QPrintDialog::PrintPageRange) ||
-                                q->isOptionEnabled(QPrintDialog::PrintSelection));
+                                     q->isOptionEnabled(QPrintDialog::PrintSelection) ||
+                                     q->isOptionEnabled(QPrintDialog::PrintCurrentPage));
 
     options.printRange->setEnabled(q->isOptionEnabled(QPrintDialog::PrintPageRange));
     options.printSelection->setVisible(q->isOptionEnabled(QPrintDialog::PrintSelection));
+    options.printCurrentPage->setVisible(q->isOptionEnabled(QPrintDialog::PrintCurrentPage));
     options.collate->setVisible(q->isOptionEnabled(QPrintDialog::PrintCollateCopies));
 
     switch (q->printRange()) {
@@ -538,6 +541,10 @@ void QPrintDialogPrivate::updateWidgets()
         break;
     case QPrintDialog::PageRange:
         options.printRange->setChecked(true);
+        break;
+    case QPrintDialog::CurrentPage:
+        if (q->isOptionEnabled(QPrintDialog::PrintCurrentPage))
+            options.printCurrentPage->setChecked(true);
         break;
     default:
         break;
@@ -699,9 +706,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p)
 #ifndef QT_NO_FILESYSTEMMODEL
     QFileSystemModel *fsm = new QFileSystemModel(widget.filename);
     fsm->setRootPath(QDir::homePath());
-#if !defined(QT_NO_FSCOMPLETER) && !defined(QT_NO_FILEDIALOG)
-    widget.filename->setCompleter(new QFSCompleter(fsm, widget.filename));
-#endif
+    widget.filename->setCompleter(new QCompleter(fsm, widget.filename));
 #endif
     _q_printerChanged(currentPrinterIndex);
 

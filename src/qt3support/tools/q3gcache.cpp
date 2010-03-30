@@ -226,7 +226,7 @@ public:
     bool  remove_ascii(Q3CacheItem *item)
 	{ return Q3GDict::remove_ascii((const char *)item->key,item); }
     bool  remove_int(Q3CacheItem *item)
-	{ return Q3GDict::remove_int((long)item->key,item);}
+	{ return Q3GDict::remove_int((quintptr)item->key,item);}
 
     void  statistics()			{ Q3GDict::statistics(); }
 
@@ -426,7 +426,7 @@ bool Q3GCache::insert_other(const char *key, Q3PtrCollection::Item data,
     if (keytype == AsciiKey)
 	dict->insert_ascii(key, ci);
     else
-	dict->insert_int((long)key, ci);
+	dict->insert_int((quintptr)key, ci);
     tCost += cost;
     return true;
 }
@@ -486,7 +486,7 @@ Q3PtrCollection::Item Q3GCache::take_other(const char *key)
     if (keytype == AsciiKey)
 	ci = dict->take_ascii(key);
     else
-	ci = dict->take_int((long)key);
+	ci = dict->take_int((quintptr)key);
     Item d;
     if (ci) {
 	d = ci->data;
@@ -563,7 +563,7 @@ Q3PtrCollection::Item Q3GCache::find_string(const QString &key, bool ref) const
 Q3PtrCollection::Item Q3GCache::find_other(const char *key, bool ref) const
 {
     Q3CacheItem *ci = keytype == AsciiKey ? dict->find_ascii(key)
-					 : dict->find_int((long)key);
+					 : dict->find_int((quintptr)key);
 #if defined(QT_DEBUG)
     lruList->finds++;
 #endif
@@ -811,7 +811,7 @@ const char *Q3GCacheIterator::getKeyAscii() const
 long Q3GCacheIterator::getKeyInt() const
 {
     Q3CacheItem *item = it->current();
-    return item ? (long)item->key : 0;
+    return item ? (quintptr)item->key : 0;
 }
 
 /*!

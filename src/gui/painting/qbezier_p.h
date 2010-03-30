@@ -59,6 +59,7 @@
 #include "QtCore/qvector.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qpair.h"
+#include "QtGui/qtransform.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -96,6 +97,8 @@ public:
     QPointF pt3() const { return QPointF(x3, y3); }
     QPointF pt4() const { return QPointF(x4, y4); }
 
+    QBezier mapBy(const QTransform &transform) const;
+
     inline QPointF midPoint() const;
     inline QLineF midTangent() const;
 
@@ -104,6 +107,7 @@ public:
 
     inline void parameterSplitLeft(qreal t, QBezier *left);
     inline void split(QBezier *firstHalf, QBezier *secondHalf) const;
+
     int shifted(QBezier *curveSegments, int maxSegmets,
                 qreal offset, float threshold) const;
 
@@ -116,6 +120,8 @@ public:
 
     static bool findIntersections(const QBezier &a, const QBezier &b,
                                   QVector<QPair<qreal, qreal> > *t);
+
+    QBezier getSubRange(qreal t0, qreal t1) const;
 
     qreal x1, y1, x2, y2, x3, y3, x4, y4;
 };

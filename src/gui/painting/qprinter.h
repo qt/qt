@@ -124,7 +124,7 @@ public:
     enum OutputFormat { NativeFormat, PdfFormat, PostScriptFormat };
 
     // ### Qt 5: Merge with QAbstractPrintDialog::PrintRange
-    enum PrintRange { AllPages, Selection, PageRange };
+    enum PrintRange { AllPages, Selection, PageRange, CurrentPage };
 
     enum Unit {
         Millimeter,
@@ -198,6 +198,10 @@ public:
     int numCopies() const;
 
     int actualNumCopies() const;
+
+    void setCopyCount(int);
+    int copyCount() const;
+    bool supportsMultipleCopies() const;
 
     void setPaperSource(PaperSource);
     PaperSource paperSource() const;

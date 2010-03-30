@@ -49,13 +49,6 @@
 #include <QtCore/qt_windows.h>
 #endif
 
-#if defined (Q_OS_MAC) && (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3)
-// assume we use iodbc on MACX
-// comment next line out if you use a
-// unicode compatible manager
-# define Q_ODBC_VERSION_2
-#endif
-
 #ifdef QT_PLUGIN
 #define Q_EXPORT_SQLDRIVER_ODBC
 #else

@@ -261,11 +261,13 @@ public:
     int utcOffset() const;
 
     static QDateTime currentDateTime();
+    static QDateTime currentDateTimeUtc();
 #ifndef QT_NO_DATESTRING
     static QDateTime fromString(const QString &s, Qt::DateFormat f = Qt::TextDate);
     static QDateTime fromString(const QString &s, const QString &format);
 #endif
     static QDateTime fromTime_t(uint secsSince1Jan1970UTC);
+    static qint64 currentMsecsSinceEpoch();
 
 #ifdef QT3_SUPPORT
     inline QT3_SUPPORT void setTime_t(uint secsSince1Jan1970UTC, Qt::TimeSpec spec) {

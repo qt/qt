@@ -69,9 +69,6 @@ public:
     inline bool isJSC() const;
     inline bool isObject() const;
 
-    QVariant &variantValue() const;
-    void setVariantValue(const QVariant &value);
-
     static inline QScriptValuePrivate *get(const QScriptValue &q)
     {
         return q.d_ptr.data();
@@ -89,15 +86,18 @@ public:
         return q.d_ptr->engine;
     }
 
-    inline QScriptValue property(const JSC::Identifier &id, int resolveMode) const;
-    QScriptValue propertyHelper(const JSC::Identifier &id, int resolveMode) const;
-    inline QScriptValue property(quint32 index, int resolveMode) const;
-    QScriptValue propertyHelper(quint32, int resolveMode) const;
-    inline QScriptValue property(const QString &, int resolveMode) const;
-    void setProperty(const JSC::Identifier &id, const QScriptValue &value,
-                     const QScriptValue::PropertyFlags &flags);
-    QScriptValue::PropertyFlags propertyFlags(
-        const JSC::Identifier &id, const QScriptValue::ResolveFlags &mode) const;
+    inline JSC::JSValue property(const JSC::Identifier &id,
+                                 const QScriptValue::ResolveFlags &mode = QScriptValue::ResolvePrototype) const;
+    inline JSC::JSValue property(quint32 index, const QScriptValue::ResolveFlags &mode = QScriptValue::ResolvePrototype) const;
+    inline JSC::JSValue property(const JSC::UString &, const QScriptValue::ResolveFlags &mode = QScriptValue::ResolvePrototype) const;
+    inline void setProperty(const JSC::UString &name, const JSC::JSValue &value,
+                            const QScriptValue::PropertyFlags &flags = QScriptValue::KeepExistingFlags);
+    inline void setProperty(const JSC::Identifier &id, const JSC::JSValue &value,
+                            const QScriptValue::PropertyFlags &flags = QScriptValue::KeepExistingFlags);
+    inline void setProperty(quint32 index, const JSC::JSValue &value,
+                            const QScriptValue::PropertyFlags &flags = QScriptValue::KeepExistingFlags);
+    inline QScriptValue::PropertyFlags propertyFlags(
+        const JSC::Identifier &id, const QScriptValue::ResolveFlags &mode = QScriptValue::ResolvePrototype) const;
 
     void detachFromEngine();
 
@@ -108,9 +108,6 @@ public:
         else
             return -1;
     }
-
-    static inline void saveException(JSC::ExecState*, JSC::JSValue*);
-    static inline void restoreException(JSC::ExecState*, JSC::JSValue);
 
     QScriptEnginePrivate *engine;
     Type type;

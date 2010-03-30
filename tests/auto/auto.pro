@@ -18,5 +18,5 @@ contains(QT_CONFIG, webkit):                SUBDIRS += webkit.pro
 contains(QT_CONFIG, multimedia):            SUBDIRS += multimedia.pro
 contains(QT_CONFIG, phonon):                SUBDIRS += phonon.pro
 contains(QT_CONFIG, svg):                   SUBDIRS += svg.pro
-
+contains(QT_CONFIG, declarative):           SUBDIRS += declarative.pro
 

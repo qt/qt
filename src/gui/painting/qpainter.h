@@ -78,6 +78,7 @@ class QPolygon;
 class QTextItem;
 class QMatrix;
 class QTransform;
+class QStaticText;
 
 class QPainterPrivateDeleter;
 
@@ -97,6 +98,29 @@ public:
     };
 
     Q_DECLARE_FLAGS(RenderHints, RenderHint)
+
+    class PixmapFragment {
+    public:
+        qreal x;
+        qreal y;
+        qreal sourceLeft;
+        qreal sourceTop;
+        qreal width;
+        qreal height;
+        qreal scaleX;
+        qreal scaleY;
+        qreal rotation;
+        qreal opacity;
+        static PixmapFragment Q_GUI_EXPORT create(const QPointF &pos, const QRectF &sourceRect,
+                                            qreal scaleX = 1, qreal scaleY = 1,
+                                            qreal rotation = 0, qreal opacity = 1);
+    };
+
+    enum PixmapFragmentHint {
+        OpaqueHint = 0x01
+    };
+
+    Q_DECLARE_FLAGS(PixmapFragmentHints, PixmapFragmentHint)
 
     QPainter();
     explicit QPainter(QPaintDevice *);
@@ -351,6 +375,9 @@ public:
     inline void drawPixmap(const QRect &r, const QPixmap &pm);
     inline void drawPixmap(int x, int y, int w, int h, const QPixmap &pm);
 
+    void drawPixmapFragments(const PixmapFragment *fragments, int fragmentCount,
+                             const QPixmap &pixmap, PixmapFragmentHints hints = 0);
+
     void drawImage(const QRectF &targetRect, const QImage &image, const QRectF &sourceRect,
                    Qt::ImageConversionFlags flags = Qt::AutoColor);
     inline void drawImage(const QRect &targetRect, const QImage &image, const QRect &sourceRect,
@@ -368,6 +395,10 @@ public:
 
     void setLayoutDirection(Qt::LayoutDirection direction);
     Qt::LayoutDirection layoutDirection() const;
+
+    void drawStaticText(const QPointF &topLeftPosition, const QStaticText &staticText);
+    inline void drawStaticText(const QPoint &topLeftPosition, const QStaticText &staticText);
+    inline void drawStaticText(int left, int top, const QStaticText &staticText);
 
     void drawText(const QPointF &p, const QString &s);
     inline void drawText(const QPoint &p, const QString &s);
@@ -894,6 +925,16 @@ inline void QPainter::drawImage(int x, int y, const QImage &image, int sx, int s
         drawImage(QPointF(x, y), image);
     else
         drawImage(QRectF(x, y, -1, -1), image, QRectF(sx, sy, sw, sh), flags);
+}
+
+inline void QPainter::drawStaticText(const QPoint &p, const QStaticText &staticText)
+{
+    drawStaticText(QPointF(p), staticText);
+}
+
+inline void QPainter::drawStaticText(int x, int y, const QStaticText &staticText)
+{
+    drawStaticText(QPointF(x, y), staticText);
 }
 
 inline void QPainter::drawTextItem(const QPoint &p, const QTextItem &ti)

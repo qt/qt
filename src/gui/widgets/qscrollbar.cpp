@@ -47,7 +47,7 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qmenu.h"
-#include <QtCore/qdatetime.h>
+#include <QtCore/qelapsedtimer.h>
 
 #ifndef QT_NO_SCROLLBAR
 
@@ -523,6 +523,7 @@ bool QScrollBar::event(QEvent *event)
         break;
 #ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel: {
+        event->ignore();
         // override wheel event without adding virtual function override
         QWheelEvent *ev = static_cast<QWheelEvent *>(event);
         int delta = ev->delta();
@@ -612,7 +613,7 @@ void QScrollBar::mousePressEvent(QMouseEvent *e)
     }
     const int initialDelay = 500; // default threshold
     d->activateControl(d->pressedControl, initialDelay);
-    QTime time;
+    QElapsedTimer time;
     time.start();
     repaint(style()->subControlRect(QStyle::CC_ScrollBar, &opt, d->pressedControl, this));
     if (time.elapsed() >= initialDelay && d->repeatActionTimer.isActive()) {

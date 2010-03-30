@@ -38,139 +38,41 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #ifndef HELPVIEWER_H
 #define HELPVIEWER_H
 
-#include <QtCore/QUrl>
-#include <QtCore/QVariant>
-#include <QtGui/QTextBrowser>
-#include <QtGui/QAction>
+#include <QtCore/QString>
 
-#if !defined(QT_NO_WEBKIT)
-#include <QWebView>
-#endif
+#include <QtGui/QFont>
 
 QT_BEGIN_NAMESPACE
 
-class QHelpEngine;
-class CentralWidget;
+class QUrl;
 
-class QPoint;
-class QString;
-class QKeyEvent;
-class QMouseEvent;
-class QContextMenuEvent;
-
-#if !defined(QT_NO_WEBKIT)
-
-class HelpViewer : public QWebView
+class AbstractHelpViewer
 {
-    Q_OBJECT
-
 public:
-    HelpViewer(QHelpEngine *helpEngine, CentralWidget *parent);
-    void setSource(const QUrl &url);
+    AbstractHelpViewer();
+    virtual ~AbstractHelpViewer();
 
-    inline QUrl source() const
-    { return url(); }
+    virtual QFont viewerFont() const = 0;
+    virtual void setViewerFont(const QFont &font) = 0;
 
-    inline QString documentTitle() const
-    { return title(); }
+    virtual void scaleUp() = 0;
+    virtual void scaleDown() = 0;
+    
+    virtual void resetScale() = 0;
+    virtual qreal scale() const = 0;
 
-    inline bool hasSelection() const
-    { return !selectedText().isEmpty(); } // ### this is suboptimal
+    static QString AboutBlank;
+    static QString LocalHelpFile;
+    static QString PageNotFoundMessage;
 
-    void resetZoom();
-    void zoomIn(qreal range = 1);
-    void zoomOut(qreal range = 1);
-
-    inline void copy()
-    { return triggerPageAction(QWebPage::Copy); }
-
-    inline bool isForwardAvailable() const
-    { return pageAction(QWebPage::Forward)->isEnabled(); }
-    inline bool isBackwardAvailable() const
-    { return pageAction(QWebPage::Back)->isEnabled(); }
-    inline bool hasLoadFinished() const
-    { return loadFinished; }
-    inline qreal zoom() const
-    { return textSizeMultiplier(); }
-
-public Q_SLOTS:
-    void home();
-    void backward() { back(); }
-
-Q_SIGNALS:
-    void copyAvailable(bool enabled);
-    void forwardAvailable(bool enabled);
-    void backwardAvailable(bool enabled);
-    void highlighted(const QString &);
-    void sourceChanged(const QUrl &);
-
-protected:
-    virtual void wheelEvent(QWheelEvent *);
-    void mouseReleaseEvent(QMouseEvent *e);
-    void mousePressEvent(QMouseEvent *event);
-
-private Q_SLOTS:
-    void actionChanged();
-    void setLoadFinished(bool ok);
-
-private:
-    QHelpEngine *helpEngine;
-    CentralWidget* parentWidget;
-    bool loadFinished;
+    static bool isLocalUrl(const QUrl &url);
+    static bool canOpenPage(const QString &url);
+    static bool launchWithExternalApp(const QUrl &url);
 };
-
-#else
-
-class HelpViewer : public QTextBrowser
-{
-    Q_OBJECT
-
-public:
-    HelpViewer(QHelpEngine *helpEngine, CentralWidget *parent);
-    void setSource(const QUrl &url);
-
-    void resetZoom();
-    void zoomIn(int range = 1);
-    void zoomOut(int range = 1);
-    int zoom() const { return zoomCount; }
-    void setZoom(int zoom) { zoomCount = zoom; }
-
-    inline bool hasSelection() const
-    { return textCursor().hasSelection(); }
-
-    bool launchedWithExternalApp(const QUrl &url);
-
-public Q_SLOTS:
-    void home();
-
-protected:
-    void wheelEvent(QWheelEvent *e);
-
-private:
-    QVariant loadResource(int type, const QUrl &name);    
-    void openLinkInNewTab(const QString &link);
-    bool hasAnchorAt(const QPoint& pos);
-    void contextMenuEvent(QContextMenuEvent *e);
-    void mouseReleaseEvent(QMouseEvent *e);
-    void keyPressEvent(QKeyEvent *e);
-
-private slots:
-    void openLinkInNewTab();
-
-private:
-    int zoomCount;
-    bool controlPressed;
-    QString lastAnchor;
-    QHelpEngine *helpEngine;
-    CentralWidget* parentWidget;
-};
-
-#endif
 
 QT_END_NAMESPACE
 
-#endif
+#endif  // HELPVIEWER_H

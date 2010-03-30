@@ -158,7 +158,7 @@ namespace QtSharedPointer {
 #if defined(Q_NO_TEMPLATE_FRIENDS)
     public:
 #else
-        template <class X> friend class QWeakPointer;
+        template <class X> friend class QT_PREPEND_NAMESPACE(QWeakPointer);
 #endif
 
         Type *value;
@@ -209,6 +209,7 @@ namespace QtSharedPointer {
 
         inline bool destroy() { destroyer(this); return true; }
         inline void operator delete(void *ptr) { ::operator delete(ptr); }
+        inline void operator delete(void *, void *) { }
     };
     // sizeof(ExternalRefCountWithDestroyFn) = 16 (32-bit) / 24 (64-bit)
 
@@ -401,7 +402,7 @@ namespace QtSharedPointer {
     public:
 #else
         template <class X> friend class ExternalRefCount;
-        template <class X> friend class QWeakPointer;
+        template <class X> friend class QT_PREPEND_NAMESPACE(QWeakPointer);
         template <class X, class Y> friend QSharedPointer<X> copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
 #endif
 
@@ -653,6 +654,9 @@ public:
     T *value;
 };
 
+//
+// operator== and operator!=
+//
 template <class T, class X>
 bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
 {
@@ -674,7 +678,6 @@ bool operator==(const T *ptr1, const QSharedPointer<X> &ptr2)
 {
     return ptr1 == ptr2.data();
 }
-
 template <class T, class X>
 bool operator!=(const QSharedPointer<T> &ptr1, const X *ptr2)
 {
@@ -697,11 +700,54 @@ bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
     return ptr2 != ptr1;
 }
 
+//
+// operator-
+//
 template <class T, class X>
-Q_INLINE_TEMPLATE typename T::difference_type operator-(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+Q_INLINE_TEMPLATE typename QSharedPointer<T>::difference_type operator-(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
 {
     return ptr1.data() - ptr2.data();
 }
+template <class T, class X>
+Q_INLINE_TEMPLATE typename QSharedPointer<T>::difference_type operator-(const QSharedPointer<T> &ptr1, X *ptr2)
+{
+    return ptr1.data() - ptr2;
+}
+template <class T, class X>
+Q_INLINE_TEMPLATE typename QSharedPointer<X>::difference_type operator-(T *ptr1, const QSharedPointer<X> &ptr2)
+{
+    return ptr1 - ptr2.data();
+}
+
+//
+// operator<
+//
+template <class T, class X>
+Q_INLINE_TEMPLATE bool operator<(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+{
+    return ptr1.data() < ptr2.data();
+}
+template <class T, class X>
+Q_INLINE_TEMPLATE bool operator<(const QSharedPointer<T> &ptr1, X *ptr2)
+{
+    return ptr1.data() < ptr2;
+}
+template <class T, class X>
+Q_INLINE_TEMPLATE bool operator<(T *ptr1, const QSharedPointer<X> &ptr2)
+{
+    return ptr1 < ptr2.data();
+}
+
+//
+// qHash
+//
+template <class T> inline uint qHash(const T *key); // defined in qhash.h
+template <class T>
+Q_INLINE_TEMPLATE uint qHash(const QSharedPointer<T> &ptr)
+{
+    return QT_PREPEND_NAMESPACE(qHash)<T>(ptr.data());
+}
+
 
 template <class T>
 Q_INLINE_TEMPLATE QWeakPointer<T> QSharedPointer<T>::toWeakRef() const

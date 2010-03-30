@@ -149,7 +149,7 @@ int runQMake(int argc, char **argv)
             //setup pwd properly
             debug_msg(1, "Resetting dir to: %s", oldpwd.toLatin1().constData());
             qmake_setpwd(oldpwd); //reset the old pwd
-            int di = fn.lastIndexOf(Option::dir_sep);
+            int di = fn.lastIndexOf(QDir::separator());
             if(di != -1) {
                 debug_msg(1, "Changing dir to: %s", fn.left(di).toLatin1().constData());
                 if(!qmake_setpwd(fn.left(di)))

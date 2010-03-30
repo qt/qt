@@ -4,7 +4,7 @@ INCLUDEPATH *= $$QMAKE_INCDIR_QT/$$TARGET #just for today to have some compat
 isEmpty(QT_ARCH):!isEmpty(ARCH):QT_ARCH=$$ARCH #another compat that will rot for change #215700
 TEMPLATE	= lib
 isEmpty(QT_MAJOR_VERSION) {
-   VERSION=4.6.3
+   VERSION=4.7.0
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
@@ -104,7 +104,7 @@ symbian {
         # built in this exact environment.  *Never* use this when building a version 
         # for release.
         contains(CONFIG, def_files) {
-            defFilePath=../s60installs
+            DEF_FILE=../s60installs
         }
     }
     load(armcc_warnings)
@@ -157,6 +157,7 @@ contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE
 DEFINES *= QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
 contains(QT_CONFIG, qt3support):DEFINES *= QT3_SUPPORT
 DEFINES *= QT_MOC_COMPAT #we don't need warnings from calling moc code in our generated code
+DEFINES *= QT_USE_FAST_OPERATOR_PLUS QT_USE_FAST_CONCATENATION
 
 TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
 

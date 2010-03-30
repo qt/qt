@@ -64,29 +64,6 @@
     the OpenGL ES window within the native window manager. In
     QGLWidget::initializeGL() we initialize OpenGL ES.
 
-    \section1 Using OpenGL ES rendering commands
-
-    To update the scene, we reimplment QGLWidget::paintGL(). We use OpenGL ES
-    rendering commands just like we do with standard OpenGL. Since the OpenGL
-    ES common light profile only supports fixed point functions, we need to
-    abstract it somehow. Hence, we define an abstraction layer in
-    \c{cl_helper.h}.
-
-    \snippet examples/opengl/hellogl_es/cl_helper.h 0
-
-    Instead of \c glFogxv() or \c glFogfv() we use \c q_glFogv() and to
-    convert the coordinates of a vertice we use the macro \c f2vt(). That way,
-    if QT_OPENGL_ES_CL is defined we use the fixed point functions and every
-    float is converted to fixed point.
-
-    If QT_OPENGL_ES_CL is not defined we use the floating point functions.
-
-    \snippet examples/opengl/hellogl_es/cl_helper.h 1
-
-    This way we support OpenGL ES Common and Common Light with the same code
-    and abstract the fact that we use either the floating point functions or
-    otherwise the fixed point functions.
-
     \section1 Porting OpenGL to OpenGL ES
 
     Since OpenGL ES is missing the immediate mode and does not support quads,

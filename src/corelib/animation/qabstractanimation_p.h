@@ -56,7 +56,12 @@
 #include <QtCore/qbasictimer.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qtimer.h>
+#include <QtCore/qelapsedtimer.h>
 #include <private/qobject_p.h>
+
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#endif
 
 #ifndef QT_NO_ANIMATION
 
@@ -109,6 +114,7 @@ private:
     Q_DECLARE_PUBLIC(QAbstractAnimation)
 };
 
+typedef QElapsedTimer ElapsedTimer;
 
 class QUnifiedTimer : public QObject
 {
@@ -162,7 +168,8 @@ private:
     // timer used to delay the check if we should start/stop the animation timer
     QBasicTimer startStopAnimationTimer;
 
-    QTime time;
+    ElapsedTimer time;
+
     int lastTick;
     int timingInterval;
     int currentAnimationIdx;

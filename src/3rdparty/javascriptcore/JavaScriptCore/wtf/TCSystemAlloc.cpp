@@ -47,7 +47,7 @@
 #include <sys/types.h>
 #endif
 
-#if PLATFORM(WIN_OS)
+#if OS(WINDOWS)
 #include "windows.h"
 #else
 #include <errno.h>
@@ -324,10 +324,10 @@ static void* TryDevMem(size_t size, size_t *actual_size, size_t alignment) {
   
   // Return the unused virtual memory to the system
   if (adjust > 0) {
-    munmap(reinterpret_cast<char*>(ptr), adjust);
+    munmap(reinterpret_cast<void*>(ptr), adjust);
   }
   if (adjust < extra) {
-    munmap(reinterpret_cast<char*>(ptr + adjust + size), extra - adjust);
+    munmap(reinterpret_cast<void*>(ptr + adjust + size), extra - adjust);
   }
   
   ptr += adjust;

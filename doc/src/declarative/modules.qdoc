@@ -1,0 +1,181 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qdeclarativemodules.html
+\title Modules
+\section1 QML Modules
+
+A \bold {QML module} is a collection of QML types. They allow you to organize your QML content
+into independent units. Modules have an optional versioning mechanism that allows for independent
+upgradability of the modules.
+
+There are two types of modules:
+location modules (defined by a URL),
+and
+installed modules (defined by a URI).
+
+Location modules types are defined in QML files and \l{QDeclarativeExtensionPlugin}{QML C++ plugins}
+in a directory refered to directly by
+the location URL, either on the local filesystem, or as a network resource. The URL that locates them
+can be relative, in which case they actual URL is resolved by the QML file containing the import.
+When importing a location module, a quoted URL is used:
+
+\code
+import "https://qml.nokia.com/qml/example" 1.0
+import "https://qml.nokia.com/qml/example" as NokiaExample
+import "mymodule" 1.0
+import "mymodule"
+\endcode
+
+Installed modules can \e only be on the local file system or in application C++ code. Again they
+are defined in QML files and \l{QDeclarativeExtensionPlugin}{QML C++ plugins} in a directory,
+but the directory is indirectly referred to by the URI. The mapping to actual content is either
+by application C++ code registering a C++ type to a module URI (see \l{Extending QML in C++}),
+or in the referenced subdirectory of a path on the import path (see below).
+When importing a location module, an un-quoted URI is used:
+
+\code
+import com.nokia.qml.mymodule 1.0
+import com.nokia.qml.mymodule as MyModule
+\endcode
+
+
+For either type of module, a \c qmldir file in the module directory defines the content of the module. This file is
+optional for location modules, but only for local filesystem content or a single remote content with a namespace.
+The second exception is explained in more detail in the section below on Namespaces.
+
+\seciont2 The Import Path
+
+Installed modules are searched for on the import path.
+The \c -L option to the \l {Qt Declarative UI Runtime}{qml} runtime adds paths to the import path.
+
+From C++, the path is available via \l QDeclarativeEngine::importPathList() and can be prepended to
+using \l QDeclarativeEngine::addImportPath().
+
+\section2 The \c qmldir File
+
+Installed QML modules and remote content without a namespace require a file \c qmldir which
+specifies the mapping from all type names to versioned QML files. It is a list of lines of the form:
+
+\code
+# <Comment>
+<TypeName> [<InitialVersion>] <File>
+internal <Name> <File>
+plugin <Name> [<Path>]
+\endcode
+
+# <Comment> lines are ignored, and can be used for comments.
+
+<TypeName> <InitialVersion> <File> lines are used to add QML files as types.
+<TypeName> is the type being made available; the optional <InitialVersion> is a version
+number like \c 4.0; <File> is the (relative)
+file name of the QML file defining the type. 
+
+Installed files do not need to import the module of which they are a part, as they can refer
+to the other QML files in the module as relative (local) files, but
+if the module is imported from a remote location, those files must nevertheless be listed in
+the \c qmldir file. Types which you do not wish to export to users of your module
+may be marked with the \c internal keyword:
+
+\code
+internal <TypeName> <File>
+\endcode
+
+\c plugin <Name> [<Path>] lines are used to add \l{QDeclarativeExtensionPlugin}{QML C++ plugins}
+to the module. <Name> is the
+name of the library. <Path> is an optional argument specifying the full path to the directory
+containing the plugin file; if it is omitted then the directory is assumed to be the same as
+the directory of the \c qmldir file. Note that <Name> is not usually the same as the file name
+of the plugin binary, which is platform dependent; e.g. the library MyAppTypes would produce
+a libMyAppTypes.so on Linux and MyAppTypes.dll on Windows. 
+
+The same type can be provided by different files in different versions, in which
+case later earlier versions (eg. 1.2) must precede earlier versions (eg. 1.0),
+since the \e first name-version match is used and a request for a version of a type
+can be fulfilled by one defined in an earlier version of the module.
+
+Installed and remote files without a namespace \e must be referred to by version information described above,
+local files \e may have it.
+
+The versioning system ensures that a given QML file will work regardless of the version
+of installed software, since a versioned import \e only imports types for that version,
+leaving other identifiers available, even if the actual installed version might otherwise
+provide those identifiers.
+
+\section2 Namespaces - Named Imports
+
+When importing content it by default imports types into the global namespace.
+You may choose to import the module into another namespace, either to allow identically-named
+types to be referenced, or purely for readability.
+
+To import a module into a namespace:
+
+\code
+import Qt 4.6 as TheQtLibrary
+\endcode
+
+Types from Qt 4.6 may then be used, but only by qualifying them with the namespace:
+
+\code
+TheQtLibrary.Rectangle { ... }
+\endcode
+
+Multiple modules can be imported into the same namespace in the same way that multiple
+modules can be imported into the global namespace:
+
+\code
+import Qt 4.6 as Nokia
+import Ovi 1.0 as Nokia
+\endcode
+
+While import statements are needed to make any types available in QML, the directory of the
+current file is implicitly loaded. This is the exact same as if you had added 'import "."' to
+every QML file. The effect of this is that you can automatically use types defined in C++ plugins
+or QML files if they reside in the same directory.
+
+*/
+
+/*
+
+Original requirement is QT-558.
+
+*/

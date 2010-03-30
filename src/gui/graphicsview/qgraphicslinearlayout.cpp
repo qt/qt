@@ -554,6 +554,8 @@ void QGraphicsLinearLayout::dump(int indent) const
                d->orientation == Qt::Horizontal ? "Horizontal" : "Vertical");
         d->engine.dump(indent + 1);
     }
+#else
+    Q_UNUSED(indent);
 #endif
 }
 

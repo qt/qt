@@ -115,7 +115,7 @@ const ClassInfo ArrayPrototype::info = {"Array", &JSArray::info, 0, ExecState::a
 */
 
 // ECMA 15.4.4
-ArrayPrototype::ArrayPrototype(PassRefPtr<Structure> structure)
+ArrayPrototype::ArrayPrototype(NonNullPassRefPtr<Structure> structure)
     : JSArray(structure)
 {
 }
@@ -204,8 +204,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncToString(ExecState* exec, JSObject*, JSValue
             buffer.append(rep->data(), rep->size());
     }
     ASSERT(buffer.size() == totalSize);
-    unsigned finalSize = buffer.size();
-    return jsString(exec, UString(buffer.releaseBuffer(), finalSize, false));
+    return jsString(exec, UString::adopt(buffer));
 }
 
 JSValue JSC_HOST_CALL arrayProtoFuncToLocaleString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
@@ -745,8 +744,8 @@ JSValue JSC_HOST_CALL arrayProtoFuncEvery(ExecState* exec, JSObject*, JSValue th
             cachedCall.setArgument(0, array->getIndex(k));
             cachedCall.setArgument(1, jsNumber(exec, k));
             cachedCall.setArgument(2, thisObj);
-            
-            if (!cachedCall.call().toBoolean(exec))
+            JSValue result = cachedCall.call();
+            if (!result.toBoolean(cachedCall.newCallFrame(exec)))
                 return jsBoolean(false);
         }
     }
@@ -846,8 +845,8 @@ JSValue JSC_HOST_CALL arrayProtoFuncSome(ExecState* exec, JSObject*, JSValue thi
             cachedCall.setArgument(0, array->getIndex(k));
             cachedCall.setArgument(1, jsNumber(exec, k));
             cachedCall.setArgument(2, thisObj);
-            
-            if (cachedCall.call().toBoolean(exec))
+            JSValue result = cachedCall.call();
+            if (result.toBoolean(cachedCall.newCallFrame(exec)))
                 return jsBoolean(true);
         }
     }
@@ -1034,7 +1033,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncIndexOf(ExecState* exec, JSObject*, JSValue 
         JSValue e = getProperty(exec, thisObj, index);
         if (!e)
             continue;
-        if (JSValue::strictEqual(searchElement, e))
+        if (JSValue::strictEqual(exec, searchElement, e))
             return jsNumber(exec, index);
     }
 
@@ -1065,7 +1064,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncLastIndexOf(ExecState* exec, JSObject*, JSVa
         JSValue e = getProperty(exec, thisObj, index);
         if (!e)
             continue;
-        if (JSValue::strictEqual(searchElement, e))
+        if (JSValue::strictEqual(exec, searchElement, e))
             return jsNumber(exec, index);
     }
 

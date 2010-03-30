@@ -46,6 +46,7 @@
 #include <qtextcodec.h>
 #endif
 #include <private/qutfcodec_p.h>
+#include "qsimd_p.h"
 #include <qdatastream.h>
 #include <qlist.h>
 #include "qlocale.h"
@@ -55,6 +56,7 @@
 #include "qtools_p.h"
 #include "qhash.h"
 #include "qdebug.h"
+#include "qendian.h"
 
 #ifdef Q_OS_MAC
 #include <private/qcore_mac_p.h>
@@ -333,7 +335,7 @@ const QString::Null QString::null = { };
   \macro QT_NO_CAST_TO_ASCII
   \relates QString
 
-  disables automatic conversion from QString to ASCII 8-bit strings (char *)
+  disables automatic conversion from QString to 8-bit strings (char *)
 
   \sa QT_NO_CAST_FROM_ASCII, QT_NO_CAST_FROM_BYTEARRAY
 */
@@ -389,10 +391,10 @@ const QString::Null QString::null = { };
     with code values above 65535 are stored using surrogate pairs,
     i.e., two consecutive \l{QChar}s.)
 
-    \l{Unicode} is an international standard that supports most of
-    the writing systems in use today. It is a superset of ASCII and
-    Latin-1 (ISO 8859-1), and all the ASCII/Latin-1 characters are
-    available at the same code positions.
+    \l{Unicode} is an international standard that supports most of the
+    writing systems in use today. It is a superset of US-ASCII (ANSI
+    X3.4-1986) and Latin-1 (ISO 8859-1), and all the US-ASCII/Latin-1
+    characters are available at the same code positions.
 
     Behind the scenes, QString uses \l{implicit sharing}
     (copy-on-write) to reduce memory usage and to avoid the needless
@@ -560,11 +562,13 @@ const QString::Null QString::null = { };
     toLatin1(), toUtf8(), and toLocal8Bit().
 
     \list
-    \o toAscii() returns an ASCII encoded 8-bit string.
+    \o toAscii() returns an 8-bit string encoded using the codec
+       specified by QTextCodec::codecForCStrings (by default, that is
+       Latin 1).
     \o toLatin1() returns a Latin-1 (ISO 8859-1) encoded 8-bit string.
     \o toUtf8() returns a UTF-8 encoded 8-bit string. UTF-8 is a
-       superset of ASCII that supports the entire Unicode character
-       set through multibyte sequences.
+       superset of US-ASCII (ANSI X3.4-1986) that supports the entire
+       Unicode character set through multibyte sequences.
     \o toLocal8Bit() returns an 8-bit string using the system's local
        encoding.
     \endlist
@@ -576,7 +580,7 @@ const QString::Null QString::null = { };
     As mentioned above, QString provides a lot of functions and
     operators that make it easy to interoperate with \c{const char *}
     strings. But this functionality is a double-edged sword: It makes
-    QString more convenient to use if all strings are ASCII or
+    QString more convenient to use if all strings are US-ASCII or
     Latin-1, but there is always the risk that an implicit conversion
     from or to \c{const char *} is done using the wrong 8-bit
     encoding. To minimize these risks, you can turn off these implicit
@@ -584,9 +588,9 @@ const QString::Null QString::null = { };
 
     \list
     \o \c QT_NO_CAST_FROM_ASCII disables automatic conversions from
-       ASCII to Unicode.
+       C string literals and pointers to Unicode.
     \o \c QT_NO_CAST_TO_ASCII disables automatic conversion from QString
-       to ASCII.
+       to C strings.
     \endlist
 
     One way to define these preprocessor symbols globally for your
@@ -835,7 +839,7 @@ int QString::grow(int size)
 
 /*! \fn QString::QString(const char *str)
 
-    Constructs a string initialized with the ASCII string \a str. The
+    Constructs a string initialized with the 8-bit string \a str. The
     given const char pointer is converted to Unicode using the
     fromAscii() function.
 
@@ -988,6 +992,40 @@ QString::QString(const QChar *unicode, int size)
     }
 }
 
+/*!
+    \since 4.7
+
+    Constructs a string initialized with the characters of the QChar array
+    \a unicode, which must be terminated with a 0.
+
+    QString makes a deep copy of the string data. The unicode data is copied as
+    is and the Byte Order Mark is preserved if present.
+*/
+QString::QString(const QChar *unicode)
+{
+     if (!unicode) {
+         d = &shared_null;
+         d->ref.ref();
+     } else {
+         int size = 0;
+         while (unicode[size] != 0)
+             ++size;
+         if (!size) {
+             d = &shared_empty;
+             d->ref.ref();
+         } else {
+             d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
+             Q_CHECK_PTR(d);
+             d->ref = 1;
+             d->alloc = d->size = size;
+             d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+             d->data = d->array;
+             memcpy(d->array, unicode, size * sizeof(QChar));
+             d->array[size] = '\0';
+         }
+     }
+}
+
 
 /*!
     Constructs a string of the given \a size with every character set
@@ -1091,7 +1129,12 @@ QString::QString(QChar ch)
     \internal
 */
 
-/*! \fn void QString::isDetached() const
+/*! \fn bool QString::isDetached() const
+
+    \internal
+*/
+
+/*! \fn bool QString::isSharedWith(const QString &other) const
 
     \internal
 */
@@ -1296,8 +1339,9 @@ QString &QString::operator=(const QString &other)
 
     \overload operator=()
 
-    Assigns \a ba to this string. The byte array is converted to
-    Unicode using the fromAscii() function.
+    Assigns \a ba to this string. The byte array is converted to Unicode
+    using the fromAscii() function. This function stops conversion at the
+    first NUL character found, or the end of the \a ba byte array.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -1760,13 +1804,14 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
     }
 
     QT_TRY {
-        detach();
         if (blen == alen) {
             // replace in place
+            detach();
             for (int i = 0; i < nIndices; ++i)
                 memcpy(d->data + indices[i], afterBuffer, alen * sizeof(QChar));
         } else if (alen < blen) {
             // replace from front
+            detach();
             uint to = indices[0];
             if (alen)
                 memcpy(d->data+to, after, alen*sizeof(QChar));
@@ -2089,7 +2134,8 @@ bool QString::operator==(const QLatin1String &other) const
     \overload operator==()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function.
+    fromAscii() function. This function stops conversion at the
+    first NUL character found, or the end of the byte array.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2150,7 +2196,8 @@ bool QString::operator<(const QLatin1String &other) const
     \overload operator<()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function.
+    fromAscii() function. If any NUL characters ('\0') are embedded
+    in the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2192,7 +2239,8 @@ bool QString::operator<(const QLatin1String &other) const
     \overload operator<=()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function.
+    fromAscii() function. If any NUL characters ('\0') are embedded
+    in the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2250,7 +2298,8 @@ bool QString::operator>(const QLatin1String &other) const
     \overload operator>()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function.
+    fromAscii() function. If any NUL characters ('\0') are embedded
+    in the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2292,7 +2341,8 @@ bool QString::operator>(const QLatin1String &other) const
     \overload operator>=()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function.
+    fromAscii() function. If any NUL characters ('\0') are embedded in
+    the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
@@ -2307,10 +2357,10 @@ bool QString::operator>(const QLatin1String &other) const
     The \a other const char pointer is converted to a QString using
     the fromAscii() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
-    can be useful if you want to ensure that all user-visible strings
-    go through QObject::tr(), for example.
+    You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
+    when you compile your applications. This can be useful if you want
+    to ensure that all user-visible strings go through QObject::tr(),
+    for example.
 */
 
 /*! \fn bool QString::operator!=(const QString &other) const
@@ -2334,7 +2384,8 @@ bool QString::operator>(const QLatin1String &other) const
     \overload operator!=()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function.
+    fromAscii() function. If any NUL characters ('\0') are embedded
+    in the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
@@ -3438,12 +3489,82 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
     QByteArray ba;
     if (length) {
         ba.resize(length);
-        const ushort *i = reinterpret_cast<const ushort *>(data);
-        const ushort *e = i + length;
-        uchar *s = (uchar*) ba.data();
-        while (i != e) {
-            *s++ = (*i>0xff) ? '?' : (uchar) *i;
-            ++i;
+        const ushort *src = reinterpret_cast<const ushort *>(data);
+        uchar *dst = (uchar*) ba.data();
+#if defined(QT_ALWAYS_HAVE_SSE2)
+        if (length >= 16) {
+            const int chunkCount = length >> 4; // divided by 16
+            const __m128i questionMark = _mm_set1_epi16('?');
+            // SSE has no compare instruction for unsigned comparison.
+            // The variables must be shiffted + 0x8000 to be compared
+            const __m128i signedBitOffset = _mm_set1_epi16(0x8000);
+            const __m128i thresholdMask = _mm_set1_epi16(0xff + 0x8000);
+            for (int i = 0; i < chunkCount; ++i) {
+                __m128i chunk1 = _mm_loadu_si128((__m128i*)src); // load
+                src += 8;
+                {
+                    // each 16 bit is equal to 0xFF if the source is outside latin 1 (>0xff)
+                    const __m128i signedChunk = _mm_add_epi16(chunk1, signedBitOffset);
+                    const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
+
+                    // offLimitQuestionMark contains '?' for each 16 bits that was off-limit
+                    // the 16 bits that were correct contains zeros
+                    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
+
+                    // correctBytes contains the bytes that were in limit
+                    // the 16 bits that were off limits contains zeros
+                    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk1);
+
+                    // merge offLimitQuestionMark and correctBytes to have the result
+                    chunk1 = _mm_or_si128(correctBytes, offLimitQuestionMark);
+                }
+
+                __m128i chunk2 = _mm_loadu_si128((__m128i*)src); // load
+                src += 8;
+                {
+                    // exactly the same operations as for the previous chunk of data
+                    const __m128i signedChunk = _mm_add_epi16(chunk2, signedBitOffset);
+                    const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
+                    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
+                    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk2);
+                    chunk2 = _mm_or_si128(correctBytes, offLimitQuestionMark);
+                }
+
+                // pack the two vector to 16 x 8bits elements
+                const __m128i result = _mm_packus_epi16(chunk1, chunk2);
+
+                _mm_storeu_si128((__m128i*)dst, result); // store
+                dst += 16;
+            }
+            length = length % 16;
+        }
+#elif QT_HAVE_NEON
+        // Refer to the documentation of the SSE2 implementation
+        // this use eactly the same method as for SSE except:
+        // 1) neon has unsigned comparison
+        // 2) packing is done to 64 bits (8 x 8bits component).
+        if (length >= 16) {
+            const int chunkCount = length >> 3; // divided by 8
+            const uint16x8_t questionMark = vdupq_n_u16('?'); // set
+            const uint16x8_t thresholdMask = vdupq_n_u16(0xff); // set
+            for (int i = 0; i < chunkCount; ++i) {
+                uint16x8_t chunk = vld1q_u16((uint16_t *)src); // load
+                src += 8;
+
+                const uint16x8_t offLimitMask = vcgtq_u16(chunk, thresholdMask); // chunk > thresholdMask
+                const uint16x8_t offLimitQuestionMark = vandq_u16(offLimitMask, questionMark); // offLimitMask & questionMark
+                const uint16x8_t correctBytes = vbicq_u16(chunk, offLimitMask); // !offLimitMask & chunk
+                chunk = vorrq_u16(correctBytes, offLimitQuestionMark); // correctBytes | offLimitQuestionMark
+                const uint8x8_t result = vmovn_u16(chunk); // narrowing move->packing
+                vst1_u8(dst, result); // store
+                dst += 8;
+            }
+            length = length % 8;
+        }
+#endif
+        while (length--) {
+            *dst++ = (*src>0xff) ? '?' : (uchar) *src;
+            ++src;
         }
     }
     return ba;
@@ -3451,8 +3572,10 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
 
 /*!
     Returns a Latin-1 representation of the string as a QByteArray.
-    The returned byte array is undefined if the string contains
-    non-Latin1 characters.
+
+    The returned byte array is undefined if the string contains non-Latin1
+    characters. Those characters may be suppressed or replaced with a
+    question mark.
 
     \sa fromLatin1(), toAscii(), toUtf8(), toLocal8Bit(), QTextCodec
 */
@@ -3466,11 +3589,14 @@ QByteArray QString::toLatin1() const
 // isn't necessary in the header. See task 177402.
 
 /*!
-    Returns an 8-bit ASCII representation of the string as a QByteArray.
+    Returns an 8-bit representation of the string as a QByteArray.
 
     If a codec has been set using QTextCodec::setCodecForCStrings(),
     it is used to convert Unicode to 8-bit char; otherwise this
     function does the same as toLatin1().
+
+    Note that, despite the name, this function does not necessarily return an US-ASCII
+    (ANSI X3.4-1986) string and its result may not be US-ASCII compatible.
 
     \sa fromAscii(), toLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
 */
@@ -3499,8 +3625,13 @@ static QByteArray toLocal8Bit_helper(const QChar *data, int length)
     QByteArray. The returned byte array is undefined if the string
     contains characters not supported by the local 8-bit encoding.
 
-    QTextCodec::codecForLocale() is used to perform the conversion
-    from Unicode.
+    QTextCodec::codecForLocale() is used to perform the conversion from
+    Unicode. If the locale encoding could not be determined, this function
+    does the same as toLatin1().
+
+    If this string contains any characters that cannot be encoded in the
+    locale, the returned byte array is undefined. Those characters may be
+    suppressed or replaced by another.
 
     \sa fromLocal8Bit(), toAscii(), toLatin1(), toUtf8(), QTextCodec
 */
@@ -3516,54 +3647,34 @@ QByteArray QString::toLocal8Bit() const
 /*!
     Returns a UTF-8 representation of the string as a QByteArray.
 
+    UTF-8 is a Unicode codec and can represent all characters in a Unicode
+    string like QString.
+
+    However, in the Unicode range, there are certain codepoints that are not
+    considered characters. The Unicode standard reserves the last two
+    codepoints in each Unicode Plane (U+FFFE, U+FFFF, U+1FFFE, U+1FFFF,
+    U+2FFFE, etc.), as well as 16 codepoints in the range U+FDD0..U+FDDF,
+    inclusive, as non-characters. If any of those appear in the string, they
+    may be discarded and will not appear in the UTF-8 representation, or they
+    may be replaced by one or more replacement characters.
+
     \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec
 */
 QByteArray QString::toUtf8() const
 {
-    QByteArray ba;
-    if (d->size) {
-        int l = d->size;
-        int rlen = l*3+1;
-        ba.resize(rlen);
-        uchar *cursor = (uchar*)ba.data();
-        const ushort *ch =d->data;
-        for (int i=0; i < l; i++) {
-            uint u = *ch;
-            if (u < 0x80) {
-                *cursor++ = (uchar)u;
-            } else {
-                if (u < 0x0800) {
-                    *cursor++ = 0xc0 | ((uchar) (u >> 6));
-                } else {
-                    if (QChar(u).isHighSurrogate() && i < l-1) {
-                        ushort low = ch[1];
-                        if (QChar(low).isLowSurrogate()) {
-                            ++ch;
-                            ++i;
-                            u = QChar::surrogateToUcs4(u,low);
-                        }
-                    }
-                    if (u > 0xffff) {
-                        *cursor++ = 0xf0 | ((uchar) (u >> 18));
-                        *cursor++ = 0x80 | (((uchar) (u >> 12)) & 0x3f);
-                    } else {
-                        *cursor++ = 0xe0 | ((uchar) (u >> 12));
-                    }
-                    *cursor++ = 0x80 | (((uchar) (u >> 6)) & 0x3f);
-                }
-                *cursor++ = 0x80 | ((uchar) (u&0x3f));
-            }
-            ++ch;
-        }
-        ba.resize(cursor - (uchar*)ba.constData());
-    }
-    return ba;
+    if (isNull())
+        return QByteArray();
+
+    return QUtf8::convertFromUnicode(constData(), length(), 0);
 }
 
 /*!
     \since 4.2
 
-    Returns a UCS-4 representation of the string as a QVector<uint>.
+    Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
+
+    UCS-4 is a Unicode codec and is lossless. All characters from this string
+    can be encoded in UCS-4.
 
     \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
 */
@@ -3606,10 +3717,35 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
         d->alloc = d->size = size;
         d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
         d->data = d->array;
-        ushort *i = d->data;
         d->array[size] = '\0';
+        ushort *dst = d->data;
+        /* SIMD:
+         * Unpacking with SSE has been shown to improve performance on recent CPUs
+         * The same method gives no improvement with NEON.
+         */
+#if defined(QT_ALWAYS_HAVE_SSE2)
+        if (size >= 16) {
+            int chunkCount = size >> 4; // divided by 16
+            const __m128i nullMask = _mm_set1_epi32(0);
+            for (int i = 0; i < chunkCount; ++i) {
+                const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+                str += 16;
+
+                // unpack the first 8 bytes, padding with zeros
+                const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+                _mm_storeu_si128((__m128i*)dst, firstHalf); // store
+                dst += 8;
+
+                // unpack the last 8 bytes, padding with zeros
+                const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+                _mm_storeu_si128((__m128i*)dst, secondHalf); // store
+                dst += 8;
+            }
+            size = size % 16;
+        }
+#endif
         while (size--)
-            *i++ = (uchar)*str++;
+            *dst++ = (uchar)*str++;
     }
     return d;
 }
@@ -3691,100 +3827,6 @@ const char *QString::latin1_helper() const
 
 #endif
 
-QT_END_NAMESPACE
-
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-#include "qt_windows.h"
-
-QT_BEGIN_NAMESPACE
-
-QByteArray qt_winQString2MB(const QString& s, int uclen)
-{
-    if (uclen < 0)
-        uclen = s.length();
-    if (s.isNull())
-        return QByteArray();
-    if (uclen == 0)
-        return QByteArray("");
-    return qt_winQString2MB(s.constData(), uclen);
-}
-
-QByteArray qt_winQString2MB(const QChar *ch, int uclen)
-{
-    if (!ch)
-	return QByteArray();
-    if (uclen == 0)
-        return QByteArray("");
-    BOOL used_def;
-    QByteArray mb(4096, 0);
-    int len;
-    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const wchar_t*)ch, uclen,
-                mb.data(), mb.size()-1, 0, &used_def)))
-    {
-        int r = GetLastError();
-        if (r == ERROR_INSUFFICIENT_BUFFER) {
-            mb.resize(1+WideCharToMultiByte(CP_ACP, 0,
-                                (const wchar_t*)ch, uclen,
-                                0, 0, 0, &used_def));
-                // and try again...
-        } else {
-#ifndef QT_NO_DEBUG
-            // Fail.
-            qWarning("WideCharToMultiByte: Cannot convert multibyte text (error %d): %s (UTF-8)",
-                r, QString(ch, uclen).toLocal8Bit().data());
-#endif
-            break;
-        }
-    }
-    mb.resize(len);
-    return mb;
-}
-
-QString qt_winMB2QString(const char *mb, int mblen)
-{
-    if (!mb || !mblen)
-        return QString();
-    const int wclen_auto = 4096;
-    wchar_t wc_auto[wclen_auto];
-    int wclen = wclen_auto;
-    wchar_t *wc = wc_auto;
-    int len;
-    while (!(len=MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-                mb, mblen, wc, wclen)))
-    {
-        int r = GetLastError();
-        if (r == ERROR_INSUFFICIENT_BUFFER) {
-            if (wc != wc_auto) {
-                qWarning("MultiByteToWideChar: Size changed");
-                break;
-            } else {
-                wclen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-                                    mb, mblen, 0, 0);
-                wc = new wchar_t[wclen];
-                // and try again...
-            }
-        } else {
-            // Fail.
-            qWarning("MultiByteToWideChar: Cannot convert multibyte text");
-            break;
-        }
-    }
-    if (len <= 0)
-        return QString();
-    if (wc[len-1] == 0) // len - 1: we don't want terminator
-        --len;
-    QString s((QChar*)wc, len);
-    if (wc != wc_auto)
-        delete [] wc;
-    return s;
-}
-
-QT_END_NAMESPACE
-
-#endif // Q_OS_WIN32
-
-QT_BEGIN_NAMESPACE
-
 /*!
     Returns a QString initialized with the first \a size characters
     of the 8-bit string \a str.
@@ -3815,14 +3857,16 @@ QString QString::fromLocal8Bit(const char *str, int size)
 
 /*!
     Returns a QString initialized with the first \a size characters
-    of the 8-bit ASCII string \a str.
+    of the 8-bit string \a str.
 
     If \a size is -1 (default), it is taken to be qstrlen(\a
     str).
 
-    If a codec has been set using QTextCodec::setCodecForCStrings(),
-    it is used to convert \a str to Unicode; otherwise this function
-    does the same as fromLatin1().
+    Note that, despite the name, this function actually uses the codec
+    defined by QTextCodec::setCodecForCStrings() to convert \a str to
+    Unicode. Depending on the codec, it may not accept valid US-ASCII (ANSI
+    X3.4-1986) input. If no codec has been set, this function does the same
+    as fromLatin1().
 
     \sa toAscii(), fromLatin1(), fromUtf8(), fromLocal8Bit()
 */
@@ -3837,6 +3881,18 @@ QString QString::fromAscii(const char *str, int size)
 
     If \a size is -1 (default), it is taken to be qstrlen(\a
     str).
+
+    UTF-8 is a Unicode codec and can represent all characters in a Unicode
+    string like QString. However, invalid sequences are possible with UTF-8
+    and, if any such are found, they will be replaced with one or more
+    "replacement characters", or suppressed. These include non-Unicode
+    sequences, non-characters, overlong sequences or surrogate codepoints
+    encoded into UTF-8.
+
+    Non-characters are codepoints that the Unicode standard reserves and must
+    not be used in text interchange. They are the last two codepoints in each
+    Unicode Plane (U+FFFE, U+FFFF, U+1FFFE, U+1FFFF, U+2FFFE, etc.), as well
+    as 16 codepoints in the range U+FDD0..U+FDDF, inclusive.
 
     \sa toUtf8(), fromAscii(), fromLatin1(), fromLocal8Bit()
 */
@@ -3861,7 +3917,7 @@ QString QString::fromUtf8(const char *str, int size)
     host byte order is assumed.
 
     This function is comparatively slow.
-    Use QString(const ushort *, int) if possible.
+    Use QString(const ushort *, int) or QString(const ushort *) if possible.
 
     QString makes a deep copy of the Unicode data.
 
@@ -3954,24 +4010,74 @@ QString QString::simplified() const
 {
     if (d->size == 0)
         return *this;
-    QString result(d->size, Qt::Uninitialized);
-    const QChar *from = (const QChar*) d->data;
-    const QChar *fromend = (const QChar*) from+d->size;
-    int outc=0;
-    QChar *to   = (QChar*) result.d->data;
-    for (;;) {
-        while (from!=fromend && from->isSpace())
-            from++;
-        while (from!=fromend && !from->isSpace())
-            to[outc++] = *from++;
-        if (from!=fromend)
-            to[outc++] = QLatin1Char(' ');
-        else
+
+    const QChar * const start = reinterpret_cast<QChar *>(d->data);
+    const QChar *from = start;
+    const QChar *fromEnd = start + d->size;
+    forever {
+        QChar ch = *from;
+        if (!ch.isSpace())
             break;
+        if (++from == fromEnd) {
+            // All-whitespace string
+            shared_empty.ref.ref();
+            return QString(&shared_empty, 0);
+        }
     }
-    if (outc > 0 && to[outc-1] == QLatin1Char(' '))
-        outc--;
-    result.truncate(outc);
+    // This loop needs no underflow check, as we already determined that
+    // the string contains non-whitespace. If the string has exactly one
+    // non-whitespace, it will be checked twice - we can live with that.
+    while (fromEnd[-1].isSpace())
+        fromEnd--;
+    // The rest of the function depends on the fact that we already know
+    // that the last character in the source is no whitespace.
+    const QChar *copyFrom = from;
+    int copyCount;
+    forever {
+        if (++from == fromEnd) {
+            // Only leading and/or trailing whitespace, if any at all
+            return mid(copyFrom - start, from - copyFrom);
+        }
+        QChar ch = *from;
+        if (!ch.isSpace())
+            continue;
+        if (ch != QLatin1Char(' ')) {
+            copyCount = from - copyFrom;
+            break;
+        }
+        ch = *++from;
+        if (ch.isSpace()) {
+            copyCount = from - copyFrom - 1;
+            break;
+        }
+    }
+    // 'from' now points at the non-trailing whitespace which made the
+    // string not simplified in the first place. 'copyCount' is the number
+    // of already simplified characters - at least one, obviously -
+    // without a trailing space.
+    QString result((fromEnd - from) + copyCount, Qt::Uninitialized);
+    QChar *to = reinterpret_cast<QChar *>(result.d->data);
+    ::memcpy(to, copyFrom, copyCount * 2);
+    to += copyCount;
+    fromEnd--;
+    QChar ch;
+    forever {
+        *to++ = QLatin1Char(' ');
+        do {
+            ch = *++from;
+        } while (ch.isSpace());
+        if (from == fromEnd)
+            break;
+        do {
+            *to++ = ch;
+            ch = *++from;
+            if (from == fromEnd)
+                goto done;
+        } while (!ch.isSpace());
+    }
+  done:
+    *to++ = ch;
+    result.truncate(to - reinterpret_cast<QChar *>(result.d->data));
     return result;
 }
 
@@ -4212,8 +4318,10 @@ QString& QString::fill(QChar ch, int size)
 
     \overload operator+=()
 
-    Appends the byte array \a ba to this string. The byte array is
-    converted to Unicode using the fromAscii() function.
+    Appends the byte array \a ba to this string. The byte array is converted
+    to Unicode using the fromAscii() function. If any NUL characters ('\0')
+    are embedded in the \a ba byte array, they will be included in the
+    transformation.
 
     You can disable this function by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -4613,6 +4721,12 @@ int QString::localeAwareCompare(const QString &other) const
     return localeAwareCompare_helper(constData(), length(), other.constData(), other.length());
 }
 
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+QT_END_NAMESPACE
+#include "qt_windows.h"
+QT_BEGIN_NAMESPACE
+#endif
+
 /*!
     \internal
     \since 4.5
@@ -4990,8 +5104,19 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
     const char *c = cformat;
     for (;;) {
         // Copy non-escape chars to result
+#ifndef QT_NO_TEXTCODEC
+        int i = 0;
+        while (*(c + i) != '\0' && *(c + i) != '%')
+            ++i;
+        if (codecForCStrings)
+            result.append(codecForCStrings->toUnicode(c, i));
+        else
+            result.append(fromLatin1(c, i));
+        c += i;
+#else
         while (*c != '\0' && *c != '%')
             result.append(QLatin1Char(*c++));
+#endif
 
         if (*c == '\0')
             break;
@@ -5989,7 +6114,7 @@ QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
 */
 QString QString::normalized(QString::NormalizationForm mode) const
 {
-    return normalized(mode, CURRENT_VERSION);
+    return normalized(mode, UNICODE_DATA_VERSION);
 }
 
 /*!
@@ -6071,7 +6196,7 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
         return;
 
     QString &s = *data;
-    if (version != CURRENT_VERSION) {
+    if (version != UNICODE_DATA_VERSION) {
         for (int i = 0; i < NumNormalizationCorrections; ++i) {
             const NormalizationCorrection &n = uc_normalization_corrections[i];
             if (n.version > version) {
@@ -6898,9 +7023,9 @@ void QString::updateProperties() const
     This operator is mostly useful to pass a QString to a function
     that accepts a std::string object.
 
-    If the QString contains non-ASCII Unicode characters, using this
-    operator can lead to loss of information, since the implementation
-    calls toAscii().
+    If the QString contains Unicode characters that the
+    QTextCodec::codecForCStrings() codec cannot handle, using this operator
+    can lead to loss of information.
 
     This operator is only available if Qt is configured with STL
     compatibility enabled.
@@ -6951,7 +7076,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
 }
 
 /*! \class QLatin1String
-    \brief The QLatin1String class provides a thin wrapper around an ASCII/Latin-1 encoded string literal.
+    \brief The QLatin1String class provides a thin wrapper around an US-ASCII/Latin-1 encoded string literal.
 
     \ingroup string-processing
     \reentrant
@@ -7038,7 +7163,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     \since 4.3
     \overload
 
-    The \a other const char pointer is converted to a QLatin1String using
+    The \a other const char pointer is converted to a QString using
     the QString::fromAscii() function.
 
     You can disable this operator by defining \c
@@ -7063,7 +7188,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     \since 4.3
     \overload operator!=()
 
-    The \a other const char pointer is converted to a QLatin1String using
+    The \a other const char pointer is converted to a QString using
     the QString::fromAscii() function.
 
     You can disable this operator by defining \c
@@ -7089,7 +7214,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     \since 4.3
     \overload
 
-    The \a other const char pointer is converted to a QLatin1String using
+    The \a other const char pointer is converted to a QString using
     the QString::fromAscii() function.
 
     You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
@@ -7115,7 +7240,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     \since 4.3
     \overload
 
-    The \a other const char pointer is converted to a QLatin1String using
+    The \a other const char pointer is converted to a QString using
     the QString::fromAscii() function.
 
     You can disable this operator by defining \c
@@ -7141,7 +7266,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     \since 4.3
     \overload
 
-    The \a other const char pointer is converted to a QLatin1String using
+    The \a other const char pointer is converted to a QString using
     the QString::fromAscii() function.
 
     You can disable this operator by defining \c
@@ -7317,7 +7442,7 @@ QDataStream &operator>>(QDataStream &in, QString &str)
                     != (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {
                 ushort *data = reinterpret_cast<ushort *>(str.data());
                 while (len--) {
-                    *data = (*data >> 8) | (*data << 8);
+                    *data = qbswap(*data);
                     ++data;
                 }
             }

@@ -47,16 +47,18 @@ contains(QT_CONFIG, system-tiff) {
 	    ../../../3rdparty/libtiff/libtiff/tif_warning.c \
 	    ../../../3rdparty/libtiff/libtiff/tif_write.c \
 	    ../../../3rdparty/libtiff/libtiff/tif_zip.c
-	    win32 {
+	    win32:!wince*: {
 	       SOURCES += ../../../3rdparty/libtiff/libtiff/tif_win32.c
 	    }
             unix: {
 	       SOURCES += ../../../3rdparty/libtiff/libtiff/tif_unix.c
             }
             wince*: {
-               SOURCES += ../../../corelib/kernel/qfunctions_wince.cpp
+               SOURCES += ../../../corelib/kernel/qfunctions_wince.cpp \
+                          ../../../3rdparty/libtiff/libtiff/tif_wince.c \
+			  ../../../3rdparty/libtiff/libtiff/tif_win32.c
             }
-            symbian*: {
+            symbian: {
                SOURCES += ../../../3rdparty/libtiff/port/lfind.c
             }
 }

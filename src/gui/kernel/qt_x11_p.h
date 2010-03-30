@@ -331,7 +331,7 @@ struct QXdndDropTransaction
 class QMimeData;
 
 struct QX11Data;
-extern QX11Data *qt_x11Data;
+extern Q_GUI_EXPORT QX11Data *qt_x11Data;
 
 enum DesktopEnvironment {
     DE_UNKNOWN,
@@ -438,6 +438,12 @@ struct QX11Data
     int xinput_major;
     int xinput_eventbase;
     int xinput_errorbase;
+
+    // for XKEYBOARD support
+    bool use_xkb;
+    int xkb_major;
+    int xkb_eventbase;
+    int xkb_errorbase;
 
     QList<QWidget *> deferred_map;
     struct ScrollInProgress {
@@ -564,11 +570,8 @@ struct QX11Data
         _MOTIF_WM_HINTS,
 
         DTWM_IS_RUNNING,
-        KDE_FULL_SESSION,
-        KWIN_RUNNING,
-        KWM_RUNNING,
-        GNOME_BACKGROUND_PROPERTIES,
         ENLIGHTENMENT_DESKTOP,
+        _DT_SAVE_MODE,
         _SGI_DESKS_MANAGER,
 
         // EWMH (aka NETWM)
@@ -628,6 +631,8 @@ struct QX11Data
         _NET_WM_CM_S0,
 
         _NET_SYSTEM_TRAY_VISUAL,
+
+        _NET_ACTIVE_WINDOW,
 
         // Property formats
         COMPOUND_TEXT,

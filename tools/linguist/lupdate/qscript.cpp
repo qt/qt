@@ -40,6 +40,26 @@
 **
 ****************************************************************************/
 
+
+#define Q_SCRIPT_REGEXPLITERAL_RULE1 7
+
+#define Q_SCRIPT_REGEXPLITERAL_RULE2 8
+
+#include <translator.h>
+
+#include <QtCore/qdebug.h>
+#include <QtCore/qnumeric.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qtextcodec.h>
+#include <QtCore/qvariant.h>
+
+#include <ctype.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+QT_BEGIN_NAMESPACE
+
 class QScriptGrammar
 {
 public:
@@ -173,7 +193,6 @@ public:
     return action_info [yyn];
   }
 };
-
 
 const char *const QScriptGrammar::spell [] = {
   "end of file", "&", "&&", "&=", "break", "case", "catch", ":", ";", "continue", 
@@ -746,26 +765,6 @@ const int QScriptGrammar::action_check [] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
   -1, -1};
-
-
-#define Q_SCRIPT_REGEXPLITERAL_RULE1 7
-
-#define Q_SCRIPT_REGEXPLITERAL_RULE2 8
-
-#include <translator.h>
-
-#include <QtCore/qdebug.h>
-#include <QtCore/qnumeric.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qtextcodec.h>
-#include <QtCore/qvariant.h>
-
-#include <ctype.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-QT_BEGIN_NAMESPACE
 
 static void recordMessage(
     Translator *tor, const QString &context, const QString &text, const QString &comment,

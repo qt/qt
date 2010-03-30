@@ -44,6 +44,14 @@
 // "some literal", but replacing all vocals by their umlauted UTF-8 string :)
 #define UTF8_LITERAL "s\xc3\xb6m\xc3\xab l\xc3\xaft\xc3\xabr\xc3\xa4l"
 
+
+//fix for gcc4.0: if the operator+ does not exist without QT_USE_FAST_OPERATOR_PLUS
+#ifndef QT_USE_FAST_CONCATENATION
+#define Q %
+#else
+#define Q P
+#endif
+
 void runScenario()
 {
     // set codec for C strings to 0, enforcing Latin1
@@ -59,13 +67,13 @@ void runScenario()
     QString r;
     QByteArray ba(LITERAL);
 
-    r = l1literal P l1literal;
+    r = l1literal Q l1literal;
     QCOMPARE(r, r2);
     r = string P string;
     QCOMPARE(r, r2);
-    r = stringref P stringref;
+    r = stringref Q stringref;
     QCOMPARE(r, QString(stringref.toString() + stringref.toString()));
-    r = string P l1literal;
+    r = string Q l1literal;
     QCOMPARE(r, r2);
     r = string P l1string;
     QCOMPARE(r, r2);

@@ -291,6 +291,7 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> QSet<T>::toList() const
 {
     QList<T> result;
+    result.reserve(size());
     typename QSet<T>::const_iterator i = constBegin();
     while (i != constEnd()) {
         result.append(*i);

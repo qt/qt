@@ -89,6 +89,7 @@ public:
 
     void setPosition(int pos, MoveMode mode = MoveAnchor);
     int position() const;
+    int positionInBlock() const;
 
     int anchor() const;
 
