@@ -101,7 +101,7 @@ static QBasicAtomicInt objectCount = Q_BASIC_ATOMIC_INITIALIZER(0);
 /** \internal
  * mutex to be locked when accessing the connectionlists or the senders list
  */
-static QMutex *signalSlotLock(const QObject *o)
+static inline QMutex *signalSlotLock(const QObject *o)
 {
     if (!signalSlotMutexes) {
         QMutexPool *mp = new QMutexPool;
@@ -392,27 +392,6 @@ void QObjectPrivate::cleanConnectionLists()
         connectionLists->dirty = false;
     }
 }
-
-QObjectPrivate::Sender *QObjectPrivate::setCurrentSender(QObject *receiver,
-                                                         Sender *sender)
-{
-    Sender *previousSender = receiver->d_func()->currentSender;
-    receiver->d_func()->currentSender = sender;
-    return previousSender;
-}
-
-void QObjectPrivate::resetCurrentSender(QObject *receiver,
-                                        Sender *currentSender,
-                                        Sender *previousSender)
-{
-    // ref is set to zero when this object is deleted during the metacall
-    if (currentSender->ref == 1)
-        receiver->d_func()->currentSender = previousSender;
-    // if we've recursed, we need to tell the caller about the objects deletion
-    if (previousSender)
-        previousSender->ref = currentSender->ref;
-}
-
 
 typedef QMultiHash<QObject *, QObject **> GuardHash;
 Q_GLOBAL_STATIC(GuardHash, guardHash)
@@ -3231,9 +3210,9 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                                                          argv ? argv : empty_argv);
     }
 
-    QMutexLocker locker(signalSlotLock(sender));
     QThreadData *currentThreadData = QThreadData::current();
 
+    QMutexLocker locker(signalSlotLock(sender));
     QObjectConnectionListVector *connectionLists = sender->d_func()->connectionLists;
     if (!connectionLists) {
         locker.unlock();
@@ -3329,7 +3308,7 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
     if (connectionLists->orphaned) {
         if (!connectionLists->inUse)
             delete connectionLists;
-    } else {
+    } else if (connectionLists->dirty) {
         sender->d_func()->cleanConnectionLists();
     }
 
