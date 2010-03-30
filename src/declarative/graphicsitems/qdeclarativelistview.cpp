@@ -541,7 +541,7 @@ FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
         listItem->item->setZValue(1);
         // complete
         model->completeItem();
-        listItem->item->setParent(q->viewport());
+        listItem->item->setParentItem(q->viewport());
         QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
         itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
         if (sectionCriteria && sectionCriteria->delegate()) {
@@ -803,7 +803,7 @@ void QDeclarativeListViewPrivate::createHighlight()
             QDeclarativeContext *highlightContext = new QDeclarativeContext(qmlContext(q));
             QObject *nobj = highlightComponent->create(highlightContext);
             if (nobj) {
-                highlightContext->setParent(nobj);
+                QDeclarative_setParent_noEvent(highlightContext, nobj);
                 item = qobject_cast<QDeclarativeItem *>(nobj);
                 if (!item)
                     delete nobj;
@@ -814,7 +814,8 @@ void QDeclarativeListViewPrivate::createHighlight()
             item = new QDeclarativeItem;
         }
         if (item) {
-            item->setParent(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->viewport());
+            item->setParentItem(q->viewport());
             highlight = new FxListItem(item, q);
             if (currentItem && autoHighlight) {
                 if (orient == QDeclarativeListView::Vertical) {
@@ -880,13 +881,14 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
                 context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
                 QObject *nobj = sectionCriteria->delegate()->create(context);
                 if (nobj) {
-                    context->setParent(nobj);
+                    QDeclarative_setParent_noEvent(context, nobj);
                     listItem->section = qobject_cast<QDeclarativeItem *>(nobj);
                     if (!listItem->section) {
                         delete nobj;
                     } else {
                         listItem->section->setZValue(1);
-                        listItem->section->setParent(q->viewport());
+                        QDeclarative_setParent_noEvent(listItem->section, q->viewport());
+                        listItem->section->setParentItem(q->viewport());
                     }
                 } else {
                     delete context;
@@ -1002,7 +1004,7 @@ void QDeclarativeListViewPrivate::updateFooter()
         QDeclarativeContext *context = new QDeclarativeContext(qmlContext(q));
         QObject *nobj = footerComponent->create(context);
         if (nobj) {
-            context->setParent(nobj);
+            QDeclarative_setParent_noEvent(context, nobj);
             item = qobject_cast<QDeclarativeItem *>(nobj);
             if (!item)
                 delete nobj;
@@ -1010,7 +1012,8 @@ void QDeclarativeListViewPrivate::updateFooter()
             delete context;
         }
         if (item) {
-            item->setParent(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->viewport());
+            item->setParentItem(q->viewport());
             item->setZValue(1);
             footer = new FxListItem(item, q);
         }
@@ -1039,7 +1042,7 @@ void QDeclarativeListViewPrivate::updateHeader()
         QDeclarativeContext *context = new QDeclarativeContext(qmlContext(q));
         QObject *nobj = headerComponent->create(context);
         if (nobj) {
-            context->setParent(nobj);
+            QDeclarative_setParent_noEvent(context, nobj);
             item = qobject_cast<QDeclarativeItem *>(nobj);
             if (!item)
                 delete nobj;
@@ -1047,7 +1050,8 @@ void QDeclarativeListViewPrivate::updateHeader()
             delete context;
         }
         if (item) {
-            item->setParent(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->viewport());
+            item->setParentItem(q->viewport());
             item->setZValue(1);
             header = new FxListItem(item, q);
             if (visibleItems.isEmpty())

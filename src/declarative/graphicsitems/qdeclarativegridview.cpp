@@ -372,7 +372,7 @@ FxGridItem *QDeclarativeGridViewPrivate::createItem(int modelIndex)
         listItem->item->setZValue(1);
         // complete
         model->completeItem();
-        listItem->item->setParent(q->viewport());
+        listItem->item->setParentItem(q->viewport());
         unrequestedItems.remove(listItem->item);
     }
     requestedIndex = -1;
@@ -644,7 +644,7 @@ void QDeclarativeGridViewPrivate::createHighlight()
             QDeclarativeContext *highlightContext = new QDeclarativeContext(qmlContext(q));
             QObject *nobj = highlightComponent->create(highlightContext);
             if (nobj) {
-                highlightContext->setParent(nobj);
+                QDeclarative_setParent_noEvent(highlightContext, nobj);
                 item = qobject_cast<QDeclarativeItem *>(nobj);
                 if (!item)
                     delete nobj;
@@ -653,10 +653,12 @@ void QDeclarativeGridViewPrivate::createHighlight()
             }
         } else {
             item = new QDeclarativeItem;
-            item->setParent(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->viewport());
+            item->setParentItem(q->viewport());
         }
         if (item) {
-            item->setParent(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->viewport());
+            item->setParentItem(q->viewport());
             highlight = new FxGridItem(item, q);
             highlightXAnimator = new QDeclarativeEaseFollow(q);
             highlightXAnimator->setTarget(QDeclarativeProperty(highlight->item, QLatin1String("x")));
@@ -2180,7 +2182,6 @@ void QDeclarativeGridView::modelReset()
 void QDeclarativeGridView::createdItem(int index, QDeclarativeItem *item)
 {
     Q_D(QDeclarativeGridView);
-    item->setParentItem(this);
     if (d->requestedIndex != index) {
         item->setParentItem(this);
         d->unrequestedItems.insert(item, index);
