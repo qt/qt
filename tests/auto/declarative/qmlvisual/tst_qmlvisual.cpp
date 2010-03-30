@@ -106,7 +106,6 @@ void tst_qmlvisual::visual_data()
         files << QT_TEST_SOURCE_DIR "/animation/reanchor/reanchor.qml";
     }
 
-
     foreach (const QString &file, files) {
         QString testdata = toTestScript(file);
         if (testdata.isEmpty())
@@ -140,6 +139,8 @@ QString tst_qmlvisual::toTestScript(const QString &file, Mode mode)
         return QString();
 
     int index = file.lastIndexOf(QDir::separator());
+    if (index == -1)
+        index = file.lastIndexOf('/');
     if (index == -1)
         return QString();
 
