@@ -873,6 +873,16 @@ void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
         t << MMP_OPTION_CW " " << cw <<  endl;
     if (!armcc.isEmpty())
         t << MMP_OPTION_ARMCC " " << armcc <<  endl;
+
+    foreach(QString armccVersion, project->values("VERSION_FLAGS.ARMCC")) {
+        QStringList currentValues = project->values("QMAKE_CXXFLAGS." + armccVersion);
+        if (currentValues.size()) {
+            t << "#if defined(" << armccVersion << ")" << endl;
+            t << MMP_OPTION_ARMCC " " << currentValues.join(" ") <<  endl;
+            t << "#endif" << endl;
+        }
+    }
+
     if (!gcce.isEmpty())
         t << MMP_OPTION_GCCE " " << gcce <<  endl;
 

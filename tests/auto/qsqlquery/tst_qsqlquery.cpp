@@ -1137,17 +1137,14 @@ void tst_QSqlQuery::last()
 
     QVERIFY( q.last() );
 
-    if ( !tst_Databases::isMSAccess( db ) )
-        // Access doesn't return the correct position
-        QCOMPARE( q.at(), ( i-1 ) );
+    QSet<int> validReturns(QSet<int>() << -1 << i-1);
+    QVERIFY( validReturns.contains(q.at()) );
 
     QSqlQuery q2( "select * from " + qtest, db );
 
     QVERIFY( q2.last() );
 
-    if ( !tst_Databases::isMSAccess( db ) )
-        // Access doesn't return the correct position
-        QCOMPARE( q.at(), ( i-1 ) );
+    QVERIFY( validReturns.contains(q.at()) );
 }
 
 void tst_QSqlQuery::seek()

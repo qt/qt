@@ -50,6 +50,7 @@
 #include "qcalendarwidget.h"
 #include "qdial.h"
 #include "qdialog.h"
+#include "qmessagebox.h"
 #include "qgroupbox.h"
 #include "qheaderview.h"
 #include "qlist.h"
@@ -91,10 +92,10 @@ static const qreal goldenRatio = 1.618;
 
 const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
 // *** generated layout data ***
-{240,320,1,16,"QVGA Landscape"},
-{320,240,1,16,"QVGA Portrait"},
-{360,640,1,16,"NHD Landscape"},
-{640,360,1,16,"NHD Portrait"},
+{240,320,1,17,"QVGA Landscape"},
+{320,240,1,17,"QVGA Portrait"},
+{360,640,1,17,"NHD Landscape"},
+{640,360,1,17,"NHD Portrait"},
 {352,800,1,12,"E90 Landscape"}
 // *** End of generated data ***
 };
@@ -103,11 +104,11 @@ const int QS60StylePrivate::m_numberOfLayouts =
 
 const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 // *** generated pixel metrics ***
-{5,0,-909,0,0,2,0,0,-1,7,12,19,13,13,6,200,-909,-909,-909,20,13,2,0,0,21,7,18,0,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,4,4,4,9,13,-909,5,51,11,5,0,3,3,6,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1},
-{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,0,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,3,3,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1},
-{7,0,-909,0,0,2,0,0,-1,25,69,28,19,19,9,258,-909,-909,-909,23,19,26,0,0,32,25,72,0,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,13,13,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,25,68,28,19,19,9,258,-909,-909,-909,31,19,6,0,0,32,25,60,0,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,12,12,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,7,32,0,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1}
+{5,0,-909,0,0,2,0,0,-1,7,12,19,13,13,6,200,-909,-909,-909,20,13,2,0,0,21,7,18,0,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,4,4,4,9,13,-909,5,51,11,5,0,3,3,6,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1, 106},
+{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,0,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,3,3,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1, 106},
+{7,0,-909,0,0,2,0,0,-1,25,69,28,19,19,9,258,-909,-909,-909,23,19,26,0,0,32,25,72,0,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,13,13,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1, 135},
+{7,0,-909,0,0,2,0,0,-1,25,68,28,19,19,9,258,-909,-909,-909,31,19,6,0,0,32,25,60,0,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,12,12,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1, 135},
+{7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,7,32,0,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1, 106}
 // *** End of generated data ***
 };
 
@@ -126,7 +127,7 @@ const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameEleme
     {SE_ButtonPressed,          QS60StyleEnums::SP_QsnFrButtonTbCenterPressed},
     {SE_FrameLineEdit,          QS60StyleEnums::SP_QsnFrInputCenter},
     {SE_ListHighlight,          QS60StyleEnums::SP_QsnFrListCenter},
-    {SE_OptionsMenu,            QS60StyleEnums::SP_QsnFrPopupCenter},
+    {SE_PopupBackground,        QS60StyleEnums::SP_QsnFrPopupCenter},
     {SE_SettingsList,           QS60StyleEnums::SP_QsnFrSetOptCenter},
     {SE_TableItem,              QS60StyleEnums::SP_QsnFrCaleCenter},
     {SE_TableHeaderItem,        QS60StyleEnums::SP_QsnFrCaleHeadingCenter},
@@ -249,8 +250,8 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     case SE_ListHighlight:
         drawFrame(SF_ListHighlight, painter, rect, flags | SF_PointNorth);
         break;
-    case SE_OptionsMenu:
-        drawFrame(SF_OptionsMenu, painter, rect, flags | SF_PointNorth);
+    case SE_PopupBackground:
+        drawFrame(SF_PopupBackground, painter, rect, flags | SF_PointNorth);
         break;
     case SE_SettingsList:
         drawFrame(SF_SettingsList, painter, rect, flags | SF_PointNorth);
@@ -636,6 +637,8 @@ void QS60StylePrivate::setFont(QWidget *widget) const
         fontCategory = QS60StyleEnums::FC_Secondary;
     } else if (qobject_cast<QGroupBox *>(widget)){
         fontCategory = QS60StyleEnums::FC_Title;
+    } else if (qobject_cast<QMessageBox *>(widget)){
+        fontCategory = QS60StyleEnums::FC_Primary;
     }
     if (fontCategory != QS60StyleEnums::FC_Undefined) {
         const bool resolveFontSize = widget->testAttribute(Qt::WA_SetFont)
@@ -2215,7 +2218,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget) &&
                 option->palette.window().texture().cacheKey() ==
                     QS60StylePrivate::m_themePalette->window().texture().cacheKey())
-                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_OptionsMenu, painter, option->rect, flags);
+                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, option->rect, flags);
             else
                 commonStyleDraws = true;
         }
@@ -2386,13 +2389,6 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
     if (metricValue == KNotFound)
         metricValue = QCommonStyle::pixelMetric(metric, option, widget);
 
-    if (metric == PM_SubMenuOverlap && widget) {
-        const QMenu *menu = qobject_cast<const QMenu *>(widget);
-        if (menu && menu->activeAction() && menu->activeAction()->menu()) {
-            const int menuWidth = menu->activeAction()->menu()->sizeHint().width();
-            metricValue = -menuWidth;
-        }
-    }
     //if layout direction is mirrored, switch left and right border margins
     if (option && option->direction == Qt::RightToLeft) {
         if (metric == PM_LayoutLeftMargin)
@@ -2400,6 +2396,12 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
         else if (metric == PM_LayoutRightMargin)
             metricValue = QS60StylePrivate::pixelMetric(PM_LayoutLeftMargin);
     }
+
+    if (widget && (metric == PM_LayoutTopMargin))
+        if (widget->windowType() == Qt::Dialog)
+            //double the top layout margin for dialogs, it is very close to real value
+            //without having to define custom pixel metric
+            metricValue *= 2;
     return metricValue;
 }
 
