@@ -18,6 +18,7 @@
 #include "common.h"
 #include "backend.h"
 #include "audiooutput.h"
+#include "audiodataoutput.h"
 #include "audioeffect.h"
 #include "mediaobject.h"
 #include "videowidget.h"
@@ -26,6 +27,7 @@
 #include "message.h"
 #include "volumefadereffect.h"
 #include <gst/interfaces/propertyprobe.h>
+#include <phonon/pulsesupport.h>
 
 #include <QtCore/QSet>
 #include <QtCore/QVariant>
@@ -49,13 +51,17 @@ Backend::Backend(QObject *parent, const QVariantList &)
         , m_debugLevel(Warning)
         , m_isValid(false)
 {
+    // Initialise PulseAudio support
+    PulseSupport *pulse = PulseSupport::getInstance();
+    pulse->enable();
+    connect(pulse, SIGNAL(objectDescriptionChanged(ObjectDescriptionType)), SIGNAL(objectDescriptionChanged(ObjectDescriptionType)));
+
     // In order to support reloading, we only set the app name once...
     static bool first = true;
     if (first) {
         first = false;
         g_set_application_name(qApp->applicationName().toUtf8());
     }
-
     GError *err = 0;
     bool wasInit = gst_init_check(0, 0, &err);  //init gstreamer: must be called before any gst-related functions
     if (err)
@@ -92,6 +98,9 @@ Backend::Backend(QObject *parent, const QVariantList &)
 
 Backend::~Backend() 
 {
+    delete m_effectManager;
+    delete m_deviceManager;
+    PulseSupport::shutdown();
 }
 
 gboolean Backend::busCall(GstBus *bus, GstMessage *msg, gpointer data)
@@ -119,18 +128,15 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
     case MediaObjectClass:
         return new MediaObject(this, parent);
 
-    case AudioOutputClass: {
-            AudioOutput *ao = new AudioOutput(this, parent);
-            m_audioOutputs.append(ao);
-            return ao;
-        }
+    case AudioOutputClass:
+        return new AudioOutput(this, parent);
+
 #ifndef QT_NO_PHONON_EFFECT
     case EffectClass:
         return new AudioEffect(this, args[0].toInt(), parent);
 #endif //QT_NO_PHONON_EFFECT
     case AudioDataOutputClass:
-        logMessage("createObject() : AudioDataOutput not implemented");
-        break;
+        return new AudioDataOutput(this, parent);
 
 #ifndef QT_NO_PHONON_VIDEO
     case VideoDataOutputClass:
@@ -214,14 +220,14 @@ QStringList Backend::availableMimeTypes() const
         GstPluginFeature *feature = GST_PLUGIN_FEATURE(iter->data);
         QString klass = gst_element_factory_get_klass(GST_ELEMENT_FACTORY(feature));
 
-        if (klass == QLatin1String("Codec/Decoder") ||
-            klass == QLatin1String("Codec/Decoder/Audio") ||
-            klass == QLatin1String("Codec/Decoder/Video") ||
-            klass == QLatin1String("Codec/Demuxer") ||
-            klass == QLatin1String("Codec/Demuxer/Audio") ||
-            klass == QLatin1String("Codec/Demuxer/Video") ||
-            klass == QLatin1String("Codec/Parser") ||
-            klass == QLatin1String("Codec/Parser/Audio") ||
+        if (klass == QLatin1String("Codec/Decoder") || 
+            klass == QLatin1String("Codec/Decoder/Audio") || 
+            klass == QLatin1String("Codec/Decoder/Video") || 
+            klass == QLatin1String("Codec/Demuxer") || 
+            klass == QLatin1String("Codec/Demuxer/Audio") || 
+            klass == QLatin1String("Codec/Demuxer/Video") || 
+            klass == QLatin1String("Codec/Parser") || 
+            klass == QLatin1String("Codec/Parser/Audio") || 
             klass == QLatin1String("Codec/Parser/Video")) {
 
             const GList *static_templates;
@@ -234,16 +240,28 @@ QStringList Backend::availableMimeTypes() const
                     GstCaps *caps = gst_static_pad_template_get_caps (padTemplate);
 
                     if (caps) {
-                        const GstStructure* capsStruct = gst_caps_get_structure (caps, 0);
-                        QString mime = QString::fromUtf8(gst_structure_get_name (capsStruct));
-                        if (!availableMimeTypes.contains(mime))
-                              availableMimeTypes.append(mime);
+                        for (unsigned int struct_idx = 0; struct_idx < gst_caps_get_size (caps); struct_idx++) {
+
+                            const GstStructure* capsStruct = gst_caps_get_structure (caps, struct_idx);
+                            QString mime = QString::fromUtf8(gst_structure_get_name (capsStruct));
+                            if (!availableMimeTypes.contains(mime))
+                                availableMimeTypes.append(mime);
+                        }
                     }
                 }
             }
         }
     }
     g_list_free(factoryList);
+    if (availableMimeTypes.contains("audio/x-vorbis")
+        && availableMimeTypes.contains("application/x-ogm-audio")) {
+        if (!availableMimeTypes.contains("audio/x-vorbis+ogg"))
+            availableMimeTypes.append("audio/x-vorbis+ogg");
+        if (!availableMimeTypes.contains("application/ogg"))  /* *.ogg */
+            availableMimeTypes.append("application/ogg");
+        if (!availableMimeTypes.contains("audio/ogg")) /* *.oga */
+            availableMimeTypes.append("audio/ogg");
+    }
     availableMimeTypes.sort();
     return availableMimeTypes;
 }
@@ -293,14 +311,11 @@ QHash<QByteArray, QVariant> Backend::objectDescriptionProperties(ObjectDescripti
 
     switch (type) {
     case Phonon::AudioOutputDeviceType: {
-            QList<AudioDevice> audioDevices = deviceManager()->audioOutputDevices();
-            foreach(const AudioDevice &device, audioDevices) {
-                if (device.id == index) {
-                    ret.insert("name", device.gstId);
-                    ret.insert("description", device.description);
-                    ret.insert("icon", QLatin1String("audio-card"));
-                    break;
-                }
+            AudioDevice* ad;
+            if ((ad = deviceManager()->audioDevice(index))) {
+                ret.insert("name", ad->gstId);
+                ret.insert("description", ad->description);
+                ret.insert("icon", ad->icon);
             }
         }
         break;
@@ -429,7 +444,7 @@ EffectManager* Backend::effectManager() const
 
 /**
  * Returns a debuglevel that is determined by the
- * PHONON_GSTREAMER_DEBUG environment variable.
+ * PHONON_GST_DEBUG environment variable.
  *
  *  Warning - important warnings
  *  Info    - general info

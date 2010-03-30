@@ -194,8 +194,8 @@ namespace Phonon
                 m_sampleBuffer = ComPointer<IMediaSample>();
 #ifndef QT_NO_OPENGL
                 freeGLResources();
-                m_textureUploaded = false;
 #endif // QT_NO_OPENGL
+                m_textureUploaded = false;
             }
 
             void endOfStream()
@@ -314,6 +314,7 @@ namespace Phonon
             REFERENCE_TIME m_start;
             HANDLE m_renderEvent, m_receiveCanWait;         // Signals sample to render
             QSize m_size;
+            bool m_textureUploaded;
 
             //mixer settings
             qreal m_brightness,
@@ -355,7 +356,6 @@ namespace Phonon
 
             bool m_checkedPrograms;
             bool m_usingOpenGL;
-            bool m_textureUploaded;
             GLuint m_program[2];
             GLuint m_texture[3];
 #endif
@@ -365,7 +365,7 @@ namespace Phonon
         {
         public:
             VideoRendererSoftPin(VideoRendererSoftFilter *parent) :
-              QMemInputPin(parent, videoMediaTypes(), false /*no transformation of the samples*/, 0),
+              QMemInputPin(parent, videoMediaTypes(), false /*no transformation of the samples*/),
                   m_renderer(parent)
               {
               }
@@ -436,7 +436,7 @@ namespace Phonon
         QBaseFilter(CLSID_NULL), m_inputPin(new VideoRendererSoftPin(this)),
             m_renderer(renderer), m_start(0)
 #ifndef QT_NO_OPENGL
-            , m_checkedPrograms(false), m_usingOpenGL(false), m_textureUploaded(false)
+            ,m_usingOpenGL(false), m_checkedPrograms(false), m_textureUploaded(false)
 #endif
         {
             m_renderEvent    = ::CreateEvent(0, 0, 0, 0);
@@ -661,10 +661,7 @@ namespace Phonon
 
 
 #ifndef QT_NO_OPENGL
-            if (painter.paintEngine() && 
-                (painter.paintEngine()->type() == QPaintEngine::OpenGL || painter.paintEngine()->type() == QPaintEngine::OpenGL2)
-                && checkGLPrograms()) {
-
+            if (painter.paintEngine() && painter.paintEngine()->type() == QPaintEngine::OpenGL && checkGLPrograms()) {
                 //for now we only support YUV (both YV12 and YUY2)
                 updateTexture();
 
@@ -676,7 +673,6 @@ namespace Phonon
                 }
 
                 //let's draw the texture
-                painter.beginNativePainting();
 
                 //Let's pass the other arguments
                 const Program prog = (m_inputPin->connectedType().subtype == MEDIASUBTYPE_YV12) ? YV12toRGB : YUY2toRGB;
@@ -726,7 +722,6 @@ namespace Phonon
                 glDisableClientState(GL_VERTEX_ARRAY);
 
                 glDisable(GL_FRAGMENT_PROGRAM_ARB);
-                painter.endNativePainting();
                 return;
             } else
 #endif

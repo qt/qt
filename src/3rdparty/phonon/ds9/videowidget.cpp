@@ -24,12 +24,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mediaobject.h"
 
-#ifndef Q_OS_WINCE
-#include "videorenderer_evr.h"
 #include "videorenderer_vmr9.h"
-#else
-#include "videorenderer_default.h"
-#endif
 #include "videorenderer_soft.h"
 
 QT_BEGIN_NAMESPACE
@@ -89,19 +84,7 @@ namespace Phonon
             void setCurrentRenderer(AbstractVideoRenderer *renderer)
             {
                 m_currentRenderer = renderer;
-                //we disallow repaint on that widget for just a fraction of second
-                //this allows better transition between videos
-                setUpdatesEnabled(false);
-                m_flickerFreeTimer.start(20, this);
-            }
-
-            void timerEvent(QTimerEvent *e)
-            {
-                if (e->timerId() == m_flickerFreeTimer.timerId()) {
-                    m_flickerFreeTimer.stop();
-                    setUpdatesEnabled(true);
-                }
-                QWidget::timerEvent(e);
+                update();
             }
 
             QSize sizeHint() const
@@ -123,8 +106,6 @@ namespace Phonon
 
             void paintEvent(QPaintEvent *e)
             {
-                if (!updatesEnabled())
-                    return; //this avoids repaint from native events
                 checkCurrentRenderingMode();
                 m_currentRenderer->repaintCurrentFrame(this, e->rect());
             }
@@ -172,14 +153,13 @@ namespace Phonon
                     }
                 } else if (!isEmbedded()) {
                     m_currentRenderer = m_node->switchRendering(m_currentRenderer);
-                    setAttribute(Qt::WA_PaintOnScreen, false);
+                    setAttribute(Qt::WA_PaintOnScreen, true);
                 }
             }
 
             VideoWidget *m_node;
             AbstractVideoRenderer *m_currentRenderer;
             QVariant m_restoreScreenSaverActive;
-            QBasicTimer m_flickerFreeTimer;
         };
 
         VideoWidget::VideoWidget(QWidget *parent)
@@ -222,9 +202,6 @@ namespace Phonon
             const bool toNative = !current->isNative();
             if (toNative && m_noNativeRendererSupported)
                 return current; //no switch here
-
-            if (!mediaObject())
-                return current;
 
             //firt we delete the renderer
             //initialization of the widgets
@@ -284,7 +261,6 @@ namespace Phonon
         {
             m_aspectRatio = aspectRatio;
             updateVideoSize();
-            m_widget->update();
         }
 
         Phonon::VideoWidget::ScaleMode VideoWidget::scaleMode() const
@@ -303,7 +279,6 @@ namespace Phonon
         {
             m_scaleMode = scaleMode;
             updateVideoSize();
-            m_widget->update();
         }
 
         void VideoWidget::setBrightness(qreal b)
@@ -357,29 +332,14 @@ namespace Phonon
             int index = graphIndex * 2 + type;
             if (m_renderers[index] == 0 && autoCreate) {
                 AbstractVideoRenderer *renderer = 0;
-                if (type == Native) {
-#ifndef Q_OS_WINCE
-                    renderer = new VideoRendererEVR(m_widget);
+				if (type == Native) {
+                    renderer = new VideoRendererVMR9(m_widget);
                     if (renderer->getFilter() == 0) {
-                        delete renderer;
-                        //EVR not present, let's try VMR
-                        renderer = new VideoRendererVMR9(m_widget);
-                        if (renderer->getFilter() == 0) {
-                            //instanciating the renderer might fail
-                            m_noNativeRendererSupported = true;
-                            delete renderer;
-                            renderer = 0;
-                        }
-                    }
-#else
-                    renderer = new VideoRendererDefault(m_widget);
-                    if (renderer->getFilter() == 0) {
-                        //instanciating the renderer might fail
+                        //instanciating the renderer might fail with error VFW_E_DDRAW_CAPS_NOT_SUITABLE (0x80040273)
                         m_noNativeRendererSupported = true;
                         delete renderer;
                         renderer = 0;
                     }
-#endif
                 }
 
                 if (renderer == 0) {

@@ -86,7 +86,6 @@ private Q_SLOTS:
 
 private:
     static gboolean busCall(GstBus *bus, GstMessage *msg, gpointer data);
-    QList<QPointer<AudioOutput> > m_audioOutputs;
 
     DeviceManager *m_deviceManager;
     EffectManager *m_effectManager;

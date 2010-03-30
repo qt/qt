@@ -28,7 +28,20 @@ namespace Phonon
     namespace DS9
     {
 
-        static const AM_MEDIA_TYPE defaultMediaType = { MEDIATYPE_NULL, MEDIASUBTYPE_NULL, TRUE, FALSE, 1, GUID_NULL, 0, 0, 0};
+        static const AM_MEDIA_TYPE defaultMediaType()
+        {
+            AM_MEDIA_TYPE ret;
+            ret.majortype = MEDIATYPE_NULL;
+            ret.subtype = MEDIASUBTYPE_NULL;
+            ret.bFixedSizeSamples = TRUE;
+            ret.bTemporalCompression = FALSE;
+            ret.lSampleSize = 1;
+            ret.formattype = GUID_NULL;
+            ret.pUnk = 0;
+            ret.cbFormat = 0;
+            ret.pbFormat = 0;
+            return ret;
+        }
 
         class QEnumMediaTypes : public IEnumMediaTypes
         {
@@ -91,8 +104,8 @@ namespace Phonon
                     return E_INVALIDARG;
                 }
 
-                uint nbFetched = 0;
-                while (nbFetched < count && m_index < m_pin->mediaTypes().count()) {
+                int nbFetched = 0;
+                while (nbFetched < int(count) && m_index < m_pin->mediaTypes().count()) {
                     //the caller will deallocate the memory
                     *out = static_cast<AM_MEDIA_TYPE *>(::CoTaskMemAlloc(sizeof(AM_MEDIA_TYPE)));
                     const AM_MEDIA_TYPE original = m_pin->mediaTypes().at(m_index);
@@ -145,9 +158,9 @@ namespace Phonon
 
 
         QPin::QPin(QBaseFilter *parent, PIN_DIRECTION dir, const QVector<AM_MEDIA_TYPE> &mt) :
-            m_parent(parent), m_flushing(false), m_refCount(1),  m_connected(0),
-            m_direction(dir), m_mediaTypes(mt), m_connectedType(defaultMediaType),
-            m_memAlloc(0)
+        m_memAlloc(0), m_parent(parent), m_refCount(1),  m_connected(0),
+            m_direction(dir), m_mediaTypes(mt), m_connectedType(defaultMediaType()),
+            m_flushing(false)
         {
             Q_ASSERT(m_parent);
             m_parent->addPin(this);
@@ -260,7 +273,7 @@ namespace Phonon
 
             if (FAILED(hr)) {
                 setConnected(0);
-                setConnectedType(defaultMediaType);
+                setConnectedType(defaultMediaType());
             } else {
                 ComPointer<IMemInputPin> input(pin, IID_IMemInputPin);
                 if (input) {
@@ -302,8 +315,10 @@ namespace Phonon
             }
 
             setConnected(0);
-            setConnectedType(defaultMediaType);
-            setMemoryAllocator(0);
+            setConnectedType(defaultMediaType());
+            if (m_direction == PINDIR_INPUT) {
+                setMemoryAllocator(0);
+            }
             return S_OK;
         }
 
@@ -323,7 +338,7 @@ namespace Phonon
 
         STDMETHODIMP QPin::ConnectionMediaType(AM_MEDIA_TYPE *type)
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             if (!type) {
                 return E_POINTER;
             }
@@ -338,6 +353,7 @@ namespace Phonon
 
         STDMETHODIMP QPin::QueryPinInfo(PIN_INFO *info)
         {
+            QReadLocker locker(&m_lock);
             if (!info) {
                 return E_POINTER;
             }
@@ -345,12 +361,14 @@ namespace Phonon
             info->dir = m_direction;
             info->pFilter = m_parent;
             m_parent->AddRef();
-            info->achName[0] = 0;
+            qMemCopy(info->achName, m_name.utf16(), qMin(MAX_FILTER_NAME, m_name.length()+1) *2);
+
             return S_OK;
         }
 
         STDMETHODIMP QPin::QueryDirection(PIN_DIRECTION *dir)
         {
+            QReadLocker locker(&m_lock);
             if (!dir) {
                 return E_POINTER;
             }
@@ -361,18 +379,20 @@ namespace Phonon
 
         STDMETHODIMP QPin::QueryId(LPWSTR *id)
         {
+            QReadLocker locker(&m_lock);
             if (!id) {
                 return E_POINTER;
             }
 
-            *id = static_cast<LPWSTR>(::CoTaskMemAlloc(2));
-            *id[0] = 0;
+            int nbBytes = (m_name.length()+1)*2;
+            *id = static_cast<LPWSTR>(::CoTaskMemAlloc(nbBytes));
+            qMemCopy(*id, m_name.utf16(), nbBytes);
             return S_OK;
         }
 
         STDMETHODIMP QPin::QueryAccept(const AM_MEDIA_TYPE *type)
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             if (!type) {
                 return E_POINTER;
             }
@@ -419,7 +439,7 @@ namespace Phonon
 
         STDMETHODIMP QPin::NewSegment(REFERENCE_TIME start, REFERENCE_TIME stop, double rate)
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             if (m_direction == PINDIR_OUTPUT && m_connected) {
                 //we deliver this downstream
                 m_connected->NewSegment(start, stop, rate);
@@ -436,8 +456,8 @@ namespace Phonon
 
         HRESULT QPin::checkOutputMediaTypesConnection(IPin *pin)
         {
-            ComPointer<IEnumMediaTypes> emt;
-            HRESULT hr = pin->EnumMediaTypes(emt.pparam());
+            IEnumMediaTypes *emt = 0;
+            HRESULT hr = pin->EnumMediaTypes(&emt);
             if (hr != S_OK) {
                 return hr;
             }
@@ -450,7 +470,7 @@ namespace Phonon
                         freeMediaType(type);
                         return S_OK;
                     } else {
-                        setConnectedType(defaultMediaType);
+                        setConnectedType(defaultMediaType());
                         freeMediaType(type);
                     }
                 }
@@ -500,7 +520,7 @@ namespace Phonon
 
         void QPin::setConnectedType(const AM_MEDIA_TYPE &type)
         {
-            QMutexLocker locker(&m_mutex);
+            QWriteLocker locker(&m_lock);
 
             //1st we free memory
             freeMediaType(m_connectedType);
@@ -510,13 +530,13 @@ namespace Phonon
 
         const AM_MEDIA_TYPE &QPin::connectedType() const 
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             return m_connectedType;
         }
 
         void QPin::setConnected(IPin *pin)
         {
-            QMutexLocker locker(&m_mutex);
+            QWriteLocker locker(&m_lock);
             if (pin) {
                 pin->AddRef();
             }
@@ -528,7 +548,7 @@ namespace Phonon
 
         IPin *QPin::connected(bool addref) const
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             if (addref && m_connected) {
                 m_connected->AddRef();
             }
@@ -537,12 +557,13 @@ namespace Phonon
 
         bool QPin::isFlushing() const
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             return m_flushing;
         }
 
         FILTER_STATE QPin::filterState() const
         {
+            QReadLocker locker(&m_lock);
             FILTER_STATE fstate = State_Stopped;
             m_parent->GetState(0, &fstate);
             return fstate;
@@ -550,7 +571,7 @@ namespace Phonon
 
         QVector<AM_MEDIA_TYPE> QPin::mediaTypes() const
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             return m_mediaTypes;
         }
 
@@ -586,7 +607,7 @@ namespace Phonon
 
         void QPin::setMemoryAllocator(IMemAllocator *alloc)
         {
-            QMutexLocker locker(&m_mutex);
+            QWriteLocker locker(&m_lock);
             if (alloc) {
                 alloc->AddRef();
             }
@@ -598,7 +619,7 @@ namespace Phonon
 
         IMemAllocator *QPin::memoryAllocator(bool addref) const
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             if (addref && m_memAlloc) {
                 m_memAlloc->AddRef();
             }

@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,11 +39,52 @@
 **
 ****************************************************************************/
 
-#include <pulse/pulseaudio.h>
+#ifndef QT7CIIMAGEVIDEOBUFFER_H
+#define QT7CIIMAGEVIDEOBUFFER_H
 
-int main(int ,char **)
+#include "qt7backend.h"
+#import <QTKit/QTKit.h>
+
+#include <QtCore/qvariant.h>
+#include <QtMultimedia/qabstractvideobuffer.h>
+
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+class QT7CIImageVideoBuffer : public QAbstractVideoBuffer
 {
-    pa_threaded_mainloop *mainloop = pa_threaded_mainloop_new();
-    return 0;
-}
+public:
+    QT7CIImageVideoBuffer(CIImage *image);
 
+    virtual ~QT7CIImageVideoBuffer();
+
+    MapMode mapMode() const;
+    uchar *map(MapMode mode, int *numBytes, int *bytesPerLine);
+    void unmap();
+    QVariant handle() const;
+
+private:
+    CIImage *m_image;
+    NSBitmapImageRep *m_buffer;
+    MapMode m_mode;
+};
+
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif
