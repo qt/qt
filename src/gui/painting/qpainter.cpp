@@ -5844,6 +5844,11 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     QStaticTextPrivate *staticText_d =
             const_cast<QStaticTextPrivate *>(QStaticTextPrivate::get(&staticText));
 
+    if (font() != staticText_d->font) {
+        staticText_d->font = font();
+        staticText_d->needsRelayout = true;
+    }
+
     // If we don't have an extended paint engine, or if the painter is projected,
     // we go through standard code path
     if (d->extended == 0 || !d->state->matrix.isAffine()) {
@@ -5877,11 +5882,6 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     bool staticTextNeedsReinit = staticText_d->needsRelayout;
     if (staticText_d->matrix != d->state->matrix) {
         staticText_d->matrix = d->state->matrix;
-        staticTextNeedsReinit = true;
-    }
-
-    if (font() != staticText_d->font) {
-        staticText_d->font = font();
         staticTextNeedsReinit = true;
     }
 
