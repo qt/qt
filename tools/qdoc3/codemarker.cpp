@@ -457,7 +457,7 @@ bool CodeMarker::insertReimpFunc(FastSection& fs, Node* node, Status status)
 void CodeMarker::append(QList<Section>& sectionList, const FastSection& fs)
 {
     if (!fs.isEmpty()) {
-	Section section(fs.name,fs.singularMember,fs.pluralMember);
+	Section section(fs.name,fs.divClass,fs.singularMember,fs.pluralMember);
 	section.members = fs.memberMap.values();
         section.reimpMembers = fs.reimpMemberMap.values();
 	section.inherited = fs.inherited;
