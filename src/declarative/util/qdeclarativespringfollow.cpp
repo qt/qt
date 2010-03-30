@@ -242,8 +242,6 @@ void QDeclarativeSpringFollowPrivate::stop()
         SpringFollow on y { source: rect1.y; velocity: 200 }
     }
     \endcode
-
-    \sa EaseFollow
 */
 
 QDeclarativeSpringFollow::QDeclarativeSpringFollow(QObject *parent)

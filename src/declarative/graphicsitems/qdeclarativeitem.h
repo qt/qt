@@ -107,7 +107,6 @@ public:
 
     QDeclarativeItem *parentItem() const;
     void setParentItem(QDeclarativeItem *parent);
-    void setParent(QDeclarativeItem *parent) { setParentItem(parent); }
 
     QDeclarativeListProperty<QObject> data();
     QDeclarativeListProperty<QObject> resources();

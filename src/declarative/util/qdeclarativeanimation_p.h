@@ -251,8 +251,8 @@ public:
     QDeclarativePropertyAnimation(QObject *parent=0);
     virtual ~QDeclarativePropertyAnimation();
 
-    int duration() const;
-    void setDuration(int);
+    virtual int duration() const;
+    virtual void setDuration(int);
 
     QVariant from() const;
     void setFrom(const QVariant &);
@@ -326,6 +326,12 @@ public:
 
     qreal to() const;
     void setTo(qreal);
+
+protected:
+    QDeclarativeNumberAnimation(QDeclarativePropertyAnimationPrivate &dd, QObject *parent);
+
+private:
+    void init();
 };
 
 class Q_AUTOTEST_EXPORT QDeclarativeVector3dAnimation : public QDeclarativePropertyAnimation

@@ -163,7 +163,8 @@ void QDeclarativeBehavior::write(const QVariant &value)
 
     d->currentValue = d->property.read();
 
-    d->animation->qtAnimation()->stop();
+    if (d->animation->qtAnimation()->duration() != -1)
+        d->animation->qtAnimation()->stop();
 
     QDeclarativeStateOperation::ActionList actions;
     QDeclarativeAction action;

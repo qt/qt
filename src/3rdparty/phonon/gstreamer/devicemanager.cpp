@@ -24,6 +24,7 @@
 #include "widgetrenderer.h"
 #include "x11renderer.h"
 #include "artssink.h"
+#include "pulsesupport.h"
 
 #ifdef USE_ALSASINK2
 #include "alsasink2.h"
@@ -44,9 +45,12 @@ namespace Gstreamer
 AudioDevice::AudioDevice(DeviceManager *manager, const QByteArray &gstId)
         : gstId(gstId)
 {
-    //get an id
-    static int counter = 0;
-    id = counter++;
+    // This should never be called when PulseAudio is active.
+    Q_ASSERT(!PulseSupport::getInstance()->isActive());
+
+    id = manager->allocateDeviceId();
+    icon = "audio-card";
+
     //get name from device
     if (gstId == "default") {
         description = "Default audio device";
@@ -71,22 +75,25 @@ AudioDevice::AudioDevice(DeviceManager *manager, const QByteArray &gstId)
 DeviceManager::DeviceManager(Backend *backend)
         : QObject(backend)
         , m_backend(backend)
+        , m_audioDeviceCounter(0)
 {
-    m_audioSink = qgetenv("PHONON_GST_AUDIOSINK");
-    m_videoSinkWidget = qgetenv("PHONON_GST_VIDEOMODE");
-
-#ifndef QT_NO_SETTINGS
     QSettings settings(QLatin1String("Trolltech"));
     settings.beginGroup(QLatin1String("Qt"));
 
+    PulseSupport *pulse = PulseSupport::getInstance();
+    m_audioSink = qgetenv("PHONON_GST_AUDIOSINK");
     if (m_audioSink.isEmpty()) {
         m_audioSink = settings.value(QLatin1String("audiosink"), "Auto").toByteArray().toLower();
+        if (m_audioSink == "auto" && pulse->isActive())
+            m_audioSink = "pulsesink";
     }
+    if ("pulsesink" != m_audioSink)
+        pulse->enable(false);
 
+    m_videoSinkWidget = qgetenv("PHONON_GST_VIDEOMODE");
     if (m_videoSinkWidget.isEmpty()) {
         m_videoSinkWidget = settings.value(QLatin1String("videomode"), "Auto").toByteArray().toLower();
     }
-#endif //QT_NO_SETTINGS
 
     if (m_backend->isValid())
         updateDeviceList();
@@ -271,9 +278,17 @@ AbstractRenderer *DeviceManager::createVideoRenderer(VideoWidget *parent)
 }
 #endif //QT_NO_PHONON_VIDEO
 
-/*
- * Returns a positive device id or -1 if device
- * does not exist
+/**
+ * Allocate a device id for a new audio device
+ */
+int DeviceManager::allocateDeviceId()
+{
+    return m_audioDeviceCounter++;
+}
+
+
+/**
+ * Returns a positive device id or -1 if device does not exist
  *
  * The gstId is typically in the format hw:1,0
  */
@@ -288,16 +303,30 @@ int DeviceManager::deviceId(const QByteArray &gstId) const
 }
 
 /**
- * Get a human-readable description from a device id
+ * Returns a gstId or "default" if device does not exist
+ *
+ * The gstId is typically in the format hw:1,0
  */
-QByteArray DeviceManager::deviceDescription(int id) const
+const QByteArray DeviceManager::gstId(int deviceId)
+{
+    if (!PulseSupport::getInstance()->isActive()) {
+        AudioDevice *ad = audioDevice(deviceId);
+        if (ad)
+            return QByteArray(ad->gstId);
+    }
+    return QByteArray("default");
+}
+
+/**
+* Get the AudioDevice for a given device id
+*/
+AudioDevice* DeviceManager::audioDevice(int id)
 {
     for (int i = 0 ; i < m_audioDeviceList.size() ; ++i) {
-        if (m_audioDeviceList[i].id == id) {
-            return m_audioDeviceList[i].description;
-        }
+        if (m_audioDeviceList[i].id == id)
+            return &m_audioDeviceList[i];
     }
-    return QByteArray();
+    return NULL;
 }
 
 /**
@@ -311,8 +340,11 @@ void DeviceManager::updateDeviceList()
     QList<QByteArray> list;
 
     if (audioSink) {
-        list = GstHelper::extractProperties(audioSink, "device");
-        list.prepend("default");
+        if (!PulseSupport::getInstance()->isActive()) {
+            // If we're using pulse, the PulseSupport class takes care of things for us.
+            list = GstHelper::extractProperties(audioSink, "device");
+            list.prepend("default");
+        }
 
         for (int i = 0 ; i < list.size() ; ++i) {
             QByteArray gstId = list.at(i);
