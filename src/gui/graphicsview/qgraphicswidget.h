@@ -83,6 +83,7 @@ class Q_GUI_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphicsLay
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
     Q_PROPERTY(QRectF geometry READ geometry WRITE setGeometry NOTIFY geometryChanged)
     Q_PROPERTY(bool autoFillBackground READ autoFillBackground WRITE setAutoFillBackground)
+    Q_PROPERTY(QGraphicsLayout* layout READ layout WRITE setLayout NOTIFY layoutChanged)
 public:
     QGraphicsWidget(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
     ~QGraphicsWidget();
@@ -180,6 +181,7 @@ public:
 
 Q_SIGNALS:
     void geometryChanged();
+    void layoutChanged();
 
 public Q_SLOTS:
     bool close();
