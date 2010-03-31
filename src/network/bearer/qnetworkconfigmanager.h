@@ -52,12 +52,12 @@
 QT_BEGIN_HEADER
 
 #ifndef QT_MOBILITY_BEARER
- QT_BEGIN_NAMESPACE
- #define QNetworkConfigurationManagerExport Q_NETWORK_EXPORT
- QT_MODULE(Network)
+QT_BEGIN_NAMESPACE
+#define QNetworkConfigurationManagerExport Q_NETWORK_EXPORT
+QT_MODULE(Network)
 #else
- QTM_BEGIN_NAMESPACE
- #define QNetworkConfigurationManagerExport Q_BEARER_EXPORT
+QTM_BEGIN_NAMESPACE
+#define QNetworkConfigurationManagerExport Q_BEARER_EXPORT
 #endif
 
 class QNetworkConfigurationManagerPrivate;
@@ -104,9 +104,9 @@ Q_SIGNALS:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkConfigurationManager::Capabilities)
 
 #ifndef QT_MOBILITY_BEARER
- QT_END_NAMESPACE
+QT_END_NAMESPACE
 #else
- QTM_END_NAMESPACE
+QTM_END_NAMESPACE
 #endif
 
 QT_END_HEADER

@@ -59,12 +59,12 @@
 QT_BEGIN_HEADER
 
 #ifndef QT_MOBILITY_BEARER
- QT_BEGIN_NAMESPACE
- QT_MODULE(Network)
- #define QNetworkConfigurationExport Q_NETWORK_EXPORT
+QT_BEGIN_NAMESPACE
+QT_MODULE(Network)
+#define QNetworkConfigurationExport Q_NETWORK_EXPORT
 #else
- QTM_BEGIN_NAMESPACE
- #define QNetworkConfigurationExport Q_BEARER_EXPORT
+QTM_BEGIN_NAMESPACE
+#define QNetworkConfigurationExport Q_BEARER_EXPORT
 #endif
 
 class QNetworkConfigurationPrivate;
@@ -123,9 +123,9 @@ private:
 };
 
 #ifndef QT_MOBILITY_BEARER
- QT_END_NAMESPACE
+QT_END_NAMESPACE
 #else
- QTM_END_NAMESPACE
+QTM_END_NAMESPACE
 #endif
 
 QT_END_HEADER

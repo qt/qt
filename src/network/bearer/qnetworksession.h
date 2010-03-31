@@ -55,14 +55,14 @@
 QT_BEGIN_HEADER
 
 #ifndef QT_MOBILITY_BEARER
- #include <QtCore/qshareddata.h>
- QT_BEGIN_NAMESPACE
- QT_MODULE(Network)
- #define QNetworkSessionExport Q_NETWORK_EXPORT
+#include <QtCore/qshareddata.h>
+QT_BEGIN_NAMESPACE
+QT_MODULE(Network)
+#define QNetworkSessionExport Q_NETWORK_EXPORT
 #else
- #include "qmobilityglobal.h"
- QTM_BEGIN_NAMESPACE
- #define QNetworkSessionExport Q_BEARER_EXPORT
+#include "qmobilityglobal.h"
+QTM_BEGIN_NAMESPACE
+#define QNetworkSessionExport Q_BEARER_EXPORT
 #endif
 
 class QNetworkSessionPrivate;
@@ -142,9 +142,9 @@ private:
     };
 
 #ifndef QT_MOBILITY_BEARER
- QT_END_NAMESPACE
+QT_END_NAMESPACE
 #else
- QTM_END_NAMESPACE
+QTM_END_NAMESPACE
 #endif
 
 QT_END_HEADER
