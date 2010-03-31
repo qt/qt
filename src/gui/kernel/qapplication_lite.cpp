@@ -53,13 +53,15 @@
 #include "private/qwidget_p.h"
 
 #include "qgenericpluginfactory_lite.h"
+#include "qplatformintegrationfactory_lite_p.h"
 #include <qdesktopwidget.h>
 
 #include <qinputcontext.h>
-#include "private/qgraphicssystem_p.h"
+#include <QtGui/private/qgraphicssystem_lite_p.h>
 #include <QGraphicsSystemCursor>
 #include <qdebug.h>
 #include <QWindowSystemInterface>
+#include <QPlatformIntegration>
 
 
 QT_BEGIN_NAMESPACE
@@ -386,10 +388,9 @@ void QApplication::restoreOverrideCursor()
 
 QWidget *QApplication::topLevelAt(const QPoint &pos)
 {
-    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
-    if (!gs)
-        return 0;
-    QGraphicsSystemScreen *screen = gs->screens().first();
+    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+
+    QPlatformScreen *screen = pi->screens().first();
     if (!screen)
         return 0;
     QWidget *w = screen->topLevelAt(pos);
@@ -402,6 +403,23 @@ void QApplication::beep()
 
 void QApplication::alert(QWidget *, int)
 {
+}
+
+static void init_platform(const QString &name)
+{
+    QApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name);
+    QApplicationPrivate::graphics_system = new QLiteGraphicsSystem;
+    if (!QApplicationPrivate::platform_integration) {
+        QStringList keys = QPlatformIntegrationFactory::keys();
+        QString fatalMessage =
+            QString::fromLatin1("Failed to load platform plugin \"%1\". Available platforms are: \n").arg(name);
+        foreach(QString key, keys) {
+            fatalMessage.append(key + QString::fromLatin1("\n"));
+        }
+        qFatal("%s", fatalMessage.toLocal8Bit().constData());
+
+    }
+
 }
 
 static void init_plugins(const QList<QByteArray> pluginList)
@@ -447,6 +465,7 @@ void qt_init(QApplicationPrivate *priv, int type)
     }
 
     QList<QByteArray> pluginList;
+    QString platformName = qgetenv("QT_LITE_PLATFORM");
 
     // Get command line params
 
@@ -460,6 +479,9 @@ void qt_init(QApplicationPrivate *priv, int type)
         if (arg == "-fn" || arg == "-font") {
             if (++i < argc)
                 appFont = argv[i];
+        } else if (arg == "-platform") {
+            if (++i < argc)
+                platformName = argv[i];
         } else if (arg == "-plugin") {
             if (++i < argc)
                 pluginList << argv[i];
@@ -473,9 +495,6 @@ void qt_init(QApplicationPrivate *priv, int type)
         priv->argc = j;
     }
 
-
-
-
 #if 0
     QByteArray pluginEnv = qgetenv("QT_LITE_PLUGINS");
     if (!pluginEnv.isEmpty()) {
@@ -483,6 +502,7 @@ void qt_init(QApplicationPrivate *priv, int type)
     }
 #endif
 
+    init_platform(platformName);
     init_plugins(pluginList);
 
     QColormap::initialize();

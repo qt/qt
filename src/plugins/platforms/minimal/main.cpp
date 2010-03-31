@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenVG module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,35 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_MINIMAL_H
-#define QWINDOWSURFACE_MINIMAL_H
-
-#include <QtGui/private/qwindowsurface_p.h>
+#include <QtGui/QPlatformIntegrationPlugin>
+#include "qplatformintegration_minimal.h"
 
 QT_BEGIN_NAMESPACE
 
-class QMinimalGraphicsSystemScreen;
-
-class QMinimalWindowSurface : public QWindowSurface
+class QMinimalIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
-    QMinimalWindowSurface
-        (QMinimalGraphicsSystemScreen *screen, QWidget *window);
-    ~QMinimalWindowSurface();
-
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void setGeometry(const QRect &rect);
-    bool scroll(const QRegion &area, int dx, int dy);
-
-    void beginPaint(const QRegion &region);
-    void endPaint(const QRegion &region);
-
-private:
-    QMinimalGraphicsSystemScreen *mScreen;
-    QImage mImage;
+    QStringList keys() const;
+    QPlatformIntegration *create(const QString&);
 };
 
-QT_END_NAMESPACE
+QStringList QMinimalIntegrationPlugin::keys() const
+{
+    QStringList list;
+    list << "Minimal";
+    return list;
+}
 
-#endif
+QPlatformIntegration *QMinimalIntegrationPlugin::create(const QString& system)
+{
+    if (system.toLower() == "minimal")
+        return new QMinimalIntegration;
+
+    return 0;
+}
+
+Q_EXPORT_PLUGIN2(minimal, QMinimalIntegrationPlugin)
+
+QT_END_NAMESPACE

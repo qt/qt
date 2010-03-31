@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtOpenVG module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,33 +39,47 @@
 **
 ****************************************************************************/
 
-#include <private/qgraphicssystemplugin_p.h>
-#include "qgraphicssystem_minimal.h"
+#include "qwindowsurface_minimal.h"
+#include <QtCore/qdebug.h>
+#include <QtGui/private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QMinimalGraphicsSystemPlugin : public QGraphicsSystemPlugin
+QMinimalWindowSurface::QMinimalWindowSurface(QWidget *window)
+    : QWindowSurface(window)
 {
-public:
-    QStringList keys() const;
-    QGraphicsSystem *create(const QString&);
-};
-
-QStringList QMinimalGraphicsSystemPlugin::keys() const
-{
-    QStringList list;
-    list << "Minimal";
-    return list;
+    //qDebug() << "QMinimalWindowSurface::QMinimalWindowSurface:" << (long)this;
 }
 
-QGraphicsSystem* QMinimalGraphicsSystemPlugin::create(const QString& system)
+QMinimalWindowSurface::~QMinimalWindowSurface()
 {
-    if (system.toLower() == "minimal")
-        return new QMinimalGraphicsSystem;
-
-    return 0;
 }
 
-Q_EXPORT_PLUGIN2(minimal, QMinimalGraphicsSystemPlugin)
+QPaintDevice *QMinimalWindowSurface::paintDevice()
+{
+    //qDebug() << "QMinimalWindowSurface::paintDevice";
+    return &mImage;
+}
+
+void QMinimalWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+{
+    Q_UNUSED(widget);
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
+
+    static int c = 0;
+    QString filename = QString("output%1.png").arg(c++, 4, 10, QLatin1Char('0'));
+    qDebug() << "QMinimalWindowSurface::flush() saving contents to" << filename.toLocal8Bit().constData();
+    mImage.save(filename);
+}
+
+void QMinimalWindowSurface::setGeometry(const QRect &rect)
+{
+    //qDebug() << "QMinimalWindowSurface::setGeometry:" << (long)this << rect;
+    QWindowSurface::setGeometry(rect);
+    QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
+    if (mImage.size() != rect.size())
+        mImage = QImage(rect.size(), format);
+}
 
 QT_END_NAMESPACE

@@ -441,6 +441,9 @@ QPalette *QApplicationPrivate::sys_pal = 0;        // default system palette
 QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by programmer
 
 QGraphicsSystem *QApplicationPrivate::graphics_system = 0; // default graphics system
+#if defined(Q_WS_LITE)
+QPlatformIntegration *QApplicationPrivate::platform_integration = 0;
+#endif
 QString QApplicationPrivate::graphics_system_name;         // graphics system id - for delayed initialization
 
 Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
@@ -771,7 +774,6 @@ void QApplicationPrivate::construct(
                                     )
 {
     initResources();
-
     graphics_system_name = QLatin1String(qgetenv("QT_DEFAULT_GRAPHICS_SYSTEM"));
 
     qt_is_gui_used = (qt_appType != QApplication::Tty);
@@ -939,10 +941,12 @@ void QApplicationPrivate::initialize()
     // Set up which span functions should be used in raster engine...
     qInitDrawhelperAsm();
     
-#if !defined(Q_WS_X11) && !defined(Q_WS_QWS)
+#if !defined(Q_WS_X11) && !defined(Q_WS_QWS) && !defined(Q_WS_LITE)
     // initialize the graphics system - on X11 this is initialized inside
     // qt_init() in qapplication_x11.cpp because of several reasons.
     // On QWS, the graphics system is set by the QScreen plugin.
+    // For lighthouse it will be initialized to QLiteGraphicsSystem
+    // when the platformIntegration plugin is instansiated in qt_init(
     graphics_system = QGraphicsSystemFactory::create(graphics_system_name);
 #endif
 #ifndef QT_NO_WHEELEVENT
@@ -1561,7 +1565,11 @@ QStyle* QApplication::setStyle(const QString& style)
 
 void QApplication::setGraphicsSystem(const QString &system)
 {
+#if !defined(Q_WS_LITE)
     QApplicationPrivate::graphics_system_name = system;
+#else
+    Q_UNUSED(system)
+#endif
 }
 
 /*!

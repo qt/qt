@@ -203,6 +203,10 @@ embedded_lite {
                 kernel/qgenericplugin_lite.h \
                 kernel/qeventdispatcher_lite_p.h \
                 kernel/qwindowsysteminterface.h \
+                kernel/qplatformintegration_lite.h \
+                kernel/qplatformscreen_lite.h \
+                kernel/qplatformintegrationfactory_lite_p.h \
+                kernel/qplatformintegrationplugin_lite.h \
 		
 	SOURCES += \
 		kernel/qapplication_lite.cpp \
@@ -216,7 +220,11 @@ embedded_lite {
 		kernel/qsound_lite.cpp \
                 kernel/qwidget_lite.cpp \
                 kernel/qeventdispatcher_lite.cpp \
-                kernel/qwindowsysteminterface.cpp
+                kernel/qwindowsysteminterface.cpp \
+                kernel/qplatformintegration_lite.cpp \
+                kernel/qplatformscreen_lite.cpp \
+                kernel/qplatformintegrationfactory_lite.cpp \
+                kernel/qplatformintegrationplugin_lite.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \

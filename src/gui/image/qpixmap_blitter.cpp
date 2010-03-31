@@ -57,7 +57,7 @@ void QBlittablePixmapData::resize(int width, int height)
     delete m_engine;
     m_engine = 0;
 #ifdef Q_WS_LITE
-    d = QApplicationPrivate::graphicsSystem()->screens().at(0)->depth();
+    d = QApplicationPrivate::platformIntegration()->screens().at(0)->depth();
 #endif
     w = width;
     h = height;

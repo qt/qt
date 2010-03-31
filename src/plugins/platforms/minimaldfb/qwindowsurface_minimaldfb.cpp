@@ -92,7 +92,7 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QWidget *window)
 
     m_dfbWindow->GetSurface(m_dfbWindow,&m_dfbSurface);
 
-    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
+    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect().size(), m_dfbSurface);
     m_pmdata = new QBlittablePixmapData(QPixmapData::PixmapType);
     m_pmdata->setBlittable(blitter);
     m_pixmap = new QPixmap(m_pmdata);
@@ -134,7 +134,7 @@ void QDirectFbWindowSurface::setGeometry(const QRect &rect)
 
     //Have to add 1 ref ass it will be removed by deleting the old blitter in setBlittable
     m_dfbSurface->AddRef(m_dfbSurface);
-    QDirectFbBlitter *blitter = new QDirectFbBlitter(rect,m_dfbSurface);
+    QDirectFbBlitter *blitter = new QDirectFbBlitter(rect.size(),m_dfbSurface);
     m_pmdata->setBlittable(blitter);
 }
 

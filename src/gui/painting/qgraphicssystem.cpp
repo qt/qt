@@ -51,9 +51,7 @@
 # include <private/qpixmap_mac_p.h>
 #endif
 #ifdef Q_WS_LITE
-# include <private/qpixmap_raster_p.h>
-# include <qapplication.h>
-# include <qdesktopwidget.h>
+# include <QtGui/private/qapplication_p.h>
 #endif
 #ifdef Q_WS_S60
 # include <private/qpixmap_s60_p.h>
@@ -64,6 +62,9 @@ QT_BEGIN_NAMESPACE
 QGraphicsSystem::~QGraphicsSystem()
 {
 }
+
+QBlittable *QGraphicsSystem::createBlittable(const QSize &) const
+{ return 0; }
 
 QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType type)
 {
@@ -77,7 +78,7 @@ QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType typ
 #elif defined(Q_WS_MAC)
     return new QMacPixmapData(type);
 #elif defined(Q_WS_LITE)
-    return new QRasterPixmapData(type);
+    return QApplicationPrivate::platformIntegration()->createPixmapData(type);
 #elif defined(Q_WS_S60)
     return new QS60PixmapData(type);
 #elif !defined(Q_WS_QWS)
@@ -85,50 +86,5 @@ QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType typ
 #endif
     return 0;
 }
-
-#ifdef Q_WS_LITE
-QWidget *QGraphicsSystemScreen::topLevelAt(const QPoint & pos) const
-{
-    QWidgetList list = QApplication::topLevelWidgets();
-    for (int i = list.size()-1; i >= 0; --i) {
-        QWidget *w = list[i];
-        //### mask is ignored
-        if (w != QApplication::desktop() && w->isVisible() && w->geometry().contains(pos))
-            return w;
-    }
-
-    return 0;
-}
-
-QList<QGraphicsSystemScreen *> QGraphicsSystem::screens() const
-{
-    return QList<QGraphicsSystemScreen *>();
-}
-
-QPixmap QGraphicsSystem::grabWindow(WId window, int x, int y, int width, int height) const
-{
-    Q_UNUSED(window);
-    Q_UNUSED(x);
-    Q_UNUSED(y);
-    Q_UNUSED(width);
-    Q_UNUSED(height);
-    return QPixmap();
-}
-
-
-QGraphicsSystemScreen::QGraphicsSystemScreen(QObject *parent)
-  : QObject(parent)
-{}
-
-QGraphicsSystemScreen::~QGraphicsSystemScreen()
-{
-}
-
-QRect QGraphicsSystemScreen::availableGeometry() const
-{
-    return geometry();
-}
-
-#endif //Q_WS_LITE
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,11 +39,17 @@
 **
 ****************************************************************************/
 
-#include <qpixmap.h>
-#include <private/qgraphicssystem_p.h>
-#include <private/qapplication_p.h>
+#include "qplatformintegrationplugin_lite.h"
 
-QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
+QT_BEGIN_NAMESPACE
+
+QPlatformIntegrationPlugin::QPlatformIntegrationPlugin(QObject *parent)
+    : QObject(parent)
 {
-    return QApplicationPrivate::platformIntegration()->grabWindow(window, x, y, w, h);
 }
+
+QPlatformIntegrationPlugin::~QPlatformIntegrationPlugin()
+{
+}
+
+QT_END_NAMESPACE

@@ -8,7 +8,7 @@
 
 #include <directfb.h>
 
-QDirectFbBlitter::QDirectFbBlitter(const QRect &rect, IDirectFBSurface *surface)
+QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, IDirectFBSurface *surface)
         : QBlittable(rect, QBlittable::Capabilities(QBlittable::SolidRectCapability
                                                           |QBlittable::SourcePixmapCapability
                                                           |QBlittable::SourceOverPixmapCapability
@@ -83,7 +83,7 @@ void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, con
 QImage *QDirectFbBlitter::doLock()
 {
     Q_ASSERT(m_surface);
-    Q_ASSERT(rect().isValid());
+    Q_ASSERT(size().isValid());
 
     void *mem;
     int bpl;

@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,61 +39,24 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_MINIMAL_H
-#define QGRAPHICSSYSTEM_MINIMAL_H
-
-#include "qdirectfbinput.h"
-
-#include <QtGui/private/qgraphicssystem_p.h>
-#include <directfb.h>
-#include <directfb_version.h>
+#include "qgraphicssystem_lite_p.h"
+#include <QtGui/private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QDirectFBCursor;
-
-class QDirectFbGraphicsSystemScreen : public QGraphicsSystemScreen
+QPixmapData *QLiteGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
-public:
-    QDirectFbGraphicsSystemScreen(int display);
-    ~QDirectFbGraphicsSystemScreen();
+    return QApplicationPrivate::platformIntegration()->createPixmapData(type);
+}
 
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    QSize physicalSize() const { return m_physicalSize; }
-
-public:
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
-    QSize m_physicalSize;
-
-    IDirectFBDisplayLayer *m_layer;
-
-private:
-    QDirectFBCursor * cursor;
-
-};
-
-class QDirectFbGraphicsSystem : public QGraphicsSystem
+QWindowSurface *QLiteGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
-public:
-    QDirectFbGraphicsSystem();
+    return QApplicationPrivate::platformIntegration()->createWindowSurface(widget);
+}
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
-    QBlittable *createBlittable(const QRect &rect) const;
-
-    QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
-
-
-
-private:
-    QDirectFbGraphicsSystemScreen *mPrimaryScreen;
-    QList<QGraphicsSystemScreen *> mScreens;
-};
+QBlittable *QLiteGraphicsSystem::createBlittable(const QSize &size) const
+{
+    return QApplicationPrivate::platformIntegration()->createBlittable(size);
+}
 
 QT_END_NAMESPACE
-
-#endif

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,11 +39,40 @@
 **
 ****************************************************************************/
 
-#include <qpixmap.h>
-#include <private/qgraphicssystem_p.h>
-#include <private/qapplication_p.h>
+#ifndef QPLATFORMINTEGRATIONFACTORY_H
+#define QPLATFORMINTEGRATIONFACTORY_H
 
-QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qstringlist.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
+class QPlatformIntegration;
+
+class QPlatformIntegrationFactory
 {
-    return QApplicationPrivate::platformIntegration()->grabWindow(window, x, y, w, h);
-}
+public:
+    static QStringList keys();
+    static QPlatformIntegration *create(const QString&);
+};
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QPLATFORMINTEGRATIONFACTORY_H
+

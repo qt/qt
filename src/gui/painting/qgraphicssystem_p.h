@@ -64,37 +64,14 @@ QT_BEGIN_NAMESPACE
 class QPixmapFilter;
 class QBlittable;
 
-#ifdef Q_WS_LITE
-class Q_GUI_EXPORT QGraphicsSystemScreen : public QObject
-{
-    Q_OBJECT
-public:
-    QGraphicsSystemScreen(QObject *parent = 0);
-    virtual ~QGraphicsSystemScreen();
-
-    virtual QRect geometry() const = 0;
-    virtual QRect availableGeometry() const;
-    virtual int depth() const = 0;
-    virtual QImage::Format format() const = 0;
-    virtual QSize physicalSize() const = 0;
-    virtual void setDirty(const QRect &) {}
-    virtual QWidget *topLevelAt(const QPoint &point) const;
-};
-#endif // Q_WS_LITE
-
 class Q_GUI_EXPORT QGraphicsSystem
 {
 public:
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
     virtual QWindowSurface *createWindowSurface(QWidget *widget) const = 0;
-    virtual QBlittable *createBlittable(const QSize &) const { return 0; }
+    virtual QBlittable *createBlittable(const QSize &size) const;
 
-    virtual ~QGraphicsSystem() = 0;
-
-#ifdef Q_WS_LITE
-    virtual QList<QGraphicsSystemScreen *> screens() const;
-    virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
-#endif
+    virtual ~QGraphicsSystem();
 
     //### Remove this & change qpixmap.cpp & qbitmap.cpp once every platform is gaurenteed
     //    to have a graphics system.

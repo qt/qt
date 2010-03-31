@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,11 +39,50 @@
 **
 ****************************************************************************/
 
-#include <qpixmap.h>
-#include <private/qgraphicssystem_p.h>
-#include <private/qapplication_p.h>
+#include "qplatformintegrationfactory_lite_p.h"
+#include <QPlatformIntegrationPlugin>
+#include "private/qfactoryloader_p.h"
+#include "qmutex.h"
 
-QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
+#include "qapplication.h"
+#include "qdebug.h"
+
+QT_BEGIN_NAMESPACE
+
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+    (QPlatformIntegrationFactoryInterface_iid, QLatin1String("/platforms"), Qt::CaseInsensitive))
+#endif
+
+QPlatformIntegration *QPlatformIntegrationFactory::create(const QString& key)
 {
-    return QApplicationPrivate::platformIntegration()->grabWindow(window, x, y, w, h);
+    QPlatformIntegration *ret = 0;
+    QString platform = key.toLower();
+
+    qDebug() << loader()->keys();
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+    if (QPlatformIntegrationFactoryInterface *factory = qobject_cast<QPlatformIntegrationFactoryInterface*>(loader()->instance(platform)))
+        ret = factory->create(platform);
+#endif
+
+    return ret;
 }
+
+/*!
+    Returns the list of valid keys, i.e. the keys this factory can
+    create styles for.
+
+    \sa create()
+*/
+QStringList QPlatformIntegrationFactory::keys()
+{
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+    QStringList list = loader()->keys();
+#else
+    QStringList list;
+#endif
+    return list;
+}
+
+QT_END_NAMESPACE
+

@@ -110,9 +110,9 @@ QWindowSurface *QDirectFbGraphicsSystem::createWindowSurface(QWidget *widget) co
     return new QDirectFbWindowSurface (widget);
 }
 
-QBlittable *QDirectFbGraphicsSystem::createBlittable(const QRect &rect) const
+QBlittable *QDirectFbGraphicsSystem::createBlittable(const QSize &size) const
 {
-    return new QDirectFbBlitter(rect);
+    return new QDirectFbBlitter(size);
 }
 
 QT_END_NAMESPACE

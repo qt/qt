@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,11 +39,32 @@
 **
 ****************************************************************************/
 
-#include <qpixmap.h>
-#include <private/qgraphicssystem_p.h>
-#include <private/qapplication_p.h>
+#ifndef QGRAPHICSSYSTEM_MAC_P_H
+#define QGRAPHICSSYSTEM_MAC_P_H
 
-QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "private/qgraphicssystem_p.h"
+
+QT_BEGIN_NAMESPACE
+
+class Q_GUI_EXPORT QLiteGraphicsSystem : public QGraphicsSystem
 {
-    return QApplicationPrivate::platformIntegration()->grabWindow(window, x, y, w, h);
-}
+public:
+    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QWindowSurface *createWindowSurface(QWidget *widget) const;
+    QBlittable *createBlittable(const QSize &size) const;
+};
+
+QT_END_NAMESPACE
+
+#endif

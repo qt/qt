@@ -67,12 +67,8 @@ void QColormap::initialize()
 {
     screenMap = new QColormapPrivate;
 
-    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
-    if (!gs)
-        return;
-    QList<QGraphicsSystemScreen *> screens = gs->screens();
-    if (screens.isEmpty())
-        return;
+    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    QList<QPlatformScreen*> screens = pi->screens();
 
     screenMap->depth = screens[0]->depth();
     if (screenMap->depth < 8) {

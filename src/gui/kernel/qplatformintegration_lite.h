@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,11 +39,35 @@
 **
 ****************************************************************************/
 
-#include <qpixmap.h>
-#include <private/qgraphicssystem_p.h>
-#include <private/qapplication_p.h>
+#ifndef QPLATFORMINTEGRATION_H
+#define QPLATFORMINTEGRATION_H
 
-QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
+#include <QtGui/private/qgraphicssystem_p.h>
+#include <QtGui/qplatformscreen_lite.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
+class Q_GUI_EXPORT QPlatformIntegration
 {
-    return QApplicationPrivate::platformIntegration()->grabWindow(window, x, y, w, h);
-}
+public:
+    virtual ~QPlatformIntegration() { };
+
+// GraphicsSystem functions
+    virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
+    virtual QWindowSurface *createWindowSurface(QWidget *widget) const = 0;
+    virtual QBlittable *createBlittable(const QSize &size) const;
+
+// Window System functions
+    virtual QList<QPlatformScreen *> screens() const = 0;
+    virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+};
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QPLATFORMINTEGRATION_H

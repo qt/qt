@@ -1,10 +1,11 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenVG module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,51 +39,47 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QGRAPHICSSYSTEMCURSOR_H
-#define QGRAPHICSSYSTEMCURSOR_H
 
-#include <QList>
-#include <QImage>
-#include <QMouseEvent>
-#include <QPointer>
-#include <QObject>
-#include "qgraphicssystem_p.h"
-#include <QPlatformScreen>
+#ifndef QPLATFORMINTEGRATION_MINIMAL_H
+#define QPLATFORMINTEGRATION_MINIMAL_H
+
+#include <QtGui/QPlatformIntegration>
+#include <QtGui/QPlatformScreen>
 
 QT_BEGIN_NAMESPACE
 
-// Cursor graphics management
-class Q_GUI_EXPORT QGraphicsSystemCursorImage {
+class QMinimalScreen : public QPlatformScreen
+{
 public:
-    QGraphicsSystemCursorImage(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
-    { set(data, mask, width, height, hotX, hotY); }
-    QImage * image() { return &cursorImage; }
-    QPoint hotspot() { return hot; }
-    void set(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
-    void set(const QImage * image, int hx, int hy);
-    void set(Qt::CursorShape);
-private:
-    static void createSystemCursor(int id);
-    QImage cursorImage;
-    QPoint hot;
+    QMinimalScreen()
+        : mDepth(16), mFormat(QImage::Format_RGB16) {}
+
+    QRect geometry() const { return mGeometry; }
+    int depth() const { return mDepth; }
+    QImage::Format format() const { return mFormat; }
+    QSize physicalSize() const { return mPhysicalSize; }
+
+public:
+    QRect mGeometry;
+    int mDepth;
+    QImage::Format mFormat;
+    QSize mPhysicalSize;
 };
 
-class Q_GUI_EXPORT QGraphicsSystemCursor : public QObject {
+class QMinimalIntegration : public QPlatformIntegration
+{
 public:
-    QGraphicsSystemCursor(QPlatformScreen *);
+    QMinimalIntegration();
 
-    // input methods
-    virtual void pointerEvent(const QMouseEvent & event) { Q_UNUSED(event); }
-    virtual void changeCursor(QCursor * widgetCursor, QWidget * widget) = 0;
+    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QWindowSurface *createWindowSurface(QWidget *widget) const;
 
-    static QPointer<QGraphicsSystemCursor> getInstance() { return instance; }
+    QList<QPlatformScreen *> screens() const { return mScreens; }
 
-protected:
-    static QPointer<QGraphicsSystemCursor> instance;    // limit 1 cursor at a time
-
-    QPlatformScreen* screen;  // Where to request an update
+private:
+    QList<QPlatformScreen *> mScreens;
 };
 
 QT_END_NAMESPACE
 
-#endif // QGRAPHICSSYSTEMCURSOR_H
+#endif

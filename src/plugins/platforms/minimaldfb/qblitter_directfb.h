@@ -3,14 +3,14 @@
 
 #include "qdirectfbconvenience.h"
 
-#include <private/qpaintengine_blitter_p.h>
+#include <private/qblittable_p.h>
 
 #include <directfb.h>
 
 class QDirectFbBlitter : public QBlittable
 {
 public:
-    QDirectFbBlitter(const QRect &rect, IDirectFBSurface *surface = 0);
+    QDirectFbBlitter(const QSize &size, IDirectFBSurface *surface = 0);
     virtual ~QDirectFbBlitter();
 
     virtual void fillRect(const QRectF &rect, const QColor &color);

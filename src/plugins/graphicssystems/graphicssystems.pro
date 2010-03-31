@@ -13,11 +13,3 @@ contains(QT_CONFIG, shivavg) {
     # Only works under X11 at present
     !win32:!embedded:!mac:SUBDIRS += shivavg
 }
-
-embedded_lite:  {
-    SUBDIRS += minimal
-}
-
-embedded_lite:x11 {
-    SUBDIRS += linuxfb
-}

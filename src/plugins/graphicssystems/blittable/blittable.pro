@@ -5,8 +5,7 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/graphicssystems
 
 SOURCES = main.cpp
 HEADERS =  qblittable_image.h  \
-           qgraphicssystem_blittable.h \
-           qwindowsurface_imageblittable.h
+           qgraphicssystem_blittable.h
 
 target.path += $$[QT_INSTALL_PLUGINS]/graphicssystems
 INSTALLS += target

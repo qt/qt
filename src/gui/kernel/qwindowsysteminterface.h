@@ -41,13 +41,17 @@
 #ifndef QWINDOWSYSTEMINTERFACE_H
 #define QWINDOWSYSTEMINTERFACE_H
 
-#include <QTime>
-#include <qwindowdefs.h>
-#include <QEvent>
-#include <QWidget>
-#include <QWeakPointer>
+#include <QtCore/QTime>
+#include <QtGui/qwindowdefs.h>
+#include <QtCore/QEvent>
+#include <QtGui/QWidget>
+#include <QtCore/QWeakPointer>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
 
 class Q_GUI_EXPORT QWindowSystemInterface
 {
@@ -129,5 +133,7 @@ public:
     static QWindowSystemInterface::UserEvent * getUserEvent() { return userEventQueue.takeFirst(); }
     static void queueUserEvent(QWindowSystemInterface::UserEvent *ev) { userEventQueue.append(ev); }
 };
+
 QT_END_NAMESPACE
+QT_END_HEADER
 #endif // QWINDOWSYSTEMINTERFACE_H

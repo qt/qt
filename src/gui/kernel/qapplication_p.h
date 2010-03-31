@@ -78,6 +78,7 @@
 #endif
 #ifdef Q_WS_LITE
 #include <QWindowSystemInterface>
+#include "QtGui/qplatformintegration_lite.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -312,10 +313,15 @@ public:
     static QString desktopStyleKey();
 
     static QGraphicsSystem *graphicsSystem()
-#if !defined(Q_WS_QWS)
-    { return graphics_system; }
-#else
+#if defined(Q_WS_QWS)
     { return QScreen::instance()->graphicsSystem(); }
+#else
+    { return graphics_system; }
+#endif
+
+#if defined(Q_WS_LITE)
+    static QPlatformIntegration *platformIntegration()
+    { return platform_integration; }
 #endif
 
     void createEventDispatcher();
@@ -417,6 +423,9 @@ public:
     static QPalette *set_pal;
     static QGraphicsSystem *graphics_system;
     static QString graphics_system_name;
+#if defined(Q_WS_LITE)
+    static QPlatformIntegration *platform_integration;
+#endif
 
 private:
     static QFont *app_font; // private for a reason! Always use QApplication::font() instead!

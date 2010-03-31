@@ -38,51 +38,28 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QGRAPHICSSYSTEMCURSOR_H
-#define QGRAPHICSSYSTEMCURSOR_H
 
-#include <QList>
-#include <QImage>
-#include <QMouseEvent>
-#include <QPointer>
-#include <QObject>
-#include "qgraphicssystem_p.h"
-#include <QPlatformScreen>
+#ifndef QWINDOWSURFACE_MINIMAL_H
+#define QWINDOWSURFACE_MINIMAL_H
+
+#include <QtGui/private/qwindowsurface_p.h>
 
 QT_BEGIN_NAMESPACE
 
-// Cursor graphics management
-class Q_GUI_EXPORT QGraphicsSystemCursorImage {
+class QMinimalWindowSurface : public QWindowSurface
+{
 public:
-    QGraphicsSystemCursorImage(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
-    { set(data, mask, width, height, hotX, hotY); }
-    QImage * image() { return &cursorImage; }
-    QPoint hotspot() { return hot; }
-    void set(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
-    void set(const QImage * image, int hx, int hy);
-    void set(Qt::CursorShape);
+    QMinimalWindowSurface(QWidget *window);
+    ~QMinimalWindowSurface();
+
+    QPaintDevice *paintDevice();
+    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void setGeometry(const QRect &rect);
+
 private:
-    static void createSystemCursor(int id);
-    QImage cursorImage;
-    QPoint hot;
-};
-
-class Q_GUI_EXPORT QGraphicsSystemCursor : public QObject {
-public:
-    QGraphicsSystemCursor(QPlatformScreen *);
-
-    // input methods
-    virtual void pointerEvent(const QMouseEvent & event) { Q_UNUSED(event); }
-    virtual void changeCursor(QCursor * widgetCursor, QWidget * widget) = 0;
-
-    static QPointer<QGraphicsSystemCursor> getInstance() { return instance; }
-
-protected:
-    static QPointer<QGraphicsSystemCursor> instance;    // limit 1 cursor at a time
-
-    QPlatformScreen* screen;  // Where to request an update
+    QImage mImage;
 };
 
 QT_END_NAMESPACE
 
-#endif // QGRAPHICSSYSTEMCURSOR_H
+#endif

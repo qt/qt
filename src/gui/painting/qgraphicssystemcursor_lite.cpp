@@ -94,7 +94,7 @@ QPointer<QGraphicsSystemCursor> QGraphicsSystemCursor::instance = 0;
     Constructs a QGraphicsSystemCursor
 
 */
-QGraphicsSystemCursor::QGraphicsSystemCursor(QGraphicsSystemScreen *scr )
+QGraphicsSystemCursor::QGraphicsSystemCursor(QPlatformScreen *scr )
         : screen(scr)
 {
     instance = this;

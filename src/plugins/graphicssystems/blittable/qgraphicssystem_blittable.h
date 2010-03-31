@@ -43,5 +43,11 @@ public:
         QImage *image = new QImage(size, QImage::Format_ARGB32_Premultiplied);
         return new QImageBlittable(image,true);
     }
+
+    QList<QGraphicsSystemScreen *> screens()
+    { return m_screens; }
+
+    QList<QGraphicsSystemScreen *> m_screens;
 };
+
 

@@ -51,7 +51,7 @@
 #include <QGraphicsSystemCursor>
 
 QT_BEGIN_NAMESPACE
-static QGraphicsSystemScreen *qt_screenForWidget(const QWidget *w);
+static QPlatformScreen *qt_screenForWidget(const QWidget *w);
 
 void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool /*destroyOldWindow*/)
 {
@@ -535,7 +535,7 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
     scrollRect(r, dx, dy);
 }
 
-static QGraphicsSystemScreen *qt_screenForWidget(const QWidget *w)
+static QPlatformScreen *qt_screenForWidget(const QWidget *w)
 {
     if (!w)
         return 0;
@@ -544,12 +544,8 @@ static QGraphicsSystemScreen *qt_screenForWidget(const QWidget *w)
         frame.moveTopLeft(w->mapToGlobal(QPoint(0, 0)));
     const QPoint p = (frame.topLeft() + frame.bottomRight()) / 2;
 
-    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
-    if (!gs) {
-        qWarning("qt_screenForWidget: no graphics system");
-        return 0;
-    }
-    QList<QGraphicsSystemScreen *> screens = gs->screens();
+    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    QList<QPlatformScreen *> screens = pi->screens();
 
     for (int i = 0; i < screens.size(); ++i) {
         if (screens[i]->geometry().contains(p))
@@ -569,7 +565,7 @@ int QWidget::metric(PaintDeviceMetric m) const
 {
     Q_D(const QWidget);
 
-    QGraphicsSystemScreen *screen = qt_screenForWidget(this);
+    QPlatformScreen *screen = qt_screenForWidget(this);
     if (!screen) {
         if (m == PdmDpiX || m == PdmDpiY)
               return 72;

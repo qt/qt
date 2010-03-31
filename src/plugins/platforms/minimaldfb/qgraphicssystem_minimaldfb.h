@@ -39,32 +39,61 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_minimal.h"
-#include "qwindowsurface_minimal.h"
-#include <QtGui/private/qpixmap_raster_p.h>
+#ifndef QGRAPHICSSYSTEM_MINIMAL_H
+#define QGRAPHICSSYSTEM_MINIMAL_H
+
+#include "qdirectfbinput.h"
+
+#include <QtGui/private/qgraphicssystem_p.h>
+#include <directfb.h>
+#include <directfb_version.h>
 
 QT_BEGIN_NAMESPACE
 
-QMinimalGraphicsSystem::QMinimalGraphicsSystem()
+class QDirectFBCursor;
+
+class QDirectFbGraphicsSystemScreen : public QGraphicsSystemScreen
 {
-    mPrimaryScreen = new QMinimalGraphicsSystemScreen();
+public:
+    QDirectFbGraphicsSystemScreen(int display);
+    ~QDirectFbGraphicsSystemScreen();
 
-    mPrimaryScreen->mGeometry = QRect(0, 0, 240, 320);
-    mPrimaryScreen->mDepth = 16;
-    mPrimaryScreen->mFormat = QImage::Format_RGB16;
-    mPrimaryScreen->mPhysicalSize = QSize(40, 54);
+    QRect geometry() const { return m_geometry; }
+    int depth() const { return m_depth; }
+    QImage::Format format() const { return m_format; }
+    QSize physicalSize() const { return m_physicalSize; }
 
-    mScreens.append(mPrimaryScreen);
-}
+public:
+    QRect m_geometry;
+    int m_depth;
+    QImage::Format m_format;
+    QSize m_physicalSize;
 
-QPixmapData *QMinimalGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+    IDirectFBDisplayLayer *m_layer;
+
+private:
+    QDirectFBCursor * cursor;
+
+};
+
+class QDirectFbGraphicsSystem : public QGraphicsSystem
 {
-    return new QRasterPixmapData(type);
-}
+public:
+    QDirectFbGraphicsSystem();
 
-QWindowSurface *QMinimalGraphicsSystem::createWindowSurface(QWidget *widget) const
-{
-    return new QMinimalWindowSurface(mPrimaryScreen, widget);
-}
+    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QWindowSurface *createWindowSurface(QWidget *widget) const;
+    QBlittable *createBlittable(const QSize &size) const;
+
+    QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
+
+
+
+private:
+    QDirectFbGraphicsSystemScreen *mPrimaryScreen;
+    QList<QGraphicsSystemScreen *> mScreens;
+};
 
 QT_END_NAMESPACE
+
+#endif

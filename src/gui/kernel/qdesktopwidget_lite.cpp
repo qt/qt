@@ -69,10 +69,8 @@ int QDesktopWidget::primaryScreen() const
 
 int QDesktopWidget::numScreens() const
 {
-    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
-    if (!gs)
-        return 0;
-    return qMax(gs->screens().size(), 1);
+    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    return qMax(pi->screens().size(), 1);
 }
 
 QWidget *QDesktopWidget::screen(int)
@@ -82,10 +80,8 @@ QWidget *QDesktopWidget::screen(int)
 
 const QRect QDesktopWidget::availableGeometry(int screenNo) const
 {
-    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
-    if (!gs)
-        return QRect();
-    QList<QGraphicsSystemScreen *> screens = gs->screens();
+    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    QList<QPlatformScreen *> screens = pi->screens();
     if (screenNo == -1)
         screenNo = 0;
     if (screenNo < 0 || screenNo >= screens.size())
@@ -96,10 +92,8 @@ const QRect QDesktopWidget::availableGeometry(int screenNo) const
 
 const QRect QDesktopWidget::screenGeometry(int screenNo) const
 {
-    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
-    if (!gs)
-        return QRect();
-    QList<QGraphicsSystemScreen *> screens = gs->screens();
+    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    QList<QPlatformScreen *> screens = pi->screens();
     if (screenNo == -1)
         screenNo = 0;
     if (screenNo < 0 || screenNo >= screens.size())
@@ -122,10 +116,8 @@ int QDesktopWidget::screenNumber(const QWidget *w) const
 
 int QDesktopWidget::screenNumber(const QPoint &p) const
 {
-    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
-    if (!gs)
-        return -1;
-    QList<QGraphicsSystemScreen *> screens = gs->screens();
+    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    QList<QPlatformScreen *> screens = pi->screens();
 
     for (int i = 0; i < screens.size(); ++i)
         if (screens[i]->geometry().contains(p))
