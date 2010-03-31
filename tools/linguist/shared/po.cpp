@@ -412,6 +412,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
             }
             if (item.msgId.isEmpty()) {
                 QStringList hdrOrder;
+                QString pluralForms;
                 foreach (const QString &hdr,
                          item.msgStr.first().split(QLatin1Char('\n'), QString::SkipEmptyParts)) {
                     int idx = hdr.indexOf(QLatin1Char(':'));
@@ -428,14 +429,26 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                         translator.setLanguageCode(hdrValue);
                     else if (hdrName == QLatin1String("X-Source-Language"))
                         translator.setSourceLanguageCode(hdrValue);
+                    else if (hdrName == QLatin1String("Plural-Forms"))
+                        pluralForms  = hdrValue;
                     else if (hdrName == QLatin1String("X-Virgin-Header"))
                         ; // legacy
                     else
                         translator.setExtra(makePoHeader(hdrName), hdrValue);
                 }
+                if (!pluralForms.isEmpty()) {
+                    if (translator.languageCode().isEmpty()) {
+                        translator.setExtra(makePoHeader(QLatin1String("Plural-Forms")),
+                                            pluralForms);
+                    } else {
+                         // FIXME: have fun with making a consistency check ...
+                    }
+                }
                 // Eliminate the field if only headers we added are present in standard order.
                 // Keep in sync with savePO
-                static const char * const dfltHdrs[] = { "X-Language", "X-Source-Language" };
+                static const char * const dfltHdrs[] = {
+                    "Plural-Forms", "X-Language", "X-Source-Language"
+                };
                 uint cdh = 0;
                 for (int cho = 0; cho < hdrOrder.length(); cho++) {
                     for (;; cdh++) {
@@ -608,8 +621,15 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
     QStringList hdrOrder = translator.extra(QLatin1String("po-headers")).split(
             QLatin1Char(','), QString::SkipEmptyParts);
     // Keep in sync with loadPO
-    if (!translator.languageCode().isEmpty())
+    if (!translator.languageCode().isEmpty()) {
+        QLocale::Language l;
+        QLocale::Country c;
+        Translator::languageAndCountry(translator.languageCode(), &l, &c);
+        const char *gettextRules;
+        if (getNumerusInfo(l, c, 0, 0, &gettextRules))
+            addPoHeader(headers, hdrOrder, "Plural-Forms", QLatin1String(gettextRules));
         addPoHeader(headers, hdrOrder, "X-Language", translator.languageCode());
+    }
     if (!translator.sourceLanguageCode().isEmpty())
         addPoHeader(headers, hdrOrder, "X-Source-Language", translator.sourceLanguageCode());
     QString hdrStr;

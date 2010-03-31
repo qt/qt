@@ -652,7 +652,7 @@ void Translator::normalizeTranslations(ConversionData &cd)
     int numPlurals = 1;
     if (l != QLocale::C) {
         QStringList forms;
-        if (getNumerusInfo(l, c, 0, &forms))
+        if (getNumerusInfo(l, c, 0, &forms, 0))
             numPlurals = forms.count(); // includes singular
     }
     for (int i = 0; i < m_messages.count(); ++i) {

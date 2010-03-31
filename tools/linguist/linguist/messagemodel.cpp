@@ -402,7 +402,7 @@ bool DataModel::setLanguageAndCountry(QLocale::Language lang, QLocale::Country c
     if (lang == QLocale::C || uint(lang) > uint(QLocale::LastLanguage)) // XXX does this make any sense?
         lang = QLocale::English;
     QByteArray rules;
-    bool ok = getNumerusInfo(lang, country, &rules, &m_numerusForms);
+    bool ok = getNumerusInfo(lang, country, &rules, &m_numerusForms, 0);
     m_localizedLanguage = QCoreApplication::translate("MessageEditor", QLocale::languageToString(lang).toAscii());
     m_countRefNeeds.clear();
     for (int i = 0; i < rules.size(); ++i) {
