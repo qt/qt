@@ -70,7 +70,10 @@
     controls.
     \endlist
 
-    The ActiveQt framework consists of two frameworks:
+    For more information about using ActiveX with Qt, see
+    \l{Building ActiveX servers and controls with Qt}.
+
+    The ActiveQt framework consists of two modules:
 
     \list
     \o The \l{Using ActiveX controls and COM objects in Qt}{QAxContainer}
