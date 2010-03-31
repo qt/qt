@@ -61,6 +61,7 @@
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QGraphicsEffect>
+#include <QInputContext>
 
 #include "../../shared/util.h"
 
@@ -424,6 +425,7 @@ private slots:
     void modality_keyEvents();
     void itemIsInFront();
     void scenePosChange();
+    void updateMicroFocus();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -9986,6 +9988,75 @@ void tst_QGraphicsItem::scenePosChange()
     QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 6);
     QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
     QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+}
+
+class MyInputContext : public QInputContext
+{
+public:
+    MyInputContext() : nbUpdates(0) {}
+    ~MyInputContext() {}
+
+    QString identifierName() { return QString(); }
+    QString language() { return QString(); }
+
+    void reset() {}
+
+    bool isComposing() const { return false; }
+
+    void update() { nbUpdates++; }
+
+    bool nbUpdates;
+};
+
+class MyInputWidget : public QGraphicsWidget
+{
+public:
+    MyInputWidget()
+    {
+        setFlag(QGraphicsItem::ItemIsFocusable, true);
+        setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
+    }
+    void mousePressEvent(QGraphicsSceneMouseEvent *event)
+    {
+        event->accept();
+    }
+
+    void doUpdateMicroFocus()
+    {
+        updateMicroFocus();
+    }
+};
+
+void tst_QGraphicsItem::updateMicroFocus()
+{
+    QGraphicsScene scene;
+    QWidget parent;
+    QGridLayout layout;
+    parent.setLayout(&layout);
+    QGraphicsView view(&scene);
+    QGraphicsView view2(&scene);
+    layout.addWidget(&view, 0, 0);
+    layout.addWidget(&view2, 0, 1);
+    MyInputContext ic2;
+    view2.setInputContext(&ic2);
+    MyInputContext ic;
+    view.setInputContext(&ic);
+    MyInputWidget input;
+    input.setPos(0, 0);
+    input.resize(150, 150);
+    scene.addItem(&input);
+    input.setFocus();
+    parent.show();
+    view.setFocus();
+    qApp->setAutoSipEnabled(true);
+    QApplication::setActiveWindow(&parent);
+    QTest::qWaitForWindowShown(&parent);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&parent));
+    input.doUpdateMicroFocus();
+    QApplication::processEvents();
+    QCOMPARE(ic.nbUpdates, 1);
+    //No update since view2 does not have the focus.
+    QCOMPARE(ic2.nbUpdates, 0);
 }
 
 void tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()

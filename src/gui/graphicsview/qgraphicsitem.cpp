@@ -731,6 +731,9 @@
 #include <QtGui/qevent.h>
 #include <QtGui/qinputcontext.h>
 #include <QtGui/qgraphicseffect.h>
+#ifndef QT_NO_ACCESSIBILITY
+# include "qaccessible.h"
+#endif
 
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicswidget_p.h>
@@ -738,6 +741,7 @@
 #include <private/qtextdocumentlayout_p.h>
 #include <private/qtextengine_p.h>
 #include <private/qwidget_p.h>
+#include <private/qapplication_p.h>
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -7305,6 +7309,31 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
 }
 
 /*!
+    Updates the item's micro focus.
+
+    \since 4.7
+
+    \sa QInputContext
+*/
+void QGraphicsItem::updateMicroFocus()
+{
+#if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
+    if (QWidget *fw = qApp->focusWidget()) {
+        if (qt_widget_private(fw)->ic || qApp->d_func()->inputContext) {
+            if (QInputContext *ic = fw->inputContext()) {
+                if (ic)
+                    ic->update();
+            }
+        }
+#ifndef QT_NO_ACCESSIBILITY
+        // ##### is this correct
+        QAccessible::updateAccessibility(fw, 0, QAccessible::StateChanged);
+#endif
+    }
+#endif
+}
+
+/*!
     This virtual function is called by QGraphicsItem to notify custom items
     that some part of the item's state changes. By reimplementing this
     function, your can react to a change, and in some cases, (depending on \a
@@ -7578,6 +7607,11 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
         QGestureManager *manager = QGestureManager::instance();
         manager->cleanupCachedGestures(this, gesture);
     }
+}
+
+void QGraphicsObject::updateMicroFocus()
+{
+    QGraphicsItem::updateMicroFocus();
 }
 
 void QGraphicsItemPrivate::append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item)

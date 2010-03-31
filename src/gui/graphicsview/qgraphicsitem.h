@@ -424,6 +424,7 @@ public:
     void removeSceneEventFilter(QGraphicsItem *filterItem);
 
 protected:
+    void updateMicroFocus();
     virtual bool sceneEventFilter(QGraphicsItem *watched, QEvent *event);
     virtual bool sceneEvent(QEvent *event);
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
@@ -570,6 +571,9 @@ public:
 
     void grabGesture(Qt::GestureType type, Qt::GestureFlags flags = Qt::GestureFlags());
     void ungrabGesture(Qt::GestureType type);
+
+protected Q_SLOTS:
+    void updateMicroFocus();
 
 Q_SIGNALS:
     void parentChanged();
