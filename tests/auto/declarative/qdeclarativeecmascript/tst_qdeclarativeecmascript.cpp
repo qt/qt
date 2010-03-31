@@ -128,6 +128,8 @@ private slots:
     void scriptDisconnect();
     void ownership();
     void qlistqobjectMethods();
+    void strictlyEquals();
+    void compiled();
 
     void bug1();
     void dynamicCreationCrash();
@@ -2001,6 +2003,64 @@ void tst_qdeclarativeecmascript::qlistqobjectMethods()
 
     QCOMPARE(object->property("test").toInt(), 2);
     QCOMPARE(object->property("test2").toBool(), true);
+
+    delete object;
+}
+
+// QTBUG-9205
+void tst_qdeclarativeecmascript::strictlyEquals()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("strictlyEquals.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+    QCOMPARE(object->property("test3").toBool(), true);
+    QCOMPARE(object->property("test4").toBool(), true);
+    QCOMPARE(object->property("test5").toBool(), true);
+    QCOMPARE(object->property("test6").toBool(), true);
+    QCOMPARE(object->property("test7").toBool(), true);
+    QCOMPARE(object->property("test8").toBool(), true);
+
+    delete object;
+}
+
+void tst_qdeclarativeecmascript::compiled()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("compiled.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toReal(), qreal(15.7));
+    QCOMPARE(object->property("test2").toReal(), qreal(-6.7));
+    QCOMPARE(object->property("test3").toBool(), true);
+    QCOMPARE(object->property("test4").toBool(), false);
+    QCOMPARE(object->property("test5").toBool(), false);
+    QCOMPARE(object->property("test6").toBool(), true);
+
+    QCOMPARE(object->property("test7").toInt(), 185);
+    QCOMPARE(object->property("test8").toInt(), 167);
+    QCOMPARE(object->property("test9").toBool(), true);
+    QCOMPARE(object->property("test10").toBool(), false);
+    QCOMPARE(object->property("test11").toBool(), false);
+    QCOMPARE(object->property("test12").toBool(), true);
+
+    QCOMPARE(object->property("test13").toString(), QLatin1String("HelloWorld"));
+    QCOMPARE(object->property("test14").toString(), QLatin1String("Hello World"));
+    QCOMPARE(object->property("test15").toBool(), false);
+    QCOMPARE(object->property("test16").toBool(), true);
+
+    QCOMPARE(object->property("test17").toInt(), 4);
+    QCOMPARE(object->property("test18").toReal(), qreal(176));
+    QEXPECT_FAIL("", "QTBUG-9538", Continue);
+    QCOMPARE(object->property("test19").toInt(), 6);
+    QCOMPARE(object->property("test20").toReal(), qreal(6.7));
+    QCOMPARE(object->property("test21").toString(), QLatin1String("6.7"));
+    QCOMPARE(object->property("test22").toString(), QLatin1String("!"));
+    QCOMPARE(object->property("test23").toBool(), true);
 
     delete object;
 }

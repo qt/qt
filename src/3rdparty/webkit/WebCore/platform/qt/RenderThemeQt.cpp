@@ -126,6 +126,7 @@ PassRefPtr<RenderTheme> RenderTheme::themeForPage(Page* page)
 RenderThemeQt::RenderThemeQt(Page* page)
     : RenderTheme()
     , m_page(page)
+    , m_lineEdit(0)
 {
     QPushButton button;
     button.setAttribute(Qt::WA_MacSmallSize);
@@ -142,6 +143,7 @@ RenderThemeQt::RenderThemeQt(Page* page)
 RenderThemeQt::~RenderThemeQt()
 {
     delete m_fallbackStyle;
+    delete m_lineEdit;
 }
 
 // for some widget painting, we need to fallback to Windows style
@@ -207,11 +209,13 @@ bool RenderThemeQt::supportsControlTints() const
     return true;
 }
 
-static int findFrameLineWidth(QStyle* style)
+int RenderThemeQt::findFrameLineWidth(QStyle* style) const
 {
-    QLineEdit lineEdit;
+    if (!m_lineEdit)
+        m_lineEdit = new QLineEdit();
+
     QStyleOptionFrameV2 opt;
-    return style->pixelMetric(QStyle::PM_DefaultFrameWidth, &opt, &lineEdit);
+    return style->pixelMetric(QStyle::PM_DefaultFrameWidth, &opt, m_lineEdit);
 }
 
 static QRect inflateButtonRect(const QRect& originalRect, QStyle* style)

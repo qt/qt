@@ -1,3 +1,216 @@
+2010-03-25  yael aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] Windowed netscape plugins don't work with QGraphicsWebView on Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=35112
+
+        Add a proxy widget when loading a QWidget based plugin in a QGraphicsWebView.
+
+        * plugins/symbian/PluginContainerSymbian.cpp:
+        (PluginContainerSymbian::PluginContainerSymbian):
+        (PluginContainerSymbian::focusInEvent):
+        * plugins/symbian/PluginContainerSymbian.h:
+        (WebCore::PluginContainerSymbian::proxy):
+        * plugins/symbian/PluginViewSymbian.cpp:
+        (WebCore::PluginView::updatePluginWidget):
+        (WebCore::PluginView::platformStart):
+        (WebCore::PluginView::platformDestroy):
+
+2010-03-29  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed for the Qt 4.6 branch by Simon Hausmann.
+
+        Accept XHTML-MP content type as XHTML content
+        https://bugs.webkit.org/show_bug.cgi?id=34262
+
+        Enable processing XHTML-MP mime type as an XHTML document
+        even if XHTML-MP support is not enabled.
+
+        * platform/MIMETypeRegistry.cpp:
+        (WebCore::initializeSupportedNonImageMimeTypes):
+
+2010-03-22  Jakub Wieczorek  <jwieczorek@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Don't construct a QLineEdit every time when painting a text field
+        https://bugs.webkit.org/show_bug.cgi?id=36373
+
+        Instead, keep one instance per RenderTheme around.
+
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::findFrameLineWidth):
+
+2010-03-26  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        Don't undefine SKIP_STATIC_CONSTRUCTORS_ON_GCC for Symbian HW targets.
+        https://bugs.webkit.org/show_bug.cgi?id=34081
+
+        Defining StringImpl instances as globals will cause a crash on process exit as 
+        StringImpl::Remove expects TLS which was already deleted at time of exiting main and ends up
+        constructing one exiting thread.
+
+        * config.h:
+
+2010-02-02  Alexey Proskuryakov  <ap@apple.com>
+
+        Reviewed by Darin Adler.
+
+        https://bugs.webkit.org/show_bug.cgi?id=34076
+        <rdar://problem/7594601> Crash in mangleme in WebCore::Element::getAttribute
+
+        Test: fast/forms/misplaced-img-form-registration.html
+
+        * html/HTMLFormElement.cpp:
+        (WebCore::HTMLFormElement::registerImgElement): Assert that the same image isn't added
+        to vector again.
+        (WebCore::HTMLFormElement::removeImgElement): Similarly, assert that we're removing something
+        that's actually registered.
+
+        * html/HTMLImageElement.cpp: (WebCore::HTMLImageElement::~HTMLImageElement): If parser fails
+        to insert the image element, then there will be no removed from tree notification either,
+        need to unregister right away.
+
+2010-01-25  Alexey Proskuryakov  <ap@apple.com>
+
+        Rubber-stamped by Geoffrey Garen.
+
+        https://bugs.webkit.org/show_bug.cgi?id=34076
+        An image remains accessible via form.property syntax after being removed from document.
+
+        Fix crashing regression tests (tables/mozilla/bugs/bug4527.html et al.)
+
+        * html/HTMLImageElement.cpp: (WebCore::HTMLImageElement::insertedIntoTree): Remove incorrect
+        assertions added in the previous patch - it's mot true that m_for is always a parent; table
+        parsing can reparent the image element, but m_form still needs to be set.
+
+2010-01-25  Alexey Proskuryakov  <ap@apple.com>
+
+        Reviewed by Geoffrey Garen.
+
+        https://bugs.webkit.org/show_bug.cgi?id=34076
+        An image remains accessible via form.property syntax after being removed from document.
+
+        Tests: fast/forms/removed-image-as-property.html
+               fast/forms/reparented-image-as-property.html
+
+        * html/HTMLImageElement.cpp:
+        (WebCore::HTMLImageElement::~HTMLImageElement): This is called during GC - not a good time
+        to make observable changes to DOM.
+        (WebCore::HTMLImageElement::insertedIntoTree): This is the right place to do any work that
+        depends on connectedness to some ancestor. We still allow for m_form to be set via constructor,
+        which happens during parsing.
+        (WebCore::HTMLImageElement::removedFromTree): Ditto.
+
+        * html/HTMLImageElement.h: Added removedFromTree/insertedIntoTree, moved removedFromDocument
+        and insertedIntoDocument to private section, as they shouldn't be called directly.
+
+2009-12-08  Brady Eidson  <beidson@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Navigating to a cached page can result in accessing a destroyed HTMLInputElement.
+        <rdar://problem/6856662> and https://webkit.org/b/32293
+
+        Test: fast/loader/input-element-page-cache-crash.html
+
+        * html/HTMLInputElement.cpp:
+        (WebCore::HTMLInputElement::parseMappedAttribute): Make sure to unregister for the activation
+          callback after the new m_autocomplete setting has been stored so the unregistration actually
+          takes place.
+
+2009-12-13  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Simon Fraser.
+
+        <rdar://problem/7341364> Crash at HTMLParser::popOneBlockCommon() after
+        handling misnested residual style tags
+
+        Test: fast/parser/residual-style-close-ref-clone.html
+
+        * html/HTMLParser.cpp:
+        (WebCore::HTMLParser::handleResidualStyleCloseTagAcrossBlocks): Gave the
+        block stack a strong reference to the cloned residual style element. 
+
+2009-12-23  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Darin Adler.
+
+        <rdar://problem/7487164> First line of text cannot be selected
+        https://bugs.webkit.org/show_bug.cgi?id=32749
+
+        Test: fast/text/remove-zero-length-run.html
+
+        * rendering/RenderText.cpp:
+        (WebCore::RenderText::positionLineBox): Changed code that assumed that if a box was being
+            removed, it was the only box in the RenderText. Instead, correctly preserve the list of
+            text boxes.
+        (WebCore::RenderText::checkConsistency): Updated for earlier rename.
+
+2009-12-10  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Crash in XMLTokenizer::popCurrentNode if window.close() is called during parsing
+        https://bugs.webkit.org/show_bug.cgi?id=31576
+
+        Add a RefCounted wrapper object around xmlParserCtxtPtr so we can
+        maintain it's lifetime more effectively.
+
+        Test: fast/parser/xhtml-close-while-parsing.xhtml
+
+        * dom/XMLTokenizer.cpp:
+        (WebCore::XMLTokenizer::popCurrentNode):
+        * dom/XMLTokenizer.h:
+        (WebCore::XMLParserContext::context):
+        (WebCore::XMLParserContext::XMLParserContext):
+        (WebCore::XMLTokenizer::context):
+        * dom/XMLTokenizerLibxml2.cpp:
+        (WebCore::XMLParserContext::createStringParser):
+        (WebCore::XMLParserContext::createMemoryParser):
+        (WebCore::XMLParserContext::~XMLParserContext):
+        (WebCore::XMLTokenizer::~XMLTokenizer):
+        (WebCore::XMLTokenizer::doWrite):
+        (WebCore::XMLTokenizer::initializeParserContext):
+        (WebCore::XMLTokenizer::doEnd):
+        (WebCore::XMLTokenizer::lineNumber):
+        (WebCore::XMLTokenizer::columnNumber):
+        (WebCore::XMLTokenizer::stopParsing):
+        (WebCore::parseXMLDocumentFragment):
+        (WebCore::parseAttributes):
+
+2009-11-09  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Darin Adler and Dan Bernstein.
+
+        <rdar://problem/7328395>
+        https://bugs.webkit.org/show_bug.cgi?id=31277
+
+        When an object tag's style changes (for example when child nodes are added/removed),
+        reuse its Frame (if it has one) instead of creating multiple Frames.
+
+        Test: fast/dom/HTMLObjectElement/children-changed.html
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::requestObject):
+
+2009-12-05  Adam Langley  <agl@google.com>
+
+        Reviewed by Adam Barth.
+
+        Check that a CSS format() argument is of a valid type.
+
+        https://bugs.webkit.org/show_bug.cgi?id=31815
+        http://code.google.com/p/chromium/issues/detail?id=28582
+
+        Test: fast/css/url-format-non-string.html
+
+        * css/CSSParser.cpp:
+        (WebCore::CSSParser::parseFontFaceSrc):
+
 2010-03-19  Miikka Heikkinen  <miikka.heikkinen@digia.com>
 
         Reviewed by Simon Hausmann.

@@ -12,7 +12,7 @@ SUBDIRS = \
 sources.files = \
    animations \
    aspectratio \
-   behaviours \
+   behaviors \
    border-image \
    clocks \
    connections \
@@ -21,7 +21,6 @@ sources.files = \
    effects \
    fillmode \
    focus \
-   focusscope \
    fonts \
    gridview \
    layouts \

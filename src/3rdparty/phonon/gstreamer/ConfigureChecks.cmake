@@ -17,6 +17,7 @@ macro_log_feature(GSTREAMER_FOUND "GStreamer" "gstreamer 0.10 is required for th
 
 macro_optional_find_package(GStreamerPlugins)
 macro_log_feature(GSTREAMER_PLUGIN_VIDEO_LIBRARIES "GStreamer video plugin" "The gstreamer video plugin (part of gstreamer-plugins-base 0.10) is required for the multimedia gstreamer backend" "http://gstreamer.freedesktop.org/modules/" FALSE "0.10")
+macro_log_feature(GSTREAMER_PLUGIN_AUDIO_LIBRARIES "GStreamer audio plugin" "The gstreamer audio plugin (part of gstreamer-plugins-base 0.10) is required for the multimedia gstreamer backend" "http://gstreamer.freedesktop.org/modules/" FALSE "0.10")
 
 macro_optional_find_package(GLIB2)
 macro_log_feature(GLIB2_FOUND "GLib2" "GLib 2 is required to compile the gstreamer backend for Phonon" "http://www.gtk.org/download/" FALSE)
@@ -30,8 +31,8 @@ macro_log_feature(LIBXML2_FOUND "LibXml2" "LibXml2 is required to compile the gs
 macro_optional_find_package(OpenGL)
 macro_log_feature(OPENGL_FOUND "OpenGL" "OpenGL support is required to compile the gstreamer backend for Phonon" "" FALSE)
 
-if (GSTREAMER_FOUND AND GSTREAMER_PLUGIN_VIDEO_LIBRARIES AND GLIB2_FOUND AND GOBJECT_FOUND AND LIBXML2_FOUND AND OPENGL_FOUND)
+if (GSTREAMER_FOUND AND GSTREAMER_PLUGIN_VIDEO_LIBRARIES AND GSTREAMER_PLUGIN_AUDIO_LIBRARIES AND GLIB2_FOUND AND GOBJECT_FOUND AND LIBXML2_FOUND AND OPENGL_FOUND)
    set(BUILD_PHONON_GSTREAMER TRUE)
-else (GSTREAMER_FOUND AND GSTREAMER_PLUGIN_VIDEO_LIBRARIES AND GLIB2_FOUND AND GOBJECT_FOUND AND LIBXML2_FOUND AND OPENGL_FOUND)
+else (GSTREAMER_FOUND AND GSTREAMER_PLUGIN_VIDEO_LIBRARIES AND GSTREAMER_PLUGIN_AUDIO_LIBRARIES AND GLIB2_FOUND AND GOBJECT_FOUND AND LIBXML2_FOUND AND OPENGL_FOUND)
    set(BUILD_PHONON_GSTREAMER FALSE)
-endif (GSTREAMER_FOUND AND GSTREAMER_PLUGIN_VIDEO_LIBRARIES AND GLIB2_FOUND AND GOBJECT_FOUND AND LIBXML2_FOUND AND OPENGL_FOUND)
+endif (GSTREAMER_FOUND AND GSTREAMER_PLUGIN_VIDEO_LIBRARIES AND GSTREAMER_PLUGIN_AUDIO_LIBRARIES AND GLIB2_FOUND AND GOBJECT_FOUND AND LIBXML2_FOUND AND OPENGL_FOUND)
