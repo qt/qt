@@ -248,13 +248,14 @@ void QSmoothedAnimation::init()
 /*!
     \qmlclass SmoothedAnimation QDeclarativeSmoothedAnimation
     \since 4.7
+    \inherits NumberAnimation
     \brief The SmoothedAnimation element allows a property to smoothly track a value.
 
-    The SmoothedAnimation smoothly animates a property's value to a set target value
+    The SmoothedAnimation animates a property's value to a set target value
     using an ease in/out quad easing curve.  If the animation is restarted
     with a different target value, the easing curves used to animate to the old
-    and the new target values are spliced together to avoid any obvious visual
-    glitches.
+    and the new target values are smoothly spliced together to avoid any obvious
+    visual glitches by maintaining the current velocity.
 
     The property animation is configured by setting the velocity at which the
     animation should occur, or the duration that the animation should take.
@@ -454,14 +455,14 @@ void QDeclarativeSmoothedAnimation::setVelocity(qreal v)
 }
 
 /*!
-\qmlproperty qreal SmoothedAnimation::maximumEasingTime
+    \qmlproperty qreal SmoothedAnimation::maximumEasingTime
 
-This property specifies the maximum time, in msecs, an "eases" during the follow should take.
-Setting this property causes the velocity to "level out" after at a time.  Setting
-a negative value reverts to the normal mode of easing over the entire animation
-duration.
+    This property specifies the maximum time, in msecs, an "eases" during the follow should take.
+    Setting this property causes the velocity to "level out" after at a time.  Setting
+    a negative value reverts to the normal mode of easing over the entire animation
+    duration.
 
-The default value is -1.
+    The default value is -1.
 */
 int QDeclarativeSmoothedAnimation::maximumEasingTime() const
 {
