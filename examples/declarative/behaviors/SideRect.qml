@@ -5,10 +5,9 @@ Rectangle {
 
     property string text
 
-    color: "black"
-    width: 75; height: 50
-    radius: 5
-    border.width: 10; border.color: "white";
+    width: 75; height: 50; radius: 6
+    color: "#646464"; border.width: 4; border.color: "white"
+
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
