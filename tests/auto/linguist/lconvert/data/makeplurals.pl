@@ -63,6 +63,9 @@ sub makeit($$$)
     print OUTFILE <<EOF;
 msgid ""
 msgstr ""
+"MIME-Version: 1.0\\n"
+"Content-Type: text/plain; charset=UTF-8\\n"
+"Content-Transfer-Encoding: 8bit\\n"
 "X-FooBar: yup\\n"
 "X-Language: $_[1]\\n"
 "Plural-Forms: $_[2]\\n"
