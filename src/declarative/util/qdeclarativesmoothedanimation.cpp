@@ -343,17 +343,14 @@ void QDeclarativeSmoothedAnimation::transition(QDeclarativeStateActions &actions
     QSet<QAbstractAnimation*> anims;
     for (int i = 0; i < d->actions->size(); i++) {
         QSmoothedAnimation *ease;
-        qreal trackVelocity;
         bool needsRestart;
         if (!d->activeAnimations.contains((*d->actions)[i].property)) {
             ease = new QSmoothedAnimation();
             d->wrapperGroup->addAnimation(ease);
             d->activeAnimations.insert((*d->actions)[i].property, ease);
-            trackVelocity = 0.0;
             needsRestart = false;
         } else {
             ease = d->activeAnimations.value((*d->actions)[i].property);
-            trackVelocity = ease->trackVelocity;
             needsRestart = true;
         }
 
@@ -366,8 +363,7 @@ void QDeclarativeSmoothedAnimation::transition(QDeclarativeStateActions &actions
         ease->velocity = d->anim->velocity;
         ease->userDuration = d->anim->userDuration;
 
-        ease->trackVelocity = trackVelocity;
-        ease->initialVelocity = trackVelocity;
+        ease->initialVelocity = ease->trackVelocity;
 
         if (needsRestart)
             ease->init();
