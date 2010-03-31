@@ -4013,7 +4013,7 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
     localTM.tm_year = fakeDate.year() - 1900;
     localTM.tm_isdst = (int)isdst;
 #if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
-    time_t secsSince1Jan1970UTC = toTime_tHelper(fakeDate, time);
+    time_t secsSince1Jan1970UTC = toMSecsSinceEpoch_helper(fakeDate.toJulianDay(), QTime().msecsTo(time));
 #else
 #if defined(Q_OS_WIN)
     _tzset();
