@@ -24,7 +24,6 @@ sources.files = \
    effects \
    fillmode \
    focus \
-   focusscope \
    fonts \
    gridview \
    layouts \

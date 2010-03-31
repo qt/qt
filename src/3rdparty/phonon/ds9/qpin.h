@@ -22,7 +22,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QtCore/QString>
 #include <QtCore/QVector>
-#include <QtCore/QMutex>
+#include <QtCore/QReadWriteLock>
 
 #include <dshow.h>
 
@@ -85,8 +85,8 @@ namespace Phonon
 
         protected:
             //this can be used by sub-classes
-            mutable QMutex m_mutex;
-            QBaseFilter * const m_parent;
+            mutable QReadWriteLock m_lock;
+            QBaseFilter *m_parent;
             bool m_flushing;
 
         private:
@@ -98,6 +98,7 @@ namespace Phonon
             const PIN_DIRECTION m_direction;
             QVector<AM_MEDIA_TYPE> m_mediaTypes; //accepted media types
             AM_MEDIA_TYPE m_connectedType;
+            QString m_name;
             IMemAllocator *m_memAlloc;
         };
 

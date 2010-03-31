@@ -1,7 +1,7 @@
 EXPORTS
 	_Z11qFadeEffectP7QWidgeti @ 1 NONAME
 	_Z11qt_image_idRK6QImage @ 2 NONAME
-	_Z12qDrawPixmapsP8QPainterPKN12QDrawPixmaps4DataEiRK7QPixmap6QFlagsINS1_11DrawingHintEE @ 3 NONAME ABSENT
+	_Z12qDrawPixmapsP8QPainterPKN12QDrawPixmaps4DataEiRK7QPixmap6QFlagsINS1_11DrawingHintEE @ 3 NONAME
 	_Z12qt_pixmap_idRK7QPixmap @ 4 NONAME
 	_Z13qDrawWinPanelP8QPainterRK5QRectRK8QPalettebPK6QBrush @ 5 NONAME
 	_Z13qDrawWinPanelP8QPainteriiiiRK8QPalettebPK6QBrush @ 6 NONAME
@@ -2906,7 +2906,7 @@ EXPORTS
 	_ZN14QPaintEngineEx10drawPointsEPK7QPointFi @ 2905 NONAME
 	_ZN14QPaintEngineEx11drawEllipseERK5QRect @ 2906 NONAME
 	_ZN14QPaintEngineEx11drawEllipseERK6QRectF @ 2907 NONAME
-	_ZN14QPaintEngineEx11drawPixmapsEPKN12QDrawPixmaps4DataEiRK7QPixmap6QFlagsINS0_11DrawingHintEE @ 2908 NONAME ABSENT
+	_ZN14QPaintEngineEx11drawPixmapsEPKN12QDrawPixmaps4DataEiRK7QPixmap6QFlagsINS0_11DrawingHintEE @ 2908 NONAME
 	_ZN14QPaintEngineEx11drawPolygonEPK6QPointiN12QPaintEngine15PolygonDrawModeE @ 2909 NONAME
 	_ZN14QPaintEngineEx11drawPolygonEPK7QPointFiN12QPaintEngine15PolygonDrawModeE @ 2910 NONAME
 	_ZN14QPaintEngineEx11updateStateERK17QPaintEngineState @ 2911 NONAME
@@ -4223,7 +4223,7 @@ EXPORTS
 	_ZN18QTextBlockUserDataD0Ev @ 4222 NONAME
 	_ZN18QTextBlockUserDataD1Ev @ 4223 NONAME
 	_ZN18QTextBlockUserDataD2Ev @ 4224 NONAME
-	_ZN18QTextureGlyphCache8populateERK12QTextItemIntRK15QVarLengthArrayIjLi256EERKS3_I11QFixedPointLi256EE @ 4225 NONAME ABSENT
+	_ZN18QTextureGlyphCache8populateERK12QTextItemIntRK15QVarLengthArrayIjLi256EERKS3_I11QFixedPointLi256EE @ 4225 NONAME
 	_ZN19QAbstractProxyModel11qt_metacallEN11QMetaObject4CallEiPPv @ 4226 NONAME
 	_ZN19QAbstractProxyModel11qt_metacastEPKc @ 4227 NONAME
 	_ZN19QAbstractProxyModel13setHeaderDataEiN2Qt11OrientationERK8QVarianti @ 4228 NONAME

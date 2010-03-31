@@ -11,8 +11,7 @@ symbian: {
     } else {
         TARGET.UID3 = 0xE00267C2
     }
-    webkitlibs.sources = QtWebKit$${QT_LIBINFIX}.dll
-    CONFIG(QTDIR_build)|: webkitlibs.sources = $$QMAKE_LIBDIR_QT/$$webkitlibs.sources
+    webkitlibs.sources = $$QMAKE_LIBDIR_QT/QtWebKit$${QT_LIBINFIX}.dll
     webkitlibs.path = /sys/bin
     vendorinfo = \
         "; Localised Vendor name" \

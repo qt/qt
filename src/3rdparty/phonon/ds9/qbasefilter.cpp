@@ -92,8 +92,8 @@ namespace Phonon
                     return E_POINTER;
                 }
 
-                uint nbfetched = 0;
-                while (nbfetched < count && m_index < m_pins.count()) {
+                int nbfetched = 0;
+                while (nbfetched < int(count) && m_index < m_pins.count()) {
                     IPin *current = m_pins[m_index];
                     current->AddRef();
                     ret[nbfetched] = current;
@@ -166,19 +166,19 @@ namespace Phonon
 
         const QList<QPin *> QBaseFilter::pins() const
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             return m_pins;
         }
 
         void QBaseFilter::addPin(QPin *pin)
         {
-            QMutexLocker locker(&m_mutex);
+            QWriteLocker locker(&m_lock);
             m_pins.append(pin);
         }
 
         void QBaseFilter::removePin(QPin *pin)
         {
-            QMutexLocker locker(&m_mutex);
+            QWriteLocker locker(&m_lock);
             m_pins.removeAll(pin);
         }
 
@@ -211,8 +211,7 @@ namespace Phonon
             }
             else if (iid == IID_IMediaPosition || iid == IID_IMediaSeeking) {
                 if (inputPins().isEmpty()) {
-                    *out = getUpStreamInterface(iid);
-                    if (*out) {
+                    if (*out = getUpStreamInterface(iid)) {
                         return S_OK; //we return here to avoid adding a reference
                     } else {
                         hr = E_NOINTERFACE;
@@ -251,35 +250,35 @@ namespace Phonon
 
         STDMETHODIMP QBaseFilter::GetClassID(CLSID *clsid)
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             *clsid = m_clsid;
             return S_OK;
         }
 
         STDMETHODIMP QBaseFilter::Stop()
         {
-            QMutexLocker locker(&m_mutex);
+            QWriteLocker locker(&m_lock);
             m_state = State_Stopped;
             return S_OK;
         }
 
         STDMETHODIMP QBaseFilter::Pause()
         {
-            QMutexLocker locker(&m_mutex);
+            QWriteLocker locker(&m_lock);
             m_state = State_Paused;
             return S_OK;
         }
 
         STDMETHODIMP QBaseFilter::Run(REFERENCE_TIME)
         {
-            QMutexLocker locker(&m_mutex);
+            QWriteLocker locker(&m_lock);
             m_state = State_Running;
             return S_OK;
         }
 
         STDMETHODIMP QBaseFilter::GetState(DWORD, FILTER_STATE *state)
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             if (!state) {
                 return E_POINTER;
             }
@@ -290,7 +289,7 @@ namespace Phonon
 
         STDMETHODIMP QBaseFilter::SetSyncSource(IReferenceClock *clock)
         {
-            QMutexLocker locker(&m_mutex);
+            QWriteLocker locker(&m_lock);
             if (clock) {
                 clock->AddRef();
             }
@@ -303,7 +302,7 @@ namespace Phonon
 
         STDMETHODIMP QBaseFilter::GetSyncSource(IReferenceClock **clock)
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             if (!clock) {
                 return E_POINTER;
             }
@@ -342,7 +341,7 @@ namespace Phonon
 
         STDMETHODIMP QBaseFilter::QueryFilterInfo(FILTER_INFO *info )
         {
-            QMutexLocker locker(&m_mutex);
+            QReadLocker locker(&m_lock);
             if (!info) {
                 return E_POINTER;
             }
@@ -356,9 +355,9 @@ namespace Phonon
 
         STDMETHODIMP QBaseFilter::JoinFilterGraph(IFilterGraph *graph, LPCWSTR name)
         {
-            QMutexLocker locker(&m_mutex);
+            QWriteLocker locker(&m_lock);
             m_graph = graph;
-            m_name = QString::fromWCharArray(name);
+            m_name = QString::fromUtf16((const unsigned short*)name);
             return S_OK;
         }
 

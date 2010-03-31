@@ -134,30 +134,24 @@ bool FactoryPrivate::createBackend()
                 continue;
             }
 
-			QStringList plugins(dir.entryList(QDir::Files));
+            QStringList plugins(dir.entryList(QDir::Files));
 
 #ifdef Q_OS_SYMBIAN
             /* On Symbian OS we might have two plugins, one which uses Symbian
-             * MMF framework("phonon_mmf"), and one which uses Real Networks's
+             * MMF framework("mmf"), and one which uses Real Networks's
              * Helix("hxphonon"). We prefer the latter because it's more
              * sophisticated, so we make sure the Helix backend is attempted
              * to be loaded first, and the MMF backend is used for backup. */
             {
-
-                const int hxphonon = plugins.indexOf(QLatin1String("hxphonon"));
-                if (hxphonon != -1)
-                    plugins.move(hxphonon, 0);
-
-                // Code for debugging the MMF backend.
-                if(hxphonon != -1) {
-                    qDebug() << "Found hxphonon backend and removed it from the lookup list.";
-                    plugins.removeAll(QLatin1String("hxphonon"));
-                }
+                const int helix = plugins.indexOf(QLatin1String("hxphonon"));
+                if (helix != -1)
+                    plugins.move(helix, 0);
             }
 #endif
 
-            for (int i = 0; i < plugins.count(); ++i) {
-                QPluginLoader pluginLoader(libPath + plugins.at(i));
+            const QStringList files = dir.entryList(QDir::Files);
+            for (int i = 0; i < files.count(); ++i) {
+                QPluginLoader pluginLoader(libPath + files.at(i));
                 if (!pluginLoader.load()) {
                     pDebug() << Q_FUNC_INFO << "  load failed:"
                              << pluginLoader.errorString();
@@ -350,6 +344,7 @@ FACTORY_IMPL(AudioOutput)
 #ifndef QT_NO_PHONON_VIDEO
 FACTORY_IMPL(VideoWidget)
 #endif //QT_NO_PHONON_VIDEO
+FACTORY_IMPL(AudioDataOutput)
 
 #undef FACTORY_IMPL
 
@@ -469,7 +464,7 @@ GET_STRING_PROPERTY(backendWebsite)
 QObject *Factory::registerQObject(QObject *o)
 {
     if (o) {
-        QObject::connect(o, SIGNAL(destroyed(QObject*)), globalFactory, SLOT(objectDestroyed(QObject*)), Qt::DirectConnection);
+        QObject::connect(o, SIGNAL(destroyed(QObject *)), globalFactory, SLOT(objectDestroyed(QObject *)), Qt::DirectConnection);
         globalFactory->objects.append(o);
     }
     return o;

@@ -2,8 +2,8 @@ TARGET = phonon
 include(../qbase.pri)
 
 PHONON_MAJOR_VERSION = $${QT_MAJOR_VERSION}
-PHONON_MINOR_VERSION = 3
-PHONON_PATCH_VERSION = 1
+PHONON_MINOR_VERSION = 4
+PHONON_PATCH_VERSION = 0
 VERSION = $${PHONON_MAJOR_VERSION}.$${PHONON_MINOR_VERSION}.$${PHONON_PATCH_VERSION}
 
 DEPENDPATH += .
@@ -21,6 +21,9 @@ HEADERS += $$PHONON_DIR/abstractaudiooutput.h \
            $$PHONON_DIR/abstractvideooutput.h \
            $$PHONON_DIR/abstractvideooutput_p.h \
            $$PHONON_DIR/addoninterface.h \
+           $$PHONON_DIR/audiodataoutput_p.h \
+           $$PHONON_DIR/audiodataoutput.h \
+           $$PHONON_DIR/audiodataoutputinterface.h \
            $$PHONON_DIR/audiooutput.h \
            $$PHONON_DIR/audiooutput_p.h \
            $$PHONON_DIR/audiooutputinterface.h \
@@ -36,6 +39,7 @@ HEADERS += $$PHONON_DIR/abstractaudiooutput.h \
            $$PHONON_DIR/effectwidget_p.h \
            $$PHONON_DIR/factory_p.h \
            $$PHONON_DIR/frontendinterface_p.h \
+           $$PHONON_DIR/globalconfig.h \
            $$PHONON_DIR/globalconfig_p.h \
            $$PHONON_DIR/iodevicestream_p.h \
            $$PHONON_DIR/mediacontroller.h \
@@ -53,6 +57,7 @@ HEADERS += $$PHONON_DIR/abstractaudiooutput.h \
            $$PHONON_DIR/objectdescriptionmodel_p.h \
            $$PHONON_DIR/path.h \
            $$PHONON_DIR/path_p.h \
+           $$PHONON_DIR/pulsesupport.h \
            $$PHONON_DIR/phonondefs.h \
            $$PHONON_DIR/phonondefs_p.h \
            $$PHONON_DIR/phononnamespace.h \
@@ -64,6 +69,7 @@ HEADERS += $$PHONON_DIR/abstractaudiooutput.h \
            $$PHONON_DIR/seekslider_p.h \
            $$PHONON_DIR/streaminterface.h \
            $$PHONON_DIR/streaminterface_p.h \
+           $$PHONON_DIR/swiftslider_p.h \
            $$PHONON_DIR/videoplayer.h \
            $$PHONON_DIR/videowidget.h \
            $$PHONON_DIR/videowidget_p.h \
@@ -73,35 +79,39 @@ HEADERS += $$PHONON_DIR/abstractaudiooutput.h \
            $$PHONON_DIR/volumefaderinterface.h \
            $$PHONON_DIR/volumeslider.h \
            $$PHONON_DIR/volumeslider_p.h
-SOURCES += $$PHONON_DIR/objectdescription.cpp \
-           $$PHONON_DIR/objectdescriptionmodel.cpp \
-           $$PHONON_DIR/phononnamespace.cpp \
-           $$PHONON_DIR/mediasource.cpp \
-           $$PHONON_DIR/abstractmediastream.cpp \
-           $$PHONON_DIR/streaminterface.cpp \
-           $$PHONON_DIR/mediaobject.cpp \
-           $$PHONON_DIR/medianode.cpp \
-           $$PHONON_DIR/path.cpp \
-           $$PHONON_DIR/effectparameter.cpp \
-           $$PHONON_DIR/effect.cpp \
-           $$PHONON_DIR/volumefadereffect.cpp \
-           $$PHONON_DIR/abstractaudiooutput.cpp \
+
+SOURCES += $$PHONON_DIR/abstractaudiooutput.cpp \
            $$PHONON_DIR/abstractaudiooutput_p.cpp \
-           $$PHONON_DIR/audiooutput.cpp \
-           $$PHONON_DIR/audiooutputinterface.cpp \
+           $$PHONON_DIR/abstractmediastream.cpp \
            $$PHONON_DIR/abstractvideooutput.cpp \
            $$PHONON_DIR/abstractvideooutput_p.cpp \
+           $$PHONON_DIR/audiodataoutput.cpp \
+           $$PHONON_DIR/audiooutput.cpp \
+           $$PHONON_DIR/audiooutputinterface.cpp \
            $$PHONON_DIR/backendcapabilities.cpp \
-           $$PHONON_DIR/globalconfig.cpp \
-           $$PHONON_DIR/factory.cpp \
-           $$PHONON_DIR/platform.cpp \
-           $$PHONON_DIR/mediacontroller.cpp \
-           $$PHONON_DIR/videowidget.cpp \
-           $$PHONON_DIR/videoplayer.cpp \
-           $$PHONON_DIR/seekslider.cpp \
-           $$PHONON_DIR/volumeslider.cpp \
+           $$PHONON_DIR/effect.cpp \
+           $$PHONON_DIR/effectparameter.cpp \
            $$PHONON_DIR/effectwidget.cpp \
-           $$PHONON_DIR/iodevicestream.cpp
+           $$PHONON_DIR/factory.cpp \
+           $$PHONON_DIR/globalconfig.cpp \
+           $$PHONON_DIR/iodevicestream.cpp \
+           $$PHONON_DIR/mediacontroller.cpp \
+           $$PHONON_DIR/medianode.cpp \
+           $$PHONON_DIR/mediaobject.cpp \
+           $$PHONON_DIR/mediasource.cpp \
+           $$PHONON_DIR/objectdescription.cpp \
+           $$PHONON_DIR/objectdescriptionmodel.cpp \
+           $$PHONON_DIR/path.cpp \
+           $$PHONON_DIR/phononnamespace.cpp \
+           $$PHONON_DIR/platform.cpp \
+           $$PHONON_DIR/pulsesupport.cpp \
+           $$PHONON_DIR/seekslider.cpp \
+           $$PHONON_DIR/streaminterface.cpp \
+           $$PHONON_DIR/swiftslider.cpp \
+           $$PHONON_DIR/videoplayer.cpp \
+           $$PHONON_DIR/videowidget.cpp \
+           $$PHONON_DIR/volumefadereffect.cpp \
+           $$PHONON_DIR/volumeslider.cpp
 
 contains(QT_CONFIG, dbus) {
        QT      += dbus
@@ -113,6 +123,12 @@ contains(QT_CONFIG, dbus) {
 }
 
 contains(QT_CONFIG, reduce_exports): CONFIG += hide_symbols
+
+unix:!isEmpty(QT_CFLAGS_PULSEAUDIO) {
+     DEFINES += HAVE_PULSEAUDIO
+     QMAKE_CXXFLAGS += $$QT_CFLAGS_PULSEAUDIO
+     LIBS += $$QT_LIBS_PULSEAUDIO
+}
 
 symbian: {
     # Phonon depends on numeric_limits. Enabling STL support in Qt

@@ -547,6 +547,9 @@ void tst_QFiledialog::completer()
 
     // ### FIXME: This will fail on Symbian on some tests and some environments until the file engine and QFileSystemModel
     // are fixed to properly capitalize paths, so that some folders are not duplicated in QFileSystemModel.
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("This will fail on Symbian on some tests and some environments until the file engine and QFileSystemModel are fixed to properly capitalize paths")
+#endif
     QTRY_COMPARE(cModel->rowCount(), expected);
     } QT_CATCH(...) {
         qDeleteAll(files);

@@ -60,7 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 const int MAX_NON_CUSTOM_PIXELMETRICS = 92;
-const int CUSTOMVALUESCOUNT = 4;
+const int CUSTOMVALUESCOUNT = 5;
 
 const int MAX_PIXELMETRICS = MAX_NON_CUSTOM_PIXELMETRICS + CUSTOMVALUESCOUNT;
 
@@ -411,7 +411,7 @@ public:
         SE_TabBarTabWestActive,
         SE_TabBarTabWestInactive,
         SE_ListHighlight,
-        SE_OptionsMenu,
+        SE_PopupBackground,
         SE_SettingsList,
         SE_TableItem,
         SE_TableHeaderItem,
@@ -432,7 +432,7 @@ public:
         SF_ButtonPressed,
         SF_FrameLineEdit,
         SF_ListHighlight,
-        SF_OptionsMenu,
+        SF_PopupBackground,
         SF_SettingsList,
         SF_TableItem,
         SF_TableHeaderItem,
