@@ -130,7 +130,6 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeTextEdit>("Qt",4,6,"TextEdit");
     qmlRegisterType<QDeclarativeTextInput>("Qt",4,6,"TextInput");
     qmlRegisterType<QDeclarativeViewSection>("Qt",4,6,"ViewSection");
-    qmlRegisterType<QDeclarativeFlickableVisibleArea>("Qt",4,6,"VisibleArea");
     qmlRegisterType<QDeclarativeVisualDataModel>("Qt",4,6,"VisualDataModel");
     qmlRegisterType<QDeclarativeVisualItemModel>("Qt",4,6,"VisualItemModel");
 
@@ -148,6 +147,7 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeVisualModel>();
     qmlRegisterType<QAction>();
     qmlRegisterType<QDeclarativePen>();
+    qmlRegisterType<QDeclarativeFlickableVisibleArea>();
 #ifdef QT_WEBKIT_LIB
     qmlRegisterType<QDeclarativeWebSettings>();
 #endif

@@ -2055,10 +2055,12 @@ void tst_qdeclarativeecmascript::compiled()
 
     QCOMPARE(object->property("test17").toInt(), 4);
     QCOMPARE(object->property("test18").toReal(), qreal(176));
-    //QCOMPARE(object->property("test19").toInt(), 6);
+    QEXPECT_FAIL("", "QTBUG-9538", Continue);
+    QCOMPARE(object->property("test19").toInt(), 6);
     QCOMPARE(object->property("test20").toReal(), qreal(6.7));
     QCOMPARE(object->property("test21").toString(), QLatin1String("6.7"));
     QCOMPARE(object->property("test22").toString(), QLatin1String("!"));
+    QCOMPARE(object->property("test23").toBool(), true);
 
     delete object;
 }

@@ -57,14 +57,18 @@ sub makeit2($$$)
     }
 }
 
-sub makeit($$)
+sub makeit($$$)
 {
     open OUTFILE, ">${OUTDIR}plural-$_[0].po" || die "cannot write file in $OUTDIR";
     print OUTFILE <<EOF;
 msgid ""
 msgstr ""
+"MIME-Version: 1.0\\n"
+"Content-Type: text/plain; charset=UTF-8\\n"
+"Content-Transfer-Encoding: 8bit\\n"
 "X-FooBar: yup\\n"
 "X-Language: $_[1]\\n"
+"Plural-Forms: $_[2]\\n"
 EOF
     makeit2($_[0], "one", "");
     makeit2($_[0], "two", "#, fuzzy
@@ -77,6 +81,6 @@ EOF
 }
 
 $OUTDIR = $ARGV[0];
-makeit(1, "zh_CN");
-makeit(2, "de_DE");
-makeit(3, "pl_PL");
+makeit(1, "zh_CN", "nplurals=1; plural=0;");
+makeit(2, "de_DE", "nplurals=2; plural=(n != 1);");
+makeit(3, "pl_PL", "nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

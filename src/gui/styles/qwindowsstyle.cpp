@@ -3105,7 +3105,9 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
                 qDrawWinButton(p, copy.rect, shadePal, copy.state & (State_Sunken | State_On),
                                 &copy.palette.brush(QPalette::Button));
                 copy.rect.adjust(4, 1, -5, -1);
-                if (!enabled || !(sb->stepEnabled & QAbstractSpinBox::StepUpEnabled) ) {
+                if ((!enabled || !(sb->stepEnabled & QAbstractSpinBox::StepUpEnabled))
+                    && proxy()->styleHint(SH_EtchDisabledText, opt, widget) )
+                {
                     QStyleOptionSpinBox lightCopy = copy;
                     lightCopy.rect.adjust(1, 1, 1, 1);
                     lightCopy.palette.setBrush(QPalette::ButtonText, copy.palette.light());
@@ -3138,7 +3140,9 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
                 qDrawWinButton(p, copy.rect, shadePal, copy.state & (State_Sunken | State_On),
                                 &copy.palette.brush(QPalette::Button));
                 copy.rect.adjust(4, 0, -5, -1);
-                if (!enabled || !(sb->stepEnabled & QAbstractSpinBox::StepDownEnabled) ) {
+                if ((!enabled || !(sb->stepEnabled & QAbstractSpinBox::StepDownEnabled))
+                    && proxy()->styleHint(SH_EtchDisabledText, opt, widget) )
+                {
                     QStyleOptionSpinBox lightCopy = copy;
                     lightCopy.rect.adjust(1, 1, 1, 1);
                     lightCopy.palette.setBrush(QPalette::ButtonText, copy.palette.light());

@@ -553,8 +553,11 @@ void QStaticTextPrivate::paintText(const QPointF &pos, QPainter *p)
     } else {
         QTextDocument document;
         document.setDefaultFont(font);
+#ifndef QT_NO_TEXTHTMLPARSER
         document.setHtml(text);
-
+#else
+        document.setPlainText(text);
+#endif
         QRectF rect = maximumSize.isValid() ? QRectF(pos, maximumSize) : QRectF();
         document.adjustSize();
         p->save();

@@ -305,7 +305,7 @@ public:
             if (item->index == -1)
                 continue;
             qreal itemTop = item->position();
-            if (item->index == model->count()-1 || (itemTop+item->size()/2 >= pos))
+            if (itemTop+item->size()/2 >= pos && itemTop <= pos)
                 return item->position();
         }
         if (visibleItems.count()) {
@@ -1153,7 +1153,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                 maxDistance = qAbs(minExtent - data.move.value());
             }
         }
-        if (snapMode != QDeclarativeListView::SnapToItem && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
+        if (snapMode == QDeclarativeListView::NoSnap && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
             data.flickTarget = minExtent;
     } else {
         if (data.move.value() > maxExtent) {
@@ -1164,10 +1164,10 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                 maxDistance = qAbs(maxExtent - data.move.value());
             }
         }
-        if (snapMode != QDeclarativeListView::SnapToItem && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
+        if (snapMode == QDeclarativeListView::NoSnap && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
             data.flickTarget = maxExtent;
     }
-    if ((maxDistance > 0 || overShoot) && (snapMode != QDeclarativeListView::NoSnap || highlightRange == QDeclarativeListView::StrictlyEnforceRange)) {
+    if (maxDistance > 0 || overShoot) {
         // These modes require the list to stop exactly on an item boundary.
         // The initial flick will estimate the boundary to stop on.
         // Since list items can have variable sizes, the boundary will be
@@ -1183,18 +1183,35 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             // the initial flick - estimate boundary
             qreal accel = deceleration;
             qreal v2 = v * v;
-            if (maxDistance > 0.0 && v2 / (2.0f * maxDistance) < accel) {
-                // + averageSize/4 to encourage moving at least one item in the flick direction
-                qreal dist = v2 / (accel * 2.0) + averageSize/4;
-                if (v > 0)
-                    dist = -dist;
+            overshootDist = 0.0;
+            // + averageSize/4 to encourage moving at least one item in the flick direction
+            qreal dist = v2 / (accel * 2.0) + averageSize/4;
+            if (maxDistance > 0)
+                dist = qMin(dist, maxDistance);
+            if (v > 0)
+                dist = -dist;
+            if ((maxDistance > 0.0 && v2 / (2.0f * maxDistance) < accel) || snapMode == QDeclarativeListView::SnapOneItem) {
                 data.flickTarget = -snapPosAt(-(data.move.value() - highlightRangeStart) + dist) + highlightRangeStart;
+                if (overShoot) {
+                    if (data.flickTarget >= minExtent) {
+                        overshootDist = overShootDistance(v, vSize);
+                        data.flickTarget += overshootDist;
+                    } else if (data.flickTarget <= maxExtent) {
+                        overshootDist = overShootDistance(v, vSize);
+                        data.flickTarget -= overshootDist;
+                    }
+                }
                 dist = -data.flickTarget + data.move.value();
                 accel = v2 / (2.0f * qAbs(dist));
-                overshootDist = 0.0;
-            } else {
-                data.flickTarget = velocity > 0 ? minExtent : maxExtent;
-                overshootDist = overShoot ? overShootDistance(v, vSize) : 0;
+            } else if (overShoot) {
+                data.flickTarget = data.move.value() - dist;
+                if (data.flickTarget >= minExtent) {
+                    overshootDist = overShootDistance(v, vSize);
+                    data.flickTarget += overshootDist;
+                } else if (data.flickTarget <= maxExtent) {
+                    overshootDist = overShootDistance(v, vSize);
+                    data.flickTarget -= overshootDist;
+                }
             }
             timeline.reset(data.move);
             timeline.accel(data.move, v, accel, maxDistance + overshootDist);
@@ -2381,6 +2398,8 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
             if (d->currentItem)
                 d->currentItem->index = d->currentIndex;
             emit currentIndexChanged();
+        } else if (d->currentIndex < 0) {
+            d->updateCurrent(0);
         }
         emit countChanged();
         return;
@@ -2743,7 +2762,6 @@ void QDeclarativeListView::destroyingItem(QDeclarativeItem *item)
 void QDeclarativeListView::animStopped()
 {
     Q_D(QDeclarativeListView);
-    d->moveReason = QDeclarativeListViewPrivate::Other;
     d->bufferMode = QDeclarativeListViewPrivate::NoBuffer;
 }
 

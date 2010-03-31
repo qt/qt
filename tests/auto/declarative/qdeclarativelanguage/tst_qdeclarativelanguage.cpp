@@ -1065,7 +1065,6 @@ void tst_qdeclarativelanguage::defaultPropertyListOrder()
 void tst_qdeclarativelanguage::declaredPropertyValues()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("declaredPropertyValues.qml"));
-    QEXPECT_FAIL("", "QTBUG-7860", Abort);
     VERIFY_ERRORS(0);
 }
 
