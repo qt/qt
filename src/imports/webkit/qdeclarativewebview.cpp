@@ -1218,6 +1218,14 @@ QString QDeclarativeWebPage::chooseFile(QWebFrame *originatingFrame, const QStri
     return oldFile;
 }
 
+/*!
+    \qmlsignal WebView::alert(message)
+
+    This signal is emitted when the web engine sends a JavaScript alert. The \a message is the text
+    to be displayed in the alert to the user.
+*/
+
+
 void QDeclarativeWebPage::javaScriptAlert(QWebFrame *originatingFrame, const QString& msg)
 {
     Q_UNUSED(originatingFrame)
