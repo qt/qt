@@ -1,5 +1,16 @@
 import Qt 4.6
 
+/*
+This test displays 6 red rects -- 4 in the top row, 2 in the bottom.
+
+Sequence:
+1. the bottom-left rect turns blue, then green
+2. the second rect in the top row turns blue
+3. the third rect in the top row turns blue
+4. the last rect in the top row quickly turns blue then back to red
+5. the bottom-left rect turns blue, then green
+*/
+
 Rectangle {
     id: root
     width: 400
