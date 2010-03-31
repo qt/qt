@@ -40,7 +40,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         source: "images/face-smile.png"; y: minHeight
 
-        // Animate the y property. Setting repeat to true makes the
+        // Animate the y property. Setting loops to Animation.Infinite makes the
         // animation repeat indefinitely, otherwise it would only run once.
         SequentialAnimation on y {
             loops: Animation.Infinite
@@ -50,7 +50,7 @@ Item {
                 from: smiley.minHeight; to: smiley.maxHeight
                 easing.type: "OutExpo"; duration: 300
             }
-            
+
             // Then move back to minHeight in 1 second, using the OutBounce easing function
             NumberAnimation {
                 from: smiley.maxHeight; to: smiley.minHeight

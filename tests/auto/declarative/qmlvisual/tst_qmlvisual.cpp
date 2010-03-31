@@ -101,6 +101,8 @@ void tst_qmlvisual::visual_data()
         files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
     else {
         //these are tests we think are stable and useful enough to be run by the CI system
+        files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/mousearea-visual.qml";
+        files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/drag.qml";
         files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation-visual.qml";
         files << QT_TEST_SOURCE_DIR "/animation/parentAnimation/parentAnimation-visual.qml";
         files << QT_TEST_SOURCE_DIR "/animation/reanchor/reanchor.qml";
@@ -124,6 +126,10 @@ void tst_qmlvisual::visual()
     arguments << "-script" << testdata
               << "-scriptopts" << "play,testimages,testerror,exitoncomplete,exitonfailure" 
               << file << "-graphicssystem" << "raster";
+#ifdef Q_WS_QWS
+    arguments << "-qws";
+#endif
+
     QProcess p;
     p.start(qmlruntime, arguments);
     QVERIFY(p.waitForFinished());

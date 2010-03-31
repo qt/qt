@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <qfxtester.h>
+#include <qdeclarativetester.h>
 #include <QDebug>
 #include <QApplication>
 #include <qdeclarativeview.h>
@@ -311,9 +311,9 @@ void QDeclarativeTester::updateCurrentTime(int msec)
             } else if (frame->msec() == msec) {
                 if (!frame->hash().isEmpty() && frame->hash().toUtf8() != fe.hash.toHex()) {
                     if (options & QDeclarativeViewer::TestImages && !(options & QDeclarativeViewer::Record)) {
-                        qWarning() << "QDeclarativeTester: Mismatched frame hash.  Seen:" 
-                                   << fe.hash.toHex() << "Expected:" 
-                                   << frame->hash().toUtf8();
+                        qWarning() << "QDeclarativeTester: Mismatched frame hash at" << msec
+                                   << ".  Seen:" << fe.hash.toHex()
+                                   << "Expected:" << frame->hash().toUtf8();
                         imagefailure();
                     }
                 }
