@@ -81,6 +81,7 @@
 #include <QDebug>
 #include <QMetaObject>
 #include <QStack>
+#include <QMap>
 #include <QPluginLoader>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qthreadstorage.h>
@@ -342,7 +343,8 @@ void QDeclarativeEnginePrivate::clear(SimpleList<QDeclarativeParserStatus> &pss)
 }
 
 Q_GLOBAL_STATIC(QDeclarativeEngineDebugServer, qmlEngineDebugServer);
-Q_GLOBAL_STATIC(QSet<QString>, qmlEnginePluginsWithRegisteredTypes);
+typedef QMap<QString, QString> StringStringMap;
+Q_GLOBAL_STATIC(StringStringMap, qmlEnginePluginsWithRegisteredTypes); // stores the uri
 
 void QDeclarativeEnginePrivate::init()
 {
@@ -1838,34 +1840,43 @@ bool QDeclarativeEngine::importExtension(const QString &fileName, const QString 
         qDebug() << "QDeclarativeEngine::importExtension" << uri << "from" << fileName;
     QFileInfo fileInfo(fileName);
     const QString absoluteFilePath = fileInfo.absoluteFilePath();
-    QPluginLoader loader(absoluteFilePath);
 
-    if (QDeclarativeExtensionInterface *iface = qobject_cast<QDeclarativeExtensionInterface *>(loader.instance())) {
-        const QByteArray bytes = uri.toUtf8();
-        const char *moduleId = bytes.constData();
+    QDeclarativeEnginePrivate *d = QDeclarativeEnginePrivate::get(this);
+    bool engineInitialized = d->initializedPlugins.contains(absoluteFilePath);
+    bool typesRegistered = qmlEnginePluginsWithRegisteredTypes()->contains(absoluteFilePath);
 
-        // ### this code should probably be protected with a mutex.
-        if (! qmlEnginePluginsWithRegisteredTypes()->contains(absoluteFilePath)) {
-            // types should only be registered once (they're global).
-
-            qmlEnginePluginsWithRegisteredTypes()->insert(absoluteFilePath);
-            iface->registerTypes(moduleId);
-        }
-
-        QDeclarativeEnginePrivate *d = QDeclarativeEnginePrivate::get(this);
-
-        if (! d->initializedPlugins.contains(absoluteFilePath)) {
-            // things on the engine (eg. adding new global objects) have to be done for every engine.
-
-            // protect against double initialization
-            d->initializedPlugins.insert(absoluteFilePath);
-            iface->initializeEngine(this, moduleId);
-        }
-
-        return true;
+    if (typesRegistered) {
+        Q_ASSERT_X(qmlEnginePluginsWithRegisteredTypes()->value(absoluteFilePath) == uri,
+                   "QDeclarativeEngine::importExtension",
+                   "Internal error: Plugin imported previously with different uri");
     }
 
-    return false;
+    if (!engineInitialized || !typesRegistered) {
+        QPluginLoader loader(absoluteFilePath);
+
+        if (QDeclarativeExtensionInterface *iface = qobject_cast<QDeclarativeExtensionInterface *>(loader.instance())) {
+
+            const QByteArray bytes = uri.toUtf8();
+            const char *moduleId = bytes.constData();
+            if (!typesRegistered) {
+
+                // ### this code should probably be protected with a mutex.
+                qmlEnginePluginsWithRegisteredTypes()->insert(absoluteFilePath, uri);
+                iface->registerTypes(moduleId);
+            }
+            if (!engineInitialized) {
+                // things on the engine (eg. adding new global objects) have to be done for every engine.
+
+                // protect against double initialization
+                d->initializedPlugins.insert(absoluteFilePath);
+                iface->initializeEngine(this, moduleId);
+            }
+        } else {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /*!
