@@ -875,7 +875,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
         return;
     }
     JSC::initializeThreading();
-
+    JSC::IdentifierTable *oldTable = JSC::currentIdentifierTable();
     globalData = JSC::JSGlobalData::create().releaseRef();
     globalData->clientData = new QScript::GlobalClientData(this);
     JSC::JSGlobalObject *globalObject = new (globalData)QScript::GlobalObject();
@@ -911,11 +911,12 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     activeAgent = 0;
     agentLineNumber = -1;
     processEventsInterval = -1;
+    JSC::setCurrentIdentifierTable(oldTable);
 }
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
-    JSC::setCurrentIdentifierTable(globalData->identifierTable);
+    QScript::APIShim shim(this);
 
     //disconnect all loadedScripts and generate all jsc::debugger::scriptUnload events
     QHash<intptr_t,QScript::UStringSourceProviderWithFeedback*>::const_iterator it;
@@ -3277,6 +3278,7 @@ bool QScriptEnginePrivate::hasDemarshalFunction(int type) const
 bool QScriptEngine::convert(const QScriptValue &value, int type, void *ptr)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return QScriptEnginePrivate::convertValue(d->currentFrame, d->scriptValueToJSCValue(value), type, ptr);
 }
 
@@ -3289,8 +3291,12 @@ bool QScriptEngine::convertV2(const QScriptValue &value, int type, void *ptr)
     if (vp) {
         switch (vp->type) {
         case QScriptValuePrivate::JavaScriptCore: {
-            JSC::ExecState *exec = vp->engine ? vp->engine->currentFrame : 0;
-            return QScriptEnginePrivate::convertValue(exec, vp->jscValue, type, ptr);
+            if (vp->engine) {
+                QScript::APIShim shim(vp->engine);
+                return QScriptEnginePrivate::convertValue(vp->engine->currentFrame, vp->jscValue, type, ptr);
+            } else {
+                return QScriptEnginePrivate::convertValue(0, vp->jscValue, type, ptr);
+            }
         }
         case QScriptValuePrivate::Number:
             return QScriptEnginePrivate::convertNumber(vp->numberValue, type, ptr);
@@ -3341,6 +3347,7 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf,
 void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue jscObject = d->scriptValueToJSCValue(object);
     JSC::JSGlobalObject *glob = d->originalGlobalObject();

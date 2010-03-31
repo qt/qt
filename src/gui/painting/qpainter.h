@@ -396,9 +396,9 @@ public:
     void setLayoutDirection(Qt::LayoutDirection direction);
     Qt::LayoutDirection layoutDirection() const;
 
-    void drawStaticText(const QPointF &p, const QStaticText &staticText);
-    inline void drawStaticText(const QPoint &p, const QStaticText &staticText);
-    inline void drawStaticText(int x, int y, const QStaticText &staticText);
+    void drawStaticText(const QPointF &topLeftPosition, const QStaticText &staticText);
+    inline void drawStaticText(const QPoint &topLeftPosition, const QStaticText &staticText);
+    inline void drawStaticText(int left, int top, const QStaticText &staticText);
 
     void drawText(const QPointF &p, const QString &s);
     inline void drawText(const QPoint &p, const QString &s);

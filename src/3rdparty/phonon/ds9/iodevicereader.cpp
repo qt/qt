@@ -139,10 +139,6 @@ namespace Phonon
               {
                   QMutexLocker locker(&m_mutexRead);
 
-                  if (m_mediaGraph->isStopping()) {
-                      return VFW_E_WRONG_STATE;
-                  }
-
                   if(streamSize() != 1 && pos + length > streamSize()) {
                       //it tries to read outside of the boundaries
                       return E_FAIL;
@@ -158,9 +154,6 @@ namespace Phonon
                   int oldSize = currentBufferSize();
                   while (currentBufferSize() < int(length)) {
                       needData();
-                      if (m_mediaGraph->isStopping()) {
-                          return VFW_E_WRONG_STATE;
-                      }
 
                       if (oldSize == currentBufferSize()) {
                           break; //we didn't get any data

@@ -381,7 +381,9 @@
 
     \value ItemSendsGeometryChanges The item enables itemChange()
     notifications for ItemPositionChange, ItemPositionHasChanged,
-    ItemMatrixChange, ItemTransformChange, and ItemTransformHasChanged. For
+    ItemMatrixChange, ItemTransformChange, ItemTransformHasChanged,
+    ItemRotationChange, ItemRotationHasChanged, ItemScaleChange, ItemScaleHasChanged,
+    ItemTransformOriginPointChange, and ItemTransformOriginPointHasChanged. For
     performance reasons, these notifications are disabled by default. You must
     enable this flag to receive notifications for position and transform
     changes. This flag was introduced in Qt 4.6.
@@ -474,6 +476,52 @@
     transformation matrix has changed. The value argument is the new matrix
     (same as transform()), and QGraphicsItem ignores the return value for this
     notification (i.e., a read-only notification).
+
+    \value ItemRotationChange The item's rotation property changes. This
+    notification is sent if the ItemSendsGeometryChanges flag is enabled, and
+    when the item's rotation property changes (i.e., as a result of calling
+    setRotation()). The value argument is the new rotation (i.e., a double);
+    to get the old rotation, call rotation(). Do not call setRotation() in
+    itemChange() as this notification is delivered; instead, you can return
+    the new rotation from itemChange().
+
+    \value ItemRotationHasChanged The item's rotation property has changed.
+    This notification is sent if the ItemSendsGeometryChanges flag is enabled,
+    and after the item's rotation property has changed. The value argument is
+    the new rotation (i.e., a double), and QGraphicsItem ignores the return
+    value for this notification (i.e., a read-only notification). Do not call
+    setRotation() in itemChange() as this notification is delivered.
+
+    \value ItemScaleChange The item's scale property changes. This notification
+    is sent if the ItemSendsGeometryChanges flag is enabled, and when the item's
+    scale property changes (i.e., as a result of calling setScale()). The value
+    argument is the new scale (i.e., a double); to get the old scale, call
+    scale(). Do not call setScale() in itemChange() as this notification is
+    delivered; instead, you can return the new scale from itemChange().
+
+    \value ItemScaleHasChanged The item's scale property has changed. This
+    notification is sent if the ItemSendsGeometryChanges flag is enabled, and
+    after the item's scale property has changed. The value argument is the new
+    scale (i.e., a double), and QGraphicsItem ignores the return value for this
+    notification (i.e., a read-only notification). Do not call setScale() in
+    itemChange() as this notification is delivered.
+
+    \value ItemTransformOriginPointChange The item's transform origin point
+    property changes. This notification is sent if the ItemSendsGeometryChanges
+    flag is enabled, and when the item's transform origin point property changes
+    (i.e., as a result of calling setTransformOriginPoint()). The value argument
+    is the new origin point (i.e., a QPointF); to get the old origin point, call
+    transformOriginPoint(). Do not call setTransformOriginPoint() in itemChange()
+    as this notification is delivered; instead, you can return the new transform
+    origin point from itemChange().
+
+    \value ItemTransformOriginPointHasChanged The item's transform origin point
+    property has changed. This notification is sent if the ItemSendsGeometryChanges
+    flag is enabled, and after the item's transform origin point property has
+    changed. The value argument is the new origin point (i.e., a QPointF), and
+    QGraphicsItem ignores the return value for this notification (i.e., a read-only
+    notification). Do not call setTransformOriginPoint() in itemChange() as this
+    notification is delivered.
 
     \value ItemSelectedChange The item's selected state changes. If the item is
     presently selected, it will become unselected, and vice verca. The value
@@ -683,6 +731,9 @@
 #include <QtGui/qevent.h>
 #include <QtGui/qinputcontext.h>
 #include <QtGui/qgraphicseffect.h>
+#ifndef QT_NO_ACCESSIBILITY
+# include "qaccessible.h"
+#endif
 
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicswidget_p.h>
@@ -690,6 +741,7 @@
 #include <private/qtextdocumentlayout_p.h>
 #include <private/qtextengine_p.h>
 #include <private/qwidget_p.h>
+#include <private/qapplication_p.h>
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -3583,7 +3635,7 @@ void QGraphicsItem::setPos(const QPointF &pos)
         return;
 
     // Update and repositition.
-    if (!(d_ptr->flags & ItemSendsGeometryChanges) && !(d_ptr->flags & ItemSendsScenePositionChanges)) {
+    if (!(d_ptr->flags & (ItemSendsGeometryChanges | ItemSendsScenePositionChanges))) {
         d_ptr->setPosHelper(pos);
         return;
     }
@@ -3728,11 +3780,27 @@ qreal QGraphicsItem::rotation() const
 void QGraphicsItem::setRotation(qreal angle)
 {
     prepareGeometryChange();
+    qreal newRotation = angle;
+
+    if (d_ptr->flags & ItemSendsGeometryChanges) {
+        // Notify the item that the rotation is changing.
+        const QVariant newRotationVariant(itemChange(ItemRotationChange, angle));
+        newRotation = newRotationVariant.toReal();
+    }
+
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->rotation = angle;
+
+    if (d_ptr->transformData->rotation == newRotation)
+        return;
+
+    d_ptr->transformData->rotation = newRotation;
     d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
+
+    // Send post-notification.
+    if (d_ptr->flags & ItemSendsGeometryChanges)
+        itemChange(ItemRotationHasChanged, newRotation);
 
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->rotationChanged();
@@ -3776,11 +3844,27 @@ qreal QGraphicsItem::scale() const
 void QGraphicsItem::setScale(qreal factor)
 {
     prepareGeometryChange();
+    qreal newScale = factor;
+
+    if (d_ptr->flags & ItemSendsGeometryChanges) {
+        // Notify the item that the scale is changing.
+        const QVariant newScaleVariant(itemChange(ItemScaleChange, factor));
+        newScale = newScaleVariant.toReal();
+    }
+
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->scale = factor;
+
+    if (d_ptr->transformData->scale == newScale)
+        return;
+
+    d_ptr->transformData->scale = newScale;
     d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
+
+    // Send post-notification.
+    if (d_ptr->flags & ItemSendsGeometryChanges)
+        itemChange(ItemScaleHasChanged, newScale);
 
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->scaleChanged();
@@ -3899,12 +3983,31 @@ QPointF QGraphicsItem::transformOriginPoint() const
 void QGraphicsItem::setTransformOriginPoint(const QPointF &origin)
 {
     prepareGeometryChange();
+    QPointF newOrigin = origin;
+
+    if (d_ptr->flags & ItemSendsGeometryChanges) {
+        // Notify the item that the origin point is changing.
+        const QVariant newOriginVariant(itemChange(ItemTransformOriginPointChange,
+                                                   qVariantFromValue<QPointF>(origin)));
+        newOrigin = newOriginVariant.toPointF();
+    }
+
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-    d_ptr->transformData->xOrigin = origin.x();
-    d_ptr->transformData->yOrigin = origin.y();
+
+    if (d_ptr->transformData->xOrigin == newOrigin.x()
+        && d_ptr->transformData->yOrigin == newOrigin.y()) {
+        return;
+    }
+
+    d_ptr->transformData->xOrigin = newOrigin.x();
+    d_ptr->transformData->yOrigin = newOrigin.y();
     d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
+
+    // Send post-notification.
+    if (d_ptr->flags & ItemSendsGeometryChanges)
+        itemChange(ItemTransformOriginPointHasChanged, qVariantFromValue<QPointF>(newOrigin));
 }
 
 /*!
@@ -7206,6 +7309,31 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
 }
 
 /*!
+    Updates the item's micro focus.
+
+    \since 4.7
+
+    \sa QInputContext
+*/
+void QGraphicsItem::updateMicroFocus()
+{
+#if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
+    if (QWidget *fw = qApp->focusWidget()) {
+        if (qt_widget_private(fw)->ic || qApp->d_func()->inputContext) {
+            if (QInputContext *ic = fw->inputContext()) {
+                if (ic)
+                    ic->update();
+            }
+        }
+#ifndef QT_NO_ACCESSIBILITY
+        // ##### is this correct
+        QAccessible::updateAccessibility(fw, 0, QAccessible::StateChanged);
+#endif
+    }
+#endif
+}
+
+/*!
     This virtual function is called by QGraphicsItem to notify custom items
     that some part of the item's state changes. By reimplementing this
     function, your can react to a change, and in some cases, (depending on \a
@@ -7479,6 +7607,11 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
         QGestureManager *manager = QGestureManager::instance();
         manager->cleanupCachedGestures(this, gesture);
     }
+}
+
+void QGraphicsObject::updateMicroFocus()
+{
+    QGraphicsItem::updateMicroFocus();
 }
 
 void QGraphicsItemPrivate::append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item)
@@ -11196,6 +11329,24 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change)
         break;
     case QGraphicsItem::ItemScenePositionHasChanged:
         str = "ItemScenePositionHasChanged";
+        break;
+    case QGraphicsItem::ItemRotationChange:
+        str = "ItemRotationChange";
+        break;
+    case QGraphicsItem::ItemRotationHasChanged:
+        str = "ItemRotationHasChanged";
+        break;
+    case QGraphicsItem::ItemScaleChange:
+        str = "ItemScaleChange";
+        break;
+    case QGraphicsItem::ItemScaleHasChanged:
+        str = "ItemScaleHasChanged";
+        break;
+    case QGraphicsItem::ItemTransformOriginPointChange:
+        str = "ItemTransformOriginPointChange";
+        break;
+    case QGraphicsItem::ItemTransformOriginPointHasChanged:
+        str = "ItemTransformOriginPointHasChanged";
         break;
     }
     debug << str;

@@ -175,7 +175,7 @@ Q_STATIC_TEMPLATE_FUNCTION uint * QT_FASTCALL destFetch(uint *buffer, QRasterBuf
 
 # define SPANFUNC_POINTER_DESTFETCH(Arg) destFetch<Arg>
 
-static const DestFetchProc destFetchProc[QImage::NImageFormats] =
+static DestFetchProc destFetchProc[QImage::NImageFormats] =
 {
     0, // Format_Invalid
     destFetchMono, // Format_Mono,
@@ -323,7 +323,7 @@ Q_STATIC_TEMPLATE_FUNCTION void QT_FASTCALL destStore(QRasterBuffer *rasterBuffe
 
 # define SPANFUNC_POINTER_DESTSTORE(DEST) destStore<DEST>
 
-static const DestStoreProc destStoreProc[QImage::NImageFormats] =
+static DestStoreProc destStoreProc[QImage::NImageFormats] =
 {
     0, // Format_Invalid
     destStoreMono, // Format_Mono,
@@ -2827,7 +2827,7 @@ static void QT_FASTCALL rasterop_SourceAndNotDestination(uint *dest,
     }
 }
 
-static const CompositionFunctionSolid functionForModeSolid_C[] = {
+static CompositionFunctionSolid functionForModeSolid_C[] = {
         comp_func_solid_SourceOver,
         comp_func_solid_DestinationOver,
         comp_func_solid_Clear,
@@ -2865,7 +2865,7 @@ static const CompositionFunctionSolid functionForModeSolid_C[] = {
 
 static const CompositionFunctionSolid *functionForModeSolid = functionForModeSolid_C;
 
-static const CompositionFunction functionForMode_C[] = {
+static CompositionFunction functionForMode_C[] = {
         comp_func_SourceOver,
         comp_func_DestinationOver,
         comp_func_Clear,
@@ -7961,6 +7961,20 @@ void qInitDrawhelperAsm()
             qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
             qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
             qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
+            qBlendFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_rgb16_neon;
+            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB16] = qt_blend_rgb16_on_argb32_neon;
+
+            qScaleFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_rgb16_neon;
+            qScaleFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_scale_image_rgb16_on_rgb16_neon;
+
+            qTransformFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_transform_image_argb32_on_rgb16_neon;
+            qTransformFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_transform_image_rgb16_on_rgb16_neon;
+
+            qDrawHelper[QImage::Format_RGB16].alphamapBlit = qt_alphamapblit_quint16_neon;
+
+            functionForMode_C[QPainter::CompositionMode_SourceOver] = qt_blend_argb32_on_argb32_scanline_neon;
+            destFetchProc[QImage::Format_RGB16] = qt_destFetchRGB16_neon;
+            destStoreProc[QImage::Format_RGB16] = qt_destStoreRGB16_neon;
         }
 #endif
 
