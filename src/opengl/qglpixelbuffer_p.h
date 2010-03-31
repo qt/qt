@@ -200,6 +200,11 @@ public:
     QEglContext *ctx;
     int textureFormat;
 #endif
+#if defined(Q_WS_LITE)
+    // Stubs
+    int pbuf;
+    int ctx;
+#endif
 };
 
 QT_END_NAMESPACE

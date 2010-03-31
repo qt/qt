@@ -76,6 +76,18 @@ SOURCES	+= qgl.cpp \
 
 }
 
+embedded_lite {
+    SOURCES += qgl_lite.cpp
+
+    # If we have EGL, use the EGL implementation of QGLPixelBuffer, otherwise we just provide
+    # a stubbed out one. PBuffers aren't too interesting anyway.
+    contains(QT_CONFIG, egl) {
+        SOURCES += qglpixelbuffer_egl.cpp
+    } else {
+        SOURCES += qglpixelbuffer_stub.cpp
+    }
+}
+
 x11 {
     contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2) {
         SOURCES +=  qgl_x11egl.cpp \
