@@ -324,14 +324,6 @@ void QGraphicsWidget::resize(const QSizeF &size)
 */
 
 /*!
-
-  \fn QGraphicsWidget::geometryChanged()
-
-  This signal gets emitted whenever the geometry of the item changes
-  \internal
-*/
-
-/*!
     \property QGraphicsWidget::geometry
     \brief the geometry of the widget
 
