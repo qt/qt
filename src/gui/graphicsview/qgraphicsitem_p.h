@@ -74,8 +74,7 @@ class QGraphicsItemPrivate;
 #ifndef QDECLARATIVELISTPROPERTY
 #define QDECLARATIVELISTPROPERTY
 template<typename T>
-class QDeclarativeListProperty {
-public:
+struct QDeclarativeListProperty {
     typedef void (*AppendFunction)(QDeclarativeListProperty<T> *, T*);
     typedef int (*CountFunction)(QDeclarativeListProperty<T> *);
     typedef T *(*AtFunction)(QDeclarativeListProperty<T> *, int);
