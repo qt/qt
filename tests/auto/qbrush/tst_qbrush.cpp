@@ -75,9 +75,10 @@ private slots:
     void gradientStops();
 
     void textures();
-    
+
     void nullBrush();
     void isOpaque();
+    void debug();
 };
 
 Q_DECLARE_METATYPE(QBrush)
@@ -388,6 +389,16 @@ void tst_QBrush::isOpaque()
 
     QBrush brush(bm);
     QVERIFY(!brush.isOpaque());
+}
+
+void tst_QBrush::debug()
+{
+    QPixmap pixmap_source(10, 10);
+    fill(&pixmap_source);
+    QBrush pixmap_brush;
+    pixmap_brush.setTexture(pixmap_source);
+    QCOMPARE(pixmap_brush.style(), Qt::TexturePattern);
+    qDebug() << pixmap_brush; // don't crash
 }
 
 QTEST_MAIN(tst_QBrush)
