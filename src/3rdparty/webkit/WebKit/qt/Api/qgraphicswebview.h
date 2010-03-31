@@ -135,6 +135,7 @@ protected:
 private:
     Q_PRIVATE_SLOT(d, void _q_doLoadFinished(bool success))
     Q_PRIVATE_SLOT(d, void _q_updateMicroFocus())
+    Q_PRIVATE_SLOT(d, void _q_pageDestroyed())
 
     QGraphicsWebViewPrivate* const d;
     friend class QGraphicsWebViewPrivate;
