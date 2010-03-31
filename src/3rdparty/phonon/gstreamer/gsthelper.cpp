@@ -121,7 +121,7 @@ GstElement* GstHelper::createPluggablePlaybin()
 {
     GstElement *playbin = 0;
     //init playbin and add to our pipeline
-    playbin = gst_element_factory_make("playbin", NULL);
+    playbin = gst_element_factory_make("playbin2", NULL);
 
     //Create an identity element to redirect sound
     GstElement *audioSinkBin =  gst_bin_new (NULL);

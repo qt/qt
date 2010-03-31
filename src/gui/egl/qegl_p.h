@@ -110,20 +110,49 @@ QT_BEGIN_NAMESPACE
 #define EGLAPIENTRY
 #endif
 
-#if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_base)
+// Try to get some info to debug the symbian build failues:
+#ifdef Q_OS_SYMBIAN
 
+#ifdef EGL_KHR_image
+#warning "EGL_KHR_image is defined"
+#else
+#warning "EGL_KHR_image is NOT defined"
+#endif
+
+#ifdef EGL_KHR_image_base
+#warning "EGL_KHR_image_base is defined"
+#else
+#warning "EGL_KHR_image_base is NOT defined"
+#endif
+
+#ifdef EGL_EGLEXT_PROTOTYPES
+#warning "EGL_EGLEXT_PROTOTYPES is defined"
+#else
+#warning "EGL_EGLEXT_PROTOTYPES NOT not defined"
+#endif
+
+#endif
+
+
+// Declare/define the bits of EGL_KHR_image_base we need:
+#if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_base)
 typedef void *EGLImageKHR;
 #define EGL_NO_IMAGE_KHR            ((EGLImageKHR)0)
 #define EGL_IMAGE_PRESERVED_KHR     0x30D2
+#endif
 
+// It is possible that something has included eglext.h (like Symbian 10.1's broken egl.h), in
+// which case, EGL_KHR_image/EGL_KHR_image_base will be defined. They may have also defined
+// the actual function prototypes, but generally EGL_EGLEXT_PROTOTYPES will be defined in that
+// case and we shouldn't re-define them here.
+#if (defined(EGL_KHR_image) || defined(EGL_KHR_image_base)) && !defined(EGL_EGLEXT_PROTOTYPES)
 typedef EGLImageKHR (EGLAPIENTRY *_eglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, EGLint*);
 typedef EGLBoolean (EGLAPIENTRY *_eglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
 
 // Defined in qegl.cpp:
 extern Q_GUI_EXPORT _eglCreateImageKHR eglCreateImageKHR;
 extern Q_GUI_EXPORT _eglDestroyImageKHR eglDestroyImageKHR;
-
-#endif // !defined(EGL_KHR_image) && !defined(EGL_KHR_image_base)
+#endif // (defined(EGL_KHR_image) || defined(EGL_KHR_image_base)) && !defined(EGL_EGLEXT_PROTOTYPES)
 
 #if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_pixmap)
 #define EGL_NATIVE_PIXMAP_KHR       0x30B0

@@ -128,9 +128,11 @@ private slots:
     void scriptDisconnect();
     void ownership();
     void qlistqobjectMethods();
+    void strictlyEquals();
 
     void bug1();
     void dynamicCreationCrash();
+    void regExpBug();
 
     void callQtInvokables();
 private:
@@ -1241,6 +1243,15 @@ void tst_qdeclarativeecmascript::dynamicCreationCrash()
     QVERIFY(created == 0);
 }
 
+//QTBUG-9367
+void tst_qdeclarativeecmascript::regExpBug()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("regExp.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->regExp().pattern(), QLatin1String("[a-zA-z]"));
+}
+
 void tst_qdeclarativeecmascript::callQtInvokables()
 {
     MyInvokableObject o;
@@ -1991,6 +2002,26 @@ void tst_qdeclarativeecmascript::qlistqobjectMethods()
 
     QCOMPARE(object->property("test").toInt(), 2);
     QCOMPARE(object->property("test2").toBool(), true);
+
+    delete object;
+}
+
+// QTBUG-9205
+void tst_qdeclarativeecmascript::strictlyEquals()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("strictlyEquals.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+    QCOMPARE(object->property("test3").toBool(), true);
+    QCOMPARE(object->property("test4").toBool(), true);
+    QCOMPARE(object->property("test5").toBool(), true);
+    QCOMPARE(object->property("test6").toBool(), true);
+    QCOMPARE(object->property("test7").toBool(), true);
+    QCOMPARE(object->property("test8").toBool(), true);
 
     delete object;
 }

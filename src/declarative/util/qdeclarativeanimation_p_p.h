@@ -100,17 +100,11 @@ class QActionAnimation : public QAbstractAnimation
 {
     Q_OBJECT
 public:
-    QActionAnimation(QObject *parent = 0) : QAbstractAnimation(parent), animAction(0), policy(KeepWhenStopped), running(false) {}
+    QActionAnimation(QObject *parent = 0) : QAbstractAnimation(parent), animAction(0), policy(KeepWhenStopped) {}
     QActionAnimation(QAbstractAnimationAction *action, QObject *parent = 0)
-        : QAbstractAnimation(parent), animAction(action), policy(KeepWhenStopped), running(false) {}
+        : QAbstractAnimation(parent), animAction(action), policy(KeepWhenStopped) {}
     ~QActionAnimation() { if (policy == DeleteWhenStopped) { delete animAction; animAction = 0; } }
     virtual int duration() const { return 0; }
-    void clearAnimAction()
-    {
-        if (policy == DeleteWhenStopped)
-            delete animAction;
-        animAction = 0;
-    }
     void setAnimAction(QAbstractAnimationAction *action, DeletionPolicy p)
     {
         if (state() == Running)
@@ -127,26 +121,18 @@ protected:
     {
         if (newState == Running) {
             if (animAction) {
-                running = true;
                 animAction->doAction();
-                running = false;
                 if (state() == Stopped && policy == DeleteWhenStopped) {
                     delete animAction;
                     animAction = 0;
                 }
             }
-        } /*else if (newState == Stopped && policy == DeleteWhenStopped) {
-            if (!running) {
-                delete animAction;
-                animAction = 0;
-            }
-        }*/
+        }
     }
 
 private:
     QAbstractAnimationAction *animAction;
     DeletionPolicy policy;
-    bool running;
 };
 
 class QDeclarativeBulkValueUpdater
@@ -192,11 +178,7 @@ protected:
             //check for new from every loop
             if (fromSourced)
                 *fromSourced = false;
-        } /*else if (newState == Stopped && policy == DeleteWhenStopped) {
-            delete animValue;
-            animValue = 0;
-        }*/ //### we get a stop each loop if we are in a group
-        //### top-level animation is the only reliable one for this
+        }
     }
 
 private:
@@ -322,7 +304,7 @@ class QDeclarativePropertyAnimationPrivate : public QDeclarativeAbstractAnimatio
 public:
     QDeclarativePropertyAnimationPrivate()
     : QDeclarativeAbstractAnimationPrivate(), target(0), fromSourced(false), fromIsDefined(false), toIsDefined(false),
-      rangeIsSet(false), defaultToInterpolatorType(0), interpolatorType(0), interpolator(0), va(0) {}
+      rangeIsSet(false), defaultToInterpolatorType(0), interpolatorType(0), interpolator(0), va(0), actions(0) {}
 
     void init();
 
@@ -347,6 +329,9 @@ public:
     QVariantAnimation::Interpolator interpolator;
 
     QDeclarativeBulkValueAnimator *va;
+
+    // for animations that dont use the QDeclarativeBulkValueAnimator
+    QDeclarativeStateActions *actions;
 
     static QVariant interpolateVariant(const QVariant &from, const QVariant &to, qreal progress);
     static void convertVariant(QVariant &variant, int type);

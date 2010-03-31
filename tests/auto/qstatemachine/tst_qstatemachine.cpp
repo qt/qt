@@ -155,6 +155,7 @@ private slots:
     void clearError();
     void historyStateHasNowhereToGo();
     void historyStateAsInitialState();
+    void historyStateAfterRestart();
     void brokenStateIsNeverEntered();
     void customErrorStateNotInGraph();
     void transitionToStateNotInGraph();
@@ -904,6 +905,64 @@ void tst_QStateMachine::historyStateHasNowhereToGo()
     QVERIFY(machine.configuration().contains(machine.errorState()));
     QCOMPARE(machine.error(), QStateMachine::NoDefaultStateInHistoryStateError);
     QCOMPARE(machine.errorString(), QString::fromLatin1("Missing default state in history state 'historyState'"));
+}
+
+void tst_QStateMachine::historyStateAfterRestart()
+{
+    // QTBUG-8842
+    QStateMachine machine;
+
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+    QState *s2 = new QState(&machine);
+    QState *s21 = new QState(s2);
+    QState *s22 = new QState(s2);
+    QHistoryState *s2h = new QHistoryState(s2);
+    s2h->setDefaultState(s21);
+    s1->addTransition(new EventTransition(QEvent::User, s2h));
+    s21->addTransition(new EventTransition(QEvent::User, s22));
+    s2->addTransition(new EventTransition(QEvent::User, s1));
+
+    for (int x = 0; x < 2; ++x) {
+        QSignalSpy startedSpy(&machine, SIGNAL(started()));
+        machine.start();
+        QTRY_COMPARE(startedSpy.count(), 1);
+        QCOMPARE(machine.configuration().count(), 1);
+        QVERIFY(machine.configuration().contains(s1));
+
+        // s1 -> s2h -> s21 (default state)
+        machine.postEvent(new QEvent(QEvent::User));
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().count(), 2);
+        QVERIFY(machine.configuration().contains(s2));
+        // This used to fail on the 2nd run because the
+        // history had not been cleared.
+        QVERIFY(machine.configuration().contains(s21));
+
+        // s21 -> s22
+        machine.postEvent(new QEvent(QEvent::User));
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().count(), 2);
+        QVERIFY(machine.configuration().contains(s2));
+        QVERIFY(machine.configuration().contains(s22));
+
+        // s2 -> s1 (s22 saved in s2h)
+        machine.postEvent(new QEvent(QEvent::User));
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().count(), 1);
+        QVERIFY(machine.configuration().contains(s1));
+
+        // s1 -> s2h -> s22 (saved state)
+        machine.postEvent(new QEvent(QEvent::User));
+        QCoreApplication::processEvents();
+        QCOMPARE(machine.configuration().count(), 2);
+        QVERIFY(machine.configuration().contains(s2));
+        QVERIFY(machine.configuration().contains(s22));
+
+        QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
+        machine.stop();
+        QTRY_COMPARE(stoppedSpy.count(), 1);
+    }
 }
 
 void tst_QStateMachine::brokenStateIsNeverEntered()

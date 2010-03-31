@@ -65,12 +65,12 @@ public:
         if (graphicsObject && graphicsObject->isWidget()) {
             if (!on) {
                 graphicsObject->removeEventFilter(q);
-                QObject::disconnect(q, SIGNAL(widthChanged(qreal)), q, SLOT(_q_updateSize()));
-                QObject::disconnect(q, SIGNAL(heightChanged(qreal)), q, SLOT(_q_updateSize()));
+                QObject::disconnect(q, SIGNAL(widthChanged()), q, SLOT(_q_updateSize()));
+                QObject::disconnect(q, SIGNAL(heightChanged()), q, SLOT(_q_updateSize()));
             } else {
                 graphicsObject->installEventFilter(q);
-                QObject::connect(q, SIGNAL(widthChanged(qreal)), q, SLOT(_q_updateSize()));
-                QObject::connect(q, SIGNAL(heightChanged(qreal)), q, SLOT(_q_updateSize()));
+                QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(_q_updateSize()));
+                QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(_q_updateSize()));
             }
         }
     }
@@ -251,7 +251,7 @@ void QDeclarativeGraphicsObjectContainerPrivate::_q_updateSize()
         return;
 
     QGraphicsWidget *gw = static_cast<QGraphicsWidget*>(graphicsObject);
-    const QSizeF newSize(width, height);
+    const QSizeF newSize(width(), height());
     gw->resize(newSize);
 
     //### will respecting the widgets min/max ever get us in trouble? (all other items always

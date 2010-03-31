@@ -70,9 +70,12 @@ QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, uint value)
     new (this) JSC::JSValue(QScriptEnginePrivate::frameForContext(ctxt), value);
 }
 
-QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, bool value)
+QScriptDeclarativeClass::Value::Value(QScriptContext *, bool value)
 {
-    new (this) JSC::JSValue(QScriptEnginePrivate::frameForContext(ctxt), value);
+    if (value)
+        new (this) JSC::JSValue(JSC::JSValue::JSTrue);
+    else
+        new (this) JSC::JSValue(JSC::JSValue::JSFalse);
 }
 
 QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, double value)
@@ -107,7 +110,10 @@ QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, uint value)
 
 QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, bool value)
 {
-    new (this) JSC::JSValue(QScriptEnginePrivate::get(eng)->currentFrame, value);
+    if (value)
+        new (this) JSC::JSValue(JSC::JSValue::JSTrue);
+    else
+        new (this) JSC::JSValue(JSC::JSValue::JSFalse);
 }
 
 QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, double value)

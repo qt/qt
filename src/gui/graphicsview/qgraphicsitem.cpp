@@ -731,6 +731,9 @@
 #include <QtGui/qevent.h>
 #include <QtGui/qinputcontext.h>
 #include <QtGui/qgraphicseffect.h>
+#ifndef QT_NO_ACCESSIBILITY
+# include "qaccessible.h"
+#endif
 
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicswidget_p.h>
@@ -738,6 +741,7 @@
 #include <private/qtextdocumentlayout_p.h>
 #include <private/qtextengine_p.h>
 #include <private/qwidget_p.h>
+#include <private/qapplication_p.h>
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -1179,6 +1183,9 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
         }
     }
 
+    // Resolve depth.
+    invalidateDepthRecursively();
+
     if ((parent = newParent)) {
         if (parent->d_func()->scene && parent->d_func()->scene != scene) {
             // Move this item to its new parent's scene
@@ -1229,8 +1236,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
         }
     }
 
-    // Resolve depth.
-    invalidateDepthRecursively();
     dirtySceneTransform = 1;
 
     // Restore the sub focus chain.
@@ -1931,7 +1936,8 @@ void QGraphicsItem::setCacheMode(CacheMode mode, const QSize &logicalCacheSize)
     d_ptr->cacheMode = mode;
     bool noVisualChange = (mode == NoCache && lastMode == NoCache)
                           || (mode == NoCache && lastMode == DeviceCoordinateCache)
-                          || (mode == DeviceCoordinateCache && lastMode == NoCache);
+                          || (mode == DeviceCoordinateCache && lastMode == NoCache)
+                          || (mode == DeviceCoordinateCache && lastMode == DeviceCoordinateCache);
     if (mode == NoCache) {
         d_ptr->removeExtraItemCache();
     } else {
@@ -2225,8 +2231,12 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
         QGraphicsItemCache *c = (QGraphicsItemCache *)qVariantValue<void *>(extra(ExtraCacheData));
         if (c)
             c->purge();
-        if (scene)
+        if (scene) {
+#ifndef QT_NO_GRAPHICSEFFECT
+            invalidateParentGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
             scene->d_func()->markDirty(q_ptr, QRectF(), /*invalidateChildren=*/false, /*force=*/true);
+        }
     }
 
     // Certain properties are dropped as an item becomes invisible.
@@ -3625,7 +3635,7 @@ void QGraphicsItem::setPos(const QPointF &pos)
         return;
 
     // Update and repositition.
-    if (!(d_ptr->flags & ItemSendsGeometryChanges) && !(d_ptr->flags & ItemSendsScenePositionChanges)) {
+    if (!(d_ptr->flags & (ItemSendsGeometryChanges | ItemSendsScenePositionChanges))) {
         d_ptr->setPosHelper(pos);
         return;
     }
@@ -3913,6 +3923,22 @@ void QGraphicsItem::setTransformations(const QList<QGraphicsTransform *> &transf
         transformations.at(i)->d_func()->setItem(this);
     d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
+}
+
+/*!
+    \internal
+*/
+void QGraphicsItemPrivate::prependGraphicsTransform(QGraphicsTransform *t)
+{
+    if (!transformData)
+        transformData = new QGraphicsItemPrivate::TransformData;
+    if (!transformData->graphicsTransforms.contains(t))
+        transformData->graphicsTransforms.prepend(t);
+
+    Q_Q(QGraphicsItem);
+    t->d_func()->setItem(q);
+    transformData->onlyTransform = false;
+    dirtySceneTransform = 1;
 }
 
 /*!
@@ -5325,6 +5351,8 @@ void QGraphicsItemPrivate::addChild(QGraphicsItem *child)
     needSortChildren = 1; // ### maybe 0
     child->d_ptr->siblingIndex = children.size();
     children.append(child);
+    if (isObject)
+        emit static_cast<QGraphicsObject *>(q_ptr)->childrenChanged();
 }
 
 /*!
@@ -5347,6 +5375,8 @@ void QGraphicsItemPrivate::removeChild(QGraphicsItem *child)
     // the child is not guaranteed to be at the index after the list is sorted.
     // (see ensureSortedChildren()).
     child->d_ptr->siblingIndex = -1;
+    if (isObject)
+        emit static_cast<QGraphicsObject *>(q_ptr)->childrenChanged();
 }
 
 /*!
@@ -7279,6 +7309,31 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
 }
 
 /*!
+    Updates the item's micro focus.
+
+    \since 4.7
+
+    \sa QInputContext
+*/
+void QGraphicsItem::updateMicroFocus()
+{
+#if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
+    if (QWidget *fw = qApp->focusWidget()) {
+        if (qt_widget_private(fw)->ic || qApp->d_func()->inputContext) {
+            if (QInputContext *ic = fw->inputContext()) {
+                if (ic)
+                    ic->update();
+            }
+        }
+#ifndef QT_NO_ACCESSIBILITY
+        // ##### is this correct
+        QAccessible::updateAccessibility(fw, 0, QAccessible::StateChanged);
+#endif
+    }
+#endif
+}
+
+/*!
     This virtual function is called by QGraphicsItem to notify custom items
     that some part of the item's state changes. By reimplementing this
     function, your can react to a change, and in some cases, (depending on \a
@@ -7554,6 +7609,93 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
     }
 }
 
+void QGraphicsObject::updateMicroFocus()
+{
+    QGraphicsItem::updateMicroFocus();
+}
+
+void QGraphicsItemPrivate::append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item)
+{
+    QGraphicsItemPrivate::get(item)->setParentItemHelper(static_cast<QGraphicsObject *>(list->object), /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+}
+
+/*!
+    Returns a list of this item's children.
+
+    The items are sorted by stacking order. This takes into account both the
+    items' insertion order and their Z-values.
+
+*/
+QDeclarativeListProperty<QGraphicsObject> QGraphicsItemPrivate::childrenList()
+{
+    Q_Q(QGraphicsItem);
+    if (isObject) {
+        QGraphicsObject *that = static_cast<QGraphicsObject *>(q);
+        return QDeclarativeListProperty<QGraphicsObject>(that, &children, QGraphicsItemPrivate::append);
+    } else {
+        //QGraphicsItem is not supported for this property
+        return QDeclarativeListProperty<QGraphicsObject>();
+    }
+}
+
+/*!
+  \internal
+  Returns the width of the item
+  Reimplemented by QGraphicsWidget
+*/
+qreal QGraphicsItemPrivate::width() const
+{
+    return 0;
+}
+
+/*!
+  \internal
+  Set the width of the item
+  Reimplemented by QGraphicsWidget
+*/
+void QGraphicsItemPrivate::setWidth(qreal w)
+{
+    Q_UNUSED(w);
+}
+
+/*!
+  \internal
+  Reset the width of the item
+  Reimplemented by QGraphicsWidget
+*/
+void QGraphicsItemPrivate::resetWidth()
+{
+}
+
+/*!
+  \internal
+  Returns the height of the item
+  Reimplemented by QGraphicsWidget
+*/
+qreal QGraphicsItemPrivate::height() const
+{
+    return 0;
+}
+
+/*!
+  \internal
+  Set the height of the item
+  Reimplemented by QGraphicsWidget
+*/
+void QGraphicsItemPrivate::setHeight(qreal h)
+{
+    Q_UNUSED(h);
+}
+
+/*!
+  \internal
+  Reset the height of the item
+  Reimplemented by QGraphicsWidget
+*/
+void QGraphicsItemPrivate::resetHeight()
+{
+}
+
 /*!
   \property QGraphicsObject::parent
   \brief the parent of the item
@@ -7740,6 +7882,23 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
   \sa scale, rotation, QGraphicsItem::transformOriginPoint()
 */
 
+/*!
+    \fn void QGraphicsObject::widthChanged()
+    \internal
+*/
+
+/*!
+    \fn void QGraphicsObject::heightChanged()
+    \internal
+*/
+
+/*!
+
+  \fn QGraphicsObject::childrenChanged()
+
+  This signal gets emitted whenever the children list changes
+  \internal
+*/
 
 /*!
     \class QAbstractGraphicsShapeItem

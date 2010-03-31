@@ -424,6 +424,7 @@ public:
     void removeSceneEventFilter(QGraphicsItem *filterItem);
 
 protected:
+    void updateMicroFocus();
     virtual bool sceneEventFilter(QGraphicsItem *watched, QEvent *event);
     virtual bool sceneEvent(QEvent *event);
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
@@ -553,6 +554,10 @@ class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
     Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(QPointF transformOriginPoint READ transformOriginPoint WRITE setTransformOriginPoint)
+    Q_PRIVATE_PROPERTY(QGraphicsItem::d_func(), QDeclarativeListProperty<QGraphicsObject> children READ childrenList DESIGNABLE false NOTIFY childrenChanged)
+    Q_PRIVATE_PROPERTY(QGraphicsItem::d_func(), qreal width READ width WRITE setWidth NOTIFY widthChanged RESET resetWidth FINAL)
+    Q_PRIVATE_PROPERTY(QGraphicsItem::d_func(), qreal height READ height WRITE setHeight NOTIFY heightChanged RESET resetHeight FINAL)
+    Q_CLASSINFO("DefaultProperty", "children")
     Q_INTERFACES(QGraphicsItem)
 public:
     QGraphicsObject(QGraphicsItem *parent = 0);
@@ -567,6 +572,9 @@ public:
     void grabGesture(Qt::GestureType type, Qt::GestureFlags flags = Qt::GestureFlags());
     void ungrabGesture(Qt::GestureType type);
 
+protected Q_SLOTS:
+    void updateMicroFocus();
+
 Q_SIGNALS:
     void parentChanged();
     void opacityChanged();
@@ -577,6 +585,9 @@ Q_SIGNALS:
     void zChanged();
     void rotationChanged();
     void scaleChanged();
+    void childrenChanged();
+    void widthChanged();
+    void heightChanged();
 
 protected:
     QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene);

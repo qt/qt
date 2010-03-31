@@ -70,6 +70,10 @@ QT_BEGIN_NAMESPACE
   sequence and returns it, and current() always returns the QXmlItem
   that next() returned the last time it was called.
 
+  \note When using the QXmlResultItems overload of QXmlQuery::evaluateTo()
+  to execute a query, it is advisable to create a new instance of this
+  class for each new set of results rather than reusing an old instance.
+
   \sa QXmlItem::isNode(), QXmlItem::isAtomicValue(), QXmlNodeModelIndex
  */
 

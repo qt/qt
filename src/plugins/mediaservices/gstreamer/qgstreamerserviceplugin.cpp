@@ -52,9 +52,9 @@
 #ifdef QMEDIA_GSTREAMER_CAPTURE
 #include "qgstreamercaptureservice.h"
 #endif
-
 #include <QtMultimedia/qmediaserviceprovider.h>
 
+#ifdef QMEDIA_GSTREAMER_CAPTURE
 #include <linux/types.h>
 #include <sys/time.h>
 #include <sys/ioctl.h>
@@ -66,6 +66,7 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <linux/videodev2.h>
+#endif
 
 
 QT_BEGIN_NAMESPACE
@@ -109,18 +110,21 @@ void QGstreamerServicePlugin::release(QMediaService *service)
 
 QList<QByteArray> QGstreamerServicePlugin::devices(const QByteArray &service) const
 {
+#ifdef QMEDIA_GSTREAMER_CAPTURE
     if (service == Q_MEDIASERVICE_CAMERA) {
         if (m_cameraDevices.isEmpty())
             updateDevices();
 
         return m_cameraDevices;
     }
+#endif
 
     return QList<QByteArray>();
 }
 
 QString QGstreamerServicePlugin::deviceDescription(const QByteArray &service, const QByteArray &device)
 {
+#ifdef QMEDIA_GSTREAMER_CAPTURE
     if (service == Q_MEDIASERVICE_CAMERA) {
         if (m_cameraDevices.isEmpty())
             updateDevices();
@@ -129,12 +133,14 @@ QString QGstreamerServicePlugin::deviceDescription(const QByteArray &service, co
             if (m_cameraDevices[i] == device)
                 return m_cameraDescriptions[i];
     }
+#endif
 
     return QString();
 }
 
 void QGstreamerServicePlugin::updateDevices() const
 {
+#ifdef QMEDIA_GSTREAMER_CAPTURE
     m_cameraDevices.clear();
     m_cameraDescriptions.clear();
 
@@ -178,6 +184,7 @@ void QGstreamerServicePlugin::updateDevices() const
         }
         ::close(fd);
     }
+#endif
 }
 
 Q_EXPORT_PLUGIN2(gstengine, QGstreamerServicePlugin);

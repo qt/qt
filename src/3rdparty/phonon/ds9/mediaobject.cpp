@@ -23,10 +23,11 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef Q_CC_MSVC
 #include <dshow.h>
-#endif
+#endif //Q_CC_MSVC
 #include <objbase.h>
 #include <initguid.h>
 #include <qnetwork.h>
+#include <comdef.h>
 #include <evcode.h>
 
 #include "mediaobject.h"
@@ -49,12 +50,30 @@ namespace Phonon
 
         //first the definition of the WorkerThread class
         WorkerThread::WorkerThread()
-          : QThread(), m_finished(false), m_currentWorkId(1)
+          : QThread(), m_currentRenderId(0), m_finished(false), m_currentWorkId(1)
         {
         }
 
         WorkerThread::~WorkerThread()
         {
+        }
+
+        WorkerThread::Work WorkerThread::dequeueWork()
+        {
+            QMutexLocker locker(&m_mutex);
+            if (m_finished) {
+                return Work();
+            }
+            Work ret = m_queue.dequeue();
+
+            //we ensure to have the wait condition in the right state
+            if (m_queue.isEmpty()) {
+                m_waitCondition.reset();
+            } else {
+                m_waitCondition.set();
+            }
+
+            return ret;
         }
 
         void WorkerThread::run()
@@ -70,6 +89,11 @@ namespace Phonon
                 }
                 DWORD result = ::WaitForMultipleObjects(count, handles, FALSE, INFINITE);
                 if (result == WAIT_OBJECT_0) {
+                    if (m_finished) {
+                        //that's the end of the thread execution
+                        return;
+                    }
+
                     handleTask();
                 } else {
                     //this is the event management
@@ -157,7 +181,6 @@ namespace Phonon
             //we create a new graph
             w.graph = Graph(CLSID_FilterGraph, IID_IGraphBuilder);
             w.filter = filter;
-            w.graph->AddFilter(filter, 0);
             w.id = m_currentWorkId++;
             m_queue.enqueue(w);
             m_waitCondition.set();
@@ -177,29 +200,23 @@ namespace Phonon
 
         void WorkerThread::handleTask()
         {
-            QMutexLocker locker(Backend::directShowMutex);
-            {
-                QMutexLocker locker(&m_mutex);
-                if (m_finished || m_queue.isEmpty()) {
-                    return;
-                }
+            const Work w = dequeueWork();
 
-                m_currentWork = m_queue.dequeue();
-
-                //we ensure to have the wait condition in the right state
-                if (m_queue.isEmpty()) {
-                    m_waitCondition.reset();
-                } else {
-                    m_waitCondition.set();
-                }
+            if (m_finished) {
+                return;
             }
 
             HRESULT hr = S_OK;
 
-            if (m_currentWork.task == ReplaceGraph) {
+            m_currentRender = w.graph;
+			m_currentRenderId = w.id;
+            if (w.task == ReplaceGraph) {
+                QMutexLocker locker(&m_mutex);
+                HANDLE h;
+
                 int index = -1;
                 for(int i = 0; i < FILTER_COUNT; ++i) {
-                    if (m_graphHandle[i].graph == m_currentWork.oldGraph) {
+                    if (m_graphHandle[i].graph == w.oldGraph) {
                         m_graphHandle[i].graph = Graph();
                         index = i;
                         break;
@@ -212,40 +229,51 @@ namespace Phonon
                 Q_ASSERT(index != -1);
 
                 //add the new graph
-                HANDLE h;
-                if (SUCCEEDED(ComPointer<IMediaEvent>(m_currentWork.graph, IID_IMediaEvent)
+                if (SUCCEEDED(ComPointer<IMediaEvent>(w.graph, IID_IMediaEvent)
                     ->GetEventHandle(reinterpret_cast<OAEVENT*>(&h)))) {
-                    m_graphHandle[index].graph = m_currentWork.graph;
+                    m_graphHandle[index].graph = w.graph;
                     m_graphHandle[index].handle = h;
                 }
-            } else if (m_currentWork.task == Render) {
-                if (m_currentWork.filter) {
+            } else if (w.task == Render) {
+                if (w.filter) {
                     //let's render pins
-                    const QList<OutputPin> outputs = BackendNode::pins(m_currentWork.filter, PINDIR_OUTPUT);
-                    for (int i = 0; SUCCEEDED(hr) && i < outputs.count(); ++i) {
-                        hr = m_currentWork.graph->Render(outputs.at(i));
+                    w.graph->AddFilter(w.filter, 0);
+                    const QList<OutputPin> outputs = BackendNode::pins(w.filter, PINDIR_OUTPUT);
+                    for (int i = 0; i < outputs.count(); ++i) {
+                        //blocking call
+                        hr = w.graph->Render(outputs.at(i));
+                        if (FAILED(hr)) {
+                            break;
+                        }
                     }
-                } else if (!m_currentWork.url.isEmpty()) {
+                } else if (!w.url.isEmpty()) {
                     //let's render a url (blocking call)
-                    hr = m_currentWork.graph->RenderFile(reinterpret_cast<const wchar_t *>(m_currentWork.url.utf16()), 0);
+                    hr = w.graph->RenderFile(reinterpret_cast<const wchar_t *>(w.url.utf16()), 0);
                 }
                 if (hr != E_ABORT) {
-                    emit asyncRenderFinished(m_currentWork.id, hr, m_currentWork.graph);
+                    emit asyncRenderFinished(w.id, hr, w.graph);
                 }
-            } else if (m_currentWork.task == Seek) {
+            } else if (w.task == Seek) {
                 //that's a seekrequest
-                ComPointer<IMediaSeeking> mediaSeeking(m_currentWork.graph, IID_IMediaSeeking);
-                qint64 newtime = m_currentWork.time * 10000;
+                ComPointer<IMediaSeeking> mediaSeeking(w.graph, IID_IMediaSeeking);
+                qint64 newtime = w.time * 10000;
                 hr = mediaSeeking->SetPositions(&newtime, AM_SEEKING_AbsolutePositioning,
                     0, AM_SEEKING_NoPositioning);
-                emit asyncSeekingFinished(m_currentWork.id, newtime / 10000);
+                qint64 currentTime = -1;
+                if (SUCCEEDED(hr)) {
+                    hr = mediaSeeking->GetCurrentPosition(&currentTime);
+                    if (SUCCEEDED(hr)) {
+                        currentTime /= 10000; //convert to ms
+                    }
+                }
+                emit asyncSeekingFinished(w.id, currentTime);
                 hr = E_ABORT; //to avoid emitting asyncRenderFinished
-            } else if (m_currentWork.task == ChangeState) {
+            } else if (w.task == ChangeState) {
 
                 //remove useless decoders
                 QList<Filter> unused;
-                for (int i = 0; i < m_currentWork.decoders.count(); ++i) {
-                    const Filter &filter = m_currentWork.decoders.at(i);
+                for (int i = 0; i < w.decoders.count(); ++i) {
+                    const Filter &filter = w.decoders.at(i);
                     bool used = false;
                     const QList<OutputPin> pins = BackendNode::pins(filter, PINDIR_OUTPUT);
                     for( int i = 0; i < pins.count(); ++i) {
@@ -262,15 +290,15 @@ namespace Phonon
                 //we can get the state
                 for (int i = 0; i < unused.count(); ++i) {
                     //we should remove this filter from the graph
-                    m_currentWork.graph->RemoveFilter(unused.at(i));
+                    w.graph->RemoveFilter(unused.at(i));
                 }
 
 
                 //we can get the state
-                ComPointer<IMediaControl> mc(m_currentWork.graph, IID_IMediaControl);
+                ComPointer<IMediaControl> mc(w.graph, IID_IMediaControl);
 
                 //we change the state here
-                switch(m_currentWork.state)
+                switch(w.state)
                 {
                 case State_Stopped:
                     mc->Stop();
@@ -288,37 +316,35 @@ namespace Phonon
 
                 if (SUCCEEDED(hr)) {
                     if (s == State_Stopped) {
-                        emit stateReady(m_currentWork.graph, Phonon::StoppedState);
+                        emit stateReady(w.graph, Phonon::StoppedState);
                     } else if (s == State_Paused) {
-                        emit stateReady(m_currentWork.graph, Phonon::PausedState);
+                        emit stateReady(w.graph, Phonon::PausedState);
                     } else /*if (s == State_Running)*/ {
-                        emit stateReady(m_currentWork.graph, Phonon::PlayingState);
+                        emit stateReady(w.graph, Phonon::PlayingState);
                     }
                 }
             }
 
-            {
-                QMutexLocker locker(&m_mutex);
-                m_currentWork = Work(); //reinitialize
-            }
+            m_currentRender = Graph();
+			m_currentRenderId = 0;
+
         }
 
-        void WorkerThread::abortCurrentRender(qint16 renderId)
-        {
+		void WorkerThread::abortCurrentRender(qint16 renderId)
+		{
             QMutexLocker locker(&m_mutex);
-            if (m_currentWork.id == renderId) {
-                m_currentWork.graph->Abort();
-            }
             bool found = false;
+            //we try to see if there is already an attempt to seek and we remove it
             for(int i = 0; !found && i < m_queue.size(); ++i) {
                 const Work &w = m_queue.at(i);
                 if (w.id == renderId) {
                     found = true;
                     m_queue.removeAt(i);
-                    if (m_queue.isEmpty()) {
-                        m_waitCondition.reset();
-                    }
                 }
+            }
+
+            if (m_currentRender && m_currentRenderId == renderId) {
+                m_currentRender->Abort();
             }
         }
 
@@ -327,9 +353,9 @@ namespace Phonon
         {
             QMutexLocker locker(&m_mutex);
             m_queue.clear();
-            if (m_currentWork.graph) {
+            if (m_currentRender) {
                 //in case we're currently rendering something
-                m_currentWork.graph->Abort();
+                m_currentRender->Abort();
 
             }
 
@@ -361,17 +387,17 @@ namespace Phonon
                 m_graphs[i] = new MediaGraph(this, i);
             }
 
-            connect(&m_thread, SIGNAL(stateReady(Graph,Phonon::State)),
-                               SLOT(slotStateReady(Graph,Phonon::State)));
+            connect(&m_thread, SIGNAL(stateReady(Graph, Phonon::State)),
+                               SLOT(slotStateReady(Graph, Phonon::State)));
 
-            connect(&m_thread, SIGNAL(eventReady(Graph,long,long)),
-                               SLOT(handleEvents(Graph,long,long)));
+            connect(&m_thread, SIGNAL(eventReady(Graph, long, long)),
+                               SLOT(handleEvents(Graph, long, long)));
 
-            connect(&m_thread, SIGNAL(asyncRenderFinished(quint16,HRESULT,Graph)),
-                SLOT(finishLoading(quint16,HRESULT,Graph)));
+            connect(&m_thread, SIGNAL(asyncRenderFinished(quint16, HRESULT, Graph)),
+                SLOT(finishLoading(quint16, HRESULT, Graph)));
 
-            connect(&m_thread, SIGNAL(asyncSeekingFinished(quint16,qint64)),
-                SLOT(finishSeeking(quint16,qint64)));
+            connect(&m_thread, SIGNAL(asyncSeekingFinished(quint16, qint64)),
+                SLOT(finishSeeking(quint16, qint64)));
             //really special case
             m_mediaObject = this;
             m_thread.start();
@@ -494,18 +520,6 @@ namespace Phonon
 
             qSwap(m_graphs[0], m_graphs[1]); //swap the graphs
 
-            if (m_transitionTime >= 0)
-                m_graphs[1]->stop(); //make sure we stop the previous graph
-
-            if (currentGraph()->mediaSource().type() != Phonon::MediaSource::Invalid &&
-                catchComError(currentGraph()->renderResult())) {
-                    setState(Phonon::ErrorState);
-                    return;
-            }
-
-            //we need to play the next media
-            play();
-
             //we tell the video widgets to switch now to the new source
 #ifndef QT_NO_PHONON_VIDEO
             for (int i = 0; i < m_videoWidgets.count(); ++i) {
@@ -514,6 +528,15 @@ namespace Phonon
 #endif //QT_NO_PHONON_VIDEO
 
             emit currentSourceChanged(currentGraph()->mediaSource());
+
+            if (currentGraph()->isLoading()) {
+                //will simply tell that when loading is finished 
+                //it should start the playback
+                play(); 
+            }
+
+
+
             emit metaDataChanged(currentGraph()->metadata());
 
             if (nextGraph()->hasVideo() != currentGraph()->hasVideo()) {
@@ -526,6 +549,15 @@ namespace Phonon
 #ifndef QT_NO_PHONON_MEDIACONTROLLER
             setTitles(currentGraph()->titles());
 #endif //QT_NO_PHONON_MEDIACONTROLLER
+
+            //this manages only gapless transitions
+            if (currentGraph()->mediaSource().type() != Phonon::MediaSource::Invalid) {
+                if (catchComError(currentGraph()->renderResult())) {
+                    setState(Phonon::ErrorState);
+                } else {
+                    play();
+                }
+            }
         }
 
         Phonon::State MediaObject::state() const
@@ -760,15 +792,14 @@ namespace Phonon
                 case Phonon::PausedState:
                     pause();
                     break;
+                case Phonon::StoppedState:
+                    stop();
+                    break;
                 case Phonon::PlayingState:
                     play();
                     break;
                 case Phonon::ErrorState:
                     setState(Phonon::ErrorState);
-                    break;
-                case Phonon::StoppedState:
-                default:
-                    stop();
                     break;
                 }
             }
@@ -817,11 +848,11 @@ namespace Phonon
 #endif
                 LPAMGETERRORTEXT getErrorText = (LPAMGETERRORTEXT)QLibrary::resolve(QLatin1String("quartz"), "AMGetErrorTextW");
 
-                WCHAR buffer[MAX_ERROR_TEXT_LEN];
-                if (getErrorText && getErrorText(hr, buffer, MAX_ERROR_TEXT_LEN)) {
-                    m_errorString = QString::fromWCharArray(buffer);
+                ushort buffer[MAX_ERROR_TEXT_LEN];
+                if (getErrorText && getErrorText(hr, (WCHAR*)buffer, MAX_ERROR_TEXT_LEN)) {
+                    m_errorString = QString::fromUtf16(buffer);
                 } else {
-                    m_errorString = QString::fromLatin1("Unknown error");
+                    m_errorString = QString::fromUtf16((ushort*)_com_error(hr).ErrorMessage());
                 }
                 const QString comError = QString::number(uint(hr), 16);
                 if (!m_errorString.toLower().contains(comError.toLower())) {

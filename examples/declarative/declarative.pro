@@ -5,7 +5,8 @@ SUBDIRS = \
    extending \
    imageprovider \
    objectlistmodel \
-   plugins
+   plugins \
+   widgets
 
 # These examples contain no C++ and can simply be copied
 sources.files = \
@@ -14,13 +15,12 @@ sources.files = \
    behaviours \
    border-image \
    clocks \
-   colorbrowser \
    connections \
    dial \
    dynamic \
    effects \
    fillmode \
-   focusscope \
+   focus \
    fonts \
    gridview \
    layouts \
