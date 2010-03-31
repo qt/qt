@@ -1788,7 +1788,13 @@ void QDeclarativeEngine::addImportPath(const QString& path)
     if (qmlImportTrace())
         qDebug() << "QDeclarativeEngine::addImportPath" << path;
     Q_D(QDeclarativeEngine);
-    d->fileImportPath.prepend(path);
+    QUrl url = QUrl(path);
+    if (url.isRelative() || url.scheme() == QString::fromLocal8Bit("file")) {
+        QDir dir = QDir(path);
+        d->fileImportPath.prepend(dir.canonicalPath());
+    } else {
+        d->fileImportPath.prepend(path);
+    }
 }
 
 
