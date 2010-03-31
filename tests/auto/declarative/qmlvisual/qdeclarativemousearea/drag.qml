@@ -1,5 +1,10 @@
 import Qt 4.6
 
+/*
+this test shows a blue box being dragged around -- first roughly tracing the
+borders of the window, then doing a rough 'x'-shape, then moving to around the middle.
+*/
+
 Rectangle{
     width:400
     height:440
