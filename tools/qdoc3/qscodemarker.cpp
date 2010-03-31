@@ -279,11 +279,11 @@ QList<Section> QsCodeMarker::sections( const InnerNode *inner, SynopsisStyle sty
     const ClassNode *classe = static_cast<const ClassNode *>(inner);
 
     if ( style == Summary ) {
-	FastSection enums(classe, "Enums", "enum", "enums");
-	FastSection functions(classe, "Functions", "function", "functions");
-	FastSection readOnlyProperties(classe, "Read-Only Properties", "property", "properties");
-	FastSection signalz(classe, "Signals", "signal", "signals");
-	FastSection writableProperties(classe, "Writable Properties", "property", "properties");
+	FastSection enums(classe, "Enums", "", "enum", "enums");
+	FastSection functions(classe, "Functions", "", "function", "functions");
+	FastSection readOnlyProperties(classe, "", "Read-Only Properties", "property", "properties");
+	FastSection signalz(classe, "Signals", "", "signal", "signals");
+	FastSection writableProperties(classe, "", "Writable Properties", "property", "properties");
 
 	QStack<const ClassNode *> stack;
 	stack.push( classe );
@@ -328,9 +328,9 @@ QList<Section> QsCodeMarker::sections( const InnerNode *inner, SynopsisStyle sty
 	append( sections, functions );
 	append( sections, signalz );
     } else if ( style == Detailed ) {
-	FastSection enums( classe, "Enum Documentation" );
-	FastSection functionsAndSignals( classe, "Function and Signal Documentation" );
-	FastSection properties( classe, "Property Documentation" );
+	FastSection enums( classe, "Enum Documentation", "", "member", "members");
+	FastSection functionsAndSignals( classe, "Function and Signal Documentation", "", "member", "members");
+	FastSection properties( classe, "Property Documentation", "", "member", "members");
 
 	NodeList::ConstIterator c = classe->childNodes().begin();
 	while ( c != classe->childNodes().end() ) {
@@ -349,7 +349,7 @@ QList<Section> QsCodeMarker::sections( const InnerNode *inner, SynopsisStyle sty
 	append( sections, properties );
 	append( sections, functionsAndSignals );
     } else { // ( style == SeparateList )
-	FastSection all( classe );
+	FastSection all(classe, "", "", "member", "members");
 
 	QStack<const ClassNode *> stack;
 	stack.push( classe );

@@ -233,7 +233,7 @@ private:
 };
 
 bool getNumerusInfo(QLocale::Language language, QLocale::Country country,
-                           QByteArray *rules, QStringList *forms);
+                    QByteArray *rules, QStringList *forms, const char **gettextRules);
 
 /*
   This is a quick hack. The proper way to handle this would be
