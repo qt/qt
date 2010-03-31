@@ -671,6 +671,8 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
         out << poEscapedString(prefix, QLatin1String("msgid"), noWrap, msg.sourceText());
         if (!msg.isPlural()) {
             QString transl = msg.translation();
+            transl.replace(QChar(Translator::BinaryVariantSeparator),
+                           QChar(Translator::TextVariantSeparator));
             out << poEscapedString(prefix, QLatin1String("msgstr"), noWrap, transl);
         } else {
             QString plural = msg.extra(QLatin1String("po-msgid_plural"));
