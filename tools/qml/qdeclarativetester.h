@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFXTESTER_H
-#define QFXTESTER_H
+#ifndef QDECLARATIVETESTER_H
+#define QDECLARATIVETESTER_H
 
 #include <QEvent>
 #include <QMouseEvent>
@@ -283,4 +283,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QFXTESTER_H
+#endif // QDECLARATIVETESTER_H

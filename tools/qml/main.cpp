@@ -47,7 +47,7 @@
 #include <QApplication>
 #include <QTranslator>
 #include <QDebug>
-#include "qfxtester.h"
+#include "qdeclarativetester.h"
 #include "qdeclarativefolderlistmodel.h"
 
 QT_USE_NAMESPACE

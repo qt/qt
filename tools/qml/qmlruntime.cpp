@@ -95,7 +95,7 @@
 #include <QGLWidget>
 #endif
 
-#include <qfxtester.h>
+#include <qdeclarativetester.h>
 
 #if defined (Q_OS_SYMBIAN)
 #define SYMBIAN_NETWORK_INIT

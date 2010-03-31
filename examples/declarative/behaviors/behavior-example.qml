@@ -1,15 +1,14 @@
 import Qt 4.6
 
 Rectangle {
-    color: "black"
-    width: 400; height: 400
+    color: "#343434"
+    width: 600; height: 400
 
     Rectangle {
-        color: "transparent"
         anchors.centerIn: parent
-        width: 200; height: 200
-        radius: 30
-        border.width: 10; border.color: "white";
+        width: 200; height: 200; radius: 30
+        color: "transparent"; border.width: 4; border.color: "white"
+
 
         SideRect {
             id: leftRect
@@ -45,27 +44,35 @@ Rectangle {
 
             property string text
 
-            color: "red"
-            width: 75; height: 50
-            radius: 5
-            border.width: 10; border.color: "white";
-            x: 100-37; y: 100-25
-            Behavior on x { NumberAnimation { duration: 300 } }
-            Behavior on y { NumberAnimation { duration: 300 } }
+            color: "firebrick"
+            x: 62.5; y: 75; width: 75; height: 50
+            radius: 6; border.width: 4; border.color: "white"
+
+            // Setting an 'elastic' behavior on the focusRect's x property.
+            Behavior on x {
+                NumberAnimation { easing.type: "OutElastic"; easing.amplitude: 3.0; easing.period: 2.0; duration: 300 }
+            }
+
+            // Setting an 'elastic' behavior on the focusRect's y property.
+            Behavior on y {
+                NumberAnimation { easing.type: "OutElastic"; easing.amplitude: 3.0; easing.period: 2.0; duration: 300 }
+            }
+
             Text {
                 id: focusText
-                text: focusRect.text;
+                text: focusRect.text
+                anchors.centerIn: parent
+                color: "white"; font.pixelSize: 16; font.bold: true
+
+                // Setting a behavior on the focusText's x property:
+                // Set the opacity to 0, set the new text value, then set the opacity back to 1.
                 Behavior on text {
                     SequentialAnimation {
                         NumberAnimation { target: focusText; property: "opacity"; to: 0; duration: 150 }
-                        PropertyAction {}
+                        PropertyAction { }
                         NumberAnimation { target: focusText; property: "opacity"; to: 1; duration: 150 }
                     }
                 }
-                anchors.centerIn: parent;
-                color: "white";
-                font.pixelSize: 16
-                font.bold: true
             }
         }
     }

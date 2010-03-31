@@ -130,7 +130,7 @@ void tst_QDeclarativeLayouts::test_qml()
 
 void tst_QDeclarativeLayouts::test_cpp()
 {
-    //TODO: Waiting on QT-2407 to write this test
+    //TODO: This test!
 }
 
 QDeclarativeView *tst_QDeclarativeLayouts::createView(const QString &filename)
