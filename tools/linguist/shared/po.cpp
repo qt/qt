@@ -482,7 +482,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
             msg.setTranslations(item.msgStr);
             if (isObsolete)
                 msg.setType(TranslatorMessage::Obsolete);
-            else if (item.isFuzzy)
+            else if (item.isFuzzy || (!msg.sourceText().isEmpty() && !msg.isTranslated()))
                 msg.setType(TranslatorMessage::Unfinished);
             else
                 msg.setType(TranslatorMessage::Finished);
@@ -645,7 +645,7 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
 
         bool noWrap = false;
         QStringList flags;
-        if (msg.type() == TranslatorMessage::Unfinished)
+        if (msg.type() == TranslatorMessage::Unfinished && msg.isTranslated())
             flags.append(QLatin1String("fuzzy"));
         TranslatorMessage::ExtraData::const_iterator itr =
                 msg.extras().find(QLatin1String("po-flags"));
