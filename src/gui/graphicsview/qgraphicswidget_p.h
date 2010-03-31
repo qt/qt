@@ -130,15 +130,6 @@ public:
     void windowFrameHoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     bool hasDecoration() const;
 
-    // Private Properties
-    qreal width() const;
-    void setWidth(qreal);
-    void resetWidth();
-
-    qreal height() const;
-    void setHeight(qreal);
-    void resetHeight();
-
     // State
     inline int attributeToBitIndex(Qt::WidgetAttribute att) const
     {
