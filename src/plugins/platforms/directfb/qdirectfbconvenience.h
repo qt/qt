@@ -37,7 +37,7 @@ public:
 
 private:
     static QDirectFbKeyMap *dfbKeymap;
-    friend class QDirectFbGraphicsSystem;
+    friend class QDirectFbIntegration;
 };
 
 #endif // QDIRECTFBCONVENIENCE_H

@@ -3,13 +3,13 @@
 
 #include <QGraphicsSystemCursor>
 #include <directfb.h>
-class QDirectFbGraphicsSystemScreen;
+class QDirectFbScreen;
 class QDirectFbBlitter;
 
 class QDirectFBCursor : public QGraphicsSystemCursor
 {
 public:
-    QDirectFBCursor(QGraphicsSystemScreen *screem);
+    QDirectFBCursor(QPlatformScreen *screem);
     void changeCursor(QCursor * cursor, QWidget * widget);
 
 private:

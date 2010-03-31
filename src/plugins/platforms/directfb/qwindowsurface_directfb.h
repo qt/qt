@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_MINIMAL_H
-#define QWINDOWSURFACE_MINIMAL_H
+#ifndef QWINDOWSURFACE_DIRECTFB_H
+#define QWINDOWSURFACE_DIRECTFB_H
 
 #include <QtGui/private/qwindowsurface_p.h>
 #include <private/qpixmap_blitter_p.h>

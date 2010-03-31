@@ -39,33 +39,60 @@
 **
 ****************************************************************************/
 
-#include <private/qgraphicssystemplugin_p.h>
-#include "qgraphicssystem_minimaldfb.h"
+#ifndef QPLATFORMINTEGRATION_DIRECTFB_H
+#define QPLATFORMINTEGRATION_DIRECTFB_H
+
+#include "qdirectfbinput.h"
+
+#include <QtGui/QPlatformIntegration>
+#include <directfb.h>
+#include <directfb_version.h>
 
 QT_BEGIN_NAMESPACE
 
-class QDirectFbGraphicsSystemPlugin : public QGraphicsSystemPlugin
+class QDirectFBCursor;
+
+class QDirectFbScreen : public QPlatformScreen
 {
 public:
-    QStringList keys() const;
-    QGraphicsSystem *create(const QString&);
+    QDirectFbScreen(int display);
+    ~QDirectFbScreen();
+
+    QRect geometry() const { return m_geometry; }
+    int depth() const { return m_depth; }
+    QImage::Format format() const { return m_format; }
+    QSize physicalSize() const { return m_physicalSize; }
+
+public:
+    QRect m_geometry;
+    int m_depth;
+    QImage::Format m_format;
+    QSize m_physicalSize;
+
+    IDirectFBDisplayLayer *m_layer;
+
+private:
+    QDirectFBCursor * cursor;
+
 };
 
-QStringList QDirectFbGraphicsSystemPlugin::keys() const
+class QDirectFbIntegration : public QPlatformIntegration
 {
-    QStringList list;
-    list << "MinimalDfb";
-    return list;
-}
+public:
+    QDirectFbIntegration();
 
-QGraphicsSystem* QDirectFbGraphicsSystemPlugin::create(const QString& system)
-{
-    if (system.toLower() == "minimaldfb")
-        return new QDirectFbGraphicsSystem;
+    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QWindowSurface *createWindowSurface(QWidget *widget) const;
+    QBlittable *createBlittable(const QSize &size) const;
 
-    return 0;
-}
+    QList<QPlatformScreen *> screens() const { return mScreens; }
 
-Q_EXPORT_PLUGIN2(directfb, QDirectFbGraphicsSystemPlugin)
+
+
+private:
+    QList<QPlatformScreen *> mScreens;
+};
 
 QT_END_NAMESPACE
+
+#endif

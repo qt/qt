@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_minimaldfb.h"
-#include "qwindowsurface_minimaldfb.h"
+#include "qplatformintegration_directfb.h"
+#include "qwindowsurface_directfb.h"
 #include "qblitter_directfb.h"
 #include "qdirectfbconvenience.h"
 #include "qdirectfbcursor.h"
@@ -54,8 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(int display)
-    :QGraphicsSystemScreen()
+QDirectFbScreen::QDirectFbScreen(int display)
+    :QPlatformScreen()
 {
     m_layer = QDirectFbConvenience::dfbDisplayLayer(display);
     m_layer->SetCooperativeLevel(m_layer,DLSCL_SHARED);
@@ -73,11 +73,11 @@ QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(int display)
     cursor = new QDirectFBCursor(this);
 }
 
-QDirectFbGraphicsSystemScreen::~QDirectFbGraphicsSystemScreen()
+QDirectFbScreen::~QDirectFbScreen()
 {
 }
 
-QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
+QDirectFbIntegration::QDirectFbIntegration()
 {
     const QStringList args = QCoreApplication::arguments();
     int argc = args.size();
@@ -93,11 +93,11 @@ QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
     }
     delete[] argv;
 
-    mPrimaryScreen = new QDirectFbGraphicsSystemScreen(0);
-    mScreens.append(mPrimaryScreen);
+    QDirectFbScreen *primaryScreen = new QDirectFbScreen(0);
+    mScreens.append(primaryScreen);
 }
 
-QPixmapData *QDirectFbGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+QPixmapData *QDirectFbIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
     if (type == QPixmapData::BitmapType)
         return new QRasterPixmapData(type);
@@ -105,12 +105,12 @@ QPixmapData *QDirectFbGraphicsSystem::createPixmapData(QPixmapData::PixelType ty
         return new QBlittablePixmapData(type);
 }
 
-QWindowSurface *QDirectFbGraphicsSystem::createWindowSurface(QWidget *widget) const
+QWindowSurface *QDirectFbIntegration::createWindowSurface(QWidget *widget) const
 {
     return new QDirectFbWindowSurface (widget);
 }
 
-QBlittable *QDirectFbGraphicsSystem::createBlittable(const QSize &size) const
+QBlittable *QDirectFbIntegration::createBlittable(const QSize &size) const
 {
     return new QDirectFbBlitter(size);
 }

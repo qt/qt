@@ -1,5 +1,4 @@
 #include "qblitter_directfb.h"
-#include "qgraphicssystem_minimaldfb.h"
 #include "qdirectfbconvenience.h"
 
 #include <QtGui/private/qpixmap_blitter_p.h>

@@ -39,61 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_MINIMAL_H
-#define QGRAPHICSSYSTEM_MINIMAL_H
-
-#include "qdirectfbinput.h"
-
-#include <QtGui/private/qgraphicssystem_p.h>
-#include <directfb.h>
-#include <directfb_version.h>
+#include <QtGui/QPlatformIntegrationPlugin>
+#include "qplatformintegration_directfb.h"
 
 QT_BEGIN_NAMESPACE
 
-class QDirectFBCursor;
-
-class QDirectFbGraphicsSystemScreen : public QGraphicsSystemScreen
+class QDirectFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
-    QDirectFbGraphicsSystemScreen(int display);
-    ~QDirectFbGraphicsSystemScreen();
-
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    QSize physicalSize() const { return m_physicalSize; }
-
-public:
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
-    QSize m_physicalSize;
-
-    IDirectFBDisplayLayer *m_layer;
-
-private:
-    QDirectFBCursor * cursor;
-
+    QStringList keys() const;
+    QPlatformIntegration *create(const QString&);
 };
 
-class QDirectFbGraphicsSystem : public QGraphicsSystem
+QStringList QDirectFbIntegrationPlugin::keys() const
 {
-public:
-    QDirectFbGraphicsSystem();
+    QStringList list;
+    list << "directfb";
+    return list;
+}
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
-    QBlittable *createBlittable(const QSize &size) const;
+QPlatformIntegration * QDirectFbIntegrationPlugin::create(const QString& system)
+{
+    if (system.toLower() == "directfb")
+        return new QDirectFbIntegration;
 
-    QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
+    return 0;
+}
 
-
-
-private:
-    QDirectFbGraphicsSystemScreen *mPrimaryScreen;
-    QList<QGraphicsSystemScreen *> mScreens;
-};
+Q_EXPORT_PLUGIN2(directfb, QDirectFbIntegrationPlugin)
 
 QT_END_NAMESPACE
-
-#endif

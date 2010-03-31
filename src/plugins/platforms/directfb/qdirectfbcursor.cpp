@@ -1,11 +1,11 @@
 #include "qdirectfbcursor.h"
 #include "qblitter_directfb.h"
-#include "qgraphicssystem_minimaldfb.h"
+#include "qplatformintegration_directfb.h"
 #include "qdirectfbconvenience.h"
 
 #include <private/qpixmap_blitter_p.h>
 
-QDirectFBCursor::QDirectFBCursor(QGraphicsSystemScreen * screen) :
+QDirectFBCursor::QDirectFBCursor(QPlatformScreen* screen) :
         QGraphicsSystemCursor(screen), surface(0)
 {
     QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),DLID_PRIMARY, &m_layer);

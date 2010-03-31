@@ -1,6 +1,6 @@
-TARGET = qminimaldfb
+TARGET = qdirectfb
 include(../../qpluginbase.pri)
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/graphicssystems
+QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 isEmpty(DIRECTFB_LIBS) {
     DIRECTFB_LIBS = -ldirectfb -lfusion -ldirect -lpthread
@@ -13,17 +13,17 @@ INCLUDEPATH += $$DIRECTFB_INCLUDEPATH
 LIBS += $$DIRECTFB_LIBS
 
 SOURCES = main.cpp \
-    qgraphicssystem_minimaldfb.cpp \
-    qwindowsurface_minimaldfb.cpp \
+    qplatformintegration_directfb.cpp \
+    qwindowsurface_directfb.cpp \
     qblitter_directfb.cpp \
     qdirectfbconvenience.cpp \
     qdirectfbinput.cpp \
     qdirectfbcursor.cpp
-HEADERS = qgraphicssystem_minimaldfb.h \
-    qwindowsurface_minimaldfb.h \
+HEADERS = qplatformintegration_directfb.h \
+    qwindowsurface_directfb.h \
     qblitter_directfb.h \
     qdirectfbconvenience.h \
     qdirectfbinput.h \
     qdirectfbcursor.h
-target.path += $$[QT_INSTALL_PLUGINS]/graphicssystems
+target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

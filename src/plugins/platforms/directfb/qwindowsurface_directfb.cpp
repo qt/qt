@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qwindowsurface_minimaldfb.h"
-#include "qgraphicssystem_minimaldfb.h"
+#include "qwindowsurface_directfb.h"
+#include "qplatformintegration_directfb.h"
 #include "qblitter_directfb.h"
 #include "qdirectfbconvenience.h"
 #include <private/qpixmap_blitter_p.h>
