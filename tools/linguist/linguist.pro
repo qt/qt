@@ -4,5 +4,3 @@ SUBDIRS  = \
     lrelease \
     lupdate \
     lconvert
-CONFIG  += ordered
-

@@ -28,6 +28,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMoveEvent>
 #include <QResizeEvent>
 
+#include <QApplication> // for QApplication::activeWindow
+
 #include <coecntrl.h>
 
 QT_BEGIN_NAMESPACE
@@ -162,6 +164,12 @@ void MMF::AbstractVideoOutput::dump() const
     QScopedPointer<ObjectDump::QVisitor> visitor(new ObjectDump::QVisitor);
     visitor->setPrefix("Phonon::MMF"); // to aid searchability of logs
     ObjectDump::addDefaultAnnotators(*visitor);
+
+    if (QWidget *window = QApplication::activeWindow()) {
+        TRACE("Dumping from root window 0x%08x:", window);
+        ObjectDump::dumpTreeFromLeaf(*window, *visitor);
+    }
+
     TRACE("Dumping tree from leaf 0x%08x:", this);
     ObjectDump::dumpTreeFromLeaf(*this, *visitor);
 

@@ -2433,7 +2433,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 const int contentHeight =
                         qMax(qMax(iconHeight, decoratorHeight) + pixelMetric(PM_ButtonMargin),
                              textHeight + 2*pixelMetric(PM_ButtonMargin));
-                sz.setHeight(contentHeight);
+                sz.setHeight(qMax(sz.height(), contentHeight));
                 sz += QSize(2 * pixelMetric(PM_ButtonMargin), 0);
             }
             break;
