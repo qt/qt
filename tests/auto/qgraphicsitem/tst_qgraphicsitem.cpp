@@ -10054,9 +10054,9 @@ void tst_QGraphicsItem::updateMicroFocus()
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&parent));
     input.doUpdateMicroFocus();
     QApplication::processEvents();
-    QCOMPARE(ic.nbUpdates, 1);
+    QTRY_COMPARE(ic.nbUpdates, 1);
     //No update since view2 does not have the focus.
-    QCOMPARE(ic2.nbUpdates, 0);
+    QTRY_COMPARE(ic2.nbUpdates, 0);
 }
 
 void tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
