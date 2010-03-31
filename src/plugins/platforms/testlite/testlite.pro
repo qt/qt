@@ -1,10 +1,10 @@
 TARGET = qtestlitegraphicssystem
 include(../../qpluginbase.pri)
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/graphicssystems
+QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
-SOURCES = main.cpp qgraphicssystem_testlite.cpp qwindowsurface_testlite.cpp
-HEADERS = qgraphicssystem_testlite.h qwindowsurface_testlite.h
+SOURCES = main.cpp qplatformintegration_testlite.cpp qwindowsurface_testlite.cpp
+HEADERS = qplatformintegration_testlite.h qwindowsurface_testlite.h
 
 
 HEADERS += x11util.h

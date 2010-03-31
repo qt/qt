@@ -48,15 +48,15 @@
 QT_BEGIN_NAMESPACE
 
 class MyWindow;
-class QTestLiteGraphicsSystem;
-class QTestLiteGraphicsSystemScreen;
+class QTestLiteIntegration;
+class QTestLiteScreen;
 
 class QTestLiteWindowSurface : public QWindowSurface
 {
 public:
     QTestLiteWindowSurface
-        (QTestLiteGraphicsSystem *graphicsSystem,
-         QTestLiteGraphicsSystemScreen *screen, QWidget *window);
+        (QTestLiteIntegration *platformIntegration,
+         QTestLiteScreen *screen, QWidget *window);
     ~QTestLiteWindowSurface();
 
     QPaintDevice *paintDevice();
@@ -85,8 +85,8 @@ public:
     void setCursor(QCursor * cursor);
 
 private:
-    QTestLiteGraphicsSystem *mGraphicsSystem;
-    QTestLiteGraphicsSystemScreen *mScreen;
+    QTestLiteIntegration *mPlatformIntegration;
+    QTestLiteScreen *mScreen;
     Qt::WindowFlags window_flags;
     MyWindow *xw;
 };

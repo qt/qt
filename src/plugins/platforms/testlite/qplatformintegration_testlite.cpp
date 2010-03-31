@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_testlite.h"
+#include "qplatformintegration_testlite.h"
 #include "qwindowsurface_testlite.h"
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/qdebug.h>
@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 class MyCursor : QGraphicsSystemCursor
 {
 public:
-    MyCursor(QGraphicsSystemScreen *screen) : QGraphicsSystemCursor(screen) {}
+    MyCursor(QPlatformScreen *screen) : QGraphicsSystemCursor(screen) {}
 
     void changeCursor(QCursor * cursor, QWidget * widget) {
         QTestLiteWindowSurface *ws = 0;
@@ -75,12 +75,12 @@ public:
 };
 
 
-QTestLiteGraphicsSystem::QTestLiteGraphicsSystem()
+QTestLiteIntegration::QTestLiteIntegration()
 {
 
     xd = new MyDisplay;
 
-    mPrimaryScreen = new QTestLiteGraphicsSystemScreen();
+    mPrimaryScreen = new QTestLiteScreen();
 
     mPrimaryScreen->mGeometry = QRect
         (0, 0, xd->width, xd->height);
@@ -96,21 +96,21 @@ QTestLiteGraphicsSystem::QTestLiteGraphicsSystem()
 
 }
 
-QPixmapData *QTestLiteGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+QPixmapData *QTestLiteIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
     return new QRasterPixmapData(type);
 }
 
-QWindowSurface *QTestLiteGraphicsSystem::createWindowSurface(QWidget *widget) const
+QWindowSurface *QTestLiteIntegration::createWindowSurface(QWidget *widget) const
 {
     if (widget->windowType() == Qt::Desktop)
         return 0;   // Don't create an explicit window surface for the destkop.
     return new QTestLiteWindowSurface
-        (const_cast<QTestLiteGraphicsSystem *>(this), mPrimaryScreen, widget);
+        (const_cast<QTestLiteIntegration *>(this), mPrimaryScreen, widget);
 }
 
 
-QPixmap QTestLiteGraphicsSystem::grabWindow(WId window, int x, int y, int width, int height) const
+QPixmap QTestLiteIntegration::grabWindow(WId window, int x, int y, int width, int height) const
 {
     QImage img = xd->grabWindow(window, x, y, width, height);
     return QPixmap::fromImage(img);

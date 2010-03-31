@@ -39,33 +39,33 @@
 **
 ****************************************************************************/
 
-#include <private/qgraphicssystemplugin_p.h>
-#include "qgraphicssystem_testlite.h"
+#include <QtGui/QPlatformIntegrationPlugin>
+#include "qplatformintegration_testlite.h"
 
 QT_BEGIN_NAMESPACE
 
-class QTestLiteGraphicsSystemPlugin : public QGraphicsSystemPlugin
+class QTestLiteIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
-    QGraphicsSystem *create(const QString&);
+    QPlatformIntegration *create(const QString&);
 };
 
-QStringList QTestLiteGraphicsSystemPlugin::keys() const
+QStringList QTestLiteIntegrationPlugin::keys() const
 {
     QStringList list;
     list << "TestLite";
     return list;
 }
 
-QGraphicsSystem* QTestLiteGraphicsSystemPlugin::create(const QString& system)
+QPlatformIntegration* QTestLiteIntegrationPlugin::create(const QString& system)
 {
     if (system.toLower() == "testlite")
-        return new QTestLiteGraphicsSystem;
+        return new QTestLiteIntegration;
 
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(testlite, QTestLiteGraphicsSystemPlugin)
+Q_EXPORT_PLUGIN2(testlite, QTestLiteIntegrationPlugin)
 
 QT_END_NAMESPACE

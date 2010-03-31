@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qwindowsurface_testlite.h"
-#include "qgraphicssystem_testlite.h"
+#include "qplatformintegration_testlite.h"
 
 #include <QtCore/qdebug.h>
 #include <QWindowSystemInterface>
@@ -50,16 +50,16 @@
 QT_BEGIN_NAMESPACE
 
 QTestLiteWindowSurface::QTestLiteWindowSurface
-        (QTestLiteGraphicsSystem *graphicsSystem,
-         QTestLiteGraphicsSystemScreen *screen, QWidget *window)
+        (QTestLiteIntegration *platformIntegration,
+         QTestLiteScreen *screen, QWidget *window)
     : QWindowSurface(window),
-      mGraphicsSystem(graphicsSystem),
+      mPlatformIntegration(platformIntegration),
       mScreen(screen),
       xw(0)
 {
 
 
-    xw = new MyWindow(graphicsSystem->xd, 0,0,300,300);
+    xw = new MyWindow(platformIntegration->xd, 0,0,300,300);
     xw->windowSurface = this;
 
 //    qDebug() << "QTestLiteWindowSurface::QTestLiteWindowSurface:" << xw->window;
@@ -640,13 +640,13 @@ WId QTestLiteWindowSurface::winId() const
 void QTestLiteWindowSurface::raise()
 {
     WId window = winId();
-    XRaiseWindow(mGraphicsSystem->xd->display, window);
+    XRaiseWindow(mPlatformIntegration->xd->display, window);
 }
 
 void QTestLiteWindowSurface::lower()
 {
     WId window = winId();
-    XLowerWindow(mGraphicsSystem->xd->display, window);
+    XLowerWindow(mPlatformIntegration->xd->display, window);
 }
 
 void QTestLiteWindowSurface::setWindowTitle(const QString &title)

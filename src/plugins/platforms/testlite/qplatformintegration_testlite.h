@@ -42,18 +42,19 @@
 #ifndef QGRAPHICSSYSTEM_TESTLITE_H
 #define QGRAPHICSSYSTEM_TESTLITE_H
 
-#include <QtGui/private/qgraphicssystem_p.h>
+#include <QtGui/QPlatformIntegration>
+#include <QtGui/QPlatformScreen>
 
 QT_BEGIN_NAMESPACE
 
 class MyDisplay;
 
-class QTestLiteGraphicsSystemScreen : public QGraphicsSystemScreen
+class QTestLiteScreen : public QPlatformScreen
 {
 public:
-    QTestLiteGraphicsSystemScreen()
+    QTestLiteScreen()
         : mDepth(16), mFormat(QImage::Format_RGB16) {}
-    ~QTestLiteGraphicsSystemScreen() {}
+    ~QTestLiteScreen() {}
 
     QRect geometry() const { return mGeometry; }
     int depth() const { return mDepth; }
@@ -67,23 +68,23 @@ public:
     QSize mPhysicalSize;
 };
 
-class QTestLiteGraphicsSystem : public QGraphicsSystem
+class QTestLiteIntegration : public QPlatformIntegration
 {
 public:
-    QTestLiteGraphicsSystem();
+    QTestLiteIntegration();
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QWindowSurface *createWindowSurface(QWidget *widget) const;
 
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
-    QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
+    QList<QPlatformScreen *> screens() const { return mScreens; }
 
     MyDisplay *xd;
 
 private:
-    QTestLiteGraphicsSystemScreen *mPrimaryScreen;
-    QList<QGraphicsSystemScreen *> mScreens;
+    QTestLiteScreen *mPrimaryScreen;
+    QList<QPlatformScreen *> mScreens;
 };
 
 QT_END_NAMESPACE
