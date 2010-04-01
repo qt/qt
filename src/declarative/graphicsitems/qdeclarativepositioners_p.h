@@ -90,10 +90,10 @@ Q_SIGNALS:
     void addChanged();
 
 protected Q_SLOTS:
-    virtual void doPositioning()=0;
     void prePositioning();
 
 protected:
+    virtual void doPositioning(QSizeF *contentSize)=0;
     struct PositionedItem {
         PositionedItem(QDeclarativeItem *i) : item(i), isNew(false), isVisible(true) {}
         bool operator==(const PositionedItem &other) const { return other.item == item; }
@@ -116,8 +116,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeColumn : public QDeclarativeBasePositione
     Q_OBJECT
 public:
     QDeclarativeColumn(QDeclarativeItem *parent=0);
-protected Q_SLOTS:
-    virtual void doPositioning();
+protected:
+    virtual void doPositioning(QSizeF *contentSize);
 private:
     Q_DISABLE_COPY(QDeclarativeColumn)
 };
@@ -127,8 +127,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeRow: public QDeclarativeBasePositioner
     Q_OBJECT
 public:
     QDeclarativeRow(QDeclarativeItem *parent=0);
-protected Q_SLOTS:
-    virtual void doPositioning();
+protected:
+    virtual void doPositioning(QSizeF *contentSize);
 private:
     Q_DISABLE_COPY(QDeclarativeRow)
 };
@@ -151,8 +151,8 @@ Q_SIGNALS:
     void rowsChanged();
     void columnsChanged();
 
-protected Q_SLOTS:
-    virtual void doPositioning();
+protected:
+    virtual void doPositioning(QSizeF *contentSize);
 
 private:
     int _rows;
@@ -176,8 +176,8 @@ public:
 Q_SIGNALS:
     void flowChanged();
 
-protected Q_SLOTS:
-    virtual void doPositioning();
+protected:
+    virtual void doPositioning(QSizeF *contentSize);
 
 protected:
     QDeclarativeFlow(QDeclarativeFlowPrivate &dd, QDeclarativeItem *parent);

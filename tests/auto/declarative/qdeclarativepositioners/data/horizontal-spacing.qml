@@ -4,6 +4,7 @@ Item {
     width: 640
     height: 480
     Row {
+        objectName: "row"
         spacing: 10
         Rectangle {
             objectName: "one"
