@@ -109,11 +109,11 @@ QScriptValue QDeclarativeObjectScriptClass::newQObject(QObject *object, int type
        return scriptEngine->undefinedValue();
     } else if (!ddata->indestructible && !object->parent()) {
         return newObject(scriptEngine, this, new ObjectData(object, type));
-    } else if (!ddata->scriptValue.isValid()) {
-        ddata->scriptValue = newObject(scriptEngine, this, new ObjectData(object, type));
-        return ddata->scriptValue;
-    } else if (ddata->scriptValue.engine() == QDeclarativeEnginePrivate::getScriptEngine(engine)) {
-        return ddata->scriptValue;
+    } else if (!ddata->scriptValue) {
+        ddata->scriptValue = new QScriptValue(newObject(scriptEngine, this, new ObjectData(object, type)));
+        return *ddata->scriptValue;
+    } else if (ddata->scriptValue->engine() == QDeclarativeEnginePrivate::getScriptEngine(engine)) {
+        return *ddata->scriptValue;
     } else {
         return newObject(scriptEngine, this, new ObjectData(object, type));
     }

@@ -862,15 +862,16 @@ void QDeclarativeDeclarativeData::destroyed(QObject *object)
     if (ownContext)
         context->destroy();
 
+    if (scriptValue)
+        delete scriptValue;
+
     if (ownMemory)
         delete this;
-    else 
-        this->~QDeclarativeDeclarativeData();
 }
 
 void QDeclarativeDeclarativeData::parentChanged(QObject *, QObject *parent)
 {
-    if (!parent && scriptValue.isValid()) scriptValue = QScriptValue();
+    if (!parent && scriptValue) { delete scriptValue; scriptValue = 0; }
 }
 
 bool QDeclarativeDeclarativeData::hasBindingBit(int bit) const
