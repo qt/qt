@@ -64,6 +64,10 @@ class QDeclarativeAbstractBinding;
 class QDeclarativeContext;
 class QDeclarativePropertyCache;
 class QDeclarativeContextData;
+// This class is structured in such a way, that simply zero'ing it is the
+// default state for elemental object allocations.  This is crucial in the
+// workings of the QDeclarativeInstruction::CreateSimpleObject instruction.
+// Don't change anything here without first considering that case!
 class Q_AUTOTEST_EXPORT QDeclarativeDeclarativeData : public QDeclarativeData
 {
 public:
@@ -73,8 +77,8 @@ public:
           bindingBits(0), lineNumber(0), columnNumber(0), deferredComponent(0), deferredIdx(0), 
           attachedProperties(0), propertyCache(0), guards(0) {}
 
-    virtual void destroyed(QObject *);
-    virtual void parentChanged(QObject *, QObject *);
+    void destroyed(QObject *);
+    void parentChanged(QObject *, QObject *);
 
     void setImplicitDestructible() {
         if (!explicitIndestructibleSet) indestructible = false;

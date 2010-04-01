@@ -881,23 +881,38 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
     }
 
     // Create the object
-    QDeclarativeInstruction create;
-    create.type = QDeclarativeInstruction::CreateObject;
-    create.line = obj->location.start.line;
-    create.create.column = obj->location.start.column;
-    create.create.data = -1;
-    if (!obj->custom.isEmpty())
-        create.create.data = output->indexForByteArray(obj->custom);
-    create.create.type = obj->type;
-    if (!output->types.at(create.create.type).type && 
-        !obj->bindingBitmask.isEmpty()) {
-        Q_ASSERT(obj->bindingBitmask.size() % 4 == 0);
-        create.create.bindingBits = 
-            output->indexForByteArray(obj->bindingBitmask);
+    if (obj->custom.isEmpty() && output->types.at(obj->type).type &&
+        obj != compileState.root) {
+
+        QDeclarativeInstruction create;
+        create.type = QDeclarativeInstruction::CreateSimpleObject;
+        create.line = obj->location.start.line;
+        create.createSimple.create = output->types.at(obj->type).type->createFunction();
+        create.createSimple.typeSize = output->types.at(obj->type).type->createSize();
+        create.createSimple.column = obj->location.start.column;
+        output->bytecode << create;
+
     } else {
-        create.create.bindingBits = -1;
+
+        QDeclarativeInstruction create;
+        create.type = QDeclarativeInstruction::CreateObject;
+        create.line = obj->location.start.line;
+        create.create.column = obj->location.start.column;
+        create.create.data = -1;
+        if (!obj->custom.isEmpty())
+            create.create.data = output->indexForByteArray(obj->custom);
+        create.create.type = obj->type;
+        if (!output->types.at(create.create.type).type && 
+            !obj->bindingBitmask.isEmpty()) {
+            Q_ASSERT(obj->bindingBitmask.size() % 4 == 0);
+            create.create.bindingBits = 
+                output->indexForByteArray(obj->bindingBitmask);
+        } else {
+            create.create.bindingBits = -1;
+        }
+        output->bytecode << create;
+
     }
-    output->bytecode << create;
 
     // Setup the synthesized meta object if necessary
     if (!obj->metadata.isEmpty()) {

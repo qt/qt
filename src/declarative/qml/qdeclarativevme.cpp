@@ -236,9 +236,29 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                         } 
                     } else { 
 			    QDeclarative_setParent_noEvent(o, parent);
-       //                 o->setParent(parent); 
                     } 
                 }
+                stack.push(o);
+            }
+            break;
+
+        case QDeclarativeInstruction::CreateSimpleObject:
+            {
+                QObject *o = (QObject *)operator new(instr.createSimple.typeSize + 
+                                                     sizeof(QDeclarativeDeclarativeData));   
+                ::bzero(o, instr.createSimple.typeSize + sizeof(QDeclarativeDeclarativeData));                             
+                instr.createSimple.create(o);
+
+                QDeclarativeDeclarativeData *ddata = 
+                    (QDeclarativeDeclarativeData *)(((const char *)o) + instr.createSimple.typeSize);
+                ddata->lineNumber = instr.line;
+                ddata->columnNumber = instr.createSimple.column;
+
+                QObjectPrivate::get(o)->declarativeData = ddata;                                                      
+                ctxt->addObject(o);                                                                                   
+                QObject *parent = stack.top();                                                                    
+                QDeclarative_setParent_noEvent(o, parent);                                                        
+
                 stack.push(o);
             }
             break;

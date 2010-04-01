@@ -60,6 +60,8 @@ void QDeclarativeCompiledData::dump(QDeclarativeInstruction *instr, int idx)
         break;
     case QDeclarativeInstruction::CreateObject:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "CREATE\t\t\t" << instr->create.type << "\t\t\t" << types.at(instr->create.type).className;
+    case QDeclarativeInstruction::CreateSimpleObject:
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "CREATE_SIMPLE\t\t" << instr->createSimple.typeSize;
         break;
     case QDeclarativeInstruction::SetId:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "SETID\t\t\t" << instr->setId.value << "\t\t\t" << primitives.at(instr->setId.value);

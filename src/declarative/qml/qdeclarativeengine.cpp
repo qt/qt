@@ -346,12 +346,26 @@ Q_GLOBAL_STATIC(QDeclarativeEngineDebugServer, qmlEngineDebugServer);
 typedef QMap<QString, QString> StringStringMap;
 Q_GLOBAL_STATIC(StringStringMap, qmlEnginePluginsWithRegisteredTypes); // stores the uri
 
+
+static void QDeclarativeDeclarativeData_destroyed(QDeclarativeData *d, QObject *o)
+{
+    static_cast<QDeclarativeDeclarativeData *>(d)->destroyed(o);
+}
+
+static void QDeclarativeDeclarativeData_parentChanged(QDeclarativeData *d, QObject *o, QObject *p)
+{
+    static_cast<QDeclarativeDeclarativeData *>(d)->parentChanged(o, p);
+}
+
 void QDeclarativeEnginePrivate::init()
 {
     Q_Q(QDeclarativeEngine);
     qRegisterMetaType<QVariant>("QVariant");
     qRegisterMetaType<QDeclarativeScriptString>("QDeclarativeScriptString");
     qRegisterMetaType<QScriptValue>("QScriptValue");
+
+    QDeclarativeData::destroyed = QDeclarativeDeclarativeData_destroyed;
+    QDeclarativeData::parentChanged = QDeclarativeDeclarativeData_parentChanged;
 
     contextClass = new QDeclarativeContextScriptClass(q);
     objectClass = new QDeclarativeObjectScriptClass(q);

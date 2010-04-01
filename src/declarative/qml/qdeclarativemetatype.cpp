@@ -313,6 +313,16 @@ QDeclarativeCustomParser *QDeclarativeType::customParser() const
     return d->m_customParser;
 }
 
+QDeclarativeType::CreateFunc QDeclarativeType::createFunction() const
+{
+    return d->m_newFunc;
+}
+
+int QDeclarativeType::createSize() const
+{
+    return d->m_allocationSize;
+}
+
 bool QDeclarativeType::isCreatable() const
 {
     return d->m_newFunc != 0;
