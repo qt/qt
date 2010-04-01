@@ -69,7 +69,7 @@ private slots:
     void drawToRect_data();
     void drawToRect();
     void setFont();
-    void setMaximumSize();
+    void setTextWidth();
     void prepareToCorrectData();
     void prepareToWrongData();
 
@@ -79,6 +79,12 @@ private slots:
     void projectedPainter();
     void rotatedScaledAndTranslatedPainter();
     void transformationChanged();    
+
+    void plainTextVsRichText();
+
+    void setPenPlainText();
+    void setPenRichText();
+    void richTextOverridesPen();
 };
 
 void tst_QStaticText::init()
@@ -121,7 +127,7 @@ void tst_QStaticText::drawToPoint()
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.setTextFormat(Qt::PlainText);
         text.setPerformanceHint(performanceHint);
-        p.drawStaticText(QPointF(11, 12), text);
+        p.drawStaticText(QPointF(11, 12 - QFontMetricsF(p.font()).ascent()), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -150,11 +156,18 @@ void tst_QStaticText::drawToRect()
     imageDrawStaticText.fill(Qt::white);
     {
         QPainter p(&imageDrawStaticText);
-        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.", QSizeF(10, 500));
+        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        text.setTextWidth(10),
+        p.setClipRect(QRectF(11, 12, 10, 500));
         text.setPerformanceHint(performanceHint);
         text.setTextFormat(Qt::PlainText);
         p.drawStaticText(QPointF(11, 12), text);
     }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("drawToRect_imageDrawText.png");
+    imageDrawStaticText.save("drawToRect_imageDrawStaticText.png");
+#endif
 
     QCOMPARE(imageDrawStaticText, imageDrawText);   
 }
@@ -181,7 +194,7 @@ void tst_QStaticText::prepareToCorrectData()
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.prepare(transform, p.font());
         text.setTextFormat(Qt::PlainText);
-        p.drawStaticText(QPointF(11, 12), text);
+        p.drawStaticText(QPointF(11, 12  - QFontMetricsF(p.font()).ascent()), text);
     }
 
     if (!supportsTransformations())
@@ -209,7 +222,7 @@ void tst_QStaticText::prepareToWrongData()
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.prepare(transform, p.font());
         text.setTextFormat(Qt::PlainText);
-        p.drawStaticText(QPointF(11, 12), text);
+        p.drawStaticText(QPointF(11, 12  - QFontMetricsF(p.font()).ascent()), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -226,10 +239,10 @@ void tst_QStaticText::setFont()
     imageDrawText.fill(Qt::white);
     {
         QPainter p(&imageDrawText);
-        p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(QRectF(0, 0, 1000, 1000), 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
 
         p.setFont(font);
-        p.drawText(11, 120, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(QRectF(11, 120, 1000, 1000), 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
     }
 
     QPixmap imageDrawStaticText(1000, 1000);
@@ -247,10 +260,15 @@ void tst_QStaticText::setFont()
         p.drawStaticText(11, 120, text);
     }
 
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("setFont_imageDrawText.png");
+    imageDrawStaticText.save("setFont_imageDrawStaticText.png");
+#endif
+
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
-void tst_QStaticText::setMaximumSize()
+void tst_QStaticText::setTextWidth()
 {
     QPixmap imageDrawText(1000, 1000);
     imageDrawText.fill(Qt::white);
@@ -264,7 +282,8 @@ void tst_QStaticText::setMaximumSize()
     {
         QPainter p(&imageDrawStaticText);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        text.setMaximumSize(QSizeF(10, 500));
+        text.setTextWidth(10);
+        p.setClipRect(QRectF(11, 12, 10, 500));
         p.drawStaticText(QPointF(11, 12), text);
     }
 
@@ -291,7 +310,7 @@ void tst_QStaticText::translatedPainter()
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.setTextFormat(Qt::PlainText);
 
-        p.drawStaticText(QPointF(11, 12), text);
+        p.drawStaticText(QPointF(11, 12 - QFontMetricsF(p.font()).ascent()), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -323,7 +342,7 @@ void tst_QStaticText::rotatedPainter()
     {
         QPainter p(&imageDrawText);
         p.rotate(30.0);
-        p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(QRectF(0, 0, 1000, 100), 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
     }
 
     QPixmap imageDrawStaticText(1000, 1000);
@@ -367,7 +386,7 @@ void tst_QStaticText::scaledPainter()
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.setTextFormat(Qt::PlainText);
 
-        p.drawStaticText(QPointF(11, 12), text);
+        p.drawStaticText(QPointF(11, 12 - QFontMetricsF(p.font()).ascent()), text);
     }
 
     if (!supportsTransformations())
@@ -398,7 +417,7 @@ void tst_QStaticText::projectedPainter()
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.setTextFormat(Qt::PlainText);
 
-        p.drawStaticText(QPointF(11, 12), text);
+        p.drawStaticText(QPointF(11, 12 - QFontMetricsF(p.font()).ascent()), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -428,7 +447,7 @@ void tst_QStaticText::rotatedScaledAndTranslatedPainter()
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.setTextFormat(Qt::PlainText);
 
-        p.drawStaticText(QPointF(11, 12), text);
+        p.drawStaticText(QPointF(11, 12 - QFontMetricsF(p.font()).ascent()), text);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -450,10 +469,10 @@ void tst_QStaticText::transformationChanged()
         p.rotate(33.0);
         p.scale(0.5, 0.7);
 
-        p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(QRectF(0, 0, 1000, 1000), 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
 
         p.scale(7.0, 5.0);
-        p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(QRectF(0, 0, 1000, 1000), 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
     }
 
     QPixmap imageDrawStaticText(1000, 1000);
@@ -480,6 +499,126 @@ void tst_QStaticText::transformationChanged()
     if (!supportsTransformations())
       QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
+}
+
+void tst_QStaticText::plainTextVsRichText()
+{
+    QPixmap imagePlainText(1000, 1000);
+    imagePlainText.fill(Qt::white);
+    {
+        QPainter p(&imagePlainText);
+
+        QStaticText staticText;
+        staticText.setText("FOObar");
+        staticText.setTextFormat(Qt::PlainText);
+
+        p.drawStaticText(10, 10, staticText);
+    }
+
+    QPixmap imageRichText(1000, 1000);
+    imageRichText.fill(Qt::white);
+    {
+        QPainter p(&imageRichText);
+
+        QStaticText staticText;
+        staticText.setText("<html><body>FOObar</body></html>");
+        staticText.setTextFormat(Qt::RichText);
+
+        p.drawStaticText(10, 10, staticText);
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imagePlainText.save("plainTextVsRichText_imagePlainText.png");
+    imageRichText.save("plainTextVsRichText_imageRichText.png");
+#endif
+
+    QCOMPARE(imagePlainText, imageRichText);
+}
+
+void tst_QStaticText::setPenPlainText()
+{
+    QFont font = QApplication::font();
+    font.setStyleStrategy(QFont::NoAntialias);
+
+    QFontMetricsF fm(font);
+    QPixmap image(qCeil(fm.width("XXXXX")), qCeil(fm.height()));
+    image.fill(Qt::white);
+    {
+        QPainter p(&image);
+        p.setFont(font);
+        p.setPen(Qt::green);
+
+        QStaticText staticText("XXXXX");
+        staticText.setTextFormat(Qt::PlainText);
+        p.drawStaticText(0, fm.ascent(), staticText);
+    }
+
+    QImage img = image.toImage();
+    for (int x=0; x<img.width(); ++x) {
+        for (int y=0; y<img.height(); ++y) {
+            QRgb pixel = img.pixel(x, y);
+            QVERIFY(pixel == QColor(Qt::white).rgba()
+                    || pixel == QColor(Qt::green).rgba());
+        }
+    }
+}
+
+void tst_QStaticText::setPenRichText()
+{
+    QFont font = QApplication::font();
+    font.setStyleStrategy(QFont::NoAntialias);
+
+    QFontMetricsF fm(font);
+    QPixmap image(qCeil(fm.width("XXXXX")), qCeil(fm.height()));
+    image.fill(Qt::white);
+    {
+        QPainter p(&image);
+        p.setFont(font);
+        p.setPen(Qt::green);
+
+        QStaticText staticText;
+        staticText.setText("<html><body>XXXXX</body></html>");
+        staticText.setTextFormat(Qt::RichText);
+        p.drawStaticText(0, 0, staticText);
+    }
+
+    QImage img = image.toImage();
+    for (int x=0; x<img.width(); ++x) {
+        for (int y=0; y<img.height(); ++y) {
+            QRgb pixel = img.pixel(x, y);
+            QVERIFY(pixel == QColor(Qt::white).rgba()
+                    || pixel == QColor(Qt::green).rgba());
+        }
+    }
+}
+
+void tst_QStaticText::richTextOverridesPen()
+{
+    QFont font = QApplication::font();
+    font.setStyleStrategy(QFont::NoAntialias);
+
+    QFontMetricsF fm(font);
+    QPixmap image(qCeil(fm.width("XXXXX")), qCeil(fm.height()));
+    image.fill(Qt::white);
+    {
+        QPainter p(&image);
+        p.setFont(font);
+        p.setPen(Qt::green);
+
+        QStaticText staticText;
+        staticText.setText("<html><body><font color=\"#ff0000\">XXXXX</font></body></html>");
+        staticText.setTextFormat(Qt::RichText);
+        p.drawStaticText(0, 0, staticText);
+    }
+
+    QImage img = image.toImage();
+    for (int x=0; x<img.width(); ++x) {
+        for (int y=0; y<img.height(); ++y) {
+            QRgb pixel = img.pixel(x, y);
+            QVERIFY(pixel == QColor(Qt::white).rgba()
+                    || pixel == QColor(Qt::red).rgba());
+        }
+    }
 }
 
 QTEST_MAIN(tst_QStaticText)

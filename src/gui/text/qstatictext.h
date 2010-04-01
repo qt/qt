@@ -66,7 +66,7 @@ public:
     };
 
     QStaticText();
-    QStaticText(const QString &text, const QSizeF &maximumSize = QSizeF());
+    QStaticText(const QString &text);
     QStaticText(const QStaticText &other);
     ~QStaticText();
 
@@ -76,12 +76,12 @@ public:
     void setTextFormat(Qt::TextFormat textFormat);
     Qt::TextFormat textFormat() const;
 
-    void setMaximumSize(const QSizeF &maximumSize);
-    QSizeF maximumSize() const;
+    void setTextWidth(qreal textWidth);
+    qreal textWidth() const;
 
     QSizeF size() const;
 
-    void prepare(const QTransform &matrix, const QFont &font);
+    void prepare(const QTransform &matrix = QTransform(), const QFont &font = QFont());
 
     void setPerformanceHint(PerformanceHint performanceHint);
     PerformanceHint performanceHint() const;

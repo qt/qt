@@ -493,12 +493,13 @@
 
     \snippet doc/src/snippets/code/doc_src_qtxmlpatterns.qdoc 1
 
-    \section1 Further Links
+    \section1 Further Reading
 
     General overviews of XQuery and XSchema can be found in the
     \l{Using XML Technologies} document.
 
-    An introduction to the XQuery language can be found in \l{A Short Path to XQuery}.
+    An introduction to the XQuery language can be found in
+    \l{A Short Path to XQuery}.
 
     \section1 License Information
 

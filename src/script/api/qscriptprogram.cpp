@@ -120,7 +120,7 @@ QScriptProgram::QScriptProgram(const QScriptProgram &other)
 */
 QScriptProgram::~QScriptProgram()
 {
-    Q_D(QScriptProgram);
+    //    Q_D(QScriptProgram);
     //    if (d->engine && (d->ref == 1))
     //      d->engine->unregisterScriptProgram(d);
 }
