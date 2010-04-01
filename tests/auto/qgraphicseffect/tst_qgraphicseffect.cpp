@@ -46,6 +46,7 @@
 #include <QtGui/qgraphicsview.h>
 #include <QtGui/qgraphicsscene.h>
 #include <QtGui/qgraphicsitem.h>
+#include <QtGui/qgraphicswidget.h>
 #include <QtGui/qstyleoption.h>
 
 #include "../../shared/util.h"
@@ -73,6 +74,7 @@ private slots:
     void deviceCoordinateTranslateCaching();
     void inheritOpacity();
     void dropShadowClipping();
+    void childrenVisibilityShouldInvalidateCache();
 };
 
 void tst_QGraphicsEffect::initTestCase()
@@ -510,6 +512,7 @@ void tst_QGraphicsEffect::drawPixmapItem()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(effect->repaints >= 1);
 
     item->rotate(180);
     QTest::qWait(50);
@@ -611,6 +614,47 @@ void tst_QGraphicsEffect::dropShadowClipping()
     for (int y = 1; y < img.height(); ++y)
         for (int x = 0; x < img.width(); ++x)
             QCOMPARE(img.pixel(x, y), img.pixel(x, y-1));
+}
+
+class MyGraphicsItem : public QGraphicsWidget
+{
+public:
+    MyGraphicsItem(QGraphicsItem *parent = 0) :
+            QGraphicsWidget(parent), nbPaint(0)
+    {}
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        nbPaint++;
+        QGraphicsWidget::paint(painter, option, widget);
+    }
+    int nbPaint;
+};
+
+void tst_QGraphicsEffect::childrenVisibilityShouldInvalidateCache()
+{
+    QGraphicsScene scene;
+    MyGraphicsItem parent;
+    parent.resize(200, 200);
+    QGraphicsWidget child(&parent);
+    child.resize(200, 200);
+    child.setVisible(false);
+    scene.addItem(&parent);
+    QGraphicsView view(&scene);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(parent.nbPaint, 1);
+    //we set an effect on the parent
+    parent.setGraphicsEffect(new QGraphicsDropShadowEffect(&parent));
+    //flush the events
+    QApplication::processEvents();
+    //new effect applied->repaint
+    QCOMPARE(parent.nbPaint, 2);
+    child.setVisible(true);
+    //flush the events
+    QApplication::processEvents();
+    //a new child appears we need to redraw the effect.
+    QCOMPARE(parent.nbPaint, 3);
 }
 
 QTEST_MAIN(tst_QGraphicsEffect)

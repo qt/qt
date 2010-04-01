@@ -324,6 +324,14 @@ void QGraphicsWidget::resize(const QSizeF &size)
 */
 
 /*!
+
+  \fn QGraphicsWidget::geometryChanged()
+
+  This signal gets emitted whenever the geometry of the item changes
+  \internal
+*/
+
+/*!
     \property QGraphicsWidget::geometry
     \brief the geometry of the widget
 
@@ -391,6 +399,10 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
         QGraphicsSceneResizeEvent re;
         re.setOldSize(oldSize);
         re.setNewSize(newGeom.size());
+        if (oldSize.width() != newGeom.size().width())
+            emit widthChanged();
+        if (oldSize.height() != newGeom.size().height())
+            emit heightChanged();
         QApplication::sendEvent(this, &re);
     }
 }
@@ -2322,5 +2334,7 @@ void QGraphicsWidget::dumpFocusChain()
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qgraphicswidget.cpp"
         
 #endif //QT_NO_GRAPHICSVIEW
