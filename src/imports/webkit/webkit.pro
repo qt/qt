@@ -18,7 +18,7 @@ symbian:{
     load(data_caging_paths)
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     
-    importFiles.sources = webkitqmlplugin.dll \
+    importFiles.sources = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH/webkitqmlplugin.dll \
     qmldir
     importFiles.path = $$QT_IMPORTS_BASE_DIR/$$TARGETPATH
     
