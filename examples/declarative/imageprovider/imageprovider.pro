@@ -18,4 +18,8 @@ ImageProviderCore_sources.files = \
     ImageProviderCore/qmldir 
 ImageProviderCore_sources.path = $$[QT_INSTALL_EXAMPLES]/declarative/imageprovider/ImageProviderCore
 
+symbian:{
+    TARGET.EPOCALLOWDLLDATA=1
+}
+
 INSTALLS = sources ImageProviderCore_sources target
