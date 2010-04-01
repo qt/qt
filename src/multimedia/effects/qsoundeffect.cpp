@@ -56,18 +56,25 @@ QT_BEGIN_NAMESPACE
     \since 4.7
     \brief The SoundEffect element provides a way to play sound effects in qml.
 
+    This element is part of the \bold{Qt.multimedia 4.7} module.
+
     The following example plays a wav file on mouse click.
 
     \qml
-    SoundEffect {
-        id: playSound
-        source: "test.wav"
-    }
-    MouseArea {
-        id: playArea
-        anchors.fill: parent
-        onPressed: {
-            playSound.play()
+    import Qt 4.6
+    import Qt.multimedia 4.7
+
+    Item {
+        SoundEffect {
+            id: playSound
+            source: "test.wav"
+        }
+        MouseArea {
+            id: playArea
+            anchors.fill: parent
+            onPressed: {
+                playSound.play()
+            }
         }
     }
     \endqml
