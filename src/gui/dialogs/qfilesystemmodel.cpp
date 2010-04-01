@@ -1361,6 +1361,16 @@ QModelIndex QFileSystemModel::setRootPath(const QString &newPath)
     if (!showDrives && !newPathDir.exists())
         return d->index(rootPath());
 
+    //We remove the watcher on the previous path
+    if (!rootPath().isEmpty() && rootPath() != QLatin1String(".")) {
+        //This remove the watcher for the old rootPath
+        d->fileInfoGatherer.removePath(rootPath());
+        //This line "marks" the node as dirty, so the next fetchMore
+        //call on the path will ask the gatherer to install a watcher again
+        //But it doesn't re-fetch everything
+        d->node(rootPath())->populatedChildren = false;
+    }
+
     // We have a new valid root path
     d->rootDir = newPathDir;
     QModelIndex newRootIndex;

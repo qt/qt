@@ -384,6 +384,7 @@ private slots:
     void tabChangesFocus();
     void tabChangesFocus_data();
     void cacheMode();
+    void cacheMode2();
     void updateCachedItemAfterMove();
     void deviceTransform_data();
     void deviceTransform();
@@ -6739,6 +6740,9 @@ void tst_QGraphicsItem::cacheMode()
     QTRY_COMPARE(tester->repaints, 4);
     QTRY_COMPARE(testerChild->repaints, 4);
     QTRY_COMPARE(testerChild2->repaints, 3);
+    tester->resetTransform();
+    testerChild->resetTransform();
+    testerChild2->resetTransform();
 
     // Explicit update causes a repaint.
     tester->update(0, 0, 5, 5);
@@ -6805,26 +6809,99 @@ void tst_QGraphicsItem::cacheMode()
     QTRY_COMPARE(tester->repaints, 10);
     QTRY_COMPARE(testerChild->repaints, 10);
     QTRY_COMPARE(testerChild2->repaints, 5);
+    tester->resetTransform();
 
     // Make a huge item
     tester->setGeometry(QRectF(-4000, -4000, 8000, 8000));
-    QTRY_COMPARE(tester->repaints, 11);
-    QTRY_COMPARE(testerChild->repaints, 10);
+    QTRY_COMPARE(tester->repaints, 12);
+    QTRY_COMPARE(testerChild->repaints, 11);
     QTRY_COMPARE(testerChild2->repaints, 5);
 
     // Move the large item - will cause a repaint as the
     // cache is clipped.
     tester->setPos(5, 0);
-    QTRY_COMPARE(tester->repaints, 12);
-    QTRY_COMPARE(testerChild->repaints, 10);
+    QTRY_COMPARE(tester->repaints, 13);
+    QTRY_COMPARE(testerChild->repaints, 11);
     QTRY_COMPARE(testerChild2->repaints, 5);
 
     // Hiding and showing should invalidate the cache
     tester->hide();
     tester->show();
-    QTRY_COMPARE(tester->repaints, 13);
-    QTRY_COMPARE(testerChild->repaints, 11);
+    QTRY_COMPARE(tester->repaints, 14);
+    QTRY_COMPARE(testerChild->repaints, 12);
     QTRY_COMPARE(testerChild2->repaints, 6);
+}
+
+void tst_QGraphicsItem::cacheMode2()
+{
+    QGraphicsScene scene(0, 0, 100, 100);
+    QGraphicsView view(&scene);
+    view.resize(150, 150);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+
+    // Increase the probability of window activation
+    // not causing another repaint of test items.
+    QTest::qWait(50);
+
+    EventTester *tester = new EventTester;
+    scene.addItem(tester);
+    QTest::qWait(10);
+    QTRY_COMPARE(tester->repaints, 1);
+
+    // Switching from NoCache to NoCache (no repaint)
+    tester->setCacheMode(QGraphicsItem::NoCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 1);
+
+    // Switching from NoCache to DeviceCoordinateCache (no repaint)
+    tester->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 1);
+
+    // Switching from DeviceCoordinateCache to DeviceCoordinateCache (no repaint)
+    tester->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 1);
+
+    // Switching from DeviceCoordinateCache to NoCache (no repaint)
+    tester->setCacheMode(QGraphicsItem::NoCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 1);
+
+    // Switching from NoCache to ItemCoordinateCache (repaint)
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 2);
+
+    // Switching from ItemCoordinateCache to ItemCoordinateCache (no repaint)
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 2);
+
+    // Switching from ItemCoordinateCache to ItemCoordinateCache with different size (repaint)
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache, QSize(100, 100));
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 3);
+
+    // Switching from ItemCoordinateCache to NoCache (repaint)
+    tester->setCacheMode(QGraphicsItem::NoCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 4);
+
+    // Switching from DeviceCoordinateCache to ItemCoordinateCache (repaint)
+    tester->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 4);
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 5);
+
+    // Switching from ItemCoordinateCache to DeviceCoordinateCache (repaint)
+    tester->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 6);
 }
 
 void tst_QGraphicsItem::updateCachedItemAfterMove()

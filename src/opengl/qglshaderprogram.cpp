@@ -969,17 +969,18 @@ GLuint QGLShaderProgram::programId() const
     Any attributes that have not been explicitly bound when the program
     is linked will be assigned locations automatically.
 
+    When this function is called after the program has been linked,
+    the program will need to be relinked for the change to take effect.
+
     \sa attributeLocation()
 */
 void QGLShaderProgram::bindAttributeLocation(const char *name, int location)
 {
     Q_D(QGLShaderProgram);
-    if (!d->linked) {
-        glBindAttribLocation(d->programGuard.id(), location, name);
-    } else {
-        qWarning() << "QGLShaderProgram::bindAttributeLocation(" << name
-                   << "): cannot bind after shader program is linked";
-    }
+    if (!init())
+        return;
+    glBindAttribLocation(d->programGuard.id(), location, name);
+    d->linked = false;  // Program needs to be relinked.
 }
 
 /*!
@@ -989,6 +990,9 @@ void QGLShaderProgram::bindAttributeLocation(const char *name, int location)
     function can be called before or after the program has been linked.
     Any attributes that have not been explicitly bound when the program
     is linked will be assigned locations automatically.
+
+    When this function is called after the program has been linked,
+    the program will need to be relinked for the change to take effect.
 
     \sa attributeLocation()
 */
@@ -1004,6 +1008,9 @@ void QGLShaderProgram::bindAttributeLocation(const QByteArray& name, int locatio
     function can be called before or after the program has been linked.
     Any attributes that have not been explicitly bound when the program
     is linked will be assigned locations automatically.
+
+    When this function is called after the program has been linked,
+    the program will need to be relinked for the change to take effect.
 
     \sa attributeLocation()
 */

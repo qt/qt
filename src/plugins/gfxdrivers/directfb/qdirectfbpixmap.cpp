@@ -290,27 +290,22 @@ bool QDirectFBPixmapData::fromDataBufferDescription(const DFBDataBufferDescripti
 void QDirectFBPixmapData::fromImage(const QImage &img,
                                     Qt::ImageConversionFlags flags)
 {
-    if (img.depth() == 1 || img.format() == QImage::Format_RGB32) {
-        fromImage(img.convertToFormat(screen->alphaPixmapFormat()), flags);
-        return;
-    }
-
-    if (img.hasAlphaChannel()
-#ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
-        && (flags & Qt::NoOpaqueDetection || QDirectFBPixmapData::hasAlphaChannel(img))
-#endif
-        ) {
+    if (img.depth() == 1) {
         alpha = true;
-        imageFormat = screen->alphaPixmapFormat();
-    } else {
-        alpha = false;
-        imageFormat = screen->pixelFormat();
+#ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
+    } else if (flags & Qt::NoOpaqueDetection || QDirectFBPixmapData::hasAlphaChannel(img)) {
+        alpha = true;
+#else
+    } else if (img.hasAlphaChannel()) {
+        alpha = true;
+#endif
     }
+    imageFormat = alpha ? screen->alphaPixmapFormat() : screen->pixelFormat();
     QImage image;
-    if (flags != Qt::AutoColor) {
+    if ((flags & ~Qt::NoOpaqueDetection) != Qt::AutoColor) {
         image = img.convertToFormat(imageFormat, flags);
         flags = Qt::AutoColor;
-    } else if (img.format() == QImage::Format_RGB32) {
+    } else if (img.format() == QImage::Format_RGB32 || img.depth() == 1) {
         image = img.convertToFormat(imageFormat, flags);
     } else {
         image = img;

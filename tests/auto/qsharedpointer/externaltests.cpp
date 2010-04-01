@@ -140,7 +140,6 @@ namespace QTest {
         QExternalTestPrivate()
             : qtModules(QExternalTest::QtCore | QExternalTest::QtGui | QExternalTest::QtTest),
               appType(QExternalTest::AutoApplication),
-              debugMode(true),
               exitCode(-1)
         {
         }
@@ -156,7 +155,6 @@ namespace QTest {
         QByteArray programHeader;
         QExternalTest::QtModules qtModules;
         QExternalTest::ApplicationType appType;
-        bool debugMode;
 
         QString temporaryDir;
         QByteArray sourceCode;
@@ -188,16 +186,6 @@ namespace QTest {
     QExternalTest::~QExternalTest()
     {
         delete d;
-    }
-
-    bool QExternalTest::isDebugMode() const
-    {
-        return d->debugMode;
-    }
-
-    void QExternalTest::setDebugMode(bool enable)
-    {
-        d->debugMode = enable;
     }
 
     QList<QByteArray> QExternalTest::qmakeSettings() const
@@ -524,10 +512,11 @@ namespace QTest {
             "INCLUDEPATH += . ");
         projectFile.write(QFile::encodeName(QDir::currentPath()));
 
-        if (debugMode)
+#ifndef QT_NO_DEBUG
             projectFile.write("\nCONFIG  += debug\n");
-        else
+#else
             projectFile.write("\nCONFIG  += release\n");
+#endif
 
         QByteArray extraSources = QFile::encodeName(extraProgramSources.join(" "));
         if (!extraSources.isEmpty()) {
