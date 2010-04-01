@@ -258,7 +258,7 @@ QT_BEGIN_NAMESPACE
 
 QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
     : QWidget(*new QDialogPrivate, parent,
-              f | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : 0))
+              f | ((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : Qt::WindowType(0)))
 {
 #ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
@@ -295,7 +295,7 @@ QDialog::QDialog(QWidget *parent, const char *name, bool modal, Qt::WindowFlags 
   \internal
 */
 QDialog::QDialog(QDialogPrivate &dd, QWidget *parent, Qt::WindowFlags f)
-    : QWidget(dd, parent, f | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : 0))
+    : QWidget(dd, parent, f | ((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : Qt::WindowType(0)))
 {
 #ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
