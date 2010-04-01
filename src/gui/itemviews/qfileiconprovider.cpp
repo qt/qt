@@ -254,7 +254,9 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
     val = SHGetFileInfo((const wchar_t *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
                         sizeof(SHFILEINFO), SHGFI_SMALLICON|SHGFI_SYSICONINDEX);
 #endif
-    if (val) {
+
+    // Even if GetFileInfo returns a valid result, hIcon can be empty in some cases
+    if (val && info.hIcon) {
         if (fileInfo.isDir() && !fileInfo.isRoot()) {
             //using the unique icon index provided by windows save us from duplicate keys
             key = QString::fromLatin1("qt_dir_%1").arg(info.iIcon);
@@ -293,7 +295,7 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
     val = SHGetFileInfo((const wchar_t *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
                         sizeof(SHFILEINFO), SHGFI_LARGEICON|SHGFI_SYSICONINDEX);
 #endif
-    if (val) {
+    if (val && info.hIcon) {
         if (fileInfo.isDir() && !fileInfo.isRoot()) {
             //using the unique icon index provided by windows save us from duplicate keys
             key = QString::fromLatin1("qt_dir_%1").arg(info.iIcon);
