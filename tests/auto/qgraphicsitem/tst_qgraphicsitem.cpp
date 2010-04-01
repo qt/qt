@@ -960,12 +960,11 @@ void tst_QGraphicsItem::toolTip()
     QGraphicsView view(&scene);
     view.setFixedSize(200, 200);
     view.show();
-    QTest::qWait(250);
     {
         QHelpEvent helpEvent(QEvent::ToolTip, view.viewport()->rect().topLeft(),
                              view.viewport()->mapToGlobal(view.viewport()->rect().topLeft()));
         QApplication::sendEvent(view.viewport(), &helpEvent);
-        QTest::qWait(250);
+        QTRY_COMPARE(QApplication::topLevelWidgets().size(), 1);
 
         bool foundView = false;
         bool foundTipLabel = false;
@@ -975,15 +974,15 @@ void tst_QGraphicsItem::toolTip()
             if (widget->inherits("QTipLabel"))
                 foundTipLabel = true;
         }
-        QVERIFY(foundView);
-        QVERIFY(!foundTipLabel);
+        QTRY_VERIFY(foundView);
+        QTRY_VERIFY(!foundTipLabel);
     }
 
     {
         QHelpEvent helpEvent(QEvent::ToolTip, view.viewport()->rect().center(),
                              view.viewport()->mapToGlobal(view.viewport()->rect().center()));
         QApplication::sendEvent(view.viewport(), &helpEvent);
-        QTest::qWait(250);
+        QTRY_COMPARE(QApplication::topLevelWidgets().size(), 2);
 
         bool foundView = false;
         bool foundTipLabel = false;
@@ -993,15 +992,15 @@ void tst_QGraphicsItem::toolTip()
             if (widget->inherits("QTipLabel"))
                 foundTipLabel = true;
         }
-        QVERIFY(foundView);
-        QVERIFY(foundTipLabel);
+        QTRY_VERIFY(foundView);
+        QTRY_VERIFY(foundTipLabel);
     }
 
     {
         QHelpEvent helpEvent(QEvent::ToolTip, view.viewport()->rect().topLeft(),
                              view.viewport()->mapToGlobal(view.viewport()->rect().topLeft()));
         QApplication::sendEvent(view.viewport(), &helpEvent);
-        QTest::qWait(1000);
+        QTRY_COMPARE(QApplication::topLevelWidgets().size(), 1);
 
         bool foundView = false;
         bool foundTipLabel = false;
@@ -1011,8 +1010,8 @@ void tst_QGraphicsItem::toolTip()
             if (widget->inherits("QTipLabel") && widget->isVisible())
                 foundTipLabel = true;
         }
-        QVERIFY(foundView);
-        QVERIFY(!foundTipLabel);
+        QTRY_VERIFY(foundView);
+        QTRY_VERIFY(!foundTipLabel);
     }
 }
 
@@ -1506,7 +1505,6 @@ void tst_QGraphicsItem::selected_textItem()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(20);
 
     QTRY_VERIFY(!text->isSelected());
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0,
@@ -1546,136 +1544,115 @@ void tst_QGraphicsItem::selected_multi()
     QVERIFY(!item2->isSelected());
 
     // Start clicking
-    QTest::qWait(200);
 
     // Click on item1
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(item1->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(item1->isSelected());
-    QVERIFY(!item2->isSelected());
+    QTRY_VERIFY(item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
 
     // Click on item2
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(item2->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(item2->isSelected());
-    QVERIFY(!item1->isSelected());
+    QTRY_VERIFY(item2->isSelected());
+    QTRY_VERIFY(!item1->isSelected());
 
     // Ctrl-click on item1
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, view.mapFromScene(item1->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(item2->isSelected());
-    QVERIFY(item1->isSelected());
+    QTRY_VERIFY(item2->isSelected());
+    QTRY_VERIFY(item1->isSelected());
 
     // Ctrl-click on item1 again
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, view.mapFromScene(item1->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(item2->isSelected());
-    QVERIFY(!item1->isSelected());
+    QTRY_VERIFY(item2->isSelected());
+    QTRY_VERIFY(!item1->isSelected());
 
     // Ctrl-click on item2
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, view.mapFromScene(item2->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(!item2->isSelected());
-    QVERIFY(!item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
+    QTRY_VERIFY(!item1->isSelected());
 
     // Click on item1
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(item1->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(item1->isSelected());
-    QVERIFY(!item2->isSelected());
+    QTRY_VERIFY(item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
 
     // Click on scene
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(0, 0));
-    QTest::qWait(20);
-    QVERIFY(!item1->isSelected());
-    QVERIFY(!item2->isSelected());
+    QTRY_VERIFY(!item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
 
     // Click on item1
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(item1->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(item1->isSelected());
-    QVERIFY(!item2->isSelected());
+    QTRY_VERIFY(item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
 
     // Ctrl-click on scene
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, view.mapFromScene(0, 0));
-    QTest::qWait(20);
-    QVERIFY(!item1->isSelected());
-    QVERIFY(!item2->isSelected());
+    QTRY_VERIFY(!item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
 
     // Click on item1
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(item1->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(item1->isSelected());
-    QVERIFY(!item2->isSelected());
+    QTRY_VERIFY(item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
 
     // Press on item2
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(item2->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(!item1->isSelected());
-    QVERIFY(item2->isSelected());
+    QTRY_VERIFY(!item1->isSelected());
+    QTRY_VERIFY(item2->isSelected());
 
     // Release on item2
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(item2->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(!item1->isSelected());
-    QVERIFY(item2->isSelected());
+    QTRY_VERIFY(!item1->isSelected());
+    QTRY_VERIFY(item2->isSelected());
 
     // Click on item1
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(item1->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(item1->isSelected());
-    QVERIFY(!item2->isSelected());
+    QTRY_VERIFY(item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
 
     // Ctrl-click on item1
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, view.mapFromScene(item1->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(!item1->isSelected());
-    QVERIFY(!item2->isSelected());
+    QTRY_VERIFY(!item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
 
     // Ctrl-press on item1
     QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::ControlModifier, view.mapFromScene(item1->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(!item1->isSelected());
-    QVERIFY(!item2->isSelected());
+    QTRY_VERIFY(!item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
 
     {
         // Ctrl-move on item1
         QMouseEvent event(QEvent::MouseMove, view.mapFromScene(item1->scenePos()) + QPoint(1, 0), Qt::LeftButton, Qt::LeftButton, Qt::ControlModifier);
         QApplication::sendEvent(view.viewport(), &event);
-        QTest::qWait(20);
-        QVERIFY(!item1->isSelected());
-        QVERIFY(!item2->isSelected());
+        QTRY_VERIFY(!item1->isSelected());
+        QTRY_VERIFY(!item2->isSelected());
     }
 
     // Release on item1
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::ControlModifier, view.mapFromScene(item1->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(item1->isSelected());
-    QVERIFY(!item2->isSelected());
+    QTRY_VERIFY(item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
 
     item1->setFlag(QGraphicsItem::ItemIsMovable);
     item1->setSelected(false);
 
     // Ctrl-press on item1
     QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::ControlModifier, view.mapFromScene(item1->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(!item1->isSelected());
-    QVERIFY(!item2->isSelected());
+    QTRY_VERIFY(!item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
 
     {
         // Ctrl-move on item1
         QMouseEvent event(QEvent::MouseMove, view.mapFromScene(item1->scenePos()) + QPoint(1, 0), Qt::LeftButton, Qt::LeftButton, Qt::ControlModifier);
         QApplication::sendEvent(view.viewport(), &event);
-        QTest::qWait(20);
-        QVERIFY(item1->isSelected());
-        QVERIFY(!item2->isSelected());
+        QTRY_VERIFY(item1->isSelected());
+        QTRY_VERIFY(!item2->isSelected());
     }
 
     // Release on item1
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::ControlModifier, view.mapFromScene(item1->scenePos()));
-    QTest::qWait(20);
-    QVERIFY(item1->isSelected());
-    QVERIFY(!item2->isSelected());
+    QTRY_VERIFY(item1->isSelected());
+    QTRY_VERIFY(!item2->isSelected());
 }
 
 void tst_QGraphicsItem::acceptedMouseButtons()
@@ -3059,7 +3036,6 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(150);
 
     EventTester *tester = new EventTester;
     scene.addItem(tester);
@@ -3075,11 +3051,9 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
 
     // Check that we get a repaint
     int npaints = tester->repaints;
-    qApp->processEvents();
-    qApp->processEvents();
-    QCOMPARE(tester->events.size(), 2); //  enter + move
-    QCOMPARE(tester->repaints, npaints + 1);
-    QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverMove);
+    QTRY_COMPARE(tester->events.size(), 2); //  enter + move
+    QTRY_COMPARE(tester->repaints, npaints + 1);
+    QTRY_COMPARE(tester->events.last(), QEvent::GraphicsSceneHoverMove);
 
     // Send a hover move event
     QGraphicsSceneHoverEvent hoverMoveEvent(QEvent::GraphicsSceneHoverMove);
@@ -3088,12 +3062,9 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     QApplication::sendEvent(&scene, &hoverMoveEvent);
 
     // Check that we don't get a repaint
-    qApp->processEvents();
-    qApp->processEvents();
-
-    QCOMPARE(tester->events.size(), 3);
-    QCOMPARE(tester->repaints, npaints + 1);
-    QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverMove);
+    QTRY_COMPARE(tester->events.size(), 3);
+    QTRY_COMPARE(tester->repaints, npaints + 1);
+    QTRY_COMPARE(tester->events.last(), QEvent::GraphicsSceneHoverMove);
 
     // Send a hover leave event
     QGraphicsSceneHoverEvent hoverLeaveEvent(QEvent::GraphicsSceneHoverLeave);
@@ -3102,12 +3073,9 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     QApplication::sendEvent(&scene, &hoverLeaveEvent);
 
     // Check that we get a repaint
-    qApp->processEvents();
-    qApp->processEvents();
-
-    QCOMPARE(tester->events.size(), 4);
-    QCOMPARE(tester->repaints, npaints + 2);
-    QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverLeave);
+    QTRY_COMPARE(tester->events.size(), 4);
+    QTRY_COMPARE(tester->repaints, npaints + 2);
+    QTRY_COMPARE(tester->events.last(), QEvent::GraphicsSceneHoverLeave);
 }
 
 void tst_QGraphicsItem::boundingRects_data()
@@ -3191,9 +3159,8 @@ void tst_QGraphicsItem::childrenBoundingRect()
     view.show();
 
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(30);
 
-    QCOMPARE(parent->childrenBoundingRect(), QRectF(-500, -100, 600, 800));
+    QTRY_COMPARE(parent->childrenBoundingRect(), QRectF(-500, -100, 600, 800));
 }
 
 void tst_QGraphicsItem::childrenBoundingRectTransformed()
@@ -3339,8 +3306,6 @@ void tst_QGraphicsItem::group()
     QCOMPARE(scene.items().size(), 4);
     QCOMPARE(scene.items(group->sceneBoundingRect()).size(), 3);
 
-    QTest::qWait(25);
-
     QRectF parent2SceneBoundingRect = parent2->sceneBoundingRect();
     group->addToGroup(parent2);
     QCOMPARE(parent2->group(), group);
@@ -3350,8 +3315,6 @@ void tst_QGraphicsItem::group()
     QCOMPARE(group->children().size(), 2);
     QCOMPARE(scene.items().size(), 4);
     QCOMPARE(scene.items(group->sceneBoundingRect()).size(), 4);
-
-    QTest::qWait(25);
 
     QList<QGraphicsItem *> newItems;
     for (int i = 0; i < 100; ++i) {
@@ -3369,9 +3332,7 @@ void tst_QGraphicsItem::group()
     int n = 0;
     foreach (QGraphicsItem *item, newItems) {
         group->addToGroup(item);
-        QCOMPARE(item->group(), group);
-        if ((n++ % 100) == 0)
-            QTest::qWait(10);
+        QTRY_COMPARE(item->group(), group);
     }
 }
 
@@ -3561,7 +3522,6 @@ void tst_QGraphicsItem::handlesChildEvents()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(20);
 
     // Pull out the items, closest item first
     QList<QGraphicsItem *> items = scene.items(scene.itemsBoundingRect());
@@ -3774,7 +3734,6 @@ void tst_QGraphicsItem::filtersChildEvents()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(20);
 
     QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
     QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
@@ -3900,7 +3859,6 @@ void tst_QGraphicsItem::ensureVisible()
     }
 
     item->ensureVisible(-100, -100, 25, 25);
-    QTest::qWait(25);
 
     for (int x = -100; x < 100; x += 25) {
         for (int y = -100; y < 100; y += 25) {
@@ -3934,7 +3892,6 @@ void tst_QGraphicsItem::ensureVisible()
     }
 
     item->ensureVisible(100, 100, 25, 25);
-    QTest::qWait(25);
 }
 
 void tst_QGraphicsItem::cursor()
@@ -3975,8 +3932,6 @@ void tst_QGraphicsItem::cursor()
     view.show();
     QTest::mouseMove(&view, view.rect().center());
 
-    QTest::qWait(25);
-
     QCursor cursor = view.viewport()->cursor();
 
     {
@@ -3984,9 +3939,7 @@ void tst_QGraphicsItem::cursor()
         QApplication::sendEvent(view.viewport(), &event);
     }
 
-    QTest::qWait(25);
-
-    QCOMPARE(view.viewport()->cursor().shape(), cursor.shape());
+    QTRY_COMPARE(view.viewport()->cursor().shape(), cursor.shape());
 
     {
         QTest::mouseMove(view.viewport(), view.mapFromScene(item1->sceneBoundingRect().center()));
@@ -4001,7 +3954,7 @@ void tst_QGraphicsItem::cursor()
     return;
 #endif
 
-    QCOMPARE(view.viewport()->cursor().shape(), item1->cursor().shape());
+    QTRY_COMPARE(view.viewport()->cursor().shape(), item1->cursor().shape());
 
     {
         QTest::mouseMove(view.viewport(), view.mapFromScene(item2->sceneBoundingRect().center()));
@@ -4009,9 +3962,7 @@ void tst_QGraphicsItem::cursor()
         QApplication::sendEvent(view.viewport(), &event);
     }
 
-    QTest::qWait(25);
-
-    QCOMPARE(view.viewport()->cursor().shape(), item2->cursor().shape());
+    QTRY_COMPARE(view.viewport()->cursor().shape(), item2->cursor().shape());
 
     {
         QTest::mouseMove(view.viewport(), view.rect().center());
@@ -4019,9 +3970,7 @@ void tst_QGraphicsItem::cursor()
         QApplication::sendEvent(view.viewport(), &event);
     }
 
-    QTest::qWait(25);
-
-    QCOMPARE(view.viewport()->cursor().shape(), cursor.shape());
+    QTRY_COMPARE(view.viewport()->cursor().shape(), cursor.shape());
 #endif
 }
 /*
@@ -4685,7 +4634,6 @@ void tst_QGraphicsItem::sceneEventFilter()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(25);
 
     QGraphicsTextItem *text1 = scene.addText(QLatin1String("Text1"));
     QGraphicsTextItem *text2 = scene.addText(QLatin1String("Text2"));
@@ -4749,7 +4697,6 @@ void tst_QGraphicsItem::sceneEventFilter()
     gv.setScene(anotherScene);
     gv.show();
     QTest::qWaitForWindowShown(&gv);
-    QTest::qWait(25);
     ti->installSceneEventFilter(ti2);
     ti3->installSceneEventFilter(ti);
     delete ti2;
@@ -4820,30 +4767,25 @@ void tst_QGraphicsItem::paint()
     QGraphicsView view2(&scene2);
     view2.show();
     QTest::qWaitForWindowShown(&view2);
-    QTest::qWait(25);
 
     PaintTester tester2;
     scene2.addItem(&tester2);
-    qApp->processEvents();
 
     //First show one paint
     QTRY_COMPARE(tester2.painted, 1);
 
     //nominal case, update call paint
     tester2.update();
-    qApp->processEvents();
     QTRY_VERIFY(tester2.painted == 2);
 
     //we remove the item from the scene, number of updates is still the same
     tester2.update();
     scene2.removeItem(&tester2);
-    qApp->processEvents();
     QTRY_VERIFY(tester2.painted == 2);
 
     //We re-add the item, the number of paint should increase
     scene2.addItem(&tester2);
     tester2.update();
-    qApp->processEvents();
     QTRY_VERIFY(tester2.painted == 3);
 }
 
@@ -5237,7 +5179,6 @@ void tst_QGraphicsItem::itemClipsChildrenToShape2()
 #else
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWait(5000);
 #endif
 }
 
@@ -5647,29 +5588,29 @@ void tst_QGraphicsItem::untransformable()
 
     for (int i = 0; i < 10; ++i) {
         QPoint center = view.viewport()->rect().center();
-        QCOMPARE(view.itemAt(center), item1);
-        QCOMPARE(view.itemAt(center - QPoint(40, 0)), item1);
-        QCOMPARE(view.itemAt(center - QPoint(-40, 0)), item1);
-        QCOMPARE(view.itemAt(center - QPoint(0, 40)), item1);
-        QCOMPARE(view.itemAt(center - QPoint(0, -40)), item1);
+        QTRY_COMPARE(view.itemAt(center), item1);
+        QTRY_COMPARE(view.itemAt(center - QPoint(40, 0)), item1);
+        QTRY_COMPARE(view.itemAt(center - QPoint(-40, 0)), item1);
+        QTRY_COMPARE(view.itemAt(center - QPoint(0, 40)), item1);
+        QTRY_COMPARE(view.itemAt(center - QPoint(0, -40)), item1);
 
         center += QPoint(70, 70);
-        QCOMPARE(view.itemAt(center - QPoint(40, 0)), item2);
-        QCOMPARE(view.itemAt(center - QPoint(-40, 0)), item2);
-        QCOMPARE(view.itemAt(center - QPoint(0, 40)), item2);
-        QCOMPARE(view.itemAt(center - QPoint(0, -40)), item2);
+        QTRY_COMPARE(view.itemAt(center - QPoint(40, 0)), item2);
+        QTRY_COMPARE(view.itemAt(center - QPoint(-40, 0)), item2);
+        QTRY_COMPARE(view.itemAt(center - QPoint(0, 40)), item2);
+        QTRY_COMPARE(view.itemAt(center - QPoint(0, -40)), item2);
 
         center += QPoint(0, 100);
-        QCOMPARE(view.itemAt(center - QPoint(40, 0)), item3);
-        QCOMPARE(view.itemAt(center - QPoint(-40, 0)), item3);
-        QCOMPARE(view.itemAt(center - QPoint(0, 40)), item3);
-        QCOMPARE(view.itemAt(center - QPoint(0, -40)), item3);
+        QTRY_COMPARE(view.itemAt(center - QPoint(40, 0)), item3);
+        QTRY_COMPARE(view.itemAt(center - QPoint(-40, 0)), item3);
+        QTRY_COMPARE(view.itemAt(center - QPoint(0, 40)), item3);
+        QTRY_COMPARE(view.itemAt(center - QPoint(0, -40)), item3);
 
         view.scale(0.5, 0.5);
         view.rotate(13);
         view.shear(qreal(0.01), qreal(0.01));
         view.translate(10, 10);
-        QTest::qWait(25);
+        qApp->processEvents();
     }
 }
 
@@ -5707,7 +5648,6 @@ void tst_QGraphicsItem::contextMenuEventPropagation()
     view.show();
     view.resize(200, 200);
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(20);
 
     QContextMenuEvent event(QContextMenuEvent::Mouse, QPoint(10, 10),
                             view.viewport()->mapToGlobal(QPoint(10, 10)));
@@ -5813,8 +5753,6 @@ void tst_QGraphicsItem::task141694_textItemEnsureVisible()
     view.ensureVisible(-1000, -1000, 5, 5);
     int hscroll = view.horizontalScrollBar()->value();
     int vscroll = view.verticalScrollBar()->value();
-
-    QTest::qWait(10);
 
     // This should not cause the view to scroll
     QTRY_COMPARE(view.horizontalScrollBar()->value(), hscroll);
@@ -5983,7 +5921,6 @@ void tst_QGraphicsItem::ensureUpdateOnTextItem()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(25);
     TextItem *text1 = new TextItem(QLatin1String("123"));
     scene.addItem(text1);
     qApp->processEvents();
@@ -6285,7 +6222,6 @@ void tst_QGraphicsItem::opacity2()
     RESET_REPAINT_COUNTERS
 
     child->setOpacity(0.0);
-    QTest::qWait(10);
     QTRY_COMPARE(view.repaints, 1);
     QCOMPARE(parent->repaints, 1);
     QCOMPARE(child->repaints, 0);
@@ -6294,7 +6230,6 @@ void tst_QGraphicsItem::opacity2()
     RESET_REPAINT_COUNTERS
 
     child->setOpacity(1.0);
-    QTest::qWait(10);
     QTRY_COMPARE(view.repaints, 1);
     QCOMPARE(parent->repaints, 1);
     QCOMPARE(child->repaints, 1);
@@ -6303,7 +6238,6 @@ void tst_QGraphicsItem::opacity2()
     RESET_REPAINT_COUNTERS
 
     parent->setOpacity(0.0);
-    QTest::qWait(10);
     QTRY_COMPARE(view.repaints, 1);
     QCOMPARE(parent->repaints, 0);
     QCOMPARE(child->repaints, 0);
@@ -6312,7 +6246,6 @@ void tst_QGraphicsItem::opacity2()
     RESET_REPAINT_COUNTERS
 
     parent->setOpacity(1.0);
-    QTest::qWait(10);
     QTRY_COMPARE(view.repaints, 1);
     QCOMPARE(parent->repaints, 1);
     QCOMPARE(child->repaints, 1);
@@ -6322,7 +6255,6 @@ void tst_QGraphicsItem::opacity2()
     RESET_REPAINT_COUNTERS
 
     child->setOpacity(0.0);
-    QTest::qWait(10);
     QTRY_COMPARE(view.repaints, 1);
     QCOMPARE(parent->repaints, 1);
     QCOMPARE(child->repaints, 0);
@@ -6331,7 +6263,6 @@ void tst_QGraphicsItem::opacity2()
     RESET_REPAINT_COUNTERS
 
     child->setOpacity(0.0); // Already 0.0; no change.
-    QTest::qWait(10);
     QTRY_COMPARE(view.repaints, 0);
     QCOMPARE(parent->repaints, 0);
     QCOMPARE(child->repaints, 0);
@@ -6355,8 +6286,6 @@ void tst_QGraphicsItem::opacityZeroUpdates()
 
     view.reset();
     parent->setOpacity(0.0);
-
-    QTest::qWait(20);
 
     // transforming items bounding rect to view coordinates
     const QRect childDeviceBoundingRect = child->deviceTransform(view.viewportTransform())
@@ -6425,7 +6354,6 @@ void tst_QGraphicsItem::itemStacksBehindParent()
     view.show();
     QTest::qWaitForWindowShown(&view);
     QTRY_VERIFY(!paintedItems.isEmpty());
-    QTest::qWait(100);
     paintedItems.clear();
     view.viewport()->update();
     QApplication::processEvents();
@@ -6522,7 +6450,6 @@ void tst_QGraphicsItem::nestedClipping()
     view.setOptimizationFlag(QGraphicsView::IndirectPainting);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(25);
 
     QList<QGraphicsItem *> expected;
     expected << root << l1 << l2 << l3;
@@ -6710,16 +6637,13 @@ void tst_QGraphicsItem::tabChangesFocus()
     QTRY_VERIFY(scene.isActive());
 
     dial1->setFocus();
-    QTest::qWait(15);
     QTRY_VERIFY(dial1->hasFocus());
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(15);
     QTRY_VERIFY(view->hasFocus());
     QTRY_VERIFY(item->hasFocus());
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(15);
 
     if (tabChangesFocus) {
         QTRY_VERIFY(!view->hasFocus());
@@ -6753,24 +6677,21 @@ void tst_QGraphicsItem::cacheMode()
     testerChild2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
     scene.addItem(tester);
-    QTest::qWait(10);
 
     for (int i = 0; i < 2; ++i) {
         // No visual change.
         QTRY_COMPARE(tester->repaints, 1);
-        QCOMPARE(testerChild->repaints, 1);
-        QCOMPARE(testerChild2->repaints, 1);
+        QTRY_COMPARE(testerChild->repaints, 1);
+        QTRY_COMPARE(testerChild2->repaints, 1);
         tester->setCacheMode(QGraphicsItem::NoCache);
         testerChild->setCacheMode(QGraphicsItem::NoCache);
         testerChild2->setCacheMode(QGraphicsItem::NoCache);
-        QTest::qWait(25);
         QTRY_COMPARE(tester->repaints, 1);
-        QCOMPARE(testerChild->repaints, 1);
-        QCOMPARE(testerChild2->repaints, 1);
+        QTRY_COMPARE(testerChild->repaints, 1);
+        QTRY_COMPARE(testerChild2->repaints, 1);
         tester->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
         testerChild->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
         testerChild2->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
-        QTest::qWait(25);
     }
 
     // The first move causes a repaint as the item is painted into its pixmap.
@@ -6778,151 +6699,131 @@ void tst_QGraphicsItem::cacheMode()
     tester->setPos(10, 10);
     testerChild->setPos(10, 10);
     testerChild2->setPos(10, 10);
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 2);
-    QCOMPARE(testerChild->repaints, 2);
-    QCOMPARE(testerChild2->repaints, 2);
+    QTRY_COMPARE(testerChild->repaints, 2);
+    QTRY_COMPARE(testerChild2->repaints, 2);
 
     // Consecutive moves should not repaint.
     tester->setPos(20, 20);
     testerChild->setPos(20, 20);
     testerChild2->setPos(20, 20);
-    QTest::qWait(250);
-    QCOMPARE(tester->repaints, 2);
-    QCOMPARE(testerChild->repaints, 2);
-    QCOMPARE(testerChild2->repaints, 2);
+    QTRY_COMPARE(tester->repaints, 2);
+    QTRY_COMPARE(testerChild->repaints, 2);
+    QTRY_COMPARE(testerChild2->repaints, 2);
 
     // Translating does not result in a repaint.
     tester->translate(10, 10);
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 2);
-    QCOMPARE(testerChild->repaints, 2);
-    QCOMPARE(testerChild2->repaints, 2);
+    QTRY_COMPARE(testerChild->repaints, 2);
+    QTRY_COMPARE(testerChild2->repaints, 2);
 
     // Rotating results in a repaint.
     tester->rotate(45);
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 3);
-    QCOMPARE(testerChild->repaints, 3);
-    QCOMPARE(testerChild2->repaints, 2);
+    QTRY_COMPARE(testerChild->repaints, 3);
+    QTRY_COMPARE(testerChild2->repaints, 2);
 
     // Change to ItemCoordinateCache (triggers repaint).
     tester->setCacheMode(QGraphicsItem::ItemCoordinateCache); // autosize
     testerChild->setCacheMode(QGraphicsItem::ItemCoordinateCache); // autosize
     testerChild2->setCacheMode(QGraphicsItem::ItemCoordinateCache); // autosize
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 4);
-    QCOMPARE(testerChild->repaints, 4);
-    QCOMPARE(testerChild2->repaints, 3);
+    QTRY_COMPARE(testerChild->repaints, 4);
+    QTRY_COMPARE(testerChild2->repaints, 3);
 
     // Rotating items with ItemCoordinateCache doesn't cause a repaint.
     tester->rotate(22);
     testerChild->rotate(22);
     testerChild2->rotate(22);
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 4);
-    QCOMPARE(testerChild->repaints, 4);
-    QCOMPARE(testerChild2->repaints, 3);
+    QTRY_COMPARE(testerChild->repaints, 4);
+    QTRY_COMPARE(testerChild2->repaints, 3);
 
     // Explicit update causes a repaint.
     tester->update(0, 0, 5, 5);
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 5);
-    QCOMPARE(testerChild->repaints, 4);
-    QCOMPARE(testerChild2->repaints, 3);
+    QTRY_COMPARE(testerChild->repaints, 4);
+    QTRY_COMPARE(testerChild2->repaints, 3);
 
     // Updating outside the item's bounds does not cause a repaint.
     tester->update(10, 10, 5, 5);
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 5);
-    QCOMPARE(testerChild->repaints, 4);
-    QCOMPARE(testerChild2->repaints, 3);
+    QTRY_COMPARE(testerChild->repaints, 4);
+    QTRY_COMPARE(testerChild2->repaints, 3);
 
     // Resizing an item should cause a repaint of that item. (because of
     // autosize).
     tester->setGeometry(QRectF(-15, -15, 30, 30));
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 6);
-    QCOMPARE(testerChild->repaints, 4);
-    QCOMPARE(testerChild2->repaints, 3);
+    QTRY_COMPARE(testerChild->repaints, 4);
+    QTRY_COMPARE(testerChild2->repaints, 3);
 
     // Set fixed size.
     tester->setCacheMode(QGraphicsItem::ItemCoordinateCache, QSize(30, 30));
     testerChild->setCacheMode(QGraphicsItem::ItemCoordinateCache, QSize(30, 30));
     testerChild2->setCacheMode(QGraphicsItem::ItemCoordinateCache, QSize(30, 30));
-    QTest::qWait(20);
     QTRY_COMPARE(tester->repaints, 7);
-    QCOMPARE(testerChild->repaints, 5);
-    QCOMPARE(testerChild2->repaints, 4);
+    QTRY_COMPARE(testerChild->repaints, 5);
+    QTRY_COMPARE(testerChild2->repaints, 4);
 
     // Resizing the item should cause a repaint.
     testerChild->setGeometry(QRectF(-15, -15, 30, 30));
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 7);
-    QCOMPARE(testerChild->repaints, 6);
-    QCOMPARE(testerChild2->repaints, 4);
+    QTRY_COMPARE(testerChild->repaints, 6);
+    QTRY_COMPARE(testerChild2->repaints, 4);
 
     // Scaling the view does not cause a repaint.
     view.scale(0.7, 0.7);
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 7);
-    QCOMPARE(testerChild->repaints, 6);
-    QCOMPARE(testerChild2->repaints, 4);
+    QTRY_COMPARE(testerChild->repaints, 6);
+    QTRY_COMPARE(testerChild2->repaints, 4);
 
     // Switch to device coordinate cache.
     tester->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
     testerChild->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
     testerChild2->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 8);
-    QCOMPARE(testerChild->repaints, 7);
-    QCOMPARE(testerChild2->repaints, 5);
+    QTRY_COMPARE(testerChild->repaints, 7);
+    QTRY_COMPARE(testerChild2->repaints, 5);
 
     // Scaling the view back should cause repaints for two of the items.
     view.setTransform(QTransform());
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 9);
-    QCOMPARE(testerChild->repaints, 8);
-    QCOMPARE(testerChild2->repaints, 5);
+    QTRY_COMPARE(testerChild->repaints, 8);
+    QTRY_COMPARE(testerChild2->repaints, 5);
 
     // Rotating the base item (perspective) should repaint two items.
     tester->setTransform(QTransform().rotate(10, Qt::XAxis));
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 10);
-    QCOMPARE(testerChild->repaints, 9);
-    QCOMPARE(testerChild2->repaints, 5);
+    QTRY_COMPARE(testerChild->repaints, 9);
+    QTRY_COMPARE(testerChild2->repaints, 5);
 
     // Moving the middle item should case a repaint even if it's a move,
     // because the parent is rotated with a perspective.
     testerChild->setPos(1, 1);
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 10);
-    QCOMPARE(testerChild->repaints, 10);
-    QCOMPARE(testerChild2->repaints, 5);
+    QTRY_COMPARE(testerChild->repaints, 10);
+    QTRY_COMPARE(testerChild2->repaints, 5);
 
     // Make a huge item
     tester->setGeometry(QRectF(-4000, -4000, 8000, 8000));
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 11);
-    QCOMPARE(testerChild->repaints, 10);
-    QCOMPARE(testerChild2->repaints, 5);
+    QTRY_COMPARE(testerChild->repaints, 10);
+    QTRY_COMPARE(testerChild2->repaints, 5);
 
     // Move the large item - will cause a repaint as the
     // cache is clipped.
     tester->setPos(5, 0);
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 12);
-    QCOMPARE(testerChild->repaints, 10);
-    QCOMPARE(testerChild2->repaints, 5);
+    QTRY_COMPARE(testerChild->repaints, 10);
+    QTRY_COMPARE(testerChild2->repaints, 5);
 
     // Hiding and showing should invalidate the cache
     tester->hide();
-    QTest::qWait(25);
     tester->show();
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 13);
-    QCOMPARE(testerChild->repaints, 11);
-    QCOMPARE(testerChild2->repaints, 6);
+    QTRY_COMPARE(testerChild->repaints, 11);
+    QTRY_COMPARE(testerChild2->repaints, 6);
 }
 
 void tst_QGraphicsItem::updateCachedItemAfterMove()
@@ -6939,31 +6840,26 @@ void tst_QGraphicsItem::updateCachedItemAfterMove()
     view.show();
     QTest::qWaitForWindowShown(&view);
 
-    QTest::qWait(12);
     QTRY_VERIFY(tester->repaints > 0);
     tester->repaints = 0;
 
     // Move the item, should not cause repaints
     tester->setPos(10, 0);
-    QTest::qWait(12);
-    QCOMPARE(tester->repaints, 0);
+    QTRY_COMPARE(tester->repaints, 0);
 
     // Move then update, should cause one repaint
     tester->setPos(20, 0);
     tester->update();
-    QTest::qWait(12);
-    QCOMPARE(tester->repaints, 1);
+    QTRY_COMPARE(tester->repaints, 1);
 
     // Hiding the item doesn't cause a repaint
     tester->hide();
-    QTest::qWait(12);
-    QCOMPARE(tester->repaints, 1);
+    QTRY_COMPARE(tester->repaints, 1);
 
     // Moving a hidden item doesn't cause a repaint
     tester->setPos(30, 0);
     tester->update();
-    QTest::qWait(12);
-    QCOMPARE(tester->repaints, 1);
+    QTRY_COMPARE(tester->repaints, 1);
 }
 
 class Track : public QGraphicsRectItem
@@ -7084,7 +6980,6 @@ void tst_QGraphicsItem::update()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(100);
 
     EventTester *item = new EventTester;
     scene.addItem(item);
@@ -7093,23 +6988,20 @@ void tst_QGraphicsItem::update()
 
     item->update(); // Item marked as dirty
     scene.update(); // Entire scene marked as dirty
-    qApp->processEvents();
-    QCOMPARE(item->repaints, 1);
+    QTRY_COMPARE(item->repaints, 1);
 
     // Make sure the dirty state from the previous update is reset so that
     // the item don't think it is already dirty and discards this update.
     item->update();
-    qApp->processEvents();
-    QCOMPARE(item->repaints, 2);
+    QTRY_COMPARE(item->repaints, 2);
 
     // Make sure a partial update doesn't cause a full update to be discarded.
     view.reset();
     item->repaints = 0;
     item->update(QRectF(0, 0, 5, 5));
     item->update();
-    qApp->processEvents();
-    QCOMPARE(item->repaints, 1);
-    QCOMPARE(view.repaints, 1);
+    QTRY_COMPARE(item->repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
     QRect itemDeviceBoundingRect = item->deviceTransform(view.viewportTransform())
                                                          .mapRect(item->boundingRect()).toRect();
     QRegion expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2);
@@ -7120,65 +7012,55 @@ void tst_QGraphicsItem::update()
     view.reset();
     item->repaints = 0;
     item->update(-15, -15, 5, 5); // Item's brect: (-10, -10, 20, 20)
-    qApp->processEvents();
-    QCOMPARE(item->repaints, 0);
-    QCOMPARE(view.repaints, 0);
+    QTRY_COMPARE(item->repaints, 0);
+    QTRY_COMPARE(view.repaints, 0);
 
     // Make sure the area occupied by an item is repainted when hiding it.
     view.reset();
     item->repaints = 0;
     item->update(); // Full update; all sub-sequent update requests are discarded.
     item->hide(); // visible set to 0. ignoreVisible must be set to 1; the item won't be processed otherwise.
-    qApp->processEvents();
-    QCOMPARE(item->repaints, 0);
-    QCOMPARE(view.repaints, 1);
+    QTRY_COMPARE(item->repaints, 0);
+    QTRY_COMPARE(view.repaints, 1);
     // The entire item's bounding rect (adjusted for antialiasing) should have been painted.
-    QCOMPARE(view.paintedRegion, expectedRegion);
+    QTRY_COMPARE(view.paintedRegion, expectedRegion);
 
     // Make sure item is repainted when shown (after being hidden).
     view.reset();
     item->repaints = 0;
     item->show();
-    qApp->processEvents();
-    QCOMPARE(item->repaints, 1);
-    QCOMPARE(view.repaints, 1);
+    QTRY_COMPARE(item->repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
     // The entire item's bounding rect (adjusted for antialiasing) should have been painted.
-    QCOMPARE(view.paintedRegion, expectedRegion);
+    QTRY_COMPARE(view.paintedRegion, expectedRegion);
 
     item->repaints = 0;
     item->hide();
-    qApp->processEvents();
     view.reset();
     const QPointF originalPos = item->pos();
     item->setPos(5000, 5000);
-    qApp->processEvents();
-    QCOMPARE(item->repaints, 0);
-    QCOMPARE(view.repaints, 0);
-    qApp->processEvents();
+    QTRY_COMPARE(item->repaints, 0);
+    QTRY_COMPARE(view.repaints, 0);
 
     item->setPos(originalPos);
-    qApp->processEvents();
-    QCOMPARE(item->repaints, 0);
-    QCOMPARE(view.repaints, 0);
+    QTRY_COMPARE(item->repaints, 0);
+    QTRY_COMPARE(view.repaints, 0);
     item->show();
-    qApp->processEvents();
-    QCOMPARE(item->repaints, 1);
-    QCOMPARE(view.repaints, 1);
+    QTRY_COMPARE(item->repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
     // The entire item's bounding rect (adjusted for antialiasing) should have been painted.
     QCOMPARE(view.paintedRegion, expectedRegion);
 
     QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
     item->setPos(originalPos + QPoint(50, 50));
     viewPrivate->updateAll();
-    QVERIFY(viewPrivate->fullUpdatePending);
-    QTest::qWait(50);
+    QVERIFY(viewPrivate->fullUpdatePending);         // test to ensure object will be updated 
+    QTRY_VERIFY(!(viewPrivate->fullUpdatePending));  // test to ensure object has been updated
     item->repaints = 0;
     view.reset();
     item->setPos(originalPos);
-    QTest::qWait(50);
-    qApp->processEvents();
-    QCOMPARE(item->repaints, 1);
-    QCOMPARE(view.repaints, 1);
+    QTRY_COMPARE(item->repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
     COMPARE_REGIONS(view.paintedRegion, expectedRegion + expectedRegion.translated(50, 50));
 
     // Make sure moving a parent item triggers an update on the children
@@ -7195,18 +7077,16 @@ void tst_QGraphicsItem::update()
     view.reset();
     item->repaints = 0;
     parent->translate(-400, 0);
-    qApp->processEvents();
-    QCOMPARE(item->repaints, 0);
-    QCOMPARE(view.repaints, 1);
-    QCOMPARE(view.paintedRegion, expectedRegion);
+    QTRY_COMPARE(item->repaints, 0);
+    QTRY_COMPARE(view.repaints, 1);
+    QTRY_COMPARE(view.paintedRegion, expectedRegion);
     view.reset();
     item->repaints = 0;
     parent->translate(400, 0);
-    qApp->processEvents();
-    QCOMPARE(item->repaints, 1);
-    QCOMPARE(view.repaints, 1);
-    QCOMPARE(view.paintedRegion, expectedRegion);
-    QCOMPARE(view.paintedRegion, expectedRegion);
+    QTRY_COMPARE(item->repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
+    QTRY_COMPARE(view.paintedRegion, expectedRegion);
+    QTRY_COMPARE(view.paintedRegion, expectedRegion);
 }
 
 void tst_QGraphicsItem::setTransformProperties_data()
@@ -7363,17 +7243,13 @@ void tst_QGraphicsItem::itemUsesExtendedStyleOption()
     rect->startTrack = false;
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(60);
     rect->startTrack = true;
     rect->update(10, 10, 10, 10);
-    QTest::qWait(60);
     rect->startTrack = false;
     rect->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption, true);
-    QVERIFY((rect->flags() & QGraphicsItem::ItemUsesExtendedStyleOption));
-    QTest::qWait(60);
+    QTRY_VERIFY((rect->flags() & QGraphicsItem::ItemUsesExtendedStyleOption));
     rect->startTrack = true;
     rect->update(10, 10, 10, 10);
-    QTest::qWait(60);
 }
 
 void tst_QGraphicsItem::itemSendsGeometryChanges()
@@ -7425,7 +7301,6 @@ void tst_QGraphicsItem::moveItem()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(100);
 
     EventTester *parent = new EventTester;
     EventTester *child = new EventTester(parent);
@@ -7448,9 +7323,8 @@ void tst_QGraphicsItem::moveItem()
                                      .adjusted(-2, -2, 2, 2); // Adjusted for antialiasing.
 
     parent->setPos(20, 20);
-    qApp->processEvents();
-    QCOMPARE(parent->repaints, 1);
-    QCOMPARE(view.repaints, 1);
+    QTRY_COMPARE(parent->repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
     QRegion expectedParentRegion = parentDeviceBoundingRect; // old position
     parentDeviceBoundingRect.translate(20, 20);
     expectedParentRegion += parentDeviceBoundingRect; // new position
@@ -7459,32 +7333,29 @@ void tst_QGraphicsItem::moveItem()
     RESET_COUNTERS
 
     child->setPos(20, 20);
-    qApp->processEvents();
-    QCOMPARE(parent->repaints, 1);
-    QCOMPARE(child->repaints, 1);
-    QCOMPARE(view.repaints, 1);
+    QTRY_COMPARE(parent->repaints, 1);
+    QTRY_COMPARE(child->repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
     const QRegion expectedChildRegion = expectedParentRegion.translated(20, 20);
     COMPARE_REGIONS(view.paintedRegion, expectedChildRegion);
 
     RESET_COUNTERS
 
     grandChild->setPos(20, 20);
-    qApp->processEvents();
-    QCOMPARE(parent->repaints, 1);
-    QCOMPARE(child->repaints, 1);
-    QCOMPARE(grandChild->repaints, 1);
-    QCOMPARE(view.repaints, 1);
+    QTRY_COMPARE(parent->repaints, 1);
+    QTRY_COMPARE(child->repaints, 1);
+    QTRY_COMPARE(grandChild->repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
     const QRegion expectedGrandChildRegion = expectedParentRegion.translated(40, 40);
     COMPARE_REGIONS(view.paintedRegion, expectedGrandChildRegion);
 
     RESET_COUNTERS
 
     parent->translate(20, 20);
-    qApp->processEvents();
-    QCOMPARE(parent->repaints, 1);
-    QCOMPARE(child->repaints, 1);
-    QCOMPARE(grandChild->repaints, 1);
-    QCOMPARE(view.repaints, 1);
+    QTRY_COMPARE(parent->repaints, 1);
+    QTRY_COMPARE(child->repaints, 1);
+    QTRY_COMPARE(grandChild->repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
     expectedParentRegion.translate(20, 20);
     expectedParentRegion += expectedChildRegion.translated(20, 20);
     expectedParentRegion += expectedGrandChildRegion.translated(20, 20);
@@ -7504,7 +7375,6 @@ void tst_QGraphicsItem::moveLineItem()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(200);
     view.reset();
 
     const QRect itemDeviceBoundingRect = item->deviceTransform(view.viewportTransform())
@@ -7513,15 +7383,13 @@ void tst_QGraphicsItem::moveLineItem()
 
     // Make sure the calculated region is correct.
     item->update();
-    QTest::qWait(10);
     QTRY_COMPARE(view.paintedRegion, expectedRegion);
     view.reset();
 
     // Old position: (50, 50)
     item->setPos(50, 100);
     expectedRegion += expectedRegion.translated(0, 50);
-    QTest::qWait(10);
-    QCOMPARE(view.paintedRegion, expectedRegion);
+    QTRY_COMPARE(view.paintedRegion, expectedRegion);
 }
 
 void tst_QGraphicsItem::sorting_data()
@@ -7564,7 +7432,6 @@ void tst_QGraphicsItem::sorting()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(100);
 
     _paintedItems.clear();
 
@@ -7623,7 +7490,6 @@ void tst_QGraphicsItem::hitTestUntransformableItem()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(100);
 
     // Confuse the BSP with dummy items.
     QGraphicsRectItem *dummy = new QGraphicsRectItem(0, 0, 20, 20);
@@ -7649,18 +7515,16 @@ void tst_QGraphicsItem::hitTestUntransformableItem()
     item3->setPos(80, 80);
 
     scene.addItem(item1);
-    QTest::qWait(100);
 
     QList<QGraphicsItem *> items = scene.items(QPointF(80, 80));
-    QCOMPARE(items.size(), 1);
-    QCOMPARE(items.at(0), static_cast<QGraphicsItem*>(item3));
+    QTRY_COMPARE(items.size(), 1);
+    QTRY_COMPARE(items.at(0), static_cast<QGraphicsItem*>(item3));
 
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
-    QTest::qWait(100);
 
     items = scene.items(QPointF(80, 80));
-    QCOMPARE(items.size(), 1);
-    QCOMPARE(items.at(0), static_cast<QGraphicsItem*>(item3));
+    QTRY_COMPARE(items.size(), 1);
+    QTRY_COMPARE(items.at(0), static_cast<QGraphicsItem*>(item3));
 }
 
 void tst_QGraphicsItem::hitTestGraphicsEffectItem()
@@ -7673,7 +7537,6 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(100);
 
     // Confuse the BSP with dummy items.
     QGraphicsRectItem *dummy = new QGraphicsRectItem(0, 0, 20, 20);
@@ -7706,7 +7569,6 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     item3->brush = Qt::blue;
 
     scene.addItem(item1);
-    QTest::qWait(100);
 
     item1->repaints = 0;
     item2->repaints = 0;
@@ -7716,28 +7578,26 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect;
     shadow->setOffset(-20, -20);
     item1->setGraphicsEffect(shadow);
-    QTest::qWait(50);
 
     // Make sure all visible items are repainted.
-    QCOMPARE(item1->repaints, 0);
-    QCOMPARE(item2->repaints, 1);
-    QCOMPARE(item3->repaints, 1);
+    QTRY_COMPARE(item1->repaints, 0);
+    QTRY_COMPARE(item2->repaints, 1);
+    QTRY_COMPARE(item3->repaints, 1);
 
     // Make sure an item doesn't respond to a click on its shadow.
     QList<QGraphicsItem *> items = scene.items(QPointF(75, 75));
-    QVERIFY(items.isEmpty());
+    QTRY_VERIFY(items.isEmpty());
     items = scene.items(QPointF(80, 80));
-    QCOMPARE(items.size(), 1);
-    QCOMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
+    QTRY_COMPARE(items.size(), 1);
+    QTRY_COMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
 
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
-    QTest::qWait(100);
 
     items = scene.items(QPointF(75, 75));
-    QVERIFY(items.isEmpty());
+    QTRY_VERIFY(items.isEmpty());
     items = scene.items(QPointF(80, 80));
-    QCOMPARE(items.size(), 1);
-    QCOMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
+    QTRY_COMPARE(items.size(), 1);
+    QTRY_COMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
 }
 
 void tst_QGraphicsItem::focusProxy()
@@ -8396,7 +8256,6 @@ void tst_QGraphicsItem::moveWhileDeleting()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(125);
 
     delete rect;
 
@@ -8405,16 +8264,12 @@ void tst_QGraphicsItem::moveWhileDeleting()
     silly = new MoveWhileDying(rect);
     child = new QGraphicsRectItem(silly);
 
-    QTest::qWait(125);
-
     delete rect;
 
     rect = new MoveWhileDying;
     rect->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
     child = new QGraphicsRectItem(rect);
     silly = new MoveWhileDying(child);
-
-    QTest::qWait(125);
 
     delete rect;
 }
