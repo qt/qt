@@ -4,6 +4,7 @@ Item {
     width: 640
     height: 480
     Grid {
+        objectName: "grid"
         columns: 3
         add: Transition {
             NumberAnimation {

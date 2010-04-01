@@ -9,7 +9,7 @@ Item { id:block
     property int targetX: 0
     property int targetY: 0
 
-    SpringFollow on x { enabled: spawned; source: targetX; spring: 2; damping: 0.2 }
+    SpringFollow on x { source: targetX; spring: 2; damping: 0.2; enabled: spawned }
     SpringFollow on y { source: targetY; spring: 2; damping: 0.2 }
     //![1]
 

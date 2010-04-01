@@ -9,7 +9,6 @@ DESTDIR = MinehuntCore
 # Input
 SOURCES += minehunt.cpp
 
-
 sources.files = minehunt.qml minehunt.pro
 sources.path = $$[QT_INSTALL_DEMOS]/declarative/minehunt
 

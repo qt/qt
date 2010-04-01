@@ -6,7 +6,7 @@ SUBDIRS = \
    imageprovider \
    objectlistmodel \
    plugins \
-   widgets
+   proxywidgets
 
 # plugins uses a 'Time' class that conflicts with symbian e32std.h also defining a class of the same name
 symbian:SUBDIRS -= plugins
