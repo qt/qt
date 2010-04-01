@@ -1,5 +1,6 @@
 import Qt 4.6
 import "content"
+import "content/samegame.js" as SameGame
 
 Rectangle {
     id: screen
@@ -21,20 +22,19 @@ Rectangle {
             property int score: 0
             property int tileSize: 40
 
-            Script { source: "content/samegame.js" }
-
             z: 20; anchors.centerIn: parent
             width: parent.width - (parent.width % getTileSize());
             height: parent.height - (parent.height % getTileSize());
 
             MouseArea {
-                id: gameMR
-                anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
+                anchors.fill: parent; onClicked: SameGame.handleClick(mouse.x,mouse.y);
             }
         }
     }
 
     Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
+
+    //![0]
     Dialog {
         id: scoreName; anchors.centerIn: parent; z: 22;
         Text {
@@ -54,6 +54,7 @@ Rectangle {
             anchors.left: spacer.right
         }
     }
+    //![0]
 
     Rectangle {
         id: toolBar
@@ -62,7 +63,7 @@ Rectangle {
         anchors.bottom: screen.bottom
 
         Button {
-            id: btnA; text: "New Game"; onClicked: {initBoard();}
+            id: btnA; text: "New Game"; onClicked: {SameGame.initBoard();}
             anchors.left: parent.left; anchors.leftMargin: 3
             anchors.verticalCenter: parent.verticalCenter
         }

@@ -523,7 +523,7 @@ void tst_qdeclarativetextinput::navigation()
     QVERIFY(input->hasFocus() == false);
     simulateKey(canvas, Qt::Key_Right);
     QVERIFY(input->hasFocus() == true);
-    //QT-2944: If text is selected, then we should deselect first.
+    //QT-2944: If text is selected, ensure we deselect upon cursor motion
     input->setCursorPosition(input->text().length());
     input->setSelectionStart(0);
     input->setSelectionEnd(input->text().length());

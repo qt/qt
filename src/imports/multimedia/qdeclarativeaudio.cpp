@@ -51,7 +51,12 @@ QT_BEGIN_NAMESPACE
     \since 4.7
     \brief The Audio element allows you to add audio playback to a scene.
 
+    This element is part of the \bold{Qt.multimedia 4.7} module.
+
     \qml
+    import Qt 4.6
+    import Qt.multimedia 4.7
+
     Audio { source: "audio/song.mp3" }
     \endqml
 
