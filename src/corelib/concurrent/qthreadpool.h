@@ -84,7 +84,7 @@ public:
     void reserveThread();
     void releaseThread();
 
-    void waitForDone(int msecs = -1);
+    void waitForDone();
 };
 
 QT_END_NAMESPACE
