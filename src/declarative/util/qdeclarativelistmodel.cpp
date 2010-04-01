@@ -532,7 +532,7 @@ QScriptValue QDeclarativeListModel::get(int index) const
     \qmlmethod ListModel::set(int index, jsobject dict)
 
     Changes the item at \a index in the list model with the
-    values in \a dict. Properties not appearing in \a valuemap
+    values in \a dict. Properties not appearing in \a dict
     are left unchanged.
 
     \code
