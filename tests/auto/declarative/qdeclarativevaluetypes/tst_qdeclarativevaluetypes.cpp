@@ -432,7 +432,6 @@ void tst_qdeclarativevaluetypes::autoBindingRemoval()
 
         object->setProperty("value", QVariant(92));
 
-        //QEXPECT_FAIL("", "QT-2920", Continue);
         QCOMPARE(object->rect().x(), 42);
 
         delete object;

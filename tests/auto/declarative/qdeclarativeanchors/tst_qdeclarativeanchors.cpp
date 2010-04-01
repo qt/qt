@@ -390,7 +390,7 @@ void tst_qdeclarativeanchors::fill()
     QCOMPARE(rect->y(), 0.0 + 30.0);
     QCOMPARE(rect->width(), 200.0 - 10.0 - 20.0);
     QCOMPARE(rect->height(), 200.0 - 30.0 - 40.0);
-    //Alter Offsets (QTBUG-6631)
+    //Alter Offsets (tests QTBUG-6631)
     rect->anchors()->setLeftMargin(20.0);
     rect->anchors()->setRightMargin(0.0);
     rect->anchors()->setBottomMargin(0.0);
@@ -411,7 +411,7 @@ void tst_qdeclarativeanchors::centerIn()
     QDeclarativeRectangle* rect = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("centered"));
     QCOMPARE(rect->x(), 75.0 + 10);
     QCOMPARE(rect->y(), 75.0 + 30);
-    //Alter Offsets (QTBUG-6631)
+    //Alter Offsets (tests QTBUG-6631)
     rect->anchors()->setHorizontalCenterOffset(-20.0);
     rect->anchors()->setVerticalCenterOffset(-10.0);
     QCOMPARE(rect->x(), 75.0 - 20.0);

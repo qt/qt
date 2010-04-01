@@ -77,13 +77,20 @@ QT_BEGIN_NAMESPACE
     \since 4.7
     \brief The Transform elements provide a way of building advanced transformations on Items.
 
+    The Transform element is a base type which cannot be instantiated directly.
+    The following concrete Transform types are available:
+
+    \list
+    \o \l Rotation
+    \o \l Scale
+    \o \l Translate
+    \endlist
+
     The Transform elements let you create and control advanced transformations that can be configured
     independently using specialized properties.
 
     You can assign any number of Transform elements to an Item. Each Transform is applied in order,
     one at a time, to the Item it's assigned to.
-
-    \sa Rotation, Scale, Translate
 */
 
 /*!
@@ -91,7 +98,7 @@ QT_BEGIN_NAMESPACE
     \since 4.7
     \brief The Translate object provides a way to move an Item without changing its x or y properties.
 
-    The Translate object independent control over position in addition to the Item's x and y properties.
+    The Translate object provides independent control over position in addition to the Item's x and y properties.
 
     The following example moves the Y axis of the Rectangles while still allowing the Row element
     to lay the items out as if they had not been transformed:
@@ -118,7 +125,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty real Translate::yTranslate
+    \qmlproperty real Translate::y
 
     The translation along the Y axis.
 */
