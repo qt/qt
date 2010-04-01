@@ -1,13 +1,13 @@
 import Qt 4.6
+//![2]
+import "samegame.js" as SameGame
+//![2]
 
 Rectangle {
     id: screen
     width: 490; height: 720
 
     SystemPalette { id: activePalette }
-//![2]
-    Script { source: "samegame.js" }
-//![2]
 
     Item {
         width: parent.width; anchors.top: parent.top; anchors.bottom: toolbar.top
@@ -27,7 +27,7 @@ Rectangle {
 
 //![1]
         Button {
-            id: btnA; text: "New Game"; onClicked: initBoard();
+            id: btnA; text: "New Game"; onClicked: SameGame.initBoard();
             anchors.left: parent.left; anchors.leftMargin: 3
             anchors.verticalCenter: parent.verticalCenter
         }
