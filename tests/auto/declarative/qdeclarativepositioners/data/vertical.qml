@@ -4,6 +4,7 @@ Item {
     width: 640
     height: 480
     Column {
+        objectName: "column"
         Rectangle {
             objectName: "one"
             color: "red"

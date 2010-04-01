@@ -61,5 +61,9 @@
         <file>images/four-frames.gif</file>
         <file>images/qt-gif-anim.gif</file>
         <file>images/qt-gif-noanim.gif</file>
+        <file>images/rect.svg</file>
+        <file>images/rect.svgz</file>
+        <file>images/corrupt.svg</file>
+        <file>images/corrupt.svgz</file>
     </qresource>
 </RCC>

@@ -537,6 +537,31 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
     int waiting = 0;
 
 
+    /*
+     For local urls, add an implicit import "." as first (most overridden) lookup. This will also trigger
+     the loading of the qmldir and the import of any native types from available plugins.
+     */
+    {
+
+        QDeclarativeDirComponents qmldircomponentsnetwork;
+        if (QDeclarativeCompositeTypeResource *resource
+            = resources.value(unit->imports.baseUrl().resolved(QUrl(QLatin1String("./qmldir"))))) {
+            QDeclarativeDirParser parser;
+            parser.setSource(QString::fromUtf8(resource->data));
+            parser.parse();
+            qmldircomponentsnetwork = parser.components();
+        }
+
+        QDeclarativeEnginePrivate::get(engine)->
+                addToImport(&unit->imports,
+                            qmldircomponentsnetwork,
+                            QLatin1String("."),
+                            QString(),
+                            -1, -1,
+                            QDeclarativeScriptParser::Import::File,
+                            0); // error ignored (just means no fallback)
+    }
+
 
     foreach (QDeclarativeScriptParser::Import imp, unit->data.imports()) {
         QDeclarativeDirComponents qmldircomponentsnetwork;
@@ -585,31 +610,6 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             doComplete(unit);
             return 0;
         }
-    }
-
-    /*
-     For local urls, add an implicit import "." as first lookup. This will also trigger
-     the loading of the qmldir and the import of any native types from available plugins.
-     */
-    {
-
-        QDeclarativeDirComponents qmldircomponentsnetwork;
-        if (QDeclarativeCompositeTypeResource *resource
-            = resources.value(unit->imports.baseUrl().resolved(QUrl(QLatin1String("./qmldir"))))) {
-            QDeclarativeDirParser parser;
-            parser.setSource(QString::fromUtf8(resource->data));
-            parser.parse();
-            qmldircomponentsnetwork = parser.components();
-        }
-
-        QDeclarativeEnginePrivate::get(engine)->
-                addToImport(&unit->imports,
-                            qmldircomponentsnetwork,
-                            QLatin1String("."),
-                            QString(),
-                            -1, -1,
-                            QDeclarativeScriptParser::Import::File,
-                            0); // error ignored (just means no fallback)
     }
 
 

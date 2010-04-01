@@ -376,6 +376,7 @@ private:
     Q_DECLARE_PRIVATE(QApplication)
 
     friend class QGraphicsWidget;
+    friend class QGraphicsItem;
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
     friend class QWidget;

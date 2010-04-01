@@ -9,7 +9,6 @@ DESTDIR = MinehuntCore
 # Input
 SOURCES += minehunt.cpp
 
-
 sources.files = minehunt.qml minehunt.pro
 sources.path = $$[QT_INSTALL_DEMOS]/declarative/minehunt
 
@@ -26,7 +25,6 @@ INSTALLS = sources MinehuntCore_sources target
 symbian:{
     load(data_caging_paths)
     TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.CAPABILITY = CAP_GENERAL_DLL
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     
     importFiles.sources = minehunt.dll \

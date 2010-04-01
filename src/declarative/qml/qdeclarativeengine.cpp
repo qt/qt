@@ -1980,8 +1980,11 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
                          QStringList()
 # ifdef QT_DEBUG
                          << QLatin1String("_debug.dylib") // try a qmake-style debug build first
-# endif
                          << QLatin1String(".dylib")
+# else
+                         << QLatin1String(".dylib")
+                         << QLatin1String("_debug.dylib") // try a qmake-style debug build after
+# endif
                          << QLatin1String(".so")
                          << QLatin1String(".bundle"),
                          QLatin1String("lib"));
