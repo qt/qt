@@ -40,7 +40,7 @@
 
 // MCRT0.CPP
 //
-// © Portions copyright (c) 2005-2006 Nokia Corporation.  All rights reserved.
+// Portions copyright (c) 2005-2006 Nokia Corporation.  All rights reserved.
 // Copyright (c) Symbian Software Ltd 1997-2004.  All rights reserved.
 //
 
@@ -50,9 +50,8 @@
 #include <exception> // must be before e32base.h so uncaught_exception gets defined
 #include <e32base.h>
 #include "estlib.h"
+#include <string>
 
-// Needed for QT_TRYCATCH_LEAVING.
-#include <qglobal.h>
 
 #ifdef __ARMCC__
 __asm int CallMain(int argc, char *argv[], char *envp[])
@@ -75,6 +74,18 @@ extern "C" GLDEF_C int __GccGlueInit()
 
 extern "C" IMPORT_C void exit(int ret);
 
+namespace {
+class QSymbianLeaveException : public std::exception
+{
+public:
+    inline QSymbianLeaveException(int err) : error(err) {}
+    inline const char* what() const throw() { return "Symbian leave exception"; }
+
+public:
+    int error;
+};
+}
+
 GLDEF_C TInt QtMainWrapper()
 {
     int argc = 0;
@@ -83,7 +94,37 @@ GLDEF_C TInt QtMainWrapper()
     // get args & environment
     __crt0(argc, argv, envp);
     //Call user(application)'s main
-    TRAPD(ret, QT_TRYCATCH_LEAVING(ret = CALLMAIN(argc, argv, envp);));
+
+    TInt _err = KErrNone;
+    TRAPD(ret,
+        try {
+            ret = CALLMAIN(argc, argv, envp);
+        } catch (const std::exception &____ex) {
+            _err = KErrGeneral;
+            const std::type_info& type = typeid(____ex);
+
+            if (type == typeid (std::bad_alloc)) {
+                _err = KErrNoMemory;
+            } else if (type == typeid(::QSymbianLeaveException)) {
+                _err = static_cast<const ::QSymbianLeaveException&>(____ex).error;
+            } else {
+                if (type == typeid(std::invalid_argument))
+                    _err =  KErrArgument;
+                else if (type == typeid(std::out_of_range))
+                    // std::out_of_range is of type logic_error which by definition means that it is
+                    // "presumably detectable before the program executes".
+                    // std::out_of_range is used to report an argument is not within the expected range.
+                    // The description of KErrArgument says an argument is out of range. Hence the mapping.
+                    _err =  KErrArgument;
+                else if (type == typeid(std::overflow_error))
+                    _err =  KErrOverflow;
+                else if (type == typeid(std::underflow_error))
+                    _err =  KErrUnderflow;
+            }
+        }
+        User::LeaveIfError(_err);
+    );
+
     delete[] argv;
     delete[] envp;
     return ret;
