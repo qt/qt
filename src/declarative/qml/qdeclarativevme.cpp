@@ -255,13 +255,13 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                 ddata->columnNumber = instr.createSimple.column;
 
                 QObjectPrivate::get(o)->declarativeData = ddata;                                                      
-
-                ddata->nextContextObject = ctxt->contextObjects;                                                      
+                ddata->context = ddata->outerContext = ctxt;
+                ddata->nextContextObject = ctxt->contextObjects; 
                 if (ddata->nextContextObject) 
-                    ddata->nextContextObject->prevContextObject = &ddata->nextContextObject;                          
-                ddata->prevContextObject = &ctxt->contextObjects;                                                     
-                ctxt->contextObjects = ddata;                                
-                
+                    ddata->nextContextObject->prevContextObject = &ddata->nextContextObject; 
+                ddata->prevContextObject = &ctxt->contextObjects; 
+                ctxt->contextObjects = ddata; 
+
                 QObject *parent = stack.top();                                                                    
                 QDeclarative_setParent_noEvent(o, parent);                                                        
 
