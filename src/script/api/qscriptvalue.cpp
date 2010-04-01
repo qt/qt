@@ -1447,6 +1447,7 @@ QScriptValue QScriptValue::property(const QScriptString &name,
     Q_D(const QScriptValue);
     if (!d || !d->isObject() || !QScriptStringPrivate::isValid(name))
         return QScriptValue();
+    QScript::APIShim shim(d->engine);
     return d->engine->scriptValueFromJSCValue(d->property(name.d_ptr->identifier, mode));
 }
 
@@ -1477,6 +1478,7 @@ void QScriptValue::setProperty(const QScriptString &name,
                  qPrintable(name.toString()));
         return;
     }
+    QScript::APIShim shim(d->engine);
     JSC::JSValue jsValue = d->engine->scriptValueToJSCValue(value);
     d->setProperty(name.d_ptr->identifier, jsValue, flags);
 }
