@@ -94,7 +94,7 @@ QScriptString::~QScriptString()
         case QScriptStringPrivate::HeapAllocated:
             if (d->engine && (d->ref == 1)) {
                 // Make sure the identifier is removed from the correct engine.
-                QScript::APIShim(d->engine);
+                QScript::APIShim shim(d->engine);
                 d->identifier = JSC::Identifier();
                 d->engine->unregisterScriptString(d);
             }
