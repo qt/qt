@@ -83,7 +83,7 @@ For either type of module, a \c qmldir file in the module directory defines the 
 optional for location modules, but only for local filesystem content or a single remote content with a namespace.
 The second exception is explained in more detail in the section below on Namespaces.
 
-\seciont2 The Import Path
+\section2 The Import Path
 
 Installed modules are searched for on the import path.
 The \c -L option to the \l {Qt Declarative UI Runtime}{qml} runtime adds paths to the import path.

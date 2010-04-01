@@ -1059,7 +1059,7 @@ bool QDeclarativeAnchorsPrivate::checkVAnchorValid(QDeclarativeAnchorLine anchor
     return true;
 }
 
-#include <moc_qdeclarativeanchors_p.cpp>
-
 QT_END_NAMESPACE
+
+#include <moc_qdeclarativeanchors_p.cpp>
 
