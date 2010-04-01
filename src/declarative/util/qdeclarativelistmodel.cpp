@@ -1273,6 +1273,8 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap) {
             value->setListValue(v);
         } else {
             value->values << v.toVariant();
+            if (objectCache)
+                objectCache->setValue(it.name().toUtf8(), value->values.last());
         }
         if (properties.contains(it.name()))
             delete properties[it.name()];
