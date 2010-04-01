@@ -2046,7 +2046,7 @@ void QLineEdit::contextMenuEvent(QContextMenuEvent *event)
     }
 }
 
-#if defined(Q_WS_WIN)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11)
     extern bool qt_use_rtl_extensions;
 #endif
 
@@ -2118,7 +2118,7 @@ QMenu *QLineEdit::createStandardContextMenu()
     }
 #endif
 
-#if defined(Q_WS_WIN)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11)
     if (!d->control->isReadOnly() && qt_use_rtl_extensions) {
 #else
     if (!d->control->isReadOnly()) {

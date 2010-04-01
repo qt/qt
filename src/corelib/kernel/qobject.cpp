@@ -496,15 +496,6 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
 void QObjectPrivate::clearGuards(QObject *object)
 {
     QObjectPrivate *priv = QObjectPrivate::get(object);
-    QGuard<QObject> *guard = priv->extraData ? priv->extraData->objectGuards : 0;
-    while (guard) {
-        QGuard<QObject> *g = guard;
-        guard = guard->next;
-        g->o = 0;
-        g->prev = 0;
-        g->next = 0;
-        g->objectDestroyed(object);
-    }
 
     if (!priv->hasGuards)
         return;

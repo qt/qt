@@ -255,10 +255,6 @@ tst_Suite::tst_Suite()
 
     addTestExclusion("string-case", "V8-specific behavior? (Doesn't pass on SpiderMonkey either)");
 
-#ifdef Q_CC_MINGW
-    addTestExclusion("date$", "QTBUG-7698: Date.prototype.setMonth() crashes on win32-g++");
-#endif
-
 #ifdef Q_OS_WINCE
     addTestExclusion("deep-recursion", "Demands too much memory on WinCE");
     addTestExclusion("nested-repetition-count-overflow", "Demands too much memory on WinCE");

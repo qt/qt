@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
       (((KeySym)(keysym) >= 0x11000000) && ((KeySym)(keysym) <= 0x1100FFFF))
 #endif
 
-static void getLocaleAndDirection(QLocale *locale,
+void q_getLocaleAndDirection(QLocale *locale,
                                   Qt::LayoutDirection *direction,
                                   const QByteArray &layoutName,
                                   const QByteArray &variantName)
@@ -523,7 +523,7 @@ void QKeyMapperPrivate::clearMappings()
         // if (keyboardLayoutName.isEmpty())
         //     qWarning("Qt: unable to determine keyboard layout, please talk to qt-bugs@trolltech.com"); ?
 
-        getLocaleAndDirection(&keyboardInputLocale,
+        q_getLocaleAndDirection(&keyboardInputLocale,
                               &keyboardInputDirection,
                               layoutName,
                               variantName);
@@ -534,7 +534,6 @@ void QKeyMapperPrivate::clearMappings()
                  << "direction ="
                  << keyboardInputDirection;
 #endif
-
         if (data)
             XFree(data);
     } else

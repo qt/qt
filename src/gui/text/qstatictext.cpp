@@ -593,7 +593,11 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
         document.setDocumentMargin(0.0);
         if (textWidth >= 0.0)
             document.setTextWidth(textWidth);
+#ifndef QT_NO_TEXTHTMLPARSER
         document.setHtml(text);
+#else
+        document.setPlainText(text);
+#endif
 
         document.adjustSize();
         p->save();

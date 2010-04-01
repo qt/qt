@@ -344,7 +344,13 @@ static XFontSet getFontSet(const QFont &f)
     return (fontsetCache[i] == (XFontSet)-1) ? 0 : fontsetCache[i];
 }
 
-
+extern bool qt_use_rtl_extensions; // from qapplication_x11.cpp
+#ifndef QT_NO_XKB
+extern void q_getLocaleAndDirection(QLocale *locale,
+                                  Qt::LayoutDirection *direction,
+                                  const QByteArray &layoutName,
+                                  const QByteArray &variantName);
+#endif
 
 QXIMInputContext::QXIMInputContext()
 {
@@ -375,6 +381,52 @@ QXIMInputContext::QXIMInputContext()
     else
         QXIMInputContext::create_xim();
 #endif // USE_X11R6_XIM
+
+#ifndef QT_NO_XKB
+    if (X11->use_xkb) {
+        QByteArray layoutName;
+        QByteArray variantName;
+
+        Atom type = XNone;
+        int format = 0;
+        ulong nitems = 0;
+        ulong bytesAfter = 0;
+        uchar *data = 0;
+        if (XGetWindowProperty(X11->display, RootWindow(X11->display, 0), ATOM(_XKB_RULES_NAMES), 0, 1024,
+                               false, XA_STRING, &type, &format, &nitems, &bytesAfter, &data) == Success
+            && type == XA_STRING && format == 8 && nitems > 2) {
+
+            char *names[5] = { 0, 0, 0, 0, 0 };
+            char *p = reinterpret_cast<char *>(data), *end = p + nitems;
+            int i = 0;
+            do {
+                names[i++] = p;
+                p += qstrlen(p) + 1;
+            } while (p < end);
+
+            QList<QByteArray> layoutNames = QByteArray::fromRawData(names[2], qstrlen(names[2])).split(',');
+            QList<QByteArray> variantNames = QByteArray::fromRawData(names[3], qstrlen(names[3])).split(',');
+            for (int i = 0; i < qMin(layoutNames.count(), variantNames.count()); ++i  ) {
+                QLocale keyboardInputLocale;
+                Qt::LayoutDirection keyboardInputDirection;
+                QByteArray variantName = variantNames.at(i);
+                const int dashPos = variantName.indexOf("-");
+                if (dashPos >= 0)
+                    variantName.truncate(dashPos);
+                q_getLocaleAndDirection(&keyboardInputLocale,
+                                      &keyboardInputDirection,
+                                      layoutNames.at(i),
+                                      variantName);
+                if (keyboardInputDirection == Qt::RightToLeft)
+                    qt_use_rtl_extensions = true;
+            }
+        }
+
+        if (data)
+            XFree(data);
+    }
+#endif // QT_NO_XKB
+
 }
 
 

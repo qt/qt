@@ -5,12 +5,12 @@
     <name>Assistant</name>
     <message>
         <source>This is some text which introduces the DonauDampfSchifffahrtsKapitaensMuetzeMitKomischenUltraViolettenFransenUndEinemKnopf</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="this/is/a/really/really/absurdly/no,/grotesquely/long/path/supposed/to/blow/up.cpp" line="20"/>
         <source>%n document(s) found.</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

@@ -91,7 +91,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_CONTEXTMENU
-#if defined(Q_WS_WIN)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11)
 extern bool qt_use_rtl_extensions;
 #endif
 #endif
@@ -2080,7 +2080,7 @@ QMenu *QTextControl::createStandardContextMenu(const QPointF &pos, QWidget *pare
     }
 #endif
 
-#if defined(Q_WS_WIN)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11)
     if ((d->interactionFlags & Qt::TextEditable) && qt_use_rtl_extensions) {
 #else
     if (d->interactionFlags & Qt::TextEditable) {

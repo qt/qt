@@ -439,6 +439,7 @@ protected:
     };
     static QPixmap qt_get_icon(IconID id)
     {
+    /* XPM */
     static const char* const image0_data[] = { 
 "22 22 2 1",
 ". c None",

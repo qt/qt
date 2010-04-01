@@ -1334,7 +1334,7 @@ QString QmlClassNode::fileBase() const
 void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
 {
     inheritedBy.insert(base,sub);
-#ifdef DEBUG_MULTIPLE-QDOCCONF_FILES
+#ifdef DEBUG_MULTIPLE_QDOCCONF_FILES
     qDebug() << "QmlClassNode::addInheritedBy(): insert" << base << sub->name() << inheritedBy.size();
 #endif
 }

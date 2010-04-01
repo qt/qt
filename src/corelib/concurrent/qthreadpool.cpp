@@ -41,6 +41,7 @@
 
 #include "qthreadpool.h"
 #include "qthreadpool_p.h"
+#include "qelapsedtimer.h"
 
 #ifndef QT_NO_THREAD
 
@@ -288,11 +289,18 @@ void QThreadPoolPrivate::reset()
     isExiting = false;
 }
 
-void QThreadPoolPrivate::waitForDone()
+void QThreadPoolPrivate::waitForDone(int msecs)
 {
     QMutexLocker locker(&mutex);
-    while (!(queue.isEmpty() && activeThreads == 0))
-        noActiveThreads.wait(locker.mutex());
+    if (msecs < 0){
+        while (!(queue.isEmpty() && activeThreads == 0))
+            noActiveThreads.wait(locker.mutex());
+    } else {
+        QElapsedTimer timer;
+        timer.start();
+        while (!(queue.isEmpty() && activeThreads == 0) && (timer.elapsed() < msecs))
+            noActiveThreads.wait(locker.mutex(), msecs - timer.elapsed());
+    }
 }
 
 /*! \internal
@@ -610,10 +618,10 @@ void QThreadPool::releaseThread()
 /*!
     Waits for each thread to exit and removes all threads from the thread pool.
 */
-void QThreadPool::waitForDone()
+void QThreadPool::waitForDone(int msecs)
 {
     Q_D(QThreadPool);
-    d->waitForDone();
+    d->waitForDone(msecs);
     d->reset();
 }
 
