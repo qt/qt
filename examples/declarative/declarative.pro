@@ -6,7 +6,7 @@ SUBDIRS = \
    imageprovider \
    objectlistmodel \
    plugins \
-   widgets
+   proxywidgets
 
 # These examples contain no C++ and can simply be copied
 sources.files = \
