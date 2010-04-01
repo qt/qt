@@ -1043,9 +1043,9 @@ EXPORTS
 	_ZN19QBearerEnginePluginD2Ev @ 1042 NONAME
 	_ZN21QNetworkAccessManager16setConfigurationERK21QNetworkConfiguration @ 1043 NONAME
 	_ZN21QNetworkAccessManager17sendCustomRequestERK15QNetworkRequestRK10QByteArrayP9QIODevice @ 1044 NONAME
-	_ZN21QNetworkAccessManager20networkAccessChangedEb @ 1045 NONAME
-	_ZN21QNetworkAccessManager20networkSessionOnlineEv @ 1046 NONAME
-	_ZN21QNetworkAccessManager23setNetworkAccessEnabledEb @ 1047 NONAME
+	_ZN21QNetworkAccessManager20networkAccessChangedEb @ 1045 NONAME ABSENT
+	_ZN21QNetworkAccessManager20networkSessionOnlineEv @ 1046 NONAME ABSENT
+	_ZN21QNetworkAccessManager23setNetworkAccessEnabledEb @ 1047 NONAME ABSENT
 	_ZN21QNetworkConfigurationC1ERKS_ @ 1048 NONAME
 	_ZN21QNetworkConfigurationC1Ev @ 1049 NONAME
 	_ZN21QNetworkConfigurationC2ERKS_ @ 1050 NONAME
@@ -1116,7 +1116,7 @@ EXPORTS
 	_ZNK19QBearerEnginePlugin10metaObjectEv @ 1115 NONAME
 	_ZNK21QNetworkAccessManager13configurationEv @ 1116 NONAME
 	_ZNK21QNetworkAccessManager19activeConfigurationEv @ 1117 NONAME
-	_ZNK21QNetworkAccessManager20networkAccessEnabledEv @ 1118 NONAME
+	_ZNK21QNetworkAccessManager20networkAccessEnabledEv @ 1118 NONAME ABSENT
 	_ZNK21QNetworkConfiguration10bearerNameEv @ 1119 NONAME
 	_ZNK21QNetworkConfiguration10identifierEv @ 1120 NONAME
 	_ZNK21QNetworkConfiguration18isRoamingAvailableEv @ 1121 NONAME
@@ -1150,4 +1150,20 @@ EXPORTS
 	_ZTV35QNetworkConfigurationManagerPrivate @ 1149 NONAME
 	_ZThn8_N19QBearerEnginePluginD0Ev @ 1150 NONAME
 	_ZThn8_N19QBearerEnginePluginD1Ev @ 1151 NONAME
+	_Z19qt_qhostinfo_lookupRK7QStringP7QObjectPKcPbPi @ 1152 NONAME
+	_Z24qt_qhostinfo_clear_cachev @ 1153 NONAME
+	_ZN21QNetworkAccessManager20setNetworkAccessibleENS_20NetworkAccessibilityE @ 1154 NONAME
+	_ZN21QNetworkAccessManager23networkSessionConnectedEv @ 1155 NONAME
+	_ZN21QNetworkAccessManager24networkAccessibleChangedENS_20NetworkAccessibilityE @ 1156 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate11pollEnginesEv @ 1157 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate12startPollingEv @ 1158 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate13enablePollingEv @ 1159 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate14disablePollingEv @ 1160 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate17allConfigurationsE6QFlagsIN21QNetworkConfiguration9StateFlagEE @ 1161 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate20defaultConfigurationEv @ 1162 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate27configurationFromIdentifierERK7QString @ 1163 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate8isOnlineEv @ 1164 NONAME
+	_ZNK13QBearerEngine15requiresPollingEv @ 1165 NONAME
+	_ZNK13QBearerEngine19configurationsInUseEv @ 1166 NONAME
+	_ZNK21QNetworkAccessManager17networkAccessibleEv @ 1167 NONAME
 
