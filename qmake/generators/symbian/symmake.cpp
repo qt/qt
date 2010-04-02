@@ -187,7 +187,6 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 
     // Generate pkg files if there are any actual files to deploy
     bool generatePkg = false;
-    DeploymentList depList;
 
     if (targetType == TypeExe) {
         generatePkg = true;
@@ -201,10 +200,10 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if (generatePkg) {
-        generatePkgFile(iconFile, depList, true);
+        generatePkgFile(iconFile, true);
     }
 
-    writeBldInfContent(t, generatePkg, iconFile, depList);
+    writeBldInfContent(t, generatePkg, iconFile);
 
     // Generate empty wrapper makefile here, because wrapper makefile must exist before writeMkFile,
     // but all required data is not yet available.
@@ -948,7 +947,7 @@ void SymbianMakefileGenerator::writeMmpFileRulesPart(QTextStream& t)
     }
 }
 
-void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploymentExtension, const QString &iconFile, DeploymentList &depList)
+void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploymentExtension, const QString &iconFile)
 {
     // Read user defined bld inf rules
 
