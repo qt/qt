@@ -142,7 +142,7 @@ void SymbianCommonGenerator::removeEpocSpecialCharacters(QString& str)
     removeSpecialCharacters(str);
 }
 
-void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, DeploymentList &depList, bool epocBuild)
+void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocBuild)
 {
     QMakeProject *project = generator->project;
     QString pkgTarget = project->first("QMAKE_ORIG_TARGET");
@@ -361,6 +361,7 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, Deployment
     QString remoteTestPath;
     remoteTestPath = QString("!:\\private\\%1").arg(privateDirUid);
 
+    DeploymentList depList;
     initProjectDeploySymbian(project, depList, remoteTestPath, true, epocBuild, "$(PLATFORM)", "$(TARGET)", generatedDirs, generatedFiles);
     if (depList.size())
         t << "; DEPLOYMENT" << endl;

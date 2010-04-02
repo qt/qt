@@ -3652,4 +3652,41 @@ EXPORTS
 	_Z40QBasicAtomicPointer_fetchAndStoreAcquirePVPvS_ @ 3651 NONAME
 	_Z40QBasicAtomicPointer_fetchAndStoreRelaxedPVPvS_ @ 3652 NONAME
 	_Z40QBasicAtomicPointer_fetchAndStoreReleasePVPvS_ @ 3653 NONAME
+	_Z14qDecodeDataUrlRK4QUrl @ 3654 NONAME
+	_Z18qDetectCPUFeaturesv @ 3655 NONAME
+	_ZN10QByteArray7replaceEiiPKci @ 3656 NONAME
+	_ZN12QTextDecoderC1EPK10QTextCodec6QFlagsINS0_14ConversionFlagEE @ 3657 NONAME
+	_ZN12QTextDecoderC2EPK10QTextCodec6QFlagsINS0_14ConversionFlagEE @ 3658 NONAME
+	_ZN12QTextEncoderC1EPK10QTextCodec6QFlagsINS0_14ConversionFlagEE @ 3659 NONAME
+	_ZN12QTextEncoderC2EPK10QTextCodec6QFlagsINS0_14ConversionFlagEE @ 3660 NONAME
+	_ZN13QElapsedTimer10invalidateEv @ 3661 NONAME
+	_ZN13QElapsedTimer11isMonotonicEv @ 3662 NONAME
+	_ZN13QElapsedTimer5startEv @ 3663 NONAME
+	_ZN13QElapsedTimer7restartEv @ 3664 NONAME
+	_ZN13QElapsedTimer9clockTypeEv @ 3665 NONAME
+	_ZN20QStateMachinePrivate12clearHistoryEv @ 3666 NONAME
+	_ZN7QStringC1EPK5QChar @ 3667 NONAME
+	_ZN7QStringC2EPK5QChar @ 3668 NONAME
+	_ZN8QVariantC1ERK12QEasingCurve @ 3669 NONAME
+	_ZN8QVariantC2ERK12QEasingCurve @ 3670 NONAME
+	_ZN9QDateTime18currentDateTimeUtcEv @ 3671 NONAME
+	_ZN9QDateTime22currentMsecsSinceEpochEv @ 3672 NONAME
+	_ZN9QListData11detach_growEPii @ 3673 NONAME
+	_ZN9QListData6appendEi @ 3674 NONAME
+	_ZN9QListData6detachEi @ 3675 NONAME
+	_ZN9QMetaType15registerTypedefEPKci @ 3676 NONAME
+	_ZN9QMetaType23registerStreamOperatorsEiPFvR11QDataStreamPKvEPFvS1_PvE @ 3677 NONAME
+	_ZNK10QTextCodec11makeDecoderE6QFlagsINS_14ConversionFlagEE @ 3678 NONAME
+	_ZNK10QTextCodec11makeEncoderE6QFlagsINS_14ConversionFlagEE @ 3679 NONAME
+	_ZNK13QElapsedTimer10hasExpiredEx @ 3680 NONAME
+	_ZNK13QElapsedTimer19msecsSinceReferenceEv @ 3681 NONAME
+	_ZNK13QElapsedTimer6secsToERKS_ @ 3682 NONAME
+	_ZNK13QElapsedTimer7elapsedEv @ 3683 NONAME
+	_ZNK13QElapsedTimer7isValidEv @ 3684 NONAME
+	_ZNK13QElapsedTimer7msecsToERKS_ @ 3685 NONAME
+	_ZNK6QState11transitionsEv @ 3686 NONAME
+	_ZNK8QVariant13toEasingCurveEv @ 3687 NONAME
+	_ZlsR11QDataStreamRK12QEasingCurve @ 3688 NONAME
+	_ZltRK13QElapsedTimerS1_ @ 3689 NONAME
+	_ZrsR11QDataStreamR12QEasingCurve @ 3690 NONAME
 
