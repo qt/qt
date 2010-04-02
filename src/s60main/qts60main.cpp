@@ -41,7 +41,7 @@
 // INCLUDE FILES
 #include <exception> // must be before e32base.h so uncaught_exception gets defined
 #include <e32base.h>
-#include <string>
+#include <qglobal.h>
 
 GLDEF_C TInt QtMainWrapper();
 
@@ -51,9 +51,7 @@ GLDEF_C TInt QtMainWrapper();
  */
 GLDEF_C TInt E32Main()
 {
-    CTrapCleanup *cleanupStack = CTrapCleanup::New();
-    if (!(cleanupStack))
-        throw std::bad_alloc();
+    CTrapCleanup *cleanupStack = q_check_ptr(CTrapCleanup::New());
     TInt err = 0;
     TRAP(err, err = QtMainWrapper());
     delete cleanupStack;
