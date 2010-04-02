@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativetextedit_p.h"
-#include "qdeclarativetextedit_p_p.h"
+#include "private/qdeclarativetextedit_p.h"
+#include "private/qdeclarativetextedit_p_p.h"
 
-#include "qdeclarativeevents_p_p.h"
+#include "private/qdeclarativeevents_p_p.h"
 #include <private/qdeclarativeglobal_p.h>
 
 #include <QTextLayout>

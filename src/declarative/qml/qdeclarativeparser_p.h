@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarative.h"
-#include "qdeclarativerefcount_p.h"
+#include "private/qdeclarativerefcount_p.h"
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>

@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qmetaobjectbuilder_p.h"
+#include "private/qmetaobjectbuilder_p.h"
 #include "qdeclarative.h"
 
 #include <QtCore/QMetaObject>

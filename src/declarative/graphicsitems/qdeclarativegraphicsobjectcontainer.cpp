@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativegraphicsobjectcontainer_p.h"
+#include "private/qdeclarativegraphicsobjectcontainer_p.h"
 
-#include "qdeclarativeitem_p.h"
+#include "private/qdeclarativeitem_p.h"
 
 #include <QGraphicsObject>
 #include <QGraphicsWidget>

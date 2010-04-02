@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativespringfollow_p.h"
+#include "private/qdeclarativespringfollow_p.h"
 
-#include "qdeclarativeanimation_p_p.h"
+#include "private/qdeclarativeanimation_p_p.h"
 
 #include <QtCore/qdebug.h>
 

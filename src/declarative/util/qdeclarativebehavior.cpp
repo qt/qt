@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativebehavior_p.h"
+#include "private/qdeclarativebehavior_p.h"
 
-#include "qdeclarativeanimation_p.h"
-#include "qdeclarativetransition_p.h"
+#include "private/qdeclarativeanimation_p.h"
+#include "private/qdeclarativetransition_p.h"
 
 #include <qdeclarativecontext.h>
 #include <qdeclarativeinfo.h>

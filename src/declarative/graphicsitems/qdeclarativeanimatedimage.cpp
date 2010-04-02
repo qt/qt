@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeanimatedimage_p.h"
-#include "qdeclarativeanimatedimage_p_p.h"
+#include "private/qdeclarativeanimatedimage_p.h"
+#include "private/qdeclarativeanimatedimage_p_p.h"
 
 #include <qdeclarativeengine.h>
 

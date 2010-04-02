@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativetextinput_p.h"
-#include "qdeclarativetextinput_p_p.h"
+#include "private/qdeclarativetextinput_p.h"
+#include "private/qdeclarativetextinput_p_p.h"
 
 #include <private/qdeclarativeglobal_p.h>
 #include <qdeclarativeinfo.h>

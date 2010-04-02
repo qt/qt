@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativestateoperations_p.h"
+#include "private/qdeclarativestateoperations_p.h"
 
 #include <qdeclarative.h>
 #include <qdeclarativecontext.h>

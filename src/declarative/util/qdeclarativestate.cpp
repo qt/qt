@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativestate_p_p.h"
-#include "qdeclarativestate_p.h"
+#include "private/qdeclarativestate_p_p.h"
+#include "private/qdeclarativestate_p.h"
 
-#include "qdeclarativetransition_p.h"
-#include "qdeclarativestategroup_p.h"
-#include "qdeclarativestateoperations_p.h"
-#include "qdeclarativeanimation_p.h"
-#include "qdeclarativeanimation_p_p.h"
+#include "private/qdeclarativetransition_p.h"
+#include "private/qdeclarativestategroup_p.h"
+#include "private/qdeclarativestateoperations_p.h"
+#include "private/qdeclarativeanimation_p.h"
+#include "private/qdeclarativeanimation_p_p.h"
 
 #include <qdeclarativebinding_p.h>
 #include <qdeclarativeglobal_p.h>

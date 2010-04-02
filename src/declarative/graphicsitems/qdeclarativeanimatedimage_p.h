@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEANIMATEDIMAGE_H
 #define QDECLARATIVEANIMATEDIMAGE_H
 
-#include "qdeclarativeimage_p.h"
+#include "private/qdeclarativeimage_p.h"
 
 QT_BEGIN_HEADER
 
