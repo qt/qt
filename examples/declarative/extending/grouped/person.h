@@ -77,7 +77,7 @@ class Person : public QObject {
 Q_OBJECT
 Q_PROPERTY(QString name READ name WRITE setName)
 // ![1]
-Q_PROPERTY(ShoeDescription *shoe READ shoe);
+Q_PROPERTY(ShoeDescription *shoe READ shoe)
 // ![1]
 public:
     Person(QObject *parent = 0);
