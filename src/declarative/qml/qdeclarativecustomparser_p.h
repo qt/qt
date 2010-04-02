@@ -53,9 +53,9 @@
 // We mean it.
 //
 
-#include "qdeclarativemetatype_p.h"
+#include "private/qdeclarativemetatype_p.h"
 #include "qdeclarativeerror.h"
-#include "qdeclarativeparser_p.h"
+#include "private/qdeclarativeparser_p.h"
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qxmlstream.h>

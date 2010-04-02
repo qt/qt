@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "rewriter_p.h"
+#include "private/rewriter_p.h"
 
 #include <qdeclarativejsast_p.h>
 

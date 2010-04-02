@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativepositioners_p.h"
-#include "qdeclarativepositioners_p_p.h"
+#include "private/qdeclarativepositioners_p.h"
+#include "private/qdeclarativepositioners_p_p.h"
 
 #include <qdeclarative.h>
 #include <qdeclarativestate_p.h>

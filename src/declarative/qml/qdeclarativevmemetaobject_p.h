@@ -65,9 +65,9 @@
 
 #include <private/qobject_p.h>
 
-#include "qdeclarativeguard_p.h"
-#include "qdeclarativecompiler_p.h"
-#include "qdeclarativecontext_p.h"
+#include "private/qdeclarativeguard_p.h"
+#include "private/qdeclarativecompiler_p.h"
+#include "private/qdeclarativecontext_p.h"
 
 QT_BEGIN_NAMESPACE
 

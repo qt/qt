@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qdeclarativeitem_p.h"
+#include "private/qdeclarativeitem_p.h"
 
 #include <qdatetime.h>
 #include <qbasictimer.h>

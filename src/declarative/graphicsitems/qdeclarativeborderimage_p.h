@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEBORDERIMAGE_H
 #define QDECLARATIVEBORDERIMAGE_H
 
-#include "qdeclarativeimagebase_p.h"
+#include "private/qdeclarativeimagebase_p.h"
 
 #include <QtNetwork/qnetworkreply.h>
 

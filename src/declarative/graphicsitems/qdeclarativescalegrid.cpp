@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativescalegrid_p_p.h"
+#include "private/qdeclarativescalegrid_p_p.h"
 
 #include <qdeclarative.h>
 

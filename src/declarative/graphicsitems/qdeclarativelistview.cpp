@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativelistview_p.h"
+#include "private/qdeclarativelistview_p.h"
 
-#include "qdeclarativeflickable_p_p.h"
-#include "qdeclarativevisualitemmodel_p.h"
+#include "private/qdeclarativeflickable_p_p.h"
+#include "private/qdeclarativevisualitemmodel_p.h"
 
-#include "qdeclarativesmoothedanimation_p_p.h"
+#include "private/qdeclarativesmoothedanimation_p_p.h"
 #include <qdeclarativeexpression.h>
 #include <qdeclarativeengine.h>
 #include <qdeclarativeguard_p.h>

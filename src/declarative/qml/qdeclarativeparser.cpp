@@ -39,16 +39,16 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeparser_p.h"
+#include "private/qdeclarativeparser_p.h"
 
 #include "qdeclarativepropertyvaluesource.h"
-#include "qdeclarativevme_p.h"
+#include "private/qdeclarativevme_p.h"
 #include "qdeclarative.h"
-#include "qdeclarativecomponent_p.h"
+#include "private/qdeclarativecomponent_p.h"
 #include "qdeclarativecomponent.h"
-#include "qmetaobjectbuilder_p.h"
-#include "qdeclarativevmemetaobject_p.h"
-#include "qdeclarativecompiler_p.h"
+#include "private/qmetaobjectbuilder_p.h"
+#include "private/qdeclarativevmemetaobject_p.h"
+#include "private/qdeclarativecompiler_p.h"
 #include "parser/qdeclarativejsast_p.h"
 #include "parser/qdeclarativejsengine_p.h"
 

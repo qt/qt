@@ -41,7 +41,7 @@
 
 // #define COMPILEDBINDINGS_DEBUG
 
-#include "qdeclarativecompiledbindings_p.h"
+#include "private/qdeclarativecompiledbindings_p.h"
 
 #include <QtDeclarative/qdeclarativeinfo.h>
 #include <private/qdeclarativecontext_p.h>

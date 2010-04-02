@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativefastproperties_p.h"
+#include "private/qdeclarativefastproperties_p.h"
 
 #include <private/qdeclarativeitem_p.h>
 

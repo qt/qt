@@ -53,9 +53,9 @@
 // We mean it.
 //
 
-#include "qdeclarativerepeater_p.h"
+#include "private/qdeclarativerepeater_p.h"
 
-#include "qdeclarativeitem_p.h"
+#include "private/qdeclarativeitem_p.h"
 
 #include <QPointer>
 

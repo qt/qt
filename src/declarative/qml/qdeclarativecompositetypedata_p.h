@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativeengine_p.h"
 
 #include <QtCore/qglobal.h>
 

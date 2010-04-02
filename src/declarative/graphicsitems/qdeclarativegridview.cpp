@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativegridview_p.h"
+#include "private/qdeclarativegridview_p.h"
 
-#include "qdeclarativevisualitemmodel_p.h"
-#include "qdeclarativeflickable_p_p.h"
+#include "private/qdeclarativevisualitemmodel_p.h"
+#include "private/qdeclarativeflickable_p_p.h"
 
-#include "qdeclarativesmoothedanimation_p_p.h"
+#include "private/qdeclarativesmoothedanimation_p_p.h"
 #include <qdeclarativeguard_p.h>
 
 #include <qlistmodelinterface_p.h>

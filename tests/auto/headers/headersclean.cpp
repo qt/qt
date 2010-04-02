@@ -55,7 +55,7 @@
 
 // extra
 #include <QtDBus/QtDBus>
-//#include <QtDeclarative/QtDeclarative>
+#include <QtDeclarative/QtDeclarative>
 #include <QtHelp/QtHelp>
 #include <QtMultimedia/QtMultimedia>
 #include <QtOpenGL/QtOpenGL>

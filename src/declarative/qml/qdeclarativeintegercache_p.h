@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qdeclarativerefcount_p.h"
-#include "qdeclarativecleanup_p.h"
+#include "private/qdeclarativerefcount_p.h"
+#include "private/qdeclarativecleanup_p.h"
 
 #include <QtCore/qhash.h>
 
