@@ -37,11 +37,13 @@ QT_BEGIN_NAMESPACE
 
 /* MinGW 3.4.x gives an ICE when trying to instantiate one of the
    ObjectDescriptionModel<foo> classes because it can't handle
-   half exported classes correct. gcc 4.3.x has a fix for this but
-   we currently there's no official gcc 4.3 on windows available.
+   half exported classes correct. gcc 4.3.x has a fix for this.
+   The problem also appears on Symbian with gcce.
+
    Because of this we need this little hack
  */
-#if defined(Q_CC_MINGW)
+#if defined(Q_CC_GNU) && (defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)) && \
+    ((__GNUC__ * 100 + __GNUC_MINOR__) < 403)
 #define PHONON_EXPORT_ODM
 #else
 #define PHONON_EXPORT_ODM  PHONON_EXPORT
