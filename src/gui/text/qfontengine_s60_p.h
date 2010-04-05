@@ -69,6 +69,7 @@ public:
     QFontEngineS60Extensions(CFont* fontOwner, COpenFont *font);
 
     QByteArray getSfntTable(uint tag) const;
+    bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
     const unsigned char *cmap() const;
     QPainterPath glyphOutline(glyph_t glyph) const;
     CFont *fontOwner() const;
@@ -106,6 +107,7 @@ public:
     qreal minRightBearing() const { return 0; }
 
     QByteArray getSfntTable(uint tag) const;
+    bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
 
     static qreal pixelsToPoints(qreal pixels, Qt::Orientation orientation = Qt::Horizontal);
     static qreal pointsToPixels(qreal points, Qt::Orientation orientation = Qt::Horizontal);
