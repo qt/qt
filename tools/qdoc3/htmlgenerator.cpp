@@ -1356,10 +1356,10 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
 
     if (!inner->doc().isEmpty()) {
         out() << "<hr />\n"
-              << "<div class=\"descr\"/>\n"
+              << "<div class=\"descr\"/>\n" // QTBUG-9504
               << "<h2>" << "Detailed Description" << "</h2>\n";
         generateBody(inner, marker);
-        out() << "</div>\n";
+        out() << "</div>\n"; // QTBUG-9504
         generateAlsoList(inner, marker);
     }
 
@@ -1368,7 +1368,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     while (s != sections.end()) {
         out() << "<hr />\n";
         if (!(*s).divClass.isEmpty())
-            out() << "<div class=\"" << (*s).divClass << "\"/>\n";
+            out() << "<div class=\"" << (*s).divClass << "\"/>\n"; // QTBUG-9504
         out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
 
         NodeList::ConstIterator m = (*s).members.begin();
@@ -1419,7 +1419,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
             ++m;
         }
         if (!(*s).divClass.isEmpty())
-            out() << "</div>\n";
+            out() << "</div>\n"; // QTBUG-9504
         ++s;
     }
     generateFooter(inner);
@@ -1591,10 +1591,14 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     Text brief = fake->doc().briefText();
     if (fake->subType() == Node::Module && !brief.isEmpty()) {
         out() << "<a name=\"" << registerRef("details") << "\"></a>\n";
+        out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
         out() << "<h2>" << "Detailed Description" << "</h2>\n";
     }
+    else
+        out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
 
     generateBody(fake, marker);
+    out() << "</div>\n"; // QTBUG-9504
     generateAlsoList(fake, marker);
 
     if (!fake->groupMembers().isEmpty()) {
