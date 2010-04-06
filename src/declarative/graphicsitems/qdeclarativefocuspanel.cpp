@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativefocuspanel_p.h"
+#include "private/qdeclarativefocuspanel_p.h"
 
-#include "qdeclarativeitem_p.h"
+#include "private/qdeclarativeitem_p.h"
 
 #include <QtGui/qgraphicsscene.h>
 #include <QEvent>

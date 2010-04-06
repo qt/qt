@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativetransitionmanager_p_p.h"
+#include "private/qdeclarativetransitionmanager_p_p.h"
 
-#include "qdeclarativestate_p_p.h"
+#include "private/qdeclarativestate_p_p.h"
 
 #include <qdeclarativebinding_p.h>
 #include <qdeclarativeglobal_p.h>

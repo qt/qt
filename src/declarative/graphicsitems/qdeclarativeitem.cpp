@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeitem_p.h"
+#include "private/qdeclarativeitem_p.h"
 #include "qdeclarativeitem.h"
 
-#include "qdeclarativeevents_p_p.h"
+#include "private/qdeclarativeevents_p_p.h"
 #include <private/qdeclarativeengine_p.h>
 
 #include <qdeclarativeengine.h>

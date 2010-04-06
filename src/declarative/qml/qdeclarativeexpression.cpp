@@ -40,13 +40,13 @@
 ****************************************************************************/
 
 #include "qdeclarativeexpression.h"
-#include "qdeclarativeexpression_p.h"
+#include "private/qdeclarativeexpression_p.h"
 
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativerewrite_p.h"
-#include "qdeclarativecompiler_p.h"
-#include "qdeclarativeglobalscriptclass_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativerewrite_p.h"
+#include "private/qdeclarativecompiler_p.h"
+#include "private/qdeclarativeglobalscriptclass_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtScript/qscriptprogram.h>

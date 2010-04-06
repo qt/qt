@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qdeclarativepath_p.h"
+#include "private/qdeclarativepath_p.h"
 
 #include <qdeclarative.h>
 

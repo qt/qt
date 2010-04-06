@@ -53,10 +53,10 @@
 // We mean it.
 //
 
-#include "qdeclarativeflickable_p.h"
+#include "private/qdeclarativeflickable_p.h"
 
-#include "qdeclarativeitem_p.h"
-#include "qdeclarativeitemchangelistener_p.h"
+#include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativeitemchangelistener_p.h"
 
 #include <qdeclarative.h>
 #include <qdeclarativetimeline_p_p.h>

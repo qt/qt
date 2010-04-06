@@ -39,15 +39,15 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativecompositetypemanager_p.h"
+#include "private/qdeclarativecompositetypemanager_p.h"
 
-#include "qdeclarativecompositetypedata_p.h"
-#include "qdeclarativescriptparser_p.h"
+#include "private/qdeclarativecompositetypedata_p.h"
+#include "private/qdeclarativescriptparser_p.h"
 #include "qdeclarativeengine.h"
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativeengine_p.h"
 #include "qdeclarativecomponent.h"
-#include "qdeclarativecomponent_p.h"
-#include "qdeclarativecompiler_p.h"
+#include "private/qdeclarativecomponent_p.h"
+#include "private/qdeclarativecompiler_p.h"
 
 #include <QtNetwork/qnetworkreply.h>
 #include <QtCore/qdebug.h>

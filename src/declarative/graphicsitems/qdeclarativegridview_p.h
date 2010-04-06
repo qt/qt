@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEGRIDVIEW_H
 #define QDECLARATIVEGRIDVIEW_H
 
-#include "qdeclarativeflickable_p.h"
+#include "private/qdeclarativeflickable_p.h"
 
 QT_BEGIN_HEADER
 

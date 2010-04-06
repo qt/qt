@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativelistmodelworkeragent_p.h"
-#include "qdeclarativelistmodel_p_p.h"
-#include "qdeclarativedeclarativedata_p.h"
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativelistmodelworkeragent_p.h"
+#include "private/qdeclarativelistmodel_p_p.h"
+#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativeengine_p.h"
 #include "qdeclarativeinfo.h"
 
 #include <QtCore/qcoreevent.h>

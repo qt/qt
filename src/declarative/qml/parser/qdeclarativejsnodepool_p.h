@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qdeclarativejsglobal_p.h"
-#include "qdeclarativejsmemorypool_p.h"
+#include "private/qdeclarativejsglobal_p.h"
+#include "private/qdeclarativejsmemorypool_p.h"
 
 #include <QtCore/QHash>
 #include <QtCore/QString>

@@ -40,20 +40,20 @@
 ****************************************************************************/
 
 #include "qdeclarativeproperty.h"
-#include "qdeclarativeproperty_p.h"
+#include "private/qdeclarativeproperty_p.h"
 
-#include "qdeclarativecompositetypedata_p.h"
+#include "private/qdeclarativecompositetypedata_p.h"
 #include "qdeclarative.h"
-#include "qdeclarativebinding_p.h"
+#include "private/qdeclarativebinding_p.h"
 #include "qdeclarativecontext.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativeboundsignal_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativeboundsignal_p.h"
 #include "qdeclarativeengine.h"
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativedeclarativedata_p.h"
-#include "qdeclarativestringconverters_p.h"
-#include "qdeclarativelist_p.h"
-#include "qdeclarativecompiler_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativestringconverters_p.h"
+#include "private/qdeclarativelist_p.h"
+#include "private/qdeclarativecompiler_p.h"
 
 #include <QStringList>
 #include <QtCore/qdebug.h>

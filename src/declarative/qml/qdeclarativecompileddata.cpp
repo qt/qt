@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativecompiler_p.h"
+#include "private/qdeclarativecompiler_p.h"
 #include "qdeclarativeengine.h"
 #include "qdeclarativecomponent.h"
-#include "qdeclarativecomponent_p.h"
+#include "private/qdeclarativecomponent_p.h"
 #include "qdeclarativecontext.h"
-#include "qdeclarativecontext_p.h"
+#include "private/qdeclarativecontext_p.h"
 
 #include <QtCore/qdebug.h>
 

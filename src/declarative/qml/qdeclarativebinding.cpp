@@ -39,15 +39,15 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativebinding_p.h"
-#include "qdeclarativebinding_p_p.h"
+#include "private/qdeclarativebinding_p.h"
+#include "private/qdeclarativebinding_p_p.h"
 
 #include "qdeclarative.h"
 #include "qdeclarativecontext.h"
 #include "qdeclarativeinfo.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativedeclarativedata_p.h"
-#include "qdeclarativestringconverters_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativestringconverters_p.h"
 
 #include <QVariant>
 #include <QtCore/qdebug.h>

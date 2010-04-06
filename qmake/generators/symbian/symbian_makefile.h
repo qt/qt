@@ -66,7 +66,6 @@ public:
 
         // Generate pkg files if there are any actual files to deploy
         bool generatePkg = false;
-        DeploymentList depList;
 
         if (targetType == TypeExe) {
             generatePkg = true;
@@ -81,7 +80,7 @@ public:
         }
 
         if (generatePkg) {
-            generatePkgFile(iconFile, depList, false);
+            generatePkgFile(iconFile, false);
         }
 
         // Get the application translations and convert to symbian OS lang code, i.e. decical number

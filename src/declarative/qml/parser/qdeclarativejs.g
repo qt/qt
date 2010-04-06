@@ -127,10 +127,10 @@
 
 #include <string.h>
 
-#include "qdeclarativejsengine_p.h"
-#include "qdeclarativejslexer_p.h"
-#include "qdeclarativejsast_p.h"
-#include "qdeclarativejsnodepool_p.h"
+#include "private/qdeclarativejsengine_p.h"
+#include "private/qdeclarativejslexer_p.h"
+#include "private/qdeclarativejsast_p.h"
+#include "private/qdeclarativejsnodepool_p.h"
 
 ./
 
@@ -195,10 +195,10 @@
 #ifndef QDECLARATIVEJSPARSER_P_H
 #define QDECLARATIVEJSPARSER_P_H
 
-#include "qdeclarativejsglobal_p.h"
-#include "qdeclarativejsgrammar_p.h"
-#include "qdeclarativejsast_p.h"
-#include "qdeclarativejsengine_p.h"
+#include "private/qdeclarativejsglobal_p.h"
+#include "private/qdeclarativejsgrammar_p.h"
+#include "private/qdeclarativejsast_p.h"
+#include "private/qdeclarativejsengine_p.h"
 
 #include <QtCore/QList>
 #include <QtCore/QString>
@@ -375,7 +375,7 @@ protected:
 
 /.
 
-#include "qdeclarativejsparser_p.h"
+#include "private/qdeclarativejsparser_p.h"
 #include <QVarLengthArray>
 
 //

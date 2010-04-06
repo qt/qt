@@ -42,8 +42,8 @@
 #ifndef QDECLARATIVEANIMATION_H
 #define QDECLARATIVEANIMATION_H
 
-#include "qdeclarativetransition_p.h"
-#include "qdeclarativestate_p.h"
+#include "private/qdeclarativetransition_p.h"
+#include "private/qdeclarativestate_p.h"
 #include <QtGui/qvector3d.h>
 
 #include <qdeclarativepropertyvaluesource.h>
