@@ -237,7 +237,7 @@ namespace QDeclarativeParser
         QList<DynamicSlot> dynamicSlots;
     };
 
-    class Variant 
+    class Q_DECLARATIVE_EXPORT Variant 
     {
     public:
         enum Type {
