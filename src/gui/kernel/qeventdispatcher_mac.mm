@@ -831,7 +831,14 @@ NSModalSession QEventDispatcherMacPrivate::currentModalSession()
             QBoolBlocker block1(blockSendPostedEvents, true);
             info.nswindow = window;
             [(NSWindow*) info.nswindow retain];
-            info.session = [NSApp beginModalSessionForWindow:window];
+            // When creating a modal session cocoa will rearrange the windows.
+            // In order to avoid windows to be put behind another we need to
+            // keep the window level.
+            {
+                int level = [window level];
+                info.session = [NSApp beginModalSessionForWindow:window];
+                [window setLevel:level];
+            }
         }
         currentModalSessionCached = info.session;
     }
