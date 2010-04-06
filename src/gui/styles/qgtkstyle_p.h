@@ -87,7 +87,7 @@ public:
 
 #ifdef __SUNPRO_CC
         QHashableLatin1Literal(const char* str)
-	  : m_size(strlen(str)), m_data(str) {}
+        : m_size(strlen(str)), m_data(str) {}
 #else
     template <int N>
         QHashableLatin1Literal(const char (&str)[N])
