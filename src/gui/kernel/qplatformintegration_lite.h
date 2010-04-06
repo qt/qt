@@ -51,6 +51,10 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+#ifndef QT_NO_OPENGL
+class QPlatformGLContext;
+#endif
+
 class Q_GUI_EXPORT QPlatformIntegration
 {
 public:
@@ -64,6 +68,12 @@ public:
 // Window System functions
     virtual QList<QPlatformScreen *> screens() const = 0;
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+
+// OpenGL Integration functions
+#ifndef QT_NO_OPENGL
+    virtual bool hasOpenGL() const;
+    virtual QPlatformGLContext * createGLContext();
+#endif
 };
 
 QT_END_NAMESPACE

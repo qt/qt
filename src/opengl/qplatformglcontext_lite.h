@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,33 +39,32 @@
 **
 ****************************************************************************/
 
-#include "qplatformintegration_lite.h"
+#ifndef QPLATFORM_GL_CONTEXT_H
+#define QPLATFORM_GL_CONTEXT_H
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QBlittable *QPlatformIntegration::createBlittable(const QSize &) const
-{ return 0; }
-
-QPixmap QPlatformIntegration::grabWindow(WId window, int x, int y, int width, int height) const
+class QPlatformGLContext
 {
-    Q_UNUSED(window);
-    Q_UNUSED(x);
-    Q_UNUSED(y);
-    Q_UNUSED(width);
-    Q_UNUSED(height);
-    return QPixmap();
-}
+public:
+    QPlatformGLContext();
+    virtual ~QPlatformGLContext();
 
-#ifndef QT_NO_OPENGL
-bool QPlatformIntegration::hasOpenGL() const
-{
-    return false;
-}
+    virtual bool create(QPaintDevice* device, const QGLFormat& format, QPlatformGLContext* shareContext) = 0;
 
-QPlatformGLContext * QPlatformIntegration::createGLContext()
-{
-    return 0;
-}
-#endif
+    virtual void makeCurrent() = 0;
+    virtual void doneCurrent() = 0;
+    virtual void swapBuffers() = 0;
+    virtual void* getProcAddress(const QString& procName) = 0;
+
+};
+
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+
+#endif // QPLATFORM_GL_INTEGRATION_P_H

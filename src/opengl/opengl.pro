@@ -78,6 +78,7 @@ SOURCES	+= qgl.cpp \
 
 embedded_lite {
     SOURCES += qgl_lite.cpp
+    HEADERS += qplatformglcontext_lite.h
 
     # If we have EGL, use the EGL implementation of QGLPixelBuffer, otherwise we just provide
     # a stubbed out one. PBuffers aren't too interesting anyway.

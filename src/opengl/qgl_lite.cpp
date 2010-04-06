@@ -39,34 +39,32 @@
 **
 ****************************************************************************/
 
+#include <QApplication>
+#include <QPixmap>
+#include <QDebug>
+
+#include <QtGui/private/qapplication_p.h>
+
 #include "qgl.h"
 #include "qgl_p.h"
+#include "qplatformglcontext_lite.h"
 
-#include "qmap.h"
-#include "qapplication.h"
-#include "qcolormap.h"
-#include "qdesktopwidget.h"
-#include "qpixmap.h"
-#include "qhash.h"
-#include "qlibrary.h"
-#include "qdebug.h"
-#include <private/qimagepixmapcleanuphooks_p.h>
 
 QT_BEGIN_NAMESPACE
 
 bool QGLFormat::hasOpenGL()
 {
-    return true; // IMPLEMENT ME PROPERLY!
+    return QApplicationPrivate::platformIntegration()->hasOpenGL();
 }
-
-
 
 bool QGLContext::chooseContext(const QGLContext* shareContext)
 {
-    // IMPLEMENT ME
+    Q_D(QGLContext);
+    d->platformContext = QApplicationPrivate::platformIntegration()->createGLContext();
+    d->platformContext->create(d->paintDevice, d->glFormat, shareContext ? shareContext->d_func()->platformContext : 0);
+
     return false;
 }
-
 
 void QGLContext::reset()
 {
@@ -76,7 +74,10 @@ void QGLContext::reset()
     d->cleanup();
     doneCurrent();
 
-    // IMPLEMENT ME
+    if (d->platformContext) {
+        delete d->platformContext;
+        d->platformContext = 0;
+    }
 
     d->crWin = false;
     d->sharing = false;
@@ -86,46 +87,70 @@ void QGLContext::reset()
     QGLContextGroup::removeShare(this);
 }
 
-
 void QGLContext::makeCurrent()
 {
-    // IMPLEMENT ME
+    Q_D(QGLContext);
+    d->platformContext->makeCurrent();
 }
 
 void QGLContext::doneCurrent()
 {
-    // IMPLEMENT ME
+    Q_D(QGLContext);
+    d->platformContext->doneCurrent();
 }
-
 
 void QGLContext::swapBuffers() const
 {
-    // IMPLEMENT ME
+    Q_D(const QGLContext);
+    d->platformContext->swapBuffers();
 }
 
-void *QGLContext::getProcAddress(const QString &proc) const
+void *QGLContext::getProcAddress(const QString &procName) const
 {
-    // IMPLEMENT ME
+    Q_D(const QGLContext);
+    return d->platformContext->getProcAddress(procName);
 }
-
-void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget *shareWidget)
-{
-    // IMPLEMENT ME
-}
-
 
 void QGLWidget::setContext(QGLContext *context,
                             const QGLContext* shareContext,
                             bool deleteOldContext)
 {
-    // IMPLEMENT ME
+    Q_D(QGLWidget);
+    if (context == 0) {
+        qWarning("QGLWidget::setContext: Cannot set null context");
+        return;
+    }
+    if (!context->deviceIsPixmap() && context->device() != this) {
+        qWarning("QGLWidget::setContext: Context must refer to this widget");
+        return;
+    }
+
+    if (d->glcx)
+        d->glcx->doneCurrent();
+    QGLContext* oldcx = d->glcx;
+    d->glcx = context;
+
+    // If the application has set WA_TranslucentBackground and not explicitly set
+    // the alpha buffer size to zero, modify the format so it have an alpha channel
+    QGLFormat& fmt = d->glcx->d_func()->glFormat;
+    if (testAttribute(Qt::WA_TranslucentBackground) && fmt.alphaBufferSize() == -1)
+        fmt.setAlphaBufferSize(1);
+
+    bool success = false;
+    if (!d->glcx->isValid())
+        success = !d->glcx->create(shareContext ? shareContext : oldcx);
+
+    if (deleteOldContext)
+        delete oldcx;
 }
 
 
 
 
-
-
+void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget *shareWidget)
+{
+    initContext(context, shareWidget);
+}
 
 bool QGLFormat::hasOpenGLOverlays()
 {

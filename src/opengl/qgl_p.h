@@ -68,6 +68,10 @@
 #include <QtGui/private/qegl_p.h>
 #endif
 
+#if defined(Q_WS_LITE)
+#include <qplatformglcontext_lite.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QGLContext;
@@ -344,7 +348,9 @@ public:
     HBITMAP hbitmap;
     HDC hbitmap_hdc;
 #endif
-#if defined(QT_OPENGL_ES)
+#if defined(Q_WS_LITE)
+    QPlatformGLContext *platformContext;
+#elif defined(QT_OPENGL_ES)
     bool ownsEglContext;
     QEglContext *eglContext;
     EGLSurface eglSurface;
