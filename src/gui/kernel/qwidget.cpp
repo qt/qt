@@ -1487,8 +1487,12 @@ QWidget::~QWidget()
     if (QWidgetPrivate::allWidgets) // might have been deleted by ~QApplication
         QWidgetPrivate::allWidgets->remove(this);
 
-    QEvent e(QEvent::Destroy);
-    QCoreApplication::sendEvent(this, &e);
+    QT_TRY {
+        QEvent e(QEvent::Destroy);
+        QCoreApplication::sendEvent(this, &e);
+    } QT_CATCH(const std::exception&) {
+        // if this fails we can't do anything about it but at least we are not allowed to throw.
+    }
 }
 
 int QWidgetPrivate::instanceCounter = 0;  // Current number of widget instances
