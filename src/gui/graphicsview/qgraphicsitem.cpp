@@ -6984,7 +6984,8 @@ void QGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                     // Root items that ignore transformations need to
                     // calculate their diff by mapping viewport coordinates
                     // directly to parent coordinates.
-                    QTransform viewToParentTransform = (item->transform().translate(item->d_ptr->pos.x(), item->d_ptr->pos.y()))
+                    // COMBINE
+                    QTransform viewToParentTransform = (item->d_func()->transformData->computedFullTransform().translate(item->d_ptr->pos.x(), item->d_ptr->pos.y()))
                                                        * (item->sceneTransform() * view->viewportTransform()).inverted();
                     currentParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->screenPos())));
                     buttonDownParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->buttonDownScreenPos(Qt::LeftButton))));
