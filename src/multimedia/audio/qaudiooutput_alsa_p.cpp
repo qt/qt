@@ -485,7 +485,6 @@ bool QAudioOutputPrivate::open()
 
 void QAudioOutputPrivate::close()
 {
-    deviceState = QAudio::StoppedState;
     timer->stop();
 
     if ( handle ) {
@@ -701,6 +700,7 @@ bool QAudioOutputPrivate::deviceReady()
 
         } else if(l < 0) {
             close();
+            deviceState = QAudio::StoppedState;
             errorState = QAudio::IOError;
             emit stateChanged(deviceState);
         }

@@ -6823,8 +6823,8 @@ void tst_QGraphicsItem::cacheMode()
     testerChild2->rotate(22);
     QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 4);
-    QCOMPARE(testerChild->repaints, 4);
-    QCOMPARE(testerChild2->repaints, 3);
+    QTRY_COMPARE(testerChild->repaints, 4);
+    QTRY_COMPARE(testerChild2->repaints, 3);
     tester->resetTransform();
     testerChild->resetTransform();
     testerChild2->resetTransform();
@@ -6902,33 +6902,30 @@ void tst_QGraphicsItem::cacheMode()
     testerChild->setPos(1, 1);
     QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 11);
-    QCOMPARE(testerChild->repaints, 10);
-    QCOMPARE(testerChild2->repaints, 5);
+    QTRY_COMPARE(testerChild->repaints, 10);
+    QTRY_COMPARE(testerChild2->repaints, 5);
     tester->resetTransform();
 
     // Make a huge item
     tester->setGeometry(QRectF(-4000, -4000, 8000, 8000));
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 12);
-    QCOMPARE(testerChild->repaints, 11);
-    QCOMPARE(testerChild2->repaints, 5);
+    QTRY_COMPARE(testerChild->repaints, 11);
+    QTRY_COMPARE(testerChild2->repaints, 5);
 
     // Move the large item - will cause a repaint as the
     // cache is clipped.
     tester->setPos(5, 0);
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 13);
-    QCOMPARE(testerChild->repaints, 11);
-    QCOMPARE(testerChild2->repaints, 5);
+    QTRY_COMPARE(testerChild->repaints, 11);
+    QTRY_COMPARE(testerChild2->repaints, 5);
 
     // Hiding and showing should invalidate the cache
     tester->hide();
     QTest::qWait(25);
     tester->show();
-    QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 14);
-    QCOMPARE(testerChild->repaints, 12);
-    QCOMPARE(testerChild2->repaints, 6);
+    QTRY_COMPARE(testerChild->repaints, 12);
+    QTRY_COMPARE(testerChild2->repaints, 6);
 }
 
 void tst_QGraphicsItem::cacheMode2()
