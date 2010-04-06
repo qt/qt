@@ -231,6 +231,7 @@ void QDeclarativeGestureArea::connectSignals()
 
 void QDeclarativeGestureArea::componentComplete()
 {
+    QDeclarativeItem::componentComplete();
     Q_D(QDeclarativeGestureArea);
     d->componentcomplete=true;
     connectSignals();

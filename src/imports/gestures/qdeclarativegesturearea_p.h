@@ -65,8 +65,6 @@ class Q_DECLARATIVE_EXPORT QDeclarativeGestureArea : public QDeclarativeItem
 
     Q_PROPERTY(QGesture *gesture READ gesture)
 
-    Q_INTERFACES(QDeclarativeParserStatus)
-
 public:
     QDeclarativeGestureArea(QDeclarativeItem *parent=0);
     ~QDeclarativeGestureArea();
