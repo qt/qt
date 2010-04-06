@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarativeproperty.h"
-#include "qdeclarativeproperty_p.h"
+#include "private/qdeclarativeproperty_p.h"
 
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>

@@ -1,4 +1,4 @@
 To run:
 
   make install
-  qml mywidgets.qml
+  qml proxywidgets.qml

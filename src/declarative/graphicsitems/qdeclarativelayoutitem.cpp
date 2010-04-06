@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativelayoutitem_p.h"
+#include "private/qdeclarativelayoutitem_p.h"
 
 #include <QDebug>
 

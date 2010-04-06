@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativevisualitemmodel_p.h"
+#include "private/qdeclarativevisualitemmodel_p.h"
 
 #include "qdeclarativeitem.h"
 

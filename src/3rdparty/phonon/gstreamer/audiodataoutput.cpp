@@ -29,6 +29,9 @@
 #include <QtCore/QMap>
 #include <phonon/audiooutput.h>
 
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
+
 namespace Phonon
 {
 namespace Gstreamer
@@ -137,6 +140,9 @@ void AudioDataOutput::mediaNodeEvent(const MediaNodeEvent *event)
 }
 
 }} //namespace Phonon::Gstreamer
+
+QT_END_NAMESPACE
+QT_END_HEADER
 
 #include "moc_audiodataoutput.cpp"
 // vim: sw=4 ts=4

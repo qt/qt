@@ -1470,9 +1470,16 @@ void tst_QDir::updateFileLists()
 
     QDir dir("update-file-lists");
 
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE)
+    //no . and .. on these OS.
+    QCOMPARE(dir.count(), uint(4));
+    QCOMPARE(dir.entryList().size(), 4);
+    QCOMPARE(dir.entryInfoList().size(), 4);
+#else
     QCOMPARE(dir.count(), uint(6));
     QCOMPARE(dir.entryList().size(), 6);
     QCOMPARE(dir.entryInfoList().size(), 6);
+#endif
 
     dir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot);
 

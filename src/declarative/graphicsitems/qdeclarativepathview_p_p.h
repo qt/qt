@@ -53,10 +53,10 @@
 // We mean it.
 //
 
-#include "qdeclarativepathview_p.h"
+#include "private/qdeclarativepathview_p.h"
 
-#include "qdeclarativeitem_p.h"
-#include "qdeclarativevisualitemmodel_p.h"
+#include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativevisualitemmodel_p.h"
 
 #include <qdeclarative.h>
 #include <qdeclarativeanimation_p_p.h>

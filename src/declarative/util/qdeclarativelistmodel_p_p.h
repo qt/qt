@@ -53,10 +53,10 @@
 // We mean it.
 //
 
-#include "qdeclarativelistmodel_p.h"
+#include "private/qdeclarativelistmodel_p.h"
 
 #include "qdeclarative.h"
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativeengine_p.h"
 
 QT_BEGIN_HEADER
 

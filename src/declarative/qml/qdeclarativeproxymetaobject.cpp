@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeproxymetaobject_p.h"
+#include "private/qdeclarativeproxymetaobject_p.h"
 
 #include <QDebug>
 

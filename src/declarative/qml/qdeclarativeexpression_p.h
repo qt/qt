@@ -55,8 +55,8 @@
 
 #include "qdeclarativeexpression.h"
 
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativeguard_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 #include <QtScript/qscriptvalue.h>
 

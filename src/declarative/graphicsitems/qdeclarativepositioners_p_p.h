@@ -53,9 +53,9 @@
 // We mean it.
 //
 
-#include "qdeclarativepositioners_p.h"
+#include "private/qdeclarativepositioners_p.h"
 
-#include "qdeclarativeitem_p.h"
+#include "private/qdeclarativeitem_p.h"
 
 #include <qdeclarativestate_p.h>
 #include <qdeclarativetransitionmanager_p_p.h>
@@ -73,8 +73,8 @@ class QDeclarativeBasePositionerPrivate : public QDeclarativeItemPrivate, public
 
 public:
     QDeclarativeBasePositionerPrivate()
-        : spacing(0), type(QDeclarativeBasePositioner::None), moveTransition(0), addTransition(0),
-          queuedPositioning(false)
+        : spacing(0), type(QDeclarativeBasePositioner::None)
+        , moveTransition(0), addTransition(0), queuedPositioning(false)
     {
     }
 
@@ -84,6 +84,7 @@ public:
     }
 
     int spacing;
+
     QDeclarativeBasePositioner::PositionerType type;
     QDeclarativeTransition *moveTransition;
     QDeclarativeTransition *addTransition;

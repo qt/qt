@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativerepeater_p.h"
-#include "qdeclarativerepeater_p_p.h"
+#include "private/qdeclarativerepeater_p.h"
+#include "private/qdeclarativerepeater_p_p.h"
 
-#include "qdeclarativevisualitemmodel_p.h"
+#include "private/qdeclarativevisualitemmodel_p.h"
 #include <private/qdeclarativeglobal_p.h>
 #include <qdeclarativelistaccessor_p.h>
 

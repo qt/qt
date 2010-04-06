@@ -39,35 +39,35 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativeengine_p.h"
 #include "qdeclarativeengine.h"
 
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativecompiler_p.h"
-#include "qdeclarativeglobalscriptclass_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativecompiler_p.h"
+#include "private/qdeclarativeglobalscriptclass_p.h"
 #include "qdeclarative.h"
 #include "qdeclarativecontext.h"
 #include "qdeclarativeexpression.h"
 #include "qdeclarativecomponent.h"
-#include "qdeclarativebinding_p_p.h"
-#include "qdeclarativevme_p.h"
-#include "qdeclarativeenginedebug_p.h"
-#include "qdeclarativestringconverters_p.h"
-#include "qdeclarativexmlhttprequest_p.h"
-#include "qdeclarativesqldatabase_p.h"
-#include "qdeclarativetypenamescriptclass_p.h"
-#include "qdeclarativelistscriptclass_p.h"
+#include "private/qdeclarativebinding_p_p.h"
+#include "private/qdeclarativevme_p.h"
+#include "private/qdeclarativeenginedebug_p.h"
+#include "private/qdeclarativestringconverters_p.h"
+#include "private/qdeclarativexmlhttprequest_p.h"
+#include "private/qdeclarativesqldatabase_p.h"
+#include "private/qdeclarativetypenamescriptclass_p.h"
+#include "private/qdeclarativelistscriptclass_p.h"
 #include "qdeclarativescriptstring.h"
-#include "qdeclarativeglobal_p.h"
-#include "qdeclarativeworkerscript_p.h"
-#include "qdeclarativecomponent_p.h"
-#include "qdeclarativescriptclass_p.h"
+#include "private/qdeclarativeglobal_p.h"
+#include "private/qdeclarativeworkerscript_p.h"
+#include "private/qdeclarativecomponent_p.h"
+#include "private/qdeclarativescriptclass_p.h"
 #include "qdeclarativenetworkaccessmanagerfactory.h"
 #include "qdeclarativeimageprovider.h"
-#include "qdeclarativedirparser_p.h"
+#include "private/qdeclarativedirparser_p.h"
 #include "qdeclarativeextensioninterface.h"
-#include "qdeclarativelist_p.h"
-#include "qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativelist_p.h"
+#include "private/qdeclarativetypenamecache_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -1980,8 +1980,11 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
                          QStringList()
 # ifdef QT_DEBUG
                          << QLatin1String("_debug.dylib") // try a qmake-style debug build first
-# endif
                          << QLatin1String(".dylib")
+# else
+                         << QLatin1String(".dylib")
+                         << QLatin1String("_debug.dylib") // try a qmake-style debug build after
+# endif
                          << QLatin1String(".so")
                          << QLatin1String(".bundle"),
                          QLatin1String("lib"));

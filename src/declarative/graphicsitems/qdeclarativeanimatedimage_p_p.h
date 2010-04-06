@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qdeclarativeimage_p_p.h"
+#include "private/qdeclarativeimage_p_p.h"
 
 QT_BEGIN_NAMESPACE
 

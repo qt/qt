@@ -111,8 +111,8 @@ The following table lists the QML elements provided by the Qt Declarative module
 \header
 \o \bold {Basic Visual Items}
 \o \bold {Basic Interaction Items}
-\o \bold {Widgets}
 \o \bold {Utility}
+\o \bold {Transforms}
 
 \row
 \o
@@ -130,13 +130,9 @@ The following table lists the QML elements provided by the Qt Declarative module
 \list
 \o \l MouseArea
 \o \l FocusScope
-\endlist
-
-\o
-\list
 \o \l Flickable
 \o \l Flipable
-\o \l WebView
+\o \l GestureArea (experimental)
 \endlist
 
 \o
@@ -148,10 +144,17 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l LayoutItem
 \endlist
 
+\o
+\list
+\o \l Scale
+\o \l Rotation
+\o \l Translate
+\endlist
+
 \header
 \o \bold {Views}
 \o \bold {Positioners}
-\o \bold {Transforms}
+\o \bold {Media}
 \o \bold {Effects}
 
 \row
@@ -172,6 +175,7 @@ The following table lists the QML elements provided by the Qt Declarative module
         \o \l PathPercent
         \endlist
     \endlist
+\o \l WebView
 \endlist
 
 \o
@@ -184,17 +188,14 @@ The following table lists the QML elements provided by the Qt Declarative module
 
 \o
 \list
-\o \l Scale
-\o \l Rotation
+\o \l SoundEffect
+\o \l Audio
+\o \l Video
 \endlist
 
 \o
 \list
-\o \l Blur
-\o \l Colorize
-\o \l DropShadow
-\o \l Opacity
-\o \l Particles
+\o \l Particles (experimental)
     \list
     \o \l ParticleMotionLinear
     \o \l ParticleMotionGravity

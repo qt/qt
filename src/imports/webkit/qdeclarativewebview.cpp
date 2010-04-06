@@ -123,7 +123,7 @@ public:
 
     This type is made available by importing the \c org.webkit module:
 
-    \b{import org.webkit 1.0}
+    \bold{import org.webkit 1.0}
 
     If the width and height of the item is not set, they will
     dynamically adjust to a size appropriate for the content.

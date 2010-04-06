@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativepath_p.h"
-#include "qdeclarativepath_p_p.h"
+#include "private/qdeclarativepath_p.h"
+#include "private/qdeclarativepath_p_p.h"
 
 #include <QSet>
 #include <QTime>

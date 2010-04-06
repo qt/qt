@@ -42,7 +42,7 @@
 #ifndef REWRITER_H
 #define REWRITER_H
 
-#include "textwriter_p.h"
+#include "private/textwriter_p.h"
 
 #include <qdeclarativejsastvisitor_p.h>
 
