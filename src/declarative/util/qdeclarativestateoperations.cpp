@@ -1090,6 +1090,9 @@ bool QDeclarativeAnchorChanges::changesBindings()
 void QDeclarativeAnchorChanges::saveOriginals()
 {
     Q_D(QDeclarativeAnchorChanges);
+    if (!d->target)
+        return;
+
     d->origLeft = d->target->anchors()->left();
     d->origRight = d->target->anchors()->right();
     d->origHCenter = d->target->anchors()->horizontalCenter();
@@ -1146,6 +1149,9 @@ void QDeclarativeAnchorChanges::copyOriginals(QDeclarativeActionEvent *other)
 void QDeclarativeAnchorChanges::clearBindings()
 {
     Q_D(QDeclarativeAnchorChanges);
+    if (!d->target)
+        return;
+
     d->fromX = d->target->x();
     d->fromY = d->target->y();
     d->fromWidth = d->target->width();
@@ -1242,6 +1248,9 @@ void QDeclarativeAnchorChanges::rewind()
 void QDeclarativeAnchorChanges::saveCurrentValues()
 {
     Q_D(QDeclarativeAnchorChanges);
+    if (!d->target)
+        return;
+
     d->rewindLeft = d->target->anchors()->left();
     d->rewindRight = d->target->anchors()->right();
     d->rewindHCenter = d->target->anchors()->horizontalCenter();
@@ -1259,6 +1268,9 @@ void QDeclarativeAnchorChanges::saveCurrentValues()
 void QDeclarativeAnchorChanges::saveTargetValues()
 {
     Q_D(QDeclarativeAnchorChanges);
+    if (!d->target)
+        return;
+
     d->toX = d->target->x();
     d->toY = d->target->y();
     d->toWidth = d->target->width();
