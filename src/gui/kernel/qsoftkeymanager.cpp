@@ -242,6 +242,7 @@ bool QSoftKeyManager::handleUpdateSoftKeys()
     d->requestedSoftKeyActions.clear();
     bool recursiveMerging = false;
     QWidget *source = softkeySource(NULL, recursiveMerging);
+    d->initialSoftKeySource = source;
     while (source) {
         if (appendSoftkeys(*source, level))
             ++level;
