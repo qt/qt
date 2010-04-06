@@ -86,6 +86,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextInput : public QDeclarativePaintedIte
     Q_PROPERTY(bool acceptableInput READ hasAcceptableInput NOTIFY acceptableInputChanged)
     Q_PROPERTY(EchoMode echoMode READ echoMode WRITE setEchoMode NOTIFY echoModeChanged)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress NOTIFY focusOnPressChanged)
+    Q_PROPERTY(QString passwordCharacter READ passwordCharacter WRITE setPasswordCharacter NOTIFY passwordCharacterChanged)
+    Q_PROPERTY(QString displayText READ displayText NOTIFY displayTextChanged)
 
 public:
     QDeclarativeTextInput(QDeclarativeItem* parent=0);
@@ -104,9 +106,9 @@ public:
         AlignHCenter = Qt::AlignHCenter
     };
 
-    //### Should we have this function, x based properties,
-    //### or copy TextEdit with x instead of QTextCursor?
-    Q_INVOKABLE int xToPos(int x);
+    //Auxilliary functions needed to control the TextInput from QML
+    Q_INVOKABLE int xToPosition(int x);
+    Q_INVOKABLE void moveCursorSelection(int pos);
 
     QString text() const;
     void setText(const QString &);
@@ -157,6 +159,11 @@ public:
     EchoMode echoMode() const;
     void setEchoMode(EchoMode echo);
 
+    QString passwordCharacter() const;
+    void setPasswordCharacter(const QString &str);
+
+    QString displayText() const;
+
     QDeclarativeComponent* cursorDelegate() const;
     void setCursorDelegate(QDeclarativeComponent*);
 
@@ -188,6 +195,8 @@ Q_SIGNALS:
     void validatorChanged();
     void inputMaskChanged(const QString &inputMask);
     void echoModeChanged(EchoMode echoMode);
+    void passwordCharacterChanged();
+    void displayTextChanged(const QString &text);
     void focusOnPressChanged(bool focusOnPress);
 
 protected:

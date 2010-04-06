@@ -634,7 +634,18 @@ void QDeclarativeTextInput::moveCursor()
     d->cursorItem->setX(d->control->cursorToX() - d->hscroll);
 }
 
-int QDeclarativeTextInput::xToPos(int x)
+/*
+    \qmlmethod int xToPosition(int x)
+
+    This function returns the character position at
+    x pixels from the left of the textInput. Position 0 is before the
+    first character, position 1 is after the first character but before the second,
+    and so on until position text.length, which is after all characters.
+
+    This means that for all x values before the first character this function returns 0,
+    and for all x values after the last character this function returns text.length.
+*/
+int QDeclarativeTextInput::xToPosition(int x)
 {
     Q_D(const QDeclarativeTextInput);
     return d->control->xToPos(x - d->hscroll);
@@ -645,6 +656,8 @@ void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
     Q_Q(QDeclarativeTextInput);
     focused = hasFocus;
     q->setCursorVisible(hasFocus);
+    if(q->echoMode() == QDeclarativeTextInput::PasswordEchoOnEdit && !hasFocus)
+        control->updatePasswordEchoEditing(false);//QLineControl sets it on key events, but doesn't deal with focus events
     QDeclarativeItemPrivate::focusChanged(hasFocus);
 }
 
@@ -809,6 +822,72 @@ void QDeclarativeTextInput::selectAll()
     filtering at the beginning of the animation and reenable it at the conclusion.
 */
 
+/*
+   \qmlproperty string TextInput::passwordCharacter
+
+   This is the character displayed when echoMode is set to Password or
+   PasswordEchoOnEdit. By default it is an asterisk.
+
+   Attempting to set this to more than one character will set it to
+   the first character in the string. Attempting to set this to less
+   than one character will fail.
+*/
+QString QDeclarativeTextInput::passwordCharacter() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return QString(d->control->passwordCharacter());
+}
+
+void QDeclarativeTextInput::setPasswordCharacter(const QString &str)
+{
+    Q_D(QDeclarativeTextInput);
+    if(str.length() < 1)
+        return;
+    emit passwordCharacterChanged();
+    d->control->setPasswordCharacter(str.constData()[0]);
+}
+
+/*
+   \qmlproperty string TextInput::displayText
+
+   This is the actual text displayed in the TextInput. When
+   echoMode is set to TextInput::Normal this will be exactly
+   the same as the TextInput::text property. When echoMode
+   is set to something else, this property will contain the text
+   the user sees, while the text property will contain the
+   entered text.
+*/
+QString QDeclarativeTextInput::displayText() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->control->displayText();
+}
+
+/*
+    \qmlmethod void moveCursorSelection(int pos)
+
+    This method allows you to move the cursor while modifying the selection accordingly.
+    To simply move the cursor, set the cursorPosition property.
+
+    When this method is called it additionally sets either the
+    selectionStart or the selectionEnd (whichever was at the previous cursor position)
+    to the specified position. This allows you to easily extend and contract the selected
+    text range.
+
+    Example: The sequence of calls
+        cursorPosition = 5
+        moveCursorSelection(9)
+        moveCursorSelection(7)
+    would move the cursor to position 5, extend the selection end from 5 to 9
+    and then retract the selection end from 9 to 7, leaving the text from position 5 to 7
+    selected (the 6th and 7th characters).
+*/
+void QDeclarativeTextInput::moveCursorSelection(int pos)
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->moveCursor(pos, true);
+}
+
 void QDeclarativeTextInputPrivate::init()
 {
     Q_Q(QDeclarativeTextInput);
@@ -823,6 +902,8 @@ void QDeclarativeTextInputPrivate::init()
                q, SLOT(cursorPosChanged()));
     q->connect(control, SIGNAL(selectionChanged()),
                q, SLOT(selectionChanged()));
+    q->connect(control, SIGNAL(textChanged(const QString &)),
+               q, SIGNAL(displayTextChanged(const QString &)));
     q->connect(control, SIGNAL(textChanged(const QString &)),
                q, SLOT(q_textChanged()));
     q->connect(control, SIGNAL(accepted()),

@@ -74,6 +74,7 @@ private slots:
     void sendRequestSoftwareInputPanelEvent();
     void setHAlignClearCache();
 
+    void echoMode();
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -585,6 +586,44 @@ void tst_qdeclarativetextinput::readOnly()
     simulateKey(canvas, Qt::Key_Space);
     simulateKey(canvas, Qt::Key_Escape);
     QCOMPARE(input->text(), initial);
+}
+
+void tst_qdeclarativetextinput::echoMode()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/echoMode.qml");
+    canvas->show();
+    canvas->setFocus();
+
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeTextInput *input = qobject_cast<QDeclarativeTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
+
+    QVERIFY(input != 0);
+    QTRY_VERIFY(input->hasFocus() == true);
+    QString initial = input->text();
+    QCOMPARE(initial, QLatin1String("ABCDefgh"));
+    QCOMPARE(input->echoMode(), QDeclarativeTextInput::Normal);
+    QCOMPARE(input->displayText(), input->text());
+    input->setEchoMode(QDeclarativeTextInput::NoEcho);
+    QCOMPARE(input->text(), initial);
+    QCOMPARE(input->displayText(), QLatin1String(""));
+    QCOMPARE(input->passwordCharacter(), QLatin1String("*"));
+    input->setEchoMode(QDeclarativeTextInput::Password);
+    QCOMPARE(input->text(), initial);
+    QCOMPARE(input->displayText(), QLatin1String("********"));
+    input->setPasswordCharacter(QChar('Q'));
+    QCOMPARE(input->passwordCharacter(), QLatin1String("Q"));
+    QCOMPARE(input->text(), initial);
+    QCOMPARE(input->displayText(), QLatin1String("QQQQQQQQ"));
+    input->setEchoMode(QDeclarativeTextInput::PasswordEchoOnEdit);
+    QCOMPARE(input->text(), initial);
+    QCOMPARE(input->displayText(), QLatin1String("QQQQQQQQ"));
+    QTest::keyPress(canvas, Qt::Key_A);//Clearing previous entry is part of PasswordEchoOnEdit
+    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QCOMPARE(input->text(), QLatin1String("a"));
+    QCOMPARE(input->displayText(), QLatin1String("a"));
+    input->setFocus(false);
+    QCOMPARE(input->displayText(), QLatin1String("Q"));
 }
 
 void tst_qdeclarativetextinput::simulateKey(QDeclarativeView *view, int key)
