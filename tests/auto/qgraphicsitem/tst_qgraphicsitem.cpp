@@ -6901,7 +6901,7 @@ void tst_QGraphicsItem::cacheMode()
     // because the parent is rotated with a perspective.
     testerChild->setPos(1, 1);
     QTest::qWait(25);
-    QTRY_COMPARE(tester->repaints, 10);
+    QTRY_COMPARE(tester->repaints, 11);
     QTRY_COMPARE(testerChild->repaints, 10);
     QTRY_COMPARE(testerChild2->repaints, 5);
     tester->resetTransform();
