@@ -133,10 +133,13 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     while (iter != listItemCoordinates.end()) {
         Coord c = iter.value();
 
+        m_currentRowHeight = qMax(m_currentRowHeight, c.h + margin * 2);
+
         if (m_cx + c.w > m_w) {
             // no room on the current line, start new glyph strip
             m_cx = 0;
-            m_cy += rowHeight;
+            m_cy += m_currentRowHeight;
+            m_currentRowHeight = 0; // New row
         }
         if (m_cy + c.h > m_h) {
             int new_height = m_h*2;
@@ -153,14 +156,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         fillTexture(c, iter.key());
         coords.insert(iter.key(), c);
 
-        if (m_cx + c.w > m_w) {
-            m_cx = 0;
-            m_cy += rowHeight;
-        } else {
-            // for the Mono case, glyph_width is 8-bit aligned,
-            // and therefore so will m_cx
-            m_cx += c.w;
-        }
+        m_cx += c.w;
         ++iter;
     }
 
