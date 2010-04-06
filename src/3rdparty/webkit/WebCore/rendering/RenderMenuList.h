@@ -1,7 +1,8 @@
 /*
  * This file is part of the select element renderer in WebCore.
  *
- * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
+ * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -37,7 +38,12 @@ namespace WebCore {
 class PopupMenu;
 class RenderText;
 
+#if ENABLE(NO_LISTBOX_RENDERING)
+class RenderMenuList : public RenderFlexibleBox, private ListPopupMenuClient {
+#else
 class RenderMenuList : public RenderFlexibleBox, private PopupMenuClient {
+#endif
+
 public:
     RenderMenuList(Element*);
     virtual ~RenderMenuList();
@@ -48,6 +54,8 @@ public:
     void hidePopup();
 
     void setOptionsChanged(bool changed) { m_optionsChanged = changed; }
+
+    void didSetSelectedIndex();
 
     String text() const;
 
@@ -73,6 +81,7 @@ private:
     // PopupMenuClient methods
     virtual String itemText(unsigned listIndex) const;
     virtual String itemToolTip(unsigned listIndex) const;
+    virtual String itemAccessibilityText(unsigned listIndex) const;
     virtual bool itemIsEnabled(unsigned listIndex) const;
     virtual PopupMenuStyle itemStyle(unsigned listIndex) const;
     virtual PopupMenuStyle menuStyle() const;
@@ -94,6 +103,11 @@ private:
     virtual HostWindow* hostWindow() const;
     virtual PassRefPtr<Scrollbar> createScrollbar(ScrollbarClient*, ScrollbarOrientation, ScrollbarControlSize);
 
+#if ENABLE(NO_LISTBOX_RENDERING)
+    virtual void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true);
+    virtual bool multiple();
+#endif
+
     virtual bool hasLineIfEmpty() const { return true; }
 
     Color itemBackgroundColor(unsigned listIndex) const;
@@ -109,6 +123,8 @@ private:
 
     bool m_optionsChanged;
     int m_optionsWidth;
+
+    int m_lastSelectedIndex;
 
     RefPtr<PopupMenu> m_popup;
     bool m_popupIsVisible;

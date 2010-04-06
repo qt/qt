@@ -75,6 +75,7 @@ private:
     virtual bool scroll(ScrollDirection, ScrollGranularity, float multiplier = 1.0f, Node** stopNode = 0);
 
     int textBlockWidth() const;
+    virtual float getAvgCharWidth(AtomicString family);
     virtual int preferredContentWidth(float charWidth) const;
     virtual void adjustControlHeightBasedOnLineHeight(int lineHeight);
 
@@ -100,6 +101,7 @@ private:
     virtual void valueChanged(unsigned listIndex, bool fireEvents = true);
     virtual String itemText(unsigned listIndex) const;
     virtual String itemToolTip(unsigned) const { return String(); }
+    virtual String itemAccessibilityText(unsigned) const { return String(); }
     virtual bool itemIsEnabled(unsigned listIndex) const;
     virtual PopupMenuStyle itemStyle(unsigned listIndex) const;
     virtual PopupMenuStyle menuStyle() const;

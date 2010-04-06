@@ -109,9 +109,9 @@ bool JSHTMLCollection::canGetItemsForName(ExecState*, HTMLCollection* collection
     return !namedItems.isEmpty();
 }
 
-JSValue JSHTMLCollection::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSHTMLCollection::nameGetter(ExecState* exec, JSValue slotBase, const Identifier& propertyName)
 {
-    JSHTMLCollection* thisObj = static_cast<JSHTMLCollection*>(asObject(slot.slotBase()));
+    JSHTMLCollection* thisObj = static_cast<JSHTMLCollection*>(asObject(slotBase));
     return getNamedItems(exec, thisObj, propertyName);
 }
 
@@ -134,7 +134,7 @@ JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, HTMLCollection* c
     if (!collection)
         return jsNull();
 
-    DOMObject* wrapper = getCachedDOMObjectWrapper(exec->globalData(), collection);
+    DOMObject* wrapper = getCachedDOMObjectWrapper(exec, collection);
 
     if (wrapper)
         return wrapper;

@@ -90,6 +90,13 @@ TextStream& TextStream::operator<<(const char* string)
     return *this;
 }
 
+TextStream& TextStream::operator<<(void* p)
+{
+    char buffer[printBufferSize];
+    snprintf(buffer, sizeof(buffer) - 1, "%p", p);
+    return *this << buffer;
+}
+
 TextStream& TextStream::operator<<(const String& string)
 {
     append(m_text, string);
@@ -101,7 +108,7 @@ String TextStream::release()
     return String::adopt(m_text);
 }
 
-#if PLATFORM(WIN_OS) && PLATFORM(X86_64) && COMPILER(MSVC)
+#if OS(WINDOWS) && PLATFORM(X86_64) && COMPILER(MSVC)
 TextStream& TextStream::operator<<(__int64 i)
 {
     char buffer[printBufferSize];

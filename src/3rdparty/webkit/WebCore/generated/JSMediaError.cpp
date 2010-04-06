@@ -38,8 +38,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSMediaError);
 
 static const HashTableValue JSMediaErrorTableValues[3] =
 {
-    { "code", DontDelete|ReadOnly, (intptr_t)jsMediaErrorCode, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsMediaErrorConstructor, (intptr_t)0 },
+    { "code", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaErrorCode), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaErrorConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -54,10 +54,10 @@ static JSC_CONST_HASHTABLE HashTable JSMediaErrorTable =
 
 static const HashTableValue JSMediaErrorConstructorTableValues[5] =
 {
-    { "MEDIA_ERR_ABORTED", DontDelete|ReadOnly, (intptr_t)jsMediaErrorMEDIA_ERR_ABORTED, (intptr_t)0 },
-    { "MEDIA_ERR_NETWORK", DontDelete|ReadOnly, (intptr_t)jsMediaErrorMEDIA_ERR_NETWORK, (intptr_t)0 },
-    { "MEDIA_ERR_DECODE", DontDelete|ReadOnly, (intptr_t)jsMediaErrorMEDIA_ERR_DECODE, (intptr_t)0 },
-    { "MEDIA_ERR_SRC_NOT_SUPPORTED", DontDelete|ReadOnly, (intptr_t)jsMediaErrorMEDIA_ERR_SRC_NOT_SUPPORTED, (intptr_t)0 },
+    { "MEDIA_ERR_ABORTED", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaErrorMEDIA_ERR_ABORTED), (intptr_t)0 },
+    { "MEDIA_ERR_NETWORK", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaErrorMEDIA_ERR_NETWORK), (intptr_t)0 },
+    { "MEDIA_ERR_DECODE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaErrorMEDIA_ERR_DECODE), (intptr_t)0 },
+    { "MEDIA_ERR_SRC_NOT_SUPPORTED", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaErrorMEDIA_ERR_SRC_NOT_SUPPORTED), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -82,7 +82,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -105,10 +105,10 @@ bool JSMediaErrorConstructor::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 static const HashTableValue JSMediaErrorPrototypeTableValues[5] =
 {
-    { "MEDIA_ERR_ABORTED", DontDelete|ReadOnly, (intptr_t)jsMediaErrorMEDIA_ERR_ABORTED, (intptr_t)0 },
-    { "MEDIA_ERR_NETWORK", DontDelete|ReadOnly, (intptr_t)jsMediaErrorMEDIA_ERR_NETWORK, (intptr_t)0 },
-    { "MEDIA_ERR_DECODE", DontDelete|ReadOnly, (intptr_t)jsMediaErrorMEDIA_ERR_DECODE, (intptr_t)0 },
-    { "MEDIA_ERR_SRC_NOT_SUPPORTED", DontDelete|ReadOnly, (intptr_t)jsMediaErrorMEDIA_ERR_SRC_NOT_SUPPORTED, (intptr_t)0 },
+    { "MEDIA_ERR_ABORTED", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaErrorMEDIA_ERR_ABORTED), (intptr_t)0 },
+    { "MEDIA_ERR_NETWORK", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaErrorMEDIA_ERR_NETWORK), (intptr_t)0 },
+    { "MEDIA_ERR_DECODE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaErrorMEDIA_ERR_DECODE), (intptr_t)0 },
+    { "MEDIA_ERR_SRC_NOT_SUPPORTED", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaErrorMEDIA_ERR_SRC_NOT_SUPPORTED), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -164,17 +164,18 @@ bool JSMediaError::getOwnPropertyDescriptor(ExecState* exec, const Identifier& p
     return getStaticValueDescriptor<JSMediaError, Base>(exec, &JSMediaErrorTable, this, propertyName, descriptor);
 }
 
-JSValue jsMediaErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMediaErrorCode(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSMediaError* castedThis = static_cast<JSMediaError*>(asObject(slot.slotBase()));
+    JSMediaError* castedThis = static_cast<JSMediaError*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     MediaError* imp = static_cast<MediaError*>(castedThis->impl());
-    return jsNumber(exec, imp->code());
+    JSValue result = jsNumber(exec, imp->code());
+    return result;
 }
 
-JSValue jsMediaErrorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMediaErrorConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSMediaError* domObject = static_cast<JSMediaError*>(asObject(slot.slotBase()));
+    JSMediaError* domObject = static_cast<JSMediaError*>(asObject(slotBase));
     return JSMediaError::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSMediaError::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -184,22 +185,22 @@ JSValue JSMediaError::getConstructor(ExecState* exec, JSGlobalObject* globalObje
 
 // Constant getters
 
-JSValue jsMediaErrorMEDIA_ERR_ABORTED(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsMediaErrorMEDIA_ERR_ABORTED(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsMediaErrorMEDIA_ERR_NETWORK(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsMediaErrorMEDIA_ERR_NETWORK(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsMediaErrorMEDIA_ERR_DECODE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsMediaErrorMEDIA_ERR_DECODE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValue jsMediaErrorMEDIA_ERR_SRC_NOT_SUPPORTED(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsMediaErrorMEDIA_ERR_SRC_NOT_SUPPORTED(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }

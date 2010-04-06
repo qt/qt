@@ -40,36 +40,48 @@ DateInstance::DateInstance(ExecState* exec, NonNullPassRefPtr<Structure> structu
     setInternalValue(jsNaN(exec));
 }
 
+DateInstance::DateInstance(ExecState* exec, NonNullPassRefPtr<Structure> structure, double time)
+    : JSWrapperObject(structure)
+{
+    setInternalValue(jsNumber(exec, timeClip(time)));
+}
+
 DateInstance::DateInstance(ExecState* exec, double time)
     : JSWrapperObject(exec->lexicalGlobalObject()->dateStructure())
 {
     setInternalValue(jsNumber(exec, timeClip(time)));
 }
 
-bool DateInstance::getGregorianDateTime(ExecState* exec, bool outputIsUTC, GregorianDateTime& t) const
+const GregorianDateTime* DateInstance::calculateGregorianDateTime(ExecState* exec) const
 {
     double milli = internalNumber();
     if (isnan(milli))
-        return false;
+        return 0;
 
     if (!m_data)
         m_data = exec->globalData().dateInstanceCache.add(milli);
 
-    if (outputIsUTC) {
-        if (m_data->m_gregorianDateTimeUTCCachedForMS != milli) {
-            WTF::msToGregorianDateTime(internalNumber(), true, m_data->m_cachedGregorianDateTimeUTC);
-            m_data->m_gregorianDateTimeUTCCachedForMS = milli;
-        }
-        t.copyFrom(m_data->m_cachedGregorianDateTimeUTC);
-    } else {
-        if (m_data->m_gregorianDateTimeCachedForMS != milli) {
-            WTF::msToGregorianDateTime(internalNumber(), false, m_data->m_cachedGregorianDateTime);
-            m_data->m_gregorianDateTimeCachedForMS = milli;
-        }
-        t.copyFrom(m_data->m_cachedGregorianDateTime);
+    if (m_data->m_gregorianDateTimeCachedForMS != milli) {
+        msToGregorianDateTime(exec, milli, false, m_data->m_cachedGregorianDateTime);
+        m_data->m_gregorianDateTimeCachedForMS = milli;
     }
+    return &m_data->m_cachedGregorianDateTime;
+}
 
-    return true;
+const GregorianDateTime* DateInstance::calculateGregorianDateTimeUTC(ExecState* exec) const
+{
+    double milli = internalNumber();
+    if (isnan(milli))
+        return 0;
+
+    if (!m_data)
+        m_data = exec->globalData().dateInstanceCache.add(milli);
+
+    if (m_data->m_gregorianDateTimeUTCCachedForMS != milli) {
+        msToGregorianDateTime(exec, milli, true, m_data->m_cachedGregorianDateTimeUTC);
+        m_data->m_gregorianDateTimeUTCCachedForMS = milli;
+    }
+    return &m_data->m_cachedGregorianDateTimeUTC;
 }
 
 } // namespace JSC

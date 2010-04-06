@@ -23,11 +23,8 @@ module events {
     // Introduced in DOM Level 2:
     interface [
         CustomToJS,
-        GenerateConstructor,
         NoStaticTables,
-        Polymorphic,
-        InterfaceUUID=D17495FA-ACAD-4d27-9362-E19E057B189D,
-        ImplementationUUID=CFDCDDB2-5B3F-412d-BDA4-80B23C721549
+        Polymorphic
     ] Event {
 
         // DOM PhaseType
@@ -61,14 +58,17 @@ module events {
         readonly attribute unsigned short   eventPhase;
         readonly attribute boolean          bubbles;
         readonly attribute boolean          cancelable;
-#if !defined(LANGUAGE_COM) || !LANGUAGE_COM
         readonly attribute DOMTimeStamp     timeStamp;
-#endif
+
         void               stopPropagation();
         void               preventDefault();
         [OldStyleObjC] void initEvent(in DOMString eventTypeArg, 
                                       in boolean canBubbleArg, 
                                       in boolean cancelableArg);
+
+        // DOM Level 3 Additions.
+        readonly attribute boolean defaultPrevented;
+        void stopImmediatePropagation();
 
         // IE Extensions
         readonly attribute EventTarget      srcElement;

@@ -29,6 +29,7 @@
 #import "config.h"
 #import "ScriptController.h"
 
+#import "Bridge.h"
 #import "DOMAbstractViewFrame.h"
 #import "DOMWindow.h"
 #import "Frame.h"
@@ -37,6 +38,8 @@
 #import "JSDOMWindow.h"
 #import "WebScriptObjectPrivate.h"
 #import "Widget.h"
+#import "objc_instance.h"
+#import "runtime_root.h"
 #import <JavaScriptCore/APICast.h>
 #import <runtime/JSLock.h>
 
@@ -46,12 +49,8 @@
 #import "npruntime_impl.h"
 #endif
 
-#import "objc_instance.h"
-#import "runtime_root.h"
-#import "runtime.h"
-
 #if ENABLE(MAC_JAVA_BRIDGE)
-#import "jni_instance.h"
+#import "JavaInstanceJSC.h"
 #endif
 
 @interface NSObject (WebPlugin)
@@ -108,7 +107,7 @@ PassScriptInstance ScriptController::createScriptInstanceForWidget(Widget* widge
 
 WebScriptObject* ScriptController::windowScriptObject()
 {
-    if (!isEnabled())
+    if (!canExecuteScripts(NotAboutToExecuteScript))
         return 0;
 
     if (!m_windowScriptObject) {

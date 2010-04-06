@@ -36,9 +36,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLModElement);
 
 static const HashTableValue JSHTMLModElementTableValues[4] =
 {
-    { "cite", DontDelete, (intptr_t)jsHTMLModElementCite, (intptr_t)setJSHTMLModElementCite },
-    { "dateTime", DontDelete, (intptr_t)jsHTMLModElementDateTime, (intptr_t)setJSHTMLModElementDateTime },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLModElementConstructor, (intptr_t)0 },
+    { "cite", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLModElementCite), (intptr_t)setJSHTMLModElementCite },
+    { "dateTime", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLModElementDateTime), (intptr_t)setJSHTMLModElementDateTime },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLModElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -139,25 +139,27 @@ bool JSHTMLModElement::getOwnPropertyDescriptor(ExecState* exec, const Identifie
     return getStaticValueDescriptor<JSHTMLModElement, Base>(exec, &JSHTMLModElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLModElementCite(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLModElementCite(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLModElement* castedThis = static_cast<JSHTMLModElement*>(asObject(slot.slotBase()));
+    JSHTMLModElement* castedThis = static_cast<JSHTMLModElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLModElement* imp = static_cast<HTMLModElement*>(castedThis->impl());
-    return jsString(exec, imp->cite());
+    JSValue result = jsString(exec, imp->cite());
+    return result;
 }
 
-JSValue jsHTMLModElementDateTime(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLModElementDateTime(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLModElement* castedThis = static_cast<JSHTMLModElement*>(asObject(slot.slotBase()));
+    JSHTMLModElement* castedThis = static_cast<JSHTMLModElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLModElement* imp = static_cast<HTMLModElement*>(castedThis->impl());
-    return jsString(exec, imp->dateTime());
+    JSValue result = jsString(exec, imp->dateTime());
+    return result;
 }
 
-JSValue jsHTMLModElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLModElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLModElement* domObject = static_cast<JSHTMLModElement*>(asObject(slot.slotBase()));
+    JSHTMLModElement* domObject = static_cast<JSHTMLModElement*>(asObject(slotBase));
     return JSHTMLModElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLModElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -167,13 +169,15 @@ void JSHTMLModElement::put(ExecState* exec, const Identifier& propertyName, JSVa
 
 void setJSHTMLModElementCite(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLModElement* imp = static_cast<HTMLModElement*>(static_cast<JSHTMLModElement*>(thisObject)->impl());
+    JSHTMLModElement* castedThisObj = static_cast<JSHTMLModElement*>(thisObject);
+    HTMLModElement* imp = static_cast<HTMLModElement*>(castedThisObj->impl());
     imp->setCite(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLModElementDateTime(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLModElement* imp = static_cast<HTMLModElement*>(static_cast<JSHTMLModElement*>(thisObject)->impl());
+    JSHTMLModElement* castedThisObj = static_cast<JSHTMLModElement*>(thisObject);
+    HTMLModElement* imp = static_cast<HTMLModElement*>(castedThisObj->impl());
     imp->setDateTime(valueToStringWithNullCheck(exec, value));
 }
 

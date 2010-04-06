@@ -39,7 +39,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -58,7 +58,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSOverflowEventPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -70,15 +70,15 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsOverflowEventPrototypeFunctionInitOverflowEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsOverflowEventOrient(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsOverflowEventHorizontalOverflow(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsOverflowEventVerticalOverflow(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsOverflowEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsOverflowEventOrient(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsOverflowEventHorizontalOverflow(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsOverflowEventVerticalOverflow(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsOverflowEventConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 // Constants
 
-JSC::JSValue jsOverflowEventHORIZONTAL(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsOverflowEventVERTICAL(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsOverflowEventBOTH(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsOverflowEventHORIZONTAL(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsOverflowEventVERTICAL(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsOverflowEventBOTH(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

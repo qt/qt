@@ -32,6 +32,7 @@
 #include "KURL.h"
 #include "PurgeableBuffer.h"
 #include "Request.h"
+#include "SharedBuffer.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
 #include <wtf/RefCountedLeakCounter.h>
@@ -103,10 +104,10 @@ CachedResource::~CachedResource()
         m_docLoader->removeCachedResource(this);
 }
     
-void CachedResource::load(DocLoader* docLoader, bool incremental, bool skipCanLoadCheck, bool sendResourceLoadCallbacks)
+void CachedResource::load(DocLoader* docLoader, bool incremental, SecurityCheckPolicy securityCheck, bool sendResourceLoadCallbacks)
 {
     m_sendResourceLoadCallbacks = sendResourceLoadCallbacks;
-    cache()->loader()->load(docLoader, this, incremental, skipCanLoadCheck, sendResourceLoadCallbacks);
+    cache()->loader()->load(docLoader, this, incremental, securityCheck, sendResourceLoadCallbacks);
     m_loading = true;
 }
 
@@ -431,7 +432,7 @@ bool CachedResource::makePurgeable(bool purgeable)
         if (!m_data)
             return false;
         
-        // Should not make buffer purgeable if it has refs othen than this since we don't want two copies.
+        // Should not make buffer purgeable if it has refs other than this since we don't want two copies.
         if (!m_data->hasOneRef())
             return false;
         

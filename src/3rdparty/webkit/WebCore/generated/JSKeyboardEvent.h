@@ -39,7 +39,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -58,7 +58,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSKeyboardEventPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -70,14 +70,14 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsKeyboardEventPrototypeFunctionInitKeyboardEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsKeyboardEventKeyIdentifier(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsKeyboardEventKeyLocation(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsKeyboardEventCtrlKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsKeyboardEventShiftKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsKeyboardEventAltKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsKeyboardEventMetaKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsKeyboardEventAltGraphKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsKeyboardEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsKeyboardEventKeyIdentifier(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsKeyboardEventKeyLocation(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsKeyboardEventCtrlKey(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsKeyboardEventShiftKey(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsKeyboardEventAltKey(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsKeyboardEventMetaKey(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsKeyboardEventAltGraphKey(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsKeyboardEventConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

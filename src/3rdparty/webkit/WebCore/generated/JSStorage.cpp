@@ -42,8 +42,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSStorage);
 
 static const HashTableValue JSStorageTableValues[3] =
 {
-    { "length", DontDelete|DontEnum|ReadOnly, (intptr_t)jsStorageLength, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsStorageConstructor, (intptr_t)0 },
+    { "length", DontDelete|DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStorageLength), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStorageConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -82,7 +82,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -105,11 +105,11 @@ bool JSStorageConstructor::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 static const HashTableValue JSStoragePrototypeTableValues[6] =
 {
-    { "key", DontDelete|DontEnum|Function, (intptr_t)jsStoragePrototypeFunctionKey, (intptr_t)1 },
-    { "getItem", DontDelete|DontEnum|Function, (intptr_t)jsStoragePrototypeFunctionGetItem, (intptr_t)1 },
-    { "setItem", DontDelete|DontEnum|Function, (intptr_t)jsStoragePrototypeFunctionSetItem, (intptr_t)2 },
-    { "removeItem", DontDelete|DontEnum|Function, (intptr_t)jsStoragePrototypeFunctionRemoveItem, (intptr_t)1 },
-    { "clear", DontDelete|DontEnum|Function, (intptr_t)jsStoragePrototypeFunctionClear, (intptr_t)0 },
+    { "key", DontDelete|DontEnum|Function, (intptr_t)static_cast<NativeFunction>(jsStoragePrototypeFunctionKey), (intptr_t)1 },
+    { "getItem", DontDelete|DontEnum|Function, (intptr_t)static_cast<NativeFunction>(jsStoragePrototypeFunctionGetItem), (intptr_t)1 },
+    { "setItem", DontDelete|DontEnum|Function, (intptr_t)static_cast<NativeFunction>(jsStoragePrototypeFunctionSetItem), (intptr_t)2 },
+    { "removeItem", DontDelete|DontEnum|Function, (intptr_t)static_cast<NativeFunction>(jsStoragePrototypeFunctionRemoveItem), (intptr_t)1 },
+    { "clear", DontDelete|DontEnum|Function, (intptr_t)static_cast<NativeFunction>(jsStoragePrototypeFunctionClear), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -187,17 +187,18 @@ bool JSStorage::getOwnPropertyDescriptor(ExecState* exec, const Identifier& prop
     return getStaticValueDescriptor<JSStorage, Base>(exec, &JSStorageTable, this, propertyName, descriptor);
 }
 
-JSValue jsStorageLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStorageLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStorage* castedThis = static_cast<JSStorage*>(asObject(slot.slotBase()));
+    JSStorage* castedThis = static_cast<JSStorage*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Storage* imp = static_cast<Storage*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
-JSValue jsStorageConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStorageConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStorage* domObject = static_cast<JSStorage*>(asObject(slot.slotBase()));
+    JSStorage* domObject = static_cast<JSStorage*>(asObject(slotBase));
     return JSStorage::getConstructor(exec, domObject->globalObject());
 }
 void JSStorage::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)

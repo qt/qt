@@ -40,11 +40,11 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGTextPathElement);
 
 static const HashTableValue JSSVGTextPathElementTableValues[6] =
 {
-    { "startOffset", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementStartOffset, (intptr_t)0 },
-    { "method", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementMethod, (intptr_t)0 },
-    { "spacing", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementSpacing, (intptr_t)0 },
-    { "href", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementHref, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGTextPathElementConstructor, (intptr_t)0 },
+    { "startOffset", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementStartOffset), (intptr_t)0 },
+    { "method", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementMethod), (intptr_t)0 },
+    { "spacing", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementSpacing), (intptr_t)0 },
+    { "href", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementHref), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -59,12 +59,12 @@ static JSC_CONST_HASHTABLE HashTable JSSVGTextPathElementTable =
 
 static const HashTableValue JSSVGTextPathElementConstructorTableValues[7] =
 {
-    { "TEXTPATH_METHODTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementTEXTPATH_METHODTYPE_UNKNOWN, (intptr_t)0 },
-    { "TEXTPATH_METHODTYPE_ALIGN", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementTEXTPATH_METHODTYPE_ALIGN, (intptr_t)0 },
-    { "TEXTPATH_METHODTYPE_STRETCH", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementTEXTPATH_METHODTYPE_STRETCH, (intptr_t)0 },
-    { "TEXTPATH_SPACINGTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementTEXTPATH_SPACINGTYPE_UNKNOWN, (intptr_t)0 },
-    { "TEXTPATH_SPACINGTYPE_AUTO", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementTEXTPATH_SPACINGTYPE_AUTO, (intptr_t)0 },
-    { "TEXTPATH_SPACINGTYPE_EXACT", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementTEXTPATH_SPACINGTYPE_EXACT, (intptr_t)0 },
+    { "TEXTPATH_METHODTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementTEXTPATH_METHODTYPE_UNKNOWN), (intptr_t)0 },
+    { "TEXTPATH_METHODTYPE_ALIGN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementTEXTPATH_METHODTYPE_ALIGN), (intptr_t)0 },
+    { "TEXTPATH_METHODTYPE_STRETCH", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementTEXTPATH_METHODTYPE_STRETCH), (intptr_t)0 },
+    { "TEXTPATH_SPACINGTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementTEXTPATH_SPACINGTYPE_UNKNOWN), (intptr_t)0 },
+    { "TEXTPATH_SPACINGTYPE_AUTO", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementTEXTPATH_SPACINGTYPE_AUTO), (intptr_t)0 },
+    { "TEXTPATH_SPACINGTYPE_EXACT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementTEXTPATH_SPACINGTYPE_EXACT), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -89,7 +89,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -112,12 +112,12 @@ bool JSSVGTextPathElementConstructor::getOwnPropertyDescriptor(ExecState* exec, 
 
 static const HashTableValue JSSVGTextPathElementPrototypeTableValues[7] =
 {
-    { "TEXTPATH_METHODTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementTEXTPATH_METHODTYPE_UNKNOWN, (intptr_t)0 },
-    { "TEXTPATH_METHODTYPE_ALIGN", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementTEXTPATH_METHODTYPE_ALIGN, (intptr_t)0 },
-    { "TEXTPATH_METHODTYPE_STRETCH", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementTEXTPATH_METHODTYPE_STRETCH, (intptr_t)0 },
-    { "TEXTPATH_SPACINGTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementTEXTPATH_SPACINGTYPE_UNKNOWN, (intptr_t)0 },
-    { "TEXTPATH_SPACINGTYPE_AUTO", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementTEXTPATH_SPACINGTYPE_AUTO, (intptr_t)0 },
-    { "TEXTPATH_SPACINGTYPE_EXACT", DontDelete|ReadOnly, (intptr_t)jsSVGTextPathElementTEXTPATH_SPACINGTYPE_EXACT, (intptr_t)0 },
+    { "TEXTPATH_METHODTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementTEXTPATH_METHODTYPE_UNKNOWN), (intptr_t)0 },
+    { "TEXTPATH_METHODTYPE_ALIGN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementTEXTPATH_METHODTYPE_ALIGN), (intptr_t)0 },
+    { "TEXTPATH_METHODTYPE_STRETCH", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementTEXTPATH_METHODTYPE_STRETCH), (intptr_t)0 },
+    { "TEXTPATH_SPACINGTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementTEXTPATH_SPACINGTYPE_UNKNOWN), (intptr_t)0 },
+    { "TEXTPATH_SPACINGTYPE_AUTO", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementTEXTPATH_SPACINGTYPE_AUTO), (intptr_t)0 },
+    { "TEXTPATH_SPACINGTYPE_EXACT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTextPathElementTEXTPATH_SPACINGTYPE_EXACT), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -167,45 +167,49 @@ bool JSSVGTextPathElement::getOwnPropertyDescriptor(ExecState* exec, const Ident
     return getStaticValueDescriptor<JSSVGTextPathElement, Base>(exec, &JSSVGTextPathElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGTextPathElementStartOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPathElementStartOffset(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGTextPathElement* castedThis = static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()));
+    JSSVGTextPathElement* castedThis = static_cast<JSSVGTextPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->startOffsetAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGTextPathElementMethod(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPathElementMethod(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGTextPathElement* castedThis = static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()));
+    JSSVGTextPathElement* castedThis = static_cast<JSSVGTextPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->methodAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGTextPathElementSpacing(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPathElementSpacing(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGTextPathElement* castedThis = static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()));
+    JSSVGTextPathElement* castedThis = static_cast<JSSVGTextPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->spacingAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGTextPathElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPathElementHref(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGTextPathElement* castedThis = static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()));
+    JSSVGTextPathElement* castedThis = static_cast<JSSVGTextPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGTextPathElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPathElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGTextPathElement* domObject = static_cast<JSSVGTextPathElement*>(asObject(slot.slotBase()));
+    JSSVGTextPathElement* domObject = static_cast<JSSVGTextPathElement*>(asObject(slotBase));
     return JSSVGTextPathElement::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSSVGTextPathElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -215,32 +219,32 @@ JSValue JSSVGTextPathElement::getConstructor(ExecState* exec, JSGlobalObject* gl
 
 // Constant getters
 
-JSValue jsSVGTextPathElementTEXTPATH_METHODTYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTextPathElementTEXTPATH_METHODTYPE_UNKNOWN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsSVGTextPathElementTEXTPATH_METHODTYPE_ALIGN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTextPathElementTEXTPATH_METHODTYPE_ALIGN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsSVGTextPathElementTEXTPATH_METHODTYPE_STRETCH(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTextPathElementTEXTPATH_METHODTYPE_STRETCH(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsSVGTextPathElementTEXTPATH_SPACINGTYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTextPathElementTEXTPATH_SPACINGTYPE_UNKNOWN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsSVGTextPathElementTEXTPATH_SPACINGTYPE_AUTO(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTextPathElementTEXTPATH_SPACINGTYPE_AUTO(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsSVGTextPathElementTEXTPATH_SPACINGTYPE_EXACT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTextPathElementTEXTPATH_SPACINGTYPE_EXACT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }

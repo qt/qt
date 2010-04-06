@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,7 +28,7 @@
 
 #if ENABLE(VIDEO)
 
-#include "RenderReplaced.h"
+#include "RenderImage.h"
 #include "Timer.h"
 
 namespace WebCore {
@@ -40,6 +40,7 @@ class MediaControlPlayButtonElement;
 class MediaControlSeekButtonElement;
 class MediaControlRewindButtonElement;
 class MediaControlReturnToRealtimeButtonElement;
+class MediaControlToggleClosedCaptionsButtonElement;
 class MediaControlTimelineElement;
 class MediaControlVolumeSliderElement;
 class MediaControlFullscreenButtonElement;
@@ -50,12 +51,12 @@ class MediaControlVolumeSliderContainerElement;
 class MediaControlElement;
 class MediaPlayer;
 
-class RenderMedia : public RenderReplaced {
+class RenderMedia : public RenderImage {
 public:
     RenderMedia(HTMLMediaElement*);
     RenderMedia(HTMLMediaElement*, const IntSize& intrinsicSize);
     virtual ~RenderMedia();
-    
+
     const RenderObjectChildList* children() const { return &m_children; }
     RenderObjectChildList* children() { return &m_children; }
 
@@ -82,6 +83,7 @@ private:
     
     virtual const char* renderName() const { return "RenderMedia"; }
     virtual bool isMedia() const { return true; }
+    virtual bool isImage() const { return false; }
 
     virtual int lowestPosition(bool includeOverflowInterior = true, bool includeSelf = true) const;
     virtual int rightmostPosition(bool includeOverflowInterior = true, bool includeSelf = true) const;
@@ -96,6 +98,7 @@ private:
     void createSeekForwardButton();
     void createRewindButton();
     void createReturnToRealtimeButton();
+    void createToggleClosedCaptionsButton();
     void createStatusDisplay();
     void createTimelineContainer();
     void createTimeline();
@@ -123,6 +126,7 @@ private:
     RefPtr<MediaControlSeekButtonElement> m_seekForwardButton;
     RefPtr<MediaControlRewindButtonElement> m_rewindButton;
     RefPtr<MediaControlReturnToRealtimeButtonElement> m_returnToRealtimeButton;
+    RefPtr<MediaControlToggleClosedCaptionsButtonElement> m_toggleClosedCaptionsButton;
     RefPtr<MediaControlTimelineElement> m_timeline;
     RefPtr<MediaControlVolumeSliderElement> m_volumeSlider;
     RefPtr<MediaControlFullscreenButtonElement> m_fullscreenButton;

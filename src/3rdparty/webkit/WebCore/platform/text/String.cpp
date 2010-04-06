@@ -24,19 +24,22 @@
 
 #include "CString.h"
 #include "FloatConversion.h"
+#include "SharedBuffer.h"
 #include "StringBuffer.h"
 #include "TextBreakIterator.h"
 #include "TextEncoding.h"
-#include <wtf/dtoa.h>
 #include <limits>
 #include <stdarg.h>
 #include <wtf/ASCIICType.h>
 #include <wtf/StringExtras.h>
 #include <wtf/Vector.h>
-#include <wtf/unicode/Unicode.h>
+#include <wtf/dtoa.h>
 #include <wtf/unicode/UTF8.h>
+#include <wtf/unicode/Unicode.h>
 
 #if USE(JSC)
+#include <runtime/Identifier.h>
+
 using JSC::Identifier;
 using JSC::UString;
 #endif
@@ -81,6 +84,9 @@ String::String(const char* str, unsigned length)
 
 void String::append(const String& str)
 {
+    if (str.isEmpty())
+       return;
+
     // FIXME: This is extremely inefficient. So much so that we might want to take this
     // out of String's API. We can make it better by optimizing the case where exactly
     // one String is pointing at this StringImpl, but even then it's going to require a
@@ -349,7 +355,7 @@ String String::format(const char *format, ...)
 
     return buffer;
 
-#elif PLATFORM(WINCE)
+#elif OS(WINCE)
     va_list args;
     va_start(args, format);
 
@@ -441,7 +447,7 @@ String String::number(unsigned long n)
 
 String String::number(long long n)
 {
-#if PLATFORM(WIN_OS) && !PLATFORM(QT)
+#if OS(WINDOWS) && !PLATFORM(QT)
     return String::format("%I64i", n);
 #else
     return String::format("%lli", n);
@@ -450,7 +456,7 @@ String String::number(long long n)
 
 String String::number(unsigned long long n)
 {
-#if PLATFORM(WIN_OS) && !PLATFORM(QT)
+#if OS(WINDOWS) && !PLATFORM(QT)
     return String::format("%I64u", n);
 #else
     return String::format("%llu", n);

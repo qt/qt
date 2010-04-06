@@ -43,8 +43,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLAllCollection);
 
 static const HashTableValue JSHTMLAllCollectionTableValues[3] =
 {
-    { "length", DontDelete|ReadOnly, (intptr_t)jsHTMLAllCollectionLength, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLAllCollectionConstructor, (intptr_t)0 },
+    { "length", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLAllCollectionLength), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLAllCollectionConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -83,7 +83,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -106,9 +106,9 @@ bool JSHTMLAllCollectionConstructor::getOwnPropertyDescriptor(ExecState* exec, c
 
 static const HashTableValue JSHTMLAllCollectionPrototypeTableValues[4] =
 {
-    { "item", DontDelete|Function, (intptr_t)jsHTMLAllCollectionPrototypeFunctionItem, (intptr_t)1 },
-    { "namedItem", DontDelete|Function, (intptr_t)jsHTMLAllCollectionPrototypeFunctionNamedItem, (intptr_t)1 },
-    { "tags", DontDelete|Function, (intptr_t)jsHTMLAllCollectionPrototypeFunctionTags, (intptr_t)1 },
+    { "item", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLAllCollectionPrototypeFunctionItem), (intptr_t)1 },
+    { "namedItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLAllCollectionPrototypeFunctionNamedItem), (intptr_t)1 },
+    { "tags", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLAllCollectionPrototypeFunctionTags), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -217,24 +217,25 @@ bool JSHTMLAllCollection::getOwnPropertySlot(ExecState* exec, unsigned propertyN
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValue jsHTMLAllCollectionLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLAllCollectionLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLAllCollection* castedThis = static_cast<JSHTMLAllCollection*>(asObject(slot.slotBase()));
+    JSHTMLAllCollection* castedThis = static_cast<JSHTMLAllCollection*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLAllCollection* imp = static_cast<HTMLAllCollection*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
-JSValue jsHTMLAllCollectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLAllCollectionConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLAllCollection* domObject = static_cast<JSHTMLAllCollection*>(asObject(slot.slotBase()));
+    JSHTMLAllCollection* domObject = static_cast<JSHTMLAllCollection*>(asObject(slotBase));
     return JSHTMLAllCollection::getConstructor(exec, domObject->globalObject());
 }
-void JSHTMLAllCollection::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSHTMLAllCollection::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<HTMLAllCollection*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSHTMLAllCollection::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -275,10 +276,10 @@ JSValue JSC_HOST_CALL jsHTMLAllCollectionPrototypeFunctionTags(ExecState* exec, 
 }
 
 
-JSValue JSHTMLAllCollection::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue JSHTMLAllCollection::indexGetter(ExecState* exec, JSValue slotBase, unsigned index)
 {
-    JSHTMLAllCollection* thisObj = static_cast<JSHTMLAllCollection*>(asObject(slot.slotBase()));
-    return toJS(exec, thisObj->globalObject(), static_cast<HTMLAllCollection*>(thisObj->impl())->item(slot.index()));
+    JSHTMLAllCollection* thisObj = static_cast<JSHTMLAllCollection*>(asObject(slotBase));
+    return toJS(exec, thisObj->globalObject(), static_cast<HTMLAllCollection*>(thisObj->impl())->item(index));
 }
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, HTMLAllCollection* object)
 {

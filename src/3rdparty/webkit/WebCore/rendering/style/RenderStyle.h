@@ -37,6 +37,7 @@
 #include "CachedImage.h"
 #include "CollapsedBorderValue.h"
 #include "Color.h"
+#include "ColorSpace.h"
 #include "ContentData.h"
 #include "CounterDirectives.h"
 #include "CursorList.h"
@@ -49,6 +50,7 @@
 #include "Length.h"
 #include "LengthBox.h"
 #include "LengthSize.h"
+#include "LineClampValue.h"
 #include "NinePieceImage.h"
 #include "OutlineValue.h"
 #include "Pair.h"
@@ -87,8 +89,8 @@
 #include "BindingURI.h"
 #endif
 
-#ifdef __WINS__
-#define compareEqual(t, u)              ((t) == (u))
+#if COMPILER(WINSCW)
+#define compareEqual(t, u)      ((t) == (u))
 #else
 template<typename T, typename U> inline bool compareEqual(const T& t, const U& u) { return t == static_cast<T>(u); }
 #endif
@@ -181,7 +183,7 @@ protected:
 
         unsigned _empty_cells : 1; // EEmptyCell
         unsigned _caption_side : 2; // ECaptionSide
-        unsigned _list_style_type : 5 ; // EListStyleType
+        unsigned _list_style_type : 7; // EListStyleType
         unsigned _list_style_position : 1; // EListStylePosition
         unsigned _visibility : 2; // EVisibility
         unsigned _text_align : 3; // ETextAlign
@@ -192,37 +194,38 @@ protected:
         bool _border_collapse : 1 ;
         unsigned _white_space : 3; // EWhiteSpace
         unsigned _box_direction : 1; // EBoxDirection (CSS3 box_direction property, flexible box layout module)
-        // 32 bits
+        // 34 bits
         
         // non CSS2 inherited
         bool _visuallyOrdered : 1;
         bool _htmlHacks : 1;
         bool _force_backgrounds_to_white : 1;
         unsigned _pointerEvents : 4; // EPointerEvents
-        // 39 bits
+        // 41 bits
     } inherited_flags;
 
 // don't inherit
     struct NonInheritedFlags {
         bool operator==(const NonInheritedFlags& other) const
         {
-            return (_effectiveDisplay == other._effectiveDisplay) &&
-            (_originalDisplay == other._originalDisplay) &&
-            (_overflowX == other._overflowX) &&
-            (_overflowY == other._overflowY) &&
-            (_vertical_align == other._vertical_align) &&
-            (_clear == other._clear) &&
-            (_position == other._position) &&
-            (_floating == other._floating) &&
-            (_table_layout == other._table_layout) &&
-            (_page_break_before == other._page_break_before) &&
-            (_page_break_after == other._page_break_after) &&
-            (_styleType == other._styleType) &&
-            (_affectedByHover == other._affectedByHover) &&
-            (_affectedByActive == other._affectedByActive) &&
-            (_affectedByDrag == other._affectedByDrag) &&
-            (_pseudoBits == other._pseudoBits) &&
-            (_unicodeBidi == other._unicodeBidi);
+            return _effectiveDisplay == other._effectiveDisplay
+                && _originalDisplay == other._originalDisplay
+                && _overflowX == other._overflowX
+                && _overflowY == other._overflowY
+                && _vertical_align == other._vertical_align
+                && _clear == other._clear
+                && _position == other._position
+                && _floating == other._floating
+                && _table_layout == other._table_layout
+                && _page_break_before == other._page_break_before
+                && _page_break_after == other._page_break_after
+                && _page_break_inside == other._page_break_inside
+                && _styleType == other._styleType
+                && _affectedByHover == other._affectedByHover
+                && _affectedByActive == other._affectedByActive
+                && _affectedByDrag == other._affectedByDrag
+                && _pseudoBits == other._pseudoBits
+                && _unicodeBidi == other._unicodeBidi;
         }
 
         bool operator!=(const NonInheritedFlags& other) const { return !(*this == other); }
@@ -239,6 +242,7 @@ protected:
 
         unsigned _page_break_before : 2; // EPageBreak
         unsigned _page_break_after : 2; // EPageBreak
+        unsigned _page_break_inside : 2; // EPageBreak
 
         unsigned _styleType : 5; // PseudoId
         bool _affectedByHover : 1;
@@ -246,7 +250,7 @@ protected:
         bool _affectedByDrag : 1;
         unsigned _pseudoBits : 7;
         unsigned _unicodeBidi : 2; // EUnicodeBidi
-        // 48 bits
+        // 50 bits
     } noninherited_flags;
 
 // !END SYNC!
@@ -282,6 +286,7 @@ protected:
         noninherited_flags._table_layout = initialTableLayout();
         noninherited_flags._page_break_before = initialPageBreak();
         noninherited_flags._page_break_after = initialPageBreak();
+        noninherited_flags._page_break_inside = initialPageBreak();
         noninherited_flags._styleType = NOPSEUDO;
         noninherited_flags._affectedByHover = false;
         noninherited_flags._affectedByActive = false;
@@ -345,6 +350,7 @@ public:
 
     bool isStyleAvailable() const;
 
+    bool hasAnyPublicPseudoStyles() const;
     bool hasPseudoStyle(PseudoId pseudo) const;
     void setHasPseudoStyle(PseudoId pseudo);
 
@@ -462,7 +468,7 @@ public:
             return font().lineSpacing();
 
         if (lh.isPercent())
-            return lh.calcMinValue(fontSize(), true);
+            return lh.calcMinValue(fontSize());
 
         return lh.value();
     }
@@ -583,7 +589,7 @@ public:
 
     short widows() const { return inherited->widows; }
     short orphans() const { return inherited->orphans; }
-    EPageBreak pageBreakInside() const { return static_cast<EPageBreak>(inherited->page_break_inside); }
+    EPageBreak pageBreakInside() const { return static_cast<EPageBreak>(noninherited_flags._page_break_inside); }
     EPageBreak pageBreakBefore() const { return static_cast<EPageBreak>(noninherited_flags._page_break_before); }
     EPageBreak pageBreakAfter() const { return static_cast<EPageBreak>(noninherited_flags._page_break_after); }
 
@@ -603,6 +609,7 @@ public:
     const Color& textStrokeColor() const { return rareInheritedData->textStrokeColor; }
     float textStrokeWidth() const { return rareInheritedData->textStrokeWidth; }
     const Color& textFillColor() const { return rareInheritedData->textFillColor; }
+    ColorSpace colorSpace() const { return static_cast<ColorSpace>(rareInheritedData->colorSpace); }
     float opacity() const { return rareNonInheritedData->opacity; }
     ControlPart appearance() const { return static_cast<ControlPart>(rareNonInheritedData->m_appearance); }
     EBoxAlignment boxAlign() const { return static_cast<EBoxAlignment>(rareNonInheritedData->flexibleBox->align); }
@@ -697,7 +704,7 @@ public:
     bool isRunningAcceleratedAnimation() const { return rareNonInheritedData->m_runningAcceleratedAnimation; }
 #endif
 
-    int lineClamp() const { return rareNonInheritedData->lineClamp; }
+    const LineClampValue& lineClamp() const { return rareNonInheritedData->lineClamp; }
     bool textSizeAdjust() const { return rareInheritedData->textSizeAdjust; }
     ETextSecurity textSecurity() const { return static_cast<ETextSecurity>(rareInheritedData->textSecurity); }
 
@@ -918,7 +925,7 @@ public:
 
     void setWidows(short w) { SET_VAR(inherited, widows, w); }
     void setOrphans(short o) { SET_VAR(inherited, orphans, o); }
-    void setPageBreakInside(EPageBreak b) { SET_VAR(inherited, page_break_inside, b); }
+    void setPageBreakInside(EPageBreak b) { noninherited_flags._page_break_inside = b; }
     void setPageBreakBefore(EPageBreak b) { noninherited_flags._page_break_before = b; }
     void setPageBreakAfter(EPageBreak b) { noninherited_flags._page_break_after = b; }
 
@@ -934,6 +941,7 @@ public:
     void setTextStrokeColor(const Color& c) { SET_VAR(rareInheritedData, textStrokeColor, c) }
     void setTextStrokeWidth(float w) { SET_VAR(rareInheritedData, textStrokeWidth, w) }
     void setTextFillColor(const Color& c) { SET_VAR(rareInheritedData, textFillColor, c) }
+    void setColorSpace(ColorSpace space) { SET_VAR(rareInheritedData, colorSpace, space) }
     void setOpacity(float f) { SET_VAR(rareNonInheritedData, opacity, f); }
     void setAppearance(ControlPart a) { SET_VAR(rareNonInheritedData, m_appearance, a); }
     void setBoxAlign(EBoxAlignment a) { SET_VAR(rareNonInheritedData.access()->flexibleBox, align, a); }
@@ -1013,7 +1021,7 @@ public:
     void setIsRunningAcceleratedAnimation(bool b = true) { SET_VAR(rareNonInheritedData, m_runningAcceleratedAnimation, b); }
 #endif
 
-    void setLineClamp(int c) { SET_VAR(rareNonInheritedData, lineClamp, c); }
+    void setLineClamp(LineClampValue c) { SET_VAR(rareNonInheritedData, lineClamp, c); }
     void setTextSizeAdjust(bool b) { SET_VAR(rareInheritedData, textSizeAdjust, b); }
     void setTextSecurity(ETextSecurity aTextSecurity) { SET_VAR(rareInheritedData, textSecurity, aTextSecurity); }
 
@@ -1106,7 +1114,7 @@ public:
     static EEmptyCell initialEmptyCells() { return SHOW; }
     static EFloat initialFloating() { return FNONE; }
     static EListStylePosition initialListStylePosition() { return OUTSIDE; }
-    static EListStyleType initialListStyleType() { return DISC; }
+    static EListStyleType initialListStyleType() { return Disc; }
     static EOverflow initialOverflowX() { return OVISIBLE; }
     static EOverflow initialOverflowY() { return OVISIBLE; }
     static EPageBreak initialPageBreak() { return PBAUTO; }
@@ -1185,7 +1193,7 @@ public:
     static Color initialBackgroundColor() { return Color::transparent; }
 
     // Keep these at the end.
-    static int initialLineClamp() { return -1; }
+    static LineClampValue initialLineClamp() { return LineClampValue(); }
     static bool initialTextSizeAdjust() { return true; }
     static ETextSecurity initialTextSecurity() { return TSNONE; }
 #if ENABLE(DASHBOARD_SUPPORT)

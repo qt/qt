@@ -39,7 +39,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSTimeRanges);
 
 static const HashTableValue JSTimeRangesTableValues[2] =
 {
-    { "length", DontDelete|ReadOnly, (intptr_t)jsTimeRangesLength, (intptr_t)0 },
+    { "length", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTimeRangesLength), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -54,8 +54,8 @@ static JSC_CONST_HASHTABLE HashTable JSTimeRangesTable =
 
 static const HashTableValue JSTimeRangesPrototypeTableValues[3] =
 {
-    { "start", DontDelete|Function, (intptr_t)jsTimeRangesPrototypeFunctionStart, (intptr_t)1 },
-    { "end", DontDelete|Function, (intptr_t)jsTimeRangesPrototypeFunctionEnd, (intptr_t)1 },
+    { "start", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsTimeRangesPrototypeFunctionStart), (intptr_t)1 },
+    { "end", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsTimeRangesPrototypeFunctionEnd), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -111,12 +111,13 @@ bool JSTimeRanges::getOwnPropertyDescriptor(ExecState* exec, const Identifier& p
     return getStaticValueDescriptor<JSTimeRanges, Base>(exec, &JSTimeRangesTable, this, propertyName, descriptor);
 }
 
-JSValue jsTimeRangesLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTimeRangesLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSTimeRanges* castedThis = static_cast<JSTimeRanges*>(asObject(slot.slotBase()));
+    JSTimeRanges* castedThis = static_cast<JSTimeRanges*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     TimeRanges* imp = static_cast<TimeRanges*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue JSC_HOST_CALL jsTimeRangesPrototypeFunctionStart(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

@@ -39,7 +39,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSSharedWorker);
 
 static const HashTableValue JSSharedWorkerTableValues[2] =
 {
-    { "port", DontDelete|ReadOnly, (intptr_t)jsSharedWorkerPort, (intptr_t)0 },
+    { "port", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSharedWorkerPort), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -93,12 +93,13 @@ bool JSSharedWorker::getOwnPropertyDescriptor(ExecState* exec, const Identifier&
     return getStaticValueDescriptor<JSSharedWorker, Base>(exec, &JSSharedWorkerTable, this, propertyName, descriptor);
 }
 
-JSValue jsSharedWorkerPort(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSharedWorkerPort(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSharedWorker* castedThis = static_cast<JSSharedWorker*>(asObject(slot.slotBase()));
+    JSSharedWorker* castedThis = static_cast<JSSharedWorker*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SharedWorker* imp = static_cast<SharedWorker*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port()));
+    return result;
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SharedWorker* object)

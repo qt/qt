@@ -37,7 +37,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSHistory);
 
 static const HashTableValue JSHistoryTableValues[2] =
 {
-    { "length", DontDelete|ReadOnly, (intptr_t)jsHistoryLength, (intptr_t)0 },
+    { "length", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHistoryLength), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -50,11 +50,13 @@ static JSC_CONST_HASHTABLE HashTable JSHistoryTable =
 
 /* Hash table for prototype */
 
-static const HashTableValue JSHistoryPrototypeTableValues[4] =
+static const HashTableValue JSHistoryPrototypeTableValues[6] =
 {
-    { "back", DontDelete|Function, (intptr_t)jsHistoryPrototypeFunctionBack, (intptr_t)0 },
-    { "forward", DontDelete|Function, (intptr_t)jsHistoryPrototypeFunctionForward, (intptr_t)0 },
-    { "go", DontDelete|Function, (intptr_t)jsHistoryPrototypeFunctionGo, (intptr_t)1 },
+    { "back", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHistoryPrototypeFunctionBack), (intptr_t)0 },
+    { "forward", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHistoryPrototypeFunctionForward), (intptr_t)0 },
+    { "go", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHistoryPrototypeFunctionGo), (intptr_t)1 },
+    { "pushState", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHistoryPrototypeFunctionPushState), (intptr_t)3 },
+    { "replaceState", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHistoryPrototypeFunctionReplaceState), (intptr_t)3 },
     { 0, 0, 0, 0 }
 };
 
@@ -62,7 +64,7 @@ static JSC_CONST_HASHTABLE HashTable JSHistoryPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSHistoryPrototypeTableValues, 0 };
 #else
-    { 9, 7, JSHistoryPrototypeTableValues, 0 };
+    { 17, 15, JSHistoryPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSHistoryPrototype::s_info = { "HistoryPrototype", 0, &JSHistoryPrototypeTable, 0 };
@@ -114,12 +116,13 @@ bool JSHistory::getOwnPropertyDescriptor(ExecState* exec, const Identifier& prop
     return getStaticValueDescriptor<JSHistory, Base>(exec, &JSHistoryTable, this, propertyName, descriptor);
 }
 
-JSValue jsHistoryLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHistoryLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHistory* castedThis = static_cast<JSHistory*>(asObject(slot.slotBase()));
+    JSHistory* castedThis = static_cast<JSHistory*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     History* imp = static_cast<History*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 void JSHistory::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -164,6 +167,24 @@ JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionGo(ExecState* exec, JSObject*, J
 
     imp->go(distance);
     return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionPushState(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSHistory::s_info))
+        return throwError(exec, TypeError);
+    JSHistory* castedThisObj = static_cast<JSHistory*>(asObject(thisValue));
+    return castedThisObj->pushState(exec, args);
+}
+
+JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionReplaceState(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSHistory::s_info))
+        return throwError(exec, TypeError);
+    JSHistory* castedThisObj = static_cast<JSHistory*>(asObject(thisValue));
+    return castedThisObj->replaceState(exec, args);
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, History* object)

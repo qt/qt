@@ -23,7 +23,6 @@
 
 #if ENABLE(EVENTSOURCE)
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -46,7 +45,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -76,7 +75,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSEventSourcePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -91,19 +90,19 @@ JSC::JSValue JSC_HOST_CALL jsEventSourcePrototypeFunctionRemoveEventListener(JSC
 JSC::JSValue JSC_HOST_CALL jsEventSourcePrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsEventSourceURL(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventSourceReadyState(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventSourceOnopen(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsEventSourceURL(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventSourceReadyState(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventSourceOnopen(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSEventSourceOnopen(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsEventSourceOnmessage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsEventSourceOnmessage(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSEventSourceOnmessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsEventSourceOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsEventSourceOnerror(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSEventSourceOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 // Constants
 
-JSC::JSValue jsEventSourceCONNECTING(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventSourceOPEN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventSourceCLOSED(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsEventSourceCONNECTING(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventSourceOPEN(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventSourceCLOSED(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

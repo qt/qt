@@ -95,8 +95,10 @@ private:
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, int x, int y, int tx, int ty, HitTestAction);
     virtual void paint(PaintInfo&, int tx, int ty);
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const;
-    
+
     inline HTMLFrameSetElement* frameSet() const;
+
+    bool flattenFrameSet() const;
 
     void setIsResizing(bool);
 
@@ -104,6 +106,7 @@ private:
     void computeEdgeInfo();
     void fillFromEdgeInfo(const FrameEdgeInfo& edgeInfo, int r, int c);
     void positionFrames();
+    void positionFramesWithFlattening();
 
     int splitPosition(const GridAxis&, int split) const;
     int hitTestSplit(const GridAxis&, int position) const;

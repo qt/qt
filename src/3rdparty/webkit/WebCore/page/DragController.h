@@ -47,7 +47,7 @@ namespace WebCore {
     class Range;
     class SelectionController;
     
-    class DragController {
+    class DragController : public Noncopyable {
     public:
         DragController(Page*, DragClient*);
         ~DragController();
@@ -77,7 +77,7 @@ namespace WebCore {
         DragDestinationAction dragDestinationAction() const { return m_dragDestinationAction; }
         DragSourceAction delegateDragSourceAction(const IntPoint& pagePoint);
         
-        bool mayStartDragAtEventLocation(const Frame*, const IntPoint& framePos);
+        bool mayStartDragAtEventLocation(const Frame*, const IntPoint& framePos, Node*);
         void dragEnded();
         
         void placeDragCaret(const IntPoint&);

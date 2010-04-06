@@ -90,7 +90,7 @@ void TypingCommand::deleteKeyPressed(Document *document, bool smartDelete, TextG
     ASSERT(frame);
     
     EditCommand* lastEditCommand = frame->editor()->lastEditCommand();
-    if (isOpenForMoreTypingCommand(lastEditCommand)) {
+    if (granularity == CharacterGranularity && isOpenForMoreTypingCommand(lastEditCommand)) {
         static_cast<TypingCommand*>(lastEditCommand)->deleteKeyPressed(granularity, killRing);
         return;
     }
@@ -109,7 +109,7 @@ void TypingCommand::forwardDeleteKeyPressed(Document *document, bool smartDelete
     ASSERT(frame);
     
     EditCommand* lastEditCommand = frame->editor()->lastEditCommand();
-    if (isOpenForMoreTypingCommand(lastEditCommand)) {
+    if (granularity == CharacterGranularity && isOpenForMoreTypingCommand(lastEditCommand)) {
         static_cast<TypingCommand*>(lastEditCommand)->forwardDeleteKeyPressed(granularity, killRing);
         return;
     }
@@ -450,6 +450,10 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
             }
             
             VisiblePosition visibleStart(endingSelection().visibleStart());
+            // If we have a caret selection on an empty cell, we have nothing to do.
+            if (isEmptyTableCell(visibleStart.deepEquivalent().node()))
+                return;
+
             // If the caret is at the start of a paragraph after a table, move content into the last table cell.
             if (isStartOfParagraph(visibleStart) && isFirstPositionAfterTable(visibleStart.previous(true))) {
                 // Unless the caret is just before a table.  We don't want to move a table into the last table cell.

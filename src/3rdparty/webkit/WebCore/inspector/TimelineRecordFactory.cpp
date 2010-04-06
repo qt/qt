@@ -35,80 +35,142 @@
 
 #include "Event.h"
 #include "InspectorFrontend.h"
+#include "IntRect.h"
+#include "ResourceRequest.h"
+#include "ResourceResponse.h"
 #include "ScriptArray.h"
+#include "ScriptCallStack.h"
 #include "ScriptObject.h"
+
 namespace WebCore {
 
-// static
 ScriptObject TimelineRecordFactory::createGenericRecord(InspectorFrontend* frontend, double startTime)
 {
     ScriptObject record = frontend->newScriptObject();
     record.set("startTime", startTime);
+
+    String sourceName;
+    int sourceLineNumber;
+    if (ScriptCallStack::callLocation(&sourceName, &sourceLineNumber) && sourceName != "undefined") {
+        record.set("callerScriptName", sourceName);
+        record.set("callerScriptLine", sourceLineNumber);
+    }
     return record;
 }
 
-// static
-ScriptObject TimelineRecordFactory::createDOMDispatchRecord(InspectorFrontend* frontend, double startTime, const Event& event)
+ScriptObject TimelineRecordFactory::createFunctionCallData(InspectorFrontend* frontend, const String& scriptName, int scriptLine)
 {
-    ScriptObject record = createGenericRecord(frontend, startTime);
+    ScriptObject data = frontend->newScriptObject();
+    data.set("scriptName", scriptName);
+    data.set("scriptLine", scriptLine);
+    return data;
+}
+
+ScriptObject TimelineRecordFactory::createEventDispatchData(InspectorFrontend* frontend, const Event& event)
+{
     ScriptObject data = frontend->newScriptObject();
     data.set("type", event.type().string());
-    record.set("data", data);
-    return record;
+    return data;
 }
 
-// static
-ScriptObject TimelineRecordFactory::createGenericTimerRecord(InspectorFrontend* frontend, double startTime, int timerId)
+ScriptObject TimelineRecordFactory::createGenericTimerData(InspectorFrontend* frontend, int timerId)
 {
-    ScriptObject record = createGenericRecord(frontend, startTime);
     ScriptObject data = frontend->newScriptObject();
     data.set("timerId", timerId);
-    record.set("data", data);
-    return record;
+    return data;
 }
 
-// static
-ScriptObject TimelineRecordFactory::createTimerInstallRecord(InspectorFrontend* frontend, double startTime, int timerId, int timeout, bool singleShot)
+ScriptObject TimelineRecordFactory::createTimerInstallData(InspectorFrontend* frontend, int timerId, int timeout, bool singleShot)
 {
-    ScriptObject record = createGenericRecord(frontend, startTime);
     ScriptObject data = frontend->newScriptObject();
     data.set("timerId", timerId);
     data.set("timeout", timeout);
     data.set("singleShot", singleShot);
-    record.set("data", data);
-    return record;
+    return data;
 }
 
-// static
-ScriptObject TimelineRecordFactory::createXHRReadyStateChangeTimelineRecord(InspectorFrontend* frontend, double startTime, const String& url, int readyState)
+ScriptObject TimelineRecordFactory::createXHRReadyStateChangeData(InspectorFrontend* frontend, const String& url, int readyState)
 {
-    ScriptObject record = createGenericRecord(frontend, startTime);
     ScriptObject data = frontend->newScriptObject();
     data.set("url", url);
     data.set("readyState", readyState);
-    record.set("data", data);
-    return record;
+    return data;
 }
 
-// static
-ScriptObject TimelineRecordFactory::createXHRLoadTimelineRecord(InspectorFrontend* frontend, double startTime, const String& url)
+ScriptObject TimelineRecordFactory::createXHRLoadData(InspectorFrontend* frontend, const String& url)
 {
-    ScriptObject record = createGenericRecord(frontend, startTime);
     ScriptObject data = frontend->newScriptObject();
     data.set("url", url);
-    record.set("data", data);
-    return record;
+    return data;
 }
 
-// static
-ScriptObject TimelineRecordFactory::createEvaluateScriptTagTimelineRecord(InspectorFrontend* frontend, double startTime, const String& url, double lineNumber) 
+ScriptObject TimelineRecordFactory::createEvaluateScriptData(InspectorFrontend* frontend, const String& url, double lineNumber) 
 {
-    ScriptObject item = createGenericRecord(frontend, startTime);
     ScriptObject data = frontend->newScriptObject();
     data.set("url", url);
     data.set("lineNumber", lineNumber);
-    item.set("data", data);
-    return item;
+    return data;
+}
+
+ScriptObject TimelineRecordFactory::createMarkTimelineData(InspectorFrontend* frontend, const String& message) 
+{
+    ScriptObject data = frontend->newScriptObject();
+    data.set("message", message);
+    return data;
+}
+
+
+ScriptObject TimelineRecordFactory::createResourceSendRequestData(InspectorFrontend* frontend, unsigned long identifier, bool isMainResource, const ResourceRequest& request)
+{
+    ScriptObject data = frontend->newScriptObject();
+    data.set("identifier", identifier);
+    data.set("url", request.url().string());
+    data.set("requestMethod", request.httpMethod());
+    data.set("isMainResource", isMainResource);
+    return data;
+}
+
+ScriptObject TimelineRecordFactory::createResourceReceiveResponseData(InspectorFrontend* frontend, unsigned long identifier, const ResourceResponse& response)
+{
+    ScriptObject data = frontend->newScriptObject();
+    data.set("identifier", identifier);
+    data.set("statusCode", response.httpStatusCode());
+    data.set("mimeType", response.mimeType());
+    data.set("expectedContentLength", response.expectedContentLength());
+    return data;
+}
+
+ScriptObject TimelineRecordFactory::createResourceFinishData(InspectorFrontend* frontend, unsigned long identifier, bool didFail)
+{
+    ScriptObject data = frontend->newScriptObject();
+    data.set("identifier", identifier);
+    data.set("didFail", didFail);
+    return data;
+}
+
+ScriptObject TimelineRecordFactory::createReceiveResourceData(InspectorFrontend* frontend, unsigned long identifier)
+{
+    ScriptObject data = frontend->newScriptObject();
+    data.set("identifier", identifier);
+    return data;
+}
+    
+ScriptObject TimelineRecordFactory::createPaintData(InspectorFrontend* frontend, const IntRect& rect)
+{
+    ScriptObject data = frontend->newScriptObject();
+    data.set("x", rect.x());
+    data.set("y", rect.y());
+    data.set("width", rect.width());
+    data.set("height", rect.height());
+    return data;
+}
+
+ScriptObject TimelineRecordFactory::createParseHTMLData(InspectorFrontend* frontend, unsigned int length, unsigned int startLine)
+{
+    ScriptObject data = frontend->newScriptObject();
+    data.set("length", length);
+    data.set("startLine", startLine);
+    return data;
 }
 
 } // namespace WebCore

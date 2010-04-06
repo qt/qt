@@ -22,8 +22,6 @@
 
 #include <QWidget>
 
-class QGraphicsProxyWidget;
-
 namespace WebCore {
 
     class PluginView;
@@ -31,19 +29,18 @@ namespace WebCore {
     class PluginContainerSymbian : public QWidget {
         Q_OBJECT
     public:
-        PluginContainerSymbian(PluginView*, QWidget* parent, QGraphicsProxyWidget* proxy = 0);
+        PluginContainerSymbian(PluginView*, QWidget* parent);
         ~PluginContainerSymbian();
 
         void requestGeometry(const QRect&, const QRegion& clip = QRegion());
         void adjustGeometry();
-        QGraphicsProxyWidget* proxy() { return m_proxy; }
 
     protected:
         virtual void focusInEvent(QFocusEvent*);
         virtual void focusOutEvent(QFocusEvent*);
     private:
         PluginView* m_pluginView;
-        QGraphicsProxyWidget* m_proxy;
+        QWidget* m_parent;
         QRect m_windowRect;
         QRegion m_clipRegion;
         bool m_hasPendingGeometryChange;

@@ -35,8 +35,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSPageTransitionEvent);
 
 static const HashTableValue JSPageTransitionEventTableValues[3] =
 {
-    { "persisted", DontDelete|ReadOnly, (intptr_t)jsPageTransitionEventPersisted, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsPageTransitionEventConstructor, (intptr_t)0 },
+    { "persisted", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPageTransitionEventPersisted), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPageTransitionEventConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -75,7 +75,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -98,7 +98,7 @@ bool JSPageTransitionEventConstructor::getOwnPropertyDescriptor(ExecState* exec,
 
 static const HashTableValue JSPageTransitionEventPrototypeTableValues[2] =
 {
-    { "initPageTransitionEvent", DontDelete|Function, (intptr_t)jsPageTransitionEventPrototypeFunctionInitPageTransitionEvent, (intptr_t)4 },
+    { "initPageTransitionEvent", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsPageTransitionEventPrototypeFunctionInitPageTransitionEvent), (intptr_t)4 },
     { 0, 0, 0, 0 }
 };
 
@@ -148,17 +148,18 @@ bool JSPageTransitionEvent::getOwnPropertyDescriptor(ExecState* exec, const Iden
     return getStaticValueDescriptor<JSPageTransitionEvent, Base>(exec, &JSPageTransitionEventTable, this, propertyName, descriptor);
 }
 
-JSValue jsPageTransitionEventPersisted(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPageTransitionEventPersisted(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSPageTransitionEvent* castedThis = static_cast<JSPageTransitionEvent*>(asObject(slot.slotBase()));
+    JSPageTransitionEvent* castedThis = static_cast<JSPageTransitionEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     PageTransitionEvent* imp = static_cast<PageTransitionEvent*>(castedThis->impl());
-    return jsBoolean(imp->persisted());
+    JSValue result = jsBoolean(imp->persisted());
+    return result;
 }
 
-JSValue jsPageTransitionEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPageTransitionEventConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSPageTransitionEvent* domObject = static_cast<JSPageTransitionEvent*>(asObject(slot.slotBase()));
+    JSPageTransitionEvent* domObject = static_cast<JSPageTransitionEvent*>(asObject(slotBase));
     return JSPageTransitionEvent::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSPageTransitionEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

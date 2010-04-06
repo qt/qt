@@ -41,9 +41,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGPaint);
 
 static const HashTableValue JSSVGPaintTableValues[4] =
 {
-    { "paintType", DontDelete|ReadOnly, (intptr_t)jsSVGPaintPaintType, (intptr_t)0 },
-    { "uri", DontDelete|ReadOnly, (intptr_t)jsSVGPaintUri, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGPaintConstructor, (intptr_t)0 },
+    { "paintType", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintPaintType), (intptr_t)0 },
+    { "uri", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintUri), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -58,16 +58,16 @@ static JSC_CONST_HASHTABLE HashTable JSSVGPaintTable =
 
 static const HashTableValue JSSVGPaintConstructorTableValues[11] =
 {
-    { "SVG_PAINTTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_UNKNOWN, (intptr_t)0 },
-    { "SVG_PAINTTYPE_RGBCOLOR", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_RGBCOLOR, (intptr_t)0 },
-    { "SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_RGBCOLOR_ICCCOLOR, (intptr_t)0 },
-    { "SVG_PAINTTYPE_NONE", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_NONE, (intptr_t)0 },
-    { "SVG_PAINTTYPE_CURRENTCOLOR", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_CURRENTCOLOR, (intptr_t)0 },
-    { "SVG_PAINTTYPE_URI_NONE", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_URI_NONE, (intptr_t)0 },
-    { "SVG_PAINTTYPE_URI_CURRENTCOLOR", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_URI_CURRENTCOLOR, (intptr_t)0 },
-    { "SVG_PAINTTYPE_URI_RGBCOLOR", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_URI_RGBCOLOR, (intptr_t)0 },
-    { "SVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR, (intptr_t)0 },
-    { "SVG_PAINTTYPE_URI", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_URI, (intptr_t)0 },
+    { "SVG_PAINTTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_UNKNOWN), (intptr_t)0 },
+    { "SVG_PAINTTYPE_RGBCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_RGBCOLOR), (intptr_t)0 },
+    { "SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_RGBCOLOR_ICCCOLOR), (intptr_t)0 },
+    { "SVG_PAINTTYPE_NONE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_NONE), (intptr_t)0 },
+    { "SVG_PAINTTYPE_CURRENTCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_CURRENTCOLOR), (intptr_t)0 },
+    { "SVG_PAINTTYPE_URI_NONE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_URI_NONE), (intptr_t)0 },
+    { "SVG_PAINTTYPE_URI_CURRENTCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_URI_CURRENTCOLOR), (intptr_t)0 },
+    { "SVG_PAINTTYPE_URI_RGBCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_URI_RGBCOLOR), (intptr_t)0 },
+    { "SVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR), (intptr_t)0 },
+    { "SVG_PAINTTYPE_URI", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_URI), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -92,7 +92,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -115,18 +115,18 @@ bool JSSVGPaintConstructor::getOwnPropertyDescriptor(ExecState* exec, const Iden
 
 static const HashTableValue JSSVGPaintPrototypeTableValues[13] =
 {
-    { "SVG_PAINTTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_UNKNOWN, (intptr_t)0 },
-    { "SVG_PAINTTYPE_RGBCOLOR", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_RGBCOLOR, (intptr_t)0 },
-    { "SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_RGBCOLOR_ICCCOLOR, (intptr_t)0 },
-    { "SVG_PAINTTYPE_NONE", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_NONE, (intptr_t)0 },
-    { "SVG_PAINTTYPE_CURRENTCOLOR", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_CURRENTCOLOR, (intptr_t)0 },
-    { "SVG_PAINTTYPE_URI_NONE", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_URI_NONE, (intptr_t)0 },
-    { "SVG_PAINTTYPE_URI_CURRENTCOLOR", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_URI_CURRENTCOLOR, (intptr_t)0 },
-    { "SVG_PAINTTYPE_URI_RGBCOLOR", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_URI_RGBCOLOR, (intptr_t)0 },
-    { "SVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR, (intptr_t)0 },
-    { "SVG_PAINTTYPE_URI", DontDelete|ReadOnly, (intptr_t)jsSVGPaintSVG_PAINTTYPE_URI, (intptr_t)0 },
-    { "setUri", DontDelete|Function, (intptr_t)jsSVGPaintPrototypeFunctionSetUri, (intptr_t)1 },
-    { "setPaint", DontDelete|Function, (intptr_t)jsSVGPaintPrototypeFunctionSetPaint, (intptr_t)4 },
+    { "SVG_PAINTTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_UNKNOWN), (intptr_t)0 },
+    { "SVG_PAINTTYPE_RGBCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_RGBCOLOR), (intptr_t)0 },
+    { "SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_RGBCOLOR_ICCCOLOR), (intptr_t)0 },
+    { "SVG_PAINTTYPE_NONE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_NONE), (intptr_t)0 },
+    { "SVG_PAINTTYPE_CURRENTCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_CURRENTCOLOR), (intptr_t)0 },
+    { "SVG_PAINTTYPE_URI_NONE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_URI_NONE), (intptr_t)0 },
+    { "SVG_PAINTTYPE_URI_CURRENTCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_URI_CURRENTCOLOR), (intptr_t)0 },
+    { "SVG_PAINTTYPE_URI_RGBCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_URI_RGBCOLOR), (intptr_t)0 },
+    { "SVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR), (intptr_t)0 },
+    { "SVG_PAINTTYPE_URI", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPaintSVG_PAINTTYPE_URI), (intptr_t)0 },
+    { "setUri", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPaintPrototypeFunctionSetUri), (intptr_t)1 },
+    { "setPaint", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPaintPrototypeFunctionSetPaint), (intptr_t)4 },
     { 0, 0, 0, 0 }
 };
 
@@ -176,25 +176,27 @@ bool JSSVGPaint::getOwnPropertyDescriptor(ExecState* exec, const Identifier& pro
     return getStaticValueDescriptor<JSSVGPaint, Base>(exec, &JSSVGPaintTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGPaintPaintType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPaintPaintType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPaint* castedThis = static_cast<JSSVGPaint*>(asObject(slot.slotBase()));
+    JSSVGPaint* castedThis = static_cast<JSSVGPaint*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPaint* imp = static_cast<SVGPaint*>(castedThis->impl());
-    return jsNumber(exec, imp->paintType());
+    JSValue result = jsNumber(exec, imp->paintType());
+    return result;
 }
 
-JSValue jsSVGPaintUri(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPaintUri(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPaint* castedThis = static_cast<JSSVGPaint*>(asObject(slot.slotBase()));
+    JSSVGPaint* castedThis = static_cast<JSSVGPaint*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPaint* imp = static_cast<SVGPaint*>(castedThis->impl());
-    return jsString(exec, imp->uri());
+    JSValue result = jsString(exec, imp->uri());
+    return result;
 }
 
-JSValue jsSVGPaintConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPaintConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPaint* domObject = static_cast<JSSVGPaint*>(asObject(slot.slotBase()));
+    JSSVGPaint* domObject = static_cast<JSSVGPaint*>(asObject(slotBase));
     return JSSVGPaint::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSSVGPaint::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -235,52 +237,52 @@ JSValue JSC_HOST_CALL jsSVGPaintPrototypeFunctionSetPaint(ExecState* exec, JSObj
 
 // Constant getters
 
-JSValue jsSVGPaintSVG_PAINTTYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGPaintSVG_PAINTTYPE_UNKNOWN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsSVGPaintSVG_PAINTTYPE_RGBCOLOR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGPaintSVG_PAINTTYPE_RGBCOLOR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsSVGPaintSVG_PAINTTYPE_RGBCOLOR_ICCCOLOR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGPaintSVG_PAINTTYPE_RGBCOLOR_ICCCOLOR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsSVGPaintSVG_PAINTTYPE_NONE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGPaintSVG_PAINTTYPE_NONE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(101));
 }
 
-JSValue jsSVGPaintSVG_PAINTTYPE_CURRENTCOLOR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGPaintSVG_PAINTTYPE_CURRENTCOLOR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(102));
 }
 
-JSValue jsSVGPaintSVG_PAINTTYPE_URI_NONE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGPaintSVG_PAINTTYPE_URI_NONE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(103));
 }
 
-JSValue jsSVGPaintSVG_PAINTTYPE_URI_CURRENTCOLOR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGPaintSVG_PAINTTYPE_URI_CURRENTCOLOR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(104));
 }
 
-JSValue jsSVGPaintSVG_PAINTTYPE_URI_RGBCOLOR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGPaintSVG_PAINTTYPE_URI_RGBCOLOR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(105));
 }
 
-JSValue jsSVGPaintSVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGPaintSVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(106));
 }
 
-JSValue jsSVGPaintSVG_PAINTTYPE_URI(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGPaintSVG_PAINTTYPE_URI(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(107));
 }
