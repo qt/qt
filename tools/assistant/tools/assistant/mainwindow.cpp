@@ -38,57 +38,55 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "tracer.h"
 
 #include "mainwindow.h"
 
+#include "aboutdialog.h"
 #include "bookmarkmanager.h"
 #include "centralwidget.h"
-#include "indexwindow.h"
-#include "topicchooser.h"
-#include "contentwindow.h"
-#include "preferencesdialog.h"
-#include "helpenginewrapper.h"
-#include "remotecontrol.h"
 #include "cmdlineparser.h"
-#include "aboutdialog.h"
-#include "searchwidget.h"
+#include "contentwindow.h"
+#include "globalactions.h"
+#include "helpenginewrapper.h"
+#include "indexwindow.h"
+#include "openpagesmanager.h"
+#include "preferencesdialog.h"
 #include "qtdocinstaller.h"
+#include "remotecontrol.h"
+#include "searchwidget.h"
+#include "topicchooser.h"
+#include "tracer.h"
 
-// #define TRACING_REQUESTED
-
-#include <QtCore/QDir>
-#include <QtCore/QTimer>
+#include <QtCore/QByteArray>
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
-#include <QtCore/QFileSystemWatcher>
+#include <QtCore/QDir>
 #include <QtCore/QPair>
 #include <QtCore/QResource>
-#include <QtCore/QByteArray>
 #include <QtCore/QTextStream>
-#include <QtCore/QCoreApplication>
+#include <QtCore/QTimer>
 
-#include <QtGui/QMenuBar>
 #include <QtGui/QAction>
-#include <QtGui/QToolBar>
-#include <QtGui/QStatusBar>
-#include <QtGui/QLabel>
-#include <QtGui/QLineEdit>
-#include <QtGui/QLayout>
-#include <QtGui/QDockWidget>
-#include <QtGui/QTreeView>
-#include <QtGui/QMessageBox>
-#include <QtGui/QFontDatabase>
 #include <QtGui/QComboBox>
-#include <QtGui/QProgressBar>
 #include <QtGui/QDesktopServices>
-#include <QtGui/QToolButton>
+#include <QtGui/QDesktopWidget>
+#include <QtGui/QDockWidget>
+#include <QtGui/QFontDatabase>
 #include <QtGui/QFileDialog>
+#include <QtGui/QLabel>
+#include <QtGui/QLayout>
+#include <QtGui/QLineEdit>
+#include <QtGui/QMenuBar>
+#include <QtGui/QMessageBox>
+#include <QtGui/QProgressBar>
+#include <QtGui/QStatusBar>
+#include <QtGui/QToolBar>
+#include <QtGui/QToolButton>
 
-#include <QtHelp/QHelpEngineCore>
-#include <QtHelp/QHelpSearchEngine>
 #include <QtHelp/QHelpContentModel>
+#include <QtHelp/QHelpEngineCore>
 #include <QtHelp/QHelpIndexModel>
+#include <QtHelp/QHelpSearchEngine>
 
 QT_BEGIN_NAMESPACE
 
@@ -105,6 +103,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     TRACE_OBJ
 
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
+    setDockOptions(ForceTabbedDocks); // Has no effect; Qt bug?
 
     QString collectionFile;
     if (usesDefaultCollection()) {
@@ -146,12 +145,19 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         = bookMarkManager->bookmarkDockWidget());
     addDockWidget(Qt::LeftDockWidgetArea, bookmarkDock);
 
+    QDockWidget *openPagesDock = new QDockWidget(tr("Open Pages"), this);
+    openPagesDock->setObjectName(QLatin1String("Open Pages"));
+    OpenPagesManager *openPagesManager
+        = OpenPagesManager::createInstance(this, usesDefaultCollection(), m_cmdLine->url());
+    openPagesDock->setWidget(openPagesManager->openPagesWidget());
+    addDockWidget(Qt::LeftDockWidgetArea, openPagesDock);
+
     connect(bookMarkManager, SIGNAL(escapePressed()), this,
             SLOT(activateCurrentCentralWidgetTab()));
     connect(bookMarkManager, SIGNAL(setSource(QUrl)), m_centralWidget,
             SLOT(setSource(QUrl)));
-    connect(bookMarkManager, SIGNAL(setSourceInNewTab(QUrl)), m_centralWidget,
-            SLOT(setSourceInNewTab(QUrl)));
+    connect(bookMarkManager, SIGNAL(setSourceInNewTab(QUrl)),
+        openPagesManager, SLOT(createPage(QUrl)));
     connect(m_centralWidget, SIGNAL(addBookmark(QString, QString)),
         bookMarkManager, SLOT(addBookmark(QString, QString)));
 
@@ -195,9 +201,11 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         } else {
             tabifyDockWidget(contentDock, indexDock);
             tabifyDockWidget(indexDock, bookmarkDock);
-            tabifyDockWidget(bookmarkDock, searchDock);
+            tabifyDockWidget(bookmarkDock, openPagesDock);
+            tabifyDockWidget(openPagesDock, searchDock);
             contentDock->raise();
-            resize(QSize(1024, 768));
+            const QRect screen = QApplication::desktop()->screenGeometry();
+            resize(4*screen.width()/5, 4*screen.height()/5);
         }
 
         if (!helpEngineWrapper.hasFontSettings()) {
@@ -261,6 +269,8 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
                 this, SLOT(documentationUpdated(QString)));
     }
     setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
+    GlobalActions::instance()->updateActions();
+    showNewAddress();
 }
 
 MainWindow::~MainWindow()
@@ -391,11 +401,6 @@ void MainWindow::checkInitState()
 void MainWindow::insertLastPages()
 {
     TRACE_OBJ
-    if (m_cmdLine->url().isValid())
-        m_centralWidget->setSource(m_cmdLine->url());
-    else
-        m_centralWidget->setupWidget();
-
     if (m_cmdLine->search() == CmdLineParser::Activate)
         showSearch();
 }
@@ -418,18 +423,16 @@ void MainWindow::setupActions()
     m_printPreviewAction = menu->addAction(tr("Print Preview..."), m_centralWidget,
         SLOT(printPreview()));
 
-    m_printAction = menu->addAction(tr("&Print..."), m_centralWidget, SLOT(print()));
-    m_printAction->setPriority(QAction::LowPriority);
-    m_printAction->setIcon(QIcon(resourcePath + QLatin1String("/print.png")));
-    m_printAction->setShortcut(QKeySequence::Print);
-
+    GlobalActions *globalActions = GlobalActions::instance(this);
+    menu->addAction(globalActions->printAction());
     menu->addSeparator();
 
-    m_newTabAction = menu->addAction(tr("New &Tab"), m_centralWidget, SLOT(newTab()));
+    OpenPagesManager * const openPages = OpenPagesManager::instance();
+    m_newTabAction
+        = menu->addAction(tr("New &Tab"), openPages, SLOT(createPage()));
     m_newTabAction->setShortcut(QKeySequence::AddTab);
-
-    m_closeTabAction = menu->addAction(tr("&Close Tab"), m_centralWidget,
-        SLOT(closeTab()));
+    m_closeTabAction = menu->addAction(tr("&Close Tab"),
+                                          openPages, SLOT(closeCurrentPage()));
     m_closeTabAction->setShortcuts(QKeySequence::Close);
 
     QAction *tmp = menu->addAction(tr("&Quit"), this, SLOT(close()));
@@ -441,19 +444,8 @@ void MainWindow::setupActions()
 #endif
 
     menu = menuBar()->addMenu(tr("&Edit"));
-    m_copyAction = menu->addAction(tr("&Copy selected Text"), m_centralWidget,
-        SLOT(copySelection()));
-    m_copyAction->setPriority(QAction::LowPriority);
-    m_copyAction->setIconText("&Copy");
-    m_copyAction->setIcon(QIcon(resourcePath + QLatin1String("/editcopy.png")));
-    m_copyAction->setShortcuts(QKeySequence::Copy);
-    m_copyAction->setEnabled(false);
-
-    m_findAction = menu->addAction(tr("&Find in Text..."), m_centralWidget,
-        SLOT(showTextSearch()));
-    m_findAction->setIconText(tr("&Find"));
-    m_findAction->setIcon(QIcon(resourcePath + QLatin1String("/find.png")));
-    m_findAction->setShortcuts(QKeySequence::Find);
+    menu->addAction(globalActions->copyAction());
+    menu->addAction(globalActions->findAction());
 
     QAction *findNextAction = menu->addAction(tr("Find &Next"), m_centralWidget,
         SLOT(findNext()));
@@ -468,17 +460,8 @@ void MainWindow::setupActions()
     tmp->setMenuRole(QAction::PreferencesRole);
 
     m_viewMenu = menuBar()->addMenu(tr("&View"));
-    m_zoomInAction = m_viewMenu->addAction(tr("Zoom &in"), m_centralWidget,
-        SLOT(zoomIn()));
-    m_zoomInAction->setPriority(QAction::LowPriority);
-    m_zoomInAction->setIcon(QIcon(resourcePath + QLatin1String("/zoomin.png")));
-    m_zoomInAction->setShortcut(QKeySequence::ZoomIn);
-
-    m_zoomOutAction = m_viewMenu->addAction(tr("Zoom &out"), m_centralWidget,
-        SLOT(zoomOut()));
-    m_zoomOutAction->setPriority(QAction::LowPriority);
-    m_zoomOutAction->setIcon(QIcon(resourcePath + QLatin1String("/zoomout.png")));
-    m_zoomOutAction->setShortcut(QKeySequence::ZoomOut);
+    m_viewMenu->addAction(globalActions->zoomInAction());
+    m_viewMenu->addAction(globalActions->zoomOutAction());
 
     m_resetZoomAction = m_viewMenu->addAction(tr("Normal &Size"), m_centralWidget,
         SLOT(resetZoom()));
@@ -496,22 +479,13 @@ void MainWindow::setupActions()
         QKeySequence(tr("ALT+O")));
     m_viewMenu->addAction(tr("Search"), this, SLOT(showSearch()),
         QKeySequence(tr("ALT+S")));
+    m_viewMenu->addAction(tr("Open Pages"), this, SLOT(showOpenPages()),
+        QKeySequence(tr("ALT+P")));
 
     menu = menuBar()->addMenu(tr("&Go"));
-    m_homeAction = menu->addAction(tr("&Home"), m_centralWidget, SLOT(home()));
-    m_homeAction->setShortcut(tr("ALT+Home"));
-    m_homeAction->setIcon(QIcon(resourcePath + QLatin1String("/home.png")));
-
-    m_backAction = menu->addAction(tr("&Back"), m_centralWidget, SLOT(backward()));
-    m_backAction->setEnabled(false);
-    m_backAction->setShortcuts(QKeySequence::Back);
-    m_backAction->setIcon(QIcon(resourcePath + QLatin1String("/previous.png")));
-
-    m_nextAction = menu->addAction(tr("&Forward"), m_centralWidget, SLOT(forward()));
-    m_nextAction->setPriority(QAction::LowPriority);
-    m_nextAction->setEnabled(false);
-    m_nextAction->setShortcuts(QKeySequence::Forward);
-    m_nextAction->setIcon(QIcon(resourcePath + QLatin1String("/next.png")));
+    menu->addAction(globalActions->homeAction());
+    menu->addAction(globalActions->backAction());
+    menu->addAction(globalActions->nextAction());
 
     m_syncAction = menu->addAction(tr("Sync with Table of Contents"), this,
         SLOT(syncContents()));
@@ -520,11 +494,11 @@ void MainWindow::setupActions()
 
     menu->addSeparator();
 
-    tmp = menu->addAction(tr("Next Page"), m_centralWidget, SLOT(nextPage()));
+    tmp = menu->addAction(tr("Next Page"), openPages, SLOT(nextPage()));
     tmp->setShortcuts(QList<QKeySequence>() << QKeySequence(tr("Ctrl+Alt+Right"))
         << QKeySequence(Qt::CTRL + Qt::Key_PageDown));
 
-    tmp = menu->addAction(tr("Previous Page"), m_centralWidget, SLOT(previousPage()));
+    tmp = menu->addAction(tr("Previous Page"), openPages, SLOT(previousPage()));
     tmp->setShortcuts(QList<QKeySequence>() << QKeySequence(tr("Ctrl+Alt+Left"))
         << QKeySequence(Qt::CTRL + Qt::Key_PageUp));
 
@@ -535,38 +509,24 @@ void MainWindow::setupActions()
     m_aboutAction->setMenuRole(QAction::AboutRole);
 
 #ifdef Q_WS_X11
-    m_backAction->setIcon(QIcon::fromTheme("go-previous" , m_backAction->icon()));
-    m_nextAction->setIcon(QIcon::fromTheme("go-next" , m_nextAction->icon()));
-    m_zoomInAction->setIcon(QIcon::fromTheme("zoom-in" , m_zoomInAction->icon()));
-    m_zoomOutAction->setIcon(QIcon::fromTheme("zoom-out" , m_zoomOutAction->icon()));
     m_resetZoomAction->setIcon(QIcon::fromTheme("zoom-original" , m_resetZoomAction->icon()));
     m_syncAction->setIcon(QIcon::fromTheme("view-refresh" , m_syncAction->icon()));
-    m_copyAction->setIcon(QIcon::fromTheme("edit-copy" , m_copyAction->icon()));
-    m_findAction->setIcon(QIcon::fromTheme("edit-find" , m_findAction->icon()));
-    m_homeAction->setIcon(QIcon::fromTheme("go-home" , m_homeAction->icon()));
-    m_printAction->setIcon(QIcon::fromTheme("document-print" , m_printAction->icon()));
 #endif
 
     QToolBar *navigationBar = addToolBar(tr("Navigation Toolbar"));
     navigationBar->setObjectName(QLatin1String("NavigationToolBar"));
-    navigationBar->addAction(m_backAction);
-    navigationBar->addAction(m_nextAction);
-    navigationBar->addAction(m_homeAction);
+    navigationBar->addAction(globalActions->backAction());
+    navigationBar->addAction(globalActions->nextAction());
+    navigationBar->addAction(globalActions->homeAction());
     navigationBar->addAction(m_syncAction);
-    QAction *sep = navigationBar->addSeparator();
-    navigationBar->addAction(m_copyAction);
-    navigationBar->addAction(m_printAction);
-    navigationBar->addAction(m_findAction);
-    QAction *sep2 = navigationBar->addSeparator();
-    navigationBar->addAction(m_zoomInAction);
-    navigationBar->addAction(m_zoomOutAction);
+    navigationBar->addSeparator();
+    navigationBar->addAction(globalActions->copyAction());
+    navigationBar->addAction(globalActions->printAction());
+    navigationBar->addAction(globalActions->findAction());
+    navigationBar->addSeparator();
+    navigationBar->addAction(globalActions->zoomInAction());
+    navigationBar->addAction(globalActions->zoomOutAction());
     navigationBar->addAction(m_resetZoomAction);
-
-    QList<QAction*> actionList;
-    actionList << m_backAction << m_nextAction << m_homeAction << sep
-        << m_zoomInAction << m_zoomOutAction << sep2 << m_copyAction
-        << m_printAction << m_findAction;
-    m_centralWidget->setGlobalActions(actionList);
 
 #if defined(Q_WS_MAC)
     QMenu *windowMenu = new QMenu(tr("&Window"), this);
@@ -577,16 +537,14 @@ void MainWindow::setupActions()
 #endif
 
     // content viewer connections
-    connect(m_centralWidget, SIGNAL(copyAvailable(bool)), this,
-        SLOT(copyAvailable(bool)));
-    connect(m_centralWidget, SIGNAL(currentViewerChanged()), this,
-        SLOT(updateNavigationItems()));
-    connect(m_centralWidget, SIGNAL(currentViewerChanged()), this,
-        SLOT(updateTabCloseAction()));
-    connect(m_centralWidget, SIGNAL(forwardAvailable(bool)), this,
-        SLOT(updateNavigationItems()));
-    connect(m_centralWidget, SIGNAL(backwardAvailable(bool)), this,
-        SLOT(updateNavigationItems()));
+    connect(m_centralWidget, SIGNAL(copyAvailable(bool)), globalActions,
+        SLOT(setCopyAvailable(bool)));
+    connect(m_centralWidget, SIGNAL(currentViewerChanged()), globalActions,
+        SLOT(updateActions()));
+    connect(m_centralWidget, SIGNAL(forwardAvailable(bool)), globalActions,
+        SLOT(updateActions()));
+    connect(m_centralWidget, SIGNAL(backwardAvailable(bool)), globalActions,
+        SLOT(updateActions()));
     connect(m_centralWidget, SIGNAL(highlighted(QString)), statusBar(),
         SLOT(showMessage(QString)));
 
@@ -605,10 +563,10 @@ void MainWindow::setupActions()
         SLOT(activateCurrentCentralWidgetTab()));
 
     // search window
-    connect(m_searchWindow, SIGNAL(requestShowLink(QUrl)),  m_centralWidget,
-            SLOT(setSourceFromSearch(QUrl)));
+    connect(m_searchWindow, SIGNAL(requestShowLink(QUrl)),
+        CentralWidget::instance(), SLOT(setSourceFromSearch(QUrl)));
     connect(m_searchWindow, SIGNAL(requestShowLinkInNewTab(QUrl)),
-        m_centralWidget, SLOT(setSourceFromSearchInNewTab(QUrl)));
+        OpenPagesManager::instance(), SLOT(createNewPageFromSearch(QUrl)));
 
 #if defined(QT_NO_PRINTER)
         m_pageSetupAction->setVisible(false);
@@ -733,20 +691,6 @@ void MainWindow::gotoAddress()
     m_centralWidget->setSource(m_addressLineEdit->text());
 }
 
-void MainWindow::updateNavigationItems()
-{
-    TRACE_OBJ
-    m_copyAction->setEnabled(m_centralWidget->hasSelection());
-    m_nextAction->setEnabled(m_centralWidget->isForwardAvailable());
-    m_backAction->setEnabled(m_centralWidget->isBackwardAvailable());
-}
-
-void MainWindow::updateTabCloseAction()
-{
-    TRACE_OBJ
-    m_closeTabAction->setEnabled(m_centralWidget->enableTabCloseAction());
-}
-
 void MainWindow::showTopicChooser(const QMap<QString, QUrl> &links,
                                   const QString &keyword)
 {
@@ -778,12 +722,6 @@ void MainWindow::syncContents()
         statusBar()->showMessage(
             tr("Could not find the associated content item."), 3000);
     qApp->restoreOverrideCursor();
-}
-
-void MainWindow::copyAvailable(bool yes)
-{
-    TRACE_OBJ
-    m_copyAction->setEnabled(yes);
 }
 
 void MainWindow::showAboutDialog()
@@ -916,6 +854,12 @@ void MainWindow::showSearch()
 {
     TRACE_OBJ
     activateDockWidget(m_searchWindow);
+}
+
+void MainWindow::showOpenPages()
+{
+    TRACE_OBJ
+    activateDockWidget(OpenPagesManager::instance()->openPagesWidget());
 }
 
 void MainWindow::hideSearch()
@@ -1071,17 +1015,13 @@ void MainWindow::currentFilterChanged(const QString &filter)
 void MainWindow::documentationRemoved(const QString &namespaceName)
 {
     TRACE_OBJ
-    CentralWidget* widget = CentralWidget::instance();
-    widget->closeOrReloadTabs(widget->currentSourceFileList().
-        keys(namespaceName), false);
+    OpenPagesManager::instance()->closePages(namespaceName);
 }
 
 void MainWindow::documentationUpdated(const QString &namespaceName)
 {
     TRACE_OBJ
-    CentralWidget* widget = CentralWidget::instance();
-    widget->closeOrReloadTabs(widget->currentSourceFileList().
-        keys(namespaceName), true);
+    OpenPagesManager::instance()->reloadPages(namespaceName);
 }
 
 void MainWindow::resetQtDocInfo(const QString &component)

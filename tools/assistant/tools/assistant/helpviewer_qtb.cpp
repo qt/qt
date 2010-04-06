@@ -42,8 +42,9 @@
 
 #if defined(QT_NO_WEBKIT)
 
-#include "centralwidget.h"
+#include "globalactions.h"
 #include "helpenginewrapper.h"
+#include "openpagesmanager.h"
 #include "tracer.h"
 
 #include <QtCore/QStringBuilder>
@@ -55,12 +56,10 @@
 
 QT_BEGIN_NAMESPACE
 
-HelpViewer::HelpViewer(CentralWidget *parent, qreal zoom)
-    : QTextBrowser(parent)
-    , zoomCount(zoom)
+HelpViewer::HelpViewer(qreal zoom)
+    : zoomCount(zoom)
     , controlPressed(false)
     , lastAnchor(QString())
-    , parentWidget(parent)
     , helpEngine(HelpEngineWrapper::instance())
     , forceFont(false)
 {
@@ -71,6 +70,7 @@ HelpViewer::HelpViewer(CentralWidget *parent, qreal zoom)
     QFont font = viewerFont();
     font.setPointSize(int(font.pointSize() + zoom));
     setViewerFont(font);
+    connect(this, SIGNAL(sourceChanged(QUrl), this, SIGNAL(titleChanged()));
 }
 
 HelpViewer::~HelpViewer()
@@ -176,7 +176,7 @@ void HelpViewer::openLinkInNewTab()
     if(lastAnchor.isEmpty())
         return;
 
-    parentWidget->setSourceInNewTab(QUrl(lastAnchor));
+    OpenPagesManager::instance()->createNewTab(QUrl(lastAnchor));
     lastAnchor.clear();
 }
 
@@ -222,7 +222,8 @@ void HelpViewer::contextMenuEvent(QContextMenuEvent *e)
             SLOT(openLinkInNewTab()));
         menu.addSeparator();
     }
-    menu.addActions(parentWidget->globalActions());
+
+    menu.addActions(GlobalActions::instance()->actionList());
     QAction *action = menu.exec(e->globalPos());
     if (action == copyAnchorAction)
         QApplication::clipboard()->setText(link.toString());

@@ -53,7 +53,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class CentralWidget;
 class HelpEngineWrapper;
 class QMouseEvent;
 
@@ -62,7 +61,7 @@ class HelpViewer : public QWebView, public AbstractHelpViewer
     Q_OBJECT
 
 public:
-    HelpViewer(CentralWidget *parent, qreal zoom = 0.0);
+    HelpViewer(qreal zoom = 0.0);
     ~HelpViewer();
 
     QFont viewerFont() const;
@@ -102,6 +101,7 @@ Q_SIGNALS:
     void backwardAvailable(bool enabled);
     void highlighted(const QString &);
     void sourceChanged(const QUrl &);
+    void titleChanged();
 
 protected:
     virtual void wheelEvent(QWheelEvent *);
@@ -113,7 +113,6 @@ private Q_SLOTS:
     void setLoadFinished(bool ok);
 
 private:
-    CentralWidget* parentWidget;
     bool loadFinished;
     HelpEngineWrapper &helpEngine;
 };

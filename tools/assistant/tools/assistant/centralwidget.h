@@ -48,45 +48,36 @@ QT_BEGIN_NAMESPACE
 
 class FindWidget;
 class HelpViewer;
-class MainWindow;
-class QHelpSearchEngine;
-class QTabWidget;
+class QStackedWidget;
 
 class CentralWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    CentralWidget(MainWindow *parent);
+    CentralWidget(QWidget *parent);
     ~CentralWidget();
 
-    void setupWidget();
     bool hasSelection() const;
     QUrl currentSource() const;
     QString currentTitle() const;
     bool isForwardAvailable() const;
     bool isBackwardAvailable() const;
-    QList<QAction*> globalActions() const;
-    void setGlobalActions(const QList<QAction*> &actions);
 
     HelpViewer *viewerAt(int index) const;
     HelpViewer *currentHelpViewer() const;
 
-    int availableHelpViewer() const;
-    bool enableTabCloseAction() const;
-
-    void closeOrReloadTabs(const QList<int> &indices, bool tryReload);
-    void closeTabAt(int index);
-    QMap<int, QString> currentSourceFileList() const;
+    void addPage(HelpViewer *page, bool fromSearch = false);
+    void removePage(int index);
+    void setCurrentPage(HelpViewer *page);
+    int currentIndex() const;
 
     static CentralWidget *instance();
 
 public slots:
     void zoomIn();
     void zoomOut();
-    void nextPage();
     void resetZoom();
-    void previousPage();
     void copySelection();
     void showTextSearch();
     void print();
@@ -94,8 +85,7 @@ public slots:
     void printPreview();
     void updateBrowserFont();
     void setSource(const QUrl &url);
-    void setSourceInNewTab(const QUrl &url, qreal zoom = 0.0);
-    HelpViewer *newEmptyTab();
+    void setSourceFromSearch(const QUrl &url);
     void home();
     void forward();
     void backward();
@@ -105,9 +95,6 @@ public slots:
     void findNext();
     void findPrevious();
     void find(const QString &text, bool forward);
-
-    void setSourceFromSearch(const QUrl &url);
-    void setSourceFromSearchInNewTab(const QUrl &url);
 
 signals:
     void currentViewerChanged();
@@ -122,31 +109,21 @@ protected:
     void keyPressEvent(QKeyEvent *);
 
 private slots:
-    void newTab();
-    void closeTab();
-    void setTabTitle(const QUrl& url);
-    void currentPageChanged(int index);
-    void showTabBarContextMenu(const QPoint &point);
     void printPreview(QPrinter *printer);
     void highlightSearchTerms();
+    void handleSourceChanged(const QUrl &url);
 
 private:
-    void connectSignals();
+    void connectSignals(HelpViewer *page);
     bool eventFilter(QObject *object, QEvent *e);
     bool findInWebPage(const QString &ttf, bool forward);
     bool findInTextBrowser(const QString &ttf, bool forward);
     void initPrinter();
-    QString quoteTabTitle(const QString &title) const;
-    void setLastShownPages();
 
 private:
-    int lastTabPage;
-    QList<QAction*> globalActionList;
-
-    QTabWidget *tabWidget;
+    QStackedWidget *m_stackedWidget;
     FindWidget *findWidget;
     QPrinter *printer;
-    bool usesDefaultCollection;
 };
 
 QT_END_NAMESPACE

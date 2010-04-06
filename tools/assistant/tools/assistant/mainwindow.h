@@ -42,21 +42,23 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QtCore/QList>
 #include <QtCore/QUrl>
 #include <QtGui/QMainWindow>
 
 QT_BEGIN_NAMESPACE
 
 class QAction;
+class QComboBox;
 class QFileSystemWatcher;
 class QLineEdit;
-class QComboBox;
 class QMenu;
 
 class CentralWidget;
 class CmdLineParser;
 class ContentWindow;
 class IndexWindow;
+class OpenPagesWindow;
 class QtDocInstaller;
 class QHelpEngineCore;
 class QHelpEngine;
@@ -96,14 +98,12 @@ private slots:
     void showContents();
     void showIndex();
     void showSearch();
+    void showOpenPages();
     void insertLastPages();
     void gotoAddress();
     void showPreferences();
     void showNewAddress();
     void showAboutDialog();
-    void copyAvailable(bool yes);
-    void updateNavigationItems();
-    void updateTabCloseAction();
     void showNewAddress(const QUrl &url);
     void showTopicChooser(const QMap<QString, QUrl> &links, const QString &keyword);
     void updateApplicationFont();
@@ -148,17 +148,9 @@ private:
     QLineEdit *m_addressLineEdit;
     QComboBox *m_filterCombo;
 
-    QAction *m_backAction;
-    QAction *m_nextAction;
-    QAction *m_homeAction;
     QAction *m_syncAction;
-    QAction *m_copyAction;
-    QAction *m_findAction;
-    QAction *m_printAction;
     QAction *m_printPreviewAction;
     QAction *m_pageSetupAction;
-    QAction *m_zoomInAction;
-    QAction *m_zoomOutAction;
     QAction *m_resetZoomAction;
     QAction *m_aboutAction;
     QAction *m_closeTabAction;

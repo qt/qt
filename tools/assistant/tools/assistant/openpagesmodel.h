@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Assistant of the Qt Toolkit.
+** This file is part of the Assistant module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,70 +39,38 @@
 **
 ****************************************************************************/
 
-#ifndef PREFERENCESDIALOG_H
-#define PREFERENCESDIALOG_H
+#ifndef OPENPAGESMODEL_H
+#define OPENPAGESMODEL_H
 
-#include <QtGui/QDialog>
-#include "ui_preferencesdialog.h"
+#include <QtCore/QAbstractTableModel>
+#include <QtCore/QList>
 
 QT_BEGIN_NAMESPACE
 
-class FontPanel;
-class HelpEngineWrapper;
-class QFileSystemWatcher;
+class HelpViewer;
+class QUrl;
 
-class PreferencesDialog : public QDialog
+class OpenPagesModel : public QAbstractTableModel
 {
     Q_OBJECT
-
 public:
-    PreferencesDialog(QWidget *parent = 0);
-    ~PreferencesDialog();
+    OpenPagesModel(QObject *parent);
 
-    void showDialog();
+    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+
+    void addPage(const QUrl &url, qreal zoom = 0);
+    void removePage(int index);
+    HelpViewer *pageAt(int index) const;
 
 private slots:
-    void updateAttributes(QListWidgetItem *item);
-    void updateFilterMap();
-    void addFilter();
-    void removeFilter();
-    void addDocumentationLocal();
-    void removeDocumentation();
-    void applyChanges();
-    void appFontSettingToggled(bool on);
-    void appFontSettingChanged(int index);
-    void browserFontSettingToggled(bool on);
-    void browserFontSettingChanged(int index);
-    
-    void setBlankPage();
-    void setCurrentPage();
-    void setDefaultPage();
-
-signals:
-    void updateBrowserFont();
-    void updateApplicationFont();
+    void handleTitleChanged();
 
 private:
-    void updateFilterPage();
-    void updateFontSettingsPage();
-    void updateOptionsPage();
-
-    Ui::PreferencesDialogClass m_ui;
-    bool m_hideFiltersTab;
-    bool m_hideDocsTab;
-    QMap<QString, QStringList> m_filterMapBackup;
-    QMap<QString, QStringList> m_filterMap;
-    QStringList m_removedFilters;
-    QStringList m_docsBackup;
-    QStringList m_regDocs;
-    QStringList m_unregDocs;
-    FontPanel *m_appFontPanel;
-    FontPanel *m_browserFontPanel;
-    bool m_appFontChanged;
-    bool m_browserFontChanged;
-    HelpEngineWrapper &helpEngine;
+    QList<HelpViewer *> m_pages;
 };
 
 QT_END_NAMESPACE
 
-#endif // SETTINGSDIALOG_H
+#endif // OPENPAGESMODEL_H

@@ -38,97 +38,49 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "tracer.h"
 
 #include "centralwidget.h"
+
 #include "findwidget.h"
 #include "helpenginewrapper.h"
 #include "helpviewer_qtb.h"
 #include "helpviewer_qwv.h"
-#include "searchwidget.h"
-#include "mainwindow.h"
+#include "tracer.h"
 #include "../shared/collectionconfiguration.h"
 
 #include <QtCore/QTimer>
 
-#include <QtGui/QApplication>
 #include <QtGui/QKeyEvent>
-#include <QtGui/QLayout>
-#include <QtGui/QMenu>
-#include <QtGui/QPrinter>
-#include <QtGui/QTabBar>
-#include <QtGui/QTabWidget>
-#include <QtGui/QTextBrowser>
-#include <QtGui/QToolButton>
 #include <QtGui/QPageSetupDialog>
 #include <QtGui/QPrintDialog>
 #include <QtGui/QPrintPreviewDialog>
+#include <QtGui/QPrinter>
+#include <QtGui/QStackedWidget>
+#include <QtGui/QTextBrowser>
+#include <QtGui/QVBoxLayout>
 
 #include <QtHelp/QHelpSearchEngine>
 
 QT_BEGIN_NAMESPACE
 
 namespace {
-    HelpViewer* helpViewerFromTabPosition(const QTabWidget *widget,
-        const QPoint &point)
-    {
-        TRACE_OBJ
-        QTabBar *tabBar = qFindChild<QTabBar*>(widget);
-        for (int i = 0; i < tabBar->count(); ++i) {
-            if (tabBar->tabRect(i).contains(point))
-                return qobject_cast<HelpViewer*>(widget->widget(i));
-        }
-        return 0;
-    }
     CentralWidget *staticCentralWidget = 0;
 }
 
 // -- CentralWidget
 
-CentralWidget::CentralWidget(MainWindow *parent)
+CentralWidget::CentralWidget(QWidget *parent)
     : QWidget(parent)
-    , lastTabPage(0)
-    , tabWidget(0)
     , findWidget(0)
     , printer(0)
-    , usesDefaultCollection(parent->usesDefaultCollection())
 {
     TRACE_OBJ
-    globalActionList.clear();
     staticCentralWidget = this;
     QVBoxLayout *vboxLayout = new QVBoxLayout(this);
-    QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
 
     vboxLayout->setMargin(0);
-    tabWidget = new QTabWidget(this);
-#ifndef Q_OS_MAC
-    resourcePath.append(QLatin1String("win"));
-#else
-    resourcePath.append(QLatin1String("mac"));
-    tabWidget->setDocumentMode(true);
-#endif
-
-    connect(tabWidget, SIGNAL(currentChanged(int)), this,
-        SLOT(currentPageChanged(int)));
-
-    QToolButton *newTabButton = new QToolButton(this);
-    newTabButton->setAutoRaise(true);
-    newTabButton->setToolTip(tr("Add new page"));
-    newTabButton->setIcon(QIcon(resourcePath + QLatin1String("/addtab.png")));
-
-    tabWidget->setCornerWidget(newTabButton, Qt::TopLeftCorner);
-    connect(newTabButton, SIGNAL(clicked()), this, SLOT(newTab()));
-
-    QToolButton *closeTabButton = new QToolButton(this);
-    closeTabButton->setEnabled(false);
-    closeTabButton->setAutoRaise(true);
-    closeTabButton->setToolTip(tr("Close current page"));
-    closeTabButton->setIcon(QIcon(resourcePath + QLatin1String("/closetab.png")));
-
-    tabWidget->setCornerWidget(closeTabButton, Qt::TopRightCorner);
-    connect(closeTabButton, SIGNAL(clicked()), this, SLOT(closeTab()));
-
-    vboxLayout->addWidget(tabWidget);
+    m_stackedWidget = new QStackedWidget(this);
+    vboxLayout->addWidget(m_stackedWidget);
 
     findWidget = new FindWidget(this);
     vboxLayout->addWidget(findWidget);
@@ -139,14 +91,6 @@ CentralWidget::CentralWidget(MainWindow *parent)
     connect(findWidget, SIGNAL(find(QString, bool)), this,
         SLOT(find(QString, bool)));
     connect(findWidget, SIGNAL(escapePressed()), this, SLOT(activateTab()));
-
-    QTabBar *tabBar = qFindChild<QTabBar*>(tabWidget);
-    if (tabBar) {
-        tabBar->installEventFilter(this);
-        tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(tabBar, SIGNAL(customContextMenuRequested(QPoint)), this,
-            SLOT(showTabBarContextMenu(QPoint)));
-    }
 
 #if defined(QT_NO_WEBKIT)
     QPalette p = palette();
@@ -167,34 +111,25 @@ CentralWidget::~CentralWidget()
 
     QStringList zoomFactors;
     QStringList currentPages;
-    for (int i = 0; i < tabWidget->count(); ++i) {
-        HelpViewer *viewer = qobject_cast<HelpViewer*>(tabWidget->widget(i));
-        if (viewer && viewer->source().isValid()) {
-            currentPages << viewer->source().toString();
+    for (int i = 0; i < m_stackedWidget->count(); ++i) {
+        const HelpViewer * const viewer = viewerAt(i);
+        const QUrl &source = viewer->source();
+        if (source.isValid()) {
+            currentPages << source.toString();
             zoomFactors << QString::number(viewer->scale());
         }
     }
 
     HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
-    helpEngine.setLastTabPage(tabWidget->currentIndex());
     helpEngine.setLastShownPages(currentPages);
     helpEngine.setLastZoomFactors(zoomFactors);
+    helpEngine.setLastTabPage(m_stackedWidget->currentIndex());
 }
 
 CentralWidget *CentralWidget::instance()
 {
     TRACE_OBJ
     return staticCentralWidget;
-}
-
-void CentralWidget::newTab()
-{
-    TRACE_OBJ
-    HelpViewer *viewer = currentHelpViewer();
-#if !defined(QT_NO_WEBKIT)
-    if (viewer->hasLoadFinished())
-#endif
-        setSourceInNewTab(viewer->source());
 }
 
 void CentralWidget::zoomIn()
@@ -209,110 +144,18 @@ void CentralWidget::zoomOut()
     currentHelpViewer()->scaleDown();
 }
 
-void CentralWidget::nextPage()
-{
-    TRACE_OBJ
-    int index = tabWidget->currentIndex() + 1;
-    if (index >= tabWidget->count())
-        index = 0;
-    tabWidget->setCurrentIndex(index);
-}
-
 void CentralWidget::resetZoom()
 {
     TRACE_OBJ
     currentHelpViewer()->resetScale();
 }
 
-void CentralWidget::previousPage()
-{
-    TRACE_OBJ
-    int index = tabWidget->currentIndex() -1;
-    if (index < 0)
-        index = tabWidget->count() -1;
-    tabWidget->setCurrentIndex(index);
-}
-
-void CentralWidget::closeTab()
-{
-    TRACE_OBJ
-    if (tabWidget->count() == 1)
-        return;
-
-    HelpViewer *viewer = currentHelpViewer();
-    tabWidget->removeTab(tabWidget->indexOf(viewer));
-    QTimer::singleShot(0, viewer, SLOT(deleteLater()));
-}
-
 void CentralWidget::setSource(const QUrl &url)
 {
     TRACE_OBJ
     HelpViewer *viewer = currentHelpViewer();
-    HelpViewer *lastViewer =
-        qobject_cast<HelpViewer*>(tabWidget->widget(lastTabPage));
-
-    if (!viewer && !lastViewer) {
-        viewer = new HelpViewer(this);
-        viewer->installEventFilter(this);
-        lastTabPage = tabWidget->addTab(viewer, QString());
-        tabWidget->setCurrentIndex(lastTabPage);
-        connectSignals();
-    } else {
-        viewer = lastViewer;
-    }
-
     viewer->setSource(url);
-    currentPageChanged(lastTabPage);
     viewer->setFocus(Qt::OtherFocusReason);
-    tabWidget->setCurrentIndex(lastTabPage);
-    tabWidget->setTabText(lastTabPage, quoteTabTitle(viewer->documentTitle()));
-}
-
-void CentralWidget::setupWidget()
-{
-    TRACE_OBJ
-    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
-    int option = helpEngine.startOption();
-    if (option != ShowLastPages) {
-        QString homePage;
-        if (option == ShowHomePage)
-            homePage = helpEngine.homePage();
-        else if (option == ShowBlankPage)
-            homePage = QLatin1String("about:blank");
-        setSource(homePage);
-    } else {
-        setLastShownPages();
-    }
-}
-
-void CentralWidget::setLastShownPages()
-{
-    TRACE_OBJ
-    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
-    const QStringList &lastShownPageList = helpEngine.lastShownPages();
-    const int pageCount = lastShownPageList.count();
-    if (pageCount == 0) {
-        if (usesDefaultCollection)
-            setSource(QUrl(QLatin1String("help")));
-        else
-            setSource(QUrl(QLatin1String("about:blank")));
-        return;
-    }
-    QStringList zoomFactors = helpEngine.lastZoomFactors();
-    while (zoomFactors.count() < pageCount)
-        zoomFactors.append(CollectionConfiguration::DefaultZoomFactor);
-
-    int tabToShow = helpEngine.lastTabPage();
-    for (int curTab = 0; curTab < pageCount; ++curTab) {
-        const QString &curFile = lastShownPageList.at(curTab);
-        if (helpEngine.findFile(curFile).isValid()
-            || curFile == QLatin1String("about:blank")) {
-            setSourceInNewTab(curFile, zoomFactors.at(curTab).toFloat());
-        } else if (curTab <= tabToShow)
-            --tabToShow;
-    }
-
-    tabWidget->setCurrentIndex(tabToShow);
 }
 
 bool CentralWidget::hasSelection() const
@@ -434,168 +277,36 @@ void CentralWidget::backward()
     currentHelpViewer()->backward();
 }
 
-
-QList<QAction*> CentralWidget::globalActions() const
+void CentralWidget::connectSignals(HelpViewer *page)
 {
     TRACE_OBJ
-    return globalActionList;
-}
-
-void CentralWidget::setGlobalActions(const QList<QAction*> &actions)
-{
-    TRACE_OBJ
-    globalActionList = actions;
-}
-
-void CentralWidget::setSourceInNewTab(const QUrl &url, qreal zoom)
-{
-    TRACE_OBJ
-
-    if (AbstractHelpViewer::launchWithExternalApp(url))
-        return;
-
-    HelpViewer *viewer = new HelpViewer(this, zoom);
-    viewer->installEventFilter(this);
-    viewer->setSource(url);
-    viewer->setFocus(Qt::OtherFocusReason);
-    tabWidget->setCurrentIndex(tabWidget->addTab(viewer,
-        quoteTabTitle(viewer->documentTitle())));
-    connectSignals();
-}
-
-HelpViewer *CentralWidget::newEmptyTab()
-{
-    TRACE_OBJ
-    HelpViewer *viewer = new HelpViewer(this);
-    viewer->installEventFilter(this);
-    viewer->setFocus(Qt::OtherFocusReason);
-#if defined(QT_NO_WEBKIT)
-    viewer->setDocumentTitle(tr("unknown"));
-#endif
-    tabWidget->setCurrentIndex(tabWidget->addTab(viewer, tr("unknown")));
-
-    connectSignals();
-    return viewer;
-}
-
-void CentralWidget::connectSignals()
-{
-    TRACE_OBJ
-    const HelpViewer *viewer = currentHelpViewer();
-    connect(viewer, SIGNAL(copyAvailable(bool)), this,
-            SIGNAL(copyAvailable(bool)));
-    connect(viewer, SIGNAL(forwardAvailable(bool)), this,
-            SIGNAL(forwardAvailable(bool)));
-    connect(viewer, SIGNAL(backwardAvailable(bool)), this,
-            SIGNAL(backwardAvailable(bool)));
-    connect(viewer, SIGNAL(sourceChanged(QUrl)), this,
-            SIGNAL(sourceChanged(QUrl)));
-    connect(viewer, SIGNAL(highlighted(QString)), this,
+    connect(page, SIGNAL(copyAvailable(bool)), this, SIGNAL(copyAvailable(bool)));
+    connect(page, SIGNAL(forwardAvailable(bool)), this,
+        SIGNAL(forwardAvailable(bool)));
+    connect(page, SIGNAL(backwardAvailable(bool)), this,
+        SIGNAL(backwardAvailable(bool)));
+    connect(page, SIGNAL(sourceChanged(QUrl)), this,
+        SLOT(handleSourceChanged(QUrl)));
+    connect(page, SIGNAL(highlighted(QString)), this,
             SIGNAL(highlighted(QString)));
-    connect(viewer, SIGNAL(sourceChanged(QUrl)), this,
-            SLOT(setTabTitle(QUrl)));
 }
 
 HelpViewer* CentralWidget::viewerAt(int index) const
 {
     TRACE_OBJ
-    return qobject_cast<HelpViewer*>(tabWidget->widget(index));
+    return static_cast<HelpViewer*>(m_stackedWidget->widget(index));
 }
 
 HelpViewer* CentralWidget::currentHelpViewer() const
 {
     TRACE_OBJ
-    return qobject_cast<HelpViewer*>(tabWidget->currentWidget());
+    return static_cast<HelpViewer *>(m_stackedWidget->currentWidget());
 }
 
 void CentralWidget::activateTab()
 {
     TRACE_OBJ
     currentHelpViewer()->setFocus();
-}
-
-void CentralWidget::setTabTitle(const QUrl &url)
-{
-    TRACE_OBJ
-    Q_UNUSED(url)
-#if !defined(QT_NO_WEBKIT)
-    QTabBar *tabBar = qFindChild<QTabBar*>(tabWidget);
-    for (int tab = 0; tab < tabBar->count(); ++tab) {
-        HelpViewer *viewer = qobject_cast<HelpViewer*>(tabWidget->widget(tab));
-        if (viewer) {
-            tabWidget->setTabText(tab,
-                quoteTabTitle(viewer->documentTitle().trimmed()));
-        }
-    }
-#else
-    HelpViewer *viewer = currentHelpViewer();
-    tabWidget->setTabText(lastTabPage,
-        quoteTabTitle(viewer->documentTitle().trimmed()));
-#endif
-}
-
-void CentralWidget::currentPageChanged(int index)
-{
-    TRACE_OBJ
-    lastTabPage = index;
-
-    QWidget *closeButton = tabWidget->cornerWidget(Qt::TopRightCorner);
-    closeButton->setEnabled(enableTabCloseAction());
-
-    emit currentViewerChanged();
-}
-
-void CentralWidget::showTabBarContextMenu(const QPoint &point)
-{
-    TRACE_OBJ
-    HelpViewer *viewer = helpViewerFromTabPosition(tabWidget, point);
-    if (!viewer)
-        return;
-
-    QTabBar *tabBar = qFindChild<QTabBar*>(tabWidget);
-
-    QMenu menu(QLatin1String(""), tabBar);
-    QAction *newPage = menu.addAction(tr("Add New Page"));
-
-    bool enableAction = enableTabCloseAction();
-    QAction *closePage = menu.addAction(tr("Close This Page"));
-    closePage->setEnabled(enableAction);
-
-    QAction *closePages = menu.addAction(tr("Close Other Pages"));
-    closePages->setEnabled(enableAction);
-
-    menu.addSeparator();
-
-    QAction *newBookmark = menu.addAction(tr("Add Bookmark for this Page..."));
-    const QString &url = viewer->source().toString();
-    if (url.isEmpty() || url == QLatin1String("about:blank"))
-        newBookmark->setEnabled(false);
-
-    QAction *pickedAction = menu.exec(tabBar->mapToGlobal(point));
-    if (pickedAction == newPage)
-        setSourceInNewTab(viewer->source());
-
-    if (pickedAction == closePage) {
-        tabWidget->removeTab(tabWidget->indexOf(viewer));
-        QTimer::singleShot(0, viewer, SLOT(deleteLater()));
-    }
-
-    if (pickedAction == closePages) {
-        int currentPage = tabWidget->indexOf(viewer);
-        for (int i = tabBar->count() -1; i >= 0; --i) {
-            viewer = qobject_cast<HelpViewer*>(tabWidget->widget(i));
-            if (i != currentPage && viewer) {
-                tabWidget->removeTab(i);
-                QTimer::singleShot(0, viewer, SLOT(deleteLater()));
-
-                if (i < currentPage)
-                    --currentPage;
-            }
-        }
-    }
-
-    if (pickedAction == newBookmark)
-        emit addBookmark(viewer->documentTitle(), viewer->source().toString());
 }
 
 bool CentralWidget::eventFilter(QObject *object, QEvent *e)
@@ -621,25 +332,6 @@ bool CentralWidget::eventFilter(QObject *object, QEvent *e)
                     }
                 }
             }   break;
-        }
-    }
-
-    if (qobject_cast<QTabBar*>(object)) {
-        const bool dblClick = e->type() == QEvent::MouseButtonDblClick;
-        if ((e->type() == QEvent::MouseButtonRelease) || dblClick) {
-            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(e);
-            HelpViewer *viewer = helpViewerFromTabPosition(tabWidget,
-                mouseEvent->pos());
-            if (viewer) {
-                if ((mouseEvent->button() == Qt::MidButton) || dblClick) {
-                    if (availableHelpViewer() > 1) {
-                        tabWidget->removeTab(tabWidget->indexOf(viewer));
-                        QTimer::singleShot(0, viewer, SLOT(deleteLater()));
-                        currentPageChanged(tabWidget->currentIndex());
-                        return true;
-                    }
-                }
-            }
         }
     }
 
@@ -782,29 +474,10 @@ bool CentralWidget::findInTextBrowser(const QString &ttf, bool forward)
 void CentralWidget::updateBrowserFont()
 {
     TRACE_OBJ
-    const int count = tabWidget->count();
+    const int count = m_stackedWidget->count();
     const QFont &font = viewerAt(count - 1)->viewerFont();
     for (int i = 0; i < count; ++i)
         viewerAt(i)->setViewerFont(font);
-}
-
-int CentralWidget::availableHelpViewer() const
-{
-    TRACE_OBJ
-    return  tabWidget->count();
-}
-
-bool CentralWidget::enableTabCloseAction() const
-{
-    TRACE_OBJ
-    return tabWidget->count() > 1;
-}
-
-QString CentralWidget::quoteTabTitle(const QString &title) const
-{
-    TRACE_OBJ
-    QString s = title;
-    return s.replace(QLatin1Char('&'), QLatin1String("&&"));
 }
 
 void
@@ -812,19 +485,6 @@ CentralWidget::setSourceFromSearch(const QUrl &url)
 {
     TRACE_OBJ
     setSource(url);
-#if defined(QT_NO_WEBKIT)
-    highlightSearchTerms();
-#else
-    connect(currentHelpViewer(), SIGNAL(loadFinished(bool)), this,
-        SLOT(highlightSearchTerms()));
-#endif
-}
-
-void
-CentralWidget::setSourceFromSearchInNewTab(const QUrl &url)
-{
-    TRACE_OBJ
-    setSourceInNewTab(url);
 #if defined(QT_NO_WEBKIT)
     highlightSearchTerms();
 #else
@@ -900,48 +560,48 @@ CentralWidget::highlightSearchTerms()
 #endif
 }
 
-
-void CentralWidget::closeOrReloadTabs(const QList<int> &indices, bool tryReload)
+void CentralWidget::addPage(HelpViewer *page, bool fromSearch)
 {
     TRACE_OBJ
-    QList<int> sortedIndices = indices;
-    qSort(sortedIndices);
-    for (int i = sortedIndices.count(); --i >= 0;) {
-        const int tab = sortedIndices.at(i);
-        bool close = true;
-        if (tryReload) {
-            HelpViewer *viewer =
-                    qobject_cast<HelpViewer*>(tabWidget->widget(tab));
-            if (HelpEngineWrapper::instance().findFile(viewer->source()).isValid()) {
-                viewer->reload();
-                close = false;
-            }
-        }
-        if (close)
-            closeTabAt(tab);
+    page->installEventFilter(this);
+    page->setFocus(Qt::OtherFocusReason);
+    connectSignals(page);
+    m_stackedWidget->addWidget(page);
+    if (fromSearch) {
+#if defined(QT_NO_WEBKIT)
+        highlightSearchTerms();
+#else
+        connect(currentHelpViewer(), SIGNAL(loadFinished(bool)), this,
+            SLOT(highlightSearchTerms()));
+#endif
     }
-    if (availableHelpViewer() == 0)
-        setSource(QUrl(QLatin1String("about:blank")));
 }
 
-void CentralWidget::closeTabAt(int index)
+void CentralWidget::removePage(int index)
 {
     TRACE_OBJ
-    HelpViewer *viewer = qobject_cast<HelpViewer*>(tabWidget->widget(index));
-    tabWidget->removeTab(index);
-    QTimer::singleShot(0, viewer, SLOT(deleteLater()));
+    const bool  currentChanged = index == currentIndex();
+    m_stackedWidget->removeWidget(m_stackedWidget->widget(index));
+    if (currentChanged)
+        emit currentViewerChanged();
 }
 
-QMap<int, QString> CentralWidget::currentSourceFileList() const
+void CentralWidget::setCurrentPage(HelpViewer *page)
 {
     TRACE_OBJ
-    QMap<int, QString> sourceList;
-    for (int i = 0; i < tabWidget->count(); ++i) {
-        HelpViewer *viewer = qobject_cast<HelpViewer*>(tabWidget->widget(i));
-        if (viewer && viewer->source().isValid())
-            sourceList.insert(i, viewer->source().host());
-    }
-    return sourceList;
+    m_stackedWidget->setCurrentWidget(page);
+    emit currentViewerChanged();
+}
+
+int CentralWidget::currentIndex() const
+{
+    return  m_stackedWidget->currentIndex();
+}
+
+void CentralWidget::handleSourceChanged(const QUrl &url)
+{
+    if (sender() == currentHelpViewer())
+        emit sourceChanged(url);
 }
 
 QT_END_NAMESPACE

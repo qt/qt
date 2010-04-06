@@ -44,6 +44,7 @@
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
 #include "helpviewer.h"
+#include "openpagesmanager.h"
 #include "topicchooser.h"
 
 #include <QtGui/QLayout>
@@ -222,7 +223,7 @@ void IndexWindow::open(QHelpIndexWidget* indexWidget, const QModelIndex &index)
         if (!AbstractHelpViewer::canOpenPage(url.path()))
             CentralWidget::instance()->setSource(url);
         else
-            CentralWidget::instance()->setSourceInNewTab(url);
+            OpenPagesManager::instance()->createPage(url);
     }
 }
 
