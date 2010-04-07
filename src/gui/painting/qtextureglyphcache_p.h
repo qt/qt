@@ -77,7 +77,7 @@ class Q_GUI_EXPORT QTextureGlyphCache : public QFontEngineGlyphCache
 public:
     QTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix)
         : QFontEngineGlyphCache(matrix, type), m_current_fontengine(0),
-                                               m_w(0), m_h(0), m_cx(0), m_cy(0)
+                                               m_w(0), m_h(0), m_cx(0), m_cy(0), m_currentRowHeight(0)
         { }
 
     virtual ~QTextureGlyphCache() { }
@@ -120,6 +120,7 @@ protected:
     int m_h; // image height
     int m_cx; // current x
     int m_cy; // current y
+    int m_currentRowHeight; // Height of last row
 };
 
 

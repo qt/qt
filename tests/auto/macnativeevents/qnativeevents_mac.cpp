@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qnativeinput.h"
+#include "qnativeevents.h"
 #include <Carbon/Carbon.h>
 #include <QtCore>
 
