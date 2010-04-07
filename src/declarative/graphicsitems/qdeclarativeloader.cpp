@@ -276,9 +276,6 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
     Q_Q(QDeclarativeLoader);
 
     if (component) {
-        QDeclarativeContext *ctxt = new QDeclarativeContext(qmlContext(q));
-        ctxt->setContextObject(q);
-
         if (!component->errors().isEmpty()) {
             qWarning() << component->errors();
             emit q->sourceChanged();
@@ -286,6 +283,9 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
             emit q->progressChanged();
             return;
         }
+
+        QDeclarativeContext *ctxt = new QDeclarativeContext(qmlContext(q));
+        ctxt->setContextObject(q);
 
         QDeclarativeComponent *c = component;
         QObject *obj = component->create(ctxt);
