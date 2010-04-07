@@ -14,7 +14,7 @@ EXPORTS
 	_ZN15QDeclarativePen8setWidthEi @ 13 NONAME
 	_ZN15QDeclarativeRow11qt_metacallEN11QMetaObject4CallEiPPv @ 14 NONAME
 	_ZN15QDeclarativeRow11qt_metacastEPKc @ 15 NONAME
-	_ZN15QDeclarativeRow13doPositioningEv @ 16 NONAME
+	_ZN15QDeclarativeRow13doPositioningEv @ 16 NONAME ABSENT
 	_ZN15QDeclarativeRow16staticMetaObjectE @ 17 NONAME DATA 16
 	_ZN15QDeclarativeRow19getStaticMetaObjectEv @ 18 NONAME
 	_ZN15QDeclarativeRowC1EP16QDeclarativeItem @ 19 NONAME
@@ -82,7 +82,7 @@ EXPORTS
 	_ZN16QDeclarativeFlow11flowChangedEv @ 81 NONAME
 	_ZN16QDeclarativeFlow11qt_metacallEN11QMetaObject4CallEiPPv @ 82 NONAME
 	_ZN16QDeclarativeFlow11qt_metacastEPKc @ 83 NONAME
-	_ZN16QDeclarativeFlow13doPositioningEv @ 84 NONAME
+	_ZN16QDeclarativeFlow13doPositioningEv @ 84 NONAME ABSENT
 	_ZN16QDeclarativeFlow16staticMetaObjectE @ 85 NONAME DATA 16
 	_ZN16QDeclarativeFlow19getStaticMetaObjectEv @ 86 NONAME
 	_ZN16QDeclarativeFlow7setFlowENS_4FlowE @ 87 NONAME
@@ -92,7 +92,7 @@ EXPORTS
 	_ZN16QDeclarativeGrid11qt_metacallEN11QMetaObject4CallEiPPv @ 91 NONAME
 	_ZN16QDeclarativeGrid11qt_metacastEPKc @ 92 NONAME
 	_ZN16QDeclarativeGrid11rowsChangedEv @ 93 NONAME
-	_ZN16QDeclarativeGrid13doPositioningEv @ 94 NONAME
+	_ZN16QDeclarativeGrid13doPositioningEv @ 94 NONAME ABSENT
 	_ZN16QDeclarativeGrid14columnsChangedEv @ 95 NONAME
 	_ZN16QDeclarativeGrid16staticMetaObjectE @ 96 NONAME DATA 16
 	_ZN16QDeclarativeGrid19getStaticMetaObjectEv @ 97 NONAME
@@ -327,7 +327,7 @@ EXPORTS
 	_ZN18QDeclarativeActionC2Ev @ 326 NONAME
 	_ZN18QDeclarativeColumn11qt_metacallEN11QMetaObject4CallEiPPv @ 327 NONAME
 	_ZN18QDeclarativeColumn11qt_metacastEPKc @ 328 NONAME
-	_ZN18QDeclarativeColumn13doPositioningEv @ 329 NONAME
+	_ZN18QDeclarativeColumn13doPositioningEv @ 329 NONAME ABSENT
 	_ZN18QDeclarativeColumn16staticMetaObjectE @ 330 NONAME DATA 16
 	_ZN18QDeclarativeColumn19getStaticMetaObjectEv @ 331 NONAME
 	_ZN18QDeclarativeColumnC1EP16QDeclarativeItem @ 332 NONAME
@@ -3369,4 +3369,29 @@ EXPORTS
 	_ZlsR11QDataStreamRKN29QDeclarativeEngineDebugServer26QDeclarativeObjectPropertyE @ 3368 NONAME
 	_ZrsR11QDataStreamRN29QDeclarativeEngineDebugServer22QDeclarativeObjectDataE @ 3369 NONAME
 	_ZrsR11QDataStreamRN29QDeclarativeEngineDebugServer26QDeclarativeObjectPropertyE @ 3370 NONAME
+	_ZN15QDeclarativeRow13doPositioningEP6QSizeF @ 3371 NONAME
+	_ZN16QDeclarativeFlow13doPositioningEP6QSizeF @ 3372 NONAME
+	_ZN16QDeclarativeGrid13doPositioningEP6QSizeF @ 3373 NONAME
+	_ZN18QDeclarativeColumn13doPositioningEP6QSizeF @ 3374 NONAME
+	_ZN18QDeclarativeParser7VariantC1ERK7QString @ 3375 NONAME
+	_ZN18QDeclarativeParser7VariantC1ERK7QStringPN14QDeclarativeJS3AST4NodeE @ 3376 NONAME
+	_ZN18QDeclarativeParser7VariantC1ERKS0_ @ 3377 NONAME
+	_ZN18QDeclarativeParser7VariantC1Eb @ 3378 NONAME
+	_ZN18QDeclarativeParser7VariantC1EdRK7QString @ 3379 NONAME
+	_ZN18QDeclarativeParser7VariantC1Ev @ 3380 NONAME
+	_ZN18QDeclarativeParser7VariantC2ERK7QString @ 3381 NONAME
+	_ZN18QDeclarativeParser7VariantC2ERK7QStringPN14QDeclarativeJS3AST4NodeE @ 3382 NONAME
+	_ZN18QDeclarativeParser7VariantC2ERKS0_ @ 3383 NONAME
+	_ZN18QDeclarativeParser7VariantC2Eb @ 3384 NONAME
+	_ZN18QDeclarativeParser7VariantC2EdRK7QString @ 3385 NONAME
+	_ZN18QDeclarativeParser7VariantC2Ev @ 3386 NONAME
+	_ZN18QDeclarativeParser7VariantaSERKS0_ @ 3387 NONAME
+	_ZNK18QDeclarativeParser7Variant12asStringListEv @ 3388 NONAME
+	_ZNK18QDeclarativeParser7Variant12isStringListEv @ 3389 NONAME
+	_ZNK18QDeclarativeParser7Variant4typeEv @ 3390 NONAME
+	_ZNK18QDeclarativeParser7Variant5asASTEv @ 3391 NONAME
+	_ZNK18QDeclarativeParser7Variant8asNumberEv @ 3392 NONAME
+	_ZNK18QDeclarativeParser7Variant8asScriptEv @ 3393 NONAME
+	_ZNK18QDeclarativeParser7Variant8asStringEv @ 3394 NONAME
+	_ZNK18QDeclarativeParser7Variant9asBooleanEv @ 3395 NONAME
 
