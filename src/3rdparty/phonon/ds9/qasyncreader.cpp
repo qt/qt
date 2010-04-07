@@ -15,8 +15,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <QtCore/QFile>
-
 #include "qasyncreader.h"
 #include "qbasefilter.h"
 
@@ -80,8 +78,7 @@ namespace Phonon
 
         STDMETHODIMP QAsyncReader::Request(IMediaSample *sample,DWORD_PTR user)
         {
-            QMutexLocker mutexLocker(&m_mutexWait);
-            QWriteLocker locker(&m_lock);
+            QMutexLocker locker(&m_mutex);
             if (m_flushing) {
                 return VFW_E_WRONG_STATE;
             }
@@ -93,32 +90,27 @@ namespace Phonon
 
         STDMETHODIMP QAsyncReader::WaitForNext(DWORD timeout, IMediaSample **sample, DWORD_PTR *user)
         {
-            QMutexLocker locker(&m_mutexWait);
+            QMutexLocker locker(&m_mutex);
             if (!sample ||!user) {
                 return E_POINTER;
             }
 
+            //msdn says to return immediately if we're flushing but that doesn't seem to be true
+            //since it triggers a dead-lock somewhere inside directshow (see task 258830)
+
             *sample = 0;
             *user = 0;
 
-            AsyncRequest r = getNextRequest();
-
-            if (r.sample == 0) {
-                //there is no request in the queue
-                if (isFlushing()) {
+            if (m_requestQueue.isEmpty()) {
+                if (m_requestWait.wait(&m_mutex, timeout) == false) {
+                    return VFW_E_TIMEOUT;
+                }
+                if (m_requestQueue.isEmpty()) {
                     return VFW_E_WRONG_STATE;
-                } else {
-                    //First we need to lock the mutex
-                    if (m_requestWait.wait(&m_mutexWait, timeout) == false) {
-                        return VFW_E_TIMEOUT;
-                    }
-                    if (isFlushing()) {
-                        return VFW_E_WRONG_STATE;
-                    }
-
-                    r = getNextRequest();
                 }
             }
+
+            AsyncRequest r = m_requestQueue.dequeue();
 
             //at this point we're sure to have a request to proceed
             if (r.sample == 0) {
@@ -127,14 +119,12 @@ namespace Phonon
 
             *sample = r.sample;
             *user = r.user;
-
-            return SyncReadAligned(r.sample);
+            return syncReadAlignedUnlocked(r.sample);
         }
 
         STDMETHODIMP QAsyncReader::BeginFlush()
         {
-            QMutexLocker mutexLocker(&m_mutexWait);
-            QWriteLocker locker(&m_lock);
+            QMutexLocker locker(&m_mutex);
             m_flushing = true;
             m_requestWait.wakeOne();
             return S_OK;
@@ -142,13 +132,28 @@ namespace Phonon
 
         STDMETHODIMP QAsyncReader::EndFlush()
         {
-            QWriteLocker locker(&m_lock);
+            QMutexLocker locker(&m_mutex);
             m_flushing = false;
             return S_OK;
         }
 
         STDMETHODIMP QAsyncReader::SyncReadAligned(IMediaSample *sample)
         {
+            QMutexLocker locker(&m_mutex);
+            return syncReadAlignedUnlocked(sample);
+        }
+
+        STDMETHODIMP QAsyncReader::SyncRead(LONGLONG pos, LONG length, BYTE *buffer)
+        {
+            QMutexLocker locker(&m_mutex);
+            return read(pos, length, buffer, 0);
+        }
+
+
+        STDMETHODIMP QAsyncReader::syncReadAlignedUnlocked(IMediaSample *sample)
+        {
+            Q_ASSERT(!m_mutex.tryLock());
+
             if (!sample) {
                 return E_POINTER;
             }
@@ -175,23 +180,6 @@ namespace Phonon
             return sample->SetActualDataLength(actual);
         }
 
-        STDMETHODIMP QAsyncReader::SyncRead(LONGLONG pos, LONG length, BYTE *buffer)
-        {
-            return read(pos, length, buffer, 0);
-        }
-
-
-        //addition
-        QAsyncReader::AsyncRequest QAsyncReader::getNextRequest()
-        {
-            QWriteLocker locker(&m_lock);
-            AsyncRequest ret;
-            if (!m_requestQueue.isEmpty()) {
-                ret = m_requestQueue.dequeue();
-            }
-
-            return ret;
-        }
     }
 }
 
