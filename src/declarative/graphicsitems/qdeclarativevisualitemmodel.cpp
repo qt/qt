@@ -662,6 +662,7 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
                 this, SLOT(_q_itemsRemoved(int,int)));
         QObject::disconnect(d->m_listModelInterface, SIGNAL(itemsMoved(int,int,int)),
                 this, SLOT(_q_itemsMoved(int,int,int)));
+        QObject::disconnect(d->m_listModelInterface, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
         d->m_listModelInterface = 0;
     } else if (d->m_abstractItemModel) {
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsInserted(const QModelIndex &,int,int)),
@@ -705,6 +706,7 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
                          this, SLOT(_q_itemsRemoved(int,int)));
         QObject::connect(d->m_listModelInterface, SIGNAL(itemsMoved(int,int,int)),
                          this, SLOT(_q_itemsMoved(int,int,int)));
+        QObject::connect(d->m_listModelInterface, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
         d->m_metaDataCacheable = true;
         if (d->m_delegate && d->m_listModelInterface->count())
             emit itemsInserted(0, d->m_listModelInterface->count());
@@ -1152,6 +1154,8 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
 void QDeclarativeVisualDataModel::_q_itemsInserted(int index, int count)
 {
     Q_D(QDeclarativeVisualDataModel);
+    if (!count)
+        return;
     // XXX - highly inefficient
     QHash<int,QDeclarativeVisualDataModelPrivate::ObjectRef> items;
     for (QHash<int,QDeclarativeVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
@@ -1179,6 +1183,8 @@ void QDeclarativeVisualDataModel::_q_itemsInserted(int index, int count)
 void QDeclarativeVisualDataModel::_q_itemsRemoved(int index, int count)
 {
     Q_D(QDeclarativeVisualDataModel);
+    if (!count)
+        return;
     // XXX - highly inefficient
     QHash<int, QDeclarativeVisualDataModelPrivate::ObjectRef> items;
     for (QHash<int, QDeclarativeVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();

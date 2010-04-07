@@ -878,21 +878,22 @@ void QDeclarativeXmlListModel::queryCompleted(const QDeclarativeXmlQueryResult &
         }
     }
     if (!hasKeys) {
-        if (!(origCount == 0 && d->size == 0)) {
-            emit itemsRemoved(0, origCount);
-            emit itemsInserted(0, d->size);
-            emit countChanged();
-        }
+        if (!(origCount == 0 && d->size == 0)) 
+            emit modelReset();
 
     } else {
+        if (result.removed.count() == 1 && result.removed[0].first == 0
+                && result.removed[0].second == origCount) {
+            emit modelReset();
+        } else {
+            for (int i=0; i<result.removed.count(); i++)
+                emit itemsRemoved(result.removed[i].first, result.removed[i].second);
+            for (int i=0; i<result.inserted.count(); i++) 
+                emit itemsInserted(result.inserted[i].first, result.inserted[i].second);
 
-        for (int i=0; i<result.removed.count(); i++)
-            emit itemsRemoved(result.removed[i].first, result.removed[i].second);
-        for (int i=0; i<result.inserted.count(); i++)
-            emit itemsInserted(result.inserted[i].first, result.inserted[i].second);
-
-        if (sizeChanged)
-            emit countChanged();
+            if (sizeChanged)
+                emit countChanged();
+        }
     }
 
     emit statusChanged(d->status);

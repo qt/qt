@@ -152,7 +152,7 @@ public:
         : currentItem(0), orient(QDeclarativeListView::Vertical)
         , visiblePos(0), visibleIndex(0)
         , averageSize(100.0), currentIndex(-1), requestedIndex(-1)
-        , highlightRangeStart(0), highlightRangeEnd(0)
+        , itemCount(0), highlightRangeStart(0), highlightRangeEnd(0)
         , highlightComponent(0), highlight(0), trackedItem(0)
         , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0)
         , sectionCriteria(0), spacing(0.0)
@@ -447,6 +447,7 @@ public:
     qreal averageSize;
     int currentIndex;
     int requestedIndex;
+    int itemCount;
     qreal highlightRangeStart;
     qreal highlightRangeEnd;
     QDeclarativeComponent *highlightComponent;
@@ -501,6 +502,7 @@ void QDeclarativeListViewPrivate::init()
 
 void QDeclarativeListViewPrivate::clear()
 {
+    timeline.clear();
     for (int i = 0; i < visibleItems.count(); ++i)
         releaseItem(visibleItems.at(i));
     visibleItems.clear();
@@ -516,6 +518,8 @@ void QDeclarativeListViewPrivate::clear()
     trackedItem = 0;
     minExtentDirty = true;
     maxExtentDirty = true;
+    setPosition(0);
+    itemCount = 0;
 }
 
 FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
@@ -594,6 +598,7 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     Q_Q(QDeclarativeListView);
     if (!isValid() || !q->isComponentComplete())
         return;
+    itemCount = model->count();
     qreal bufferFrom = from - buffer;
     qreal bufferTo = to + buffer;
     qreal fillFrom = from;
@@ -698,6 +703,10 @@ void QDeclarativeListViewPrivate::layout()
 {
     Q_Q(QDeclarativeListView);
     layoutScheduled = false;
+    if (!isValid()) {
+        clear();
+        return;
+    }
     updateSections();
     if (!visibleItems.isEmpty()) {
         int oldEnd = visibleItems.last()->endPosition();
@@ -711,8 +720,6 @@ void QDeclarativeListViewPrivate::layout()
         if (currentItem && currentIndex > lastVisibleIndex())
             currentItem->setPosition(currentItem->position() + (visibleItems.last()->endPosition() - oldEnd));
     }
-    if (!isValid())
-        return;
     q->refill();
     minExtentDirty = true;
     maxExtentDirty = true;
@@ -2314,13 +2321,15 @@ void QDeclarativeListView::componentComplete()
 {
     Q_D(QDeclarativeListView);
     QDeclarativeFlickable::componentComplete();
-    refill();
-    d->moveReason = QDeclarativeListViewPrivate::SetIndex;
-    if (d->currentIndex < 0)
-        d->updateCurrent(0);
-    else
-        d->updateCurrent(d->currentIndex);
-    d->fixupPosition();
+    if (d->isValid()) {
+        refill();
+        d->moveReason = QDeclarativeListViewPrivate::SetIndex;
+        if (d->currentIndex < 0)
+            d->updateCurrent(0);
+        else
+            d->updateCurrent(d->currentIndex);
+        d->fixupPosition();
+    }
 }
 
 void QDeclarativeListView::refill()
@@ -2401,6 +2410,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         } else if (d->currentIndex < 0) {
             d->updateCurrent(0);
         }
+        d->itemCount += count;
         emit countChanged();
         return;
     }
@@ -2432,6 +2442,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
                 emit currentIndexChanged();
             }
             d->scheduleLayout();
+            d->itemCount += count;
             emit countChanged();
             return;
         }
@@ -2524,6 +2535,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
     for (int j = 0; j < added.count(); ++j)
         added.at(j)->attached->emitAdd();
 
+    d->itemCount += count;
     emit countChanged();
 }
 
@@ -2534,6 +2546,7 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         return;
     d->moveReason = QDeclarativeListViewPrivate::Other;
     d->updateUnrequestedIndexes();
+    d->itemCount -= count;
 
     FxListItem *firstVisible = d->firstVisibleItem();
     int preRemovedSize = 0;
@@ -2586,7 +2599,8 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         d->releaseItem(d->currentItem);
         d->currentItem = 0;
         d->currentIndex = -1;
-        d->updateCurrent(qMin(modelIndex, d->model->count()-1));
+        if (d->itemCount)
+            d->updateCurrent(qMin(modelIndex, d->itemCount-1));
     }
 
     // update visibleIndex
@@ -2602,7 +2616,7 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         d->visiblePos = d->header ? d->header->size() : 0;
         d->timeline.clear();
         d->setPosition(0);
-        if (d->model->count() == 0)
+        if (d->itemCount == 0)
             update();
     }
 
