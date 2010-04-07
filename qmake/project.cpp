@@ -283,7 +283,7 @@ static QStringList split_arg_list(QString params)
     return args;
 }
 
-static QStringList split_value_list(const QString &vals, bool do_semicolon=false)
+static QStringList split_value_list(const QString &vals)
 {
     QString build;
     QStringList ret;
@@ -294,7 +294,6 @@ static QStringList split_value_list(const QString &vals, bool do_semicolon=false
     const ushort SINGLEQUOTE = '\'';
     const ushort DOUBLEQUOTE = '"';
     const ushort BACKSLASH = '\\';
-    const ushort SEMICOLON = ';';
 
     ushort unicode;
     const QChar *vals_data = vals.data();
@@ -314,8 +313,7 @@ static QStringList split_value_list(const QString &vals, bool do_semicolon=false
             ++parens;
         }
 
-        if(!parens && quote.isEmpty() && ((do_semicolon && unicode == SEMICOLON) ||
-                                           vals_data[x] == Option::field_sep)) {
+        if(!parens && quote.isEmpty() && (vals_data[x] == Option::field_sep)) {
             ret << build;
             build.clear();
         } else {
@@ -1160,7 +1158,7 @@ QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int num
         QStringList vallist;
         {
             //doVariableReplace(vals, place);
-            QStringList tmp = split_value_list(vals, (var == "DEPENDPATH" || var == "INCLUDEPATH"));
+            QStringList tmp = split_value_list(vals);
             for(int i = 0; i < tmp.size(); ++i)
                 vallist += doVariableReplaceExpand(tmp[i], place);
         }
