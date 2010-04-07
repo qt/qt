@@ -42,26 +42,26 @@
 #ifndef DateMath_h
 #define DateMath_h
 
-#include <time.h>
+#include <math.h>
 #include <string.h>
+#include <time.h>
+#include <wtf/CurrentTime.h>
 #include <wtf/Noncopyable.h>
+#include <wtf/UnusedParam.h>
 
 namespace WTF {
-
-struct GregorianDateTime;
-
 void initializeDates();
-void msToGregorianDateTime(double, bool outputIsUTC, GregorianDateTime&);
-double gregorianDateTimeToMS(const GregorianDateTime&, double, bool inputIsUTC);
-double getUTCOffset();
 int equivalentYearForDST(int year);
-double getCurrentUTCTime();
-double getCurrentUTCTimeWithMicroseconds();
-void getLocalTime(const time_t*, tm*);
 
 // Not really math related, but this is currently the only shared place to put these.  
-double parseDateFromNullTerminatedCharacters(const char*);
+double parseDateFromNullTerminatedCharacters(const char* dateString);
 double timeClip(double);
+
+inline double jsCurrentTime()
+{
+    // JavaScript doesn't recognize fractions of a millisecond.
+    return floor(WTF::currentTimeMS());
+}
 
 const char * const weekdayName[7] = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 const char * const monthName[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
@@ -74,9 +74,39 @@ const double msPerSecond = 1000.0;
 const double msPerMinute = 60.0 * 1000.0;
 const double msPerHour = 60.0 * 60.0 * 1000.0;
 const double msPerDay = 24.0 * 60.0 * 60.0 * 1000.0;
+const double msPerMonth = 2592000000.0;
 
-// Intentionally overridding the default tm of the system
-// Tee members of tm differ on various operating systems.
+// Returns the number of days from 1970-01-01 to the specified date.
+double dateToDaysFrom1970(int year, int month, int day);
+int msToYear(double ms);
+int dayInYear(double ms, int year);
+int monthFromDayInYear(int dayInYear, bool leapYear);
+int dayInMonthFromDayInYear(int dayInYear, bool leapYear);
+
+} // namespace WTF
+
+using WTF::dateToDaysFrom1970;
+using WTF::dayInMonthFromDayInYear;
+using WTF::dayInYear;
+using WTF::minutesPerHour;
+using WTF::monthFromDayInYear;
+using WTF::msPerDay;
+using WTF::msPerSecond;
+using WTF::msToYear;
+using WTF::secondsPerMinute;
+
+#if USE(JSC)
+namespace JSC {
+class ExecState;
+struct GregorianDateTime;
+
+void msToGregorianDateTime(ExecState*, double, bool outputIsUTC, GregorianDateTime&);
+double gregorianDateTimeToMS(ExecState*, const GregorianDateTime&, double, bool inputIsUTC);
+double getUTCOffset(ExecState*);
+double parseDateFromNullTerminatedCharacters(ExecState*, const char* dateString);
+
+// Intentionally overridding the default tm of the system.
+// The members of tm differ on various operating systems.
 struct GregorianDateTime : Noncopyable {
     GregorianDateTime()
         : second(0)
@@ -98,7 +128,7 @@ struct GregorianDateTime : Noncopyable {
         delete [] timeZone;
     }
 
-    GregorianDateTime(const tm& inTm)
+    GregorianDateTime(ExecState* exec, const tm& inTm)
         : second(inTm.tm_sec)
         , minute(inTm.tm_min)
         , hour(inTm.tm_hour)
@@ -109,10 +139,11 @@ struct GregorianDateTime : Noncopyable {
         , year(inTm.tm_year)
         , isDST(inTm.tm_isdst)
     {
+        UNUSED_PARAM(exec);
 #if HAVE(TM_GMTOFF)
         utcOffset = static_cast<int>(inTm.tm_gmtoff);
 #else
-        utcOffset = static_cast<int>(getUTCOffset() / msPerSecond + (isDST ? secondsPerHour : 0));
+        utcOffset = static_cast<int>(getUTCOffset(exec) / WTF::msPerSecond + (isDST ? WTF::secondsPerHour : 0));
 #endif
 
 #if HAVE(TM_ZONE)
@@ -186,7 +217,7 @@ static inline int gmtoffset(const GregorianDateTime& t)
 {
     return t.utcOffset;
 }
-
-} // namespace WTF
+} // namespace JSC
+#endif // USE(JSC)
 
 #endif // DateMath_h

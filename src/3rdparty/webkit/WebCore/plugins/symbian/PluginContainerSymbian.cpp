@@ -32,12 +32,12 @@
 
 using namespace WebCore;
 
-PluginContainerSymbian::PluginContainerSymbian(PluginView* view, QWidget* parent, QGraphicsProxyWidget* proxy)
-    : QWidget(parent)
+PluginContainerSymbian::PluginContainerSymbian(PluginView* view, QWidget* parent)
+    : m_parent(parent)
     , m_pluginView(view)
-    , m_proxy(proxy)
     , m_hasPendingGeometryChange(false)
 {
+    setParent(m_parent);
 }
 
 PluginContainerSymbian::~PluginContainerSymbian()
@@ -62,7 +62,7 @@ void PluginContainerSymbian::adjustGeometry()
     }
 }
 
-void PluginContainerSymbian::focusInEvent(QFocusEvent*)
+void PluginContainerSymbian::focusInEvent(QFocusEvent* event)
 {
     if (Page* page = m_pluginView->parentFrame()->page())
         page->focusController()->setActive(true);

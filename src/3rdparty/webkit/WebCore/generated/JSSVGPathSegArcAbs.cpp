@@ -36,24 +36,72 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegArcAbs);
 
 /* Hash table */
 
-static const HashTableValue JSSVGPathSegArcAbsTableValues[8] =
+static const HashTableValue JSSVGPathSegArcAbsTableValues[9] =
 {
-    { "x", DontDelete, (intptr_t)jsSVGPathSegArcAbsX, (intptr_t)setJSSVGPathSegArcAbsX },
-    { "y", DontDelete, (intptr_t)jsSVGPathSegArcAbsY, (intptr_t)setJSSVGPathSegArcAbsY },
-    { "r1", DontDelete, (intptr_t)jsSVGPathSegArcAbsR1, (intptr_t)setJSSVGPathSegArcAbsR1 },
-    { "r2", DontDelete, (intptr_t)jsSVGPathSegArcAbsR2, (intptr_t)setJSSVGPathSegArcAbsR2 },
-    { "angle", DontDelete, (intptr_t)jsSVGPathSegArcAbsAngle, (intptr_t)setJSSVGPathSegArcAbsAngle },
-    { "largeArcFlag", DontDelete, (intptr_t)jsSVGPathSegArcAbsLargeArcFlag, (intptr_t)setJSSVGPathSegArcAbsLargeArcFlag },
-    { "sweepFlag", DontDelete, (intptr_t)jsSVGPathSegArcAbsSweepFlag, (intptr_t)setJSSVGPathSegArcAbsSweepFlag },
+    { "x", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathSegArcAbsX), (intptr_t)setJSSVGPathSegArcAbsX },
+    { "y", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathSegArcAbsY), (intptr_t)setJSSVGPathSegArcAbsY },
+    { "r1", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathSegArcAbsR1), (intptr_t)setJSSVGPathSegArcAbsR1 },
+    { "r2", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathSegArcAbsR2), (intptr_t)setJSSVGPathSegArcAbsR2 },
+    { "angle", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathSegArcAbsAngle), (intptr_t)setJSSVGPathSegArcAbsAngle },
+    { "largeArcFlag", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathSegArcAbsLargeArcFlag), (intptr_t)setJSSVGPathSegArcAbsLargeArcFlag },
+    { "sweepFlag", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathSegArcAbsSweepFlag), (intptr_t)setJSSVGPathSegArcAbsSweepFlag },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathSegArcAbsConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGPathSegArcAbsTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 15, JSSVGPathSegArcAbsTableValues, 0 };
+    { 31, JSSVGPathSegArcAbsTableValues, 0 };
 #else
-    { 16, 15, JSSVGPathSegArcAbsTableValues, 0 };
+    { 17, 15, JSSVGPathSegArcAbsTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGPathSegArcAbsConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegArcAbsConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGPathSegArcAbsConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGPathSegArcAbsConstructorTableValues, 0 };
+#endif
+
+class JSSVGPathSegArcAbsConstructor : public DOMConstructorObject {
+public:
+    JSSVGPathSegArcAbsConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGPathSegArcAbsConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGPathSegArcAbsPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGPathSegArcAbsConstructor::s_info = { "SVGPathSegArcAbsConstructor", 0, &JSSVGPathSegArcAbsConstructorTable, 0 };
+
+bool JSSVGPathSegArcAbsConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGPathSegArcAbsConstructor, DOMObject>(exec, &JSSVGPathSegArcAbsConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGPathSegArcAbsConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSegArcAbsConstructor, DOMObject>(exec, &JSSVGPathSegArcAbsConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -78,8 +126,8 @@ JSObject* JSSVGPathSegArcAbsPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSSVGPathSegArcAbs::s_info = { "SVGPathSegArcAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegArcAbsTable, 0 };
 
-JSSVGPathSegArcAbs::JSSVGPathSegArcAbs(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegArcAbs> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, globalObject, impl, context)
+JSSVGPathSegArcAbs::JSSVGPathSegArcAbs(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegArcAbs> impl)
+    : JSSVGPathSeg(structure, globalObject, impl)
 {
 }
 
@@ -98,62 +146,74 @@ bool JSSVGPathSegArcAbs::getOwnPropertyDescriptor(ExecState* exec, const Identif
     return getStaticValueDescriptor<JSSVGPathSegArcAbs, Base>(exec, &JSSVGPathSegArcAbsTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGPathSegArcAbsX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegArcAbsX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slot.slotBase()));
+    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThis->impl());
-    return jsNumber(exec, imp->x());
+    JSValue result = jsNumber(exec, imp->x());
+    return result;
 }
 
-JSValue jsSVGPathSegArcAbsY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegArcAbsY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slot.slotBase()));
+    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThis->impl());
-    return jsNumber(exec, imp->y());
+    JSValue result = jsNumber(exec, imp->y());
+    return result;
 }
 
-JSValue jsSVGPathSegArcAbsR1(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegArcAbsR1(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slot.slotBase()));
+    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThis->impl());
-    return jsNumber(exec, imp->r1());
+    JSValue result = jsNumber(exec, imp->r1());
+    return result;
 }
 
-JSValue jsSVGPathSegArcAbsR2(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegArcAbsR2(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slot.slotBase()));
+    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThis->impl());
-    return jsNumber(exec, imp->r2());
+    JSValue result = jsNumber(exec, imp->r2());
+    return result;
 }
 
-JSValue jsSVGPathSegArcAbsAngle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegArcAbsAngle(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slot.slotBase()));
+    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThis->impl());
-    return jsNumber(exec, imp->angle());
+    JSValue result = jsNumber(exec, imp->angle());
+    return result;
 }
 
-JSValue jsSVGPathSegArcAbsLargeArcFlag(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegArcAbsLargeArcFlag(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slot.slotBase()));
+    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThis->impl());
-    return jsBoolean(imp->largeArcFlag());
+    JSValue result = jsBoolean(imp->largeArcFlag());
+    return result;
 }
 
-JSValue jsSVGPathSegArcAbsSweepFlag(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegArcAbsSweepFlag(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slot.slotBase()));
+    JSSVGPathSegArcAbs* castedThis = static_cast<JSSVGPathSegArcAbs*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThis->impl());
-    return jsBoolean(imp->sweepFlag());
+    JSValue result = jsBoolean(imp->sweepFlag());
+    return result;
 }
 
+JSValue jsSVGPathSegArcAbsConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGPathSegArcAbs* domObject = static_cast<JSSVGPathSegArcAbs*>(asObject(slotBase));
+    return JSSVGPathSegArcAbs::getConstructor(exec, domObject->globalObject());
+}
 void JSSVGPathSegArcAbs::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPathSegArcAbs, Base>(exec, propertyName, value, &JSSVGPathSegArcAbsTable, this, slot);
@@ -161,58 +221,63 @@ void JSSVGPathSegArcAbs::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSSVGPathSegArcAbsX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl());
+    JSSVGPathSegArcAbs* castedThisObj = static_cast<JSSVGPathSegArcAbs*>(thisObject);
+    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThisObj->impl());
     imp->setX(value.toFloat(exec));
-    if (static_cast<JSSVGPathSegArcAbs*>(thisObject)->context())
-        static_cast<JSSVGPathSegArcAbs*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl()->associatedAttributeName());
+    JSSVGContextCache::propagateSVGDOMChange(castedThisObj, imp->associatedAttributeName());
 }
 
 void setJSSVGPathSegArcAbsY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl());
+    JSSVGPathSegArcAbs* castedThisObj = static_cast<JSSVGPathSegArcAbs*>(thisObject);
+    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThisObj->impl());
     imp->setY(value.toFloat(exec));
-    if (static_cast<JSSVGPathSegArcAbs*>(thisObject)->context())
-        static_cast<JSSVGPathSegArcAbs*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl()->associatedAttributeName());
+    JSSVGContextCache::propagateSVGDOMChange(castedThisObj, imp->associatedAttributeName());
 }
 
 void setJSSVGPathSegArcAbsR1(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl());
+    JSSVGPathSegArcAbs* castedThisObj = static_cast<JSSVGPathSegArcAbs*>(thisObject);
+    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThisObj->impl());
     imp->setR1(value.toFloat(exec));
-    if (static_cast<JSSVGPathSegArcAbs*>(thisObject)->context())
-        static_cast<JSSVGPathSegArcAbs*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl()->associatedAttributeName());
+    JSSVGContextCache::propagateSVGDOMChange(castedThisObj, imp->associatedAttributeName());
 }
 
 void setJSSVGPathSegArcAbsR2(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl());
+    JSSVGPathSegArcAbs* castedThisObj = static_cast<JSSVGPathSegArcAbs*>(thisObject);
+    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThisObj->impl());
     imp->setR2(value.toFloat(exec));
-    if (static_cast<JSSVGPathSegArcAbs*>(thisObject)->context())
-        static_cast<JSSVGPathSegArcAbs*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl()->associatedAttributeName());
+    JSSVGContextCache::propagateSVGDOMChange(castedThisObj, imp->associatedAttributeName());
 }
 
 void setJSSVGPathSegArcAbsAngle(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl());
+    JSSVGPathSegArcAbs* castedThisObj = static_cast<JSSVGPathSegArcAbs*>(thisObject);
+    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThisObj->impl());
     imp->setAngle(value.toFloat(exec));
-    if (static_cast<JSSVGPathSegArcAbs*>(thisObject)->context())
-        static_cast<JSSVGPathSegArcAbs*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl()->associatedAttributeName());
+    JSSVGContextCache::propagateSVGDOMChange(castedThisObj, imp->associatedAttributeName());
 }
 
 void setJSSVGPathSegArcAbsLargeArcFlag(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl());
+    JSSVGPathSegArcAbs* castedThisObj = static_cast<JSSVGPathSegArcAbs*>(thisObject);
+    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThisObj->impl());
     imp->setLargeArcFlag(value.toBoolean(exec));
-    if (static_cast<JSSVGPathSegArcAbs*>(thisObject)->context())
-        static_cast<JSSVGPathSegArcAbs*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl()->associatedAttributeName());
+    JSSVGContextCache::propagateSVGDOMChange(castedThisObj, imp->associatedAttributeName());
 }
 
 void setJSSVGPathSegArcAbsSweepFlag(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl());
+    JSSVGPathSegArcAbs* castedThisObj = static_cast<JSSVGPathSegArcAbs*>(thisObject);
+    SVGPathSegArcAbs* imp = static_cast<SVGPathSegArcAbs*>(castedThisObj->impl());
     imp->setSweepFlag(value.toBoolean(exec));
-    if (static_cast<JSSVGPathSegArcAbs*>(thisObject)->context())
-        static_cast<JSSVGPathSegArcAbs*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegArcAbs*>(thisObject)->impl()->associatedAttributeName());
+    JSSVGContextCache::propagateSVGDOMChange(castedThisObj, imp->associatedAttributeName());
+}
+
+JSValue JSSVGPathSegArcAbs::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGPathSegArcAbsConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

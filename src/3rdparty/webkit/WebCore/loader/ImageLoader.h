@@ -49,14 +49,15 @@ public:
     bool imageComplete() const { return m_imageComplete; }
 
     CachedImage* image() const { return m_image.get(); }
-    void setImage(CachedImage*);
+    void setImage(CachedImage*); // Cancels pending beforeload and load events, and doesn't dispatch new ones.
 
     void setLoadManually(bool loadManually) { m_loadManually = loadManually; }
 
     bool haveFiredBeforeLoadEvent() const { return m_firedBeforeLoad; }
     bool haveFiredLoadEvent() const { return m_firedLoad; }
 
-    static void dispatchPendingEvents();
+    static void dispatchPendingBeforeLoadEvents();
+    static void dispatchPendingLoadEvents();
 
 protected:
     virtual void notifyFinished(CachedResource*);
@@ -68,8 +69,6 @@ private:
     friend class ImageEventSender;
     void dispatchPendingBeforeLoadEvent();
     void dispatchPendingLoadEvent();
-
-    void setLoadingImage(CachedImage*);
 
     void updateRenderer();
 

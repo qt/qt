@@ -40,12 +40,12 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLDataGridCellElement);
 
 static const HashTableValue JSHTMLDataGridCellElementTableValues[7] =
 {
-    { "label", DontDelete, (intptr_t)jsHTMLDataGridCellElementLabel, (intptr_t)setJSHTMLDataGridCellElementLabel },
-    { "focused", DontDelete, (intptr_t)jsHTMLDataGridCellElementFocused, (intptr_t)setJSHTMLDataGridCellElementFocused },
-    { "checked", DontDelete, (intptr_t)jsHTMLDataGridCellElementChecked, (intptr_t)setJSHTMLDataGridCellElementChecked },
-    { "indeterminate", DontDelete, (intptr_t)jsHTMLDataGridCellElementIndeterminate, (intptr_t)setJSHTMLDataGridCellElementIndeterminate },
-    { "progress", DontDelete, (intptr_t)jsHTMLDataGridCellElementProgress, (intptr_t)setJSHTMLDataGridCellElementProgress },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLDataGridCellElementConstructor, (intptr_t)0 },
+    { "label", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridCellElementLabel), (intptr_t)setJSHTMLDataGridCellElementLabel },
+    { "focused", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridCellElementFocused), (intptr_t)setJSHTMLDataGridCellElementFocused },
+    { "checked", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridCellElementChecked), (intptr_t)setJSHTMLDataGridCellElementChecked },
+    { "indeterminate", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridCellElementIndeterminate), (intptr_t)setJSHTMLDataGridCellElementIndeterminate },
+    { "progress", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridCellElementProgress), (intptr_t)setJSHTMLDataGridCellElementProgress },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridCellElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -84,7 +84,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -146,49 +146,54 @@ bool JSHTMLDataGridCellElement::getOwnPropertyDescriptor(ExecState* exec, const 
     return getStaticValueDescriptor<JSHTMLDataGridCellElement, Base>(exec, &JSHTMLDataGridCellElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLDataGridCellElementLabel(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridCellElementLabel(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThis->impl());
-    return jsString(exec, imp->label());
+    JSValue result = jsString(exec, imp->label());
+    return result;
 }
 
-JSValue jsHTMLDataGridCellElementFocused(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridCellElementFocused(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThis->impl());
-    return jsBoolean(imp->focused());
+    JSValue result = jsBoolean(imp->focused());
+    return result;
 }
 
-JSValue jsHTMLDataGridCellElementChecked(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridCellElementChecked(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThis->impl());
-    return jsBoolean(imp->checked());
+    JSValue result = jsBoolean(imp->checked());
+    return result;
 }
 
-JSValue jsHTMLDataGridCellElementIndeterminate(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridCellElementIndeterminate(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThis->impl());
-    return jsBoolean(imp->indeterminate());
+    JSValue result = jsBoolean(imp->indeterminate());
+    return result;
 }
 
-JSValue jsHTMLDataGridCellElementProgress(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridCellElementProgress(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThis->impl());
-    return jsNumber(exec, imp->progress());
+    JSValue result = jsNumber(exec, imp->progress());
+    return result;
 }
 
-JSValue jsHTMLDataGridCellElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridCellElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridCellElement* domObject = static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridCellElement* domObject = static_cast<JSHTMLDataGridCellElement*>(asObject(slotBase));
     return JSHTMLDataGridCellElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLDataGridCellElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -198,31 +203,36 @@ void JSHTMLDataGridCellElement::put(ExecState* exec, const Identifier& propertyN
 
 void setJSHTMLDataGridCellElementLabel(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(static_cast<JSHTMLDataGridCellElement*>(thisObject)->impl());
+    JSHTMLDataGridCellElement* castedThisObj = static_cast<JSHTMLDataGridCellElement*>(thisObject);
+    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThisObj->impl());
     imp->setLabel(value.toString(exec));
 }
 
 void setJSHTMLDataGridCellElementFocused(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(static_cast<JSHTMLDataGridCellElement*>(thisObject)->impl());
+    JSHTMLDataGridCellElement* castedThisObj = static_cast<JSHTMLDataGridCellElement*>(thisObject);
+    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThisObj->impl());
     imp->setFocused(value.toBoolean(exec));
 }
 
 void setJSHTMLDataGridCellElementChecked(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(static_cast<JSHTMLDataGridCellElement*>(thisObject)->impl());
+    JSHTMLDataGridCellElement* castedThisObj = static_cast<JSHTMLDataGridCellElement*>(thisObject);
+    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThisObj->impl());
     imp->setChecked(value.toBoolean(exec));
 }
 
 void setJSHTMLDataGridCellElementIndeterminate(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(static_cast<JSHTMLDataGridCellElement*>(thisObject)->impl());
+    JSHTMLDataGridCellElement* castedThisObj = static_cast<JSHTMLDataGridCellElement*>(thisObject);
+    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThisObj->impl());
     imp->setIndeterminate(value.toBoolean(exec));
 }
 
 void setJSHTMLDataGridCellElementProgress(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(static_cast<JSHTMLDataGridCellElement*>(thisObject)->impl());
+    JSHTMLDataGridCellElement* castedThisObj = static_cast<JSHTMLDataGridCellElement*>(thisObject);
+    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThisObj->impl());
     imp->setProgress(value.toFloat(exec));
 }
 

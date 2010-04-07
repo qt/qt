@@ -21,7 +21,8 @@
 #ifndef JSGeolocation_h
 #define JSGeolocation_h
 
-#include "DOMObjectWithSVGContext.h"
+#if ENABLE(GEOLOCATION)
+
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -36,14 +37,12 @@ public:
     JSGeolocation(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Geolocation>);
     virtual ~JSGeolocation();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
-    virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
 
@@ -55,7 +54,7 @@ public:
 private:
     RefPtr<Geolocation> m_impl;
 protected:
-    static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
+    static const unsigned StructureFlags = Base::StructureFlags;
 };
 
 JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Geolocation*);
@@ -71,7 +70,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSGeolocationPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -83,10 +82,9 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionGetCurrentPosition(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionWatchPosition(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionClearWatch(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-// Attributes
-
-JSC::JSValue jsGeolocationLastPosition(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
+
+#endif // ENABLE(GEOLOCATION)
 
 #endif

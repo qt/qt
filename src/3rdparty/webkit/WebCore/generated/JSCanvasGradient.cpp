@@ -36,7 +36,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSCanvasGradient);
 
 static const HashTableValue JSCanvasGradientPrototypeTableValues[2] =
 {
-    { "addColorStop", DontDelete|Function, (intptr_t)jsCanvasGradientPrototypeFunctionAddColorStop, (intptr_t)2 },
+    { "addColorStop", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasGradientPrototypeFunctionAddColorStop), (intptr_t)2 },
     { 0, 0, 0, 0 }
 };
 

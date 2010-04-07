@@ -36,8 +36,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSMessageChannel);
 
 static const HashTableValue JSMessageChannelTableValues[3] =
 {
-    { "port1", DontDelete|ReadOnly, (intptr_t)jsMessageChannelPort1, (intptr_t)0 },
-    { "port2", DontDelete|ReadOnly, (intptr_t)jsMessageChannelPort2, (intptr_t)0 },
+    { "port1", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMessageChannelPort1), (intptr_t)0 },
+    { "port2", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMessageChannelPort2), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -105,20 +105,22 @@ bool JSMessageChannel::getOwnPropertyDescriptor(ExecState* exec, const Identifie
     return getStaticValueDescriptor<JSMessageChannel, Base>(exec, getJSMessageChannelTable(exec), this, propertyName, descriptor);
 }
 
-JSValue jsMessageChannelPort1(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMessageChannelPort1(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSMessageChannel* castedThis = static_cast<JSMessageChannel*>(asObject(slot.slotBase()));
+    JSMessageChannel* castedThis = static_cast<JSMessageChannel*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     MessageChannel* imp = static_cast<MessageChannel*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port1()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port1()));
+    return result;
 }
 
-JSValue jsMessageChannelPort2(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMessageChannelPort2(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSMessageChannel* castedThis = static_cast<JSMessageChannel*>(asObject(slot.slotBase()));
+    JSMessageChannel* castedThis = static_cast<JSMessageChannel*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     MessageChannel* imp = static_cast<MessageChannel*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port2()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port2()));
+    return result;
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, MessageChannel* object)

@@ -44,8 +44,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSCSSPrimitiveValue);
 
 static const HashTableValue JSCSSPrimitiveValueTableValues[3] =
 {
-    { "primitiveType", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValuePrimitiveType, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCSSPrimitiveValueConstructor, (intptr_t)0 },
+    { "primitiveType", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValuePrimitiveType), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -60,32 +60,32 @@ static JSC_CONST_HASHTABLE HashTable JSCSSPrimitiveValueTable =
 
 static const HashTableValue JSCSSPrimitiveValueConstructorTableValues[27] =
 {
-    { "CSS_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_UNKNOWN, (intptr_t)0 },
-    { "CSS_NUMBER", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_NUMBER, (intptr_t)0 },
-    { "CSS_PERCENTAGE", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_PERCENTAGE, (intptr_t)0 },
-    { "CSS_EMS", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_EMS, (intptr_t)0 },
-    { "CSS_EXS", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_EXS, (intptr_t)0 },
-    { "CSS_PX", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_PX, (intptr_t)0 },
-    { "CSS_CM", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_CM, (intptr_t)0 },
-    { "CSS_MM", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_MM, (intptr_t)0 },
-    { "CSS_IN", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_IN, (intptr_t)0 },
-    { "CSS_PT", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_PT, (intptr_t)0 },
-    { "CSS_PC", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_PC, (intptr_t)0 },
-    { "CSS_DEG", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_DEG, (intptr_t)0 },
-    { "CSS_RAD", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_RAD, (intptr_t)0 },
-    { "CSS_GRAD", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_GRAD, (intptr_t)0 },
-    { "CSS_MS", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_MS, (intptr_t)0 },
-    { "CSS_S", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_S, (intptr_t)0 },
-    { "CSS_HZ", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_HZ, (intptr_t)0 },
-    { "CSS_KHZ", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_KHZ, (intptr_t)0 },
-    { "CSS_DIMENSION", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_DIMENSION, (intptr_t)0 },
-    { "CSS_STRING", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_STRING, (intptr_t)0 },
-    { "CSS_URI", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_URI, (intptr_t)0 },
-    { "CSS_IDENT", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_IDENT, (intptr_t)0 },
-    { "CSS_ATTR", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_ATTR, (intptr_t)0 },
-    { "CSS_COUNTER", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_COUNTER, (intptr_t)0 },
-    { "CSS_RECT", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_RECT, (intptr_t)0 },
-    { "CSS_RGBCOLOR", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_RGBCOLOR, (intptr_t)0 },
+    { "CSS_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_UNKNOWN), (intptr_t)0 },
+    { "CSS_NUMBER", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_NUMBER), (intptr_t)0 },
+    { "CSS_PERCENTAGE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_PERCENTAGE), (intptr_t)0 },
+    { "CSS_EMS", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_EMS), (intptr_t)0 },
+    { "CSS_EXS", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_EXS), (intptr_t)0 },
+    { "CSS_PX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_PX), (intptr_t)0 },
+    { "CSS_CM", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_CM), (intptr_t)0 },
+    { "CSS_MM", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_MM), (intptr_t)0 },
+    { "CSS_IN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_IN), (intptr_t)0 },
+    { "CSS_PT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_PT), (intptr_t)0 },
+    { "CSS_PC", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_PC), (intptr_t)0 },
+    { "CSS_DEG", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_DEG), (intptr_t)0 },
+    { "CSS_RAD", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_RAD), (intptr_t)0 },
+    { "CSS_GRAD", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_GRAD), (intptr_t)0 },
+    { "CSS_MS", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_MS), (intptr_t)0 },
+    { "CSS_S", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_S), (intptr_t)0 },
+    { "CSS_HZ", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_HZ), (intptr_t)0 },
+    { "CSS_KHZ", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_KHZ), (intptr_t)0 },
+    { "CSS_DIMENSION", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_DIMENSION), (intptr_t)0 },
+    { "CSS_STRING", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_STRING), (intptr_t)0 },
+    { "CSS_URI", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_URI), (intptr_t)0 },
+    { "CSS_IDENT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_IDENT), (intptr_t)0 },
+    { "CSS_ATTR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_ATTR), (intptr_t)0 },
+    { "CSS_COUNTER", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_COUNTER), (intptr_t)0 },
+    { "CSS_RECT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_RECT), (intptr_t)0 },
+    { "CSS_RGBCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_RGBCOLOR), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -110,7 +110,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -133,39 +133,39 @@ bool JSCSSPrimitiveValueConstructor::getOwnPropertyDescriptor(ExecState* exec, c
 
 static const HashTableValue JSCSSPrimitiveValuePrototypeTableValues[34] =
 {
-    { "CSS_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_UNKNOWN, (intptr_t)0 },
-    { "CSS_NUMBER", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_NUMBER, (intptr_t)0 },
-    { "CSS_PERCENTAGE", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_PERCENTAGE, (intptr_t)0 },
-    { "CSS_EMS", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_EMS, (intptr_t)0 },
-    { "CSS_EXS", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_EXS, (intptr_t)0 },
-    { "CSS_PX", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_PX, (intptr_t)0 },
-    { "CSS_CM", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_CM, (intptr_t)0 },
-    { "CSS_MM", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_MM, (intptr_t)0 },
-    { "CSS_IN", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_IN, (intptr_t)0 },
-    { "CSS_PT", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_PT, (intptr_t)0 },
-    { "CSS_PC", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_PC, (intptr_t)0 },
-    { "CSS_DEG", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_DEG, (intptr_t)0 },
-    { "CSS_RAD", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_RAD, (intptr_t)0 },
-    { "CSS_GRAD", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_GRAD, (intptr_t)0 },
-    { "CSS_MS", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_MS, (intptr_t)0 },
-    { "CSS_S", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_S, (intptr_t)0 },
-    { "CSS_HZ", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_HZ, (intptr_t)0 },
-    { "CSS_KHZ", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_KHZ, (intptr_t)0 },
-    { "CSS_DIMENSION", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_DIMENSION, (intptr_t)0 },
-    { "CSS_STRING", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_STRING, (intptr_t)0 },
-    { "CSS_URI", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_URI, (intptr_t)0 },
-    { "CSS_IDENT", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_IDENT, (intptr_t)0 },
-    { "CSS_ATTR", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_ATTR, (intptr_t)0 },
-    { "CSS_COUNTER", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_COUNTER, (intptr_t)0 },
-    { "CSS_RECT", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_RECT, (intptr_t)0 },
-    { "CSS_RGBCOLOR", DontDelete|ReadOnly, (intptr_t)jsCSSPrimitiveValueCSS_RGBCOLOR, (intptr_t)0 },
-    { "setFloatValue", DontDelete|Function, (intptr_t)jsCSSPrimitiveValuePrototypeFunctionSetFloatValue, (intptr_t)2 },
-    { "getFloatValue", DontDelete|Function, (intptr_t)jsCSSPrimitiveValuePrototypeFunctionGetFloatValue, (intptr_t)1 },
-    { "setStringValue", DontDelete|Function, (intptr_t)jsCSSPrimitiveValuePrototypeFunctionSetStringValue, (intptr_t)2 },
-    { "getStringValue", DontDelete|Function, (intptr_t)jsCSSPrimitiveValuePrototypeFunctionGetStringValue, (intptr_t)0 },
-    { "getCounterValue", DontDelete|Function, (intptr_t)jsCSSPrimitiveValuePrototypeFunctionGetCounterValue, (intptr_t)0 },
-    { "getRectValue", DontDelete|Function, (intptr_t)jsCSSPrimitiveValuePrototypeFunctionGetRectValue, (intptr_t)0 },
-    { "getRGBColorValue", DontDelete|Function, (intptr_t)jsCSSPrimitiveValuePrototypeFunctionGetRGBColorValue, (intptr_t)0 },
+    { "CSS_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_UNKNOWN), (intptr_t)0 },
+    { "CSS_NUMBER", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_NUMBER), (intptr_t)0 },
+    { "CSS_PERCENTAGE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_PERCENTAGE), (intptr_t)0 },
+    { "CSS_EMS", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_EMS), (intptr_t)0 },
+    { "CSS_EXS", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_EXS), (intptr_t)0 },
+    { "CSS_PX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_PX), (intptr_t)0 },
+    { "CSS_CM", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_CM), (intptr_t)0 },
+    { "CSS_MM", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_MM), (intptr_t)0 },
+    { "CSS_IN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_IN), (intptr_t)0 },
+    { "CSS_PT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_PT), (intptr_t)0 },
+    { "CSS_PC", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_PC), (intptr_t)0 },
+    { "CSS_DEG", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_DEG), (intptr_t)0 },
+    { "CSS_RAD", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_RAD), (intptr_t)0 },
+    { "CSS_GRAD", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_GRAD), (intptr_t)0 },
+    { "CSS_MS", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_MS), (intptr_t)0 },
+    { "CSS_S", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_S), (intptr_t)0 },
+    { "CSS_HZ", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_HZ), (intptr_t)0 },
+    { "CSS_KHZ", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_KHZ), (intptr_t)0 },
+    { "CSS_DIMENSION", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_DIMENSION), (intptr_t)0 },
+    { "CSS_STRING", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_STRING), (intptr_t)0 },
+    { "CSS_URI", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_URI), (intptr_t)0 },
+    { "CSS_IDENT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_IDENT), (intptr_t)0 },
+    { "CSS_ATTR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_ATTR), (intptr_t)0 },
+    { "CSS_COUNTER", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_COUNTER), (intptr_t)0 },
+    { "CSS_RECT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_RECT), (intptr_t)0 },
+    { "CSS_RGBCOLOR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSPrimitiveValueCSS_RGBCOLOR), (intptr_t)0 },
+    { "setFloatValue", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCSSPrimitiveValuePrototypeFunctionSetFloatValue), (intptr_t)2 },
+    { "getFloatValue", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCSSPrimitiveValuePrototypeFunctionGetFloatValue), (intptr_t)1 },
+    { "setStringValue", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCSSPrimitiveValuePrototypeFunctionSetStringValue), (intptr_t)2 },
+    { "getStringValue", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCSSPrimitiveValuePrototypeFunctionGetStringValue), (intptr_t)0 },
+    { "getCounterValue", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCSSPrimitiveValuePrototypeFunctionGetCounterValue), (intptr_t)0 },
+    { "getRectValue", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCSSPrimitiveValuePrototypeFunctionGetRectValue), (intptr_t)0 },
+    { "getRGBColorValue", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCSSPrimitiveValuePrototypeFunctionGetRGBColorValue), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -215,17 +215,18 @@ bool JSCSSPrimitiveValue::getOwnPropertyDescriptor(ExecState* exec, const Identi
     return getStaticValueDescriptor<JSCSSPrimitiveValue, Base>(exec, &JSCSSPrimitiveValueTable, this, propertyName, descriptor);
 }
 
-JSValue jsCSSPrimitiveValuePrimitiveType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSPrimitiveValuePrimitiveType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSPrimitiveValue* castedThis = static_cast<JSCSSPrimitiveValue*>(asObject(slot.slotBase()));
+    JSCSSPrimitiveValue* castedThis = static_cast<JSCSSPrimitiveValue*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSPrimitiveValue* imp = static_cast<CSSPrimitiveValue*>(castedThis->impl());
-    return jsNumber(exec, imp->primitiveType());
+    JSValue result = jsNumber(exec, imp->primitiveType());
+    return result;
 }
 
-JSValue jsCSSPrimitiveValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSPrimitiveValueConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSPrimitiveValue* domObject = static_cast<JSCSSPrimitiveValue*>(asObject(slot.slotBase()));
+    JSCSSPrimitiveValue* domObject = static_cast<JSCSSPrimitiveValue*>(asObject(slotBase));
     return JSCSSPrimitiveValue::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSCSSPrimitiveValue::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -343,132 +344,132 @@ JSValue JSC_HOST_CALL jsCSSPrimitiveValuePrototypeFunctionGetRGBColorValue(ExecS
 
 // Constant getters
 
-JSValue jsCSSPrimitiveValueCSS_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_UNKNOWN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsCSSPrimitiveValueCSS_NUMBER(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_NUMBER(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsCSSPrimitiveValueCSS_PERCENTAGE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_PERCENTAGE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsCSSPrimitiveValueCSS_EMS(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_EMS(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValue jsCSSPrimitiveValueCSS_EXS(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_EXS(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSValue jsCSSPrimitiveValueCSS_PX(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_PX(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(5));
 }
 
-JSValue jsCSSPrimitiveValueCSS_CM(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_CM(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(6));
 }
 
-JSValue jsCSSPrimitiveValueCSS_MM(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_MM(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(7));
 }
 
-JSValue jsCSSPrimitiveValueCSS_IN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_IN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(8));
 }
 
-JSValue jsCSSPrimitiveValueCSS_PT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_PT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(9));
 }
 
-JSValue jsCSSPrimitiveValueCSS_PC(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_PC(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(10));
 }
 
-JSValue jsCSSPrimitiveValueCSS_DEG(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_DEG(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(11));
 }
 
-JSValue jsCSSPrimitiveValueCSS_RAD(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_RAD(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(12));
 }
 
-JSValue jsCSSPrimitiveValueCSS_GRAD(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_GRAD(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(13));
 }
 
-JSValue jsCSSPrimitiveValueCSS_MS(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_MS(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(14));
 }
 
-JSValue jsCSSPrimitiveValueCSS_S(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_S(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(15));
 }
 
-JSValue jsCSSPrimitiveValueCSS_HZ(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_HZ(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(16));
 }
 
-JSValue jsCSSPrimitiveValueCSS_KHZ(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_KHZ(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(17));
 }
 
-JSValue jsCSSPrimitiveValueCSS_DIMENSION(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_DIMENSION(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(18));
 }
 
-JSValue jsCSSPrimitiveValueCSS_STRING(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_STRING(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(19));
 }
 
-JSValue jsCSSPrimitiveValueCSS_URI(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_URI(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(20));
 }
 
-JSValue jsCSSPrimitiveValueCSS_IDENT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_IDENT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(21));
 }
 
-JSValue jsCSSPrimitiveValueCSS_ATTR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_ATTR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(22));
 }
 
-JSValue jsCSSPrimitiveValueCSS_COUNTER(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_COUNTER(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(23));
 }
 
-JSValue jsCSSPrimitiveValueCSS_RECT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_RECT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(24));
 }
 
-JSValue jsCSSPrimitiveValueCSS_RGBCOLOR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSPrimitiveValueCSS_RGBCOLOR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(25));
 }

@@ -36,8 +36,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSCanvasRenderingContext);
 
 static const HashTableValue JSCanvasRenderingContextTableValues[3] =
 {
-    { "canvas", DontDelete|ReadOnly, (intptr_t)jsCanvasRenderingContextCanvas, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCanvasRenderingContextConstructor, (intptr_t)0 },
+    { "canvas", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContextCanvas), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContextConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -144,17 +144,18 @@ bool JSCanvasRenderingContext::getOwnPropertyDescriptor(ExecState* exec, const I
     return getStaticValueDescriptor<JSCanvasRenderingContext, Base>(exec, &JSCanvasRenderingContextTable, this, propertyName, descriptor);
 }
 
-JSValue jsCanvasRenderingContextCanvas(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContextCanvas(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext* castedThis = static_cast<JSCanvasRenderingContext*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext* castedThis = static_cast<JSCanvasRenderingContext*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext* imp = static_cast<CanvasRenderingContext*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->canvas()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->canvas()));
+    return result;
 }
 
-JSValue jsCanvasRenderingContextConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContextConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext* domObject = static_cast<JSCanvasRenderingContext*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext* domObject = static_cast<JSCanvasRenderingContext*>(asObject(slotBase));
     return JSCanvasRenderingContext::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSCanvasRenderingContext::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

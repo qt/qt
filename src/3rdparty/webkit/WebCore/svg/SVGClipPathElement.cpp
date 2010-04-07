@@ -1,8 +1,7 @@
 /*
     Copyright (C) 2004, 2005, 2007, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006, 2007, 2008 Rob Buis <buis@kde.org>
-
-    This file is part of the KDE project
+    Copyright (C) Research In Motion Limited 2009-2010. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -28,6 +27,7 @@
 #include "CSSStyleSelector.h"
 #include "Document.h"
 #include "MappedAttribute.h"
+#include "RenderSVGResourceClipper.h"
 #include "SVGNames.h"
 #include "SVGTransformList.h"
 #include "SVGUnitTypes.h"
@@ -39,8 +39,7 @@ SVGClipPathElement::SVGClipPathElement(const QualifiedName& tagName, Document* d
     , SVGTests()
     , SVGLangSpace()
     , SVGExternalResourcesRequired()
-    , m_clipPathUnits(this, SVGNames::clipPathUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
-    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
+    , m_clipPathUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
 {
 }
 
@@ -70,54 +69,39 @@ void SVGClipPathElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     SVGStyledTransformableElement::svgAttributeChanged(attrName);
 
-    if (!m_clipper)
-        return;
-
     if (attrName == SVGNames::clipPathUnitsAttr ||
         SVGTests::isKnownAttribute(attrName) || 
         SVGLangSpace::isKnownAttribute(attrName) ||
         SVGExternalResourcesRequired::isKnownAttribute(attrName) ||
         SVGStyledTransformableElement::isKnownAttribute(attrName))
-        m_clipper->invalidate();
+        invalidateCanvasResources();
+}
+
+void SVGClipPathElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGStyledTransformableElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName()) {
+        synchronizeClipPathUnits();
+        synchronizeExternalResourcesRequired();
+        return;
+    }
+
+    if (attrName == SVGNames::clipPathUnitsAttr)
+        synchronizeClipPathUnits();
+    else if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
+        synchronizeExternalResourcesRequired();
 }
 
 void SVGClipPathElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     SVGStyledTransformableElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-
-    if (!m_clipper)
-        return;
-
-    m_clipper->invalidate();
+    invalidateCanvasResources();
 }
 
-SVGResource* SVGClipPathElement::canvasResource()
+RenderObject* SVGClipPathElement::createRenderer(RenderArena* arena, RenderStyle*)
 {
-    if (!m_clipper)
-        m_clipper = SVGResourceClipper::create();
-    else
-        m_clipper->resetClipData();
-
-    bool bbox = clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
-
-    RefPtr<RenderStyle> clipPathStyle = styleForRenderer(); // FIXME: Manual style resolution is a hack
-    for (Node* n = firstChild(); n; n = n->nextSibling()) {
-        if (n->isSVGElement() && static_cast<SVGElement*>(n)->isStyledTransformable()) {
-            SVGStyledTransformableElement* styled = static_cast<SVGStyledTransformableElement*>(n);
-            RefPtr<RenderStyle> pathStyle = document()->styleSelector()->styleForElement(styled, clipPathStyle.get());
-            if (pathStyle->display() != NONE) {
-                Path pathData = styled->toClipPath();
-                if (!pathData.isEmpty())
-                    m_clipper->addClipData(pathData, pathStyle->svgStyle()->clipRule(), bbox);
-            }
-        }
-    }
-    if (m_clipper->clipData().isEmpty()) {
-        Path pathData;
-        pathData.addRect(FloatRect());
-        m_clipper->addClipData(pathData, RULE_EVENODD, bbox);
-    }
-    return m_clipper.get();
+    return new (arena) RenderSVGResourceClipper(this);
 }
 
 }

@@ -30,23 +30,23 @@
 
 namespace WebCore {
 
-FEMerge::FEMerge(const Vector<FilterEffect*>& mergeInputs) 
+FEMerge::FEMerge(const Vector<RefPtr<FilterEffect> >& mergeInputs) 
     : FilterEffect()
     , m_mergeInputs(mergeInputs)
 {
 }
 
-PassRefPtr<FEMerge> FEMerge::create(const Vector<FilterEffect*>& mergeInputs)
+PassRefPtr<FEMerge> FEMerge::create(const Vector<RefPtr<FilterEffect> >& mergeInputs)
 {
     return adoptRef(new FEMerge(mergeInputs));
 }
 
-const Vector<FilterEffect*>& FEMerge::mergeInputs() const
+const Vector<RefPtr<FilterEffect> >& FEMerge::mergeInputs() const
 {
     return m_mergeInputs;
 }
 
-void FEMerge::setMergeInputs(const Vector<FilterEffect*>& mergeInputs)
+void FEMerge::setMergeInputs(const Vector<RefPtr<FilterEffect> >& mergeInputs)
 {
     m_mergeInputs = mergeInputs;
 }
@@ -78,8 +78,8 @@ void FEMerge::apply(Filter* filter)
         return;
 
     for (unsigned i = 0; i < m_mergeInputs.size(); i++) {
-        FloatRect destRect = calculateDrawingRect(m_mergeInputs[i]->subRegion());
-        filterContext->drawImage(m_mergeInputs[i]->resultImage()->image(), destRect);
+        FloatRect destRect = calculateDrawingRect(m_mergeInputs[i]->scaledSubRegion());
+        filterContext->drawImage(m_mergeInputs[i]->resultImage()->image(), DeviceColorSpace, destRect);
     }
 }
 

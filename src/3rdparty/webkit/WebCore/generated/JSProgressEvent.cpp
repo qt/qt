@@ -36,10 +36,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSProgressEvent);
 
 static const HashTableValue JSProgressEventTableValues[5] =
 {
-    { "lengthComputable", DontDelete|ReadOnly, (intptr_t)jsProgressEventLengthComputable, (intptr_t)0 },
-    { "loaded", DontDelete|ReadOnly, (intptr_t)jsProgressEventLoaded, (intptr_t)0 },
-    { "total", DontDelete|ReadOnly, (intptr_t)jsProgressEventTotal, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsProgressEventConstructor, (intptr_t)0 },
+    { "lengthComputable", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsProgressEventLengthComputable), (intptr_t)0 },
+    { "loaded", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsProgressEventLoaded), (intptr_t)0 },
+    { "total", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsProgressEventTotal), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsProgressEventConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -78,7 +78,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -101,7 +101,7 @@ bool JSProgressEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const
 
 static const HashTableValue JSProgressEventPrototypeTableValues[2] =
 {
-    { "initProgressEvent", DontDelete|Function, (intptr_t)jsProgressEventPrototypeFunctionInitProgressEvent, (intptr_t)6 },
+    { "initProgressEvent", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsProgressEventPrototypeFunctionInitProgressEvent), (intptr_t)6 },
     { 0, 0, 0, 0 }
 };
 
@@ -151,33 +151,36 @@ bool JSProgressEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier
     return getStaticValueDescriptor<JSProgressEvent, Base>(exec, &JSProgressEventTable, this, propertyName, descriptor);
 }
 
-JSValue jsProgressEventLengthComputable(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsProgressEventLengthComputable(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSProgressEvent* castedThis = static_cast<JSProgressEvent*>(asObject(slot.slotBase()));
+    JSProgressEvent* castedThis = static_cast<JSProgressEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     ProgressEvent* imp = static_cast<ProgressEvent*>(castedThis->impl());
-    return jsBoolean(imp->lengthComputable());
+    JSValue result = jsBoolean(imp->lengthComputable());
+    return result;
 }
 
-JSValue jsProgressEventLoaded(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsProgressEventLoaded(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSProgressEvent* castedThis = static_cast<JSProgressEvent*>(asObject(slot.slotBase()));
+    JSProgressEvent* castedThis = static_cast<JSProgressEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     ProgressEvent* imp = static_cast<ProgressEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->loaded());
+    JSValue result = jsNumber(exec, imp->loaded());
+    return result;
 }
 
-JSValue jsProgressEventTotal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsProgressEventTotal(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSProgressEvent* castedThis = static_cast<JSProgressEvent*>(asObject(slot.slotBase()));
+    JSProgressEvent* castedThis = static_cast<JSProgressEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     ProgressEvent* imp = static_cast<ProgressEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->total());
+    JSValue result = jsNumber(exec, imp->total());
+    return result;
 }
 
-JSValue jsProgressEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsProgressEventConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSProgressEvent* domObject = static_cast<JSProgressEvent*>(asObject(slot.slotBase()));
+    JSProgressEvent* domObject = static_cast<JSProgressEvent*>(asObject(slotBase));
     return JSProgressEvent::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSProgressEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

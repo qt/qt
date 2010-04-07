@@ -36,7 +36,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSConsole);
 
 static const HashTableValue JSConsoleTableValues[2] =
 {
-    { "profiles", DontDelete|ReadOnly, (intptr_t)jsConsoleProfiles, (intptr_t)0 },
+    { "profiles", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsConsoleProfiles), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -49,24 +49,25 @@ static JSC_CONST_HASHTABLE HashTable JSConsoleTable =
 
 /* Hash table for prototype */
 
-static const HashTableValue JSConsolePrototypeTableValues[17] =
+static const HashTableValue JSConsolePrototypeTableValues[18] =
 {
-    { "debug", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionDebug, (intptr_t)0 },
-    { "error", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionError, (intptr_t)0 },
-    { "info", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionInfo, (intptr_t)0 },
-    { "log", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionLog, (intptr_t)0 },
-    { "warn", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionWarn, (intptr_t)0 },
-    { "dir", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionDir, (intptr_t)0 },
-    { "dirxml", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionDirxml, (intptr_t)0 },
-    { "trace", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionTrace, (intptr_t)0 },
-    { "assert", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionAssert, (intptr_t)1 },
-    { "count", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionCount, (intptr_t)0 },
-    { "profile", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionProfile, (intptr_t)1 },
-    { "profileEnd", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionProfileEnd, (intptr_t)1 },
-    { "time", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionTime, (intptr_t)1 },
-    { "timeEnd", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionTimeEnd, (intptr_t)1 },
-    { "group", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionGroup, (intptr_t)0 },
-    { "groupEnd", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionGroupEnd, (intptr_t)0 },
+    { "debug", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionDebug), (intptr_t)0 },
+    { "error", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionError), (intptr_t)0 },
+    { "info", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionInfo), (intptr_t)0 },
+    { "log", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionLog), (intptr_t)0 },
+    { "warn", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionWarn), (intptr_t)0 },
+    { "dir", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionDir), (intptr_t)0 },
+    { "dirxml", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionDirxml), (intptr_t)0 },
+    { "trace", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionTrace), (intptr_t)0 },
+    { "assert", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionAssert), (intptr_t)1 },
+    { "count", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionCount), (intptr_t)0 },
+    { "markTimeline", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionMarkTimeline), (intptr_t)0 },
+    { "profile", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionProfile), (intptr_t)1 },
+    { "profileEnd", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionProfileEnd), (intptr_t)1 },
+    { "time", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionTime), (intptr_t)1 },
+    { "timeEnd", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionTimeEnd), (intptr_t)1 },
+    { "group", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionGroup), (intptr_t)0 },
+    { "groupEnd", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsConsolePrototypeFunctionGroupEnd), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -74,7 +75,7 @@ static JSC_CONST_HASHTABLE HashTable JSConsolePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSConsolePrototypeTableValues, 0 };
 #else
-    { 35, 31, JSConsolePrototypeTableValues, 0 };
+    { 65, 63, JSConsolePrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSConsolePrototype::s_info = { "ConsolePrototype", 0, &JSConsolePrototypeTable, 0 };
@@ -122,9 +123,9 @@ bool JSConsole::getOwnPropertyDescriptor(ExecState* exec, const Identifier& prop
     return getStaticValueDescriptor<JSConsole, Base>(exec, &JSConsoleTable, this, propertyName, descriptor);
 }
 
-JSValue jsConsoleProfiles(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsConsoleProfiles(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSConsole* castedThis = static_cast<JSConsole*>(asObject(slot.slotBase()));
+    JSConsole* castedThis = static_cast<JSConsole*>(asObject(slotBase));
     return castedThis->profiles(exec);
 }
 
@@ -256,6 +257,19 @@ JSValue JSC_HOST_CALL jsConsolePrototypeFunctionCount(ExecState* exec, JSObject*
     ScriptCallStack callStack(exec, args, 0);
 
     imp->count(&callStack);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionMarkTimeline(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSConsole::s_info))
+        return throwError(exec, TypeError);
+    JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
+    Console* imp = static_cast<Console*>(castedThisObj->impl());
+    ScriptCallStack callStack(exec, args, 0);
+
+    imp->markTimeline(&callStack);
     return jsUndefined();
 }
 

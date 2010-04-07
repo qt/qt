@@ -34,7 +34,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSComment);
 
 static const HashTableValue JSCommentTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCommentConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCommentConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -73,7 +73,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -135,9 +135,9 @@ bool JSComment::getOwnPropertyDescriptor(ExecState* exec, const Identifier& prop
     return getStaticValueDescriptor<JSComment, Base>(exec, &JSCommentTable, this, propertyName, descriptor);
 }
 
-JSValue jsCommentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCommentConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSComment* domObject = static_cast<JSComment*>(asObject(slot.slotBase()));
+    JSComment* domObject = static_cast<JSComment*>(asObject(slotBase));
     return JSComment::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSComment::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

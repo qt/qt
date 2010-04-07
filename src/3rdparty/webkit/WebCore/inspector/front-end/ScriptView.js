@@ -33,10 +33,7 @@ WebInspector.ScriptView = function(script)
 
     this._frameNeedsSetup = true;
     this._sourceFrameSetup = false;
-
-    this.sourceFrame = new WebInspector.SourceFrame(null, this._addBreakpoint.bind(this));
-
-    this.element.appendChild(this.sourceFrame.element);
+    this.sourceFrame = new WebInspector.SourceFrame(this.element, this._addBreakpoint.bind(this), this._removeBreakpoint.bind(this));
 }
 
 WebInspector.ScriptView.prototype = {
@@ -44,12 +41,8 @@ WebInspector.ScriptView.prototype = {
     {
         WebInspector.View.prototype.show.call(this, parentElement);
         this.setupSourceFrameIfNeeded();
-    },
-
-    hide: function()
-    {
-        WebInspector.View.prototype.hide.call(this);
-        this._currentSearchResultIndex = -1;
+        this.sourceFrame.visible = true;
+        this.resize();
     },
 
     setupSourceFrameIfNeeded: function()
@@ -59,13 +52,13 @@ WebInspector.ScriptView.prototype = {
 
         this.attach();
 
-        if (!InspectorController.addSourceToFrame("text/javascript", this.script.source, this.sourceFrame.element))
-            return;
+        var prefix = "";
+        for (var i = 0; i < this.script.startingLine - 1; ++i)
+            prefix += "\n";
 
+        this.sourceFrame.setContent("text/javascript", prefix + this.script.source);
+        this._sourceFrameSetup = true;
         delete this._frameNeedsSetup;
-
-        this.sourceFrame.addEventListener("syntax highlighting complete", this._syntaxHighlightingComplete, this);
-        this.sourceFrame.syntaxHighlightJavascript();
     },
 
     attach: function()
@@ -83,6 +76,7 @@ WebInspector.ScriptView.prototype = {
     // The follow methods are pulled from SourceView, since they are
     // generic and work with ScriptView just fine.
 
+    hide: WebInspector.SourceView.prototype.hide,
     revealLine: WebInspector.SourceView.prototype.revealLine,
     highlightLine: WebInspector.SourceView.prototype.highlightLine,
     addMessage: WebInspector.SourceView.prototype.addMessage,
@@ -97,7 +91,8 @@ WebInspector.ScriptView.prototype = {
     showingLastSearchResult: WebInspector.SourceView.prototype.showingLastSearchResult,
     _jumpToSearchResult: WebInspector.SourceView.prototype._jumpToSearchResult,
     _sourceFrameSetupFinished: WebInspector.SourceView.prototype._sourceFrameSetupFinished,
-    _syntaxHighlightingComplete: WebInspector.SourceView.prototype._syntaxHighlightingComplete
+    _removeBreakpoint: WebInspector.SourceView.prototype._removeBreakpoint,
+    resize: WebInspector.SourceView.prototype.resize
 }
 
 WebInspector.ScriptView.prototype.__proto__ = WebInspector.View.prototype;

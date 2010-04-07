@@ -100,6 +100,9 @@ bool passesAccessControlCheck(const ResourceResponse& response, bool includeCred
     if (accessControlOriginString == "*" && !includeCredentials)
         return true;
 
+    if (securityOrigin->isUnique())
+        return false;
+
     RefPtr<SecurityOrigin> accessControlOrigin = SecurityOrigin::createFromString(accessControlOriginString);
     if (!accessControlOrigin->isSameSchemeHostPort(securityOrigin))
         return false;

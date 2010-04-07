@@ -36,8 +36,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLQuoteElement);
 
 static const HashTableValue JSHTMLQuoteElementTableValues[3] =
 {
-    { "cite", DontDelete, (intptr_t)jsHTMLQuoteElementCite, (intptr_t)setJSHTMLQuoteElementCite },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLQuoteElementConstructor, (intptr_t)0 },
+    { "cite", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLQuoteElementCite), (intptr_t)setJSHTMLQuoteElementCite },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLQuoteElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -138,17 +138,18 @@ bool JSHTMLQuoteElement::getOwnPropertyDescriptor(ExecState* exec, const Identif
     return getStaticValueDescriptor<JSHTMLQuoteElement, Base>(exec, &JSHTMLQuoteElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLQuoteElementCite(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLQuoteElementCite(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLQuoteElement* castedThis = static_cast<JSHTMLQuoteElement*>(asObject(slot.slotBase()));
+    JSHTMLQuoteElement* castedThis = static_cast<JSHTMLQuoteElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLQuoteElement* imp = static_cast<HTMLQuoteElement*>(castedThis->impl());
-    return jsString(exec, imp->cite());
+    JSValue result = jsString(exec, imp->cite());
+    return result;
 }
 
-JSValue jsHTMLQuoteElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLQuoteElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLQuoteElement* domObject = static_cast<JSHTMLQuoteElement*>(asObject(slot.slotBase()));
+    JSHTMLQuoteElement* domObject = static_cast<JSHTMLQuoteElement*>(asObject(slotBase));
     return JSHTMLQuoteElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLQuoteElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -158,7 +159,8 @@ void JSHTMLQuoteElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLQuoteElementCite(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLQuoteElement* imp = static_cast<HTMLQuoteElement*>(static_cast<JSHTMLQuoteElement*>(thisObject)->impl());
+    JSHTMLQuoteElement* castedThisObj = static_cast<JSHTMLQuoteElement*>(thisObject);
+    HTMLQuoteElement* imp = static_cast<HTMLQuoteElement*>(castedThisObj->impl());
     imp->setCite(valueToStringWithNullCheck(exec, value));
 }
 

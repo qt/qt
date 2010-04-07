@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2007 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -34,7 +32,6 @@ namespace WebCore {
 
 SVGFETileElement::SVGFETileElement(const QualifiedName& tagName, Document* doc)
     : SVGFilterPrimitiveStandardAttributes(tagName, doc)
-    , m_in1(this, SVGNames::inAttr)
 {
 }
 
@@ -49,6 +46,14 @@ void SVGFETileElement::parseMappedAttribute(MappedAttribute* attr)
         setIn1BaseValue(value);
     else
         SVGFilterPrimitiveStandardAttributes::parseMappedAttribute(attr);
+}
+
+void SVGFETileElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGFilterPrimitiveStandardAttributes::synchronizeProperty(attrName);
+
+    if (attrName == anyQName() || attrName == SVGNames::inAttr)
+        synchronizeIn1();
 }
 
 bool SVGFETileElement::build(SVGResourceFilter* filterResource)

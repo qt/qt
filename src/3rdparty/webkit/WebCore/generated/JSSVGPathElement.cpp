@@ -86,24 +86,25 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGPathElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGPathElementTableValues[17] =
+static const HashTableValue JSSVGPathElementTableValues[18] =
 {
-    { "pathLength", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementPathLength, (intptr_t)0 },
-    { "requiredFeatures", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementRequiredFeatures, (intptr_t)0 },
-    { "requiredExtensions", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementRequiredExtensions, (intptr_t)0 },
-    { "systemLanguage", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementSystemLanguage, (intptr_t)0 },
-    { "xmllang", DontDelete, (intptr_t)jsSVGPathElementXmllang, (intptr_t)setJSSVGPathElementXmllang },
-    { "xmlspace", DontDelete, (intptr_t)jsSVGPathElementXmlspace, (intptr_t)setJSSVGPathElementXmlspace },
-    { "externalResourcesRequired", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementExternalResourcesRequired, (intptr_t)0 },
-    { "className", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementClassName, (intptr_t)0 },
-    { "style", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementStyle, (intptr_t)0 },
-    { "transform", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementTransform, (intptr_t)0 },
-    { "nearestViewportElement", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementNearestViewportElement, (intptr_t)0 },
-    { "farthestViewportElement", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementFarthestViewportElement, (intptr_t)0 },
-    { "pathSegList", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementPathSegList, (intptr_t)0 },
-    { "normalizedPathSegList", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementNormalizedPathSegList, (intptr_t)0 },
-    { "animatedPathSegList", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementAnimatedPathSegList, (intptr_t)0 },
-    { "animatedNormalizedPathSegList", DontDelete|ReadOnly, (intptr_t)jsSVGPathElementAnimatedNormalizedPathSegList, (intptr_t)0 },
+    { "pathLength", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementPathLength), (intptr_t)0 },
+    { "requiredFeatures", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementRequiredFeatures), (intptr_t)0 },
+    { "requiredExtensions", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementRequiredExtensions), (intptr_t)0 },
+    { "systemLanguage", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementSystemLanguage), (intptr_t)0 },
+    { "xmllang", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementXmllang), (intptr_t)setJSSVGPathElementXmllang },
+    { "xmlspace", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementXmlspace), (intptr_t)setJSSVGPathElementXmlspace },
+    { "externalResourcesRequired", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementExternalResourcesRequired), (intptr_t)0 },
+    { "className", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementClassName), (intptr_t)0 },
+    { "style", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementStyle), (intptr_t)0 },
+    { "transform", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementTransform), (intptr_t)0 },
+    { "nearestViewportElement", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementNearestViewportElement), (intptr_t)0 },
+    { "farthestViewportElement", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementFarthestViewportElement), (intptr_t)0 },
+    { "pathSegList", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementPathSegList), (intptr_t)0 },
+    { "normalizedPathSegList", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementNormalizedPathSegList), (intptr_t)0 },
+    { "animatedPathSegList", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementAnimatedPathSegList), (intptr_t)0 },
+    { "animatedNormalizedPathSegList", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementAnimatedNormalizedPathSegList), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -111,41 +112,88 @@ static JSC_CONST_HASHTABLE HashTable JSSVGPathElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGPathElementTableValues, 0 };
 #else
-    { 36, 31, JSSVGPathElementTableValues, 0 };
+    { 67, 63, JSSVGPathElementTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGPathElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGPathElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGPathElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGPathElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGPathElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGPathElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGPathElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGPathElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGPathElementConstructor::s_info = { "SVGPathElementConstructor", 0, &JSSVGPathElementConstructorTable, 0 };
+
+bool JSSVGPathElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGPathElementConstructor, DOMObject>(exec, &JSSVGPathElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGPathElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathElementConstructor, DOMObject>(exec, &JSSVGPathElementConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
 static const HashTableValue JSSVGPathElementPrototypeTableValues[29] =
 {
-    { "getTotalLength", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionGetTotalLength, (intptr_t)0 },
-    { "getPointAtLength", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionGetPointAtLength, (intptr_t)1 },
-    { "getPathSegAtLength", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionGetPathSegAtLength, (intptr_t)1 },
-    { "createSVGPathSegClosePath", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegClosePath, (intptr_t)0 },
-    { "createSVGPathSegMovetoAbs", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegMovetoAbs, (intptr_t)2 },
-    { "createSVGPathSegMovetoRel", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegMovetoRel, (intptr_t)2 },
-    { "createSVGPathSegLinetoAbs", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegLinetoAbs, (intptr_t)2 },
-    { "createSVGPathSegLinetoRel", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegLinetoRel, (intptr_t)2 },
-    { "createSVGPathSegCurvetoCubicAbs", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoCubicAbs, (intptr_t)6 },
-    { "createSVGPathSegCurvetoCubicRel", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoCubicRel, (intptr_t)6 },
-    { "createSVGPathSegCurvetoQuadraticAbs", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoQuadraticAbs, (intptr_t)4 },
-    { "createSVGPathSegCurvetoQuadraticRel", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoQuadraticRel, (intptr_t)4 },
-    { "createSVGPathSegArcAbs", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegArcAbs, (intptr_t)7 },
-    { "createSVGPathSegArcRel", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegArcRel, (intptr_t)7 },
-    { "createSVGPathSegLinetoHorizontalAbs", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegLinetoHorizontalAbs, (intptr_t)1 },
-    { "createSVGPathSegLinetoHorizontalRel", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegLinetoHorizontalRel, (intptr_t)1 },
-    { "createSVGPathSegLinetoVerticalAbs", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegLinetoVerticalAbs, (intptr_t)1 },
-    { "createSVGPathSegLinetoVerticalRel", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegLinetoVerticalRel, (intptr_t)1 },
-    { "createSVGPathSegCurvetoCubicSmoothAbs", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoCubicSmoothAbs, (intptr_t)4 },
-    { "createSVGPathSegCurvetoCubicSmoothRel", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoCubicSmoothRel, (intptr_t)4 },
-    { "createSVGPathSegCurvetoQuadraticSmoothAbs", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoQuadraticSmoothAbs, (intptr_t)2 },
-    { "createSVGPathSegCurvetoQuadraticSmoothRel", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoQuadraticSmoothRel, (intptr_t)2 },
-    { "hasExtension", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionHasExtension, (intptr_t)1 },
-    { "getPresentationAttribute", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionGetPresentationAttribute, (intptr_t)1 },
-    { "getBBox", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionGetBBox, (intptr_t)0 },
-    { "getCTM", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionGetCTM, (intptr_t)0 },
-    { "getScreenCTM", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionGetScreenCTM, (intptr_t)0 },
-    { "getTransformToElement", DontDelete|Function, (intptr_t)jsSVGPathElementPrototypeFunctionGetTransformToElement, (intptr_t)1 },
+    { "getTotalLength", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionGetTotalLength), (intptr_t)0 },
+    { "getPointAtLength", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionGetPointAtLength), (intptr_t)1 },
+    { "getPathSegAtLength", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionGetPathSegAtLength), (intptr_t)1 },
+    { "createSVGPathSegClosePath", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegClosePath), (intptr_t)0 },
+    { "createSVGPathSegMovetoAbs", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegMovetoAbs), (intptr_t)2 },
+    { "createSVGPathSegMovetoRel", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegMovetoRel), (intptr_t)2 },
+    { "createSVGPathSegLinetoAbs", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegLinetoAbs), (intptr_t)2 },
+    { "createSVGPathSegLinetoRel", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegLinetoRel), (intptr_t)2 },
+    { "createSVGPathSegCurvetoCubicAbs", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoCubicAbs), (intptr_t)6 },
+    { "createSVGPathSegCurvetoCubicRel", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoCubicRel), (intptr_t)6 },
+    { "createSVGPathSegCurvetoQuadraticAbs", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoQuadraticAbs), (intptr_t)4 },
+    { "createSVGPathSegCurvetoQuadraticRel", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoQuadraticRel), (intptr_t)4 },
+    { "createSVGPathSegArcAbs", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegArcAbs), (intptr_t)7 },
+    { "createSVGPathSegArcRel", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegArcRel), (intptr_t)7 },
+    { "createSVGPathSegLinetoHorizontalAbs", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegLinetoHorizontalAbs), (intptr_t)1 },
+    { "createSVGPathSegLinetoHorizontalRel", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegLinetoHorizontalRel), (intptr_t)1 },
+    { "createSVGPathSegLinetoVerticalAbs", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegLinetoVerticalAbs), (intptr_t)1 },
+    { "createSVGPathSegLinetoVerticalRel", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegLinetoVerticalRel), (intptr_t)1 },
+    { "createSVGPathSegCurvetoCubicSmoothAbs", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoCubicSmoothAbs), (intptr_t)4 },
+    { "createSVGPathSegCurvetoCubicSmoothRel", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoCubicSmoothRel), (intptr_t)4 },
+    { "createSVGPathSegCurvetoQuadraticSmoothAbs", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoQuadraticSmoothAbs), (intptr_t)2 },
+    { "createSVGPathSegCurvetoQuadraticSmoothRel", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionCreateSVGPathSegCurvetoQuadraticSmoothRel), (intptr_t)2 },
+    { "hasExtension", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionHasExtension), (intptr_t)1 },
+    { "getPresentationAttribute", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionGetPresentationAttribute), (intptr_t)1 },
+    { "getBBox", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionGetBBox), (intptr_t)0 },
+    { "getCTM", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionGetCTM), (intptr_t)0 },
+    { "getScreenCTM", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionGetScreenCTM), (intptr_t)0 },
+    { "getTransformToElement", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathElementPrototypeFunctionGetTransformToElement), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -195,138 +243,159 @@ bool JSSVGPathElement::getOwnPropertyDescriptor(ExecState* exec, const Identifie
     return getStaticValueDescriptor<JSSVGPathElement, Base>(exec, &JSSVGPathElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGPathElementPathLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementPathLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->pathLengthAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPathElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementRequiredFeatures(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
+    return result;
 }
 
-JSValue jsSVGPathElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementRequiredExtensions(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
+    return result;
 }
 
-JSValue jsSVGPathElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementSystemLanguage(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
+    return result;
 }
 
-JSValue jsSVGPathElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementXmllang(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
-    return jsString(exec, imp->xmllang());
+    JSValue result = jsString(exec, imp->xmllang());
+    return result;
 }
 
-JSValue jsSVGPathElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementXmlspace(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
-    return jsString(exec, imp->xmlspace());
+    JSValue result = jsString(exec, imp->xmlspace());
+    return result;
 }
 
-JSValue jsSVGPathElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementExternalResourcesRequired(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPathElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementClassName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPathElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementStyle(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
 }
 
-JSValue jsSVGPathElementTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementTransform(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedTransformList> obj = imp->transformAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPathElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementNearestViewportElement(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nearestViewportElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nearestViewportElement()));
+    return result;
 }
 
-JSValue jsSVGPathElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementFarthestViewportElement(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->farthestViewportElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->farthestViewportElement()));
+    return result;
 }
 
-JSValue jsSVGPathElementPathSegList(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementPathSegList(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->pathSegList()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->pathSegList()), imp);
+    return result;
 }
 
-JSValue jsSVGPathElementNormalizedPathSegList(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementNormalizedPathSegList(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->normalizedPathSegList()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->normalizedPathSegList()), imp);
+    return result;
 }
 
-JSValue jsSVGPathElementAnimatedPathSegList(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementAnimatedPathSegList(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->animatedPathSegList()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->animatedPathSegList()), imp);
+    return result;
 }
 
-JSValue jsSVGPathElementAnimatedNormalizedPathSegList(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathElementAnimatedNormalizedPathSegList(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slot.slotBase()));
+    JSSVGPathElement* castedThis = static_cast<JSSVGPathElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->animatedNormalizedPathSegList()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->animatedNormalizedPathSegList()), imp);
+    return result;
 }
 
+JSValue jsSVGPathElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGPathElement* domObject = static_cast<JSSVGPathElement*>(asObject(slotBase));
+    return JSSVGPathElement::getConstructor(exec, domObject->globalObject());
+}
 void JSSVGPathElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPathElement, Base>(exec, propertyName, value, &JSSVGPathElementTable, this, slot);
@@ -334,14 +403,21 @@ void JSSVGPathElement::put(ExecState* exec, const Identifier& propertyName, JSVa
 
 void setJSSVGPathElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGPathElement* imp = static_cast<SVGPathElement*>(static_cast<JSSVGPathElement*>(thisObject)->impl());
+    JSSVGPathElement* castedThisObj = static_cast<JSSVGPathElement*>(thisObject);
+    SVGPathElement* imp = static_cast<SVGPathElement*>(castedThisObj->impl());
     imp->setXmllang(value.toString(exec));
 }
 
 void setJSSVGPathElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGPathElement* imp = static_cast<SVGPathElement*>(static_cast<JSSVGPathElement*>(thisObject)->impl());
+    JSSVGPathElement* castedThisObj = static_cast<JSSVGPathElement*>(thisObject);
+    SVGPathElement* imp = static_cast<SVGPathElement*>(castedThisObj->impl());
     imp->setXmlspace(value.toString(exec));
+}
+
+JSValue JSSVGPathElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGPathElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGPathElementPrototypeFunctionGetTotalLength(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -367,7 +443,7 @@ JSValue JSC_HOST_CALL jsSVGPathElementPrototypeFunctionGetPointAtLength(ExecStat
     float distance = args.at(0).toFloat(exec);
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->getPointAtLength(distance)).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->getPointAtLength(distance)).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -378,10 +454,12 @@ JSValue JSC_HOST_CALL jsSVGPathElementPrototypeFunctionGetPathSegAtLength(ExecSt
         return throwError(exec, TypeError);
     JSSVGPathElement* castedThisObj = static_cast<JSSVGPathElement*>(asObject(thisValue));
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
     float distance = args.at(0).toFloat(exec);
 
 
-    JSC::JSValue result = jsNumber(exec, imp->getPathSegAtLength(distance));
+    JSC::JSValue result = jsNumber(exec, imp->getPathSegAtLength(distance, ec));
+    setDOMException(exec, ec);
     return result;
 }
 
@@ -727,7 +805,7 @@ JSValue JSC_HOST_CALL jsSVGPathElementPrototypeFunctionGetBBox(ExecState* exec, 
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -740,7 +818,7 @@ JSValue JSC_HOST_CALL jsSVGPathElementPrototypeFunctionGetCTM(ExecState* exec, J
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<AffineTransform>::create(imp->getCTM()).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -753,7 +831,7 @@ JSValue JSC_HOST_CALL jsSVGPathElementPrototypeFunctionGetScreenCTM(ExecState* e
     SVGPathElement* imp = static_cast<SVGPathElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<AffineTransform>::create(imp->getScreenCTM()).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -768,7 +846,7 @@ JSValue JSC_HOST_CALL jsSVGPathElementPrototypeFunctionGetTransformToElement(Exe
     SVGElement* element = toSVGElement(args.at(0));
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<AffineTransform>::create(imp->getTransformToElement(element, ec)).get(), 0 /* no context on purpose */);
     setDOMException(exec, ec);
     return result;
 }

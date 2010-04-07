@@ -36,11 +36,11 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLParamElement);
 
 static const HashTableValue JSHTMLParamElementTableValues[6] =
 {
-    { "name", DontDelete, (intptr_t)jsHTMLParamElementName, (intptr_t)setJSHTMLParamElementName },
-    { "type", DontDelete, (intptr_t)jsHTMLParamElementType, (intptr_t)setJSHTMLParamElementType },
-    { "value", DontDelete, (intptr_t)jsHTMLParamElementValue, (intptr_t)setJSHTMLParamElementValue },
-    { "valueType", DontDelete, (intptr_t)jsHTMLParamElementValueType, (intptr_t)setJSHTMLParamElementValueType },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLParamElementConstructor, (intptr_t)0 },
+    { "name", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLParamElementName), (intptr_t)setJSHTMLParamElementName },
+    { "type", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLParamElementType), (intptr_t)setJSHTMLParamElementType },
+    { "value", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLParamElementValue), (intptr_t)setJSHTMLParamElementValue },
+    { "valueType", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLParamElementValueType), (intptr_t)setJSHTMLParamElementValueType },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLParamElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -141,41 +141,45 @@ bool JSHTMLParamElement::getOwnPropertyDescriptor(ExecState* exec, const Identif
     return getStaticValueDescriptor<JSHTMLParamElement, Base>(exec, &JSHTMLParamElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLParamElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLParamElementName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLParamElement* castedThis = static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()));
+    JSHTMLParamElement* castedThis = static_cast<JSHTMLParamElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLParamElement* imp = static_cast<HTMLParamElement*>(castedThis->impl());
-    return jsString(exec, imp->name());
+    JSValue result = jsString(exec, imp->name());
+    return result;
 }
 
-JSValue jsHTMLParamElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLParamElementType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLParamElement* castedThis = static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()));
+    JSHTMLParamElement* castedThis = static_cast<JSHTMLParamElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLParamElement* imp = static_cast<HTMLParamElement*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
-JSValue jsHTMLParamElementValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLParamElementValue(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLParamElement* castedThis = static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()));
+    JSHTMLParamElement* castedThis = static_cast<JSHTMLParamElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLParamElement* imp = static_cast<HTMLParamElement*>(castedThis->impl());
-    return jsString(exec, imp->value());
+    JSValue result = jsString(exec, imp->value());
+    return result;
 }
 
-JSValue jsHTMLParamElementValueType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLParamElementValueType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLParamElement* castedThis = static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()));
+    JSHTMLParamElement* castedThis = static_cast<JSHTMLParamElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLParamElement* imp = static_cast<HTMLParamElement*>(castedThis->impl());
-    return jsString(exec, imp->valueType());
+    JSValue result = jsString(exec, imp->valueType());
+    return result;
 }
 
-JSValue jsHTMLParamElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLParamElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLParamElement* domObject = static_cast<JSHTMLParamElement*>(asObject(slot.slotBase()));
+    JSHTMLParamElement* domObject = static_cast<JSHTMLParamElement*>(asObject(slotBase));
     return JSHTMLParamElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLParamElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -185,25 +189,29 @@ void JSHTMLParamElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLParamElementName(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLParamElement* imp = static_cast<HTMLParamElement*>(static_cast<JSHTMLParamElement*>(thisObject)->impl());
+    JSHTMLParamElement* castedThisObj = static_cast<JSHTMLParamElement*>(thisObject);
+    HTMLParamElement* imp = static_cast<HTMLParamElement*>(castedThisObj->impl());
     imp->setName(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLParamElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLParamElement* imp = static_cast<HTMLParamElement*>(static_cast<JSHTMLParamElement*>(thisObject)->impl());
+    JSHTMLParamElement* castedThisObj = static_cast<JSHTMLParamElement*>(thisObject);
+    HTMLParamElement* imp = static_cast<HTMLParamElement*>(castedThisObj->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLParamElementValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLParamElement* imp = static_cast<HTMLParamElement*>(static_cast<JSHTMLParamElement*>(thisObject)->impl());
+    JSHTMLParamElement* castedThisObj = static_cast<JSHTMLParamElement*>(thisObject);
+    HTMLParamElement* imp = static_cast<HTMLParamElement*>(castedThisObj->impl());
     imp->setValue(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLParamElementValueType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLParamElement* imp = static_cast<HTMLParamElement*>(static_cast<JSHTMLParamElement*>(thisObject)->impl());
+    JSHTMLParamElement* castedThisObj = static_cast<JSHTMLParamElement*>(thisObject);
+    HTMLParamElement* imp = static_cast<HTMLParamElement*>(castedThisObj->impl());
     imp->setValueType(valueToStringWithNullCheck(exec, value));
 }
 

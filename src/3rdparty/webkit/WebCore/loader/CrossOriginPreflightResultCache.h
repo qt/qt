@@ -24,8 +24,13 @@
  *
  */
 
+#ifndef CrossOriginPreflightResultCacheItem_h
+#define CrossOriginPreflightResultCacheItem_h
+
 #include "KURLHash.h"
 #include "StringHash.h"
+#include <wtf/HashMap.h>
+#include <wtf/HashSet.h>
 
 namespace WebCore {
 
@@ -75,3 +80,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
+
+#endif

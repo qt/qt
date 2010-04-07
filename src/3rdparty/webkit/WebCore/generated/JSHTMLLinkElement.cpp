@@ -38,17 +38,17 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLLinkElement);
 
 static const HashTableValue JSHTMLLinkElementTableValues[12] =
 {
-    { "disabled", DontDelete, (intptr_t)jsHTMLLinkElementDisabled, (intptr_t)setJSHTMLLinkElementDisabled },
-    { "charset", DontDelete, (intptr_t)jsHTMLLinkElementCharset, (intptr_t)setJSHTMLLinkElementCharset },
-    { "href", DontDelete, (intptr_t)jsHTMLLinkElementHref, (intptr_t)setJSHTMLLinkElementHref },
-    { "hreflang", DontDelete, (intptr_t)jsHTMLLinkElementHreflang, (intptr_t)setJSHTMLLinkElementHreflang },
-    { "media", DontDelete, (intptr_t)jsHTMLLinkElementMedia, (intptr_t)setJSHTMLLinkElementMedia },
-    { "rel", DontDelete, (intptr_t)jsHTMLLinkElementRel, (intptr_t)setJSHTMLLinkElementRel },
-    { "rev", DontDelete, (intptr_t)jsHTMLLinkElementRev, (intptr_t)setJSHTMLLinkElementRev },
-    { "target", DontDelete, (intptr_t)jsHTMLLinkElementTarget, (intptr_t)setJSHTMLLinkElementTarget },
-    { "type", DontDelete, (intptr_t)jsHTMLLinkElementType, (intptr_t)setJSHTMLLinkElementType },
-    { "sheet", DontDelete|ReadOnly, (intptr_t)jsHTMLLinkElementSheet, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLLinkElementConstructor, (intptr_t)0 },
+    { "disabled", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLinkElementDisabled), (intptr_t)setJSHTMLLinkElementDisabled },
+    { "charset", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLinkElementCharset), (intptr_t)setJSHTMLLinkElementCharset },
+    { "href", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLinkElementHref), (intptr_t)setJSHTMLLinkElementHref },
+    { "hreflang", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLinkElementHreflang), (intptr_t)setJSHTMLLinkElementHreflang },
+    { "media", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLinkElementMedia), (intptr_t)setJSHTMLLinkElementMedia },
+    { "rel", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLinkElementRel), (intptr_t)setJSHTMLLinkElementRel },
+    { "rev", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLinkElementRev), (intptr_t)setJSHTMLLinkElementRev },
+    { "target", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLinkElementTarget), (intptr_t)setJSHTMLLinkElementTarget },
+    { "type", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLinkElementType), (intptr_t)setJSHTMLLinkElementType },
+    { "sheet", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLinkElementSheet), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLinkElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -87,7 +87,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -149,89 +149,99 @@ bool JSHTMLLinkElement::getOwnPropertyDescriptor(ExecState* exec, const Identifi
     return getStaticValueDescriptor<JSHTMLLinkElement, Base>(exec, &JSHTMLLinkElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLLinkElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLinkElementDisabled(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slot.slotBase()));
+    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThis->impl());
-    return jsBoolean(imp->disabled());
+    JSValue result = jsBoolean(imp->disabled());
+    return result;
 }
 
-JSValue jsHTMLLinkElementCharset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLinkElementCharset(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slot.slotBase()));
+    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThis->impl());
-    return jsString(exec, imp->charset());
+    JSValue result = jsString(exec, imp->charset());
+    return result;
 }
 
-JSValue jsHTMLLinkElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLinkElementHref(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slot.slotBase()));
+    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThis->impl());
-    return jsString(exec, imp->href());
+    JSValue result = jsString(exec, imp->href());
+    return result;
 }
 
-JSValue jsHTMLLinkElementHreflang(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLinkElementHreflang(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slot.slotBase()));
+    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThis->impl());
-    return jsString(exec, imp->hreflang());
+    JSValue result = jsString(exec, imp->hreflang());
+    return result;
 }
 
-JSValue jsHTMLLinkElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLinkElementMedia(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slot.slotBase()));
+    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThis->impl());
-    return jsString(exec, imp->media());
+    JSValue result = jsString(exec, imp->media());
+    return result;
 }
 
-JSValue jsHTMLLinkElementRel(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLinkElementRel(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slot.slotBase()));
+    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThis->impl());
-    return jsString(exec, imp->rel());
+    JSValue result = jsString(exec, imp->rel());
+    return result;
 }
 
-JSValue jsHTMLLinkElementRev(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLinkElementRev(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slot.slotBase()));
+    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThis->impl());
-    return jsString(exec, imp->rev());
+    JSValue result = jsString(exec, imp->rev());
+    return result;
 }
 
-JSValue jsHTMLLinkElementTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLinkElementTarget(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slot.slotBase()));
+    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThis->impl());
-    return jsString(exec, imp->target());
+    JSValue result = jsString(exec, imp->target());
+    return result;
 }
 
-JSValue jsHTMLLinkElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLinkElementType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slot.slotBase()));
+    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
-JSValue jsHTMLLinkElementSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLinkElementSheet(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slot.slotBase()));
+    JSHTMLLinkElement* castedThis = static_cast<JSHTMLLinkElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->sheet()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->sheet()));
+    return result;
 }
 
-JSValue jsHTMLLinkElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLinkElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLinkElement* domObject = static_cast<JSHTMLLinkElement*>(asObject(slot.slotBase()));
+    JSHTMLLinkElement* domObject = static_cast<JSHTMLLinkElement*>(asObject(slotBase));
     return JSHTMLLinkElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLLinkElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -241,55 +251,64 @@ void JSHTMLLinkElement::put(ExecState* exec, const Identifier& propertyName, JSV
 
 void setJSHTMLLinkElementDisabled(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(static_cast<JSHTMLLinkElement*>(thisObject)->impl());
+    JSHTMLLinkElement* castedThisObj = static_cast<JSHTMLLinkElement*>(thisObject);
+    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThisObj->impl());
     imp->setDisabled(value.toBoolean(exec));
 }
 
 void setJSHTMLLinkElementCharset(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(static_cast<JSHTMLLinkElement*>(thisObject)->impl());
+    JSHTMLLinkElement* castedThisObj = static_cast<JSHTMLLinkElement*>(thisObject);
+    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThisObj->impl());
     imp->setCharset(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLLinkElementHref(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(static_cast<JSHTMLLinkElement*>(thisObject)->impl());
+    JSHTMLLinkElement* castedThisObj = static_cast<JSHTMLLinkElement*>(thisObject);
+    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThisObj->impl());
     imp->setHref(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLLinkElementHreflang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(static_cast<JSHTMLLinkElement*>(thisObject)->impl());
+    JSHTMLLinkElement* castedThisObj = static_cast<JSHTMLLinkElement*>(thisObject);
+    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThisObj->impl());
     imp->setHreflang(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLLinkElementMedia(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(static_cast<JSHTMLLinkElement*>(thisObject)->impl());
+    JSHTMLLinkElement* castedThisObj = static_cast<JSHTMLLinkElement*>(thisObject);
+    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThisObj->impl());
     imp->setMedia(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLLinkElementRel(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(static_cast<JSHTMLLinkElement*>(thisObject)->impl());
+    JSHTMLLinkElement* castedThisObj = static_cast<JSHTMLLinkElement*>(thisObject);
+    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThisObj->impl());
     imp->setRel(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLLinkElementRev(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(static_cast<JSHTMLLinkElement*>(thisObject)->impl());
+    JSHTMLLinkElement* castedThisObj = static_cast<JSHTMLLinkElement*>(thisObject);
+    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThisObj->impl());
     imp->setRev(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLLinkElementTarget(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(static_cast<JSHTMLLinkElement*>(thisObject)->impl());
+    JSHTMLLinkElement* castedThisObj = static_cast<JSHTMLLinkElement*>(thisObject);
+    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThisObj->impl());
     imp->setTarget(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLLinkElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(static_cast<JSHTMLLinkElement*>(thisObject)->impl());
+    JSHTMLLinkElement* castedThisObj = static_cast<JSHTMLLinkElement*>(thisObject);
+    HTMLLinkElement* imp = static_cast<HTMLLinkElement*>(castedThisObj->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 

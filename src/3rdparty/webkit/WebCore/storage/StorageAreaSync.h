@@ -42,17 +42,17 @@ namespace WebCore {
 
     class StorageAreaSync : public RefCounted<StorageAreaSync> {
     public:
-        static PassRefPtr<StorageAreaSync> create(PassRefPtr<StorageSyncManager> storageSyncManager, PassRefPtr<StorageAreaImpl> storageArea);
+        static PassRefPtr<StorageAreaSync> create(PassRefPtr<StorageSyncManager> storageSyncManager, PassRefPtr<StorageAreaImpl> storageArea, String databaseIdentifier);
         ~StorageAreaSync();
 
         void scheduleFinalSync();
-        void blockUntilImportComplete() const;
+        void blockUntilImportComplete();
 
         void scheduleItemForSync(const String& key, const String& value);
         void scheduleClear();
 
     private:
-        StorageAreaSync(PassRefPtr<StorageSyncManager> storageSyncManager, PassRefPtr<StorageAreaImpl> storageArea);
+        StorageAreaSync(PassRefPtr<StorageSyncManager> storageSyncManager, PassRefPtr<StorageAreaImpl> storageArea, String databaseIdentifier);
 
         void dispatchStorageEvent(const String& key, const String& oldValue, const String& newValue, Frame* sourceFrame);
 
@@ -78,10 +78,13 @@ namespace WebCore {
         void syncTimerFired(Timer<StorageAreaSync>*);
         void sync(bool clearItems, const HashMap<String, String>& items);
 
+        const String m_databaseIdentifier;
+
         Mutex m_syncLock;
         HashMap<String, String> m_itemsPendingSync;
         bool m_clearItemsWhileSyncing;
         bool m_syncScheduled;
+        bool m_syncInProgress;
 
         mutable Mutex m_importLock;
         mutable ThreadCondition m_importCondition;

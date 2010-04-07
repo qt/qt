@@ -33,9 +33,8 @@
 #include "JSClassRef.h"
 #include "JSGlobalObject.h"
 #include "JSObject.h"
-#include <wtf/Platform.h>
 
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
 #include <mach-o/dyld.h>
 
 static const int32_t webkitFirstVersionWithConcurrentGlobalContexts = 0x2100500; // 528.5.0
@@ -46,7 +45,7 @@ using namespace JSC;
 JSContextGroupRef JSContextGroupCreate()
 {
     initializeThreading();
-    return toRef(JSGlobalData::create().releaseRef());
+    return toRef(JSGlobalData::createNonDefault().releaseRef());
 }
 
 JSContextGroupRef JSContextGroupRetain(JSContextGroupRef group)
@@ -63,7 +62,7 @@ void JSContextGroupRelease(JSContextGroupRef group)
 JSGlobalContextRef JSGlobalContextCreate(JSClassRef globalObjectClass)
 {
     initializeThreading();
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
     // When running on Tiger or Leopard, or if the application was linked before JSGlobalContextCreate was changed
     // to use a unique JSGlobalData, we use a shared one for compatibility.
 #if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD)
@@ -74,7 +73,7 @@ JSGlobalContextRef JSGlobalContextCreate(JSClassRef globalObjectClass)
         JSLock lock(LockForReal);
         return JSGlobalContextCreateInGroup(toRef(&JSGlobalData::sharedInstance()), globalObjectClass);
     }
-#endif // PLATFORM(DARWIN)
+#endif // OS(DARWIN)
 
     return JSGlobalContextCreateInGroup(0, globalObjectClass);
 }
@@ -84,8 +83,9 @@ JSGlobalContextRef JSGlobalContextCreateInGroup(JSContextGroupRef group, JSClass
     initializeThreading();
 
     JSLock lock(LockForReal);
+    RefPtr<JSGlobalData> globalData = group ? PassRefPtr<JSGlobalData>(toJS(group)) : JSGlobalData::createNonDefault();
 
-    RefPtr<JSGlobalData> globalData = group ? PassRefPtr<JSGlobalData>(toJS(group)) : JSGlobalData::create();
+    APIEntryShim entryShim(globalData.get(), false);
 
 #if ENABLE(JSC_MULTIPLE_THREADS)
     globalData->makeUsableFromMultipleThreads();
@@ -108,12 +108,9 @@ JSGlobalContextRef JSGlobalContextCreateInGroup(JSContextGroupRef group, JSClass
 JSGlobalContextRef JSGlobalContextRetain(JSGlobalContextRef ctx)
 {
     ExecState* exec = toJS(ctx);
-    JSLock lock(exec);
+    APIEntryShim entryShim(exec);
 
     JSGlobalData& globalData = exec->globalData();
-
-    globalData.heap.registerThread();
-
     gcProtect(exec->dynamicGlobalObject());
     globalData.ref();
     return ctx;
@@ -124,25 +121,39 @@ void JSGlobalContextRelease(JSGlobalContextRef ctx)
     ExecState* exec = toJS(ctx);
     JSLock lock(exec);
 
-    gcUnprotect(exec->dynamicGlobalObject());
-
     JSGlobalData& globalData = exec->globalData();
-    if (globalData.refCount() == 2) { // One reference is held by JSGlobalObject, another added by JSGlobalContextRetain().
-        // The last reference was released, this is our last chance to collect.
-        ASSERT(!globalData.heap.protectedObjectCount());
-        ASSERT(!globalData.heap.isBusy());
+    JSGlobalObject* dgo = exec->dynamicGlobalObject();
+    IdentifierTable* savedIdentifierTable = setCurrentIdentifierTable(globalData.identifierTable);
+
+    // One reference is held by JSGlobalObject, another added by JSGlobalContextRetain().
+    bool releasingContextGroup = globalData.refCount() == 2;
+    bool releasingGlobalObject = Heap::heap(dgo)->unprotect(dgo);
+    // If this is the last reference to a global data, it should also
+    // be the only remaining reference to the global object too!
+    ASSERT(!releasingContextGroup || releasingGlobalObject);
+
+    // An API 'JSGlobalContextRef' retains two things - a global object and a
+    // global data (or context group, in API terminology).
+    // * If this is the last reference to any contexts in the given context group,
+    //   call destroy on the heap (the global data is being  freed).
+    // * If this was the last reference to the global object, then unprotecting
+    //   it may  release a lot of GC memory - run the garbage collector now.
+    // * If there are more references remaining the the global object, then do nothing
+    //   (specifically that is more protects, which we assume come from other JSGlobalContextRefs).
+    if (releasingContextGroup)
         globalData.heap.destroy();
-    } else
-        globalData.heap.collect();
+    else if (releasingGlobalObject)
+        globalData.heap.collectAllGarbage();
 
     globalData.deref();
+
+    setCurrentIdentifierTable(savedIdentifierTable);
 }
 
 JSObjectRef JSContextGetGlobalObject(JSContextRef ctx)
 {
     ExecState* exec = toJS(ctx);
-    exec->globalData().heap.registerThread();
-    JSLock lock(exec);
+    APIEntryShim entryShim(exec);
 
     // It is necessary to call toThisObject to get the wrapper object when used with WebCore.
     return toRef(exec->lexicalGlobalObject()->toThisObject(exec));
@@ -157,8 +168,7 @@ JSContextGroupRef JSContextGetGroup(JSContextRef ctx)
 JSGlobalContextRef JSContextGetGlobalContext(JSContextRef ctx)
 {
     ExecState* exec = toJS(ctx);
-    exec->globalData().heap.registerThread();
-    JSLock lock(exec);
+    APIEntryShim entryShim(exec);
 
     return toGlobalRef(exec->lexicalGlobalObject()->globalExec());
 }

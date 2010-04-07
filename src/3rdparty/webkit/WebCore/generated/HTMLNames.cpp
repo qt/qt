@@ -51,6 +51,8 @@ DEFINE_GLOBAL(QualifiedName, acronymTag, nullAtom, "acronym", xhtmlNamespaceURI)
 DEFINE_GLOBAL(QualifiedName, addressTag, nullAtom, "address", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, appletTag, nullAtom, "applet", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, areaTag, nullAtom, "area", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, articleTag, nullAtom, "article", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, asideTag, nullAtom, "aside", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, audioTag, nullAtom, "audio", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, bTag, nullAtom, "b", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, baseTag, nullAtom, "base", xhtmlNamespaceURI);
@@ -84,6 +86,7 @@ DEFINE_GLOBAL(QualifiedName, emTag, nullAtom, "em", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, embedTag, nullAtom, "embed", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, fieldsetTag, nullAtom, "fieldset", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, fontTag, nullAtom, "font", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, footerTag, nullAtom, "footer", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, formTag, nullAtom, "form", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, frameTag, nullAtom, "frame", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, framesetTag, nullAtom, "frameset", xhtmlNamespaceURI);
@@ -94,6 +97,8 @@ DEFINE_GLOBAL(QualifiedName, h4Tag, nullAtom, "h4", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, h5Tag, nullAtom, "h5", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, h6Tag, nullAtom, "h6", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, headTag, nullAtom, "head", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, headerTag, nullAtom, "header", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, hgroupTag, nullAtom, "hgroup", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, hrTag, nullAtom, "hr", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, htmlTag, nullAtom, "html", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, iTag, nullAtom, "i", xhtmlNamespaceURI);
@@ -129,6 +134,7 @@ DEFINE_GLOBAL(QualifiedName, pTag, nullAtom, "p", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, paramTag, nullAtom, "param", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, plaintextTag, nullAtom, "plaintext", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, preTag, nullAtom, "pre", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, progressTag, nullAtom, "progress", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, qTag, nullAtom, "q", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, rpTag, nullAtom, "rp", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, rtTag, nullAtom, "rt", xhtmlNamespaceURI);
@@ -136,6 +142,7 @@ DEFINE_GLOBAL(QualifiedName, rubyTag, nullAtom, "ruby", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, sTag, nullAtom, "s", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, sampTag, nullAtom, "samp", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, scriptTag, nullAtom, "script", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, sectionTag, nullAtom, "section", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, selectTag, nullAtom, "select", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, smallTag, nullAtom, "small", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, sourceTag, nullAtom, "source", xhtmlNamespaceURI);
@@ -172,6 +179,8 @@ WebCore::QualifiedName** getHTMLTags(size_t* size)
         (WebCore::QualifiedName*)&addressTag,
         (WebCore::QualifiedName*)&appletTag,
         (WebCore::QualifiedName*)&areaTag,
+        (WebCore::QualifiedName*)&articleTag,
+        (WebCore::QualifiedName*)&asideTag,
         (WebCore::QualifiedName*)&audioTag,
         (WebCore::QualifiedName*)&bTag,
         (WebCore::QualifiedName*)&baseTag,
@@ -205,6 +214,7 @@ WebCore::QualifiedName** getHTMLTags(size_t* size)
         (WebCore::QualifiedName*)&embedTag,
         (WebCore::QualifiedName*)&fieldsetTag,
         (WebCore::QualifiedName*)&fontTag,
+        (WebCore::QualifiedName*)&footerTag,
         (WebCore::QualifiedName*)&formTag,
         (WebCore::QualifiedName*)&frameTag,
         (WebCore::QualifiedName*)&framesetTag,
@@ -215,6 +225,8 @@ WebCore::QualifiedName** getHTMLTags(size_t* size)
         (WebCore::QualifiedName*)&h5Tag,
         (WebCore::QualifiedName*)&h6Tag,
         (WebCore::QualifiedName*)&headTag,
+        (WebCore::QualifiedName*)&headerTag,
+        (WebCore::QualifiedName*)&hgroupTag,
         (WebCore::QualifiedName*)&hrTag,
         (WebCore::QualifiedName*)&htmlTag,
         (WebCore::QualifiedName*)&iTag,
@@ -250,6 +262,7 @@ WebCore::QualifiedName** getHTMLTags(size_t* size)
         (WebCore::QualifiedName*)&paramTag,
         (WebCore::QualifiedName*)&plaintextTag,
         (WebCore::QualifiedName*)&preTag,
+        (WebCore::QualifiedName*)&progressTag,
         (WebCore::QualifiedName*)&qTag,
         (WebCore::QualifiedName*)&rpTag,
         (WebCore::QualifiedName*)&rtTag,
@@ -257,6 +270,7 @@ WebCore::QualifiedName** getHTMLTags(size_t* size)
         (WebCore::QualifiedName*)&sTag,
         (WebCore::QualifiedName*)&sampTag,
         (WebCore::QualifiedName*)&scriptTag,
+        (WebCore::QualifiedName*)&sectionTag,
         (WebCore::QualifiedName*)&selectTag,
         (WebCore::QualifiedName*)&smallTag,
         (WebCore::QualifiedName*)&sourceTag,
@@ -283,7 +297,7 @@ WebCore::QualifiedName** getHTMLTags(size_t* size)
         (WebCore::QualifiedName*)&wbrTag,
         (WebCore::QualifiedName*)&xmpTag,
     };
-    *size = 116;
+    *size = 123;
     return HTMLTags;
 }
 
@@ -298,22 +312,35 @@ DEFINE_GLOBAL(QualifiedName, alinkAttr, nullAtom, "alink", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, altAttr, nullAtom, "alt", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, archiveAttr, nullAtom, "archive", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_activedescendantAttr, nullAtom, "aria_activedescendant", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_atomicAttr, nullAtom, "aria_atomic", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_busyAttr, nullAtom, "aria_busy", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_checkedAttr, nullAtom, "aria_checked", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_controlsAttr, nullAtom, "aria_controls", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_describedbyAttr, nullAtom, "aria_describedby", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_disabledAttr, nullAtom, "aria_disabled", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_dropeffectAttr, nullAtom, "aria_dropeffect", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_expandedAttr, nullAtom, "aria_expanded", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_flowtoAttr, nullAtom, "aria_flowto", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_grabbedAttr, nullAtom, "aria_grabbed", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_haspopupAttr, nullAtom, "aria_haspopup", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_hiddenAttr, nullAtom, "aria_hidden", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_labelAttr, nullAtom, "aria_label", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_labeledbyAttr, nullAtom, "aria_labeledby", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_labelledbyAttr, nullAtom, "aria_labelledby", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_levelAttr, nullAtom, "aria_level", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_liveAttr, nullAtom, "aria_live", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_multiselectableAttr, nullAtom, "aria_multiselectable", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_orientationAttr, nullAtom, "aria_orientation", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_ownsAttr, nullAtom, "aria_owns", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_pressedAttr, nullAtom, "aria_pressed", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_readonlyAttr, nullAtom, "aria_readonly", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_relevantAttr, nullAtom, "aria_relevant", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_requiredAttr, nullAtom, "aria_required", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, aria_selectedAttr, nullAtom, "aria_selected", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_valuemaxAttr, nullAtom, "aria_valuemax", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_valueminAttr, nullAtom, "aria_valuemin", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_valuenowAttr, nullAtom, "aria_valuenow", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_valuetextAttr, nullAtom, "aria_valuetext", xhtmlNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, autobufferAttr, nullAtom, "autobuffer", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, autocompleteAttr, nullAtom, "autocomplete", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, autofocusAttr, nullAtom, "autofocus", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, autoplayAttr, nullAtom, "autoplay", xhtmlNamespaceURI);
@@ -359,6 +386,7 @@ DEFINE_GLOBAL(QualifiedName, disabledAttr, nullAtom, "disabled", xhtmlNamespaceU
 DEFINE_GLOBAL(QualifiedName, draggableAttr, nullAtom, "draggable", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, enctypeAttr, nullAtom, "enctype", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, endAttr, nullAtom, "end", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, eventAttr, nullAtom, "event", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, expandedAttr, nullAtom, "expanded", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, faceAttr, nullAtom, "face", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, focusedAttr, nullAtom, "focused", xhtmlNamespaceURI);
@@ -433,6 +461,8 @@ DEFINE_GLOBAL(QualifiedName, onemptiedAttr, nullAtom, "onemptied", xhtmlNamespac
 DEFINE_GLOBAL(QualifiedName, onendedAttr, nullAtom, "onended", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onerrorAttr, nullAtom, "onerror", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onfocusAttr, nullAtom, "onfocus", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onfocusinAttr, nullAtom, "onfocusin", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onfocusoutAttr, nullAtom, "onfocusout", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onhashchangeAttr, nullAtom, "onhashchange", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, oninputAttr, nullAtom, "oninput", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, oninvalidAttr, nullAtom, "oninvalid", xhtmlNamespaceURI);
@@ -458,6 +488,7 @@ DEFINE_GLOBAL(QualifiedName, onpasteAttr, nullAtom, "onpaste", xhtmlNamespaceURI
 DEFINE_GLOBAL(QualifiedName, onpauseAttr, nullAtom, "onpause", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onplayAttr, nullAtom, "onplay", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onplayingAttr, nullAtom, "onplaying", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onpopstateAttr, nullAtom, "onpopstate", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onprogressAttr, nullAtom, "onprogress", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onratechangeAttr, nullAtom, "onratechange", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onresetAttr, nullAtom, "onreset", xhtmlNamespaceURI);
@@ -473,12 +504,18 @@ DEFINE_GLOBAL(QualifiedName, onstorageAttr, nullAtom, "onstorage", xhtmlNamespac
 DEFINE_GLOBAL(QualifiedName, onsubmitAttr, nullAtom, "onsubmit", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onsuspendAttr, nullAtom, "onsuspend", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, ontimeupdateAttr, nullAtom, "ontimeupdate", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, ontouchcancelAttr, nullAtom, "ontouchcancel", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, ontouchendAttr, nullAtom, "ontouchend", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, ontouchmoveAttr, nullAtom, "ontouchmove", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, ontouchstartAttr, nullAtom, "ontouchstart", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onunloadAttr, nullAtom, "onunload", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onvolumechangeAttr, nullAtom, "onvolumechange", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onwaitingAttr, nullAtom, "onwaiting", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onwebkitanimationendAttr, nullAtom, "onwebkitanimationend", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onwebkitanimationiterationAttr, nullAtom, "onwebkitanimationiteration", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onwebkitanimationstartAttr, nullAtom, "onwebkitanimationstart", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onwebkitbeginfullscreenAttr, nullAtom, "onwebkitbeginfullscreen", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onwebkitendfullscreenAttr, nullAtom, "onwebkitendfullscreen", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onwebkittransitionendAttr, nullAtom, "onwebkittransitionend", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, patternAttr, nullAtom, "pattern", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, placeholderAttr, nullAtom, "placeholder", xhtmlNamespaceURI);
@@ -486,6 +523,7 @@ DEFINE_GLOBAL(QualifiedName, playcountAttr, nullAtom, "playcount", xhtmlNamespac
 DEFINE_GLOBAL(QualifiedName, pluginurlAttr, nullAtom, "pluginurl", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, posterAttr, nullAtom, "poster", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, precisionAttr, nullAtom, "precision", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, preloadAttr, nullAtom, "preload", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, primaryAttr, nullAtom, "primary", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, profileAttr, nullAtom, "profile", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, progressAttr, nullAtom, "progress", xhtmlNamespaceURI);
@@ -499,6 +537,7 @@ DEFINE_GLOBAL(QualifiedName, roleAttr, nullAtom, "role", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, rowsAttr, nullAtom, "rows", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, rowspanAttr, nullAtom, "rowspan", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, rulesAttr, nullAtom, "rules", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, sandboxAttr, nullAtom, "sandbox", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, schemeAttr, nullAtom, "scheme", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, scopeAttr, nullAtom, "scope", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, scrollamountAttr, nullAtom, "scrollamount", xhtmlNamespaceURI);
@@ -514,6 +553,7 @@ DEFINE_GLOBAL(QualifiedName, spellcheckAttr, nullAtom, "spellcheck", xhtmlNamesp
 DEFINE_GLOBAL(QualifiedName, srcAttr, nullAtom, "src", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, standbyAttr, nullAtom, "standby", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, startAttr, nullAtom, "start", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, stepAttr, nullAtom, "step", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, styleAttr, nullAtom, "style", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, summaryAttr, nullAtom, "summary", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, tabindexAttr, nullAtom, "tabindex", xhtmlNamespaceURI);
@@ -550,22 +590,35 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&altAttr,
         (WebCore::QualifiedName*)&archiveAttr,
         (WebCore::QualifiedName*)&aria_activedescendantAttr,
+        (WebCore::QualifiedName*)&aria_atomicAttr,
+        (WebCore::QualifiedName*)&aria_busyAttr,
         (WebCore::QualifiedName*)&aria_checkedAttr,
+        (WebCore::QualifiedName*)&aria_controlsAttr,
         (WebCore::QualifiedName*)&aria_describedbyAttr,
         (WebCore::QualifiedName*)&aria_disabledAttr,
+        (WebCore::QualifiedName*)&aria_dropeffectAttr,
+        (WebCore::QualifiedName*)&aria_expandedAttr,
+        (WebCore::QualifiedName*)&aria_flowtoAttr,
+        (WebCore::QualifiedName*)&aria_grabbedAttr,
+        (WebCore::QualifiedName*)&aria_haspopupAttr,
         (WebCore::QualifiedName*)&aria_hiddenAttr,
         (WebCore::QualifiedName*)&aria_labelAttr,
         (WebCore::QualifiedName*)&aria_labeledbyAttr,
         (WebCore::QualifiedName*)&aria_labelledbyAttr,
         (WebCore::QualifiedName*)&aria_levelAttr,
+        (WebCore::QualifiedName*)&aria_liveAttr,
+        (WebCore::QualifiedName*)&aria_multiselectableAttr,
+        (WebCore::QualifiedName*)&aria_orientationAttr,
+        (WebCore::QualifiedName*)&aria_ownsAttr,
         (WebCore::QualifiedName*)&aria_pressedAttr,
         (WebCore::QualifiedName*)&aria_readonlyAttr,
+        (WebCore::QualifiedName*)&aria_relevantAttr,
         (WebCore::QualifiedName*)&aria_requiredAttr,
+        (WebCore::QualifiedName*)&aria_selectedAttr,
         (WebCore::QualifiedName*)&aria_valuemaxAttr,
         (WebCore::QualifiedName*)&aria_valueminAttr,
         (WebCore::QualifiedName*)&aria_valuenowAttr,
         (WebCore::QualifiedName*)&aria_valuetextAttr,
-        (WebCore::QualifiedName*)&autobufferAttr,
         (WebCore::QualifiedName*)&autocompleteAttr,
         (WebCore::QualifiedName*)&autofocusAttr,
         (WebCore::QualifiedName*)&autoplayAttr,
@@ -611,6 +664,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&draggableAttr,
         (WebCore::QualifiedName*)&enctypeAttr,
         (WebCore::QualifiedName*)&endAttr,
+        (WebCore::QualifiedName*)&eventAttr,
         (WebCore::QualifiedName*)&expandedAttr,
         (WebCore::QualifiedName*)&faceAttr,
         (WebCore::QualifiedName*)&focusedAttr,
@@ -685,6 +739,8 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&onendedAttr,
         (WebCore::QualifiedName*)&onerrorAttr,
         (WebCore::QualifiedName*)&onfocusAttr,
+        (WebCore::QualifiedName*)&onfocusinAttr,
+        (WebCore::QualifiedName*)&onfocusoutAttr,
         (WebCore::QualifiedName*)&onhashchangeAttr,
         (WebCore::QualifiedName*)&oninputAttr,
         (WebCore::QualifiedName*)&oninvalidAttr,
@@ -710,6 +766,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&onpauseAttr,
         (WebCore::QualifiedName*)&onplayAttr,
         (WebCore::QualifiedName*)&onplayingAttr,
+        (WebCore::QualifiedName*)&onpopstateAttr,
         (WebCore::QualifiedName*)&onprogressAttr,
         (WebCore::QualifiedName*)&onratechangeAttr,
         (WebCore::QualifiedName*)&onresetAttr,
@@ -725,12 +782,18 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&onsubmitAttr,
         (WebCore::QualifiedName*)&onsuspendAttr,
         (WebCore::QualifiedName*)&ontimeupdateAttr,
+        (WebCore::QualifiedName*)&ontouchcancelAttr,
+        (WebCore::QualifiedName*)&ontouchendAttr,
+        (WebCore::QualifiedName*)&ontouchmoveAttr,
+        (WebCore::QualifiedName*)&ontouchstartAttr,
         (WebCore::QualifiedName*)&onunloadAttr,
         (WebCore::QualifiedName*)&onvolumechangeAttr,
         (WebCore::QualifiedName*)&onwaitingAttr,
         (WebCore::QualifiedName*)&onwebkitanimationendAttr,
         (WebCore::QualifiedName*)&onwebkitanimationiterationAttr,
         (WebCore::QualifiedName*)&onwebkitanimationstartAttr,
+        (WebCore::QualifiedName*)&onwebkitbeginfullscreenAttr,
+        (WebCore::QualifiedName*)&onwebkitendfullscreenAttr,
         (WebCore::QualifiedName*)&onwebkittransitionendAttr,
         (WebCore::QualifiedName*)&patternAttr,
         (WebCore::QualifiedName*)&placeholderAttr,
@@ -738,6 +801,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&pluginurlAttr,
         (WebCore::QualifiedName*)&posterAttr,
         (WebCore::QualifiedName*)&precisionAttr,
+        (WebCore::QualifiedName*)&preloadAttr,
         (WebCore::QualifiedName*)&primaryAttr,
         (WebCore::QualifiedName*)&profileAttr,
         (WebCore::QualifiedName*)&progressAttr,
@@ -751,6 +815,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&rowsAttr,
         (WebCore::QualifiedName*)&rowspanAttr,
         (WebCore::QualifiedName*)&rulesAttr,
+        (WebCore::QualifiedName*)&sandboxAttr,
         (WebCore::QualifiedName*)&schemeAttr,
         (WebCore::QualifiedName*)&scopeAttr,
         (WebCore::QualifiedName*)&scrollamountAttr,
@@ -766,6 +831,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&srcAttr,
         (WebCore::QualifiedName*)&standbyAttr,
         (WebCore::QualifiedName*)&startAttr,
+        (WebCore::QualifiedName*)&stepAttr,
         (WebCore::QualifiedName*)&styleAttr,
         (WebCore::QualifiedName*)&summaryAttr,
         (WebCore::QualifiedName*)&tabindexAttr,
@@ -788,14 +854,9 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&widthAttr,
         (WebCore::QualifiedName*)&wrapAttr,
     };
-    *size = 247;
+    *size = 273;
     return HTMLAttr;
 }
-
-// Tags as strings
-
-// Attributes as strings
-char classAttrString[] = "class";
 
 void init()
 {
@@ -813,732 +874,403 @@ void init()
     new ((void*)&xhtmlNamespaceURI) AtomicString(xhtmlNS);
 
     // Tags
-    const char *aTagString = "a";
-    const char *abbrTagString = "abbr";
-    const char *acronymTagString = "acronym";
-    const char *addressTagString = "address";
-    const char *appletTagString = "applet";
-    const char *areaTagString = "area";
-    const char *audioTagString = "audio";
-    const char *bTagString = "b";
-    const char *baseTagString = "base";
-    const char *basefontTagString = "basefont";
-    const char *bdoTagString = "bdo";
-    const char *bigTagString = "big";
-    const char *blockquoteTagString = "blockquote";
-    const char *bodyTagString = "body";
-    const char *brTagString = "br";
-    const char *buttonTagString = "button";
-    const char *canvasTagString = "canvas";
-    const char *captionTagString = "caption";
-    const char *centerTagString = "center";
-    const char *citeTagString = "cite";
-    const char *codeTagString = "code";
-    const char *colTagString = "col";
-    const char *colgroupTagString = "colgroup";
-    const char *datagridTagString = "datagrid";
-    const char *datalistTagString = "datalist";
-    const char *dcellTagString = "dcell";
-    const char *dcolTagString = "dcol";
-    const char *ddTagString = "dd";
-    const char *delTagString = "del";
-    const char *dfnTagString = "dfn";
-    const char *dirTagString = "dir";
-    const char *divTagString = "div";
-    const char *dlTagString = "dl";
-    const char *drowTagString = "drow";
-    const char *dtTagString = "dt";
-    const char *emTagString = "em";
-    const char *embedTagString = "embed";
-    const char *fieldsetTagString = "fieldset";
-    const char *fontTagString = "font";
-    const char *formTagString = "form";
-    const char *frameTagString = "frame";
-    const char *framesetTagString = "frameset";
-    const char *h1TagString = "h1";
-    const char *h2TagString = "h2";
-    const char *h3TagString = "h3";
-    const char *h4TagString = "h4";
-    const char *h5TagString = "h5";
-    const char *h6TagString = "h6";
-    const char *headTagString = "head";
-    const char *hrTagString = "hr";
-    const char *htmlTagString = "html";
-    const char *iTagString = "i";
-    const char *iframeTagString = "iframe";
-    const char *imageTagString = "image";
-    const char *imgTagString = "img";
-    const char *inputTagString = "input";
-    const char *insTagString = "ins";
-    const char *isindexTagString = "isindex";
-    const char *kbdTagString = "kbd";
-    const char *keygenTagString = "keygen";
-    const char *labelTagString = "label";
-    const char *layerTagString = "layer";
-    const char *legendTagString = "legend";
-    const char *liTagString = "li";
-    const char *linkTagString = "link";
-    const char *listingTagString = "listing";
-    const char *mapTagString = "map";
-    const char *marqueeTagString = "marquee";
-    const char *menuTagString = "menu";
-    const char *metaTagString = "meta";
-    const char *navTagString = "nav";
-    const char *nobrTagString = "nobr";
-    const char *noembedTagString = "noembed";
-    const char *noframesTagString = "noframes";
-    const char *nolayerTagString = "nolayer";
-    const char *noscriptTagString = "noscript";
-    const char *objectTagString = "object";
-    const char *olTagString = "ol";
-    const char *optgroupTagString = "optgroup";
-    const char *optionTagString = "option";
-    const char *pTagString = "p";
-    const char *paramTagString = "param";
-    const char *plaintextTagString = "plaintext";
-    const char *preTagString = "pre";
-    const char *qTagString = "q";
-    const char *rpTagString = "rp";
-    const char *rtTagString = "rt";
-    const char *rubyTagString = "ruby";
-    const char *sTagString = "s";
-    const char *sampTagString = "samp";
-    const char *scriptTagString = "script";
-    const char *selectTagString = "select";
-    const char *smallTagString = "small";
-    const char *sourceTagString = "source";
-    const char *spanTagString = "span";
-    const char *strikeTagString = "strike";
-    const char *strongTagString = "strong";
-    const char *styleTagString = "style";
-    const char *subTagString = "sub";
-    const char *supTagString = "sup";
-    const char *tableTagString = "table";
-    const char *tbodyTagString = "tbody";
-    const char *tdTagString = "td";
-    const char *textareaTagString = "textarea";
-    const char *tfootTagString = "tfoot";
-    const char *thTagString = "th";
-    const char *theadTagString = "thead";
-    const char *titleTagString = "title";
-    const char *trTagString = "tr";
-    const char *ttTagString = "tt";
-    const char *uTagString = "u";
-    const char *ulTagString = "ul";
-    const char *varTagString = "var";
-    const char *videoTagString = "video";
-    const char *wbrTagString = "wbr";
-    const char *xmpTagString = "xmp";
-    new ((void*)&aTag) QualifiedName(nullAtom, aTagString, xhtmlNS);
-    new ((void*)&abbrTag) QualifiedName(nullAtom, abbrTagString, xhtmlNS);
-    new ((void*)&acronymTag) QualifiedName(nullAtom, acronymTagString, xhtmlNS);
-    new ((void*)&addressTag) QualifiedName(nullAtom, addressTagString, xhtmlNS);
-    new ((void*)&appletTag) QualifiedName(nullAtom, appletTagString, xhtmlNS);
-    new ((void*)&areaTag) QualifiedName(nullAtom, areaTagString, xhtmlNS);
-    new ((void*)&audioTag) QualifiedName(nullAtom, audioTagString, xhtmlNS);
-    new ((void*)&bTag) QualifiedName(nullAtom, bTagString, xhtmlNS);
-    new ((void*)&baseTag) QualifiedName(nullAtom, baseTagString, xhtmlNS);
-    new ((void*)&basefontTag) QualifiedName(nullAtom, basefontTagString, xhtmlNS);
-    new ((void*)&bdoTag) QualifiedName(nullAtom, bdoTagString, xhtmlNS);
-    new ((void*)&bigTag) QualifiedName(nullAtom, bigTagString, xhtmlNS);
-    new ((void*)&blockquoteTag) QualifiedName(nullAtom, blockquoteTagString, xhtmlNS);
-    new ((void*)&bodyTag) QualifiedName(nullAtom, bodyTagString, xhtmlNS);
-    new ((void*)&brTag) QualifiedName(nullAtom, brTagString, xhtmlNS);
-    new ((void*)&buttonTag) QualifiedName(nullAtom, buttonTagString, xhtmlNS);
-    new ((void*)&canvasTag) QualifiedName(nullAtom, canvasTagString, xhtmlNS);
-    new ((void*)&captionTag) QualifiedName(nullAtom, captionTagString, xhtmlNS);
-    new ((void*)&centerTag) QualifiedName(nullAtom, centerTagString, xhtmlNS);
-    new ((void*)&citeTag) QualifiedName(nullAtom, citeTagString, xhtmlNS);
-    new ((void*)&codeTag) QualifiedName(nullAtom, codeTagString, xhtmlNS);
-    new ((void*)&colTag) QualifiedName(nullAtom, colTagString, xhtmlNS);
-    new ((void*)&colgroupTag) QualifiedName(nullAtom, colgroupTagString, xhtmlNS);
-    new ((void*)&datagridTag) QualifiedName(nullAtom, datagridTagString, xhtmlNS);
-    new ((void*)&datalistTag) QualifiedName(nullAtom, datalistTagString, xhtmlNS);
-    new ((void*)&dcellTag) QualifiedName(nullAtom, dcellTagString, xhtmlNS);
-    new ((void*)&dcolTag) QualifiedName(nullAtom, dcolTagString, xhtmlNS);
-    new ((void*)&ddTag) QualifiedName(nullAtom, ddTagString, xhtmlNS);
-    new ((void*)&delTag) QualifiedName(nullAtom, delTagString, xhtmlNS);
-    new ((void*)&dfnTag) QualifiedName(nullAtom, dfnTagString, xhtmlNS);
-    new ((void*)&dirTag) QualifiedName(nullAtom, dirTagString, xhtmlNS);
-    new ((void*)&divTag) QualifiedName(nullAtom, divTagString, xhtmlNS);
-    new ((void*)&dlTag) QualifiedName(nullAtom, dlTagString, xhtmlNS);
-    new ((void*)&drowTag) QualifiedName(nullAtom, drowTagString, xhtmlNS);
-    new ((void*)&dtTag) QualifiedName(nullAtom, dtTagString, xhtmlNS);
-    new ((void*)&emTag) QualifiedName(nullAtom, emTagString, xhtmlNS);
-    new ((void*)&embedTag) QualifiedName(nullAtom, embedTagString, xhtmlNS);
-    new ((void*)&fieldsetTag) QualifiedName(nullAtom, fieldsetTagString, xhtmlNS);
-    new ((void*)&fontTag) QualifiedName(nullAtom, fontTagString, xhtmlNS);
-    new ((void*)&formTag) QualifiedName(nullAtom, formTagString, xhtmlNS);
-    new ((void*)&frameTag) QualifiedName(nullAtom, frameTagString, xhtmlNS);
-    new ((void*)&framesetTag) QualifiedName(nullAtom, framesetTagString, xhtmlNS);
-    new ((void*)&h1Tag) QualifiedName(nullAtom, h1TagString, xhtmlNS);
-    new ((void*)&h2Tag) QualifiedName(nullAtom, h2TagString, xhtmlNS);
-    new ((void*)&h3Tag) QualifiedName(nullAtom, h3TagString, xhtmlNS);
-    new ((void*)&h4Tag) QualifiedName(nullAtom, h4TagString, xhtmlNS);
-    new ((void*)&h5Tag) QualifiedName(nullAtom, h5TagString, xhtmlNS);
-    new ((void*)&h6Tag) QualifiedName(nullAtom, h6TagString, xhtmlNS);
-    new ((void*)&headTag) QualifiedName(nullAtom, headTagString, xhtmlNS);
-    new ((void*)&hrTag) QualifiedName(nullAtom, hrTagString, xhtmlNS);
-    new ((void*)&htmlTag) QualifiedName(nullAtom, htmlTagString, xhtmlNS);
-    new ((void*)&iTag) QualifiedName(nullAtom, iTagString, xhtmlNS);
-    new ((void*)&iframeTag) QualifiedName(nullAtom, iframeTagString, xhtmlNS);
-    new ((void*)&imageTag) QualifiedName(nullAtom, imageTagString, xhtmlNS);
-    new ((void*)&imgTag) QualifiedName(nullAtom, imgTagString, xhtmlNS);
-    new ((void*)&inputTag) QualifiedName(nullAtom, inputTagString, xhtmlNS);
-    new ((void*)&insTag) QualifiedName(nullAtom, insTagString, xhtmlNS);
-    new ((void*)&isindexTag) QualifiedName(nullAtom, isindexTagString, xhtmlNS);
-    new ((void*)&kbdTag) QualifiedName(nullAtom, kbdTagString, xhtmlNS);
-    new ((void*)&keygenTag) QualifiedName(nullAtom, keygenTagString, xhtmlNS);
-    new ((void*)&labelTag) QualifiedName(nullAtom, labelTagString, xhtmlNS);
-    new ((void*)&layerTag) QualifiedName(nullAtom, layerTagString, xhtmlNS);
-    new ((void*)&legendTag) QualifiedName(nullAtom, legendTagString, xhtmlNS);
-    new ((void*)&liTag) QualifiedName(nullAtom, liTagString, xhtmlNS);
-    new ((void*)&linkTag) QualifiedName(nullAtom, linkTagString, xhtmlNS);
-    new ((void*)&listingTag) QualifiedName(nullAtom, listingTagString, xhtmlNS);
-    new ((void*)&mapTag) QualifiedName(nullAtom, mapTagString, xhtmlNS);
-    new ((void*)&marqueeTag) QualifiedName(nullAtom, marqueeTagString, xhtmlNS);
-    new ((void*)&menuTag) QualifiedName(nullAtom, menuTagString, xhtmlNS);
-    new ((void*)&metaTag) QualifiedName(nullAtom, metaTagString, xhtmlNS);
-    new ((void*)&navTag) QualifiedName(nullAtom, navTagString, xhtmlNS);
-    new ((void*)&nobrTag) QualifiedName(nullAtom, nobrTagString, xhtmlNS);
-    new ((void*)&noembedTag) QualifiedName(nullAtom, noembedTagString, xhtmlNS);
-    new ((void*)&noframesTag) QualifiedName(nullAtom, noframesTagString, xhtmlNS);
-    new ((void*)&nolayerTag) QualifiedName(nullAtom, nolayerTagString, xhtmlNS);
-    new ((void*)&noscriptTag) QualifiedName(nullAtom, noscriptTagString, xhtmlNS);
-    new ((void*)&objectTag) QualifiedName(nullAtom, objectTagString, xhtmlNS);
-    new ((void*)&olTag) QualifiedName(nullAtom, olTagString, xhtmlNS);
-    new ((void*)&optgroupTag) QualifiedName(nullAtom, optgroupTagString, xhtmlNS);
-    new ((void*)&optionTag) QualifiedName(nullAtom, optionTagString, xhtmlNS);
-    new ((void*)&pTag) QualifiedName(nullAtom, pTagString, xhtmlNS);
-    new ((void*)&paramTag) QualifiedName(nullAtom, paramTagString, xhtmlNS);
-    new ((void*)&plaintextTag) QualifiedName(nullAtom, plaintextTagString, xhtmlNS);
-    new ((void*)&preTag) QualifiedName(nullAtom, preTagString, xhtmlNS);
-    new ((void*)&qTag) QualifiedName(nullAtom, qTagString, xhtmlNS);
-    new ((void*)&rpTag) QualifiedName(nullAtom, rpTagString, xhtmlNS);
-    new ((void*)&rtTag) QualifiedName(nullAtom, rtTagString, xhtmlNS);
-    new ((void*)&rubyTag) QualifiedName(nullAtom, rubyTagString, xhtmlNS);
-    new ((void*)&sTag) QualifiedName(nullAtom, sTagString, xhtmlNS);
-    new ((void*)&sampTag) QualifiedName(nullAtom, sampTagString, xhtmlNS);
-    new ((void*)&scriptTag) QualifiedName(nullAtom, scriptTagString, xhtmlNS);
-    new ((void*)&selectTag) QualifiedName(nullAtom, selectTagString, xhtmlNS);
-    new ((void*)&smallTag) QualifiedName(nullAtom, smallTagString, xhtmlNS);
-    new ((void*)&sourceTag) QualifiedName(nullAtom, sourceTagString, xhtmlNS);
-    new ((void*)&spanTag) QualifiedName(nullAtom, spanTagString, xhtmlNS);
-    new ((void*)&strikeTag) QualifiedName(nullAtom, strikeTagString, xhtmlNS);
-    new ((void*)&strongTag) QualifiedName(nullAtom, strongTagString, xhtmlNS);
-    new ((void*)&styleTag) QualifiedName(nullAtom, styleTagString, xhtmlNS);
-    new ((void*)&subTag) QualifiedName(nullAtom, subTagString, xhtmlNS);
-    new ((void*)&supTag) QualifiedName(nullAtom, supTagString, xhtmlNS);
-    new ((void*)&tableTag) QualifiedName(nullAtom, tableTagString, xhtmlNS);
-    new ((void*)&tbodyTag) QualifiedName(nullAtom, tbodyTagString, xhtmlNS);
-    new ((void*)&tdTag) QualifiedName(nullAtom, tdTagString, xhtmlNS);
-    new ((void*)&textareaTag) QualifiedName(nullAtom, textareaTagString, xhtmlNS);
-    new ((void*)&tfootTag) QualifiedName(nullAtom, tfootTagString, xhtmlNS);
-    new ((void*)&thTag) QualifiedName(nullAtom, thTagString, xhtmlNS);
-    new ((void*)&theadTag) QualifiedName(nullAtom, theadTagString, xhtmlNS);
-    new ((void*)&titleTag) QualifiedName(nullAtom, titleTagString, xhtmlNS);
-    new ((void*)&trTag) QualifiedName(nullAtom, trTagString, xhtmlNS);
-    new ((void*)&ttTag) QualifiedName(nullAtom, ttTagString, xhtmlNS);
-    new ((void*)&uTag) QualifiedName(nullAtom, uTagString, xhtmlNS);
-    new ((void*)&ulTag) QualifiedName(nullAtom, ulTagString, xhtmlNS);
-    new ((void*)&varTag) QualifiedName(nullAtom, varTagString, xhtmlNS);
-    new ((void*)&videoTag) QualifiedName(nullAtom, videoTagString, xhtmlNS);
-    new ((void*)&wbrTag) QualifiedName(nullAtom, wbrTagString, xhtmlNS);
-    new ((void*)&xmpTag) QualifiedName(nullAtom, xmpTagString, xhtmlNS);
+    new ((void*)&aTag) QualifiedName(nullAtom, "a", xhtmlNS);
+    new ((void*)&abbrTag) QualifiedName(nullAtom, "abbr", xhtmlNS);
+    new ((void*)&acronymTag) QualifiedName(nullAtom, "acronym", xhtmlNS);
+    new ((void*)&addressTag) QualifiedName(nullAtom, "address", xhtmlNS);
+    new ((void*)&appletTag) QualifiedName(nullAtom, "applet", xhtmlNS);
+    new ((void*)&areaTag) QualifiedName(nullAtom, "area", xhtmlNS);
+    new ((void*)&articleTag) QualifiedName(nullAtom, "article", xhtmlNS);
+    new ((void*)&asideTag) QualifiedName(nullAtom, "aside", xhtmlNS);
+    new ((void*)&audioTag) QualifiedName(nullAtom, "audio", xhtmlNS);
+    new ((void*)&bTag) QualifiedName(nullAtom, "b", xhtmlNS);
+    new ((void*)&baseTag) QualifiedName(nullAtom, "base", xhtmlNS);
+    new ((void*)&basefontTag) QualifiedName(nullAtom, "basefont", xhtmlNS);
+    new ((void*)&bdoTag) QualifiedName(nullAtom, "bdo", xhtmlNS);
+    new ((void*)&bigTag) QualifiedName(nullAtom, "big", xhtmlNS);
+    new ((void*)&blockquoteTag) QualifiedName(nullAtom, "blockquote", xhtmlNS);
+    new ((void*)&bodyTag) QualifiedName(nullAtom, "body", xhtmlNS);
+    new ((void*)&brTag) QualifiedName(nullAtom, "br", xhtmlNS);
+    new ((void*)&buttonTag) QualifiedName(nullAtom, "button", xhtmlNS);
+    new ((void*)&canvasTag) QualifiedName(nullAtom, "canvas", xhtmlNS);
+    new ((void*)&captionTag) QualifiedName(nullAtom, "caption", xhtmlNS);
+    new ((void*)&centerTag) QualifiedName(nullAtom, "center", xhtmlNS);
+    new ((void*)&citeTag) QualifiedName(nullAtom, "cite", xhtmlNS);
+    new ((void*)&codeTag) QualifiedName(nullAtom, "code", xhtmlNS);
+    new ((void*)&colTag) QualifiedName(nullAtom, "col", xhtmlNS);
+    new ((void*)&colgroupTag) QualifiedName(nullAtom, "colgroup", xhtmlNS);
+    new ((void*)&datagridTag) QualifiedName(nullAtom, "datagrid", xhtmlNS);
+    new ((void*)&datalistTag) QualifiedName(nullAtom, "datalist", xhtmlNS);
+    new ((void*)&dcellTag) QualifiedName(nullAtom, "dcell", xhtmlNS);
+    new ((void*)&dcolTag) QualifiedName(nullAtom, "dcol", xhtmlNS);
+    new ((void*)&ddTag) QualifiedName(nullAtom, "dd", xhtmlNS);
+    new ((void*)&delTag) QualifiedName(nullAtom, "del", xhtmlNS);
+    new ((void*)&dfnTag) QualifiedName(nullAtom, "dfn", xhtmlNS);
+    new ((void*)&dirTag) QualifiedName(nullAtom, "dir", xhtmlNS);
+    new ((void*)&divTag) QualifiedName(nullAtom, "div", xhtmlNS);
+    new ((void*)&dlTag) QualifiedName(nullAtom, "dl", xhtmlNS);
+    new ((void*)&drowTag) QualifiedName(nullAtom, "drow", xhtmlNS);
+    new ((void*)&dtTag) QualifiedName(nullAtom, "dt", xhtmlNS);
+    new ((void*)&emTag) QualifiedName(nullAtom, "em", xhtmlNS);
+    new ((void*)&embedTag) QualifiedName(nullAtom, "embed", xhtmlNS);
+    new ((void*)&fieldsetTag) QualifiedName(nullAtom, "fieldset", xhtmlNS);
+    new ((void*)&fontTag) QualifiedName(nullAtom, "font", xhtmlNS);
+    new ((void*)&footerTag) QualifiedName(nullAtom, "footer", xhtmlNS);
+    new ((void*)&formTag) QualifiedName(nullAtom, "form", xhtmlNS);
+    new ((void*)&frameTag) QualifiedName(nullAtom, "frame", xhtmlNS);
+    new ((void*)&framesetTag) QualifiedName(nullAtom, "frameset", xhtmlNS);
+    new ((void*)&h1Tag) QualifiedName(nullAtom, "h1", xhtmlNS);
+    new ((void*)&h2Tag) QualifiedName(nullAtom, "h2", xhtmlNS);
+    new ((void*)&h3Tag) QualifiedName(nullAtom, "h3", xhtmlNS);
+    new ((void*)&h4Tag) QualifiedName(nullAtom, "h4", xhtmlNS);
+    new ((void*)&h5Tag) QualifiedName(nullAtom, "h5", xhtmlNS);
+    new ((void*)&h6Tag) QualifiedName(nullAtom, "h6", xhtmlNS);
+    new ((void*)&headTag) QualifiedName(nullAtom, "head", xhtmlNS);
+    new ((void*)&headerTag) QualifiedName(nullAtom, "header", xhtmlNS);
+    new ((void*)&hgroupTag) QualifiedName(nullAtom, "hgroup", xhtmlNS);
+    new ((void*)&hrTag) QualifiedName(nullAtom, "hr", xhtmlNS);
+    new ((void*)&htmlTag) QualifiedName(nullAtom, "html", xhtmlNS);
+    new ((void*)&iTag) QualifiedName(nullAtom, "i", xhtmlNS);
+    new ((void*)&iframeTag) QualifiedName(nullAtom, "iframe", xhtmlNS);
+    new ((void*)&imageTag) QualifiedName(nullAtom, "image", xhtmlNS);
+    new ((void*)&imgTag) QualifiedName(nullAtom, "img", xhtmlNS);
+    new ((void*)&inputTag) QualifiedName(nullAtom, "input", xhtmlNS);
+    new ((void*)&insTag) QualifiedName(nullAtom, "ins", xhtmlNS);
+    new ((void*)&isindexTag) QualifiedName(nullAtom, "isindex", xhtmlNS);
+    new ((void*)&kbdTag) QualifiedName(nullAtom, "kbd", xhtmlNS);
+    new ((void*)&keygenTag) QualifiedName(nullAtom, "keygen", xhtmlNS);
+    new ((void*)&labelTag) QualifiedName(nullAtom, "label", xhtmlNS);
+    new ((void*)&layerTag) QualifiedName(nullAtom, "layer", xhtmlNS);
+    new ((void*)&legendTag) QualifiedName(nullAtom, "legend", xhtmlNS);
+    new ((void*)&liTag) QualifiedName(nullAtom, "li", xhtmlNS);
+    new ((void*)&linkTag) QualifiedName(nullAtom, "link", xhtmlNS);
+    new ((void*)&listingTag) QualifiedName(nullAtom, "listing", xhtmlNS);
+    new ((void*)&mapTag) QualifiedName(nullAtom, "map", xhtmlNS);
+    new ((void*)&marqueeTag) QualifiedName(nullAtom, "marquee", xhtmlNS);
+    new ((void*)&menuTag) QualifiedName(nullAtom, "menu", xhtmlNS);
+    new ((void*)&metaTag) QualifiedName(nullAtom, "meta", xhtmlNS);
+    new ((void*)&navTag) QualifiedName(nullAtom, "nav", xhtmlNS);
+    new ((void*)&nobrTag) QualifiedName(nullAtom, "nobr", xhtmlNS);
+    new ((void*)&noembedTag) QualifiedName(nullAtom, "noembed", xhtmlNS);
+    new ((void*)&noframesTag) QualifiedName(nullAtom, "noframes", xhtmlNS);
+    new ((void*)&nolayerTag) QualifiedName(nullAtom, "nolayer", xhtmlNS);
+    new ((void*)&noscriptTag) QualifiedName(nullAtom, "noscript", xhtmlNS);
+    new ((void*)&objectTag) QualifiedName(nullAtom, "object", xhtmlNS);
+    new ((void*)&olTag) QualifiedName(nullAtom, "ol", xhtmlNS);
+    new ((void*)&optgroupTag) QualifiedName(nullAtom, "optgroup", xhtmlNS);
+    new ((void*)&optionTag) QualifiedName(nullAtom, "option", xhtmlNS);
+    new ((void*)&pTag) QualifiedName(nullAtom, "p", xhtmlNS);
+    new ((void*)&paramTag) QualifiedName(nullAtom, "param", xhtmlNS);
+    new ((void*)&plaintextTag) QualifiedName(nullAtom, "plaintext", xhtmlNS);
+    new ((void*)&preTag) QualifiedName(nullAtom, "pre", xhtmlNS);
+    new ((void*)&progressTag) QualifiedName(nullAtom, "progress", xhtmlNS);
+    new ((void*)&qTag) QualifiedName(nullAtom, "q", xhtmlNS);
+    new ((void*)&rpTag) QualifiedName(nullAtom, "rp", xhtmlNS);
+    new ((void*)&rtTag) QualifiedName(nullAtom, "rt", xhtmlNS);
+    new ((void*)&rubyTag) QualifiedName(nullAtom, "ruby", xhtmlNS);
+    new ((void*)&sTag) QualifiedName(nullAtom, "s", xhtmlNS);
+    new ((void*)&sampTag) QualifiedName(nullAtom, "samp", xhtmlNS);
+    new ((void*)&scriptTag) QualifiedName(nullAtom, "script", xhtmlNS);
+    new ((void*)&sectionTag) QualifiedName(nullAtom, "section", xhtmlNS);
+    new ((void*)&selectTag) QualifiedName(nullAtom, "select", xhtmlNS);
+    new ((void*)&smallTag) QualifiedName(nullAtom, "small", xhtmlNS);
+    new ((void*)&sourceTag) QualifiedName(nullAtom, "source", xhtmlNS);
+    new ((void*)&spanTag) QualifiedName(nullAtom, "span", xhtmlNS);
+    new ((void*)&strikeTag) QualifiedName(nullAtom, "strike", xhtmlNS);
+    new ((void*)&strongTag) QualifiedName(nullAtom, "strong", xhtmlNS);
+    new ((void*)&styleTag) QualifiedName(nullAtom, "style", xhtmlNS);
+    new ((void*)&subTag) QualifiedName(nullAtom, "sub", xhtmlNS);
+    new ((void*)&supTag) QualifiedName(nullAtom, "sup", xhtmlNS);
+    new ((void*)&tableTag) QualifiedName(nullAtom, "table", xhtmlNS);
+    new ((void*)&tbodyTag) QualifiedName(nullAtom, "tbody", xhtmlNS);
+    new ((void*)&tdTag) QualifiedName(nullAtom, "td", xhtmlNS);
+    new ((void*)&textareaTag) QualifiedName(nullAtom, "textarea", xhtmlNS);
+    new ((void*)&tfootTag) QualifiedName(nullAtom, "tfoot", xhtmlNS);
+    new ((void*)&thTag) QualifiedName(nullAtom, "th", xhtmlNS);
+    new ((void*)&theadTag) QualifiedName(nullAtom, "thead", xhtmlNS);
+    new ((void*)&titleTag) QualifiedName(nullAtom, "title", xhtmlNS);
+    new ((void*)&trTag) QualifiedName(nullAtom, "tr", xhtmlNS);
+    new ((void*)&ttTag) QualifiedName(nullAtom, "tt", xhtmlNS);
+    new ((void*)&uTag) QualifiedName(nullAtom, "u", xhtmlNS);
+    new ((void*)&ulTag) QualifiedName(nullAtom, "ul", xhtmlNS);
+    new ((void*)&varTag) QualifiedName(nullAtom, "var", xhtmlNS);
+    new ((void*)&videoTag) QualifiedName(nullAtom, "video", xhtmlNS);
+    new ((void*)&wbrTag) QualifiedName(nullAtom, "wbr", xhtmlNS);
+    new ((void*)&xmpTag) QualifiedName(nullAtom, "xmp", xhtmlNS);
     // Attributes
-    const char *abbrAttrString = "abbr";
-    const char *acceptAttrString = "accept";
-    const char *accept_charsetAttrString = "accept-charset";
-    const char *accesskeyAttrString = "accesskey";
-    const char *actionAttrString = "action";
-    const char *alignAttrString = "align";
-    const char *alinkAttrString = "alink";
-    const char *altAttrString = "alt";
-    const char *archiveAttrString = "archive";
-    const char *aria_activedescendantAttrString = "aria-activedescendant";
-    const char *aria_checkedAttrString = "aria-checked";
-    const char *aria_describedbyAttrString = "aria-describedby";
-    const char *aria_disabledAttrString = "aria-disabled";
-    const char *aria_hiddenAttrString = "aria-hidden";
-    const char *aria_labelAttrString = "aria-label";
-    const char *aria_labeledbyAttrString = "aria-labeledby";
-    const char *aria_labelledbyAttrString = "aria-labelledby";
-    const char *aria_levelAttrString = "aria-level";
-    const char *aria_pressedAttrString = "aria-pressed";
-    const char *aria_readonlyAttrString = "aria-readonly";
-    const char *aria_requiredAttrString = "aria-required";
-    const char *aria_valuemaxAttrString = "aria-valuemax";
-    const char *aria_valueminAttrString = "aria-valuemin";
-    const char *aria_valuenowAttrString = "aria-valuenow";
-    const char *aria_valuetextAttrString = "aria-valuetext";
-    const char *autobufferAttrString = "autobuffer";
-    const char *autocompleteAttrString = "autocomplete";
-    const char *autofocusAttrString = "autofocus";
-    const char *autoplayAttrString = "autoplay";
-    const char *autosaveAttrString = "autosave";
-    const char *axisAttrString = "axis";
-    const char *backgroundAttrString = "background";
-    const char *behaviorAttrString = "behavior";
-    const char *bgcolorAttrString = "bgcolor";
-    const char *bgpropertiesAttrString = "bgproperties";
-    const char *borderAttrString = "border";
-    const char *bordercolorAttrString = "bordercolor";
-    const char *cellborderAttrString = "cellborder";
-    const char *cellpaddingAttrString = "cellpadding";
-    const char *cellspacingAttrString = "cellspacing";
-    const char *challengeAttrString = "challenge";
-    const char *charAttrString = "char";
-    const char *charoffAttrString = "charoff";
-    const char *charsetAttrString = "charset";
-    const char *checkedAttrString = "checked";
-    const char *citeAttrString = "cite";
-    const char *classidAttrString = "classid";
-    const char *clearAttrString = "clear";
-    const char *codeAttrString = "code";
-    const char *codebaseAttrString = "codebase";
-    const char *codetypeAttrString = "codetype";
-    const char *colorAttrString = "color";
-    const char *colsAttrString = "cols";
-    const char *colspanAttrString = "colspan";
-    const char *compactAttrString = "compact";
-    const char *compositeAttrString = "composite";
-    const char *contentAttrString = "content";
-    const char *contenteditableAttrString = "contenteditable";
-    const char *controlsAttrString = "controls";
-    const char *coordsAttrString = "coords";
-    const char *dataAttrString = "data";
-    const char *datetimeAttrString = "datetime";
-    const char *declareAttrString = "declare";
-    const char *deferAttrString = "defer";
-    const char *dirAttrString = "dir";
-    const char *directionAttrString = "direction";
-    const char *disabledAttrString = "disabled";
-    const char *draggableAttrString = "draggable";
-    const char *enctypeAttrString = "enctype";
-    const char *endAttrString = "end";
-    const char *expandedAttrString = "expanded";
-    const char *faceAttrString = "face";
-    const char *focusedAttrString = "focused";
-    const char *forAttrString = "for";
-    const char *formnovalidateAttrString = "formnovalidate";
-    const char *frameAttrString = "frame";
-    const char *frameborderAttrString = "frameborder";
-    const char *headersAttrString = "headers";
-    const char *heightAttrString = "height";
-    const char *hiddenAttrString = "hidden";
-    const char *hrefAttrString = "href";
-    const char *hreflangAttrString = "hreflang";
-    const char *hspaceAttrString = "hspace";
-    const char *http_equivAttrString = "http-equiv";
-    const char *idAttrString = "id";
-    const char *incrementalAttrString = "incremental";
-    const char *indeterminateAttrString = "indeterminate";
-    const char *ismapAttrString = "ismap";
-    const char *keytypeAttrString = "keytype";
-    const char *labelAttrString = "label";
-    const char *langAttrString = "lang";
-    const char *languageAttrString = "language";
-    const char *leftmarginAttrString = "leftmargin";
-    const char *linkAttrString = "link";
-    const char *listAttrString = "list";
-    const char *longdescAttrString = "longdesc";
-    const char *loopAttrString = "loop";
-    const char *loopendAttrString = "loopend";
-    const char *loopstartAttrString = "loopstart";
-    const char *lowsrcAttrString = "lowsrc";
-    const char *manifestAttrString = "manifest";
-    const char *marginheightAttrString = "marginheight";
-    const char *marginwidthAttrString = "marginwidth";
-    const char *maxAttrString = "max";
-    const char *maxlengthAttrString = "maxlength";
-    const char *mayscriptAttrString = "mayscript";
-    const char *mediaAttrString = "media";
-    const char *methodAttrString = "method";
-    const char *minAttrString = "min";
-    const char *multipleAttrString = "multiple";
-    const char *nameAttrString = "name";
-    const char *nohrefAttrString = "nohref";
-    const char *noresizeAttrString = "noresize";
-    const char *noshadeAttrString = "noshade";
-    const char *novalidateAttrString = "novalidate";
-    const char *nowrapAttrString = "nowrap";
-    const char *objectAttrString = "object";
-    const char *onabortAttrString = "onabort";
-    const char *onbeforecopyAttrString = "onbeforecopy";
-    const char *onbeforecutAttrString = "onbeforecut";
-    const char *onbeforeloadAttrString = "onbeforeload";
-    const char *onbeforepasteAttrString = "onbeforepaste";
-    const char *onbeforeunloadAttrString = "onbeforeunload";
-    const char *onblurAttrString = "onblur";
-    const char *oncanplayAttrString = "oncanplay";
-    const char *oncanplaythroughAttrString = "oncanplaythrough";
-    const char *onchangeAttrString = "onchange";
-    const char *onclickAttrString = "onclick";
-    const char *oncontextmenuAttrString = "oncontextmenu";
-    const char *oncopyAttrString = "oncopy";
-    const char *oncutAttrString = "oncut";
-    const char *ondblclickAttrString = "ondblclick";
-    const char *ondragAttrString = "ondrag";
-    const char *ondragendAttrString = "ondragend";
-    const char *ondragenterAttrString = "ondragenter";
-    const char *ondragleaveAttrString = "ondragleave";
-    const char *ondragoverAttrString = "ondragover";
-    const char *ondragstartAttrString = "ondragstart";
-    const char *ondropAttrString = "ondrop";
-    const char *ondurationchangeAttrString = "ondurationchange";
-    const char *onemptiedAttrString = "onemptied";
-    const char *onendedAttrString = "onended";
-    const char *onerrorAttrString = "onerror";
-    const char *onfocusAttrString = "onfocus";
-    const char *onhashchangeAttrString = "onhashchange";
-    const char *oninputAttrString = "oninput";
-    const char *oninvalidAttrString = "oninvalid";
-    const char *onkeydownAttrString = "onkeydown";
-    const char *onkeypressAttrString = "onkeypress";
-    const char *onkeyupAttrString = "onkeyup";
-    const char *onloadAttrString = "onload";
-    const char *onloadeddataAttrString = "onloadeddata";
-    const char *onloadedmetadataAttrString = "onloadedmetadata";
-    const char *onloadstartAttrString = "onloadstart";
-    const char *onmousedownAttrString = "onmousedown";
-    const char *onmousemoveAttrString = "onmousemove";
-    const char *onmouseoutAttrString = "onmouseout";
-    const char *onmouseoverAttrString = "onmouseover";
-    const char *onmouseupAttrString = "onmouseup";
-    const char *onmousewheelAttrString = "onmousewheel";
-    const char *onofflineAttrString = "onoffline";
-    const char *ononlineAttrString = "ononline";
-    const char *onorientationchangeAttrString = "onorientationchange";
-    const char *onpagehideAttrString = "onpagehide";
-    const char *onpageshowAttrString = "onpageshow";
-    const char *onpasteAttrString = "onpaste";
-    const char *onpauseAttrString = "onpause";
-    const char *onplayAttrString = "onplay";
-    const char *onplayingAttrString = "onplaying";
-    const char *onprogressAttrString = "onprogress";
-    const char *onratechangeAttrString = "onratechange";
-    const char *onresetAttrString = "onreset";
-    const char *onresizeAttrString = "onresize";
-    const char *onscrollAttrString = "onscroll";
-    const char *onsearchAttrString = "onsearch";
-    const char *onseekedAttrString = "onseeked";
-    const char *onseekingAttrString = "onseeking";
-    const char *onselectAttrString = "onselect";
-    const char *onselectstartAttrString = "onselectstart";
-    const char *onstalledAttrString = "onstalled";
-    const char *onstorageAttrString = "onstorage";
-    const char *onsubmitAttrString = "onsubmit";
-    const char *onsuspendAttrString = "onsuspend";
-    const char *ontimeupdateAttrString = "ontimeupdate";
-    const char *onunloadAttrString = "onunload";
-    const char *onvolumechangeAttrString = "onvolumechange";
-    const char *onwaitingAttrString = "onwaiting";
-    const char *onwebkitanimationendAttrString = "onwebkitanimationend";
-    const char *onwebkitanimationiterationAttrString = "onwebkitanimationiteration";
-    const char *onwebkitanimationstartAttrString = "onwebkitanimationstart";
-    const char *onwebkittransitionendAttrString = "onwebkittransitionend";
-    const char *patternAttrString = "pattern";
-    const char *placeholderAttrString = "placeholder";
-    const char *playcountAttrString = "playcount";
-    const char *pluginurlAttrString = "pluginurl";
-    const char *posterAttrString = "poster";
-    const char *precisionAttrString = "precision";
-    const char *primaryAttrString = "primary";
-    const char *profileAttrString = "profile";
-    const char *progressAttrString = "progress";
-    const char *promptAttrString = "prompt";
-    const char *readonlyAttrString = "readonly";
-    const char *relAttrString = "rel";
-    const char *requiredAttrString = "required";
-    const char *resultsAttrString = "results";
-    const char *revAttrString = "rev";
-    const char *roleAttrString = "role";
-    const char *rowsAttrString = "rows";
-    const char *rowspanAttrString = "rowspan";
-    const char *rulesAttrString = "rules";
-    const char *schemeAttrString = "scheme";
-    const char *scopeAttrString = "scope";
-    const char *scrollamountAttrString = "scrollamount";
-    const char *scrolldelayAttrString = "scrolldelay";
-    const char *scrollingAttrString = "scrolling";
-    const char *selectedAttrString = "selected";
-    const char *shapeAttrString = "shape";
-    const char *sizeAttrString = "size";
-    const char *sortableAttrString = "sortable";
-    const char *sortdirectionAttrString = "sortdirection";
-    const char *spanAttrString = "span";
-    const char *spellcheckAttrString = "spellcheck";
-    const char *srcAttrString = "src";
-    const char *standbyAttrString = "standby";
-    const char *startAttrString = "start";
-    const char *styleAttrString = "style";
-    const char *summaryAttrString = "summary";
-    const char *tabindexAttrString = "tabindex";
-    const char *tableborderAttrString = "tableborder";
-    const char *targetAttrString = "target";
-    const char *textAttrString = "text";
-    const char *titleAttrString = "title";
-    const char *topAttrString = "top";
-    const char *topmarginAttrString = "topmargin";
-    const char *truespeedAttrString = "truespeed";
-    const char *typeAttrString = "type";
-    const char *usemapAttrString = "usemap";
-    const char *valignAttrString = "valign";
-    const char *valueAttrString = "value";
-    const char *valuetypeAttrString = "valuetype";
-    const char *versionAttrString = "version";
-    const char *viewsourceAttrString = "viewsource";
-    const char *vlinkAttrString = "vlink";
-    const char *vspaceAttrString = "vspace";
-    const char *widthAttrString = "width";
-    const char *wrapAttrString = "wrap";
-    new ((void*)&abbrAttr) QualifiedName(nullAtom, abbrAttrString, nullAtom);
-    new ((void*)&acceptAttr) QualifiedName(nullAtom, acceptAttrString, nullAtom);
-    new ((void*)&accept_charsetAttr) QualifiedName(nullAtom, accept_charsetAttrString, nullAtom);
-    new ((void*)&accesskeyAttr) QualifiedName(nullAtom, accesskeyAttrString, nullAtom);
-    new ((void*)&actionAttr) QualifiedName(nullAtom, actionAttrString, nullAtom);
-    new ((void*)&alignAttr) QualifiedName(nullAtom, alignAttrString, nullAtom);
-    new ((void*)&alinkAttr) QualifiedName(nullAtom, alinkAttrString, nullAtom);
-    new ((void*)&altAttr) QualifiedName(nullAtom, altAttrString, nullAtom);
-    new ((void*)&archiveAttr) QualifiedName(nullAtom, archiveAttrString, nullAtom);
-    new ((void*)&aria_activedescendantAttr) QualifiedName(nullAtom, aria_activedescendantAttrString, nullAtom);
-    new ((void*)&aria_checkedAttr) QualifiedName(nullAtom, aria_checkedAttrString, nullAtom);
-    new ((void*)&aria_describedbyAttr) QualifiedName(nullAtom, aria_describedbyAttrString, nullAtom);
-    new ((void*)&aria_disabledAttr) QualifiedName(nullAtom, aria_disabledAttrString, nullAtom);
-    new ((void*)&aria_hiddenAttr) QualifiedName(nullAtom, aria_hiddenAttrString, nullAtom);
-    new ((void*)&aria_labelAttr) QualifiedName(nullAtom, aria_labelAttrString, nullAtom);
-    new ((void*)&aria_labeledbyAttr) QualifiedName(nullAtom, aria_labeledbyAttrString, nullAtom);
-    new ((void*)&aria_labelledbyAttr) QualifiedName(nullAtom, aria_labelledbyAttrString, nullAtom);
-    new ((void*)&aria_levelAttr) QualifiedName(nullAtom, aria_levelAttrString, nullAtom);
-    new ((void*)&aria_pressedAttr) QualifiedName(nullAtom, aria_pressedAttrString, nullAtom);
-    new ((void*)&aria_readonlyAttr) QualifiedName(nullAtom, aria_readonlyAttrString, nullAtom);
-    new ((void*)&aria_requiredAttr) QualifiedName(nullAtom, aria_requiredAttrString, nullAtom);
-    new ((void*)&aria_valuemaxAttr) QualifiedName(nullAtom, aria_valuemaxAttrString, nullAtom);
-    new ((void*)&aria_valueminAttr) QualifiedName(nullAtom, aria_valueminAttrString, nullAtom);
-    new ((void*)&aria_valuenowAttr) QualifiedName(nullAtom, aria_valuenowAttrString, nullAtom);
-    new ((void*)&aria_valuetextAttr) QualifiedName(nullAtom, aria_valuetextAttrString, nullAtom);
-    new ((void*)&autobufferAttr) QualifiedName(nullAtom, autobufferAttrString, nullAtom);
-    new ((void*)&autocompleteAttr) QualifiedName(nullAtom, autocompleteAttrString, nullAtom);
-    new ((void*)&autofocusAttr) QualifiedName(nullAtom, autofocusAttrString, nullAtom);
-    new ((void*)&autoplayAttr) QualifiedName(nullAtom, autoplayAttrString, nullAtom);
-    new ((void*)&autosaveAttr) QualifiedName(nullAtom, autosaveAttrString, nullAtom);
-    new ((void*)&axisAttr) QualifiedName(nullAtom, axisAttrString, nullAtom);
-    new ((void*)&backgroundAttr) QualifiedName(nullAtom, backgroundAttrString, nullAtom);
-    new ((void*)&behaviorAttr) QualifiedName(nullAtom, behaviorAttrString, nullAtom);
-    new ((void*)&bgcolorAttr) QualifiedName(nullAtom, bgcolorAttrString, nullAtom);
-    new ((void*)&bgpropertiesAttr) QualifiedName(nullAtom, bgpropertiesAttrString, nullAtom);
-    new ((void*)&borderAttr) QualifiedName(nullAtom, borderAttrString, nullAtom);
-    new ((void*)&bordercolorAttr) QualifiedName(nullAtom, bordercolorAttrString, nullAtom);
-    new ((void*)&cellborderAttr) QualifiedName(nullAtom, cellborderAttrString, nullAtom);
-    new ((void*)&cellpaddingAttr) QualifiedName(nullAtom, cellpaddingAttrString, nullAtom);
-    new ((void*)&cellspacingAttr) QualifiedName(nullAtom, cellspacingAttrString, nullAtom);
-    new ((void*)&challengeAttr) QualifiedName(nullAtom, challengeAttrString, nullAtom);
-    new ((void*)&charAttr) QualifiedName(nullAtom, charAttrString, nullAtom);
-    new ((void*)&charoffAttr) QualifiedName(nullAtom, charoffAttrString, nullAtom);
-    new ((void*)&charsetAttr) QualifiedName(nullAtom, charsetAttrString, nullAtom);
-    new ((void*)&checkedAttr) QualifiedName(nullAtom, checkedAttrString, nullAtom);
-    new ((void*)&citeAttr) QualifiedName(nullAtom, citeAttrString, nullAtom);
-    new ((void*)&classAttr) QualifiedName(nullAtom, classAttrString, nullAtom);
-    new ((void*)&classidAttr) QualifiedName(nullAtom, classidAttrString, nullAtom);
-    new ((void*)&clearAttr) QualifiedName(nullAtom, clearAttrString, nullAtom);
-    new ((void*)&codeAttr) QualifiedName(nullAtom, codeAttrString, nullAtom);
-    new ((void*)&codebaseAttr) QualifiedName(nullAtom, codebaseAttrString, nullAtom);
-    new ((void*)&codetypeAttr) QualifiedName(nullAtom, codetypeAttrString, nullAtom);
-    new ((void*)&colorAttr) QualifiedName(nullAtom, colorAttrString, nullAtom);
-    new ((void*)&colsAttr) QualifiedName(nullAtom, colsAttrString, nullAtom);
-    new ((void*)&colspanAttr) QualifiedName(nullAtom, colspanAttrString, nullAtom);
-    new ((void*)&compactAttr) QualifiedName(nullAtom, compactAttrString, nullAtom);
-    new ((void*)&compositeAttr) QualifiedName(nullAtom, compositeAttrString, nullAtom);
-    new ((void*)&contentAttr) QualifiedName(nullAtom, contentAttrString, nullAtom);
-    new ((void*)&contenteditableAttr) QualifiedName(nullAtom, contenteditableAttrString, nullAtom);
-    new ((void*)&controlsAttr) QualifiedName(nullAtom, controlsAttrString, nullAtom);
-    new ((void*)&coordsAttr) QualifiedName(nullAtom, coordsAttrString, nullAtom);
-    new ((void*)&dataAttr) QualifiedName(nullAtom, dataAttrString, nullAtom);
-    new ((void*)&datetimeAttr) QualifiedName(nullAtom, datetimeAttrString, nullAtom);
-    new ((void*)&declareAttr) QualifiedName(nullAtom, declareAttrString, nullAtom);
-    new ((void*)&deferAttr) QualifiedName(nullAtom, deferAttrString, nullAtom);
-    new ((void*)&dirAttr) QualifiedName(nullAtom, dirAttrString, nullAtom);
-    new ((void*)&directionAttr) QualifiedName(nullAtom, directionAttrString, nullAtom);
-    new ((void*)&disabledAttr) QualifiedName(nullAtom, disabledAttrString, nullAtom);
-    new ((void*)&draggableAttr) QualifiedName(nullAtom, draggableAttrString, nullAtom);
-    new ((void*)&enctypeAttr) QualifiedName(nullAtom, enctypeAttrString, nullAtom);
-    new ((void*)&endAttr) QualifiedName(nullAtom, endAttrString, nullAtom);
-    new ((void*)&expandedAttr) QualifiedName(nullAtom, expandedAttrString, nullAtom);
-    new ((void*)&faceAttr) QualifiedName(nullAtom, faceAttrString, nullAtom);
-    new ((void*)&focusedAttr) QualifiedName(nullAtom, focusedAttrString, nullAtom);
-    new ((void*)&forAttr) QualifiedName(nullAtom, forAttrString, nullAtom);
-    new ((void*)&formnovalidateAttr) QualifiedName(nullAtom, formnovalidateAttrString, nullAtom);
-    new ((void*)&frameAttr) QualifiedName(nullAtom, frameAttrString, nullAtom);
-    new ((void*)&frameborderAttr) QualifiedName(nullAtom, frameborderAttrString, nullAtom);
-    new ((void*)&headersAttr) QualifiedName(nullAtom, headersAttrString, nullAtom);
-    new ((void*)&heightAttr) QualifiedName(nullAtom, heightAttrString, nullAtom);
-    new ((void*)&hiddenAttr) QualifiedName(nullAtom, hiddenAttrString, nullAtom);
-    new ((void*)&hrefAttr) QualifiedName(nullAtom, hrefAttrString, nullAtom);
-    new ((void*)&hreflangAttr) QualifiedName(nullAtom, hreflangAttrString, nullAtom);
-    new ((void*)&hspaceAttr) QualifiedName(nullAtom, hspaceAttrString, nullAtom);
-    new ((void*)&http_equivAttr) QualifiedName(nullAtom, http_equivAttrString, nullAtom);
-    new ((void*)&idAttr) QualifiedName(nullAtom, idAttrString, nullAtom);
-    new ((void*)&incrementalAttr) QualifiedName(nullAtom, incrementalAttrString, nullAtom);
-    new ((void*)&indeterminateAttr) QualifiedName(nullAtom, indeterminateAttrString, nullAtom);
-    new ((void*)&ismapAttr) QualifiedName(nullAtom, ismapAttrString, nullAtom);
-    new ((void*)&keytypeAttr) QualifiedName(nullAtom, keytypeAttrString, nullAtom);
-    new ((void*)&labelAttr) QualifiedName(nullAtom, labelAttrString, nullAtom);
-    new ((void*)&langAttr) QualifiedName(nullAtom, langAttrString, nullAtom);
-    new ((void*)&languageAttr) QualifiedName(nullAtom, languageAttrString, nullAtom);
-    new ((void*)&leftmarginAttr) QualifiedName(nullAtom, leftmarginAttrString, nullAtom);
-    new ((void*)&linkAttr) QualifiedName(nullAtom, linkAttrString, nullAtom);
-    new ((void*)&listAttr) QualifiedName(nullAtom, listAttrString, nullAtom);
-    new ((void*)&longdescAttr) QualifiedName(nullAtom, longdescAttrString, nullAtom);
-    new ((void*)&loopAttr) QualifiedName(nullAtom, loopAttrString, nullAtom);
-    new ((void*)&loopendAttr) QualifiedName(nullAtom, loopendAttrString, nullAtom);
-    new ((void*)&loopstartAttr) QualifiedName(nullAtom, loopstartAttrString, nullAtom);
-    new ((void*)&lowsrcAttr) QualifiedName(nullAtom, lowsrcAttrString, nullAtom);
-    new ((void*)&manifestAttr) QualifiedName(nullAtom, manifestAttrString, nullAtom);
-    new ((void*)&marginheightAttr) QualifiedName(nullAtom, marginheightAttrString, nullAtom);
-    new ((void*)&marginwidthAttr) QualifiedName(nullAtom, marginwidthAttrString, nullAtom);
-    new ((void*)&maxAttr) QualifiedName(nullAtom, maxAttrString, nullAtom);
-    new ((void*)&maxlengthAttr) QualifiedName(nullAtom, maxlengthAttrString, nullAtom);
-    new ((void*)&mayscriptAttr) QualifiedName(nullAtom, mayscriptAttrString, nullAtom);
-    new ((void*)&mediaAttr) QualifiedName(nullAtom, mediaAttrString, nullAtom);
-    new ((void*)&methodAttr) QualifiedName(nullAtom, methodAttrString, nullAtom);
-    new ((void*)&minAttr) QualifiedName(nullAtom, minAttrString, nullAtom);
-    new ((void*)&multipleAttr) QualifiedName(nullAtom, multipleAttrString, nullAtom);
-    new ((void*)&nameAttr) QualifiedName(nullAtom, nameAttrString, nullAtom);
-    new ((void*)&nohrefAttr) QualifiedName(nullAtom, nohrefAttrString, nullAtom);
-    new ((void*)&noresizeAttr) QualifiedName(nullAtom, noresizeAttrString, nullAtom);
-    new ((void*)&noshadeAttr) QualifiedName(nullAtom, noshadeAttrString, nullAtom);
-    new ((void*)&novalidateAttr) QualifiedName(nullAtom, novalidateAttrString, nullAtom);
-    new ((void*)&nowrapAttr) QualifiedName(nullAtom, nowrapAttrString, nullAtom);
-    new ((void*)&objectAttr) QualifiedName(nullAtom, objectAttrString, nullAtom);
-    new ((void*)&onabortAttr) QualifiedName(nullAtom, onabortAttrString, nullAtom);
-    new ((void*)&onbeforecopyAttr) QualifiedName(nullAtom, onbeforecopyAttrString, nullAtom);
-    new ((void*)&onbeforecutAttr) QualifiedName(nullAtom, onbeforecutAttrString, nullAtom);
-    new ((void*)&onbeforeloadAttr) QualifiedName(nullAtom, onbeforeloadAttrString, nullAtom);
-    new ((void*)&onbeforepasteAttr) QualifiedName(nullAtom, onbeforepasteAttrString, nullAtom);
-    new ((void*)&onbeforeunloadAttr) QualifiedName(nullAtom, onbeforeunloadAttrString, nullAtom);
-    new ((void*)&onblurAttr) QualifiedName(nullAtom, onblurAttrString, nullAtom);
-    new ((void*)&oncanplayAttr) QualifiedName(nullAtom, oncanplayAttrString, nullAtom);
-    new ((void*)&oncanplaythroughAttr) QualifiedName(nullAtom, oncanplaythroughAttrString, nullAtom);
-    new ((void*)&onchangeAttr) QualifiedName(nullAtom, onchangeAttrString, nullAtom);
-    new ((void*)&onclickAttr) QualifiedName(nullAtom, onclickAttrString, nullAtom);
-    new ((void*)&oncontextmenuAttr) QualifiedName(nullAtom, oncontextmenuAttrString, nullAtom);
-    new ((void*)&oncopyAttr) QualifiedName(nullAtom, oncopyAttrString, nullAtom);
-    new ((void*)&oncutAttr) QualifiedName(nullAtom, oncutAttrString, nullAtom);
-    new ((void*)&ondblclickAttr) QualifiedName(nullAtom, ondblclickAttrString, nullAtom);
-    new ((void*)&ondragAttr) QualifiedName(nullAtom, ondragAttrString, nullAtom);
-    new ((void*)&ondragendAttr) QualifiedName(nullAtom, ondragendAttrString, nullAtom);
-    new ((void*)&ondragenterAttr) QualifiedName(nullAtom, ondragenterAttrString, nullAtom);
-    new ((void*)&ondragleaveAttr) QualifiedName(nullAtom, ondragleaveAttrString, nullAtom);
-    new ((void*)&ondragoverAttr) QualifiedName(nullAtom, ondragoverAttrString, nullAtom);
-    new ((void*)&ondragstartAttr) QualifiedName(nullAtom, ondragstartAttrString, nullAtom);
-    new ((void*)&ondropAttr) QualifiedName(nullAtom, ondropAttrString, nullAtom);
-    new ((void*)&ondurationchangeAttr) QualifiedName(nullAtom, ondurationchangeAttrString, nullAtom);
-    new ((void*)&onemptiedAttr) QualifiedName(nullAtom, onemptiedAttrString, nullAtom);
-    new ((void*)&onendedAttr) QualifiedName(nullAtom, onendedAttrString, nullAtom);
-    new ((void*)&onerrorAttr) QualifiedName(nullAtom, onerrorAttrString, nullAtom);
-    new ((void*)&onfocusAttr) QualifiedName(nullAtom, onfocusAttrString, nullAtom);
-    new ((void*)&onhashchangeAttr) QualifiedName(nullAtom, onhashchangeAttrString, nullAtom);
-    new ((void*)&oninputAttr) QualifiedName(nullAtom, oninputAttrString, nullAtom);
-    new ((void*)&oninvalidAttr) QualifiedName(nullAtom, oninvalidAttrString, nullAtom);
-    new ((void*)&onkeydownAttr) QualifiedName(nullAtom, onkeydownAttrString, nullAtom);
-    new ((void*)&onkeypressAttr) QualifiedName(nullAtom, onkeypressAttrString, nullAtom);
-    new ((void*)&onkeyupAttr) QualifiedName(nullAtom, onkeyupAttrString, nullAtom);
-    new ((void*)&onloadAttr) QualifiedName(nullAtom, onloadAttrString, nullAtom);
-    new ((void*)&onloadeddataAttr) QualifiedName(nullAtom, onloadeddataAttrString, nullAtom);
-    new ((void*)&onloadedmetadataAttr) QualifiedName(nullAtom, onloadedmetadataAttrString, nullAtom);
-    new ((void*)&onloadstartAttr) QualifiedName(nullAtom, onloadstartAttrString, nullAtom);
-    new ((void*)&onmousedownAttr) QualifiedName(nullAtom, onmousedownAttrString, nullAtom);
-    new ((void*)&onmousemoveAttr) QualifiedName(nullAtom, onmousemoveAttrString, nullAtom);
-    new ((void*)&onmouseoutAttr) QualifiedName(nullAtom, onmouseoutAttrString, nullAtom);
-    new ((void*)&onmouseoverAttr) QualifiedName(nullAtom, onmouseoverAttrString, nullAtom);
-    new ((void*)&onmouseupAttr) QualifiedName(nullAtom, onmouseupAttrString, nullAtom);
-    new ((void*)&onmousewheelAttr) QualifiedName(nullAtom, onmousewheelAttrString, nullAtom);
-    new ((void*)&onofflineAttr) QualifiedName(nullAtom, onofflineAttrString, nullAtom);
-    new ((void*)&ononlineAttr) QualifiedName(nullAtom, ononlineAttrString, nullAtom);
-    new ((void*)&onorientationchangeAttr) QualifiedName(nullAtom, onorientationchangeAttrString, nullAtom);
-    new ((void*)&onpagehideAttr) QualifiedName(nullAtom, onpagehideAttrString, nullAtom);
-    new ((void*)&onpageshowAttr) QualifiedName(nullAtom, onpageshowAttrString, nullAtom);
-    new ((void*)&onpasteAttr) QualifiedName(nullAtom, onpasteAttrString, nullAtom);
-    new ((void*)&onpauseAttr) QualifiedName(nullAtom, onpauseAttrString, nullAtom);
-    new ((void*)&onplayAttr) QualifiedName(nullAtom, onplayAttrString, nullAtom);
-    new ((void*)&onplayingAttr) QualifiedName(nullAtom, onplayingAttrString, nullAtom);
-    new ((void*)&onprogressAttr) QualifiedName(nullAtom, onprogressAttrString, nullAtom);
-    new ((void*)&onratechangeAttr) QualifiedName(nullAtom, onratechangeAttrString, nullAtom);
-    new ((void*)&onresetAttr) QualifiedName(nullAtom, onresetAttrString, nullAtom);
-    new ((void*)&onresizeAttr) QualifiedName(nullAtom, onresizeAttrString, nullAtom);
-    new ((void*)&onscrollAttr) QualifiedName(nullAtom, onscrollAttrString, nullAtom);
-    new ((void*)&onsearchAttr) QualifiedName(nullAtom, onsearchAttrString, nullAtom);
-    new ((void*)&onseekedAttr) QualifiedName(nullAtom, onseekedAttrString, nullAtom);
-    new ((void*)&onseekingAttr) QualifiedName(nullAtom, onseekingAttrString, nullAtom);
-    new ((void*)&onselectAttr) QualifiedName(nullAtom, onselectAttrString, nullAtom);
-    new ((void*)&onselectstartAttr) QualifiedName(nullAtom, onselectstartAttrString, nullAtom);
-    new ((void*)&onstalledAttr) QualifiedName(nullAtom, onstalledAttrString, nullAtom);
-    new ((void*)&onstorageAttr) QualifiedName(nullAtom, onstorageAttrString, nullAtom);
-    new ((void*)&onsubmitAttr) QualifiedName(nullAtom, onsubmitAttrString, nullAtom);
-    new ((void*)&onsuspendAttr) QualifiedName(nullAtom, onsuspendAttrString, nullAtom);
-    new ((void*)&ontimeupdateAttr) QualifiedName(nullAtom, ontimeupdateAttrString, nullAtom);
-    new ((void*)&onunloadAttr) QualifiedName(nullAtom, onunloadAttrString, nullAtom);
-    new ((void*)&onvolumechangeAttr) QualifiedName(nullAtom, onvolumechangeAttrString, nullAtom);
-    new ((void*)&onwaitingAttr) QualifiedName(nullAtom, onwaitingAttrString, nullAtom);
-    new ((void*)&onwebkitanimationendAttr) QualifiedName(nullAtom, onwebkitanimationendAttrString, nullAtom);
-    new ((void*)&onwebkitanimationiterationAttr) QualifiedName(nullAtom, onwebkitanimationiterationAttrString, nullAtom);
-    new ((void*)&onwebkitanimationstartAttr) QualifiedName(nullAtom, onwebkitanimationstartAttrString, nullAtom);
-    new ((void*)&onwebkittransitionendAttr) QualifiedName(nullAtom, onwebkittransitionendAttrString, nullAtom);
-    new ((void*)&patternAttr) QualifiedName(nullAtom, patternAttrString, nullAtom);
-    new ((void*)&placeholderAttr) QualifiedName(nullAtom, placeholderAttrString, nullAtom);
-    new ((void*)&playcountAttr) QualifiedName(nullAtom, playcountAttrString, nullAtom);
-    new ((void*)&pluginurlAttr) QualifiedName(nullAtom, pluginurlAttrString, nullAtom);
-    new ((void*)&posterAttr) QualifiedName(nullAtom, posterAttrString, nullAtom);
-    new ((void*)&precisionAttr) QualifiedName(nullAtom, precisionAttrString, nullAtom);
-    new ((void*)&primaryAttr) QualifiedName(nullAtom, primaryAttrString, nullAtom);
-    new ((void*)&profileAttr) QualifiedName(nullAtom, profileAttrString, nullAtom);
-    new ((void*)&progressAttr) QualifiedName(nullAtom, progressAttrString, nullAtom);
-    new ((void*)&promptAttr) QualifiedName(nullAtom, promptAttrString, nullAtom);
-    new ((void*)&readonlyAttr) QualifiedName(nullAtom, readonlyAttrString, nullAtom);
-    new ((void*)&relAttr) QualifiedName(nullAtom, relAttrString, nullAtom);
-    new ((void*)&requiredAttr) QualifiedName(nullAtom, requiredAttrString, nullAtom);
-    new ((void*)&resultsAttr) QualifiedName(nullAtom, resultsAttrString, nullAtom);
-    new ((void*)&revAttr) QualifiedName(nullAtom, revAttrString, nullAtom);
-    new ((void*)&roleAttr) QualifiedName(nullAtom, roleAttrString, nullAtom);
-    new ((void*)&rowsAttr) QualifiedName(nullAtom, rowsAttrString, nullAtom);
-    new ((void*)&rowspanAttr) QualifiedName(nullAtom, rowspanAttrString, nullAtom);
-    new ((void*)&rulesAttr) QualifiedName(nullAtom, rulesAttrString, nullAtom);
-    new ((void*)&schemeAttr) QualifiedName(nullAtom, schemeAttrString, nullAtom);
-    new ((void*)&scopeAttr) QualifiedName(nullAtom, scopeAttrString, nullAtom);
-    new ((void*)&scrollamountAttr) QualifiedName(nullAtom, scrollamountAttrString, nullAtom);
-    new ((void*)&scrolldelayAttr) QualifiedName(nullAtom, scrolldelayAttrString, nullAtom);
-    new ((void*)&scrollingAttr) QualifiedName(nullAtom, scrollingAttrString, nullAtom);
-    new ((void*)&selectedAttr) QualifiedName(nullAtom, selectedAttrString, nullAtom);
-    new ((void*)&shapeAttr) QualifiedName(nullAtom, shapeAttrString, nullAtom);
-    new ((void*)&sizeAttr) QualifiedName(nullAtom, sizeAttrString, nullAtom);
-    new ((void*)&sortableAttr) QualifiedName(nullAtom, sortableAttrString, nullAtom);
-    new ((void*)&sortdirectionAttr) QualifiedName(nullAtom, sortdirectionAttrString, nullAtom);
-    new ((void*)&spanAttr) QualifiedName(nullAtom, spanAttrString, nullAtom);
-    new ((void*)&spellcheckAttr) QualifiedName(nullAtom, spellcheckAttrString, nullAtom);
-    new ((void*)&srcAttr) QualifiedName(nullAtom, srcAttrString, nullAtom);
-    new ((void*)&standbyAttr) QualifiedName(nullAtom, standbyAttrString, nullAtom);
-    new ((void*)&startAttr) QualifiedName(nullAtom, startAttrString, nullAtom);
-    new ((void*)&styleAttr) QualifiedName(nullAtom, styleAttrString, nullAtom);
-    new ((void*)&summaryAttr) QualifiedName(nullAtom, summaryAttrString, nullAtom);
-    new ((void*)&tabindexAttr) QualifiedName(nullAtom, tabindexAttrString, nullAtom);
-    new ((void*)&tableborderAttr) QualifiedName(nullAtom, tableborderAttrString, nullAtom);
-    new ((void*)&targetAttr) QualifiedName(nullAtom, targetAttrString, nullAtom);
-    new ((void*)&textAttr) QualifiedName(nullAtom, textAttrString, nullAtom);
-    new ((void*)&titleAttr) QualifiedName(nullAtom, titleAttrString, nullAtom);
-    new ((void*)&topAttr) QualifiedName(nullAtom, topAttrString, nullAtom);
-    new ((void*)&topmarginAttr) QualifiedName(nullAtom, topmarginAttrString, nullAtom);
-    new ((void*)&truespeedAttr) QualifiedName(nullAtom, truespeedAttrString, nullAtom);
-    new ((void*)&typeAttr) QualifiedName(nullAtom, typeAttrString, nullAtom);
-    new ((void*)&usemapAttr) QualifiedName(nullAtom, usemapAttrString, nullAtom);
-    new ((void*)&valignAttr) QualifiedName(nullAtom, valignAttrString, nullAtom);
-    new ((void*)&valueAttr) QualifiedName(nullAtom, valueAttrString, nullAtom);
-    new ((void*)&valuetypeAttr) QualifiedName(nullAtom, valuetypeAttrString, nullAtom);
-    new ((void*)&versionAttr) QualifiedName(nullAtom, versionAttrString, nullAtom);
-    new ((void*)&viewsourceAttr) QualifiedName(nullAtom, viewsourceAttrString, nullAtom);
-    new ((void*)&vlinkAttr) QualifiedName(nullAtom, vlinkAttrString, nullAtom);
-    new ((void*)&vspaceAttr) QualifiedName(nullAtom, vspaceAttrString, nullAtom);
-    new ((void*)&widthAttr) QualifiedName(nullAtom, widthAttrString, nullAtom);
-    new ((void*)&wrapAttr) QualifiedName(nullAtom, wrapAttrString, nullAtom);
+    new ((void*)&abbrAttr) QualifiedName(nullAtom, "abbr", nullAtom);
+    new ((void*)&acceptAttr) QualifiedName(nullAtom, "accept", nullAtom);
+    new ((void*)&accept_charsetAttr) QualifiedName(nullAtom, "accept-charset", nullAtom);
+    new ((void*)&accesskeyAttr) QualifiedName(nullAtom, "accesskey", nullAtom);
+    new ((void*)&actionAttr) QualifiedName(nullAtom, "action", nullAtom);
+    new ((void*)&alignAttr) QualifiedName(nullAtom, "align", nullAtom);
+    new ((void*)&alinkAttr) QualifiedName(nullAtom, "alink", nullAtom);
+    new ((void*)&altAttr) QualifiedName(nullAtom, "alt", nullAtom);
+    new ((void*)&archiveAttr) QualifiedName(nullAtom, "archive", nullAtom);
+    new ((void*)&aria_activedescendantAttr) QualifiedName(nullAtom, "aria-activedescendant", nullAtom);
+    new ((void*)&aria_atomicAttr) QualifiedName(nullAtom, "aria-atomic", nullAtom);
+    new ((void*)&aria_busyAttr) QualifiedName(nullAtom, "aria-busy", nullAtom);
+    new ((void*)&aria_checkedAttr) QualifiedName(nullAtom, "aria-checked", nullAtom);
+    new ((void*)&aria_controlsAttr) QualifiedName(nullAtom, "aria-controls", nullAtom);
+    new ((void*)&aria_describedbyAttr) QualifiedName(nullAtom, "aria-describedby", nullAtom);
+    new ((void*)&aria_disabledAttr) QualifiedName(nullAtom, "aria-disabled", nullAtom);
+    new ((void*)&aria_dropeffectAttr) QualifiedName(nullAtom, "aria-dropeffect", nullAtom);
+    new ((void*)&aria_expandedAttr) QualifiedName(nullAtom, "aria-expanded", nullAtom);
+    new ((void*)&aria_flowtoAttr) QualifiedName(nullAtom, "aria-flowto", nullAtom);
+    new ((void*)&aria_grabbedAttr) QualifiedName(nullAtom, "aria-grabbed", nullAtom);
+    new ((void*)&aria_haspopupAttr) QualifiedName(nullAtom, "aria-haspopup", nullAtom);
+    new ((void*)&aria_hiddenAttr) QualifiedName(nullAtom, "aria-hidden", nullAtom);
+    new ((void*)&aria_labelAttr) QualifiedName(nullAtom, "aria-label", nullAtom);
+    new ((void*)&aria_labeledbyAttr) QualifiedName(nullAtom, "aria-labeledby", nullAtom);
+    new ((void*)&aria_labelledbyAttr) QualifiedName(nullAtom, "aria-labelledby", nullAtom);
+    new ((void*)&aria_levelAttr) QualifiedName(nullAtom, "aria-level", nullAtom);
+    new ((void*)&aria_liveAttr) QualifiedName(nullAtom, "aria-live", nullAtom);
+    new ((void*)&aria_multiselectableAttr) QualifiedName(nullAtom, "aria-multiselectable", nullAtom);
+    new ((void*)&aria_orientationAttr) QualifiedName(nullAtom, "aria-orientation", nullAtom);
+    new ((void*)&aria_ownsAttr) QualifiedName(nullAtom, "aria-owns", nullAtom);
+    new ((void*)&aria_pressedAttr) QualifiedName(nullAtom, "aria-pressed", nullAtom);
+    new ((void*)&aria_readonlyAttr) QualifiedName(nullAtom, "aria-readonly", nullAtom);
+    new ((void*)&aria_relevantAttr) QualifiedName(nullAtom, "aria-relevant", nullAtom);
+    new ((void*)&aria_requiredAttr) QualifiedName(nullAtom, "aria-required", nullAtom);
+    new ((void*)&aria_selectedAttr) QualifiedName(nullAtom, "aria-selected", nullAtom);
+    new ((void*)&aria_valuemaxAttr) QualifiedName(nullAtom, "aria-valuemax", nullAtom);
+    new ((void*)&aria_valueminAttr) QualifiedName(nullAtom, "aria-valuemin", nullAtom);
+    new ((void*)&aria_valuenowAttr) QualifiedName(nullAtom, "aria-valuenow", nullAtom);
+    new ((void*)&aria_valuetextAttr) QualifiedName(nullAtom, "aria-valuetext", nullAtom);
+    new ((void*)&autocompleteAttr) QualifiedName(nullAtom, "autocomplete", nullAtom);
+    new ((void*)&autofocusAttr) QualifiedName(nullAtom, "autofocus", nullAtom);
+    new ((void*)&autoplayAttr) QualifiedName(nullAtom, "autoplay", nullAtom);
+    new ((void*)&autosaveAttr) QualifiedName(nullAtom, "autosave", nullAtom);
+    new ((void*)&axisAttr) QualifiedName(nullAtom, "axis", nullAtom);
+    new ((void*)&backgroundAttr) QualifiedName(nullAtom, "background", nullAtom);
+    new ((void*)&behaviorAttr) QualifiedName(nullAtom, "behavior", nullAtom);
+    new ((void*)&bgcolorAttr) QualifiedName(nullAtom, "bgcolor", nullAtom);
+    new ((void*)&bgpropertiesAttr) QualifiedName(nullAtom, "bgproperties", nullAtom);
+    new ((void*)&borderAttr) QualifiedName(nullAtom, "border", nullAtom);
+    new ((void*)&bordercolorAttr) QualifiedName(nullAtom, "bordercolor", nullAtom);
+    new ((void*)&cellborderAttr) QualifiedName(nullAtom, "cellborder", nullAtom);
+    new ((void*)&cellpaddingAttr) QualifiedName(nullAtom, "cellpadding", nullAtom);
+    new ((void*)&cellspacingAttr) QualifiedName(nullAtom, "cellspacing", nullAtom);
+    new ((void*)&challengeAttr) QualifiedName(nullAtom, "challenge", nullAtom);
+    new ((void*)&charAttr) QualifiedName(nullAtom, "char", nullAtom);
+    new ((void*)&charoffAttr) QualifiedName(nullAtom, "charoff", nullAtom);
+    new ((void*)&charsetAttr) QualifiedName(nullAtom, "charset", nullAtom);
+    new ((void*)&checkedAttr) QualifiedName(nullAtom, "checked", nullAtom);
+    new ((void*)&citeAttr) QualifiedName(nullAtom, "cite", nullAtom);
+    new ((void*)&classAttr) QualifiedName(nullAtom, "class", nullAtom);
+    new ((void*)&classidAttr) QualifiedName(nullAtom, "classid", nullAtom);
+    new ((void*)&clearAttr) QualifiedName(nullAtom, "clear", nullAtom);
+    new ((void*)&codeAttr) QualifiedName(nullAtom, "code", nullAtom);
+    new ((void*)&codebaseAttr) QualifiedName(nullAtom, "codebase", nullAtom);
+    new ((void*)&codetypeAttr) QualifiedName(nullAtom, "codetype", nullAtom);
+    new ((void*)&colorAttr) QualifiedName(nullAtom, "color", nullAtom);
+    new ((void*)&colsAttr) QualifiedName(nullAtom, "cols", nullAtom);
+    new ((void*)&colspanAttr) QualifiedName(nullAtom, "colspan", nullAtom);
+    new ((void*)&compactAttr) QualifiedName(nullAtom, "compact", nullAtom);
+    new ((void*)&compositeAttr) QualifiedName(nullAtom, "composite", nullAtom);
+    new ((void*)&contentAttr) QualifiedName(nullAtom, "content", nullAtom);
+    new ((void*)&contenteditableAttr) QualifiedName(nullAtom, "contenteditable", nullAtom);
+    new ((void*)&controlsAttr) QualifiedName(nullAtom, "controls", nullAtom);
+    new ((void*)&coordsAttr) QualifiedName(nullAtom, "coords", nullAtom);
+    new ((void*)&dataAttr) QualifiedName(nullAtom, "data", nullAtom);
+    new ((void*)&datetimeAttr) QualifiedName(nullAtom, "datetime", nullAtom);
+    new ((void*)&declareAttr) QualifiedName(nullAtom, "declare", nullAtom);
+    new ((void*)&deferAttr) QualifiedName(nullAtom, "defer", nullAtom);
+    new ((void*)&dirAttr) QualifiedName(nullAtom, "dir", nullAtom);
+    new ((void*)&directionAttr) QualifiedName(nullAtom, "direction", nullAtom);
+    new ((void*)&disabledAttr) QualifiedName(nullAtom, "disabled", nullAtom);
+    new ((void*)&draggableAttr) QualifiedName(nullAtom, "draggable", nullAtom);
+    new ((void*)&enctypeAttr) QualifiedName(nullAtom, "enctype", nullAtom);
+    new ((void*)&endAttr) QualifiedName(nullAtom, "end", nullAtom);
+    new ((void*)&eventAttr) QualifiedName(nullAtom, "event", nullAtom);
+    new ((void*)&expandedAttr) QualifiedName(nullAtom, "expanded", nullAtom);
+    new ((void*)&faceAttr) QualifiedName(nullAtom, "face", nullAtom);
+    new ((void*)&focusedAttr) QualifiedName(nullAtom, "focused", nullAtom);
+    new ((void*)&forAttr) QualifiedName(nullAtom, "for", nullAtom);
+    new ((void*)&formnovalidateAttr) QualifiedName(nullAtom, "formnovalidate", nullAtom);
+    new ((void*)&frameAttr) QualifiedName(nullAtom, "frame", nullAtom);
+    new ((void*)&frameborderAttr) QualifiedName(nullAtom, "frameborder", nullAtom);
+    new ((void*)&headersAttr) QualifiedName(nullAtom, "headers", nullAtom);
+    new ((void*)&heightAttr) QualifiedName(nullAtom, "height", nullAtom);
+    new ((void*)&hiddenAttr) QualifiedName(nullAtom, "hidden", nullAtom);
+    new ((void*)&hrefAttr) QualifiedName(nullAtom, "href", nullAtom);
+    new ((void*)&hreflangAttr) QualifiedName(nullAtom, "hreflang", nullAtom);
+    new ((void*)&hspaceAttr) QualifiedName(nullAtom, "hspace", nullAtom);
+    new ((void*)&http_equivAttr) QualifiedName(nullAtom, "http-equiv", nullAtom);
+    new ((void*)&idAttr) QualifiedName(nullAtom, "id", nullAtom);
+    new ((void*)&incrementalAttr) QualifiedName(nullAtom, "incremental", nullAtom);
+    new ((void*)&indeterminateAttr) QualifiedName(nullAtom, "indeterminate", nullAtom);
+    new ((void*)&ismapAttr) QualifiedName(nullAtom, "ismap", nullAtom);
+    new ((void*)&keytypeAttr) QualifiedName(nullAtom, "keytype", nullAtom);
+    new ((void*)&labelAttr) QualifiedName(nullAtom, "label", nullAtom);
+    new ((void*)&langAttr) QualifiedName(nullAtom, "lang", nullAtom);
+    new ((void*)&languageAttr) QualifiedName(nullAtom, "language", nullAtom);
+    new ((void*)&leftmarginAttr) QualifiedName(nullAtom, "leftmargin", nullAtom);
+    new ((void*)&linkAttr) QualifiedName(nullAtom, "link", nullAtom);
+    new ((void*)&listAttr) QualifiedName(nullAtom, "list", nullAtom);
+    new ((void*)&longdescAttr) QualifiedName(nullAtom, "longdesc", nullAtom);
+    new ((void*)&loopAttr) QualifiedName(nullAtom, "loop", nullAtom);
+    new ((void*)&loopendAttr) QualifiedName(nullAtom, "loopend", nullAtom);
+    new ((void*)&loopstartAttr) QualifiedName(nullAtom, "loopstart", nullAtom);
+    new ((void*)&lowsrcAttr) QualifiedName(nullAtom, "lowsrc", nullAtom);
+    new ((void*)&manifestAttr) QualifiedName(nullAtom, "manifest", nullAtom);
+    new ((void*)&marginheightAttr) QualifiedName(nullAtom, "marginheight", nullAtom);
+    new ((void*)&marginwidthAttr) QualifiedName(nullAtom, "marginwidth", nullAtom);
+    new ((void*)&maxAttr) QualifiedName(nullAtom, "max", nullAtom);
+    new ((void*)&maxlengthAttr) QualifiedName(nullAtom, "maxlength", nullAtom);
+    new ((void*)&mayscriptAttr) QualifiedName(nullAtom, "mayscript", nullAtom);
+    new ((void*)&mediaAttr) QualifiedName(nullAtom, "media", nullAtom);
+    new ((void*)&methodAttr) QualifiedName(nullAtom, "method", nullAtom);
+    new ((void*)&minAttr) QualifiedName(nullAtom, "min", nullAtom);
+    new ((void*)&multipleAttr) QualifiedName(nullAtom, "multiple", nullAtom);
+    new ((void*)&nameAttr) QualifiedName(nullAtom, "name", nullAtom);
+    new ((void*)&nohrefAttr) QualifiedName(nullAtom, "nohref", nullAtom);
+    new ((void*)&noresizeAttr) QualifiedName(nullAtom, "noresize", nullAtom);
+    new ((void*)&noshadeAttr) QualifiedName(nullAtom, "noshade", nullAtom);
+    new ((void*)&novalidateAttr) QualifiedName(nullAtom, "novalidate", nullAtom);
+    new ((void*)&nowrapAttr) QualifiedName(nullAtom, "nowrap", nullAtom);
+    new ((void*)&objectAttr) QualifiedName(nullAtom, "object", nullAtom);
+    new ((void*)&onabortAttr) QualifiedName(nullAtom, "onabort", nullAtom);
+    new ((void*)&onbeforecopyAttr) QualifiedName(nullAtom, "onbeforecopy", nullAtom);
+    new ((void*)&onbeforecutAttr) QualifiedName(nullAtom, "onbeforecut", nullAtom);
+    new ((void*)&onbeforeloadAttr) QualifiedName(nullAtom, "onbeforeload", nullAtom);
+    new ((void*)&onbeforepasteAttr) QualifiedName(nullAtom, "onbeforepaste", nullAtom);
+    new ((void*)&onbeforeunloadAttr) QualifiedName(nullAtom, "onbeforeunload", nullAtom);
+    new ((void*)&onblurAttr) QualifiedName(nullAtom, "onblur", nullAtom);
+    new ((void*)&oncanplayAttr) QualifiedName(nullAtom, "oncanplay", nullAtom);
+    new ((void*)&oncanplaythroughAttr) QualifiedName(nullAtom, "oncanplaythrough", nullAtom);
+    new ((void*)&onchangeAttr) QualifiedName(nullAtom, "onchange", nullAtom);
+    new ((void*)&onclickAttr) QualifiedName(nullAtom, "onclick", nullAtom);
+    new ((void*)&oncontextmenuAttr) QualifiedName(nullAtom, "oncontextmenu", nullAtom);
+    new ((void*)&oncopyAttr) QualifiedName(nullAtom, "oncopy", nullAtom);
+    new ((void*)&oncutAttr) QualifiedName(nullAtom, "oncut", nullAtom);
+    new ((void*)&ondblclickAttr) QualifiedName(nullAtom, "ondblclick", nullAtom);
+    new ((void*)&ondragAttr) QualifiedName(nullAtom, "ondrag", nullAtom);
+    new ((void*)&ondragendAttr) QualifiedName(nullAtom, "ondragend", nullAtom);
+    new ((void*)&ondragenterAttr) QualifiedName(nullAtom, "ondragenter", nullAtom);
+    new ((void*)&ondragleaveAttr) QualifiedName(nullAtom, "ondragleave", nullAtom);
+    new ((void*)&ondragoverAttr) QualifiedName(nullAtom, "ondragover", nullAtom);
+    new ((void*)&ondragstartAttr) QualifiedName(nullAtom, "ondragstart", nullAtom);
+    new ((void*)&ondropAttr) QualifiedName(nullAtom, "ondrop", nullAtom);
+    new ((void*)&ondurationchangeAttr) QualifiedName(nullAtom, "ondurationchange", nullAtom);
+    new ((void*)&onemptiedAttr) QualifiedName(nullAtom, "onemptied", nullAtom);
+    new ((void*)&onendedAttr) QualifiedName(nullAtom, "onended", nullAtom);
+    new ((void*)&onerrorAttr) QualifiedName(nullAtom, "onerror", nullAtom);
+    new ((void*)&onfocusAttr) QualifiedName(nullAtom, "onfocus", nullAtom);
+    new ((void*)&onfocusinAttr) QualifiedName(nullAtom, "onfocusin", nullAtom);
+    new ((void*)&onfocusoutAttr) QualifiedName(nullAtom, "onfocusout", nullAtom);
+    new ((void*)&onhashchangeAttr) QualifiedName(nullAtom, "onhashchange", nullAtom);
+    new ((void*)&oninputAttr) QualifiedName(nullAtom, "oninput", nullAtom);
+    new ((void*)&oninvalidAttr) QualifiedName(nullAtom, "oninvalid", nullAtom);
+    new ((void*)&onkeydownAttr) QualifiedName(nullAtom, "onkeydown", nullAtom);
+    new ((void*)&onkeypressAttr) QualifiedName(nullAtom, "onkeypress", nullAtom);
+    new ((void*)&onkeyupAttr) QualifiedName(nullAtom, "onkeyup", nullAtom);
+    new ((void*)&onloadAttr) QualifiedName(nullAtom, "onload", nullAtom);
+    new ((void*)&onloadeddataAttr) QualifiedName(nullAtom, "onloadeddata", nullAtom);
+    new ((void*)&onloadedmetadataAttr) QualifiedName(nullAtom, "onloadedmetadata", nullAtom);
+    new ((void*)&onloadstartAttr) QualifiedName(nullAtom, "onloadstart", nullAtom);
+    new ((void*)&onmousedownAttr) QualifiedName(nullAtom, "onmousedown", nullAtom);
+    new ((void*)&onmousemoveAttr) QualifiedName(nullAtom, "onmousemove", nullAtom);
+    new ((void*)&onmouseoutAttr) QualifiedName(nullAtom, "onmouseout", nullAtom);
+    new ((void*)&onmouseoverAttr) QualifiedName(nullAtom, "onmouseover", nullAtom);
+    new ((void*)&onmouseupAttr) QualifiedName(nullAtom, "onmouseup", nullAtom);
+    new ((void*)&onmousewheelAttr) QualifiedName(nullAtom, "onmousewheel", nullAtom);
+    new ((void*)&onofflineAttr) QualifiedName(nullAtom, "onoffline", nullAtom);
+    new ((void*)&ononlineAttr) QualifiedName(nullAtom, "ononline", nullAtom);
+    new ((void*)&onorientationchangeAttr) QualifiedName(nullAtom, "onorientationchange", nullAtom);
+    new ((void*)&onpagehideAttr) QualifiedName(nullAtom, "onpagehide", nullAtom);
+    new ((void*)&onpageshowAttr) QualifiedName(nullAtom, "onpageshow", nullAtom);
+    new ((void*)&onpasteAttr) QualifiedName(nullAtom, "onpaste", nullAtom);
+    new ((void*)&onpauseAttr) QualifiedName(nullAtom, "onpause", nullAtom);
+    new ((void*)&onplayAttr) QualifiedName(nullAtom, "onplay", nullAtom);
+    new ((void*)&onplayingAttr) QualifiedName(nullAtom, "onplaying", nullAtom);
+    new ((void*)&onpopstateAttr) QualifiedName(nullAtom, "onpopstate", nullAtom);
+    new ((void*)&onprogressAttr) QualifiedName(nullAtom, "onprogress", nullAtom);
+    new ((void*)&onratechangeAttr) QualifiedName(nullAtom, "onratechange", nullAtom);
+    new ((void*)&onresetAttr) QualifiedName(nullAtom, "onreset", nullAtom);
+    new ((void*)&onresizeAttr) QualifiedName(nullAtom, "onresize", nullAtom);
+    new ((void*)&onscrollAttr) QualifiedName(nullAtom, "onscroll", nullAtom);
+    new ((void*)&onsearchAttr) QualifiedName(nullAtom, "onsearch", nullAtom);
+    new ((void*)&onseekedAttr) QualifiedName(nullAtom, "onseeked", nullAtom);
+    new ((void*)&onseekingAttr) QualifiedName(nullAtom, "onseeking", nullAtom);
+    new ((void*)&onselectAttr) QualifiedName(nullAtom, "onselect", nullAtom);
+    new ((void*)&onselectstartAttr) QualifiedName(nullAtom, "onselectstart", nullAtom);
+    new ((void*)&onstalledAttr) QualifiedName(nullAtom, "onstalled", nullAtom);
+    new ((void*)&onstorageAttr) QualifiedName(nullAtom, "onstorage", nullAtom);
+    new ((void*)&onsubmitAttr) QualifiedName(nullAtom, "onsubmit", nullAtom);
+    new ((void*)&onsuspendAttr) QualifiedName(nullAtom, "onsuspend", nullAtom);
+    new ((void*)&ontimeupdateAttr) QualifiedName(nullAtom, "ontimeupdate", nullAtom);
+    new ((void*)&ontouchcancelAttr) QualifiedName(nullAtom, "ontouchcancel", nullAtom);
+    new ((void*)&ontouchendAttr) QualifiedName(nullAtom, "ontouchend", nullAtom);
+    new ((void*)&ontouchmoveAttr) QualifiedName(nullAtom, "ontouchmove", nullAtom);
+    new ((void*)&ontouchstartAttr) QualifiedName(nullAtom, "ontouchstart", nullAtom);
+    new ((void*)&onunloadAttr) QualifiedName(nullAtom, "onunload", nullAtom);
+    new ((void*)&onvolumechangeAttr) QualifiedName(nullAtom, "onvolumechange", nullAtom);
+    new ((void*)&onwaitingAttr) QualifiedName(nullAtom, "onwaiting", nullAtom);
+    new ((void*)&onwebkitanimationendAttr) QualifiedName(nullAtom, "onwebkitanimationend", nullAtom);
+    new ((void*)&onwebkitanimationiterationAttr) QualifiedName(nullAtom, "onwebkitanimationiteration", nullAtom);
+    new ((void*)&onwebkitanimationstartAttr) QualifiedName(nullAtom, "onwebkitanimationstart", nullAtom);
+    new ((void*)&onwebkitbeginfullscreenAttr) QualifiedName(nullAtom, "onwebkitbeginfullscreen", nullAtom);
+    new ((void*)&onwebkitendfullscreenAttr) QualifiedName(nullAtom, "onwebkitendfullscreen", nullAtom);
+    new ((void*)&onwebkittransitionendAttr) QualifiedName(nullAtom, "onwebkittransitionend", nullAtom);
+    new ((void*)&patternAttr) QualifiedName(nullAtom, "pattern", nullAtom);
+    new ((void*)&placeholderAttr) QualifiedName(nullAtom, "placeholder", nullAtom);
+    new ((void*)&playcountAttr) QualifiedName(nullAtom, "playcount", nullAtom);
+    new ((void*)&pluginurlAttr) QualifiedName(nullAtom, "pluginurl", nullAtom);
+    new ((void*)&posterAttr) QualifiedName(nullAtom, "poster", nullAtom);
+    new ((void*)&precisionAttr) QualifiedName(nullAtom, "precision", nullAtom);
+    new ((void*)&preloadAttr) QualifiedName(nullAtom, "preload", nullAtom);
+    new ((void*)&primaryAttr) QualifiedName(nullAtom, "primary", nullAtom);
+    new ((void*)&profileAttr) QualifiedName(nullAtom, "profile", nullAtom);
+    new ((void*)&progressAttr) QualifiedName(nullAtom, "progress", nullAtom);
+    new ((void*)&promptAttr) QualifiedName(nullAtom, "prompt", nullAtom);
+    new ((void*)&readonlyAttr) QualifiedName(nullAtom, "readonly", nullAtom);
+    new ((void*)&relAttr) QualifiedName(nullAtom, "rel", nullAtom);
+    new ((void*)&requiredAttr) QualifiedName(nullAtom, "required", nullAtom);
+    new ((void*)&resultsAttr) QualifiedName(nullAtom, "results", nullAtom);
+    new ((void*)&revAttr) QualifiedName(nullAtom, "rev", nullAtom);
+    new ((void*)&roleAttr) QualifiedName(nullAtom, "role", nullAtom);
+    new ((void*)&rowsAttr) QualifiedName(nullAtom, "rows", nullAtom);
+    new ((void*)&rowspanAttr) QualifiedName(nullAtom, "rowspan", nullAtom);
+    new ((void*)&rulesAttr) QualifiedName(nullAtom, "rules", nullAtom);
+    new ((void*)&sandboxAttr) QualifiedName(nullAtom, "sandbox", nullAtom);
+    new ((void*)&schemeAttr) QualifiedName(nullAtom, "scheme", nullAtom);
+    new ((void*)&scopeAttr) QualifiedName(nullAtom, "scope", nullAtom);
+    new ((void*)&scrollamountAttr) QualifiedName(nullAtom, "scrollamount", nullAtom);
+    new ((void*)&scrolldelayAttr) QualifiedName(nullAtom, "scrolldelay", nullAtom);
+    new ((void*)&scrollingAttr) QualifiedName(nullAtom, "scrolling", nullAtom);
+    new ((void*)&selectedAttr) QualifiedName(nullAtom, "selected", nullAtom);
+    new ((void*)&shapeAttr) QualifiedName(nullAtom, "shape", nullAtom);
+    new ((void*)&sizeAttr) QualifiedName(nullAtom, "size", nullAtom);
+    new ((void*)&sortableAttr) QualifiedName(nullAtom, "sortable", nullAtom);
+    new ((void*)&sortdirectionAttr) QualifiedName(nullAtom, "sortdirection", nullAtom);
+    new ((void*)&spanAttr) QualifiedName(nullAtom, "span", nullAtom);
+    new ((void*)&spellcheckAttr) QualifiedName(nullAtom, "spellcheck", nullAtom);
+    new ((void*)&srcAttr) QualifiedName(nullAtom, "src", nullAtom);
+    new ((void*)&standbyAttr) QualifiedName(nullAtom, "standby", nullAtom);
+    new ((void*)&startAttr) QualifiedName(nullAtom, "start", nullAtom);
+    new ((void*)&stepAttr) QualifiedName(nullAtom, "step", nullAtom);
+    new ((void*)&styleAttr) QualifiedName(nullAtom, "style", nullAtom);
+    new ((void*)&summaryAttr) QualifiedName(nullAtom, "summary", nullAtom);
+    new ((void*)&tabindexAttr) QualifiedName(nullAtom, "tabindex", nullAtom);
+    new ((void*)&tableborderAttr) QualifiedName(nullAtom, "tableborder", nullAtom);
+    new ((void*)&targetAttr) QualifiedName(nullAtom, "target", nullAtom);
+    new ((void*)&textAttr) QualifiedName(nullAtom, "text", nullAtom);
+    new ((void*)&titleAttr) QualifiedName(nullAtom, "title", nullAtom);
+    new ((void*)&topAttr) QualifiedName(nullAtom, "top", nullAtom);
+    new ((void*)&topmarginAttr) QualifiedName(nullAtom, "topmargin", nullAtom);
+    new ((void*)&truespeedAttr) QualifiedName(nullAtom, "truespeed", nullAtom);
+    new ((void*)&typeAttr) QualifiedName(nullAtom, "type", nullAtom);
+    new ((void*)&usemapAttr) QualifiedName(nullAtom, "usemap", nullAtom);
+    new ((void*)&valignAttr) QualifiedName(nullAtom, "valign", nullAtom);
+    new ((void*)&valueAttr) QualifiedName(nullAtom, "value", nullAtom);
+    new ((void*)&valuetypeAttr) QualifiedName(nullAtom, "valuetype", nullAtom);
+    new ((void*)&versionAttr) QualifiedName(nullAtom, "version", nullAtom);
+    new ((void*)&viewsourceAttr) QualifiedName(nullAtom, "viewsource", nullAtom);
+    new ((void*)&vlinkAttr) QualifiedName(nullAtom, "vlink", nullAtom);
+    new ((void*)&vspaceAttr) QualifiedName(nullAtom, "vspace", nullAtom);
+    new ((void*)&widthAttr) QualifiedName(nullAtom, "width", nullAtom);
+    new ((void*)&wrapAttr) QualifiedName(nullAtom, "wrap", nullAtom);
 }
 
 } }

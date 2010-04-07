@@ -17,7 +17,7 @@
 # Library General Public License for more details.
 # 
 # You should have received a copy of the GNU Library General Public License
-# aint with this library; see the file COPYING.LIB.  If not, write to
+# along with this library; see the file COPYING.LIB.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 #
@@ -66,7 +66,7 @@ my %nativeObjCTypeHash = ("URL" => 1, "Color" => 1);
 my %baseTypeHash = ("Object" => 1, "Node" => 1, "NodeList" => 1, "NamedNodeMap" => 1, "DOMImplementation" => 1,
                     "Event" => 1, "CSSRule" => 1, "CSSValue" => 1, "StyleSheet" => 1, "MediaList" => 1,
                     "Counter" => 1, "Rect" => 1, "RGBColor" => 1, "XPathExpression" => 1, "XPathResult" => 1,
-                    "NodeIterator" => 1, "TreeWalker" => 1, "AbstractView" => 1,
+                    "NodeIterator" => 1, "TreeWalker" => 1, "AbstractView" => 1, "Blob" => 1,
                     "SVGAngle" => 1, "SVGAnimatedAngle" => 1, "SVGAnimatedBoolean" => 1, "SVGAnimatedEnumeration" => 1,
                     "SVGAnimatedInteger" => 1, "SVGAnimatedLength" => 1, "SVGAnimatedLengthList" => 1,
                     "SVGAnimatedNumber" => 1, "SVGAnimatedNumberList" => 1, "SVGAnimatedPoints" => 1,
@@ -222,7 +222,13 @@ sub ReadPublicInterfaces
     %publicInterfaces = ();
 
     my $fileName = "WebCore/bindings/objc/PublicDOMInterfaces.h";
-    open FILE, "-|", "/usr/bin/gcc", "-E", "-P", "-x", "objective-c", 
+    my $gccLocation = "";
+    if (($Config::Config{'osname'}) =~ /solaris/i) {
+        $gccLocation = "/usr/sfw/bin/gcc";
+    } else {
+        $gccLocation = "/usr/bin/gcc";
+    }
+    open FILE, "-|", $gccLocation, "-E", "-P", "-x", "objective-c",
         (map { "-D$_" } split(/ +/, $defines)), "-DOBJC_CODE_GENERATION", $fileName or die "Could not open $fileName";
     my @documentContent = <FILE>;
     close FILE;
@@ -316,6 +322,7 @@ sub GetClassName
     return "BOOL" if $name eq "boolean";
     return "unsigned" if $name eq "unsigned long";
     return "int" if $name eq "long";
+    return "NSTimeInterval" if $name eq "Date";
     return "DOMAbstractView" if $name eq "DOMWindow";
     return $name if $codeGenerator->IsPrimitiveType($name) or $name eq "DOMImplementation" or $name eq "DOMTimeStamp";
 
@@ -577,7 +584,7 @@ sub AddIncludesForType
     }
 
     if ($type eq "SVGMatrix") {
-        $implIncludes{"TransformationMatrix.h"} = 1;
+        $implIncludes{"AffineTransform.h"} = 1;
         $implIncludes{"DOMSVGMatrixInternal.h"} = 1;
         $implIncludes{"SVGException.h"} = 1;
         return;
@@ -1040,6 +1047,7 @@ sub GenerateImplementation
     $implIncludes{$classHeaderName . "Internal.h"} = 1;
 
     # FIXME: These includes are only needed when the class is a subclass of one of these polymorphic classes.
+    $implIncludes{"DOMBlobInternal.h"} = 1;
     $implIncludes{"DOMCSSRuleInternal.h"} = 1;
     $implIncludes{"DOMCSSValueInternal.h"} = 1;
     $implIncludes{"DOMEventInternal.h"} = 1;
@@ -1221,7 +1229,7 @@ sub GenerateImplementation
                 $getterContentTail .= ")";
             } elsif ($attribute->signature->extendedAttributes->{"ConvertFromString"}) {
                 $getterContentTail .= ".toInt()";
-            } elsif ($codeGenerator->IsPodType($idlType)) {
+            } elsif ($codeGenerator->IsPodType($idlType) or $idlType eq "Date") {
                 $getterContentHead = "kit($getterContentHead";
                 $getterContentTail .= ")";
             } elsif (IsProtocolType($idlType) and $idlType ne "EventTarget") {
@@ -1290,6 +1298,10 @@ sub GenerateImplementation
 
                 unless ($codeGenerator->IsPrimitiveType($idlType) or $codeGenerator->IsStringType($idlType)) {
                     push(@implContent, "    ASSERT($argName);\n\n");
+                }
+
+                if ($idlType eq "Date") {
+                    $arg = "core(" . $arg . ")";
                 }
 
                 if ($podType) {
@@ -1420,8 +1432,8 @@ sub GenerateImplementation
             }
 
             # FIXME! We need [Custom] support for ObjC, to move these hacks into DOMSVGLength/MatrixCustom.mm
-            my $svgMatrixRotateFromVector = ($podType and $podType eq "TransformationMatrix" and $functionName eq "rotateFromVector");
-            my $svgMatrixInverse = ($podType and $podType eq "TransformationMatrix" and $functionName eq "inverse");
+            my $svgMatrixRotateFromVector = ($podType and $podType eq "AffineTransform" and $functionName eq "rotateFromVector");
+            my $svgMatrixInverse = ($podType and $podType eq "AffineTransform" and $functionName eq "inverse");
             my $svgLengthConvertToSpecifiedUnits = ($podType and $podType eq "SVGLength" and $functionName eq "convertToSpecifiedUnits");
 
             push(@parameterNames, "ec") if $raisesExceptions and !($svgMatrixRotateFromVector || $svgMatrixInverse);

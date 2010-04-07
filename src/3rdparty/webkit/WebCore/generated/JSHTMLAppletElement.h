@@ -44,7 +44,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual JSC::CallType getCallData(JSC::CallData&);
@@ -52,9 +52,6 @@ public:
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
-private:
-    static bool canGetItemsForName(JSC::ExecState*, HTMLAppletElement*, const JSC::Identifier&);
-    static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
 
@@ -66,7 +63,7 @@ public:
     static const JSC::ClassInfo s_info;
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSHTMLAppletElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -75,29 +72,29 @@ protected:
 
 // Attributes
 
-JSC::JSValue jsHTMLAppletElementAlign(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAppletElementAlign(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLAppletElementAlign(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLAppletElementAlt(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAppletElementAlt(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLAppletElementAlt(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLAppletElementArchive(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAppletElementArchive(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLAppletElementArchive(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLAppletElementCode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAppletElementCode(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLAppletElementCode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLAppletElementCodeBase(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAppletElementCodeBase(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLAppletElementCodeBase(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLAppletElementHeight(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAppletElementHeight(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLAppletElementHeight(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLAppletElementHspace(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAppletElementHspace(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLAppletElementHspace(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLAppletElementName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAppletElementName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLAppletElementName(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLAppletElementObject(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAppletElementObject(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLAppletElementObject(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLAppletElementVspace(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAppletElementVspace(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLAppletElementVspace(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLAppletElementWidth(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAppletElementWidth(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLAppletElementWidth(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLAppletElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAppletElementConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

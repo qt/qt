@@ -34,19 +34,67 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimatedBoolean);
 
 /* Hash table */
 
-static const HashTableValue JSSVGAnimatedBooleanTableValues[3] =
+static const HashTableValue JSSVGAnimatedBooleanTableValues[4] =
 {
-    { "baseVal", DontDelete, (intptr_t)jsSVGAnimatedBooleanBaseVal, (intptr_t)setJSSVGAnimatedBooleanBaseVal },
-    { "animVal", DontDelete|ReadOnly, (intptr_t)jsSVGAnimatedBooleanAnimVal, (intptr_t)0 },
+    { "baseVal", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGAnimatedBooleanBaseVal), (intptr_t)setJSSVGAnimatedBooleanBaseVal },
+    { "animVal", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGAnimatedBooleanAnimVal), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGAnimatedBooleanConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedBooleanTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 1, JSSVGAnimatedBooleanTableValues, 0 };
+    { 3, JSSVGAnimatedBooleanTableValues, 0 };
 #else
-    { 4, 3, JSSVGAnimatedBooleanTableValues, 0 };
+    { 8, 7, JSSVGAnimatedBooleanTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGAnimatedBooleanConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedBooleanConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGAnimatedBooleanConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGAnimatedBooleanConstructorTableValues, 0 };
+#endif
+
+class JSSVGAnimatedBooleanConstructor : public DOMConstructorObject {
+public:
+    JSSVGAnimatedBooleanConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGAnimatedBooleanConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGAnimatedBooleanPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGAnimatedBooleanConstructor::s_info = { "SVGAnimatedBooleanConstructor", 0, &JSSVGAnimatedBooleanConstructorTable, 0 };
+
+bool JSSVGAnimatedBooleanConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGAnimatedBooleanConstructor, DOMObject>(exec, &JSSVGAnimatedBooleanConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGAnimatedBooleanConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedBooleanConstructor, DOMObject>(exec, &JSSVGAnimatedBooleanConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -71,8 +119,8 @@ JSObject* JSSVGAnimatedBooleanPrototype::self(ExecState* exec, JSGlobalObject* g
 
 const ClassInfo JSSVGAnimatedBoolean::s_info = { "SVGAnimatedBoolean", 0, &JSSVGAnimatedBooleanTable, 0 };
 
-JSSVGAnimatedBoolean::JSSVGAnimatedBoolean(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedBoolean> impl, SVGElement* context)
-    : DOMObjectWithSVGContext(structure, globalObject, context)
+JSSVGAnimatedBoolean::JSSVGAnimatedBoolean(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedBoolean> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -80,6 +128,7 @@ JSSVGAnimatedBoolean::JSSVGAnimatedBoolean(NonNullPassRefPtr<Structure> structur
 JSSVGAnimatedBoolean::~JSSVGAnimatedBoolean()
 {
     forgetDOMObject(this, impl());
+    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGAnimatedBoolean::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -97,22 +146,29 @@ bool JSSVGAnimatedBoolean::getOwnPropertyDescriptor(ExecState* exec, const Ident
     return getStaticValueDescriptor<JSSVGAnimatedBoolean, Base>(exec, &JSSVGAnimatedBooleanTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGAnimatedBooleanBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedBooleanBaseVal(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGAnimatedBoolean* castedThis = static_cast<JSSVGAnimatedBoolean*>(asObject(slot.slotBase()));
+    JSSVGAnimatedBoolean* castedThis = static_cast<JSSVGAnimatedBoolean*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGAnimatedBoolean* imp = static_cast<SVGAnimatedBoolean*>(castedThis->impl());
-    return jsBoolean(imp->baseVal());
+    JSValue result = jsBoolean(imp->baseVal());
+    return result;
 }
 
-JSValue jsSVGAnimatedBooleanAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedBooleanAnimVal(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGAnimatedBoolean* castedThis = static_cast<JSSVGAnimatedBoolean*>(asObject(slot.slotBase()));
+    JSSVGAnimatedBoolean* castedThis = static_cast<JSSVGAnimatedBoolean*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGAnimatedBoolean* imp = static_cast<SVGAnimatedBoolean*>(castedThis->impl());
-    return jsBoolean(imp->animVal());
+    JSValue result = jsBoolean(imp->animVal());
+    return result;
 }
 
+JSValue jsSVGAnimatedBooleanConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGAnimatedBoolean* domObject = static_cast<JSSVGAnimatedBoolean*>(asObject(slotBase));
+    return JSSVGAnimatedBoolean::getConstructor(exec, domObject->globalObject());
+}
 void JSSVGAnimatedBoolean::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGAnimatedBoolean, Base>(exec, propertyName, value, &JSSVGAnimatedBooleanTable, this, slot);
@@ -120,10 +176,15 @@ void JSSVGAnimatedBoolean::put(ExecState* exec, const Identifier& propertyName, 
 
 void setJSSVGAnimatedBooleanBaseVal(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGAnimatedBoolean* imp = static_cast<SVGAnimatedBoolean*>(static_cast<JSSVGAnimatedBoolean*>(thisObject)->impl());
+    JSSVGAnimatedBoolean* castedThisObj = static_cast<JSSVGAnimatedBoolean*>(thisObject);
+    SVGAnimatedBoolean* imp = static_cast<SVGAnimatedBoolean*>(castedThisObj->impl());
     imp->setBaseVal(value.toBoolean(exec));
-    if (static_cast<JSSVGAnimatedBoolean*>(thisObject)->context())
-        static_cast<JSSVGAnimatedBoolean*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGAnimatedBoolean*>(thisObject)->impl()->associatedAttributeName());
+    JSSVGContextCache::propagateSVGDOMChange(castedThisObj, imp->associatedAttributeName());
+}
+
+JSValue JSSVGAnimatedBoolean::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGAnimatedBooleanConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnimatedBoolean* object, SVGElement* context)
