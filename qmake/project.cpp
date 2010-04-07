@@ -1245,8 +1245,7 @@ QMakeProject::read(const QString &file, QMap<QString, QStringList> &place)
     reset();
 
     const QString oldpwd = qmake_getpwd();
-    QString filename = Option::fixPathToLocalOS(file);
-    doVariableReplace(filename, place);
+    QString filename = Option::fixPathToLocalOS(file, false);
     bool ret = false, using_stdin = false;
     QFile qfile;
     if(!strcmp(filename.toLatin1(), "-")) {
