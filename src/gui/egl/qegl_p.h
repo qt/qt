@@ -139,6 +139,12 @@ QT_BEGIN_NAMESPACE
 typedef void *EGLImageKHR;
 #define EGL_NO_IMAGE_KHR            ((EGLImageKHR)0)
 #define EGL_IMAGE_PRESERVED_KHR     0x30D2
+#define EGL_KHR_image_base
+#endif
+
+#if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_pixmap)
+#define EGL_NATIVE_PIXMAP_KHR       0x30B0
+#define EGL_KHR_image_pixmap
 #endif
 
 // It is possible that something has included eglext.h (like Symbian 10.1's broken egl.h), in
@@ -154,9 +160,6 @@ extern Q_GUI_EXPORT _eglCreateImageKHR eglCreateImageKHR;
 extern Q_GUI_EXPORT _eglDestroyImageKHR eglDestroyImageKHR;
 #endif // (defined(EGL_KHR_image) || defined(EGL_KHR_image_base)) && !defined(EGL_EGLEXT_PROTOTYPES)
 
-#if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_pixmap)
-#define EGL_NATIVE_PIXMAP_KHR       0x30B0
-#endif
 
 
 class QEglProperties;

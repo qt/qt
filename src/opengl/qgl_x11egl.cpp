@@ -435,30 +435,30 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
 
     // If the pixmap doesn't already have a valid surface, try binding it via EGLImage
     // first, as going through EGLImage should be faster and better supported:
-//    if (!textureIsBound && haveEglImageTFP) {
-//        Q_ASSERT(eglCreateImageKHR);
-//
-//        EGLImageKHR eglImage;
-//
-//        EGLint attribs[] = {
-//            EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
-//            EGL_NONE
-//        };
-//        eglImage = eglCreateImageKHR(QEgl::display(), EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR,
-//                                     (EGLClientBuffer)QEgl::nativePixmap(pixmap), attribs);
-//
-//        QGLContext* ctx = q;
-//        glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, eglImage);
-//
-//        GLint err = glGetError();
-//        if (err == GL_NO_ERROR)
-//            textureIsBound = true;
-//
-//        // Once the egl image is bound, the texture becomes a new sibling image and we can safely
-//        // destroy the EGLImage we created for the pixmap:
-//        if (eglImage != EGL_NO_IMAGE_KHR)
-//            eglDestroyImageKHR(QEgl::display(), eglImage);
-//    }
+    if (!textureIsBound && haveEglImageTFP) {
+        Q_ASSERT(eglCreateImageKHR);
+
+        EGLImageKHR eglImage;
+
+        EGLint attribs[] = {
+            EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
+            EGL_NONE
+        };
+        eglImage = eglCreateImageKHR(QEgl::display(), EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR,
+                                     (EGLClientBuffer)QEgl::nativePixmap(pixmap), attribs);
+
+        QGLContext* ctx = q;
+        glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, eglImage);
+
+        GLint err = glGetError();
+        if (err == GL_NO_ERROR)
+            textureIsBound = true;
+
+        // Once the egl image is bound, the texture becomes a new sibling image and we can safely
+        // destroy the EGLImage we created for the pixmap:
+        if (eglImage != EGL_NO_IMAGE_KHR)
+            eglDestroyImageKHR(QEgl::display(), eglImage);
+    }
 
     if (!textureIsBound && haveTFP) {
         // Check to see if the surface is still valid
