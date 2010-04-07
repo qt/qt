@@ -1861,6 +1861,9 @@ void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
     }
 }
 
+/*!
+  Generates a table of contents begining at \a node.
+ */
 void HtmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,
                                             Doc::SectioningUnit sectioningUnit,
