@@ -439,7 +439,7 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             }
         }
 
-        if (d->dragX) {
+        if (d->dragX && d->dragged) {
             qreal x = (curLocalPos.x() - startLocalPos.x()) + d->startX;
             if (x < drag()->xmin())
                 x = drag()->xmin();
@@ -447,7 +447,7 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 x = drag()->xmax();
             drag()->target()->setX(x);
         }
-        if (d->dragY) {
+        if (d->dragY && d->dragged) {
             qreal y = (curLocalPos.y() - startLocalPos.y()) + d->startY;
             if (y < drag()->ymin())
                 y = drag()->ymin();
