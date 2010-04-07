@@ -1,11 +1,10 @@
-
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,47 +38,42 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QPLATFORMWINDOW_H
+#define QPLATFORMWINDOW_H
 
-#ifndef QPLATFORMINTEGRATION_MINIMAL_H
-#define QPLATFORMINTEGRATION_MINIMAL_H
-
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QMinimalScreen : public QPlatformScreen
+#include <QtCore/qscopedpointer.h>
+
+class QPlatformWindowPrivate;
+
+class Q_GUI_EXPORT QPlatformWindow
 {
+    Q_DECLARE_PRIVATE(QPlatformWindow);
 public:
-    QMinimalScreen()
-        : mDepth(16), mFormat(QImage::Format_RGB16) {}
+    QPlatformWindow(QWidget *tlw);
+    virtual ~QPlatformWindow();
 
-    QRect geometry() const { return mGeometry; }
-    int depth() const { return mDepth; }
-    QImage::Format format() const { return mFormat; }
-    QSize physicalSize() const { return mPhysicalSize; }
+    QWidget *widget() const;
+    virtual void setGeometry(const QRect &rect);
+    virtual QRect geometry() const;
 
-public:
-    QRect mGeometry;
-    int mDepth;
-    QImage::Format mFormat;
-    QSize mPhysicalSize;
-};
+    virtual void setVisible(bool visible);
+    virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
+    virtual Qt::WindowFlags windowFlags() const;
+    virtual WId winId() const;
 
-class QMinimalIntegration : public QPlatformIntegration
-{
-public:
-    QMinimalIntegration();
+    virtual void setWindowTitle(const QString &);
+    virtual void raise();
+    virtual void lower();
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    void createWindowAndSurface(QPlatformWindow**window, QWindowSurface**surface, QWidget *widget, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-private:
-    QList<QPlatformScreen *> mScreens;
+protected:
+    QScopedPointer<QPlatformWindowPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
 
-#endif
+QT_END_HEADER
+#endif //QPLATFORMWINDOW_H

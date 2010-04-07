@@ -11836,6 +11836,44 @@ QWindowSurface *QWidget::windowSurface() const
     return bs ? bs->windowSurface : 0;
 }
 
+/*!
+    \preliminary
+
+    Sets the window to be the \a window specified.
+    The QWidget takes ownership of the \a surface.
+*/
+void QWidget::setPlatformWindow(QPlatformWindow *window)
+{
+#ifndef Q_BACKINGSTORE_SUBSURFACES
+    if (!isTopLevel())
+        return;
+#endif
+
+    Q_D(QWidget);
+
+    QTLWExtra *topData = d->topData();
+    if (topData->platformWindow == window)
+        return;
+
+    delete topData->platformWindow;
+    topData->platformWindow = window;
+}
+
+/*!
+    \preliminary
+
+    Returns the QPlatformWindow this widget will be drawn into.
+*/
+QPlatformWindow *QWidget::platformWindow() const
+{
+    Q_D(const QWidget);
+    QTLWExtra *extra = d->maybeTopData();
+    if (extra && extra->platformWindow)
+        return extra->platformWindow;
+
+    return 0;
+}
+
 void QWidgetPrivate::getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const
 {
     if (left)

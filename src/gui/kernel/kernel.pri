@@ -207,6 +207,7 @@ embedded_lite {
                 kernel/qplatformscreen_lite.h \
                 kernel/qplatformintegrationfactory_lite_p.h \
                 kernel/qplatformintegrationplugin_lite.h \
+                kernel/qplatformwindow_lite.h
 		
 	SOURCES += \
 		kernel/qapplication_lite.cpp \
@@ -224,7 +225,8 @@ embedded_lite {
                 kernel/qplatformintegration_lite.cpp \
                 kernel/qplatformscreen_lite.cpp \
                 kernel/qplatformintegrationfactory_lite.cpp \
-                kernel/qplatformintegrationplugin_lite.cpp
+                kernel/qplatformintegrationplugin_lite.cpp \
+                kernel/qplatformwindow_lite.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \

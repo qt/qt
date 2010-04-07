@@ -286,7 +286,11 @@ bool QWidgetBackingStore::bltRect(const QRect &rect, int dx, int dy, QWidget *wi
 void QWidgetBackingStore::releaseBuffer()
 {
     if (windowSurface)
+#if defined(Q_WS_LITE)
+        windowSurface->resize(QSize());
+#else
         windowSurface->setGeometry(QRect());
+#endif
 #ifdef Q_BACKINGSTORE_SUBSURFACES
     for (int i = 0; i < subSurfaces.size(); ++i)
         subSurfaces.at(i)->setGeometry(QRect());
@@ -415,6 +419,7 @@ void QWidgetBackingStore::endPaint(const QRegion &cleaned, QWindowSurface *windo
 QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
 {
     const bool widgetDirty = widget && widget != tlw;
+#if !defined(Q_WS_LITE)
     const QRect tlwRect(topLevelRect());
     const QRect surfaceGeometry(windowSurface->geometry());
     if (surfaceGeometry != tlwRect && surfaceGeometry.size() != tlwRect.size()) {
@@ -426,6 +431,7 @@ QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
         }
         return QRect(QPoint(), tlwRect.size());
     }
+#endif
 
     // Calculate the region that needs repaint.
     QRegion r(dirty);
@@ -467,7 +473,11 @@ QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
 QRegion QWidgetBackingStore::staticContents(QWidget *parent, const QRect &withinClipRect) const
 {
     if (!parent && tlw->testAttribute(Qt::WA_StaticContents)) {
+#if defined(Q_WS_LITE)
+        const QSize surfaceGeometry(windowSurface->size());
+#else
         const QRect surfaceGeometry(windowSurface->geometry());
+#endif
         QRect surfaceRect(0, 0, surfaceGeometry.width(), surfaceGeometry.height());
         if (!withinClipRect.isEmpty())
             surfaceRect &= withinClipRect;
@@ -1144,11 +1154,12 @@ void QWidgetBackingStore::sync()
         return;
     }
 
-    const bool inTopLevelResize = tlwExtra->inTopLevelResize;
     const bool updatesDisabled = !tlw->updatesEnabled();
+    bool repaintAllWidgets = false;
+#if !defined(Q_WS_LITE)
+    const bool inTopLevelResize = tlwExtra->inTopLevelResize;
     const QRect tlwRect(topLevelRect());
     const QRect surfaceGeometry(windowSurface->geometry());
-    bool repaintAllWidgets = false;
 
     if (inTopLevelResize || surfaceGeometry != tlwRect) {
         if ((inTopLevelResize || surfaceGeometry.size() != tlwRect.size()) && !updatesDisabled) {
@@ -1171,6 +1182,7 @@ void QWidgetBackingStore::sync()
         }
         windowSurface->setGeometry(tlwRect);
     }
+#endif
 
     if (updatesDisabled)
         return;

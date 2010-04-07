@@ -94,6 +94,7 @@ class QHideEvent;
 class QInputContext;
 class QIcon;
 class QWindowSurface;
+class QPlatformWindow;
 class QLocale;
 class QGraphicsProxyWidget;
 class QGraphicsEffect;
@@ -624,6 +625,11 @@ public:
 
     void setWindowSurface(QWindowSurface *surface);
     QWindowSurface *windowSurface() const;
+
+#if defined(Q_WS_LITE)
+    void setPlatformWindow(QPlatformWindow *window);
+    QPlatformWindow *platformWindow() const;
+#endif
 
 Q_SIGNALS:
     void customContextMenuRequested(const QPoint &pos);

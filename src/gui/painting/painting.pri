@@ -117,7 +117,7 @@ embedded {
     SOURCES += \
         painting/qgraphicssystem_qws.cpp \
 
-} else {
+} else: if(!embedded_lite) {
     HEADERS += \
         painting/qgraphicssystem_raster_p.h \
         painting/qgraphicssystemfactory_p.h \

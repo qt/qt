@@ -2,6 +2,7 @@
 #include "qwindowsurface_minimal.h"
 
 #include <QtGui/private/qpixmap_raster_p.h>
+#include <QtGui/QPlatformWindow>
 
 QMinimalIntegration::QMinimalIntegration()
 {
@@ -19,7 +20,9 @@ QPixmapData *QMinimalIntegration::createPixmapData(QPixmapData::PixelType type) 
 {
     return new QRasterPixmapData(type);
 }
-QWindowSurface *QMinimalIntegration::createWindowSurface(QWidget *widget) const
+void QMinimalIntegration::createWindowAndSurface(QPlatformWindow**window, QWindowSurface**surface, QWidget *widget, WId winId) const
 {
-    return new QMinimalWindowSurface(widget);
+    qDebug() << "createWindow";
+    *surface = new QMinimalWindowSurface(widget);
+    *window = new QPlatformWindow(widget);
 }

@@ -39,26 +39,28 @@
 **
 ****************************************************************************/
 
-#include "qwidget.h"
-#include "qevent.h"
-#include "qapplication.h"
-#include "private/qbackingstore_p.h"
-#include "private/qwidget_p.h"
-#include "private/qgraphicssystem_p.h"
-#include "private/qapplication_p.h"
-#include "qdesktopwidget.h"
+#include "QtGui/qwidget.h"
+#include "QtGui/qevent.h"
+#include "QtGui/qapplication.h"
+#include "QtGui/private/qbackingstore_p.h"
+#include "QtGui/private/qwidget_p.h"
+#include "QtGui/private/qgraphicssystem_p.h"
+#include "QtGui/private/qapplication_p.h"
+#include "QtGui/qdesktopwidget.h"
+#include "QtGui/qplatformwindow_lite.h"
 
-#include <QGraphicsSystemCursor>
+#include <QtGui/QGraphicsSystemCursor>
 
 QT_BEGIN_NAMESPACE
 static QPlatformScreen *qt_screenForWidget(const QWidget *w);
 
-void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool /*destroyOldWindow*/)
+void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyOldWindow)
 {
     Q_Q(QWidget);
 
     Q_UNUSED(window);
     Q_UNUSED(initializeWindow);
+    Q_UNUSED(destroyOldWindow);
     // XXX
 
     Qt::WindowFlags flags = data.window_flags;
@@ -67,15 +69,16 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool /*destro
         return; // we only care about real toplevels
 
     QWindowSurface *surface = q->windowSurface();
+    QPlatformWindow *platformWindow = q->platformWindow();
 
-    if (!surface)
-        surface = createDefaultWindowSurface();
-
+    if (!surface) {
+        QApplicationPrivate::platformIntegration()->createWindowAndSurface(&platformWindow,&surface,q);
+    }
     Q_ASSERT(surface);
 
-    data.window_flags = surface->setWindowFlags(data.window_flags);
+    data.window_flags = q->platformWindow()->setWindowFlags(data.window_flags);
 
-    setWinId(surface->winId());
+    setWinId(q->platformWindow()->winId());
 
 //    qDebug() << "create_sys" << q << q->internalWinId();
 }
@@ -119,8 +122,8 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 
     if (f & Qt::Window) {
         //qDebug() << "setParent_sys" << q << newparent << hex << f;
-        if (QWindowSurface *surface = q->windowSurface())
-            data.window_flags = surface->setWindowFlags(data.window_flags);
+        if (QPlatformWindow *window = q->platformWindow())
+            data.window_flags = window->setWindowFlags(data.window_flags);
     }
     // XXX Reparenting child to toplevel or vice versa ###
     if ((f&Qt::Window) && !(oldFlags&Qt::Window)) {
@@ -191,8 +194,8 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
     if (!q->isWindow())
         return;
 
-    if (QWindowSurface *surface = q->windowSurface())
-        surface->setWindowTitle(caption);
+    if (QPlatformWindow *window = q->platformWindow())
+        window->setWindowTitle(caption);
 
 }
 
@@ -299,9 +302,14 @@ void QWidgetPrivate::show_sys()
 
     if (QWindowSurface *surface = q->windowSurface()) {
          const QRect geomRect = q->geometry();
-         if (surface->geometry() != geomRect)
-             surface->setGeometry(geomRect);
-         surface->setVisible(true);
+         const QRect windowRect = q->platformWindow()->geometry();
+         if (windowRect != geomRect) {
+             q->platformWindow()->setGeometry(geomRect);
+             if (windowRect.size() != geomRect.size()) {
+                surface->resize(geomRect.size());
+             }
+         }
+         q->platformWindow()->setVisible(true);
      }
 
     if (q->windowType() != Qt::Popup && q->windowType() != Qt::ToolTip && !(q->windowFlags() & Qt::X11BypassWindowManagerHint))
@@ -320,8 +328,8 @@ void QWidgetPrivate::hide_sys()
         }
         return;
     }
-    if (QWindowSurface *surface = q->windowSurface()) {
-         surface->setVisible(false);
+    if (QPlatformWindow *window = q->platformWindow()) {
+         window->setVisible(false);
      }
 
     //### we don't yet have proper focus event handling
@@ -427,8 +435,7 @@ void QWidgetPrivate::raise_sys()
 {
     Q_Q(QWidget);
     if (q->isWindow()) {
-        QWindowSurface *surface = q->windowSurface();
-        surface->raise();
+        q->platformWindow()->raise();
     }
 }
 
@@ -437,8 +444,7 @@ void QWidgetPrivate::lower_sys()
     Q_Q(QWidget);
     if (q->isWindow()) {
         Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-        QWindowSurface *surface = q->windowSurface();
-        surface->lower();
+        q->platformWindow()->lower();
     } else if (QWidget *p = q->parentWidget()) {
         setDirtyOpaqueRegion();
         p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
@@ -491,8 +497,11 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
         if (q->isWindow()) {
             const QWidgetBackingStore *bs = maybeBackingStore();
-            if (bs->windowSurface)
-                bs->windowSurface->setGeometry(q->frameGeometry());
+            if (bs->windowSurface) {
+                q->platformWindow()->setGeometry(q->frameGeometry());
+                if (isResize)
+                    bs->windowSurface->resize(r.size());
+            }
         } else {
             if (isMove && !isResize)
                 moveRect(QRect(oldPos, olds), x - oldPos.x(), y - oldPos.y());
@@ -653,16 +662,7 @@ QPaintEngine *QWidget::paintEngine() const
 
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
 {
-    Q_Q(QWidget);
-    if (q->windowType() == Qt::Desktop)
-        return 0;
-    q->ensurePolished();
-
-    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
-    if (!gs)
-        return 0;
-
-    return gs->createWindowSurface(q);
+    qFatal("CreateDefaultWindowSurface_sys should not be used on lighthouse");
 }
 
 void QWidgetPrivate::setModal_sys()

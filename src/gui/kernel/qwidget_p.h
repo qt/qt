@@ -102,6 +102,9 @@ class QWSManager;
 #if defined(Q_WS_MAC)
 class QCoreGraphicsPaintEnginePrivate;
 #endif
+#if defined(Q_WS_LITE)
+class QPlatformWindow;
+#endif
 class QPaintEngine;
 class QPixmap;
 class QWidgetBackingStore;
@@ -176,6 +179,8 @@ struct QTLWExtra {
 #endif
 #elif defined(Q_OS_SYMBIAN)
     uint inExpose : 1; // Prevents drawing recursion
+#elif defined(Q_WS_LITE)
+    QPlatformWindow *platformWindow;
 #endif
 };
 

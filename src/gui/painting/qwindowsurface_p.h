@@ -63,6 +63,7 @@ class QRect;
 class QPoint;
 class QImage;
 class QWindowSurfacePrivate;
+class QPlatformWindow;
 
 class Q_GUI_EXPORT QWindowSurface
 {
@@ -75,8 +76,13 @@ public:
     virtual QPaintDevice *paintDevice() = 0;
     virtual void flush(QWidget *widget, const QRegion &region,
                        const QPoint &offset) = 0;
+#if !defined(Q_WS_LITE)
     virtual void setGeometry(const QRect &rect);
     QRect geometry() const;
+#else
+    virtual void resize(const QSize &size);
+    QSize size() const;
+#endif
 
     virtual bool scroll(const QRegion &area, int dx, int dy);
 
@@ -89,16 +95,6 @@ public:
     virtual QPoint offset(const QWidget *widget) const;
     inline QRect rect(const QWidget *widget) const;
 
-#ifdef Q_WS_LITE
-    virtual void setVisible(bool visible);
-    virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
-    virtual Qt::WindowFlags windowFlags() const;
-    virtual WId winId() const;
-
-    virtual void setWindowTitle(const QString &) {}
-    virtual void raise() { qWarning("This plugin does not support raise()"); }
-    virtual void lower() { qWarning("This plugin does not support lower()"); }
-#endif
     bool hasStaticContentsSupport() const;
 
     void setStaticContents(const QRegion &region);
