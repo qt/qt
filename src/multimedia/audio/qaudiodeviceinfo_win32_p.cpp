@@ -78,6 +78,8 @@ QAudioDeviceInfoInternal::QAudioDeviceInfoInternal(QByteArray dev, QAudio::Mode 
 {
     device = QLatin1String(dev);
     this->mode = mode;
+
+    updateLists();
 }
 
 QAudioDeviceInfoInternal::~QAudioDeviceInfoInternal()
@@ -176,22 +178,70 @@ bool QAudioDeviceInfoInternal::testSettings(const QAudioFormat& format) const
     // See if what is in settings will work (return value).
 
     bool failed = false;
+    bool match = false;
 
-    // For now, just accept only audio/pcm codec
-    if(!format.codec().startsWith(QLatin1String("audio/pcm")))
-        failed = true;
+    // check codec
+    for( int i = 0; i < codecz.count(); i++) {
+        if (format.codec() == codecz.at(i))
+            match = true;
+    }
+    if (!match) failed = true;
 
-    if(!failed && !(format.channels() == 1 || format.channels() == 2))
-        failed = true;
+    // check channel
+    match = false;
+    if (!failed) {
+        for( int i = 0; i < channelz.count(); i++) {
+            if (format.channels() == channelz.at(i)) {
+                match = true;
+                break;
+            }
+        }
+    }
+    if (!match) failed = true;
 
-    if(!failed) {
-        if(!(format.frequency() == 8000 || format.frequency() == 11025 || format.frequency() == 22050 ||
-	   format.frequency() == 44100 || format.frequency() == 48000 || format.frequency() == 96000))
-	    failed = true;
+    // check frequency
+    match = false;
+    if (!failed) {
+        for( int i = 0; i < freqz.count(); i++) {
+            if (format.frequency() == freqz.at(i)) {
+                match = true;
+                break;
+            }
+        }
     }
 
-    if(!failed && !(format.sampleSize() == 8 || format.sampleSize() == 16))
-        failed = true;
+    // check sample size
+    match = false;
+    if (!failed) {
+        for( int i = 0; i < sizez.count(); i++) {
+            if (format.sampleSize() == sizez.at(i)) {
+                match = true;
+                break;
+            }
+        }
+    }
+
+    // check byte order
+    match = false;
+    if (!failed) {
+        for( int i = 0; i < byteOrderz.count(); i++) {
+            if (format.byteOrder() == byteOrderz.at(i)) {
+                match = true;
+                break;
+            }
+        }
+    }
+
+    // check sample type
+    match = false;
+    if (!failed) {
+        for( int i = 0; i < typez.count(); i++) {
+            if (format.sampleType() == typez.at(i)) {
+                match = true;
+                break;
+            }
+        }
+    }
 
     if(!failed) {
         // settings work
@@ -332,6 +382,8 @@ void QAudioDeviceInfoInternal::updateLists()
 
 	codecz.append(QLatin1String("audio/pcm"));
     }
+    if (freqz.count() > 0)
+        freqz.prepend(8000);
 }
 
 QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
