@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qdeclarativescriptparser_p.h"
-#include "qdeclarativerefcount_p.h"
+#include "private/qdeclarativescriptparser_p.h"
+#include "private/qdeclarativerefcount_p.h"
 #include "qdeclarativeerror.h"
 #include "qdeclarativeengine.h"
 

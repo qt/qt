@@ -235,7 +235,7 @@ static QByteArray slurpEscapedString(const QList<QByteArray> &lines, int &l,
         const QByteArray &line = lines.at(l);
         if (line.isEmpty() || !line.startsWith(prefix))
             break;
-        while (::isspace(line[offset])) // No length check, as string has no trailing spaces.
+        while (isspace(line[offset])) // No length check, as string has no trailing spaces.
             offset++;
         if (line[offset] != '"')
             break;
@@ -247,7 +247,7 @@ static QByteArray slurpEscapedString(const QList<QByteArray> &lines, int &l,
             if (c == '"') {
                 if (offset == line.length())
                     break;
-                while (::isspace(line[offset]))
+                while (isspace(line[offset]))
                     offset++;
                 if (line[offset++] != '"') {
                     cd.appendError(QString::fromLatin1(
@@ -305,7 +305,7 @@ static QByteArray slurpEscapedString(const QList<QByteArray> &lines, int &l,
                     break;
                 case 'x':
                     stoff = offset;
-                    while (::isxdigit(line[offset]))
+                    while (isxdigit(line[offset]))
                         if (++offset == line.length())
                             goto premature_eol;
                     msg += line.mid(stoff, offset - stoff).toUInt(0, 16);

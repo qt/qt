@@ -55,19 +55,19 @@
 
 #include "qdeclarativecontext.h"
 
-#include "qdeclarativedeclarativedata_p.h"
-#include "qdeclarativeintegercache_p.h"
-#include "qdeclarativetypenamecache_p.h"
-#include "qdeclarativenotifier_p.h"
+#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativeintegercache_p.h"
+#include "private/qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativenotifier_p.h"
 #include "qdeclarativelist.h"
-#include "qdeclarativeparser_p.h"
+#include "private/qdeclarativeparser_p.h"
 
 #include <QtCore/qhash.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qset.h>
 
 #include <private/qobject_p.h>
-#include "qdeclarativeguard_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 QT_BEGIN_NAMESPACE
 

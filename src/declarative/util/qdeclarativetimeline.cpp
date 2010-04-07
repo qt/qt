@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativetimeline_p_p.h"
+#include "private/qdeclarativetimeline_p_p.h"
 
 #include <QDebug>
 #include <QMutex>

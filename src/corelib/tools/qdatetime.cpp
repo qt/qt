@@ -1336,7 +1336,10 @@ bool QDate::isValid(int year, int month, int day)
 bool QDate::isLeapYear(int y)
 {
     if (y < 1582) {
-        return qAbs(y) % 4 == 0;
+        if ( y < 1) {  // No year 0 in Julian calendar, so -1, -5, -9 etc are leap years
+            ++y;
+        }
+        return y % 4 == 0;
     } else {
         return (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
     }

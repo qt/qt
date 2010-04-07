@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativevaluetype_p.h"
+#include "private/qdeclarativevaluetype_p.h"
 
-#include "qdeclarativemetatype_p.h"
+#include "private/qdeclarativemetatype_p.h"
 
 #include <QtCore/qdebug.h>
 

@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qdeclarativeanchors_p.h"
-#include "qdeclarativeitemchangelistener_p.h"
+#include "private/qdeclarativeanchors_p.h"
+#include "private/qdeclarativeitemchangelistener_p.h"
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE

@@ -40,7 +40,7 @@
 
 // MCRT0.CPP
 //
-// © Portions copyright (c) 2005-2006 Nokia Corporation.  All rights reserved.
+// Portions copyright (c) 2005-2006 Nokia Corporation.  All rights reserved.
 // Copyright (c) Symbian Software Ltd 1997-2004.  All rights reserved.
 //
 

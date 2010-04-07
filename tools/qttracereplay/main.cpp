@@ -49,7 +49,7 @@ class ReplayWidget : public QWidget
 {
     Q_OBJECT
 public:
-    ReplayWidget(const QString &filename, int from, int to, bool single);
+    ReplayWidget(const QString &filename, int from, int to, bool single, int frame);
 
     void paintEvent(QPaintEvent *event);
     void resizeEvent(QResizeEvent *event);
@@ -66,26 +66,95 @@ public:
     QTime timer;
 
     QList<uint> visibleUpdates;
-    QList<uint> iterationTimes;
+
+    QVector<uint> iterationTimes;
     QString filename;
 
     int from;
     int to;
 
     bool single;
+
+    int frame;
+    int currentCommand;
 };
 
 void ReplayWidget::updateRect()
 {
-    if (!visibleUpdates.isEmpty())
+    if (frame >= 0 && !updates.isEmpty())
+        update(updates.at(frame));
+    else if (!visibleUpdates.isEmpty())
         update(updates.at(visibleUpdates.at(currentFrame)));
 }
+
+const int singleFrameRepeatsPerCommand = 100;
+const int singleFrameIterations = 4;
 
 void ReplayWidget::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
 
+    QTimer::singleShot(0, this, SLOT(updateRect()));
+
 //    p.setClipRegion(frames.at(currentFrame).updateRegion);
+
+    if (frame >= 0) {
+        int start = buffer.frameStartIndex(frame);
+        int end = buffer.frameEndIndex(frame);
+
+        iterationTimes.resize(end - start);
+
+        int saveRestoreStackDepth = buffer.processCommands(&p, start, start + currentCommand);
+
+        for (int i = 0; i < saveRestoreStackDepth; ++i)
+            p.restore();
+
+        const int repeats = currentIteration >= 3 ? singleFrameRepeatsPerCommand : 1;
+
+        ++currentFrame;
+        if (currentFrame == repeats) {
+            currentFrame = 0;
+            if (currentIteration >= 3) {
+                iterationTimes[currentCommand - 1] = qMin(iterationTimes[currentCommand - 1], uint(timer.elapsed()));
+                timer.restart();
+            }
+
+            if (currentIteration >= singleFrameIterations + 3) {
+                printf(" #    | ms      | description\n");
+                printf("------+---------+------------------------------------------------------------\n");
+
+		qSort(iterationTimes);
+
+		int sum = 0;
+                for (int i = 0; i < iterationTimes.size(); ++i) {
+                    int delta = iterationTimes.at(i);
+                    if (i > 0)
+                        delta -= iterationTimes.at(i-1);
+		    sum += delta;
+                    qreal deltaF = delta / qreal(repeats);
+                    printf("%.5d | %.5f | %s\n", i, deltaF, qPrintable(buffer.commandDescription(start + i)));
+                }
+                printf("Total | %.5f | Total frame time\n", sum / qreal(repeats));
+                deleteLater();
+                return;
+            }
+
+            if (start + currentCommand >= end) {
+                currentCommand = 1;
+		++currentIteration;
+                if (currentIteration == 3) {
+                    timer.start();
+                    iterationTimes.fill(uint(-1));
+                }
+		if (currentIteration >= 3 && currentIteration < singleFrameIterations + 3)
+                    printf("Profiling iteration %d of %d\n", currentIteration - 2, singleFrameIterations);
+            } else {
+                ++currentCommand;
+	    }
+        }
+
+        return;
+    }
 
     buffer.draw(&p, visibleUpdates.at(currentFrame));
 
@@ -138,11 +207,9 @@ void ReplayWidget::paintEvent(QPaintEvent *)
             }
         }
     }
-
-    QTimer::singleShot(0, this, SLOT(updateRect()));
 }
 
-void ReplayWidget::resizeEvent(QResizeEvent *event)
+void ReplayWidget::resizeEvent(QResizeEvent *)
 {
     visibleUpdates.clear();
 
@@ -162,13 +229,15 @@ void ReplayWidget::resizeEvent(QResizeEvent *event)
 
 }
 
-ReplayWidget::ReplayWidget(const QString &filename_, int from_, int to_, bool single_)
+ReplayWidget::ReplayWidget(const QString &filename_, int from_, int to_, bool single_, int frame_)
     : currentFrame(0)
     , currentIteration(0)
     , filename(filename_)
     , from(from_)
     , to(to_)
     , single(single_)
+    , frame(frame_)
+    , currentCommand(1)
 {
     setWindowTitle(filename);
     QFile file(filename);
@@ -216,7 +285,8 @@ int main(int argc, char **argv)
         printf("Usage:\n  > %s [OPTIONS] [traceFile]\n", argv[0]);
         printf("OPTIONS\n"
                "   --range=from-to to specify a frame range.\n"
-               "   --singlerun to do only one run (without statistics)\n");
+               "   --singlerun to do only one run (without statistics)\n"
+               "   --instrumentframe=frame to instrument a single frame\n");
         return 1;
     }
 
@@ -227,6 +297,8 @@ int main(int argc, char **argv)
     }
 
     bool single = false;
+
+    int frame = -1;
 
     int from = 0;
     int to = -1;
@@ -253,13 +325,22 @@ int main(int argc, char **argv)
             }
         } else if (arg == QLatin1String("--singlerun")) {
             single = true;
+        } else if (arg.startsWith(QLatin1String("--instrumentframe="))) {
+            QString rest = arg.mid(18);
+            bool ok = false;
+            int frameCandidate = rest.toInt(&ok);
+            if (ok) {
+                frame = frameCandidate;
+            } else {
+                printf("ERROR: malformed syntax in argument %s\n", qPrintable(arg));
+            }
         } else {
             printf("Unrecognized argument: %s\n", qPrintable(arg));
             return 1;
         }
     }
 
-    ReplayWidget *widget = new ReplayWidget(app.arguments().last(), from, to, single);
+    ReplayWidget *widget = new ReplayWidget(app.arguments().last(), from, to, single, frame);
 
     if (!widget->updates.isEmpty()) {
         widget->show();

@@ -57,7 +57,7 @@
 #include "qdeclarativepropertyvaluesource.h"
 #include "qdeclarativeexpression.h"
 #include "qdeclarativeproperty.h"
-#include "qdeclarativeproperty_p.h"
+#include "private/qdeclarativeproperty_p.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QMetaProperty>

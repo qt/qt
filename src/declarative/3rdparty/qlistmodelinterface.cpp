@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qlistmodelinterface_p.h"
+#include "private/qlistmodelinterface_p.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -161,6 +161,7 @@ private slots:
 
     void qRegExpInport_data();
     void qRegExpInport();
+    void reentrency();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -4575,6 +4576,26 @@ void tst_QScriptEngine::qRegExpInport()
     for (int i = 0; i <= rx.captureCount(); i++)  {
         QCOMPARE(result.property(i).toString(), rx.cap(i));
     }
+}
+
+static QScriptValue createAnotherEngine(QScriptContext *, QScriptEngine *)
+{
+    QScriptEngine eng;
+    eng.evaluate("function foo(x, y) { return x + y; }" );
+    eng.evaluate("hello = 5; world = 6" );
+    return eng.evaluate("foo(hello,world)").toInt32();
+}
+
+
+void tst_QScriptEngine::reentrency()
+{
+    QScriptEngine eng;
+    eng.globalObject().setProperty("foo", eng.newFunction(createAnotherEngine));
+    eng.evaluate("function bar() { return foo(); }  hello = 9; function getHello() { return hello; }");
+    QCOMPARE(eng.evaluate("foo() + getHello() + foo()").toInt32(), 5+6 + 9 + 5+6);
+    QCOMPARE(eng.evaluate("foo").call().toInt32(), 5+6);
+    QCOMPARE(eng.evaluate("hello").toInt32(), 9);
+    QCOMPARE(eng.evaluate("foo() + hello").toInt32(), 5+6+9);
 }
 
 QTEST_MAIN(tst_QScriptEngine)

@@ -82,7 +82,7 @@ public:
 
     void startThread(QRunnable *runnable = 0);
     void reset();
-    void waitForDone(int msecs = -1);
+    void waitForDone();
     bool startFrontRunnable();
     void stealRunnable(QRunnable *);
 

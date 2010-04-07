@@ -620,6 +620,20 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
     QByteArray key;
     bool success = false;
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+    if (fileName.endsWith(QLatin1String(".debug"))) {
+        // refuse to load a file that ends in .debug
+        // these are the debug symbols from the libraries
+        // the problem is that they are valid shared library files
+        // and dlopen is known to crash while opening them
+
+        // pretend we didn't see the file
+        errorString = QLibrary::tr("The shared library was not found.");
+        pluginState = IsNotAPlugin;
+        return false;
+    }
+#endif
+
     QFileInfo fileinfo(fileName);
 
 #ifndef QT_NO_DATESTRING

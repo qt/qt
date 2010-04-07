@@ -77,10 +77,12 @@ static HB_UChar16 compose_0x300(HB_UChar16 base)
             return 0x1fdd;
         return 0;
     }
-    const hb_greek_decomposition *d = decompose_0x300;
-    while (d->base && d->base != base)
-        ++d;
-    return d->composed;
+    {
+        const hb_greek_decomposition *d = decompose_0x300;
+        while (d->base && d->base != base)
+            ++d;
+        return d->composed;
+    }
 }
 
 static const hb_greek_decomposition decompose_0x301[] = {
@@ -115,10 +117,12 @@ static HB_UChar16 compose_0x301(HB_UChar16 base)
         if (base == 0x1ffe)
             return 0x1fde;
     }
-    const hb_greek_decomposition *d = decompose_0x301;
-    while (d->base && d->base != base)
-        ++d;
-    return d->composed;
+    {
+        const hb_greek_decomposition *d = decompose_0x301;
+        while (d->base && d->base != base)
+            ++d;
+        return d->composed;
+    }
 }
 
 static const hb_greek_decomposition decompose_0x304[] = {
@@ -351,8 +355,7 @@ static HB_UChar16 compose_0x345(HB_UChar16 base)
 */
 HB_Bool HB_GreekShape(HB_ShaperItem *shaper_item)
 {
-    assert(shaper_item->item.script == HB_Script_Greek);
-
+    const int availableGlyphs = shaper_item->num_glyphs;
     const HB_UChar16 *uc = shaper_item->string + shaper_item->item.pos;
     unsigned short *logClusters = shaper_item->log_clusters;
     HB_GlyphAttributes *attributes = shaper_item->attributes;
@@ -363,6 +366,9 @@ HB_Bool HB_GreekShape(HB_ShaperItem *shaper_item)
     hb_uint32 i;
 
     HB_STACKARRAY(HB_UChar16, shapedChars, 2 * shaper_item->item.length);
+
+    assert(shaper_item->item.script == HB_Script_Greek);
+
     *shapedChars = *uc;
     logClusters[0] = 0;
 
@@ -430,7 +436,6 @@ HB_Bool HB_GreekShape(HB_ShaperItem *shaper_item)
 
 #ifndef NO_OPENTYPE
     if (HB_SelectScript(shaper_item, greek_features)) {
-        const int availableGlyphs = shaper_item->num_glyphs;
         HB_OpenTypeShape(shaper_item, /*properties*/0);
         return HB_OpenTypePosition(shaper_item, availableGlyphs, /*doLogClusters*/TRUE);
     }

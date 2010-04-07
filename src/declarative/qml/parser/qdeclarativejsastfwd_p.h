@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEJSAST_FWD_P_H
 #define QDECLARATIVEJSAST_FWD_P_H
 
-#include "qdeclarativejsglobal_p.h"
+#include "private/qdeclarativejsglobal_p.h"
 
 #include <QtCore/qglobal.h>
 

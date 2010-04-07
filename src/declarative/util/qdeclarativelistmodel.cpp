@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativelistmodel_p_p.h"
-#include "qdeclarativelistmodelworkeragent_p.h"
-#include "qdeclarativeopenmetaobject_p.h"
+#include "private/qdeclarativelistmodel_p_p.h"
+#include "private/qdeclarativelistmodelworkeragent_p.h"
+#include "private/qdeclarativeopenmetaobject_p.h"
 
 #include <qdeclarativecustomparser_p.h>
 #include <qdeclarativeparser_p.h>

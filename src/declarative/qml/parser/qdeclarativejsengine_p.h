@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qdeclarativejsglobal_p.h"
-#include "qdeclarativejsastfwd_p.h"
+#include "private/qdeclarativejsglobal_p.h"
+#include "private/qdeclarativejsastfwd_p.h"
 
 #include <QString>
 #include <QSet>

@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qdeclarativetypenamecache_p.h"
-#include "qdeclarativescriptclass_p.h"
+#include "private/qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativescriptclass_p.h"
 
 QT_BEGIN_NAMESPACE
 

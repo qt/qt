@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativepropertychanges_p.h"
+#include "private/qdeclarativepropertychanges_p.h"
 
-#include "qdeclarativeopenmetaobject_p.h"
+#include "private/qdeclarativeopenmetaobject_p.h"
 
 #include <qdeclarativeinfo.h>
 #include <qdeclarativecustomparser_p.h>

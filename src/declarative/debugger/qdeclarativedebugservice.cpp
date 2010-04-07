@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativedebugservice_p.h"
+#include "private/qdeclarativedebugservice_p.h"
 
-#include "qpacketprotocol_p.h"
+#include "private/qpacketprotocol_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtNetwork/qtcpserver.h>

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeflickable_p.h"
-#include "qdeclarativeflickable_p_p.h"
+#include "private/qdeclarativeflickable_p.h"
+#include "private/qdeclarativeflickable_p_p.h"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QPointer>

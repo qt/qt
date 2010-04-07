@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativejsengine_p.h"
+#include "private/qdeclarativejsengine_p.h"
 
-#include "qdeclarativejsglobal_p.h"
-#include "qdeclarativejsnodepool_p.h"
+#include "private/qdeclarativejsglobal_p.h"
+#include "private/qdeclarativejsnodepool_p.h"
 
 #include <qnumeric.h>
 #include <QHash>

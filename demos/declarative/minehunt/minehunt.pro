@@ -25,8 +25,9 @@ INSTALLS = sources MinehuntCore_sources target
 symbian:{
     load(data_caging_paths)
     TARGET.EPOCALLOWDLLDATA = 1
+    TARGET.CAPABILITY = all -tcb
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
-    
+
     importFiles.sources = minehunt.dll \
     MinehuntCore/Explosion.qml \
     MinehuntCore/pics \

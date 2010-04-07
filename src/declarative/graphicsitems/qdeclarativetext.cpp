@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativetext_p.h"
-#include "qdeclarativetext_p_p.h"
+#include "private/qdeclarativetext_p.h"
+#include "private/qdeclarativetext_p_p.h"
 #include <qdeclarativestyledtext_p.h>
 
 #include <QTextLayout>

@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarativeerror.h"
-#include "qbitfield_p.h"
+#include "private/qbitfield_p.h"
 
 #include <QtCore/QString>
 #include <QtCore/QStack>

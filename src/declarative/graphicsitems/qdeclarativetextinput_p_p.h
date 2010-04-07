@@ -42,9 +42,9 @@
 #ifndef QDECLARATIVETEXTINPUT_P_H
 #define QDECLARATIVETEXTINPUT_P_H
 
-#include "qdeclarativetextinput_p.h"
+#include "private/qdeclarativetextinput_p.h"
 
-#include "qdeclarativepainteditem_p_p.h"
+#include "private/qdeclarativepainteditem_p_p.h"
 
 #include <qdeclarative.h>
 

@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarative.h"
-#include "qdeclarativerefcount_p.h"
+#include "private/qdeclarativerefcount_p.h"
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
@@ -237,7 +237,7 @@ namespace QDeclarativeParser
         QList<DynamicSlot> dynamicSlots;
     };
 
-    class Variant 
+    class Q_DECLARATIVE_EXPORT Variant 
     {
     public:
         enum Type {

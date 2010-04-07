@@ -1037,8 +1037,18 @@ QDataStream & operator>>(QDataStream &s, QTransform &t)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QTransform &m)
 {
-    dbg.nospace() << "QTransform("
-                  << "11="  << m.m11()
+    static const char *typeStr[] =
+    {
+        "TxNone",
+        "TxTranslate",
+        "TxScale",
+        "TxRotate",
+        "TxShear",
+        "TxProject"
+    };
+
+    dbg.nospace() << "QTransform(type=" << typeStr[m.type()] << ','
+                  << " 11=" << m.m11()
                   << " 12=" << m.m12()
                   << " 13=" << m.m13()
                   << " 21=" << m.m21()
@@ -1048,6 +1058,7 @@ QDebug operator<<(QDebug dbg, const QTransform &m)
                   << " 32=" << m.m32()
                   << " 33=" << m.m33()
                   << ')';
+
     return dbg.space();
 }
 #endif
