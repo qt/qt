@@ -121,7 +121,6 @@ HEADERS += \
     $$PWD/qdeclarativetypenamescriptclass_p.h \
     $$PWD/qdeclarativelistscriptclass_p.h \
     $$PWD/qdeclarativeworkerscript_p.h \
-    $$PWD/qdeclarativescriptclass_p.h \
     $$PWD/qdeclarativeguard_p.h \
     $$PWD/qdeclarativeimageprovider.h \
     $$PWD/qdeclarativenetworkaccessmanagerfactory.h \

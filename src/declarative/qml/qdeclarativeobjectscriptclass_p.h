@@ -56,7 +56,7 @@
 #include "private/qdeclarativepropertycache_p.h"
 #include "private/qdeclarativetypenamecache_p.h"
 
-#include <private/qdeclarativescriptclass_p.h>
+#include <private/qscriptdeclarativeclass_p.h>
 #include <QtScript/qscriptengine.h>
 
 QT_BEGIN_NAMESPACE
@@ -93,7 +93,7 @@ private:
 };
 #endif
 
-class Q_AUTOTEST_EXPORT QDeclarativeObjectScriptClass : public QDeclarativeScriptClass
+class Q_AUTOTEST_EXPORT QDeclarativeObjectScriptClass : public QScriptDeclarativeClass
 {
 public:
     QDeclarativeObjectScriptClass(QDeclarativeEngine *);
@@ -115,7 +115,7 @@ public:
                                            QDeclarativeContextData *evalContext,
                                            QueryHints hints = 0);
 
-    ScriptValue property(QObject *, const Identifier &);
+    Value property(QObject *, const Identifier &);
 
     void setProperty(QObject *, const Identifier &name, const QScriptValue &,
                      QDeclarativeContextData *evalContext = 0);
@@ -126,7 +126,7 @@ protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
 
-    virtual ScriptValue property(Object *, const Identifier &);
+    virtual Value property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
     virtual bool isQObject() const;
     virtual QObject *toQObject(Object *, bool *ok = 0);

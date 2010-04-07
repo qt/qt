@@ -79,7 +79,7 @@ struct ContextData : public QScriptDeclarativeClass::Object {
     via QtScript.
  */
 QDeclarativeContextScriptClass::QDeclarativeContextScriptClass(QDeclarativeEngine *bindEngine)
-: QDeclarativeScriptClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine),
+: QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine),
   lastScopeObject(0), lastContext(0), lastData(0), lastPropertyIndex(-1)
 {
 }
@@ -223,7 +223,7 @@ QDeclarativeContextScriptClass::queryProperty(QDeclarativeContextData *bindConte
     return 0;
 }
 
-QDeclarativeContextScriptClass::ScriptValue
+QDeclarativeContextScriptClass::Value
 QDeclarativeContextScriptClass::property(Object *object, const Identifier &name)
 {
     Q_UNUSED(object);

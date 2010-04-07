@@ -62,7 +62,7 @@ struct TypeNameData : public QScriptDeclarativeClass::Object {
 };
 
 QDeclarativeTypeNameScriptClass::QDeclarativeTypeNameScriptClass(QDeclarativeEngine *bindEngine)
-: QDeclarativeScriptClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), 
+: QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), 
   engine(bindEngine), object(0), type(0)
 {
 }
@@ -139,7 +139,7 @@ QDeclarativeTypeNameScriptClass::queryProperty(Object *obj, const Identifier &na
     return 0;
 }
 
-QDeclarativeTypeNameScriptClass::ScriptValue 
+QDeclarativeTypeNameScriptClass::Value 
 QDeclarativeTypeNameScriptClass::property(Object *obj, const Identifier &name)
 {
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);

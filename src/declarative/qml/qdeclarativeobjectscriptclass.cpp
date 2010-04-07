@@ -78,11 +78,8 @@ struct ObjectData : public QScriptDeclarativeClass::Object {
     QtScript for QML.
  */
 QDeclarativeObjectScriptClass::QDeclarativeObjectScriptClass(QDeclarativeEngine *bindEngine)
-: QDeclarativeScriptClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)),
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
-  methods(bindEngine),
-#endif
-  lastData(0), engine(bindEngine)
+: QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)),
+  methods(bindEngine), lastData(0), engine(bindEngine)
 {
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
@@ -191,13 +188,13 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
     return 0;
 }
 
-QDeclarativeObjectScriptClass::ScriptValue
+QDeclarativeObjectScriptClass::Value
 QDeclarativeObjectScriptClass::property(Object *object, const Identifier &name)
 {
     return property(toQObject(object), name);
 }
 
-QDeclarativeObjectScriptClass::ScriptValue
+QDeclarativeObjectScriptClass::Value
 QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
 {
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
@@ -357,7 +354,7 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         QMetaObject::metacall(obj, QMetaObject::ResetProperty, lastData->coreIndex, a);
     } else {
         // ### Can well known types be optimized?
-        QVariant v = QDeclarativeScriptClass::toVariant(engine, value);
+        QVariant v = enginePriv->scriptValueToVariant(value);
         QDeclarativePropertyPrivate::write(obj, *lastData, v, evalContext);
     }
 }
@@ -557,7 +554,7 @@ QDeclarativeObjectMethodScriptClass::queryProperty(Object *, const Identifier &n
 
 }
 
-QDeclarativeObjectScriptClass::ScriptValue
+QDeclarativeObjectMethodScriptClass::Value
 QDeclarativeObjectMethodScriptClass::property(Object *, const Identifier &name)
 {
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
@@ -687,7 +684,7 @@ void MetaCallArgument::fromScriptValue(int callType, QDeclarativeEngine *engine,
         *((QObject **)&data) = value.toQObject();
         type = callType;
     } else if (callType == qMetaTypeId<QVariant>()) {
-        new (&data) QVariant(QDeclarativeScriptClass::toVariant(engine, value));
+        new (&data) QVariant(QDeclarativeEnginePrivate::get(engine)->scriptValueToVariant(value));
         type = callType;
     } else if (callType == qMetaTypeId<QList<QObject*> >()) {
         new (&data) QList<QObject *>(); // We don't support passing in QList<QObject*>
@@ -696,7 +693,7 @@ void MetaCallArgument::fromScriptValue(int callType, QDeclarativeEngine *engine,
         new (&data) QVariant();
         type = -1;
 
-        QVariant v = QDeclarativeScriptClass::toVariant(engine, value);
+        QVariant v = QDeclarativeEnginePrivate::get(engine)->scriptValueToVariant(value);
         if (v.userType() == callType) {
             *((QVariant *)&data) = v;
         } else if (v.canConvert((QVariant::Type)callType)) {

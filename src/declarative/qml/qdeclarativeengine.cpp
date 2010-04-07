@@ -61,7 +61,6 @@
 #include "private/qdeclarativeglobal_p.h"
 #include "private/qdeclarativeworkerscript_p.h"
 #include "private/qdeclarativecomponent_p.h"
-#include "private/qdeclarativescriptclass_p.h"
 #include "qdeclarativenetworkaccessmanagerfactory.h"
 #include "qdeclarativeimageprovider.h"
 #include "private/qdeclarativedirparser_p.h"
@@ -1363,19 +1362,6 @@ QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val
     } else {
         return QVariant();
     }
-}
-
-QDeclarativeScriptClass::QDeclarativeScriptClass(QScriptEngine *engine)
-: QScriptDeclarativeClass(engine)
-{
-}
-
-QVariant QDeclarativeScriptClass::toVariant(QDeclarativeEngine *engine, const QScriptValue &val)
-{
-    QDeclarativeEnginePrivate *ep =
-        static_cast<QDeclarativeEnginePrivate *>(QObjectPrivate::get(engine));
-
-    return ep->scriptValueToVariant(val);
 }
 
 // XXX this beyonds in QUrl::toLocalFile()
