@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativewatcher_p.h"
+#include "private/qdeclarativewatcher_p.h"
 
 #include "qdeclarativeexpression.h"
 #include "qdeclarativecontext.h"

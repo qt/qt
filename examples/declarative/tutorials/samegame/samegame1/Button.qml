@@ -14,11 +14,11 @@ Rectangle {
     gradient: Gradient {
         GradientStop {
             id: topGrad; position: 0.0
-            color: if (mr.pressed) { activePalette.dark } else { activePalette.light } }
+            color: if (mouseArea.pressed) { activePalette.dark } else { activePalette.light } }
         GradientStop { position: 1.0; color: activePalette.button }
     }
 
-    MouseArea { id: mr; anchors.fill: parent; onClicked: container.clicked() }
+    MouseArea { id: mouseArea; anchors.fill: parent; onClicked: container.clicked() }
 
     Text {
         id: txtItem; text: container.text; anchors.centerIn: container; color: activePalette.buttonText

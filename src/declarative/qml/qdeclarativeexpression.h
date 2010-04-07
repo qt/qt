@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEEXPRESSION_H
 #define QDECLARATIVEEXPRESSION_H
 
-#include "qdeclarativeerror.h"
+#include <QtDeclarative/qdeclarativeerror.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>

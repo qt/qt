@@ -4,7 +4,8 @@ Item {
     width: 90
     height: 480
     Flow {
-        anchors.fill: parent
+        objectName: "flow"
+        width: parent.width
         Rectangle {
             objectName: "one"
             color: "red"

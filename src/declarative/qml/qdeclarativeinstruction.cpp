@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeinstruction_p.h"
+#include "private/qdeclarativeinstruction_p.h"
 
-#include "qdeclarativecompiler_p.h"
+#include "private/qdeclarativecompiler_p.h"
 
 #include <QtCore/qdebug.h>
 

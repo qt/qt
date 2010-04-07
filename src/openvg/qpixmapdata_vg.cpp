@@ -42,6 +42,7 @@
 #include "qpixmapdata_vg_p.h"
 #include "qpaintengine_vg_p.h"
 #include <QtGui/private/qdrawhelper_p.h>
+#include <QtGui/private/qegl_p.h>
 #include "qvg_p.h"
 #include "qvgimagepool_p.h"
 
@@ -51,8 +52,6 @@
 #endif
 #ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
 #include <sgresource/sgimage.h>
-typedef EGLImageKHR (*pfnEglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, EGLint*);
-typedef EGLBoolean (*pfnEglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
 typedef VGImage (*pfnVgCreateEGLImageTargetKHR)(VGeglImageKHR);
 #endif // QT_SYMBIAN_SUPPORTS_SGIMAGE
 
@@ -488,11 +487,9 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
             return;
         }
 
-        pfnEglCreateImageKHR eglCreateImageKHR = (pfnEglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
-        pfnEglDestroyImageKHR eglDestroyImageKHR = (pfnEglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
         pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
 
-        if (eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
+        if (eglGetError() != EGL_SUCCESS || !(QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_pixmap")) || !vgCreateEGLImageTargetKHR) {
             cleanup();
             driver.Close();
             return;
@@ -606,11 +603,9 @@ void* QVGPixmapData::toNativeType(NativeType type)
             return 0;
         }
 
-        pfnEglCreateImageKHR eglCreateImageKHR = (pfnEglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
-        pfnEglDestroyImageKHR eglDestroyImageKHR = (pfnEglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
         pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
 
-        if (eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
+        if (eglGetError() != EGL_SUCCESS || !(QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_pixmap")) || !vgCreateEGLImageTargetKHR) {
             driver.Close();
             return 0;
         }

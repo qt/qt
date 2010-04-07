@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qdeclarativeparser_p.h"
+#include "private/qdeclarativeparser_p.h"
 
 #include <QtCore/QtGlobal>
 

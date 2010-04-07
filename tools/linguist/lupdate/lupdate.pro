@@ -16,7 +16,7 @@ include(../shared/formats.pri)
 include(../shared/proparser.pri)
 
 include($$QT_SOURCE_TREE/src/declarative/qml/parser/parser.pri)
-INCLUDEPATH += $$QT_SOURCE_TREE/src/declarative/qml
+INCLUDEPATH += $$QT_SOURCE_TREE/src/declarative/qml $$QT_BUILD_TREE/include/QtDeclarative
 
 SOURCES += \
     main.cpp \

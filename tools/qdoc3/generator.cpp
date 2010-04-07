@@ -322,11 +322,11 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
     bool quiet = false;
 
     if (node->type() == Node::Function) {
-#if 0        
+#if 0
         const FunctionNode *func = (const FunctionNode *) node;
         if (func->isOverload() && func->metaness() != FunctionNode::Ctor)
             generateOverload(node, marker);
-#endif        
+#endif
     }
     else if (node->type() == Node::Fake) {
         const FakeNode *fake = static_cast<const FakeNode *>(node);
@@ -347,7 +347,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             if (func->reimplementedFrom() != 0)
                 generateReimplementedFrom(func, marker);
         }
-        
+
         if (!generateText(node->doc().body(), node, marker))
             if (node->isReimp())
                 return;
@@ -452,7 +452,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             // Now we put this at the top, before the other text.
             if (func->reimplementedFrom() != 0)
                 generateReimplementedFrom(func, marker);
-#endif            
+#endif
         }
     }
 
@@ -544,7 +544,7 @@ void Generator::generateInheritedBy(const ClassNode *classe,
   example is being formatted. It outputs the list of source
   files comprising the example, and the list of images used
   by the example. The images are copied into a subtree of
-  \c{...doc/html/images/used-in-examples/...} 
+  \c{...doc/html/images/used-in-examples/...}
  */
 void Generator::generateFileList(const FakeNode* fake,
                                  CodeMarker* marker,
@@ -946,7 +946,7 @@ void Generator::generateThreadSafeness(const Node *node, CodeMarker *marker)
                 }
                 ++c;
             }
-            if (!exceptions) 
+            if (!exceptions)
                 text << ".";
             else if (threadSafeness == Node::Reentrant) {
                 if (nonreentrant.isEmpty()) {
@@ -1033,7 +1033,7 @@ void Generator::generateOverload(const Node *node, CodeMarker *marker)
     text << Atom::ParaLeft
          << "This function overloads ";
     QString t = node->name() + "()";
-    text << Atom::AutoLink << t 
+    text << Atom::AutoLink << t
          << Atom::ParaRight;
     generateText(text, node, marker);
 }

@@ -94,6 +94,7 @@ private slots:
     void anchorChanges3();
     void anchorChanges4();
     void anchorChanges5();
+    void anchorChangesCrash();
     void script();
     void restoreEntryValues();
     void explicitChanges();
@@ -712,6 +713,20 @@ void tst_qdeclarativestates::anchorChanges5()
     QCOMPARE(aChanges->anchors()->horizontalCenter().anchorLine, bottomGuideline->horizontalCenter().anchorLine);
     QCOMPARE(aChanges->anchors()->baseline().item, leftGuideline->baseline().item);
     QCOMPARE(aChanges->anchors()->baseline().anchorLine, leftGuideline->baseline().anchorLine);
+
+    delete rect;
+}
+
+//QTBUG-9609
+void tst_qdeclarativestates::anchorChangesCrash()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChangesCrash.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    rect->setState("reanchored");
 
     delete rect;
 }

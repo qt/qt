@@ -53,9 +53,9 @@
 // We mean it.
 //
 
-#include "qdeclarativecustomparser_p.h"
+#include "private/qdeclarativecustomparser_p.h"
 
-#include "qdeclarativeparser_p.h"
+#include "private/qdeclarativeparser_p.h"
 
 #include <QtCore/qglobal.h>
 

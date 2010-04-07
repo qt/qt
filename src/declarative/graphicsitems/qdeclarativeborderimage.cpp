@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeborderimage_p.h"
-#include "qdeclarativeborderimage_p_p.h"
+#include "private/qdeclarativeborderimage_p.h"
+#include "private/qdeclarativeborderimage_p_p.h"
 
 #include <qdeclarativeengine.h>
 

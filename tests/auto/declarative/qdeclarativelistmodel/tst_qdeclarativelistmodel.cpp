@@ -41,6 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/private/qdeclarativeitem_p.h>
 #include <QtDeclarative/private/qdeclarativetext_p.h>
+#include <QtDeclarative/private/qdeclarativeengine_p.h>
 #include <QtDeclarative/private/qdeclarativelistmodel_p.h>
 #include <QtDeclarative/private/qdeclarativeexpression_p.h>
 #include <QDeclarativeComponent>
@@ -77,6 +78,7 @@ private slots:
     void convertNestedToFlat_ok_data();
     void error_data();
     void error();
+    void set();
 };
 
 QScriptValue tst_QDeclarativeListModel::nestedListValue(QScriptEngine *eng) const
@@ -549,6 +551,30 @@ void tst_QDeclarativeListModel::error()
         QCOMPARE(errors.at(0).description(),error);
     }
 }
+
+void tst_QDeclarativeListModel::set()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeListModel model;
+    QDeclarativeEngine::setContextForObject(&model,engine.rootContext());
+    engine.rootContext()->setContextObject(&model);
+    QScriptEngine *seng = QDeclarativeEnginePrivate::getScriptEngine(&engine);
+
+    QScriptValue sv = seng->newObject();
+    sv.setProperty("test", QScriptValue(false));
+    model.append(sv);
+
+    sv.setProperty("test", QScriptValue(true));
+    model.set(0, sv);
+    QCOMPARE(model.get(0).property("test").toBool(), true); // triggers creation of model cache
+    QCOMPARE(model.data(0, model.roles()[0]), qVariantFromValue(true)); 
+
+    sv.setProperty("test", QScriptValue(false));
+    model.set(0, sv);
+    QCOMPARE(model.get(0).property("test").toBool(), false); // tests model cache is updated
+    QCOMPARE(model.data(0, model.roles()[0]), qVariantFromValue(false)); 
+}
+
 
 QTEST_MAIN(tst_QDeclarativeListModel)
 

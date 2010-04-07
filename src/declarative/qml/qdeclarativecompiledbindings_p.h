@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qdeclarativeexpression_p.h"
-#include "qdeclarativebinding_p.h"
+#include "private/qdeclarativeexpression_p.h"
+#include "private/qdeclarativebinding_p.h"
 
 QT_BEGIN_HEADER
 

@@ -2088,6 +2088,9 @@ signals:
 
     void typePointerConstRefSignal(Class * const &);
 
+    void constTemplateSignal1( Template<int > );
+    void constTemplateSignal2( Template< const int >);
+
 public slots:
     void uintPointerSlot(uint *) { }
     void ulongPointerSlot(ulong *) { }
@@ -2124,6 +2127,10 @@ public slots:
     void typeConstRefSlot(Template<Class const &> const &) {}
 
     void typePointerConstRefSlot(Class * const &) {}
+
+    void constTemplateSlot1(Template<int > const) {}
+    void constTemplateSlot2(const Template<int > ) {}
+    void constTemplateSlot3(const Template< const int >) {}
 };
 
 #include "oldnormalizeobject.h"
@@ -2526,6 +2533,19 @@ void tst_QObject::normalize()
     QVERIFY(object.connect(&object,
                            SIGNAL(typePointerConstRefSignal(Class*)),
                            SLOT(typePointerConstRefSlot(Class*))));
+
+    QVERIFY( connect(&object, SIGNAL(constTemplateSignal1(Template <int>)),
+                     &object , SLOT(constTemplateSlot1 (Template<int > )  ) ));
+    QVERIFY( connect(&object, SIGNAL(constTemplateSignal1(Template <int>)),
+                     &object , SLOT(constTemplateSlot2 (Template<int > )  ) ));
+    QVERIFY( connect(&object, SIGNAL(constTemplateSignal2(Template <const int>)),
+                     &object , SLOT(constTemplateSlot3(Template<int const > ) ) ));
+
+    //type does not match
+    QTest::ignoreMessage(QtWarningMsg, "QObject::connect: Incompatible sender/receiver arguments\n"
+                    "        NormalizeObject::constTemplateSignal1(Template<int>) --> NormalizeObject::constTemplateSlot3(Template<const int>)");
+    QVERIFY(!connect(&object, SIGNAL(constTemplateSignal1(Template <int>)),
+                     &object , SLOT(constTemplateSlot3(Template<int const> ) ) ));
 }
 
 class SiblingDeleter : public QObject

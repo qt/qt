@@ -14,12 +14,6 @@ function index(xIdx,yIdx) {
 
 function initBoard()
 {
-    for(var i = 0; i<maxIndex; i++){
-        //Delete old blocks
-        if(board[i] != null)
-            board[i].destroy();
-    }
-
     //Calculate board size
     maxX = Math.floor(gameCanvas.width/gameCanvas.tileSize);
     maxY = Math.floor(gameCanvas.height/gameCanvas.tileSize);

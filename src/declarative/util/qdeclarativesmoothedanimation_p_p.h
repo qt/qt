@@ -53,10 +53,10 @@
 // We mean it.
 //
 
-#include "qdeclarativesmoothedanimation_p.h"
-#include "qdeclarativeanimation_p.h"
+#include "private/qdeclarativesmoothedanimation_p.h"
+#include "private/qdeclarativeanimation_p.h"
 
-#include "qdeclarativeanimation_p_p.h"
+#include "private/qdeclarativeanimation_p_p.h"
 
 #include <qparallelanimationgroup.h>
 

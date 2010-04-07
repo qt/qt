@@ -1,7 +1,7 @@
 # we have some module specific options (defined in qt.prf) lets add them
-eval(TMPVAR = \$\$QMAKE_$${TARGET}_CXXFLAGS)
+!contains(TARGET, ".*[ -].*"):eval(TMPVAR = \$\$QMAKE_$${TARGET}_CXXFLAGS)
 !isEmpty(TMPVAR):QMAKE_CXXFLAGS += $$TMPVAR
-eval(TMPVAR = \$\$QMAKE_$${TARGET}_LFLAGS)
+!contains(TARGET, ".*[ -].*"):eval(TMPVAR = \$\$QMAKE_$${TARGET}_LFLAGS)
 !isEmpty(TMPVAR) {
     QMAKE_LFLAGS += $$TMPVAR
 } else :linux-gcce {  # lets provide a simple default. Without elf2e32 complains

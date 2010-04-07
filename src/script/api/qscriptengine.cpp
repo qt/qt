@@ -875,7 +875,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
         return;
     }
     JSC::initializeThreading();
-
+    JSC::IdentifierTable *oldTable = JSC::currentIdentifierTable();
     globalData = JSC::JSGlobalData::create().releaseRef();
     globalData->clientData = new QScript::GlobalClientData(this);
     JSC::JSGlobalObject *globalObject = new (globalData)QScript::GlobalObject();
@@ -911,6 +911,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     activeAgent = 0;
     agentLineNumber = -1;
     processEventsInterval = -1;
+    JSC::setCurrentIdentifierTable(oldTable);
 }
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
@@ -3311,8 +3312,12 @@ bool QScriptEngine::convertV2(const QScriptValue &value, int type, void *ptr)
     if (vp) {
         switch (vp->type) {
         case QScriptValuePrivate::JavaScriptCore: {
-            JSC::ExecState *exec = vp->engine ? vp->engine->currentFrame : 0;
-            return QScriptEnginePrivate::convertValue(exec, vp->jscValue, type, ptr);
+            if (vp->engine) {
+                QScript::APIShim shim(vp->engine);
+                return QScriptEnginePrivate::convertValue(vp->engine->currentFrame, vp->jscValue, type, ptr);
+            } else {
+                return QScriptEnginePrivate::convertValue(0, vp->jscValue, type, ptr);
+            }
         }
         case QScriptValuePrivate::Number:
             return QScriptEnginePrivate::convertNumber(vp->numberValue, type, ptr);

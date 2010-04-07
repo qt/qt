@@ -1,12 +1,12 @@
 //![0]
 import Qt 4.6
+import "samegame.js" as SameGame
 
 Rectangle {
     id: screen
     width: 490; height: 720
 
     SystemPalette { id: activePalette }
-    Script { source: "samegame.js" }
 
     Item {
         width: parent.width; anchors.top: parent.top; anchors.bottom: toolbar.top
@@ -28,8 +28,7 @@ Rectangle {
             height: parent.height - (parent.height % tileSize);
 
             MouseArea {
-                id: gameMR
-                anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
+                anchors.fill: parent; onClicked: SameGame.handleClick(mouse.x,mouse.y);
             }
         }
 //![1]
@@ -46,7 +45,7 @@ Rectangle {
         anchors.bottom: screen.bottom
 
         Button {
-            id: btnA; text: "New Game"; onClicked: initBoard();
+            id: btnA; text: "New Game"; onClicked: SameGame.initBoard();
             anchors.left: parent.left; anchors.leftMargin: 3
             anchors.verticalCenter: parent.verticalCenter
         }

@@ -133,6 +133,12 @@ void tst_QVarLengthArray::oldTests()
 	QVERIFY(sa.data() == &sa[0]);
 	QVERIFY(sa[0] == 0xfee);
 	QVERIFY(sa[10] == 0xff);
+        QVERIFY(sa.at(0) == 0xfee);
+        QVERIFY(sa.at(10) == 0xff);
+        QVERIFY(sa.value(0) == 0xfee);
+        QVERIFY(sa.value(10) == 0xff);
+        QVERIFY(sa.value(1000) == 0);
+        QVERIFY(sa.value(1000, 12) == 12);
 	QVERIFY(sa.size() == 512);
 	sa.reserve(1024);
 	QVERIFY(sa.capacity() == 1024);
@@ -168,6 +174,13 @@ void tst_QVarLengthArray::oldTests()
         QCOMPARE(sa.size(), 12);
         QCOMPARE(sa[10], QString("hello"));
         QCOMPARE(sa[11], QString("world"));
+        QCOMPARE(sa.at(10), QString("hello"));
+        QCOMPARE(sa.at(11), QString("world"));
+        QCOMPARE(sa.value(10), QString("hello"));
+        QCOMPARE(sa.value(11), QString("world"));
+        QCOMPARE(sa.value(10000), QString());
+        QCOMPARE(sa.value(1212112, QString("none")), QString("none"));
+        QCOMPARE(sa.value(-12, QString("neg")), QString("neg"));
 
         sa.append(arr, 1);
         QCOMPARE(sa.size(), 13);

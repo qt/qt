@@ -55,9 +55,9 @@
 
 #include "qdeclarativecomponent.h"
 
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativecompositetypemanager_p.h"
-#include "qbitfield_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativecompositetypemanager_p.h"
+#include "private/qbitfield_p.h"
 #include "qdeclarativeerror.h"
 #include "qdeclarative.h"
 

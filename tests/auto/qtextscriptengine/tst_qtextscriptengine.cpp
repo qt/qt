@@ -1068,6 +1068,42 @@ void tst_QTextScriptEngine::greek()
             QSKIP("couln't find DejaVu Sans", SkipAll);
         }
     }
+
+    {
+        if (QFontDatabase().families(QFontDatabase::Any).contains("SBL Greek")) {
+            QFont f("SBL Greek");
+            for (int uc = 0x1f00; uc <= 0x1fff; ++uc) {
+                QString str;
+                str.append(uc);
+                if (str.normalized(QString::NormalizationForm_D).normalized(QString::NormalizationForm_C) != str) {
+                    //qDebug() << "skipping" << hex << uc;
+                    continue;
+                }
+                if (uc == 0x1fc1 || uc == 0x1fed)
+                    continue;
+                QVERIFY( decomposedShaping(f, QChar(uc) ) );
+
+            }
+
+            const ShapeTable shape_table [] = {
+                { { 0x3b1, 0x300, 0x313, 0x0 },
+                  { 0xb8, 0x3d3, 0x3c7, 0x0 } },
+                { { 0x3b1, 0x313, 0x300, 0x0 },
+                  { 0xd4, 0x0 } },
+
+                { {0}, {0} }
+            };
+
+
+            const ShapeTable *s = shape_table;
+            while (s->unicode[0]) {
+                QVERIFY( shaping(f, s) );
+                ++s;
+            }
+        } else {
+            QSKIP("couln't find SBL_grk", SkipAll);
+        }
+    }
 #else
     QSKIP("X11 specific test", SkipAll);
 #endif

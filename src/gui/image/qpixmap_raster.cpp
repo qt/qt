@@ -182,6 +182,7 @@ void QRasterPixmapData::fromImage(const QImage &sourceImage,
             QImage::Format opaqueFormat = QNativeImage::systemFormat();
             QImage::Format alphaFormat = QImage::Format_ARGB32_Premultiplied;
 
+#ifndef QT_HAVE_NEON
             switch (opaqueFormat) {
             case QImage::Format_RGB16:
                 alphaFormat = QImage::Format_ARGB8565_Premultiplied;
@@ -189,6 +190,7 @@ void QRasterPixmapData::fromImage(const QImage &sourceImage,
             default: // We don't care about the others...
                 break;
             }
+#endif
 
             if (!sourceImage.hasAlphaChannel()
                 || ((flags & Qt::NoOpaqueDetection) == 0
@@ -238,6 +240,7 @@ void QRasterPixmapData::fill(const QColor &color)
         if (alpha != 255) {
             if (!image.hasAlphaChannel()) {
                 QImage::Format toFormat;
+#ifndef QT_HAVE_NEON
                 if (image.format() == QImage::Format_RGB16)
                     toFormat = QImage::Format_ARGB8565_Premultiplied;
                 else if (image.format() == QImage::Format_RGB666)
@@ -247,6 +250,7 @@ void QRasterPixmapData::fill(const QColor &color)
                 else if (image.format() == QImage::Format_RGB444)
                     toFormat = QImage::Format_ARGB4444_Premultiplied;
                 else
+#endif
                     toFormat = QImage::Format_ARGB32_Premultiplied;
                 image = QImage(image.width(), image.height(), toFormat);
             }
