@@ -71,6 +71,14 @@ void QDeclarativeDrag::setTarget(QGraphicsObject *t)
     emit targetChanged();
 }
 
+void QDeclarativeDrag::resetTarget()
+{
+    if (!_target)
+        return;
+    _target = 0;
+    emit targetChanged();
+}
+
 QDeclarativeDrag::Axis QDeclarativeDrag::axis() const
 {
     return _axis;
