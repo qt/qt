@@ -71,11 +71,16 @@ void tst_qdeclarativestyledtext::textOutput_data()
     QTest::newRow("missing </b>") << "<b>text" << "text";
     QTest::newRow("bad nest") << "<b>text <i>italic</b></i>" << "text italic";
     QTest::newRow("font color") << "<font color=\"red\">red text</font>" << "red text";
+    QTest::newRow("font color: single quote") << "<font color='red'>red text</font>" << "red text";
     QTest::newRow("font size") << "<font size=\"1\">text</font>" << "text";
     QTest::newRow("font empty") << "<font>text</font>" << "text";
     QTest::newRow("font bad 1") << "<font ezis=\"blah\">text</font>" << "text";
     QTest::newRow("font bad 2") << "<font size=\"1>text</font>" << "";
     QTest::newRow("extra close") << "<b>text</b></b>" << "text";
+    QTest::newRow("extra space") << "<b >text</b>" << "text";
+    QTest::newRow("entities") << "&lt;b&gt;this &amp; that&lt;/b&gt;" << "<b>this & that</b>";
+    QTest::newRow("newline") << "text<br>more text" << QLatin1String("text") + QChar(QChar::LineSeparator) + QLatin1String("more text")  ;
+    QTest::newRow("self-closing newline") << "text<br/>more text" << QLatin1String("text") + QChar(QChar::LineSeparator) + QLatin1String("more text")  ;
     QTest::newRow("empty") << "" << "";
 }
 

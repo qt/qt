@@ -480,9 +480,12 @@ public:
     void resetFocusProxy();
     virtual void subFocusItemChange();
 
+    static void children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item);
+    static int children_count(QDeclarativeListProperty<QGraphicsObject> *list);
+    static QGraphicsObject *children_at(QDeclarativeListProperty<QGraphicsObject> *list, int);
+
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
-    static void append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item);
     static inline bool insertionOrder(QGraphicsItem *a, QGraphicsItem *b);
     void ensureSequentialSiblingIndex();
     inline void sendScenePosChange();

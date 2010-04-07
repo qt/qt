@@ -64,6 +64,9 @@ private slots:
     void transforms();
     void transforms_data();
 
+    void childrenProperty();
+    void resourcesProperty();
+
 private:
     template<typename T>
     T *findItem(QGraphicsObject *parent, const QString &objectName);
@@ -427,6 +430,36 @@ void tst_QDeclarativeItem::transforms()
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(item->sceneMatrix(), matrix);
+}
+
+void tst_QDeclarativeItem::childrenProperty()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/childrenProperty.qml");
+    
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+    QCOMPARE(o->property("test4").toBool(), true);
+    QCOMPARE(o->property("test5").toBool(), true);
+    delete o;
+}
+
+void tst_QDeclarativeItem::resourcesProperty()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/resourcesProperty.qml");
+    
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+    QCOMPARE(o->property("test4").toBool(), true);
+    QCOMPARE(o->property("test5").toBool(), true);
+    delete o;
 }
 
 void tst_QDeclarativeItem::propertyChanges()
