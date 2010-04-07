@@ -44,6 +44,8 @@
 #include <QtGui>
 #include <math.h>
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=QGraphicsLayout
 //TESTED_FILES=
 
@@ -423,22 +425,15 @@ void tst_QGraphicsLayout::alternativeLayoutItems()
     view.resize(150, 150);
     view.show();
 
-    QApplication::processEvents();
-    QTest::qWait(750);
-    QApplication::processEvents();
-
-    QCOMPARE(static_cast<QGraphicsRectItem*>(li1->graphicsItem())->rect(), QRectF( 0, 0, 33, 99));
-    QCOMPARE(static_cast<QGraphicsRectItem*>(li2->graphicsItem())->rect(), QRectF(33, 0, 33, 99));
-    QCOMPARE(static_cast<QGraphicsRectItem*>(li3->graphicsItem())->rect(), QRectF(66, 0, 33, 99));
+    QTRY_COMPARE(static_cast<QGraphicsRectItem*>(li1->graphicsItem())->rect(), QRectF( 0, 0, 33, 99));
+    QTRY_COMPARE(static_cast<QGraphicsRectItem*>(li2->graphicsItem())->rect(), QRectF(33, 0, 33, 99));
+    QTRY_COMPARE(static_cast<QGraphicsRectItem*>(li3->graphicsItem())->rect(), QRectF(66, 0, 33, 99));
 
     lout->setOrientation(Qt::Vertical);
 
-    QApplication::processEvents();
-    QTest::qWait(750);
-    QApplication::processEvents();
-    QCOMPARE(static_cast<QGraphicsRectItem*>(li1->graphicsItem())->rect(), QRectF(0, 0,  99, 33));
-    QCOMPARE(static_cast<QGraphicsRectItem*>(li2->graphicsItem())->rect(), QRectF(0, 33, 99, 33));
-    QCOMPARE(static_cast<QGraphicsRectItem*>(li3->graphicsItem())->rect(), QRectF(0, 66, 99, 33));
+    QTRY_COMPARE(static_cast<QGraphicsRectItem*>(li1->graphicsItem())->rect(), QRectF(0, 0,  99, 33));
+    QTRY_COMPARE(static_cast<QGraphicsRectItem*>(li2->graphicsItem())->rect(), QRectF(0, 33, 99, 33));
+    QTRY_COMPARE(static_cast<QGraphicsRectItem*>(li3->graphicsItem())->rect(), QRectF(0, 66, 99, 33));
 
 }
 
