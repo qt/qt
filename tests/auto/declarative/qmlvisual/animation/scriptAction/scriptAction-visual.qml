@@ -1,5 +1,10 @@
 import Qt 4.6
 
+/*
+This test starts with a red rectangle at 0,0. It should animate moving 50 pixels right,
+then immediately change blue, and then animate moving 50 pixels down.
+*/
+
 Rectangle {
     width: 400; height: 400
     Rectangle {

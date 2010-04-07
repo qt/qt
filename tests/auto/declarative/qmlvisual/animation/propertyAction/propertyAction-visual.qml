@@ -1,5 +1,12 @@
 import Qt 4.6
 
+/*
+This test starts with a red rectangle at 0,0. It should animate a color change to blue,
+then jump 50 pixels right, and then animate moving 50 pixels down. Afer this it should
+do an exact visual reversal (animate up 50 pixels, jump left 50 pixels, and then animate
+a change back to red).
+*/
+
 Rectangle {
     width: 400; height: 400
     Rectangle {

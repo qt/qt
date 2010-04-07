@@ -1,5 +1,13 @@
 import Qt 4.6
 
+/*
+    This test verifies that a single animation animating two properties is visually the same as two
+    animations in a parallel group animating the same properties. Visually, you should see a red
+    rectangle at 0,0 stretching from the top of the window to the bottom. This rect will be moved to
+    the right side of the window while turning purple. If the bottom half is visually different
+    than the top half, there is a problem.
+*/
+
 Rectangle {
     width: 400; height: 200
     Rectangle {
