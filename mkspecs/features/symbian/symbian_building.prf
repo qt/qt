@@ -123,6 +123,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
         QMAKE_LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
     } else :linux-gcce {
         QMAKE_LIBS += \
+            -l:edll.lib \
             -l:usrt2_2.lib \
             -l:dfpaeabi.dso \
             -l:drtaeabi.dso \
