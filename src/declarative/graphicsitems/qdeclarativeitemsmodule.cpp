@@ -101,8 +101,6 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeGridView>("Qt",4,6,"GridView");
     qmlRegisterType<QDeclarativeImage>("Qt",4,6,"Image");
     qmlRegisterType<QDeclarativeItem>("Qt",4,6,"Item");
-    qmlRegisterType<QDeclarativeKeyNavigationAttached>("Qt",4,6,"KeyNavigation");
-    qmlRegisterType<QDeclarativeKeysAttached>("Qt",4,6,"Keys");
     qmlRegisterType<QDeclarativeLayoutItem>("Qt",4,6,"LayoutItem");
     qmlRegisterType<QDeclarativeListView>("Qt",4,6,"ListView");
     qmlRegisterType<QDeclarativeLoader>("Qt",4,6,"Loader");
@@ -151,4 +149,7 @@ void QDeclarativeItemModule::defineModule()
 #ifdef QT_WEBKIT_LIB
     qmlRegisterType<QDeclarativeWebSettings>();
 #endif
+
+    qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("Qt",4,6,"KeyNavigation");
+    qmlRegisterUncreatableType<QDeclarativeKeysAttached>("Qt",4,6,"Keys");
 }

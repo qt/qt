@@ -71,38 +71,6 @@
 #include "private/qdeclarativexmllistmodel_p.h"
 #endif
 
-template<typename T>
-int qmlRegisterTypeEnums(const char *qmlName)
-{
-    QByteArray name(T::staticMetaObject.className());
-
-    QByteArray pointerName(name + '*');
-    QByteArray listName("QDeclarativeListProperty<" + name + ">");
-
-    QDeclarativePrivate::RegisterType type = {
-        0,
-
-        qRegisterMetaType<T *>(pointerName.constData()),
-        qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
-        0, 0,
-
-        "Qt", 4, 6, qmlName, &T::staticMetaObject,
-
-        QDeclarativePrivate::attachedPropertiesFunc<T>(),
-        QDeclarativePrivate::attachedPropertiesMetaObject<T>(),
-
-        QDeclarativePrivate::StaticCastSelector<T,QDeclarativeParserStatus>::cast(),
-        QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueSource>::cast(),
-        QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueInterceptor>::cast(),
-
-        0, 0,
-
-        0
-    };
-
-    return QDeclarativePrivate::registerType(type);
-}
-
 void QDeclarativeUtilModule::defineModule()
 {
     qmlRegisterType<QDeclarativeAnchorAnimation>("Qt",4,6,"AnchorAnimation");
@@ -142,7 +110,7 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterType<QDeclarativeStateOperation>();
     qmlRegisterType<QDeclarativeAnchorSet>();
 
-    qmlRegisterTypeEnums<QDeclarativeAbstractAnimation>("Animation");
+    qmlRegisterUncreatableType<QDeclarativeAbstractAnimation>("Qt",4,6,"Animation");
 
     qmlRegisterCustomType<QDeclarativeListModel>("Qt", 4,6, "ListModel", "QDeclarativeListModel",
                                                  new QDeclarativeListModelParser);
