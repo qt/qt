@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,28 +39,62 @@
 **
 ****************************************************************************/
 
+#ifndef QDECLARATIVEGESTUREAREA_H
+#define QDECLARATIVEGESTUREAREA_H
+
+#include <qdeclarativeitem.h>
+#include <qdeclarativescriptstring.h>
+#include <private/qdeclarativecustomparser_p.h>
+
+#include <QtCore/qobject.h>
+#include <QtCore/qstring.h>
+#include <QtGui/qgesture.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+class QDeclarativeBoundSignal;
+class QDeclarativeContext;
+class QDeclarativeGestureAreaPrivate;
+class Q_DECLARATIVE_EXPORT QDeclarativeGestureArea : public QDeclarativeItem
 {
-//! [0]
-    QDBusPendingCall async = iface->asyncCall("RemoteMethod", value1, value2);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(async, this);
+    Q_OBJECT
 
-    QObject::connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                     this, SLOT(callFinishedSlot(QDBusPendingCallWatcher*)));
-//! [0]
+    Q_PROPERTY(QGesture *gesture READ gesture)
 
-}
+public:
+    QDeclarativeGestureArea(QDeclarativeItem *parent=0);
+    ~QDeclarativeGestureArea();
 
-//! [1]
-void MyClass::callFinishedSlot(QDBusPendingCallWatcher *call)
+    QGesture *gesture() const;
+
+protected:
+    bool sceneEvent(QEvent *event);
+
+private:
+    void connectSignals();
+    void componentComplete();
+    friend class QDeclarativeGestureAreaParser;
+
+    Q_DISABLE_COPY(QDeclarativeGestureArea)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeGestureArea)
+};
+
+class QDeclarativeGestureAreaParser : public QDeclarativeCustomParser
 {
-    QDBusPendingReply<QString, QByteArray> reply = *call;
-    if (reply.isError()) {
-        showError();
-    } else {
-        QString text = reply.argumentAt<0>();
-        QByteArray data = reply.argumentAt<1>();
-        showReply(text, data);
-    }
-    call->deleteLater();
-}
-//! [1]
+public:
+    virtual QByteArray compile(const QList<QDeclarativeCustomParserProperty> &);
+    virtual void setCustomData(QObject *, const QByteArray &);
+};
+
+
+QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QDeclarativeGestureArea)
+
+QT_END_HEADER
+
+#endif

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,28 +39,28 @@
 **
 ****************************************************************************/
 
+#include <QtDeclarative/qdeclarativeextensionplugin.h>
+#include <QtDeclarative/qdeclarative.h>
+
+#include "qdeclarativegesturearea_p.h"
+
+QT_BEGIN_NAMESPACE
+
+class GestureAreaQmlPlugin : public QDeclarativeExtensionPlugin
 {
-//! [0]
-    QDBusPendingCall async = iface->asyncCall("RemoteMethod", value1, value2);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(async, this);
-
-    QObject::connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                     this, SLOT(callFinishedSlot(QDBusPendingCallWatcher*)));
-//! [0]
-
-}
-
-//! [1]
-void MyClass::callFinishedSlot(QDBusPendingCallWatcher *call)
-{
-    QDBusPendingReply<QString, QByteArray> reply = *call;
-    if (reply.isError()) {
-        showError();
-    } else {
-        QString text = reply.argumentAt<0>();
-        QByteArray data = reply.argumentAt<1>();
-        showReply(text, data);
+    Q_OBJECT
+public:
+    virtual void registerTypes(const char *uri)
+    {
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.labs.gestures"));
+        qmlRegisterCustomType<QDeclarativeGestureArea>(uri,1,0, "GestureArea", "QDeclarativeGestureArea",
+                                                   new QDeclarativeGestureAreaParser);
     }
-    call->deleteLater();
-}
-//! [1]
+};
+
+QT_END_NAMESPACE
+
+#include "plugin.moc"
+
+Q_EXPORT_PLUGIN2(gesturesqmlplugin, QT_PREPEND_NAMESPACE(GestureAreaQmlPlugin));
+

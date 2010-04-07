@@ -132,6 +132,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l FocusScope
 \o \l Flickable
 \o \l Flipable
+\o \l GestureArea (experimental)
 \endlist
 
 \o
@@ -194,7 +195,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 
 \o
 \list
-\o \l Particles
+\o \l Particles (experimental)
     \list
     \o \l ParticleMotionLinear
     \o \l ParticleMotionGravity
