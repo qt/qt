@@ -412,8 +412,8 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (d->drag && d->drag->target()) {
         if (!d->moved) {
-            if (d->dragX) d->startX = drag()->target()->x();
-            if (d->dragY) d->startY = drag()->target()->y();
+            d->startX = drag()->target()->x();
+            d->startY = drag()->target()->y();
         }
 
         QPointF startLocalPos;
@@ -455,8 +455,8 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 y = drag()->ymax();
             drag()->target()->setY(y);
         }
+        d->moved = true;
     }
-    d->moved = true;
     QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
     emit positionChanged(&me);
 }
