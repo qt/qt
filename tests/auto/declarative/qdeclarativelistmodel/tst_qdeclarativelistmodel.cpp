@@ -528,7 +528,11 @@ void tst_QDeclarativeListModel::error_data()
 
     QTest::newRow("default properties not allowed in ListElement")
         << "import Qt 4.6\nListModel { ListElement { Item { } } }"
-        << "QTBUG-6082 ListElement should not allow child objects";
+        << "ListElement: cannot contain nested elements";
+
+    QTest::newRow("QML elements not allowed in ListElement")
+        << "import Qt 4.6\nListModel { ListElement { a: Item { } } }"
+        << "ListElement: cannot contain nested elements";
 }
 
 void tst_QDeclarativeListModel::error()
@@ -543,8 +547,6 @@ void tst_QDeclarativeListModel::error()
     if (error.isEmpty()) {
         QVERIFY(!component.isError());
     } else {
-        if (error.startsWith(QLatin1String("QTBUG-")))
-            QEXPECT_FAIL("",error.toLatin1(),Abort);
         QVERIFY(component.isError());
         QList<QDeclarativeError> errors = component.errors();
         QCOMPARE(errors.count(),1);
