@@ -787,7 +787,6 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QApplication::processEvents();
     QTRY_COMPARE(QApplication::activeWindow(), &view);
     if (hasScene) {
         scene.addItem(proxy);
@@ -836,7 +835,6 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
     view.activateWindow();
     view.setFocus();
     QTest::qWaitForWindowShown(&view);
-    QApplication::processEvents();
     QTRY_VERIFY(view.isVisible());
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
@@ -989,7 +987,6 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
 
     // in
     QTest::mouseMove(&view, QPoint(50, 50));
-    QTest::qWait(25);
     QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), hasWidget ? true : false);
     // ### this attribute isn't supported
     QCOMPARE(widget->enterCount, hasWidget ? 1 : 0);
@@ -999,11 +996,10 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
 
     // out
     QTest::mouseMove(&view, QPoint(10, 10));
-    QTest::qWait(25);
     // QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), false);
     // ### this attribute isn't supported
-    QCOMPARE(widget->leaveCount, hasWidget ? 1 : 0);
-    QCOMPARE(widget->hoverLeave, (hasWidget && hoverEnabled) ? 1 : 0);
+    QTRY_COMPARE(widget->leaveCount, hasWidget ? 1 : 0);
+    QTRY_COMPARE(widget->hoverLeave, (hasWidget && hoverEnabled) ? 1 : 0);
     // does not work on all platforms
     //QCOMPARE(widget->moveCount, 0);
 
@@ -1071,7 +1067,6 @@ void tst_QGraphicsProxyWidget::hoverMoveEvent()
 
     // move a little bit
     QTest::mouseMove(&view, QPoint(60, 60));
-    QTest::qWait(12);
     QTRY_COMPARE(widget->hoverEnter, (hasWidget && hoverEnabled) ? 1 : 0);
     QCOMPARE(widget->moveCount, (hasWidget && mouseTracking) || (hasWidget && mouseDown) ? 1 : 0);
 
@@ -1097,7 +1092,6 @@ void tst_QGraphicsProxyWidget::keyPressEvent()
     view.viewport()->setFocus();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QApplication::processEvents();
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
@@ -1305,13 +1299,11 @@ void tst_QGraphicsProxyWidget::paintEvent()
     scene.addItem(&proxy);
 
     //make sure we flush all the paint events
-    QTest::qWait(30);
     QTRY_VERIFY(proxy.paintCount > 1);
     QTest::qWait(30);
     proxy.paintCount = 0;
 
     w->update();
-    QTest::qWait(30);
     QTRY_COMPARE(proxy.paintCount, 1); //the widget should have been painted now
 }
 
@@ -1504,7 +1496,6 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     view.paintEventRegion = QRegion();
     view.npaints = 0;
     QTimer::singleShot(0, widget, SLOT(updateScroll()));
-    QTest::qWait(50);
     QTRY_COMPARE(view.npaints, 2);
     // QRect(0, 0, 200, 12) is the first update, expanded (-2, -2, 2, 2)
     // QRect(0, 12, 102, 10) is the scroll update, expanded (-2, -2, 2, 2),
@@ -2483,9 +2474,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0,
 		      view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
 
-    QTest::qWait(12);
-
-    QCOMPARE(box->pos(), QPoint());
+    QTRY_COMPARE(box->pos(), QPoint());
 
     QCOMPARE(proxy->childItems().count(), 1);
     QGraphicsProxyWidget *child = (QGraphicsProxyWidget*)(proxy->childItems())[0];
@@ -2498,7 +2487,6 @@ void tst_QGraphicsProxyWidget::popup_basic()
         QSKIP("Does not work due to SH_Combobox_Popup", SkipAll);
     QCOMPARE(child->widget()->parent(), static_cast<QObject*>(box));
 
-    QTest::qWait(12);
     QTRY_COMPARE(proxy->pos(), QPointF(box->pos()));
     QCOMPARE(child->x(), qreal(box->x()));
     QCOMPARE(child->y(), qreal(box->rect().bottom()));
@@ -2583,13 +2571,11 @@ void tst_QGraphicsProxyWidget::changingCursor_basic()
     // in
     QTest::mouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
     sendMouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
-    QTest::qWait(12);
     QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
 
     // out
     QTest::mouseMove(view.viewport(), QPoint(1, 1));
     sendMouseMove(view.viewport(), QPoint(1, 1));
-    QTest::qWait(12);
     QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::ArrowCursor);
 #endif
 }
@@ -2615,9 +2601,8 @@ void tst_QGraphicsProxyWidget::tooltip_basic()
 
     // in
     QTest::mouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
-    QTest::qWait(3000);
 
-    QCOMPARE(proxy->childItems().count(), 1);
+    QTRY_COMPARE(proxy->childItems().count(), 1);
     QGraphicsProxyWidget *child = (QGraphicsProxyWidget*)(proxy->childItems())[0];
     QVERIFY(child->isWidget());
     QVERIFY(child->widget());
@@ -3348,7 +3333,6 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(20);
     QTRY_VERIFY(view.npaints > 0);
 
     const QRect itemDeviceBoundingRect = proxy->deviceTransform(view.viewportTransform())
@@ -3361,8 +3345,7 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     // Update and hide.
     proxy->update();
     proxy->hide();
-    QTest::qWait(50);
-    QCOMPARE(view.npaints, 1);
+    QTRY_COMPARE(view.npaints, 1);
     QCOMPARE(view.paintEventRegion, expectedRegion);
 
     proxy->show();
@@ -3373,8 +3356,7 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     // Update and delete.
     proxy->update();
     delete proxy;
-    QTest::qWait(50);
-    QCOMPARE(view.npaints, 1);
+    QTRY_COMPARE(view.npaints, 1);
     QCOMPARE(view.paintEventRegion, expectedRegion);
 }
 
@@ -3439,7 +3421,6 @@ void tst_QGraphicsProxyWidget::clickFocus()
         qt_x11_wait_for_window_manager(&view);
 #endif
         QApplication::setActiveWindow(&view);
-        QTest::qWait(25);
         QTRY_COMPARE(QApplication::activeWindow(), &view);
 
         QVERIFY(!proxy->hasFocus());
