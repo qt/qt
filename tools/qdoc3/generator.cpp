@@ -127,7 +127,9 @@ void Generator::initialize(const Config &config)
     }
 
     imageFiles = config.getStringList(CONFIG_IMAGES);
+    qDebug() << "IMAGE FILES" << imageFiles;
     imageDirs = config.getStringList(CONFIG_IMAGEDIRS);
+    qDebug() << "IMAGE DIRS" << imageDirs;
     exampleDirs = config.getStringList(CONFIG_EXAMPLEDIRS);
     exampleImgExts = config.getStringList(CONFIG_EXAMPLES + Config::dot +
                                           CONFIG_IMAGEEXTENSIONS);
