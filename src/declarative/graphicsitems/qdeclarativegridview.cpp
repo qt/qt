@@ -102,7 +102,7 @@ public:
     QDeclarativeGridViewPrivate()
     : currentItem(0), flow(QDeclarativeGridView::LeftToRight)
     , visibleIndex(0) , currentIndex(-1)
-    , cellWidth(100), cellHeight(100), columns(1), itemCount(0), requestedIndex(-1)
+    , cellWidth(100), cellHeight(100), columns(1), requestedIndex(-1), itemCount(0)
     , highlightRangeStart(0), highlightRangeEnd(0), highlightRange(QDeclarativeGridView::NoHighlightRange)
     , highlightComponent(0), highlight(0), trackedItem(0)
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
