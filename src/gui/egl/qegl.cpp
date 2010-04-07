@@ -556,7 +556,7 @@ EGLDisplay QEgl::display()
         }
 
         // Resolve the egl extension function pointers:
-#if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_base)
+#if (defined(EGL_KHR_image) || defined(EGL_KHR_image_base)) && !defined(EGL_EGLEXT_PROTOTYPES)
         if (QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_base")) {
             eglCreateImageKHR = (_eglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
             eglDestroyImageKHR = (_eglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
