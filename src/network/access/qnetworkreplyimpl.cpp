@@ -448,7 +448,7 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
 
     qint64 bytesWritten = 0;
     for (int i = 0; i < data.bufferCount(); i++) {
-        QByteArray item = data[i];
+        QByteArray const &item = data[i];
 
         if (cacheSaveDevice)
             cacheSaveDevice->write(item.constData(), item.size());
