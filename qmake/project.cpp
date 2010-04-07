@@ -2383,12 +2383,9 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
                 if(d_off == d_len-1)
                     test += *(d+d_off);
                 if(!test.isEmpty()) {
-                    const bool success = doProjectTest(test, place);
-                    test = "";
-                    if(or_op)
-                        ret = ret || success;
-                    else
-                        ret = ret && success;
+                    if (or_op != ret)
+                        ret = doProjectTest(test, place);
+                    test.clear();
                 }
                 if(*(d+d_off) == QLatin1Char(':')) {
                     or_op = false;
