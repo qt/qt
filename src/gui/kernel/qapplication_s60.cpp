@@ -372,8 +372,13 @@ QSymbianControl::~QSymbianControl()
 {
     if (S60->curWin == this)
         S60->curWin = 0;
-    if (!QApplicationPrivate::is_app_closing)
-        setFocusSafely(false);
+    if (!QApplicationPrivate::is_app_closing) {
+        QT_TRY {
+            setFocusSafely(false);
+        } QT_CATCH(const std::exception&) {
+            // ignore exceptions, nothing can be done
+        }
+    }
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
 }

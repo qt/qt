@@ -5667,7 +5667,11 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
 
     detach();
 
-    *this = convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    QImage converted = convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    if (!converted.isNull())
+        *this = converted;
+    else
+        return;
 
     // Slight optimization since alphachannels are returned as 8-bit grays.
     if (alphaChannel.d->depth == 8 && alphaChannel.isGrayscale()) {
