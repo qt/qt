@@ -1,3 +1,91 @@
+2010-03-01  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix the Qt build on Mac OS X/Cocoa 64-bit
+
+        * JavaScriptCore.pri: Add missing implementation file to resolve JSC symbols
+
+2010-02-26  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Symbian specific getCPUTime implemetation
+        https://bugs.webkit.org/show_bug.cgi?id=34742
+
+        Default implementation doesn't work on Symbian devices.
+        This change adds a proper implementation by
+        asking thread execution time from the current thread.
+
+        * runtime/TimeoutChecker.cpp:
+        (JSC::getCPUTime):
+
+2010-02-15  Gabor Loki  <loki@webkit.org>
+
+        Reviewed by Gavin Barraclough.
+
+        Fix the SP at ctiOpThrowNotCaught on Thumb2 (JSVALUE32)
+        https://bugs.webkit.org/show_bug.cgi?id=34939
+
+        * jit/JITStubs.cpp:
+
+2010-02-15  Gavin Barraclough  <barraclough@apple.com>
+
+        Reviewed by NOBODY (Build fix).
+
+        Add missing cast for !YARR (PPC) builds.
+
+        * runtime/RegExp.cpp:
+        (JSC::RegExp::match):
+
+2010-02-14  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Adam Barth.
+
+        Implement NEVER_INLINE and NO_RETURN for RVCT
+        https://bugs.webkit.org/show_bug.cgi?id=34740
+
+        * wtf/AlwaysInline.h:
+
+2010-02-12  Kwang Yul Seo  <skyul@company100.net>
+
+        Reviewed by Adam Barth.
+
+        Typedef both JSChar and UChar to wchar_t in RVCT.
+        https://bugs.webkit.org/show_bug.cgi?id=34560
+
+        Define both JSChar and UChar to wchar_t as the size
+        of wchar_t is 2 bytes in RVCT.
+
+        * API/JSStringRef.h:
+        * wtf/unicode/qt4/UnicodeQt4.h:
+
+2009-10-06  Yongjun Zhang  <yongjun.zhang@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Get rid of WINSCW hack for UnSpecifiedBoolType
+
+        Add parenthesis around (RefPtr::*UnspecifiedBoolType) to make the WINSCW
+        compiler work with the default UnSpecifiedBoolType() operator.
+
+        https://bugs.webkit.org/show_bug.cgi?id=28054
+
+        * wtf/RefPtr.h:
+
+2010-02-09  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] use nanval() for Symbian as nonInlineNaN
+        https://bugs.webkit.org/show_bug.cgi?id=34170
+
+        numeric_limits<double>::quiet_NaN is broken in Symbian
+        causing NaN to be evaluated as a number.
+
+        * runtime/JSValue.cpp:
+        (JSC::nonInlineNaN):
+
 2010-02-01  Kent Tamura  <tkent@chromium.org>
 
         Reviewed by Darin Adler.
