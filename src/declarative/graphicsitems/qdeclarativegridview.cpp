@@ -102,7 +102,7 @@ public:
     QDeclarativeGridViewPrivate()
     : currentItem(0), flow(QDeclarativeGridView::LeftToRight)
     , visibleIndex(0) , currentIndex(-1)
-    , cellWidth(100), cellHeight(100), columns(1), requestedIndex(-1)
+    , cellWidth(100), cellHeight(100), columns(1), itemCount(0), requestedIndex(-1)
     , highlightRangeStart(0), highlightRangeEnd(0), highlightRange(QDeclarativeGridView::NoHighlightRange)
     , highlightComponent(0), highlight(0), trackedItem(0)
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
@@ -315,6 +315,7 @@ public:
     int cellHeight;
     int columns;
     int requestedIndex;
+    int itemCount;
     qreal highlightRangeStart;
     qreal highlightRangeEnd;
     QDeclarativeGridView::HighlightRangeMode highlightRange;
@@ -358,6 +359,7 @@ void QDeclarativeGridViewPrivate::clear()
     currentItem = 0;
     createHighlight();
     trackedItem = 0;
+    itemCount = 0;
 }
 
 FxGridItem *QDeclarativeGridViewPrivate::createItem(int modelIndex)
@@ -403,6 +405,7 @@ void QDeclarativeGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     if (!isValid() || !q->isComponentComplete())
         return;
 
+    itemCount = model->count();
     qreal bufferFrom = from - buffer;
     qreal bufferTo = to + buffer;
     qreal fillFrom = from;
@@ -546,6 +549,10 @@ void QDeclarativeGridViewPrivate::layout()
 {
     Q_Q(QDeclarativeGridView);
     layoutScheduled = false;
+    if (!isValid()) {
+        clear();
+        return;
+    }
     if (visibleItems.count()) {
         qreal rowPos = visibleItems.first()->rowPos();
         qreal colPos = visibleItems.first()->colPos();
@@ -1780,13 +1787,15 @@ void QDeclarativeGridView::componentComplete()
 {
     Q_D(QDeclarativeGridView);
     QDeclarativeFlickable::componentComplete();
-    d->updateGrid();
-    refill();
-    if (d->currentIndex < 0)
-        d->updateCurrent(0);
-    else
-        d->updateCurrent(d->currentIndex);
-    d->fixupPosition();
+    if (d->isValid()) {
+        d->updateGrid();
+        refill();
+        if (d->currentIndex < 0)
+            d->updateCurrent(0);
+        else
+            d->updateCurrent(d->currentIndex);
+        d->fixupPosition();
+    }
 }
 
 void QDeclarativeGridView::trackedPositionChanged()
@@ -1859,6 +1868,7 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
         } else if (d->currentIndex < 0) {
             d->updateCurrent(0);
         }
+        d->itemCount += count;
         emit countChanged();
         return;
     }
@@ -1889,6 +1899,7 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
                 emit currentIndexChanged();
             }
             d->scheduleLayout();
+            d->itemCount += count;
             emit countChanged();
             return;
         }
@@ -1976,6 +1987,7 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
     for (int j = 0; j < added.count(); ++j)
         added.at(j)->attached->emitAdd();
 
+    d->itemCount += count;
     emit countChanged();
 }
 
@@ -1984,6 +1996,8 @@ void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
     Q_D(QDeclarativeGridView);
     if (!isComponentComplete())
         return;
+
+    d->itemCount -= count;
     bool currentRemoved = d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count;
     bool removedVisible = false;
 
@@ -2031,7 +2045,8 @@ void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
         d->releaseItem(d->currentItem);
         d->currentItem = 0;
         d->currentIndex = -1;
-        d->updateCurrent(qMin(modelIndex, d->model->count()-1));
+        if (d->itemCount)
+            d->updateCurrent(qMin(modelIndex, d->itemCount-1));
     }
 
     // update visibleIndex
@@ -2046,7 +2061,7 @@ void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
     if (removedVisible && d->visibleItems.isEmpty()) {
         d->timeline.clear();
         d->setPosition(0);
-        if (d->model->count() == 0)
+        if (d->itemCount == 0)
             update();
     }
 

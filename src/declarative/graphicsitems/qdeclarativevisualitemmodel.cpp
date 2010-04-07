@@ -1152,6 +1152,8 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
 void QDeclarativeVisualDataModel::_q_itemsInserted(int index, int count)
 {
     Q_D(QDeclarativeVisualDataModel);
+    if (!count)
+        return;
     // XXX - highly inefficient
     QHash<int,QDeclarativeVisualDataModelPrivate::ObjectRef> items;
     for (QHash<int,QDeclarativeVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
@@ -1179,6 +1181,8 @@ void QDeclarativeVisualDataModel::_q_itemsInserted(int index, int count)
 void QDeclarativeVisualDataModel::_q_itemsRemoved(int index, int count)
 {
     Q_D(QDeclarativeVisualDataModel);
+    if (!count)
+        return;
     // XXX - highly inefficient
     QHash<int, QDeclarativeVisualDataModelPrivate::ObjectRef> items;
     for (QHash<int, QDeclarativeVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
