@@ -1820,8 +1820,8 @@ void QDeclarativeGridView::componentComplete()
 {
     Q_D(QDeclarativeGridView);
     QDeclarativeFlickable::componentComplete();
+    d->updateGrid();
     if (d->isValid()) {
-        d->updateGrid();
         refill();
         if (d->currentIndex < 0)
             d->updateCurrent(0);
