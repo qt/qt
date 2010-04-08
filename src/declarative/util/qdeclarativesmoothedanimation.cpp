@@ -69,6 +69,7 @@ QSmoothedAnimation::QSmoothedAnimation(QObject *parent)
 
 void QSmoothedAnimation::restart()
 {
+    initialVelocity = trackVelocity;
     if (state() != QAbstractAnimation::Running)
         start();
     else
@@ -224,6 +225,7 @@ void QSmoothedAnimation::init()
                 QDeclarativePropertyPrivate::write(target, to,
                                                    QDeclarativePropertyPrivate::BypassInterceptor
                                                    | QDeclarativePropertyPrivate::DontRemoveBinding);
+                stop();
                 return;
             case QDeclarativeSmoothedAnimation::Immediate:
                 initialVelocity = 0;
