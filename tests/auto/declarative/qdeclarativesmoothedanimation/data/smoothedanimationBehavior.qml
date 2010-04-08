@@ -17,7 +17,8 @@ Rectangle {
          color: "green"
          width: 60; height: 60;
          x: rect1.x; y: rect1.y;
-         Behavior on x { SmoothedAnimation { objectName: "easeX"; velocity: 400 } }
-         Behavior on y { SmoothedAnimation { objectName: "easeY"; velocity: 400 } }
+         // id are needed for SmoothedAnimation in order to avoid deferred creation
+         Behavior on x { SmoothedAnimation { id: anim1; objectName: "easeX"; velocity: 400 } }
+         Behavior on y { SmoothedAnimation { id: anim2; objectName: "easeY"; velocity: 400 } }
      }
  }
