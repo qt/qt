@@ -399,7 +399,8 @@ public:
 
 private:
     QFont font;
-    bool hasPixelSize;
+    bool pixelSizeSet;
+    bool pointSizeSet;
 };
 
 QT_END_NAMESPACE
