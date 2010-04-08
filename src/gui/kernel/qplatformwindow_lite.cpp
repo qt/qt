@@ -70,3 +70,9 @@ void QPlatformWindow::setWindowTitle(const QString &) {}
 void QPlatformWindow::raise() { qWarning("This plugin does not support raise()"); }
 
 void QPlatformWindow::lower() { qWarning("This plugin does not support lower()"); }
+
+void QPlatformWindow::setOpacity(qreal level)
+{
+    Q_UNUSED(level);
+    qWarning("This plugin does not support setting window opacity");
+}

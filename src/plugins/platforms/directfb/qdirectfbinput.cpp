@@ -78,16 +78,13 @@ void QDirectFbInput::addWindow(DFBWindowID id, QWidget *tlw)
     window->AttachEventBuffer(window,eventBuffer);
 }
 
-void QDirectFbInput::removeWindow(QWidget *tlw)
+void QDirectFbInput::removeWindow(WId wId)
 {
-    DFBWindowID id = tlwMap.key(tlw,0);
-    if (id) {
-        IDirectFBWindow *window;
-        dfbDisplayLayer->GetWindow(dfbDisplayLayer,id, &window);
+    IDirectFBWindow *window;
+    dfbDisplayLayer->GetWindow(dfbDisplayLayer,wId, &window);
 
-        window->DetachEventBuffer(window,eventBuffer);
-        tlwMap.remove(id);
-    }
+    window->DetachEventBuffer(window,eventBuffer);
+    tlwMap.remove(wId);
 }
 
 void QDirectFbInput::handleEvents()

@@ -49,29 +49,19 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDirectFbGraphicsSystemScreen;
-
 class QDirectFbWindowSurface : public QWindowSurface
 {
 public:
-    QDirectFbWindowSurface(QWidget *window);
+    QDirectFbWindowSurface(QWidget *window, WId wid);
     ~QDirectFbWindowSurface();
 
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void setGeometry(const QRect &rect);
+    void resize (const QSize &size);
     bool scroll(const QRegion &area, int dx, int dy);
 
     void beginPaint(const QRegion &region);
     void endPaint(const QRegion &region);
-
-    void setVisible(bool visible);
-    Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
-
-    void raise();
-    void lower();
-
-    WId winId() const;
 
 private:
     void lockSurfaceToImage();
@@ -79,7 +69,6 @@ private:
     QPixmap *m_pixmap;
     QBlittablePixmapData *m_pmdata;
 
-    IDirectFBWindow *m_dfbWindow;
     IDirectFBSurface *m_dfbSurface;
 };
 

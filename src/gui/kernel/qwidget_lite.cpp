@@ -71,8 +71,13 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     QWindowSurface *surface = q->windowSurface();
     QPlatformWindow *platformWindow = q->platformWindow();
 
+    if (!platformWindow) {
+        platformWindow = QApplicationPrivate::platformIntegration()->createPlatformWindow(q);
+    }
+    Q_ASSERT(platformWindow);
+
     if (!surface) {
-        QApplicationPrivate::platformIntegration()->createWindowAndSurface(&platformWindow,&surface,q);
+        surface = QApplicationPrivate::platformIntegration()->createWindowSurfaceForWindow(q,platformWindow->winId());
     }
     Q_ASSERT(surface);
 
@@ -102,8 +107,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
 
-
-    QWidget *oldParent = q->parentWidget();
+//    QWidget *oldParent = q->parentWidget();
     Qt::WindowFlags oldFlags = data.window_flags;
     if (parent != newparent) {
         QObjectPrivate::setParent_helper(newparent); //### why does this have to be done in the _sys function???
@@ -643,8 +647,8 @@ void QWidgetPrivate::updateFrameStrut()
 
 void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 {
-    Q_UNUSED(level);
-    // XXX
+    Q_Q(QWidget);
+    q->platformWindow()->setOpacity(level);
 }
 
 void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
@@ -663,6 +667,7 @@ QPaintEngine *QWidget::paintEngine() const
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
 {
     qFatal("CreateDefaultWindowSurface_sys should not be used on lighthouse");
+    return 0;
 }
 
 void QWidgetPrivate::setModal_sys()

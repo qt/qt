@@ -74,6 +74,9 @@
 # include "qpaintengine.h" // for PorterDuff
 # include "private/qwindowsurface_qws_p.h"
 #endif
+#if defined(Q_WS_LITE)
+#include "qplatformwindow_lite.h"
+#endif
 #include "qpainter.h"
 #include "qtooltip.h"
 #include "qwhatsthis.h"
@@ -1573,6 +1576,9 @@ void QWidgetPrivate::createTLExtra()
 #ifdef QWIDGET_EXTRA_DEBUG
         static int count = 0;
         qDebug() << "tlextra" << ++count;
+#endif
+#if defined(Q_WS_LITE)
+        x->platformWindow = 0;
 #endif
     }
 }

@@ -1,11 +1,10 @@
-
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtOpenVG module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -40,47 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_MINIMAL_H
-#define QPLATFORMINTEGRATION_MINIMAL_H
+#ifndef QDIRECTFBWINDOW_H
+#define QDIRECTFBWINDOW_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+#include <QPlatformWindow>
+
+#include "qdirectfbconvenience.h"
 
 QT_BEGIN_NAMESPACE
 
-class QMinimalScreen : public QPlatformScreen
+class QDirectFbWindow : public QPlatformWindow
 {
 public:
-    QMinimalScreen()
-        : mDepth(16), mFormat(QImage::Format_RGB16) {}
+    QDirectFbWindow(QWidget *tlw);
+    ~QDirectFbWindow();
 
-    QRect geometry() const { return mGeometry; }
-    int depth() const { return mDepth; }
-    QImage::Format format() const { return mFormat; }
-    QSize physicalSize() const { return mPhysicalSize; }
+    void setGeometry(const QRect &rect);
+    void setOpacity(qreal level);
 
-public:
-    QRect mGeometry;
-    int mDepth;
-    QImage::Format mFormat;
-    QSize mPhysicalSize;
-};
+    void setVisible(bool visible);
 
-class QMinimalIntegration : public QPlatformIntegration
-{
-public:
-    QMinimalIntegration();
-
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurfaceForWindow(QWidget *widget, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
+    Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
+    void raise();
+    void lower();
+    WId winId() const;
 
 private:
-    QList<QPlatformScreen *> mScreens;
+    IDirectFBWindow *m_dfbWindow;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QDIRECTFBWINDOW_H

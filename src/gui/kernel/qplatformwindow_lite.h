@@ -41,13 +41,18 @@
 #ifndef QPLATFORMWINDOW_H
 #define QPLATFORMWINDOW_H
 
+
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qstring.h>
+#include <QtGui/qwindowdefs.h>
+
+class QPlatformWindowPrivate;
+class QWidget;
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-
-#include <QtCore/qscopedpointer.h>
-
-class QPlatformWindowPrivate;
 
 class Q_GUI_EXPORT QPlatformWindow
 {
@@ -69,6 +74,7 @@ public:
     virtual void raise();
     virtual void lower();
 
+    virtual void setOpacity(qreal level);
 protected:
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 };
