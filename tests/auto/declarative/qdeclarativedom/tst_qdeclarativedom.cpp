@@ -297,7 +297,7 @@ void tst_qdeclarativedom::testValueSource()
     QVERIFY(springValue.isLiteral());
     QVERIFY(springValue.toLiteral().literal() == "1.4");
 
-    const QDeclarativeDomValue sourceValue = valueSourceObject.property("source").value();
+    const QDeclarativeDomValue sourceValue = valueSourceObject.property("to").value();
     QVERIFY(!sourceValue.isInvalid());
     QVERIFY(sourceValue.isBinding());
     QVERIFY(sourceValue.toBinding().binding() == "Math.min(Math.max(-130, value*2.2 - 130), 133)");
