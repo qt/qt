@@ -150,7 +150,9 @@ public:
     QDeclarativeExpressionData *data;
 
     QVariant value(QObject *secondaryScope = 0, bool *isUndefined = 0);
-    QVariant evalQtScript(QObject *secondaryScope, bool *isUndefined = 0);
+    QScriptValue scriptValue(QObject *secondaryScope = 0, bool *isUndefined = 0);
+
+    QScriptValue eval(QObject *secondaryScope, bool *isUndefined = 0);
 
     void updateGuards(const QPODVector<QDeclarativeEnginePrivate::CapturedProperty> &properties);
     void clearGuards();

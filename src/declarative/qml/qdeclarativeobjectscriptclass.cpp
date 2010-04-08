@@ -222,15 +222,10 @@ QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
         if (lastData->flags & QDeclarativePropertyCache::Data::IsVMEFunction) {
             return Value(scriptEngine, ((QDeclarativeVMEMetaObject *)(obj->metaObject()))->vmeMethod(lastData->coreIndex));
         } else {
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
             // Uncomment to use QtScript method call logic
             // QScriptValue sobj = scriptEngine->newQObject(obj);
             // return Value(scriptEngine, sobj.property(toString(name)));
             return Value(scriptEngine, methods.newMethod(obj, lastData));
-#else
-            QScriptValue sobj = scriptEngine->newQObject(obj);
-            return Value(scriptEngine, sobj.property(toString(name)));
-#endif
         }
     } else {
         if (enginePriv->captureProperties && !(lastData->flags & QDeclarativePropertyCache::Data::IsConstant)) {
@@ -295,7 +290,6 @@ QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
             QVariant var = obj->metaObject()->property(lastData->coreIndex).read(obj);
             return Value(scriptEngine, enginePriv->scriptValueFromVariant(var));
         }
-
     }
 }
 
@@ -455,8 +449,6 @@ bool QDeclarativeObjectScriptClass::compare(Object *o1, Object *o2)
 
     return d1 == d2 || d1->object == d2->object;
 }
-
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
 
 struct MethodData : public QScriptDeclarativeClass::Object {
     MethodData(QObject *o, const QDeclarativePropertyCache::Data &d) : object(o), data(d) {}
@@ -687,7 +679,17 @@ void MetaCallArgument::fromScriptValue(int callType, QDeclarativeEngine *engine,
         new (&data) QVariant(QDeclarativeEnginePrivate::get(engine)->scriptValueToVariant(value));
         type = callType;
     } else if (callType == qMetaTypeId<QList<QObject*> >()) {
-        new (&data) QList<QObject *>(); // We don't support passing in QList<QObject*>
+        QList<QObject *> *list = new (&data) QList<QObject *>(); 
+        if (value.isArray()) {
+            int length = value.property(QLatin1String("length")).toInt32();
+            for (int ii = 0; ii < length; ++ii) {
+                QScriptValue arrayItem = value.property(ii);
+                QObject *d = arrayItem.toQObject();
+                list->append(d);
+            }
+        } else if (QObject *d = value.toQObject()) {
+            list->append(d);
+        }
         type = callType;
     } else {
         new (&data) QVariant();
@@ -799,8 +801,6 @@ QDeclarativeObjectMethodScriptClass::Value QDeclarativeObjectMethodScriptClass::
     }
     return Value();
 }
-
-#endif
 
 QT_END_NAMESPACE
 

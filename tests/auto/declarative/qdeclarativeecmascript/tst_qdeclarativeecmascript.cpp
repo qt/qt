@@ -130,6 +130,7 @@ private slots:
     void qlistqobjectMethods();
     void strictlyEquals();
     void compiled();
+    void qlistOfQObjects();
 
     void bug1();
     void dynamicCreationCrash();
@@ -2063,6 +2064,80 @@ void tst_qdeclarativeecmascript::compiled()
     QCOMPARE(object->property("test23").toBool(), true);
 
     delete object;
+}
+
+// Test manipulating QList<QObject *> properties
+void tst_qdeclarativeecmascript::qlistOfQObjects()
+{
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("qlistOfQObjects.1.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("qlistOfQObjects.2.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("qlistOfQObjects.3.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+    QCOMPARE(object->property("test3").toBool(), true);
+    QCOMPARE(object->property("test4").toBool(), true);
+
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("qlistOfQObjects.4.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+    QCOMPARE(object->property("test3").toBool(), true);
+    QCOMPARE(object->property("test4").toBool(), true);
+
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("qlistOfQObjects.5.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+    QCOMPARE(object->property("test3").toBool(), true);
+    QCOMPARE(object->property("test4").toBool(), true);
+    QCOMPARE(object->property("test5").toBool(), true);
+    QCOMPARE(object->property("test6").toBool(), true);
+    QCOMPARE(object->property("test7").toBool(), true);
+    QCOMPARE(object->property("test8").toBool(), true);
+
+    delete object;
+    }
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)
