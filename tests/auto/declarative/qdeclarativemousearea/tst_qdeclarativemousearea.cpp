@@ -53,6 +53,7 @@ private slots:
     void dragProperties();
     void resetDrag();
     void updateMouseAreaPosOnClick();
+    void noOnClickedWithPressAndHold();
 private:
     QDeclarativeView *createView();
 };
@@ -200,6 +201,36 @@ void tst_QDeclarativeMouseArea::updateMouseAreaPosOnClick()
     QCOMPARE(mouseRegion->mouseY(), rect->y());
 
     delete canvas;
+}
+
+void tst_QDeclarativeMouseArea::noOnClickedWithPressAndHold()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/clickandhold.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
+    pressEvent.setScenePos(QPointF(100, 100));
+    pressEvent.setButton(Qt::LeftButton);
+    pressEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &pressEvent);
+
+    QVERIFY(!canvas->rootObject()->property("clicked").toBool());
+    QVERIFY(!canvas->rootObject()->property("held").toBool());
+
+    QTest::qWait(1000);
+
+    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMousePress);
+    releaseEvent.setScenePos(QPointF(100, 100));
+    releaseEvent.setButton(Qt::LeftButton);
+    releaseEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &releaseEvent);
+
+    QVERIFY(!canvas->rootObject()->property("clicked").toBool());
+    QVERIFY(canvas->rootObject()->property("held").toBool());
 }
 
 QTEST_MAIN(tst_QDeclarativeMouseArea)

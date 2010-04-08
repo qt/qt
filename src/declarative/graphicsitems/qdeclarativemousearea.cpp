@@ -651,7 +651,7 @@ bool QDeclarativeMouseArea::setPressed(bool p)
             emit positionChanged(&me);
         } else {
             emit released(&me);
-            if (isclick)
+            if (isclick && !d->longPress)
                 emit clicked(&me);
         }
 
