@@ -1,6 +1,11 @@
 # JavaScriptCore - Qt4 build info
 VPATH += $$PWD
-JAVASCRIPTCORE_TARGET = jscore
+# Output in JavaScriptCore/<config>
+CONFIG(debug, debug|release): JAVASCRIPTCORE_DESTDIR = debug
+CONFIG(release, debug|release): JAVASCRIPTCORE_DESTDIR = release
+# Use different targets to prevent parallel builds file clashes on Mac
+CONFIG(debug, debug|release): JAVASCRIPTCORE_TARGET = jscored
+CONFIG(release, debug|release): JAVASCRIPTCORE_TARGET = jscore
 
 CONFIG(standalone_package) {
     isEmpty(JSC_GENERATED_SOURCES_DIR):JSC_GENERATED_SOURCES_DIR = $$PWD/generated
@@ -61,9 +66,8 @@ wince* {
 
 
 defineTest(addJavaScriptCoreLib) {
-    pathToJavaScriptCoreOutput = $$ARGS
-    CONFIG(debug_and_release):CONFIG(debug, debug|release): pathToJavaScriptCoreOutput = $$pathToJavaScriptCoreOutput/debug
-    CONFIG(debug_and_release):CONFIG(release, debug|release): pathToJavaScriptCoreOutput = $$pathToJavaScriptCoreOutput/release
+    # Argument is the relative path to JavaScriptCore.pro's qmake output
+    pathToJavaScriptCoreOutput = $$ARGS/$$JAVASCRIPTCORE_DESTDIR
 
     win32-msvc* {
         LIBS += -L$$pathToJavaScriptCoreOutput
