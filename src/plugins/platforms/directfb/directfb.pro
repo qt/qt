@@ -18,12 +18,14 @@ SOURCES = main.cpp \
     qblitter_directfb.cpp \
     qdirectfbconvenience.cpp \
     qdirectfbinput.cpp \
-    qdirectfbcursor.cpp
+    qdirectfbcursor.cpp \
+    qdirectfbwindow.cpp
 HEADERS = qplatformintegration_directfb.h \
     qwindowsurface_directfb.h \
     qblitter_directfb.h \
     qdirectfbconvenience.h \
     qdirectfbinput.h \
-    qdirectfbcursor.h
+    qdirectfbcursor.h \
+    qdirectfbwindow.h
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
