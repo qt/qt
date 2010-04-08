@@ -100,6 +100,9 @@ QScriptValue QDeclarativeObjectScriptClass::newQObject(QObject *object, int type
     if (!object)
         return newObject(scriptEngine, this, new ObjectData(object, type));
 
+    if (QObjectPrivate::get(object)->wasDeleted)
+       return scriptEngine->undefinedValue();
+
     QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object, true);
 
     if (!ddata) {
