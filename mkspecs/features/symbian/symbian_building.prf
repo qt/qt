@@ -160,20 +160,28 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
 
     linux-armcc: {
         QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
+        contains(CONFIG, "qt"):contains(QT, "core") { #if linking with QtCore
+            QMAKE_LIBS += -lqtmain$${QT_LIBINFIX}.lib
+        } else {
+            QMAKE_LIBS += -llibcrt0.lib
+        }
     } else :linux-gcce {
+        # notice that we can't merge these as ordering of arguments is important.
         QMAKE_LIBS += \
             -l:eexe.lib \
-            -l:usrt2_2.lib \
-            -l:qtmain.lib \
+            -l:usrt2_2.lib
+        contains(CONFIG, "qt"):contains(QT, "core") { #if linking with QtCore
+            QMAKE_LIBS += -l:qtmain$${QT_LIBINFIX}.lib
+        } else {
+            QMAKE_LIBS += -l:libcrt0_gcce.lib
+        }
+        QMAKE_LIBS += \
             -l:dfpaeabi.dso \
             -l:drtaeabi.dso \
             -l:scppnwdl.dso \
             -lsupc++ \
             -lgcc
         QMAKE_LFLAGS += --shared
-        isEmpty(QT) { # we need QtCore for this.
-            QMAKE_LIBS -= -l:qtmain.lib
-        }
     }
 
     QMAKE_LFLAGS += --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe
