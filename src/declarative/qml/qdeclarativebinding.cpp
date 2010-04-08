@@ -148,26 +148,8 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                                   idx, a);
 
         } else {
-            QDeclarativeEnginePrivate *ep = (data->context() && data->context()->engine)?
-                QDeclarativeEnginePrivate::get(data->context()->engine):0;
-
             bool isUndefined = false;
-            QVariant value;
-
-            if (data->property.propertyTypeCategory() == QDeclarativeProperty::List) {
-                QScriptValue scriptValue = d->scriptValue(0, &isUndefined);
-                value = ep->scriptValueToVariant(scriptValue, qMetaTypeId<QList<QObject *> >());
-            } else {
-                QScriptValue scriptValue = d->scriptValue(0, &isUndefined);
-                value = ep->scriptValueToVariant(scriptValue);
-                if (value.userType() == QMetaType::QObjectStar && !qvariant_cast<QObject*>(value)) {
-                    // If the object is null, we extract the predicted type.  While this isn't
-                    // 100% reliable, in many cases it gives us better error messages if we
-                    // assign this null-object to an incompatible property
-                    int type = ep->objectClass->objectType(scriptValue);
-                    value = QVariant(type, (void *)0);
-                }
-            }
+            QVariant value = this->value(&isUndefined);
 
             if (isUndefined && !data->error.isValid() && data->property.isResettable()) {
 
@@ -205,7 +187,9 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
             }
 
             if (data->error.isValid()) {
-               if (!data->addError(ep)) 
+                QDeclarativeEnginePrivate *p = (data->context() && data->context()->engine)?
+                    QDeclarativeEnginePrivate::get(data->context()->engine):0;
+               if (!data->addError(p)) 
                    qWarning().nospace() << qPrintable(this->error().toString());
             } else {
                 data->removeError();

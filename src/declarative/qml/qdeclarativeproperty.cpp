@@ -1045,21 +1045,6 @@ bool QDeclarativePropertyPrivate::write(QObject *object, const QDeclarativePrope
             prop.append(&prop, (void *)o);
         }
 
-    } else if (propertyType == qMetaTypeId<QList<QObject *> >()) {
-
-        QList<QObject *> list;
-
-        if (value.userType() == qMetaTypeId<QList<QObject *> >()) {
-            list = qvariant_cast<QList<QObject *> >(value);
-        } else {
-            QObject *o = enginePriv?enginePriv->toQObject(value):QDeclarativeMetaType::toQObject(value);
-            if (o)
-               list.append(o);
-        } 
-
-        void *args[] = { &list, 0, &status, &flags };
-        QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, args);
-
     } else {
         Q_ASSERT(variantType != propertyType);
 

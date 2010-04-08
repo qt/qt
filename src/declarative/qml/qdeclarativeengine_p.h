@@ -308,7 +308,7 @@ public:
     QHash<QString, QScriptValue> m_sharedScriptImports;
 
     QScriptValue scriptValueFromVariant(const QVariant &);
-    QVariant scriptValueToVariant(const QScriptValue &, int hint = QVariant::Invalid);
+    QVariant scriptValueToVariant(const QScriptValue &);
 
     void sendQuit ();
 

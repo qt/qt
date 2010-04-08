@@ -108,6 +108,7 @@ private slots:
     void nonExistantProperty();
     void reset();
     void illegalObjectCreation();
+    void whenOrdering();
 };
 
 void tst_qdeclarativestates::initTestCase()
@@ -991,6 +992,28 @@ void tst_qdeclarativestates::illegalObjectCreation()
     QCOMPARE(error.line(), 9);
     QCOMPARE(error.column(), 23);
     QCOMPARE(error.description().toUtf8().constData(), "PropertyChanges does not support creating state-specific objects.");
+}
+
+void tst_qdeclarativestates::whenOrdering()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/whenOrdering.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+
+    QCOMPARE(rect->state(), QLatin1String(""));
+    rect->setProperty("condition2", true);
+    QCOMPARE(rect->state(), QLatin1String("state2"));
+    rect->setProperty("condition1", true);
+    QCOMPARE(rect->state(), QLatin1String("state1"));
+    rect->setProperty("condition2", false);
+    QCOMPARE(rect->state(), QLatin1String("state1"));
+    rect->setProperty("condition2", true);
+    QCOMPARE(rect->state(), QLatin1String("state1"));
+    rect->setProperty("condition1", false);
+    rect->setProperty("condition2", false);
+    QCOMPARE(rect->state(), QLatin1String(""));
 }
 
 QTEST_MAIN(tst_qdeclarativestates)

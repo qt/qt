@@ -1324,6 +1324,7 @@ QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine
     return qScriptValueFromValue(engine, qVariantFromValue(finalColor));
 }
 
+
 QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &val)
 {
     if (val.userType() == qMetaTypeId<QDeclarativeListReference>()) {
@@ -1334,14 +1335,6 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
         } else {
             return scriptEngine.nullValue();
         }
-    } else if (val.userType() == qMetaTypeId<QList<QObject *> >()) {
-        const QList<QObject *> &list = *(QList<QObject *>*)val.constData();
-        QScriptValue rv = scriptEngine.newArray(list.count());
-        for (int ii = 0; ii < list.count(); ++ii) {
-            QObject *object = list.at(ii);
-            rv.setProperty(ii, objectClass->newQObject(object));
-        }
-        return rv;
     } 
 
     bool objOk;
@@ -1353,31 +1346,22 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
     }
 }
 
-QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val, int hint)
+QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val)
 {
     QScriptDeclarativeClass *dc = QScriptDeclarativeClass::scriptClass(val);
     if (dc == objectClass)
         return QVariant::fromValue(objectClass->toQObject(val));
-    else if (dc == valueTypeClass) 
-        return valueTypeClass->toVariant(val);
     else if (dc == contextClass)
         return QVariant();
 
-    // Convert to a QList<QObject*> if val is an array and we were explicitly hinted, or
-    // if the first element is a QObject*
-    if ((hint == qMetaTypeId<QList<QObject *> >() && val.isArray()) ||
-        (val.isArray() && QScriptDeclarativeClass::scriptClass(val.property(0)) == objectClass)) {
-        QList<QObject *> list;
-        int length = val.property(QLatin1String("length")).toInt32();
-        for (int ii = 0; ii < length; ++ii) {
-            QScriptValue arrayItem = val.property(ii);
-            QObject *d = arrayItem.toQObject();
-            list << d;
-        }
-        return QVariant::fromValue(list);
+    QScriptDeclarativeClass *sc = QScriptDeclarativeClass::scriptClass(val);
+    if (!sc) {
+        return val.toVariant();
+    } else if (sc == valueTypeClass) {
+        return valueTypeClass->toVariant(val);
+    } else {
+        return QVariant();
     }
-
-    return val.toVariant();
 }
 
 // XXX this beyonds in QUrl::toLocalFile()
