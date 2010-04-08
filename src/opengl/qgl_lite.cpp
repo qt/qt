@@ -52,6 +52,15 @@
 
 QT_BEGIN_NAMESPACE
 
+QPlatformGLContext::QPlatformGLContext()
+{
+}
+
+QPlatformGLContext::~QPlatformGLContext()
+{
+}
+
+
 bool QGLFormat::hasOpenGL()
 {
     return QApplicationPrivate::platformIntegration()->hasOpenGL();
@@ -61,9 +70,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
     d->platformContext = QApplicationPrivate::platformIntegration()->createGLContext();
-    d->platformContext->create(d->paintDevice, d->glFormat, shareContext ? shareContext->d_func()->platformContext : 0);
+    d->valid = d->platformContext->create(d->paintDevice, d->glFormat, shareContext ? shareContext->d_func()->platformContext : 0);
 
-    return false;
+    return d->valid;
 }
 
 void QGLContext::reset()
@@ -91,12 +100,14 @@ void QGLContext::makeCurrent()
 {
     Q_D(QGLContext);
     d->platformContext->makeCurrent();
+    QGLContextPrivate::setCurrentContext(this);
 }
 
 void QGLContext::doneCurrent()
 {
     Q_D(QGLContext);
     d->platformContext->doneCurrent();
+    QGLContextPrivate::setCurrentContext(0);
 }
 
 void QGLContext::swapBuffers() const

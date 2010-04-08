@@ -42,11 +42,13 @@
 #ifndef QPLATFORM_GL_CONTEXT_H
 #define QPLATFORM_GL_CONTEXT_H
 
+#include <QtOpenGL/qgl.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QPlatformGLContext
+class Q_OPENGL_EXPORT QPlatformGLContext
 {
 public:
     QPlatformGLContext();
