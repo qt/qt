@@ -164,7 +164,8 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                     // 100% reliable, in many cases it gives us better error messages if we
                     // assign this null-object to an incompatible property
                     int type = ep->objectClass->objectType(scriptValue);
-                    value = QVariant(type, (void *)0);
+                    QObject *o = 0;
+                    value = QVariant(type, (void *)&o);
                 }
             }
 

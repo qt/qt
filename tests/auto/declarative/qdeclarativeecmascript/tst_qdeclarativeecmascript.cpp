@@ -137,6 +137,7 @@ private slots:
     void bug1();
     void dynamicCreationCrash();
     void regExpBug();
+    void nullObjectBinding();
 
     void callQtInvokables();
 private:
@@ -2139,6 +2140,20 @@ void tst_qdeclarativeecmascript::numberAssignment()
     QVERIFY(object->property("test10") == QVariant((unsigned int)7));
     QVERIFY(object->property("test11") == QVariant((unsigned int)6));
     QVERIFY(object->property("test12") == QVariant((unsigned int)6));
+
+    delete object;
+}
+
+// Test that assigning a null object works 
+// Regressed with: df1788b4dbbb2826ae63f26bdf166342595343f4
+void tst_qdeclarativeecmascript::nullObjectBinding()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("nullObjectBinding.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QVERIFY(object->property("test") == QVariant::fromValue((QObject *)0));
 
     delete object;
 }
