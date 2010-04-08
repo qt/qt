@@ -870,6 +870,11 @@ void QDeclarativeViewer::addLibraryPath(const QString& lib)
     canvas->engine()->addImportPath(lib);
 }
 
+void QDeclarativeViewer::addPluginPath(const QString& plugin)
+{
+    canvas->engine()->addPluginPath(plugin);
+}
+
 void QDeclarativeViewer::reload()
 {
     openQml(currentFileOrUrl);
