@@ -103,7 +103,7 @@ QT_BEGIN_NAMESPACE
     natural width (which is the whole string on one line).
 
     \qml
-    import Qt 4.6
+    import Qt 4.7
 
     Rectangle {
         width: 640
@@ -111,7 +111,7 @@ QT_BEGIN_NAMESPACE
         Text {
             id: theText
             width: 50
-            wrap: true
+            wrapMode: Text.WordWrap
             text: "a text string that is longer than 50 pixels"
         }
 

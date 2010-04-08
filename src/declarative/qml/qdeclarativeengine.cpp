@@ -346,12 +346,12 @@ typedef QMap<QString, QString> StringStringMap;
 Q_GLOBAL_STATIC(StringStringMap, qmlEnginePluginsWithRegisteredTypes); // stores the uri
 
 
-static void QDeclarativeDeclarativeData_destroyed(QDeclarativeData *d, QObject *o)
+void QDeclarativeDeclarativeData::destroyed(QDeclarativeData *d, QObject *o)
 {
     static_cast<QDeclarativeDeclarativeData *>(d)->destroyed(o);
 }
 
-static void QDeclarativeDeclarativeData_parentChanged(QDeclarativeData *d, QObject *o, QObject *p)
+void QDeclarativeDeclarativeData::parentChanged(QDeclarativeData *d, QObject *o, QObject *p)
 {
     static_cast<QDeclarativeDeclarativeData *>(d)->parentChanged(o, p);
 }
@@ -363,8 +363,7 @@ void QDeclarativeEnginePrivate::init()
     qRegisterMetaType<QDeclarativeScriptString>("QDeclarativeScriptString");
     qRegisterMetaType<QScriptValue>("QScriptValue");
 
-    QDeclarativeData::destroyed = QDeclarativeDeclarativeData_destroyed;
-    QDeclarativeData::parentChanged = QDeclarativeDeclarativeData_parentChanged;
+    QDeclarativeDeclarativeData::init();
 
     contextClass = new QDeclarativeContextScriptClass(q);
     objectClass = new QDeclarativeObjectScriptClass(q);
@@ -409,7 +408,7 @@ QDeclarativeWorkerScriptEngine *QDeclarativeEnginePrivate::getWorkerScriptEngine
   \code
   QDeclarativeEngine engine;
   QDeclarativeComponent component(&engine);
-  component.setData("import Qt 4.6\nText { text: \"Hello world!\" }", QUrl());
+  component.setData("import Qt 4.7\nText { text: \"Hello world!\" }", QUrl());
   QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(component.create());
   
   //add item to view, etc
@@ -1324,7 +1323,6 @@ QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine
     return qScriptValueFromValue(engine, qVariantFromValue(finalColor));
 }
 
-
 QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &val)
 {
     if (val.userType() == qMetaTypeId<QDeclarativeListReference>()) {
@@ -1335,6 +1333,14 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
         } else {
             return scriptEngine.nullValue();
         }
+    } else if (val.userType() == qMetaTypeId<QList<QObject *> >()) {
+        const QList<QObject *> &list = *(QList<QObject *>*)val.constData();
+        QScriptValue rv = scriptEngine.newArray(list.count());
+        for (int ii = 0; ii < list.count(); ++ii) {
+            QObject *object = list.at(ii);
+            rv.setProperty(ii, objectClass->newQObject(object));
+        }
+        return rv;
     } 
 
     bool objOk;
@@ -1346,22 +1352,29 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
     }
 }
 
-QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val)
+QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val, int hint)
 {
     QScriptDeclarativeClass *dc = QScriptDeclarativeClass::scriptClass(val);
     if (dc == objectClass)
         return QVariant::fromValue(objectClass->toQObject(val));
+    else if (dc == valueTypeClass) 
+        return valueTypeClass->toVariant(val);
     else if (dc == contextClass)
         return QVariant();
 
-    QScriptDeclarativeClass *sc = QScriptDeclarativeClass::scriptClass(val);
-    if (!sc) {
-        return val.toVariant();
-    } else if (sc == valueTypeClass) {
-        return valueTypeClass->toVariant(val);
-    } else {
-        return QVariant();
+    // Convert to a QList<QObject*> only if val is an array and we were explicitly hinted
+    if (hint == qMetaTypeId<QList<QObject *> >() && val.isArray()) {
+        QList<QObject *> list;
+        int length = val.property(QLatin1String("length")).toInt32();
+        for (int ii = 0; ii < length; ++ii) {
+            QScriptValue arrayItem = val.property(ii);
+            QObject *d = arrayItem.toQObject();
+            list << d;
+        }
+        return QVariant::fromValue(list);
     }
+
+    return val.toVariant();
 }
 
 // XXX this beyonds in QUrl::toLocalFile()

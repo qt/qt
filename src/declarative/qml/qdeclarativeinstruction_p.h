@@ -114,6 +114,8 @@ public:
         StoreRectF,               /* storeRect */
         StoreVector3D,            /* storeVector3D */
         StoreVariant,             /* storeString */
+        StoreVariantInteger,      /* storeInteger */
+        StoreVariantDouble,       /* storeDouble */
         StoreObject,              /* storeObject */
         StoreVariantObject,       /* storeObject */
         StoreInterface,           /* storeObject */

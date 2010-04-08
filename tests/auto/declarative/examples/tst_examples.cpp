@@ -185,10 +185,10 @@ void tst_examples::examples()
 
     QFileInfo fi(file);
     QFileInfo dir(fi.path());
-    QString script = "data/"+dir.baseName()+"/"+fi.baseName();
+    QString script = SRCDIR "/data/"+dir.baseName()+"/"+fi.baseName();
     QFileInfo testdata(script+".qml");
     QStringList arguments;
-    arguments << "-script" << (testdata.exists() ? script : QLatin1String("data/dummytest"))
+    arguments << "-script" << (testdata.exists() ? script : QLatin1String(SRCDIR "/data/dummytest"))
               << "-scriptopts" << "play,testerror,exitoncomplete,exitonfailure" 
               << file;
     QProcess p;

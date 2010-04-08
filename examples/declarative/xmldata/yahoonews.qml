@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     gradient: Gradient {
@@ -45,7 +45,7 @@ Rectangle {
                     id: descriptionText
                     text: description
                     width: 560
-                    wrap: true
+                    wrapMode: Text.WordWrap
                     font.family: "Helvetica"
                     anchors.top: titleText.bottom
                     anchors.topMargin: 5

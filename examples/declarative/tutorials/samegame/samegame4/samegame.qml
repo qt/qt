@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 import "content"
 import "content/samegame.js" as SameGame
 
@@ -23,8 +23,8 @@ Rectangle {
             property int tileSize: 40
 
             z: 20; anchors.centerIn: parent
-            width: parent.width - (parent.width % getTileSize());
-            height: parent.height - (parent.height % getTileSize());
+            width: parent.width - (parent.width % tileSize);
+            height: parent.height - (parent.height % tileSize);
 
             MouseArea {
                 anchors.fill: parent; onClicked: SameGame.handleClick(mouse.x,mouse.y);

@@ -25,7 +25,7 @@ Rectangle {
             origin.x: 7.5; origin.y: 73; angle: 0
             SpringFollow on angle {
                 spring: 2; damping: 0.2; modulus: 360
-                source: (clock.hours * 30) + (clock.minutes * 0.5)
+                to: (clock.hours * 30) + (clock.minutes * 0.5)
             }
         }
     }
@@ -39,7 +39,7 @@ Rectangle {
             origin.x: 6.5; origin.y: 83; angle: 0
             SpringFollow on angle {
                 spring: 2; damping: 0.2; modulus: 360
-                source: clock.minutes * 6
+                to: clock.minutes * 6
             }
         }
     }
@@ -53,7 +53,7 @@ Rectangle {
             origin.x: 2.5; origin.y: 80; angle: 0
             SpringFollow on angle {
                 spring: 5; damping: 0.25; modulus: 360
-                source: clock.seconds * 6
+                to: clock.seconds * 6
             }
         }
     }

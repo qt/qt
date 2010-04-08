@@ -200,7 +200,7 @@ QDeclarativeParser::Object::DynamicSlot::DynamicSlot()
 }
 
 QDeclarativeParser::Object::DynamicSlot::DynamicSlot(const DynamicSlot &o)
-: name(o.name), body(o.body), parameterNames(o.parameterNames)
+: name(o.name), body(o.body), parameterNames(o.parameterNames), location(o.location)
 {
 }
 

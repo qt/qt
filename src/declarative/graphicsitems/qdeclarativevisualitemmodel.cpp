@@ -830,7 +830,7 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
 
     \code
     // view.qml
-    import Qt 4.6
+    import Qt 4.7
 
     ListView {
         width: 200

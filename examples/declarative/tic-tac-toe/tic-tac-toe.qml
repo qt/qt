@@ -1,6 +1,6 @@
-import Qt 4.6
+import Qt 4.7
 import "content"
-import "tic-tac-toe.js" as Logic
+import "content/tic-tac-toe.js" as Logic
 
 Item {
     id: game

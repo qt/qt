@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 //This "model" gets the user information about the searched user. Mainly for the icon.
 //Copied from RssModel

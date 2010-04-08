@@ -87,6 +87,7 @@ private slots:
     void assignBasicTypes();
     void assignTypeExtremes();
     void assignCompositeToType();
+    void assignLiteralToVariant();
     void customParserTypes();
     void rootAsQmlComponent();
     void inlineQmlComponents();
@@ -283,18 +284,7 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("property.6") << "property.6.qml" << "property.6.errors.txt" << false;
     QTest::newRow("property.7") << "property.7.qml" << "property.7.errors.txt" << false;
 
-    QTest::newRow("Script.1") << "script.1.qml" << "script.1.errors.txt" << false;
-    QTest::newRow("Script.2") << "script.2.qml" << "script.2.errors.txt" << false;
-    QTest::newRow("Script.3") << "script.3.qml" << "script.3.errors.txt" << false;
-    QTest::newRow("Script.4") << "script.4.qml" << "script.4.errors.txt" << false;
-    QTest::newRow("Script.5") << "script.5.qml" << "script.5.errors.txt" << false;
-    QTest::newRow("Script.6") << "script.6.qml" << "script.6.errors.txt" << false;
-    QTest::newRow("Script.7") << "script.7.qml" << "script.7.errors.txt" << false;
-    QTest::newRow("Script.8") << "script.8.qml" << "script.8.errors.txt" << false;
-    QTest::newRow("Script.9") << "script.9.qml" << "script.9.errors.txt" << false;
-    QTest::newRow("Script.10") << "script.10.qml" << "script.10.errors.txt" << false;
-    QTest::newRow("Script.11") << "script.11.qml" << "script.11.errors.txt" << false;
-    QTest::newRow("Script.12") << "script.12.qml" << "script.12.errors.txt" << false;
+    QTest::newRow("importScript.1") << "importscript.1.qml" << "importscript.1.errors.txt" << false;
 
     QTest::newRow("Component.1") << "component.1.qml" << "component.1.errors.txt" << false;
     QTest::newRow("Component.2") << "component.2.qml" << "component.2.errors.txt" << false;
@@ -488,6 +478,37 @@ void tst_qdeclarativelanguage::assignCompositeToType()
     VERIFY_ERRORS(0);
     QObject *object = component.create();
     QVERIFY(object != 0);
+}
+
+// Test that literals are stored correctly in variant properties
+void tst_qdeclarativelanguage::assignLiteralToVariant()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("assignLiteralToVariant.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").userType(), (int)QVariant::Int);
+    QCOMPARE(object->property("test2").userType(), (int)QMetaType::Double);
+    QCOMPARE(object->property("test3").userType(), (int)QVariant::String);
+    QCOMPARE(object->property("test4").userType(), (int)QVariant::Color);
+    QCOMPARE(object->property("test5").userType(), (int)QVariant::RectF);
+    QCOMPARE(object->property("test6").userType(), (int)QVariant::PointF);
+    QCOMPARE(object->property("test7").userType(), (int)QVariant::SizeF);
+    QCOMPARE(object->property("test8").userType(), (int)QVariant::Vector3D);
+    QCOMPARE(object->property("test9").userType(), (int)QVariant::String);
+
+    QVERIFY(object->property("test1") == QVariant(1));
+    QVERIFY(object->property("test2") == QVariant((double)1.7));
+    QVERIFY(object->property("test3") == QVariant(QString(QLatin1String("Hello world!"))));
+    QVERIFY(object->property("test4") == QVariant(QColor::fromRgb(0xFF008800)));
+    QVERIFY(object->property("test5") == QVariant(QRectF(10, 10, 10, 10)));
+    QVERIFY(object->property("test6") == QVariant(QPointF(10, 10)));
+    QVERIFY(object->property("test7") == QVariant(QSizeF(10, 10)));
+    QVERIFY(object->property("test8") == QVariant(QVector3D(100, 100, 100)));
+    QVERIFY(object->property("test9") == QVariant(QString(QLatin1String("#FF008800"))));
+
+    delete object;
 }
 
 // Tests that custom parser types can be instantiated

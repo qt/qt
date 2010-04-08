@@ -274,7 +274,7 @@ void tst_qdeclarativedom::loadComposite()
 void tst_qdeclarativedom::testValueSource()
 {
     QByteArray qml = "import Qt 4.6\n"
-                     "Rectangle { SpringFollow on height { spring: 1.4; damping: .15; source: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
+                     "Rectangle { SpringFollow on height { spring: 1.4; damping: .15; to: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
 
     QDeclarativeEngine freshEngine;
     QDeclarativeDomDocument document;
@@ -333,8 +333,8 @@ void tst_qdeclarativedom::testValueInterceptor()
 void tst_qdeclarativedom::loadImports()
 {
     QByteArray qml = "import Qt 4.6\n"
-                     "import importlib.sublib 4.7\n"
-                     "import importlib.sublib 4.6 as NewFoo\n"
+                     "import importlib.sublib 1.1\n"
+                     "import importlib.sublib 1.0 as NewFoo\n"
                      "import 'import'\n"
                      "import 'import' as X\n"
                      "Item {}";
@@ -356,13 +356,13 @@ void tst_qdeclarativedom::loadImports()
     QCOMPARE(import.type(), QDeclarativeDomImport::Library);
     QCOMPARE(import.uri(), QLatin1String("importlib.sublib"));
     QCOMPARE(import.qualifier(), QString());
-    QCOMPARE(import.version(), QLatin1String("4.7"));
+    QCOMPARE(import.version(), QLatin1String("1.1"));
 
     import = document.imports().at(2);
     QCOMPARE(import.type(), QDeclarativeDomImport::Library);
     QCOMPARE(import.uri(), QLatin1String("importlib.sublib"));
     QCOMPARE(import.qualifier(), QLatin1String("NewFoo"));
-    QCOMPARE(import.version(), QLatin1String("4.6"));
+    QCOMPARE(import.version(), QLatin1String("1.0"));
 
     import = document.imports().at(3);
     QCOMPARE(import.type(), QDeclarativeDomImport::File);

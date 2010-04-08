@@ -108,6 +108,8 @@ private slots:
     void selfDeletingBinding();
     void extendedObjectPropertyLookup();
     void scriptErrors();
+    void functionErrors();
+    void propertyAssignmentErrors();
     void signalTriggeredBindings();
     void listProperties();
     void exceptionClearsOnReeval();
@@ -130,6 +132,7 @@ private slots:
     void qlistqobjectMethods();
     void strictlyEquals();
     void compiled();
+    void numberAssignment();
 
     void bug1();
     void dynamicCreationCrash();
@@ -543,11 +546,20 @@ void tst_qdeclarativeecmascript::extensionObjects()
     QVERIFY(object != 0);
     QCOMPARE(object->baseProperty(), 13);
     QCOMPARE(object->coreProperty(), 9);
-
     object->setProperty("extendedProperty", QVariant(11));
     object->setProperty("baseExtendedProperty", QVariant(92));
     QCOMPARE(object->coreProperty(), 11);
     QCOMPARE(object->baseProperty(), 92);
+
+    MyExtendedObject *nested = qobject_cast<MyExtendedObject*>(qvariant_cast<QObject *>(object->property("nested")));
+    QVERIFY(nested);
+    QCOMPARE(nested->baseProperty(), 13);
+    QCOMPARE(nested->coreProperty(), 9);
+    nested->setProperty("extendedProperty", QVariant(11));
+    nested->setProperty("baseExtendedProperty", QVariant(92));
+    QCOMPARE(nested->coreProperty(), 11);
+    QCOMPARE(nested->baseProperty(), 92);
+
 }
 
 void tst_qdeclarativeecmascript::attachedProperties()
@@ -985,6 +997,46 @@ void tst_qdeclarativeecmascript::scriptErrors()
     emit object->thirdBasicSignal();
 }
 
+/*
+Test file/lineNumbers for inline functions.
+*/
+void tst_qdeclarativeecmascript::functionErrors()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("functionErrors.qml"));
+    QString url = component.url().toString();
+
+    QString warning = url + ":5: Error: Invalid write to global property \"a\"";
+
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    delete object;
+}
+
+/*
+Test various errors that can occur when assigning a property from script
+*/
+void tst_qdeclarativeecmascript::propertyAssignmentErrors()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("propertyAssignmentErrors.qml"));
+
+    QString url = component.url().toString();
+
+    QString warning1 = url + ":11:Error: Cannot assign [undefined] to int";
+    QString warning2 = url + ":17:Error: Cannot assign JavaScript array to QML variant property";
+    QString warning3 = url + ":23:Error: Cannot assign QString to int";
+
+    QTest::ignoreMessage(QtDebugMsg, warning1.toLatin1().constData());
+    QTest::ignoreMessage(QtDebugMsg, warning2.toLatin1().constData());
+    QTest::ignoreMessage(QtDebugMsg, warning3.toLatin1().constData());
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    delete object;
+}
+    
 /*
 Test bindings still work when the reeval is triggered from within
 a signal script.
@@ -2061,6 +2113,32 @@ void tst_qdeclarativeecmascript::compiled()
     QCOMPARE(object->property("test21").toString(), QLatin1String("6.7"));
     QCOMPARE(object->property("test22").toString(), QLatin1String("!"));
     QCOMPARE(object->property("test23").toBool(), true);
+
+    delete object;
+}
+
+// Test that numbers assigned in bindings as strings work consistently
+void tst_qdeclarativeecmascript::numberAssignment()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("numberAssignment.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QVERIFY(object->property("test1") == QVariant((qreal)6.7));
+    QVERIFY(object->property("test2") == QVariant((qreal)6.7));
+    QVERIFY(object->property("test3") == QVariant((qreal)6));
+    QVERIFY(object->property("test4") == QVariant((qreal)6));
+
+    QVERIFY(object->property("test5") == QVariant((int)7));
+    QVERIFY(object->property("test6") == QVariant((int)7));
+    QVERIFY(object->property("test7") == QVariant((int)6));
+    QVERIFY(object->property("test8") == QVariant((int)6));
+
+    QVERIFY(object->property("test9") == QVariant((unsigned int)7));
+    QVERIFY(object->property("test10") == QVariant((unsigned int)7));
+    QVERIFY(object->property("test11") == QVariant((unsigned int)6));
+    QVERIFY(object->property("test12") == QVariant((unsigned int)6));
 
     delete object;
 }

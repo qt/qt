@@ -1,5 +1,5 @@
-import Qt 4.6
-import "PhotoViewerCore" 1.0
+import Qt 4.7
+import "PhotoViewerCore"
 
 Rectangle {
     id: mainWindow

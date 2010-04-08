@@ -251,18 +251,18 @@ void tst_qdeclarativetext::wrap()
     // for specified width and wrap set true
     {
         QDeclarativeComponent textComponent(&engine);
-        textComponent.setData("import Qt 4.6\nText { text: \"Hello\"; wrap: true; width: 300 }", QUrl::fromLocalFile(""));
+        textComponent.setData("import Qt 4.6\nText { text: \"Hello\"; wrapMode: Text.WordWrap; width: 300 }", QUrl::fromLocalFile(""));
         QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
         textHeight = textObject->height();
 
         QVERIFY(textObject != 0);
-        QVERIFY(textObject->wrap() == true);
+        QVERIFY(textObject->wrapMode() == QDeclarativeText::WordWrap);
         QCOMPARE(textObject->width(), 300.);
     }
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "import Qt 4.6\nText { wrap: true; width: 30; text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import Qt 4.6\nText { wrapMode: Text.WordWrap; width: 30; text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
@@ -278,7 +278,7 @@ void tst_qdeclarativetext::wrap()
 
     for (int i = 0; i < richText.size(); i++)
     {
-        QString componentStr = "import Qt 4.6\nText { wrap: true; width: 30; text: \"" + richText.at(i) + "\" }";
+        QString componentStr = "import Qt 4.6\nText { wrapMode: Text.WordWrap; width: 30; text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent textComponent(&engine);
         textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
