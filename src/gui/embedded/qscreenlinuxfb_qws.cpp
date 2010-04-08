@@ -91,7 +91,7 @@ public:
     int startuph;
     int startupd;
     bool blank;
-    bool is8Track;
+    QLinuxFbScreen::DriverTypes driverType;
 
     bool doGraphicsMode;
 #ifdef QT_QWS_DEPTH_GENERIC
@@ -165,7 +165,24 @@ void QLinuxFbScreenPrivate::closeTty()
     ttyfd = -1;
 }
 
-static void fixupScreenInfo(fb_fix_screeninfo &finfo, fb_var_screeninfo &vinfo)
+/*!
+    \enum QLinuxFbScreen::DriverTypes
+
+    This enum describes the driver type.
+
+    \value GenericDriver Generic Linux framebuffer driver
+    \value EInk8Track e-Ink framebuffer driver using the 8Track chipset
+ */
+
+/*!
+    \fn QLinuxFbScreen::fixupScreenInfo(fb_fix_screeninfo &finfo, fb_var_screeninfo &vinfo)
+
+    Adjust the values returned by the framebuffer driver, to work
+    around driver bugs or nonstandard behavior in certain drivers.
+    \a finfo and \a vinfo specify the fixed and variable screen info
+    returned by the driver.
+ */
+void QLinuxFbScreen::fixupScreenInfo(fb_fix_screeninfo &finfo, fb_var_screeninfo &vinfo)
 {
     // 8Track e-ink devices (as found in Sony PRS-505) lie
     // about their bit depth -- they claim they're 1 bit per
@@ -320,7 +337,7 @@ bool QLinuxFbScreen::connect(const QString &displaySpec)
         return false;
     }
 
-    d_ptr->is8Track = !strcmp(finfo.id, "8TRACKFB");
+    d_ptr->driverType = strcmp(finfo.id, "8TRACKFB") ? GenericDriver : EInk8Track;
 
     if (finfo.type == FB_TYPE_VGA_PLANES) {
         qWarning("VGA16 video mode not supported");
@@ -1223,12 +1240,12 @@ int QLinuxFbScreen::sharedRamSize(void * end)
 */
 void QLinuxFbScreen::setDirty(const QRect &r)
 {
-    if(d_ptr->is8Track) {
+    if(d_ptr->driverType == EInk8Track) {
         // e-Ink displays need a trigger to actually show what is
 	// in their framebuffer memory. The 8-Track driver does this
 	// by adding custom IOCTLs - FBIO_EINK_DISP_PIC (0x46a2) takes
-	// an argument specifying whether or not to update the Flash
-	// memory.
+	// an argument specifying whether or not to flash the screen
+	// while updating.
 	// There doesn't seem to be a way to tell it to just update
 	// a subset of the screen.
 	if(r.left() == 0 && r.top() == 0 && r.width() == dw && r.height() == dh)
@@ -1358,7 +1375,7 @@ bool QLinuxFbScreen::useOffscreen()
 {
     // Not done for 8Track because on e-Ink displays,
     // everything is offscreen anyway
-    if (d_ptr->is8Track || ((mapsize - size) < 16*1024))
+    if (d_ptr->driverType == EInk8Track || ((mapsize - size) < 16*1024))
         return false;
 
     return true;

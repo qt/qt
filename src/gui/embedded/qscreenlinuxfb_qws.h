@@ -88,6 +88,8 @@ public:
 
     virtual bool useOffscreen();
 
+    enum DriverTypes { GenericDriver, EInk8Track };
+
     virtual void disconnect();
     virtual void shutdownDevice();
     virtual void setMode(int,int,int);
@@ -110,6 +112,7 @@ protected:
     int dataoffset;
     int cacheStart;
 
+    virtual void fixupScreenInfo(fb_fix_screeninfo &finfo, fb_var_screeninfo &vinfo);
     static void clearCache(QScreen *instance, int);
 
 private:
