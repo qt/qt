@@ -17,7 +17,6 @@ Component {
 
         Repeater {
             model: notes
-
             Item {
                 property int randomX: Math.random() * 500 + 100
                 property int randomY: Math.random() * 200 + 50
@@ -26,7 +25,7 @@ Component {
                 x: randomX; y: randomY
 
                 SpringFollow on rotation {
-                    source: -flickable.horizontalVelocity / 100
+                    to: -flickable.horizontalVelocity / 100
                     spring: 2.0; damping: 0.15
                 }
 
