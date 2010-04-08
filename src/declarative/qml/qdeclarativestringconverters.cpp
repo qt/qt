@@ -100,6 +100,10 @@ QVariant QDeclarativeStringConverters::variantFromString(const QString &s)
 QVariant QDeclarativeStringConverters::variantFromString(const QString &s, int preferredType, bool *ok)
 {
     switch (preferredType) {
+    case QMetaType::Int:
+        return QVariant(int(qRound(s.toDouble(ok))));
+    case QMetaType::UInt:
+        return QVariant(uint(qRound(s.toDouble(ok))));
     case QMetaType::QColor:
         return QVariant::fromValue(colorFromString(s, ok));
     case QMetaType::QDate:

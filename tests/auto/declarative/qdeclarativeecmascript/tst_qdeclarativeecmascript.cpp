@@ -132,6 +132,7 @@ private slots:
     void qlistqobjectMethods();
     void strictlyEquals();
     void compiled();
+    void numberAssignment();
 
     void bug1();
     void dynamicCreationCrash();
@@ -2112,6 +2113,32 @@ void tst_qdeclarativeecmascript::compiled()
     QCOMPARE(object->property("test21").toString(), QLatin1String("6.7"));
     QCOMPARE(object->property("test22").toString(), QLatin1String("!"));
     QCOMPARE(object->property("test23").toBool(), true);
+
+    delete object;
+}
+
+// Test that numbers assigned in bindings as strings work consistently
+void tst_qdeclarativeecmascript::numberAssignment()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("numberAssignment.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QVERIFY(object->property("test1") == QVariant((qreal)6.7));
+    QVERIFY(object->property("test2") == QVariant((qreal)6.7));
+    QVERIFY(object->property("test3") == QVariant((qreal)6));
+    QVERIFY(object->property("test4") == QVariant((qreal)6));
+
+    QVERIFY(object->property("test5") == QVariant((int)7));
+    QVERIFY(object->property("test6") == QVariant((int)7));
+    QVERIFY(object->property("test7") == QVariant((int)6));
+    QVERIFY(object->property("test8") == QVariant((int)6));
+
+    QVERIFY(object->property("test9") == QVariant((unsigned int)7));
+    QVERIFY(object->property("test10") == QVariant((unsigned int)7));
+    QVERIFY(object->property("test11") == QVariant((unsigned int)6));
+    QVERIFY(object->property("test12") == QVariant((unsigned int)6));
 
     delete object;
 }
