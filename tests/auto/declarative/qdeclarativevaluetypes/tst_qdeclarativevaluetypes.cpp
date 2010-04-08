@@ -352,6 +352,30 @@ void tst_qdeclarativevaluetypes::font()
 
         delete object;
     }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("font_write.4.qml"));
+        QTest::ignoreMessage(QtWarningMsg, "Both point size and pixel size set. Using pixel size. ");
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->font().pixelSize(), 10);
+
+        delete object;
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("font_write.5.qml"));
+        QObject *object = qobject_cast<QObject *>(component.create());
+        QVERIFY(object != 0);
+        MyTypeObject *object1 = object->findChild<MyTypeObject *>("object1");
+        QVERIFY(object1 != 0);
+        MyTypeObject *object2 = object->findChild<MyTypeObject *>("object2");
+        QVERIFY(object2 != 0);
+
+        QCOMPARE(object1->font().pixelSize(), 19);
+        QCOMPARE(object2->font().pointSize(), 14);
+
+        delete object;
+    }
 }
 
 // Test bindings can write to value types

@@ -619,7 +619,7 @@ void QDeclarativeEasingValueType::setPeriod(qreal period)
 }
 
 QDeclarativeFontValueType::QDeclarativeFontValueType(QObject *parent)
-: QDeclarativeValueType(parent), hasPixelSize(false)
+: QDeclarativeValueType(parent), pixelSizeSet(false), pointSizeSet(false)
 {
 }
 
@@ -627,6 +627,8 @@ void QDeclarativeFontValueType::read(QObject *obj, int idx)
 {
     void *a[] = { &font, 0 };
     QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+    pixelSizeSet = false;
+    pointSizeSet = false;
 }
 
 void QDeclarativeFontValueType::write(QObject *obj, int idx, QDeclarativePropertyPrivate::WriteFlags flags)
@@ -724,13 +726,17 @@ qreal QDeclarativeFontValueType::pointSize() const
 
 void QDeclarativeFontValueType::setPointSize(qreal size)
 {
-    if (hasPixelSize) {
+    if (pixelSizeSet) {
         qWarning() << "Both point size and pixel size set. Using pixel size.";
         return;
     }
 
-    if (size >= 0.0)
+    if (size >= 0.0) {
+        pointSizeSet = true;
         font.setPointSizeF(size);
+    } else {
+        pointSizeSet = false;
+    }
 }
 
 int QDeclarativeFontValueType::pixelSize() const
@@ -741,10 +747,12 @@ int QDeclarativeFontValueType::pixelSize() const
 void QDeclarativeFontValueType::setPixelSize(int size)
 {
     if (size >=0) {
+        if (pointSizeSet)
+            qWarning() << "Both point size and pixel size set. Using pixel size.";
         font.setPixelSize(size);
-        hasPixelSize = true;
+        pixelSizeSet = true;
     } else {
-        hasPixelSize = false;
+        pixelSizeSet = false;
     }
 }
 
