@@ -428,37 +428,6 @@ private:
     std::string stdr;
 };
 
-
-//void operator%(QString, int) {}
-
-int main(int argc, char *argv[])
-{
-    //qDebug() << (QString("xx") * QLatin1String("y")).toString();
-    //42 % 3; // Sanity test, should always work.
-    //QString("x") % 2; // Sanity test, should only compile when the 
-    // operator%(QString, int) is visible.
-
-    if (argc == 2 && (QLatin1String(argv[1]) == QLatin1String("--run-builder")
-                   || QLatin1String(argv[1]) == QLatin1String("-b"))) {
-        tst_qstringbuilder test;
-        return test.run_builder();
-    }
-
-    if (argc == 2 && (QLatin1String(argv[1]) == QLatin1String("--run-traditional")
-                   || QLatin1String(argv[1]) == QLatin1String("-t"))) {
-        tst_qstringbuilder test;
-        return test.run_traditional();
-    }
-
-    if (argc == 1) {
-        QCoreApplication app(argc, argv);
-        QStringList args = app.arguments();
-        tst_qstringbuilder test;
-        return QTest::qExec(&test, argc, argv);
-    }
-
-    qDebug() << "Usage: " << argv[0] << " [--run-builder|-r|--run-traditional|-t]";
-}
-
+QTEST_MAIN(tst_qstringbuilder)
 
 #include "main.moc"
