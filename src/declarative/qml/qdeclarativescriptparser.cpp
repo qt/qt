@@ -488,8 +488,8 @@ bool ProcessAST::visit(AST::UiImport *node)
     } else if (import.type == QDeclarativeScriptParser::Import::Script) {
         QDeclarativeError error;
         error.setDescription(QCoreApplication::translate("QDeclarativeParser","Script import requires a qualifier"));
-        error.setLine(node->importIdToken.startLine);
-        error.setColumn(node->importIdToken.startColumn);
+        error.setLine(node->fileNameToken.startLine);
+        error.setColumn(node->fileNameToken.startColumn);
         _parser->_errors << error;
         return false;
     }
