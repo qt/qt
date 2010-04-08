@@ -98,6 +98,7 @@ public:
     virtual uchar * cache(int);
     virtual void uncache(uchar *);
     virtual int sharedRamSize(void *);
+    virtual void setDirty(const QRect&);
 
     QLinuxFb_Shared * shared;
 

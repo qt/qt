@@ -91,6 +91,7 @@ public:
     int startuph;
     int startupd;
     bool blank;
+    bool is8Track;
 
     bool doGraphicsMode;
 #ifdef QT_QWS_DEPTH_GENERIC
@@ -162,6 +163,19 @@ void QLinuxFbScreenPrivate::closeTty()
 
     QT_CLOSE(ttyfd);
     ttyfd = -1;
+}
+
+static void fixupScreenInfo(fb_fix_screeninfo &finfo, fb_var_screeninfo &vinfo)
+{
+    // 8Track e-ink devices (as found in Sony PRS-505) lie
+    // about their bit depth -- they claim they're 1 bit per
+    // pixel while the only supported mode is 8 bit per pixel
+    // grayscale.
+    // Caused by this, they also miscalculate their line length.
+    if(!strcmp(finfo.id, "8TRACKFB") && vinfo.bits_per_pixel == 1) {
+        vinfo.bits_per_pixel = 8;
+        finfo.line_length = vinfo.xres;
+    }
 }
 
 /*!
@@ -306,6 +320,8 @@ bool QLinuxFbScreen::connect(const QString &displaySpec)
         return false;
     }
 
+    d_ptr->is8Track = !strcmp(finfo.id, "8TRACKFB");
+
     if (finfo.type == FB_TYPE_VGA_PLANES) {
         qWarning("VGA16 video mode not supported");
         return false;
@@ -317,6 +333,8 @@ bool QLinuxFbScreen::connect(const QString &displaySpec)
         qWarning("Error reading variable information");
         return false;
     }
+
+    fixupScreenInfo(finfo, vinfo);
 
     grayscale = vinfo.grayscale;
     d = vinfo.bits_per_pixel;
@@ -664,11 +682,6 @@ bool QLinuxFbScreen::initDevice()
            vinfo.transp.msb_right);
 #endif
 
-    d_ptr->startupw=vinfo.xres;
-    d_ptr->startuph=vinfo.yres;
-    d_ptr->startupd=vinfo.bits_per_pixel;
-    grayscale = vinfo.grayscale;
-
     if (ioctl(d_ptr->fd, FBIOGET_FSCREENINFO, &finfo)) {
         perror("QLinuxFbScreen::initDevice");
         qCritical("Error reading fixed information in card init");
@@ -676,6 +689,13 @@ bool QLinuxFbScreen::initDevice()
         // so we return true
         return true;
     }
+
+    fixupScreenInfo(finfo, vinfo);
+
+    d_ptr->startupw=vinfo.xres;
+    d_ptr->startuph=vinfo.yres;
+    d_ptr->startupd=vinfo.bits_per_pixel;
+    grayscale = vinfo.grayscale;
 
 #ifdef __i386__
     // Now init mtrr
@@ -1122,6 +1142,7 @@ void QLinuxFbScreen::setMode(int nw,int nh,int nd)
         qFatal("Error reading fixed information");
     }
 
+    fixupScreenInfo(finfo, vinfo);
     disconnect();
     connect(d_ptr->displaySpec);
     exposeRegion(region(), 0);
@@ -1195,6 +1216,23 @@ int QLinuxFbScreen::sharedRamSize(void * end)
     shared=(QLinuxFb_Shared *)end;
     shared--;
     return sizeof(QLinuxFb_Shared);
+}
+
+/*!
+    \reimp
+*/
+void QLinuxFbScreen::setDirty(const QRect &)
+{
+    if(d_ptr->is8Track) {
+        // e-Ink displays need a trigger to actually show what is
+	// in their framebuffer memory. The 8-Track driver does this
+	// by adding custom IOCTLs - FBIO_EINK_DISP_PIC (0x46a2) takes
+	// an argument specifying whether or not to update the Flash
+	// memory.
+	// There doesn't seem to be a way to tell it to just update
+	// a subset of the screen.
+	ioctl(d_ptr->fd, 0x46a2, 1);
+    }
 }
 
 /*!
@@ -1315,7 +1353,9 @@ void QLinuxFbScreen::setPixelFormat(struct fb_var_screeninfo info)
 
 bool QLinuxFbScreen::useOffscreen()
 {
-    if ((mapsize - size) < 16*1024)
+    // Not done for 8Track because on e-Ink displays,
+    // everything is offscreen anyway
+    if (d_ptr->is8Track || ((mapsize - size) < 16*1024))
         return false;
 
     return true;
