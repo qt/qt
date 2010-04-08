@@ -137,7 +137,7 @@ public:
     Subscription *subscriptions;
     QScriptDeclarativeClass::PersistentIdentifier *identifiers;
 
-    void run(Binding *);
+    void run(Binding *, QDeclarativePropertyPrivate::WriteFlags flags);
 
     const char *programData;
     Binding *m_bindings;
@@ -147,7 +147,7 @@ public:
 
     void init();
     void run(int instr, QDeclarativeContextData *context, 
-             QDeclarativeDelayedError *error, QObject *scope, QObject *output);
+             QDeclarativeDelayedError *error, QObject *scope, QObject *output, QDeclarativePropertyPrivate::WriteFlags storeFlags);
 
 
     inline void unsubscribe(int subIndex);
@@ -246,9 +246,9 @@ int QDeclarativeCompiledBindingsPrivate::Binding::propertyIndex()
     return property & 0xFFFF;
 }
 
-void QDeclarativeCompiledBindingsPrivate::Binding::update(QDeclarativePropertyPrivate::WriteFlags)
+void QDeclarativeCompiledBindingsPrivate::Binding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 {
-    parent->run(this);
+    parent->run(this, flags);
 }
 
 void QDeclarativeCompiledBindingsPrivate::Binding::destroy()
@@ -270,13 +270,13 @@ int QDeclarativeCompiledBindings::qt_metacall(QMetaObject::Call c, int id, void 
         quint32 count = *reeval;
         ++reeval;
         for (quint32 ii = 0; ii < count; ++ii) {
-            d->run(d->m_bindings + reeval[ii]);
+            d->run(d->m_bindings + reeval[ii], QDeclarativePropertyPrivate::DontRemoveBinding);
         }
     }
     return -1;
 }
 
-void QDeclarativeCompiledBindingsPrivate::run(Binding *binding)
+void QDeclarativeCompiledBindingsPrivate::run(Binding *binding, QDeclarativePropertyPrivate::WriteFlags flags)
 {
     Q_Q(QDeclarativeCompiledBindings);
 
@@ -319,12 +319,11 @@ void QDeclarativeCompiledBindingsPrivate::run(Binding *binding)
         vt->read(binding->target, binding->property & 0xFFFF);
 
         QObject *target = vt;
-        run(binding->index, context, binding, binding->scope, target);
+        run(binding->index, context, binding, binding->scope, target, flags);
 
-        vt->write(binding->target, binding->property & 0xFFFF, 
-                  QDeclarativePropertyPrivate::DontRemoveBinding);
+        vt->write(binding->target, binding->property & 0xFFFF, flags);
     } else {
-        run(binding->index, context, binding, binding->scope, binding->target);
+        run(binding->index, context, binding, binding->scope, binding->target, flags);
     }
     binding->updating = false;
 }
@@ -1085,14 +1084,13 @@ static void dumpInstruction(const Instr *instr)
 
 void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
                                               QDeclarativeContextData *context, QDeclarativeDelayedError *error,
-                                              QObject *scope, QObject *output)
+                                              QObject *scope, QObject *output, QDeclarativePropertyPrivate::WriteFlags storeFlags)
 {
     Q_Q(QDeclarativeCompiledBindings);
 
     error->removeError();
 
     Register registers[32];
-    int storeFlags = 0;
 
     QDeclarativeEnginePrivate *engine = QDeclarativeEnginePrivate::get(context->engine);
     Program *program = (Program *)programData;

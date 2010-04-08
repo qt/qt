@@ -106,10 +106,4 @@ QT_BEGIN_NAMESPACE
   \a roles changed.
  */
 
-/*! \fn void QListModelInterface::modelReset()
-  Emit this signal when all of the model data has changed.
-  This is more efficient than forcing the receivier to handle multiple
-  inserted and removed signals etc.
-*/
-
 QT_END_NAMESPACE

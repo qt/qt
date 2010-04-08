@@ -124,7 +124,6 @@ Q_SIGNALS:
     void xmlChanged();
     void queryChanged();
     void namespaceDeclarationsChanged();
-    void modelReset();
 
 public Q_SLOTS:
     // ### need to use/expose Expiry to guess when to call this?
