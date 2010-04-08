@@ -75,7 +75,17 @@ public:
         : ownMemory(true), ownContext(false), indestructible(true), explicitIndestructibleSet(false), 
           context(0), outerContext(0), bindings(0), nextContextObject(0), prevContextObject(0), bindingBitsSize(0), 
           bindingBits(0), lineNumber(0), columnNumber(0), deferredComponent(0), deferredIdx(0), 
-          attachedProperties(0), scriptValue(0), propertyCache(0), guards(0) {}
+          attachedProperties(0), scriptValue(0), propertyCache(0), guards(0) { 
+          init(); 
+      }
+
+    static inline void init() {
+        QDeclarativeData::destroyed = destroyed;
+        QDeclarativeData::parentChanged = parentChanged;
+    }
+
+    static void destroyed(QDeclarativeData *, QObject *);
+    static void parentChanged(QDeclarativeData *, QObject *, QObject *);
 
     void destroyed(QObject *);
     void parentChanged(QObject *, QObject *);
