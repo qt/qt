@@ -130,6 +130,12 @@ void QDeclarativeCompiledData::dump(QDeclarativeInstruction *instr, int idx)
     case QDeclarativeInstruction::StoreVariant:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_VARIANT\t\t" << instr->storeString.propertyIndex << "\t" << instr->storeString.value << "\t\t" << primitives.at(instr->storeString.value);
         break;
+    case QDeclarativeInstruction::StoreVariantInteger:
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_VARIANT_INTEGER\t\t" << instr->storeInteger.propertyIndex << "\t" << instr->storeInteger.value;
+        break;
+    case QDeclarativeInstruction::StoreVariantDouble:
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_VARIANT_DOUBLE\t\t" << instr->storeDouble.propertyIndex << "\t" << instr->storeDouble.value;
+        break;
     case QDeclarativeInstruction::StoreObject:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_OBJECT\t\t" << instr->storeObject.propertyIndex;
         break;

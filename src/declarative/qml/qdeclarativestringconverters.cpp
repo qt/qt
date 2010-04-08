@@ -82,10 +82,6 @@ QVariant QDeclarativeStringConverters::variantFromString(const QString &s)
 {
     if (s.isEmpty())
         return QVariant(s);
-    if (s.startsWith(QLatin1Char('\'')) && s.endsWith(QLatin1Char('\''))) {
-        QString data = s.mid(1, s.length() - 2);
-        return QVariant(data);
-    } 
     bool ok = false;
     QRectF r = rectFFromString(s, &ok);
     if (ok) return QVariant(r);
