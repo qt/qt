@@ -46,7 +46,7 @@ Rectangle {
             id: editor
             onAccepted: {
                 if(nameInputDialog.opacity==1&&editor.text!="")
-                    saveHighScore(editor.text);
+                    SameGame.saveHighScore(editor.text);
                 nameInputDialog.forceClose();
             }
             anchors.verticalCenter: parent.verticalCenter

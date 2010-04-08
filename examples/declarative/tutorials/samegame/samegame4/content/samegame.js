@@ -48,6 +48,8 @@ function initBoard()
             createBlock(column,row);
         }
     }
+
+    timer = new Date();
 }
 
 var fillFound;//Set after a floodFill call to the number of tiles found
@@ -150,7 +152,6 @@ function victoryCheck()
     if(deservesBonus || !(floodMoveCheck(0,maxRow-1, -1))){
         timer = new Date() - timer;
         nameInputDialog.show("You won! Please enter your name:                 ");
-        //dialog.show("Game Over. Your score is " + gameCanvas.score);
     }
 }
 
