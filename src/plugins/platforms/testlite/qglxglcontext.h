@@ -39,58 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_TESTLITE_H
-#define QGRAPHICSSYSTEM_TESTLITE_H
+#ifndef Q_GLX_CONTEXT_H
+#define Q_GLX_CONTEXT_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+#include <QtOpenGL/qplatformglcontext_lite.h>
+#include "x11util.h"
+#include <GL/glx.h>
 
 QT_BEGIN_NAMESPACE
 
-class MyDisplay;
-
-class QTestLiteScreen : public QPlatformScreen
+class QGLXGLContext : public QPlatformGLContext
 {
 public:
-    QTestLiteScreen()
-        : mDepth(16), mFormat(QImage::Format_RGB16) {}
-    ~QTestLiteScreen() {}
+    QGLXGLContext(Display* xdpy);
+    ~QGLXGLContext();
 
-    QRect geometry() const { return mGeometry; }
-    int depth() const { return mDepth; }
-    QImage::Format format() const { return mFormat; }
-    QSize physicalSize() const { return mPhysicalSize; }
+    bool create(QPaintDevice* device, const QGLFormat& format, QPlatformGLContext* shareContext);
 
-public:
-    QRect mGeometry;
-    int mDepth;
-    QImage::Format mFormat;
-    QSize mPhysicalSize;
-};
-
-class QTestLiteIntegration : public QPlatformIntegration
-{
-public:
-    QTestLiteIntegration();
-
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
-
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-#ifndef QT_NO_OPENGL
-    bool hasOpenGL() const;
-    QPlatformGLContext * createGLContext();
-#endif
-
-    MyDisplay *xd;
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
+    void* getProcAddress(const QString& procName);
 
 private:
-    QTestLiteScreen *mPrimaryScreen;
-    QList<QPlatformScreen *> mScreens;
+    Display    *m_display;
+    GLXContext  m_context;
+    QWidget    *m_widget;
 };
+
 
 QT_END_NAMESPACE
 

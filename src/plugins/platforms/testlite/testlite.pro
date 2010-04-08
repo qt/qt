@@ -12,6 +12,11 @@ SOURCES += x11util.cpp
 
 LIBS += -lX11 -lXext
 
+contains(QT_CONFIG, opengl) {
+    QT += opengl
+    HEADERS += qglxglcontext.h
+    SOURCES += qglxglcontext.cpp
+}
 
 target.path += $$[QT_INSTALL_PLUGINS]/graphicssystems
 INSTALLS += target

@@ -46,8 +46,12 @@
 
 #include <QGraphicsSystemCursor>
 
-
 #include "x11util.h"
+
+#ifndef QT_NO_OPENGL
+#include <GL/glx.h>
+#include "qglxglcontext.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -116,6 +120,18 @@ QPixmap QTestLiteIntegration::grabWindow(WId window, int x, int y, int width, in
     return QPixmap::fromImage(img);
 }
 
+#ifndef QT_NO_OPENGL
+bool QTestLiteIntegration::hasOpenGL() const
+{
+    return glXQueryExtension(xd->display, 0, 0) != 0;
+}
+
+QPlatformGLContext * QTestLiteIntegration::createGLContext()
+{
+    return new QGLXGLContext(xd->display);
+}
+
+#endif // QT_NO_OPENGL
 
 
 QT_END_NAMESPACE
