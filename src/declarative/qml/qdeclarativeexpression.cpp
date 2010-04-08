@@ -475,7 +475,7 @@ QVariant QDeclarativeExpressionPrivate::value(QObject *secondaryScope, bool *isU
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(q->engine());
 
-    return ep->scriptValueToVariant(scriptValue(secondaryScope, isUndefined));
+    return ep->scriptValueToVariant(scriptValue(secondaryScope, isUndefined), qMetaTypeId<QList<QObject*> >());
 }
 
 /*!
