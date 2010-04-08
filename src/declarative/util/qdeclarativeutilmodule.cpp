@@ -46,6 +46,7 @@
 #include "private/qdeclarativebind_p.h"
 #include "private/qdeclarativeconnections_p.h"
 #include "private/qdeclarativesmoothedanimation_p.h"
+#include "private/qdeclarativesmoothedfollow_p.h"
 #include "private/qdeclarativefontloader_p.h"
 #include "private/qdeclarativelistaccessor_p.h"
 #include "private/qdeclarativelistmodel_p.h"
@@ -80,6 +81,7 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterType<QDeclarativeColorAnimation>("Qt",4,6,"ColorAnimation");
     qmlRegisterType<QDeclarativeConnections>("Qt",4,6,"Connections");
     qmlRegisterType<QDeclarativeSmoothedAnimation>("Qt",4,6,"SmoothedAnimation");
+    qmlRegisterType<QDeclarativeSmoothedFollow>("Qt",4,6,"SmoothedFollow");
     qmlRegisterType<QDeclarativeFontLoader>("Qt",4,6,"FontLoader");
     qmlRegisterType<QDeclarativeListElement>("Qt",4,6,"ListElement");
     qmlRegisterType<QDeclarativeNumberAnimation>("Qt",4,6,"NumberAnimation");

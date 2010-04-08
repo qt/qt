@@ -126,7 +126,7 @@ following example shows a simple QML file that accesses some enumeration
 values and calls an imported JavaScript function.
 
 \code
-import Qt 4.6
+import Qt 4.7
 import "code.js" as Code
 
 ListView {
@@ -267,7 +267,7 @@ is used, the \c title property may resolve differently.
 
 \code
 // TitlePage.qml
-import Qt 4.6
+import Qt 4.7
 Item {
     property string title
     
@@ -283,7 +283,7 @@ Item {
 }
 
 // TitleText.qml
-import Qt 4.6
+import Qt 4.7
 Text {
     property int size
     text: "<b>" + title + "</b>"
@@ -299,7 +299,7 @@ to use property interfaces, like this:
 
 \code
 // TitlePage.qml
-import Qt 4.6
+import Qt 4.7
 Item {
     id: root
     property string title
@@ -318,7 +318,7 @@ Item {
 }
 
 // TitleText.qml
-import Qt 4.6
+import Qt 4.7
 Text {
     property string title
     property int size

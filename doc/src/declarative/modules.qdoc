@@ -150,7 +150,7 @@ types to be referenced, or purely for readability.
 To import a module into a namespace:
 
 \code
-import Qt 4.6 as TheQtLibrary
+import Qt 4.7 as TheQtLibrary
 \endcode
 
 Types from Qt 4.6 may then be used, but only by qualifying them with the namespace:
@@ -163,7 +163,7 @@ Multiple modules can be imported into the same namespace in the same way that mu
 modules can be imported into the global namespace:
 
 \code
-import Qt 4.6 as Nokia
+import Qt 4.7 as Nokia
 import Ovi 1.0 as Nokia
 \endcode
 

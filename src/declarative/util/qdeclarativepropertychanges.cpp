@@ -103,7 +103,7 @@ QT_BEGIN_NAMESPACE
     natural width (which is the whole string on one line).
 
     \qml
-    import Qt 4.6
+    import Qt 4.7
 
     Rectangle {
         width: 640

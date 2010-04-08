@@ -882,7 +882,7 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
 
     // Create the object
     if (obj->custom.isEmpty() && output->types.at(obj->type).type &&
-        obj != compileState.root) {
+        !output->types.at(obj->type).type->isExtendedType() && obj != compileState.root) {
 
         QDeclarativeInstruction create;
         create.type = QDeclarativeInstruction::CreateSimpleObject;

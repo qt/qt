@@ -41,13 +41,14 @@ SUBDIRS += \
            qdeclarativelanguage \            # Cover
            qdeclarativelistreference \       # Cover
            qdeclarativelistmodel \           # Cover
-           qdeclarativeproperty \        # Cover
+           qdeclarativeproperty \            # Cover
            qdeclarativemetatype \            # Cover
            qdeclarativemoduleplugin \        # Cover
            qdeclarativepixmapcache \         # Cover
            qdeclarativepropertymap \         # Cover
            qdeclarativeqt \                  # Cover
            qdeclarativesmoothedanimation \   # Cover
+           qdeclarativesmoothedfollow\       # Cover
            qdeclarativespringfollow \        # Cover
            qdeclarativestates \              # Cover
            qdeclarativesystempalette \       # Cover
