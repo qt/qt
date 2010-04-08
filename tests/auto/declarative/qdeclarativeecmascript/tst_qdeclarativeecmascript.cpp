@@ -543,11 +543,20 @@ void tst_qdeclarativeecmascript::extensionObjects()
     QVERIFY(object != 0);
     QCOMPARE(object->baseProperty(), 13);
     QCOMPARE(object->coreProperty(), 9);
-
     object->setProperty("extendedProperty", QVariant(11));
     object->setProperty("baseExtendedProperty", QVariant(92));
     QCOMPARE(object->coreProperty(), 11);
     QCOMPARE(object->baseProperty(), 92);
+
+    MyExtendedObject *nested = qobject_cast<MyExtendedObject*>(qvariant_cast<QObject *>(object->property("nested")));
+    QVERIFY(nested);
+    QCOMPARE(nested->baseProperty(), 13);
+    QCOMPARE(nested->coreProperty(), 9);
+    nested->setProperty("extendedProperty", QVariant(11));
+    nested->setProperty("baseExtendedProperty", QVariant(92));
+    QCOMPARE(nested->coreProperty(), 11);
+    QCOMPARE(nested->baseProperty(), 92);
+
 }
 
 void tst_qdeclarativeecmascript::attachedProperties()
