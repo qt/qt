@@ -6,7 +6,7 @@ unix:!symbian {
 } else {
         SUBDIRS *= codecs
 }
-!embedded:!embedded-lite:SUBDIRS *= graphicssystems
+!embedded:!embedded_lite:SUBDIRS *= graphicssystems
 embedded:SUBDIRS *=  gfxdrivers decorations mousedrivers kbddrivers
 !win32:!embedded:!mac:!symbian:SUBDIRS *= inputmethods
 symbian:SUBDIRS += s60
