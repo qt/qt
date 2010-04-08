@@ -1242,16 +1242,16 @@ void QLinuxFbScreen::setDirty(const QRect &r)
 {
     if(d_ptr->driverType == EInk8Track) {
         // e-Ink displays need a trigger to actually show what is
-	// in their framebuffer memory. The 8-Track driver does this
-	// by adding custom IOCTLs - FBIO_EINK_DISP_PIC (0x46a2) takes
-	// an argument specifying whether or not to flash the screen
-	// while updating.
-	// There doesn't seem to be a way to tell it to just update
-	// a subset of the screen.
-	if(r.left() == 0 && r.top() == 0 && r.width() == dw && r.height() == dh)
-		ioctl(d_ptr->fd, 0x46a2, 1);
-	else
-		ioctl(d_ptr->fd, 0x46a2, 0);
+        // in their framebuffer memory. The 8-Track driver does this
+        // by adding custom IOCTLs - FBIO_EINK_DISP_PIC (0x46a2) takes
+        // an argument specifying whether or not to flash the screen
+        // while updating.
+        // There doesn't seem to be a way to tell it to just update
+        // a subset of the screen.
+        if(r.left() == 0 && r.top() == 0 && r.width() == dw && r.height() == dh)
+            ioctl(d_ptr->fd, 0x46a2, 1);
+        else
+            ioctl(d_ptr->fd, 0x46a2, 0);
     }
 }
 
