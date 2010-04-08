@@ -141,4 +141,11 @@ Item {
 
             MouseArea { anchors.fill: parent; onPressed: reset() }
         }
+    Text {
+        anchors.fill: parent; wrap: true
+        text: "Minehunt will not run properly if the C++ plugin is not compiled.\nPlease see README."
+        color: "white"; font.bold: true; font.pixelSize: 14
+        visible: tiles == undefined
+    }
+
 }
