@@ -101,7 +101,9 @@ class Q_DECLARATIVE_EXPORT QDeclarativeListView : public QDeclarativeFlickable
     Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightItemChanged)
     Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem NOTIFY highlightFollowsCurrentItemChanged)
     Q_PROPERTY(qreal highlightMoveSpeed READ highlightMoveSpeed WRITE setHighlightMoveSpeed NOTIFY highlightMoveSpeedChanged)
+    Q_PROPERTY(int highlightMoveDuration READ highlightMoveDuration WRITE setHighlightMoveDuration NOTIFY highlightMoveDurationChanged)
     Q_PROPERTY(qreal highlightResizeSpeed READ highlightResizeSpeed WRITE setHighlightResizeSpeed NOTIFY highlightResizeSpeedChanged)
+    Q_PROPERTY(int highlightResizeDuration READ highlightResizeDuration WRITE setHighlightResizeDuration NOTIFY highlightResizeDurationChanged)
 
     Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin NOTIFY preferredHighlightBeginChanged)
     Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd NOTIFY preferredHighlightEndChanged)
@@ -176,8 +178,14 @@ public:
     qreal highlightMoveSpeed() const;
     void setHighlightMoveSpeed(qreal);
 
+    int highlightMoveDuration() const;
+    void setHighlightMoveDuration(int);
+
     qreal highlightResizeSpeed() const;
     void setHighlightResizeSpeed(qreal);
+
+    int highlightResizeDuration() const;
+    void setHighlightResizeDuration(int);
 
     enum SnapMode { NoSnap, SnapToItem, SnapOneItem };
     SnapMode snapMode() const;
@@ -208,7 +216,9 @@ Q_SIGNALS:
     void currentIndexChanged();
     void currentSectionChanged();
     void highlightMoveSpeedChanged();
+    void highlightMoveDurationChanged();
     void highlightResizeSpeedChanged();
+    void highlightResizeDurationChanged();
     void highlightChanged();
     void highlightItemChanged();
     void modelChanged();

@@ -106,6 +106,7 @@ public:
     , highlightRangeStart(0), highlightRangeEnd(0), highlightRange(QDeclarativeGridView::NoHighlightRange)
     , highlightComponent(0), highlight(0), trackedItem(0)
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
+    , highlightMoveDuration(150)
     , bufferMode(NoBuffer), snapMode(QDeclarativeGridView::NoSnap)
     , ownModel(false), wrap(false), autoHighlight(true)
     , fixCurrentVisibility(false), lazyRelease(false), layoutScheduled(false)
@@ -327,6 +328,7 @@ public:
     int buffer;
     QSmoothedAnimation *highlightXAnimator;
     QSmoothedAnimation *highlightYAnimator;
+    int highlightMoveDuration;
     enum BufferMode { NoBuffer = 0x00, BufferBefore = 0x01, BufferAfter = 0x02 };
     BufferMode bufferMode;
     QDeclarativeGridView::SnapMode snapMode;
@@ -669,10 +671,10 @@ void QDeclarativeGridViewPrivate::createHighlight()
             highlight = new FxGridItem(item, q);
             highlightXAnimator = new QSmoothedAnimation(q);
             highlightXAnimator->target = QDeclarativeProperty(highlight->item, QLatin1String("x"));
-            highlightXAnimator->userDuration = 150;
+            highlightXAnimator->userDuration = highlightMoveDuration;
             highlightYAnimator = new QSmoothedAnimation(q);
             highlightYAnimator->target = QDeclarativeProperty(highlight->item, QLatin1String("y"));
-            highlightYAnimator->userDuration = 150;
+            highlightYAnimator->userDuration = highlightMoveDuration;
             highlightXAnimator->restart();
             highlightYAnimator->restart();
             changed = true;
@@ -1202,6 +1204,37 @@ void QDeclarativeGridView::setHighlightFollowsCurrentItem(bool autoHighlight)
         d->updateHighlight();
     }
 }
+
+/*!
+    \qmlproperty int GridView::highlightMoveDuration
+    This property holds the move animation duration of the highlight delegate.
+
+    highlightFollowsCurrentItem must be true for this property
+    to have effect.
+
+    The default value for the duration is 150ms.
+
+    \sa highlightFollowsCurrentItem
+*/
+int QDeclarativeGridView::highlightMoveDuration() const
+{
+    Q_D(const QDeclarativeGridView);
+    return d->highlightMoveDuration;
+}
+
+void QDeclarativeGridView::setHighlightMoveDuration(int duration)
+{
+    Q_D(QDeclarativeGridView);
+    if (d->highlightMoveDuration != duration) {
+        d->highlightMoveDuration = duration;
+        if (d->highlightYAnimator) {
+            d->highlightXAnimator->userDuration = d->highlightMoveDuration;
+            d->highlightYAnimator->userDuration = d->highlightMoveDuration;
+        }
+        emit highlightMoveDurationChanged();
+    }
+}
+
 
 /*!
     \qmlproperty real GridView::preferredHighlightBegin

@@ -156,7 +156,8 @@ public:
         , highlightComponent(0), highlight(0), trackedItem(0)
         , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0)
         , sectionCriteria(0), spacing(0.0)
-        , highlightMoveSpeed(400), highlightResizeSpeed(400), highlightRange(QDeclarativeListView::NoHighlightRange)
+        , highlightMoveSpeed(400), highlightMoveDuration(-1)
+        , highlightResizeSpeed(400), highlightResizeDuration(-1), highlightRange(QDeclarativeListView::NoHighlightRange)
         , snapMode(QDeclarativeListView::NoSnap), overshootDist(0.0)
         , footerComponent(0), footer(0), headerComponent(0), header(0)
         , bufferMode(NoBuffer)
@@ -464,7 +465,9 @@ public:
     QDeclarativeItem *sectionCache[sectionCacheSize];
     qreal spacing;
     qreal highlightMoveSpeed;
+    int highlightMoveDuration;
     qreal highlightResizeSpeed;
+    int highlightResizeDuration;
     QDeclarativeListView::HighlightRangeMode highlightRange;
     QDeclarativeListView::SnapMode snapMode;
     qreal overshootDist;
@@ -835,10 +838,12 @@ void QDeclarativeListViewPrivate::createHighlight()
             highlightPosAnimator = new QSmoothedAnimation(q);
             highlightPosAnimator->target = QDeclarativeProperty(highlight->item, posProp);
             highlightPosAnimator->velocity = highlightMoveSpeed;
+            highlightPosAnimator->userDuration = highlightMoveDuration;
             highlightPosAnimator->restart();
             const QLatin1String sizeProp(orient == QDeclarativeListView::Vertical ? "height" : "width");
             highlightSizeAnimator = new QSmoothedAnimation(q);
             highlightSizeAnimator->velocity = highlightResizeSpeed;
+            highlightSizeAnimator->userDuration = highlightResizeDuration;
             highlightSizeAnimator->target = QDeclarativeProperty(highlight->item, sizeProp);
             highlightSizeAnimator->restart();
             changed = true;
@@ -1867,13 +1872,19 @@ QString QDeclarativeListView::currentSection() const
 
 /*!
     \qmlproperty real ListView::highlightMoveSpeed
+    \qmlproperty int ListView::highlightMoveDuration
     \qmlproperty real ListView::highlightResizeSpeed
+    \qmlproperty int ListView::highlightResizeDuration
     These properties hold the move and resize animation speed of the highlight delegate.
 
     highlightFollowsCurrentItem must be true for these properties
     to have effect.
 
-    The default value for these properties is 400 pixels/second.
+    The default value for the speed properties is 400 pixels/second.
+    The default value for the duration properties is -1, i.e. the
+    highlight will take as much time as necessary to move at the set speed.
+
+    These properties have the same characteristics as a SmoothedAnimation.
 
     \sa highlightFollowsCurrentItem
 */
@@ -1894,6 +1905,23 @@ void QDeclarativeListView::setHighlightMoveSpeed(qreal speed)
     }
 }
 
+int QDeclarativeListView::highlightMoveDuration() const
+{
+    Q_D(const QDeclarativeListView);
+    return d->highlightMoveDuration;
+}
+
+void QDeclarativeListView::setHighlightMoveDuration(int duration)
+{
+    Q_D(QDeclarativeListView);\
+    if (d->highlightMoveDuration != duration) {
+        d->highlightMoveDuration = duration;
+        if (d->highlightPosAnimator)
+            d->highlightPosAnimator->userDuration = d->highlightMoveDuration;
+        emit highlightMoveDurationChanged();
+    }
+}
+
 qreal QDeclarativeListView::highlightResizeSpeed() const
 {
     Q_D(const QDeclarativeListView);\
@@ -1908,6 +1936,23 @@ void QDeclarativeListView::setHighlightResizeSpeed(qreal speed)
         if (d->highlightSizeAnimator)
             d->highlightSizeAnimator->velocity = d->highlightResizeSpeed;
         emit highlightResizeSpeedChanged();
+    }
+}
+
+int QDeclarativeListView::highlightResizeDuration() const
+{
+    Q_D(const QDeclarativeListView);
+    return d->highlightResizeDuration;
+}
+
+void QDeclarativeListView::setHighlightResizeDuration(int duration)
+{
+    Q_D(QDeclarativeListView);\
+    if (d->highlightResizeDuration != duration) {
+        d->highlightResizeDuration = duration;
+        if (d->highlightSizeAnimator)
+            d->highlightSizeAnimator->userDuration = d->highlightResizeDuration;
+        emit highlightResizeDurationChanged();
     }
 }
 
