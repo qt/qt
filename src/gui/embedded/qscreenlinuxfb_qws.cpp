@@ -1221,7 +1221,7 @@ int QLinuxFbScreen::sharedRamSize(void * end)
 /*!
     \reimp
 */
-void QLinuxFbScreen::setDirty(const QRect &)
+void QLinuxFbScreen::setDirty(const QRect &r)
 {
     if(d_ptr->is8Track) {
         // e-Ink displays need a trigger to actually show what is
@@ -1231,7 +1231,10 @@ void QLinuxFbScreen::setDirty(const QRect &)
 	// memory.
 	// There doesn't seem to be a way to tell it to just update
 	// a subset of the screen.
-	ioctl(d_ptr->fd, 0x46a2, 1);
+	if(r.left() == 0 && r.top() == 0 && r.width() == dw && r.height() == dh)
+		ioctl(d_ptr->fd, 0x46a2, 1);
+	else
+		ioctl(d_ptr->fd, 0x46a2, 0);
     }
 }
 
