@@ -58,6 +58,8 @@
 #include "qdbusmetaobject_p.h"
 #include <qdbusinterface.h>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 class QDBusInterfacePrivate: public QDBusAbstractInterfacePrivate
@@ -76,4 +78,5 @@ public:
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_DBUS
 #endif
