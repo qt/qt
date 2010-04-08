@@ -21,17 +21,17 @@ Rectangle {
         objectName: "itemModel"
         Rectangle {
             objectName: "item1"
-            height: view.height; width: view.width; color: "#FFFEF0"
+            height: 50; width: 100; color: "#FFFEF0"
             Text { objectName: "text1"; text: "index: " + parent.VisualItemModel.index; font.bold: true; anchors.centerIn: parent }
         }
         Rectangle {
             objectName: "item2"
-            height: view.height; width: view.width; color: "#F0FFF7"
+            height: 50; width: 100; color: "#F0FFF7"
             Text { objectName: "text2"; text: "index: " + parent.VisualItemModel.index; font.bold: true; anchors.centerIn: parent }
         }
         Rectangle {
             objectName: "item3"
-            height: view.height; width: view.width; color: "#F4F0FF"
+            height: 50; width: 100; color: "#F4F0FF"
             Text { objectName: "text3"; text: "index: " + parent.VisualItemModel.index; font.bold: true; anchors.centerIn: parent }
         }
     }
@@ -41,8 +41,6 @@ Rectangle {
         Repeater {
             id: view
             objectName: "repeater"
-            anchors.fill: parent
-            anchors.bottomMargin: 30
             model: testObject.useModel ? itemModel : 0
         }
     }

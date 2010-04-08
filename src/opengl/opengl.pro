@@ -116,6 +116,7 @@ mac {
     LIBS_PRIVATE += -framework AppKit -framework Carbon
 }
 win32:!wince*: {
+    DEFINES += QT_NO_EGL
     SOURCES += qgl_win.cpp \
 	       qglpixelbuffer_win.cpp
 }

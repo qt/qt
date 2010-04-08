@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVESTATEOPERATIONS_H
 #define QDECLARATIVESTATEOPERATIONS_H
 
-#include "qdeclarativestate_p.h"
+#include "private/qdeclarativestate_p.h"
 
 #include <qdeclarativeitem.h>
 #include <private/qdeclarativeanchors_p.h>

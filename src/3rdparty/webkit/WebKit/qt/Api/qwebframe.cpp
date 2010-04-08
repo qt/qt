@@ -324,15 +324,12 @@ void QWebFramePrivate::renderPrivate(QPainter *painter, QWebFrame::RenderLayer l
     }
 }
 
-static bool webframe_scrollOverflow(WebCore::Frame* frame, int dx, int dy)
+static bool webframe_scrollOverflow(WebCore::Frame* frame, int dx, int dy, const QPoint& pos)
 {
     if (!frame || !frame->document() || !frame->eventHandler())
         return false;
 
-    Node* node = frame->document()->focusedNode();
-    if (!node)
-        node = frame->document()->elementFromPoint(frame->eventHandler()->currentMousePosition().x(),
-                                                   frame->eventHandler()->currentMousePosition().y());
+    Node* node = frame->document()->elementFromPoint(pos.x(), pos.y());
     if (!node)
         return false;
 
@@ -362,6 +359,10 @@ static bool webframe_scrollOverflow(WebCore::Frame* frame, int dx, int dy)
 
     return (scrolledHorizontal || scrolledVertical);
 }
+
+
+
+
 
 /*!
     \class QWebFrame
@@ -1047,27 +1048,24 @@ void QWebFrame::scroll(int dx, int dy)
 }
 
 /*!
-  \since 4.7
   \internal
   Scrolls nested frames starting at this frame, \a dx pixels to the right 
   and \a dy pixels downward. Both \a dx and \a dy may be negative. First attempts
-  to scroll elements with CSS overflow followed by this frame. If this 
+  to scroll elements with CSS overflow at position pos, followed by this frame. If this 
   frame doesn't scroll, attempts to scroll the parent
-
-  \sa QWebFrame::scroll
 */
-bool QWEBKIT_EXPORT qtwebkit_webframe_scrollRecursively(QWebFrame* qFrame, int dx, int dy)
+void QWEBKIT_EXPORT qtwebkit_webframe_scrollRecursively(QWebFrame* qFrame, int dx, int dy, const QPoint& pos)
 {
     Frame* frame = QWebFramePrivate::core(qFrame);
-    bool scrolledHorizontal = false;
-    bool scrolledVertical = false;
-    bool scrolledOverflow = webframe_scrollOverflow(frame, dx, dy);
 
-    if (!scrolledOverflow) {
-        if (!frame || !frame->view())
-            return false;
-
+    if (!frame || !frame->view())
+        return;
+    
+    if (!webframe_scrollOverflow(frame, dx, dy, pos)) {
         do {
+            bool scrolledHorizontal = false;
+            bool scrolledVertical = false;
+            
             IntSize scrollOffset = frame->view()->scrollOffset();
             IntPoint maxScrollOffset = frame->view()->maximumScrollPosition();
 
@@ -1083,12 +1081,12 @@ bool QWEBKIT_EXPORT qtwebkit_webframe_scrollRecursively(QWebFrame* qFrame, int d
 
             if (scrolledHorizontal || scrolledVertical) {
                 frame->view()->scrollBy(IntSize(dx, dy));
-                return true;
+                return;
             }
+            
             frame = frame->tree()->parent(); 
         } while (frame && frame->view());
     }
-    return (scrolledHorizontal || scrolledVertical || scrolledOverflow);
 }
 
 /*!

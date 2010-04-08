@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativelistmodel_p_p.h"
-#include "qdeclarativelistmodelworkeragent_p.h"
-#include "qdeclarativeopenmetaobject_p.h"
+#include "private/qdeclarativelistmodel_p_p.h"
+#include "private/qdeclarativelistmodelworkeragent_p.h"
+#include "private/qdeclarativeopenmetaobject_p.h"
 
 #include <qdeclarativecustomparser_p.h>
 #include <qdeclarativeparser_p.h>
@@ -532,7 +532,7 @@ QScriptValue QDeclarativeListModel::get(int index) const
     \qmlmethod ListModel::set(int index, jsobject dict)
 
     Changes the item at \a index in the list model with the
-    values in \a dict. Properties not appearing in \a valuemap
+    values in \a dict. Properties not appearing in \a dict
     are left unchanged.
 
     \code
@@ -1273,6 +1273,8 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap) {
             value->setListValue(v);
         } else {
             value->values << v.toVariant();
+            if (objectCache)
+                objectCache->setValue(it.name().toUtf8(), value->values.last());
         }
         if (properties.contains(it.name()))
             delete properties[it.name()];

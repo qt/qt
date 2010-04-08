@@ -40,9 +40,9 @@
 ****************************************************************************/
 
 #include "qdeclarativelist.h"
-#include "qdeclarativelist_p.h"
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativeproperty_p.h"
+#include "private/qdeclarativelist_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativeproperty_p.h"
 
 QT_BEGIN_NAMESPACE
 

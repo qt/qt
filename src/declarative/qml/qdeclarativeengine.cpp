@@ -39,35 +39,35 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativeengine_p.h"
 #include "qdeclarativeengine.h"
 
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativecompiler_p.h"
-#include "qdeclarativeglobalscriptclass_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativecompiler_p.h"
+#include "private/qdeclarativeglobalscriptclass_p.h"
 #include "qdeclarative.h"
 #include "qdeclarativecontext.h"
 #include "qdeclarativeexpression.h"
 #include "qdeclarativecomponent.h"
-#include "qdeclarativebinding_p_p.h"
-#include "qdeclarativevme_p.h"
-#include "qdeclarativeenginedebug_p.h"
-#include "qdeclarativestringconverters_p.h"
-#include "qdeclarativexmlhttprequest_p.h"
-#include "qdeclarativesqldatabase_p.h"
-#include "qdeclarativetypenamescriptclass_p.h"
-#include "qdeclarativelistscriptclass_p.h"
+#include "private/qdeclarativebinding_p_p.h"
+#include "private/qdeclarativevme_p.h"
+#include "private/qdeclarativeenginedebug_p.h"
+#include "private/qdeclarativestringconverters_p.h"
+#include "private/qdeclarativexmlhttprequest_p.h"
+#include "private/qdeclarativesqldatabase_p.h"
+#include "private/qdeclarativetypenamescriptclass_p.h"
+#include "private/qdeclarativelistscriptclass_p.h"
 #include "qdeclarativescriptstring.h"
-#include "qdeclarativeglobal_p.h"
-#include "qdeclarativeworkerscript_p.h"
-#include "qdeclarativecomponent_p.h"
-#include "qdeclarativescriptclass_p.h"
+#include "private/qdeclarativeglobal_p.h"
+#include "private/qdeclarativeworkerscript_p.h"
+#include "private/qdeclarativecomponent_p.h"
+#include "private/qdeclarativescriptclass_p.h"
 #include "qdeclarativenetworkaccessmanagerfactory.h"
 #include "qdeclarativeimageprovider.h"
-#include "qdeclarativedirparser_p.h"
+#include "private/qdeclarativedirparser_p.h"
 #include "qdeclarativeextensioninterface.h"
-#include "qdeclarativelist_p.h"
-#include "qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativelist_p.h"
+#include "private/qdeclarativetypenamecache_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -81,6 +81,7 @@
 #include <QDebug>
 #include <QMetaObject>
 #include <QStack>
+#include <QMap>
 #include <QPluginLoader>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qthreadstorage.h>
@@ -342,7 +343,8 @@ void QDeclarativeEnginePrivate::clear(SimpleList<QDeclarativeParserStatus> &pss)
 }
 
 Q_GLOBAL_STATIC(QDeclarativeEngineDebugServer, qmlEngineDebugServer);
-Q_GLOBAL_STATIC(QSet<QString>, qmlEnginePluginsWithRegisteredTypes);
+typedef QMap<QString, QString> StringStringMap;
+Q_GLOBAL_STATIC(StringStringMap, qmlEnginePluginsWithRegisteredTypes); // stores the uri
 
 void QDeclarativeEnginePrivate::init()
 {
@@ -1463,13 +1465,14 @@ public:
 
     QDeclarativeDirComponents importExtension(const QString &absoluteFilePath, const QString &uri, QDeclarativeEngine *engine) {
         QFile file(absoluteFilePath);
-        QString dir = QFileInfo(file).path();
         QString filecontent;
         if (file.open(QFile::ReadOnly)) {
             filecontent = QString::fromUtf8(file.readAll());
             if (qmlImportTrace())
                 qDebug() << "QDeclarativeEngine::add: loaded" << absoluteFilePath;
         }
+        QDir dir = QFileInfo(file).dir();
+
         QDeclarativeDirParser qmldirParser;
         qmldirParser.setSource(filecontent);
         qmldirParser.parse();
@@ -1479,9 +1482,13 @@ public:
 
 
             foreach (const QDeclarativeDirParser::Plugin &plugin, qmldirParser.plugins()) {
-                QDir pluginDir(dir + QDir::separator() + plugin.path);
-                if (dir.startsWith(QLatin1Char(':')))
+
+                QDir pluginDir = dir.absoluteFilePath(plugin.path);
+
+                // hack for resources, should probably go away
+                if (absoluteFilePath.startsWith(QLatin1Char(':')))
                     pluginDir = QDir(QCoreApplication::applicationDirPath());
+
                 QString resolvedFilePath =
                         QDeclarativeEnginePrivate::get(engine)
                         ->resolvePlugin(pluginDir,
@@ -1783,7 +1790,13 @@ void QDeclarativeEngine::addImportPath(const QString& path)
     if (qmlImportTrace())
         qDebug() << "QDeclarativeEngine::addImportPath" << path;
     Q_D(QDeclarativeEngine);
-    d->fileImportPath.prepend(path);
+    QUrl url = QUrl(path);
+    if (url.isRelative() || url.scheme() == QString::fromLocal8Bit("file")) {
+        QDir dir = QDir(path);
+        d->fileImportPath.prepend(dir.canonicalPath());
+    } else {
+        d->fileImportPath.prepend(path);
+    }
 }
 
 
@@ -1833,34 +1846,43 @@ bool QDeclarativeEngine::importExtension(const QString &fileName, const QString 
         qDebug() << "QDeclarativeEngine::importExtension" << uri << "from" << fileName;
     QFileInfo fileInfo(fileName);
     const QString absoluteFilePath = fileInfo.absoluteFilePath();
-    QPluginLoader loader(absoluteFilePath);
 
-    if (QDeclarativeExtensionInterface *iface = qobject_cast<QDeclarativeExtensionInterface *>(loader.instance())) {
-        const QByteArray bytes = uri.toUtf8();
-        const char *moduleId = bytes.constData();
+    QDeclarativeEnginePrivate *d = QDeclarativeEnginePrivate::get(this);
+    bool engineInitialized = d->initializedPlugins.contains(absoluteFilePath);
+    bool typesRegistered = qmlEnginePluginsWithRegisteredTypes()->contains(absoluteFilePath);
 
-        // ### this code should probably be protected with a mutex.
-        if (! qmlEnginePluginsWithRegisteredTypes()->contains(absoluteFilePath)) {
-            // types should only be registered once (they're global).
-
-            qmlEnginePluginsWithRegisteredTypes()->insert(absoluteFilePath);
-            iface->registerTypes(moduleId);
-        }
-
-        QDeclarativeEnginePrivate *d = QDeclarativeEnginePrivate::get(this);
-
-        if (! d->initializedPlugins.contains(absoluteFilePath)) {
-            // things on the engine (eg. adding new global objects) have to be done for every engine.
-
-            // protect against double initialization
-            d->initializedPlugins.insert(absoluteFilePath);
-            iface->initializeEngine(this, moduleId);
-        }
-
-        return true;
+    if (typesRegistered) {
+        Q_ASSERT_X(qmlEnginePluginsWithRegisteredTypes()->value(absoluteFilePath) == uri,
+                   "QDeclarativeEngine::importExtension",
+                   "Internal error: Plugin imported previously with different uri");
     }
 
-    return false;
+    if (!engineInitialized || !typesRegistered) {
+        QPluginLoader loader(absoluteFilePath);
+
+        if (QDeclarativeExtensionInterface *iface = qobject_cast<QDeclarativeExtensionInterface *>(loader.instance())) {
+
+            const QByteArray bytes = uri.toUtf8();
+            const char *moduleId = bytes.constData();
+            if (!typesRegistered) {
+
+                // ### this code should probably be protected with a mutex.
+                qmlEnginePluginsWithRegisteredTypes()->insert(absoluteFilePath, uri);
+                iface->registerTypes(moduleId);
+            }
+            if (!engineInitialized) {
+                // things on the engine (eg. adding new global objects) have to be done for every engine.
+
+                // protect against double initialization
+                d->initializedPlugins.insert(absoluteFilePath);
+                iface->initializeEngine(this, moduleId);
+            }
+        } else {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /*!
@@ -1958,8 +1980,11 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
                          QStringList()
 # ifdef QT_DEBUG
                          << QLatin1String("_debug.dylib") // try a qmake-style debug build first
-# endif
                          << QLatin1String(".dylib")
+# else
+                         << QLatin1String(".dylib")
+                         << QLatin1String("_debug.dylib") // try a qmake-style debug build after
+# endif
                          << QLatin1String(".so")
                          << QLatin1String(".bundle"),
                          QLatin1String("lib"));

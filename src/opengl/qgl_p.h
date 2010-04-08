@@ -361,7 +361,7 @@ public:
     quint32 gpm;
     int screen;
     QHash<QPixmapData*, QPixmap> boundPixmaps;
-    QGLTexture *bindTextureFromNativePixmap(QPixmapData*, const qint64 key,
+    QGLTexture *bindTextureFromNativePixmap(QPixmap*, const qint64 key,
                                             QGLContext::BindOptions options);
     static void destroyGlSurfaceForPixmap(QPixmapData*);
     static void unbindPixmapFromTexture(QPixmapData*);
@@ -593,7 +593,7 @@ inline GLenum qt_gl_preferredTextureTarget()
 }
 
 // One resource per group of shared contexts.
-class Q_AUTOTEST_EXPORT QGLContextResource
+class Q_OPENGL_EXPORT QGLContextResource
 {
 public:
     typedef void (*FreeFunc)(void *);

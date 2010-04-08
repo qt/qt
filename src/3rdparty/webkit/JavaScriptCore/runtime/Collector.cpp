@@ -52,11 +52,6 @@
 #include <mach/thread_act.h>
 #include <mach/vm_map.h>
 
-#elif PLATFORM(SYMBIAN)
-#include <e32std.h>
-#include <e32cmn.h>
-#include <unistd.h>
-
 #elif PLATFORM(WIN_OS)
 
 #include <windows.h>
@@ -124,11 +119,6 @@ const size_t ALLOCATIONS_PER_COLLECTION = 4000;
 // a PIC branch in Mach-O binaries, see <rdar://problem/5971391>.
 #define MIN_ARRAY_SIZE (static_cast<size_t>(14))
 
-#if PLATFORM(SYMBIAN)
-const size_t MAX_NUM_BLOCKS = 256; // Max size of collector heap set to 16 MB
-static RHeap* userChunk = 0;
-#endif
-
 #if ENABLE(JSC_MULTIPLE_THREADS)
 
 #if PLATFORM(DARWIN)
@@ -165,29 +155,11 @@ Heap::Heap(JSGlobalData* globalData)
     , m_currentThreadRegistrar(0)
 #endif
     , m_globalData(globalData)
+#if PLATFORM(SYMBIAN)
+    , m_blockallocator(JSCCOLLECTOR_VIRTUALMEM_RESERVATION, BLOCK_SIZE)
+#endif
 {
     ASSERT(globalData);
-
-#if PLATFORM(SYMBIAN)
-    // Symbian OpenC supports mmap but currently not the MAP_ANON flag.
-    // Using fastMalloc() does not properly align blocks on 64k boundaries
-    // and previous implementation was flawed/incomplete.
-    // UserHeap::ChunkHeap allows allocation of continuous memory and specification
-    // of alignment value for (symbian) cells within that heap.
-    //
-    // Clarification and mapping of terminology:
-    // RHeap (created by UserHeap::ChunkHeap below) is continuos memory chunk,
-    // which can dynamically grow up to 8 MB,
-    // that holds all CollectorBlocks of this session (static).
-    // Each symbian cell within RHeap maps to a 64kb aligned CollectorBlock.
-    // JSCell objects are maintained as usual within CollectorBlocks.
-    if (!userChunk) {
-        userChunk = UserHeap::ChunkHeap(0, 0, MAX_NUM_BLOCKS * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-        if (!userChunk)
-            CRASH();
-    }
-#endif // PLATFORM(SYMBIAN)
-    
     memset(&primaryHeap, 0, sizeof(CollectorHeap));
     memset(&numberHeap, 0, sizeof(CollectorHeap));
 }
@@ -233,7 +205,9 @@ void Heap::destroy()
         t = next;
     }
 #endif
-
+#if PLATFORM(SYMBIAN)
+    m_blockallocator.destroy();
+#endif
     m_globalData = 0;
 }
 
@@ -247,12 +221,9 @@ NEVER_INLINE CollectorBlock* Heap::allocateBlock()
     // FIXME: tag the region as a JavaScriptCore heap when we get a registered VM tag: <rdar://problem/6054788>.
     vm_map(current_task(), &address, BLOCK_SIZE, BLOCK_OFFSET_MASK, VM_FLAGS_ANYWHERE | VM_TAG_FOR_COLLECTOR_MEMORY, MEMORY_OBJECT_NULL, 0, FALSE, VM_PROT_DEFAULT, VM_PROT_DEFAULT, VM_INHERIT_DEFAULT);
 #elif PLATFORM(SYMBIAN)
-    // Allocate a 64 kb aligned CollectorBlock
-    unsigned char* mask = reinterpret_cast<unsigned char*>(userChunk->Alloc(BLOCK_SIZE));
-    if (!mask)
+    void* address = m_blockallocator.alloc();  
+    if (!address)
         CRASH();
-    uintptr_t address = reinterpret_cast<uintptr_t>(mask);
-
     memset(reinterpret_cast<void*>(address), 0, BLOCK_SIZE);
 #elif PLATFORM(WINCE)
     void* address = VirtualAlloc(NULL, BLOCK_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -339,7 +310,7 @@ NEVER_INLINE void Heap::freeBlock(CollectorBlock* block)
 #if PLATFORM(DARWIN) && !PLATFORM(QT)
     vm_deallocate(current_task(), reinterpret_cast<vm_address_t>(block), BLOCK_SIZE);
 #elif PLATFORM(SYMBIAN)
-    userChunk->Free(reinterpret_cast<TAny*>(block));
+    m_blockallocator.free(reinterpret_cast<void*>(block));
 #elif PLATFORM(WINCE)
     VirtualFree(block, 0, MEM_RELEASE);
 #elif PLATFORM(WIN_OS)

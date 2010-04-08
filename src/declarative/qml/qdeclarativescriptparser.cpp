@@ -39,16 +39,16 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativescriptparser_p.h"
+#include "private/qdeclarativescriptparser_p.h"
 
-#include "qdeclarativeparser_p.h"
+#include "private/qdeclarativeparser_p.h"
 #include "parser/qdeclarativejsengine_p.h"
 #include "parser/qdeclarativejsparser_p.h"
 #include "parser/qdeclarativejslexer_p.h"
 #include "parser/qdeclarativejsnodepool_p.h"
 #include "parser/qdeclarativejsastvisitor_p.h"
 #include "parser/qdeclarativejsast_p.h"
-#include "qdeclarativerewrite_p.h"
+#include "private/qdeclarativerewrite_p.h"
 
 #include <QStack>
 #include <QCoreApplication>
@@ -397,7 +397,7 @@ Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId, bool on
                     if (string.isStringList()) {
                         QStringList urls = string.asStringList();
                         // We need to add this as a resource
-                        for (int ii = 0; ii < urls.count(); ++ii) 
+                        for (int ii = 0; ii < urls.count(); ++ii)
                             _parser->_refUrls << QUrl(urls.at(ii));
                     }
                 }
@@ -503,7 +503,7 @@ bool ProcessAST::visit(AST::UiImport *node)
         error.setColumn(node->importIdToken.startColumn);
         _parser->_errors << error;
         return false;
-    } 
+    }
 
 
     import.location = location(startLoc, endLoc);
@@ -637,7 +637,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         property.isDefaultProperty = node->isDefaultMember;
         property.type = type;
         if (type >= Object::DynamicProperty::Custom) {
-            QDeclarativeScriptParser::TypeReference *typeRef = 
+            QDeclarativeScriptParser::TypeReference *typeRef =
                 _parser->findOrCreateType(memberType);
             typeRef->refObjects.append(_stateStack.top().object);
         }
@@ -660,9 +660,12 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         }
 
         _stateStack.top().object->dynamicProperties << property;
+
+        // process QML-like initializers (e.g. property Object o: Object {})
+        accept(node->binding);
     }
 
-    return true;
+    return false;
 }
 
 
@@ -996,7 +999,7 @@ QDeclarativeParser::Object::ScriptBlock::Pragmas QDeclarativeScriptParser::extra
     for (int ii = 0; ii < length; ++ii) {
         const QChar &c = data[ii];
 
-        if (c.isSpace()) 
+        if (c.isSpace())
             continue;
 
         if (c == forwardSlash) {

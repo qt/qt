@@ -41,6 +41,7 @@ namespace Phonon
         public:
             IODeviceReader(const MediaSource &source, const MediaGraph *);
             ~IODeviceReader();
+            STDMETHODIMP Stop();
 
         private:
             StreamReader *m_streamReader;

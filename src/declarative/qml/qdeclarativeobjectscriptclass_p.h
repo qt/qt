@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qdeclarativepropertycache_p.h"
-#include "qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativepropertycache_p.h"
+#include "private/qdeclarativetypenamecache_p.h"
 
 #include <private/qdeclarativescriptclass_p.h>
 #include <QtScript/qscriptengine.h>

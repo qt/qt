@@ -80,7 +80,7 @@ class Person : public QObject {
 Q_OBJECT
 Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 // ![0]
-Q_PROPERTY(ShoeDescription *shoe READ shoe CONSTANT);
+Q_PROPERTY(ShoeDescription *shoe READ shoe CONSTANT)
 // ![0]
 public:
     Person(QObject *parent = 0);

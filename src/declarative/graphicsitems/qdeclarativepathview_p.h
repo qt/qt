@@ -43,7 +43,7 @@
 #define QDECLARATIVEPATHVIEW_H
 
 #include "qdeclarativeitem.h"
-#include "qdeclarativepath_p.h"
+#include "private/qdeclarativepath_p.h"
 
 QT_BEGIN_HEADER
 
@@ -77,7 +77,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativePathView : public QDeclarativeItem
     Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
     Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount NOTIFY pathItemCountChanged)
 
-    Q_ENUMS(HighlightRangeMode);
+    Q_ENUMS(HighlightRangeMode)
 
 public:
     QDeclarativePathView(QDeclarativeItem *parent=0);

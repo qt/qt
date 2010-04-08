@@ -798,7 +798,6 @@ inline void QScriptEnginePrivate::unregisterScriptString(QScriptStringPrivate *v
         registeredScriptStrings = value->next;
     value->prev = 0;
     value->next = 0;
-    JSC::setCurrentIdentifierTable(globalData->identifierTable);
 }
 
 inline QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeglobalscriptclass_p.h"
+#include "private/qdeclarativeglobalscriptclass_p.h"
 
 #include <QtScript/qscriptstring.h>
 #include <QtScript/qscriptengine.h>

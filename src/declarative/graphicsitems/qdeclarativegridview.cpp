@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativegridview_p.h"
+#include "private/qdeclarativegridview_p.h"
 
-#include "qdeclarativevisualitemmodel_p.h"
-#include "qdeclarativeflickable_p_p.h"
+#include "private/qdeclarativevisualitemmodel_p.h"
+#include "private/qdeclarativeflickable_p_p.h"
 
-#include "qdeclarativesmoothedanimation_p_p.h"
+#include "private/qdeclarativesmoothedanimation_p_p.h"
 #include <qdeclarativeguard_p.h>
 
 #include <qlistmodelinterface_p.h>
@@ -815,7 +815,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         if (snapMode != QDeclarativeGridView::SnapToRow && highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
             data.flickTarget = maxExtent;
     }
-    if ((maxDistance > 0 || overShoot) && (snapMode != QDeclarativeGridView::NoSnap || highlightRange == QDeclarativeGridView::StrictlyEnforceRange)) {
+    if (maxDistance > 0 || overShoot) {
         // This mode requires the grid to stop exactly on a row boundary.
         qreal v = velocity;
         if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
@@ -1856,6 +1856,8 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
             if (d->currentItem)
                 d->currentItem->index = d->currentIndex;
             emit currentIndexChanged();
+        } else if (d->currentIndex < 0) {
+            d->updateCurrent(0);
         }
         emit countChanged();
         return;

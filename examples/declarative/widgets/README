@@ -1,4 +1,0 @@
-To run:
-
-  make install
-  qml mywidgets.qml

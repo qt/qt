@@ -943,6 +943,7 @@ void tst_QGraphicsWidget::layout()
         layout->addItem(item);
         children.append(item);
     }
+    QSignalSpy spy(&widget, SIGNAL(layoutChanged()));
     widget.setLayout(layout);
 
     QTRY_COMPARE(widget.layout(), static_cast<QGraphicsLayout*>(layout));
@@ -951,7 +952,7 @@ void tst_QGraphicsWidget::layout()
         QCOMPARE(item->parentWidget(), (QGraphicsWidget *)&widget);
         QVERIFY(item->geometry() != QRectF(0, 0, -1, -1));
     }
-
+    QCOMPARE(spy.count(), 1);
     // don't crash
     widget.setLayout(0);
 }

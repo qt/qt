@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeflipable_p.h"
+#include "private/qdeclarativeflipable_p.h"
 
-#include "qdeclarativeitem_p.h"
-#include "qdeclarativeguard_p.h"
+#include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 #include <qdeclarativeinfo.h>
 
@@ -75,7 +75,7 @@ public:
 
     Here is a Flipable that flips whenever it is clicked:
 
-    \snippet examples/declarative/flipable/flipable-example.qml 0
+    \snippet doc/src/snippets/declarative/flipable.qml 0
 
     \image flipable.gif
 

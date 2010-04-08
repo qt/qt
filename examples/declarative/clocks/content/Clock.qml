@@ -74,7 +74,7 @@ Item {
     }
 
     Text {
-        id: cityLabel; font.bold: true; font.pixelSize: 14; y:200; color: "white"
-        anchors.horizontalCenter: parent.horizontalCenter
+        id: cityLabel; font.bold: true; font.pixelSize: 14; y: 200; color: "white"
+        anchors.horizontalCenter: parent.horizontalCenter; style: Text.Raised; styleColor: "black"
     }
 }

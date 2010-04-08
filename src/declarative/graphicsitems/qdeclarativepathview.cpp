@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativepathview_p.h"
-#include "qdeclarativepathview_p_p.h"
+#include "private/qdeclarativepathview_p.h"
+#include "private/qdeclarativepathview_p_p.h"
 
 #include <qdeclarativestate_p.h>
 #include <qdeclarativeopenmetaobject_p.h>

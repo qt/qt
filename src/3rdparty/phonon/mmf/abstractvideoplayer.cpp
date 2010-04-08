@@ -193,10 +193,13 @@ qint64 MMF::AbstractVideoPlayer::totalTime() const
 
 void MMF::AbstractVideoPlayer::videoWindowChanged()
 {
-    TRACE_CONTEXT(AbstractVideoPlayer::videoOutputRegionChanged, EVideoInternal);
+    TRACE_CONTEXT(AbstractVideoPlayer::videoWindowChanged, EVideoInternal);
     TRACE_ENTRY("state %d", state());
 
     m_window = m_videoOutput ? m_videoOutput->videoWindow() : 0;
+
+    if (m_videoOutput)
+        m_videoOutput->dump();
 
     handleVideoWindowChanged();
 
@@ -253,6 +256,9 @@ void MMF::AbstractVideoPlayer::MvpuoPrepareComplete(TInt aError)
     TRAPD(err, getVideoClipParametersL(aError));
 
     if (KErrNone == err) {
+        if (m_videoOutput)
+            m_videoOutput->dump();
+
         maxVolumeChanged(m_player->MaxVolume());
 
         if (m_videoOutput)

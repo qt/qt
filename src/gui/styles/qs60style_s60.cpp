@@ -859,11 +859,9 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
     User::LeaveIfError(bitmapDev->CreateContext(bitmapGc));
     CleanupStack::PushL(bitmapGc);
 
-#ifndef Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
     frame->LockHeap();
     memset(frame->DataAddress(), 0, frame->SizeInPixels().iWidth * frame->SizeInPixels().iHeight * 4);  // 4: argb bytes
     frame->UnlockHeap();
-#endif
 
     const TRect outerRect(TPoint(0, 0), targetSize);
     const TRect innerRect = innerRectFromElement(frameElement, outerRect);
@@ -983,16 +981,20 @@ TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameEl
     switch(frameElement) {
         case QS60StylePrivate::SF_PanelBackground:
             // panel should have slightly slimmer border to enable thin line of background graphics between closest component
-            widthShrink = widthShrink-2;
-            heightShrink = heightShrink-2;
+            widthShrink = widthShrink - 2;
+            heightShrink = heightShrink - 2;
             break;
         case QS60StylePrivate::SF_ToolTip:
-            widthShrink = widthShrink>>1;
-            heightShrink = heightShrink>>1;
+            widthShrink = widthShrink >> 1;
+            heightShrink = heightShrink >> 1;
             break;
         case QS60StylePrivate::SF_ListHighlight:
-            widthShrink = widthShrink-2;
-            heightShrink = heightShrink-2;
+            widthShrink = widthShrink - 2;
+            heightShrink = heightShrink - 2;
+            break;
+        case QS60StylePrivate::SF_PopupBackground:
+            widthShrink = widthShrink + 5;
+            heightShrink = heightShrink + 5;
             break;
         default:
             break;

@@ -259,7 +259,7 @@ void tst_QFontMetrics::bearingIncludedInBoundingRect()
     font.setItalic(false);
     QRect brectNormal = QFontMetrics(font).boundingRect("ITALIC");
 
-    QVERIFY(brectItalic.width() > brectNormal.width());
+    QVERIFY(brectItalic.width() >= brectNormal.width());
 }
 
 QTEST_MAIN(tst_QFontMetrics)

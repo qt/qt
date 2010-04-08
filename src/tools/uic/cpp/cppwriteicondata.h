@@ -64,7 +64,8 @@ public:
     void acceptImages(DomImages *images);
     void acceptImage(DomImage *image);
 
-    static void writeImage(QTextStream &output, const QString &indent, DomImage *image);
+    static void writeImage(QTextStream &output, const QString &indent,
+                           bool limitXPM_LineLength, const DomImage *image);
     static void writeImage(QIODevice &output, DomImage *image);
 
 private:

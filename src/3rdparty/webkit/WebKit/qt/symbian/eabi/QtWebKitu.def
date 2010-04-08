@@ -693,5 +693,5 @@ EXPORTS
 	_Z23qt_networkAccessAllowedb @ 692 NONAME
 	_Z25qt_resumeActiveDOMObjectsP9QWebFrame @ 693 NONAME
 	_Z26qt_suspendActiveDOMObjectsP9QWebFrame @ 694 NONAME
-	_Z35qtwebkit_webframe_scrollRecursivelyP9QWebFrameii @ 695 NONAME
-
+	_Z35qtwebkit_webframe_scrollRecursivelyP9QWebFrameii @ 695 NONAME ABSENT
+	_Z35qtwebkit_webframe_scrollRecursivelyP9QWebFrameiiRK6QPoint @ 696 NONAME

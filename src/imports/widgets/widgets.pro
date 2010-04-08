@@ -15,14 +15,14 @@ HEADERS += \
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/imports/$$TARGETPATH
 target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
-qmldir.files += $$QT_BUILD_TREE/imports/$$TARGETPATH/qmldir
+qmldir.files += $$PWD/qmldir
 qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
 symbian:{
     load(data_caging_paths)
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     
-    importFiles.sources = widgets.dll \
+    importFiles.sources = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH/widgets.dll \
     qmldir
     importFiles.path = $$QT_IMPORTS_BASE_DIR/$$TARGETPATH
     

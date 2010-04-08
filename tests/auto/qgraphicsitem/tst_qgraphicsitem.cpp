@@ -61,6 +61,7 @@
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QGraphicsEffect>
+#include <QInputContext>
 
 #include "../../shared/util.h"
 
@@ -384,6 +385,7 @@ private slots:
     void tabChangesFocus();
     void tabChangesFocus_data();
     void cacheMode();
+    void cacheMode2();
     void updateCachedItemAfterMove();
     void deviceTransform_data();
     void deviceTransform();
@@ -423,6 +425,7 @@ private slots:
     void modality_keyEvents();
     void itemIsInFront();
     void scenePosChange();
+    void updateMicroFocus();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -4317,6 +4320,21 @@ protected:
             break;
         case QGraphicsItem::ItemScenePositionHasChanged:
             break;
+        case QGraphicsItem::ItemRotationChange:
+            oldValues << rotation();
+            break;
+        case QGraphicsItem::ItemRotationHasChanged:
+            break;
+        case QGraphicsItem::ItemScaleChange:
+            oldValues << scale();
+            break;
+        case QGraphicsItem::ItemScaleHasChanged:
+            break;
+        case QGraphicsItem::ItemTransformOriginPointChange:
+            oldValues << transformOriginPoint();
+            break;
+        case QGraphicsItem::ItemTransformOriginPointHasChanged:
+            break;
         }
         return itemChangeReturnValue.isValid() ? itemChangeReturnValue : value;
     }
@@ -4411,6 +4429,48 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(tester.values.at(tester.changes.size() - 1), QVariant(qreal(2.0)));
         QCOMPARE(tester.oldValues.last(), QVariant(qreal(0.0)));
         QCOMPARE(tester.zValue(), qreal(2.0));
+    }
+    {
+        // ItemRotationChange / ItemRotationHasChanged
+        tester.itemChangeReturnValue = qreal(15.0);
+        tester.setRotation(10.0);
+        ++changeCount; // notification sent too
+        ++changeCount;
+        QCOMPARE(tester.changes.size(), changeCount);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 2), QGraphicsItem::ItemRotationChange);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 1), QGraphicsItem::ItemRotationHasChanged);
+        QCOMPARE(tester.values.at(tester.changes.size() - 2), QVariant(qreal(10.0)));
+        QCOMPARE(tester.values.at(tester.changes.size() - 1), QVariant(qreal(15.0)));
+        QCOMPARE(tester.oldValues.last(), QVariant(qreal(0.0)));
+        QCOMPARE(tester.rotation(), qreal(15.0));
+    }
+    {
+        // ItemScaleChange / ItemScaleHasChanged
+        tester.itemChangeReturnValue = qreal(2.0);
+        tester.setScale(1.5);
+        ++changeCount; // notification sent too
+        ++changeCount;
+        QCOMPARE(tester.changes.size(), changeCount);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 2), QGraphicsItem::ItemScaleChange);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 1), QGraphicsItem::ItemScaleHasChanged);
+        QCOMPARE(tester.values.at(tester.changes.size() - 2), QVariant(qreal(1.5)));
+        QCOMPARE(tester.values.at(tester.changes.size() - 1), QVariant(qreal(2.0)));
+        QCOMPARE(tester.oldValues.last(), QVariant(qreal(1.0)));
+        QCOMPARE(tester.scale(), qreal(2.0));
+    }
+    {
+        // ItemTransformOriginPointChange / ItemTransformOriginPointHasChanged
+        tester.itemChangeReturnValue = QPointF(2.0, 2.0);
+        tester.setTransformOriginPoint(1.0, 1.0);
+        ++changeCount; // notification sent too
+        ++changeCount;
+        QCOMPARE(tester.changes.size(), changeCount);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 2), QGraphicsItem::ItemTransformOriginPointChange);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 1), QGraphicsItem::ItemTransformOriginPointHasChanged);
+        QCOMPARE(tester.values.at(tester.changes.size() - 2), QVariant(QPointF(1.0, 1.0)));
+        QCOMPARE(tester.values.at(tester.changes.size() - 1), QVariant(QPointF(2.0, 2.0)));
+        QCOMPARE(tester.oldValues.last(), QVariant(QPointF(0.0, 0.0)));
+        QCOMPARE(tester.transformOriginPoint(), QPointF(2.0, 2.0));
     }
     {
         // ItemFlagsChange
@@ -6824,6 +6884,9 @@ void tst_QGraphicsItem::cacheMode()
     QTRY_COMPARE(tester->repaints, 4);
     QCOMPARE(testerChild->repaints, 4);
     QCOMPARE(testerChild2->repaints, 3);
+    tester->resetTransform();
+    testerChild->resetTransform();
+    testerChild2->resetTransform();
 
     // Explicit update causes a repaint.
     tester->update(0, 0, 5, 5);
@@ -6897,23 +6960,24 @@ void tst_QGraphicsItem::cacheMode()
     // because the parent is rotated with a perspective.
     testerChild->setPos(1, 1);
     QTest::qWait(25);
-    QTRY_COMPARE(tester->repaints, 10);
+    QTRY_COMPARE(tester->repaints, 11);
     QCOMPARE(testerChild->repaints, 10);
     QCOMPARE(testerChild2->repaints, 5);
+    tester->resetTransform();
 
     // Make a huge item
     tester->setGeometry(QRectF(-4000, -4000, 8000, 8000));
     QTest::qWait(25);
-    QTRY_COMPARE(tester->repaints, 11);
-    QCOMPARE(testerChild->repaints, 10);
+    QTRY_COMPARE(tester->repaints, 12);
+    QCOMPARE(testerChild->repaints, 11);
     QCOMPARE(testerChild2->repaints, 5);
 
     // Move the large item - will cause a repaint as the
     // cache is clipped.
     tester->setPos(5, 0);
     QTest::qWait(25);
-    QTRY_COMPARE(tester->repaints, 12);
-    QCOMPARE(testerChild->repaints, 10);
+    QTRY_COMPARE(tester->repaints, 13);
+    QCOMPARE(testerChild->repaints, 11);
     QCOMPARE(testerChild2->repaints, 5);
 
     // Hiding and showing should invalidate the cache
@@ -6921,9 +6985,81 @@ void tst_QGraphicsItem::cacheMode()
     QTest::qWait(25);
     tester->show();
     QTest::qWait(25);
-    QTRY_COMPARE(tester->repaints, 13);
-    QCOMPARE(testerChild->repaints, 11);
+    QTRY_COMPARE(tester->repaints, 14);
+    QCOMPARE(testerChild->repaints, 12);
     QCOMPARE(testerChild2->repaints, 6);
+}
+
+void tst_QGraphicsItem::cacheMode2()
+{
+    QGraphicsScene scene(0, 0, 100, 100);
+    QGraphicsView view(&scene);
+    view.resize(150, 150);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+
+    // Increase the probability of window activation
+    // not causing another repaint of test items.
+    QTest::qWait(50);
+
+    EventTester *tester = new EventTester;
+    scene.addItem(tester);
+    QTest::qWait(10);
+    QTRY_COMPARE(tester->repaints, 1);
+
+    // Switching from NoCache to NoCache (no repaint)
+    tester->setCacheMode(QGraphicsItem::NoCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 1);
+
+    // Switching from NoCache to DeviceCoordinateCache (no repaint)
+    tester->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 1);
+
+    // Switching from DeviceCoordinateCache to DeviceCoordinateCache (no repaint)
+    tester->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 1);
+
+    // Switching from DeviceCoordinateCache to NoCache (no repaint)
+    tester->setCacheMode(QGraphicsItem::NoCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 1);
+
+    // Switching from NoCache to ItemCoordinateCache (repaint)
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 2);
+
+    // Switching from ItemCoordinateCache to ItemCoordinateCache (no repaint)
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 2);
+
+    // Switching from ItemCoordinateCache to ItemCoordinateCache with different size (repaint)
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache, QSize(100, 100));
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 3);
+
+    // Switching from ItemCoordinateCache to NoCache (repaint)
+    tester->setCacheMode(QGraphicsItem::NoCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 4);
+
+    // Switching from DeviceCoordinateCache to ItemCoordinateCache (repaint)
+    tester->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 4);
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 5);
+
+    // Switching from ItemCoordinateCache to DeviceCoordinateCache (repaint)
+    tester->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    QTest::qWait(50);
+    QTRY_COMPARE(tester->repaints, 6);
 }
 
 void tst_QGraphicsItem::updateCachedItemAfterMove()
@@ -7386,10 +7522,19 @@ void tst_QGraphicsItem::itemSendsGeometryChanges()
     QTransform x = QTransform().rotate(45);
     QPointF pos(10, 10);
     qreal o(0.5);
+    qreal r(10.0);
+    qreal s(1.5);
+    QPointF origin(1.0, 1.0);
     item.setTransform(x);
     item.setPos(pos);
+    item.setRotation(r);
+    item.setScale(s);
+    item.setTransformOriginPoint(origin);
     QCOMPARE(item.transform(), x);
     QCOMPARE(item.pos(), pos);
+    QCOMPARE(item.rotation(), r);
+    QCOMPARE(item.scale(), s);
+    QCOMPARE(item.transformOriginPoint(), origin);
     QCOMPARE(item.changes.size(), 0);
 
     item.setOpacity(o);
@@ -7403,6 +7548,13 @@ void tst_QGraphicsItem::itemSendsGeometryChanges()
     QCOMPARE(item.transform(), QTransform());
     QCOMPARE(item.pos(), QPointF());
     QCOMPARE(item.opacity(), o);
+    item.setRotation(0.0);
+    item.setScale(1.0);
+    item.setTransformOriginPoint(0.0, 0.0);
+    QCOMPARE(item.changes.size(), 14); // rotation + scale + origin
+    QCOMPARE(item.rotation(), qreal(0.0));
+    QCOMPARE(item.scale(), qreal(1.0));
+    QCOMPARE(item.transformOriginPoint(), QPointF(0.0, 0.0));
 
     QCOMPARE(item.changes, QList<QGraphicsItem::GraphicsItemChange>()
              << QGraphicsItem::ItemOpacityChange
@@ -7412,7 +7564,13 @@ void tst_QGraphicsItem::itemSendsGeometryChanges()
              << QGraphicsItem::ItemTransformChange
              << QGraphicsItem::ItemTransformHasChanged
              << QGraphicsItem::ItemPositionChange
-             << QGraphicsItem::ItemPositionHasChanged);
+             << QGraphicsItem::ItemPositionHasChanged
+             << QGraphicsItem::ItemRotationChange
+             << QGraphicsItem::ItemRotationHasChanged
+             << QGraphicsItem::ItemScaleChange
+             << QGraphicsItem::ItemScaleHasChanged
+             << QGraphicsItem::ItemTransformOriginPointChange
+             << QGraphicsItem::ItemTransformOriginPointHasChanged);
 }
 
 // Make sure we update moved items correctly.
@@ -9830,6 +9988,79 @@ void tst_QGraphicsItem::scenePosChange()
     QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 6);
     QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
     QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+}
+
+class MyInputContext : public QInputContext
+{
+public:
+    MyInputContext() : nbUpdates(0) {}
+    ~MyInputContext() {}
+
+    QString identifierName() { return QString(); }
+    QString language() { return QString(); }
+
+    void reset() {}
+
+    bool isComposing() const { return false; }
+
+    void update() { nbUpdates++; }
+
+    bool nbUpdates;
+};
+
+class MyInputWidget : public QGraphicsWidget
+{
+public:
+    MyInputWidget()
+    {
+        setFlag(QGraphicsItem::ItemIsFocusable, true);
+        setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
+    }
+    void mousePressEvent(QGraphicsSceneMouseEvent *event)
+    {
+        event->accept();
+    }
+
+    void doUpdateMicroFocus()
+    {
+        updateMicroFocus();
+    }
+};
+
+void tst_QGraphicsItem::updateMicroFocus()
+{
+#if defined Q_OS_WIN || defined Q_OS_MAC
+    QSKIP("QTBUG-9578", SkipAll);
+    return;
+#endif
+    QGraphicsScene scene;
+    QWidget parent;
+    QGridLayout layout;
+    parent.setLayout(&layout);
+    QGraphicsView view(&scene);
+    QGraphicsView view2(&scene);
+    layout.addWidget(&view, 0, 0);
+    layout.addWidget(&view2, 0, 1);
+    MyInputContext ic2;
+    view2.setInputContext(&ic2);
+    MyInputContext ic;
+    view.setInputContext(&ic);
+    MyInputWidget input;
+    input.setPos(0, 0);
+    input.resize(150, 150);
+    scene.addItem(&input);
+    input.setFocus();
+    parent.show();
+    view.setFocus();
+    qApp->setAutoSipEnabled(true);
+    QApplication::setActiveWindow(&parent);
+    QTest::qWaitForWindowShown(&parent);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&parent));
+    input.doUpdateMicroFocus();
+    QApplication::processEvents();
+    QTRY_COMPARE(ic.nbUpdates, 1);
+    //No update since view2 does not have the focus.
+    QTRY_COMPARE(ic2.nbUpdates, 0);
 }
 
 void tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()

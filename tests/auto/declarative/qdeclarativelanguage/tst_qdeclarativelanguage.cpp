@@ -1065,7 +1065,6 @@ void tst_qdeclarativelanguage::defaultPropertyListOrder()
 void tst_qdeclarativelanguage::declaredPropertyValues()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("declaredPropertyValues.qml"));
-    QEXPECT_FAIL("", "QTBUG-7860", Abort);
     VERIFY_ERRORS(0);
 }
 
@@ -1358,6 +1357,13 @@ void tst_qdeclarativelanguage::importsOrder_data()
            "import com.nokia.installedtest 1.5\n"
            "Rectangle.Image {}"
         << "QDeclarativeImage";
+    QTest::newRow("local last 1") <<
+           "LocalLast {}"
+        << "QDeclarativeText";
+    QTest::newRow("local last 2") <<
+           "import com.nokia.installedtest 1.0\n"
+           "LocalLast {}"
+        << "QDeclarativeRectangle"; // i.e. from com.nokia.installedtest, not data/LocalLast.qml
 }
 
 void tst_qdeclarativelanguage::importsOrder()

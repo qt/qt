@@ -44,6 +44,7 @@
 #include <QDeclarativeEngine>
 #include <QFileInfo>
 #include <QDeclarativeComponent>
+#include <QDesktopServices>
 #include <QDir>
 #include <QVector3D>
 #include <QCryptographicHash>
@@ -261,10 +262,31 @@ void tst_qdeclarativeqt::tint()
     delete object;
 }
 
+class MyUrlHandler : public QObject
+{
+    Q_OBJECT
+public:
+    MyUrlHandler() : called(0) { }
+    int called;
+    QUrl last;
+
+public slots:
+    void noteCall(const QUrl &url) { called++; last = url; }
+};
+
 void tst_qdeclarativeqt::openUrlExternally()
 {
-    QEXPECT_FAIL("", "How do we test this?", Abort);
-    QVERIFY(false);
+    MyUrlHandler handler;
+
+    QDesktopServices::setUrlHandler("test", &handler, "noteCall");
+
+    QDeclarativeComponent component(&engine, TEST_FILE("openUrlExternally.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(handler.called,1);
+    QCOMPARE(handler.last, QUrl("test:url"));
+
+    QDesktopServices::unsetUrlHandler("test");
 }
 
 void tst_qdeclarativeqt::md5()

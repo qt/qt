@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativedirparser_p.h"
+#include "private/qdeclarativedirparser_p.h"
 #include "qdeclarativeerror.h"
 
 #include <QtCore/QTextStream>

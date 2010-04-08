@@ -39,16 +39,16 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeboundsignal_p.h"
+#include "private/qdeclarativeboundsignal_p.h"
 
-#include "qmetaobjectbuilder_p.h"
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativeexpression_p.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativemetatype_p.h"
+#include "private/qmetaobjectbuilder_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativeexpression_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativemetatype_p.h"
 #include "qdeclarative.h"
 #include "qdeclarativecontext.h"
-#include "qdeclarativeglobal_p.h"
+#include "private/qdeclarativeglobal_p.h"
 
 #include <QtCore/qdebug.h>
 

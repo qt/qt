@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qegl_p.h>
 #include <QtGui/private/qeglcontext_p.h>
 #include <QtGui/private/qeglproperties_p.h>
 

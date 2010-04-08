@@ -6,13 +6,16 @@ SUBDIRS = \
    imageprovider \
    objectlistmodel \
    plugins \
-   widgets
+   proxywidgets
+
+# plugins uses a 'Time' class that conflicts with symbian e32std.h also defining a class of the same name
+symbian:SUBDIRS -= plugins
 
 # These examples contain no C++ and can simply be copied
 sources.files = \
    animations \
    aspectratio \
-   behaviours \
+   behaviors \
    border-image \
    clocks \
    connections \
@@ -21,7 +24,6 @@ sources.files = \
    effects \
    fillmode \
    focus \
-   focusscope \
    fonts \
    gridview \
    layouts \

@@ -54,12 +54,19 @@
 
 QT_BEGIN_HEADER
 
+#ifndef QT_MOBILITY_BEARER
+#include <QtCore/qshareddata.h>
 QT_BEGIN_NAMESPACE
-
 QT_MODULE(Network)
+#define QNetworkSessionExport Q_NETWORK_EXPORT
+#else
+#include "qmobilityglobal.h"
+QTM_BEGIN_NAMESPACE
+#define QNetworkSessionExport Q_BEARER_EXPORT
+#endif
 
 class QNetworkSessionPrivate;
-class Q_NETWORK_EXPORT QNetworkSession : public QObject
+class QNetworkSessionExport QNetworkSession : public QObject
 {
     Q_OBJECT
 public:
@@ -80,8 +87,11 @@ public:
         OperationNotSupportedError,
         InvalidConfigurationError
     };
-
-    explicit QNetworkSession(const QNetworkConfiguration& connConfig, QObject* parent =0);
+#ifndef QT_MOBILITY_BEARER
+    QNetworkSession(const QNetworkConfiguration& connConfig, QObject* parent =0);
+#else
+	explicit QNetworkSession(const QNetworkConfiguration& connConfig, QObject* parent =0);
+#endif
     virtual ~QNetworkSession();
 
     bool isOpen() const;
@@ -131,7 +141,11 @@ private:
     friend class QNetworkSessionPrivate;
     };
 
+#ifndef QT_MOBILITY_BEARER
 QT_END_NAMESPACE
+#else
+QTM_END_NAMESPACE
+#endif
 
 QT_END_HEADER
 

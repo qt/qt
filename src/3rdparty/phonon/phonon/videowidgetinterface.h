@@ -53,8 +53,21 @@ class VideoWidgetInterface
 //X        virtual int overlayCapabilities() const = 0;
 //X        virtual bool createOverlay(QWidget *widget, int type) = 0;
 };
+
+class VideoWidgetInterface44 : public VideoWidgetInterface
+{
+    public:
+        virtual QImage snapshot() const = 0;
+};
 }
 
+#ifdef PHONON_BACKEND_VERSION_4_4
+namespace Phonon { typedef VideoWidgetInterface44 VideoWidgetInterfaceLatest; }
+#else
+namespace Phonon { typedef VideoWidgetInterface VideoWidgetInterfaceLatest; }
+#endif
+
+Q_DECLARE_INTERFACE(Phonon::VideoWidgetInterface44, "VideoWidgetInterface44.phonon.kde.org")
 Q_DECLARE_INTERFACE(Phonon::VideoWidgetInterface, "VideoWidgetInterface3.phonon.kde.org")
 
 #endif //QT_NO_PHONON_VIDEO

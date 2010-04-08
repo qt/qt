@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativexmllistmodel_p.h"
+#include "private/qdeclarativexmllistmodel_p.h"
 
 #include <qdeclarativecontext.h>
 #include <qdeclarativeengine.h>

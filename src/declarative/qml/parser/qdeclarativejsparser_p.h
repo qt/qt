@@ -59,10 +59,10 @@
 #ifndef QDECLARATIVEJSPARSER_P_H
 #define QDECLARATIVEJSPARSER_P_H
 
-#include "qdeclarativejsglobal_p.h"
-#include "qdeclarativejsgrammar_p.h"
-#include "qdeclarativejsast_p.h"
-#include "qdeclarativejsengine_p.h"
+#include "private/qdeclarativejsglobal_p.h"
+#include "private/qdeclarativejsgrammar_p.h"
+#include "private/qdeclarativejsast_p.h"
+#include "private/qdeclarativejsengine_p.h"
 
 #include <QtCore/QList>
 #include <QtCore/QString>
@@ -235,9 +235,9 @@ protected:
 
 
 
-#define J_SCRIPT_REGEXPLITERAL_RULE1 76
+#define J_SCRIPT_REGEXPLITERAL_RULE1 78
 
-#define J_SCRIPT_REGEXPLITERAL_RULE2 77
+#define J_SCRIPT_REGEXPLITERAL_RULE2 79
 
 QT_QML_END_NAMESPACE
 

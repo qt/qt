@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeimage_p.h"
-#include "qdeclarativeimage_p_p.h"
+#include "private/qdeclarativeimage_p.h"
+#include "private/qdeclarativeimage_p_p.h"
 
 #include <QKeyEvent>
 #include <QPainter>
@@ -274,6 +274,10 @@ qreal QDeclarativeImage::paintedHeight() const
     If you set this property explicitly, you can to control the storage
     used by a loaded image. The image will be scaled down if its intrinsic size
     is greater than this value.
+
+    If only one dimension of the size is set (and the other left at 0), the
+    unset dimension will be set in proportion to the set dimension to preserve
+    the source image aspect ratio. The fillMode is independent of this.
 
     Unlike setting the width and height properties, which merely scale the painting
     of the image, this property affects the number of pixels stored.

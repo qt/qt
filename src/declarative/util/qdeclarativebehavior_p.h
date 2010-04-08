@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEBEHAVIOR_H
 #define QDECLARATIVEBEHAVIOR_H
 
-#include "qdeclarativestate_p.h"
+#include "private/qdeclarativestate_p.h"
 
 #include <qdeclarativepropertyvaluesource.h>
 #include <qdeclarativepropertyvalueinterceptor.h>

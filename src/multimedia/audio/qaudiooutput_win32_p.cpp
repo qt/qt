@@ -88,7 +88,7 @@ QAudioOutputPrivate::~QAudioOutputPrivate()
     DeleteCriticalSection(&waveOutCriticalSection);
 }
 
-void QT_WIN_CALLBACK QAudioOutputPrivate::waveOutProc( HWAVEOUT hWaveOut, UINT uMsg,
+void CALLBACK QAudioOutputPrivate::waveOutProc( HWAVEOUT hWaveOut, UINT uMsg,
         DWORD dwInstance, DWORD dwParam1, DWORD dwParam2 )
 {
     Q_UNUSED(dwParam1)

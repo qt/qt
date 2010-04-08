@@ -58,6 +58,28 @@ QT_BEGIN_NAMESPACE
 
 // TODO: Put channel specific stuff here so it does not polute qhttpnetworkconnection.cpp
 
+QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
+    : socket(0)
+    , state(IdleState)
+    , reply(0)
+    , written(0)
+    , bytesTotal(0)
+    , resendCurrent(false)
+    , lastStatus(0)
+    , pendingEncrypt(false)
+    , reconnectAttempts(2)
+    , authMehtod(QAuthenticatorPrivate::None)
+    , proxyAuthMehtod(QAuthenticatorPrivate::None)
+#ifndef QT_NO_OPENSSL
+    , ignoreAllSslErrors(false)
+#endif
+    , pipeliningSupported(PipeliningSupportUnknown)
+    , connection(0)
+{
+    // Inlining this function in the header leads to compiler error on
+    // release-armv5, on at least timebox 9.2 and 10.1.
+}
+
 void QHttpNetworkConnectionChannel::init()
 {
 #ifndef QT_NO_OPENSSL
@@ -648,7 +670,8 @@ void QHttpNetworkConnectionChannel::allDone()
             close();
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     } else if (alreadyPipelinedRequests.isEmpty()) {
-        QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+        if (qobject_cast<QHttpNetworkConnection*>(connection))
+            QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     }
 }
 
@@ -753,7 +776,8 @@ void QHttpNetworkConnectionChannel::handleStatus()
         }
         break;
     default:
-        QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+        if (qobject_cast<QHttpNetworkConnection*>(connection))
+            QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     }
 }
 
@@ -801,7 +825,8 @@ void QHttpNetworkConnectionChannel::closeAndResendCurrentRequest()
     requeueCurrentlyPipelinedRequests();
     close();
     resendCurrent = true;
-    QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+    if (qobject_cast<QHttpNetworkConnection*>(connection))
+        QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
 }
 
 bool QHttpNetworkConnectionChannel::isSocketBusy() const
@@ -939,7 +964,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         errorCode = QNetworkReply::UnknownNetworkError;
         break;
     }
-    QPointer<QObject> that = connection;
+    QPointer<QHttpNetworkConnection> that = connection;
     QString errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
     if (send2Reply) {
         if (reply) {
@@ -994,7 +1019,15 @@ void QHttpNetworkConnectionChannel::_q_encryptedBytesWritten(qint64 bytes)
         sendRequest();
     // otherwise we do nothing
 }
+
 #endif
+
+void QHttpNetworkConnectionChannel::setConnection(QHttpNetworkConnection *c)
+{
+    // Inlining this function in the header leads to compiler error on
+    // release-armv5, on at least timebox 9.2 and 10.1.
+    connection = c;
+}
 
 QT_END_NAMESPACE
 

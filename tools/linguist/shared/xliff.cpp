@@ -503,6 +503,8 @@ bool XLIFFHandler::startElement(const QString& namespaceURI,
         m_language.replace(QLatin1Char('-'), QLatin1Char('_'));
         m_sourceLanguage = atts.value(QLatin1String("source-language"));
         m_sourceLanguage.replace(QLatin1Char('-'), QLatin1Char('_'));
+        if (m_sourceLanguage == QLatin1String("en"))
+            m_sourceLanguage.clear();
     } else if (localName == QLatin1String("group")) {
         if (atts.value(QLatin1String("restype")) == QLatin1String(restypeContext)) {
             m_context = atts.value(QLatin1String("resname"));

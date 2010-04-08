@@ -98,7 +98,7 @@ void QElapsedTimer::start()
 qint64 QElapsedTimer::restart()
 {
     qint64 old = t1;
-    t1 = QDateTime::currentMsecsSinceEpoch();
+    t1 = QDateTime::currentMSecsSinceEpoch();
     t2 = 0;
     return t1 - old;
 }
@@ -112,7 +112,7 @@ qint64 QElapsedTimer::restart()
 */
 qint64 QElapsedTimer::elapsed() const
 {
-    return QDateTime::currentMsecsSinceEpoch() - t1;
+    return QDateTime::currentMSecsSinceEpoch() - t1;
 }
 
 /*!

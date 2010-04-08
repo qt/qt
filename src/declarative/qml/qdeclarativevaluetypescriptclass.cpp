@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativevaluetypescriptclass_p.h"
+#include "private/qdeclarativevaluetypescriptclass_p.h"
 
-#include "qdeclarativebinding_p.h"
-#include "qdeclarativeproperty_p.h"
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativeguard_p.h"
+#include "private/qdeclarativebinding_p.h"
+#include "private/qdeclarativeproperty_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -4301,12 +4301,7 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
     if (!subPix.isNull()) {
         // Blit the subpixmap into the main pixmap.
         pixmapPainter.begin(pix);
-        if (item->cacheMode() == QGraphicsItem::DeviceCoordinateCache
-            && itemToPixmap.type() > QTransform::TxTranslate) {
-            pixmapPainter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
-        } else {
-            pixmapPainter.setCompositionMode(QPainter::CompositionMode_Source);
-        }
+        pixmapPainter.setCompositionMode(QPainter::CompositionMode_Source);
         pixmapPainter.setClipRegion(pixmapExposed);
         pixmapPainter.drawPixmap(br.topLeft(), subPix);
         pixmapPainter.end();
@@ -4472,6 +4467,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         }
 
         // Create or reuse offscreen pixmap, possibly scroll/blit from the old one.
+        // If the world transform is rotated we always recreate the cache to avoid
+        // wrong blending.
         bool pixModified = false;
         QGraphicsItemCache::DeviceData *deviceData = &itemCache->deviceData[widget];
         bool invertable = true;
@@ -4479,7 +4476,9 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         if (invertable)
             diff *= painter->worldTransform();
         deviceData->lastTransform = painter->worldTransform();
-        if (!invertable || diff.type() > QTransform::TxTranslate) {
+        if (!invertable
+            || diff.type() > QTransform::TxTranslate
+            || painter->worldTransform().type() > QTransform::TxScale) {
             pixModified = true;
             itemCache->allExposed = true;
             itemCache->exposed.clear();

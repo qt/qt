@@ -1,0 +1,4 @@
+To run:
+
+  make install
+  qml proxywidgets.qml

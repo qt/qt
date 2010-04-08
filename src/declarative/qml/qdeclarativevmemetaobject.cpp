@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativevmemetaobject_p.h"
+#include "private/qdeclarativevmemetaobject_p.h"
 
 #include "qdeclarative.h"
-#include "qdeclarativerefcount_p.h"
+#include "private/qdeclarativerefcount_p.h"
 #include "qdeclarativeexpression.h"
-#include "qdeclarativeexpression_p.h"
-#include "qdeclarativecontext_p.h"
+#include "private/qdeclarativeexpression_p.h"
+#include "private/qdeclarativecontext_p.h"
 
 Q_DECLARE_METATYPE(QScriptValue);
 

@@ -83,6 +83,8 @@ private slots:
     void setTime();
     void setTimeSpec();
     void setTime_t();
+    void setMSecsSinceEpoch_data();
+    void setMSecsSinceEpoch();
     void toString_enumformat();
     void toString_strformat_data();
     void toString_strformat();
@@ -435,6 +437,71 @@ void tst_QDateTime::setTime_t()
         dt2.setTime_t(0x7FFFFFFF);
         QCOMPARE(dt2, QDateTime(QDate(2038, 1, 19), QTime(4, 14, 7), Qt::LocalTime));
     }
+}
+
+void tst_QDateTime::setMSecsSinceEpoch_data()
+{
+    QTest::addColumn<qint64>("msecs");
+    QTest::addColumn<QDateTime>("utc");
+    QTest::addColumn<QDateTime>("european");
+
+    QTest::newRow("zero")
+            << Q_INT64_C(0)
+            << QDateTime(QDate(1970, 1, 1), QTime(), Qt::UTC)
+            << QDateTime(QDate(1970, 1, 1), QTime(1, 0));
+    QTest::newRow("-1")
+            << Q_INT64_C(-1)
+            << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59, 999), Qt::UTC)
+            << QDateTime(QDate(1970, 1, 1), QTime(0, 59, 59, 999));
+    QTest::newRow("123456789")
+            << Q_INT64_C(123456789)
+            << QDateTime(QDate(1970, 1, 2), QTime(10, 17, 36, 789), Qt::UTC)
+            << QDateTime(QDate(1970, 1, 2), QTime(11, 17, 36, 789), Qt::LocalTime);
+    QTest::newRow("-123456789")
+            << Q_INT64_C(-123456789)
+            << QDateTime(QDate(1969, 12, 30), QTime(13, 42, 23, 211), Qt::UTC)
+            << QDateTime(QDate(1969, 12, 30), QTime(14, 42, 23, 211), Qt::LocalTime);
+    QTest::newRow("non-time_t")
+            << (Q_INT64_C(1000) << 32)
+            << QDateTime(QDate(2106, 2, 7), QTime(6, 28, 16), Qt::UTC)
+            << QDateTime(QDate(2106, 2, 7), QTime(7, 28, 16));
+    QTest::newRow("very-large")
+            << (Q_INT64_C(123456) << 32)
+            << QDateTime(QDate(18772, 8, 15), QTime(1, 8, 14, 976), Qt::UTC)
+            << QDateTime(QDate(18772, 8, 15), QTime(3, 8, 14, 976));
+    QTest::newRow("min_date") // julian day 0 is an invalid date for QDate
+            << Q_INT64_C(-210866716800000)
+            << QDateTime(QDate::fromJulianDay(1), QTime(), Qt::UTC)
+            << QDateTime(QDate::fromJulianDay(1), QTime(1, 0));
+    QTest::newRow("max_date") // technically jd is unsigned, but fromJulianDay takes int
+            << Q_INT64_C(185331720376799999)
+            << QDateTime(QDate::fromJulianDay(0x7fffffff), QTime(21, 59, 59, 999), Qt::UTC)
+            << QDateTime(QDate::fromJulianDay(0x7fffffff), QTime(23, 59, 59, 999));
+}
+
+void tst_QDateTime::setMSecsSinceEpoch()
+{
+    QFETCH(qint64, msecs);
+    QFETCH(QDateTime, utc);
+    QFETCH(QDateTime, european);
+
+    QDateTime dt;
+    dt.setTimeSpec(Qt::UTC);
+    dt.setMSecsSinceEpoch(msecs);
+
+    QCOMPARE(dt, utc);
+    if (europeanTimeZone) {
+        QCOMPARE(dt.toLocalTime(), european);
+    }
+
+    QCOMPARE(dt.toMSecsSinceEpoch(), msecs);
+
+    if (quint64(msecs / 1000) < 0xFFFFFFFF) {
+        QCOMPARE(qint64(dt.toTime_t()), msecs / 1000);
+    }
+
+    QDateTime reference(QDate(1970, 1, 1), QTime(), Qt::UTC);
+    QCOMPARE(dt, reference.addMSecs(msecs));
 }
 
 void tst_QDateTime::toString_enumformat()
@@ -932,7 +999,7 @@ void tst_QDateTime::currentDateTimeUtc2()
     do {
         local = QDateTime::currentDateTime();
         utc = QDateTime::currentDateTimeUtc();
-        msec = QDateTime::currentMsecsSinceEpoch();
+        msec = QDateTime::currentMSecsSinceEpoch();
         ok = local.time().msec() == utc.time().msec()
             && utc.time().msec() == (msec % 1000);
     } while (--i && !ok);
@@ -953,6 +1020,8 @@ void tst_QDateTime::currentDateTimeUtc2()
     // and finally, the time_t should equal our number
     QCOMPARE(qint64(utc.toTime_t()), msec / 1000);
     QCOMPARE(qint64(local.toTime_t()), msec / 1000);
+    QCOMPARE(utc.toMSecsSinceEpoch(), msec);
+    QCOMPARE(local.toMSecsSinceEpoch(), msec);
 }
 
 void tst_QDateTime::toTime_t_data()
