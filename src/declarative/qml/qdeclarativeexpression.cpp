@@ -351,7 +351,7 @@ void QDeclarativeExpressionPrivate::exceptionToError(QScriptEngine *scriptEngine
     }
 }
 
-QScriptValue QDeclarativeExpressionPrivate::eval(QObject *secondaryScope, bool *isUndefined)
+QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUndefined)
 {
     QDeclarativeExpressionData *data = this->data;
     QDeclarativeEngine *engine = data->context()->engine;
@@ -376,7 +376,7 @@ QScriptValue QDeclarativeExpressionPrivate::eval(QObject *secondaryScope, bool *
             const QString code = rewriteBinding(data->expression, &ok);
             if (!ok) {
                 scriptEngine->popContext();
-                return QScriptValue();
+                return QVariant();
             }
             data->expressionFunction = scriptEngine->evaluate(code, data->url, data->line);
         }
@@ -413,20 +413,54 @@ QScriptValue QDeclarativeExpressionPrivate::eval(QObject *secondaryScope, bool *
     if (scriptEngine->hasUncaughtException()) {
        exceptionToError(scriptEngine, data->error);
        scriptEngine->clearExceptions();
-       return QScriptValue();
+       return QVariant();
     } else {
         data->error = QDeclarativeError();
-        return svalue;
     }
+
+    QVariant rv;
+
+    if (svalue.isArray()) {
+        int length = svalue.property(QLatin1String("length")).toInt32();
+        if (length && svalue.property(0).isObject()) {
+            QList<QObject *> list;
+            for (int ii = 0; ii < length; ++ii) {
+                QScriptValue arrayItem = svalue.property(ii);
+                QObject *d = arrayItem.toQObject();
+                list << d;
+            }
+            rv = QVariant::fromValue(list);
+        }
+    } else if (svalue.isObject() &&
+               ep->objectClass->scriptClass(svalue) == ep->objectClass) {
+        QObject *o = svalue.toQObject();
+        int type = QMetaType::QObjectStar;
+        // If the object is null, we extract the predicted type.  While this isn't
+        // 100% reliable, in many cases it gives us better error messages if we
+        // assign this null-object to an incompatible property
+        if (!o) type = ep->objectClass->objectType(svalue);
+
+        return QVariant(type, &o);
+    }
+
+    if (rv.isNull())
+        rv = svalue.toVariant();
+
+    return rv;
 }
 
-QScriptValue QDeclarativeExpressionPrivate::scriptValue(QObject *secondaryScope, bool *isUndefined)
+QVariant QDeclarativeExpressionPrivate::value(QObject *secondaryScope, bool *isUndefined)
 {
     Q_Q(QDeclarativeExpression);
-    Q_ASSERT(q->engine());
+
+    QVariant rv;
+    if (!q->engine()) {
+        qWarning("QDeclarativeExpression: Attempted to evaluate an expression in an invalid context");
+        return rv;
+    }
 
     if (data->expression.isEmpty())
-        return QScriptValue();
+        return rv;
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(q->engine());
 
@@ -442,7 +476,7 @@ QScriptValue QDeclarativeExpressionPrivate::scriptValue(QObject *secondaryScope,
     QDeclarativeExpressionData *localData = data;
     localData->addref();
 
-    QScriptValue value = eval(secondaryScope, isUndefined);
+    rv = evalQtScript(secondaryScope, isUndefined);
 
     ep->currentExpression = lastCurrentExpression;
     ep->captureProperties = lastCaptureProperties;
@@ -460,21 +494,7 @@ QScriptValue QDeclarativeExpressionPrivate::scriptValue(QObject *secondaryScope,
 
     lastCapturedProperties.copyAndClear(ep->capturedProperties);
 
-    return value;
-}
-
-QVariant QDeclarativeExpressionPrivate::value(QObject *secondaryScope, bool *isUndefined)
-{
-    Q_Q(QDeclarativeExpression);
-
-    if (!q->engine()) {
-        qWarning("QDeclarativeExpression: Attempted to evaluate an expression in an invalid context");
-        return QVariant();
-    }
-
-    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(q->engine());
-
-    return ep->scriptValueToVariant(scriptValue(secondaryScope, isUndefined));
+    return rv;
 }
 
 /*!
