@@ -2520,7 +2520,7 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
 
         ((QDeclarativeVMEMetaData *)dynamicData.data())->methodCount++;
         QDeclarativeVMEMetaData::MethodData methodData =
-             { s.parameterNames.count(), 0, funcScript.length(), 0 };
+             { s.parameterNames.count(), 0, funcScript.length(), s.location.start.line };
 
         dynamicData.append((char *)&methodData, sizeof(methodData));
     }
