@@ -148,14 +148,46 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                                   idx, a);
 
         } else {
-            bool isUndefined = false;
-            QVariant value = this->value(&isUndefined);
+            QDeclarativeEnginePrivate *ep = (data->context() && data->context()->engine)?
+                QDeclarativeEnginePrivate::get(data->context()->engine):0;
 
-            if (isUndefined && !data->error.isValid() && data->property.isResettable()) {
+            bool isUndefined = false;
+            QVariant value;
+
+            QScriptValue scriptValue = d->scriptValue(0, &isUndefined);
+            if (data->property.propertyTypeCategory() == QDeclarativeProperty::List) {
+                value = ep->scriptValueToVariant(scriptValue, qMetaTypeId<QList<QObject *> >());
+            } else {
+                value = ep->scriptValueToVariant(scriptValue, data->property.propertyType());
+                if (value.userType() == QMetaType::QObjectStar && !qvariant_cast<QObject*>(value)) {
+                    // If the object is null, we extract the predicted type.  While this isn't
+                    // 100% reliable, in many cases it gives us better error messages if we
+                    // assign this null-object to an incompatible property
+                    int type = ep->objectClass->objectType(scriptValue);
+                    value = QVariant(type, (void *)0);
+                }
+            }
+
+            if (data->error.isValid()) {
+
+            } else if (!scriptValue.isVariant() && value.userType() == QMetaType::QVariantList && 
+                       data->property.propertyType() == qMetaTypeId<QVariant>()) {
+
+                // This case catches QtScript's automatic conversion to QVariantList for arrays
+                QUrl url = QUrl(data->url);
+                int line = data->line;
+                if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
+
+                data->error.setUrl(url);
+                data->error.setLine(line);
+                data->error.setColumn(-1);
+                data->error.setDescription(QLatin1String("Unable to assign JavaScript array to QML variant property"));
+
+            } else if (isUndefined && data->property.isResettable()) {
 
                 data->property.reset();
 
-            } else if (isUndefined && !data->error.isValid()) {
+            } else if (isUndefined) {
 
                 QUrl url = QUrl(data->url);
                 int line = data->line;
@@ -166,7 +198,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                 data->error.setColumn(-1);
                 data->error.setDescription(QLatin1String("Unable to assign [undefined] to ") + QLatin1String(QMetaType::typeName(data->property.propertyType())));
 
-            } else if (!isUndefined && data->property.object() && 
+            } else if (data->property.object() && 
                        !QDeclarativePropertyPrivate::write(data->property, value, flags)) {
 
                 QUrl url = QUrl(data->url);
@@ -187,9 +219,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
             }
 
             if (data->error.isValid()) {
-                QDeclarativeEnginePrivate *p = (data->context() && data->context()->engine)?
-                    QDeclarativeEnginePrivate::get(data->context()->engine):0;
-               if (!data->addError(p)) 
+               if (!data->addError(ep)) 
                    qWarning().nospace() << qPrintable(this->error().toString());
             } else {
                 data->removeError();

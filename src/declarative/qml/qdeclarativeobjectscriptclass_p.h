@@ -118,7 +118,7 @@ public:
     Value property(QObject *, const Identifier &);
 
     void setProperty(QObject *, const Identifier &name, const QScriptValue &,
-                     QDeclarativeContextData *evalContext = 0);
+                     QScriptContext *context, QDeclarativeContextData *evalContext = 0);
     virtual QStringList propertyNames(Object *);
     virtual bool compare(Object *, Object *);
 

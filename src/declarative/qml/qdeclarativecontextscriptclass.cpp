@@ -295,7 +295,7 @@ void QDeclarativeContextScriptClass::setProperty(Object *object, const Identifie
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
 
-    ep->objectClass->setProperty(lastScopeObject, name, value, bindContext);
+    ep->objectClass->setProperty(lastScopeObject, name, value, context(), bindContext);
 }
 
 QT_END_NAMESPACE

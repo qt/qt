@@ -108,6 +108,8 @@ private slots:
     void selfDeletingBinding();
     void extendedObjectPropertyLookup();
     void scriptErrors();
+    void functionErrors();
+    void propertyAssignmentErrors();
     void signalTriggeredBindings();
     void listProperties();
     void exceptionClearsOnReeval();
@@ -994,6 +996,46 @@ void tst_qdeclarativeecmascript::scriptErrors()
     emit object->thirdBasicSignal();
 }
 
+/*
+Test file/lineNumbers for inline functions.
+*/
+void tst_qdeclarativeecmascript::functionErrors()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("functionErrors.qml"));
+    QString url = component.url().toString();
+
+    QString warning = url + ":5: Error: Invalid write to global property \"a\"";
+
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    delete object;
+}
+
+/*
+Test various errors that can occur when assigning a property from script
+*/
+void tst_qdeclarativeecmascript::propertyAssignmentErrors()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("propertyAssignmentErrors.qml"));
+
+    QString url = component.url().toString();
+
+    QString warning1 = url + ":11:Error: Cannot assign [undefined] to int";
+    QString warning2 = url + ":17:Error: Cannot assign JavaScript array to QML variant property";
+    QString warning3 = url + ":23:Error: Cannot assign QString to int";
+
+    QTest::ignoreMessage(QtDebugMsg, warning1.toLatin1().constData());
+    QTest::ignoreMessage(QtDebugMsg, warning2.toLatin1().constData());
+    QTest::ignoreMessage(QtDebugMsg, warning3.toLatin1().constData());
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    delete object;
+}
+    
 /*
 Test bindings still work when the reeval is triggered from within
 a signal script.
