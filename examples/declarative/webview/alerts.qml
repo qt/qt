@@ -51,7 +51,7 @@ WebView {
             color: "white"
             font.pixelSize: 20
             width: webView.width*0.75
-            wrap: true
+            wrapMode: Text.WordWrap
             horizontalAlignment: "AlignHCenter"
         }
     }

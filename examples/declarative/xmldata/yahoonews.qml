@@ -45,7 +45,7 @@ Rectangle {
                     id: descriptionText
                     text: description
                     width: 560
-                    wrap: true
+                    wrapMode: Text.WordWrap
                     font.family: "Helvetica"
                     anchors.top: titleText.bottom
                     anchors.topMargin: 5
