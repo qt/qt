@@ -59,6 +59,7 @@ private slots:
     void pointf();
     void size();
     void sizef();
+    void sizereadonly();
     void rect();
     void rectf();
     void vector3d();
@@ -190,6 +191,34 @@ void tst_qdeclarativevaluetypes::sizef()
         QCOMPARE(object->sizef(), QSizeF(44.3, 92.8));
 
         delete object;
+    }
+}
+
+void tst_qdeclarativevaluetypes::sizereadonly()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_read.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("s_width").toInt(), 1912);
+        QCOMPARE(object->property("s_height").toInt(), 1913);
+        QCOMPARE(object->property("copy"), QVariant(QSize(1912, 1913)));
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror.qml"));
+        QVERIFY(component.isError());
+        QCOMPARE(component.errors().at(0).description(), QLatin1String("Invalid property assignment: \"sizereadonly\" is a read-only property"));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror2.qml"));
+        QEXPECT_FAIL("", "QTBUG-9685", Abort);
+        QVERIFY(component.isError());
+        QCOMPARE(component.errors().at(0).description(), QLatin1String("Invalid property assignment: \"sizereadonly\" is a read-only property"));
     }
 }
 

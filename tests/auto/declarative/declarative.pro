@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += \
+           examples \
            graphicswidgets \        # Cover
            parserstress \           # Cover
            qmetaobjectbuilder \     # Cover
@@ -62,7 +63,7 @@ SUBDIRS += \
            qdeclarativeimageprovider \       # Cover
            qdeclarativestyledtext \          # Cover
            sql \                      # Cover
-           qmlvisual
+           qmlvisual                    # Cover
 
 contains(QT_CONFIG, webkit) {
     SUBDIRS += \

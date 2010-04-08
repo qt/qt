@@ -634,7 +634,7 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             QDeclarativeError error;
             error.setUrl(unit->imports.baseUrl());
             QString userTypeName = QString::fromUtf8(typeName);
-            userTypeName.replace('/','.');
+            userTypeName.replace(QLatin1Char('/'),QLatin1Char('.'));
             if (typeNamespace)
                 error.setDescription(tr("Namespace %1 cannot be used as a type").arg(userTypeName));
             else

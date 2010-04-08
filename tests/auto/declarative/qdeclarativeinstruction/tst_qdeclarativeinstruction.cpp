@@ -520,6 +520,24 @@ void tst_qdeclarativeinstruction::dump()
         data->bytecode << i;
     }
 
+    {
+        QDeclarativeInstruction i;
+        i.line = 51;
+        i.type = QDeclarativeInstruction::StoreVariantInteger;
+        i.storeInteger.value = 11;
+        i.storeInteger.propertyIndex = 32;
+        data->bytecode << i;
+    }
+
+    {
+        QDeclarativeInstruction i;
+        i.line = 52;
+        i.type = QDeclarativeInstruction::StoreVariantDouble;
+        i.storeDouble.value = 33.7;
+        i.storeDouble.propertyIndex = 19;
+        data->bytecode << i;
+    }
+
     QStringList expect;
     expect 
         << "Index\tLine\tOperation\t\tData1\tData2\tData3\tComments"
@@ -575,6 +593,8 @@ void tst_qdeclarativeinstruction::dump()
         << "47\t\tNA\tDEFER\t\t\t7"
         << "48\t\t48\tSTORE_IMPORTED_SCRIPT\t2"
         << "49\t\t50\tXXX UNKOWN INSTRUCTION\t1234"
+        << "50\t\t51\tSTORE_VARIANT_INTEGER\t\t32\t11"
+        << "51\t\t52\tSTORE_VARIANT_DOUBLE\t\t19\t33.7"
         << "-------------------------------------------------------------------------------";
 
     messages = QStringList();

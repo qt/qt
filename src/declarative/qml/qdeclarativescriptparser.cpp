@@ -828,6 +828,7 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
         if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
 
             Object::DynamicSlot slot;
+            slot.location = location(funDecl->firstSourceLocation(), funDecl->lastSourceLocation());
 
             AST::FormalParameterList *f = funDecl->formals;
             while (f) {

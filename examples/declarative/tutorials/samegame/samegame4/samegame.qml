@@ -23,8 +23,8 @@ Rectangle {
             property int tileSize: 40
 
             z: 20; anchors.centerIn: parent
-            width: parent.width - (parent.width % getTileSize());
-            height: parent.height - (parent.height % getTileSize());
+            width: parent.width - (parent.width % tileSize);
+            height: parent.height - (parent.height % tileSize);
 
             MouseArea {
                 anchors.fill: parent; onClicked: SameGame.handleClick(mouse.x,mouse.y);
@@ -36,7 +36,7 @@ Rectangle {
 
     //![0]
     Dialog {
-        id: scoreName; anchors.centerIn: parent; z: 22;
+        id: nameInputDialog; anchors.centerIn: parent; z: 22;
         Text {
             id: spacer
             opacity: 0
@@ -45,9 +45,9 @@ Rectangle {
         TextInput {
             id: editor
             onAccepted: {
-                if(scoreName.opacity==1&&editor.text!="")
-                    saveHighScore(editor.text);
-                scoreName.forceClose();
+                if(nameInputDialog.opacity==1&&editor.text!="")
+                    SameGame.saveHighScore(editor.text);
+                nameInputDialog.forceClose();
             }
             anchors.verticalCenter: parent.verticalCenter
             width: 72; focus: true
@@ -63,7 +63,7 @@ Rectangle {
         anchors.bottom: screen.bottom
 
         Button {
-            id: btnA; text: "New Game"; onClicked: {SameGame.initBoard();}
+            text: "New Game"; onClicked: SameGame.initBoard();
             anchors.left: parent.left; anchors.leftMargin: 3
             anchors.verticalCenter: parent.verticalCenter
         }

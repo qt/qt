@@ -274,7 +274,7 @@ void tst_qdeclarativedom::loadComposite()
 void tst_qdeclarativedom::testValueSource()
 {
     QByteArray qml = "import Qt 4.6\n"
-                     "Rectangle { SpringFollow on height { spring: 1.4; damping: .15; source: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
+                     "Rectangle { SpringFollow on height { spring: 1.4; damping: .15; to: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
 
     QDeclarativeEngine freshEngine;
     QDeclarativeDomDocument document;
@@ -297,7 +297,7 @@ void tst_qdeclarativedom::testValueSource()
     QVERIFY(springValue.isLiteral());
     QVERIFY(springValue.toLiteral().literal() == "1.4");
 
-    const QDeclarativeDomValue sourceValue = valueSourceObject.property("source").value();
+    const QDeclarativeDomValue sourceValue = valueSourceObject.property("to").value();
     QVERIFY(!sourceValue.isInvalid());
     QVERIFY(sourceValue.isBinding());
     QVERIFY(sourceValue.toBinding().binding() == "Math.min(Math.max(-130, value*2.2 - 130), 133)");

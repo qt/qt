@@ -108,6 +108,8 @@ private slots:
     void selfDeletingBinding();
     void extendedObjectPropertyLookup();
     void scriptErrors();
+    void functionErrors();
+    void propertyAssignmentErrors();
     void signalTriggeredBindings();
     void listProperties();
     void exceptionClearsOnReeval();
@@ -130,10 +132,13 @@ private slots:
     void qlistqobjectMethods();
     void strictlyEquals();
     void compiled();
+    void numberAssignment();
 
     void bug1();
     void dynamicCreationCrash();
     void regExpBug();
+    void nullObjectBinding();
+    void deletedEngine();
 
     void callQtInvokables();
 private:
@@ -994,6 +999,46 @@ void tst_qdeclarativeecmascript::scriptErrors()
     emit object->thirdBasicSignal();
 }
 
+/*
+Test file/lineNumbers for inline functions.
+*/
+void tst_qdeclarativeecmascript::functionErrors()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("functionErrors.qml"));
+    QString url = component.url().toString();
+
+    QString warning = url + ":5: Error: Invalid write to global property \"a\"";
+
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    delete object;
+}
+
+/*
+Test various errors that can occur when assigning a property from script
+*/
+void tst_qdeclarativeecmascript::propertyAssignmentErrors()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("propertyAssignmentErrors.qml"));
+
+    QString url = component.url().toString();
+
+    QString warning1 = url + ":11:Error: Cannot assign [undefined] to int";
+    QString warning2 = url + ":17:Error: Cannot assign JavaScript array to QML variant property";
+    QString warning3 = url + ":23:Error: Cannot assign QString to int";
+
+    QTest::ignoreMessage(QtDebugMsg, warning1.toLatin1().constData());
+    QTest::ignoreMessage(QtDebugMsg, warning2.toLatin1().constData());
+    QTest::ignoreMessage(QtDebugMsg, warning3.toLatin1().constData());
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    delete object;
+}
+    
 /*
 Test bindings still work when the reeval is triggered from within
 a signal script.
@@ -2070,6 +2115,68 @@ void tst_qdeclarativeecmascript::compiled()
     QCOMPARE(object->property("test21").toString(), QLatin1String("6.7"));
     QCOMPARE(object->property("test22").toString(), QLatin1String("!"));
     QCOMPARE(object->property("test23").toBool(), true);
+
+    delete object;
+}
+
+// Test that numbers assigned in bindings as strings work consistently
+void tst_qdeclarativeecmascript::numberAssignment()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("numberAssignment.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QVERIFY(object->property("test1") == QVariant((qreal)6.7));
+    QVERIFY(object->property("test2") == QVariant((qreal)6.7));
+    QVERIFY(object->property("test3") == QVariant((qreal)6));
+    QVERIFY(object->property("test4") == QVariant((qreal)6));
+
+    QVERIFY(object->property("test5") == QVariant((int)7));
+    QVERIFY(object->property("test6") == QVariant((int)7));
+    QVERIFY(object->property("test7") == QVariant((int)6));
+    QVERIFY(object->property("test8") == QVariant((int)6));
+
+    QVERIFY(object->property("test9") == QVariant((unsigned int)7));
+    QVERIFY(object->property("test10") == QVariant((unsigned int)7));
+    QVERIFY(object->property("test11") == QVariant((unsigned int)6));
+    QVERIFY(object->property("test12") == QVariant((unsigned int)6));
+
+    delete object;
+}
+
+// Test that assigning a null object works 
+// Regressed with: df1788b4dbbb2826ae63f26bdf166342595343f4
+void tst_qdeclarativeecmascript::nullObjectBinding()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("nullObjectBinding.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QVERIFY(object->property("test") == QVariant::fromValue((QObject *)0));
+
+    delete object;
+}
+
+// Test that bindings don't evaluate once the engine has been destroyed
+void tst_qdeclarativeecmascript::deletedEngine()
+{
+    QDeclarativeEngine *engine = new QDeclarativeEngine;
+    QDeclarativeComponent component(engine, TEST_FILE("deletedEngine.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("a").toInt(), 39);
+    object->setProperty("b", QVariant(9));
+    QCOMPARE(object->property("a").toInt(), 117);
+
+    delete engine;
+
+    QCOMPARE(object->property("a").toInt(), 117);
+    object->setProperty("b", QVariant(10));
+    QCOMPARE(object->property("a").toInt(), 117);
 
     delete object;
 }
