@@ -63,6 +63,7 @@ class MyTypeObject : public QObject
     Q_PROPERTY(QPointF pointf READ pointf WRITE setPointf NOTIFY changed)
     Q_PROPERTY(QSize size READ size WRITE setSize NOTIFY changed)
     Q_PROPERTY(QSizeF sizef READ sizef WRITE setSizef NOTIFY changed)
+    Q_PROPERTY(QSize sizereadonly READ size NOTIFY changed)
     Q_PROPERTY(QRect rect READ rect WRITE setRect NOTIFY changed)
     Q_PROPERTY(QRectF rectf READ rectf WRITE setRectf NOTIFY changed)
     Q_PROPERTY(QVector3D vector READ vector WRITE setVector NOTIFY changed)
