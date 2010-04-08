@@ -1620,6 +1620,18 @@ public:
                 url.chop(1);
         }
 
+        if (vmaj > -1 && vmin > -1 && !qmldircomponents.isEmpty()) {
+            QList<QDeclarativeDirParser::Component>::ConstIterator it = qmldircomponents.begin();
+            for (; it != qmldircomponents.end(); ++it) {
+                if (it->majorVersion > vmaj || (it->majorVersion == vmaj && it->minorVersion >= vmin))
+                    break;
+            }
+            if (it == qmldircomponents.end()) {
+                *errorString = QDeclarativeEngine::tr("module \"%1\" version %2.%3 is not installed").arg(uri_arg).arg(vmaj).arg(vmin);
+                return false;
+            }
+        }
+
         s->uris.prepend(uri);
         s->urls.prepend(url);
         s->majversions.prepend(vmaj);

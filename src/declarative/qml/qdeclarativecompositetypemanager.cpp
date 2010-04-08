@@ -633,10 +633,12 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             //  - type with unknown namespace (UnknownNamespace.SomeType {})
             QDeclarativeError error;
             error.setUrl(unit->imports.baseUrl());
+            QString userTypeName = QString::fromUtf8(typeName);
+            userTypeName.replace('/','.');
             if (typeNamespace)
-                error.setDescription(tr("Namespace %1 cannot be used as a type").arg(QString::fromUtf8(typeName)));
+                error.setDescription(tr("Namespace %1 cannot be used as a type").arg(userTypeName));
             else
-                error.setDescription(tr("%1 is not a type").arg(QString::fromUtf8(typeName)));
+                error.setDescription(tr("%1 is not a type").arg(userTypeName));
             if (!parserRef->refObjects.isEmpty()) {
                 QDeclarativeParser::Object *obj = parserRef->refObjects.first();
                 error.setLine(obj->location.start.line);

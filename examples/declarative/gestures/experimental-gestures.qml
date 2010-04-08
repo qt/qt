@@ -8,6 +8,7 @@ Rectangle {
 
     GestureArea {
         anchors.fill: parent
+        focus: true
 
         // Only some of the many gesture properties are shown. See Gesture documentation.
 
