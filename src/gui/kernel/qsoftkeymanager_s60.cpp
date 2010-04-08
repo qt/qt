@@ -408,14 +408,14 @@ bool QSoftKeyManagerPrivateS60::handleCommand(int command)
             }
             qt_symbian_next_menu_from_action(actionContainer);
             QT_TRAP_THROWING(tryDisplayMenuBarL());
-        } else {
-            Q_ASSERT(action->softKeyRole() != QAction::NoSoftKey);
-            QWidget *actionParent = action->parentWidget();
-            Q_ASSERT_X(actionParent, Q_FUNC_INFO, "No parent set for softkey action!");
-            if (actionParent->isEnabled()) {
-                action->activate(QAction::Trigger);
-                return true;
-            }
+        }
+
+        Q_ASSERT(action->softKeyRole() != QAction::NoSoftKey);
+        QWidget *actionParent = action->parentWidget();
+        Q_ASSERT_X(actionParent, Q_FUNC_INFO, "No parent set for softkey action!");
+        if (actionParent->isEnabled()) {
+            action->activate(QAction::Trigger);
+            return true;
         }
     }
     return false;
