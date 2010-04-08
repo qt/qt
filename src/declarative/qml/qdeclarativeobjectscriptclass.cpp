@@ -355,7 +355,11 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
                         QLatin1String(QMetaType::typeName(lastData->propType));
         context->throwError(error);
     } else {
-        QVariant v = enginePriv->scriptValueToVariant(value, lastData->propType);
+        QVariant v;
+        if (lastData->flags & QDeclarativePropertyCache::Data::IsQList)
+            v = enginePriv->scriptValueToVariant(value, qMetaTypeId<QList<QObject *> >());
+        else
+            v = enginePriv->scriptValueToVariant(value, lastData->propType);
 
         if (!value.isVariant() && v.userType() == QMetaType::QVariantList &&
             lastData->propType == qMetaTypeId<QVariant>()) {
