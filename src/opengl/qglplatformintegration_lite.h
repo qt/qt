@@ -63,6 +63,17 @@ public:
 
 };
 
+// QGLPlatformWidgetSurface does _not_ inherit from QWindowSurface
+// - The backing store may be totally unaware of it's existance.
+class QPlatformGLWidgetSurface
+{
+public:
+    QPlatformGLWidgetSurface(QGLWidget*);
+    virtual ~QPlatformGLWidgetSurface();
+
+    virtual void setGeometry(const QRect&) = 0;
+};
+
 
 QT_END_NAMESPACE
 

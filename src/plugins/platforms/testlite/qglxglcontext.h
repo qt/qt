@@ -42,7 +42,7 @@
 #ifndef Q_GLX_CONTEXT_H
 #define Q_GLX_CONTEXT_H
 
-#include <QtOpenGL/qplatformglcontext_lite.h>
+#include <QtOpenGL/qglplatformintegration_lite.h>
 #include "x11util.h"
 #include <GL/glx.h>
 

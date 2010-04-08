@@ -69,7 +69,7 @@
 #endif
 
 #if defined(Q_WS_LITE)
-#include <qplatformglcontext_lite.h>
+#include <qglplatformintegration_lite.h>
 #endif
 
 QT_BEGIN_NAMESPACE

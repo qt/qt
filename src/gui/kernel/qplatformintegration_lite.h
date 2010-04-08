@@ -53,6 +53,8 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_OPENGL
 class QPlatformGLContext;
+class QPlatformGLWidgetSurface;
+class QGLWidget;
 #endif
 
 class Q_GUI_EXPORT QPlatformIntegration
@@ -72,7 +74,8 @@ public:
 // OpenGL Integration functions
 #ifndef QT_NO_OPENGL
     virtual bool hasOpenGL() const;
-    virtual QPlatformGLContext * createGLContext();
+    virtual QPlatformGLContext       * createGLContext();
+    virtual QPlatformGLWidgetSurface * createGLWidgetSurface(QGLWidget*);
 #endif
 };
 

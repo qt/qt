@@ -66,6 +66,11 @@ QPlatformGLContext * QPlatformIntegration::createGLContext()
 {
     return 0;
 }
+
+QPlatformGLWidgetSurface * QPlatformIntegration::createGLWidgetSurface(QGLWidget*)
+{
+    return 0;
+}
 #endif
 
 QT_END_NAMESPACE
