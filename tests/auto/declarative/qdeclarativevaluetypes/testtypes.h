@@ -134,6 +134,7 @@ QML_DECLARE_TYPE(MyTypeObject);
 class MyConstantValueSource : public QObject, public QDeclarativePropertyValueSource
 {
     Q_OBJECT
+    Q_INTERFACES(QDeclarativePropertyValueSource)
 public:
     virtual void setTarget(const QDeclarativeProperty &p) { p.write(3345); }
 };
@@ -142,6 +143,7 @@ QML_DECLARE_TYPE(MyConstantValueSource);
 class MyOffsetValueInterceptor : public QObject, public QDeclarativePropertyValueInterceptor
 {
     Q_OBJECT
+    Q_INTERFACES(QDeclarativePropertyValueInterceptor)
 public:
     virtual void setTarget(const QDeclarativeProperty &p) { prop = p; }
     virtual void write(const QVariant &value) { QDeclarativePropertyPrivate::write(prop, value.toInt() + 13, QDeclarativePropertyPrivate::BypassInterceptor); }
