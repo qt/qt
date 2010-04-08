@@ -408,7 +408,7 @@ QDeclarativeWorkerScriptEngine *QDeclarativeEnginePrivate::getWorkerScriptEngine
   \code
   QDeclarativeEngine engine;
   QDeclarativeComponent component(&engine);
-  component.setData("import Qt 4.6\nText { text: \"Hello world!\" }", QUrl());
+  component.setData("import Qt 4.7\nText { text: \"Hello world!\" }", QUrl());
   QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(component.create());
   
   //add item to view, etc

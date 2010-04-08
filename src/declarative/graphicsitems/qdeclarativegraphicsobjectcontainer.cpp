@@ -108,7 +108,7 @@ public:
 
     Example:
     \code
-    import Qt 4.6
+    import Qt 4.7
     import MyApp 2.1 as Widgets
     Rectangle{
         id: rect

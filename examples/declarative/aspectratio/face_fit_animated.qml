@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 // Here, we extend the "face_fit" example with animation to show how truly
 // diverse and usage-specific behaviours are made possible by NOT putting a

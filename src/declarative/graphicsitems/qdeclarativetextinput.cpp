@@ -449,7 +449,7 @@ void QDeclarativeTextInput::setFocusOnPress(bool b)
     input of integers between 11 and 31 into the text input:
 
     \code
-    import Qt 4.6
+    import Qt 4.7
     TextInput{
         validator: IntValidator{bottom: 11; top: 31;}
         focus: true

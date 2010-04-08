@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 import "content" as Content
 import "content/snake.js" as Logic
 

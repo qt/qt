@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 import "content"
 
 // This example illustrates expanding a list item to show a more detailed view
