@@ -1361,6 +1361,10 @@ QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags()
         }
     }
 
+#ifdef Q_WS_LITE
+    hasOpenGL(); // ### I have no idea why this is needed here, but it makes things work for testlite
+#endif
+
     QString versionString(QLatin1String(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
     OpenGLVersionFlags versionFlags = qOpenGLVersionFlagsFromString(versionString);
     if (currentCtx) {
@@ -3907,7 +3911,7 @@ void QGLWidget::resizeOverlayGL(int, int)
 /*! \fn bool QGLWidget::event(QEvent *e)
   \reimp
 */
-#if !defined(Q_OS_WINCE) && !defined(Q_WS_QWS)
+#if !defined(Q_OS_WINCE) && !defined(Q_WS_QWS) && !defined(Q_WS_LITE)
 bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);

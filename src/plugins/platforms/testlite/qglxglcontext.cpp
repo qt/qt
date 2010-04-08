@@ -62,8 +62,10 @@ QGLXGLContext::QGLXGLContext(Display *xdpy)
 
 QGLXGLContext::~QGLXGLContext()
 {
-    if (m_context)
+    if (m_context) {
+        qDebug("Destroying GLX context 0x%x", m_context);
         glXDestroyContext(m_display, m_context);
+    }
 }
 
 bool QGLXGLContext::create(QPaintDevice* device, const QGLFormat& format, QPlatformGLContext* shareContext)
@@ -88,9 +90,9 @@ bool QGLXGLContext::create(QPaintDevice* device, const QGLFormat& format, QPlatf
     int matchingCount = 0;
     visualInfo = XGetVisualInfo(m_display, VisualIDMask, &visualInfoTemplate, &matchingCount);
 
-    qDebug("Creating a GLX context for visual ID %d", visualInfoTemplate.visualid);
-
     m_context = glXCreateContext(m_display, visualInfo, 0, True);
+
+    qDebug("Created GLX context 0x%x for visual ID %d", m_context, visualInfoTemplate.visualid);
 
     return true;
 }

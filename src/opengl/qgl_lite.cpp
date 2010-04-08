@@ -232,16 +232,22 @@ void QGLWidget::setMouseTracking(bool enable)
     Q_UNUSED(enable);
 }
 
+bool QGLWidget::event(QEvent *e)
+{
+    QWidget::event(e);
+}
+
 void QGLWidget::resizeEvent(QResizeEvent *)
 {
     Q_D(QGLWidget);
     if (!isValid())
         return;
     makeCurrent();
-    if (!d->glcx->initialized())
-        glInit();
-    resizeGL(width(), height());
+//    if (!d->glcx->initialized())
+//        glInit();
+//    resizeGL(width(), height());
 }
+
 
 const QGLContext* QGLWidget::overlayContext() const
 {
