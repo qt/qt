@@ -283,6 +283,8 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("property.6") << "property.6.qml" << "property.6.errors.txt" << false;
     QTest::newRow("property.7") << "property.7.qml" << "property.7.errors.txt" << false;
 
+    QTest::newRow("importScript.1") << "importscript.1.qml" << "importscript.1.errors.txt" << false;
+
     QTest::newRow("Component.1") << "component.1.qml" << "component.1.errors.txt" << false;
     QTest::newRow("Component.2") << "component.2.qml" << "component.2.errors.txt" << false;
     QTest::newRow("Component.3") << "component.3.qml" << "component.3.errors.txt" << false;
