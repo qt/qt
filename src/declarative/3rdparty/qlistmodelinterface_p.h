@@ -72,7 +72,6 @@ class Q_DECLARATIVE_EXPORT QListModelInterface : public QObject
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
     void itemsChanged(int index, int count, const QList<int> &roles);
-    void modelReset();
 
  protected:
     QListModelInterface(QObjectPrivate &dd, QObject *parent) 

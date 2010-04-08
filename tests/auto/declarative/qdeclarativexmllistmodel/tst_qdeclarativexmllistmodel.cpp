@@ -378,16 +378,17 @@ void tst_qdeclarativexmllistmodel::reload()
     QSignalSpy spyInsert(model, SIGNAL(itemsInserted(int,int)));
     QSignalSpy spyRemove(model, SIGNAL(itemsRemoved(int,int)));
     QSignalSpy spyCount(model, SIGNAL(countChanged())); 
-    QSignalSpy spyReset(model, SIGNAL(modelReset())); 
 
     model->reload();
-    QTRY_COMPARE(spyReset.count(), 1);
-    QCOMPARE(spyCount.count(), 0);
-    QCOMPARE(spyInsert.count(), 0);
-    QCOMPARE(spyRemove.count(), 0);
+    QTRY_COMPARE(spyCount.count(), 1);
+    QTRY_COMPARE(spyInsert.count(), 1);
+    QTRY_COMPARE(spyRemove.count(), 1);
 
-    QCOMPARE(model->data(0, model->roles().first()).toString(), QString("Polly"));
-    QCOMPARE(model->data(model->count()-1, model->roles().first()).toString(), QString("Tiny"));
+    QCOMPARE(spyInsert[0][0].toInt(), 0);
+    QCOMPARE(spyInsert[0][1].toInt(), 9);
+
+    QCOMPARE(spyRemove[0][0].toInt(), 0);
+    QCOMPARE(spyRemove[0][1].toInt(), 9);
 
     delete model;
 }
@@ -415,15 +416,15 @@ void tst_qdeclarativexmllistmodel::useKeys()
     QSignalSpy spyInsert(model, SIGNAL(itemsInserted(int,int)));
     QSignalSpy spyRemove(model, SIGNAL(itemsRemoved(int,int)));
     QSignalSpy spyCount(model, SIGNAL(countChanged()));
-    QSignalSpy spyReset(model, SIGNAL(modelReset()));
 
     model->setXml(newXml);
 
-    if (insertRanges.isEmpty() && removeRanges.isEmpty()) {
-        QTRY_COMPARE(spyReset.count(), 1);
+    if (oldCount != newData.count()) {
+        QTRY_COMPARE(model->count(), newData.count());
+        QCOMPARE(spyCount.count(), 1);
     } else {
         QTRY_VERIFY(spyInsert.count() > 0 || spyRemove.count() > 0);
-        QCOMPARE(spyCount.count() == 0, oldCount == newData.count());
+        QCOMPARE(spyCount.count(), 0);
     }
 
     QList<int> roles = model->roles();
@@ -512,14 +513,21 @@ void tst_qdeclarativexmllistmodel::useKeys_data()
         << makeItemXmlAndData("", &modelData)
         << modelData
         << QList<QDeclarativeXmlListRange>()
-        << QList<QDeclarativeXmlListRange>();
+        << (QList<QDeclarativeXmlListRange>() << qMakePair(0, 3));
 
     QTest::newRow("replace item")
         << makeItemXmlAndData("name=A,age=25,sport=Football") << 1
         << makeItemXmlAndData("name=ZZZ,age=25,sport=Football", &modelData)
         << modelData
-        << QList<QDeclarativeXmlListRange>()
-        << QList<QDeclarativeXmlListRange>();
+        << (QList<QDeclarativeXmlListRange>() << qMakePair(0, 1))
+        << (QList<QDeclarativeXmlListRange>() << qMakePair(0, 1));
+
+    QTest::newRow("add and remove simultaneously, in different spots")
+        << makeItemXmlAndData("name=A,age=25,sport=Football;name=B,age=35,sport=Athletics;name=C,age=45,sport=Curling;name=D,age=55,sport=Golf") << 4
+        << makeItemXmlAndData("name=B,age=35,sport=Athletics;name=E,age=65,sport=Fencing", &modelData)
+        << modelData
+        << (QList<QDeclarativeXmlListRange>() << qMakePair(1, 1))
+        << (QList<QDeclarativeXmlListRange>() << qMakePair(0, 1) << qMakePair(2,2));
 
     QTest::newRow("insert at start, remove at end i.e. rss feed")
         << makeItemXmlAndData("name=C,age=45,sport=Curling;name=D,age=55,sport=Golf;name=E,age=65,sport=Fencing") << 3
@@ -539,8 +547,8 @@ void tst_qdeclarativexmllistmodel::useKeys_data()
         << makeItemXmlAndData("name=A,age=25,sport=Football;name=B,age=35") << 2
         << makeItemXmlAndData("name=C,age=45,sport=Curling;name=D,age=55,sport=Golf", &modelData)
         << modelData
-        << QList<QDeclarativeXmlListRange>()
-        << QList<QDeclarativeXmlListRange>();
+        << (QList<QDeclarativeXmlListRange>() << qMakePair(0, 2))
+        << (QList<QDeclarativeXmlListRange>() << qMakePair(0, 2));
 }
 
 void tst_qdeclarativexmllistmodel::noKeysValueChanges()
@@ -600,14 +608,20 @@ void tst_qdeclarativexmllistmodel::keysChanged()
     QSignalSpy spyInsert(model, SIGNAL(itemsInserted(int,int)));
     QSignalSpy spyRemove(model, SIGNAL(itemsRemoved(int,int)));
     QSignalSpy spyCount(model, SIGNAL(countChanged()));
-    QSignalSpy spyReset(model, SIGNAL(modelReset()));
 
     QVERIFY(QMetaObject::invokeMethod(model, "disableNameKey"));
     model->setXml(xml);
 
-    QTRY_COMPARE(spyReset.count(), 1);
-    QCOMPARE(spyInsert.count(), 0);
-    QCOMPARE(spyRemove.count(), 0);
+    QTRY_VERIFY(spyInsert.count() > 0 && spyRemove.count() > 0);
+
+    QCOMPARE(spyInsert.count(), 1);
+    QCOMPARE(spyInsert[0][0].toInt(), 0);
+    QCOMPARE(spyInsert[0][1].toInt(), 2);
+
+    QCOMPARE(spyRemove.count(), 1);
+    QCOMPARE(spyRemove[0][0].toInt(), 0);
+    QCOMPARE(spyRemove[0][1].toInt(), 2);
+
     QCOMPARE(spyCount.count(), 0);
 
     delete model;
