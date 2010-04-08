@@ -126,7 +126,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 
     QDeclarativeBindingData *data = d->bindingData();
 
-    if (!data->enabled)
+    if (!data->enabled || !data->context() || !data->context()->engine)
         return;
 
     data->addref();
@@ -148,8 +148,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                                   idx, a);
 
         } else {
-            QDeclarativeEnginePrivate *ep = (data->context() && data->context()->engine)?
-                QDeclarativeEnginePrivate::get(data->context()->engine):0;
+            QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(data->context()->engine);
 
             bool isUndefined = false;
             QVariant value;

@@ -138,6 +138,7 @@ private slots:
     void dynamicCreationCrash();
     void regExpBug();
     void nullObjectBinding();
+    void deletedEngine();
 
     void callQtInvokables();
 private:
@@ -2154,6 +2155,28 @@ void tst_qdeclarativeecmascript::nullObjectBinding()
     QVERIFY(object != 0);
 
     QVERIFY(object->property("test") == QVariant::fromValue((QObject *)0));
+
+    delete object;
+}
+
+// Test that bindings don't evaluate once the engine has been destroyed
+void tst_qdeclarativeecmascript::deletedEngine()
+{
+    QDeclarativeEngine *engine = new QDeclarativeEngine;
+    QDeclarativeComponent component(engine, TEST_FILE("deletedEngine.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("a").toInt(), 39);
+    object->setProperty("b", QVariant(9));
+    QCOMPARE(object->property("a").toInt(), 117);
+
+    delete engine;
+
+    QCOMPARE(object->property("a").toInt(), 117);
+    object->setProperty("b", QVariant(10));
+    QCOMPARE(object->property("a").toInt(), 117);
 
     delete object;
 }
