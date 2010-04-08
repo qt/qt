@@ -358,13 +358,13 @@ bool QRfbClientCutText::read(QTcpSocket *s)
 
 //===========================================================================
 
-QVNCServer::QVNCServer(QVNCGraphicsSystemScreen *screen)
+QVNCServer::QVNCServer(QVNCPlatformScreen *screen)
     : qvnc_screen(screen), cursor(0)
 {
     init(5900);
 }
 
-QVNCServer::QVNCServer(QVNCGraphicsSystemScreen *screen, int id)
+QVNCServer::QVNCServer(QVNCPlatformScreen *screen, int id)
     : qvnc_screen(screen), cursor(0)
 {
     init(5900 + id);
@@ -620,7 +620,7 @@ void QVNCServer::readClient()
 }
 
 #if 0//Q_BYTE_ORDER == Q_BIG_ENDIAN
-bool QVNCGraphicsSystemScreen::swapBytes() const
+bool QVNCScreen::swapBytes() const
 {
     if (depth() != 16)
         return false;
@@ -1499,7 +1499,7 @@ static void blendCursor(QImage &image, const QRect &imageRect)
 }
 #endif // QT_NO_QWS_CURSOR
 
-QVNCDirtyMap::QVNCDirtyMap(QVNCGraphicsSystemScreen *s)
+QVNCDirtyMap::QVNCDirtyMap(QVNCPlatformScreen *s)
     : bytesPerPixel(0), numDirty(0), screen(s)
 {
     bytesPerPixel = (screen->depth() + 7) / 8;
@@ -1885,7 +1885,7 @@ void QVNCServer::discardClient()
 
 
 
-QVNCGraphicsSystemScreenPrivate::QVNCGraphicsSystemScreenPrivate(QVNCGraphicsSystemScreen *parent)
+QVNCPlatformScreenPrivate::QVNCPlatformScreenPrivate(QVNCPlatformScreen *parent)
     : dpiX(72), dpiY(72), doOnScreenSurface(false), refreshRate(25),
       vncServer(0), q_ptr(parent)
 {
@@ -1902,12 +1902,12 @@ QVNCGraphicsSystemScreenPrivate::QVNCGraphicsSystemScreenPrivate(QVNCGraphicsSys
     dirty = new QVNCDirtyMapOptimized<quint32>(q_ptr);
 }
 
-QVNCGraphicsSystemScreenPrivate::~QVNCGraphicsSystemScreenPrivate()
+QVNCPlatformScreenPrivate::~QVNCPlatformScreenPrivate()
 {
 }
 
 
-void QVNCGraphicsSystemScreenPrivate::setDirty(const QRect& rect, bool force)
+void QVNCPlatformScreenPrivate::setDirty(const QRect& rect, bool force)
 {
     if (rect.isEmpty())
         return;
@@ -1916,7 +1916,7 @@ void QVNCGraphicsSystemScreenPrivate::setDirty(const QRect& rect, bool force)
 //         q_ptr->screen()->setDirty(rect);
 
     if (!vncServer || !vncServer->isConnected()) {
-//        qDebug() << "QVNCGraphicsSystemScreenPrivate::setDirty() - Not connected";
+//        qDebug() << "QVNCScreenPrivate::setDirty() - Not connected";
         return;
     }
     const QRect r = rect; // .translated(-q_ptr->offset());

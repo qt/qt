@@ -44,6 +44,7 @@
 
 #include <QtCore/qrect.h>
 #include <QtGui/qimage.h>
+#include <QObject>
 
 QT_BEGIN_HEADER
 
@@ -51,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class Q_GUI_EXPORT QPlatformScreen
+class Q_GUI_EXPORT QPlatformScreen : public QObject
 {
 public:
     virtual ~QPlatformScreen() { }

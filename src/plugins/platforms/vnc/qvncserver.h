@@ -72,7 +72,7 @@ class QVNCServer;
 class QVNCCursor : public QProxyScreenCursor
 {
 public:
-    QVNCCursor(QVNCGraphicsSystemScreen *s);
+    QVNCCursor(QVNCScreen *s);
     ~QVNCCursor();
 
     void hide();
@@ -82,7 +82,7 @@ public:
 
 private:
     void setDirty(const QRect &r) const;
-    QVNCGraphicsSystemScreen *screen;
+    QVNCScreen *screen;
 };
 
 class QVNCClientCursor : public QProxyScreenCursor
@@ -106,7 +106,7 @@ private:
 class QVNCDirtyMap
 {
 public:
-    QVNCDirtyMap(QVNCGraphicsSystemScreen *screen);
+    QVNCDirtyMap(QVNCPlatformScreen *screen);
     virtual ~QVNCDirtyMap();
 
     void reset();
@@ -122,7 +122,7 @@ public:
 
 protected:
     uchar *map;
-    QVNCGraphicsSystemScreen *screen;
+    QVNCPlatformScreen *screen;
     uchar *buffer;
     int bufferWidth;
     int bufferHeight;
@@ -134,7 +134,7 @@ template <class T>
 class QVNCDirtyMapOptimized : public QVNCDirtyMap
 {
 public:
-    QVNCDirtyMapOptimized(QVNCGraphicsSystemScreen *screen) : QVNCDirtyMap(screen) {}
+    QVNCDirtyMapOptimized(QVNCPlatformScreen *screen) : QVNCDirtyMap(screen) {}
     ~QVNCDirtyMapOptimized() {}
 
     void setDirty(int x, int y, bool force = false);
@@ -246,11 +246,11 @@ public:
     quint32 length;
 };
 
-class QVNCGraphicsSystemScreenPrivate : public QObject
+class QVNCPlatformScreenPrivate : public QObject
 {
 public:
-    QVNCGraphicsSystemScreenPrivate(QVNCGraphicsSystemScreen *parent);
-    ~QVNCGraphicsSystemScreenPrivate();
+    QVNCPlatformScreenPrivate(QVNCPlatformScreen *parent);
+    ~QVNCPlatformScreenPrivate();
 
     void setDirty(const QRect &rect, bool force = false);
     void configure();
@@ -266,7 +266,7 @@ public:
     QSharedMemory shm;
 #endif
 
-    QVNCGraphicsSystemScreen *q_ptr;
+    QVNCPlatformScreen *q_ptr;
 };
 
 class QRfbEncoder
@@ -438,8 +438,8 @@ class QVNCServer : public QObject
 {
     Q_OBJECT
 public:
-    QVNCServer(QVNCGraphicsSystemScreen *screen);
-    QVNCServer(QVNCGraphicsSystemScreen *screen, int id);
+    QVNCServer(QVNCPlatformScreen *screen);
+    QVNCServer(QVNCPlatformScreen *screen, int id);
     ~QVNCServer();
 
     void setDirty();
@@ -464,7 +464,7 @@ public:
         return pixelFormat.bitsPerPixel / 8;
     }
 
-    inline QVNCGraphicsSystemScreen* screen() const { return qvnc_screen; }
+    inline QVNCPlatformScreen* screen() const { return qvnc_screen; }
     inline QVNCDirtyMap* dirtyMap() const { return qvnc_screen->dirtyMap(); }
     inline QTcpSocket* clientSocket() const { return client; }
     QImage *screenImage() const;
@@ -519,7 +519,7 @@ private:
 #endif
     bool dirtyCursor;
     int refreshRate;
-    QVNCGraphicsSystemScreen *qvnc_screen;
+    QVNCPlatformScreen *qvnc_screen;
 #ifndef QT_NO_QWS_CURSOR
     QVNCClientCursor *qvnc_cursor;
 #endif
