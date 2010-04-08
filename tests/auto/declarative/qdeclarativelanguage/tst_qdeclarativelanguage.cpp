@@ -1347,11 +1347,16 @@ void tst_qdeclarativelanguage::importsInstalled_data()
            "InstalledTest {}"
         << "QDeclarativeText"
         << "";
-    QTest::newRow("installed import 4")
+    QTest::newRow("installed import minor version not available") // QTBUG-9627
         << "import com.nokia.installedtest 1.10\n"
            "InstalledTest {}"
-        << "QDeclarativeText"
-        << "";
+        << ""
+        << "module \"com.nokia.installedtest\" version 1.10 is not installed";
+    QTest::newRow("installed import major version not available") // QTBUG-9627
+        << "import com.nokia.installedtest 9.0\n"
+           "InstalledTest {}"
+        << ""
+        << "module \"com.nokia.installedtest\" version 9.0 is not installed";
     QTest::newRow("installed import visibility") // QT-614
         << "import com.nokia.installedtest 1.4\n"
            "PrivateType {}"
