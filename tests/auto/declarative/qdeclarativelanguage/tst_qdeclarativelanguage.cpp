@@ -283,19 +283,6 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("property.6") << "property.6.qml" << "property.6.errors.txt" << false;
     QTest::newRow("property.7") << "property.7.qml" << "property.7.errors.txt" << false;
 
-    QTest::newRow("Script.1") << "script.1.qml" << "script.1.errors.txt" << false;
-    QTest::newRow("Script.2") << "script.2.qml" << "script.2.errors.txt" << false;
-    QTest::newRow("Script.3") << "script.3.qml" << "script.3.errors.txt" << false;
-    QTest::newRow("Script.4") << "script.4.qml" << "script.4.errors.txt" << false;
-    QTest::newRow("Script.5") << "script.5.qml" << "script.5.errors.txt" << false;
-    QTest::newRow("Script.6") << "script.6.qml" << "script.6.errors.txt" << false;
-    QTest::newRow("Script.7") << "script.7.qml" << "script.7.errors.txt" << false;
-    QTest::newRow("Script.8") << "script.8.qml" << "script.8.errors.txt" << false;
-    QTest::newRow("Script.9") << "script.9.qml" << "script.9.errors.txt" << false;
-    QTest::newRow("Script.10") << "script.10.qml" << "script.10.errors.txt" << false;
-    QTest::newRow("Script.11") << "script.11.qml" << "script.11.errors.txt" << false;
-    QTest::newRow("Script.12") << "script.12.qml" << "script.12.errors.txt" << false;
-
     QTest::newRow("Component.1") << "component.1.qml" << "component.1.errors.txt" << false;
     QTest::newRow("Component.2") << "component.2.qml" << "component.2.errors.txt" << false;
     QTest::newRow("Component.3") << "component.3.qml" << "component.3.errors.txt" << false;
