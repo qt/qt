@@ -84,6 +84,8 @@ void QDeclarativeListAccessor::setList(const QVariant &v, QDeclarativeEngine *en
         QObject *data = enginePrivate?enginePrivate->toQObject(v):QDeclarativeMetaType::toQObject(v);
         d = QVariant::fromValue(data);
         m_type = Instance;
+    } else if (d.userType() == qMetaTypeId<QList<QObject *> >()) {
+        m_type = ObjectList;
     } else if (d.userType() == qMetaTypeId<QDeclarativeListReference>()) {
         m_type = ListProperty;
     } else {
@@ -98,6 +100,8 @@ int QDeclarativeListAccessor::count() const
         return qvariant_cast<QStringList>(d).count();
     case VariantList:
         return qvariant_cast<QVariantList>(d).count();
+    case ObjectList:
+        return qvariant_cast<QList<QObject*> >(d).count();
     case ListProperty:
         return ((QDeclarativeListReference *)d.constData())->count();
     case Instance:
@@ -118,6 +122,8 @@ QVariant QDeclarativeListAccessor::at(int idx) const
         return QVariant::fromValue(qvariant_cast<QStringList>(d).at(idx));
     case VariantList:
         return qvariant_cast<QVariantList>(d).at(idx);
+    case ObjectList:
+        return QVariant::fromValue(qvariant_cast<QList<QObject*> >(d).at(idx));
     case ListProperty:
         return QVariant::fromValue(((QDeclarativeListReference *)d.constData())->at(idx));
     case Instance:
