@@ -19,7 +19,7 @@ TEMPLATE        = subdirs
          unix:!mac:!embedded:contains(QT_CONFIG, qt3support):SUBDIRS += qtconfig
          win32:!wince*:SUBDIRS += activeqt
     }
-    contains(QT_CONFIG, declarative):SUBDIRS += qmlviewer qmldebugger
+    contains(QT_CONFIG, declarative):SUBDIRS += qml
 }
 
 SUBDIRS     += linguist
@@ -30,7 +30,6 @@ mac {
 
 embedded:SUBDIRS += kmap2qmap
 
-contains(QT_CONFIG, declarative):SUBDIRS += qml
 contains(QT_CONFIG, dbus):SUBDIRS += qdbus
 !wince*:contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns xmlpatternsvalidator
 embedded: SUBDIRS += makeqpf
