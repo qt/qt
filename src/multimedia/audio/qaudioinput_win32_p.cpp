@@ -57,8 +57,6 @@ QT_BEGIN_NAMESPACE
 
 //#define DEBUG_AUDIO 1
 
-static CRITICAL_SECTION waveInCriticalSection;
-
 static const int minimumIntervalTime = 50;
 
 QAudioInputPrivate::QAudioInputPrivate(const QByteArray &device, const QAudioFormat& audioFormat):
@@ -104,16 +102,16 @@ void CALLBACK QAudioInputPrivate::waveInProc( HWAVEIN hWaveIn, UINT uMsg,
         case WIM_OPEN:
             break;
         case WIM_DATA:
-            EnterCriticalSection(&waveInCriticalSection);
+            EnterCriticalSection(&qAudio->waveInCriticalSection);
             if(qAudio->waveFreeBlockCount > 0)
                 qAudio->waveFreeBlockCount--;
             qAudio->feedback();
-            LeaveCriticalSection(&waveInCriticalSection);
+            LeaveCriticalSection(&qAudio->waveInCriticalSection);
             break;
         case WIM_CLOSE:
-            EnterCriticalSection(&waveInCriticalSection);
+            EnterCriticalSection(&qAudio->waveInCriticalSection);
             qAudio->finished = true;
-            LeaveCriticalSection(&waveInCriticalSection);
+            LeaveCriticalSection(&qAudio->waveInCriticalSection);
             break;
         default:
             return;
@@ -226,8 +224,8 @@ bool QAudioInputPrivate::open()
 #endif
     header = 0;
     if(buffer_size == 0) {
-        // Default buffer size, 100ms, default period size is 20ms
-        buffer_size = settings.frequency()*settings.channels()*(settings.sampleSize()/8)*0.1;
+        // Default buffer size, 200ms, default period size is 40ms
+        buffer_size = settings.frequency()*settings.channels()*(settings.sampleSize()/8)*0.2;
 	period_size = buffer_size/5;
     } else {
         period_size = buffer_size/5;
