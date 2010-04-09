@@ -122,6 +122,8 @@ private:
     volatile int waveFreeBlockCount;
     int waveCurrentBlock;
 
+    CRITICAL_SECTION waveInCriticalSection;
+
     static void CALLBACK waveInProc( HWAVEIN hWaveIn, UINT uMsg,
             DWORD dwInstance, DWORD dwParam1, DWORD dwParam2 );
 

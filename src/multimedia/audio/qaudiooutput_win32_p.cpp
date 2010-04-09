@@ -56,8 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static CRITICAL_SECTION waveOutCriticalSection;
-
 static const int minimumIntervalTime = 50;
 
 QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray &device, const QAudioFormat& audioFormat):
@@ -107,16 +105,16 @@ void CALLBACK QAudioOutputPrivate::waveOutProc( HWAVEOUT hWaveOut, UINT uMsg,
         case WOM_CLOSE:
             return;
         case WOM_DONE:
-            EnterCriticalSection(&waveOutCriticalSection);
+            EnterCriticalSection(&qAudio->waveOutCriticalSection);
             if(qAudio->finished || qAudio->buffer_size == 0 || qAudio->period_size == 0) {
-                LeaveCriticalSection(&waveOutCriticalSection);
+                LeaveCriticalSection(&qAudio->waveOutCriticalSection);
                 return;
 	    }
             qAudio->waveFreeBlockCount++;
             if(qAudio->waveFreeBlockCount >= qAudio->buffer_size/qAudio->period_size)
                 qAudio->waveFreeBlockCount = qAudio->buffer_size/qAudio->period_size;
             qAudio->feedback();
-            LeaveCriticalSection(&waveOutCriticalSection);
+            LeaveCriticalSection(&qAudio->waveOutCriticalSection);
             break;
         default:
             return;

@@ -57,8 +57,6 @@ QT_BEGIN_NAMESPACE
 
 //#define DEBUG_AUDIO 1
 
-static CRITICAL_SECTION waveInCriticalSection;
-
 static const int minimumIntervalTime = 50;
 
 QAudioInputPrivate::QAudioInputPrivate(const QByteArray &device, const QAudioFormat& audioFormat):
@@ -104,16 +102,16 @@ void CALLBACK QAudioInputPrivate::waveInProc( HWAVEIN hWaveIn, UINT uMsg,
         case WIM_OPEN:
             break;
         case WIM_DATA:
-            EnterCriticalSection(&waveInCriticalSection);
+            EnterCriticalSection(&qAudio->waveInCriticalSection);
             if(qAudio->waveFreeBlockCount > 0)
                 qAudio->waveFreeBlockCount--;
             qAudio->feedback();
-            LeaveCriticalSection(&waveInCriticalSection);
+            LeaveCriticalSection(&qAudio->waveInCriticalSection);
             break;
         case WIM_CLOSE:
-            EnterCriticalSection(&waveInCriticalSection);
+            EnterCriticalSection(&qAudio->waveInCriticalSection);
             qAudio->finished = true;
-            LeaveCriticalSection(&waveInCriticalSection);
+            LeaveCriticalSection(&qAudio->waveInCriticalSection);
             break;
         default:
             return;
