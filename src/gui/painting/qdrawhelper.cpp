@@ -70,8 +70,10 @@ static uint gccBug(uint value)
   constants and structures
 */
 
-static const int fixed_scale = 1 << 16;
-static const int half_point = 1 << 15;
+enum {
+    fixed_scale = 1 << 16,
+    half_point = 1 << 15
+};
 static const int buffer_size = 2048;
 
 struct LinearGradientValues
@@ -695,11 +697,6 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
             int y1 = (fy >> 16);
             int y2 = y1 + 1;
 
-            int distx = ((fx - (x1 << 16)) >> 8);
-            int disty = ((fy - (y1 << 16)) >> 8);
-            int idistx = 256 - distx;
-            int idisty = 256 - disty;
-
             if (blendType == BlendTransformedBilinearTiled) {
                 x1 %= image_width;
                 x2 %= image_width;
@@ -729,6 +726,11 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
             uint tr = fetch(s1, x2, data->texture.colorTable);
             uint bl = fetch(s2, x1, data->texture.colorTable);
             uint br = fetch(s2, x2, data->texture.colorTable);
+
+            int distx = (fx & 0x0000ffff) >> 8;
+            int disty = (fy & 0x0000ffff) >> 8;
+            int idistx = 256 - distx;
+            int idisty = 256 - disty;
 
             uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
             uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
