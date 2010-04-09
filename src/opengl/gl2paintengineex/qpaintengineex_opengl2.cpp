@@ -184,7 +184,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         QImage texImage = qt_imageForBrush(style, false);
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, true, QGLContext::InternalBindOption);
+        ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
