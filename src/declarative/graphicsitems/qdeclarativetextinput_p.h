@@ -86,6 +86,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextInput : public QDeclarativePaintedIte
     Q_PROPERTY(bool acceptableInput READ hasAcceptableInput NOTIFY acceptableInputChanged)
     Q_PROPERTY(EchoMode echoMode READ echoMode WRITE setEchoMode NOTIFY echoModeChanged)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress NOTIFY focusOnPressChanged)
+    Q_PROPERTY(bool autoScroll READ autoScroll WRITE setAutoScroll NOTIFY autoScrollChanged)
 
 public:
     QDeclarativeTextInput(QDeclarativeItem* parent=0);
@@ -163,6 +164,9 @@ public:
     bool focusOnPress() const;
     void setFocusOnPress(bool);
 
+    bool autoScroll() const;
+    void setAutoScroll(bool);
+
     bool hasAcceptableInput() const;
 
     void drawContents(QPainter *p,const QRect &r);
@@ -189,12 +193,14 @@ Q_SIGNALS:
     void inputMaskChanged(const QString &inputMask);
     void echoModeChanged(EchoMode echoMode);
     void focusOnPressChanged(bool focusOnPress);
+    void autoScrollChanged(bool autoScroll);
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void keyPressEvent(QKeyEvent* ev);
     bool event(QEvent *e);
