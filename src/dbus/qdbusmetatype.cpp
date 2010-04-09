@@ -54,6 +54,8 @@
 #include "qdbusmetatype_p.h"
 #include "qdbusargument_p.h"
 
+#ifndef QT_NO_DBUS
+
 Q_DECLARE_METATYPE(QList<bool>)
 Q_DECLARE_METATYPE(QList<short>)
 Q_DECLARE_METATYPE(QList<ushort>)
@@ -462,3 +464,5 @@ const char *QDBusMetaType::typeToSignature(int type)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

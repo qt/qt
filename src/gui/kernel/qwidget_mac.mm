@@ -4267,6 +4267,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
     QMacCocoaAutoReleasePool pool;
     bool realWindow = isRealWindow();
+    BOOL needDisplay = realWindow ? YES : NO;
 
     if (realWindow && !q->testAttribute(Qt::WA_DontShowOnScreen)){
         adjustWithinMaxAndMinSize(w, h);
@@ -4314,7 +4315,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
         if (currTopLeft.x() == x && currTopLeft.y() == y
                 && cocoaFrameRect.size.width != 0
                 && cocoaFrameRect.size.height != 0) {
-            [window setFrame:cocoaFrameRect display:NO];
+            [window setFrame:cocoaFrameRect display:needDisplay];
         } else {
             // The window is moved and resized (or resized to zero).
             // Since Cocoa usually only sends us a resize callback after
@@ -4323,7 +4324,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             // would have the same origin as the setFrame call) we shift the
             // window back and forth inbetween.
             cocoaFrameRect.origin.y += 1;
-            [window setFrame:cocoaFrameRect display:NO];
+            [window setFrame:cocoaFrameRect display:needDisplay];
             cocoaFrameRect.origin.y -= 1;
             [window setFrameOrigin:cocoaFrameRect.origin];
         }

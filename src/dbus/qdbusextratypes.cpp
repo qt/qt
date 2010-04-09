@@ -42,6 +42,8 @@
 #include "qdbusextratypes.h"
 #include "qdbusutil_p.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 void QDBusObjectPath::check()
@@ -237,3 +239,4 @@ void QDBusSignature::check()
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_DBUS

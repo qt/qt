@@ -45,8 +45,13 @@
 
 #include <stdio.h>
 #ifdef Q_OS_WIN
-#include <io.h> // required for _setmode, to avoid _O_TEXT streams...
-#include <fcntl.h> // for _O_BINARY
+// required for _setmode, to avoid _O_TEXT streams...
+# ifdef Q_OS_WINCE
+#  include <stdlib.h>
+# else
+#  include <io.h> // for _setmode
+#  include <fcntl.h> // for _O_BINARY
+# endif
 #endif
 
 #include <QtCore/QDebug>

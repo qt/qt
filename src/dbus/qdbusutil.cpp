@@ -47,6 +47,8 @@
 
 #include "qdbusargument.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 static inline bool isValidCharacterNoDash(const QChar &c)
@@ -466,3 +468,5 @@ namespace QDBusUtil
 } // namespace QDBusUtil
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS
