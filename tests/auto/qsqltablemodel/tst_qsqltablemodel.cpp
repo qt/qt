@@ -181,7 +181,11 @@ void tst_QSqlTableModel::createTestTables()
 
         QVERIFY_SQL( q, exec("create table " + test3 + "(id int, random varchar(20), randomtwo varchar(20))"));
 
-        QVERIFY_SQL( q, exec("create table " + qTableName("test4", __FILE__) + "(column1 varchar(50), column2 varchar(50), column3 varchar(50))"));
+        if(!tst_Databases::isSqlServer(db))
+            QVERIFY_SQL( q, exec("create table " + qTableName("test4", __FILE__) + "(column1 varchar(50), column2 varchar(50), column3 varchar(50))"));
+        else
+            QVERIFY_SQL( q, exec("create table " + qTableName("test4", __FILE__) + "(column1 varchar(50), column2 varchar(50) NULL, column3 varchar(50))"));
+
 
         QVERIFY_SQL( q, exec("create table " + qTableName("emptytable", __FILE__) + "(id int)"));
 
