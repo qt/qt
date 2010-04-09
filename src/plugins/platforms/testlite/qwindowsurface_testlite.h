@@ -43,24 +43,23 @@
 #define QWINDOWSURFACE_TESTLITE_H
 
 #include <QtGui/private/qwindowsurface_p.h>
-#include <QPlatformWindow>
-#include <qevent.h>
+
 
 QT_BEGIN_NAMESPACE
 
-class MyWindow;
+class QTestLiteWindow;
 class QTestLiteIntegration;
 class QTestLiteScreen;
+class MyShmImageInfo;
 
 class QTestLiteWindowSurface : public QWindowSurface
 {
 public:
-    QTestLiteWindowSurface
-        (QTestLiteIntegration *platformIntegration,
-         QTestLiteScreen *screen, QWidget *window);
+    QTestLiteWindowSurface (QTestLiteScreen *screen, QWidget *window);
     ~QTestLiteWindowSurface();
 
     QPaintDevice *paintDevice();
+//    void flush();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
 //    void resize(const QSize &size);
     bool scroll(const QRegion &area, int dx, int dy);
@@ -69,47 +68,18 @@ public:
     void endPaint(const QRegion &region);
 
 private:
-    QTestLiteIntegration *mPlatformIntegration;
-    QTestLiteScreen *mScreen;
-    Qt::WindowFlags window_flags;
-    MyWindow *xw;
-};
+    bool painted;
+    void resizeBuffer(QSize);
+    QSize bufferSize() const;
 
 
-class QTestLiteWindow : public QPlatformWindow
-{
-public:
-    QTestLiteWindow(QTestLiteIntegration *platformIntegration,
-         QTestLiteScreen *screen, QWidget *window);
-    ~QTestLiteWindow();
+    void resizeShmImage(int width, int height);
 
+    QImage shm_img;
+    MyShmImageInfo *image_info;
 
-    void handleMouseEvent(QEvent::Type, void *); //forwarding X types is apparently impossible :(
-    void handleKeyEvent(QEvent::Type, void *);
-    void handleGeometryChange(int x, int y, int w, int h);
-    void handleCloseEvent();
-    void handleEnterEvent();
-    void handleLeaveEvent();
+    QTestLiteWindow *xw;
 
-    void setGeometry(const QRect &rect);
-
-    Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
-    Qt::WindowFlags windowFlags() const;
-    void setVisible(bool visible);
-    WId winId() const;
-    void raise();
-    void lower();
-    void setWindowTitle(const QString &title);
-
-    void setCursor(QCursor * cursor);
-
-private:
-    QTestLiteIntegration *mPlatformIntegration;
-    QTestLiteScreen *mScreen;
-    Qt::WindowFlags window_flags;
-    MyWindow *xw;
-
-    friend class QTestLiteWindowSurface; //### needs refactoring
 };
 
 

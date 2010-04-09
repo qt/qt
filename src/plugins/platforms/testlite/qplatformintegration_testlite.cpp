@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+
+
 #include "qplatformintegration_testlite.h"
 #include "qwindowsurface_testlite.h"
 #include <QtGui/private/qpixmap_raster_p.h>
@@ -47,7 +49,7 @@
 #include <QGraphicsSystemCursor>
 
 
-#include "x11util.h"
+#include "qtestlitewindow.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -105,12 +107,11 @@ QWindowSurface *QTestLiteIntegration::createWindowSurfaceForWindow(QWidget *widg
 {
     if (widget->windowType() == Qt::Desktop)
         return 0;   // Don't create an explicit window surface for the destkop.
-    return new QTestLiteWindowSurface
-        (const_cast<QTestLiteIntegration *>(this), mPrimaryScreen, widget);
+    return new QTestLiteWindowSurface(mPrimaryScreen, widget);
 }
 
 
-QPlatformWindow *QTestLiteIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+QPlatformWindow *QTestLiteIntegration::createPlatformWindow(QWidget *widget, WId /*winId*/) const
 {
     return new QTestLiteWindow(const_cast<QTestLiteIntegration *>(this), mPrimaryScreen, widget);
 }
