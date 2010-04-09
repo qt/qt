@@ -171,12 +171,12 @@ Column {
     }
     TextEdit {
         font.pointSize: 24
-        textFormat: "RichText"
+        textFormat: TextEdit.RichText
         text: "<b>Hello</b> <i>World!</i>"
     }
     TextEdit {
         font.pointSize: 24
-        textFormat: "PlainText"
+        textFormat: TextEdit.PlainText
         text: "<b>Hello</b> <i>World!</i>"
     }
 }

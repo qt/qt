@@ -398,18 +398,18 @@ void QDeclarativeText::setWrap(bool w)
     \o
     \qml
 Column {
-    TextEdit {
+    Text {
         font.pointSize: 24
         text: "<b>Hello</b> <i>World!</i>"
     }
-    TextEdit {
+    Text {
         font.pointSize: 24
-        textFormat: "RichText"
+        textFormat: Text.RichText
         text: "<b>Hello</b> <i>World!</i>"
     }
-    TextEdit {
+    Text {
         font.pointSize: 24
-        textFormat: "PlainText"
+        textFormat: Text.PlainText
         text: "<b>Hello</b> <i>World!</i>"
     }
 }
