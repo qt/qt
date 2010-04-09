@@ -2166,6 +2166,8 @@ void QDeclarativeGridView::itemsMoved(int from, int to, int count)
             if (!movedItem)
                 movedItem = d->createItem(item->index);
             it = d->visibleItems.insert(it, movedItem);
+            if (it == d->visibleItems.begin() && firstItem)
+                movedItem->setPosition(firstItem->colPos(), firstItem->rowPos());
             ++it;
             --remaining;
         } else {
