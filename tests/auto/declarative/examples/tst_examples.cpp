@@ -194,6 +194,8 @@ void tst_examples::examples()
     QProcess p;
     p.start(qmlruntime, arguments);
     QVERIFY(p.waitForFinished());
+    if (p.exitStatus() != QProcess::NormalExit || p.exitCode() != 0)
+        qWarning() << p.readAllStandardOutput() << p.readAllStandardError();
     QCOMPARE(p.exitStatus(), QProcess::NormalExit);
     QCOMPARE(p.exitCode(), 0);
 }
