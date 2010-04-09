@@ -57,7 +57,6 @@
 #include "private/qdeclarativeflipable_p.h"
 #include "private/qdeclarativefocuspanel_p.h"
 #include "private/qdeclarativefocusscope_p.h"
-#include "private/qdeclarativegraphicsobjectcontainer_p.h"
 #include "private/qdeclarativegridview_p.h"
 #include "private/qdeclarativeimage_p.h"
 #include "private/qdeclarativeitem_p.h"
@@ -96,7 +95,6 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeFocusScope>("Qt",4,6,"FocusScope");
     qmlRegisterType<QDeclarativeGradient>("Qt",4,6,"Gradient");
     qmlRegisterType<QDeclarativeGradientStop>("Qt",4,6,"GradientStop");
-    qmlRegisterType<QDeclarativeGraphicsObjectContainer>("Qt",4,6,"GraphicsObjectContainer");
     qmlRegisterType<QDeclarativeGrid>("Qt",4,6,"Grid");
     qmlRegisterType<QDeclarativeGridView>("Qt",4,6,"GridView");
     qmlRegisterType<QDeclarativeImage>("Qt",4,6,"Image");

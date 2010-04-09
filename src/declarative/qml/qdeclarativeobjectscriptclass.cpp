@@ -361,12 +361,7 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         else
             v = enginePriv->scriptValueToVariant(value, lastData->propType);
 
-        if (!value.isVariant() && v.userType() == QMetaType::QVariantList &&
-            lastData->propType == qMetaTypeId<QVariant>()) {
-
-            QString error = QLatin1String("Cannot assign JavaScript array to QML variant property");
-            context->throwError(error);
-        } else if (!QDeclarativePropertyPrivate::write(obj, *lastData, v, evalContext)) {
+        if (!QDeclarativePropertyPrivate::write(obj, *lastData, v, evalContext)) {
             const char *valueType = 0;
             if (v.userType() == QVariant::Invalid) valueType = "null";
             else valueType = QMetaType::typeName(v.userType());

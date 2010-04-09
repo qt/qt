@@ -10,7 +10,7 @@ Rectangle {
     Rectangle {
         // Add a property for the target y coordinate
         property int targetY : page.height - 10
-        property var direction : "right"
+        property variant direction : "right"
 
         id: ball
         color: "Lime"

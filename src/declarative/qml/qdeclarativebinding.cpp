@@ -170,19 +170,6 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 
             if (data->error.isValid()) {
 
-            } else if (!scriptValue.isVariant() && value.userType() == QMetaType::QVariantList && 
-                       data->property.propertyType() == qMetaTypeId<QVariant>()) {
-
-                // This case catches QtScript's automatic conversion to QVariantList for arrays
-                QUrl url = QUrl(data->url);
-                int line = data->line;
-                if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
-
-                data->error.setUrl(url);
-                data->error.setLine(line);
-                data->error.setColumn(-1);
-                data->error.setDescription(QLatin1String("Unable to assign JavaScript array to QML variant property"));
-
             } else if (isUndefined && data->property.isResettable()) {
 
                 data->property.reset();

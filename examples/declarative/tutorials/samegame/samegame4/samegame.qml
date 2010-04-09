@@ -20,11 +20,11 @@ Rectangle {
         Item {
             id: gameCanvas
             property int score: 0
-            property int tileSize: 40
+            property int blockSize: 40
 
             z: 20; anchors.centerIn: parent
-            width: parent.width - (parent.width % tileSize);
-            height: parent.height - (parent.height % tileSize);
+            width: parent.width - (parent.width % blockSize);
+            height: parent.height - (parent.height % blockSize);
 
             MouseArea {
                 anchors.fill: parent; onClicked: SameGame.handleClick(mouse.x,mouse.y);
@@ -63,7 +63,7 @@ Rectangle {
         anchors.bottom: screen.bottom
 
         Button {
-            text: "New Game"; onClicked: SameGame.initBoard();
+            text: "New Game"; onClicked: SameGame.startNewGame();
             anchors.left: parent.left; anchors.leftMargin: 3
             anchors.verticalCenter: parent.verticalCenter
         }

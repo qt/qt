@@ -74,6 +74,18 @@ QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyN
         fromValue = property.read();
 }
 
+QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyName,
+               QDeclarativeContext *context, const QVariant &value)
+: restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false),
+  property(target, propertyName, context), toValue(value),
+  fromBinding(0), toBinding(0), event(0),
+  specifiedObject(target), specifiedProperty(propertyName)
+{
+    if (property.isValid())
+        fromValue = property.read();
+}
+
+
 QDeclarativeActionEvent::~QDeclarativeActionEvent()
 {
 }

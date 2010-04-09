@@ -5,9 +5,9 @@ Rectangle {
     color: "gray"
     width: 200; height: 200
 
-    property var hours: 10
-    property var minutes: 28
-    property var seconds: 0
+    property variant hours: 10
+    property variant minutes: 28
+    property variant seconds: 0
 
     Timer {
         interval: 1000; running: true; repeat: true; triggeredOnStart: true

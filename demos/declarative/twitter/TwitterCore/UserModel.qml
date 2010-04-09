@@ -4,7 +4,7 @@ import Qt 4.7
 //Copied from RssModel
 
 Item { id: wrapper
-    property var model: xmlModel
+    property variant model: xmlModel
     property string user : ""
     property int status: xmlModel.status
     function reload() { xmlModel.reload(); }

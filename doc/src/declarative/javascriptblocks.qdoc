@@ -163,7 +163,7 @@ component instance) "startup".  While it is tempting to just include the startup
 script as \e {global code} in an external script file, this can have severe limitations
 as the QML environment may not have been fully established.  For example, some objects 
 might not have been created or some \l {Property Binding}s may not have been run.
-\l {QML Script Restrictions} covers the exact limitations of global script code.
+\l {QML JavaScript Restrictions} covers the exact limitations of global script code.
 
 The QML \l Component element provides an \e attached \c onCompleted property that
 can be used to trigger the execution of script code at startup after the

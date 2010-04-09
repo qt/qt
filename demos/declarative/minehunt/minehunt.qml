@@ -86,19 +86,20 @@ Item {
                     field.clicky = flipable.parent.y
                     var row = Math.floor(index / 9)
                     var col = index - (Math.floor(index / 9) * 9)
-                    if (mouse.button == undefined || mouse.button == Qt.RightButton)
+                    if (mouse.button == undefined || mouse.button == Qt.RightButton) {
                         flag(row, col)
-                        else
-                            flip(row, col)
+                    } else {
+                        flip(row, col)
                     }
-                        onPressAndHold: {
-                            field.clickx = flipable.parent.x
-                            field.clicky = flipable.parent.y
-                            var row = Math.floor(index / 9)
-                            var col = index - (Math.floor(index / 9) * 9)
-                            flag(row, col)
-                        }
-                    }
+                }
+                onPressAndHold: {
+                    field.clickx = flipable.parent.x
+                    field.clicky = flipable.parent.y
+                    var row = Math.floor(index / 9)
+                    var col = index - (Math.floor(index / 9) * 9)
+                    flag(row, col)
+                }
+            }
         }
     }
 
@@ -136,13 +137,13 @@ Item {
     Image {
         anchors.bottom: field.bottom; anchors.bottomMargin: 15
         anchors.right: field.right; anchors.rightMargin: 20
-        source: isPlaying ? 'MinehuntCore/pics/face-smile.png'
-            : hasWon ? 'MinehuntCore/pics/face-smile-big.png': 'MinehuntCore/pics/face-sad.png'
+        source: isPlaying ? 'MinehuntCore/pics/face-smile.png' :
+        hasWon ? 'MinehuntCore/pics/face-smile-big.png': 'MinehuntCore/pics/face-sad.png'
 
-            MouseArea { anchors.fill: parent; onPressed: reset() }
-        }
+        MouseArea { anchors.fill: parent; onPressed: reset() }
+    }
     Text {
-        anchors.fill: parent; wrap: true
+        anchors.fill: parent; wrapMode: Text.WordWrap
         text: "Minehunt will not run properly if the C++ plugin is not compiled.\nPlease see README."
         color: "white"; font.bold: true; font.pixelSize: 14
         visible: tiles == undefined

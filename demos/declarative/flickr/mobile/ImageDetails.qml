@@ -4,7 +4,7 @@ import "../common" as Common
 Flipable {
     id: container
 
-    property var frontContainer: containerFront
+    property variant frontContainer: containerFront
     property string photoTitle: ""
     property string photoTags: ""
     property int photoWidth
@@ -14,7 +14,7 @@ Flipable {
     property string photoDate
     property string photoUrl
     property int rating: 2
-    property var prevScale: 1.0
+    property variant prevScale: 1.0
 
     signal closed
 

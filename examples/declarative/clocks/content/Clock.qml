@@ -5,10 +5,10 @@ Item {
     width: 200; height: 230
 
     property alias city: cityLabel.text
-    property var hours
-    property var minutes
-    property var seconds
-    property var shift : 0
+    property variant hours
+    property variant minutes
+    property variant seconds
+    property variant shift : 0
     property bool night: false
 
     function timeChanged() {

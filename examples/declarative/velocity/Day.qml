@@ -2,7 +2,7 @@ import Qt 4.7
 
 Component {
     Item {
-        property var stickies
+        property variant stickies
 
         id: page
         width: 840; height: 480

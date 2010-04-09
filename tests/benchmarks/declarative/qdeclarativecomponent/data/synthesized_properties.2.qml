@@ -9,7 +9,7 @@ QtObject {
     property url f
     property color g
     property date h
-    property var i
+    property variant i
     property variant j
 }
 

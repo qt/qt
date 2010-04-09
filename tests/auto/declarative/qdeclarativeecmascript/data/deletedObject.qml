@@ -2,7 +2,7 @@ import Qt 4.6
 import Qt.test 1.0
 
 QtObject {
-    property var obj
+    property variant obj
     obj: MyQmlObject {
         id: myObject
         value: 92

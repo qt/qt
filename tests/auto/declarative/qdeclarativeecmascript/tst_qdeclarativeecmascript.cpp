@@ -1026,12 +1026,10 @@ void tst_qdeclarativeecmascript::propertyAssignmentErrors()
     QString url = component.url().toString();
 
     QString warning1 = url + ":11:Error: Cannot assign [undefined] to int";
-    QString warning2 = url + ":17:Error: Cannot assign JavaScript array to QML variant property";
-    QString warning3 = url + ":23:Error: Cannot assign QString to int";
+    QString warning2 = url + ":17:Error: Cannot assign QString to int";
 
     QTest::ignoreMessage(QtDebugMsg, warning1.toLatin1().constData());
     QTest::ignoreMessage(QtDebugMsg, warning2.toLatin1().constData());
-    QTest::ignoreMessage(QtDebugMsg, warning3.toLatin1().constData());
 
     QObject *object = component.create();
     QVERIFY(object != 0);

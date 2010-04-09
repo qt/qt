@@ -3,8 +3,8 @@ import Qt 4.6
 Rectangle {
     id: root
     property bool keyPressed: false
-    property var folders: folders1
-    property var view: view1
+    property variant folders: folders1
+    property variant view: view1
     width: 320
     height: 480
     color: palette.window

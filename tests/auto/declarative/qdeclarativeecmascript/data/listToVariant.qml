@@ -1,5 +1,5 @@
 import Qt 4.6
 
 QtObject {
-    property var test: children
+    property variant test: children
 }
