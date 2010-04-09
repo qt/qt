@@ -144,11 +144,17 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen)
     m_cos_theta = qFastCos(Q_PI / m_roundness);
 
     const qreal *endPts = pts + (count<<1);
-    const qreal *startPts;
+    const qreal *startPts = 0;
 
     Qt::PenCapStyle cap = m_cap_style;
 
     if (!types) {
+        // skip duplicate points
+        while((pts + 2) < endPts && pts[0] == pts[2] && pts[1] == pts[3])
+            pts += 2;
+        if ((pts + 2) == endPts)
+            return;
+
         startPts = pts;
 
         bool endsAtStart = startPts[0] == *(endPts-2) && startPts[1] == *(endPts-1);
@@ -161,15 +167,17 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen)
         lineTo(pts);
         pts += 2;
         while (pts < endPts) {
-            join(pts);
-            lineTo(pts);
+            if (m_cx != pts[0] || m_cy != pts[1]) {
+                join(pts);
+                lineTo(pts);
+            }
             pts += 2;
         }
 
         endCapOrJoinClosed(startPts, pts-2, path.hasImplicitClose(), endsAtStart);
 
     } else {
-        bool endsAtStart;
+        bool endsAtStart = false;
         while (pts < endPts) {
             switch (*types) {
             case QPainterPath::MoveToElement: {
