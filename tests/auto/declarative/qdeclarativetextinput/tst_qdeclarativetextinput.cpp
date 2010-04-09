@@ -73,6 +73,7 @@ private slots:
 
     void sendRequestSoftwareInputPanelEvent();
     void setHAlignClearCache();
+    void focusOutClearSelection();
 
 private:
     void simulateKey(QDeclarativeView *, int key);
@@ -723,6 +724,29 @@ void tst_qdeclarativetextinput::setHAlignClearCache()
     QApplication::processEvents();
     //Changing the alignment should trigger a repaint
     QCOMPARE(input.nbPaint, 2);
+}
+
+void tst_qdeclarativetextinput::focusOutClearSelection()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QDeclarativeTextInput input;
+    QDeclarativeTextInput input2;
+    input.setText(QLatin1String("Hello world"));
+    input.setFocus(true);
+    scene.addItem(&input2);
+    scene.addItem(&input);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    input.setSelectionStart(2);
+    input.setSelectionEnd(5);
+    //The selection should work
+    QTRY_COMPARE(input.selectedText(), QLatin1String("llo"));
+    input2.setFocus(true);
+    QApplication::processEvents();
+    //The input lost the focus selection should be cleared
+    QTRY_COMPARE(input.selectedText(), QLatin1String(""));
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)
