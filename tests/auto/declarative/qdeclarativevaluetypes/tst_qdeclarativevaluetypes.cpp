@@ -216,9 +216,25 @@ void tst_qdeclarativevaluetypes::sizereadonly()
 
     {
         QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror2.qml"));
-        QEXPECT_FAIL("", "QTBUG-9685", Abort);
         QVERIFY(component.isError());
         QCOMPARE(component.errors().at(0).description(), QLatin1String("Invalid property assignment: \"sizereadonly\" is a read-only property"));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror3.qml"));
+        QVERIFY(component.isError());
+        QCOMPARE(component.errors().at(0).description(), QLatin1String("Invalid property assignment: \"sizereadonly\" is a read-only property"));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror4.qml"));
+
+        QObject *object = component.create();
+        QVERIFY(object);
+
+        QCOMPARE(object->property("sizereadonly").toSize(), QSize(1912, 1913));
+
+        delete object;
     }
 }
 

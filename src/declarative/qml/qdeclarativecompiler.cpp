@@ -1866,6 +1866,10 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
                 }
             }
 
+            if (!obj->metaObject()->property(prop->index).isWritable()) {
+                COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler", "Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
+            }
+
             COMPILE_CHECK(buildValueTypeProperty(ep->valueTypes[prop->type],
                                                  prop->value, obj, ctxt.incr()));
             obj->addValueTypeProperty(prop);
