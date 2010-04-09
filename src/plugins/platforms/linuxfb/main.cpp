@@ -39,33 +39,33 @@
 **
 ****************************************************************************/
 
-#include <private/qgraphicssystemplugin_p.h>
+#include <QtGui/QPlatformIntegrationPlugin>
 #include "qgraphicssystem_linuxfb.h"
 
 QT_BEGIN_NAMESPACE
 
-class QLinuxFbGraphicsSystemPlugin : public QGraphicsSystemPlugin
+class QLinuxFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
-    QGraphicsSystem *create(const QString&);
+    QPlatformIntegration *create(const QString&);
 };
 
-QStringList QLinuxFbGraphicsSystemPlugin::keys() const
+QStringList QLinuxFbIntegrationPlugin::keys() const
 {
     QStringList list;
     list << "LinuxFb";
     return list;
 }
 
-QGraphicsSystem* QLinuxFbGraphicsSystemPlugin::create(const QString& system)
+QPlatformIntegration* QLinuxFbIntegrationPlugin::create(const QString& system)
 {
     if (system.toLower() == "linuxfb")
-        return new QLinuxFbGraphicsSystem;
+        return new QLinuxFbIntegration;
 
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(linuxfb, QLinuxFbGraphicsSystemPlugin)
+Q_EXPORT_PLUGIN2(linuxfb, QLinuxFbIntegrationPlugin)
 
 QT_END_NAMESPACE
