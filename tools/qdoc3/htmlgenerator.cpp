@@ -333,6 +333,7 @@ QString HtmlGenerator::format()
  */
 void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
 {
+#if 0    
     // Copy the stylesheets from the directory containing the qdocconf file.
     // ### This should be changed to use a special directory in doc/src.
     QStringList::ConstIterator styleIter = stylesheets.begin();
@@ -342,7 +343,7 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
         Config::copyFile(Location(), filePath, filePath, outputDir());
         ++styleIter;
     }
-
+#endif
     myTree = tree;
     nonCompatClasses.clear();
     mainClasses.clear();
@@ -1657,13 +1658,79 @@ QString HtmlGenerator::fileExtension(const Node * /* node */) const
     return "html";
 }
 
+#if 0
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Qt Reference Documentation</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+  <!--[if IE]>
+	<meta name="MSSmartTagsPreventParsing" content="true">
+	<meta http-equiv="imagetoolbar" content="no">
+	<![endif]-->
+  <!--[if lt IE 7]>
+	<link rel="stylesheet" type="text/css" href="style/style_ie6.css">
+	<![endif]-->
+  <!--[if IE 7]>
+	<link rel="stylesheet" type="text/css" href="style/style_ie7.css">
+	<![endif]-->
+  <!--[if IE 8]>
+	<link rel="stylesheet" type="text/css" href="style/style_ie8.css">
+	<![endif]-->
+
+  <script src="scripts/jquery.js" type="text/javascript"></script>
+
+</head>
+#endif
+
 void HtmlGenerator::generateHeader(const QString& title,
                                    const Node *node,
                                    CodeMarker *marker,
                                    bool mainPage)
 {
     out() << QString("<?xml version=\"1.0\" encoding=\"%1\"?>\n").arg(outputEncoding);
+    out() << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n";
+    out() << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
+    out() << "<head>\n";
+    out() << "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
+    QString shortVersion;
+    shortVersion = project + " " + shortVersion + ": ";
+    if (node && !node->doc().location().isEmpty())
+        out() << "<!-- " << node->doc().location().fileName() << " -->\n";
 
+    shortVersion = myTree->version();
+    if (shortVersion.count(QChar('.')) == 2)
+        shortVersion.truncate(shortVersion.lastIndexOf(QChar('.')));
+    if (!shortVersion.isEmpty()) {
+        if (project == "QSA")
+            shortVersion = "QSA " + shortVersion + ": ";
+        else
+            shortVersion = "Qt " + shortVersion + ": ";
+    }
+
+    out() << "  <title>" << shortVersion << protectEnc(title) << "</title>\n";
+
+    //out() << "  <title>Qt Reference Documentation</title>";
+    out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n";
+    out() << "  <!--[if IE]>\n";
+    out() << "	<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
+    out() << "	<meta http-equiv=\"imagetoolbar\" content=\"no\">\n";
+    out() << "	<![endif]-->\n";
+    out() << "  <!--[if lt IE 7]>\n";
+    out() << "	<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie6.css\">\n";
+    out() << "	<![endif]-->\n";
+    out() << "  <!--[if IE 7]>\n";
+    out() << "	<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie7.css\">\n";
+    out() << "	<![endif]-->\n";
+    out() << "  <!--[if IE 8]>\n";
+    out() << "	<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">\n";
+    out() << "	<![endif]-->\n";
+    out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
+    out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+    out() << "</head>\n";
+    
+#if 0    
     out() << "<!DOCTYPE html\n"
              "    PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"DTD/xhtml1-strict.dtd\">\n";
     out() << QString("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"%1\" lang=\"%1\">\n").arg(naturalLanguage);
@@ -1795,14 +1862,16 @@ void HtmlGenerator::generateHeader(const QString& title,
     }
 
     out() << "</head>\n"
-             "<body>\n";
+ #endif       
+        out() << "<body class=\"\">\n";
     if (mainPage)
         generateMacRef(node, marker);
     out() << QString(postHeader).replace("\\" + COMMAND_VERSION, myTree->version());
 
-
+#if 0
     if (node && !node->links().empty())
         out() << "<p>\n" << navigationLinks << "</p>\n";
+#endif    
 }
 
 void HtmlGenerator::generateTitle(const QString& title,
@@ -2179,7 +2248,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                                         QString commonPrefix)
 {
     const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
-    const int NumColumns = 4; // number of columns in the result
+    const int NumColumns = 2; // number of columns in the result
 
     if (classMap.isEmpty())
         return;

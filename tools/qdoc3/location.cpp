@@ -265,6 +265,8 @@ void Location::error(const QString& message, const QString& details) const
 void Location::fatal(const QString& message, const QString& details) const
 {
     emitMessage(Error, message, details);
+    information(message);
+    information(details);
     information("Aborting");
     exit(EXIT_FAILURE);
 }
