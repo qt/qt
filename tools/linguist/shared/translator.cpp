@@ -49,9 +49,9 @@
 # ifdef Q_OS_WINCE
 #  include <stdlib.h>
 # else
-#  include <io.h>
+#  include <io.h> // for _setmode
+#  include <fcntl.h> // for _O_BINARY
 # endif
-# include <fcntl.h> // for _O_BINARY
 #endif
 
 #include <QtCore/QDebug>
