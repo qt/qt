@@ -35,7 +35,7 @@ Item {
         Text {
             width: 180
             text: "Could not access twitter using this screen name and password pair.";
-            color: "#cccccc"; style: Text.Raised; styleColor: "black"; wrap: true
+            color: "#cccccc"; style: Text.Raised; styleColor: "black"; wrapMode: Text.WordWrap
             visible: rssModel.status==XmlListModel.Error; anchors.centerIn: parent
         }
 

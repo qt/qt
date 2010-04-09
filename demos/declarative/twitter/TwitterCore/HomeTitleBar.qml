@@ -90,7 +90,7 @@ Item {
                 width: parent.width - 12
                 height: parent.height - 8
                 font.pointSize: 10
-                wrap: true
+                wrapMode: TextEdit.WordWrap
                 color: "#151515"; selectionColor: "green"
             }
             Keys.forwardTo: [(returnKey), (editor)]

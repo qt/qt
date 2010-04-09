@@ -362,7 +362,7 @@ bool QDeclarativeText::wrap() const
 void QDeclarativeText::setWrap(bool w)
 {
     qmlInfo(this) << "\"wrap\" property is deprecated and will soon be removed.  Use wrapMode";
-    setWrapMode(WordWrap);
+    setWrapMode(w ? WordWrap : NoWrap);
 }
 
 

@@ -6,14 +6,14 @@ Item {
     TextEdit {
         width: 200
         height: 200
-        wrap: true
+        wrapMode: TextEdit.WordWrap
         focus: true
     }
     //With QTBUG-6273 only the bottom one would be wrapped
     TextEdit {
         width: 200
         height: 200
-        wrap: true
+        wrapMode: TextEdit.WordWrap
         text: "This is a test that text edit wraps correctly."
         y:200
     }

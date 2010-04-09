@@ -235,7 +235,7 @@ void tst_qdeclarativetextedit::wrap()
     // for specified width and wrap set true
     {
         QDeclarativeComponent texteditComponent(&engine);
-        texteditComponent.setData("import Qt 4.6\nTextEdit {  text: \"\"; wrap: true; width: 300 }", QUrl());
+        texteditComponent.setData("import Qt 4.6\nTextEdit {  text: \"\"; wrapMode: TextEdit.WordWrap; width: 300 }", QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
 
         QVERIFY(textEditObject != 0);
@@ -244,7 +244,7 @@ void tst_qdeclarativetextedit::wrap()
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "import Qt 4.6\nTextEdit {  wrap: true; width: 300; text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import Qt 4.6\nTextEdit {  wrapMode: TextEdit.WordWrap; width: 300; text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -255,7 +255,7 @@ void tst_qdeclarativetextedit::wrap()
 
     for (int i = 0; i < richText.size(); i++)
     {
-        QString componentStr = "import Qt 4.6\nTextEdit {  wrap: true; width: 300; text: \"" + richText.at(i) + "\" }";
+        QString componentStr = "import Qt 4.6\nTextEdit {  wrapMode: TextEdit.WordWrap; width: 300; text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
