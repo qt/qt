@@ -450,7 +450,7 @@ void tst_qdeclarativedom::loadDynamicProperty()
                          "    property url f\n"
                          "    property color g\n"
                          "    property date h\n"
-                         "    property var i\n"
+                         "    property variant i\n"
                          "    property QtObject j\n"
                          "}";
 
@@ -483,8 +483,8 @@ void tst_qdeclarativedom::loadDynamicProperty()
         DP_TEST(5, f, QVariant::Url, 128, 14, "url");
         DP_TEST(6, g, QVariant::Color, 147, 16, "color");
         DP_TEST(7, h, QVariant::DateTime, 168, 15, "date");
-        DP_TEST(8, i, qMetaTypeId<QVariant>(), 188, 14, "var");
-        DP_TEST(9, j, -1, 207, 19, "QtObject");
+        DP_TEST(8, i, qMetaTypeId<QVariant>(), 188, 18, "variant");
+        DP_TEST(9, j, -1, 211, 19, "QtObject");
     }
 
     {
