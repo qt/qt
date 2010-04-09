@@ -46,66 +46,61 @@
 #include <QMetaEnum>
 #endif
 
-
 QT_BEGIN_NAMESPACE
 
-static void qt_shared_shaders_free(void *data)
+class QGLThreadLocalShaders : public QObject
 {
-    qDebug() << "qt_shared_shaders_free() for thread:" << hex << QThread::currentThread();
-    delete reinterpret_cast<QGLEngineSharedShaders *>(data);
-}
-
-
-class QGLThreadLocalShaders {
+    Q_OBJECT
 public:
-    QGLThreadLocalShaders(QGLContextResource *resource) : m_resource(resource), m_shaders(0) {}
+    QGLThreadLocalShaders(const QGLContext *context, QGLEngineSharedShaders *shaders)
+        : m_context(context), m_shaders(shaders)
+    {
+        connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(contextDestroyed(const QGLContext*)));
+    }
     ~QGLThreadLocalShaders() {
-        if (m_shaders) {
-            qDebug() << "~QGLThreadLocalShaders() for thread:" << hex << QThread::currentThread();
+        qDebug() << "~QGLThreadLocalShaders() for thread:" << hex << QThread::currentThread();
+        qDebug() << "  -> deleting shader cache:" << hex << m_shaders;
+        delete m_shaders;
+    }
+    const QGLContext *m_context;
+    QGLEngineSharedShaders *m_shaders;
+
+private slots:
+    void contextDestroyed(const QGLContext * context) {
+        if (context == m_context) {
+            qDebug() << "QGLThreadLocalShaders::contextDestroyed():";
+            qDebug() << "  -> cleaning up shader cache for thread:" << hex << QThread::currentThread();
+            qDebug() << "  -> shaders:" << hex << m_shaders;
             m_shaders->cleanupBeforeDestruction();
         }
     }
-    QGLContextResource *m_resource;
-    QGLEngineSharedShaders *m_shaders;
 };
 
-class QGLThreadShaders
+class QGLShaderStorage
 {
 public:
-    QGLContextResource *shadersForThread() {
+    QGLEngineSharedShaders *shadersForThread(const QGLContext *context) {
         QGLThreadLocalShaders *shaders = m_storage.localData();
         if (!shaders) {
-            // The QGLContextResource is needed because the shaders need to be cleaned up
-            // when the context is destroyed, not just when a thread exits
-            QGLContextResource *resource = new QGLContextResource(qt_shared_shaders_free);
-            qDebug() << "new local resource for thread:" << hex << QThread::currentThread() << resource;
-            shaders = new QGLThreadLocalShaders(resource);
+            qDebug() << "new shader cache for thread:" << hex << QThread::currentThread();
+            QGLShareContextScope scope(context);
+            shaders = new QGLThreadLocalShaders(context, new QGLEngineSharedShaders(context));
+            qDebug() << "  -> context:" << context;
             m_storage.setLocalData(shaders);
         }
-        return shaders->m_resource;
-    }
-
-    void setShadersForThread(const QGLContext *context, QGLEngineSharedShaders *sharedShaders) {
-        shadersForThread()->insert(context, sharedShaders);
-        m_storage.localData()->m_shaders = sharedShaders;
-        qDebug() << "  -> context:" << context;
+        return shaders->m_shaders;
     }
 
 private:
     QThreadStorage<QGLThreadLocalShaders *> m_storage;
 };
 
-Q_GLOBAL_STATIC(QGLThreadShaders, qt_shared_shaders);
+Q_GLOBAL_STATIC(QGLShaderStorage, qt_shader_storage);
 
 QGLEngineSharedShaders *QGLEngineSharedShaders::shadersForContext(const QGLContext *context)
 {
-    QGLEngineSharedShaders *shaders = reinterpret_cast<QGLEngineSharedShaders *>(qt_shared_shaders()->shadersForThread()->value(context));
-    if (!shaders) {
-        QGLShareContextScope scope(context);
-        shaders = new QGLEngineSharedShaders(context);
-        qt_shared_shaders()->setShadersForThread(context, shaders);
-    }
-    return shaders;
+    return reinterpret_cast<QGLEngineSharedShaders *>(qt_shader_storage()->shadersForThread(context));
 }
 
 const char* QGLEngineSharedShaders::qShaderSnippets[] = {
@@ -845,3 +840,5 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
 }
 
 QT_END_NAMESPACE
+
+#include "qglengineshadermanager.moc"
