@@ -370,6 +370,9 @@ void QDeclarativeTextEdit::setVAlign(QDeclarativeTextEdit::VAlignment alignment)
     \list
     \o NoWrap - no wrapping will be performed.
     \o WordWrap - wrapping is done on word boundaries.
+    \o WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
+    \o WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
+       will occur at the appropriate point on the line, even in the middle of a word.
     \endlist
 
     The default is NoWrap.
@@ -1039,11 +1042,7 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
     opt.setAlignment((Qt::Alignment)(int)(hAlign | vAlign));
 
     QTextOption::WrapMode oldWrapMode = opt.wrapMode();
-
-    if (wrapMode == QDeclarativeTextEdit::WordWrap)
-        opt.setWrapMode(QTextOption::WordWrap);
-    else
-        opt.setWrapMode(QTextOption::NoWrap);
+    opt.setWrapMode(QTextOption::WrapMode(wrapMode));
 
     if (oldWrapMode == opt.wrapMode() && oldAlignment == opt.alignment())
         return;

@@ -81,5 +81,11 @@ Rectangle {
         Text {
             text: s.text; elide: Text.ElideRight; width: 200; wrapMode: Text.WordWrap
         }
+        Text {
+            text: s.text + " thisisaverylongstringwithnospaces"; width: 150; wrapMode: Text.WrapAnywhere
+        }
+        Text {
+            text: s.text + " thisisaverylongstringwithnospaces"; width: 150; wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+        }
     }
 }

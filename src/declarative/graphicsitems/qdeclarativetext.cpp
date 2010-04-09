@@ -330,6 +330,9 @@ void QDeclarativeText::setVAlign(VAlignment align)
     \o WordWrap - wrapping is done on word boundaries. If the text cannot be
     word-wrapped to the specified width it will be partially drawn outside of the item's bounds.
     If this is undesirable then enable clipping on the item (Item::clip).
+    \o WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
+    \o WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
+       will occur at the appropriate point on the line, even in the middle of a word.
     \endlist
 
     The default is NoWrap.
@@ -554,10 +557,7 @@ void QDeclarativeTextPrivate::updateSize()
             singleline = false; // richtext can't elide or be optimized for single-line case
             doc->setDefaultFont(font);
             QTextOption option((Qt::Alignment)int(hAlign | vAlign));
-            if (wrapMode == QDeclarativeText::WordWrap)
-                option.setWrapMode(QTextOption::WordWrap);
-            else
-                option.setWrapMode(QTextOption::NoWrap);
+            option.setWrapMode(QTextOption::WrapMode(wrapMode));
             doc->setDefaultTextOption(option);
             if (wrapMode != QDeclarativeText::NoWrap && !q->heightValid() && q->widthValid())
                 doc->setTextWidth(q->width());
@@ -641,6 +641,10 @@ QSize QDeclarativeTextPrivate::setupTextLayout(QTextLayout *layout)
     //set manual width
     if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
         lineWidth = q->width();
+
+    QTextOption textOption = layout->textOption();
+    textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
+    layout->setTextOption(textOption);
 
     layout->beginLayout();
 

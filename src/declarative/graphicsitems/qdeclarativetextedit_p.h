@@ -110,9 +110,9 @@ public:
     };
 
     enum WrapMode { NoWrap = QTextOption::NoWrap,
-                    WordWrap = QTextOption::WordWrap
-//                    WrapAnywhere = QTextOption::WrapAnywhere,
-//                    WrapAtWordBoundaryOrAnywhere = QTextOption::WrapAtWordBoundaryOrAnywhere
+                    WordWrap = QTextOption::WordWrap,
+                    WrapAnywhere = QTextOption::WrapAnywhere,
+                    WrapAtWordBoundaryOrAnywhere = QTextOption::WrapAtWordBoundaryOrAnywhere
                   };
 
     QString text() const;
