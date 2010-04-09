@@ -264,6 +264,9 @@ QDeclarativeListModel::QDeclarativeListModel(bool workerCopy, QObject *parent)
 
 QDeclarativeListModel::~QDeclarativeListModel()
 {
+    if (m_agent)
+        m_agent->release();
+
     delete m_nested;
     delete m_flat;
 }

@@ -13,7 +13,8 @@ Rectangle {
     gradient: Gradient {
         GradientStop {
             position: 0.0
-            color: if (mouseArea.pressed) { activePalette.dark } else { activePalette.light } }
+            color: if (mouseArea.pressed) { activePalette.dark } else { activePalette.light }
+        }
         GradientStop { position: 1.0; color: activePalette.button }
     }
 
