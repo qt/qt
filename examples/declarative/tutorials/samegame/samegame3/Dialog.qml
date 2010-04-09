@@ -12,7 +12,7 @@ Rectangle {
         page.opacity = 1;
     }
     signal closed();
-    color: "white"; border.width: 1; width: dialogText.width + 20; height: 60;
+    color: "white"; border.width: 1; width: dialogText.width + 20; height: dialogText.height + 20;
     opacity: 0
     Behavior on opacity { 
         NumberAnimation { duration: 1000 }

@@ -1,11 +1,9 @@
 //![0]
-//Note that X/Y referred to here are in game coordinates
-var maxColumn = 10;//Nums are for tileSize 40
+var blockSize = 40;
+var maxColumn = 10;
 var maxRow = 15;
-var tileSize = 40;
 var maxIndex = maxColumn*maxRow;
 var board = new Array(maxIndex);
-var tileSrc = "Block.qml";
 var component;
 
 //Index function used instead of a 2D array
@@ -13,17 +11,17 @@ function index(column,row) {
     return column + (row * maxColumn);
 }
 
-function initBoard()
+function startNewGame()
 {
-    //Delete old blocks
+    //Delete blocks from previous game
     for(var i = 0; i<maxIndex; i++){
         if(board[i] != null)
             board[i].destroy();
     }
 
     //Calculate board size
-    maxColumn = Math.floor(background.width/tileSize);
-    maxRow = Math.floor(background.height/tileSize);
+    maxColumn = Math.floor(background.width/blockSize);
+    maxRow = Math.floor(background.height/blockSize);
     maxIndex = maxRow*maxColumn;
 
     //Initialize Board
@@ -38,12 +36,11 @@ function initBoard()
 
 function createBlock(column,row){
     if(component==null)
-        component = createComponent(tileSrc);
+        component = createComponent("Block.qml");
 
-    // Note that we don't wait for the component to become ready. This will
-    // only work if the block QML is a local file. Otherwise the component will
-    // not be ready immediately. There is a statusChanged signal on the
-    // component you could use if you want to wait to load remote files.
+    // Note that if Block.qml was not a local file, component.isReady would be
+    // false and we should wait for the component's statusChanged() signal to
+    // know when the file is downloaded and fully loaded before calling createObject().
     if(component.isReady){
         var dynamicObject = component.createObject();
         if(dynamicObject == null){
@@ -52,12 +49,12 @@ function createBlock(column,row){
             return false;
         }
         dynamicObject.parent = background;
-        dynamicObject.x = column*tileSize;
-        dynamicObject.y = row*tileSize;
-        dynamicObject.width = tileSize;
-        dynamicObject.height = tileSize;
+        dynamicObject.x = column*blockSize;
+        dynamicObject.y = row*blockSize;
+        dynamicObject.width = blockSize;
+        dynamicObject.height = blockSize;
         board[index(column,row)] = dynamicObject;
-    }else{//isError or isLoading
+    }else{
         print("error loading block component");
         print(component.errorsString());
         return false;

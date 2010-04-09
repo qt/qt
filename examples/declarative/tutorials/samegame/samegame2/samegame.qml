@@ -27,7 +27,7 @@ Rectangle {
 
 //![1]
         Button {
-            text: "New Game"; onClicked: SameGame.initBoard();
+            text: "New Game"; onClicked: SameGame.startNewGame();
             anchors.left: parent.left; anchors.leftMargin: 3
             anchors.verticalCenter: parent.verticalCenter
         }
