@@ -647,7 +647,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         property.location = location(node->firstSourceLocation(),
                                      node->lastSourceLocation());
 
-        if (memberType == QByteArray("var")) 
+        if (memberType == QLatin1String("var")) 
             qWarning().nospace() << qPrintable(_parser->_scriptFile) << ":" << property.location.start.line << ":" 
                                  << property.location.start.column << ": var type has been replaced by variant.  "
                                  << "Support will be removed entirely shortly.";
