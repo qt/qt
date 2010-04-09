@@ -1479,13 +1479,17 @@ public:
 
     QSet<QString> qmlDirFilesForWhichPluginsHaveBeenLoaded;
 
-    QDeclarativeDirComponents importExtension(const QString &absoluteFilePath, const QString &uri, QDeclarativeEngine *engine) {
+    QDeclarativeDirComponents importExtension(const QString &absoluteFilePath, const QString &uri, QDeclarativeEngine *engine, QString *errorString) {
         QFile file(absoluteFilePath);
         QString filecontent;
         if (file.open(QFile::ReadOnly)) {
             filecontent = QString::fromUtf8(file.readAll());
             if (qmlImportTrace())
                 qDebug() << "QDeclarativeEngine::add: loaded" << absoluteFilePath;
+        } else {
+            if (errorString)
+                *errorString = QDeclarativeEngine::tr("module \"%1\" definition \"%2\" not readable").arg(uri).arg(absoluteFilePath);
+            return QDeclarativeDirComponents();
         }
         QDir dir = QFileInfo(file).dir();
 
@@ -1505,7 +1509,15 @@ public:
                                         plugin.name);
 
                 if (!resolvedFilePath.isEmpty()) {
-                    engine->importPlugin(resolvedFilePath, uri);
+                    if (!engine->importPlugin(resolvedFilePath, uri)) {
+                        if (errorString)
+                            *errorString = QDeclarativeEngine::tr("plugin \"%1\" cannot be loaded for module \"%2\"").arg(resolvedFilePath).arg(uri);
+                        return QDeclarativeDirComponents();
+                    }
+                } else {
+                    if (errorString)
+                        *errorString = QDeclarativeEngine::tr("module \"%1\" plugin \"%2\" not found").arg(uri).arg(plugin.name);
+                    return QDeclarativeDirComponents();
                 }
             }
         }
@@ -1570,7 +1582,9 @@ public:
 
                     url = QUrl::fromLocalFile(fi.absolutePath()).toString();
                     uri = resolvedUri(dir, engine);
-                    qmldircomponents = importExtension(absoluteFilePath, uri, engine);
+                    qmldircomponents = importExtension(absoluteFilePath, uri, engine, errorString);
+                    if (qmldircomponents.isEmpty()) // error (or empty)
+                        return false;
                     break;
                 }
             }
@@ -1601,12 +1615,14 @@ public:
                         return false; // local import dirs must exist
                     }
                     uri = resolvedUri(toLocalFileOrQrc(base.resolved(QUrl(uri))), engine);
-                    qmldircomponents = importExtension(localFileOrQrc,
-                                                    uri,
-                                                    engine);
-
                     if (uri.endsWith(QLatin1Char('/')))
                         uri.chop(1);
+                    if (QFile::exists(localFileOrQrc)) {
+                        qmldircomponents = importExtension(localFileOrQrc,
+                                                    uri,engine,errorString);
+                        if (qmldircomponents.isEmpty()) // error (or empty)
+                            return false;
+                    }
                 } else {
                     if (prefix.isEmpty()) {
                         // directory must at least exist for valid import

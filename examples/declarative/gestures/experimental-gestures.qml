@@ -5,6 +5,14 @@ import Qt.labs.gestures 1.0
 
 Rectangle {
     id: rect
+    width: 320
+    height: 180
+
+    Text {
+        anchors.centerIn: parent
+        text: "Tap / TapAndHold / Pan / Pinch / Swipe\nOnly works on platforms with Touch support."
+        horizontalAlignment: Text.Center
+    }
 
     GestureArea {
         anchors.fill: parent
