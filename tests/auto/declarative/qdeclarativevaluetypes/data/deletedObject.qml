@@ -3,7 +3,7 @@ import Qt 4.6
 import "deletedObject.js" as JS
 
 MyTypeObject {
-    property var object
+    property variant object
 
     object: MyTypeObject {}
     Component.onCompleted: JS.startup()

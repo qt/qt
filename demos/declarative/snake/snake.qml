@@ -24,7 +24,7 @@ Rectangle {
     property int direction
     property int headDirection
 
-    property var head;
+    property variant head;
 
     Content.HighScoreModel {
         id: highScores

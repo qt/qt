@@ -4,7 +4,7 @@ import "TwitterCore" 1.0 as Twitter
 Item {
     id: screen; width: 320; height: 480
     property bool userView : false
-    property var tmpStr
+    property variant tmpStr
     function setMode(m){
         screen.userView = m;
         if(m == false){

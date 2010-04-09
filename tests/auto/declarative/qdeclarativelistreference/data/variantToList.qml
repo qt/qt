@@ -4,7 +4,7 @@ QtObject {
     property list<QtObject> myList;
     myList: QtObject {}
 
-    property var value: myList
+    property variant value: myList
     property int test: value.length
 }
 

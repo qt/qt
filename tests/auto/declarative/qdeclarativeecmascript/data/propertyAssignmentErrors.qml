@@ -4,7 +4,7 @@ QtObject {
     id: root
 
     property int a
-    property var b
+    property variant b
 
     Component.onCompleted: {
         try {

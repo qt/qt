@@ -3,7 +3,7 @@ import Qt 4.7
 Rectangle {
     id: container
 
-    property var text
+    property variant text
     signal clicked
 
     SystemPalette { id: activePalette }

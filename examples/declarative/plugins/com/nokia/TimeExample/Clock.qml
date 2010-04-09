@@ -5,9 +5,9 @@ Rectangle {
     width: 200; height: 200; color: "gray"
 
     property alias city: cityLabel.text
-    property var hours
-    property var minutes
-    property var shift : 0
+    property variant hours
+    property variant minutes
+    property variant shift : 0
 
     Image { id: background; source: "clock.png" }
 

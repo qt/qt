@@ -3,7 +3,7 @@ import Qt 4.7
 Item {
     id: container
 
-    property var flickableArea
+    property variant flickableArea
 
     Rectangle {
         radius: 5
