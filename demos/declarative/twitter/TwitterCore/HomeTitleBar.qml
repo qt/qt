@@ -11,25 +11,23 @@ Item {
         id: container
         width: (parent.width * 2) - 55 ; height: parent.height
 
-        Script {
-            function accept() {
-                if(rssModel.authName == '' || rssModel.authPass == '')
-                    return false;//Can't login like that
+        function accept() {
+            if(rssModel.authName == '' || rssModel.authPass == '')
+                return false;//Can't login like that
 
-                var postData = "status=" + editor.text;
-                var postman = new XMLHttpRequest();
-                postman.open("POST", "http://twitter.com/statuses/update.xml", true, rssModel.authName,  rssModel.authPass);
-                postman.onreadystatechange = function() {
-                    if (postman.readyState == postman.DONE) {
-                        titleBar.update();
-                    }
+            var postData = "status=" + editor.text;
+            var postman = new XMLHttpRequest();
+            postman.open("POST", "http://twitter.com/statuses/update.xml", true, rssModel.authName,  rssModel.authPass);
+            postman.onreadystatechange = function() {
+                if (postman.readyState == postman.DONE) {
+                    titleBar.update();
                 }
-                postman.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                postman.send(postData);
-
-                editor.text = ""
-                titleBar.state = ""
             }
+            postman.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            postman.send(postData);
+
+            editor.text = ""
+            titleBar.state = ""
         }
 
         Rectangle {
@@ -59,7 +57,7 @@ Item {
         Button {
             id: tagButton; x: titleBar.width - 90; width: 85; height: 32; text: "New Post..."
             anchors.verticalCenter: parent.verticalCenter;
-            onClicked: if (titleBar.state == "Posting") accept(); else titleBar.state = "Posting"
+            onClicked: if (titleBar.state == "Posting") container.accept(); else titleBar.state = "Posting"
         }
 
         Text {
@@ -96,7 +94,7 @@ Item {
             Keys.forwardTo: [(returnKey), (editor)]
             Item {
                 id: returnKey
-                Keys.onReturnPressed: accept()
+                Keys.onReturnPressed: container.accept()
                 Keys.onEscapePressed: titleBar.state = ""
             }
         }

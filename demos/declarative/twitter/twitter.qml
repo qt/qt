@@ -15,12 +15,11 @@ Item {
             toolBar.button2Label = "Return home";
         }
     }
+    function setUser(str){hack.running = true; tmpStr = str}
+    function reallySetUser(){rssModel.tags = tmpStr;}
+
     //Workaround for bug 260266
-    Timer{ interval: 1; running: false; repeat: false; onTriggered: reallySetUser(); id:hack }
-    Script {
-        function setUser(str){hack.running = true; tmpStr = str}
-        function reallySetUser(){rssModel.tags = tmpStr;}
-    }
+    Timer{ interval: 1; running: false; repeat: false; onTriggered: screen.reallySetUser(); id:hack }
 
     //TODO: better way to return to the auth screen
     Keys.onEscapePressed: rssModel.authName=''
