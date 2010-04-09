@@ -323,7 +323,8 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         return;
     }
 
-    if (!(lastData->flags & QDeclarativePropertyCache::Data::IsWritable)) {
+    if (!(lastData->flags & QDeclarativePropertyCache::Data::IsWritable) && 
+        !(lastData->flags & QDeclarativePropertyCache::Data::IsQList)) {
         QString error = QLatin1String("Cannot assign to read-only property \"") +
                         toString(name) + QLatin1Char('\"');
         context->throwError(error);
