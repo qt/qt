@@ -90,10 +90,6 @@ public:
 
 private:
     QDeclarativeValueType *valueTypes[QVariant::UserType - 1]; 
-#if (QT_VERSION < QT_VERSION_CHECK(4,7,0))
-    int easingType;
-    QDeclarativeValueType *easingValueType;
-#endif
 };
 
 class Q_AUTOTEST_EXPORT QDeclarativePointFValueType : public QDeclarativeValueType

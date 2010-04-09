@@ -66,7 +66,6 @@ class QScriptContext;
 class QScriptEngine;
 class QDeclarativeContextData;
 
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
 class Q_AUTOTEST_EXPORT QDeclarativeObjectMethodScriptClass : public QScriptDeclarativeClass
 {
 public:
@@ -91,7 +90,6 @@ private:
 
     QDeclarativeEngine *engine;
 };
-#endif
 
 class Q_AUTOTEST_EXPORT QDeclarativeObjectScriptClass : public QScriptDeclarativeClass
 {
@@ -132,10 +130,8 @@ protected:
     virtual QObject *toQObject(Object *, bool *ok = 0);
 
 private:
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
     friend class QDeclarativeObjectMethodScriptClass;
     QDeclarativeObjectMethodScriptClass methods;
-#endif
 
     QDeclarativeTypeNameCache::Data *lastTNData;
     QDeclarativePropertyCache::Data *lastData;

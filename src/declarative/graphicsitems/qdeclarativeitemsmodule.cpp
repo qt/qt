@@ -112,10 +112,8 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePathQuad>("Qt",4,6,"PathQuad");
     qmlRegisterType<QDeclarativePathView>("Qt",4,6,"PathView");
     qmlRegisterType<QIntValidator>("Qt",4,6,"IntValidator");
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
     qmlRegisterType<QDoubleValidator>("Qt",4,7,"DoubleValidator");
     qmlRegisterType<QRegExpValidator>("Qt",4,7,"RegExpValidator");
-#endif
     qmlRegisterType<QDeclarativeRectangle>("Qt",4,6,"Rectangle");
     qmlRegisterType<QDeclarativeRepeater>("Qt",4,6,"Repeater");
     qmlRegisterType<QGraphicsRotation>("Qt",4,6,"Rotation");

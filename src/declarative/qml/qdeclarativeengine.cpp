@@ -182,11 +182,9 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
                 fileImportPath.append(canonicalPath);
         }
     }
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
     QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
     if (!builtinPath.isEmpty())
         fileImportPath += builtinPath;
-#endif
 
     filePluginPath += QLatin1String(".");
 
