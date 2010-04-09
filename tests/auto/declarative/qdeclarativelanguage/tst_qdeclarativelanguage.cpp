@@ -87,6 +87,7 @@ private slots:
     void assignBasicTypes();
     void assignTypeExtremes();
     void assignCompositeToType();
+    void assignLiteralToVariant();
     void customParserTypes();
     void rootAsQmlComponent();
     void inlineQmlComponents();
@@ -477,6 +478,37 @@ void tst_qdeclarativelanguage::assignCompositeToType()
     VERIFY_ERRORS(0);
     QObject *object = component.create();
     QVERIFY(object != 0);
+}
+
+// Test that literals are stored correctly in variant properties
+void tst_qdeclarativelanguage::assignLiteralToVariant()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("assignLiteralToVariant.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").userType(), (int)QVariant::Int);
+    QCOMPARE(object->property("test2").userType(), (int)QMetaType::Double);
+    QCOMPARE(object->property("test3").userType(), (int)QVariant::String);
+    QCOMPARE(object->property("test4").userType(), (int)QVariant::Color);
+    QCOMPARE(object->property("test5").userType(), (int)QVariant::RectF);
+    QCOMPARE(object->property("test6").userType(), (int)QVariant::PointF);
+    QCOMPARE(object->property("test7").userType(), (int)QVariant::SizeF);
+    QCOMPARE(object->property("test8").userType(), (int)QVariant::Vector3D);
+    QCOMPARE(object->property("test9").userType(), (int)QVariant::String);
+
+    QVERIFY(object->property("test1") == QVariant(1));
+    QVERIFY(object->property("test2") == QVariant((double)1.7));
+    QVERIFY(object->property("test3") == QVariant(QString(QLatin1String("Hello world!"))));
+    QVERIFY(object->property("test4") == QVariant(QColor::fromRgb(0xFF008800)));
+    QVERIFY(object->property("test5") == QVariant(QRectF(10, 10, 10, 10)));
+    QVERIFY(object->property("test6") == QVariant(QPointF(10, 10)));
+    QVERIFY(object->property("test7") == QVariant(QSizeF(10, 10)));
+    QVERIFY(object->property("test8") == QVariant(QVector3D(100, 100, 100)));
+    QVERIFY(object->property("test9") == QVariant(QString(QLatin1String("#FF008800"))));
+
+    delete object;
 }
 
 // Tests that custom parser types can be instantiated

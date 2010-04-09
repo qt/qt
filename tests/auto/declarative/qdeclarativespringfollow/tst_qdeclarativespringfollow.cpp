@@ -72,7 +72,7 @@ void tst_qdeclarativespringfollow::defaultValues()
 
     QVERIFY(obj != 0);
 
-    QCOMPARE(obj->sourceValue(), 0.);
+    QCOMPARE(obj->to(), 0.);
     QCOMPARE(obj->velocity(), 0.);
     QCOMPARE(obj->spring(), 0.);
     QCOMPARE(obj->damping(), 0.);
@@ -94,7 +94,7 @@ void tst_qdeclarativespringfollow::values()
 
     QVERIFY(obj != 0);
 
-    QCOMPARE(obj->sourceValue(), 1.44);
+    QCOMPARE(obj->to(), 1.44);
     QCOMPARE(obj->velocity(), 0.9);
     QCOMPARE(obj->spring(), 1.0);
     QCOMPARE(obj->damping(), 0.5);
@@ -117,7 +117,7 @@ void tst_qdeclarativespringfollow::disabled()
 
     QVERIFY(obj != 0);
 
-    QCOMPARE(obj->sourceValue(), 1.44);
+    QCOMPARE(obj->to(), 1.44);
     QCOMPARE(obj->velocity(), 0.9);
     QCOMPARE(obj->spring(), 1.0);
     QCOMPARE(obj->damping(), 0.5);

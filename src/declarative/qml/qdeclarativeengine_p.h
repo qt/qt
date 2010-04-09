@@ -231,6 +231,7 @@ public:
 
     QDeclarativeCompositeTypeManager typeManager;
     QStringList fileImportPath;
+    QStringList filePluginPath;
     QString offlineStoragePath;
 
     mutable quint32 uniqueId;
@@ -274,10 +275,10 @@ public:
 
     QSet<QString> initializedPlugins;
 
-    QString resolvePlugin(const QDir &dir, const QString &baseName,
+    QString resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName,
                           const QStringList &suffixes,
                           const QString &prefix = QString());
-    QString resolvePlugin(const QDir &dir, const QString &baseName);
+    QString resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName);
 
 
     bool addToImport(Imports*, const QDeclarativeDirComponents &qmldircomponentsnetwork, 

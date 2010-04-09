@@ -68,6 +68,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativePathView : public QDeclarativeItem
     Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin NOTIFY preferredHighlightBeginChanged)
     Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd NOTIFY preferredHighlightEndChanged)
     Q_PROPERTY(HighlightRangeMode highlightRangeMode READ highlightRangeMode WRITE setHighlightRangeMode NOTIFY highlightRangeModeChanged)
+    Q_PROPERTY(int highlightMoveDuration READ highlightMoveDuration WRITE setHighlightMoveDuration NOTIFY highlightMoveDurationChanged)
 
     Q_PROPERTY(qreal dragMargin READ dragMargin WRITE setDragMargin NOTIFY dragMarginChanged)
     Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration NOTIFY flickDecelerationChanged)
@@ -109,6 +110,9 @@ public:
     qreal preferredHighlightEnd() const;
     void setPreferredHighlightEnd(qreal);
 
+    int highlightMoveDuration() const;
+    void setHighlightMoveDuration(int);
+
     qreal dragMargin() const;
     void setDragMargin(qreal margin);
 
@@ -145,6 +149,7 @@ Q_SIGNALS:
     void interactiveChanged();
     void highlightChanged();
     void highlightItemChanged();
+    void highlightMoveDurationChanged();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

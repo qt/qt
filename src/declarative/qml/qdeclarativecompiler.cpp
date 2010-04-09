@@ -342,9 +342,22 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
     switch(type) {
         case -1:
             {
-            instr.type = QDeclarativeInstruction::StoreVariant;
-            instr.storeString.propertyIndex = prop.propertyIndex();
-            instr.storeString.value = output->indexForString(string);
+            if (v->value.isNumber()) {
+                double n = v->value.asNumber();
+                if (double(int(n)) == n) {
+                    instr.type = QDeclarativeInstruction::StoreVariantInteger;
+                    instr.storeInteger.propertyIndex = prop.propertyIndex();
+                    instr.storeInteger.value = int(n);
+                } else {
+                    instr.type = QDeclarativeInstruction::StoreVariantDouble;
+                    instr.storeDouble.propertyIndex = prop.propertyIndex();
+                    instr.storeDouble.value = n;
+                }
+            } else {
+                instr.type = QDeclarativeInstruction::StoreVariant;
+                instr.storeString.propertyIndex = prop.propertyIndex();
+                instr.storeString.value = output->indexForString(string);
+            }
             }
             break;
         case QVariant::String:
