@@ -792,19 +792,28 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
                  "a different engine");
         return;
     }
+    JSC::JSObject *thisObject = JSC::asObject(d->jscValue);
     JSC::JSValue other = d->engine->scriptValueToJSCValue(prototype);
 
     // check for cycle
     JSC::JSValue nextPrototypeValue = other;
     while (nextPrototypeValue && nextPrototypeValue.isObject()) {
         JSC::JSObject *nextPrototype = JSC::asObject(nextPrototypeValue);
-        if (nextPrototype == JSC::asObject(d->jscValue)) {
+        if (nextPrototype == thisObject) {
             qWarning("QScriptValue::setPrototype() failed: cyclic prototype value");
             return;
         }
         nextPrototypeValue = nextPrototype->prototype();
     }
-    JSC::asObject(d->jscValue)->setPrototype(other);
+
+    thisObject->setPrototype(other);
+
+    // Sync the internal Global Object prototype if appropriate.
+    if (((thisObject == d->engine->originalGlobalObjectProxy)
+         && !d->engine->customGlobalObject())
+        || (thisObject == d->engine->customGlobalObject())) {
+        d->engine->originalGlobalObject()->setPrototype(other);
+    }
 }
 
 /*!
