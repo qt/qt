@@ -158,7 +158,7 @@ To import a module into a namespace:
 import Qt 4.7 as TheQtLibrary
 \endcode
 
-Types from Qt 4.6 may then be used, but only by qualifying them with the namespace:
+Types from the Qt 4.7 module may then be used, but only by qualifying them with the namespace:
 
 \code
 TheQtLibrary.Rectangle { ... }
