@@ -107,6 +107,10 @@ class QDeclarativeWorkerScriptEnginePrivate : public QObject
 {
     Q_OBJECT
 public:
+    enum WorkerEventTypes {
+        WorkerDestroyEvent = QEvent::User + 100
+    };
+
     QDeclarativeWorkerScriptEnginePrivate(QDeclarativeEngine *eng);
 
     struct ScriptEngine : public QDeclarativeScriptEngine 
@@ -158,6 +162,9 @@ public:
 
     static QScriptValue onMessage(QScriptContext *ctxt, QScriptEngine *engine);
     static QScriptValue sendMessage(QScriptContext *ctxt, QScriptEngine *engine);
+
+signals:
+    void stopThread();
 
 protected:
     virtual bool event(QEvent *);
@@ -245,6 +252,9 @@ bool QDeclarativeWorkerScriptEnginePrivate::event(QEvent *event)
     } else if (event->type() == (QEvent::Type)WorkerLoadEvent::WorkerLoad) {
         WorkerLoadEvent *workerEvent = static_cast<WorkerLoadEvent *>(event);
         processLoad(workerEvent->workerId(), workerEvent->url());
+        return true;
+    } else if (event->type() == (QEvent::Type)WorkerDestroyEvent) {
+        emit stopThread();
         return true;
     } else {
         return QObject::event(event);
@@ -429,6 +439,7 @@ QDeclarativeWorkerScriptEngine::QDeclarativeWorkerScriptEngine(QDeclarativeEngin
 : QThread(parent), d(new QDeclarativeWorkerScriptEnginePrivate(parent))
 {
     d->m_lock.lock();
+    connect(d, SIGNAL(stopThread()), this, SLOT(quit()), Qt::DirectConnection);
     start(QThread::LowPriority);
     d->m_wait.wait(&d->m_lock);
     d->moveToThread(this);
@@ -440,8 +451,10 @@ QDeclarativeWorkerScriptEngine::~QDeclarativeWorkerScriptEngine()
     d->m_lock.lock();
     qDeleteAll(d->workers);
     d->workers.clear();
+    QCoreApplication::postEvent(d, new QEvent((QEvent::Type)QDeclarativeWorkerScriptEnginePrivate::WorkerDestroyEvent));
     d->m_lock.unlock();
 
+    wait();
     d->deleteLater();
 }
 

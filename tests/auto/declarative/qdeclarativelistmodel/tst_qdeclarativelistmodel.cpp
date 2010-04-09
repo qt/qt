@@ -337,7 +337,6 @@ void tst_QDeclarativeListModel::dynamic_worker()
     }
 
     delete item;
-    QTest::ignoreMessage(QtWarningMsg, "QThread: Destroyed while thread is still running");
     qApp->processEvents();
 }
 
@@ -367,7 +366,6 @@ void tst_QDeclarativeListModel::convertNestedToFlat_fail()
     QCOMPARE(model.count(), 2);
 
     delete item;
-    QTest::ignoreMessage(QtWarningMsg, "QThread: Destroyed while thread is still running");
     qApp->processEvents();
 }
 
@@ -427,7 +425,6 @@ void tst_QDeclarativeListModel::convertNestedToFlat_ok()
     QCOMPARE(model.count(), count+1);
 
     delete item;
-    QTest::ignoreMessage(QtWarningMsg, "QThread: Destroyed while thread is still running");
     qApp->processEvents();
 }
 
