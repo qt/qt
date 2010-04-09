@@ -511,7 +511,7 @@ GC MyWindow::createGC()
 
 void MyWindow::closeEvent()
 {
-    windowSurface->handleCloseEvent();
+    windowTL->handleCloseEvent();
 }
 
 void MyWindow::paintEvent()
@@ -633,7 +633,7 @@ void MyWindow::resizeEvent(XConfigureEvent *e)
     qDebug() << hex << window << dec << "ConfigureNotify" << e->x << e->y << e->width << e->height << "geometry" << xpos << ypos << width << height << "img:" << shm_img.size();
 #endif
 
-    windowSurface->handleGeometryChange(xpos, ypos, width, height);
+    windowTL->handleGeometryChange(xpos, ypos, width, height);
 }
 
 #if 0
@@ -657,7 +657,7 @@ void MyWindow::enterEvent(XCrossingEvent *)
 #ifdef MYX11_DEBUG
     qDebug() << "MyWindow::enterEvent" << hex << window;
 #endif
-    windowSurface->handleEnterEvent();
+    windowTL->handleEnterEvent();
 }
 
 void MyWindow::leaveEvent(XCrossingEvent *)
@@ -665,7 +665,7 @@ void MyWindow::leaveEvent(XCrossingEvent *)
 #ifdef MYX11_DEBUG
     qDebug() << "MyWindow::enterEvent" << hex << window;
 #endif
-    windowSurface->handleLeaveEvent();
+    windowTL->handleLeaveEvent();
 }
 
 void MyWindow::mousePressEvent(XButtonEvent *e)
@@ -688,17 +688,17 @@ void MyWindow::mousePressEvent(XButtonEvent *e)
     prevX = e->x;
     prevY = e->y;
 
-    windowSurface->handleMouseEvent(type, e);
+    windowTL->handleMouseEvent(type, e);
 }
 
 void MyWindow::mouseReleaseEvent(XButtonEvent *e)
 {
-    windowSurface->handleMouseEvent(QEvent::MouseButtonRelease, e);
+    windowTL->handleMouseEvent(QEvent::MouseButtonRelease, e);
 }
 
 void MyWindow::mouseMoveEvent(XButtonEvent *e)
 {
-    windowSurface->handleMouseEvent(QEvent::MouseMove, e);
+    windowTL->handleMouseEvent(QEvent::MouseMove, e);
 }
 
 #ifdef KeyPress
@@ -707,7 +707,7 @@ void MyWindow::mouseMoveEvent(XButtonEvent *e)
 
 void MyWindow::keyPressEvent(XKeyEvent *e)
 {
-    windowSurface->handleKeyEvent(QEvent::KeyPress, e);
+    windowTL->handleKeyEvent(QEvent::KeyPress, e);
 }
 
 #ifdef KeyRelease
@@ -716,7 +716,7 @@ void MyWindow::keyPressEvent(XKeyEvent *e)
 
 void MyWindow::keyReleaseEvent(XKeyEvent *e)
 {
-    windowSurface->handleKeyEvent(QEvent::KeyRelease, e);
+    windowTL->handleKeyEvent(QEvent::KeyRelease, e);
 }
 
 

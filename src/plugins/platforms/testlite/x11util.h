@@ -85,7 +85,7 @@ public: //###
     MyX11Cursors * cursors;
 };
 
-class QTestLiteWindowSurface; //### abstract callback interface, anyone?
+class QTestLiteWindow; //### abstract callback interface, anyone?
 
 struct MyShmImageInfo;
 
@@ -133,7 +133,7 @@ public: //###
     MyDisplay *xd;
     GC gc;
 
-    QTestLiteWindowSurface *windowSurface;
+    QTestLiteWindow *windowTL;
 
     int currentCursor;
     bool painted;

@@ -43,6 +43,7 @@
 #define QWINDOWSURFACE_TESTLITE_H
 
 #include <QtGui/private/qwindowsurface_p.h>
+#include <QPlatformWindow>
 #include <qevent.h>
 
 QT_BEGIN_NAMESPACE
@@ -61,11 +62,27 @@ public:
 
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void setGeometry(const QRect &rect);
+//    void resize(const QSize &size);
     bool scroll(const QRegion &area, int dx, int dy);
 
     void beginPaint(const QRegion &region);
     void endPaint(const QRegion &region);
+
+private:
+    QTestLiteIntegration *mPlatformIntegration;
+    QTestLiteScreen *mScreen;
+    Qt::WindowFlags window_flags;
+    MyWindow *xw;
+};
+
+
+class QTestLiteWindow : public QPlatformWindow
+{
+public:
+    QTestLiteWindow(QTestLiteIntegration *platformIntegration,
+         QTestLiteScreen *screen, QWidget *window);
+    ~QTestLiteWindow();
+
 
     void handleMouseEvent(QEvent::Type, void *); //forwarding X types is apparently impossible :(
     void handleKeyEvent(QEvent::Type, void *);
@@ -73,6 +90,8 @@ public:
     void handleCloseEvent();
     void handleEnterEvent();
     void handleLeaveEvent();
+
+    void setGeometry(const QRect &rect);
 
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
     Qt::WindowFlags windowFlags() const;
@@ -89,7 +108,10 @@ private:
     QTestLiteScreen *mScreen;
     Qt::WindowFlags window_flags;
     MyWindow *xw;
+
+    friend class QTestLiteWindowSurface; //### needs refactoring
 };
+
 
 QT_END_NAMESPACE
 

@@ -74,7 +74,8 @@ public:
     QTestLiteIntegration();
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
+    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
+    QWindowSurface *createWindowSurfaceForWindow(QWidget *widget, WId winId) const;
 
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 

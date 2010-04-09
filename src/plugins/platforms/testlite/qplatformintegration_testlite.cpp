@@ -57,20 +57,20 @@ public:
     MyCursor(QPlatformScreen *screen) : QGraphicsSystemCursor(screen) {}
 
     void changeCursor(QCursor * cursor, QWidget * widget) {
-        QTestLiteWindowSurface *ws = 0;
+        QTestLiteWindow *w = 0;
         if (widget) {
             QWidget *window = widget->window();
-            ws = static_cast<QTestLiteWindowSurface*>(window->windowSurface());
+            w = static_cast<QTestLiteWindow*>(window->platformWindow());
         } else {
             // No X11 cursor control when there is no widget under the cursor
             return;
         }
 
         //qDebug() << "changeCursor" << widget << ws;
-        if (!ws)
+        if (!w)
             return;
 
-        ws->setCursor(cursor);
+        w->setCursor(cursor);
     }
 };
 
@@ -101,13 +101,20 @@ QPixmapData *QTestLiteIntegration::createPixmapData(QPixmapData::PixelType type)
     return new QRasterPixmapData(type);
 }
 
-QWindowSurface *QTestLiteIntegration::createWindowSurface(QWidget *widget) const
+QWindowSurface *QTestLiteIntegration::createWindowSurfaceForWindow(QWidget *widget, WId) const
 {
     if (widget->windowType() == Qt::Desktop)
         return 0;   // Don't create an explicit window surface for the destkop.
     return new QTestLiteWindowSurface
         (const_cast<QTestLiteIntegration *>(this), mPrimaryScreen, widget);
 }
+
+
+QPlatformWindow *QTestLiteIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+{
+    return new QTestLiteWindow(const_cast<QTestLiteIntegration *>(this), mPrimaryScreen, widget);
+}
+
 
 
 QPixmap QTestLiteIntegration::grabWindow(WId window, int x, int y, int width, int height) const

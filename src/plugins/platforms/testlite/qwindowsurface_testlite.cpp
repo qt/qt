@@ -58,19 +58,16 @@ QTestLiteWindowSurface::QTestLiteWindowSurface
       xw(0)
 {
 
-
-    xw = new MyWindow(platformIntegration->xd, 0,0,300,300);
-    xw->windowSurface = this;
+    xw = static_cast<QTestLiteWindow*>(window->platformWindow())->xw;
+//    xw = new MyWindow(platformIntegration->xd, 0,0,300,300);
 
 //    qDebug() << "QTestLiteWindowSurface::QTestLiteWindowSurface:" << xw->window;
 
-    setWindowFlags(window->windowFlags()); //##### This should not be the plugin's responsibility
 }
 
 QTestLiteWindowSurface::~QTestLiteWindowSurface()
 {
 //    qDebug() << "~QTestLiteWindowSurface" << xw->window;
-    delete xw;
 }
 
 QPaintDevice *QTestLiteWindowSurface::paintDevice()
@@ -90,18 +87,18 @@ void QTestLiteWindowSurface::flush(QWidget *widget, const QRegion &region, const
 }
 
 
-void QTestLiteWindowSurface::setGeometry(const QRect &rect)
-{
-    QRect oldRect = geometry();
-    if (rect == oldRect)
-        return;
+// void QTestLiteWindowSurface::resize(const QSize &s)
+// {
+//     if (s == size())
+//         return;
 
-    QWindowSurface::setGeometry(rect);
+//     QWindowSurface::resize(size);
 
-    //if unchanged ###
-//    xw->setSize(rect.width(), rect.height());
-    xw->setGeometry(rect.x(), rect.y(), rect.width(), rect.height());
-}
+//     //if unchanged ###
+// //    xw->setSize(rect.width(), rect.height());
+
+
+// }
 
 //### scroll logic copied from QRasterWindowSurface, we should make better API for this
 
@@ -168,7 +165,8 @@ bool QTestLiteWindowSurface::scroll(const QRegion &area, int dx, int dy)
 void QTestLiteWindowSurface::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);
-    xw->resizeBuffer(geometry().size());
+    qDebug() << "QTestLiteWindowSurface::beginPaint" << size();
+    xw->resizeBuffer(size());
 }
 
 void QTestLiteWindowSurface::endPaint(const QRegion &region)
@@ -176,6 +174,29 @@ void QTestLiteWindowSurface::endPaint(const QRegion &region)
     Q_UNUSED(region);
     xw->painted = true; //there is content in the buffer
 }
+
+
+/**************************************************************************
+** QTestLiteWindow
+**************************************************************************/
+
+QTestLiteWindow::QTestLiteWindow(QTestLiteIntegration *platformIntegration,
+                                 QTestLiteScreen */*screen*/, QWidget *window)
+    :QPlatformWindow(window)
+{
+    xw = new MyWindow(platformIntegration->xd, 0,0,300,300);
+    setWindowFlags(window->windowFlags()); //##### This should not be the plugin's responsibility
+
+    xw->windowTL = this;
+}
+
+
+QTestLiteWindow::~QTestLiteWindow()
+{
+    delete xw;
+}
+
+
 
 
 
@@ -220,7 +241,7 @@ static Qt::KeyboardModifiers translateModifiers(int s)
     return ret;
 }
 
-void QTestLiteWindowSurface::handleMouseEvent(QEvent::Type type, void *ev)
+void QTestLiteWindow::handleMouseEvent(QEvent::Type type, void *ev)
 {
     static QPoint mousePoint;
 
@@ -245,7 +266,7 @@ void QTestLiteWindowSurface::handleMouseEvent(QEvent::Type type, void *ev)
                 bool hor = (((e->button == Button4 || e->button == Button5)
                              && (modifiers & Qt::AltModifier))
                             || (e->button == 6 || e->button == 7));
-                QWindowSystemInterface::handleWheelEvent(window(), e->time,
+                QWindowSystemInterface::handleWheelEvent(widget(), e->time,
                                                       QPoint(e->x, e->y),
                                                       QPoint(e->x_root, e->y_root),
                                                       delta, hor ? Qt::Horizontal : Qt::Vertical);
@@ -258,33 +279,33 @@ void QTestLiteWindowSurface::handleMouseEvent(QEvent::Type type, void *ev)
 
     buttons ^= button; // X event uses state *before*, Qt uses state *after*
 
-    QWindowSystemInterface::handleMouseEvent(window(), e->time, QPoint(e->x, e->y),
+    QWindowSystemInterface::handleMouseEvent(widget(), e->time, QPoint(e->x, e->y),
                                           QPoint(e->x_root, e->y_root),
                                           buttons);
 
     mousePoint = QPoint(e->x_root, e->y_root);
 }
 
-void QTestLiteWindowSurface::handleGeometryChange(int x, int y, int w, int h)
+void QTestLiteWindow::handleGeometryChange(int x, int y, int w, int h)
 {
-    QWindowSystemInterface::handleGeometryChange(window(), QRect(x,y,w,h));
+    QWindowSystemInterface::handleGeometryChange(widget(), QRect(x,y,w,h));
 }
 
 
-void QTestLiteWindowSurface::handleCloseEvent()
+void QTestLiteWindow::handleCloseEvent()
 {
-    QWindowSystemInterface::handleCloseEvent(window());
+    QWindowSystemInterface::handleCloseEvent(widget());
 }
 
 
-void QTestLiteWindowSurface::handleEnterEvent()
+void QTestLiteWindow::handleEnterEvent()
 {
-    QWindowSystemInterface::handleEnterEvent(window());
+    QWindowSystemInterface::handleEnterEvent(widget());
 }
 
-void QTestLiteWindowSurface::handleLeaveEvent()
+void QTestLiteWindow::handleLeaveEvent()
 {
-    QWindowSystemInterface::handleLeaveEvent(window());
+    QWindowSystemInterface::handleLeaveEvent(widget());
 }
 
 
@@ -568,7 +589,7 @@ static Qt::KeyboardModifiers modifierFromKeyCode(int qtcode)
     }
 }
 
-void QTestLiteWindowSurface::handleKeyEvent(QEvent::Type type, void *ev)
+void QTestLiteWindow::handleKeyEvent(QEvent::Type type, void *ev)
 {
     XKeyEvent *e = static_cast<XKeyEvent*>(ev);
 
@@ -592,12 +613,12 @@ void QTestLiteWindowSurface::handleKeyEvent(QEvent::Type type, void *ev)
     modifiers ^= modifierFromKeyCode(qtcode);
 
     if (qtcode) {
-        QWindowSystemInterface::handleKeyEvent(window(), e->time, type, qtcode, modifiers);
+        QWindowSystemInterface::handleKeyEvent(widget(), e->time, type, qtcode, modifiers);
     } else if (chars[0]) {
         int qtcode = chars.toUpper()[0]; //Not exactly right...
 	if (modifiers & Qt::ControlModifier && qtcode < ' ')
 	  qtcode = chars[0] + '@';
-        QWindowSystemInterface::handleKeyEvent(window(), e->time, type, qtcode, modifiers, QString::fromLatin1(chars));
+        QWindowSystemInterface::handleKeyEvent(widget(), e->time, type, qtcode, modifiers, QString::fromLatin1(chars));
     } else {
         qWarning() << "unknown X keycode" << hex << e->keycode << keySym;
     }
@@ -605,7 +626,19 @@ void QTestLiteWindowSurface::handleKeyEvent(QEvent::Type type, void *ev)
 
 
 
-Qt::WindowFlags QTestLiteWindowSurface::setWindowFlags(Qt::WindowFlags flags)
+void QTestLiteWindow::setGeometry(const QRect &rect)
+{
+    QRect oldRect = geometry();
+    if (rect == oldRect)
+        return;
+
+    //if unchanged ###
+    xw->setGeometry(rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+
+
+Qt::WindowFlags QTestLiteWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     Q_ASSERT(flags & Qt::Window);
 
@@ -617,19 +650,19 @@ Qt::WindowFlags QTestLiteWindowSurface::setWindowFlags(Qt::WindowFlags flags)
 
 }
 
-Qt::WindowFlags QTestLiteWindowSurface::windowFlags() const
+Qt::WindowFlags QTestLiteWindow::windowFlags() const
 {
     return window_flags;
 }
 
-void QTestLiteWindowSurface::setVisible(bool visible)
+void QTestLiteWindow::setVisible(bool visible)
 {
     //qDebug() << "QTestLiteWindowSurface::setVisible" << visible << xw->window;
     xw->setVisible(visible);
 }
 
 
-WId QTestLiteWindowSurface::winId() const
+WId QTestLiteWindow::winId() const
 {
     if (xw)
         return (WId) xw->window;
@@ -637,24 +670,24 @@ WId QTestLiteWindowSurface::winId() const
         return WId(0);
 }
 
-void QTestLiteWindowSurface::raise()
+void QTestLiteWindow::raise()
 {
     WId window = winId();
     XRaiseWindow(mPlatformIntegration->xd->display, window);
 }
 
-void QTestLiteWindowSurface::lower()
+void QTestLiteWindow::lower()
 {
     WId window = winId();
     XLowerWindow(mPlatformIntegration->xd->display, window);
 }
 
-void QTestLiteWindowSurface::setWindowTitle(const QString &title)
+void QTestLiteWindow::setWindowTitle(const QString &title)
 {
     xw->setWindowTitle(title);
 }
 
-void QTestLiteWindowSurface::setCursor(QCursor *cursor)
+void QTestLiteWindow::setCursor(QCursor *cursor)
 {
     xw->setCursor(cursor);
 }
