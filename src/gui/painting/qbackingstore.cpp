@@ -419,9 +419,12 @@ void QWidgetBackingStore::endPaint(const QRegion &cleaned, QWindowSurface *windo
 QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
 {
     const bool widgetDirty = widget && widget != tlw;
-#if !defined(Q_WS_LITE)
     const QRect tlwRect(topLevelRect());
+#if defined(Q_WS_LITE)
+    const QRect surfaceGeometry(tlwRect.topLeft(), windowSurface->size());
+#else
     const QRect surfaceGeometry(windowSurface->geometry());
+#endif
     if (surfaceGeometry != tlwRect && surfaceGeometry.size() != tlwRect.size()) {
         if (widgetDirty) {
             const QRect dirtyTlwRect = QRect(QPoint(), tlwRect.size());
@@ -431,7 +434,6 @@ QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
         }
         return QRect(QPoint(), tlwRect.size());
     }
-#endif
 
     // Calculate the region that needs repaint.
     QRegion r(dirty);
@@ -1156,11 +1158,14 @@ void QWidgetBackingStore::sync()
 
     const bool updatesDisabled = !tlw->updatesEnabled();
     bool repaintAllWidgets = false;
-#if !defined(Q_WS_LITE)
+
     const bool inTopLevelResize = tlwExtra->inTopLevelResize;
     const QRect tlwRect(topLevelRect());
+#ifdef  Q_WS_LITE
+    const QRect surfaceGeometry(tlwRect.topLeft(), windowSurface->size());
+#else
     const QRect surfaceGeometry(windowSurface->geometry());
-
+#endif
     if (inTopLevelResize || surfaceGeometry != tlwRect) {
         if ((inTopLevelResize || surfaceGeometry.size() != tlwRect.size()) && !updatesDisabled) {
             if (hasStaticContents()) {
@@ -1180,9 +1185,13 @@ void QWidgetBackingStore::sync()
                 repaintAllWidgets = true;
             }
         }
+#ifdef Q_WS_LITE
+        windowSurface->resize(tlwRect.size());
+#else
         windowSurface->setGeometry(tlwRect);
-    }
 #endif
+    }
+
 
     if (updatesDisabled)
         return;

@@ -165,7 +165,6 @@ bool QTestLiteWindowSurface::scroll(const QRegion &area, int dx, int dy)
 void QTestLiteWindowSurface::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);
-    qDebug() << "QTestLiteWindowSurface::beginPaint" << size();
     xw->resizeBuffer(size());
 }
 

@@ -767,6 +767,7 @@ void QApplicationPrivate::processGeometryChange(QWidget *tlw, const QRect &newRe
     if (isResize) {
         QResizeEvent e(tlw->data->crect.size(), cr.size());
         QApplication::sendSpontaneousEvent(tlw, &e);
+        tlw->update();
     }
 
     if (isMove) {
