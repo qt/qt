@@ -1376,10 +1376,10 @@ void tst_QNetworkReply::deleteFromHttp_data()
     // for status codes to expect, see http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
 
     QTest::newRow("405-method-not-allowed") << QUrl("http://" + QtNetworkSettings::serverName() + "/index.html") << 405 << QNetworkReply::ContentOperationNotPermittedError;
-    QTest::newRow("200-ok") << QUrl("http://" + QtNetworkSettings::serverName() + "/cgi-bin/http-delete.cgi?200-ok") << 200 << QNetworkReply::NoError;
-    QTest::newRow("202-accepted") << QUrl("http://" + QtNetworkSettings::serverName() + "/cgi-bin/http-delete.cgi?202-accepted") << 202 << QNetworkReply::NoError;
-    QTest::newRow("204-no-content") << QUrl("http://" + QtNetworkSettings::serverName() + "/cgi-bin/http-delete.cgi?204-no-content") << 204 << QNetworkReply::NoError;
-    QTest::newRow("404-not-found") << QUrl("http://" + QtNetworkSettings::serverName() + "/cgi-bin/http-delete.cgi?404-not-found") << 404 << QNetworkReply::ContentNotFoundError;
+    QTest::newRow("200-ok") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/http-delete.cgi?200-ok") << 200 << QNetworkReply::NoError;
+    QTest::newRow("202-accepted") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/http-delete.cgi?202-accepted") << 202 << QNetworkReply::NoError;
+    QTest::newRow("204-no-content") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/http-delete.cgi?204-no-content") << 204 << QNetworkReply::NoError;
+    QTest::newRow("404-not-found") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/http-delete.cgi?404-not-found") << 404 << QNetworkReply::ContentNotFoundError;
 }
 
 void tst_QNetworkReply::deleteFromHttp()
@@ -3786,10 +3786,10 @@ void tst_QNetworkReply::authorizationError_data()
     QTest::addColumn<QString>("httpBody");
 
     QTest::newRow("unknown-authorization-method") << "http://" + QtNetworkSettings::serverName() +
-                                                     "/cgi-bin/http-unknown-authentication-method.cgi?401-authorization-required" << 1 << 1
+                                                     "/qtest/cgi-bin/http-unknown-authentication-method.cgi?401-authorization-required" << 1 << 1
                                                   << int(QNetworkReply::AuthenticationRequiredError) << 401 << "authorization required";
     QTest::newRow("unknown-proxy-authorization-method") << "http://" + QtNetworkSettings::serverName() +
-                                                           "/cgi-bin/http-unknown-authentication-method.cgi?407-proxy-authorization-required" << 1 << 1
+                                                           "/qtest/cgi-bin/http-unknown-authentication-method.cgi?407-proxy-authorization-required" << 1 << 1
                                                         << int(QNetworkReply::ProxyAuthenticationRequiredError) << 407
                                                         << "authorization required";
 }
