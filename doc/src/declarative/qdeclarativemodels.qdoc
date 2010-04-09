@@ -309,13 +309,21 @@ There are no data roles.
 
 The following example creates a ListView with five elements:
 \code
-Component {
-    id: itemDelegate
-    Text { text: "I am item number: " + index }
-}
-ListView {
-    model: 5
-    delegate: itemDelegate
+Item {
+    width: 200
+    height: 250
+
+    Component {
+        id: itemDelegate
+        Text { text: "I am item number: " + index }
+    }
+
+    ListView {
+        anchors.fill: parent
+        model: 5
+        delegate: itemDelegate
+    }
+
 }
 \endcode
 
