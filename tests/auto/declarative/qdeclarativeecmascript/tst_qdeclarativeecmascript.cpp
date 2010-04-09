@@ -140,6 +140,7 @@ private slots:
     void nullObjectBinding();
     void deletedEngine();
     void libraryScriptAssert();
+    void variantsAssignedUndefined();
 
     void callQtInvokables();
 private:
@@ -2187,6 +2188,25 @@ void tst_qdeclarativeecmascript::libraryScriptAssert()
 
     QObject *object = component.create();
     QVERIFY(object != 0);
+
+    delete object;
+}
+
+void tst_qdeclarativeecmascript::variantsAssignedUndefined()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("variantsAssignedUndefined.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toInt(), 10);
+    QCOMPARE(object->property("test2").toInt(), 11);
+
+    object->setProperty("runTest", true);
+
+    QCOMPARE(object->property("test1"), QVariant());
+    QCOMPARE(object->property("test2"), QVariant());
+
 
     delete object;
 }

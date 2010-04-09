@@ -174,6 +174,10 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 
                 data->property.reset();
 
+            } else if (isUndefined && data->property.propertyType() == qMetaTypeId<QVariant>()) {
+
+                QDeclarativePropertyPrivate::write(data->property, QVariant(), flags);
+
             } else if (isUndefined) {
 
                 QUrl url = QUrl(data->url);

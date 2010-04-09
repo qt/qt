@@ -351,6 +351,8 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
     if (value.isUndefined() && lastData->flags & QDeclarativePropertyCache::Data::IsResettable) {
         void *a[] = { 0 };
         QMetaObject::metacall(obj, QMetaObject::ResetProperty, lastData->coreIndex, a);
+    } else if (value.isUndefined() && lastData->propType == qMetaTypeId<QVariant>()) {
+        QDeclarativePropertyPrivate::write(obj, *lastData, QVariant(), evalContext);
     } else if (value.isUndefined()) {
         QString error = QLatin1String("Cannot assign [undefined] to ") +
                         QLatin1String(QMetaType::typeName(lastData->propType));
