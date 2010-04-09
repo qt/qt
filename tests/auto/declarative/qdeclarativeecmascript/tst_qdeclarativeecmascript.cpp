@@ -139,6 +139,7 @@ private slots:
     void regExpBug();
     void nullObjectBinding();
     void deletedEngine();
+    void libraryScriptAssert();
 
     void callQtInvokables();
 private:
@@ -2175,6 +2176,17 @@ void tst_qdeclarativeecmascript::deletedEngine()
     QCOMPARE(object->property("a").toInt(), 117);
     object->setProperty("b", QVariant(10));
     QCOMPARE(object->property("a").toInt(), 117);
+
+    delete object;
+}
+
+// Test the crashing part of QTBUG-9705
+void tst_qdeclarativeecmascript::libraryScriptAssert()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("libraryScriptAssert.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 
     delete object;
 }
