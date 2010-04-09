@@ -218,7 +218,11 @@ bool Translator::load(const QString &filename, ConversionData &cd, const QString
     if (filename.isEmpty() || filename == QLatin1String("-")) {
 #ifdef Q_OS_WIN
         // QFile is broken for text files
+# ifdef Q_OS_WINCE
+        ::_setmode(stdin, _O_BINARY);
+# else
         ::_setmode(0, _O_BINARY);
+# endif
 #endif
         if (!file.open(stdin, QIODevice::ReadOnly)) {
             cd.appendError(QString::fromLatin1("Cannot open stdin!? (%1)")
