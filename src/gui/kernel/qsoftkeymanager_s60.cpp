@@ -312,17 +312,8 @@ bool QSoftKeyManagerPrivateS60::setMiddleSoftkey(CEikButtonGroupContainer &cba)
 bool QSoftKeyManagerPrivateS60::setRightSoftkey(CEikButtonGroupContainer &cba)
 {
     if (!setSoftkey(cba, QAction::NegativeSoftKey, RSK_POSITION)) {
-        Qt::WindowType windowType = Qt::Window;
-        QAction *action = requestedSoftKeyActions.value(0);
-        if (action) {
-            QWidget *actionParent = action->parentWidget();
-            Q_ASSERT_X(actionParent, Q_FUNC_INFO, "No parent set for softkey action!");
-
-            QWidget *actionWindow = actionParent->window();
-            Q_ASSERT_X(actionWindow, Q_FUNC_INFO, "Softkey action does not have window!");
-            windowType = actionWindow->windowType();
-        }
-
+        const Qt::WindowType windowType = initialSoftKeySource
+            ? initialSoftKeySource->window()->windowType() : Qt::Window;
         if (windowType != Qt::Dialog && windowType != Qt::Popup) {
             QString text(QSoftKeyManager::tr("Exit"));
             TPtrC nativeText = qt_QString2TPtrC(text);

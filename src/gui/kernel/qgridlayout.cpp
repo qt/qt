@@ -1852,7 +1852,7 @@ void QGridLayout::invalidate()
 /*!
     \fn int QGridLayout::colSpacing(int col) const
 
-    Use columnSpacing() instead.
+    Use columnMinimumWidth() instead.
 */
 
 /*!
