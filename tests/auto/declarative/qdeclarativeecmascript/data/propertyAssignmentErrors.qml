@@ -14,12 +14,6 @@ QtObject {
         }
 
         try {
-            root.b = [ 10, root ]
-        } catch(e) {
-            console.log (e.fileName + ":" + e.lineNumber + ":" + e);
-        }
-
-        try {
             root.a = "Hello";
         } catch(e) {
             console.log (e.fileName + ":" + e.lineNumber + ":" + e);

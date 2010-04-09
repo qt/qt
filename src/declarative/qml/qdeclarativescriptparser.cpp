@@ -535,7 +535,8 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         // { "time", Object::DynamicProperty::Time, "QTime" },
         // { "date", Object::DynamicProperty::Date, "QDate" },
         { "date", Object::DynamicProperty::DateTime, "QDateTime" },
-        { "var", Object::DynamicProperty::Variant, "QVariant" }
+        { "var", Object::DynamicProperty::Variant, "QVariant" },
+        { "variant", Object::DynamicProperty::Variant, "QVariant" }
     };
     const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) /
                                          sizeof(propTypeNameToTypes[0]);
@@ -563,7 +564,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
                 _parser->_errors << error;
                 return false;
             }
-
+            
             signal.parameterTypes << qtType;
             signal.parameterNames << p->name->asString().toUtf8();
             p = p->finish();
@@ -645,6 +646,11 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         property.name = name.toUtf8();
         property.location = location(node->firstSourceLocation(),
                                      node->lastSourceLocation());
+
+        if (memberType == QByteArray("var")) 
+            qWarning().nospace() << qPrintable(_parser->_scriptFile) << ":" << property.location.start.line << ":" 
+                                 << property.location.start.column << ": var type has been replaced by variant.  "
+                                 << "Support will be removed entirely shortly.";
 
         if (node->expression) { // default value
             property.defaultValue = new Property;
@@ -909,6 +915,7 @@ bool QDeclarativeScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
     clear();
 
     const QString fileName = url.toString();
+    _scriptFile = fileName;
 
     QTextStream stream(qmldata, QIODevice::ReadOnly);
     stream.setCodec("UTF-8");
