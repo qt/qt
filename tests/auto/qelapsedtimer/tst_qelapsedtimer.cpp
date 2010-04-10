@@ -46,6 +46,17 @@
 
 static const int minResolution = 50; // the minimum resolution for the tests
 
+QDebug operator<<(QDebug s, const QElapsedTimer &t)
+{
+    union {
+        QElapsedTimer t;
+        struct { qint64 t1, t2; } i;
+    } copy;
+    copy.t = t;
+    s.nospace() << "(" <<  copy.i.t1 << ", " << copy.i.t2 << ")";
+    return s.space();
+}
+
 class tst_QElapsedTimer : public QObject
 {
     Q_OBJECT
@@ -110,10 +121,12 @@ void tst_QElapsedTimer::basics()
 #endif
 
     quint64 value1 = t1.msecsSinceReference();
+    qDebug() << value1 << t1;
     qint64 elapsed = t1.restart();
     QVERIFY(elapsed < minResolution);
 
     quint64 value2 = t1.msecsSinceReference();
+    qDebug() << value2 << t1 << elapsed;
     // in theory, elapsed == value2 - value1
 
     // However, since QElapsedTimer keeps internally the full resolution,
