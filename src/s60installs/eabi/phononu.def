@@ -544,4 +544,53 @@ EXPORTS
 	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE2EEE @ 543 NONAME
 	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE3EEE @ 544 NONAME
 	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE4EEE @ 545 NONAME
+	_ZN6Phonon12GlobalConfig22setHideAdvancedDevicesEb @ 546 NONAME
+	_ZN6Phonon12GlobalConfig27setAudioOutputDeviceListForENS_8CategoryE5QListIiE @ 547 NONAME
+	_ZN6Phonon12GlobalConfig28setAudioCaptureDeviceListForENS_8CategoryE5QListIiE @ 548 NONAME
+	_ZN6Phonon12PulseSupport11getInstanceEv @ 549 NONAME
+	_ZN6Phonon12PulseSupport11qt_metacallEN11QMetaObject4CallEiPPv @ 550 NONAME
+	_ZN6Phonon12PulseSupport11qt_metacastEPKc @ 551 NONAME
+	_ZN6Phonon12PulseSupport11usingDeviceE7QStringi @ 552 NONAME
+	_ZN6Phonon12PulseSupport15emitUsingDeviceE7QStringi @ 553 NONAME
+	_ZN6Phonon12PulseSupport15setOutputDeviceE7QStringi @ 554 NONAME
+	_ZN6Phonon12PulseSupport16clearStreamCacheE7QString @ 555 NONAME
+	_ZN6Phonon12PulseSupport16setCaptureDeviceE7QStringi @ 556 NONAME
+	_ZN6Phonon12PulseSupport16staticMetaObjectE @ 557 NONAME DATA 16
+	_ZN6Phonon12PulseSupport17setStreamPropListENS_8CategoryE7QString @ 558 NONAME
+	_ZN6Phonon12PulseSupport19getStaticMetaObjectEv @ 559 NONAME
+	_ZN6Phonon12PulseSupport24objectDescriptionChangedENS_21ObjectDescriptionTypeE @ 560 NONAME
+	_ZN6Phonon12PulseSupport28emitObjectDescriptionChangedENS_21ObjectDescriptionTypeE @ 561 NONAME
+	_ZN6Phonon12PulseSupport34setOutputDevicePriorityForCategoryENS_8CategoryE5QListIiE @ 562 NONAME
+	_ZN6Phonon12PulseSupport35setCaptureDevicePriorityForCategoryENS_8CategoryE5QListIiE @ 563 NONAME
+	_ZN6Phonon12PulseSupport6enableEb @ 564 NONAME
+	_ZN6Phonon12PulseSupport8isActiveEv @ 565 NONAME
+	_ZN6Phonon12PulseSupport8shutdownEv @ 566 NONAME
+	_ZN6Phonon12PulseSupportC1Ev @ 567 NONAME
+	_ZN6Phonon12PulseSupportC2Ev @ 568 NONAME
+	_ZN6Phonon12PulseSupportD0Ev @ 569 NONAME
+	_ZN6Phonon12PulseSupportD1Ev @ 570 NONAME
+	_ZN6Phonon12PulseSupportD2Ev @ 571 NONAME
+	_ZN6Phonon15AudioDataOutput10endOfMediaEi @ 572 NONAME
+	_ZN6Phonon15AudioDataOutput11qt_metacallEN11QMetaObject4CallEiPPv @ 573 NONAME
+	_ZN6Phonon15AudioDataOutput11qt_metacastEPKc @ 574 NONAME
+	_ZN6Phonon15AudioDataOutput11setDataSizeEi @ 575 NONAME
+	_ZN6Phonon15AudioDataOutput16staticMetaObjectE @ 576 NONAME DATA 16
+	_ZN6Phonon15AudioDataOutput19getStaticMetaObjectEv @ 577 NONAME
+	_ZN6Phonon15AudioDataOutput9dataReadyERK4QMapINS0_7ChannelE7QVectorIsEE @ 578 NONAME
+	_ZN6Phonon15AudioDataOutputC1EP7QObject @ 579 NONAME
+	_ZN6Phonon15AudioDataOutputC2EP7QObject @ 580 NONAME
+	_ZN6Phonon7Factory21createAudioDataOutputEP7QObject @ 581 NONAME
+	_ZNK6Phonon11VideoWidget8snapshotEv @ 582 NONAME
+	_ZNK6Phonon12GlobalConfig19hideAdvancedDevicesEv @ 583 NONAME
+	_ZNK6Phonon12PulseSupport10metaObjectEv @ 584 NONAME
+	_ZNK6Phonon12PulseSupport23objectIndexesByCategoryENS_21ObjectDescriptionTypeENS_8CategoryE @ 585 NONAME
+	_ZNK6Phonon12PulseSupport24objectDescriptionIndexesENS_21ObjectDescriptionTypeE @ 586 NONAME
+	_ZNK6Phonon12PulseSupport27objectDescriptionPropertiesENS_21ObjectDescriptionTypeEi @ 587 NONAME
+	_ZNK6Phonon15AudioDataOutput10metaObjectEv @ 588 NONAME
+	_ZNK6Phonon15AudioDataOutput10sampleRateEv @ 589 NONAME
+	_ZNK6Phonon15AudioDataOutput8dataSizeEv @ 590 NONAME
+	_ZTIN6Phonon12PulseSupportE @ 591 NONAME
+	_ZTIN6Phonon15AudioDataOutputE @ 592 NONAME
+	_ZTVN6Phonon12PulseSupportE @ 593 NONAME
+	_ZTVN6Phonon15AudioDataOutputE @ 594 NONAME
 
