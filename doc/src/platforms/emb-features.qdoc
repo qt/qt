@@ -105,9 +105,6 @@
     \note The \c qconfig tool is intended to be built against Qt on
     desktop platforms.
 
-    \bold{Windows CE:} The Qt for Windows CE package contains a \c qconfig
-    executable that you can run on a Windows desktop to configure the build.
-
     \image qt-embedded-qconfigtool.png
 
     The \c qconfig tool's interface displays all of Qt's

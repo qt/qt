@@ -1007,11 +1007,15 @@ void QScriptEnginePrivate::setGlobalObject(JSC::JSObject *object)
     if (object == globalObject())
         return;
     QScript::GlobalObject *glob = static_cast<QScript::GlobalObject*>(originalGlobalObject());
-    if (object == originalGlobalObjectProxy)
+    if (object == originalGlobalObjectProxy) {
         glob->customGlobalObject = 0;
-    else {
+        // Sync the internal prototype, since JSObject::prototype() is not virtual.
+        glob->setPrototype(originalGlobalObjectProxy->prototype());
+    } else {
         Q_ASSERT(object != originalGlobalObject());
         glob->customGlobalObject = object;
+        // Sync the internal prototype, since JSObject::prototype() is not virtual.
+        glob->setPrototype(object->prototype());
     }
 }
 

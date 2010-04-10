@@ -1520,6 +1520,7 @@ void tst_QSslSocket::verifyMode()
     loop.exec();
 
     QVERIFY(clientSocket.isEncrypted());
+    qDebug() << server.socket->sslErrors();
     QVERIFY(server.socket->sslErrors().isEmpty());
 }
 
