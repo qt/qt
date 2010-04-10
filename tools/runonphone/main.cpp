@@ -55,18 +55,20 @@
 void printUsage(QTextStream& outstream, QString exeName)
 {
     outstream << exeName << " [options] [program] [program arguments]" << endl
-            << "-s, --sis <file>                     specify sis file to install" << endl
-            << "-p, --portname <COMx>                specify COM port to use by device name" << endl
-            << "-f, --portfriendlyname <substring>   specify COM port to use by friendly name" << endl
-            << "-t, --timeout <milliseconds>         terminate test if timeout occurs" << endl
-            << "-v, --verbose                        show debugging output" << endl
-            << "-q, --quiet                          hide progress messages" << endl
+            << "-s, --sis <file>                         specify sis file to install" << endl
+            << "-p, --portname <COMx>                    specify COM port to use by device name" << endl
+            << "-f, --portfriendlyname <substring>       specify COM port to use by friendly name" << endl
+            << "-t, --timeout <milliseconds>             terminate test if timeout occurs" << endl
+            << "-v, --verbose                            show debugging output" << endl
+            << "-q, --quiet                              hide progress messages" << endl
+            << "-d, --download <remote file> <local file> copy file from phone to PC after running test" << endl
             << endl
             << "USB COM ports can usually be autodetected, use -p or -f to force a specific port." << endl
             << "If using System TRK, it is possible to copy the program directly to sys/bin on the phone." << endl
             << "-s can be used with both System and Application TRK to install the program" << endl;
 }
 
+#define CHECK_PARAMETER_EXISTS if(!it.hasNext()) { printUsage(outstream, args[0]); return 1; }
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -79,59 +81,59 @@ int main(int argc, char *argv[])
     QStringList args = QCoreApplication::arguments();
     QTextStream outstream(stdout);
     QTextStream errstream(stderr);
+    QString downloadRemoteFile;
+    QString downloadLocalFile;
     int loglevel=1;
     int timeout=0;
-    for (int i=1;i<args.size();i++) {
-        QString arg = args.at(i);
+    QListIterator<QString> it(args);
+    it.next(); //skip name of program
+    while (it.hasNext()) {
+        QString arg = it.next();
+
         if (arg.startsWith("-")) {
-            if (args.size() < i+2) {
-                errstream << "Command line missing argument parameters" << endl;
-                return 1;
+            if (arg == "--portname" || arg == "-p") {
+                CHECK_PARAMETER_EXISTS
+                serialPortName = it.next();
             }
-            QString param = args.at(i+1);
-            if (arg.compare("--portname", Qt::CaseSensitive) == 0
-               || arg.compare("-p", Qt::CaseSensitive) == 0) {
-                serialPortName = param;
-                i++;
+            else if (arg == "--portfriendlyname" || arg == "-f") {
+                CHECK_PARAMETER_EXISTS
+                serialPortFriendlyName = it.next();
             }
-            else if (arg.compare("--portfriendlyname", Qt::CaseSensitive) == 0
-                    || arg.compare("-f", Qt::CaseSensitive) == 0) {
-                serialPortFriendlyName = param;
-                i++;
+            else if (arg == "--sis" || arg == "-s") {
+                CHECK_PARAMETER_EXISTS
+                sisFile = it.next();
             }
-            else if (arg.compare("--sis", Qt::CaseSensitive) == 0
-                    || arg.compare("-s", Qt::CaseSensitive) == 0) {
-                sisFile = param;
-                i++;
+            else if (arg == "--download" || arg == "-d") {
+                CHECK_PARAMETER_EXISTS
+                downloadRemoteFile = it.next();
+                CHECK_PARAMETER_EXISTS
+                downloadLocalFile = it.next();
             }
-            else if (arg.compare("--timeout", Qt::CaseSensitive) == 0
-                    || arg.compare("-t", Qt::CaseSensitive) == 0) {
+            else if (arg == "--timeout" || arg == "-t") {
+                CHECK_PARAMETER_EXISTS
                 bool ok;
-                timeout = param.toInt(&ok);
+                timeout = it.next().toInt(&ok);
                 if (!ok) {
                     errstream << "Timeout must be specified in milliseconds" << endl;
                     return 1;
                 }
-                i++;
             }
-            else if (arg.compare("--verbose", Qt::CaseSensitive) == 0
-                    || arg.compare("-v", Qt::CaseSensitive) == 0)
+            else if (arg == "--verbose" || arg == "-v")
                 loglevel=2;
-            else if (arg.compare("--quiet", Qt::CaseSensitive) == 0
-                    || arg.compare("-q", Qt::CaseSensitive) == 0)
+            else if (arg == "--quiet" || arg == "-q")
                 loglevel=0;
             else
                 errstream << "unknown command line option " << arg << endl;
         } else {
             exeFile = arg;
-            i++;
-            for(;i<args.size();i++) {
-                cmdLine.append(args.at(i));
+            while(it.hasNext()) {
+                cmdLine.append(it.next());
             }
         }
     }
 
-    if (exeFile.isEmpty() && sisFile.isEmpty()) {
+    if (exeFile.isEmpty() && sisFile.isEmpty() && 
+        (downloadLocalFile.isEmpty() || downloadRemoteFile.isEmpty())) {
         printUsage(outstream, args[0]);
         return 1;
     }
@@ -179,6 +181,10 @@ int main(int argc, char *argv[])
         launcher->addStartupActions(trk::Launcher::ActionRun);
         launcher->setFileName(QString("c:\\sys\\bin\\") + info.fileName());
         launcher->setCommandLineArgs(cmdLine);
+    }
+    if (!downloadRemoteFile.isEmpty() && !downloadLocalFile.isEmpty()) {
+        launcher->addStartupActions(trk::Launcher::ActionDownload);
+        launcher->setDownloadFileName(downloadRemoteFile, downloadLocalFile);
     }
     if (loglevel > 0)
         outstream << "Connecting to target via " << serialPortName << endl;
