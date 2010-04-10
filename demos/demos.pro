@@ -1,4 +1,6 @@
 TEMPLATE    = subdirs
+
+!contains(QT_CONFIG, no-gui) {
 SUBDIRS     = \
             demos_shared \
             demos_deform \
@@ -103,4 +105,5 @@ demos_sub-attaq.subdir = sub-attaq
      demos_composition.depends = demos_shared
      demos_arthurplugin.depends = demos_shared
      demos_pathstroke.depends = demos_shared
+}
 }

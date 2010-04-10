@@ -43,6 +43,8 @@
 #include "qdbusmetatype_p.h"
 #include "qdbusutil_p.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 static void qIterAppend(DBusMessageIter *it, QByteArray *ba, int type, const void *arg)
@@ -548,3 +550,5 @@ bool QDBusMarshaller::appendCrossMarshalling(QDBusDemarshaller *demarshaller)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

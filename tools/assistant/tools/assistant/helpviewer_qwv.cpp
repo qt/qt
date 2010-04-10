@@ -129,26 +129,15 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
     const QNetworkRequest &request, QIODevice* /*outgoingData*/)
 {
     TRACE_OBJ
-    const QUrl& url = request.url();
-    QString mimeType = url.toString();
-    if (mimeType.endsWith(QLatin1String(".svg"))
-        || mimeType.endsWith(QLatin1String(".svgz"))) {
-            mimeType = QLatin1String("image/svg+xml");
-    } else if (mimeType.endsWith(QLatin1String(".css"))) {
-        mimeType = QLatin1String("text/css");
-    } else if (mimeType.endsWith(QLatin1String(".js"))) {
-        mimeType = QLatin1String("text/javascript");
-    } else if (mimeType.endsWith(QLatin1String(".txt"))) {
-        mimeType = QLatin1String("text/plain");
-    } else {
-        mimeType = QLatin1String("text/html");
-    }
-
+    const QUrl &url = request.url();
+    const QString &mimeType = AbstractHelpViewer::mimeFromUrl(url.toString());
+    
     HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     const QByteArray &data = helpEngine.findFile(url).isValid()
         ? helpEngine.fileData(url)
         : AbstractHelpViewer::PageNotFoundMessage.arg(url.toString()).toUtf8();
-    return new HelpNetworkReply(request, data, mimeType);
+    return new HelpNetworkReply(request, data, mimeType.isEmpty()
+        ? QLatin1String("application/octet-stream") : mimeType);
 }
 
 class HelpPage : public QWebPage

@@ -70,6 +70,7 @@ public:
 
     static bool isLocalUrl(const QUrl &url);
     static bool canOpenPage(const QString &url);
+    static QString mimeFromUrl(const QString &url);
     static bool launchWithExternalApp(const QUrl &url);
 };
 

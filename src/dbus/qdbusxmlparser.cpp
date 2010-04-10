@@ -50,6 +50,8 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qtextstream.h>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 static QDBusIntrospection::Annotations
@@ -367,3 +369,5 @@ QDBusXmlParser::objectTree() const
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

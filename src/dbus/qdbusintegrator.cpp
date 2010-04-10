@@ -64,6 +64,8 @@
 
 #include "qdbusthreaddebug_p.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 static bool isDebugging;
@@ -758,6 +760,7 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
     if (!object)
         return false;
 
+#ifndef QT_NO_PROPERTIES
     Q_ASSERT_X(QThread::currentThread() == object->thread(),
                "QDBusConnection: internal threading error",
                "function called for an object that is in another thread!!");
@@ -816,6 +819,8 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
         deliverCall(object, flags, msg, cacheIt->metaTypes, cacheIt->slotIdx);
         return true;
     }
+#endif // QT_NO_PROPERTIES
+    return false;
 }
 
 void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const QDBusMessage &msg,
@@ -2327,3 +2332,5 @@ void QDBusConnectionPrivate::postEventToThread(int action, QObject *object, QEve
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

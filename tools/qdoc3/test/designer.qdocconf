@@ -46,6 +46,7 @@ exampledirs             = $QT_SOURCE_TREE \
                           $QT_SOURCE_TREE/examples \
                           $QT_SOURCE_TREE/doc/src
 
-imagedirs               = $QT_SOURCE_TREE/doc/src/images
+imagedirs               = $QT_SOURCE_TREE/doc/src/images \
+			  $QT_SOURCE_TREE/doc/src/template/images
 outputdir               = $QT_BUILD_TREE/doc-build/html-designer
 base                    = file:$QT_BUILD_TREE/doc-build/html-designer
