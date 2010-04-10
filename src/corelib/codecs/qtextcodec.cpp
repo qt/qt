@@ -671,6 +671,11 @@ static void setup()
     if (all)
         return;
 
+#ifdef Q_OS_SYMBIAN
+    if (User::TrapHandler() == NULL)
+        return;
+#endif
+
 #ifdef Q_DEBUG_TEXTCODEC
     if (destroying_is_ok)
         qWarning("QTextCodec: Creating new codec during codec cleanup");
