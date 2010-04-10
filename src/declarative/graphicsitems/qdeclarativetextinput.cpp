@@ -429,6 +429,29 @@ void QDeclarativeTextInput::setFocusOnPress(bool b)
 }
 
 /*!
+    \qmlproperty bool TextInput::autoScroll
+
+    Whether the TextInput should scroll when the text is longer than the width. By default this is
+    set to true.
+*/
+bool QDeclarativeTextInput::autoScroll() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->autoScroll;
+}
+
+void QDeclarativeTextInput::setAutoScroll(bool b)
+{
+    Q_D(QDeclarativeTextInput);
+    if (d->autoScroll == b)
+        return;
+
+    d->autoScroll = b;
+
+    emit autoScrollChanged(d->autoScroll);
+}
+
+/*!
     \qmlproperty Validator TextInput::validator
 
     Allows you to set a validator on the TextInput. When a validator is set
@@ -449,7 +472,7 @@ void QDeclarativeTextInput::setFocusOnPress(bool b)
     input of integers between 11 and 31 into the text input:
 
     \code
-    import Qt 4.6
+    import Qt 4.7
     TextInput{
         validator: IntValidator{bottom: 11; top: 31;}
         focus: true
@@ -645,6 +668,8 @@ void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
     Q_Q(QDeclarativeTextInput);
     focused = hasFocus;
     q->setCursorVisible(hasFocus);
+    if (!hasFocus)
+        control->deselect();
     QDeclarativeItemPrivate::focusChanged(hasFocus);
 }
 
@@ -679,7 +704,15 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
         setFocus(true);
     }
-    d->control->processEvent(event);
+    bool mark = event->modifiers() & Qt::ShiftModifier;
+    int cursor = d->xToPos(event->pos().x());
+    d->control->moveCursor(cursor, mark);
+}
+
+void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->moveCursor(d->xToPos(event->pos().x()), true);
 }
 
 /*!
@@ -704,6 +737,7 @@ bool QDeclarativeTextInput::event(QEvent* ev)
         case QEvent::KeyPress:
         case QEvent::KeyRelease://###Should the control be doing anything with release?
         case QEvent::GraphicsSceneMousePress:
+        case QEvent::GraphicsSceneMouseMove:
         case QEvent::GraphicsSceneMouseRelease:
             break;
         default:
@@ -733,28 +767,56 @@ void QDeclarativeTextInput::drawContents(QPainter *p, const QRect &r)
     int flags = QLineControl::DrawText;
     if(!isReadOnly() && d->cursorVisible && !d->cursorItem)
         flags |= QLineControl::DrawCursor;
-    if (d->control->hasSelectedText()){
+    if (d->control->hasSelectedText())
             flags |= QLineControl::DrawSelections;
+    QPoint offset = QPoint(0,0);
+    QFontMetrics fm = QFontMetrics(d->font);
+    int cix = qRound(d->control->cursorToX());
+    QRect br(boundingRect().toRect());
+    //###Is this using bearing appropriately?
+    int minLB = qMax(0, -fm.minLeftBearing());
+    int minRB = qMax(0, -fm.minRightBearing());
+    int widthUsed = qRound(d->control->naturalTextWidth()) + 1 + minRB;
+    if (d->autoScroll) {
+        if ((minLB + widthUsed) <=  br.width()) {
+            // text fits in br; use hscroll for alignment
+            switch (d->hAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+            case Qt::AlignRight:
+                d->hscroll = widthUsed - br.width() + 1;
+                break;
+            case Qt::AlignHCenter:
+                d->hscroll = (widthUsed - br.width()) / 2;
+                break;
+            default:
+                // Left
+                d->hscroll = 0;
+                break;
+            }
+            d->hscroll -= minLB;
+        } else if (cix - d->hscroll >= br.width()) {
+            // text doesn't fit, cursor is to the right of br (scroll right)
+            d->hscroll = cix - br.width() + 1;
+        } else if (cix - d->hscroll < 0 && d->hscroll < widthUsed) {
+            // text doesn't fit, cursor is to the left of br (scroll left)
+            d->hscroll = cix;
+        } else if (widthUsed - d->hscroll < br.width()) {
+            // text doesn't fit, text document is to the left of br; align
+            // right
+            d->hscroll = widthUsed - br.width() + 1;
+        }
+        // the y offset is there to keep the baseline constant in case we have script changes in the text.
+        offset = br.topLeft() - QPoint(d->hscroll, d->control->ascent() - fm.ascent());
+    } else {
+        if(d->hAlign == AlignRight){
+            d->hscroll = width() - widthUsed;
+        }else if(d->hAlign == AlignHCenter){
+            d->hscroll = (width() - widthUsed) / 2;
+        }
+        d->hscroll -= minLB;
+        offset = QPoint(d->hscroll, 0);
     }
 
-    QPoint offset = QPoint(0,0);
-    if(d->hAlign != AlignLeft){
-        QFontMetrics fm = QFontMetrics(d->font);
-        //###Is this using bearing appropriately?
-        int minLB = qMax(0, -fm.minLeftBearing());
-        int minRB = qMax(0, -fm.minRightBearing());
-        int widthUsed = qRound(d->control->naturalTextWidth()) + 1 + minRB;
-        int hOffset = 0;
-        if(d->hAlign == AlignRight){
-            hOffset = width() - widthUsed;
-        }else if(d->hAlign == AlignHCenter){
-            hOffset = (width() - widthUsed) / 2;
-        }
-        hOffset -= minLB;
-        offset = QPoint(hOffset, 0);
-    }
-    QRect clipRect = r;
-    d->control->draw(p, offset, clipRect, flags);
+    d->control->draw(p, offset, r, flags);
 
     p->restore();
 }
@@ -892,10 +954,11 @@ void QDeclarativeTextInput::q_textChanged()
 
 void QDeclarativeTextInput::updateRect(const QRect &r)
 {
+    Q_D(QDeclarativeTextInput);
     if(r == QRect())
         clearCache();
     else
-        dirtyCache(r);
+        dirtyCache(QRect(r.x() - d->hscroll, r.y(), r.width(), r.height()));
     update();
 }
 

@@ -38,7 +38,7 @@ Rectangle {
                 Keys.onReturnPressed: console.log("Top Left");
                 KeyNavigation.right: item2
                 focus: true
-                wrap: true
+                wrapMode: TextEdit.WordWrap
                 text: "Box 1"
             }
 
@@ -79,6 +79,6 @@ Rectangle {
 
         Keys.onReturnPressed: console.log("Bottom Left");
         KeyNavigation.up: myScope
-        wrap: true
+        wrapMode: TextEdit.WordWrap
     }
 }

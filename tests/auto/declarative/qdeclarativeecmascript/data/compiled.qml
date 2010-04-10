@@ -38,7 +38,7 @@ QtObject {
     property int d: 176
     property string e: "Hello"
     property string f: "World"
-    property var g: 6.7
-    property var h: "!"
-    property var i: true
+    property variant g: 6.7
+    property variant h: "!"
+    property variant i: true
 }

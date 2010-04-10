@@ -1,13 +1,13 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     id: clock
     width: 200; height: 200; color: "gray"
 
     property alias city: cityLabel.text
-    property var hours
-    property var minutes
-    property var shift : 0
+    property variant hours
+    property variant minutes
+    property variant shift : 0
 
     Image { id: background; source: "clock.png" }
 
@@ -20,7 +20,7 @@ Rectangle {
             origin.x: 7.5; origin.y: 73; angle: 0
             SpringFollow on angle {
                 spring: 2; damping: 0.2; modulus: 360
-                source: (clock.hours * 30) + (clock.minutes * 0.5)
+                to: (clock.hours * 30) + (clock.minutes * 0.5)
             }
         }
     }
@@ -34,7 +34,7 @@ Rectangle {
             origin.x: 6.5; origin.y: 83; angle: 0
             SpringFollow on angle {
                 spring: 2; damping: 0.2; modulus: 360
-                source: clock.minutes * 6
+                to: clock.minutes * 6
             }
         }
     }

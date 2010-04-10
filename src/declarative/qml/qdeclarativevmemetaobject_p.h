@@ -94,7 +94,7 @@ struct QDeclarativeVMEMetaData
         int parameterCount;
         int bodyOffset;
         int bodyLength;
-        int scriptProgram;
+        int lineNumber;
     };
 
     PropertyData *propertyData() const {

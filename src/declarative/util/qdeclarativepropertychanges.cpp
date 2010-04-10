@@ -103,7 +103,7 @@ QT_BEGIN_NAMESPACE
     natural width (which is the whole string on one line).
 
     \qml
-    import Qt 4.6
+    import Qt 4.7
 
     Rectangle {
         width: 640
@@ -111,7 +111,7 @@ QT_BEGIN_NAMESPACE
         Text {
             id: theText
             width: 50
-            wrap: true
+            wrapMode: Text.WordWrap
             text: "a text string that is longer than 50 pixels"
         }
 
@@ -377,7 +377,7 @@ QDeclarativeProperty
 QDeclarativePropertyChangesPrivate::property(const QByteArray &property)
 {
     Q_Q(QDeclarativePropertyChanges);
-    QDeclarativeProperty prop(object, QString::fromUtf8(property));
+    QDeclarativeProperty prop(object, QString::fromUtf8(property), qmlContext(q));
     if (!prop.isValid()) {
         qmlInfo(q) << QDeclarativePropertyChanges::tr("Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(property));
         return QDeclarativeProperty();
@@ -400,16 +400,11 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
 
         QByteArray property = d->properties.at(ii).first;
 
-        QDeclarativeAction a(d->object, QString::fromLatin1(property),
-                 d->properties.at(ii).second);
+        QDeclarativeAction a(d->object, QString::fromUtf8(property),
+                 qmlContext(this), d->properties.at(ii).second);
 
         if (a.property.isValid()) {
             a.restore = restoreEntryValues();
-
-            if (a.property.propertyType() == QVariant::Url &&
-                (a.toValue.userType() == QVariant::String || a.toValue.userType() == QVariant::ByteArray) && !a.toValue.isNull())
-                a.toValue.setValue(qmlContext(this)->resolvedUrl(QUrl(a.toValue.toString())));
-
             list << a;
         }
     }
@@ -436,7 +431,7 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
             a.property = prop;
             a.fromValue = a.property.read();
             a.specifiedObject = d->object;
-            a.specifiedProperty = QString::fromLatin1(property);
+            a.specifiedProperty = QString::fromUtf8(property);
 
             if (d->isExplicit) {
                 a.toValue = d->expressions.at(ii).second->value();

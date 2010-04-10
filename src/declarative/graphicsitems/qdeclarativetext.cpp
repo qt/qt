@@ -42,6 +42,7 @@
 #include "private/qdeclarativetext_p.h"
 #include "private/qdeclarativetext_p_p.h"
 #include <qdeclarativestyledtext_p.h>
+#include <qdeclarativeinfo.h>
 
 #include <QTextLayout>
 #include <QTextLine>
@@ -70,7 +71,7 @@ QT_BEGIN_NAMESPACE
     \image declarative-text.png
 
     If height and width are not explicitly set, Text will attempt to determine how
-    much room is needed and set it accordingly. Unless \c wrap is set, it will always
+    much room is needed and set it accordingly. Unless \c wrapMode is set, it will always
     prefer width to height (all text will be placed on a single line).
 
     The \c elide property can alternatively be used to fit a single line of
@@ -98,7 +99,7 @@ QT_BEGIN_NAMESPACE
     \image text.png
 
     If height and width are not explicitly set, Text will attempt to determine how
-    much room is needed and set it accordingly. Unless \c wrap is set, it will always
+    much room is needed and set it accordingly. Unless \c wrapMode is set, it will always
     prefer width to height (all text will be placed on a single line).
 
     The \c elide property can alternatively be used to fit a line of plain text to a set width.
@@ -319,36 +320,54 @@ void QDeclarativeText::setVAlign(VAlignment align)
 }
 
 /*!
-    \qmlproperty bool Text::wrap
+    \qmlproperty enumeration Text::wrapMode
 
     Set this property to wrap the text to the Text item's width.  The text will only
-    wrap if an explicit width has been set.
+    wrap if an explicit width has been set.  wrapMode can be one of:
 
-    Wrapping is done on word boundaries (i.e. it is a "word-wrap"). If the text cannot be
+    \list
+    \o NoWrap - no wrapping will be performed.
+    \o WordWrap - wrapping is done on word boundaries. If the text cannot be
     word-wrapped to the specified width it will be partially drawn outside of the item's bounds.
     If this is undesirable then enable clipping on the item (Item::clip).
+    \o WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
+    \o WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
+       will occur at the appropriate point on the line, even in the middle of a word.
+    \endlist
 
-    Wrapping is off by default.
+    The default is NoWrap.
 */
-//### Future may provide choice of wrap modes, such as QTextOption::WrapAtWordBoundaryOrAnywhere
+QDeclarativeText::WrapMode QDeclarativeText::wrapMode() const
+{
+    Q_D(const QDeclarativeText);
+    return d->wrapMode;
+}
+
+void QDeclarativeText::setWrapMode(WrapMode mode)
+{
+    Q_D(QDeclarativeText);
+    if (mode == d->wrapMode)
+        return;
+
+    d->wrapMode = mode;
+
+    d->updateLayout();
+    d->markImgDirty();
+    emit wrapModeChanged();
+}
+
 bool QDeclarativeText::wrap() const
 {
     Q_D(const QDeclarativeText);
-    return d->wrap;
+    return d->wrapMode != NoWrap;
 }
 
 void QDeclarativeText::setWrap(bool w)
 {
-    Q_D(QDeclarativeText);
-    if (w == d->wrap)
-        return;
-
-    d->wrap = w;
-
-    d->updateLayout();
-    d->markImgDirty();
-    emit wrapChanged(d->wrap);
+    qmlInfo(this) << "\"wrap\" property is deprecated and will soon be removed.  Use wrapMode";
+    setWrapMode(w ? WordWrap : NoWrap);
 }
+
 
 /*!
     \qmlproperty enumeration Text::textFormat
@@ -379,18 +398,18 @@ void QDeclarativeText::setWrap(bool w)
     \o
     \qml
 Column {
-    TextEdit {
+    Text {
         font.pointSize: 24
         text: "<b>Hello</b> <i>World!</i>"
     }
-    TextEdit {
+    Text {
         font.pointSize: 24
-        textFormat: "RichText"
+        textFormat: Text.RichText
         text: "<b>Hello</b> <i>World!</i>"
     }
-    TextEdit {
+    Text {
         font.pointSize: 24
-        textFormat: "PlainText"
+        textFormat: Text.PlainText
         text: "<b>Hello</b> <i>World!</i>"
     }
 }
@@ -437,7 +456,7 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     Set this property to elide parts of the text fit to the Text item's width.
     The text will only elide if an explicit width has been set.
 
-    This property cannot be used with wrap enabled or with rich text.
+    This property cannot be used with wrapping enabled or with rich text.
 
     Eliding can be \c ElideNone (the default), \c ElideLeft, \c ElideMiddle, or \c ElideRight.
 
@@ -471,7 +490,7 @@ void QDeclarativeText::geometryChanged(const QRectF &newGeometry,
 {
     Q_D(QDeclarativeText);
     if (newGeometry.width() != oldGeometry.width()) {
-        if (d->wrap || d->elideMode != QDeclarativeText::ElideNone) {
+        if (d->wrapMode != QDeclarativeText::NoWrap || d->elideMode != QDeclarativeText::ElideNone) {
             //re-elide if needed
             if (d->singleline && d->elideMode != QDeclarativeText::ElideNone &&
                 isComponentComplete() && widthValid()) {
@@ -538,12 +557,9 @@ void QDeclarativeTextPrivate::updateSize()
             singleline = false; // richtext can't elide or be optimized for single-line case
             doc->setDefaultFont(font);
             QTextOption option((Qt::Alignment)int(hAlign | vAlign));
-            if (wrap)
-                option.setWrapMode(QTextOption::WordWrap);
-            else
-                option.setWrapMode(QTextOption::NoWrap);
+            option.setWrapMode(QTextOption::WrapMode(wrapMode));
             doc->setDefaultTextOption(option);
-            if (wrap && !q->heightValid() && q->widthValid())
+            if (wrapMode != QDeclarativeText::NoWrap && !q->heightValid() && q->widthValid())
                 doc->setTextWidth(q->width());
             else
                 doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
@@ -623,8 +639,12 @@ QSize QDeclarativeTextPrivate::setupTextLayout(QTextLayout *layout)
     qreal lineWidth = 0;
 
     //set manual width
-    if ((wrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
+    if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
         lineWidth = q->width();
+
+    QTextOption textOption = layout->textOption();
+    textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
+    layout->setTextOption(textOption);
 
     layout->beginLayout();
 
@@ -633,7 +653,7 @@ QSize QDeclarativeTextPrivate::setupTextLayout(QTextLayout *layout)
         if (!line.isValid())
             break;
 
-        if ((wrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
+        if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
             line.setLineWidth(lineWidth);
     }
     layout->endLayout();

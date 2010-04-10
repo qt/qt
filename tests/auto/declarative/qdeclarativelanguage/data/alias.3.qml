@@ -1,7 +1,7 @@
 import Qt 4.6
 
 QtObject {
-   property var other
+   property variant other
    other: Alias { id: myAliasObject }
 
    property alias value: myAliasObject.aliasValue

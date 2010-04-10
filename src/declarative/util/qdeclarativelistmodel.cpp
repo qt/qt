@@ -264,6 +264,9 @@ QDeclarativeListModel::QDeclarativeListModel(bool workerCopy, QObject *parent)
 
 QDeclarativeListModel::~QDeclarativeListModel()
 {
+    if (m_agent)
+        m_agent->release();
+
     delete m_nested;
     delete m_flat;
 }
@@ -622,6 +625,11 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
             QDeclarativeCustomParserNode node =
                 qvariant_cast<QDeclarativeCustomParserNode>(value);
 
+            if (node.name() != "ListElement") {
+                error(node, QDeclarativeListModel::tr("ListElement: cannot contain nested elements"));
+                return false;
+            }
+
             {
             ListInstruction li;
             li.type = ListInstruction::Push;
@@ -633,7 +641,7 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
             for(int jj = 0; jj < props.count(); ++jj) {
                 const QDeclarativeCustomParserProperty &nodeProp = props.at(jj);
                 if (nodeProp.name() == "") {
-                    error(nodeProp, QDeclarativeListModel::tr("ListElement: cannot use default property"));
+                    error(nodeProp, QDeclarativeListModel::tr("ListElement: cannot contain nested elements"));
                     return false;
                 }
                 if (nodeProp.name() == "id") {

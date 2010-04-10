@@ -7615,9 +7615,24 @@ void QGraphicsObject::updateMicroFocus()
     QGraphicsItem::updateMicroFocus();
 }
 
-void QGraphicsItemPrivate::append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item)
+void QGraphicsItemPrivate::children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item)
 {
     QGraphicsItemPrivate::get(item)->setParentItemHelper(static_cast<QGraphicsObject *>(list->object), /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+}
+
+int QGraphicsItemPrivate::children_count(QDeclarativeListProperty<QGraphicsObject> *list)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
+    return d->children.count();
+}
+
+QGraphicsObject *QGraphicsItemPrivate::children_at(QDeclarativeListProperty<QGraphicsObject> *list, int index)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
+    if (index >= 0 && index < d->children.count()) 
+        return d->children.at(index)->toGraphicsObject();
+    else 
+        return 0;
 }
 
 /*!
@@ -7632,7 +7647,8 @@ QDeclarativeListProperty<QGraphicsObject> QGraphicsItemPrivate::childrenList()
     Q_Q(QGraphicsItem);
     if (isObject) {
         QGraphicsObject *that = static_cast<QGraphicsObject *>(q);
-        return QDeclarativeListProperty<QGraphicsObject>(that, &children, QGraphicsItemPrivate::append);
+        return QDeclarativeListProperty<QGraphicsObject>(that, &children, children_append,
+                                                         children_count, children_at);
     } else {
         //QGraphicsItem is not supported for this property
         return QDeclarativeListProperty<QGraphicsObject>();

@@ -121,10 +121,8 @@ void tst_parserstress::ecmascript()
             qml+= dataStr + "\n";
             qml+= "        return 1;\n";
             qml+= "    }\n";
-            qml+= "    Script {\n";
-            qml+= "        function stress() {\n";
+            qml+= "    function stress() {\n";
             qml+= dataStr;
-            qml+= "        }\n";
             qml+= "    }\n";
             qml+= "}\n";
 

@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 import "ProxyWidgets" 1.0
 
 Rectangle {

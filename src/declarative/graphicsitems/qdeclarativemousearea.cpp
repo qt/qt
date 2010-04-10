@@ -71,6 +71,14 @@ void QDeclarativeDrag::setTarget(QGraphicsObject *t)
     emit targetChanged();
 }
 
+void QDeclarativeDrag::resetTarget()
+{
+    if (!_target)
+        return;
+    _target = 0;
+    emit targetChanged();
+}
+
 QDeclarativeDrag::Axis QDeclarativeDrag::axis() const
 {
     return _axis;
@@ -412,8 +420,8 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (d->drag && d->drag->target()) {
         if (!d->moved) {
-            if (d->dragX) d->startX = drag()->target()->x();
-            if (d->dragY) d->startY = drag()->target()->y();
+            d->startX = drag()->target()->x();
+            d->startY = drag()->target()->y();
         }
 
         QPointF startLocalPos;
@@ -439,7 +447,7 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             }
         }
 
-        if (d->dragX) {
+        if (d->dragX && d->dragged) {
             qreal x = (curLocalPos.x() - startLocalPos.x()) + d->startX;
             if (x < drag()->xmin())
                 x = drag()->xmin();
@@ -447,7 +455,7 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 x = drag()->xmax();
             drag()->target()->setX(x);
         }
-        if (d->dragY) {
+        if (d->dragY && d->dragged) {
             qreal y = (curLocalPos.y() - startLocalPos.y()) + d->startY;
             if (y < drag()->ymin())
                 y = drag()->ymin();
@@ -455,8 +463,8 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 y = drag()->ymax();
             drag()->target()->setY(y);
         }
+        d->moved = true;
     }
-    d->moved = true;
     QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
     emit positionChanged(&me);
 }
@@ -643,7 +651,7 @@ bool QDeclarativeMouseArea::setPressed(bool p)
             emit positionChanged(&me);
         } else {
             emit released(&me);
-            if (isclick)
+            if (isclick && !d->longPress)
                 emit clicked(&me);
         }
 
