@@ -217,7 +217,7 @@ void getDsaRegion(RWsSession &session, const RWindowBase &window)
 void MMF::DsaVideoPlayer::handleParametersChanged(VideoParameters parameters)
 {
     TRACE_CONTEXT(DsaVideoPlayer::handleParametersChanged, EVideoInternal);
-    TRACE_ENTRY("parameters 0x%x", parameters);
+    TRACE_ENTRY("parameters 0x%x", parameters.operator int());
 
     if (!m_window)
         return;

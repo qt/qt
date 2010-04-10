@@ -369,6 +369,13 @@ void MMF::AbstractMediaPlayer::playbackComplete(int error)
 {
     stopTimers();
 
+    if (KErrNone == error && !m_aboutToFinishSent) {
+        const qint64 total = totalTime();
+        emit MMF::AbstractPlayer::tick(total);
+        m_aboutToFinishSent = true;
+        emit aboutToFinish();
+    }
+
     if (KErrNone == error) {
         changeState(StoppedState);
 
@@ -393,15 +400,13 @@ qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds 
 
 void MMF::AbstractMediaPlayer::positionTick()
 {
-    emitMarksIfReached();
-
     const qint64 current = currentTime();
+    emitMarksIfReached(current);
     emit MMF::AbstractPlayer::tick(current);
 }
 
-void MMF::AbstractMediaPlayer::emitMarksIfReached()
+void MMF::AbstractMediaPlayer::emitMarksIfReached(qint64 current)
 {
-    const qint64 current = currentTime();
     const qint64 total = totalTime();
     const qint64 remaining = total - current;
 
