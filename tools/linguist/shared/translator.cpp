@@ -262,7 +262,11 @@ bool Translator::save(const QString &filename, ConversionData &cd, const QString
     if (filename.isEmpty() || filename == QLatin1String("-")) {
 #ifdef Q_OS_WIN
         // QFile is broken for text files
+# ifdef Q_OS_WINCE
+        ::_setmode(stdout, _O_BINARY);
+# else
         ::_setmode(1, _O_BINARY);
+# endif
 #endif
         if (!file.open(stdout, QIODevice::WriteOnly)) {
             cd.appendError(QString::fromLatin1("Cannot open stdout!? (%1)")
