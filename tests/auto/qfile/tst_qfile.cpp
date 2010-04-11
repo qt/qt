@@ -480,7 +480,7 @@ void tst_QFile::open_data()
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("//./PhysicalDrive0") << QString("//./PhysicalDrive0") << int(QIODevice::ReadOnly)
                                         << (bool)TRUE << QFile::NoError;
-    QTest::newRow("uncFile") << "//" + QtNetworkSettings::winServerName() + "/testsharewritable/test.pri" << int(QIODevice::ReadOnly)
+    QTest::newRow("uncFile") << "//" + QtNetworkSettings::winServerName() + "/testshare/test.pri" << int(QIODevice::ReadOnly)
                              << true << QFile::NoError;
 #endif
 }
@@ -552,7 +552,7 @@ void tst_QFile::size_data()
     QTest::newRow( "exist01" ) << QString(SRCDIR "testfile.txt") << (qint64)245;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     // Only test UNC on Windows./
-    QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testsharewritable/test.pri") << (qint64)34;
+    QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testshare/test.pri") << (qint64)34;
 #endif
 }
 
@@ -2473,7 +2473,7 @@ void tst_QFile::miscWithUncPathAsCurrentDir()
 {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QString current = QDir::currentPath();
-    QVERIFY(QDir::setCurrent("//" + QtNetworkSettings::winServerName() + "/testsharewritable"));
+    QVERIFY(QDir::setCurrent("//" + QtNetworkSettings::winServerName() + "/testshare"));
     QFile file("test.pri");
     QVERIFY(file.exists());
     QCOMPARE(int(file.size()), 34);
