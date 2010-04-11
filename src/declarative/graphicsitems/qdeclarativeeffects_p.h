@@ -56,10 +56,12 @@
 #include <qdeclarative.h>
 #include <QtGui/qgraphicseffect.h>
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QML_DECLARE_TYPE(QGraphicsEffect)
 QML_DECLARE_TYPE(QGraphicsBlurEffect)
 QML_DECLARE_TYPE(QGraphicsColorizeEffect)
 QML_DECLARE_TYPE(QGraphicsDropShadowEffect)
 QML_DECLARE_TYPE(QGraphicsOpacityEffect)
+#endif
 
 #endif // QDECLARATIVEEFFECTS_P_H
