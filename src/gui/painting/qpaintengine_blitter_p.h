@@ -64,7 +64,6 @@ public:
 
 private:
     QRasterPaintEngine *raster() const;
-
 };
 
 QT_END_NAMESPACE
