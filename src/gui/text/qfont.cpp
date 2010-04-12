@@ -2614,8 +2614,10 @@ void QFontCache::cleanup()
     } QT_CATCH (const std::bad_alloc &) {
         // no cache - just ignore
     }
-    if (cache && cache->hasLocalData())
+    if (cache && cache->hasLocalData()) {
+        cache->localData()->clear();
         cache->setLocalData(0);
+        }
 }
 #endif // QT_NO_THREAD
 

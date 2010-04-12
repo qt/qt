@@ -117,6 +117,8 @@ void tst_qdeclarativeflipable::QTBUG_9161_crash()
 {
     QDeclarativeView *canvas = new QDeclarativeView;
     canvas->setSource(QUrl(SRCDIR "/data/crash.qml"));
+    QGraphicsObject *root = canvas->rootObject();
+    QVERIFY(root != 0);
     canvas->show();
     delete canvas;
 }
@@ -125,6 +127,8 @@ void tst_qdeclarativeflipable::QTBUG_8474_qgv_abort()
 {
     QDeclarativeView *canvas = new QDeclarativeView;
     canvas->setSource(QUrl(SRCDIR "/data/flipable-abort.qml"));
+    QGraphicsObject *root = canvas->rootObject();
+    QVERIFY(root != 0);
     canvas->show();
     delete canvas;
 }

@@ -3670,7 +3670,7 @@ EXPORTS
 	_ZN8QVariantC1ERK12QEasingCurve @ 3669 NONAME
 	_ZN8QVariantC2ERK12QEasingCurve @ 3670 NONAME
 	_ZN9QDateTime18currentDateTimeUtcEv @ 3671 NONAME
-	_ZN9QDateTime22currentMsecsSinceEpochEv @ 3672 NONAME
+	_ZN9QDateTime22currentMSecsSinceEpochEv @ 3672 NONAME
 	_ZN9QListData11detach_growEPii @ 3673 NONAME
 	_ZN9QListData6appendEi @ 3674 NONAME
 	_ZN9QListData6detachEi @ 3675 NONAME
@@ -3689,4 +3689,7 @@ EXPORTS
 	_ZlsR11QDataStreamRK12QEasingCurve @ 3688 NONAME
 	_ZltRK13QElapsedTimerS1_ @ 3689 NONAME
 	_ZrsR11QDataStreamR12QEasingCurve @ 3690 NONAME
+	_ZN9QDateTime18setMSecsSinceEpochEx @ 3691 NONAME
+	_ZN9QDateTime19fromMSecsSinceEpochEx @ 3692 NONAME
+	_ZNK9QDateTime17toMSecsSinceEpochEv @ 3693 NONAME
 

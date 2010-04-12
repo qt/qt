@@ -60,7 +60,7 @@
 //#include <QTextCodec>
 
 _LIT(KIapNameSetting, "IAP\\Name");             // text - mandatory
-_LIT(KIapTableIdField, "IAP\Id");
+_LIT(KIapTableIdField, "IAP\\Id");
 _LIT(KIapDialogPref, "IAP\\DialogPref");        // TUnit32 - optional
 _LIT(KIapService, "IAP\\IAPService");           // TUnit32 - mandatory
 _LIT(KIapServiceType, "IAP\\IAPServiceType");   // text - mandatory
