@@ -1199,7 +1199,8 @@ void QTextControlPrivate::keyPressEvent(QKeyEvent *e)
             blockFmt.setIndent(blockFmt.indent() - 1);
             cursor.setBlockFormat(blockFmt);
         } else {
-            cursor.deletePreviousChar();
+            QTextCursor localCursor = cursor;
+            localCursor.deletePreviousChar();
         }
         goto accept;
     }
@@ -1232,7 +1233,8 @@ void QTextControlPrivate::keyPressEvent(QKeyEvent *e)
     }
 #endif
     else if (e == QKeySequence::Delete) {
-        cursor.deleteChar();
+        QTextCursor localCursor = cursor;
+        localCursor.deleteChar();
     }
     else if (e == QKeySequence::DeleteEndOfWord) {
         if (!cursor.hasSelection())
