@@ -106,6 +106,8 @@ private slots:
     void pushButtonPopulateOnAboutToShow();
     void QTBUG7907_submenus_autoselect();
     void QTBUG7411_submenus_activate();
+    void menuGeometry_data();
+    void menuGeometry();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -967,6 +969,60 @@ void tst_QMenu::QTBUG7411_submenus_activate()
     QTRY_VERIFY(sub1.isVisible());
 }
 
+void tst_QMenu::menuGeometry_data()
+{
+    QTest::addColumn<QRect>("screen");
+    QTest::addColumn<QPoint>("pos");
+    QTest::addColumn<QPoint>("expectedPos");
+
+    QMenu menu("Test Menu");
+    for (int i = 0; i < 3; ++i)
+        menu.addAction("Hello World!");
+
+    menu.adjustSize();
+
+    const int screenCount = QApplication::desktop()->screenCount();
+    const int desktopFrame = menu.style()->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, &menu);
+
+    for (int i = 0; i < screenCount; ++i) {
+        const QRect screen = QApplication::desktop()->screenGeometry(i);
+
+        if (screen.width() < menu.width() || screen.height() < menu.height())
+            continue;
+
+        QTest::newRow("topLeft") << screen << screen.topLeft()
+            << QPoint(screen.left() + desktopFrame, screen.top() + desktopFrame);
+
+        QTest::newRow("topRight") << screen << screen.topRight()
+            << QPoint(screen.right() - desktopFrame - menu.width() + 1, screen.top() + desktopFrame);
+
+        QTest::newRow("bottomLeft") << screen << screen.bottomLeft()
+            << QPoint(screen.left() + desktopFrame, screen.bottom() - desktopFrame - menu.height() + 1);
+
+        QTest::newRow("bottomRight") << screen << screen.bottomRight()
+            << QPoint(screen.right() - desktopFrame - menu.width() + 1, screen.bottom() - desktopFrame - menu.height() + 1);
+
+        const QPoint pos = QPoint(screen.right() - qMax(desktopFrame, 20), screen.bottom() - qMax(desktopFrame, 20));
+        QTest::newRow("position") << screen << pos
+            << QPoint(screen.right() - menu.width() + 1, pos.y() - menu.height() + 1);
+    }
+}
+
+void tst_QMenu::menuGeometry()
+{
+    QFETCH(QRect, screen);
+    QFETCH(QPoint, pos);
+    QFETCH(QPoint, expectedPos);
+
+    QMenu menu("Test Menu");
+    for (int i = 0; i < 3; ++i)
+        menu.addAction("Hello World!");
+
+    menu.popup(pos);
+    QTest::qWaitForWindowShown(&menu);
+    QVERIFY(screen.contains(menu.geometry()));
+    QCOMPARE(menu.pos(), expectedPos);
+}
 
 
 QTEST_MAIN(tst_QMenu)

@@ -1221,7 +1221,7 @@ void qt_init(QApplicationPrivate *priv, int)
         }
 
 #endif
-        if (!app_proc_ae_handlerUPP) {
+        if (!app_proc_ae_handlerUPP && !QApplication::testAttribute(Qt::AA_MacPluginApplication)) {
             app_proc_ae_handlerUPP = AEEventHandlerUPP(QApplicationPrivate::globalAppleEventProcessor);
             for(uint i = 0; i < sizeof(app_apple_events) / sizeof(QMacAppleEventTypeSpec); ++i) {
                 // Install apple event handler, but avoid overwriting an already
@@ -2446,25 +2446,30 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             }
             if(!handled_event) {
                 if(cmd.commandID == kHICommandQuit) {
-                    handled_event = true;
-                    HiliteMenu(0);
-                    bool handle_quit = true;
-                    if(QApplicationPrivate::modalState()) {
-                        int visible = 0;
-                        const QWidgetList tlws = QApplication::topLevelWidgets();
-                        for(int i = 0; i < tlws.size(); ++i) {
-                            if(tlws.at(i)->isVisible())
-                                ++visible;
+                    // Quitting the application is not Qt's responsibility if
+                    // used in a plugin or just embedded into a native application.
+                    // In that case, let the event pass down to the native apps event handler.
+                    if (!QApplication::testAttribute(Qt::AA_MacPluginApplication)) {
+                        handled_event = true;
+                        HiliteMenu(0);
+                        bool handle_quit = true;
+                        if(QApplicationPrivate::modalState()) {
+                            int visible = 0;
+                            const QWidgetList tlws = QApplication::topLevelWidgets();
+                            for(int i = 0; i < tlws.size(); ++i) {
+                                if(tlws.at(i)->isVisible())
+                                    ++visible;
+                            }
+                            handle_quit = (visible <= 1);
                         }
-                        handle_quit = (visible <= 1);
-                    }
-                    if(handle_quit) {
-                        QCloseEvent ev;
-                        QApplication::sendSpontaneousEvent(app, &ev);
-                        if(ev.isAccepted())
-                            app->quit();
-                    } else {
-                        QApplication::beep();
+                        if(handle_quit) {
+                            QCloseEvent ev;
+                            QApplication::sendSpontaneousEvent(app, &ev);
+                            if(ev.isAccepted())
+                                app->quit();
+                        } else {
+                            QApplication::beep();
+                        }
                     }
                 } else if(cmd.commandID == kHICommandSelectWindow) {
                     if((GetCurrentKeyModifiers() & cmdKey))

@@ -66,6 +66,8 @@
 #include <QMap>
 #include "qnmdbushelper.h"
 
+#ifndef QT_NO_DBUS
+
 #ifndef NETWORK_MANAGER_H
 typedef enum NMDeviceType
 {
@@ -442,4 +444,5 @@ public:
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_DBUS
 #endif //QNETWORKMANAGERSERVICE_H

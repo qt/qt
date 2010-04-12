@@ -335,6 +335,11 @@
 #define QT_NO_DATESTRING
 #endif
 
+// QtDBus module
+#if !defined(QT_NO_DBUS) && (defined(QT_NO_PROPERTIES))
+#define QT_NO_DBUS
+#endif
+
 // QDial
 #if !defined(QT_NO_DIAL) && (defined(QT_NO_SLIDER))
 #define QT_NO_DIAL

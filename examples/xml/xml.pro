@@ -1,10 +1,13 @@
 TEMPLATE      = subdirs
-SUBDIRS       = dombookmarks \
-                htmlinfo \
+SUBDIRS       = htmlinfo \
+                xmlstreamlint
+
+!contains(QT_CONFIG, no-gui) {
+    SUBDIRS +=  dombookmarks \
                 rsslisting \
                 saxbookmarks \
-                streambookmarks \
-                xmlstreamlint
+                streambookmarks
+}
 
 symbian: SUBDIRS = htmlinfo saxbookmarks
 
