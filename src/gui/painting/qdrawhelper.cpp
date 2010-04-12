@@ -693,31 +693,31 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
         fy -= half_point;
         while (b < end) {
             int x1 = (fx >> 16);
-            int x2 = x1 + 1;
+            int x2;
             int y1 = (fy >> 16);
-            int y2 = y1 + 1;
+            int y2;
 
             if (blendType == BlendTransformedBilinearTiled) {
                 x1 %= image_width;
-                x2 %= image_width;
-                y1 %= image_height;
-                y2 %= image_height;
-
                 if (x1 < 0) x1 += image_width;
-                if (x2 < 0) x2 += image_width;
-                if (y1 < 0) y1 += image_height;
-                if (y2 < 0) y2 += image_height;
+                x2 = x1 + 1;
+                x2 %= image_width;
 
-                Q_ASSERT(x1 >= 0 && x1 < image_width);
-                Q_ASSERT(x2 >= 0 && x2 < image_width);
-                Q_ASSERT(y1 >= 0 && y1 < image_height);
-                Q_ASSERT(y2 >= 0 && y2 < image_height);
+                y1 %= image_height;
+                if (y1 < 0) y1 += image_height;
+                y2 = y1 + 1;
+                y2 %= image_height;
             } else {
                 x1 = qBound(0, x1, image_width - 1);
-                x2 = qBound(0, x2, image_width - 1);
+                x2 = qMin(x1 + 1, image_width - 1);
                 y1 = qBound(0, y1, image_height - 1);
-                y2 = qBound(0, y2, image_height - 1);
+                y2 = qMin(y1 + 1, image_height - 1);
             }
+
+            Q_ASSERT(x1 >= 0 && x1 < image_width);
+            Q_ASSERT(x2 >= 0 && x2 < image_width);
+            Q_ASSERT(y1 >= 0 && y1 < image_height);
+            Q_ASSERT(y2 >= 0 && y2 < image_height);
 
             const uchar *s1 = data->texture.scanLine(y1);
             const uchar *s2 = data->texture.scanLine(y2);
@@ -755,9 +755,9 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
             const qreal py = fy * iw - 0.5;
 
             int x1 = int(px) - (px < 0);
-            int x2 = x1 + 1;
+            int x2;
             int y1 = int(py) - (py < 0);
-            int y2 = y1 + 1;
+            int y2;
 
             int distx = int((px - x1) * 256);
             int disty = int((py - y1) * 256);
@@ -766,25 +766,25 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
 
             if (blendType == BlendTransformedBilinearTiled) {
                 x1 %= image_width;
-                x2 %= image_width;
-                y1 %= image_height;
-                y2 %= image_height;
-
                 if (x1 < 0) x1 += image_width;
-                if (x2 < 0) x2 += image_width;
-                if (y1 < 0) y1 += image_height;
-                if (y2 < 0) y2 += image_height;
+                x2 = x1 + 1;
+                x2 %= image_width;
 
-                Q_ASSERT(x1 >= 0 && x1 < image_width);
-                Q_ASSERT(x2 >= 0 && x2 < image_width);
-                Q_ASSERT(y1 >= 0 && y1 < image_height);
-                Q_ASSERT(y2 >= 0 && y2 < image_height);
+                y1 %= image_height;
+                if (y1 < 0) y1 += image_height;
+                y2 = y1 + 1;
+                y2 %= image_height;
             } else {
                 x1 = qBound(0, x1, image_width - 1);
-                x2 = qBound(0, x2, image_width - 1);
+                x2 = qMin(x1 + 1, image_width - 1);
                 y1 = qBound(0, y1, image_height - 1);
-                y2 = qBound(0, y2, image_height - 1);
+                y2 = qMin(y1 + 1, image_height - 1);
             }
+
+            Q_ASSERT(x1 >= 0 && x1 < image_width);
+            Q_ASSERT(x2 >= 0 && x2 < image_width);
+            Q_ASSERT(y1 >= 0 && y1 < image_height);
+            Q_ASSERT(y2 >= 0 && y2 < image_height);
 
             const uchar *s1 = data->texture.scanLine(y1);
             const uchar *s2 = data->texture.scanLine(y2);
@@ -5191,20 +5191,20 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
                 uint *b = buffer;
                 while (b < end) {
                     int x1 = (x >> 16);
-                    int x2 = x1 + 1;
+                    int x2;
                     int y1 = (y >> 16);
-                    int y2 = y1 + 1;
+                    int y2;
 
                     if (blendType == BlendTransformedBilinearTiled) {
                         x1 %= image_width;
-                        x2 %= image_width;
-                        y1 %= image_height;
-                        y2 %= image_height;
-
                         if (x1 < 0) x1 += image_width;
-                        if (x2 < 0) x2 += image_width;
+                        x2 = x1 + 1;
+                        x2 %= image_width;
+
+                        y1 %= image_height;
                         if (y1 < 0) y1 += image_height;
-                        if (y2 < 0) y2 += image_height;
+                        y2 = y1 + 1;
+                        y2 %= image_height;
 
                         Q_ASSERT(x1 >= 0 && x1 < image_width);
                         Q_ASSERT(x2 >= 0 && x2 < image_width);
@@ -5212,9 +5212,9 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
                         Q_ASSERT(y2 >= 0 && y2 < image_height);
                     } else {
                         x1 = qBound(image_x1, x1, image_x2 - 1);
-                        x2 = qBound(image_x1, x2, image_x2 - 1);
+                        x2 = qMin(x1 + 1, image_x2 - 1);
                         y1 = qBound(image_y1, y1, image_y2 - 1);
-                        y2 = qBound(image_y1, y2, image_y2 - 1);
+                        y2 = qMin(y1 + 1, image_y2 - 1);
                     }
 
                     int y1_offset = y1 * scanline_offset;
@@ -5286,9 +5286,9 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
                     const qreal py = y * iw - 0.5;
 
                     int x1 = int(px) - (px < 0);
-                    int x2 = x1 + 1;
+                    int x2;
                     int y1 = int(py) - (py < 0);
-                    int y2 = y1 + 1;
+                    int y2;
 
                     int distx = int((px - x1) * 256);
                     int disty = int((py - y1) * 256);
@@ -5297,14 +5297,14 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
 
                     if (blendType == BlendTransformedBilinearTiled) {
                         x1 %= image_width;
-                        x2 %= image_width;
-                        y1 %= image_height;
-                        y2 %= image_height;
-
                         if (x1 < 0) x1 += image_width;
-                        if (x2 < 0) x2 += image_width;
+                        x2 = x1 + 1;
+                        x2 %= image_width;
+
+                        y1 %= image_height;
                         if (y1 < 0) y1 += image_height;
-                        if (y2 < 0) y2 += image_height;
+                        y2 = y1 + 1;
+                        y2 %= image_height;
 
                         Q_ASSERT(x1 >= 0 && x1 < image_width);
                         Q_ASSERT(x2 >= 0 && x2 < image_width);
@@ -5312,9 +5312,9 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
                         Q_ASSERT(y2 >= 0 && y2 < image_height);
                     } else {
                         x1 = qBound(image_x1, x1, image_x2 - 1);
-                        x2 = qBound(image_x1, x2, image_x2 - 1);
+                        x2 = qMin(x1 + 1, image_x2 - 1);
                         y1 = qBound(image_y1, y1, image_y2 - 1);
-                        y2 = qBound(image_y1, y2, image_y2 - 1);
+                        y2 = qMin(y1 + 1, image_y2 - 1);
                     }
 
                     int y1_offset = y1 * scanline_offset;
