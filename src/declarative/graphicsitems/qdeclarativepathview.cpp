@@ -1155,7 +1155,7 @@ void QDeclarativePathView::refill()
         d->updateItem(d->highlightItem, d->highlightRangeStart);
         if (QDeclarativePathViewAttached *att = d->attached(d->highlightItem))
             att->setOnPath(true);
-    } else if (d->moveReason != QDeclarativePathViewPrivate::SetIndex) {
+    } else if (d->highlightItem && d->moveReason != QDeclarativePathViewPrivate::SetIndex) {
         d->updateItem(d->highlightItem, d->currentItemOffset);
         if (QDeclarativePathViewAttached *att = d->attached(d->highlightItem))
             att->setOnPath(currentVisible);
