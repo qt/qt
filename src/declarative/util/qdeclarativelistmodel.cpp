@@ -248,6 +248,20 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 */
 
 
+/*
+    A ListModel internally uses either a NestedListModel or FlatListModel.
+
+    A NestedListModel can contain lists of ListElements (which
+    when retrieved from get() is accessible as a list model within the list
+    model) whereas a FlatListModel cannot.
+
+    ListModel uses a NestedListModel to begin with, and if the model is later 
+    used from a WorkerScript, it changes to use a FlatListModel instead. This
+    is because ModelNode (which abstracts the nested list model data) needs
+    access to the declarative engine and script engine, which cannot be
+    safely used from outside of the main thread.
+*/
+
 QDeclarativeListModel::QDeclarativeListModel(QObject *parent)
 : QListModelInterface(parent), m_agent(0), m_nested(new NestedListModel(this)), m_flat(0), m_isWorkerCopy(false)
 {
@@ -1351,6 +1365,7 @@ ModelObject::ModelObject()
 void ModelObject::setValue(const QByteArray &name, const QVariant &val)
 {
     _mo->setValue(name, val);
+    setProperty(name.constData(), val);
 }
 
 
