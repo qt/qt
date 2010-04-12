@@ -43,9 +43,10 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
@@ -61,7 +62,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSSVGPathElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -100,24 +101,25 @@ JSC::JSValue JSC_HOST_CALL jsSVGPathElementPrototypeFunctionGetScreenCTM(JSC::Ex
 JSC::JSValue JSC_HOST_CALL jsSVGPathElementPrototypeFunctionGetTransformToElement(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsSVGPathElementPathLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementRequiredFeatures(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementRequiredExtensions(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementSystemLanguage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementXmllang(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGPathElementPathLength(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementRequiredFeatures(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementRequiredExtensions(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementSystemLanguage(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementXmllang(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSSVGPathElementXmllang(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsSVGPathElementXmlspace(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGPathElementXmlspace(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSSVGPathElementXmlspace(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsSVGPathElementExternalResourcesRequired(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementClassName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementStyle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementTransform(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementNearestViewportElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementFarthestViewportElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementPathSegList(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementNormalizedPathSegList(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementAnimatedPathSegList(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGPathElementAnimatedNormalizedPathSegList(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGPathElementExternalResourcesRequired(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementClassName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementStyle(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementTransform(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementNearestViewportElement(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementFarthestViewportElement(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementPathSegList(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementNormalizedPathSegList(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementAnimatedPathSegList(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementAnimatedNormalizedPathSegList(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGPathElementConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

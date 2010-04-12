@@ -21,8 +21,7 @@
 #include "config.h"
 #include "QNetworkReplyHandler.h"
 
-#if QT_VERSION >= 0x040400
-
+#include "CString.h"
 #include "HTTPParsers.h"
 #include "MIMETypeRegistry.h"
 #include "ResourceHandle.h"
@@ -39,6 +38,16 @@
 
 #include <QDebug>
 #include <QCoreApplication>
+
+// What type of connection should be used for the signals of the
+// QNetworkReply? This depends on if Qt has a bugfix for this or not.
+// It is fixed in Qt 4.6.1. See https://bugs.webkit.org/show_bug.cgi?id=32113
+#if QT_VERSION > QT_VERSION_CHECK(4, 6, 0)
+#define SIGNAL_CONN Qt::DirectConnection
+#else
+#define SIGNAL_CONN Qt::QueuedConnection
+#endif
+
 
 namespace WebCore {
 
@@ -143,6 +152,10 @@ QNetworkReplyHandler::QNetworkReplyHandler(ResourceHandle* handle, LoadMode load
 #if QT_VERSION >= 0x040600
     else if (r.httpMethod() == "DELETE")
         m_method = QNetworkAccessManager::DeleteOperation;
+#endif
+#if QT_VERSION >= 0x040700
+    else if (r.httpMethod() == "OPTIONS")
+        m_method = QNetworkAccessManager::CustomOperation;
 #endif
     else
         m_method = QNetworkAccessManager::UnknownOperation;
@@ -309,13 +322,21 @@ void QNetworkReplyHandler::sendResponseIfNeeded()
         response.setHTTPStatusText(m_reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray().constData());
 
         // Add remaining headers.
+#if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
+        foreach (const QNetworkReply::RawHeaderPair& pair, m_reply->rawHeaderPairs()) {
+            response.setHTTPHeaderField(QString::fromAscii(pair.first), QString::fromAscii(pair.second));
+        }
+#else
         foreach (const QByteArray& headerName, m_reply->rawHeaderList()) {
             response.setHTTPHeaderField(QString::fromAscii(headerName), QString::fromAscii(m_reply->rawHeader(headerName)));
         }
+#endif
     }
 
     QUrl redirection = m_reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
     if (redirection.isValid()) {
+        m_redirected = true;
+
         QUrl newUrl = m_reply->url().resolved(redirection);
         ResourceRequest newRequest = m_resourceHandle->request();
         newRequest.setURL(newUrl);
@@ -330,7 +351,9 @@ void QNetworkReplyHandler::sendResponseIfNeeded()
             newRequest.clearHTTPReferrer();
 
         client->willSendRequest(m_resourceHandle, newRequest, response);
-        m_redirected = true;
+        if (!m_resourceHandle) // network error did cancel the request
+            return;
+
         m_request = newRequest.toNetworkRequest(m_resourceHandle->getInternal()->m_frame);
         return;
     }
@@ -363,6 +386,18 @@ void QNetworkReplyHandler::forwardData()
         m_responseDataSent = true;
         client->didReceiveData(m_resourceHandle, data.constData(), data.length(), data.length() /*FixMe*/);
     }
+}
+
+void QNetworkReplyHandler::uploadProgress(qint64 bytesSent, qint64 bytesTotal)
+{
+    if (!m_resourceHandle)
+        return;
+
+    ResourceHandleClient* client = m_resourceHandle->client();
+    if (!client)
+        return;
+
+    client->didSendData(m_resourceHandle, bytesSent, bytesTotal);
 }
 
 void QNetworkReplyHandler::start()
@@ -407,6 +442,11 @@ void QNetworkReplyHandler::start()
             break;
         }
 #endif
+#if QT_VERSION >= 0x040700
+        case QNetworkAccessManager::CustomOperation:
+            m_reply = manager->sendCustomRequest(m_request, m_resourceHandle->request().httpMethod().latin1().data());
+            break;
+#endif
         case QNetworkAccessManager::UnknownOperation: {
             m_reply = 0;
             ResourceHandleClient* client = m_resourceHandle->client();
@@ -423,18 +463,25 @@ void QNetworkReplyHandler::start()
     m_reply->setParent(this);
 
     connect(m_reply, SIGNAL(finished()),
-            this, SLOT(finish()), Qt::QueuedConnection);
+            this, SLOT(finish()), SIGNAL_CONN);
 
     // For http(s) we know that the headers are complete upon metaDataChanged() emission, so we
     // can send the response as early as possible
     if (scheme == QLatin1String("http") || scheme == QLatin1String("https"))
         connect(m_reply, SIGNAL(metaDataChanged()),
-                this, SLOT(sendResponseIfNeeded()), Qt::QueuedConnection);
+                this, SLOT(sendResponseIfNeeded()), SIGNAL_CONN);
 
     connect(m_reply, SIGNAL(readyRead()),
-            this, SLOT(forwardData()), Qt::QueuedConnection);
+            this, SLOT(forwardData()), SIGNAL_CONN);
+
+    if (m_resourceHandle->request().reportUploadProgress()) {
+        connect(m_reply, SIGNAL(uploadProgress(qint64, qint64)),
+                this, SLOT(uploadProgress(qint64, qint64)), SIGNAL_CONN);
+    }
+
+    // Make this a direct function call once we require 4.6.1+.
     connect(this, SIGNAL(processQueuedItems()),
-            this, SLOT(sendQueuedItems()), Qt::QueuedConnection);
+            this, SLOT(sendQueuedItems()), SIGNAL_CONN);
 }
 
 void QNetworkReplyHandler::resetState()
@@ -470,5 +517,3 @@ void QNetworkReplyHandler::sendQueuedItems()
 }
 
 #include "moc_QNetworkReplyHandler.cpp"
-
-#endif

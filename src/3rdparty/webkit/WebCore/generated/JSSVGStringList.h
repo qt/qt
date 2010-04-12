@@ -23,7 +23,6 @@
 
 #if ENABLE(SVG)
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -33,10 +32,10 @@ namespace WebCore {
 
 class SVGStringList;
 
-class JSSVGStringList : public DOMObjectWithSVGContext {
-    typedef DOMObjectWithSVGContext Base;
+class JSSVGStringList : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSSVGStringList(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGStringList>, SVGElement* context);
+    JSSVGStringList(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGStringList>);
     virtual ~JSSVGStringList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,9 +45,10 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     SVGStringList* impl() const { return m_impl.get(); }
 
 private:
@@ -70,7 +70,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSSVGStringListPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -88,7 +88,8 @@ JSC::JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionRemoveItem(JSC::ExecS
 JSC::JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionAppendItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsSVGStringListNumberOfItems(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGStringListNumberOfItems(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGStringListConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

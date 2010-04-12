@@ -23,7 +23,6 @@
 
 #if ENABLE(WORKERS)
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -45,7 +44,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     WorkerNavigator* impl() const { return m_impl.get(); }
@@ -67,7 +66,7 @@ public:
     static const JSC::ClassInfo s_info;
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSWorkerNavigatorPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -76,11 +75,11 @@ protected:
 
 // Attributes
 
-JSC::JSValue jsWorkerNavigatorAppName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWorkerNavigatorAppVersion(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWorkerNavigatorPlatform(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWorkerNavigatorUserAgent(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWorkerNavigatorOnLine(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWorkerNavigatorAppName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWorkerNavigatorAppVersion(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWorkerNavigatorPlatform(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWorkerNavigatorUserAgent(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWorkerNavigatorOnLine(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

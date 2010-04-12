@@ -35,8 +35,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSCSSCharsetRule);
 
 static const HashTableValue JSCSSCharsetRuleTableValues[3] =
 {
-    { "encoding", DontDelete, (intptr_t)jsCSSCharsetRuleEncoding, (intptr_t)setJSCSSCharsetRuleEncoding },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCSSCharsetRuleConstructor, (intptr_t)0 },
+    { "encoding", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSCharsetRuleEncoding), (intptr_t)setJSCSSCharsetRuleEncoding },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSCharsetRuleConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -75,7 +75,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -137,17 +137,18 @@ bool JSCSSCharsetRule::getOwnPropertyDescriptor(ExecState* exec, const Identifie
     return getStaticValueDescriptor<JSCSSCharsetRule, Base>(exec, &JSCSSCharsetRuleTable, this, propertyName, descriptor);
 }
 
-JSValue jsCSSCharsetRuleEncoding(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSCharsetRuleEncoding(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSCharsetRule* castedThis = static_cast<JSCSSCharsetRule*>(asObject(slot.slotBase()));
+    JSCSSCharsetRule* castedThis = static_cast<JSCSSCharsetRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSCharsetRule* imp = static_cast<CSSCharsetRule*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->encoding());
+    JSValue result = jsStringOrNull(exec, imp->encoding());
+    return result;
 }
 
-JSValue jsCSSCharsetRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSCharsetRuleConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSCharsetRule* domObject = static_cast<JSCSSCharsetRule*>(asObject(slot.slotBase()));
+    JSCSSCharsetRule* domObject = static_cast<JSCSSCharsetRule*>(asObject(slotBase));
     return JSCSSCharsetRule::getConstructor(exec, domObject->globalObject());
 }
 void JSCSSCharsetRule::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -157,7 +158,8 @@ void JSCSSCharsetRule::put(ExecState* exec, const Identifier& propertyName, JSVa
 
 void setJSCSSCharsetRuleEncoding(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CSSCharsetRule* imp = static_cast<CSSCharsetRule*>(static_cast<JSCSSCharsetRule*>(thisObject)->impl());
+    JSCSSCharsetRule* castedThisObj = static_cast<JSCSSCharsetRule*>(thisObject);
+    CSSCharsetRule* imp = static_cast<CSSCharsetRule*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setEncoding(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);

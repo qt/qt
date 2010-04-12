@@ -40,7 +40,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDatabase);
 
 static const HashTableValue JSDatabaseTableValues[2] =
 {
-    { "version", DontDelete|ReadOnly, (intptr_t)jsDatabaseVersion, (intptr_t)0 },
+    { "version", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDatabaseVersion), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -55,9 +55,9 @@ static JSC_CONST_HASHTABLE HashTable JSDatabaseTable =
 
 static const HashTableValue JSDatabasePrototypeTableValues[4] =
 {
-    { "changeVersion", DontDelete|Function, (intptr_t)jsDatabasePrototypeFunctionChangeVersion, (intptr_t)5 },
-    { "transaction", DontDelete|Function, (intptr_t)jsDatabasePrototypeFunctionTransaction, (intptr_t)3 },
-    { "readTransaction", DontDelete|Function, (intptr_t)jsDatabasePrototypeFunctionReadTransaction, (intptr_t)3 },
+    { "changeVersion", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsDatabasePrototypeFunctionChangeVersion), (intptr_t)5 },
+    { "transaction", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsDatabasePrototypeFunctionTransaction), (intptr_t)3 },
+    { "readTransaction", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsDatabasePrototypeFunctionReadTransaction), (intptr_t)3 },
     { 0, 0, 0, 0 }
 };
 
@@ -113,12 +113,13 @@ bool JSDatabase::getOwnPropertyDescriptor(ExecState* exec, const Identifier& pro
     return getStaticValueDescriptor<JSDatabase, Base>(exec, &JSDatabaseTable, this, propertyName, descriptor);
 }
 
-JSValue jsDatabaseVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDatabaseVersion(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSDatabase* castedThis = static_cast<JSDatabase*>(asObject(slot.slotBase()));
+    JSDatabase* castedThis = static_cast<JSDatabase*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Database* imp = static_cast<Database*>(castedThis->impl());
-    return jsString(exec, imp->version());
+    JSValue result = jsString(exec, imp->version());
+    return result;
 }
 
 JSValue JSC_HOST_CALL jsDatabasePrototypeFunctionChangeVersion(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

@@ -34,8 +34,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLDListElement);
 
 static const HashTableValue JSHTMLDListElementTableValues[3] =
 {
-    { "compact", DontDelete, (intptr_t)jsHTMLDListElementCompact, (intptr_t)setJSHTMLDListElementCompact },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLDListElementConstructor, (intptr_t)0 },
+    { "compact", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDListElementCompact), (intptr_t)setJSHTMLDListElementCompact },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDListElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -74,7 +74,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -136,17 +136,18 @@ bool JSHTMLDListElement::getOwnPropertyDescriptor(ExecState* exec, const Identif
     return getStaticValueDescriptor<JSHTMLDListElement, Base>(exec, &JSHTMLDListElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLDListElementCompact(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDListElementCompact(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDListElement* castedThis = static_cast<JSHTMLDListElement*>(asObject(slot.slotBase()));
+    JSHTMLDListElement* castedThis = static_cast<JSHTMLDListElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDListElement* imp = static_cast<HTMLDListElement*>(castedThis->impl());
-    return jsBoolean(imp->compact());
+    JSValue result = jsBoolean(imp->compact());
+    return result;
 }
 
-JSValue jsHTMLDListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDListElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDListElement* domObject = static_cast<JSHTMLDListElement*>(asObject(slot.slotBase()));
+    JSHTMLDListElement* domObject = static_cast<JSHTMLDListElement*>(asObject(slotBase));
     return JSHTMLDListElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLDListElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -156,7 +157,8 @@ void JSHTMLDListElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLDListElementCompact(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDListElement* imp = static_cast<HTMLDListElement*>(static_cast<JSHTMLDListElement*>(thisObject)->impl());
+    JSHTMLDListElement* castedThisObj = static_cast<JSHTMLDListElement*>(thisObject);
+    HTMLDListElement* imp = static_cast<HTMLDListElement*>(castedThisObj->impl());
     imp->setCompact(value.toBoolean(exec));
 }
 

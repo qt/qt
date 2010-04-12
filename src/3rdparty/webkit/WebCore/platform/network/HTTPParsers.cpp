@@ -2,6 +2,7 @@
  * Copyright (C) 2006 Alexey Proskuryakov (ap@webkit.org)
  * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2009 Torch Mobile Inc. http://www.torchmobile.com/
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +31,7 @@
 
 #include "config.h"
 #include "HTTPParsers.h"
+#include "ResourceResponseBase.h"
 
 #include "CString.h"
 #include "PlatformString.h"
@@ -53,6 +55,51 @@ static inline bool skipWhiteSpace(const String& str, int& pos, bool fromHttpEqui
     }
 
     return pos != len;
+}
+
+// Returns true if the function can match the whole token (case insensitive).
+// Note: Might return pos == str.length()
+static inline bool skipToken(const String& str, int& pos, const char* token)
+{
+    int len = str.length();
+
+    while (pos != len && *token) {
+        if (toASCIILower(str[pos]) != *token++)
+            return false;
+        ++pos;
+    }
+
+    return true;
+}
+
+ContentDispositionType contentDispositionType(const String& contentDisposition)
+{   
+    if (contentDisposition.isEmpty())
+        return ContentDispositionNone;
+
+    // Some broken sites just send
+    // Content-Disposition: ; filename="file"
+    // screen those out here.
+    if (contentDisposition.startsWith(";"))
+        return ContentDispositionNone;
+
+    if (contentDisposition.startsWith("inline", false))
+        return ContentDispositionInline;
+
+    // Some broken sites just send
+    // Content-Disposition: filename="file"
+    // without a disposition token... screen those out.
+    if (contentDisposition.startsWith("filename", false))
+        return ContentDispositionNone;
+
+    // Also in use is Content-Disposition: name="file"
+    if (contentDisposition.startsWith("name", false))
+        return ContentDispositionNone;
+
+    // We have a content-disposition of "attachment" or unknown.
+    // RFC 2183, section 2.8 says that an unknown disposition
+    // value should be treated as "attachment"
+    return ContentDispositionAttachment;  
 }
 
 bool parseHTTPRefresh(const String& refresh, bool fromHttpEquivMeta, double& delay, String& url)
@@ -220,4 +267,32 @@ String extractCharsetFromMediaType(const String& mediaType)
     
     return String();
 }
+
+XSSProtectionDisposition parseXSSProtectionHeader(const String& header)
+{
+    String stippedHeader = header.stripWhiteSpace();
+
+    if (stippedHeader.isEmpty())
+        return XSSProtectionEnabled;
+
+    if (stippedHeader[0] == '0')
+        return XSSProtectionDisabled;
+
+    int length = (int)header.length();
+    int pos = 0;
+    if (stippedHeader[pos++] == '1'
+        && skipWhiteSpace(stippedHeader, pos, false)
+        && stippedHeader[pos++] == ';'
+        && skipWhiteSpace(stippedHeader, pos, false)
+        && skipToken(stippedHeader, pos, "mode")
+        && skipWhiteSpace(stippedHeader, pos, false)
+        && stippedHeader[pos++] == '='
+        && skipWhiteSpace(stippedHeader, pos, false)
+        && skipToken(stippedHeader, pos, "block")
+        && pos == length)
+        return XSSProtectionBlockEnabled;
+
+    return XSSProtectionEnabled;
+}
+
 }

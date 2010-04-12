@@ -30,11 +30,11 @@
 
 #include "WorkerScriptController.h"
 
-#include "JSDOMBinding.h"
 #include "JSDedicatedWorkerContext.h"
 #include "JSSharedWorkerContext.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
+#include "WebCoreJSClientData.h"
 #include "WorkerContext.h"
 #include "WorkerObjectProxy.h"
 #include "WorkerThread.h"
@@ -58,9 +58,6 @@ WorkerScriptController::WorkerScriptController(WorkerContext* workerContext)
 WorkerScriptController::~WorkerScriptController()
 {
     m_workerContextWrapper = 0; // Unprotect the global object.
-
-    ASSERT(!m_globalData->heap.protectedObjectCount());
-    ASSERT(!m_globalData->heap.isBusy());
     m_globalData->heap.destroy();
 }
 
@@ -123,7 +120,7 @@ ScriptValue WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode,
 
     ExecState* exec = m_workerContextWrapper->globalExec();
     m_workerContextWrapper->globalData()->timeoutChecker.start();
-    Completion comp = evaluateInWorld(exec, exec->dynamicGlobalObject()->globalScopeChain(), sourceCode.jsSourceCode(), m_workerContextWrapper, currentWorld(exec));
+    Completion comp = JSC::evaluate(exec, exec->dynamicGlobalObject()->globalScopeChain(), sourceCode.jsSourceCode(), m_workerContextWrapper);
     m_workerContextWrapper->globalData()->timeoutChecker.stop();
 
     if (comp.complType() == Normal || comp.complType() == ReturnValue)

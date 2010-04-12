@@ -31,6 +31,7 @@
 #ifndef DocumentThreadableLoader_h
 #define DocumentThreadableLoader_h
 
+#include "FrameLoaderTypes.h"
 #include "SubresourceLoaderClient.h"
 #include "ThreadableLoader.h"
 #include <wtf/OwnPtr.h>
@@ -41,7 +42,7 @@
 namespace WebCore {
     class Document;
     class KURL;
-    struct ResourceRequest;
+    class ResourceRequest;
     class ThreadableLoaderClient;
 
     class DocumentThreadableLoader : public RefCounted<DocumentThreadableLoader>, public ThreadableLoader, private SubresourceLoaderClient  {
@@ -85,7 +86,7 @@ namespace WebCore {
         void preflightSuccess();
         void preflightFailure();
 
-        void loadRequest(const ResourceRequest&, bool skipCanLoadCheck);
+        void loadRequest(const ResourceRequest&, SecurityCheckPolicy);
         bool isAllowedRedirect(const KURL&);
 
         RefPtr<SubresourceLoader> m_loader;

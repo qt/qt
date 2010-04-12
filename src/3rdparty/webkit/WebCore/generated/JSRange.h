@@ -21,7 +21,6 @@
 #ifndef JSRange_h
 #define JSRange_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -43,7 +42,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -68,7 +67,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSRangePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -105,23 +104,23 @@ JSC::JSValue JSC_HOST_CALL jsRangePrototypeFunctionIsPointInRange(JSC::ExecState
 JSC::JSValue JSC_HOST_CALL jsRangePrototypeFunctionExpand(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsRangeStartContainer(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeStartOffset(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeEndContainer(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeEndOffset(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeCollapsed(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeCommonAncestorContainer(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsRangeStartContainer(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeStartOffset(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeEndContainer(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeEndOffset(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeCollapsed(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeCommonAncestorContainer(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 // Constants
 
-JSC::JSValue jsRangeSTART_TO_START(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeSTART_TO_END(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeEND_TO_END(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeEND_TO_START(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeNODE_BEFORE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeNODE_AFTER(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeNODE_BEFORE_AND_AFTER(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsRangeNODE_INSIDE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsRangeSTART_TO_START(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeSTART_TO_END(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeEND_TO_END(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeEND_TO_START(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeNODE_BEFORE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeNODE_AFTER(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeNODE_BEFORE_AND_AFTER(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsRangeNODE_INSIDE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

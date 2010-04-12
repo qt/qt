@@ -38,39 +38,41 @@
 
 namespace WebCore {
 
+    class Document;
     class Notification;
+    class KURL;
     class SecurityOrigin;
     class String;
-    
+
     class NotificationPresenter {
 
     public:
-        enum Permission { 
-            PermissionAllowed,     // User has allowed notifications
-            PermissionNotAllowed,  // User has not yet allowed
-            PermissionDenied       // User has explictly denied permission
+        enum Permission {
+            PermissionAllowed, // User has allowed notifications
+            PermissionNotAllowed, // User has not yet allowed
+            PermissionDenied // User has explicitly denied permission
         };
 
         virtual ~NotificationPresenter() {}
 
         // Requests that a notification be shown.
-        virtual bool show(Notification* object) = 0;
+        virtual bool show(Notification*) = 0;
 
         // Requests that a notification that has already been shown be canceled.
-        virtual void cancel(Notification* object) = 0;
+        virtual void cancel(Notification*) = 0;
 
-        // Informs the presenter that a Notification object has been destroyed 
+        // Informs the presenter that a Notification object has been destroyed
         // (such as by a page transition).  The presenter may continue showing
         // the notification, but must not attempt to call the event handlers.
-        virtual void notificationObjectDestroyed(Notification* object) = 0;
+        virtual void notificationObjectDestroyed(Notification*) = 0;
 
         // Requests user permission to show desktop notifications from a particular
-        // origin.  The callback parameter should be run when the user has
+        // origin. The callback parameter should be run when the user has
         // made a decision.
-        virtual void requestPermission(SecurityOrigin* origin, PassRefPtr<VoidCallback> callback) = 0;
+        virtual void requestPermission(SecurityOrigin*, PassRefPtr<VoidCallback>) = 0;
 
         // Checks the current level of permission.
-        virtual Permission checkPermission(SecurityOrigin* origin) = 0;
+        virtual Permission checkPermission(SecurityOrigin*) = 0;
     };
 
 } // namespace WebCore

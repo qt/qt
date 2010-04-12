@@ -25,6 +25,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include "config.h"
 #include "ChromeClientQt.h"
 
@@ -35,11 +36,23 @@
 #include "FrameLoaderClientQt.h"
 #include "FrameView.h"
 #include "HitTestResult.h"
+#include "Icon.h"
 #include "NotImplemented.h"
+#include "ScrollbarTheme.h"
 #include "WindowFeatures.h"
 #include "DatabaseTracker.h"
-#include "SecurityOrigin.h"
+#if defined(Q_WS_MAEMO_5)
+#include "QtMaemoWebPopup.h"
+#else
+#include "QtFallbackWebPopup.h"
+#endif
 #include "QWebPageClient.h"
+#include "SecurityOrigin.h"
+
+#include <qdebug.h>
+#include <qeventloop.h>
+#include <qtextdocument.h>
+#include <qtooltip.h>
 
 #include "qwebpage.h"
 #include "qwebpage_p.h"
@@ -48,22 +61,23 @@
 #include "qwebsecurityorigin_p.h"
 #include "qwebview.h"
 
-#include <qtooltip.h>
-#include <qtextdocument.h>
+#if USE(ACCELERATED_COMPOSITING)
+#include "GraphicsLayerQt.h"
+#endif
 
-namespace WebCore
-{
-
+namespace WebCore {
 
 ChromeClientQt::ChromeClientQt(QWebPage* webPage)
     : m_webPage(webPage)
+    , m_eventLoop(0)
 {
     toolBarsVisible = statusBarVisible = menuBarVisible = true;
 }
 
 ChromeClientQt::~ChromeClientQt()
 {
-
+    if (m_eventLoop)
+        m_eventLoop->exit();
 }
 
 void ChromeClientQt::setWindowRect(const FloatRect& rect)
@@ -141,6 +155,11 @@ void ChromeClientQt::takeFocus(FocusDirection)
 }
 
 
+void ChromeClientQt::focusedNodeChanged(WebCore::Node*)
+{
+}
+
+
 Page* ChromeClientQt::createWindow(Frame*, const FrameLoadRequest& request, const WindowFeatures& features)
 {
     QWebPage *newPage = m_webPage->createWindow(features.dialog ? QWebPage::WebModalDialog : QWebPage::WebBrowserWindow);
@@ -163,14 +182,16 @@ void ChromeClientQt::show()
 
 bool ChromeClientQt::canRunModal()
 {
-    notImplemented();
-    return false;
+    return true;
 }
 
 
 void ChromeClientQt::runModal()
 {
-    notImplemented();
+    m_eventLoop = new QEventLoop();
+    QEventLoop* eventLoop = m_eventLoop;
+    m_eventLoop->exec();
+    delete eventLoop;
 }
 
 
@@ -309,24 +330,60 @@ bool ChromeClientQt::tabsToLinks() const
 
 IntRect ChromeClientQt::windowResizerRect() const
 {
-    return IntRect();
+    if (!m_webPage)
+        return IntRect();
+
+    QWebPageClient* pageClient = platformPageClient();
+    if (!pageClient)
+        return IntRect();
+
+    QWidget* ownerWidget = pageClient->ownerWidget();
+    if (!ownerWidget)
+        return IntRect();
+
+    QWidget* topLevelWidget = ownerWidget->topLevelWidget();
+    QRect topLevelGeometry(topLevelWidget->geometry());
+
+    // There's no API in Qt to query for the size of the resizer, so we assume
+    // it has the same width and height as the scrollbar thickness.
+    int scollbarThickness = ScrollbarTheme::nativeTheme()->scrollbarThickness();
+
+    // There's no API in Qt to query for the position of the resizer. Sometimes
+    // it's drawn by the system, and sometimes it's a QSizeGrip. For RTL locales
+    // it might even be on the lower left side of the window, but in WebKit we
+    // always draw scrollbars on the right hand side, so we assume this to be the
+    // location when computing the resize rect to reserve for WebKit.
+    QPoint resizeCornerTopLeft = ownerWidget->mapFrom(topLevelWidget,
+            QPoint(topLevelGeometry.width(), topLevelGeometry.height())
+            - QPoint(scollbarThickness, scollbarThickness));
+
+    QRect resizeCornerRect = QRect(resizeCornerTopLeft, QSize(scollbarThickness, scollbarThickness));
+    return resizeCornerRect.intersected(pageClient->geometryRelativeToOwnerWidget());
 }
 
-void ChromeClientQt::repaint(const IntRect& windowRect, bool contentChanged, bool, bool)
+void ChromeClientQt::invalidateWindow(const IntRect&, bool)
+{
+    notImplemented();
+}
+
+void ChromeClientQt::invalidateContentsAndWindow(const IntRect& windowRect, bool immediate)
 {
     // No double buffer, so only update the QWidget if content changed.
-    if (contentChanged) {
-        if (platformPageClient()) {
-            QRect rect(windowRect);
-            rect = rect.intersected(QRect(QPoint(0, 0), m_webPage->viewportSize()));
-            if (!rect.isEmpty())
-                platformPageClient()->update(rect);
-        }
-        emit m_webPage->repaintRequested(windowRect);
+    if (platformPageClient()) {
+        QRect rect(windowRect);
+        rect = rect.intersected(QRect(QPoint(0, 0), m_webPage->viewportSize()));
+        if (!rect.isEmpty())
+            platformPageClient()->update(rect);
     }
+    emit m_webPage->repaintRequested(windowRect);
 
     // FIXME: There is no "immediate" support for window painting.  This should be done always whenever the flag
     // is set.
+}
+
+void ChromeClientQt::invalidateContentsForSlowScroll(const IntRect& windowRect, bool immediate)
+{
+    invalidateContentsAndWindow(windowRect, immediate);
 }
 
 void ChromeClientQt::scroll(const IntSize& delta, const IntRect& scrollViewRect, const IntRect&)
@@ -448,6 +505,11 @@ void ChromeClientQt::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> prpFileC
     }
 }
 
+void ChromeClientQt::chooseIconForFiles(const Vector<String>& filenames, PassRefPtr<FileChooser> chooser)
+{
+    chooser->iconLoaded(Icon::createIconForFiles(filenames));
+}
+
 bool ChromeClientQt::setCursor(PlatformCursorHandle)
 {
     notImplemented();
@@ -459,5 +521,58 @@ void ChromeClientQt::requestGeolocationPermissionForFrame(Frame*, Geolocation*)
     // See the comment in WebCore/page/ChromeClient.h
     notImplemented();
 }
+
+#if USE(ACCELERATED_COMPOSITING)
+void ChromeClientQt::attachRootGraphicsLayer(Frame* frame, GraphicsLayer* graphicsLayer)
+{    
+    if (platformPageClient())
+        platformPageClient()->setRootGraphicsLayer(graphicsLayer ? graphicsLayer->nativeLayer() : 0);
+}
+
+void ChromeClientQt::setNeedsOneShotDrawingSynchronization()
+{
+    // we want the layers to synchronize next time we update the screen anyway
+    if (platformPageClient())
+        platformPageClient()->markForSync(false);
+}
+
+void ChromeClientQt::scheduleCompositingLayerSync()
+{
+    // we want the layers to synchronize ASAP
+    if (platformPageClient())
+        platformPageClient()->markForSync(true);
+}
+#endif
+
+QtAbstractWebPopup* ChromeClientQt::createSelectPopup()
+{
+#if defined(Q_WS_MAEMO_5)
+    return new QtMaemoWebPopup;
+#else
+    return new QtFallbackWebPopup;
+#endif
+}
+
+#if ENABLE(WIDGETS_10_SUPPORT)
+bool ChromeClientQt::isDocked()
+{
+    return m_webPage->d->viewMode == "mini";
+}
+
+bool ChromeClientQt::isFloating()
+{
+    return m_webPage->d->viewMode == "floating";
+}
+
+bool ChromeClientQt::isApplication()
+{
+    return m_webPage->d->viewMode == "application";
+}
+
+bool ChromeClientQt::isFullscreen()
+{
+    return m_webPage->d->viewMode == "fullscreen";
+}
+#endif
 
 }

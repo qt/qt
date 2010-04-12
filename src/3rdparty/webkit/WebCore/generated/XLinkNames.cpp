@@ -70,15 +70,6 @@ WebCore::QualifiedName** getXLinkAttrs(size_t* size)
     return XLinkAttr;
 }
 
-// Attributes as strings
-char actuateAttrString[] = "actuate";
-char arcroleAttrString[] = "arcrole";
-char hrefAttrString[] = "href";
-char roleAttrString[] = "role";
-char showAttrString[] = "show";
-char titleAttrString[] = "title";
-char typeAttrString[] = "type";
-
 void init()
 {
     static bool initialized = false;
@@ -95,13 +86,13 @@ void init()
     new ((void*)&xlinkNamespaceURI) AtomicString(xlinkNS);
 
     // Attributes
-    new ((void*)&actuateAttr) QualifiedName(nullAtom, actuateAttrString, xlinkNS);
-    new ((void*)&arcroleAttr) QualifiedName(nullAtom, arcroleAttrString, xlinkNS);
-    new ((void*)&hrefAttr) QualifiedName(nullAtom, hrefAttrString, xlinkNS);
-    new ((void*)&roleAttr) QualifiedName(nullAtom, roleAttrString, xlinkNS);
-    new ((void*)&showAttr) QualifiedName(nullAtom, showAttrString, xlinkNS);
-    new ((void*)&titleAttr) QualifiedName(nullAtom, titleAttrString, xlinkNS);
-    new ((void*)&typeAttr) QualifiedName(nullAtom, typeAttrString, xlinkNS);
+    new ((void*)&actuateAttr) QualifiedName(nullAtom, "actuate", xlinkNS);
+    new ((void*)&arcroleAttr) QualifiedName(nullAtom, "arcrole", xlinkNS);
+    new ((void*)&hrefAttr) QualifiedName(nullAtom, "href", xlinkNS);
+    new ((void*)&roleAttr) QualifiedName(nullAtom, "role", xlinkNS);
+    new ((void*)&showAttr) QualifiedName(nullAtom, "show", xlinkNS);
+    new ((void*)&titleAttr) QualifiedName(nullAtom, "title", xlinkNS);
+    new ((void*)&typeAttr) QualifiedName(nullAtom, "type", xlinkNS);
 }
 
 } }

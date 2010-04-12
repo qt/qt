@@ -39,7 +39,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -58,7 +58,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSMutationEventPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -70,17 +70,17 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsMutationEventPrototypeFunctionInitMutationEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsMutationEventRelatedNode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMutationEventPrevValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMutationEventNewValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMutationEventAttrName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMutationEventAttrChange(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMutationEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsMutationEventRelatedNode(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMutationEventPrevValue(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMutationEventNewValue(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMutationEventAttrName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMutationEventAttrChange(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMutationEventConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 // Constants
 
-JSC::JSValue jsMutationEventMODIFICATION(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMutationEventADDITION(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMutationEventREMOVAL(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsMutationEventMODIFICATION(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMutationEventADDITION(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMutationEventREMOVAL(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

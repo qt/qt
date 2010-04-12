@@ -96,7 +96,6 @@ MathObject::MathObject(ExecState* exec, NonNullPassRefPtr<Structure> structure)
     putDirectWithoutTransition(Identifier(exec, "PI"), jsNumber(exec, piDouble), DontDelete | DontEnum | ReadOnly);
     putDirectWithoutTransition(Identifier(exec, "SQRT1_2"), jsNumber(exec, sqrt(0.5)), DontDelete | DontEnum | ReadOnly);
     putDirectWithoutTransition(Identifier(exec, "SQRT2"), jsNumber(exec, sqrt(2.0)), DontDelete | DontEnum | ReadOnly);
-    WTF::initializeWeakRandomNumberGenerator();
 }
 
 // ECMA 15.8
@@ -120,22 +119,22 @@ JSValue JSC_HOST_CALL mathProtoFuncAbs(ExecState* exec, JSObject*, JSValue, cons
 
 JSValue JSC_HOST_CALL mathProtoFuncACos(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsNumber(exec, acos(args.at(0).toNumber(exec)));
+    return jsDoubleNumber(exec, acos(args.at(0).toNumber(exec)));
 }
 
 JSValue JSC_HOST_CALL mathProtoFuncASin(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsNumber(exec, asin(args.at(0).toNumber(exec)));
+    return jsDoubleNumber(exec, asin(args.at(0).toNumber(exec)));
 }
 
 JSValue JSC_HOST_CALL mathProtoFuncATan(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsNumber(exec, atan(args.at(0).toNumber(exec)));
+    return jsDoubleNumber(exec, atan(args.at(0).toNumber(exec)));
 }
 
 JSValue JSC_HOST_CALL mathProtoFuncATan2(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsNumber(exec, atan2(args.at(0).toNumber(exec), args.at(1).toNumber(exec)));
+    return jsDoubleNumber(exec, atan2(args.at(0).toNumber(exec), args.at(1).toNumber(exec)));
 }
 
 JSValue JSC_HOST_CALL mathProtoFuncCeil(ExecState* exec, JSObject*, JSValue, const ArgList& args)
@@ -145,12 +144,12 @@ JSValue JSC_HOST_CALL mathProtoFuncCeil(ExecState* exec, JSObject*, JSValue, con
 
 JSValue JSC_HOST_CALL mathProtoFuncCos(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsNumber(exec, cos(args.at(0).toNumber(exec)));
+    return jsDoubleNumber(exec, cos(args.at(0).toNumber(exec)));
 }
 
 JSValue JSC_HOST_CALL mathProtoFuncExp(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsNumber(exec, exp(args.at(0).toNumber(exec)));
+    return jsDoubleNumber(exec, exp(args.at(0).toNumber(exec)));
 }
 
 JSValue JSC_HOST_CALL mathProtoFuncFloor(ExecState* exec, JSObject*, JSValue, const ArgList& args)
@@ -160,7 +159,7 @@ JSValue JSC_HOST_CALL mathProtoFuncFloor(ExecState* exec, JSObject*, JSValue, co
 
 JSValue JSC_HOST_CALL mathProtoFuncLog(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsNumber(exec, log(args.at(0).toNumber(exec)));
+    return jsDoubleNumber(exec, log(args.at(0).toNumber(exec)));
 }
 
 JSValue JSC_HOST_CALL mathProtoFuncMax(ExecState* exec, JSObject*, JSValue, const ArgList& args)
@@ -211,30 +210,29 @@ JSValue JSC_HOST_CALL mathProtoFuncPow(ExecState* exec, JSObject*, JSValue, cons
 
 JSValue JSC_HOST_CALL mathProtoFuncRandom(ExecState* exec, JSObject*, JSValue, const ArgList&)
 {
-    return jsNumber(exec, WTF::weakRandomNumber());
+    return jsDoubleNumber(exec, exec->globalData().weakRandom.get());
 }
 
 JSValue JSC_HOST_CALL mathProtoFuncRound(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
     double arg = args.at(0).toNumber(exec);
-    if (signbit(arg) && arg >= -0.5)
-         return jsNumber(exec, -0.0);
-    return jsNumber(exec, floor(arg + 0.5));
+    double integer = ceil(arg);
+    return jsNumber(exec, integer - (integer - arg > 0.5));
 }
 
 JSValue JSC_HOST_CALL mathProtoFuncSin(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsNumber(exec, sin(args.at(0).toNumber(exec)));
+    return jsDoubleNumber(exec, sin(args.at(0).toNumber(exec)));
 }
 
 JSValue JSC_HOST_CALL mathProtoFuncSqrt(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsNumber(exec, sqrt(args.at(0).toNumber(exec)));
+    return jsDoubleNumber(exec, sqrt(args.at(0).toNumber(exec)));
 }
 
 JSValue JSC_HOST_CALL mathProtoFuncTan(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsNumber(exec, tan(args.at(0).toNumber(exec)));
+    return jsDoubleNumber(exec, tan(args.at(0).toNumber(exec)));
 }
 
 } // namespace JSC

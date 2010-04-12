@@ -31,6 +31,7 @@ WebInspector.DatabaseQueryView = function(database)
 
     this.element.addStyleClass("storage-view");
     this.element.addStyleClass("query");
+    this.element.addStyleClass("monospace");
     this.element.tabIndex = 0;
 
     this.element.addEventListener("selectstart", this._selectStart.bind(this), false);
@@ -38,7 +39,7 @@ WebInspector.DatabaseQueryView = function(database)
     this.promptElement = document.createElement("div");
     this.promptElement.className = "database-query-prompt";
     this.promptElement.appendChild(document.createElement("br"));
-    this.promptElement.handleKeyEvent = this._promptKeyDown.bind(this);
+    this.promptElement.addEventListener("keydown", this._promptKeyDown.bind(this), true);
     this.element.appendChild(this.promptElement);
 
     this.prompt = new WebInspector.TextPrompt(this.promptElement, this.completions.bind(this), " ");
@@ -98,8 +99,6 @@ WebInspector.DatabaseQueryView.prototype = {
             this._enterKeyPressed(event);
             return;
         }
-
-        this.prompt.handleKeyEvent(event);
     },
 
     _selectStart: function(event)
@@ -145,6 +144,7 @@ WebInspector.DatabaseQueryView.prototype = {
             return;
         dataGrid.element.addStyleClass("inline");
         this._appendQueryResult(query, dataGrid.element);
+        dataGrid.autoSizeColumns(5);
 
         if (query.match(/^create /i) || query.match(/^drop table /i))
             WebInspector.panels.storage.updateDatabaseTables(this.database);

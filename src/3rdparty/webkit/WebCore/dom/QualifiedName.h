@@ -22,7 +22,7 @@
 #define QualifiedName_h
 
 #include "AtomicString.h"
-#include <wtf/HashFunctions.h>
+#include <wtf/HashTraits.h>
 
 namespace WebCore {
 
@@ -32,7 +32,7 @@ struct QualifiedNameComponents {
     StringImpl* m_namespace;
 };
 
-class QualifiedName {
+class QualifiedName : public FastAllocBase {
 public:
     class QualifiedNameImpl : public RefCounted<QualifiedNameImpl> {
     public:
@@ -57,6 +57,7 @@ public:
     };
 
     QualifiedName(const AtomicString& prefix, const AtomicString& localName, const AtomicString& namespaceURI);
+    QualifiedName(const AtomicString& prefix, const char* localName, const AtomicString& namespaceURI);
     ~QualifiedName() { deref(); }
 #ifdef QNAME_DEFAULT_CONSTRUCTOR
     QualifiedName() : m_impl(0) { }
@@ -88,6 +89,7 @@ public:
     static void init();
     
 private:
+    void init(const AtomicString& prefix, const AtomicString& localName, const AtomicString& namespaceURI);
     void ref() const { m_impl->ref(); }
     void deref();
     

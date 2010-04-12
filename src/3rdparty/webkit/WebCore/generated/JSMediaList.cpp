@@ -38,9 +38,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSMediaList);
 
 static const HashTableValue JSMediaListTableValues[4] =
 {
-    { "mediaText", DontDelete, (intptr_t)jsMediaListMediaText, (intptr_t)setJSMediaListMediaText },
-    { "length", DontDelete|ReadOnly, (intptr_t)jsMediaListLength, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsMediaListConstructor, (intptr_t)0 },
+    { "mediaText", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaListMediaText), (intptr_t)setJSMediaListMediaText },
+    { "length", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaListLength), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaListConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -102,9 +102,9 @@ bool JSMediaListConstructor::getOwnPropertyDescriptor(ExecState* exec, const Ide
 
 static const HashTableValue JSMediaListPrototypeTableValues[4] =
 {
-    { "item", DontDelete|Function, (intptr_t)jsMediaListPrototypeFunctionItem, (intptr_t)1 },
-    { "deleteMedium", DontDelete|Function, (intptr_t)jsMediaListPrototypeFunctionDeleteMedium, (intptr_t)1 },
-    { "appendMedium", DontDelete|Function, (intptr_t)jsMediaListPrototypeFunctionAppendMedium, (intptr_t)1 },
+    { "item", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsMediaListPrototypeFunctionItem), (intptr_t)1 },
+    { "deleteMedium", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsMediaListPrototypeFunctionDeleteMedium), (intptr_t)1 },
+    { "appendMedium", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsMediaListPrototypeFunctionAppendMedium), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -159,7 +159,7 @@ bool JSMediaList::getOwnPropertySlot(ExecState* exec, const Identifier& property
     }
     bool ok;
     unsigned index = propertyName.toUInt32(&ok, false);
-    if (ok && index < static_cast<MediaList*>(impl())->length()) {
+    if (ok) {
         slot.setCustomIndex(this, index, indexGetter);
         return true;
     }
@@ -195,25 +195,27 @@ bool JSMediaList::getOwnPropertySlot(ExecState* exec, unsigned propertyName, Pro
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValue jsMediaListMediaText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMediaListMediaText(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSMediaList* castedThis = static_cast<JSMediaList*>(asObject(slot.slotBase()));
+    JSMediaList* castedThis = static_cast<JSMediaList*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     MediaList* imp = static_cast<MediaList*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->mediaText());
+    JSValue result = jsStringOrNull(exec, imp->mediaText());
+    return result;
 }
 
-JSValue jsMediaListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMediaListLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSMediaList* castedThis = static_cast<JSMediaList*>(asObject(slot.slotBase()));
+    JSMediaList* castedThis = static_cast<JSMediaList*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     MediaList* imp = static_cast<MediaList*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
-JSValue jsMediaListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMediaListConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSMediaList* domObject = static_cast<JSMediaList*>(asObject(slot.slotBase()));
+    JSMediaList* domObject = static_cast<JSMediaList*>(asObject(slotBase));
     return JSMediaList::getConstructor(exec, domObject->globalObject());
 }
 void JSMediaList::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -223,17 +225,18 @@ void JSMediaList::put(ExecState* exec, const Identifier& propertyName, JSValue v
 
 void setJSMediaListMediaText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    MediaList* imp = static_cast<MediaList*>(static_cast<JSMediaList*>(thisObject)->impl());
+    JSMediaList* castedThisObj = static_cast<JSMediaList*>(thisObject);
+    MediaList* imp = static_cast<MediaList*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setMediaText(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);
 }
 
-void JSMediaList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSMediaList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<MediaList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSMediaList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -286,10 +289,10 @@ JSValue JSC_HOST_CALL jsMediaListPrototypeFunctionAppendMedium(ExecState* exec, 
 }
 
 
-JSValue JSMediaList::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue JSMediaList::indexGetter(ExecState* exec, JSValue slotBase, unsigned index)
 {
-    JSMediaList* thisObj = static_cast<JSMediaList*>(asObject(slot.slotBase()));
-    return jsStringOrNull(exec, thisObj->impl()->item(slot.index()));
+    JSMediaList* thisObj = static_cast<JSMediaList*>(asObject(slotBase));
+    return jsStringOrNull(exec, thisObj->impl()->item(index));
 }
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, MediaList* object)
 {

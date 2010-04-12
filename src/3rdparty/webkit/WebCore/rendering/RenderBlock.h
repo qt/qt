@@ -2,7 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2007 David Smith (catfish.man@gmail.com)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -34,7 +34,6 @@ namespace WebCore {
 
 class InlineIterator;
 class RenderInline;
-class RootInlineBox;
 
 struct BidiRun;
 
@@ -91,8 +90,6 @@ public:
     bool containsFloats() { return m_floatingObjects && !m_floatingObjects->isEmpty(); }
     bool containsFloat(RenderObject*);
 
-    IntRect floatRect() const;
-
     int lineWidth(int y, bool firstLine) const;
     
     virtual int lowestPosition(bool includeOverflowInterior = true, bool includeSelf = true) const;
@@ -130,6 +127,7 @@ public:
     void clearTruncation();
 
     void adjustRectForColumns(IntRect&) const;
+    virtual void adjustForColumns(IntSize&, const IntPoint&) const;
 
     void addContinuationWithOutline(RenderInline*);
 
@@ -140,7 +138,15 @@ public:
     // style from this RenderBlock.
     RenderBlock* createAnonymousBlock(bool isFlexibleBox = false) const;
 
+    static void appendRunsForObject(int start, int end, RenderObject*, InlineBidiResolver&);    
+    static bool requiresLineBox(const InlineIterator&, bool isLineEmpty = true, bool previousLineBrokeCleanly = true);
+
 protected:
+    void moveChildTo(RenderObject* to, RenderObjectChildList* toChildList, RenderObject* child);
+    void moveChildTo(RenderObject* to, RenderObjectChildList* toChildList, RenderObject* beforeChild, RenderObject* child);
+    void moveAllChildrenTo(RenderObject* to, RenderObjectChildList* toChildList);
+    void moveAllChildrenTo(RenderObject* to, RenderObjectChildList* toChildList, RenderObject* beforeChild);
+
     int maxTopPosMargin() const { return m_maxMargin ? m_maxMargin->m_topPos : MaxMargin::topPosDefault(this); }
     int maxTopNegMargin() const { return m_maxMargin ? m_maxMargin->m_topNeg : MaxMargin::topNegDefault(this); }
     int maxBottomPosMargin() const { return m_maxMargin ? m_maxMargin->m_bottomPos : MaxMargin::bottomPosDefault(this); }
@@ -310,7 +316,6 @@ private:
     // Obtains the nearest enclosing block (including this block) that contributes a first-line style to our inline
     // children.
     virtual RenderBlock* firstLineBlock() const;
-    bool inRootBlockContext() const;
 
     virtual IntRect rectWithOutlineForRepaint(RenderBoxModelObject* repaintContainer, int outlineWidth);
     virtual RenderStyle* outlineStyleForRepaint() const;
@@ -349,12 +354,12 @@ private:
 
     virtual IntRect localCaretRect(InlineBox*, int caretOffset, int* extraWidthToEndOfLine = 0);
 
-    virtual void addFocusRingRects(GraphicsContext*, int tx, int ty);
+    virtual void addFocusRingRects(Vector<IntRect>&, int tx, int ty);
 
     void adjustPointToColumnContents(IntPoint&) const;
     void adjustForBorderFit(int x, int& left, int& right) const; // Helper function for borderFitAdjust
 
-    void markLinesDirtyInVerticalRange(int top, int bottom);
+    void markLinesDirtyInVerticalRange(int top, int bottom, RootInlineBox* highest = 0);
 
     void newLine(EClear);
 
@@ -366,13 +371,14 @@ private:
     void offsetForContents(int& tx, int& ty) const;
 
     void calcColumnWidth();
-    int layoutColumns(int endOfContent = -1);
+    int layoutColumns(int endOfContent = -1, int requestedColumnHeight = -1);
+    int visibleTopOfHighestFloatExtendingBelow(int bottom, int maxHeight) const;
 
     bool expandsToEncloseOverhangingFloats() const;
 
     void updateScrollInfoAfterLayout();
 
-    struct FloatingObject {
+    struct FloatingObject : Noncopyable {
         enum Type {
             FloatLeft,
             FloatRight
@@ -488,7 +494,7 @@ private:
     RenderInline* m_inlineContinuation;
 
     // Allocated only when some of these fields have non-default values
-    struct MaxMargin {
+    struct MaxMargin : Noncopyable {
         MaxMargin(const RenderBlock* o) 
             : m_topPos(topPosDefault(o))
             , m_topNeg(topNegDefault(o))
@@ -514,6 +520,10 @@ private:
     RenderLineBoxList m_lineBoxes;   // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
 
     mutable int m_lineHeight;
+    
+    // RenderRubyBase objects need to be able to split and merge, moving their children around
+    // (calling moveChildTo, moveAllChildrenTo, and makeChildrenNonInline).
+    friend class RenderRubyBase;
 };
 
 inline RenderBlock* toRenderBlock(RenderObject* object)

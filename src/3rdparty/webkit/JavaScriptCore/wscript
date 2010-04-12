@@ -29,18 +29,19 @@ import commands
 
 from settings import *
 
-jscore_excludes = ['jsc.cpp', 'ucptable.cpp', 'GOwnPtr.cpp']
-jscore_excludes.extend(get_excludes(jscore_dir, ['*CF.cpp', '*Symbian.cpp']))
+jscore_excludes = ['jsc.cpp', 'ucptable.cpp']
+jscore_excludes.extend(get_excludes(jscore_dir, ['*Brew.cpp', '*CF.cpp', '*Symbian.cpp']))
 
 sources = []
 
-jscore_excludes.extend(get_excludes(jscore_dir, ['*Win.cpp', '*None.cpp']))
+jscore_excludes.extend(get_excludes(jscore_dir, ['*None.cpp']))
 
 if building_on_win32:
-    jscore_excludes += ['ExecutableAllocatorPosix.cpp', 'MarkStackPosix.cpp']
+    jscore_excludes += ['ExecutableAllocatorPosix.cpp', 'MarkStackPosix.cpp', 'ThreadingPthreads.cpp']
     sources += ['jit/ExecutableAllocatorWin.cpp', 'runtime/MarkStackWin.cpp']
 else:
     jscore_excludes.append('JSStringRefBSTR.cpp')
+    jscore_excludes.extend(get_excludes(jscore_dir, ['*Win.cpp']))
 
 def generate_jscore_derived_sources():
     # build the derived sources
@@ -71,11 +72,13 @@ def build(bld):
     full_dirs = get_dirs_for_features(jscore_dir, features=[build_port], dirs=jscore_dirs)
 
     includes = common_includes + full_dirs
+    if sys.platform.startswith('darwin'):
+        includes.append(os.path.join(jscore_dir, 'icu'))
 
     # 1. A simple program
     jscore = bld.new_task_gen(
         features = 'cxx cstaticlib',
-        includes = '. .. assembler wrec DerivedSources ForwardingHeaders ' + ' '.join(includes),
+        includes = '. .. assembler DerivedSources ForwardingHeaders ' + ' '.join(includes),
         source = sources,
         target = 'jscore',
         uselib = 'WX ICU ' + get_config(),
@@ -86,7 +89,7 @@ def build(bld):
         
     obj = bld.new_task_gen(
         features = 'cxx cprogram',
-        includes = '. .. assembler wrec DerivedSources ForwardingHeaders ' + ' '.join(includes),
+        includes = '. .. assembler DerivedSources ForwardingHeaders ' + ' '.join(includes),
         source = 'jsc.cpp',
         target = 'jsc',
         uselib = 'WX ICU ' + get_config(),

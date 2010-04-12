@@ -25,8 +25,10 @@
 #include "HTMLFormElement.h"
 #include "JSHTMLFormElement.h"
 #include "JSValidityState.h"
+#include "KURL.h"
 #include "ValidityState.h"
 #include <runtime/Error.h>
+#include <runtime/JSString.h>
 #include <wtf/GetPtr.h>
 
 using namespace JSC;
@@ -37,12 +39,13 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLFieldSetElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLFieldSetElementTableValues[5] =
+static const HashTableValue JSHTMLFieldSetElementTableValues[6] =
 {
-    { "form", DontDelete|ReadOnly, (intptr_t)jsHTMLFieldSetElementForm, (intptr_t)0 },
-    { "validity", DontDelete|ReadOnly, (intptr_t)jsHTMLFieldSetElementValidity, (intptr_t)0 },
-    { "willValidate", DontDelete|ReadOnly, (intptr_t)jsHTMLFieldSetElementWillValidate, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLFieldSetElementConstructor, (intptr_t)0 },
+    { "form", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFieldSetElementForm), (intptr_t)0 },
+    { "validity", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFieldSetElementValidity), (intptr_t)0 },
+    { "willValidate", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFieldSetElementWillValidate), (intptr_t)0 },
+    { "validationMessage", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFieldSetElementValidationMessage), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLFieldSetElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -50,7 +53,7 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLFieldSetElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSHTMLFieldSetElementTableValues, 0 };
 #else
-    { 8, 7, JSHTMLFieldSetElementTableValues, 0 };
+    { 16, 15, JSHTMLFieldSetElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -81,7 +84,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -104,8 +107,8 @@ bool JSHTMLFieldSetElementConstructor::getOwnPropertyDescriptor(ExecState* exec,
 
 static const HashTableValue JSHTMLFieldSetElementPrototypeTableValues[3] =
 {
-    { "checkValidity", DontDelete|Function, (intptr_t)jsHTMLFieldSetElementPrototypeFunctionCheckValidity, (intptr_t)0 },
-    { "setCustomValidity", DontDelete|Function, (intptr_t)jsHTMLFieldSetElementPrototypeFunctionSetCustomValidity, (intptr_t)1 },
+    { "checkValidity", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLFieldSetElementPrototypeFunctionCheckValidity), (intptr_t)0 },
+    { "setCustomValidity", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLFieldSetElementPrototypeFunctionSetCustomValidity), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -155,33 +158,45 @@ bool JSHTMLFieldSetElement::getOwnPropertyDescriptor(ExecState* exec, const Iden
     return getStaticValueDescriptor<JSHTMLFieldSetElement, Base>(exec, &JSHTMLFieldSetElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLFieldSetElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFieldSetElementForm(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()));
+    JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
+    return result;
 }
 
-JSValue jsHTMLFieldSetElementValidity(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFieldSetElementValidity(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()));
+    JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->validity()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->validity()));
+    return result;
 }
 
-JSValue jsHTMLFieldSetElementWillValidate(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFieldSetElementWillValidate(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()));
+    JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThis->impl());
-    return jsBoolean(imp->willValidate());
+    JSValue result = jsBoolean(imp->willValidate());
+    return result;
 }
 
-JSValue jsHTMLFieldSetElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFieldSetElementValidationMessage(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLFieldSetElement* domObject = static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()));
+    JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slotBase));
+    UNUSED_PARAM(exec);
+    HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThis->impl());
+    JSValue result = jsString(exec, imp->validationMessage());
+    return result;
+}
+
+JSValue jsHTMLFieldSetElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSHTMLFieldSetElement* domObject = static_cast<JSHTMLFieldSetElement*>(asObject(slotBase));
     return JSHTMLFieldSetElement::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSHTMLFieldSetElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

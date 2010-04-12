@@ -33,6 +33,10 @@ WebInspector.DOMNode = function(doc, payload) {
     this.ownerDocument = doc;
 
     this.id = payload.id;
+    // injectedScriptId is a node is for DOM nodes which should be converted
+    // to corresponding InjectedScript by the inspector backend. We indicate
+    // this by making injectedScriptId negative.
+    this.injectedScriptId = -payload.id;
     this.nodeType = payload.nodeType;
     this.nodeName = payload.nodeName;
     this.localName = payload.localName;
@@ -60,12 +64,20 @@ WebInspector.DOMNode = function(doc, payload) {
     this.style = null;
     this._matchedCSSRules = [];
 
-    if (this.nodeType == Node.ELEMENT_NODE) {
-        if (this.nodeName == "HTML")
+    if (this.nodeType === Node.ELEMENT_NODE) {
+        // HTML and BODY from internal iframes should not overwrite top-level ones.
+        if (!this.ownerDocument.documentElement && this.nodeName === "HTML")
             this.ownerDocument.documentElement = this;
-        if (this.nodeName == "BODY")
+        if (!this.ownerDocument.body && this.nodeName === "BODY")
             this.ownerDocument.body = this;
-    }
+        if (payload.documentURL)
+            this.documentURL = payload.documentURL;
+    } else if (this.nodeType === Node.DOCUMENT_TYPE_NODE) {
+        this.publicId = payload.publicId;
+        this.systemId = payload.systemId;
+        this.internalSubset = payload.internalSubset;
+    } else if (this.nodeType === Node.DOCUMENT_NODE)
+        this.documentURL = payload.documentURL;
 }
 
 WebInspector.DOMNode.prototype = {
@@ -132,6 +144,8 @@ WebInspector.DOMNode.prototype = {
 
     _setAttributesPayload: function(attrs)
     {
+        this.attributes = [];
+        this._attributesMap = {};
         for (var i = 0; i < attrs.length; i += 2)
             this._addAttribute(attrs[i], attrs[i + 1]);
     },
@@ -139,10 +153,13 @@ WebInspector.DOMNode.prototype = {
     _insertChild: function(prev, payload)
     {
         var node = new WebInspector.DOMNode(this.ownerDocument, payload);
-        if (!prev)
-            // First node
-            this.children = [ node ];
-        else
+        if (!prev) {
+            if (!this.children) {
+                // First node
+                this.children = [ node ];
+            } else
+                this.children.unshift(node);
+        } else
             this.children.splice(this.children.indexOf(prev) + 1, 0, node);
         this._renumber();
         return node;
@@ -178,6 +195,7 @@ WebInspector.DOMNode.prototype = {
         this.lastChild = this.children[this._childNodeCount - 1];
         for (var i = 0; i < this._childNodeCount; ++i) {
             var child = this.children[i];
+            child.index = i;
             child.nextSibling = i + 1 < this._childNodeCount ? this.children[i + 1] : null;
             child.prevSibling = i - 1 >= 0 ? this.children[i - 1] : null;
             child.parentNode = this;
@@ -193,30 +211,6 @@ WebInspector.DOMNode.prototype = {
         };
         this._attributesMap[name] = attr;
         this.attributes.push(attr);
-    },
-
-    _setStyles: function(computedStyle, inlineStyle, styleAttributes, matchedCSSRules)
-    {
-        this._computedStyle = new WebInspector.CSSStyleDeclaration(computedStyle);
-        this.style = new WebInspector.CSSStyleDeclaration(inlineStyle);
-
-        for (var name in styleAttributes) {
-            if (this._attributesMap[name])
-                this._attributesMap[name].style = new WebInspector.CSSStyleDeclaration(styleAttributes[name]);
-        }
-
-        this._matchedCSSRules = [];
-        for (var i = 0; i < matchedCSSRules.length; i++)
-            this._matchedCSSRules.push(WebInspector.CSSStyleDeclaration.parseRule(matchedCSSRules[i]));
-    },
-
-    _clearStyles: function()
-    {
-        this.computedStyle = null;
-        this.style = null;
-        for (var name in this._attributesMap)
-            this._attributesMap[name].style = null;
-        this._matchedCSSRules = null;
     }
 }
 
@@ -290,16 +284,6 @@ WebInspector.DOMWindow.prototype = {
 
     Object: function()
     {
-    },
-
-    getComputedStyle: function(node)
-    {
-        return node._computedStyle;
-    },
-
-    getMatchedCSSRules: function(node, pseudoElement, authorOnly)
-    {
-        return node._matchedCSSRules;
     }
 }
 
@@ -326,25 +310,25 @@ WebInspector.DOMAgent.prototype = {
             callback(parent.children);
         }
         var callId = WebInspector.Callback.wrap(mycallback);
-        InspectorController.getChildNodes(callId, parent.id);
+        InspectorBackend.getChildNodes(callId, parent.id);
     },
 
     setAttributeAsync: function(node, name, value, callback)
     {
         var mycallback = this._didApplyDomChange.bind(this, node, callback);
-        InspectorController.setAttribute(WebInspector.Callback.wrap(mycallback), node.id, name, value);
+        InspectorBackend.setAttribute(WebInspector.Callback.wrap(mycallback), node.id, name, value);
     },
 
     removeAttributeAsync: function(node, name, callback)
     {
         var mycallback = this._didApplyDomChange.bind(this, node, callback);
-        InspectorController.removeAttribute(WebInspector.Callback.wrap(mycallback), node.id, name);
+        InspectorBackend.removeAttribute(WebInspector.Callback.wrap(mycallback), node.id, name);
     },
 
     setTextNodeValueAsync: function(node, text, callback)
     {
         var mycallback = this._didApplyDomChange.bind(this, node, callback);
-        InspectorController.setTextNodeValue(WebInspector.Callback.wrap(mycallback), node.id, text);
+        InspectorBackend.setTextNodeValue(WebInspector.Callback.wrap(mycallback), node.id, text);
     },
 
     _didApplyDomChange: function(node, callback, success)
@@ -354,15 +338,16 @@ WebInspector.DOMAgent.prototype = {
         callback();
         // TODO(pfeldman): Fix this hack.
         var elem = WebInspector.panels.elements.treeOutline.findTreeElement(node);
-        if (elem) {
-            elem._updateTitle();
-        }
+        if (elem)
+            elem.updateTitle();
     },
 
     _attributesUpdated: function(nodeId, attrsArray)
     {
         var node = this._idToDOMNode[nodeId];
         node._setAttributesPayload(attrsArray);
+        var event = {target: node};
+        this.document._fireDomEvent("DOMAttrModified", event);
     },
 
     nodeForId: function(nodeId) {
@@ -372,13 +357,13 @@ WebInspector.DOMAgent.prototype = {
     _setDocument: function(payload)
     {
         this._idToDOMNode = {};
-        if (payload) {
+        if (payload && "id" in payload) {
             this.document = new WebInspector.DOMDocument(this, this._window, payload);
             this._idToDOMNode[payload.id] = this.document;
             this._bindNodes(this.document.children);
         } else
             this.document = null;
-        WebInspector.panels.elements.reset();
+        WebInspector.panels.elements.setDocument(this.document);
     },
 
     _setDetachedRoot: function(payload)
@@ -437,7 +422,7 @@ WebInspector.DOMAgent.prototype = {
 
 WebInspector.Cookies = {}
 
-WebInspector.Cookies.getCookiesAsync = function(callback, cookieDomain)
+WebInspector.Cookies.getCookiesAsync = function(callback)
 {
     function mycallback(cookies, cookiesString) {
         if (cookiesString)
@@ -446,7 +431,7 @@ WebInspector.Cookies.getCookiesAsync = function(callback, cookieDomain)
             callback(cookies, true);
     }
     var callId = WebInspector.Callback.wrap(mycallback);
-    InspectorController.getCookies(callId, cookieDomain);
+    InspectorBackend.getCookies(callId);
 }
 
 WebInspector.Cookies.buildCookiesFromString = function(rawCookieString)
@@ -468,6 +453,28 @@ WebInspector.Cookies.buildCookiesFromString = function(rawCookieString)
     return cookies;
 }
 
+WebInspector.Cookies.cookieMatchesResourceURL = function(cookie, resourceURL)
+{
+    var match = resourceURL.match(WebInspector.URLRegExp);
+    if (!match)
+        return false;
+    // See WebInspector.URLRegExp for definitions of the group index constants.
+    if (!this.cookieDomainMatchesResourceDomain(cookie.domain, match[2]))
+        return false;
+    var resourcePort = match[3] ? match[3] : undefined;
+    var resourcePath = match[4] ? match[4] : '/';
+    return (resourcePath.indexOf(cookie.path) === 0
+        && (!cookie.port || resourcePort == cookie.port)
+        && (!cookie.secure || match[1].toLowerCase() === 'https'));
+}
+
+WebInspector.Cookies.cookieDomainMatchesResourceDomain = function(cookieDomain, resourceDomain)
+{
+    if (cookieDomain.charAt(0) !== '.')
+        return resourceDomain === cookieDomain;
+    return !!resourceDomain.match(new RegExp("^([^\\.]+\\.)?" + cookieDomain.substring(1).escapeForRegExp() + "$"), "i");
+}
+
 WebInspector.EventListeners = {}
 
 WebInspector.EventListeners.getEventListenersForNodeAsync = function(node, callback)
@@ -476,7 +483,7 @@ WebInspector.EventListeners.getEventListenersForNodeAsync = function(node, callb
         return;
 
     var callId = WebInspector.Callback.wrap(callback);
-    InspectorController.getEventListenersForNode(callId, node.id);
+    InspectorBackend.getEventListenersForNode(callId, node.id);
 }
 
 WebInspector.CSSStyleDeclaration = function(payload)
@@ -484,10 +491,27 @@ WebInspector.CSSStyleDeclaration = function(payload)
     this.id = payload.id;
     this.width = payload.width;
     this.height = payload.height;
-    this.__disabledProperties = payload.__disabledProperties;
-    this.__disabledPropertyValues = payload.__disabledPropertyValues;
-    this.__disabledPropertyPriorities = payload.__disabledPropertyPriorities;
-    this.uniqueStyleProperties = payload.uniqueStyleProperties;
+    this.__disabledProperties = {};
+    this.__disabledPropertyValues = {};
+    this.__disabledPropertyPriorities = {};
+    if (payload.disabled) {
+        var disabledProperties = payload.disabled.properties;
+        var shorthandValues = payload.disabled.shorthandValues;
+        for (var name in shorthandValues) {
+            this.__disabledProperties[name] = true;
+            this.__disabledPropertyValues[name] = shorthandValues[name];
+        }
+        for (var i = 0; i < disabledProperties.length; ++i) {
+            var disabledProperty = disabledProperties[i];
+            if (disabledProperty.shorthand)
+                continue;
+            var name = disabledProperty.name;
+            this.__disabledProperties[name] = true;
+            this.__disabledPropertyValues[name] = disabledProperty.value;
+            this.__disabledPropertyPriorities[name] = disabledProperty.priority;
+        }
+    }
+    
     this._shorthandValues = payload.shorthandValues;
     this._propertyMap = {};
     this._longhandProperties = {};
@@ -498,12 +522,8 @@ WebInspector.CSSStyleDeclaration = function(payload)
         var name = property.name;
         this[i] = name;
         this._propertyMap[name] = property;
-    }
 
-    // Index longhand properties.
-    for (var i = 0; i < this.uniqueStyleProperties.length; ++i) {
-        var name = this.uniqueStyleProperties[i];
-        var property = this._propertyMap[name];
+        // Index longhand properties.
         if (property.shorthand) {
             var longhands = this._longhandProperties[property.shorthand];
             if (!longhands) {
@@ -530,6 +550,7 @@ WebInspector.CSSStyleDeclaration.parseRule = function(payload)
     rule.isUserAgent = payload.isUserAgent;
     rule.isUser = payload.isUser;
     rule.isViaInspector = payload.isViaInspector;
+    rule.sourceLine = payload.sourceLine;
     if (payload.parentStyleSheet)
         rule.parentStyleSheet = { href: payload.parentStyleSheet.href };
 
@@ -654,4 +675,16 @@ WebInspector.didPerformSearch = WebInspector.Callback.processCallback;
 WebInspector.didApplyDomChange = WebInspector.Callback.processCallback;
 WebInspector.didRemoveAttribute = WebInspector.Callback.processCallback;
 WebInspector.didSetTextNodeValue = WebInspector.Callback.processCallback;
+WebInspector.didRemoveNode = WebInspector.Callback.processCallback;
 WebInspector.didGetEventListenersForNode = WebInspector.Callback.processCallback;
+
+WebInspector.didGetStyles = WebInspector.Callback.processCallback;
+WebInspector.didGetAllStyles = WebInspector.Callback.processCallback;
+WebInspector.didGetInlineStyle = WebInspector.Callback.processCallback;
+WebInspector.didGetComputedStyle = WebInspector.Callback.processCallback;
+WebInspector.didApplyStyleText = WebInspector.Callback.processCallback;
+WebInspector.didSetStyleText = WebInspector.Callback.processCallback;
+WebInspector.didSetStyleProperty = WebInspector.Callback.processCallback;
+WebInspector.didToggleStyleEnabled = WebInspector.Callback.processCallback;
+WebInspector.didSetRuleSelector = WebInspector.Callback.processCallback;
+WebInspector.didAddRule = WebInspector.Callback.processCallback;

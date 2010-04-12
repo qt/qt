@@ -71,7 +71,8 @@ public:
         AnimationStatePausedWaitTimer,      // in pause mode when animation started
         AnimationStatePausedWaitResponse,   // animation paused when in STARTING state
         AnimationStatePausedRun,            // animation paused when in LOOPING or ENDING state
-        AnimationStateDone                  // end timer fired, animation finished and removed
+        AnimationStateDone,                 // end timer fired, animation finished and removed
+        AnimationStateFillingForwards       // animation has ended and is retaining its final value
     };
 
     enum AnimStateInput {
@@ -85,7 +86,7 @@ public:
         AnimationStateInputEndTimerFired,     // end timer fired
         AnimationStateInputPauseOverride,     // pause an animation due to override
         AnimationStateInputResumeOverride,    // resume an overridden animation
-        AnimationStateInputPlayStateRunnning, // play state paused -> running
+        AnimationStateInputPlayStateRunning,  // play state paused -> running
         AnimationStateInputPlayStatePaused,   // play state running -> paused
         AnimationStateInputEndAnimation       // force an end from any state
     };
@@ -186,8 +187,13 @@ protected:
     virtual void onAnimationStart(double /*elapsedTime*/) { }
     virtual void onAnimationIteration(double /*elapsedTime*/) { }
     virtual void onAnimationEnd(double /*elapsedTime*/) { }
-    virtual bool startAnimation(double /*beginTime*/) { return false; }
-    virtual void endAnimation(bool /*reset*/) { }
+    
+    // timeOffset is an offset from the current time when the animation should start. Negative values are OK.
+    // Return value indicates whether to expect an asynchronous notifyAnimationStarted() callback.
+    virtual bool startAnimation(double /*timeOffset*/) { return false; }
+    // timeOffset is the time at which the animation is being paused.
+    virtual void pauseAnimation(double /*timeOffset*/) { }
+    virtual void endAnimation() { }
 
     void goIntoEndingOrLoopingState();
 

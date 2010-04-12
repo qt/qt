@@ -39,7 +39,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -58,7 +58,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSMouseEventPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -70,24 +70,24 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsMouseEventPrototypeFunctionInitMouseEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsMouseEventScreenX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventScreenY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventClientX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventClientY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventCtrlKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventShiftKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventAltKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventMetaKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventButton(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventRelatedTarget(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventOffsetX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventOffsetY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventFromElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventToElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventDataTransfer(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMouseEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsMouseEventScreenX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventScreenY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventClientX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventClientY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventCtrlKey(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventShiftKey(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventAltKey(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventMetaKey(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventButton(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventRelatedTarget(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventOffsetX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventOffsetY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventFromElement(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventToElement(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventDataTransfer(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsMouseEventConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

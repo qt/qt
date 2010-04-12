@@ -40,6 +40,16 @@ WebInspector.BreakpointsSidebarPane = function()
 }
 
 WebInspector.BreakpointsSidebarPane.prototype = {
+    reset: function()
+    {
+        this.breakpoints = {};
+        this.listElement.removeChildren();
+        if (this.listElement.parentElement) {
+            this.bodyElement.removeChild(this.listElement);
+            this.bodyElement.appendChild(this.emptyElement);
+        }
+    },
+
     addBreakpoint: function(breakpoint)
     {
         if (this.breakpoints[breakpoint.id])
@@ -58,30 +68,28 @@ WebInspector.BreakpointsSidebarPane.prototype = {
             this.bodyElement.appendChild(this.listElement);
         }
 
-        if (!InspectorController.debuggerEnabled() || !breakpoint.sourceID)
-            return;
-
-        if (breakpoint.enabled)
-            InspectorController.addBreakpoint(breakpoint.sourceID, breakpoint.line, breakpoint.condition);
+        InspectorBackend.setBreakpoint(breakpoint.sourceID, breakpoint.line, breakpoint.enabled, breakpoint.condition);
     },
 
     _appendBreakpointElement: function(breakpoint)
     {
-        function checkboxClicked()
+        function checkboxClicked(event)
         {
             breakpoint.enabled = !breakpoint.enabled;
+
+            // without this, we'd switch to the source of the clicked breakpoint
+            event.stopPropagation();
         }
 
-        function labelClicked()
+        function breakpointClicked()
         {
-            var script = WebInspector.panels.scripts.scriptOrResourceForID(breakpoint.sourceID);
-            if (script)
-                WebInspector.panels.scripts.showScript(script, breakpoint.line);
+            WebInspector.panels.scripts.showSourceLine(breakpoint.url, breakpoint.line);
         }
 
         var breakpointElement = document.createElement("li");
         breakpoint._breakpointListElement = breakpointElement;
         breakpointElement._breakpointObject = breakpoint;
+        breakpointElement.addEventListener("click", breakpointClicked, false);
 
         var checkboxElement = document.createElement("input");
         checkboxElement.className = "checkbox-elem";
@@ -90,14 +98,12 @@ WebInspector.BreakpointsSidebarPane.prototype = {
         checkboxElement.addEventListener("click", checkboxClicked, false);
         breakpointElement.appendChild(checkboxElement);
 
-        var labelElement = document.createElement("a");
-        labelElement.textContent = breakpoint.label;
-        labelElement.addEventListener("click", labelClicked, false);
+        var labelElement = document.createTextNode(breakpoint.label);
         breakpointElement.appendChild(labelElement);
 
         var sourceTextElement = document.createElement("div");
         sourceTextElement.textContent = breakpoint.sourceText;
-        sourceTextElement.className = "source-text";
+        sourceTextElement.className = "source-text monospace";
         breakpointElement.appendChild(sourceTextElement);
 
         var currentElement = this.listElement.firstChild;
@@ -133,10 +139,7 @@ WebInspector.BreakpointsSidebarPane.prototype = {
             this.bodyElement.appendChild(this.emptyElement);
         }
 
-        if (!InspectorController.debuggerEnabled() || !breakpoint.sourceID)
-            return;
-
-        InspectorController.removeBreakpoint(breakpoint.sourceID, breakpoint.line);
+        InspectorBackend.removeBreakpoint(breakpoint.sourceID, breakpoint.line);
     },
 
     _breakpointEnableChanged: function(event)
@@ -145,14 +148,7 @@ WebInspector.BreakpointsSidebarPane.prototype = {
 
         var checkbox = breakpoint._breakpointListElement.firstChild;
         checkbox.checked = breakpoint.enabled;
-
-        if (!InspectorController.debuggerEnabled() || !breakpoint.sourceID)
-            return;
-
-        if (breakpoint.enabled)
-            InspectorController.addBreakpoint(breakpoint.sourceID, breakpoint.line, breakpoint.condition);
-        else
-            InspectorController.removeBreakpoint(breakpoint.sourceID, breakpoint.line);
+        InspectorBackend.setBreakpoint(breakpoint.sourceID, breakpoint.line, breakpoint.enabled, breakpoint.condition);
     },
 
     _breakpointTextChanged: function(event)

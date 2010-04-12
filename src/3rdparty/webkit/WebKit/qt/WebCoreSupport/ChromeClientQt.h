@@ -34,6 +34,10 @@
 #include "KURL.h"
 #include "PlatformString.h"
 
+QT_BEGIN_NAMESPACE
+class QEventLoop;
+QT_END_NAMESPACE
+
 class QWebPage;
 
 namespace WebCore {
@@ -42,6 +46,7 @@ namespace WebCore {
     class FloatRect;
     class Page;
     struct FrameLoadRequest;
+    class QtAbstractWebPopup;
 
     class ChromeClientQt : public ChromeClient
     {
@@ -62,6 +67,8 @@ namespace WebCore {
 
         virtual bool canTakeFocus(FocusDirection);
         virtual void takeFocus(FocusDirection);
+
+        virtual void focusedNodeChanged(Node*);
 
         virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&);
         virtual void show();
@@ -101,8 +108,11 @@ namespace WebCore {
         virtual bool tabsToLinks() const;
         virtual IntRect windowResizerRect() const;
 
-        virtual void repaint(const IntRect&, bool contentChanged, bool immediate = false, bool repaintContentOnly = false);
+        virtual void invalidateWindow(const IntRect&, bool);
+        virtual void invalidateContentsAndWindow(const IntRect&, bool);
+        virtual void invalidateContentsForSlowScroll(const IntRect&, bool);
         virtual void scroll(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);
+
         virtual IntPoint screenToWindow(const IntPoint&) const;
         virtual IntRect windowToScreen(const IntRect&) const;
         virtual PlatformPageClient platformPageClient() const;
@@ -120,7 +130,21 @@ namespace WebCore {
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
         virtual void reachedMaxAppCacheSize(int64_t spaceNeeded);
 #endif
+
+#if USE(ACCELERATED_COMPOSITING)
+        // see ChromeClient.h
+        // this is a hook for WebCore to tell us what we need to do with the GraphicsLayers
+        virtual void attachRootGraphicsLayer(Frame*, GraphicsLayer*);
+        virtual void setNeedsOneShotDrawingSynchronization();
+        virtual void scheduleCompositingLayerSync();
+#endif
+
+#if ENABLE(TOUCH_EVENTS)
+        virtual void needTouchEvents(bool) { }
+#endif
+
         virtual void runOpenPanel(Frame*, PassRefPtr<FileChooser>);
+        virtual void chooseIconForFiles(const Vector<String>&, PassRefPtr<FileChooser>);
 
         virtual void formStateDidChange(const Node*) { }
 
@@ -131,6 +155,16 @@ namespace WebCore {
         virtual void scrollRectIntoView(const IntRect&, const ScrollView*) const {}
 
         virtual void requestGeolocationPermissionForFrame(Frame*, Geolocation*);
+        virtual void cancelGeolocationPermissionRequestForFrame(Frame*) { }
+
+#if ENABLE(WIDGETS_10_SUPPORT)
+        virtual bool isDocked();
+        virtual bool isFloating();
+        virtual bool isApplication();
+        virtual bool isFullscreen();
+#endif
+
+        QtAbstractWebPopup* createSelectPopup();
 
         QWebPage* m_webPage;
         WebCore::KURL lastHoverURL;
@@ -140,6 +174,7 @@ namespace WebCore {
         bool toolBarsVisible;
         bool statusBarVisible;
         bool menuBarVisible;
+        QEventLoop* m_eventLoop;
     };
 }
 

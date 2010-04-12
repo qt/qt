@@ -44,7 +44,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual JSC::CallType getCallData(JSC::CallData&);
@@ -52,9 +52,6 @@ public:
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
-private:
-    static bool canGetItemsForName(JSC::ExecState*, HTMLObjectElement*, const JSC::Identifier&);
-    static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
 
@@ -68,7 +65,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSHTMLObjectElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -80,42 +77,42 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsHTMLObjectElementPrototypeFunctionGetSVGDocument(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsHTMLObjectElementForm(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsHTMLObjectElementCode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementForm(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsHTMLObjectElementCode(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementCode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementAlign(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementAlign(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementAlign(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementArchive(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementArchive(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementArchive(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementBorder(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementBorder(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementBorder(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementCodeBase(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementCodeBase(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementCodeBase(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementCodeType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementCodeType(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementCodeType(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementData(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementData(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementData(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementDeclare(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementDeclare(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementDeclare(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementHeight(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementHeight(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementHeight(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementHspace(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementHspace(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementHspace(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementName(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementStandby(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementStandby(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementStandby(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementType(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementType(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementUseMap(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementUseMap(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementUseMap(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementVspace(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementVspace(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementVspace(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementWidth(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementWidth(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLObjectElementWidth(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLObjectElementWillValidate(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsHTMLObjectElementContentDocument(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsHTMLObjectElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLObjectElementWillValidate(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsHTMLObjectElementContentDocument(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsHTMLObjectElementConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

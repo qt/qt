@@ -25,7 +25,6 @@
 #include "JSSVGAnimatedPreserveAspectRatio.h"
 
 #include "JSSVGPreserveAspectRatio.h"
-#include "SVGPreserveAspectRatio.h"
 #include <wtf/GetPtr.h>
 
 using namespace JSC;
@@ -36,19 +35,67 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimatedPreserveAspectRatio);
 
 /* Hash table */
 
-static const HashTableValue JSSVGAnimatedPreserveAspectRatioTableValues[3] =
+static const HashTableValue JSSVGAnimatedPreserveAspectRatioTableValues[4] =
 {
-    { "baseVal", DontDelete|ReadOnly, (intptr_t)jsSVGAnimatedPreserveAspectRatioBaseVal, (intptr_t)0 },
-    { "animVal", DontDelete|ReadOnly, (intptr_t)jsSVGAnimatedPreserveAspectRatioAnimVal, (intptr_t)0 },
+    { "baseVal", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGAnimatedPreserveAspectRatioBaseVal), (intptr_t)0 },
+    { "animVal", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGAnimatedPreserveAspectRatioAnimVal), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGAnimatedPreserveAspectRatioConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedPreserveAspectRatioTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 1, JSSVGAnimatedPreserveAspectRatioTableValues, 0 };
+    { 3, JSSVGAnimatedPreserveAspectRatioTableValues, 0 };
 #else
-    { 4, 3, JSSVGAnimatedPreserveAspectRatioTableValues, 0 };
+    { 8, 7, JSSVGAnimatedPreserveAspectRatioTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGAnimatedPreserveAspectRatioConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedPreserveAspectRatioConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGAnimatedPreserveAspectRatioConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGAnimatedPreserveAspectRatioConstructorTableValues, 0 };
+#endif
+
+class JSSVGAnimatedPreserveAspectRatioConstructor : public DOMConstructorObject {
+public:
+    JSSVGAnimatedPreserveAspectRatioConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGAnimatedPreserveAspectRatioConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGAnimatedPreserveAspectRatioPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGAnimatedPreserveAspectRatioConstructor::s_info = { "SVGAnimatedPreserveAspectRatioConstructor", 0, &JSSVGAnimatedPreserveAspectRatioConstructorTable, 0 };
+
+bool JSSVGAnimatedPreserveAspectRatioConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGAnimatedPreserveAspectRatioConstructor, DOMObject>(exec, &JSSVGAnimatedPreserveAspectRatioConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGAnimatedPreserveAspectRatioConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedPreserveAspectRatioConstructor, DOMObject>(exec, &JSSVGAnimatedPreserveAspectRatioConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -73,8 +120,8 @@ JSObject* JSSVGAnimatedPreserveAspectRatioPrototype::self(ExecState* exec, JSGlo
 
 const ClassInfo JSSVGAnimatedPreserveAspectRatio::s_info = { "SVGAnimatedPreserveAspectRatio", 0, &JSSVGAnimatedPreserveAspectRatioTable, 0 };
 
-JSSVGAnimatedPreserveAspectRatio::JSSVGAnimatedPreserveAspectRatio(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedPreserveAspectRatio> impl, SVGElement* context)
-    : DOMObjectWithSVGContext(structure, globalObject, context)
+JSSVGAnimatedPreserveAspectRatio::JSSVGAnimatedPreserveAspectRatio(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedPreserveAspectRatio> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -82,6 +129,7 @@ JSSVGAnimatedPreserveAspectRatio::JSSVGAnimatedPreserveAspectRatio(NonNullPassRe
 JSSVGAnimatedPreserveAspectRatio::~JSSVGAnimatedPreserveAspectRatio()
 {
     forgetDOMObject(this, impl());
+    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGAnimatedPreserveAspectRatio::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -99,20 +147,32 @@ bool JSSVGAnimatedPreserveAspectRatio::getOwnPropertyDescriptor(ExecState* exec,
     return getStaticValueDescriptor<JSSVGAnimatedPreserveAspectRatio, Base>(exec, &JSSVGAnimatedPreserveAspectRatioTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGAnimatedPreserveAspectRatioBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedPreserveAspectRatioBaseVal(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGAnimatedPreserveAspectRatio* castedThis = static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(slot.slotBase()));
+    JSSVGAnimatedPreserveAspectRatio* castedThis = static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGAnimatedPreserveAspectRatio* imp = static_cast<SVGAnimatedPreserveAspectRatio*>(castedThis->impl());
-    return toJS(exec, deprecatedGlobalObjectForPrototype(exec), WTF::getPtr(imp->baseVal()), castedThis->context());
+    JSValue result = toJS(exec, castedThis->globalObject(), JSSVGDynamicPODTypeWrapperCache<SVGPreserveAspectRatio, SVGAnimatedPreserveAspectRatio>::lookupOrCreateWrapper(imp, &SVGAnimatedPreserveAspectRatio::baseVal, &SVGAnimatedPreserveAspectRatio::setBaseVal).get(), JSSVGContextCache::svgContextForDOMObject(castedThis));;
+    return result;
 }
 
-JSValue jsSVGAnimatedPreserveAspectRatioAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedPreserveAspectRatioAnimVal(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGAnimatedPreserveAspectRatio* castedThis = static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(slot.slotBase()));
+    JSSVGAnimatedPreserveAspectRatio* castedThis = static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGAnimatedPreserveAspectRatio* imp = static_cast<SVGAnimatedPreserveAspectRatio*>(castedThis->impl());
-    return toJS(exec, deprecatedGlobalObjectForPrototype(exec), WTF::getPtr(imp->animVal()), castedThis->context());
+    JSValue result = toJS(exec, castedThis->globalObject(), JSSVGDynamicPODTypeWrapperCache<SVGPreserveAspectRatio, SVGAnimatedPreserveAspectRatio>::lookupOrCreateWrapper(imp, &SVGAnimatedPreserveAspectRatio::animVal, &SVGAnimatedPreserveAspectRatio::setAnimVal).get(), JSSVGContextCache::svgContextForDOMObject(castedThis));;
+    return result;
+}
+
+JSValue jsSVGAnimatedPreserveAspectRatioConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGAnimatedPreserveAspectRatio* domObject = static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(slotBase));
+    return JSSVGAnimatedPreserveAspectRatio::getConstructor(exec, domObject->globalObject());
+}
+JSValue JSSVGAnimatedPreserveAspectRatio::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGAnimatedPreserveAspectRatioConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnimatedPreserveAspectRatio* object, SVGElement* context)

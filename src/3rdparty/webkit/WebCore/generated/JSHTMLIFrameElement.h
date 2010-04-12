@@ -40,7 +40,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -62,7 +62,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSHTMLIFrameElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -74,29 +74,31 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsHTMLIFrameElementPrototypeFunctionGetSVGDocument(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsHTMLIFrameElementAlign(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLIFrameElementAlign(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLIFrameElementAlign(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLIFrameElementFrameBorder(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLIFrameElementFrameBorder(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLIFrameElementFrameBorder(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLIFrameElementHeight(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLIFrameElementHeight(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLIFrameElementHeight(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLIFrameElementLongDesc(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLIFrameElementLongDesc(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLIFrameElementLongDesc(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLIFrameElementMarginHeight(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLIFrameElementMarginHeight(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLIFrameElementMarginHeight(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLIFrameElementMarginWidth(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLIFrameElementMarginWidth(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLIFrameElementMarginWidth(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLIFrameElementName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLIFrameElementName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLIFrameElementName(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLIFrameElementScrolling(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLIFrameElementSandbox(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+void setJSHTMLIFrameElementSandbox(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLIFrameElementScrolling(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLIFrameElementScrolling(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLIFrameElementSrc(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLIFrameElementSrc(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLIFrameElementSrc(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLIFrameElementWidth(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLIFrameElementWidth(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLIFrameElementWidth(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLIFrameElementContentDocument(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsHTMLIFrameElementContentWindow(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsHTMLIFrameElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLIFrameElementContentDocument(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsHTMLIFrameElementContentWindow(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsHTMLIFrameElementConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

@@ -1,6 +1,4 @@
 /*
- * This file is part of the CSS implementation for KDE.
- *
  * Copyright (C) 2005 Apple Computer, Inc.
  *
  * This library is free software; you can redistribute it and/or
@@ -26,6 +24,13 @@
 
 namespace WebCore {
     namespace MediaFeatureNames {
+
+#if ENABLE(WIDGETS_10_SUPPORT)
+#define CSS_MEDIAQUERY_NAMES_FOR_WIDGETS_10_MEDIAFEATURE(macro) \
+    macro(view_mode, "-webkit-view-mode")
+#else
+#define CSS_MEDIAQUERY_NAMES_FOR_WIDGETS_10_MEDIAFEATURE(macro)
+#endif
 
 #define CSS_MEDIAQUERY_NAMES_FOR_EACH_MEDIAFEATURE(macro) \
     macro(color, "color") \
@@ -61,6 +66,8 @@ namespace WebCore {
     macro(transform_3d, "-webkit-transform-3d") \
     macro(transition, "-webkit-transition") \
     macro(animation, "-webkit-animation") \
+    CSS_MEDIAQUERY_NAMES_FOR_WIDGETS_10_MEDIAFEATURE(macro)
+
 // end of macro
 
 #ifndef CSS_MEDIAQUERY_NAMES_HIDE_GLOBALS
