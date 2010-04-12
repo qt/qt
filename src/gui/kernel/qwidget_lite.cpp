@@ -90,10 +90,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
-    Q_UNUSED(destroyWindow);
+    Q_D(QWidget);
     Q_UNUSED(destroySubWindows);
-    // XXX
-
 
     if ((windowType() == Qt::Popup))
         qApp->d_func()->closePopup(this);
@@ -101,6 +99,20 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
     //### we don't have proper focus event handling yet
     if (this == QApplicationPrivate::active_window)
         QApplication::setActiveWindow(0);
+
+    if (windowType() != Qt::Desktop) {
+        if (destroyWindow && isWindow()) {
+            QTLWExtra *topData = d->maybeTopData();
+            if (topData) {
+                delete topData->platformWindow;
+                topData->platformWindow = 0;
+            }
+        } else {
+            if (parentWidget() && parentWidget()->testAttribute(Qt::WA_WState_Created)) {
+                d->hide_sys();
+            }
+        }
+    }
 }
 
 void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)

@@ -622,6 +622,7 @@ void QTestLiteWindow::setGeometry(const QRect &rect)
 
     //if unchanged ###
     XMoveResizeWindow(xd->display, x_window, rect.x(), rect.y(), rect.width(), rect.height());
+    QPlatformWindow::setGeometry(rect);
 }
 
 

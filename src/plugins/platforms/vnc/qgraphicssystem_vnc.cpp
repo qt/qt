@@ -104,12 +104,30 @@ QPixmapData *QVNCGraphicsSystem::createPixmapData(QPixmapData::PixelType type) c
     return new QRasterPixmapData(type);
 }
 
-QWindowSurface *QVNCGraphicsSystem::createWindowSurface(QWidget *widget) const
+// QWindowSurface *QVNCGraphicsSystem::createWindowSurface(QWidget *widget) const
+// {
+//     if (widget->windowType() == Qt::Desktop)
+//         return 0;   // Don't create an explicit window surface for the destkop.
+//     QGraphicsSystemFbWindowSurface * surface;
+//     surface = new QGraphicsSystemFbWindowSurface(mPrimaryScreen, widget);
+//     mPrimaryScreen->addWindowSurface(surface);
+//     return surface;
+// }
+
+QWindowSurface *QVNCGraphicsSystem::createWindowSurfaceForWindow(QWidget *widget, WId) const
 {
     if (widget->windowType() == Qt::Desktop)
         return 0;   // Don't create an explicit window surface for the destkop.
     QGraphicsSystemFbWindowSurface * surface;
     surface = new QGraphicsSystemFbWindowSurface(mPrimaryScreen, widget);
-    mPrimaryScreen->addWindowSurface(surface);
     return surface;
 }
+
+
+QPlatformWindow *QVNCGraphicsSystem::createPlatformWindow(QWidget *widget, WId /*winId*/) const
+{
+    QFbWindow *w = new QFbWindow(mPrimaryScreen, widget);
+    mPrimaryScreen->addWindow(w);
+    return w;
+}
+

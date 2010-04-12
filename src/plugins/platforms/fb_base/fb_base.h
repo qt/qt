@@ -1,12 +1,14 @@
 #ifndef QLIGHTHOUSEGRAPHICSSCREEN_H
 #define QLIGHTHOUSEGRAPHICSSCREEN_H
 
-#include <QtGui/private/qgraphicssystem_p.h>
+//#include <QtGui/private/qgraphicssystem_p.h>
 #include <qrect.h>
 #include <qimage.h>
 #include <qtimer.h>
 #include <qpainter.h>
 #include <QGraphicsSystemCursor>
+#include <QPlatformScreen>
+#include <QPlatformWindow>
 
 class QMouseEvent;
 class QSize;
@@ -17,7 +19,7 @@ class QGraphicsSystemFbScreen;
 class QGraphicsSystemSoftwareCursor : public QGraphicsSystemCursor
 {
 public:
-    QGraphicsSystemSoftwareCursor(QGraphicsSystemScreen * scr);
+    QGraphicsSystemSoftwareCursor(QPlatformScreen * scr);
 
     // output methods
     QRect dirtyRect();
@@ -39,6 +41,9 @@ private:
     QRect getCurrentRect();
 };
 
+
+class QFbWindow;
+
 class QGraphicsSystemFbWindowSurface : public QWindowSurface
 {
 public:
@@ -51,30 +56,58 @@ public:
 
     virtual void beginPaint(const QRegion &region);
     virtual void endPaint(const QRegion &region);
+
+
+    const QImage image() { return mImage; }
+    void resize(const QSize &size);
+
+protected:
+    friend class QFbWindow;
+    QFbWindow *platformWindow;
+
+    QGraphicsSystemFbScreen *mScreen;
+    QImage mImage;
+};
+
+
+class QFbWindow : public QPlatformWindow
+{
+public:
+
+    QFbWindow(QGraphicsSystemFbScreen *screen, QWidget *window);
+    ~QFbWindow();
+
+
     virtual void setVisible(bool visible);
     virtual bool visible() { return visibleFlag; }
 
-    const QImage image() { return mImage; }
-    void setGeometry(const QRect &rect);
-
     virtual void raise();
     virtual void lower();
+
+    void setGeometry(const QRect &rect);
 
     virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
     virtual Qt::WindowFlags windowFlags() const;
 
     WId winId() const { return windowId; }
+
+    virtual void repaint(const QRegion&);
+
 protected:
+    friend class QGraphicsSystemFbWindowSurface;
+    friend class QGraphicsSystemFbScreen;
+    QGraphicsSystemFbWindowSurface *surface;
     QGraphicsSystemFbScreen *mScreen;
     QRect oldGeometry;
-    QImage mImage;
     bool visibleFlag;
     Qt::WindowFlags flags;
+
 
     WId windowId;
 };
 
-class QGraphicsSystemFbScreen : public QGraphicsSystemScreen
+
+class QGraphicsSystemFbScreen : public QPlatformScreen
 {
     Q_OBJECT
 public:
@@ -93,18 +126,18 @@ public:
 
     virtual void setDirty(const QRect &rect);
 
-    virtual void removeWindowSurface(QGraphicsSystemFbWindowSurface * surface);
-    virtual void addWindowSurface(QGraphicsSystemFbWindowSurface * surface) {
+    virtual void removeWindow(QFbWindow * surface);
+    virtual void addWindow(QFbWindow * surface) {
         windowStack.prepend(surface); invalidateRectCache(); }
-    virtual void raise(QWindowSurface * surface);
-    virtual void lower(QWindowSurface * surface);
+    virtual void raise(QPlatformWindow * surface);
+    virtual void lower(QPlatformWindow * surface);
     virtual QWidget * topLevelAt(const QPoint & p) const;
 
     QImage * image() const { return mScreenImage; }
     QPaintDevice * paintDevice() const { return mScreenImage; }
 
 protected:
-    QList<QGraphicsSystemFbWindowSurface *> windowStack;
+    QList<QFbWindow *> windowStack;
     QRegion repaintRegion;
     QGraphicsSystemSoftwareCursor * cursor;
     QTimer redrawTimer;
@@ -126,6 +159,7 @@ private:
 
     void invalidateRectCache() { isUpToDate = false; }
     friend class QGraphicsSystemFbWindowSurface;
+    friend class QFbWindow;
     bool isUpToDate;
 };
 

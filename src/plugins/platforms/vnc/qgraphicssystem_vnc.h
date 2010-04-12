@@ -42,9 +42,9 @@
 #ifndef QGRAPHICSSYSTEM_VNC_H
 #define QGRAPHICSSYSTEM_VNC_H
 
-#include <QtGui/private/qgraphicssystem_p.h>
 #include "qvnccursor.h"
 #include "../fb_base/fb_base.h"
+#include <QPlatformIntegration>
 
 QT_BEGIN_NAMESPACE
 
@@ -73,20 +73,21 @@ private:
 class QVNCGraphicsSystemPrivate;
 
 
-class QVNCGraphicsSystem : public QGraphicsSystem
+class QVNCGraphicsSystem : public QPlatformIntegration
 {
 public:
     QVNCGraphicsSystem();
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
+    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
+    QWindowSurface *createWindowSurfaceForWindow(QWidget *widget, WId winId) const;
 
-    QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
+    QList<QPlatformScreen *> screens() const { return mScreens; }
 
 
 private:
     QVNCGraphicsSystemScreen *mPrimaryScreen;
-    QList<QGraphicsSystemScreen *> mScreens;
+    QList<QPlatformScreen *> mScreens;
 };
 
 
