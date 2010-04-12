@@ -113,14 +113,14 @@ public:
 
     QDeclarativeWorkerScriptEnginePrivate(QDeclarativeEngine *eng);
 
-    struct ScriptEngine : public QDeclarativeScriptEngine 
+    struct ScriptEngine : public QDeclarativeScriptEngine
     {
         ScriptEngine(QDeclarativeWorkerScriptEnginePrivate *parent) : QDeclarativeScriptEngine(0), p(parent), accessManager(0) {}
         ~ScriptEngine() { delete accessManager; }
         QDeclarativeWorkerScriptEnginePrivate *p;
         QNetworkAccessManager *accessManager;
 
-        virtual QNetworkAccessManager *networkAccessManager() { 
+        virtual QNetworkAccessManager *networkAccessManager() {
             if (!accessManager) {
                 if (p->qmlengine && p->qmlengine->networkAccessManagerFactory()) {
                     accessManager = p->qmlengine->networkAccessManagerFactory()->create(this);
@@ -189,7 +189,7 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::onMessage(QScriptContext *ct
     if (!script)
         return engine->undefinedValue();
 
-    if (ctxt->argumentCount() >= 1) 
+    if (ctxt->argumentCount() >= 1)
         script->callback = ctxt->argument(0);
 
     return script->callback;
@@ -205,13 +205,13 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::sendMessage(QScriptContext *
     int id = ctxt->thisObject().data().toVariant().toInt();
 
     WorkerScript *script = p->workers.value(id);
-    if (!script) 
+    if (!script)
         return engine->undefinedValue();
 
     QMutexLocker(&p->m_lock);
 
-    if (script->owner) 
-        QCoreApplication::postEvent(script->owner, 
+    if (script->owner)
+        QCoreApplication::postEvent(script->owner,
                                     new WorkerDataEvent(0, scriptValueToVariant(ctxt->argument(0))));
 
     return engine->undefinedValue();
@@ -233,7 +233,7 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::getWorker(int id)
         QScriptValue api = workerEngine->newObject();
         api.setData(script->id);
 
-        api.setProperty(QLatin1String("onMessage"), workerEngine->newFunction(onMessage), 
+        api.setProperty(QLatin1String("onMessage"), workerEngine->newFunction(onMessage),
                         QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
         api.setProperty(QLatin1String("sendMessage"), workerEngine->newFunction(sendMessage));
 
@@ -372,7 +372,7 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::variantToScriptValue(const Q
         QVariantList list = qvariant_cast<QVariantList>(value);
         QScriptValue rv = engine->newArray(list.count());
 
-        for (quint32 ii = 0; ii < quint32(list.count()); ++ii) 
+        for (quint32 ii = 0; ii < quint32(list.count()); ++ii)
             rv.setProperty(ii, variantToScriptValue(list.at(ii), engine));
 
         return rv;
@@ -382,7 +382,7 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::variantToScriptValue(const Q
 
         QScriptValue rv = engine->newObject();
 
-        for (QVariantHash::ConstIterator iter = hash.begin(); iter != hash.end(); ++iter) 
+        for (QVariantHash::ConstIterator iter = hash.begin(); iter != hash.end(); ++iter)
             rv.setProperty(iter.key(), variantToScriptValue(iter.value(), engine));
 
         return rv;
@@ -517,36 +517,10 @@ void QDeclarativeWorkerScriptEngine::run()
 
     Messages can be passed between the new thread and the parent thread
     using sendMessage() and the onMessage() handler.
-    
+
     Here is an example:
 
-    \qml
-    import Qt 4.7
-
-    Rectangle {
-        width: 300
-        height: 300
-
-        Text {
-            id: myText
-            text: 'Click anywhere'
-        }
-
-        WorkerScript {
-            id: myWorker
-            source: "script.js"
-
-            onMessage: {
-                myText.text = messageObject.reply
-            }
-        }
-
-        MouseArea { 
-            anchors.fill: parent
-            onClicked: myWorker.sendMessage( {'x': mouse.x, 'y': mouse.y} );
-        }
-    }
-    \endqml
+    \snippet doc/src/snippets/declarative/workerscript.qml 0
 
     The above worker script specifies a javascript file, "script.js", that handles
     the operations to be performed in the new thread:
@@ -554,10 +528,10 @@ void QDeclarativeWorkerScriptEngine::run()
     \qml
     WorkerScript.onMessage = function(message) {
         // ... long-running operations and calculations are done here
-        WorkerScript.sendMessage( {'reply': 'Mouse is at ' + message.x + ',' + message.y} );
+        WorkerScript.sendMessage({ 'reply': 'Mouse is at ' + message.x + ',' + message.y })
     }
     \endqml
-    
+
     When the user clicks anywhere within the rectangle, \c sendMessage() is
     called, triggering the \tt WorkerScript.onMessage() handler in
     \tt source.js. This in turn sends a reply message that is then received
@@ -591,7 +565,7 @@ void QDeclarativeWorkerScript::setSource(const QUrl &source)
 
     m_source = source;
 
-    if (m_engine) 
+    if (m_engine)
         m_engine->executeUrl(m_scriptId, m_source);
 
     emit sourceChanged();
@@ -645,7 +619,7 @@ bool QDeclarativeWorkerScript::event(QEvent *event)
         if (engine) {
             QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
             WorkerDataEvent *workerEvent = static_cast<WorkerDataEvent *>(event);
-            QScriptValue value = 
+            QScriptValue value =
                 QDeclarativeWorkerScriptEnginePrivate::variantToScriptValue(workerEvent->data(), scriptEngine);
             emit message(value);
         }
