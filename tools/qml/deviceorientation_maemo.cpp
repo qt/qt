@@ -61,7 +61,7 @@ public:
         return m_current;
     }
 
-    void setOrientation(Orientation orient) { }
+    void setOrientation(Orientation) { }
 
 protected:
     virtual void timerEvent(QTimerEvent *)
