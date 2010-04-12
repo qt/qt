@@ -7134,6 +7134,11 @@ void qt_build_pow_tables() {
     int winSmooth;
     if (SystemParametersInfo(0x200C /* SPI_GETFONTSMOOTHINGCONTRAST */, 0, &winSmooth, 0))
         smoothing = winSmooth / 1000.0;
+
+    // Safeguard ourselves against corrupt registry values...
+    if (smoothing > 5 || smoothing < 1)
+        smoothing = 1.4;
+
 #endif
 
 #ifdef Q_WS_X11
