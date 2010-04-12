@@ -99,6 +99,15 @@ win32-msvc2005|win32-msvc2008:{
     QMAKE_CXXFLAGS_RELEASE -= -GL
 }
 
+wince* {
+#    DEFINES += ENABLE_SVG=0 ENABLE_XPATH=0 ENABLE_XBL=0 \
+#               ENABLE_SVG_ANIMATION=0 ENABLE_SVG_USE=0  \
+#               ENABLE_SVG_FOREIGN_OBJECT=0 ENABLE_SVG_AS_IMAGE=0
+
+    INCLUDEPATH += $$PWD/../JavaScriptCore/os-wince
+    INCLUDEPATH += $$PWD/../JavaScriptCore/os-win32
+}
+
 # Pick up 3rdparty libraries from INCLUDE/LIB just like with MSVC
 win32-g++ {
     TMPPATH            = $$quote($$(INCLUDE))
@@ -2370,7 +2379,7 @@ contains(DEFINES, ENABLE_VIDEO=1) {
             HEADERS += platform/graphics/qt/MediaPlayerPrivateQt.h
             SOURCES += platform/graphics/qt/MediaPlayerPrivateQt.cpp
 
-            tobe|!tobe: QT += multimedia
+            QT += multimedia
         } else {
             HEADERS += \
                 platform/graphics/qt/MediaPlayerPrivatePhonon.h
@@ -2745,7 +2754,7 @@ contains(DEFINES, ENABLE_WEB_SOCKETS=1) {
 }
 
 contains(DEFINES, ENABLE_3D_CANVAS=1) {
-tobe|!tobe: QT += opengl
+QT += opengl
 HEADERS += \
 	bindings/js/JSWebGLArrayBufferConstructor.h \
 	bindings/js/JSWebGLArrayHelper.h \
@@ -2836,7 +2845,7 @@ include($$PWD/../WebKit/qt/Api/headers.pri)
 HEADERS += $$WEBKIT_API_HEADERS
 
 !CONFIG(QTDIR_build) {
-    exists(../include/QtWebKit/classheaders.pri):include(../include/QtWebKit/classheaders.pri)
+    exists($$OUTPUT_DIR/include/QtWebKit/classheaders.pri): include($$OUTPUT_DIR/include/QtWebKit/classheaders.pri)
     WEBKIT_INSTALL_HEADERS = $$WEBKIT_API_HEADERS $$WEBKIT_CLASS_HEADERS
 
     !symbian {

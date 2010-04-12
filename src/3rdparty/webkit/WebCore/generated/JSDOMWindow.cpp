@@ -468,10 +468,18 @@ static const HashTableValue JSDOMWindowTableValues[409] =
     { "onwebkitanimationiteration", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOnwebkitanimationiteration), (intptr_t)setJSDOMWindowOnwebkitanimationiteration },
     { "onwebkitanimationstart", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOnwebkitanimationstart), (intptr_t)setJSDOMWindowOnwebkitanimationstart },
     { "onwebkittransitionend", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOnwebkittransitionend), (intptr_t)setJSDOMWindowOnwebkittransitionend },
+#if ENABLE(TOUCH_EVENTS)
     { "ontouchstart", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOntouchstart), (intptr_t)setJSDOMWindowOntouchstart },
+#endif
+#if ENABLE(TOUCH_EVENTS)
     { "ontouchmove", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOntouchmove), (intptr_t)setJSDOMWindowOntouchmove },
+#endif
+#if ENABLE(TOUCH_EVENTS)
     { "ontouchend", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOntouchend), (intptr_t)setJSDOMWindowOntouchend },
+#endif
+#if ENABLE(TOUCH_EVENTS)
     { "ontouchcancel", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowOntouchcancel), (intptr_t)setJSDOMWindowOntouchcancel },
+#endif
     { "StyleSheet", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowStyleSheetConstructor), (intptr_t)setJSDOMWindowStyleSheetConstructor },
     { "CSSStyleSheet", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowCSSStyleSheetConstructor), (intptr_t)setJSDOMWindowCSSStyleSheetConstructor },
     { "CSSValue", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowCSSValueConstructor), (intptr_t)setJSDOMWindowCSSValueConstructor },
@@ -797,7 +805,9 @@ static const HashTableValue JSDOMWindowTableValues[409] =
     { "SVGFETileElement", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowSVGFETileElementConstructor), (intptr_t)setJSDOMWindowSVGFETileElementConstructor },
     { "SVGFETurbulenceElement", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowSVGFETurbulenceElementConstructor), (intptr_t)setJSDOMWindowSVGFETurbulenceElementConstructor },
     { "SVGFilterElement", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowSVGFilterElementConstructor), (intptr_t)setJSDOMWindowSVGFilterElementConstructor },
+#if ENABLE(TOUCH_EVENTS)
     { "TouchEvent", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowTouchEventConstructor), (intptr_t)setJSDOMWindowTouchEventConstructor },
+#endif
     { "FormData", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowFormDataConstructor), (intptr_t)setJSDOMWindowFormDataConstructor },
     { 0, 0, 0, 0 }
 };
@@ -2433,6 +2443,7 @@ JSValue jsDOMWindowOnwebkittransitionend(ExecState* exec, JSValue slotBase, cons
     return jsNull();
 }
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsDOMWindowOntouchstart(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slotBase));
@@ -2448,7 +2459,9 @@ JSValue jsDOMWindowOntouchstart(ExecState* exec, JSValue slotBase, const Identif
     }
     return jsNull();
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsDOMWindowOntouchmove(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slotBase));
@@ -2464,7 +2477,9 @@ JSValue jsDOMWindowOntouchmove(ExecState* exec, JSValue slotBase, const Identifi
     }
     return jsNull();
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsDOMWindowOntouchend(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slotBase));
@@ -2480,7 +2495,9 @@ JSValue jsDOMWindowOntouchend(ExecState* exec, JSValue slotBase, const Identifie
     }
     return jsNull();
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsDOMWindowOntouchcancel(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slotBase));
@@ -2496,6 +2513,7 @@ JSValue jsDOMWindowOntouchcancel(ExecState* exec, JSValue slotBase, const Identi
     }
     return jsNull();
 }
+#endif
 
 JSValue jsDOMWindowStyleSheetConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
@@ -4845,6 +4863,7 @@ JSValue jsDOMWindowSVGFilterElementConstructor(ExecState* exec, JSValue slotBase
     return JSSVGFilterElement::getConstructor(exec, castedThis);
 }
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsDOMWindowTouchEventConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slotBase));
@@ -4852,6 +4871,7 @@ JSValue jsDOMWindowTouchEventConstructor(ExecState* exec, JSValue slotBase, cons
         return jsUndefined();
     return JSTouchEvent::getConstructor(exec, castedThis);
 }
+#endif
 
 JSValue jsDOMWindowFormDataConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
@@ -5729,6 +5749,7 @@ void setJSDOMWindowOnwebkittransitionend(ExecState* exec, JSObject* thisObject, 
     imp->setOnwebkittransitionend(createJSAttributeEventListener(exec, value, thisObject));
 }
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSDOMWindowOntouchstart(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -5737,7 +5758,9 @@ void setJSDOMWindowOntouchstart(ExecState* exec, JSObject* thisObject, JSValue v
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     imp->setOntouchstart(createJSAttributeEventListener(exec, value, thisObject));
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSDOMWindowOntouchmove(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -5746,7 +5769,9 @@ void setJSDOMWindowOntouchmove(ExecState* exec, JSObject* thisObject, JSValue va
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     imp->setOntouchmove(createJSAttributeEventListener(exec, value, thisObject));
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSDOMWindowOntouchend(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -5755,7 +5780,9 @@ void setJSDOMWindowOntouchend(ExecState* exec, JSObject* thisObject, JSValue val
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     imp->setOntouchend(createJSAttributeEventListener(exec, value, thisObject));
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSDOMWindowOntouchcancel(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -5764,6 +5791,7 @@ void setJSDOMWindowOntouchcancel(ExecState* exec, JSObject* thisObject, JSValue 
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     imp->setOntouchcancel(createJSAttributeEventListener(exec, value, thisObject));
 }
+#endif
 
 void setJSDOMWindowStyleSheetConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
@@ -6181,6 +6209,7 @@ void setJSDOMWindowHTMLCanvasElementConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLCanvasElement"), value);
 }
 
+#if ENABLE(DATAGRID)
 void setJSDOMWindowHTMLDataGridElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6188,7 +6217,9 @@ void setJSDOMWindowHTMLDataGridElementConstructor(ExecState* exec, JSObject* thi
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLDataGridElement"), value);
 }
+#endif
 
+#if ENABLE(DATAGRID)
 void setJSDOMWindowHTMLDataGridCellElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6196,7 +6227,9 @@ void setJSDOMWindowHTMLDataGridCellElementConstructor(ExecState* exec, JSObject*
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLDataGridCellElement"), value);
 }
+#endif
 
+#if ENABLE(DATAGRID)
 void setJSDOMWindowHTMLDataGridColElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6204,6 +6237,7 @@ void setJSDOMWindowHTMLDataGridColElementConstructor(ExecState* exec, JSObject* 
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLDataGridColElement"), value);
 }
+#endif
 
 void setJSDOMWindowHTMLDListElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
@@ -6621,6 +6655,7 @@ void setJSDOMWindowImageDataConstructor(ExecState* exec, JSObject* thisObject, J
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "ImageData"), value);
 }
 
+#if ENABLE(3D_CANVAS)
 void setJSDOMWindowWebGLRenderingContextConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6628,6 +6663,7 @@ void setJSDOMWindowWebGLRenderingContextConstructor(ExecState* exec, JSObject* t
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebGLRenderingContext"), value);
 }
+#endif
 
 void setJSDOMWindowTextMetricsConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
@@ -6637,6 +6673,7 @@ void setJSDOMWindowTextMetricsConstructor(ExecState* exec, JSObject* thisObject,
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "TextMetrics"), value);
 }
 
+#if ENABLE(3D_CANVAS)
 void setJSDOMWindowWebGLArrayBufferConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6644,7 +6681,9 @@ void setJSDOMWindowWebGLArrayBufferConstructor(ExecState* exec, JSObject* thisOb
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebGLArrayBuffer"), value);
 }
+#endif
 
+#if ENABLE(3D_CANVAS)
 void setJSDOMWindowWebGLByteArrayConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6652,7 +6691,9 @@ void setJSDOMWindowWebGLByteArrayConstructor(ExecState* exec, JSObject* thisObje
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebGLByteArray"), value);
 }
+#endif
 
+#if ENABLE(3D_CANVAS)
 void setJSDOMWindowWebGLUnsignedByteArrayConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6660,7 +6701,9 @@ void setJSDOMWindowWebGLUnsignedByteArrayConstructor(ExecState* exec, JSObject* 
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebGLUnsignedByteArray"), value);
 }
+#endif
 
+#if ENABLE(3D_CANVAS)
 void setJSDOMWindowWebGLShortArrayConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6668,7 +6711,9 @@ void setJSDOMWindowWebGLShortArrayConstructor(ExecState* exec, JSObject* thisObj
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebGLShortArray"), value);
 }
+#endif
 
+#if ENABLE(3D_CANVAS)
 void setJSDOMWindowWebGLUnsignedShortArrayConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6676,7 +6721,9 @@ void setJSDOMWindowWebGLUnsignedShortArrayConstructor(ExecState* exec, JSObject*
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebGLUnsignedShortArray"), value);
 }
+#endif
 
+#if ENABLE(3D_CANVAS)
 void setJSDOMWindowWebGLIntArrayConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6684,7 +6731,9 @@ void setJSDOMWindowWebGLIntArrayConstructor(ExecState* exec, JSObject* thisObjec
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebGLIntArray"), value);
 }
+#endif
 
+#if ENABLE(3D_CANVAS)
 void setJSDOMWindowWebGLUnsignedIntArrayConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6692,7 +6741,9 @@ void setJSDOMWindowWebGLUnsignedIntArrayConstructor(ExecState* exec, JSObject* t
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebGLUnsignedIntArray"), value);
 }
+#endif
 
+#if ENABLE(3D_CANVAS)
 void setJSDOMWindowWebGLFloatArrayConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6700,6 +6751,7 @@ void setJSDOMWindowWebGLFloatArrayConstructor(ExecState* exec, JSObject* thisObj
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebGLFloatArray"), value);
 }
+#endif
 
 void setJSDOMWindowEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
@@ -6965,6 +7017,7 @@ void setJSDOMWindowXMLHttpRequestExceptionConstructor(ExecState* exec, JSObject*
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "XMLHttpRequestException"), value);
 }
 
+#if ENABLE(XSLT)
 void setJSDOMWindowXSLTProcessorConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -6972,6 +7025,7 @@ void setJSDOMWindowXSLTProcessorConstructor(ExecState* exec, JSObject* thisObjec
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "XSLTProcessor"), value);
 }
+#endif
 
 void setJSDOMWindowMessagePortConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
@@ -7077,6 +7131,7 @@ void setJSDOMWindowStorageEventConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "StorageEvent"), value);
 }
 
+#if ENABLE(VIDEO)
 void setJSDOMWindowAudioConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -7084,7 +7139,9 @@ void setJSDOMWindowAudioConstructor(ExecState* exec, JSObject* thisObject, JSVal
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Audio"), value);
 }
+#endif
 
+#if ENABLE(VIDEO)
 void setJSDOMWindowHTMLAudioElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -7092,7 +7149,9 @@ void setJSDOMWindowHTMLAudioElementConstructor(ExecState* exec, JSObject* thisOb
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLAudioElement"), value);
 }
+#endif
 
+#if ENABLE(VIDEO)
 void setJSDOMWindowHTMLMediaElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -7100,7 +7159,9 @@ void setJSDOMWindowHTMLMediaElementConstructor(ExecState* exec, JSObject* thisOb
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLMediaElement"), value);
 }
+#endif
 
+#if ENABLE(VIDEO)
 void setJSDOMWindowHTMLVideoElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -7108,7 +7169,9 @@ void setJSDOMWindowHTMLVideoElementConstructor(ExecState* exec, JSObject* thisOb
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLVideoElement"), value);
 }
+#endif
 
+#if ENABLE(VIDEO)
 void setJSDOMWindowMediaErrorConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -7116,6 +7179,7 @@ void setJSDOMWindowMediaErrorConstructor(ExecState* exec, JSObject* thisObject, 
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "MediaError"), value);
 }
+#endif
 
 void setJSDOMWindowXPathEvaluatorConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
@@ -8077,6 +8141,7 @@ void setJSDOMWindowSVGFilterElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGFilterElement"), value);
 }
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSDOMWindowTouchEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
@@ -8084,6 +8149,7 @@ void setJSDOMWindowTouchEventConstructor(ExecState* exec, JSObject* thisObject, 
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "TouchEvent"), value);
 }
+#endif
 
 void setJSDOMWindowFormDataConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {

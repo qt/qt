@@ -167,10 +167,18 @@ static const HashTableValue JSDocumentTableValues[75] =
     { "onreset", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDocumentOnreset), (intptr_t)setJSDocumentOnreset },
     { "onsearch", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDocumentOnsearch), (intptr_t)setJSDocumentOnsearch },
     { "onselectstart", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDocumentOnselectstart), (intptr_t)setJSDocumentOnselectstart },
+#if ENABLE(TOUCH_EVENTS)
     { "ontouchstart", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDocumentOntouchstart), (intptr_t)setJSDocumentOntouchstart },
+#endif
+#if ENABLE(TOUCH_EVENTS)
     { "ontouchmove", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDocumentOntouchmove), (intptr_t)setJSDocumentOntouchmove },
+#endif
+#if ENABLE(TOUCH_EVENTS)
     { "ontouchend", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDocumentOntouchend), (intptr_t)setJSDocumentOntouchend },
+#endif
+#if ENABLE(TOUCH_EVENTS)
     { "ontouchcancel", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDocumentOntouchcancel), (intptr_t)setJSDocumentOntouchcancel },
+#endif
     { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDocumentConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
@@ -1123,6 +1131,7 @@ JSValue jsDocumentOnselectstart(ExecState* exec, JSValue slotBase, const Identif
     return jsNull();
 }
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsDocumentOntouchstart(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSDocument* castedThis = static_cast<JSDocument*>(asObject(slotBase));
@@ -1136,7 +1145,9 @@ JSValue jsDocumentOntouchstart(ExecState* exec, JSValue slotBase, const Identifi
     }
     return jsNull();
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsDocumentOntouchmove(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSDocument* castedThis = static_cast<JSDocument*>(asObject(slotBase));
@@ -1150,7 +1161,9 @@ JSValue jsDocumentOntouchmove(ExecState* exec, JSValue slotBase, const Identifie
     }
     return jsNull();
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsDocumentOntouchend(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSDocument* castedThis = static_cast<JSDocument*>(asObject(slotBase));
@@ -1164,7 +1177,9 @@ JSValue jsDocumentOntouchend(ExecState* exec, JSValue slotBase, const Identifier
     }
     return jsNull();
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsDocumentOntouchcancel(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSDocument* castedThis = static_cast<JSDocument*>(asObject(slotBase));
@@ -1178,6 +1193,7 @@ JSValue jsDocumentOntouchcancel(ExecState* exec, JSValue slotBase, const Identif
     }
     return jsNull();
 }
+#endif
 
 JSValue jsDocumentConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
@@ -1540,33 +1556,41 @@ void setJSDocumentOnselectstart(ExecState* exec, JSObject* thisObject, JSValue v
     imp->setOnselectstart(createJSAttributeEventListener(exec, value, thisObject));
 }
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSDocumentOntouchstart(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
     imp->setOntouchstart(createJSAttributeEventListener(exec, value, thisObject));
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSDocumentOntouchmove(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
     imp->setOntouchmove(createJSAttributeEventListener(exec, value, thisObject));
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSDocumentOntouchend(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
     imp->setOntouchend(createJSAttributeEventListener(exec, value, thisObject));
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSDocumentOntouchcancel(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
     imp->setOntouchcancel(createJSAttributeEventListener(exec, value, thisObject));
 }
+#endif
 
 JSValue JSDocument::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {

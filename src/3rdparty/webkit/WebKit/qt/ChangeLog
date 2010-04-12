@@ -1,3 +1,160 @@
+2010-04-09  Yi Shen  <yi.4.shen@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] tst_QWebFrame::popupFocus() fails
+        https://bugs.webkit.org/show_bug.cgi?id=37320
+
+        The QWebPopup class has been moved & renamed, so tst_QWebFrame::popupFocus() should use
+        the class name "QComboBox", rather than "WebCore::QWebPopup" to find the popup menu.
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+
+2010-04-09  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix compile error with QT_NO_ACTION
+        https://bugs.webkit.org/show_bug.cgi?id=36529
+
+        Make sure QT_NO_ACTION is not defined to use QAction
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::pageAction):
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::updateAction):
+        (QWebPage::updatePositionDependentActions):
+        * Api/qwebpage.h:
+        * Api/qwebview.cpp:
+        * Api/qwebview.h:
+
+2010-04-09  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Lars Knoll.
+
+        [Qt] tests/qgraphicswebview fails
+        https://bugs.webkit.org/show_bug.cgi?id=37317
+
+        * Api/qwebpage.cpp:
+        (QWebPage::userAgentForUrl): Don't crash if the ownerWidget is null.
+
+2010-04-08  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Warnings when compiling InspectorClientQt.cpp
+        https://bugs.webkit.org/show_bug.cgi?id=37266
+
+        Add a default: for the switch()-case to avoid
+        warnings.
+
+        * WebCoreSupport/InspectorClientQt.cpp:
+        (WebCore::variantToSetting):
+
+2010-04-08  Joe Ligman  <joseph.ligman@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] WebKit crashes while input text through input method.
+        The formatted text underline painting crashes when painting with invalid indexes.
+        https://bugs.webkit.org/show_bug.cgi?id=36870
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::inputMethodEvent):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::inputMethodsTextFormat_data):
+        (tst_QWebPage::inputMethodsTextFormat):
+
+2010-04-01  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by David Hyatt.
+
+        [Qt] REGRESSION:(r50665) QWebFrame::setScrollBarPolicy(Qt::Vertical,Qt::ScrollBarAlwaysOff) has no effect.
+        https://bugs.webkit.org/show_bug.cgi?id=29431
+
+        Make use of the new lock parameter of set{Vertical,Horizontal}ScrollbarMode.
+
+        Always added a qt auto test for set scrollbar policy feature.
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::setScrollBarPolicy):
+        * tests/qwebframe/tst_qwebframe.cpp:
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (FrameLoaderClientQt::transitionToCommittedForNewPage):
+
+2010-04-08  Joe Ligman  <joseph.ligman@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] qtwebkit_webframe_scrollRecursively scrolls when body.style.overflow="hidden"
+        https://bugs.webkit.org/show_bug.cgi?id=36674
+
+        The scrolling check was based on the frameview's scrolloffset, and
+        maximumScrollPosition, which does not acknowledge the overflow properties.
+
+        I am now basing the scrolling off the scrollbar position. The scrollbars are
+        affected by the overflow properties indicating when not to scroll. The scrollbar
+        positions also continue to work for CSS ::-webkit-scrollbar styles.
+
+        * Api/qwebframe.cpp:
+        (qtwebkit_webframe_scrollRecursively):
+
+2010-04-07  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] When providing a widget for the PDF mime type it will cause a crash
+
+        m_pluginView may actually be a Widget (for embedded Qt widgets),
+        so always check isPluginView() before calling PluginView specific methods.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29450
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::finishedLoading):
+        (WebCore::FrameLoaderClientQt::setMainDocumentError):
+        (WebCore::FrameLoaderClientQt::committedLoad):
+
+2010-04-07  Dawit Alemayehu  <adawit@kde.org>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=36827
+
+        Updated the WebCore::shouldTreatAsAttachement function call with the
+        new more generic replacement WebCore::contentDispositionType.
+
+        See comments 39-42 in https://bugs.webkit.org/show_bug.cgi?id=36395
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::dispatchDecidePolicyForMIMEType):
+
+2010-04-02  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] [Symbian] Rebaseline Symbian def file
+        https://bugs.webkit.org/show_bug.cgi?id=37038
+
+        Switch the ordinal numbers for qtwebkit_webframe_scrollRecursively
+        and QWebInspector::closeEvent to match QtWebkit 4.6 branch
+
+        Fix the signature for qt_drt_setFrameFlatteningEnabled
+        after r56718.
+
+        Add new QtWebKit API symbols introduced not listed in the file yet.
+
+        * symbian/eabi/QtWebKitu.def:
+
+2010-04-06  Diego Gonzalez  <diego.gonzalez@openbossa.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Add mechanism to detect QtWebKit 2.0 via the preprocessor
+        https://bugs.webkit.org/show_bug.cgi?id=36538
+
+        * Api/qwebkitglobal.h:
+
 2010-04-02  Luiz Agostini  <luiz.agostini@openbossa.org>
 
         Reviewed by Kenneth Rohde Christiansen.

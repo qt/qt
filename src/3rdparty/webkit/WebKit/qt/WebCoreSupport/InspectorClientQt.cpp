@@ -149,6 +149,8 @@ static String variantToSetting(const QVariant& qvariant)
         retVal = qvariant.toBool() ? "true" : "false";
     case QVariant::String:
         retVal = qvariant.toString();
+    default:
+        break;
     }
 
     return retVal;

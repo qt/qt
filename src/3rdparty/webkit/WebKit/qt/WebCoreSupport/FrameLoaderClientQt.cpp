@@ -215,12 +215,17 @@ void FrameLoaderClientQt::transitionToCommittedForNewPage()
     QWebPage* page = m_webFrame->page();
     const QSize preferredLayoutSize = page->preferredContentsSize();
 
+    ScrollbarMode hScrollbar = (ScrollbarMode) m_webFrame->scrollBarPolicy(Qt::Horizontal);
+    ScrollbarMode vScrollbar = (ScrollbarMode) m_webFrame->scrollBarPolicy(Qt::Vertical);
+    bool hLock = hScrollbar != ScrollbarAuto;
+    bool vLock = vScrollbar != ScrollbarAuto;
+
     m_frame->createView(m_webFrame->page()->viewportSize(),
                         backgroundColor, !backgroundColor.alpha(),
                         preferredLayoutSize.isValid() ? IntSize(preferredLayoutSize) : IntSize(),
                         preferredLayoutSize.isValid(),
-                        (ScrollbarMode)m_webFrame->scrollBarPolicy(Qt::Horizontal),
-                        (ScrollbarMode)m_webFrame->scrollBarPolicy(Qt::Vertical));
+                        hScrollbar, hLock,
+                        vScrollbar, vLock);
 }
 
 
@@ -517,7 +522,8 @@ void FrameLoaderClientQt::finishedLoading(DocumentLoader* loader)
         }
     }
     else {
-        m_pluginView->didFinishLoading();
+        if (m_pluginView->isPluginView())
+            m_pluginView->didFinishLoading();
         m_pluginView = 0;
         m_hasSentResponseToPlugin = false;
     }
@@ -706,7 +712,8 @@ void FrameLoaderClientQt::setMainDocumentError(WebCore::DocumentLoader* loader, 
             m_firstData = false;
         }
     } else {
-        m_pluginView->didFail(error);
+        if (m_pluginView->isPluginView())
+            m_pluginView->didFail(error);
         m_pluginView = 0;
         m_hasSentResponseToPlugin = false;
     }
@@ -726,7 +733,7 @@ void FrameLoaderClientQt::committedLoad(WebCore::DocumentLoader* loader, const c
     }
     
     // We re-check here as the plugin can have been created
-    if (m_pluginView) {
+    if (m_pluginView && m_pluginView->isPluginView()) {
         if (!m_hasSentResponseToPlugin) {
             m_pluginView->didReceiveResponse(loader->response());
             // didReceiveResponse sets up a new stream to the plug-in. on a full-page plug-in, a failure in
@@ -967,8 +974,9 @@ WebCore::Frame* FrameLoaderClientQt::dispatchCreatePage()
 void FrameLoaderClientQt::dispatchDecidePolicyForMIMEType(FramePolicyFunction function, const WebCore::String& MIMEType, const WebCore::ResourceRequest&)
 {
     // we need to call directly here
-    if (WebCore::shouldTreatAsAttachment(m_frame->loader()->activeDocumentLoader()->response()))
-        callPolicyFunction(function, PolicyDownload);    
+    const ResourceResponse& response = m_frame->loader()->activeDocumentLoader()->response();
+    if (WebCore::contentDispositionType(response.httpHeaderField("Content-Disposition")) == WebCore::ContentDispositionAttachment)
+        callPolicyFunction(function, PolicyDownload);
     else if (canShowMIMEType(MIMEType))
         callPolicyFunction(function, PolicyUse);
     else

@@ -1298,7 +1298,6 @@ void PluginView::keepAlive(NPP instance)
 }
 #endif
 
-#if ENABLE(NETSCAPE_PLUGIN_API)
 NPError PluginView::getValueStatic(NPNVariable variable, void* value)
 {
     LOG(Plugins, "PluginView::getValueStatic(%s)", prettyNameForNPNVariable(variable).data());
@@ -1309,7 +1308,6 @@ NPError PluginView::getValueStatic(NPNVariable variable, void* value)
 
     return NPERR_GENERIC_ERROR;
 }
-#endif
 
 NPError PluginView::getValue(NPNVariable variable, void* value)
 {
@@ -1319,10 +1317,8 @@ NPError PluginView::getValue(NPNVariable variable, void* value)
     if (platformGetValue(variable, value, &result))
         return result;
 
-#if ENABLE(NETSCAPE_PLUGIN_API)
     if (platformGetValueStatic(variable, value, &result))
         return result;
-#endif
 
     switch (variable) {
 #if ENABLE(NETSCAPE_PLUGIN_API)

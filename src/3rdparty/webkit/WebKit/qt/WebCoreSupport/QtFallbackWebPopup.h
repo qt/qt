@@ -23,9 +23,7 @@
 #include "QtAbstractWebPopup.h"
 #include <QComboBox>
 
-QT_BEGIN_NAMESPACE
 class QGraphicsProxyWidget;
-QT_END_NAMESPACE
 
 namespace WebCore {
 

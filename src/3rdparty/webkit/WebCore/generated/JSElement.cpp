@@ -112,10 +112,18 @@ static const HashTableValue JSElementTableValues[65] =
     { "onreset", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsElementOnreset), (intptr_t)setJSElementOnreset },
     { "onsearch", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsElementOnsearch), (intptr_t)setJSElementOnsearch },
     { "onselectstart", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsElementOnselectstart), (intptr_t)setJSElementOnselectstart },
+#if ENABLE(TOUCH_EVENTS)
     { "ontouchstart", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsElementOntouchstart), (intptr_t)setJSElementOntouchstart },
+#endif
+#if ENABLE(TOUCH_EVENTS)
     { "ontouchmove", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsElementOntouchmove), (intptr_t)setJSElementOntouchmove },
+#endif
+#if ENABLE(TOUCH_EVENTS)
     { "ontouchend", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsElementOntouchend), (intptr_t)setJSElementOntouchend },
+#endif
+#if ENABLE(TOUCH_EVENTS)
     { "ontouchcancel", DontDelete|DontEnum, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsElementOntouchcancel), (intptr_t)setJSElementOntouchcancel },
+#endif
     { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
@@ -971,6 +979,7 @@ JSValue jsElementOnselectstart(ExecState* exec, JSValue slotBase, const Identifi
     return jsNull();
 }
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsElementOntouchstart(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSElement* castedThis = static_cast<JSElement*>(asObject(slotBase));
@@ -984,7 +993,9 @@ JSValue jsElementOntouchstart(ExecState* exec, JSValue slotBase, const Identifie
     }
     return jsNull();
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsElementOntouchmove(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSElement* castedThis = static_cast<JSElement*>(asObject(slotBase));
@@ -998,7 +1009,9 @@ JSValue jsElementOntouchmove(ExecState* exec, JSValue slotBase, const Identifier
     }
     return jsNull();
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsElementOntouchend(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSElement* castedThis = static_cast<JSElement*>(asObject(slotBase));
@@ -1012,7 +1025,9 @@ JSValue jsElementOntouchend(ExecState* exec, JSValue slotBase, const Identifier&
     }
     return jsNull();
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 JSValue jsElementOntouchcancel(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSElement* castedThis = static_cast<JSElement*>(asObject(slotBase));
@@ -1026,6 +1041,7 @@ JSValue jsElementOntouchcancel(ExecState* exec, JSValue slotBase, const Identifi
     }
     return jsNull();
 }
+#endif
 
 JSValue jsElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
@@ -1324,33 +1340,41 @@ void setJSElementOnselectstart(ExecState* exec, JSObject* thisObject, JSValue va
     imp->setOnselectstart(createJSAttributeEventListener(exec, value, thisObject));
 }
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSElementOntouchstart(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(thisObject)->impl());
     imp->setOntouchstart(createJSAttributeEventListener(exec, value, thisObject));
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSElementOntouchmove(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(thisObject)->impl());
     imp->setOntouchmove(createJSAttributeEventListener(exec, value, thisObject));
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSElementOntouchend(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(thisObject)->impl());
     imp->setOntouchend(createJSAttributeEventListener(exec, value, thisObject));
 }
+#endif
 
+#if ENABLE(TOUCH_EVENTS)
 void setJSElementOntouchcancel(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(thisObject)->impl());
     imp->setOntouchcancel(createJSAttributeEventListener(exec, value, thisObject));
 }
+#endif
 
 JSValue JSElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {

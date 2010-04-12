@@ -619,6 +619,7 @@ QMenu *QWebPagePrivate::createContextMenu(const WebCore::ContextMenu *webcoreMen
 }
 #endif // QT_NO_CONTEXTMENU
 
+#ifndef QT_NO_ACTION
 void QWebPagePrivate::_q_webActionTriggered(bool checked)
 {
     QAction *a = qobject_cast<QAction *>(q->sender());
@@ -627,6 +628,7 @@ void QWebPagePrivate::_q_webActionTriggered(bool checked)
     QWebPage::WebAction action = static_cast<QWebPage::WebAction>(a->data().toInt());
     q->triggerAction(action, checked);
 }
+#endif // QT_NO_ACTION
 
 void QWebPagePrivate::_q_cleanupLeakMessages()
 {
@@ -638,6 +640,9 @@ void QWebPagePrivate::_q_cleanupLeakMessages()
 
 void QWebPagePrivate::updateAction(QWebPage::WebAction action)
 {
+#ifdef QT_NO_ACTION
+    Q_UNUSED(action)
+#else
     QAction *a = actions[action];
     if (!a || !mainFrame)
         return;
@@ -697,6 +702,7 @@ void QWebPagePrivate::updateAction(QWebPage::WebAction action)
 
     if (a->isCheckable())
         a->setChecked(checked);
+#endif // QT_NO_ACTION
 }
 
 void QWebPagePrivate::updateNavigationActions()
@@ -1320,7 +1326,7 @@ void QWebPagePrivate::inputMethodEvent(QInputMethodEvent *ev)
         case QInputMethodEvent::TextFormat: {
             QTextCharFormat textCharFormat = a.value.value<QTextFormat>().toCharFormat();
             QColor qcolor = textCharFormat.underlineColor();
-            underlines.append(CompositionUnderline(a.start, a.length, Color(makeRGBA(qcolor.red(), qcolor.green(), qcolor.blue(), qcolor.alpha())), false));
+            underlines.append(CompositionUnderline(qMin(a.start, (a.start + a.length)), qMax(a.start, (a.start + a.length)), Color(makeRGBA(qcolor.red(), qcolor.green(), qcolor.blue(), qcolor.alpha())), false));
             break;
         }
         case QInputMethodEvent::Cursor: {
@@ -2297,6 +2303,7 @@ QString QWebPage::selectedText() const
     return d->page->focusController()->focusedOrMainFrame()->selectedText();
 }
 
+#ifndef QT_NO_ACTION
 /*!
    Returns a QAction for the specified WebAction \a action.
 
@@ -2569,6 +2576,7 @@ QAction *QWebPage::action(WebAction action) const
     d->updateAction(action);
     return a;
 }
+#endif // QT_NO_ACTION
 
 /*!
     \property QWebPage::modified
@@ -2838,6 +2846,7 @@ bool QWebPage::swallowContextMenuEvent(QContextMenuEvent *event)
 */
 void QWebPage::updatePositionDependentActions(const QPoint &pos)
 {
+#ifndef QT_NO_ACTION
     // First we disable all actions, but keep track of which ones were originally enabled.
     QBitArray originallyEnabledWebActions(QWebPage::WebActionCount);
     for (int i = ContextMenuItemTagNoAction; i < ContextMenuItemBaseApplicationTag; ++i) {
@@ -2847,6 +2856,7 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
             a->setEnabled(false);
         }
     }
+#endif // QT_NO_ACTION
 
     d->createMainFrame();
     WebCore::Frame* focusedFrame = d->page->focusController()->focusedOrMainFrame();
@@ -2873,6 +2883,7 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
     d->currentContextMenu = d->createContextMenu(&menu, menu.platformDescription(), &visitedWebActions);
 #endif // QT_NO_CONTEXTMENU
 
+#ifndef QT_NO_ACTION
     // Finally, we restore the original enablement for the actions that were not put into the menu.
     originallyEnabledWebActions &= ~visitedWebActions; // Mask out visited actions (they're part of the menu)
     for (int i = 0; i < QWebPage::WebActionCount; ++i) {
@@ -2881,6 +2892,7 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
                 a->setEnabled(true);
         }
     }
+#endif // QT_NO_ACTION
 
     // This whole process ensures that any actions put into to the context menu has the right
     // enablement, while also keeping the correct enablement for actions that were left out of
@@ -3377,7 +3389,7 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
 
     // Language
     QLocale locale;
-    if (d->client)
+    if (d->client && d->client->ownerWidget())
         locale = d->client->ownerWidget()->locale();
     QString name = locale.name();
     name[2] = QLatin1Char('-');
