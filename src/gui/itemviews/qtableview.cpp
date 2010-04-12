@@ -1847,7 +1847,9 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
             selection.append(QItemSelectionRange(topLeft, bottomRight));
         }
     } else { // nothing moved
-        selection.append(QItemSelectionRange(tl, br));
+        QItemSelectionRange range(tl, br);
+        if (!range.isEmpty())
+            selection.append(range);
     }
 
     d->selectionModel->select(selection, command);
