@@ -118,13 +118,114 @@ QString QDeclarativeTextEdit::text() const
 
 /*!
     \qmlproperty string TextEdit::font.family
+
+    Sets the family name of the font.
+
+    The family name is case insensitive and may optionally include a foundry name, e.g. "Helvetica [Cronyx]".
+    If the family is available from more than one foundry and the foundry isn't specified, an arbitrary foundry is chosen.
+    If the family isn't available a family will be set using the font matching algorithm.
+*/
+
+/*!
     \qmlproperty bool TextEdit::font.bold
+
+    Sets the font's weight to bold.
+*/
+
+/*!
+    \qmlproperty enumeration TextEdit::font.weight
+
+    Sets the font's weight.
+
+    The weight can be one of:
+    \list
+    \o Light
+    \o Normal - the default
+    \o DemiBold
+    \o Bold
+    \o Black
+    \endlist
+
+    \qml
+    TextEdit { text: "Hello"; font.weight: Font.DemiBold }
+    \endqml
+*/
+
+/*!
     \qmlproperty bool TextEdit::font.italic
+
+    Sets the style of the text to italic.
+*/
+
+/*!
     \qmlproperty bool TextEdit::font.underline
+
+    Set the style of the text to underline.
+*/
+
+/*!
+    \qmlproperty bool TextEdit::font.outline
+
+    Set the style of the text to outline.
+*/
+
+/*!
+    \qmlproperty bool TextEdit::font.strikeout
+
+    Set the style of the text to strikeout.
+*/
+
+/*!
     \qmlproperty real TextEdit::font.pointSize
+
+    Sets the font size in points. The point size must be greater than zero.
+*/
+
+/*!
     \qmlproperty int TextEdit::font.pixelSize
 
-    Set the TextEdit's font attributes.
+    Sets the font size in pixels.
+
+    Using this function makes the font device dependent.
+    Use \c pointSize to set the size of the font in a device independent manner.
+*/
+
+/*!
+    \qmlproperty real TextEdit::font.letterSpacing
+
+    Sets the letter spacing for the font.
+
+    Letter spacing changes the default spacing between individual letters in the font.
+    A value of 100 will keep the spacing unchanged; a value of 200 will enlarge the spacing after a character by
+    the width of the character itself.
+*/
+
+/*!
+    \qmlproperty real TextEdit::font.wordSpacing
+
+    Sets the word spacing for the font.
+
+    Word spacing changes the default spacing between individual words.
+    A positive value increases the word spacing by a corresponding amount of pixels,
+    while a negative value decreases the inter-word spacing accordingly.
+*/
+
+/*!
+    \qmlproperty enumeration TextEdit::font.capitalization
+
+    Sets the capitalization for the text.
+
+    \list
+    \o MixedCase - This is the normal text rendering option where no capitalization change is applied.
+    \o AllUppercase - This alters the text to be rendered in all uppercase type.
+    \o AllLowercase	 - This alters the text to be rendered in all lowercase type.
+    \o SmallCaps -	This alters the text to be rendered in small-caps type.
+    \o Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
+    \endlist
+
+    \qml
+    TextEdit { text: "Hello"; font.capitalization: Font.AllLowercase }
+    \endqml
 */
 
 /*!
@@ -688,7 +789,7 @@ void QDeclarativeTextEdit::componentComplete()
 */
 void QDeclarativeTextEdit::setReadOnly(bool r)
 {
-    Q_D(QDeclarativeTextEdit);    
+    Q_D(QDeclarativeTextEdit);
     if (r == isReadOnly())
         return;
 

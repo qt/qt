@@ -87,11 +87,12 @@ JavaScript file.
 
 \section1 Separate JavaScript files
 
-Large blocks of JavaScript should be written in separate files.  Like element
-types, external JavaScript files are \c {import}'ed into QML files.
+Large blocks of JavaScript should be written in separate files. These files
+can be imported into QML files using an \c import statement, in the same way
+that \l {Modules}{modules} are imported.
 
-The \c {factorial()} method used in the \l {Inline JavaScript} section could
-be refactored into an external file, and accessed like this.
+For example, the \c {factorial()} method in the above example for \l {Inline JavaScript}
+could be moved into an external file named \c factorial.js, and accessed like this:
 
 \code
 import "factorial.js" as MathFunctions
@@ -103,12 +104,12 @@ Item {
 }
 \endcode
 
-Both relative and absolute JavaScript URLs can be imported.  In the case of a
-relative URL, the location is resolved relative to the location of the
-\l {QML Document} that contains the import.  If the script file is not accessible,
-an error will occur.  If the JavaScript needs to be fetched from a network
-resource, the QML document will remain in the
-\l {QDeclarativeComponent::status()}{waiting state} until the script has been
+Both relative and absolute JavaScript URLs can be imported.  In the case of a 
+relative URL, the location is resolved relative to the location of the 
+\l {QML Document} that contains the import.  If the script file is not accessible, 
+an error will occur.  If the JavaScript needs to be fetched from a network 
+resource, the QML document has a "Loading"
+\l {QDeclarativeComponent::status()}{status} until the script has been 
 downloaded.
 
 Imported JavaScript files are always qualified using the "as" keyword.  The
@@ -167,9 +168,7 @@ might not have been created or some \l {Property Binding}s may not have been run
 
 The QML \l Component element provides an \e attached \c onCompleted property that
 can be used to trigger the execution of script code at startup after the
-QML environment has been completely established.
-
-The following QML code shows how to use the \c Component::onCompleted property.
+QML environment has been completely established. For example:
 
 \code
 Rectangle {
@@ -181,8 +180,8 @@ Rectangle {
 }
 \endcode
 
-Any element in a QML file - including nested elements and nested QML component
-instances - can use this attached property.  If there is more than one onCompleted
+Any element in a QML file - including nested elements and nested QML component 
+instances - can use this attached property.  If there is more than one \c onCompleted()
 handler to execute at startup, they are run sequentially in an undefined order.
 
 \section1 QML JavaScript Restrictions
