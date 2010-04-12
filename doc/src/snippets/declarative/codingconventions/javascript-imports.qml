@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 //![0]
 import "myscript.js" as Script
