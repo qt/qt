@@ -145,12 +145,13 @@ public:
 private:
     friend class QTextCodecCleanup;
     static QTextCodec *cftr;
+    static bool validCodecs();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextCodec::ConversionFlags)
 
-inline QTextCodec* QTextCodec::codecForTr() { return cftr; }
+        inline QTextCodec* QTextCodec::codecForTr() { return validCodecs() ? cftr : 0; }
 inline void QTextCodec::setCodecForTr(QTextCodec *c) { cftr = c; }
-inline QTextCodec* QTextCodec::codecForCStrings() { return QString::codecForCStrings; }
+inline QTextCodec* QTextCodec::codecForCStrings() { return validCodecs() ? QString::codecForCStrings : 0; }
 inline void QTextCodec::setCodecForCStrings(QTextCodec *c) { QString::codecForCStrings = c; }
 
 class Q_CORE_EXPORT QTextEncoder {
