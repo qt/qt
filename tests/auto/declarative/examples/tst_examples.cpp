@@ -80,6 +80,7 @@ tst_examples::tst_examples()
     excludedDirs << "examples/declarative/extending";
     excludedDirs << "examples/declarative/plugins";
     excludedDirs << "examples/declarative/proxywidgets";
+    excludedDirs << "examples/declarative/gestures";
 }
 
 /*
