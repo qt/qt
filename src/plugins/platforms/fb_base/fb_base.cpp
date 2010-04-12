@@ -142,6 +142,9 @@ void QGraphicsSystemFbScreen::generateRects()
     for (int i = 0; i < windowStack.length(); i++) {
         if (remainingScreen.isEmpty())
             break;
+        if (!windowStack[i]->visible())
+            continue;
+
         if (!windowStack[i]->widget()->testAttribute(Qt::WA_TranslucentBackground)) {
             remainingScreen -= windowStack[i]->geometry();
             QRegion windowRegion(windowStack[i]->geometry());
