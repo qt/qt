@@ -146,7 +146,6 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l Loader
 \o \l Repeater
 \o \l SystemPalette
-\o \l GraphicsObjectContainer
 \o \l LayoutItem
 \endlist
 
