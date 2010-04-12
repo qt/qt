@@ -236,9 +236,40 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                         } 
                     } else { 
 			    QDeclarative_setParent_noEvent(o, parent);
-       //                 o->setParent(parent); 
                     } 
                 }
+                stack.push(o);
+            }
+            break;
+
+        case QDeclarativeInstruction::CreateSimpleObject:
+            {
+                QObject *o = (QObject *)operator new(instr.createSimple.typeSize + 
+                                                     sizeof(QDeclarativeDeclarativeData));   
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+                ::memset(o, 0, instr.createSimple.typeSize + sizeof(QDeclarativeDeclarativeData));
+#else
+                // faster than memset
+                ::bzero(o, instr.createSimple.typeSize + sizeof(QDeclarativeDeclarativeData));
+#endif
+                instr.createSimple.create(o);
+
+                QDeclarativeDeclarativeData *ddata = 
+                    (QDeclarativeDeclarativeData *)(((const char *)o) + instr.createSimple.typeSize);
+                ddata->lineNumber = instr.line;
+                ddata->columnNumber = instr.createSimple.column;
+
+                QObjectPrivate::get(o)->declarativeData = ddata;                                                      
+                ddata->context = ddata->outerContext = ctxt;
+                ddata->nextContextObject = ctxt->contextObjects; 
+                if (ddata->nextContextObject) 
+                    ddata->nextContextObject->prevContextObject = &ddata->nextContextObject; 
+                ddata->prevContextObject = &ctxt->contextObjects; 
+                ctxt->contextObjects = ddata; 
+
+                QObject *parent = stack.top();                                                                    
+                QDeclarative_setParent_noEvent(o, parent);                                                        
+
                 stack.push(o);
             }
             break;
@@ -308,6 +339,26 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                 QObject *target = stack.top();
                 // XXX - can be more efficient
                 QVariant v = QDeclarativeStringConverters::variantFromString(primitives.at(instr.storeString.value));
+                void *a[] = { &v, 0, &status, &flags };
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeString.propertyIndex, a);
+            }
+            break;
+
+        case QDeclarativeInstruction::StoreVariantInteger:
+            {
+                QObject *target = stack.top();
+                QVariant v(instr.storeInteger.value);
+                void *a[] = { &v, 0, &status, &flags };
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeString.propertyIndex, a);
+            }
+            break;
+
+        case QDeclarativeInstruction::StoreVariantDouble:
+            {
+                QObject *target = stack.top();
+                QVariant v(instr.storeDouble.value);
                 void *a[] = { &v, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeString.propertyIndex, a);

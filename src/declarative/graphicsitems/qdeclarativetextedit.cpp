@@ -44,6 +44,7 @@
 
 #include "private/qdeclarativeevents_p_p.h"
 #include <private/qdeclarativeglobal_p.h>
+#include <qdeclarativeinfo.h>
 
 #include <QTextLayout>
 #include <QTextLine>
@@ -170,12 +171,12 @@ Column {
     }
     TextEdit {
         font.pointSize: 24
-        textFormat: "RichText"
+        textFormat: TextEdit.RichText
         text: "<b>Hello</b> <i>World!</i>"
     }
     TextEdit {
         font.pointSize: 24
-        textFormat: "PlainText"
+        textFormat: TextEdit.PlainText
         text: "<b>Hello</b> <i>World!</i>"
     }
 }
@@ -360,29 +361,50 @@ void QDeclarativeTextEdit::setVAlign(QDeclarativeTextEdit::VAlignment alignment)
     emit verticalAlignmentChanged(d->vAlign);
 }
 
-bool QDeclarativeTextEdit::wrap() const
-{
-    Q_D(const QDeclarativeTextEdit);
-    return d->wrap;
-}
-
 /*!
-    \qmlproperty bool TextEdit::wrap
+    \qmlproperty enumeration TextEdit::wrapMode
 
     Set this property to wrap the text to the TextEdit item's width.
     The text will only wrap if an explicit width has been set.
 
-    Wrapping is done on word boundaries (i.e. it is a "word-wrap"). Wrapping is off by default.
+    \list
+    \o NoWrap - no wrapping will be performed.
+    \o WordWrap - wrapping is done on word boundaries.
+    \o WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
+    \o WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
+       will occur at the appropriate point on the line, even in the middle of a word.
+    \endlist
+
+    The default is NoWrap.
 */
-void QDeclarativeTextEdit::setWrap(bool w)
+QDeclarativeTextEdit::WrapMode QDeclarativeTextEdit::wrapMode() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    return d->wrapMode;
+}
+
+void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
 {
     Q_D(QDeclarativeTextEdit);
-    if (w == d->wrap)
+    if (mode == d->wrapMode)
         return;
-    d->wrap = w;
+    d->wrapMode = mode;
     d->updateDefaultTextOption();
     updateSize();
-    emit wrapChanged(d->wrap);
+    emit wrapModeChanged();
+}
+
+bool QDeclarativeTextEdit::wrap() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    return d->wrapMode != QDeclarativeTextEdit::NoWrap;
+}
+
+void QDeclarativeTextEdit::setWrap(bool w)
+{
+
+    qmlInfo(this) << "\"wrap\" property is deprecated and will soon be removed.  Use wrapMode";
+    setWrapMode(w ? WordWrap : NoWrap);
 }
 
 /*!
@@ -1020,11 +1042,7 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
     opt.setAlignment((Qt::Alignment)(int)(hAlign | vAlign));
 
     QTextOption::WrapMode oldWrapMode = opt.wrapMode();
-
-    if (wrap)
-        opt.setWrapMode(QTextOption::WordWrap);
-    else
-        opt.setWrapMode(QTextOption::NoWrap);
+    opt.setWrapMode(QTextOption::WrapMode(wrapMode));
 
     if (oldWrapMode == opt.wrapMode() && oldAlignment == opt.alignment())
         return;

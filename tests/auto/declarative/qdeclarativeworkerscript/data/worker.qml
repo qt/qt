@@ -4,7 +4,7 @@ WorkerScript {
     id: worker
     source: "script.js"
 
-    property var response
+    property variant response
 
     signal done()
 

@@ -281,6 +281,8 @@ private:
 
     void addId(const QString &, QDeclarativeParser::Object *);
 
+    QString tr(const char *);
+
     void dumpStats();
 
     struct BindingReference {

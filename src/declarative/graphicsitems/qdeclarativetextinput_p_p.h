@@ -72,13 +72,21 @@ public:
                  color((QRgb)0), style(QDeclarativeText::Normal),
                  styleColor((QRgb)0), hAlign(QDeclarativeTextInput::AlignLeft),
                  hscroll(0), oldScroll(0), focused(false), focusOnPress(true),
-                 cursorVisible(false)
+                 cursorVisible(false), autoScroll(true)
     {
     }
 
     ~QDeclarativeTextInputPrivate()
     {
         delete control;
+    }
+
+    int xToPos(int x, QTextLine::CursorPosition betweenOrOn = QTextLine::CursorBetweenCharacters) const
+    {
+        Q_Q(const QDeclarativeTextInput);
+        QRect cr = q->boundingRect().toRect();
+        x-= cr.x() - hscroll;
+        return control->xToPos(x, betweenOrOn);
     }
 
     void init();
@@ -107,6 +115,7 @@ public:
     bool focused;
     bool focusOnPress;
     bool cursorVisible;
+    bool autoScroll;
 };
 
 QT_END_NAMESPACE

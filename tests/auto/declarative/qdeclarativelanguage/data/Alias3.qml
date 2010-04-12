@@ -3,7 +3,7 @@ import Qt 4.6
 
 QtObject {
     property alias obj : otherObj
-    property var child
+    property variant child
     child: QtObject {
         id: otherObj
         property int myValue: 10

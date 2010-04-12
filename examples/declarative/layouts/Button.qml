@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle { border.color: "black"; color: "steelblue"; radius: 5; width: pix.width + textelement.width + 13; height: pix.height + 10; id: page
     property string text

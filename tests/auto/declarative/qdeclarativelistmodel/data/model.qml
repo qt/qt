@@ -2,9 +2,9 @@ import Qt 4.6
 
 Item {
     id: item
-    property var model
+    property variant model
     property bool done: false
-    property var result
+    property variant result
 
     function evalExpressionViaWorker(commands) {
         done = false

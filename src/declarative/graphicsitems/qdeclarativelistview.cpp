@@ -152,11 +152,12 @@ public:
         : currentItem(0), orient(QDeclarativeListView::Vertical)
         , visiblePos(0), visibleIndex(0)
         , averageSize(100.0), currentIndex(-1), requestedIndex(-1)
-        , highlightRangeStart(0), highlightRangeEnd(0)
+        , itemCount(0), highlightRangeStart(0), highlightRangeEnd(0)
         , highlightComponent(0), highlight(0), trackedItem(0)
         , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0)
         , sectionCriteria(0), spacing(0.0)
-        , highlightMoveSpeed(400), highlightResizeSpeed(400), highlightRange(QDeclarativeListView::NoHighlightRange)
+        , highlightMoveSpeed(400), highlightMoveDuration(-1)
+        , highlightResizeSpeed(400), highlightResizeDuration(-1), highlightRange(QDeclarativeListView::NoHighlightRange)
         , snapMode(QDeclarativeListView::NoSnap), overshootDist(0.0)
         , footerComponent(0), footer(0), headerComponent(0), header(0)
         , bufferMode(NoBuffer)
@@ -447,6 +448,7 @@ public:
     qreal averageSize;
     int currentIndex;
     int requestedIndex;
+    int itemCount;
     qreal highlightRangeStart;
     qreal highlightRangeEnd;
     QDeclarativeComponent *highlightComponent;
@@ -463,7 +465,9 @@ public:
     QDeclarativeItem *sectionCache[sectionCacheSize];
     qreal spacing;
     qreal highlightMoveSpeed;
+    int highlightMoveDuration;
     qreal highlightResizeSpeed;
+    int highlightResizeDuration;
     QDeclarativeListView::HighlightRangeMode highlightRange;
     QDeclarativeListView::SnapMode snapMode;
     qreal overshootDist;
@@ -501,6 +505,7 @@ void QDeclarativeListViewPrivate::init()
 
 void QDeclarativeListViewPrivate::clear()
 {
+    timeline.clear();
     for (int i = 0; i < visibleItems.count(); ++i)
         releaseItem(visibleItems.at(i));
     visibleItems.clear();
@@ -516,6 +521,8 @@ void QDeclarativeListViewPrivate::clear()
     trackedItem = 0;
     minExtentDirty = true;
     maxExtentDirty = true;
+    setPosition(0);
+    itemCount = 0;
 }
 
 FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
@@ -594,6 +601,7 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     Q_Q(QDeclarativeListView);
     if (!isValid() || !q->isComponentComplete())
         return;
+    itemCount = model->count();
     qreal bufferFrom = from - buffer;
     qreal bufferTo = to + buffer;
     qreal fillFrom = from;
@@ -698,6 +706,10 @@ void QDeclarativeListViewPrivate::layout()
 {
     Q_Q(QDeclarativeListView);
     layoutScheduled = false;
+    if (!isValid()) {
+        clear();
+        return;
+    }
     updateSections();
     if (!visibleItems.isEmpty()) {
         int oldEnd = visibleItems.last()->endPosition();
@@ -711,8 +723,6 @@ void QDeclarativeListViewPrivate::layout()
         if (currentItem && currentIndex > lastVisibleIndex())
             currentItem->setPosition(currentItem->position() + (visibleItems.last()->endPosition() - oldEnd));
     }
-    if (!isValid())
-        return;
     q->refill();
     minExtentDirty = true;
     maxExtentDirty = true;
@@ -828,10 +838,12 @@ void QDeclarativeListViewPrivate::createHighlight()
             highlightPosAnimator = new QSmoothedAnimation(q);
             highlightPosAnimator->target = QDeclarativeProperty(highlight->item, posProp);
             highlightPosAnimator->velocity = highlightMoveSpeed;
+            highlightPosAnimator->userDuration = highlightMoveDuration;
             highlightPosAnimator->restart();
             const QLatin1String sizeProp(orient == QDeclarativeListView::Vertical ? "height" : "width");
             highlightSizeAnimator = new QSmoothedAnimation(q);
             highlightSizeAnimator->velocity = highlightResizeSpeed;
+            highlightSizeAnimator->userDuration = highlightResizeDuration;
             highlightSizeAnimator->target = QDeclarativeProperty(highlight->item, sizeProp);
             highlightSizeAnimator->restart();
             changed = true;
@@ -1860,13 +1872,19 @@ QString QDeclarativeListView::currentSection() const
 
 /*!
     \qmlproperty real ListView::highlightMoveSpeed
+    \qmlproperty int ListView::highlightMoveDuration
     \qmlproperty real ListView::highlightResizeSpeed
+    \qmlproperty int ListView::highlightResizeDuration
     These properties hold the move and resize animation speed of the highlight delegate.
 
     highlightFollowsCurrentItem must be true for these properties
     to have effect.
 
-    The default value for these properties is 400 pixels/second.
+    The default value for the speed properties is 400 pixels/second.
+    The default value for the duration properties is -1, i.e. the
+    highlight will take as much time as necessary to move at the set speed.
+
+    These properties have the same characteristics as a SmoothedAnimation.
 
     \sa highlightFollowsCurrentItem
 */
@@ -1887,6 +1905,23 @@ void QDeclarativeListView::setHighlightMoveSpeed(qreal speed)
     }
 }
 
+int QDeclarativeListView::highlightMoveDuration() const
+{
+    Q_D(const QDeclarativeListView);
+    return d->highlightMoveDuration;
+}
+
+void QDeclarativeListView::setHighlightMoveDuration(int duration)
+{
+    Q_D(QDeclarativeListView);\
+    if (d->highlightMoveDuration != duration) {
+        d->highlightMoveDuration = duration;
+        if (d->highlightPosAnimator)
+            d->highlightPosAnimator->userDuration = d->highlightMoveDuration;
+        emit highlightMoveDurationChanged();
+    }
+}
+
 qreal QDeclarativeListView::highlightResizeSpeed() const
 {
     Q_D(const QDeclarativeListView);\
@@ -1901,6 +1936,23 @@ void QDeclarativeListView::setHighlightResizeSpeed(qreal speed)
         if (d->highlightSizeAnimator)
             d->highlightSizeAnimator->velocity = d->highlightResizeSpeed;
         emit highlightResizeSpeedChanged();
+    }
+}
+
+int QDeclarativeListView::highlightResizeDuration() const
+{
+    Q_D(const QDeclarativeListView);
+    return d->highlightResizeDuration;
+}
+
+void QDeclarativeListView::setHighlightResizeDuration(int duration)
+{
+    Q_D(QDeclarativeListView);\
+    if (d->highlightResizeDuration != duration) {
+        d->highlightResizeDuration = duration;
+        if (d->highlightSizeAnimator)
+            d->highlightSizeAnimator->userDuration = d->highlightResizeDuration;
+        emit highlightResizeDurationChanged();
     }
 }
 
@@ -2314,13 +2366,15 @@ void QDeclarativeListView::componentComplete()
 {
     Q_D(QDeclarativeListView);
     QDeclarativeFlickable::componentComplete();
-    refill();
-    d->moveReason = QDeclarativeListViewPrivate::SetIndex;
-    if (d->currentIndex < 0)
-        d->updateCurrent(0);
-    else
-        d->updateCurrent(d->currentIndex);
-    d->fixupPosition();
+    if (d->isValid()) {
+        refill();
+        d->moveReason = QDeclarativeListViewPrivate::SetIndex;
+        if (d->currentIndex < 0)
+            d->updateCurrent(0);
+        else
+            d->updateCurrent(d->currentIndex);
+        d->fixupPosition();
+    }
 }
 
 void QDeclarativeListView::refill()
@@ -2401,6 +2455,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         } else if (d->currentIndex < 0) {
             d->updateCurrent(0);
         }
+        d->itemCount += count;
         emit countChanged();
         return;
     }
@@ -2432,6 +2487,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
                 emit currentIndexChanged();
             }
             d->scheduleLayout();
+            d->itemCount += count;
             emit countChanged();
             return;
         }
@@ -2524,6 +2580,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
     for (int j = 0; j < added.count(); ++j)
         added.at(j)->attached->emitAdd();
 
+    d->itemCount += count;
     emit countChanged();
 }
 
@@ -2534,6 +2591,7 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         return;
     d->moveReason = QDeclarativeListViewPrivate::Other;
     d->updateUnrequestedIndexes();
+    d->itemCount -= count;
 
     FxListItem *firstVisible = d->firstVisibleItem();
     int preRemovedSize = 0;
@@ -2586,7 +2644,8 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         d->releaseItem(d->currentItem);
         d->currentItem = 0;
         d->currentIndex = -1;
-        d->updateCurrent(qMin(modelIndex, d->model->count()-1));
+        if (d->itemCount)
+            d->updateCurrent(qMin(modelIndex, d->itemCount-1));
     }
 
     // update visibleIndex
@@ -2602,7 +2661,7 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         d->visiblePos = d->header ? d->header->size() : 0;
         d->timeline.clear();
         d->setPosition(0);
-        if (d->model->count() == 0)
+        if (d->itemCount == 0)
             update();
     }
 

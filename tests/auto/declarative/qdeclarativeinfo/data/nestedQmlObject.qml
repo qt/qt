@@ -1,8 +1,8 @@
 import Qt 4.6
 
 QtObject {
-    property var nested
+    property variant nested
     nested: NestedObject { }
-    property var nested2: nested.nested
+    property variant nested2: nested.nested
 }
 

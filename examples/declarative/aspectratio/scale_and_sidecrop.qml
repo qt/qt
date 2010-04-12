@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 // Here, we implement a variant of "Scale and Crop" behaviour, where we
 // crop the sides if necessary to fully fit vertically, but not the reverse.

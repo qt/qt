@@ -61,7 +61,7 @@ Rectangle {
             text: s.text; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignBottom; width: 800; height: 20
         }
         Text {
-            text: s.text; font.pixelSize: 18; style: Text.Outline; styleColor: "white"; wrap: true; width: 200
+            text: s.text; font.pixelSize: 18; style: Text.Outline; styleColor: "white"; wrapMode: Text.WordWrap; width: 200
         }
         Text {
             text: s.text; elide: Text.ElideLeft; width: 200
@@ -73,13 +73,19 @@ Rectangle {
             text: s.text; elide: Text.ElideRight; width: 200
         }
         Text {
-            text: s.text; elide: Text.ElideLeft; width: 200; wrap: true
+            text: s.text; elide: Text.ElideLeft; width: 200; wrapMode: Text.WordWrap
         }
         Text {
-            text: s.text; elide: Text.ElideMiddle; width: 200; wrap: true
+            text: s.text; elide: Text.ElideMiddle; width: 200; wrapMode: Text.WordWrap
         }
         Text {
-            text: s.text; elide: Text.ElideRight; width: 200; wrap: true
+            text: s.text; elide: Text.ElideRight; width: 200; wrapMode: Text.WordWrap
+        }
+        Text {
+            text: s.text + " thisisaverylongstringwithnospaces"; width: 150; wrapMode: Text.WrapAnywhere
+        }
+        Text {
+            text: s.text + " thisisaverylongstringwithnospaces"; width: 150; wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         }
     }
 }

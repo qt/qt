@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 import Qt.labs.particles 1.0
 import "qml"
 
@@ -110,7 +110,7 @@ Item {
                 focusOnPress: true
                 font.pixelSize: 14
 
-                text: "import Qt 4.6\nImage {\n  id: smile;\n  x: 500*Math.random();\n  y: 200*Math.random(); \n  source: 'images/face-smile.png';\n  NumberAnimation on opacity { \n    to: 0; duration: 1500;\n  }\n   Component.onCompleted: smile.destroy(1500);\n}"
+                text: "import Qt 4.7\nImage {\n  id: smile;\n  x: 500*Math.random();\n  y: 200*Math.random(); \n  source: 'images/face-smile.png';\n  NumberAnimation on opacity { \n    to: 0; duration: 1500;\n  }\n   Component.onCompleted: smile.destroy(1500);\n}"
             }
             Button {
                 text: "Create"

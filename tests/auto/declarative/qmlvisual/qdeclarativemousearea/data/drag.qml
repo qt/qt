@@ -486,7 +486,7 @@ VisualTest {
     }
     Frame {
         msec: 1840
-        hash: "b6b4b2c7acddd23609caa9727911b981"
+        hash: "668cc6d9d699b947a7c0f3ff4b26853f"
     }
     Mouse {
         type: 5
@@ -498,7 +498,7 @@ VisualTest {
     }
     Frame {
         msec: 1856
-        hash: "b6b4b2c7acddd23609caa9727911b981"
+        hash: "668cc6d9d699b947a7c0f3ff4b26853f"
     }
     Mouse {
         type: 5
@@ -510,7 +510,7 @@ VisualTest {
     }
     Frame {
         msec: 1872
-        hash: "022610222cfbcf9e9a8991cdb60c7bbb"
+        hash: "668cc6d9d699b947a7c0f3ff4b26853f"
     }
     Mouse {
         type: 5
@@ -522,7 +522,7 @@ VisualTest {
     }
     Frame {
         msec: 1888
-        hash: "9b5201a3201a102b20592d81218b5e74"
+        hash: "668cc6d9d699b947a7c0f3ff4b26853f"
     }
     Mouse {
         type: 5
