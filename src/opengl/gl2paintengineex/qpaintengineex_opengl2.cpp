@@ -1641,7 +1641,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         glBindTexture(GL_TEXTURE_2D, cache->texture());
         lastMaskTextureUsed = cache->texture();
     }
-    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
+    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, s->matrix.type() > QTransform::TxTranslate);
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
