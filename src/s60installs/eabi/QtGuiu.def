@@ -1,7 +1,7 @@
 EXPORTS
 	_Z11qFadeEffectP7QWidgeti @ 1 NONAME
 	_Z11qt_image_idRK6QImage @ 2 NONAME
-	_Z12qDrawPixmapsP8QPainterPKN12QDrawPixmaps4DataEiRK7QPixmap6QFlagsINS1_11DrawingHintEE @ 3 NONAME
+	_Z12qDrawPixmapsP8QPainterPKN12QDrawPixmaps4DataEiRK7QPixmap6QFlagsINS1_11DrawingHintEE @ 3 NONAME ABSENT
 	_Z12qt_pixmap_idRK7QPixmap @ 4 NONAME
 	_Z13qDrawWinPanelP8QPainterRK5QRectRK8QPalettebPK6QBrush @ 5 NONAME
 	_Z13qDrawWinPanelP8QPainteriiiiRK8QPalettebPK6QBrush @ 6 NONAME
@@ -2906,7 +2906,7 @@ EXPORTS
 	_ZN14QPaintEngineEx10drawPointsEPK7QPointFi @ 2905 NONAME
 	_ZN14QPaintEngineEx11drawEllipseERK5QRect @ 2906 NONAME
 	_ZN14QPaintEngineEx11drawEllipseERK6QRectF @ 2907 NONAME
-	_ZN14QPaintEngineEx11drawPixmapsEPKN12QDrawPixmaps4DataEiRK7QPixmap6QFlagsINS0_11DrawingHintEE @ 2908 NONAME
+	_ZN14QPaintEngineEx11drawPixmapsEPKN12QDrawPixmaps4DataEiRK7QPixmap6QFlagsINS0_11DrawingHintEE @ 2908 NONAME ABSENT
 	_ZN14QPaintEngineEx11drawPolygonEPK6QPointiN12QPaintEngine15PolygonDrawModeE @ 2909 NONAME
 	_ZN14QPaintEngineEx11drawPolygonEPK7QPointFiN12QPaintEngine15PolygonDrawModeE @ 2910 NONAME
 	_ZN14QPaintEngineEx11updateStateERK17QPaintEngineState @ 2911 NONAME
@@ -3726,7 +3726,7 @@ EXPORTS
 	_ZN16QFileSystemModelD1Ev @ 3725 NONAME
 	_ZN16QFileSystemModelD2Ev @ 3726 NONAME
 	_ZN16QPainterReplayer14setupTransformEP8QPainter @ 3727 NONAME
-	_ZN16QPainterReplayer4drawERK12QPaintBufferP8QPainteri @ 3728 NONAME
+	_ZN16QPainterReplayer4drawERK12QPaintBufferP8QPainteri @ 3728 NONAME ABSENT
 	_ZN16QPainterReplayer7processERK19QPaintBufferCommand @ 3729 NONAME
 	_ZN16QRegExpValidator11qt_metacallEN11QMetaObject4CallEiPPv @ 3730 NONAME
 	_ZN16QRegExpValidator11qt_metacastEPKc @ 3731 NONAME
@@ -4223,7 +4223,7 @@ EXPORTS
 	_ZN18QTextBlockUserDataD0Ev @ 4222 NONAME
 	_ZN18QTextBlockUserDataD1Ev @ 4223 NONAME
 	_ZN18QTextBlockUserDataD2Ev @ 4224 NONAME
-	_ZN18QTextureGlyphCache8populateERK12QTextItemIntRK15QVarLengthArrayIjLi256EERKS3_I11QFixedPointLi256EE @ 4225 NONAME
+	_ZN18QTextureGlyphCache8populateERK12QTextItemIntRK15QVarLengthArrayIjLi256EERKS3_I11QFixedPointLi256EE @ 4225 NONAME ABSENT
 	_ZN19QAbstractProxyModel11qt_metacallEN11QMetaObject4CallEiPPv @ 4226 NONAME
 	_ZN19QAbstractProxyModel11qt_metacastEPKc @ 4227 NONAME
 	_ZN19QAbstractProxyModel13setHeaderDataEiN2Qt11OrientationERK8QVarianti @ 4228 NONAME
@@ -11821,15 +11821,15 @@ EXPORTS
 	_ZN10QZipReaderD1Ev @ 11820 NONAME
 	_ZN10QZipReaderD2Ev @ 11821 NONAME
 	_ZN11QStaticText13setTextFormatEN2Qt10TextFormatE @ 11822 NONAME
-	_ZN11QStaticText14setMaximumSizeERK6QSizeF @ 11823 NONAME
+	_ZN11QStaticText14setMaximumSizeERK6QSizeF @ 11823 NONAME ABSENT
 	_ZN11QStaticText18setPerformanceHintENS_15PerformanceHintE @ 11824 NONAME
 	_ZN11QStaticText6detachEv @ 11825 NONAME
 	_ZN11QStaticText7prepareERK10QTransformRK5QFont @ 11826 NONAME
 	_ZN11QStaticText7setTextERK7QString @ 11827 NONAME
-	_ZN11QStaticTextC1ERK7QStringRK6QSizeF @ 11828 NONAME
+	_ZN11QStaticTextC1ERK7QString @ 11828 NONAME
 	_ZN11QStaticTextC1ERKS_ @ 11829 NONAME
 	_ZN11QStaticTextC1Ev @ 11830 NONAME
-	_ZN11QStaticTextC2ERK7QStringRK6QSizeF @ 11831 NONAME
+	_ZN11QStaticTextC2ERK7QString @ 11831 NONAME
 	_ZN11QStaticTextC2ERKS_ @ 11832 NONAME
 	_ZN11QStaticTextC2Ev @ 11833 NONAME
 	_ZN11QStaticTextD1Ev @ 11834 NONAME
@@ -11894,7 +11894,7 @@ EXPORTS
 	_ZNK10QZipReader6statusEv @ 11893 NONAME
 	_ZNK10QZipReader8fileDataERK7QString @ 11894 NONAME
 	_ZNK11QStaticText10textFormatEv @ 11895 NONAME
-	_ZNK11QStaticText11maximumSizeEv @ 11896 NONAME
+	_ZNK11QStaticText11maximumSizeEv @ 11896 NONAME ABSENT
 	_ZNK11QStaticText15performanceHintEv @ 11897 NONAME
 	_ZNK11QStaticText4sizeEv @ 11898 NONAME
 	_ZNK11QStaticText4textEv @ 11899 NONAME
@@ -11960,4 +11960,14 @@ EXPORTS
 	_ZNK7QWizard10sideWidgetEv @ 11959 NONAME
 	_ZNK9QLineEdit15placeholderTextEv @ 11960 NONAME
 	_ZNK9QTextLine17horizontalAdvanceEv @ 11961 NONAME
+	_ZN11QStaticText12setTextWidthEf @ 11962 NONAME
+	_ZN13QGraphicsItem16updateMicroFocusEv @ 11963 NONAME
+	_ZN15QGraphicsObject16updateMicroFocusEv @ 11964 NONAME
+	_ZN15QGraphicsWidget13layoutChangedEv @ 11965 NONAME
+	_ZN16QPainterReplayer15processCommandsERK12QPaintBufferP8QPainterii @ 11966 NONAME
+	_ZNK11QStaticText9textWidthEv @ 11967 NONAME
+	_ZNK12QPaintBuffer13frameEndIndexEi @ 11968 NONAME
+	_ZNK12QPaintBuffer15frameStartIndexEi @ 11969 NONAME
+	_ZNK12QPaintBuffer15processCommandsEP8QPainterii @ 11970 NONAME
+	_ZNK12QPaintBuffer18commandDescriptionEi @ 11971 NONAME
 

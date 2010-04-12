@@ -45,15 +45,6 @@ for(libraries, QMAKE_LIBS) {
 }
 QMAKE_LIBS = $$newLIBS
 
-linux-gcce {
-    QMAKE_LIBS	+= -l:usrt2_2.lib \
-                   -l:dfpaeabi.dso \
-                   -l:drtaeabi.dso \
-                   -l:scppnwdl.dso \
-                   -lsupc++ \
-                   -lgcc
-}
-
 elf2e32_LIBPATH =
 for(libPath, QMAKE_LIBDIR) {
     elf2e32_LIBPATH += "--libpath=$$libPath"
@@ -131,7 +122,14 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     linux-armcc: {
         QMAKE_LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
     } else :linux-gcce {
-        #QMAKE_LIBS += -l:edllstub.lib -l:edll.lib
+        QMAKE_LIBS += \
+            -l:edll.lib \
+            -l:usrt2_2.lib \
+            -l:dfpaeabi.dso \
+            -l:drtaeabi.dso \
+            -l:scppnwdl.dso \
+            -lsupc++ \
+            -lgcc
     }
 
     QMAKE_LFLAGS += --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll
@@ -162,12 +160,31 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
 
     linux-armcc: {
         QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
+        contains(CONFIG, "qt"):contains(QT, "core") { #if linking with QtCore
+            QMAKE_LIBS += -lqtmain$${QT_LIBINFIX}.lib
+        } else {
+            QMAKE_LIBS += -llibcrt0.lib
+        }
     } else :linux-gcce {
-        #QMAKE_LIBS += -l:eexe.lib
+        # notice that we can't merge these as ordering of arguments is important.
+        QMAKE_LIBS += \
+            -l:eexe.lib \
+            -l:usrt2_2.lib
+        contains(CONFIG, "qt"):contains(QT, "core") { #if linking with QtCore
+            QMAKE_LIBS += -l:qtmain$${QT_LIBINFIX}.lib
+        } else {
+            QMAKE_LIBS += -l:libcrt0_gcce.lib
+        }
+        QMAKE_LIBS += \
+            -l:dfpaeabi.dso \
+            -l:drtaeabi.dso \
+            -l:scppnwdl.dso \
+            -lsupc++ \
+            -lgcc
+        QMAKE_LFLAGS += --shared
     }
 
     QMAKE_LFLAGS += --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe
-# TODO gcce added --shared here...
     DEFINES += __EXE__
 }
 
