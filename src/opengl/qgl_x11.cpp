@@ -1677,6 +1677,14 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
 #if !defined(GLX_VERSION_1_3) || defined(Q_OS_HPUX)
     return 0;
 #else
+
+    // Check we have GLX 1.3, as it is needed for glXCreatePixmap & glXDestroyPixmap
+    int majorVersion = 0;
+    int minorVersion = 0;
+    glXQueryVersion(X11->display, &majorVersion, &minorVersion);
+    if (majorVersion < 1 || (majorVersion == 1 && minorVersion < 3))
+        return 0;
+
     Q_Q(QGLContext);
 
     QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pixmap->data_ptr().data());

@@ -721,11 +721,13 @@ void tst_QDialogButtonBox::testDefaultButton_data()
 static int softKeyCount(QWidget *widget)
 {
     int softkeyCount = 0;
+#ifndef QT_NO_ACTION
     QList<QAction *> actions = widget->actions();
     foreach (QAction *action, actions) {
         if (action->softKeyRole() != QAction::NoSoftKey)
             softkeyCount++;
     }
+#endif
     return softkeyCount;
 }
 
@@ -737,14 +739,18 @@ void tst_QDialogButtonBox::testS60SoftKeys()
     buttonBox.setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     dialog.show();
 
+#ifndef QT_NO_ACTION
     QCOMPARE( softKeyCount(&dialog), 2);
+#endif
 
     QDialog dialog2(0);
     QDialogButtonBox buttonBox2(&dialog2);
     buttonBox2.setStandardButtons(QDialogButtonBox::Cancel);
     dialog2.show();
 
+#ifndef QT_NO_ACTION
     QCOMPARE( softKeyCount(&dialog2), 1);
+#endif
 
 #else
     QSKIP("S60-specific test", SkipAll );
@@ -759,21 +765,27 @@ void tst_QDialogButtonBox::testSoftKeyReparenting()
     buttonBox->addButton(QDialogButtonBox::Ok);
     buttonBox->addButton(QDialogButtonBox::Cancel);
 
+#ifndef QT_NO_ACTION
     QCOMPARE(softKeyCount(&dialog), 0);
     QCOMPARE(softKeyCount(buttonBox), 2);
+#endif
 
     // Were the softkeys re-parented correctly?
     dialog.setLayout(new QVBoxLayout);
     dialog.layout()->addWidget(buttonBox);
+#ifndef QT_NO_ACTION
     QCOMPARE(softKeyCount(&dialog), 2);
     QCOMPARE(softKeyCount(buttonBox), 0);
+#endif
 
     // Softkeys are only added to QDialog, not QWidget
     QWidget *nested = new QWidget;
     nested->setLayout(new QVBoxLayout);
     nested->layout()->addWidget(buttonBox);
+#ifndef QT_NO_ACTION
     QCOMPARE(softKeyCount(nested), 0);
     QCOMPARE(softKeyCount(buttonBox), 2);
+#endif
 }
 #endif
 

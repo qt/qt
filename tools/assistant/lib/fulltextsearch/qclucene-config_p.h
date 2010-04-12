@@ -314,14 +314,12 @@ configure.
 #define _CL_HAVE_SYS_TYPES_H  1
 #endif
 
-// Do not use the tchar.h that ships with mingw, this causes the qt build to
-// fail (211547, 211401, etc...), reuse the replacement as with any other compiler
-// #if defined(__MINGW32__)
-//     /* Define to 1 if you have the <tchar.h> header file. */
-// #   ifndef _CL_HAVE_TCHAR_H
-// #   define _CL_HAVE_TCHAR_H  1
-// #   endif
-// #endif
+#if defined(__MINGW32__)
+     /* Define to 1 if you have the <tchar.h> header file. */
+ #   ifndef _CL_HAVE_TCHAR_H
+ #   define _CL_HAVE_TCHAR_H  1
+ #   endif
+#endif
 
 #if defined(__MINGW32__) || defined(__SUNPRO_CC) || defined(__SUNPRO_C)
     /* Define to 1 if you have the `tell' function. */

@@ -3194,12 +3194,16 @@ void QTreeViewPrivate::layout(int i, bool recursiveExpanding, bool afterIsUninit
 int QTreeViewPrivate::pageUp(int i) const
 {
     int index = itemAtCoordinate(coordinateForItem(i) - viewport->height());
+    while (isItemHiddenOrDisabled(index))
+        index--;
     return index == -1 ? 0 : index;
 }
 
 int QTreeViewPrivate::pageDown(int i) const
 {
     int index = itemAtCoordinate(coordinateForItem(i) + viewport->height());
+    while (isItemHiddenOrDisabled(index))
+        index++;
     return index == -1 ? viewItems.count() - 1 : index;
 }
 

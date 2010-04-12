@@ -3816,6 +3816,11 @@ void QWidget::setMaximumSize(int maxw, int maxh)
     d->updateGeometry_helper(d->extra->minw == d->extra->maxw && d->extra->minh == d->extra->maxh);
 }
 
+bool QWidgetPrivate::hasHeightForWidth() const
+{
+    return layout ? layout->hasHeightForWidth() : size_policy.hasHeightForWidth();
+}
+
 /*!
     \overload
 
@@ -7959,6 +7964,18 @@ QSize QWidget::minimumSizeHint() const
     if (d->layout)
         return d->layout->totalMinimumSize();
     return QSize(-1, -1);
+}
+
+/*!
+    \internal
+    This is a bit hackish, but ideally this would have been a virtual
+    function so that subclasses could reimplement their own function.
+    Instead we add a virtual function to QWidgetPrivate.
+*/
+bool QWidget::hasHeightForWidth() const
+{
+    Q_D(const QWidget);
+    return d->hasHeightForWidth();
 }
 
 
