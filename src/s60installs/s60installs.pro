@@ -16,9 +16,15 @@ symbian: {
         BLD_INF_RULES.prj_exports += \
             "sqlite3.sis $${EPOCROOT}epoc32/data/qt/sis/sqlite3.sis" \
             "sqlite3_selfsigned.sis $${EPOCROOT}epoc32/data/qt/sis/sqlite3_selfsigned.sis"
-        sqlitedeployment = \
-            "; Deploy sqlite onto phone that does not have it already" \
-            "@\"$${EPOCROOT}epoc32/data/qt/sis/sqlite3.sis\", (0x2002af5f)"
+        symbian-abld|symbian-sbsv2 {
+            sqlitedeployment = \
+                "; Deploy sqlite onto phone that does not have it already" \
+                "@\"$${EPOCROOT}epoc32/data/qt/sis/sqlite3.sis\", (0x2002af5f)"
+        } else {
+            sqlitedeployment = \
+                "; Deploy sqlite onto phone that does not have it already" \
+                "@\"$${PWD}/sqlite3.sis\", (0x2002af5f)"
+        }
         qtlibraries.pkg_postrules += sqlitedeployment
     } else {
         # Always use experimental UID for infixed configuration to avoid UID clash

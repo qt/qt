@@ -385,7 +385,7 @@ void tst_QHttpNetworkConnection::post_data()
     QTest::addColumn<int>("contentLength");
     QTest::addColumn<int>("downloadSize");
 
-    QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/cgi-bin/echo.cgi" << ushort(80) << false << "7 bytes" << 200 << "OK" << 7 << 7;
+    QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/qtest/cgi-bin/echo.cgi" << ushort(80) << false << "7 bytes" << 200 << "OK" << 7 << 7;
     QTest::newRow("failure-internal") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << "Hello World" << 404 << "Not Found" << -1 << 997 + QtNetworkSettings::serverName().size();
 }
 

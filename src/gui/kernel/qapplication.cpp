@@ -5292,9 +5292,9 @@ QInputContext *QApplication::inputContext() const
         QApplication *that = const_cast<QApplication *>(this);
         const QStringList keys = QInputContextFactory::keys();
         // Try hbim and coefep first, then try others.
-        if (keys.contains("hbim")) {
+        if (keys.contains(QLatin1String("hbim"))) {
             that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("hbim"), that);
-        } else if (keys.contains("coefep")) {
+        } else if (keys.contains(QLatin1String("coefep"))) {
             that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("coefep"), that);
         } else {
             for (int c = 0; c < keys.size() && !d->inputContext; ++c) {

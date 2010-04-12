@@ -1166,7 +1166,7 @@
     <message>
         <location filename="../tools/designer/src/components/formeditor/formwindowsettings.ui" line="166"/>
         <source>&amp;Pixmap Function</source>
-        <translation>Function de &amp;pixmap</translation>
+        <translation>Fonction de &amp;pixmap</translation>
     </message>
     <message>
         <location filename="../tools/designer/src/components/formeditor/formwindowsettings.ui" line="219"/>

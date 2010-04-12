@@ -1046,9 +1046,9 @@ EXPORTS
 	?metaObject@QNetworkSessionPrivate@@UBEPBUQMetaObject@@XZ @ 1045 NONAME ; struct QMetaObject const * QNetworkSessionPrivate::metaObject(void) const
 	?migrate@QNetworkSession@@QAEXXZ @ 1046 NONAME ; void QNetworkSession::migrate(void)
 	?name@QNetworkConfiguration@@QBE?AVQString@@XZ @ 1047 NONAME ; class QString QNetworkConfiguration::name(void) const
-	?networkAccessChanged@QNetworkAccessManager@@IAEX_N@Z @ 1048 NONAME ; void QNetworkAccessManager::networkAccessChanged(bool)
-	?networkAccessEnabled@QNetworkAccessManager@@QBE_NXZ @ 1049 NONAME ; bool QNetworkAccessManager::networkAccessEnabled(void) const
-	?networkSessionOnline@QNetworkAccessManager@@IAEXXZ @ 1050 NONAME ; void QNetworkAccessManager::networkSessionOnline(void)
+	?networkAccessChanged@QNetworkAccessManager@@IAEX_N@Z @ 1048 NONAME ABSENT ; void QNetworkAccessManager::networkAccessChanged(bool)
+	?networkAccessEnabled@QNetworkAccessManager@@QBE_NXZ @ 1049 NONAME ABSENT ; bool QNetworkAccessManager::networkAccessEnabled(void) const
+	?networkSessionOnline@QNetworkAccessManager@@IAEXXZ @ 1050 NONAME ABSENT ; void QNetworkAccessManager::networkSessionOnline(void)
 	?newConfigurationActivated@QNetworkSession@@IAEXXZ @ 1051 NONAME ; void QNetworkSession::newConfigurationActivated(void)
 	?newConfigurationActivated@QNetworkSessionPrivate@@IAEXXZ @ 1052 NONAME ; void QNetworkSessionPrivate::newConfigurationActivated(void)
 	?onlineStateChanged@QNetworkConfigurationManager@@IAEX_N@Z @ 1053 NONAME ; void QNetworkConfigurationManager::onlineStateChanged(bool)
@@ -1081,7 +1081,7 @@ EXPORTS
 	?sessionProperty@QNetworkSession@@QBE?AVQVariant@@ABVQString@@@Z @ 1080 NONAME ; class QVariant QNetworkSession::sessionProperty(class QString const &) const
 	?setALREnabled@QNetworkSessionPrivate@@UAEX_N@Z @ 1081 NONAME ; void QNetworkSessionPrivate::setALREnabled(bool)
 	?setConfiguration@QNetworkAccessManager@@QAEXABVQNetworkConfiguration@@@Z @ 1082 NONAME ; void QNetworkAccessManager::setConfiguration(class QNetworkConfiguration const &)
-	?setNetworkAccessEnabled@QNetworkAccessManager@@QAEX_N@Z @ 1083 NONAME ; void QNetworkAccessManager::setNetworkAccessEnabled(bool)
+	?setNetworkAccessEnabled@QNetworkAccessManager@@QAEX_N@Z @ 1083 NONAME ABSENT ; void QNetworkAccessManager::setNetworkAccessEnabled(bool)
 	?setPriority@QNetworkRequest@@QAEXW4Priority@1@@Z @ 1084 NONAME ; void QNetworkRequest::setPriority(enum QNetworkRequest::Priority)
 	?setPrivateConfiguration@QNetworkSessionPrivate@@IBEXAAVQNetworkConfiguration@@V?$QExplicitlySharedDataPointer@VQNetworkConfigurationPrivate@@@@@Z @ 1085 NONAME ; void QNetworkSessionPrivate::setPrivateConfiguration(class QNetworkConfiguration &, class QExplicitlySharedDataPointer<class QNetworkConfigurationPrivate>) const
 	?setSessionProperty@QNetworkSession@@QAEXABVQString@@ABVQVariant@@@Z @ 1086 NONAME ; void QNetworkSession::setSessionProperty(class QString const &, class QVariant const &)
@@ -1126,4 +1126,20 @@ EXPORTS
 	?staticMetaObject@QNetworkConfigurationManager@@2UQMetaObject@@B @ 1125 NONAME ; struct QMetaObject const QNetworkConfigurationManager::staticMetaObject
 	?staticMetaObject@QBearerEnginePlugin@@2UQMetaObject@@B @ 1126 NONAME ; struct QMetaObject const QBearerEnginePlugin::staticMetaObject
 	?staticMetaObject@QNetworkConfigurationManagerPrivate@@2UQMetaObject@@B @ 1127 NONAME ; struct QMetaObject const QNetworkConfigurationManagerPrivate::staticMetaObject
+	?allConfigurations@QNetworkConfigurationManagerPrivate@@QAE?AV?$QList@VQNetworkConfiguration@@@@V?$QFlags@W4StateFlag@QNetworkConfiguration@@@@@Z @ 1128 NONAME ; class QList<class QNetworkConfiguration> QNetworkConfigurationManagerPrivate::allConfigurations(class QFlags<enum QNetworkConfiguration::StateFlag>)
+	?configurationFromIdentifier@QNetworkConfigurationManagerPrivate@@QAE?AVQNetworkConfiguration@@ABVQString@@@Z @ 1129 NONAME ; class QNetworkConfiguration QNetworkConfigurationManagerPrivate::configurationFromIdentifier(class QString const &)
+	?configurationsInUse@QBearerEngine@@QBE_NXZ @ 1130 NONAME ; bool QBearerEngine::configurationsInUse(void) const
+	?defaultConfiguration@QNetworkConfigurationManagerPrivate@@QAE?AVQNetworkConfiguration@@XZ @ 1131 NONAME ; class QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration(void)
+	?disablePolling@QNetworkConfigurationManagerPrivate@@QAEXXZ @ 1132 NONAME ; void QNetworkConfigurationManagerPrivate::disablePolling(void)
+	?enablePolling@QNetworkConfigurationManagerPrivate@@QAEXXZ @ 1133 NONAME ; void QNetworkConfigurationManagerPrivate::enablePolling(void)
+	?isOnline@QNetworkConfigurationManagerPrivate@@QAE_NXZ @ 1134 NONAME ; bool QNetworkConfigurationManagerPrivate::isOnline(void)
+	?networkAccessible@QNetworkAccessManager@@QBE?AW4NetworkAccessibility@1@XZ @ 1135 NONAME ; enum QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccessible(void) const
+	?networkAccessibleChanged@QNetworkAccessManager@@IAEXW4NetworkAccessibility@1@@Z @ 1136 NONAME ; void QNetworkAccessManager::networkAccessibleChanged(enum QNetworkAccessManager::NetworkAccessibility)
+	?networkSessionConnected@QNetworkAccessManager@@IAEXXZ @ 1137 NONAME ; void QNetworkAccessManager::networkSessionConnected(void)
+	?pollEngines@QNetworkConfigurationManagerPrivate@@AAEXXZ @ 1138 NONAME ; void QNetworkConfigurationManagerPrivate::pollEngines(void)
+	?qt_qhostinfo_clear_cache@@YAXXZ @ 1139 NONAME ; void qt_qhostinfo_clear_cache(void)
+	?qt_qhostinfo_lookup@@YA?AVQHostInfo@@ABVQString@@PAVQObject@@PBDPA_NPAH@Z @ 1140 NONAME ; class QHostInfo qt_qhostinfo_lookup(class QString const &, class QObject *, char const *, bool *, int *)
+	?requiresPolling@QBearerEngine@@UBE_NXZ @ 1141 NONAME ; bool QBearerEngine::requiresPolling(void) const
+	?setNetworkAccessible@QNetworkAccessManager@@QAEXW4NetworkAccessibility@1@@Z @ 1142 NONAME ; void QNetworkAccessManager::setNetworkAccessible(enum QNetworkAccessManager::NetworkAccessibility)
+	?startPolling@QNetworkConfigurationManagerPrivate@@QAEXXZ @ 1143 NONAME ; void QNetworkConfigurationManagerPrivate::startPolling(void)
 

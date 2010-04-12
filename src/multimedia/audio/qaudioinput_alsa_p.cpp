@@ -428,7 +428,6 @@ bool QAudioInputPrivate::open()
 
 void QAudioInputPrivate::close()
 {
-    deviceState = QAudio::StoppedState;
     timer->stop();
 
     if ( handle ) {

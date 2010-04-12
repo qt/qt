@@ -2040,7 +2040,7 @@ void tst_QXmlQuery::fnDocNetworkAccessSuccess_data() const
         return;
 
     QTest::newRow("http scheme")
-        << QUrl(QString("http://" + QtNetworkSettings::serverName() + "/qxmlquery/wellFormed.xml"))
+        << QUrl(QString("http://" + QtNetworkSettings::serverName() + "/qtest/qxmlquery/wellFormed.xml"))
         << QByteArray("<!-- a comment --><e from=\"http\">Some Text</e>");
 
     QTest::newRow("ftp scheme")
@@ -2103,10 +2103,10 @@ void tst_QXmlQuery::fnDocNetworkAccessFailure_data() const
         return;
 
     QTest::newRow("http scheme, not well-formed")
-        << QUrl(QString("http://" + QtNetworkSettings::serverName() + "/qxmlquery/notWellformed.xml"));
+        << QUrl(QString("http://" + QtNetworkSettings::serverName() + "/qtest/qxmlquery/notWellformed.xml"));
 
     QTest::newRow("https scheme, not well-formed")
-        << QUrl(QString("https://" + QtNetworkSettings::serverName() + "/qxmlquery/notWellformedViaHttps.xml"));
+        << QUrl(QString("https://" + QtNetworkSettings::serverName() + "/qtest/qxmlquery/notWellformedViaHttps.xml"));
 
     QTest::newRow("https scheme, nonexistent host")
         << QUrl(QLatin1String("https://this.host.does.not.exist.I.SWear"));
@@ -2564,7 +2564,7 @@ void tst_QXmlQuery::setQueryQUrlSuccess_data() const
         << QByteArray("This was received via FTP");
 
     QTest::newRow("A valid query via the http scheme")
-        << QUrl::fromEncoded(QString("http://" + QtNetworkSettings::serverName() + "/qxmlquery/viaHttp.xq").toLatin1())
+        << QUrl::fromEncoded(QString("http://" + QtNetworkSettings::serverName() + "/qtest/qxmlquery/viaHttp.xq").toLatin1())
         << QByteArray("This was received via HTTP.");
 }
 
@@ -2630,11 +2630,11 @@ void tst_QXmlQuery::setQueryQUrlFailure_data() const
 
     QTest::newRow("A query via http:// that is completely empty, but readable.")
         << QUrl::fromEncoded(QString(
-                "http://" + QtNetworkSettings::serverName() + "/qxmlquery/completelyEmptyQuery.xq").toLatin1());
+                "http://" + QtNetworkSettings::serverName() + "/qtest/qxmlquery/completelyEmptyQuery.xq").toLatin1());
 
     QTest::newRow("A query via ftp:// that is completely empty, but readable.")
         << QUrl::fromEncoded(QString(
-                "ftp://" + QtNetworkSettings::serverName() + "qxmlquery/completelyEmptyQuery.xq").toLatin1());
+                "ftp://" + QtNetworkSettings::serverName() + "/pub/qxmlquery/completelyEmptyQuery.xq").toLatin1());
 
 }
 
