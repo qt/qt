@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 import "content"
 
 // This example illustrates expanding a list item to show a more detailed view
@@ -60,7 +60,9 @@ Rectangle {
                         opacity: wrapper.detailsOpacity
                     }
                     Text {
-                        text: ingredients; wrap: true; width: parent.width
+                        text: ingredients
+                        wrapMode: Text.WordWrap
+                        width: parent.width
                         opacity: wrapper.detailsOpacity
                     }
                 }
@@ -82,7 +84,7 @@ Rectangle {
                     id: flick
                     anchors.top: methodTitle.bottom; anchors.bottom: parent.bottom
                     width: parent.width; contentHeight: methodText.height; clip: true
-                    Text { id: methodText; text: method; wrap: true; width: details.width }
+                    Text { id: methodText; text: method; wrapMode: Text.WordWrap; width: details.width }
                 }
                 Image {
                     anchors.right: flick.right; anchors.top: flick.top

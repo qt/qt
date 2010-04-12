@@ -203,6 +203,9 @@ This function causes the QML engine to emit the quit signal, which in
 This function returns \c url resolved relative to the URL of the
 caller.
 
+\section3 Qt.isQtObject(object)
+Returns true if \c object is a valid reference to a Qt or QML object, otherwise false.
+
 \section1 Dynamic Object Creation
 The following functions on the global object allow you to dynamically create QML
 items from files or strings. See \l{Dynamic Object Management} for an overview
@@ -266,7 +269,7 @@ of their use.
 
     Example (where targetItem is the id of an existing QML item):
     \code
-    newObject = createQmlObject('import Qt 4.6; Rectangle {color: "red"; width: 20; height: 20}',
+    newObject = createQmlObject('import Qt 4.7; Rectangle {color: "red"; width: 20; height: 20}',
         targetItem, "dynamicSnippet1");
     \endcode
 

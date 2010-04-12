@@ -85,7 +85,7 @@ public:
         , highlightPosition(0)
         , highlightRangeStart(0), highlightRangeEnd(0)
         , highlightRangeMode(QDeclarativePathView::StrictlyEnforceRange)
-        , highlightMoveSpeed(1.0)
+        , highlightMoveDuration(300)
     {
     }
 
@@ -160,7 +160,7 @@ public:
     qreal highlightRangeStart;
     qreal highlightRangeEnd;
     QDeclarativePathView::HighlightRangeMode highlightRangeMode;
-    qreal highlightMoveSpeed;
+    int highlightMoveDuration;
 };
 
 QT_END_NAMESPACE

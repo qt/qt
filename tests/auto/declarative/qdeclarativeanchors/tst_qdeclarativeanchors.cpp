@@ -372,6 +372,16 @@ void tst_qdeclarativeanchors::crash1()
     QUrl source(QUrl::fromLocalFile(SRCDIR "/data/crash1.qml"));
 
     QString expect = "QML Text (" + source.toString() + ":4:5" + ") Possible anchor loop detected on fill.";
+
+    QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+
+    // QT-3245 ... anchor loop detection needs improving.
+    QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+    QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+    QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+    QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+    QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+    QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
     QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
 
     QDeclarativeView *view = new QDeclarativeView(source);

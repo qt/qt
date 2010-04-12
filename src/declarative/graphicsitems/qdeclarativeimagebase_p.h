@@ -73,7 +73,7 @@ public:
     bool asynchronous() const;
     void setAsynchronous(bool);
 
-    void setSourceSize(const QSize&);
+    virtual void setSourceSize(const QSize&);
     QSize sourceSize() const;
 
 Q_SIGNALS:

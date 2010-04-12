@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     id: scrollBar
@@ -9,7 +9,7 @@ Item {
     // orientation can be either 'Vertical' or 'Horizontal'
     property real position
     property real pageSize
-    property var orientation : "Vertical"
+    property variant orientation : "Vertical"
 
     // A light, semi-transparent background
     Rectangle {

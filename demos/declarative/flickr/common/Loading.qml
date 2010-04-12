@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Image {
     id: loading; source: "pics/loading.png"

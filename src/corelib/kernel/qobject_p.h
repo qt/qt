@@ -87,9 +87,8 @@ enum { QObjectPrivateVersion = QT_VERSION };
 class Q_CORE_EXPORT QDeclarativeData
 {
 public:
-    virtual ~QDeclarativeData();
-    virtual void destroyed(QObject *) = 0;
-    virtual void parentChanged(QObject *, QObject *) = 0;
+    static void (*destroyed)(QDeclarativeData *, QObject *);
+    static void (*parentChanged)(QDeclarativeData *, QObject *, QObject *);
 };
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData

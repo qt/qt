@@ -623,6 +623,7 @@ void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object
         if (iter == enginePriv->m_sharedScriptImports.end()) {
             QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
 
+            scriptContext->pushScope(enginePriv->contextClass->newContext(0, 0));
             scriptContext->pushScope(enginePriv->globalClass->globalObject());
         
             QScriptValue scope = scriptEngine->newObject();

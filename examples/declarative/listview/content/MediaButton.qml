@@ -1,7 +1,7 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
-    property var text
+    property variant text
     signal clicked
 
     id: container

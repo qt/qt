@@ -58,3 +58,7 @@ symbian {
     LIBS += -lesock -lcommdb -lconnmon -linsock
     TARGET.CAPABILITY = "All -TCB"
 }
+mac {
+    QMAKE_INFO_PLIST=Info_mac.plist
+    TARGET=Qml
+}

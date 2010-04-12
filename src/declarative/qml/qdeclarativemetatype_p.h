@@ -115,9 +115,14 @@ public:
     QObject *create() const;
     void create(QObject **, void **, size_t) const;
 
+    typedef void (*CreateFunc)(void *);
+    CreateFunc createFunction() const;
+    int createSize() const;
+
     QDeclarativeCustomParser *customParser() const;
 
     bool isCreatable() const;
+    bool isExtendedType() const;
 
     bool isInterface() const;
     int typeId() const;

@@ -671,7 +671,8 @@ QScriptValue QDeclarativeVMEMetaObject::method(int index)
         // XXX We should evaluate all methods in a single big script block to 
         // improve the call time between dynamic methods defined on the same
         // object
-        methods[index] = QDeclarativeExpressionPrivate::evalInObjectScope(ctxt, object, code);
+        methods[index] = QDeclarativeExpressionPrivate::evalInObjectScope(ctxt, object, code, ctxt->url.toString(),
+                                                                          data->lineNumber, 0);
     }
 
     return methods[index];

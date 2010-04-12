@@ -53,13 +53,13 @@
 // We mean it.
 //
 
-#include <private/qdeclarativescriptclass_p.h>
+#include <private/qscriptdeclarativeclass_p.h>
 #include "qdeclarativelist.h"
 
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeEngine;
-class QDeclarativeListScriptClass : public QDeclarativeScriptClass
+class QDeclarativeListScriptClass : public QScriptDeclarativeClass
 {
 public:
     QDeclarativeListScriptClass(QDeclarativeEngine *);
@@ -71,7 +71,7 @@ public:
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
-    virtual ScriptValue property(Object *, const Identifier &);
+    virtual Value property(Object *, const Identifier &);
     virtual QVariant toVariant(Object *, bool *ok);
 
 private:

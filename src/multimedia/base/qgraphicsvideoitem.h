@@ -90,6 +90,9 @@ Q_SIGNALS:
     void nativeSizeChanged(const QSizeF &size);
 
 protected:
+    bool event(QEvent *event);
+    bool sceneEvent(QEvent *event);
+
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
     QGraphicsVideoItemPrivate *d_ptr;

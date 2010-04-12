@@ -133,7 +133,7 @@ void tst_QDeclarativeLoader::component()
     QVERIFY(c);
     QCOMPARE(loader->sourceComponent(), c);
 
-    delete loader;
+    delete item;
 }
 
 void tst_QDeclarativeLoader::invalidUrl()
@@ -196,7 +196,7 @@ void tst_QDeclarativeLoader::clear()
         QCOMPARE(loader->status(), QDeclarativeLoader::Null);
         QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 0);
 
-        delete loader;
+        delete item;
     }
 }
 
@@ -242,7 +242,7 @@ void tst_QDeclarativeLoader::componentToUrl()
     QCOMPARE(loader->width(), 120.0);
     QCOMPARE(loader->height(), 60.0);
 
-    delete loader;
+    delete item;
 }
 
 void tst_QDeclarativeLoader::sizeLoaderToItem()
@@ -275,6 +275,8 @@ void tst_QDeclarativeLoader::sizeLoaderToItem()
     QCOMPARE(spy.count(),1);
     loader->setResizeMode(QDeclarativeLoader::NoResize);
     QCOMPARE(spy.count(),1);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::sizeItemToLoader()
@@ -303,6 +305,8 @@ void tst_QDeclarativeLoader::sizeItemToLoader()
     rect->setHeight(45);
     QCOMPARE(loader->width(), 160.0);
     QCOMPARE(loader->height(), 45.0);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::noResize()
@@ -317,6 +321,8 @@ void tst_QDeclarativeLoader::noResize()
     QVERIFY(rect);
     QCOMPARE(rect->width(), 120.0);
     QCOMPARE(rect->height(), 60.0);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::sizeLoaderToGraphicsWidget()
@@ -344,6 +350,8 @@ void tst_QDeclarativeLoader::sizeLoaderToGraphicsWidget()
     loader->setHeight(30);
     QCOMPARE(widget->size().width(), 180.0);
     QCOMPARE(widget->size().height(), 30.0);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::sizeGraphicsWidgetToLoader()
@@ -374,6 +382,8 @@ void tst_QDeclarativeLoader::sizeGraphicsWidgetToLoader()
     widget->resize(QSizeF(160,45));
     QCOMPARE(loader->width(), 160.0);
     QCOMPARE(loader->height(), 45.0);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::noResizeGraphicsWidget()
@@ -391,6 +401,8 @@ void tst_QDeclarativeLoader::noResizeGraphicsWidget()
     QVERIFY(widget);
     QCOMPARE(widget->size().width(), 250.0);
     QCOMPARE(widget->size().height(), 250.0);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::networkRequestUrl()

@@ -64,7 +64,6 @@ Image {
 Network transparency is supported throughout QML, for example:
 
 \list
-\o Scripts - the \c source property of \l Script is a URL
 \o Fonts - the \c source property of FontLoader is a URL
 \o WebViews - the \c url property of WebView (obviously!)
 \endlist

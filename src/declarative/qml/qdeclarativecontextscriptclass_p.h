@@ -54,14 +54,14 @@
 //
 
 #include "private/qdeclarativetypenamecache_p.h"
-#include "private/qdeclarativescriptclass_p.h"
+#include <private/qscriptdeclarativeclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeEngine;
 class QDeclarativeContext;
 class QDeclarativeContextData;
-class QDeclarativeContextScriptClass : public QDeclarativeScriptClass
+class QDeclarativeContextScriptClass : public QScriptDeclarativeClass
 {
 public:
     QDeclarativeContextScriptClass(QDeclarativeEngine *);
@@ -76,7 +76,7 @@ public:
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
-    virtual ScriptValue property(Object *, const Identifier &);
+    virtual Value property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
 
 private:
