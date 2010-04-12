@@ -27,6 +27,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <objbase.h>
 #include <initguid.h>
 #include <qnetwork.h>
+#ifdef Q_CC_MSVC
+# include <comdef.h>
+#endif
 #include <evcode.h>
 
 #include "mediaobject.h"
@@ -817,11 +820,21 @@ namespace Phonon
 #endif
                 LPAMGETERRORTEXT getErrorText = (LPAMGETERRORTEXT)QLibrary::resolve(QLatin1String("quartz"), "AMGetErrorTextW");
 
+<<<<<<< HEAD:src/3rdparty/phonon/ds9/mediaobject.cpp
                 WCHAR buffer[MAX_ERROR_TEXT_LEN];
                 if (getErrorText && getErrorText(hr, buffer, MAX_ERROR_TEXT_LEN)) {
                     m_errorString = QString::fromWCharArray(buffer);
                 } else {
                     m_errorString = QString::fromLatin1("Unknown error");
+=======
+                ushort buffer[MAX_ERROR_TEXT_LEN];
+                if (getErrorText && getErrorText(hr, (WCHAR*)buffer, MAX_ERROR_TEXT_LEN)) {
+                    m_errorString = QString::fromUtf16(buffer);
+#ifdef Q_CC_MSVC
+                } else {
+                    m_errorString = QString::fromUtf16((ushort*)_com_error(hr).ErrorMessage());
+#endif
+>>>>>>> internal-qt-repo/4.7:src/3rdparty/phonon/ds9/mediaobject.cpp
                 }
                 const QString comError = QString::number(uint(hr), 16);
                 if (!m_errorString.toLower().contains(comError.toLower())) {

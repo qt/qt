@@ -540,7 +540,7 @@ public:
         case StaticTextWithMaximumSizeMode: {
             QStaticText staticText;
             m_size = (p->boundingRect(m_bounds, 0, m_text)).size();
-            staticText.setMaximumSize(m_size + QSize(10, 10));
+            staticText.setTextWidth(m_size.width() + 10);
             staticText.setText(m_text);
             staticText.prepare(p->transform(), p->font());
             m_staticTexts.append(staticText);
@@ -551,7 +551,7 @@ public:
             for (int i=0; i<iterations; ++i) {
                 QStaticText staticText;
                 staticText.setPerformanceHint(QStaticText::AggressiveCaching);
-                staticText.setMaximumSize(m_size + QSize(10, 10));
+                staticText.setTextWidth(m_size.width() + 10);
                 staticText.setText(m_text);
                 staticText.prepare(p->transform(), p->font());
                 m_staticTexts.append(staticText);

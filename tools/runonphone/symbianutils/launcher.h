@@ -69,6 +69,7 @@ public:
         ActionInstall = 0x2,
         ActionCopyInstall = ActionCopy | ActionInstall,
         ActionRun = 0x4,
+        ActionDownload = 0x8,
         ActionCopyRun = ActionCopy | ActionRun,
         ActionInstallRun = ActionInstall | ActionRun,
         ActionCopyInstallRun = ActionCopy | ActionInstall | ActionRun
@@ -94,6 +95,7 @@ public:
     QString trkServerName() const;
     void setFileName(const QString &name);
     void setCopyFileName(const QString &srcName, const QString &dstName);
+    void setDownloadFileName(const QString &srcName, const QString &dstName);
     void setInstallFileName(const QString &name);
     void setCommandLineArgs(const QStringList &args);
     bool startServer(QString *errorMessage);
@@ -132,6 +134,8 @@ signals:
     void copyingStarted();
     void canNotConnect(const QString &errorMessage);
     void canNotCreateFile(const QString &filename, const QString &errorMessage);
+    void canNotOpenFile(const QString &filename, const QString &errorMessage);
+    void canNotOpenLocalFile(const QString &filename, const QString &errorMessage);
     void canNotWriteFile(const QString &filename, const QString &errorMessage);
     void canNotCloseFile(const QString &filename, const QString &errorMessage);
     void installingStarted();
@@ -164,8 +168,11 @@ private:
     void handleRemoteProcessKilled(const TrkResult &result);
     void handleConnect(const TrkResult &result);
     void handleFileCreation(const TrkResult &result);
+    void handleFileOpened(const TrkResult &result);
     void handleCopy(const TrkResult &result);
+    void handleRead(const TrkResult &result);
     void continueCopying(uint lastCopiedBlockSize = 0);
+    void continueReading();
     void closeRemoteFile(bool failed = false);
     void handleFileCopied(const TrkResult &result);
     void handleInstallPackageFinished(const TrkResult &result);
@@ -177,6 +184,7 @@ private:
     void handleTrkVersion(const TrkResult &result);
 
     void copyFileToRemote();
+    void copyFileFromRemote();
     void installRemotePackageSilently();
     void startInferiorIfNeeded();
     void handleFinished();
