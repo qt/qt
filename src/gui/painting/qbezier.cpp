@@ -117,8 +117,8 @@ QBezier QBezier::mapBy(const QTransform &transform) const
     return QBezier::fromPoints(transform.map(pt1()), transform.map(pt2()), transform.map(pt3()), transform.map(pt4()));
 }
 
-//0.5 is really low
-static const qreal flatness = 0.5;
+//0.05 is really low, but required for scaled-up beziers...
+static const qreal flatness = 0.05;
 
 //based on "Fast, precise flattening of cubic Bezier path and offset curves"
 //      by T. F. Hain, A. L. Ahmad, S. V. R. Racherla and D. D. Langan

@@ -703,7 +703,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p)
     }
 #endif
 
-#ifndef QT_NO_FILESYSTEMMODEL
+#if !defined(QT_NO_FILESYSTEMMODEL) && !defined(QT_NO_COMPLETER)
     QFileSystemModel *fsm = new QFileSystemModel(widget.filename);
     fsm->setRootPath(QDir::homePath());
     widget.filename->setCompleter(new QCompleter(fsm, widget.filename));

@@ -111,7 +111,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
     // depending on if the pen is cosmetic or not.
     //
     // The curvyness value of PI/14 was based on,
-    // arcLength=2*PI*r/4=PI/2 and splitting length into somewhere
+    // arcLength = 2*PI*r/4 = PI*r/2 and splitting length into somewhere
     // between 3 and 8 where 5 seemed to be give pretty good results
     // hence: Q_PI/14. Lower divisors will give more detail at the
     // direct cost of performance.
@@ -495,6 +495,8 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
     const QPainterPath::ElementType *types = path.elements();
     int count = path.elementCount();
 
+    bool cosmetic = pen.isCosmetic();
+
     m_points.reset();
     m_types.reset();
 
@@ -503,10 +505,26 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
         width = 1;
 
     m_dash_stroker.setDashPattern(pen.dashPattern());
-    m_dash_stroker.setStrokeWidth(pen.isCosmetic() ? width * m_inv_scale : width);
+    m_dash_stroker.setStrokeWidth(cosmetic ? width * m_inv_scale : width);
     m_dash_stroker.setMiterLimit(pen.miterLimit());
     m_dash_stroker.setClipRect(clip);
-    qreal curvyness = sqrt(width) * m_inv_scale / 8;
+
+    float curvynessAdd, curvynessMul, roundness = 0;
+
+    // simplfy pens that are thin in device size (2px wide or less)
+    if (width < 2.5 && (cosmetic || m_inv_scale == 1)) {
+        curvynessAdd = 0.5;
+        curvynessMul = CURVE_FLATNESS / m_inv_scale;
+        roundness = 1;
+    } else if (cosmetic) {
+        curvynessAdd= width / 2;
+        curvynessMul= CURVE_FLATNESS;
+        roundness = qMax<int>(4, width * CURVE_FLATNESS);
+    } else {
+        curvynessAdd = width * m_inv_scale;
+        curvynessMul = CURVE_FLATNESS / m_inv_scale;
+        roundness = qMax<int>(4, width * curvynessMul);
+    }
 
     if (count < 2)
         return;
@@ -541,9 +559,11 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
                                                 *(((const QPointF *) pts) + 1),
                                                 *(((const QPointF *) pts) + 2));
                 QRectF bounds = b.bounds();
-                int threshold = qMin<float>(64, qMax(bounds.width(), bounds.height()) * curvyness);
+                float rad = qMax(bounds.width(), bounds.height());
+                int threshold = qMin<float>(64, (rad + curvynessAdd) * curvynessMul);
                 if (threshold < 4)
                     threshold = 4;
+
                 qreal threshold_minus_1 = threshold - 1;
                 for (int i=0; i<threshold; ++i) {
                     QPointF pt = b.pointAt(i / threshold_minus_1);
