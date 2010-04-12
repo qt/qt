@@ -53,6 +53,7 @@
 QT_BEGIN_NAMESPACE
 
 bool usingWinMain = false;  // whether the qWinMain() is used or not
+int appCmdShow = 0;
 
 Q_CORE_EXPORT HINSTANCE qWinAppInst()                // get Windows app handle
 {
@@ -66,12 +67,16 @@ Q_CORE_EXPORT HINSTANCE qWinAppPrevInst()                // get Windows prev app
 
 Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window show command
 {
+#if defined(Q_OS_WINCE)
+    return appCmdShow;
+#else
     STARTUPINFO startupInfo;
     GetStartupInfo(&startupInfo);
 
     return (startupInfo.dwFlags & STARTF_USESHOWWINDOW)
         ? startupInfo.wShowWindow
         : SW_SHOWDEFAULT;
+#endif
 }
 
 Q_CORE_EXPORT QString qAppFileName()                // get application file name
@@ -185,10 +190,11 @@ void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
     // Create command line
     argv = qWinCmdLine<char>(cmdParam, int(strlen(cmdParam)), argc);
 
+    appCmdShow = cmdShow;
+
     // Ignore Windows parameters
     Q_UNUSED(instance);
     Q_UNUSED(prevInstance);
-    Q_UNUSED(cmdShow);
 }
 
 /*!
