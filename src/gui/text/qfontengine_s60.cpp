@@ -79,6 +79,31 @@ QByteArray QFontEngineS60Extensions::getSfntTable(uint tag) const
     return result;
 }
 
+bool QFontEngineS60Extensions::getSfntTableData(uint tag, uchar *buffer, uint *length) const
+{
+    if (!m_trueTypeExtension->HasTrueTypeTable(tag))
+        return false;
+
+    bool result = true;
+    TInt error = KErrNone;
+    TInt tableByteLength;
+    TAny *table =
+        q_check_ptr(m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength));
+
+    if (error != KErrNone) {
+        return false;
+    } else if (*length > 0 && *length < tableByteLength) {
+        result = false; // Caller did not allocate enough memory
+    } else {
+        *length = tableByteLength;
+        if (buffer)
+            qMemCopy(buffer, table, tableByteLength);
+    }
+
+    m_trueTypeExtension->ReleaseTrueTypeTable(table);
+    return result;
+}
+
 const unsigned char *QFontEngineS60Extensions::cmap() const
 {
     if (!m_cmap) {
@@ -324,6 +349,11 @@ bool QFontEngineS60::canRender(const QChar *string, int len)
 QByteArray QFontEngineS60::getSfntTable(uint tag) const
 {
     return m_extensions->getSfntTable(tag);
+}
+
+bool QFontEngineS60::getSfntTableData(uint tag, uchar *buffer, uint *length) const
+{
+    return m_extensions->getSfntTableData(tag, buffer, length);
 }
 
 QFontEngine::Type QFontEngineS60::type() const
