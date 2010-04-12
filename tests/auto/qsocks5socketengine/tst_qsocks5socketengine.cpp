@@ -647,7 +647,8 @@ void tst_QSocks5SocketEngine::tcpSocketNonBlockingTest()
 
     // Connect
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
-    QCOMPARE(socket.state(), QTcpSocket::HostLookupState);
+    QVERIFY(socket.state() == QTcpSocket::HostLookupState ||
+            socket.state() == QTcpSocket::ConnectingState);
 
     QTestEventLoop::instance().enterLoop(30);
     if (QTestEventLoop::instance().timeout()) {
