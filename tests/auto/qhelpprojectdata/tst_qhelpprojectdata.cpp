@@ -83,7 +83,7 @@ void tst_QHelpProjectData::namespaceName()
     QHelpProjectData data;
     if (!data.readData(m_inputFile))
         QFAIL("Cannot read qhp file!");
-    QCOMPARE(data.namespaceName(), QString("trolltech.com.1_0_0.test"));
+    QCOMPARE(data.namespaceName(), QString("trolltech.com.1.0.0.test"));
 }
 
 void tst_QHelpProjectData::virtualFolder()

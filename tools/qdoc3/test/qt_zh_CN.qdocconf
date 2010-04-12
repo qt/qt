@@ -78,7 +78,8 @@ exampledirs             = $QTDIR/doc/src \
                           $QTDIR/qmake/examples \
                           $QTDIR/src/3rdparty/webkit/WebKit/qt/docs
 imagedirs               = $QTDIR/doc/src/images \
-                          $QTDIR/examples
+                          $QTDIR/examples \
+			  $QTDIR/doc/src/template/images
 outputdir               = $QTDIR/doc/html_zh_CN
 tagfile                 = $QTDIR/doc/html_zh_CN/qt.tags
 base                    = file:$QTDIR/doc/html_zh_CN

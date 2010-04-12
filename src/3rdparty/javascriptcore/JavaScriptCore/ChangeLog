@@ -1,3 +1,265 @@
+2010-03-29  Patrick Gansterer  <paroga@paroga.com>
+
+        Reviewed by Darin Adler.
+
+        Corrected name of (u)int64_t compile time assert.
+        https://bugs.webkit.org/show_bug.cgi?id=36739
+
+        int64_t_is_four_bytes -> int64_t_is_eight_bytes
+
+        * os-win32/stdint.h:
+
+2010-03-29  Thomas Zander  <t.zander@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=36742
+
+        gcc for Symbian doesn't support gcc extensions like atomicity.h - disable
+
+        * wtf/Threading.h: also detect os symbian
+
+2010-03-23  Mark Rowe  <mrowe@apple.com>
+
+        Build fix.
+
+        * runtime/ArrayPrototype.cpp:
+        (JSC::arrayProtoFuncSplice): Some versions of GCC emit a warning about the implicit 64- to 32-bit truncation
+        that takes place here. An explicit cast is sufficient to silence it.
+
+2010-03-23  Alexey Proskuryakov  <ap@apple.com>
+
+        Build fix.
+
+        * runtime/ArrayPrototype.cpp: (JSC::arrayProtoFuncSplice): Fixed a typo - length doesn't
+        need to be converted with toInteger().
+
+2010-03-23  Alexey Proskuryakov  <ap@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        https://bugs.webkit.org/show_bug.cgi?id=36511
+        <rdar://problem/7753498> Safari freezes when using SPUTNIK JavaScript conformance check
+
+        Test: fast/js/sputnik-S15.4.4.12_A3_T3.html
+
+        * runtime/ArrayPrototype.cpp: (JSC::arrayProtoFuncSplice): We were incorrectly computing
+        the start offset, and iterated over (almost) all integers. Note that this can be fixed
+        without using doubles, but the code would be much more complicated, and there is no important
+        reason to stick to integers here.
+
+2010-03-22  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Fixed <rdar://problem/7728196> REGRESSION (r46701): -(-2147483648)
+        evaluates to -2147483648 on 32 bit (35842)
+        
+        Two ways to fix the same bug:
+        
+        1. Check for overflow when negating, since negating the largest negative
+        int causes overflow.
+        
+        2. Constant-fold even when negating a negative, since, like they say in
+        high school, "math works."
+
+        * assembler/MacroAssemblerARM.h:
+        (JSC::MacroAssemblerARM::branchNeg32):
+        * assembler/MacroAssemblerX86Common.h:
+        (JSC::MacroAssemblerX86Common::branchNeg32): Added a branching version
+        of the negate operator.
+
+        * jit/JITArithmetic.cpp:
+        (JSC::JIT::emit_op_negate): Use the branching version of the negate 
+        operator to check for overflow.
+
+        (JSC::JIT::emitSlow_op_negate): Link the check for overflow to a slow case.
+        (We could emit inline code for this, since we know what the result would
+        be, but that's probably just a waste of generated code.)
+
+        * parser/Grammar.y: Constant fold even when negating a negative.
+
+2010-03-17  Mike Homey  <glandium@debian.org>
+
+        Reviewed by Gustavo Noronha.
+
+        Build fix for SPARC. Fix missing macro value.
+
+        * wtf/Platform.h:
+
+2010-03-03  Mark Rowe  <mrowe@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        Add virtual memory tags for TCMalloc and WebCore's purgeable buffers.
+
+        * wtf/TCSystemAlloc.cpp:
+        (TryMmap): Use the VM tag.
+        * wtf/VMTags.h: Make use of VM_MEMORY_TCMALLOC and VM_MEMORY_WEBCORE_PURGEABLE_BUFFERS.
+
+2010-03-01  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix the Qt build on Mac OS X/Cocoa 64-bit
+
+        * JavaScriptCore.pri: Add missing implementation file to resolve JSC symbols
+
+2010-02-26  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Symbian specific getCPUTime implemetation
+        https://bugs.webkit.org/show_bug.cgi?id=34742
+
+        Default implementation doesn't work on Symbian devices.
+        This change adds a proper implementation by
+        asking thread execution time from the current thread.
+
+        * runtime/TimeoutChecker.cpp:
+        (JSC::getCPUTime):
+
+2010-02-15  Gabor Loki  <loki@webkit.org>
+
+        Reviewed by Gavin Barraclough.
+
+        Fix the SP at ctiOpThrowNotCaught on Thumb2 (JSVALUE32)
+        https://bugs.webkit.org/show_bug.cgi?id=34939
+
+        * jit/JITStubs.cpp:
+
+2010-02-15  Gavin Barraclough  <barraclough@apple.com>
+
+        Reviewed by NOBODY (Build fix).
+
+        Add missing cast for !YARR (PPC) builds.
+
+        * runtime/RegExp.cpp:
+        (JSC::RegExp::match):
+
+2010-02-14  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Adam Barth.
+
+        Implement NEVER_INLINE and NO_RETURN for RVCT
+        https://bugs.webkit.org/show_bug.cgi?id=34740
+
+        * wtf/AlwaysInline.h:
+
+2010-02-12  Kwang Yul Seo  <skyul@company100.net>
+
+        Reviewed by Adam Barth.
+
+        Typedef both JSChar and UChar to wchar_t in RVCT.
+        https://bugs.webkit.org/show_bug.cgi?id=34560
+
+        Define both JSChar and UChar to wchar_t as the size
+        of wchar_t is 2 bytes in RVCT.
+
+        * API/JSStringRef.h:
+        * wtf/unicode/qt4/UnicodeQt4.h:
+
+2009-10-06  Yongjun Zhang  <yongjun.zhang@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Get rid of WINSCW hack for UnSpecifiedBoolType
+
+        Add parenthesis around (RefPtr::*UnspecifiedBoolType) to make the WINSCW
+        compiler work with the default UnSpecifiedBoolType() operator.
+
+        https://bugs.webkit.org/show_bug.cgi?id=28054
+
+        * wtf/RefPtr.h:
+
+2010-02-09  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] use nanval() for Symbian as nonInlineNaN
+        https://bugs.webkit.org/show_bug.cgi?id=34170
+
+        numeric_limits<double>::quiet_NaN is broken in Symbian
+        causing NaN to be evaluated as a number.
+
+        * runtime/JSValue.cpp:
+        (JSC::nonInlineNaN):
+
+2010-02-01  Kent Tamura  <tkent@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Date.UTC() should apply TimeClip operation.
+        https://bugs.webkit.org/show_bug.cgi?id=34461
+
+        ECMAScript 5 15.9.4.3:
+        > 9 Return TimeClip(MakeDate(MakeDay(yr, m, dt), MakeTime(h, min, s, milli))).
+
+        * runtime/DateConstructor.cpp:
+        (JSC::dateUTC): Calls WTF::timeClip().
+
+2010-02-01  Kent Tamura  <tkent@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Fix a bug that Math.round() retunrs incorrect results for huge integers
+        https://bugs.webkit.org/show_bug.cgi?id=34462
+
+        * runtime/MathObject.cpp:
+        (JSC::mathProtoFuncRound): Avoid "arg + 0.5".
+
+2010-02-01  Patrick Gansterer  <paroga@paroga.com>
+
+        Reviewed by Darin Adler.
+
+        [Qt] WinCE buildfix after r52729 and fix for Q_BIG_ENDIAN typo.
+        https://bugs.webkit.org/show_bug.cgi?id=34378
+
+        * wtf/Platform.h:
+
+2010-01-31  Patrick Gansterer  <paroga@paroga.com>
+
+        Reviewed by Darin Adler.
+
+        Buildfix for WinCE + style fixes (TLS_OUT_OF_INDEXES is not defined).
+        https://bugs.webkit.org/show_bug.cgi?id=34380
+
+        * wtf/ThreadSpecific.h:
+
+2010-01-31  Kent Tamura  <tkent@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        [Windows] Fix a bug of round() with huge integral numbers
+        https://bugs.webkit.org/show_bug.cgi?id=34297
+
+        Fix a bug that round() for huge integral numbers returns incorrect
+        results. For example, round(8639999913600001) returns
+        8639999913600002 without this change though the double type can
+        represent 8639999913600001 precisely.
+
+        Math.round() of JavaScript has a similar problem. But this change
+        doesn't fix it because Math.round() doesn't use round() of
+        MathExtra.h.
+
+        * wtf/MathExtras.h:
+        (round): Avoid to do "num + 0.5" or "num - 0.5".
+        (roundf): Fixed similarly.
+        (llround): Calls round().
+        (llroundf): Calls roundf().
+        (lround): Calls round().
+        (lroundf): Calls roundf().
+
+2010-01-27  Anton Muhin  <antonm@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Remove trailing \ from inline function code
+        https://bugs.webkit.org/show_bug.cgi?id=34223
+
+        * assembler/ARMv7Assembler.h:
+        (JSC::ARMThumbImmediate::countLeadingZerosPartial):
+
 2010-01-27  Kwang Yul Seo  <skyul@company100.net>
 
         Reviewed by Oliver Hunt.

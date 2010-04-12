@@ -191,6 +191,10 @@ class Generator
     static QStringList imageDirs;
     static QStringList exampleDirs;
     static QStringList exampleImgExts;
+    static QStringList scriptFiles;
+    static QStringList scriptDirs;
+    static QStringList styleFiles;
+    static QStringList styleDirs;
     static QString outDir;
     static QString project;
 };

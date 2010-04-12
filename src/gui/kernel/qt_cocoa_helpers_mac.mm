@@ -882,7 +882,15 @@ void qt_mac_dispatchNCMouseMessage(void * /* NSWindow* */eventWindow, void * /* 
         }
     }
 
-    QMouseEvent qme(eventType, qlocalPoint, qglobalPoint, button, button, keyMods);
+    Qt::MouseButtons buttons = 0;
+    {
+        UInt32 mac_buttons;
+        if (GetEventParameter((EventRef)[event eventRef], kEventParamMouseChord, typeUInt32, 0,
+                              sizeof(mac_buttons), 0, &mac_buttons) == noErr)
+            buttons = qt_mac_get_buttons(mac_buttons);
+    }
+
+    QMouseEvent qme(eventType, qlocalPoint, qglobalPoint, button, buttons, keyMods);
     qt_sendSpontaneousEvent(widgetToGetEvent, &qme);
 
     // We don't need to set the implicit grab widget here because we won't

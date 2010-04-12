@@ -98,6 +98,7 @@ void QMediaPluginLoader::load()
             }
         }
     } else {
+#ifndef QT_NO_LIBRARY
         QStringList     paths = QCoreApplication::libraryPaths();
 
         foreach (QString const &path, paths) {
@@ -126,6 +127,7 @@ void QMediaPluginLoader::load()
                 loader.unload();
             }
         }
+#endif
     }
 }
 
