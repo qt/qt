@@ -47,13 +47,13 @@
 #include <QtCore/qstring.h>
 #include <QtGui/qwindowdefs.h>
 
-class QPlatformWindowPrivate;
-class QWidget;
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+class QPlatformWindowPrivate;
+class QWidget;
 class Q_GUI_EXPORT QPlatformWindow
 {
     Q_DECLARE_PRIVATE(QPlatformWindow);
