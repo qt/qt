@@ -55,6 +55,8 @@
 
 #include "private/qdeclarativeimage_p_p.h"
 
+#ifndef QT_NO_MOVIE
+
 QT_BEGIN_NAMESPACE
 
 class QMovie;
@@ -79,5 +81,7 @@ public:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_MOVIE
 
 #endif // QDECLARATIVEANIMATEDIMAGE_P_H
