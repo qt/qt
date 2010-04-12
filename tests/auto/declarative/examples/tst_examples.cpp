@@ -193,6 +193,10 @@ void tst_examples::examples()
     arguments << "-script" << (testdata.exists() ? script : QLatin1String(SRCDIR "/data/dummytest"))
               << "-scriptopts" << "play,testerror,exitoncomplete,exitonfailure" 
               << file;
+#ifdef Q_WS_QWS
+    arguments << "-qws";
+#endif
+
     QProcess p;
     p.start(qmlruntime, arguments);
     QVERIFY(p.waitForFinished());
