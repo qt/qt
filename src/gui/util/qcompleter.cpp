@@ -1689,8 +1689,10 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
         QString t;
         if (isDirModel)
             t = sourceModel->data(idx, Qt::EditRole).toString();
+#ifndef QT_NO_FILESYSTEMMODEL
         else
             t = sourceModel->data(idx, QFileSystemModel::FileNameRole).toString();
+#endif
         list.prepend(t);
         QModelIndex parent = idx.parent();
         idx = parent.sibling(parent.row(), index.column());
