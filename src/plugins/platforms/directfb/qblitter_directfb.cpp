@@ -60,9 +60,15 @@ void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, con
 
     IDirectFBSurface *s = dfbBlitter->m_surface;
 
-    quint32 blittingFlags = pixmap.hasAlpha()? DSBLIT_BLEND_ALPHACHANNEL : DSBLIT_NOFX;
+    DFBSurfaceBlittingFlags blittingFlags = DSBLIT_NOFX;
+    DFBSurfacePorterDuffRule porterDuff = DSPD_SRC;
+    if (pixmap.hasAlpha()) {
+        blittingFlags = DSBLIT_BLEND_ALPHACHANNEL;
+        porterDuff = DSPD_SRC_OVER;
+    }
+
     m_surface->SetBlittingFlags(m_surface, DFBSurfaceBlittingFlags(blittingFlags));
-    m_surface->SetPorterDuff(m_surface,DSPD_SRC_OVER);
+    m_surface->SetPorterDuff(m_surface,porterDuff);
     m_surface->SetDstBlendFunction(m_surface,DSBF_INVSRCALPHA);
 
     const DFBRectangle sRect = { srcRect.x(), srcRect.y(), srcRect.width(), srcRect.height() };

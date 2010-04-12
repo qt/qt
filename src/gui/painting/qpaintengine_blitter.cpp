@@ -533,7 +533,7 @@ void QBlitterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const Q
         if (d->hasXForm) {
             targetRect = state()->matrix.mapRect(r);
         }
-        const QClipData *clipData = d->raster->d_func()->clip();
+        const QClipData *clipData = clip();
         if (clipData) {
             if (clipData->hasRectClip) {
                 d->clipAndDrawPixmap(clipData->clipRect,targetRect,pm,sr);
