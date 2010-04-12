@@ -11842,6 +11842,7 @@ QWindowSurface *QWidget::windowSurface() const
     return bs ? bs->windowSurface : 0;
 }
 
+#if defined(Q_WS_LITE)
 /*!
     \preliminary
 
@@ -11879,6 +11880,7 @@ QPlatformWindow *QWidget::platformWindow() const
 
     return 0;
 }
+#endif //defined(Q_WS_LITE)
 
 void QWidgetPrivate::getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const
 {
