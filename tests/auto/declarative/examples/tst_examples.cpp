@@ -81,6 +81,12 @@ tst_examples::tst_examples()
     excludedDirs << "examples/declarative/plugins";
     excludedDirs << "examples/declarative/proxywidgets";
     excludedDirs << "examples/declarative/gestures";
+#ifdef QT_NO_XMLPATTERNS
+    excludedDirs << "examples/declarative/xmldata";
+    excludedDirs << "demos/declarative/twitter";
+    excludedDirs << "demos/declarative/flickr";
+    excludedDirs << "demos/declarative/photoviewer";
+#endif
 }
 
 /*
