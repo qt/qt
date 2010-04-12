@@ -14,6 +14,7 @@ TEMPLATE        = subdirs
          } else {
              SUBDIRS += designer
          }
+	 SUBDIRS     += linguist
          symbian: SUBDIRS = designer
          wince*: SUBDIRS = qtestlib designer
          unix:!mac:!embedded:contains(QT_CONFIG, qt3support):SUBDIRS += qtconfig
@@ -21,8 +22,6 @@ TEMPLATE        = subdirs
     }
     contains(QT_CONFIG, declarative):SUBDIRS += qml
 }
-
-SUBDIRS     += linguist
 
 mac {
     SUBDIRS += macdeployqt
