@@ -79,6 +79,8 @@ tst_examples::tst_examples()
     // Add directories you want excluded here
     excludedDirs << "examples/declarative/extending";
     excludedDirs << "examples/declarative/plugins";
+    excludedDirs << "examples/declarative/proxywidgets";
+    excludedDirs << "examples/declarative/gestures";
 }
 
 /*
@@ -88,7 +90,7 @@ to have them tested by the examples() test.
 void tst_examples::namingConvention(const QDir &d)
 {
     for (int ii = 0; ii < excludedDirs.count(); ++ii) {
-        QString s = QDir::toNativeSeparators(excludedDirs.at(ii));
+        QString s = excludedDirs.at(ii);
         if (d.absolutePath().endsWith(s))
             return;
     }
@@ -129,7 +131,7 @@ void tst_examples::namingConvention()
 QStringList tst_examples::findQmlFiles(const QDir &d)
 {
     for (int ii = 0; ii < excludedDirs.count(); ++ii) {
-        QString s = QDir::toNativeSeparators(excludedDirs.at(ii));
+        QString s = excludedDirs.at(ii);
         if (d.absolutePath().endsWith(s))
             return QStringList();
     }
@@ -185,15 +187,21 @@ void tst_examples::examples()
 
     QFileInfo fi(file);
     QFileInfo dir(fi.path());
-    QString script = "data/"+dir.baseName()+"/"+fi.baseName();
+    QString script = SRCDIR "/data/"+dir.baseName()+"/"+fi.baseName();
     QFileInfo testdata(script+".qml");
     QStringList arguments;
-    arguments << "-script" << (testdata.exists() ? script : QLatin1String("data/dummytest"))
+    arguments << "-script" << (testdata.exists() ? script : QLatin1String(SRCDIR "/data/dummytest"))
               << "-scriptopts" << "play,testerror,exitoncomplete,exitonfailure" 
               << file;
+#ifdef Q_WS_QWS
+    arguments << "-qws";
+#endif
+
     QProcess p;
     p.start(qmlruntime, arguments);
     QVERIFY(p.waitForFinished());
+    if (p.exitStatus() != QProcess::NormalExit || p.exitCode() != 0)
+        qWarning() << p.readAllStandardOutput() << p.readAllStandardError();
     QCOMPARE(p.exitStatus(), QProcess::NormalExit);
     QCOMPARE(p.exitCode(), 0);
 }

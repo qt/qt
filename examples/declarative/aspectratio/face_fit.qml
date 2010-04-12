@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 // Here, we implement a hybrid of the "scale to fit" and "scale and crop"
 // behaviours which will crop up to 25% from *one* dimension if necessary

@@ -42,7 +42,7 @@
 #include <QFile>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
-#include <QtGui/qgraphicsview.h>
+#include <QtGui/qgraphicswidget.h>
 
 class tst_graphicswidgets : public QObject
 
@@ -63,12 +63,9 @@ void tst_graphicswidgets::widgets()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/graphicswidgets.qml"));
-    QGraphicsView *obj = qobject_cast<QGraphicsView*>(c.create());
+    QGraphicsWidget *obj = qobject_cast<QGraphicsWidget*>(c.create());
 
     QVERIFY(obj != 0);
-    QVERIFY(obj->scene() != 0);
-    QList<QObject*> list;
-    QVERIFY(obj->scene()->children() != list);
     delete obj;
 }
 

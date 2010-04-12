@@ -88,11 +88,17 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o
 \list
 \o \l Binding
-\o \l ListModel, \l ListElement
+\o \l ListModel
+\list
+\o \l ListElement
+\endlist
 \o \l VisualItemModel
 \o \l VisualDataModel
 \o \l Package
-\o \l XmlListModel and XmlRole
+\o \l XmlListModel
+\list
+\o \l XmlRole
+\endlist
 \endlist
 
 \o
@@ -140,7 +146,6 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l Loader
 \o \l Repeater
 \o \l SystemPalette
-\o \l GraphicsObjectContainer
 \o \l LayoutItem
 \endlist
 

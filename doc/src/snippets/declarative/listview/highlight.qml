@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     width: 180; height: 200; color: "white"
@@ -45,7 +45,7 @@ Rectangle {
             width: 180; height: 40
             color: "lightsteelblue"; radius: 5
             SpringFollow on y {
-                source: list.currentItem.y
+                to: list.currentItem.y
                 spring: 3
                 damping: 0.2
             }

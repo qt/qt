@@ -3,7 +3,7 @@ import Qt 4.6
 Rectangle {
     id: root
     property int added: -1
-    property var removed
+    property variant removed
 
     width: 240
     height: 320

@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 //![2]
 import "samegame.js" as SameGame
 //![2]
@@ -27,7 +27,7 @@ Rectangle {
 
 //![1]
         Button {
-            id: btnA; text: "New Game"; onClicked: SameGame.initBoard();
+            text: "New Game"; onClicked: SameGame.startNewGame();
             anchors.left: parent.left; anchors.leftMargin: 3
             anchors.verticalCenter: parent.verticalCenter
         }

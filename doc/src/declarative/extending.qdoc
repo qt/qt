@@ -655,7 +655,7 @@ declaring a new property, and the corresponding C++ type.
 \row \o url \o QUrl
 \row \o color \o QColor
 \row \o date \o QDateTime
-\row \o var \o QVariant
+\row \o variant \o QVariant
 \endtable
 
 QML supports two methods for adding a new property to a type: a new property
@@ -852,7 +852,7 @@ Here are three examples of signal declarations:
     Item {
         signal clicked
         signal hovered()
-        signal performAction(string action, var actionArgument)
+        signal performAction(string action, variant actionArgument)
     }
 \endcode
 

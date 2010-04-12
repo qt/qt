@@ -47,10 +47,10 @@
 highly dynamic, custom user interfaces.
 
 Qt Declarative UI provides a declarative framework for building highly dynamic, custom
-user interfaces.  Declarative UI helps programmers and designers collaborate to build 
-the animation rich, fluid user interfaces that are becoming common in portable 
-consumer devices, such as mobile phones, media players, set-top boxes and netbooks.  
-The Qt Declarative module provides an engine for interpreting the declarative QML 
+user interfaces.  Declarative UI helps programmers and designers collaborate to build
+the animation rich, fluid user interfaces that are becoming common in portable
+consumer devices, such as mobile phones, media players, set-top boxes and netbooks.
+The Qt Declarative module provides an engine for interpreting the declarative QML
 language, and a rich set of \l {QML Elements}{QML elements} that can be used
 from QML.
 
@@ -106,5 +106,6 @@ completely new applications.  QML is fully \l {Extending QML in C++}{extensible 
 \o \l {QML Security}
 \o \l {QtDeclarative Module}
 \o \l {Debugging QML}
+\o \l {QML Coding Conventions}
 \endlist
 */

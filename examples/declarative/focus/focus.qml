@@ -1,5 +1,5 @@
-import Qt 4.6
-import "Core" 1.0
+import Qt 4.7
+import "Core"
 
 Rectangle {
     id: window; width: 800; height: 480; color: "#3E606F"

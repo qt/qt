@@ -74,6 +74,18 @@ QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyN
         fromValue = property.read();
 }
 
+QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyName,
+               QDeclarativeContext *context, const QVariant &value)
+: restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false),
+  property(target, propertyName, context), toValue(value),
+  fromBinding(0), toBinding(0), event(0),
+  specifiedObject(target), specifiedProperty(propertyName)
+{
+    if (property.isValid())
+        fromValue = property.read();
+}
+
+
 QDeclarativeActionEvent::~QDeclarativeActionEvent()
 {
 }
@@ -121,14 +133,13 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
 
 /*!
     \qmlclass State QDeclarativeState
-  \since 4.7
+    \since 4.7
     \brief The State element defines configurations of objects and properties.
 
     A state is specified as a set of batched changes from the default configuration.
 
-    Note that setting the state of an object from within another state of the same object is
-    inadvisible. Not only would this have the same effect as going directly to the second state
-    it may cause the program to crash.
+    \note setting the state of an object from within another state of the same object is
+    not allowed.
 
     \sa {qmlstates}{States}, {state-transitions}{Transitions}
 */
@@ -191,6 +202,17 @@ bool QDeclarativeState::isWhenKnown() const
 
     This should be set to an expression that evaluates to true when you want the state to
     be applied.
+
+    If multiple states in a group have \c when clauses that evaluate to true at the same time,
+    the first matching state will be applied. For example, in the following snippet
+    \c state1 will always be selected rather than \c state2 when sharedCondition becomes
+    \c true.
+    \qml
+    states: [
+        State { name: "state1"; when: sharedCondition },
+        State { name: "state2"; when: sharedCondition }
+    ]
+    \endqml
 */
 QDeclarativeBinding *QDeclarativeState::when() const
 {
