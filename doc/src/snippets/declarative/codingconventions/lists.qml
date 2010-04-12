@@ -13,7 +13,7 @@ states: [
     }
     Item {
 //! [1]
- states: State {
+states: State {
     name: "open"
     PropertyChanges { target: container; width: 200 }
 }

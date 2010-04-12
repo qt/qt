@@ -64,7 +64,7 @@ Through our documentation and examples, QML objects are always structured in the
 \o transitions
 \endlist
 
-For better lisibility, we separate these different parts with an empty line.
+For better readability, we separate these different parts with an empty line.
 
 
 For example, a hypothetical \e photo QML object would look like this:
@@ -75,7 +75,7 @@ For example, a hypothetical \e photo QML object would look like this:
 \section1 Grouped properties
 
 If using multiple properties from a group of properties,
-we use the \e {group notation} rather than the \e {dot notation} to improve lisibility.
+we use the \e {group notation} rather than the \e {dot notation} to improve readability.
 
 For example, this:
 
