@@ -1116,13 +1116,13 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
         QApplication::sendEvent(this, &event);
         break;
     }
-    case ItemCursorChange: {
+    case ItemCursorHasChanged: {
         // Deliver CursorChange.
         QEvent event(QEvent::CursorChange);
         QApplication::sendEvent(this, &event);
         break;
     }
-    case ItemToolTipChange: {
+    case ItemToolTipHasChanged: {
         // Deliver ToolTipChange.
         QEvent event(QEvent::ToolTipChange);
         QApplication::sendEvent(this, &event);

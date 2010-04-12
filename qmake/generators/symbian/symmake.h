@@ -104,6 +104,15 @@ protected:
     void writeMmpFileIncludePart(QTextStream& t);
     void writeMmpFileLibraryPart(QTextStream& t);
     void writeMmpFileCapabilityPart(QTextStream& t);
+    void writeMmpFileConditionalOptions(QTextStream& t,
+                                        const QString &optionType,
+                                        const QString &optionTag,
+                                        const QString &variableBase);
+    void writeMmpFileSimpleOption(QTextStream& t,
+                                  const QString &optionType,
+                                  const QString &optionTag,
+                                  const QString &options);
+    void appendMmpFileOptions(QString &options, const QStringList &list);
     void writeMmpFileCompilerOptionPart(QTextStream& t);
     void writeMmpFileBinaryVersionPart(QTextStream& t);
     void writeMmpFileRulesPart(QTextStream& t);
