@@ -1947,6 +1947,13 @@ bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &ur
     if (!engineInitialized || !typesRegistered) {
         QPluginLoader loader(absoluteFilePath);
 
+        if (!loader.load()) {
+            if (qmlImportTrace()) {
+                qDebug() << "QDeclarativeEngine::importPlugin: " << loader.errorString();
+            }
+            return false;
+        }
+
         if (QDeclarativeExtensionInterface *iface = qobject_cast<QDeclarativeExtensionInterface *>(loader.instance())) {
 
             const QByteArray bytes = uri.toUtf8();
@@ -1965,6 +1972,8 @@ bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &ur
                 iface->initializeEngine(this, moduleId);
             }
         } else {
+            if (qmlImportTrace())
+                qDebug() << "QDeclarativeEngine::importPlugin: no DeclarativeExtensionInterface error";
             return false;
         }
     }
