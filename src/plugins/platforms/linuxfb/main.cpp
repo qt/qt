@@ -39,16 +39,16 @@
 **
 ****************************************************************************/
 
-#include <private/qgraphicssystemplugin_p.h>
+#include <QPlatformIntegrationPlugin>
 #include "qgraphicssystem_linuxfb.h"
 
 QT_BEGIN_NAMESPACE
 
-class QLinuxFbGraphicsSystemPlugin : public QGraphicsSystemPlugin
+class QLinuxFbGraphicsSystemPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
-    QGraphicsSystem *create(const QString&);
+    QPlatformIntegration *create(const QString&);
 };
 
 QStringList QLinuxFbGraphicsSystemPlugin::keys() const
@@ -58,7 +58,7 @@ QStringList QLinuxFbGraphicsSystemPlugin::keys() const
     return list;
 }
 
-QGraphicsSystem* QLinuxFbGraphicsSystemPlugin::create(const QString& system)
+QPlatformIntegration* QLinuxFbGraphicsSystemPlugin::create(const QString& system)
 {
     if (system.toLower() == "linuxfb")
         return new QLinuxFbGraphicsSystem;

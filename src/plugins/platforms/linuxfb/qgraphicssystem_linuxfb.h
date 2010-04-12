@@ -42,7 +42,7 @@
 #ifndef QGRAPHICSSYSTEM_LINUXFB_H
 #define QGRAPHICSSYSTEM_LINUXFB_H
 
-#include <QtGui/private/qgraphicssystem_p.h>
+#include <QPlatformIntegration>
 #include "../fb_base/fb_base.h"
 
 QT_BEGIN_NAMESPACE
@@ -70,20 +70,21 @@ struct fb_cmap;
 struct fb_var_screeninfo;
 struct fb_fix_screeninfo;
 
-class QLinuxFbGraphicsSystem : public QGraphicsSystem
+class QLinuxFbGraphicsSystem : public QPlatformIntegration
 {
 public:
     QLinuxFbGraphicsSystem();
     ~QLinuxFbGraphicsSystem();
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
+    QPlatformWindow *createPlatformWindow(QWidget *widget, WId WinId) const;
+    QWindowSurface *createWindowSurfaceForWindow(QWidget *widget, WId WinId) const;
 
-    QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
+    QList<QPlatformScreen *> screens() const { return mScreens; }
 
 private:
     QLinuxFbGraphicsSystemScreen *mPrimaryScreen;
-    QList<QGraphicsSystemScreen *> mScreens;
+    QList<QPlatformScreen *> mScreens;
     QLinuxFbGraphicsSystemPrivate *d_ptr;
 
     enum PixelType { NormalPixel, BGRPixel };

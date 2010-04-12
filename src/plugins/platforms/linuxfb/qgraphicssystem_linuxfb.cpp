@@ -786,15 +786,27 @@ QPixmapData *QLinuxFbGraphicsSystem::createPixmapData(QPixmapData::PixelType typ
     return new QRasterPixmapData(type);
 }
 
-QWindowSurface *QLinuxFbGraphicsSystem::createWindowSurface(QWidget *widget) const
+QWindowSurface *QLinuxFbGraphicsSystem::createWindowSurfaceForWindow(QWidget *widget, WId) const
 {
     if (widget->windowType() == Qt::Desktop)
         return 0;   // Don't create an explicit window surface for the destkop.
     QGraphicsSystemFbWindowSurface * surface =
         new QGraphicsSystemFbWindowSurface(mPrimaryScreen, widget);
-    mPrimaryScreen->addWindowSurface(surface);
     return surface;
 }
+
+
+
+QPlatformWindow *QLinuxFbGraphicsSystem::createPlatformWindow(QWidget *widget, WId /*winId*/) const
+{
+    QFbWindow *w = new QFbWindow(mPrimaryScreen, widget);
+    mPrimaryScreen->addWindow(w);
+    return w;
+}
+
+
+
+
 
 QLinuxFbGraphicsSystemScreen::QLinuxFbGraphicsSystemScreen(uchar * d, int w,
     int h, int lstep, QImage::Format screenFormat) : compositePainter(0)
