@@ -275,7 +275,7 @@ void QDeclarativeText::setText(const QString &n)
 /*!
     \qmlproperty string Text::text
 
-    The text to display.  Text supports both plain and rich text strings.
+    The text to display. Text supports both plain and rich text strings.
 
     The item will try to automatically determine whether the text should
     be treated as rich text. This determination is made using Qt::mightBeRichText().
@@ -322,14 +322,20 @@ QColor QDeclarativeText::color() const
 
     Set an additional text style.
 
-    Supported text styles are \c Normal, \c Outline, \c Raised and \c Sunken.
+    Supported text styles are:
+    \list
+    \o Normal - the default
+    \o Outline
+    \o Raised
+    \o Sunken
+    \endlist
 
     \qml
     Row {
         Text { font.pointSize: 24; text: "Normal" }
-        Text { font.pointSize: 24; text: "Raised";  style: Text.Raised;  styleColor: "#AAAAAA" }
-        Text { font.pointSize: 24; text: "Outline"; style: Text.Outline; styleColor: "red" }
-        Text { font.pointSize: 24; text: "Sunken";  style: Text.Sunken;  styleColor: "#AAAAAA" }
+        Text { font.pointSize: 24; text: "Raised"; style: Text.Raised; styleColor: "#AAAAAA" }
+        Text { font.pointSize: 24; text: "Outline";style: Text.Outline; styleColor: "red" }
+        Text { font.pointSize: 24; text: "Sunken"; style: Text.Sunken; styleColor: "#AAAAAA" }
     }
     \endqml
 
@@ -371,6 +377,10 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     \c styleColor is used as the outline color for outlined text, and as the
     shadow color for raised or sunken text. If no style has been set, it is not
     used at all.
+
+    \qml
+    Text { font.pointSize: 18; text: "hello"; style: Text.Raised; styleColor: "gray" }
+    \endqml
  */
 QColor QDeclarativeText::styleColor() const
 {
