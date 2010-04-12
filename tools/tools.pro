@@ -10,7 +10,6 @@ TEMPLATE        = subdirs
             SUBDIRS = qtestlib designer
         } else {
             SUBDIRS = assistant \
-                      linguist \
                       pixeltool \
                       porting \
                       qtestlib \
@@ -26,6 +25,8 @@ TEMPLATE        = subdirs
     }
     contains(QT_CONFIG, declarative):SUBDIRS += qml
 }
+
+!wince*:!symbian:SUBDIRS += linguist
 
 mac {
     SUBDIRS += macdeployqt
