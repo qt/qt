@@ -98,6 +98,7 @@
 
     \value CoverArtUrlSmall The URL of a small cover art image. QUrl.
     \value CoverArtUrlLarge The URL of a large cover art image. QUrl.
+    \value CoverArtImage An embedded cover art image. QImage.
 
     Image and video attributes
     \value Resolution The dimensions of an image or video.  QSize.
@@ -109,6 +110,7 @@
     \value VideoCodec The codec of the media's video stream.  QString.
 
     \value PosterUrl The URL of a poster image.  QUrl.
+    \value PosterImage An embedded poster image.  QImage.
 
     Movie attributes
     \value ChapterNumber The chapter number of the media.  int.
@@ -162,6 +164,8 @@
         Indicates the direction of sharpness processing applied by the camera when the image was shot.
     \value DeviceSettingDescription
         Exif tag, indicates information on the picture-taking conditions of a particular camera model. QString
+
+    \value ThumbnailImage An embedded thumbnail image.  QImage.
 */
 
 /*!
