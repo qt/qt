@@ -51,32 +51,32 @@ QT_BEGIN_NAMESPACE
 class QVNCServer;
 class QVNCDirtyMap;
 
-class QVNCGraphicsSystemScreenPrivate;
+class QVNCScreenPrivate;
 
-class QVNCGraphicsSystemScreen : public QGraphicsSystemFbScreen
+class QVNCScreen : public QFbScreen
 {
 public:
-    QVNCGraphicsSystemScreen();
+    QVNCScreen();
 
     int linestep() const { return image() ? image()->bytesPerLine() : 0; }
     uchar *base() const { return image() ? image()->bits() : 0; }
     QVNCDirtyMap *dirtyMap();
 
 public:
-    QVNCGraphicsSystemScreenPrivate *d_ptr;
+    QVNCScreenPrivate *d_ptr;
 
 private:
     QVNCServer *server;
     QRegion doRedraw();
 };
 
-class QVNCGraphicsSystemPrivate;
+class QVNCIntegrationPrivate;
 
 
-class QVNCGraphicsSystem : public QPlatformIntegration
+class QVNCIntegration : public QPlatformIntegration
 {
 public:
-    QVNCGraphicsSystem();
+    QVNCIntegration();
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
@@ -86,7 +86,7 @@ public:
 
 
 private:
-    QVNCGraphicsSystemScreen *mPrimaryScreen;
+    QVNCScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
 };
 

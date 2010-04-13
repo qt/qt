@@ -14,7 +14,7 @@ class QMouseEvent;
 class QSize;
 class QPainter;
 
-class QGraphicsSystemFbScreen;
+class QFbScreen;
 
 class QGraphicsSystemSoftwareCursor : public QGraphicsSystemCursor
 {
@@ -44,11 +44,11 @@ private:
 
 class QFbWindow;
 
-class QGraphicsSystemFbWindowSurface : public QWindowSurface
+class QFbWindowSurface : public QWindowSurface
 {
 public:
-    QGraphicsSystemFbWindowSurface(QGraphicsSystemFbScreen *screen, QWidget *window);
-    ~QGraphicsSystemFbWindowSurface();
+    QFbWindowSurface(QFbScreen *screen, QWidget *window);
+    ~QFbWindowSurface();
 
     virtual QPaintDevice *paintDevice() { return &mImage; }
     virtual void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
@@ -65,7 +65,7 @@ protected:
     friend class QFbWindow;
     QFbWindow *platformWindow;
 
-    QGraphicsSystemFbScreen *mScreen;
+    QFbScreen *mScreen;
     QImage mImage;
 };
 
@@ -74,7 +74,7 @@ class QFbWindow : public QPlatformWindow
 {
 public:
 
-    QFbWindow(QGraphicsSystemFbScreen *screen, QWidget *window);
+    QFbWindow(QFbScreen *screen, QWidget *window);
     ~QFbWindow();
 
 
@@ -94,10 +94,10 @@ public:
     virtual void repaint(const QRegion&);
 
 protected:
-    friend class QGraphicsSystemFbWindowSurface;
-    friend class QGraphicsSystemFbScreen;
-    QGraphicsSystemFbWindowSurface *surface;
-    QGraphicsSystemFbScreen *mScreen;
+    friend class QFbWindowSurface;
+    friend class QFbScreen;
+    QFbWindowSurface *surface;
+    QFbScreen *mScreen;
     QRect oldGeometry;
     bool visibleFlag;
     Qt::WindowFlags flags;
@@ -107,12 +107,12 @@ protected:
 };
 
 
-class QGraphicsSystemFbScreen : public QPlatformScreen
+class QFbScreen : public QPlatformScreen
 {
     Q_OBJECT
 public:
-    QGraphicsSystemFbScreen();
-    ~QGraphicsSystemFbScreen();
+    QFbScreen();
+    ~QFbScreen();
 
     virtual QRect geometry() const { return mGeometry; }
     virtual int depth() const { return mDepth; }
@@ -158,7 +158,7 @@ private:
     QList<QPair<QRect, int> > cachedRects;
 
     void invalidateRectCache() { isUpToDate = false; }
-    friend class QGraphicsSystemFbWindowSurface;
+    friend class QFbWindowSurface;
     friend class QFbWindow;
     bool isUpToDate;
 };

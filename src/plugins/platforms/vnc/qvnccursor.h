@@ -48,12 +48,12 @@
 
 QT_BEGIN_NAMESPACE
 
-class QVNCGraphicsSystemScreen;
+class QVNCScreen;
 class QVNCServer;
 
 class QVNCCursor : public QGraphicsSystemSoftwareCursor {
 public:
-    QVNCCursor(QVNCServer *, QVNCGraphicsSystemScreen *);
+    QVNCCursor(QVNCServer *, QVNCScreen *);
 
     // input methods
     void setCursorMode(bool vnc);

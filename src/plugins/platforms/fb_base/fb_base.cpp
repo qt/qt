@@ -81,7 +81,7 @@ void QGraphicsSystemSoftwareCursor::changeCursor(QCursor * widgetCursor, QWidget
     screen->setDirty(currentRect);
 }
 
-QGraphicsSystemFbScreen::QGraphicsSystemFbScreen() : cursor(0), mGeometry(), mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0), compositePainter(0), isUpToDate(false)
+QFbScreen::QFbScreen() : cursor(0), mGeometry(), mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0), compositePainter(0), isUpToDate(false)
 {
     mScreenImage = new QImage(mGeometry.size(), mFormat);
     redrawTimer.setSingleShot(true);
@@ -89,7 +89,7 @@ QGraphicsSystemFbScreen::QGraphicsSystemFbScreen() : cursor(0), mGeometry(), mDe
     QObject::connect(&redrawTimer, SIGNAL(timeout()), this, SLOT(doRedraw()));
 }
 
-void QGraphicsSystemFbScreen::setGeometry(QRect rect)
+void QFbScreen::setGeometry(QRect rect)
 {
     delete mScreenImage;
     mGeometry = rect;
@@ -99,17 +99,17 @@ void QGraphicsSystemFbScreen::setGeometry(QRect rect)
     invalidateRectCache();
 }
 
-void QGraphicsSystemFbScreen::setDepth(int depth)
+void QFbScreen::setDepth(int depth)
 {
     mDepth = depth;
 }
 
-void QGraphicsSystemFbScreen::setPhysicalSize(QSize size)
+void QFbScreen::setPhysicalSize(QSize size)
 {
     mPhysicalSize = size;
 }
 
-void QGraphicsSystemFbScreen::setFormat(QImage::Format format)
+void QFbScreen::setFormat(QImage::Format format)
 {
     mFormat = format;
     delete mScreenImage;
@@ -118,23 +118,23 @@ void QGraphicsSystemFbScreen::setFormat(QImage::Format format)
     compositePainter = 0;
 }
 
-QGraphicsSystemFbScreen::~QGraphicsSystemFbScreen()
+QFbScreen::~QFbScreen()
 {
     delete compositePainter;
     delete mScreenImage;
 }
 
-void QGraphicsSystemFbScreen::setDirty(const QRect &rect)
+void QFbScreen::setDirty(const QRect &rect)
 {
 
-//    qDebug() << "QGraphicsSystemFbScreen::setDirty" << rect;
+//    qDebug() << "QFbScreen::setDirty" << rect;
     repaintRegion += rect;
     if (!redrawTimer.isActive()) {
         redrawTimer.start();
     }
 }
 
-void QGraphicsSystemFbScreen::generateRects()
+void QFbScreen::generateRects()
 {
     cachedRects.clear();
     QRegion remainingScreen(mGeometry);
@@ -162,7 +162,7 @@ void QGraphicsSystemFbScreen::generateRects()
 
 
 
-QRegion QGraphicsSystemFbScreen::doRedraw()
+QRegion QFbScreen::doRedraw()
 {
     QRegion touchedRegion;
     if (cursor)
@@ -232,13 +232,13 @@ QRegion QGraphicsSystemFbScreen::doRedraw()
 
 
 
-//    qDebug() << "QGraphicsSystemFbScreen::doRedraw"  << windowStack.size() << mScreenImage->size() << touchedRegion;
+//    qDebug() << "QFbScreen::doRedraw"  << windowStack.size() << mScreenImage->size() << touchedRegion;
 
 
     return touchedRegion;
 }
 
-void QGraphicsSystemFbScreen::removeWindow(QFbWindow * surface)
+void QFbScreen::removeWindow(QFbWindow * surface)
 {
     windowStack.removeOne(surface);
     invalidateRectCache();
@@ -250,7 +250,7 @@ void QFbWindow::raise()
     mScreen->raise(this);
 }
 
-void QGraphicsSystemFbScreen::raise(QPlatformWindow * surface)
+void QFbScreen::raise(QPlatformWindow * surface)
 {
     QFbWindow *s = static_cast<QFbWindow *>(surface);
     int index = windowStack.indexOf(s);
@@ -266,7 +266,7 @@ void QFbWindow::lower()
     mScreen->lower(this);
 }
 
-void QGraphicsSystemFbScreen::lower(QPlatformWindow * surface)
+void QFbScreen::lower(QPlatformWindow * surface)
 {
     QFbWindow *s = static_cast<QFbWindow *>(surface);
     int index = windowStack.indexOf(s);
@@ -277,7 +277,7 @@ void QGraphicsSystemFbScreen::lower(QPlatformWindow * surface)
     setDirty(s->geometry());
 }
 
-QWidget * QGraphicsSystemFbScreen::topLevelAt(const QPoint & p) const
+QWidget * QFbScreen::topLevelAt(const QPoint & p) const
 {
     for(int i = 0; i < windowStack.size(); i++) {
         if (windowStack[i]->geometry().contains(p, false) &&
@@ -291,7 +291,7 @@ QWidget * QGraphicsSystemFbScreen::topLevelAt(const QPoint & p) const
 
 
 
-QFbWindow::QFbWindow(QGraphicsSystemFbScreen *screen, QWidget *window)
+QFbWindow::QFbWindow(QFbScreen *screen, QWidget *window)
     :QPlatformWindow(window),
       mScreen(screen),
       visibleFlag(false)
@@ -307,7 +307,7 @@ QFbWindow::~QFbWindow()
 }
 
 
-QGraphicsSystemFbWindowSurface::QGraphicsSystemFbWindowSurface(QGraphicsSystemFbScreen *screen, QWidget *window)
+QFbWindowSurface::QFbWindowSurface(QFbScreen *screen, QWidget *window)
     : QWindowSurface(window),
       mScreen(screen)
 {
@@ -317,18 +317,18 @@ QGraphicsSystemFbWindowSurface::QGraphicsSystemFbWindowSurface(QGraphicsSystemFb
     platformWindow->surface = this;
 }
 
-QGraphicsSystemFbWindowSurface::~QGraphicsSystemFbWindowSurface()
+QFbWindowSurface::~QFbWindowSurface()
 {
 }
 
 
-void QGraphicsSystemFbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+void QFbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(widget);
     Q_UNUSED(offset);
 
 
-//    qDebug() << "QGraphicsSystemFbWindowSurface::flush" << region;
+//    qDebug() << "QFbWindowSurface::flush" << region;
 
 
     platformWindow->repaint(region);
@@ -352,7 +352,7 @@ void QFbWindow::repaint(const QRegion &region)
     mScreen->setDirty(dirtyRegion);
 }
 
-void QGraphicsSystemFbWindowSurface::resize(const QSize &size)
+void QFbWindowSurface::resize(const QSize &size)
 {
     // change the widget's QImage if this is a resize
     if (mImage.size() != size)
@@ -376,17 +376,17 @@ void QFbWindow::setGeometry(const QRect &rect)
 
 
 
-bool QGraphicsSystemFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
+bool QFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
     return QWindowSurface::scroll(area, dx, dy);
 }
 
-void QGraphicsSystemFbWindowSurface::beginPaint(const QRegion &region)
+void QFbWindowSurface::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);
 }
 
-void QGraphicsSystemFbWindowSurface::endPaint(const QRegion &region)
+void QFbWindowSurface::endPaint(const QRegion &region)
 {
     Q_UNUSED(region);
 }

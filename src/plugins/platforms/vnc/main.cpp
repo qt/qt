@@ -45,28 +45,28 @@
 
 QT_BEGIN_NAMESPACE
 
-class QVNCGraphicsSystemPlugin : public QPlatformIntegrationPlugin
+class QVNCIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
     QPlatformIntegration *create(const QString&);
 };
 
-QStringList QVNCGraphicsSystemPlugin::keys() const
+QStringList QVNCIntegrationPlugin::keys() const
 {
     QStringList list;
     list << "VNC";
     return list;
 }
 
-QPlatformIntegration* QVNCGraphicsSystemPlugin::create(const QString& system)
+QPlatformIntegration* QVNCIntegrationPlugin::create(const QString& system)
 {
     if (system.toLower() == "vnc")
-        return new QVNCGraphicsSystem;
+        return new QVNCIntegration;
 
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(vnc, QVNCGraphicsSystemPlugin)
+Q_EXPORT_PLUGIN2(vnc, QVNCIntegrationPlugin)
 
 QT_END_NAMESPACE
