@@ -742,7 +742,7 @@ bool q_resolveOpenSslSymbols()
 
 bool q_resolveOpenSslSymbols()
 {
-#ifdef QT_NO_SSL
+#ifdef QT_NO_OPENSSL
     return false;
 #endif
     return true;
