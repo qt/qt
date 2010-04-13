@@ -276,7 +276,8 @@ void tst_examples::examples()
     QFutureSynchronizer<void> sync;
 
     for (int ii = 0; ii < tests.count(); ++ii) {
-        QFuture<void> r = QtConcurrent::run(tests.at(ii), &Example::run);
+        Example *e = &tests[ii];
+        QFuture<void> r = QtConcurrent::run(e, &Example::run);
         sync.addFuture(r);
     }
 
