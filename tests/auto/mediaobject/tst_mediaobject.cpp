@@ -572,13 +572,18 @@ void tst_MediaObject::playSDP()
     if (m_media->state() != Phonon::StoppedState)
         QTest::waitForSignal(m_media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 10000);
 
-    // At this point we're in error state due to absent media, but it has now loaded the SDP:
-    QCOMPARE(m_media->errorString(), QString::fromLatin1("Buffering clip failed: Unknown error (-39)"));
+    // MediaObject should have loaded the SDP, but be in error state due to absent media
+    const bool stateMatch = (m_media->state() == Phonon::ErrorState);
+    const bool errorStringMatch = (m_media->errorString() == QString::fromLatin1("Buffering clip failed: Unknown error (-39)"));
 
-    // We cannot play the SDP, we can neither attempt to play it, because we
-    // won't get a state change from ErrorState to ErrorState, and hence block
-    // on a never occuring signal.
+    // Ensure that m_media is back in ground state prior to starting next test step
     m_media->setCurrentSource(oldSource);
+    if (m_media->state() != Phonon::StoppedState)
+       QTest::waitForSignal(m_media, SIGNAL(stateChanged(Phonon::State, Phonon::State)));
+    QCOMPARE(m_media->state(), Phonon::StoppedState);
+
+    QVERIFY(stateMatch);
+    QVERIFY(errorStringMatch);
 
 #else
     QSKIP("Unsupported on this platform.", SkipAll);
