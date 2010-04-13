@@ -205,7 +205,7 @@ static bool createMemSurface(QQnxScreenContext * const d, int w, int h)
     int ret = gf_surface_create(&d->memSurface, d->device, w, h,
                 GF_FORMAT_ARGB8888, 0,
                 GF_SURFACE_CREATE_CPU_FAST_ACCESS | GF_SURFACE_CREATE_CPU_LINEAR_ACCESSIBLE
-                | GF_SURFACE_PHYS_CONTIG);
+                | GF_SURFACE_PHYS_CONTIG | GF_SURFACE_CREATE_SHAREABLE);
     if (ret != GF_ERR_OK) {
         qWarning("QQnxScreen: gf_surface_create(%dx%d) failed with error code %d",
                 w, h, ret);
