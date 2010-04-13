@@ -1469,6 +1469,14 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     }
 
     generateHeader(htmlTitle, fake, marker, true);
+        
+    /*
+      Generate the TOC for the new doc format.
+      Don't generate a TOC for the home page.
+    */
+    if (fake->name() != QString("index.html"))
+        generateTableOfContents(fake,marker);
+
     generateTitle(fullTitle,
                   Text() << fake->subTitle(),
                   subTitleSize,
@@ -2014,6 +2022,72 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
     inLink = false;
 }
 
+/*!
+  Revised for the new doc format.
+  Generates a table of contents begining at \a node.
+ */
+void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker)
+{
+    if (!node->doc().hasTableOfContents())
+        return;
+    QList<Atom *> toc = node->doc().tableOfContents();
+    if (toc.isEmpty())
+        return;
+
+    Doc::SectioningUnit sectioningUnit =  Doc::Section4;
+    QString nodeName = node->name();
+
+    QStringList sectionNumber;
+    int columnSize = 0;
+
+    // disable nested links in table of contents
+    inContents = true;
+    inLink = true;
+
+    out() << "<div class=\"toc\">\n";
+        
+    for (int i = 0; i < toc.size(); ++i) {
+        Atom *atom = toc.at(i);
+
+        int nextLevel = atom->string().toInt();
+        if (nextLevel > (int)sectioningUnit)
+            continue;
+
+        if (sectionNumber.size() < nextLevel) {
+            do {
+                out() << "<ul>\n";
+                sectionNumber.append("1");
+            } while (sectionNumber.size() < nextLevel);
+        }
+        else {
+            while (sectionNumber.size() > nextLevel) {
+                out() << "</ul>\n";
+                sectionNumber.removeLast();
+            }
+            sectionNumber.last() = QString::number(sectionNumber.last().toInt() + 1);
+        }
+        int numAtoms;
+        Text headingText = Text::sectionHeading(atom);
+        out() << "<li>";
+        out() << "<a href=\""
+              << nodeName
+              << "#"
+              << Doc::canonicalTitle(headingText.toString())
+              << "\">";
+        generateAtomList(headingText.firstAtom(), node, marker, true, numAtoms);
+        out() << "</a></li>\n";
+
+        ++columnSize;
+    }
+    while (!sectionNumber.isEmpty()) {
+        out() << "</ul>\n";
+        sectionNumber.removeLast();
+    }
+    out() << "</div>\n";
+    inContents = false;
+    inLink = false;
+}
+
 #if 0
 void HtmlGenerator::generateNavigationBar(const NavigationBar& bar,
                                            const Node *node,
@@ -2248,7 +2322,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                                         QString commonPrefix)
 {
     const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
-    const int NumColumns = 2; // number of columns in the result
+    const int NumColumns = 3; // number of columns in the result
 
     if (classMap.isEmpty())
         return;

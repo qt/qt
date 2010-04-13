@@ -217,8 +217,6 @@ void PageGenerator::generateInnerNode(const InnerNode *node,
 
     if (node->parent() != 0) {
 	beginSubPage(node->location(), fileName(node));
-        // <!--Put all your content here-->
-        //generateTableOfContents(node,marker,Doc::Section4,1,relative);
 	if (node->type() == Node::Namespace || node->type() == Node::Class) {
 	    generateClassLikeNode(node, marker);
 	}
