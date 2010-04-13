@@ -293,6 +293,24 @@ public:
         SP_QsnFrButtonSideLInactive,
         SP_QsnFrButtonSideRInactive,
         SP_QsnFrButtonCenterInactive,
+        SP_QsnFrGridCornerTlPressed, // Pressed table item
+        SP_QsnFrGridCornerTrPressed,
+        SP_QsnFrGridCornerBlPressed,
+        SP_QsnFrGridCornerBrPressed,
+        SP_QsnFrGridSideTPressed,
+        SP_QsnFrGridSideBPressed,
+        SP_QsnFrGridSideLPressed,
+        SP_QsnFrGridSideRPressed,
+        SP_QsnFrGridCenterPressed,
+        SP_QsnFrListCornerTlPressed,  // Pressed list item
+        SP_QsnFrListCornerTrPressed,
+        SP_QsnFrListCornerBlPressed,
+        SP_QsnFrListCornerBrPressed,
+        SP_QsnFrListSideTPressed,
+        SP_QsnFrListSideBPressed,
+        SP_QsnFrListSideLPressed,
+        SP_QsnFrListSideRPressed,
+        SP_QsnFrListPressed,
     };
 
     enum ColorLists {
@@ -424,7 +442,9 @@ public:
         SE_ScrollBarHandlePressedVertical,
         SE_ButtonInactive,
         SE_Editor,
-        SE_DropArea
+        SE_DropArea,
+        SE_TableItemPressed,
+        SE_ListItemPressed,
     };
 
     enum SkinFrameElements {
@@ -442,6 +462,8 @@ public:
         SF_ToolBarButtonPressed,
         SF_PanelBackground,
         SF_ButtonInactive,
+        SF_TableItemPressed,
+        SF_ListItemPressed,
     };
 
     enum SkinElementFlag {
@@ -496,6 +518,7 @@ public:
     static bool isToolBarBackground();
     static bool hasSliderGrooveGraphic();
     static bool isSingleClickUi();
+    static bool isWidgetPressed(const QWidget *widget);
 
     // calculates average color based on button skin graphics (minus borders).
     QColor colorFromFrameGraphics(SkinFrameElements frame) const;
@@ -592,6 +615,8 @@ private:
 
     QPointer<QFocusFrame> m_focusFrame;
     static qint64 m_webPaletteKey;
+
+    static QPointer<QWidget> m_pressedWidget;
 
 #ifdef Q_WS_S60
     //list of progress bars having animation running
