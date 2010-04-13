@@ -10,3 +10,6 @@ SOURCES += tst_qdeclarativeimageprovider.cpp
 
 # Define SRCDIR equal to test's source directory
 DEFINES += SRCDIR=\\\"$$PWD\\\"
+
+CONFIG += parallel_test
+
