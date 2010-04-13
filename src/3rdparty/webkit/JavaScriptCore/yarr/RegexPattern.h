@@ -26,7 +26,6 @@
 #ifndef RegexPattern_h
 #define RegexPattern_h
 
-#include <wtf/Platform.h>
 
 #if ENABLE(YARR)
 
@@ -137,7 +136,7 @@ struct PatternTerm {
 
     PatternTerm(unsigned spatternId)
         : type(TypeBackReference)
-        , invertOrCapture(invertOrCapture)
+        , invertOrCapture(false)
     {
         subpatternId = spatternId;
         quantityType = QuantifierFixedCount;

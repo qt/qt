@@ -6,8 +6,8 @@ Item {
     property int minimum: 0
     property int maximum: 100
     property int value: 0
-    property alias color: g1.color
-    property alias secondColor: g2.color
+    property alias color: gradient1.color
+    property alias secondColor: gradient2.color
 
     width: 250; height: 23
     clip: true
@@ -29,8 +29,8 @@ Item {
         anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 3; topMargin: 3; bottomMargin: 3 }
         radius: 1
         gradient: Gradient {
-            GradientStop { id: g1; position: 0.0 }
-            GradientStop { id: g2; position: 1.0 }
+            GradientStop { id: gradient1; position: 0.0 }
+            GradientStop { id: gradient2; position: 1.0 }
         }
 
     }

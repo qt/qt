@@ -40,8 +40,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSClientRectList);
 
 static const HashTableValue JSClientRectListTableValues[3] =
 {
-    { "length", DontDelete|ReadOnly, (intptr_t)jsClientRectListLength, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsClientRectListConstructor, (intptr_t)0 },
+    { "length", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsClientRectListLength), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsClientRectListConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -103,7 +103,7 @@ bool JSClientRectListConstructor::getOwnPropertyDescriptor(ExecState* exec, cons
 
 static const HashTableValue JSClientRectListPrototypeTableValues[2] =
 {
-    { "item", DontDelete|Function, (intptr_t)jsClientRectListPrototypeFunctionItem, (intptr_t)1 },
+    { "item", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsClientRectListPrototypeFunctionItem), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -194,24 +194,25 @@ bool JSClientRectList::getOwnPropertySlot(ExecState* exec, unsigned propertyName
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValue jsClientRectListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsClientRectListLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSClientRectList* castedThis = static_cast<JSClientRectList*>(asObject(slot.slotBase()));
+    JSClientRectList* castedThis = static_cast<JSClientRectList*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     ClientRectList* imp = static_cast<ClientRectList*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
-JSValue jsClientRectListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsClientRectListConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSClientRectList* domObject = static_cast<JSClientRectList*>(asObject(slot.slotBase()));
+    JSClientRectList* domObject = static_cast<JSClientRectList*>(asObject(slotBase));
     return JSClientRectList::getConstructor(exec, domObject->globalObject());
 }
-void JSClientRectList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSClientRectList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<ClientRectList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSClientRectList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -238,10 +239,10 @@ JSValue JSC_HOST_CALL jsClientRectListPrototypeFunctionItem(ExecState* exec, JSO
 }
 
 
-JSValue JSClientRectList::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue JSClientRectList::indexGetter(ExecState* exec, JSValue slotBase, unsigned index)
 {
-    JSClientRectList* thisObj = static_cast<JSClientRectList*>(asObject(slot.slotBase()));
-    return toJS(exec, thisObj->globalObject(), static_cast<ClientRectList*>(thisObj->impl())->item(slot.index()));
+    JSClientRectList* thisObj = static_cast<JSClientRectList*>(asObject(slotBase));
+    return toJS(exec, thisObj->globalObject(), static_cast<ClientRectList*>(thisObj->impl())->item(index));
 }
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, ClientRectList* object)
 {

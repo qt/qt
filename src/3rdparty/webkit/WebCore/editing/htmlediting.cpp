@@ -289,7 +289,7 @@ VisiblePosition firstEditablePositionAfterPositionInRoot(const Position& positio
     while (p.node() && !isEditablePosition(p) && p.node()->isDescendantOf(highestRoot))
         p = isAtomicNode(p.node()) ? positionInParentAfterNode(p.node()) : nextVisuallyDistinctCandidate(p);
     
-    if (p.node() && !p.node()->isDescendantOf(highestRoot))
+    if (p.node() && p.node() != highestRoot && !p.node()->isDescendantOf(highestRoot))
         return VisiblePosition();
     
     return VisiblePosition(p);
@@ -310,7 +310,7 @@ VisiblePosition lastEditablePositionBeforePositionInRoot(const Position& positio
     while (p.node() && !isEditablePosition(p) && p.node()->isDescendantOf(highestRoot))
         p = isAtomicNode(p.node()) ? positionInParentBeforeNode(p.node()) : previousVisuallyDistinctCandidate(p);
     
-    if (p.node() && !p.node()->isDescendantOf(highestRoot))
+    if (p.node() && p.node() != highestRoot && !p.node()->isDescendantOf(highestRoot))
         return VisiblePosition();
     
     return VisiblePosition(p);
@@ -474,26 +474,33 @@ bool validBlockTag(const AtomicString& blockTag)
     DEFINE_STATIC_LOCAL(HashSet<AtomicString>, blockTags, ());
     if (blockTags.isEmpty()) {
         blockTags.add(addressTag.localName());
+        blockTags.add(articleTag.localName());
+        blockTags.add(asideTag.localName());
         blockTags.add(blockquoteTag.localName());
         blockTags.add(ddTag.localName());
         blockTags.add(divTag.localName());
         blockTags.add(dlTag.localName());
         blockTags.add(dtTag.localName());
+        blockTags.add(footerTag.localName());
         blockTags.add(h1Tag.localName());
         blockTags.add(h2Tag.localName());
         blockTags.add(h3Tag.localName());
         blockTags.add(h4Tag.localName());
         blockTags.add(h5Tag.localName());
         blockTags.add(h6Tag.localName());
+        blockTags.add(headerTag.localName());
+        blockTags.add(hgroupTag.localName());
         blockTags.add(navTag.localName());
         blockTags.add(pTag.localName());
         blockTags.add(preTag.localName());
+        blockTags.add(sectionTag.localName());
     }
     return blockTags.contains(blockTag);
 }
 
 static Node* firstInSpecialElement(const Position& pos)
 {
+    // FIXME: This begins at pos.node(), which doesn't necessarily contain pos (suppose pos was [img, 0]).  See <rdar://problem/5027702>.
     Node* rootEditableElement = pos.node()->rootEditableElement();
     for (Node* n = pos.node(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode())
         if (isSpecialElement(n)) {
@@ -509,6 +516,7 @@ static Node* firstInSpecialElement(const Position& pos)
 
 static Node* lastInSpecialElement(const Position& pos)
 {
+    // FIXME: This begins at pos.node(), which doesn't necessarily contain pos (suppose pos was [img, 0]).  See <rdar://problem/5027702>.
     Node* rootEditableElement = pos.node()->rootEditableElement();
     for (Node* n = pos.node(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode())
         if (isSpecialElement(n)) {
@@ -651,6 +659,11 @@ bool isListElement(Node *n)
     return (n && (n->hasTagName(ulTag) || n->hasTagName(olTag) || n->hasTagName(dlTag)));
 }
 
+bool isListItem(Node *n)
+{
+    return n && n->renderer() && n->renderer()->isListItem();
+}
+
 Node* enclosingNodeWithTag(const Position& p, const QualifiedName& tagName)
 {
     if (p.isNull())
@@ -772,7 +785,7 @@ static Node* appendedSublist(Node* listItem)
     for (Node* n = listItem->nextSibling(); n; n = n->nextSibling()) {
         if (isListElement(n))
             return static_cast<HTMLElement*>(n);
-        if (n->renderer() && n->renderer()->isListItem())
+        if (isListItem(listItem))
             return 0;
     }
     
@@ -849,6 +862,11 @@ bool isTableCell(const Node* node)
     return r->isTableCell();
 }
 
+bool isEmptyTableCell(const Node* node)
+{
+    return node && node->renderer() && (node->renderer()->isTableCell() || (node->renderer()->isBR() && node->parentNode()->renderer() && node->parentNode()->renderer()->isTableCell()));     
+}
+
 PassRefPtr<HTMLElement> createDefaultParagraphElement(Document* document)
 {
     return new HTMLDivElement(divTag, document);
@@ -899,6 +917,16 @@ Node *tabSpanNode(const Node *node)
     return isTabSpanTextNode(node) ? node->parentNode() : 0;
 }
 
+bool isNodeInTextFormControl(Node* node)
+{
+    if (!node)
+        return false;
+    Node* ancestor = node->shadowAncestorNode();
+    if (ancestor == node)
+        return false;
+    return ancestor->isElementNode() && static_cast<Element*>(ancestor)->isTextFormControl();
+}
+    
 Position positionBeforeTabSpan(const Position& pos)
 {
     Node *node = pos.node();
@@ -971,7 +999,7 @@ unsigned numEnclosingMailBlockquotes(const Position& p)
 
 bool isMailBlockquote(const Node *node)
 {
-    if (!node || (!node->isElementNode() && !node->hasTagName(blockquoteTag)))
+    if (!node || !node->hasTagName(blockquoteTag))
         return false;
         
     return static_cast<const Element *>(node)->getAttribute("type") == "cite";
@@ -1075,6 +1103,14 @@ bool isNodeVisiblyContainedWithin(Node* node, const Range* selectedRange)
     // If the node starts and ends at where selectedRange starts and ends, the node is contained within
     return visiblePositionBeforeNode(node) == selectedRange->startPosition()
         && visiblePositionAfterNode(node) == selectedRange->endPosition();
+}
+
+bool isRenderedAsNonInlineTableImageOrHR(const Node* node)
+{
+    if (!node)
+        return false;
+    RenderObject* renderer = node->renderer();
+    return renderer && ((renderer->isTable() && !renderer->isInline()) || (renderer->isImage() && !renderer->isInline()) || renderer->isHR());
 }
 
 PassRefPtr<Range> avoidIntersectionWithNode(const Range* range, Node* node)

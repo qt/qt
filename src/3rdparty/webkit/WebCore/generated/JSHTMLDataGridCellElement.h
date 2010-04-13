@@ -42,7 +42,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -59,7 +59,7 @@ public:
     static const JSC::ClassInfo s_info;
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSHTMLDataGridCellElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -68,17 +68,17 @@ protected:
 
 // Attributes
 
-JSC::JSValue jsHTMLDataGridCellElementLabel(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLDataGridCellElementLabel(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLDataGridCellElementLabel(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLDataGridCellElementFocused(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLDataGridCellElementFocused(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLDataGridCellElementFocused(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLDataGridCellElementChecked(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLDataGridCellElementChecked(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLDataGridCellElementChecked(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLDataGridCellElementIndeterminate(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLDataGridCellElementIndeterminate(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLDataGridCellElementIndeterminate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLDataGridCellElementProgress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLDataGridCellElementProgress(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLDataGridCellElementProgress(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLDataGridCellElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLDataGridCellElementConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

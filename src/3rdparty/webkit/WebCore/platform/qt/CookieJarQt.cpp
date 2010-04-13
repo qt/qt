@@ -33,19 +33,14 @@
 #include "KURL.h"
 #include "PlatformString.h"
 
-#if QT_VERSION >= 0x040400
 #include "qwebpage.h"
 #include "qwebframe.h"
 #include "FrameLoaderClientQt.h"
 #include <QNetworkAccessManager>
 #include <QNetworkCookie>
-#else
-#include <qcookiejar.h>
-#endif
 
 namespace WebCore {
 
-#if QT_VERSION >= 0x040400
 static QNetworkCookieJar *cookieJar(const Document *document)
 {
     if (!document)
@@ -62,19 +57,16 @@ static QNetworkCookieJar *cookieJar(const Document *document)
     QNetworkCookieJar* jar = manager->cookieJar();
     return jar;
 }
-#endif
 
 void setCookies(Document* document, const KURL& url, const String& value)
 {
     QUrl u(url);
     QUrl p(document->firstPartyForCookies());
-#if QT_VERSION >= 0x040400
     QNetworkCookieJar* jar = cookieJar(document);
     if (!jar)
         return;
 
     QList<QNetworkCookie> cookies = QNetworkCookie::parseCookies(QString(value).toAscii());
-#if QT_VERSION >= 0x040500
     QList<QNetworkCookie>::Iterator it = cookies.begin();
     while (it != cookies.end()) {
         if (it->isHttpOnly())
@@ -82,17 +74,12 @@ void setCookies(Document* document, const KURL& url, const String& value)
         else
             ++it;
     }
-#endif
     jar->setCookiesFromUrl(cookies, u);
-#else
-    QCookieJar::cookieJar()->setCookies(u, p, (QString)value);
-#endif
 }
 
 String cookies(const Document* document, const KURL& url)
 {
     QUrl u(url);
-#if QT_VERSION >= 0x040400
     QNetworkCookieJar* jar = cookieJar(document);
     if (!jar)
         return String();
@@ -103,32 +90,39 @@ String cookies(const Document* document, const KURL& url)
 
     QStringList resultCookies;
     foreach (QNetworkCookie networkCookie, cookies) {
-#if QT_VERSION >= 0x040500
         if (networkCookie.isHttpOnly())
             continue;
-#endif
         resultCookies.append(QString::fromAscii(
                              networkCookie.toRawForm(QNetworkCookie::NameAndValueOnly).constData()));
     }
 
     return resultCookies.join(QLatin1String("; "));
-#else
-    QString cookies = QCookieJar::cookieJar()->cookies(u);
-    int idx = cookies.indexOf(QLatin1Char(';'));
-    if (idx > 0)
-        cookies = cookies.left(idx);
-    return cookies;
-#endif
+}
+
+String cookieRequestHeaderFieldValue(const Document* document, const KURL &url)
+{
+    QUrl u(url);
+    QNetworkCookieJar* jar = cookieJar(document);
+    if (!jar)
+        return String();
+
+    QList<QNetworkCookie> cookies = jar->cookiesForUrl(u);
+    if (cookies.isEmpty())
+        return String();
+
+    QStringList resultCookies;
+    foreach (QNetworkCookie networkCookie, cookies) {
+        resultCookies.append(QString::fromAscii(
+                             networkCookie.toRawForm(QNetworkCookie::NameAndValueOnly).constData()));
+    }
+
+    return resultCookies.join(QLatin1String("; "));
 }
 
 bool cookiesEnabled(const Document* document)
 {
-#if QT_VERSION >= 0x040400
     QNetworkCookieJar* jar = cookieJar(document);
     return (jar != 0);
-#else
-    return QCookieJar::cookieJar()->isEnabled();
-#endif
 }
 
 bool getRawCookies(const Document*, const KURL&, Vector<Cookie>& rawCookies)

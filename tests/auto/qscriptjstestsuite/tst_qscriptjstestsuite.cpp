@@ -683,11 +683,6 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 7", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 26", willFixInNextReleaseMessage);
 
-#ifndef Q_CC_MINGW
-    addExpectedFailure("ecma/Expressions/11.4.7-02.js", "-(-2147483648) == 2147483648", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma/TypeConversion/9.3.1-3.js", "- -\"0x80000000\"", willFixInNextReleaseMessage);
-#endif
-
 #ifdef Q_CC_MSVC
     addExpectedFailure("ecma_3/Expressions/11.7.3-01.js", "11.7.3 - >>> should evaluate operands in order: order", "QTBUG-8056");
     addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.7.3 >>>", "QTBUG-8056");

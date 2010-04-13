@@ -26,7 +26,7 @@
 #ifndef RUNTIME_FUNCTION_H_
 #define RUNTIME_FUNCTION_H_
 
-#include "runtime.h"
+#include "Bridge.h"
 #include <runtime/InternalFunction.h>
 #include <runtime/JSGlobalObject.h>
 #include <wtf/OwnPtr.h>
@@ -47,12 +47,14 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue prototype)
     {
-        return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
+        return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount);
     }
+
+    virtual const ClassInfo* classInfo() const { return &s_info; }
 
 private:
     static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | OverridesMarkChildren | InternalFunction::StructureFlags;
-    static JSValue lengthGetter(ExecState*, const Identifier&, const PropertySlot&);
+    static JSValue lengthGetter(ExecState*, JSValue, const Identifier&);
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual CallType getCallData(CallData&);

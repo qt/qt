@@ -27,7 +27,6 @@
 #define IntPoint_h
 
 #include "IntSize.h"
-#include <wtf/Platform.h>
 
 #if PLATFORM(QT)
 #include <QDataStream>
@@ -61,6 +60,10 @@ class BPoint;
 
 #if PLATFORM(WX)
 class wxPoint;
+#endif
+
+#if PLATFORM(BREWMP)
+typedef struct _point AEEPoint;
 #endif
 
 #if PLATFORM(SKIA)
@@ -133,6 +136,11 @@ public:
     operator wxPoint() const;
 #endif
 
+#if PLATFORM(BREWMP)
+    IntPoint(const AEEPoint&);
+    operator AEEPoint() const;
+#endif
+
 #if PLATFORM(SKIA)
     IntPoint(const SkIPoint&);
     operator SkIPoint() const;
@@ -178,6 +186,11 @@ inline bool operator==(const IntPoint& a, const IntPoint& b)
 inline bool operator!=(const IntPoint& a, const IntPoint& b)
 {
     return a.x() != b.x() || a.y() != b.y();
+}
+
+inline IntPoint toPoint(const IntSize& size)
+{
+    return IntPoint(size.width(), size.height());
 }
 
 #if PLATFORM(QT)

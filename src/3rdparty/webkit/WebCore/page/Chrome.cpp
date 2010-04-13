@@ -67,9 +67,19 @@ Chrome::~Chrome()
     m_client->chromeDestroyed();
 }
 
-void Chrome::repaint(const IntRect& windowRect, bool contentChanged, bool immediate, bool repaintContentOnly)
+void Chrome::invalidateWindow(const IntRect& updateRect, bool immediate)
 {
-    m_client->repaint(windowRect, contentChanged, immediate, repaintContentOnly);
+    m_client->invalidateWindow(updateRect, immediate);
+}
+
+void Chrome::invalidateContentsAndWindow(const IntRect& updateRect, bool immediate)
+{
+    m_client->invalidateContentsAndWindow(updateRect, immediate);
+}
+
+void Chrome::invalidateContentsForSlowScroll(const IntRect& updateRect, bool immediate)
+{
+    m_client->invalidateContentsForSlowScroll(updateRect, immediate);
 }
 
 void Chrome::scroll(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
@@ -145,6 +155,11 @@ bool Chrome::canTakeFocus(FocusDirection direction) const
 void Chrome::takeFocus(FocusDirection direction) const
 {
     m_client->takeFocus(direction);
+}
+
+void Chrome::focusedNodeChanged(Node* node) const
+{
+    m_client->focusedNodeChanged(node);
 }
 
 Page* Chrome::createWindow(Frame* frame, const FrameLoadRequest& request, const WindowFeatures& features) const
@@ -302,6 +317,16 @@ bool Chrome::shouldInterruptJavaScript()
     return m_client->shouldInterruptJavaScript();
 }
 
+void Chrome::registerProtocolHandler(const String& scheme, const String& baseURL, const String& url, const String& title)
+{
+    m_client->registerProtocolHandler(scheme, baseURL, url, title);
+}
+
+void Chrome::registerContentHandler(const String& mimeType, const String& baseURL, const String& url, const String& title)
+{
+    m_client->registerContentHandler(mimeType,  baseURL, url,  title);
+}
+
 IntRect Chrome::windowResizerRect() const
 {
     return m_client->windowResizerRect();
@@ -312,7 +337,7 @@ void Chrome::mouseDidMoveOverElement(const HitTestResult& result, unsigned modif
     if (result.innerNode()) {
         Document* document = result.innerNode()->document();
         if (document && document->isDNSPrefetchEnabled())
-            prefetchDNS(result.absoluteLinkURL().host());
+            ResourceHandle::prepareForURL(result.absoluteLinkURL());
     }
     m_client->mouseDidMoveOverElement(result, modifierFlags);
 
@@ -392,17 +417,22 @@ void Chrome::print(Frame* frame)
 
 void Chrome::requestGeolocationPermissionForFrame(Frame* frame, Geolocation* geolocation)
 {
-    // Defer loads in case the client method runs a new event loop that would
-    // otherwise cause the load to continue while we're in the middle of executing JavaScript.
-    PageGroupLoadDeferrer deferrer(m_page, true);
-
-    ASSERT(frame);
     m_client->requestGeolocationPermissionForFrame(frame, geolocation);
+}
+
+void Chrome::cancelGeolocationPermissionRequestForFrame(Frame* frame)
+{
+    m_client->cancelGeolocationPermissionRequestForFrame(frame);
 }
 
 void Chrome::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> fileChooser)
 {
     m_client->runOpenPanel(frame, fileChooser);
+}
+
+void Chrome::chooseIconForFiles(const Vector<String>& filenames, PassRefPtr<FileChooser> fileChooser)
+{
+    m_client->chooseIconForFiles(filenames, fileChooser);
 }
 
 bool Chrome::setCursor(PlatformCursorHandle cursor)

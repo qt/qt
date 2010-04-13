@@ -41,20 +41,20 @@ ASSERT_CLASS_FITS_IN_CELL(JSNavigator);
 
 static const HashTableValue JSNavigatorTableValues[15] =
 {
-    { "appCodeName", DontDelete|ReadOnly, (intptr_t)jsNavigatorAppCodeName, (intptr_t)0 },
-    { "appName", DontDelete|ReadOnly, (intptr_t)jsNavigatorAppName, (intptr_t)0 },
-    { "appVersion", DontDelete|ReadOnly, (intptr_t)jsNavigatorAppVersion, (intptr_t)0 },
-    { "language", DontDelete|ReadOnly, (intptr_t)jsNavigatorLanguage, (intptr_t)0 },
-    { "userAgent", DontDelete|ReadOnly, (intptr_t)jsNavigatorUserAgent, (intptr_t)0 },
-    { "platform", DontDelete|ReadOnly, (intptr_t)jsNavigatorPlatform, (intptr_t)0 },
-    { "plugins", DontDelete|ReadOnly, (intptr_t)jsNavigatorPlugins, (intptr_t)0 },
-    { "mimeTypes", DontDelete|ReadOnly, (intptr_t)jsNavigatorMimeTypes, (intptr_t)0 },
-    { "product", DontDelete|ReadOnly, (intptr_t)jsNavigatorProduct, (intptr_t)0 },
-    { "productSub", DontDelete|ReadOnly, (intptr_t)jsNavigatorProductSub, (intptr_t)0 },
-    { "vendor", DontDelete|ReadOnly, (intptr_t)jsNavigatorVendor, (intptr_t)0 },
-    { "vendorSub", DontDelete|ReadOnly, (intptr_t)jsNavigatorVendorSub, (intptr_t)0 },
-    { "cookieEnabled", DontDelete|ReadOnly, (intptr_t)jsNavigatorCookieEnabled, (intptr_t)0 },
-    { "onLine", DontDelete|ReadOnly, (intptr_t)jsNavigatorOnLine, (intptr_t)0 },
+    { "appCodeName", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorAppCodeName), (intptr_t)0 },
+    { "appName", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorAppName), (intptr_t)0 },
+    { "appVersion", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorAppVersion), (intptr_t)0 },
+    { "language", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorLanguage), (intptr_t)0 },
+    { "userAgent", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorUserAgent), (intptr_t)0 },
+    { "platform", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorPlatform), (intptr_t)0 },
+    { "plugins", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorPlugins), (intptr_t)0 },
+    { "mimeTypes", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorMimeTypes), (intptr_t)0 },
+    { "product", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorProduct), (intptr_t)0 },
+    { "productSub", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorProductSub), (intptr_t)0 },
+    { "vendor", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorVendor), (intptr_t)0 },
+    { "vendorSub", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorVendorSub), (intptr_t)0 },
+    { "cookieEnabled", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorCookieEnabled), (intptr_t)0 },
+    { "onLine", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNavigatorOnLine), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -67,18 +67,20 @@ static JSC_CONST_HASHTABLE HashTable JSNavigatorTable =
 
 /* Hash table for prototype */
 
-static const HashTableValue JSNavigatorPrototypeTableValues[3] =
+static const HashTableValue JSNavigatorPrototypeTableValues[5] =
 {
-    { "javaEnabled", DontDelete|Function, (intptr_t)jsNavigatorPrototypeFunctionJavaEnabled, (intptr_t)0 },
-    { "getStorageUpdates", DontDelete|Function, (intptr_t)jsNavigatorPrototypeFunctionGetStorageUpdates, (intptr_t)0 },
+    { "javaEnabled", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsNavigatorPrototypeFunctionJavaEnabled), (intptr_t)0 },
+    { "getStorageUpdates", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsNavigatorPrototypeFunctionGetStorageUpdates), (intptr_t)0 },
+    { "registerProtocolHandler", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsNavigatorPrototypeFunctionRegisterProtocolHandler), (intptr_t)3 },
+    { "registerContentHandler", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsNavigatorPrototypeFunctionRegisterContentHandler), (intptr_t)3 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSNavigatorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 1, JSNavigatorPrototypeTableValues, 0 };
+    { 31, JSNavigatorPrototypeTableValues, 0 };
 #else
-    { 4, 3, JSNavigatorPrototypeTableValues, 0 };
+    { 9, 7, JSNavigatorPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSNavigatorPrototype::s_info = { "NavigatorPrototype", 0, &JSNavigatorPrototypeTable, 0 };
@@ -126,116 +128,130 @@ bool JSNavigator::getOwnPropertyDescriptor(ExecState* exec, const Identifier& pr
     return getStaticValueDescriptor<JSNavigator, Base>(exec, &JSNavigatorTable, this, propertyName, descriptor);
 }
 
-JSValue jsNavigatorAppCodeName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorAppCodeName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return jsString(exec, imp->appCodeName());
+    JSValue result = jsString(exec, imp->appCodeName());
+    return result;
 }
 
-JSValue jsNavigatorAppName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorAppName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return jsString(exec, imp->appName());
+    JSValue result = jsString(exec, imp->appName());
+    return result;
 }
 
-JSValue jsNavigatorAppVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorAppVersion(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return jsString(exec, imp->appVersion());
+    JSValue result = jsString(exec, imp->appVersion());
+    return result;
 }
 
-JSValue jsNavigatorLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorLanguage(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return jsString(exec, imp->language());
+    JSValue result = jsString(exec, imp->language());
+    return result;
 }
 
-JSValue jsNavigatorUserAgent(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorUserAgent(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return jsString(exec, imp->userAgent());
+    JSValue result = jsString(exec, imp->userAgent());
+    return result;
 }
 
-JSValue jsNavigatorPlatform(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorPlatform(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return jsString(exec, imp->platform());
+    JSValue result = jsString(exec, imp->platform());
+    return result;
 }
 
-JSValue jsNavigatorPlugins(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorPlugins(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->plugins()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->plugins()));
+    return result;
 }
 
-JSValue jsNavigatorMimeTypes(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorMimeTypes(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->mimeTypes()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->mimeTypes()));
+    return result;
 }
 
-JSValue jsNavigatorProduct(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorProduct(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return jsString(exec, imp->product());
+    JSValue result = jsString(exec, imp->product());
+    return result;
 }
 
-JSValue jsNavigatorProductSub(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorProductSub(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return jsString(exec, imp->productSub());
+    JSValue result = jsString(exec, imp->productSub());
+    return result;
 }
 
-JSValue jsNavigatorVendor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorVendor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return jsString(exec, imp->vendor());
+    JSValue result = jsString(exec, imp->vendor());
+    return result;
 }
 
-JSValue jsNavigatorVendorSub(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorVendorSub(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return jsString(exec, imp->vendorSub());
+    JSValue result = jsString(exec, imp->vendorSub());
+    return result;
 }
 
-JSValue jsNavigatorCookieEnabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorCookieEnabled(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return jsBoolean(imp->cookieEnabled());
+    JSValue result = jsBoolean(imp->cookieEnabled());
+    return result;
 }
 
-JSValue jsNavigatorOnLine(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorOnLine(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slot.slotBase()));
+    JSNavigator* castedThis = static_cast<JSNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(castedThis->impl());
-    return jsBoolean(imp->onLine());
+    JSValue result = jsBoolean(imp->onLine());
+    return result;
 }
 
 JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionJavaEnabled(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -260,6 +276,40 @@ JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionGetStorageUpdates(ExecState* e
     Navigator* imp = static_cast<Navigator*>(castedThisObj->impl());
 
     imp->getStorageUpdates();
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionRegisterProtocolHandler(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSNavigator::s_info))
+        return throwError(exec, TypeError);
+    JSNavigator* castedThisObj = static_cast<JSNavigator*>(asObject(thisValue));
+    Navigator* imp = static_cast<Navigator*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
+    const UString& scheme = args.at(0).toString(exec);
+    const UString& url = args.at(1).toString(exec);
+    const UString& title = args.at(2).toString(exec);
+
+    imp->registerProtocolHandler(scheme, url, title, ec);
+    setDOMException(exec, ec);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionRegisterContentHandler(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSNavigator::s_info))
+        return throwError(exec, TypeError);
+    JSNavigator* castedThisObj = static_cast<JSNavigator*>(asObject(thisValue));
+    Navigator* imp = static_cast<Navigator*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
+    const UString& mimeType = args.at(0).toString(exec);
+    const UString& url = args.at(1).toString(exec);
+    const UString& title = args.at(2).toString(exec);
+
+    imp->registerContentHandler(mimeType, url, title, ec);
+    setDOMException(exec, ec);
     return jsUndefined();
 }
 

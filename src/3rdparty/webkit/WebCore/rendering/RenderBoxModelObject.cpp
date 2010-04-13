@@ -33,6 +33,7 @@
 #include "RenderInline.h"
 #include "RenderLayer.h"
 #include "RenderView.h"
+#include <wtf/CurrentTime.h>
 
 using namespace std;
 
@@ -43,6 +44,142 @@ using namespace HTMLNames;
 bool RenderBoxModelObject::s_wasFloating = false;
 bool RenderBoxModelObject::s_hadLayer = false;
 bool RenderBoxModelObject::s_layerWasSelfPainting = false;
+
+static const double cInterpolationCutoff = 800. * 800.;
+static const double cLowQualityTimeThreshold = 0.500; // 500 ms
+
+class RenderBoxModelScaleData : public Noncopyable {
+public:
+    RenderBoxModelScaleData(RenderBoxModelObject* object, const IntSize& size, const AffineTransform& transform, double time, bool lowQualityScale)
+        : m_size(size)
+        , m_transform(transform)
+        , m_lastPaintTime(time)
+        , m_lowQualityScale(lowQualityScale)
+        , m_highQualityRepaintTimer(object, &RenderBoxModelObject::highQualityRepaintTimerFired)
+    {
+    }
+
+    ~RenderBoxModelScaleData()
+    {
+        m_highQualityRepaintTimer.stop();
+    }
+
+    Timer<RenderBoxModelObject>& hiqhQualityRepaintTimer() { return m_highQualityRepaintTimer; }
+
+    const IntSize& size() const { return m_size; }
+    void setSize(const IntSize& s) { m_size = s; }
+    double lastPaintTime() const { return m_lastPaintTime; }
+    void setLastPaintTime(double t) { m_lastPaintTime = t; }
+    bool useLowQualityScale() const { return m_lowQualityScale; }
+    const AffineTransform& transform() const { return m_transform; }
+    void setTransform(const AffineTransform& transform) { m_transform = transform; }
+    void setUseLowQualityScale(bool b)
+    {
+        m_highQualityRepaintTimer.stop();
+        m_lowQualityScale = b;
+        if (b)
+            m_highQualityRepaintTimer.startOneShot(cLowQualityTimeThreshold);
+    }
+
+private:
+    IntSize m_size;
+    AffineTransform m_transform;
+    double m_lastPaintTime;
+    bool m_lowQualityScale;
+    Timer<RenderBoxModelObject> m_highQualityRepaintTimer;
+};
+
+class RenderBoxModelScaleObserver {
+public:
+    static bool shouldPaintBackgroundAtLowQuality(GraphicsContext*, RenderBoxModelObject*, Image*, const IntSize&);
+
+    static void boxModelObjectDestroyed(RenderBoxModelObject* object)
+    {
+        if (gBoxModelObjects) {
+            RenderBoxModelScaleData* data = gBoxModelObjects->take(object);
+            delete data;
+            if (!gBoxModelObjects->size()) {
+                delete gBoxModelObjects;
+                gBoxModelObjects = 0;
+            }
+        }
+    }
+
+    static void highQualityRepaintTimerFired(RenderBoxModelObject* object)
+    {
+        RenderBoxModelScaleObserver::boxModelObjectDestroyed(object);
+        object->repaint();
+    }
+
+    static HashMap<RenderBoxModelObject*, RenderBoxModelScaleData*>* gBoxModelObjects;
+};
+
+bool RenderBoxModelScaleObserver::shouldPaintBackgroundAtLowQuality(GraphicsContext* context, RenderBoxModelObject* object, Image* image, const IntSize& size)
+{
+    // If the image is not a bitmap image, then none of this is relevant and we just paint at high
+    // quality.
+    if (!image || !image->isBitmapImage())
+        return false;
+
+    // Make sure to use the unzoomed image size, since if a full page zoom is in effect, the image
+    // is actually being scaled.
+    IntSize imageSize(image->width(), image->height());
+
+    // Look ourselves up in the hashtable.
+    RenderBoxModelScaleData* data = 0;
+    if (gBoxModelObjects)
+        data = gBoxModelObjects->get(object);
+
+    const AffineTransform& currentTransform = context->getCTM();
+    bool contextIsScaled = !currentTransform.isIdentityOrTranslationOrFlipped();
+    if (!contextIsScaled && imageSize == size) {
+        // There is no scale in effect.  If we had a scale in effect before, we can just delete this data.
+        if (data) {
+            gBoxModelObjects->remove(object);
+            delete data;
+        }
+        return false;
+    }
+
+    // There is no need to hash scaled images that always use low quality mode when the page demands it.  This is the iChat case.
+    if (object->document()->page()->inLowQualityImageInterpolationMode()) {
+        double totalPixels = static_cast<double>(image->width()) * static_cast<double>(image->height());
+        if (totalPixels > cInterpolationCutoff)
+            return true;
+    }
+
+    // If there is no data yet, we will paint the first scale at high quality and record the paint time in case a second scale happens
+    // very soon.
+    if (!data) {
+        data = new RenderBoxModelScaleData(object, size, currentTransform, currentTime(), false);
+        if (!gBoxModelObjects)
+            gBoxModelObjects = new HashMap<RenderBoxModelObject*, RenderBoxModelScaleData*>;
+        gBoxModelObjects->set(object, data);
+        return false;
+    }
+
+    const AffineTransform& tr = data->transform();
+    bool scaleUnchanged = tr.a() == currentTransform.a() && tr.b() == currentTransform.b() && tr.c() == currentTransform.c() && tr.d() == currentTransform.d();
+    // We are scaled, but we painted already at this size, so just keep using whatever mode we last painted with.
+    if ((!contextIsScaled || scaleUnchanged) && data->size() == size)
+        return data->useLowQualityScale();
+
+    // We have data and our size just changed.  If this change happened quickly, go into low quality mode and then set a repaint
+    // timer to paint in high quality mode.  Otherwise it is ok to just paint in high quality mode.
+    double newTime = currentTime();
+    data->setUseLowQualityScale(newTime - data->lastPaintTime() < cLowQualityTimeThreshold);
+    data->setLastPaintTime(newTime);
+    data->setTransform(currentTransform);
+    data->setSize(size);
+    return data->useLowQualityScale();
+}
+
+HashMap<RenderBoxModelObject*, RenderBoxModelScaleData*>* RenderBoxModelScaleObserver::gBoxModelObjects = 0;
+
+void RenderBoxModelObject::highQualityRepaintTimerFired(Timer<RenderBoxModelObject>*)
+{
+    RenderBoxModelScaleObserver::highQualityRepaintTimerFired(this);
+}
 
 RenderBoxModelObject::RenderBoxModelObject(Node* node)
     : RenderObject(node)
@@ -55,6 +192,7 @@ RenderBoxModelObject::~RenderBoxModelObject()
     // Our layer should have been destroyed and cleared by now
     ASSERT(!hasLayer());
     ASSERT(!m_layer);
+    RenderBoxModelScaleObserver::boxModelObjectDestroyed(this);
 }
 
 void RenderBoxModelObject::destroyLayer()
@@ -304,9 +442,12 @@ int RenderBoxModelObject::paddingRight(bool) const
 }
 
 
-void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, const Color& c, const FillLayer* bgLayer, int tx, int ty, int w, int h, InlineFlowBox* box, CompositeOperator op)
+void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, const Color& c, const FillLayer* bgLayer, int tx, int ty, int w, int h, InlineFlowBox* box, CompositeOperator op, RenderObject* backgroundObject)
 {
     GraphicsContext* context = paintInfo.context;
+    if (context->paintingDisabled())
+        return;
+
     bool includeLeftEdge = box ? box->includeLeftEdge() : true;
     bool includeRightEdge = box ? box->includeRightEdge() : true;
     int bLeft = includeLeftEdge ? borderLeft() : 0;
@@ -340,7 +481,9 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
         context->clip(toRenderBox(this)->overflowClipRect(tx, ty));
         
         // Now adjust our tx, ty, w, h to reflect a scrolled content box with borders at the ends.
-        layer()->subtractScrolledContentOffset(tx, ty);
+        IntSize offset = layer()->scrolledContentOffset();
+        tx -= offset.width();
+        ty -= offset.height();
         w = bLeft + layer()->scrollWidth() + bRight;
         h = borderTop() + layer()->scrollHeight() + borderBottom();
     }
@@ -441,14 +584,14 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
             if (baseColor.alpha() > 0) {
                 context->save();
                 context->setCompositeOperation(CompositeCopy);
-                context->fillRect(rect, baseColor);
+                context->fillRect(rect, baseColor, style()->colorSpace());
                 context->restore();
             } else
                 context->clearRect(rect);
         }
 
         if (bgColor.isValid() && bgColor.alpha() > 0)
-            context->fillRect(rect, bgColor);
+            context->fillRect(rect, bgColor, style()->colorSpace());
     }
 
     // no progressive loading of the background image
@@ -463,21 +606,10 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
         if (!destRect.isEmpty()) {
             phase += destRect.location() - destOrigin;
             CompositeOperator compositeOp = op == CompositeSourceOver ? bgLayer->composite() : op;
-            RenderObject* clientForBackgroundImage = this;
-            // Check if this is the root element painting a background layer propagated from <body>,
-            // and pass the body's renderer as the client in that case.
-            if (isRoot && !style()->hasBackground()) {
-                ASSERT(node()->hasTagName(htmlTag));
-                HTMLElement* body = document()->body();
-                ASSERT(body);
-                ASSERT(body->hasLocalName(bodyTag));
-                ASSERT(body->renderer());
-                if (body) {
-                    if (RenderObject* bodyRenderer = body->renderer())
-                        clientForBackgroundImage = bodyRenderer;
-                }
-            }
-            context->drawTiledImage(bg->image(clientForBackgroundImage, tileSize), destRect, phase, tileSize, compositeOp);
+            RenderObject* clientForBackgroundImage = backgroundObject ? backgroundObject : this;
+            Image* image = bg->image(clientForBackgroundImage, tileSize);
+            bool useLowQualityScaling = RenderBoxModelScaleObserver::shouldPaintBackgroundAtLowQuality(context, this, image, tileSize);
+            context->drawTiledImage(image, style()->colorSpace(), destRect, phase, tileSize, compositeOp, useLowQualityScaling);
         }
     }
 
@@ -663,7 +795,8 @@ int RenderBoxModelObject::verticalPosition(bool firstLine) const
             vpos += -static_cast<int>(f.xHeight() / 2) - lineHeight(firstLine) / 2 + baselinePosition(firstLine);
         else if (va == TEXT_BOTTOM) {
             vpos += f.descent();
-            if (!isReplaced()) // lineHeight - baselinePosition is always 0 for replaced elements, so don't bother wasting time in that case.
+            // lineHeight - baselinePosition is always 0 for replaced elements (except inline blocks), so don't bother wasting time in that case.
+            if (!isReplaced() || style()->display() == INLINE_BLOCK)
                 vpos -= (lineHeight(firstLine) - baselinePosition(firstLine));
         } else if (va == BASELINE_MIDDLE)
             vpos += -lineHeight(firstLine) / 2 + baselinePosition(firstLine);
@@ -717,6 +850,7 @@ bool RenderBoxModelObject::paintNinePieceImage(GraphicsContext* graphicsContext,
                       (imageHeight - topSlice - bottomSlice) > 0 && (h - topWidth - bottomWidth) > 0;
 
     Image* image = styleImage->image(this, imageSize);
+    ColorSpace colorSpace = style->colorSpace();
 
     if (drawLeft) {
         // Paint the top and bottom left corners.
@@ -724,18 +858,18 @@ bool RenderBoxModelObject::paintNinePieceImage(GraphicsContext* graphicsContext,
         // The top left corner rect is (tx, ty, leftWidth, topWidth)
         // The rect to use from within the image is obtained from our slice, and is (0, 0, leftSlice, topSlice)
         if (drawTop)
-            graphicsContext->drawImage(image, IntRect(tx, ty, leftWidth, topWidth),
+            graphicsContext->drawImage(image, colorSpace, IntRect(tx, ty, leftWidth, topWidth),
                                        IntRect(0, 0, leftSlice, topSlice), op);
 
         // The bottom left corner rect is (tx, ty + h - bottomWidth, leftWidth, bottomWidth)
         // The rect to use from within the image is (0, imageHeight - bottomSlice, leftSlice, botomSlice)
         if (drawBottom)
-            graphicsContext->drawImage(image, IntRect(tx, ty + h - bottomWidth, leftWidth, bottomWidth),
+            graphicsContext->drawImage(image, colorSpace, IntRect(tx, ty + h - bottomWidth, leftWidth, bottomWidth),
                                        IntRect(0, imageHeight - bottomSlice, leftSlice, bottomSlice), op);
 
         // Paint the left edge.
         // Have to scale and tile into the border rect.
-        graphicsContext->drawTiledImage(image, IntRect(tx, ty + topWidth, leftWidth,
+        graphicsContext->drawTiledImage(image, colorSpace, IntRect(tx, ty + topWidth, leftWidth,
                                         h - topWidth - bottomWidth),
                                         IntRect(0, topSlice, leftSlice, imageHeight - topSlice - bottomSlice),
                                         Image::StretchTile, (Image::TileRule)vRule, op);
@@ -746,17 +880,17 @@ bool RenderBoxModelObject::paintNinePieceImage(GraphicsContext* graphicsContext,
         // The top right corner rect is (tx + w - rightWidth, ty, rightWidth, topWidth)
         // The rect to use from within the image is obtained from our slice, and is (imageWidth - rightSlice, 0, rightSlice, topSlice)
         if (drawTop)
-            graphicsContext->drawImage(image, IntRect(tx + w - rightWidth, ty, rightWidth, topWidth),
+            graphicsContext->drawImage(image, colorSpace, IntRect(tx + w - rightWidth, ty, rightWidth, topWidth),
                                        IntRect(imageWidth - rightSlice, 0, rightSlice, topSlice), op);
 
         // The bottom right corner rect is (tx + w - rightWidth, ty + h - bottomWidth, rightWidth, bottomWidth)
         // The rect to use from within the image is (imageWidth - rightSlice, imageHeight - bottomSlice, rightSlice, bottomSlice)
         if (drawBottom)
-            graphicsContext->drawImage(image, IntRect(tx + w - rightWidth, ty + h - bottomWidth, rightWidth, bottomWidth),
+            graphicsContext->drawImage(image, colorSpace, IntRect(tx + w - rightWidth, ty + h - bottomWidth, rightWidth, bottomWidth),
                                        IntRect(imageWidth - rightSlice, imageHeight - bottomSlice, rightSlice, bottomSlice), op);
 
         // Paint the right edge.
-        graphicsContext->drawTiledImage(image, IntRect(tx + w - rightWidth, ty + topWidth, rightWidth,
+        graphicsContext->drawTiledImage(image, colorSpace, IntRect(tx + w - rightWidth, ty + topWidth, rightWidth,
                                         h - topWidth - bottomWidth),
                                         IntRect(imageWidth - rightSlice, topSlice, rightSlice, imageHeight - topSlice - bottomSlice),
                                         Image::StretchTile, (Image::TileRule)vRule, op);
@@ -764,20 +898,20 @@ bool RenderBoxModelObject::paintNinePieceImage(GraphicsContext* graphicsContext,
 
     // Paint the top edge.
     if (drawTop)
-        graphicsContext->drawTiledImage(image, IntRect(tx + leftWidth, ty, w - leftWidth - rightWidth, topWidth),
+        graphicsContext->drawTiledImage(image, colorSpace, IntRect(tx + leftWidth, ty, w - leftWidth - rightWidth, topWidth),
                                         IntRect(leftSlice, 0, imageWidth - rightSlice - leftSlice, topSlice),
                                         (Image::TileRule)hRule, Image::StretchTile, op);
 
     // Paint the bottom edge.
     if (drawBottom)
-        graphicsContext->drawTiledImage(image, IntRect(tx + leftWidth, ty + h - bottomWidth,
+        graphicsContext->drawTiledImage(image, colorSpace, IntRect(tx + leftWidth, ty + h - bottomWidth,
                                         w - leftWidth - rightWidth, bottomWidth),
                                         IntRect(leftSlice, imageHeight - bottomSlice, imageWidth - rightSlice - leftSlice, bottomSlice),
                                         (Image::TileRule)hRule, Image::StretchTile, op);
 
     // Paint the middle.
     if (drawMiddle)
-        graphicsContext->drawTiledImage(image, IntRect(tx + leftWidth, ty + topWidth, w - leftWidth - rightWidth,
+        graphicsContext->drawTiledImage(image, colorSpace, IntRect(tx + leftWidth, ty + topWidth, w - leftWidth - rightWidth,
                                         h - topWidth - bottomWidth),
                                         IntRect(leftSlice, topSlice, imageWidth - rightSlice - leftSlice, imageHeight - topSlice - bottomSlice),
                                         (Image::TileRule)hRule, (Image::TileRule)vRule, op);
@@ -1209,7 +1343,7 @@ void RenderBoxModelObject::paintBoxShadow(GraphicsContext* context, int tx, int 
             shadowOffset -= extraOffset;
             fillRect.move(extraOffset);
 
-            context->setShadow(shadowOffset, shadowBlur, shadowColor);
+            context->setShadow(shadowOffset, shadowBlur, shadowColor, s->colorSpace());
             if (hasBorderRadius) {
                 IntRect rectToClipOut = rect;
                 IntSize topLeftToClipOut = topLeft;
@@ -1252,7 +1386,7 @@ void RenderBoxModelObject::paintBoxShadow(GraphicsContext* context, int tx, int 
 
                 if (!rectToClipOut.isEmpty())
                     context->clipOutRoundedRect(rectToClipOut, topLeftToClipOut, topRightToClipOut, bottomLeftToClipOut, bottomRightToClipOut);
-                context->fillRoundedRect(fillRect, topLeft, topRight, bottomLeft, bottomRight, Color::black);
+                context->fillRoundedRect(fillRect, topLeft, topRight, bottomLeft, bottomRight, Color::black, s->colorSpace());
             } else {
                 IntRect rectToClipOut = rect;
 
@@ -1261,7 +1395,7 @@ void RenderBoxModelObject::paintBoxShadow(GraphicsContext* context, int tx, int 
                 // edges if they are not pixel-aligned. Those are avoided by insetting the clipping path
                 // by one pixel.
                 if (hasOpaqueBackground) {
-                    TransformationMatrix currentTransformation = context->getCTM();
+                    AffineTransform currentTransformation = context->getCTM();
                     if (currentTransformation.a() != 1 || (currentTransformation.d() != 1 && currentTransformation.d() != -1)
                             || currentTransformation.b() || currentTransformation.c())
                         rectToClipOut.inflate(-1);
@@ -1269,7 +1403,7 @@ void RenderBoxModelObject::paintBoxShadow(GraphicsContext* context, int tx, int 
 
                 if (!rectToClipOut.isEmpty())
                     context->clipOut(rectToClipOut);
-                context->fillRect(fillRect, Color::black);
+                context->fillRect(fillRect, Color::black, s->colorSpace());
             }
 
             context->restore();
@@ -1280,9 +1414,9 @@ void RenderBoxModelObject::paintBoxShadow(GraphicsContext* context, int tx, int 
 
             if (holeRect.isEmpty()) {
                 if (hasBorderRadius)
-                    context->fillRoundedRect(rect, topLeft, topRight, bottomLeft, bottomRight, shadowColor);
+                    context->fillRoundedRect(rect, topLeft, topRight, bottomLeft, bottomRight, shadowColor, s->colorSpace());
                 else
-                    context->fillRect(rect, shadowColor);
+                    context->fillRect(rect, shadowColor, s->colorSpace());
                 continue;
             }
             if (!begin) {
@@ -1331,8 +1465,8 @@ void RenderBoxModelObject::paintBoxShadow(GraphicsContext* context, int tx, int 
                 context->addPath(Path::createRectangle(holeRect));
 
             context->setFillRule(RULE_EVENODD);
-            context->setFillColor(fillColor);
-            context->setShadow(shadowOffset, shadowBlur, shadowColor);
+            context->setFillColor(fillColor, s->colorSpace());
+            context->setShadow(shadowOffset, shadowBlur, shadowColor, s->colorSpace());
             context->fillPath();
 
             context->restore();

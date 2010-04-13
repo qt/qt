@@ -43,9 +43,10 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
@@ -61,7 +62,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSSVGRectElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -78,25 +79,26 @@ JSC::JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionGetScreenCTM(JSC::Ex
 JSC::JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionGetTransformToElement(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsSVGRectElementX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementWidth(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementHeight(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementRx(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementRy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementRequiredFeatures(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementRequiredExtensions(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementSystemLanguage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementXmllang(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGRectElementX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementWidth(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementHeight(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementRx(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementRy(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementRequiredFeatures(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementRequiredExtensions(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementSystemLanguage(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementXmllang(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSSVGRectElementXmllang(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsSVGRectElementXmlspace(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGRectElementXmlspace(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSSVGRectElementXmlspace(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsSVGRectElementExternalResourcesRequired(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementClassName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementStyle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementTransform(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementNearestViewportElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGRectElementFarthestViewportElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGRectElementExternalResourcesRequired(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementClassName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementStyle(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementTransform(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementNearestViewportElement(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementFarthestViewportElement(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGRectElementConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

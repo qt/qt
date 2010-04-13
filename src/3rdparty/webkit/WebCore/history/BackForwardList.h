@@ -35,8 +35,11 @@
 
 namespace WebCore {
 
+class Document;
 class HistoryItem;
 class Page;
+class SerializedScriptValue;
+class String;
 
 typedef Vector<RefPtr<HistoryItem> > HistoryItemVector;
 typedef HashSet<RefPtr<HistoryItem> > HistoryItemHashSet;
@@ -96,13 +99,15 @@ public:
     void removeItem(HistoryItem*);
     HistoryItemVector& entries();
     
+    void pushStateItem(PassRefPtr<HistoryItem>);
+
 #if ENABLE(WML)
     void clearWMLPageHistory();
 #endif
 
 private:
     BackForwardList(Page*);
-
+    
     Page* m_page;
 #if PLATFORM(CHROMIUM) 
     BackForwardListClient* m_client;

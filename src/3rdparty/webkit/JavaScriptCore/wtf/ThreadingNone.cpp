@@ -30,11 +30,13 @@
 #include "config.h"
 #include "Threading.h"
 
+#if ENABLE(SINGLE_THREADED)
+
 namespace WTF {
 
 void initializeThreading() { }
 ThreadIdentifier createThreadInternal(ThreadFunction, void*, const char*) { return ThreadIdentifier(); }
-void setThreadNameInternal(const char*) { }
+void initializeCurrentThreadInternal(const char*) { }
 int waitForThreadCompletion(ThreadIdentifier, void**) { return 0; }
 void detachThread(ThreadIdentifier) { }
 ThreadIdentifier currentThread() { return ThreadIdentifier(); }
@@ -57,3 +59,5 @@ void lockAtomicallyInitializedStaticMutex() { }
 void unlockAtomicallyInitializedStaticMutex() { }
 
 } // namespace WebCore
+
+#endif

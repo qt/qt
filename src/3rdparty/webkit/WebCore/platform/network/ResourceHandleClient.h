@@ -27,7 +27,6 @@
 #define ResourceHandleClient_h
 
 #include <wtf/RefCounted.h>
-#include <wtf/Platform.h>
 #include <wtf/RefPtr.h>
 
 #if USE(CFNETWORK)
@@ -50,7 +49,7 @@ namespace WebCore {
     class KURL;
     class ResourceHandle;
     class ResourceError;
-    struct ResourceRequest;
+    class ResourceRequest;
     class ResourceResponse;
 
     enum CacheStoragePolicy {

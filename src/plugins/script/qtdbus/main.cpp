@@ -44,6 +44,8 @@
 #include <QMetaMethod>
 #include <QScriptExtensionPlugin>
 
+#ifndef QT_NO_DBUS
+
 QT_USE_NAMESPACE
 
 static QScriptValue setupDBusInterface(QScriptEngine *engine, QDBusAbstractInterface *iface);
@@ -394,3 +396,5 @@ void QtDBusScriptPlugin::initialize(const QString &key, QScriptEngine *engine)
 
 Q_EXPORT_STATIC_PLUGIN(QtDBusScriptPlugin)
 Q_EXPORT_PLUGIN2(qtscriptdbus, QtDBusScriptPlugin)
+
+#endif // QT_NO_DBUS

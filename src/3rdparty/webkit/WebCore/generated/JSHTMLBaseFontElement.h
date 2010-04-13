@@ -40,7 +40,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -57,7 +57,7 @@ public:
     static const JSC::ClassInfo s_info;
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSHTMLBaseFontElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -66,13 +66,13 @@ protected:
 
 // Attributes
 
-JSC::JSValue jsHTMLBaseFontElementColor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBaseFontElementColor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBaseFontElementColor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBaseFontElementFace(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBaseFontElementFace(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBaseFontElementFace(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBaseFontElementSize(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBaseFontElementSize(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBaseFontElementSize(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBaseFontElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBaseFontElementConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

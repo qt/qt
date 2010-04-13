@@ -40,7 +40,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -59,7 +59,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSHTMLTableRowElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -72,20 +72,20 @@ JSC::JSValue JSC_HOST_CALL jsHTMLTableRowElementPrototypeFunctionInsertCell(JSC:
 JSC::JSValue JSC_HOST_CALL jsHTMLTableRowElementPrototypeFunctionDeleteCell(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsHTMLTableRowElementRowIndex(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsHTMLTableRowElementSectionRowIndex(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsHTMLTableRowElementCells(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsHTMLTableRowElementAlign(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLTableRowElementRowIndex(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsHTMLTableRowElementSectionRowIndex(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsHTMLTableRowElementCells(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsHTMLTableRowElementAlign(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLTableRowElementAlign(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLTableRowElementBgColor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLTableRowElementBgColor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLTableRowElementBgColor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLTableRowElementCh(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLTableRowElementCh(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLTableRowElementCh(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLTableRowElementChOff(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLTableRowElementChOff(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLTableRowElementChOff(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLTableRowElementVAlign(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLTableRowElementVAlign(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLTableRowElementVAlign(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLTableRowElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLTableRowElementConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

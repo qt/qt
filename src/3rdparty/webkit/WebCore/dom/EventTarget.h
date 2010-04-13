@@ -36,6 +36,7 @@
 #include "EventNames.h"
 #include "RegisteredEventListener.h"
 #include <wtf/Forward.h>
+#include <wtf/HashMap.h>
 
 namespace WebCore {
 
@@ -76,9 +77,11 @@ namespace WebCore {
     typedef Vector<FiringEventIterator, 1> FiringEventIteratorVector;
 
     typedef Vector<RegisteredEventListener, 1> EventListenerVector;
-    typedef HashMap<AtomicString, EventListenerVector> EventListenerMap;
+    typedef HashMap<AtomicString, EventListenerVector*> EventListenerMap;
 
-    struct EventTargetData {
+    struct EventTargetData : Noncopyable {
+        ~EventTargetData();
+
         EventListenerMap eventListenerMap;
         FiringEventIteratorVector firingEventIterators;
     };
@@ -137,8 +140,8 @@ namespace WebCore {
         bool isFiringEventListeners();
 
 #if USE(JSC)
-        void markEventListeners(JSC::MarkStack&);
-        void invalidateEventListeners();
+        void markJSEventListeners(JSC::MarkStack&);
+        void invalidateJSEventListeners(JSC::JSObject*);
 #endif
 
     protected:
@@ -150,6 +153,8 @@ namespace WebCore {
     private:
         virtual void refEventTarget() = 0;
         virtual void derefEventTarget() = 0;
+        
+        void fireEventListeners(Event*, EventTargetData*, EventListenerVector&);
     };
 
     #define DEFINE_ATTRIBUTE_EVENT_LISTENER(attribute) \
@@ -182,7 +187,7 @@ namespace WebCore {
 #endif
 
 #if USE(JSC)
-    inline void EventTarget::markEventListeners(JSC::MarkStack& markStack)
+    inline void EventTarget::markJSEventListeners(JSC::MarkStack& markStack)
     {
         EventTargetData* d = eventTargetData();
         if (!d)
@@ -190,19 +195,24 @@ namespace WebCore {
 
         EventListenerMap::iterator end = d->eventListenerMap.end();
         for (EventListenerMap::iterator it = d->eventListenerMap.begin(); it != end; ++it) {
-            EventListenerVector& entry = it->second;
+            EventListenerVector& entry = *it->second;
             for (size_t i = 0; i < entry.size(); ++i)
                 entry[i].listener->markJSFunction(markStack);
         }
     }
 
-    inline void EventTarget::invalidateEventListeners()
+    inline void EventTarget::invalidateJSEventListeners(JSC::JSObject* wrapper)
     {
         EventTargetData* d = eventTargetData();
         if (!d)
             return;
 
-        d->eventListenerMap.clear();
+        EventListenerMap::iterator end = d->eventListenerMap.end();
+        for (EventListenerMap::iterator it = d->eventListenerMap.begin(); it != end; ++it) {
+            EventListenerVector& entry = *it->second;
+            for (size_t i = 0; i < entry.size(); ++i)
+                entry[i].listener->invalidateJSFunction(wrapper);
+        }
     }
 #endif
 

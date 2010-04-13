@@ -165,7 +165,7 @@ void InlineFlowBox::attachLineBoxToRenderObject()
 
 void InlineFlowBox::adjustPosition(int dx, int dy)
 {
-    InlineRunBox::adjustPosition(dx, dy);
+    InlineBox::adjustPosition(dx, dy);
     for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
         child->adjustPosition(dx, dy);
     if (m_overflow)
@@ -429,7 +429,7 @@ void InlineFlowBox::computeLogicalBoxHeights(int& maxPositionTop, int& maxPositi
                 }
                 lineHeight = baseline + baselineToBottom;
             } else if (parentLineHeight.isPercent()) {
-                lineHeight = parentLineHeight.calcMinValue(curr->renderer()->style()->fontSize(), true);
+                lineHeight = parentLineHeight.calcMinValue(curr->renderer()->style()->fontSize());
                 baseline = 0;
                 for (size_t i = 0; i < usedFonts.size(); ++i) {
                     int halfLeading = (lineHeight - usedFonts[i]->ascent() - usedFonts[i]->descent()) / 2;
@@ -532,9 +532,6 @@ void InlineFlowBox::computeVerticalOverflow(int lineTop, int lineBottom, bool st
 
     // Any spillage outside of the line top and bottom is not considered overflow.  We just ignore this, since it only happens
     // from the "your ascent/descent don't affect the line" quirk.
-    // FIXME: Technically this means there can be repaint errors in the case where a line box has a shadow or background that spills
-    // outside of the block. We should consider making any line box that has anything to render just stop respecting the quirk or making
-    // boxes that render something set visual overflow.
     int topOverflow = max(y(), lineTop);
     int bottomOverflow = min(y() + boxHeight, lineBottom);
     
@@ -706,11 +703,11 @@ void InlineFlowBox::paintFillLayer(const RenderObject::PaintInfo& paintInfo, con
         // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
         // but it isn't even clear how this should work at all.
         int xOffsetOnLine = 0;
-        for (InlineRunBox* curr = prevLineBox(); curr; curr = curr->prevLineBox())
+        for (InlineFlowBox* curr = prevLineBox(); curr; curr = curr->prevLineBox())
             xOffsetOnLine += curr->width();
         int startX = tx - xOffsetOnLine;
         int totalWidth = xOffsetOnLine;
-        for (InlineRunBox* curr = this; curr; curr = curr->nextLineBox())
+        for (InlineFlowBox* curr = this; curr; curr = curr->nextLineBox())
             totalWidth += curr->width();
         paintInfo.context->save();
         paintInfo.context->clip(IntRect(tx, ty, width(), height()));
@@ -735,13 +732,24 @@ void InlineFlowBox::paintBoxDecorations(RenderObject::PaintInfo& paintInfo, int 
     if (!renderer()->shouldPaintWithinRoot(paintInfo) || renderer()->style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseForeground)
         return;
 
-    // Move x/y to our coordinates.
-    tx += m_x;
-    ty += m_y;
-    
+    int x = m_x;
+    int y = m_y;
     int w = width();
     int h = height();
 
+    // Constrain our background/border painting to the line top and bottom if necessary.
+    bool strictMode = renderer()->document()->inStrictMode();
+    if (!hasTextChildren() && !strictMode) {
+        RootInlineBox* rootBox = root();
+        int bottom = min(rootBox->lineBottom(), y + h);
+        y = max(rootBox->lineTop(), y);
+        h = bottom - y;
+    }
+    
+    // Move x/y to our coordinates.
+    tx += x;
+    ty += y;
+    
     GraphicsContext* context = paintInfo.context;
     
     // You can use p::first-line to specify a background. If so, the root line boxes for
@@ -780,11 +788,11 @@ void InlineFlowBox::paintBoxDecorations(RenderObject::PaintInfo& paintInfo, int 
                 // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
                 // but it isn't even clear how this should work at all.
                 int xOffsetOnLine = 0;
-                for (InlineRunBox* curr = prevLineBox(); curr; curr = curr->prevLineBox())
+                for (InlineFlowBox* curr = prevLineBox(); curr; curr = curr->prevLineBox())
                     xOffsetOnLine += curr->width();
                 int startX = tx - xOffsetOnLine;
                 int totalWidth = xOffsetOnLine;
-                for (InlineRunBox* curr = this; curr; curr = curr->nextLineBox())
+                for (InlineFlowBox* curr = this; curr; curr = curr->nextLineBox())
                     totalWidth += curr->width();
                 context->save();
                 context->clip(IntRect(tx, ty, w, h));
@@ -800,12 +808,23 @@ void InlineFlowBox::paintMask(RenderObject::PaintInfo& paintInfo, int tx, int ty
     if (!renderer()->shouldPaintWithinRoot(paintInfo) || renderer()->style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
         return;
 
-    // Move x/y to our coordinates.
-    tx += m_x;
-    ty += m_y;
-    
+    int x = m_x;
+    int y = m_y;
     int w = width();
     int h = height();
+
+    // Constrain our background/border painting to the line top and bottom if necessary.
+    bool strictMode = renderer()->document()->inStrictMode();
+    if (!hasTextChildren() && !strictMode) {
+        RootInlineBox* rootBox = root();
+        int bottom = min(rootBox->lineBottom(), y + h);
+        y = max(rootBox->lineTop(), y);
+        h = bottom - y;
+    }
+    
+    // Move x/y to our coordinates.
+    tx += x;
+    ty += y;
 
     const NinePieceImage& maskNinePieceImage = renderer()->style()->maskBoxImage();
     StyleImage* maskBoxImage = renderer()->style()->maskBoxImage().image();
@@ -840,11 +859,11 @@ void InlineFlowBox::paintMask(RenderObject::PaintInfo& paintInfo, int tx, int ty
         // We have a mask image that spans multiple lines.
         // We need to adjust _tx and _ty by the width of all previous lines.
         int xOffsetOnLine = 0;
-        for (InlineRunBox* curr = prevLineBox(); curr; curr = curr->prevLineBox())
+        for (InlineFlowBox* curr = prevLineBox(); curr; curr = curr->prevLineBox())
             xOffsetOnLine += curr->width();
         int startX = tx - xOffsetOnLine;
         int totalWidth = xOffsetOnLine;
-        for (InlineRunBox* curr = this; curr; curr = curr->nextLineBox())
+        for (InlineFlowBox* curr = this; curr; curr = curr->nextLineBox())
             totalWidth += curr->width();
         paintInfo.context->save();
         paintInfo.context->clip(IntRect(tx, ty, w, h));
@@ -974,6 +993,7 @@ void InlineFlowBox::paintTextDecorations(RenderObject::PaintInfo& paintInfo, int
             setClip = true;
         }
 
+        ColorSpace colorSpace = renderer()->style()->colorSpace();
         bool setShadow = false;
         do {
             if (shadow) {
@@ -982,24 +1002,24 @@ void InlineFlowBox::paintTextDecorations(RenderObject::PaintInfo& paintInfo, int
                     ty -= extraOffset;
                     extraOffset = 0;
                 }
-                context->setShadow(IntSize(shadow->x, shadow->y - extraOffset), shadow->blur, shadow->color);
+                context->setShadow(IntSize(shadow->x, shadow->y - extraOffset), shadow->blur, shadow->color, colorSpace);
                 setShadow = true;
                 shadow = shadow->next;
             }
 
             if (paintUnderline) {
-                context->setStrokeColor(underline);
+                context->setStrokeColor(underline, colorSpace);
                 context->setStrokeStyle(SolidStroke);
                 // Leave one pixel of white between the baseline and the underline.
                 context->drawLineForText(IntPoint(tx, ty + baselinePos + 1), w, isPrinting);
             }
             if (paintOverline) {
-                context->setStrokeColor(overline);
+                context->setStrokeColor(overline, colorSpace);
                 context->setStrokeStyle(SolidStroke);
                 context->drawLineForText(IntPoint(tx, ty), w, isPrinting);
             }
             if (paintLineThrough) {
-                context->setStrokeColor(linethrough);
+                context->setStrokeColor(linethrough, colorSpace);
                 context->setStrokeStyle(SolidStroke);
                 context->drawLineForText(IntPoint(tx, ty + 2 * baselinePos / 3), w, isPrinting);
             }

@@ -8,4 +8,8 @@ deploy.sources += NormalizationTest.txt
 DEPLOYMENT = deploy
 }
 
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
+symbian*: {
+    DEFINES += SRCDIR=""
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
+}

@@ -24,9 +24,9 @@
 #define CachedResource_h
 
 #include "CachePolicy.h"
+#include "FrameLoaderTypes.h"
 #include "PlatformString.h"
 #include "ResourceResponse.h"
-#include "SharedBuffer.h"
 #include <wtf/HashCountedSet.h>
 #include <wtf/HashSet.h>
 #include <wtf/OwnPtr.h>
@@ -46,7 +46,7 @@ class PurgeableBuffer;
 // A resource that is held in the cache. Classes who want to use this object should derive
 // from CachedResourceClient, to get the function calls in case the requested data has arrived.
 // This class also does the actual communication with the loader to obtain the resource from the network.
-class CachedResource {
+class CachedResource : public Noncopyable {
     friend class Cache;
     friend class InspectorResource;
     
@@ -75,8 +75,8 @@ public:
     CachedResource(const String& url, Type);
     virtual ~CachedResource();
     
-    virtual void load(DocLoader* docLoader)  { load(docLoader, false, false, true); }
-    void load(DocLoader*, bool incremental, bool skipCanLoadCheck, bool sendResourceLoadCallbacks);
+    virtual void load(DocLoader* docLoader)  { load(docLoader, false, DoSecurityCheck, true); }
+    void load(DocLoader*, bool incremental, SecurityCheckPolicy, bool sendResourceLoadCallbacks);
 
     virtual void setEncoding(const String&) { }
     virtual String encoding() const { return String(); }
@@ -148,7 +148,7 @@ public:
 
     virtual bool schedule() const { return false; }
 
-    // List of acceptable MIME types seperated by ",".
+    // List of acceptable MIME types separated by ",".
     // A MIME type may contain a wildcard, e.g. "text/*".
     String accept() const { return m_accept; }
     void setAccept(const String& accept) { m_accept = accept; }

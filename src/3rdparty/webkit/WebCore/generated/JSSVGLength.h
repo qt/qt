@@ -23,7 +23,6 @@
 
 #if ENABLE(SVG)
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "JSSVGPODTypeWrapper.h"
 #include "SVGElement.h"
@@ -33,10 +32,10 @@
 
 namespace WebCore {
 
-class JSSVGLength : public DOMObjectWithSVGContext {
-    typedef DOMObjectWithSVGContext Base;
+class JSSVGLength : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSSVGLength(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<SVGLength> >, SVGElement* context);
+    JSSVGLength(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<SVGLength> >);
     virtual ~JSSVGLength();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,7 +46,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -65,7 +64,7 @@ protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, JSSVGPODTypeWrapper<SVGLength>*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, JSSVGPODTypeWrapper<SVGLength>*, SVGElement*);
 SVGLength toSVGLength(JSC::JSValue);
 
 class JSSVGLengthPrototype : public JSC::JSObject {
@@ -78,7 +77,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSSVGLengthPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -91,27 +90,27 @@ JSC::JSValue JSC_HOST_CALL jsSVGLengthPrototypeFunctionNewValueSpecifiedUnits(JS
 JSC::JSValue JSC_HOST_CALL jsSVGLengthPrototypeFunctionConvertToSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsSVGLengthUnitType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGLengthValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthUnitType(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGLengthValue(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSSVGLengthValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsSVGLengthValueInSpecifiedUnits(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthValueInSpecifiedUnits(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSSVGLengthValueInSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsSVGLengthValueAsString(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthValueAsString(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSSVGLengthValueAsString(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsSVGLengthConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 // Constants
 
-JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_UNKNOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_NUMBER(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_PERCENTAGE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_EMS(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_EXS(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_PX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_CM(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_MM(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_IN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_PT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_PC(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_UNKNOWN(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_NUMBER(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_PERCENTAGE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_EMS(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_EXS(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_PX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_CM(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_MM(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_IN(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_PT(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_PC(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

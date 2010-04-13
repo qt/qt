@@ -43,6 +43,7 @@ protected:
     void resizeEvent(QResizeEvent* event);
     void showEvent(QShowEvent* event);
     void hideEvent(QHideEvent* event);
+    void closeEvent(QCloseEvent* event);
 
 private:
     QWebInspectorPrivate* d;
@@ -51,5 +52,6 @@ private:
     friend class QWebPage;
     friend class QWebPagePrivate;
     friend class WebCore::InspectorClientQt;
+    friend class WebCore::InspectorFrontendClientQt;
 };
 #endif

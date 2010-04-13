@@ -39,11 +39,11 @@ ASSERT_CLASS_FITS_IN_CELL(JSCSSRule);
 
 static const HashTableValue JSCSSRuleTableValues[6] =
 {
-    { "type", DontDelete|ReadOnly, (intptr_t)jsCSSRuleType, (intptr_t)0 },
-    { "cssText", DontDelete, (intptr_t)jsCSSRuleCssText, (intptr_t)setJSCSSRuleCssText },
-    { "parentStyleSheet", DontDelete|ReadOnly, (intptr_t)jsCSSRuleParentStyleSheet, (intptr_t)0 },
-    { "parentRule", DontDelete|ReadOnly, (intptr_t)jsCSSRuleParentRule, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCSSRuleConstructor, (intptr_t)0 },
+    { "type", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleType), (intptr_t)0 },
+    { "cssText", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleCssText), (intptr_t)setJSCSSRuleCssText },
+    { "parentStyleSheet", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleParentStyleSheet), (intptr_t)0 },
+    { "parentRule", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleParentRule), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -58,16 +58,16 @@ static JSC_CONST_HASHTABLE HashTable JSCSSRuleTable =
 
 static const HashTableValue JSCSSRuleConstructorTableValues[11] =
 {
-    { "UNKNOWN_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleUNKNOWN_RULE, (intptr_t)0 },
-    { "STYLE_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleSTYLE_RULE, (intptr_t)0 },
-    { "CHARSET_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleCHARSET_RULE, (intptr_t)0 },
-    { "IMPORT_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleIMPORT_RULE, (intptr_t)0 },
-    { "MEDIA_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleMEDIA_RULE, (intptr_t)0 },
-    { "FONT_FACE_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleFONT_FACE_RULE, (intptr_t)0 },
-    { "PAGE_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRulePAGE_RULE, (intptr_t)0 },
-    { "VARIABLES_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleVARIABLES_RULE, (intptr_t)0 },
-    { "WEBKIT_KEYFRAMES_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleWEBKIT_KEYFRAMES_RULE, (intptr_t)0 },
-    { "WEBKIT_KEYFRAME_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleWEBKIT_KEYFRAME_RULE, (intptr_t)0 },
+    { "UNKNOWN_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleUNKNOWN_RULE), (intptr_t)0 },
+    { "STYLE_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleSTYLE_RULE), (intptr_t)0 },
+    { "CHARSET_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleCHARSET_RULE), (intptr_t)0 },
+    { "IMPORT_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleIMPORT_RULE), (intptr_t)0 },
+    { "MEDIA_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleMEDIA_RULE), (intptr_t)0 },
+    { "FONT_FACE_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleFONT_FACE_RULE), (intptr_t)0 },
+    { "PAGE_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRulePAGE_RULE), (intptr_t)0 },
+    { "VARIABLES_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleVARIABLES_RULE), (intptr_t)0 },
+    { "WEBKIT_KEYFRAMES_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleWEBKIT_KEYFRAMES_RULE), (intptr_t)0 },
+    { "WEBKIT_KEYFRAME_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleWEBKIT_KEYFRAME_RULE), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -92,7 +92,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -115,16 +115,16 @@ bool JSCSSRuleConstructor::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 static const HashTableValue JSCSSRulePrototypeTableValues[11] =
 {
-    { "UNKNOWN_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleUNKNOWN_RULE, (intptr_t)0 },
-    { "STYLE_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleSTYLE_RULE, (intptr_t)0 },
-    { "CHARSET_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleCHARSET_RULE, (intptr_t)0 },
-    { "IMPORT_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleIMPORT_RULE, (intptr_t)0 },
-    { "MEDIA_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleMEDIA_RULE, (intptr_t)0 },
-    { "FONT_FACE_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleFONT_FACE_RULE, (intptr_t)0 },
-    { "PAGE_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRulePAGE_RULE, (intptr_t)0 },
-    { "VARIABLES_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleVARIABLES_RULE, (intptr_t)0 },
-    { "WEBKIT_KEYFRAMES_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleWEBKIT_KEYFRAMES_RULE, (intptr_t)0 },
-    { "WEBKIT_KEYFRAME_RULE", DontDelete|ReadOnly, (intptr_t)jsCSSRuleWEBKIT_KEYFRAME_RULE, (intptr_t)0 },
+    { "UNKNOWN_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleUNKNOWN_RULE), (intptr_t)0 },
+    { "STYLE_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleSTYLE_RULE), (intptr_t)0 },
+    { "CHARSET_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleCHARSET_RULE), (intptr_t)0 },
+    { "IMPORT_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleIMPORT_RULE), (intptr_t)0 },
+    { "MEDIA_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleMEDIA_RULE), (intptr_t)0 },
+    { "FONT_FACE_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleFONT_FACE_RULE), (intptr_t)0 },
+    { "PAGE_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRulePAGE_RULE), (intptr_t)0 },
+    { "VARIABLES_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleVARIABLES_RULE), (intptr_t)0 },
+    { "WEBKIT_KEYFRAMES_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleWEBKIT_KEYFRAMES_RULE), (intptr_t)0 },
+    { "WEBKIT_KEYFRAME_RULE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleWEBKIT_KEYFRAME_RULE), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -180,41 +180,45 @@ bool JSCSSRule::getOwnPropertyDescriptor(ExecState* exec, const Identifier& prop
     return getStaticValueDescriptor<JSCSSRule, Base>(exec, &JSCSSRuleTable, this, propertyName, descriptor);
 }
 
-JSValue jsCSSRuleType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSRuleType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
+    JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSRule* imp = static_cast<CSSRule*>(castedThis->impl());
-    return jsNumber(exec, imp->type());
+    JSValue result = jsNumber(exec, imp->type());
+    return result;
 }
 
-JSValue jsCSSRuleCssText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSRuleCssText(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
+    JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSRule* imp = static_cast<CSSRule*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->cssText());
+    JSValue result = jsStringOrNull(exec, imp->cssText());
+    return result;
 }
 
-JSValue jsCSSRuleParentStyleSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSRuleParentStyleSheet(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
+    JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSRule* imp = static_cast<CSSRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentStyleSheet()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentStyleSheet()));
+    return result;
 }
 
-JSValue jsCSSRuleParentRule(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSRuleParentRule(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
+    JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSRule* imp = static_cast<CSSRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentRule()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentRule()));
+    return result;
 }
 
-JSValue jsCSSRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSRuleConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSRule* domObject = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
+    JSCSSRule* domObject = static_cast<JSCSSRule*>(asObject(slotBase));
     return JSCSSRule::getConstructor(exec, domObject->globalObject());
 }
 void JSCSSRule::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -224,7 +228,8 @@ void JSCSSRule::put(ExecState* exec, const Identifier& propertyName, JSValue val
 
 void setJSCSSRuleCssText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CSSRule* imp = static_cast<CSSRule*>(static_cast<JSCSSRule*>(thisObject)->impl());
+    JSCSSRule* castedThisObj = static_cast<JSCSSRule*>(thisObject);
+    CSSRule* imp = static_cast<CSSRule*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setCssText(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);
@@ -237,52 +242,52 @@ JSValue JSCSSRule::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 
 // Constant getters
 
-JSValue jsCSSRuleUNKNOWN_RULE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSRuleUNKNOWN_RULE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsCSSRuleSTYLE_RULE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSRuleSTYLE_RULE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsCSSRuleCHARSET_RULE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSRuleCHARSET_RULE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsCSSRuleIMPORT_RULE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSRuleIMPORT_RULE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValue jsCSSRuleMEDIA_RULE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSRuleMEDIA_RULE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSValue jsCSSRuleFONT_FACE_RULE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSRuleFONT_FACE_RULE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(5));
 }
 
-JSValue jsCSSRulePAGE_RULE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSRulePAGE_RULE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(6));
 }
 
-JSValue jsCSSRuleVARIABLES_RULE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSRuleVARIABLES_RULE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(7));
 }
 
-JSValue jsCSSRuleWEBKIT_KEYFRAMES_RULE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSRuleWEBKIT_KEYFRAMES_RULE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(8));
 }
 
-JSValue jsCSSRuleWEBKIT_KEYFRAME_RULE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsCSSRuleWEBKIT_KEYFRAME_RULE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(9));
 }

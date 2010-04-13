@@ -71,14 +71,14 @@ bool DebuggerActivation::deleteProperty(ExecState* exec, const Identifier& prope
     return m_activation->deleteProperty(exec, propertyName);
 }
 
-void DebuggerActivation::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void DebuggerActivation::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
-    m_activation->getPropertyNames(exec, propertyNames);
+    m_activation->getPropertyNames(exec, propertyNames, mode);
 }
 
-bool DebuggerActivation::getPropertyAttributes(JSC::ExecState* exec, const Identifier& propertyName, unsigned& attributes) const
+bool DebuggerActivation::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
 {
-    return m_activation->getPropertyAttributes(exec, propertyName, attributes);
+    return m_activation->getOwnPropertyDescriptor(exec, propertyName, descriptor);
 }
 
 void DebuggerActivation::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction, unsigned attributes)

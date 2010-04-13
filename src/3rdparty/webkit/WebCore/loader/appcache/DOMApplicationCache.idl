@@ -27,7 +27,8 @@ module offline {
  
     interface [
         Conditional=OFFLINE_WEB_APPLICATIONS,
-        EventTarget
+        EventTarget,
+        OmitConstructor
     ] DOMApplicationCache {
         // update status
         const unsigned short UNCACHED = 0;
@@ -54,12 +55,12 @@ module offline {
         attribute EventListener onobsolete;
 
         // EventTarget interface
-        [Custom] void addEventListener(in DOMString type, 
-                                       in EventListener listener, 
-                                       in boolean useCapture);
-        [Custom] void removeEventListener(in DOMString type, 
+        [JSCCustom] void addEventListener(in DOMString type, 
                                           in EventListener listener, 
                                           in boolean useCapture);
+        [JSCCustom] void removeEventListener(in DOMString type, 
+                                             in EventListener listener, 
+                                             in boolean useCapture);
         boolean dispatchEvent(in Event evt)
             raises(EventException);
     };

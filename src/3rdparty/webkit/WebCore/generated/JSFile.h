@@ -21,20 +21,17 @@
 #ifndef JSFile_h
 #define JSFile_h
 
-#include "DOMObjectWithSVGContext.h"
-#include "JSDOMBinding.h"
-#include <runtime/JSGlobalObject.h>
-#include <runtime/ObjectPrototype.h>
+#include "File.h"
+#include "JSBlob.h"
 
 namespace WebCore {
 
 class File;
 
-class JSFile : public DOMObjectWithGlobalPointer {
-    typedef DOMObjectWithGlobalPointer Base;
+class JSFile : public JSBlob {
+    typedef JSBlob Base;
 public:
     JSFile(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<File>);
-    virtual ~JSFile();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -43,14 +40,14 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
-    File* impl() const { return m_impl.get(); }
-
-private:
-    RefPtr<File> m_impl;
+    File* impl() const
+    {
+        return static_cast<File*>(Base::impl());
+    }
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
@@ -66,7 +63,7 @@ public:
     static const JSC::ClassInfo s_info;
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSFilePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -75,9 +72,11 @@ protected:
 
 // Attributes
 
-JSC::JSValue jsFileFileName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsFileFileSize(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsFileConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsFileName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsFileType(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsFileFileName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsFileFileSize(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsFileConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

@@ -57,6 +57,7 @@ EventSource::EventSource(const String& url, ScriptExecutionContext* context, Exc
     : ActiveDOMObject(context, this)
     , m_state(CONNECTING)
     , m_reconnectTimer(this, &EventSource::reconnectTimerFired)
+    , m_discardTrailingNewline(false)
     , m_failSilently(false)
     , m_requestInFlight(false)
     , m_reconnectDelay(defaultReconnectDelay)
@@ -210,21 +211,24 @@ void EventSource::parseEventStream()
 {
     unsigned int bufPos = 0;
     unsigned int bufSize = m_receiveBuf.size();
-    for (;;) {
+    while (bufPos < bufSize) {
+        if (m_discardTrailingNewline) {
+            if (m_receiveBuf[bufPos] == '\n')
+                bufPos++;
+            m_discardTrailingNewline = false;
+        }
+
         int lineLength = -1;
         int fieldLength = -1;
-        int carriageReturn = 0;
         for (unsigned int i = bufPos; lineLength < 0 && i < bufSize; i++) {
             switch (m_receiveBuf[i]) {
             case ':':
                 if (fieldLength < 0)
                     fieldLength = i - bufPos;
                 break;
+            case '\r':
+                m_discardTrailingNewline = true;
             case '\n':
-                if (i > bufPos && m_receiveBuf[i - 1] == '\r') {
-                    carriageReturn++;
-                    i--;
-                }
                 lineLength = i - bufPos;
                 break;
             }
@@ -234,7 +238,7 @@ void EventSource::parseEventStream()
             break;
 
         parseEventStreamLine(bufPos, fieldLength, lineLength);
-        bufPos += lineLength + carriageReturn + 1;
+        bufPos += lineLength + 1;
     }
 
     if (bufPos == bufSize)
@@ -246,8 +250,10 @@ void EventSource::parseEventStream()
 void EventSource::parseEventStreamLine(unsigned int bufPos, int fieldLength, int lineLength)
 {
     if (!lineLength) {
-        if (!m_data.isEmpty())
+        if (!m_data.isEmpty()) {
+            m_data.removeLast();
             dispatchEvent(createMessageEvent());
+        }
         if (!m_eventName.isEmpty())
             m_eventName = "";
     } else if (fieldLength) {
@@ -265,10 +271,9 @@ void EventSource::parseEventStreamLine(unsigned int bufPos, int fieldLength, int
         int valueLength = lineLength - step;
 
         if (field == "data") {
-            if (m_data.size() > 0)
-                m_data.append('\n');
             if (valueLength)
                 m_data.append(&m_receiveBuf[bufPos], valueLength);
+            m_data.append('\n');
         } else if (field == "event")
             m_eventName = valueLength ? String(&m_receiveBuf[bufPos], valueLength) : "";
         else if (field == "id")

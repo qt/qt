@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2007 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -33,9 +31,6 @@ namespace WebCore {
 
 SVGFEOffsetElement::SVGFEOffsetElement(const QualifiedName& tagName, Document* doc)
     : SVGFilterPrimitiveStandardAttributes(tagName, doc)
-    , m_in1(this, SVGNames::inAttr)
-    , m_dx(this, SVGNames::dxAttr)
-    , m_dy(this, SVGNames::dyAttr)
 {
 }
 
@@ -54,6 +49,25 @@ void SVGFEOffsetElement::parseMappedAttribute(MappedAttribute* attr)
         setIn1BaseValue(value);
     else
         SVGFilterPrimitiveStandardAttributes::parseMappedAttribute(attr);
+}
+
+void SVGFEOffsetElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGFilterPrimitiveStandardAttributes::synchronizeProperty(attrName);
+
+    if (attrName == anyQName()) {
+        synchronizeDx();
+        synchronizeDy();
+        synchronizeIn1();
+        return;
+    }
+
+    if (attrName == SVGNames::dxAttr)
+        synchronizeDx();
+    else if (attrName == SVGNames::dyAttr)
+        synchronizeDy();
+    else if (attrName == SVGNames::inAttr)
+        synchronizeIn1();
 }
 
 bool SVGFEOffsetElement::build(SVGResourceFilter* filterResource)

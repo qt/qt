@@ -54,6 +54,10 @@
 #ifndef QDBUSCONTEXT_P_H
 #define QDBUSCONTEXT_P_H
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 class QDBusMessage;
@@ -74,5 +78,6 @@ public:
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_DBUS
 #endif
 

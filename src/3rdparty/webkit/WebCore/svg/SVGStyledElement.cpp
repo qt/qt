@@ -32,11 +32,15 @@
 #include "MappedAttribute.h"
 #include "PlatformString.h"
 #include "RenderObject.h"
+#include "RenderSVGResource.h"
+#include "RenderSVGResourceClipper.h"
+#include "RenderSVGResourceMasker.h"
 #include "SVGElement.h"
 #include "SVGElementInstance.h"
+#include "SVGElementRareData.h"
 #include "SVGNames.h"
 #include "SVGRenderStyle.h"
-#include "SVGResource.h"
+#include "SVGResourceFilter.h"
 #include "SVGSVGElement.h"
 #include <wtf/Assertions.h>
 
@@ -44,12 +48,15 @@ namespace WebCore {
 
 using namespace SVGNames;
 
-char SVGStyledElementIdentifier[] = "SVGStyledElement";
-static HashSet<const SVGStyledElement*>* gElementsWithInstanceUpdatesBlocked = 0;
+void mapAttributeToCSSProperty(HashMap<AtomicStringImpl*, int>* propertyNameToIdMap, const QualifiedName& attrName)
+{
+    int propertyId = cssPropertyID(attrName.localName());
+    ASSERT(propertyId > 0);
+    propertyNameToIdMap->set(attrName.localName().impl(), propertyId);
+}
 
 SVGStyledElement::SVGStyledElement(const QualifiedName& tagName, Document* doc)
     : SVGElement(tagName, doc)
-    , m_className(this, HTMLNames::classAttr)
 {
 }
 
@@ -71,13 +78,6 @@ bool SVGStyledElement::rendererIsNeeded(RenderStyle* style)
     return false;
 }
 
-static void mapAttributeToCSSProperty(HashMap<AtomicStringImpl*, int>* propertyNameToIdMap, const QualifiedName& attrName)
-{
-    int propertyId = cssPropertyID(attrName.localName());
-    ASSERT(propertyId > 0);
-    propertyNameToIdMap->set(attrName.localName().impl(), propertyId);
-}
-
 int SVGStyledElement::cssPropertyIdForSVGAttributeName(const QualifiedName& attrName)
 {
     if (!attrName.namespaceURI().isNull())
@@ -92,13 +92,13 @@ int SVGStyledElement::cssPropertyIdForSVGAttributeName(const QualifiedName& attr
         mapAttributeToCSSProperty(propertyNameToIdMap, clipAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, clip_pathAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, clip_ruleAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, colorAttr);
+        mapAttributeToCSSProperty(propertyNameToIdMap, SVGNames::colorAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, color_interpolationAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, color_interpolation_filtersAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, color_profileAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, color_renderingAttr); 
         mapAttributeToCSSProperty(propertyNameToIdMap, cursorAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, directionAttr);
+        mapAttributeToCSSProperty(propertyNameToIdMap, SVGNames::directionAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, displayAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, dominant_baselineAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, enable_backgroundAttr);
@@ -176,7 +176,7 @@ void SVGStyledElement::parseMappedAttribute(MappedAttribute* attr)
     // style updates (instead of StyledElement::parseMappedAttribute). We don't
     // tell StyledElement about the change to avoid parsing the class list twice
     if (attrName.matches(HTMLNames::classAttr))
-        setClassName(attr->value());
+        setClassNameBaseValue(attr->value());
     else
         // id is handled by StyledElement which SVGElement inherits from
         SVGElement::parseMappedAttribute(attr);
@@ -189,7 +189,7 @@ bool SVGStyledElement::isKnownAttribute(const QualifiedName& attrName)
     if (propId > 0)
         return true;
 
-    return (attrName == HTMLNames::idAttr || attrName == HTMLNames::styleAttr); 
+    return (attrName == idAttributeName() || attrName == HTMLNames::styleAttr); 
 }
 
 void SVGStyledElement::svgAttributeChanged(const QualifiedName& attrName)
@@ -202,8 +202,44 @@ void SVGStyledElement::svgAttributeChanged(const QualifiedName& attrName)
     // If we're the child of a resource element, be sure to invalidate it.
     invalidateResourcesInAncestorChain();
 
+    // If the element is using resources, invalidate them.
+    invalidateResources();
+
     // Invalidate all SVGElementInstances associated with us
     SVGElementInstance::invalidateAllInstancesOfElement(this);
+}
+
+void SVGStyledElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName() || attrName.matches(HTMLNames::classAttr))
+        synchronizeClassName();
+}
+
+void SVGStyledElement::invalidateResources()
+{
+    RenderObject* object = renderer();
+    if (!object)
+        return;
+
+    const SVGRenderStyle* svgStyle = object->style()->svgStyle();
+    Document* document = this->document();
+
+    if (document->parsing())
+        return;
+
+#if ENABLE(FILTERS)
+    SVGResourceFilter* filter = getFilterById(document, svgStyle->filter(), object);
+    if (filter)
+        filter->invalidate();
+#endif
+
+    if (RenderSVGResourceMasker* masker = getRenderSVGResourceById<RenderSVGResourceMasker>(document, svgStyle->maskElement()))
+        masker->invalidateClient(object);
+
+    if (RenderSVGResourceClipper* clipper = getRenderSVGResourceById<RenderSVGResourceClipper>(document, svgStyle->clipPath()))
+        clipper->invalidateClient(object);
 }
 
 void SVGStyledElement::invalidateResourcesInAncestorChain() const
@@ -214,20 +250,30 @@ void SVGStyledElement::invalidateResourcesInAncestorChain() const
             break;
 
         SVGElement* element = static_cast<SVGElement*>(node);
-        if (SVGStyledElement* styledElement = static_cast<SVGStyledElement*>(element->isStyled() ? element : 0)) {
-            if (SVGResource* resource = styledElement->canvasResource())
-                resource->invalidate();
-        }
+        if (SVGStyledElement* styledElement = static_cast<SVGStyledElement*>(element->isStyled() ? element : 0))
+            styledElement->invalidateCanvasResources();
 
         node = node->parentNode();
     }
 }
 
+void SVGStyledElement::invalidateCanvasResources()
+{
+    RenderObject* object = renderer();
+    if (!object)
+        return;
+
+    if (object->isSVGResource())
+        object->toRenderSVGResource()->invalidateClients();
+
+    // The following lines will be removed soon, once all resources are handled by renderers.
+    if (SVGResource* resource = canvasResource(object))
+        resource->invalidate();
+}
+
 void SVGStyledElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     SVGElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-    if (document()->parsing())
-        return;
 
     // Invalidate all SVGElementInstances associated with us
     SVGElementInstance::invalidateAllInstancesOfElement(this);
@@ -271,19 +317,17 @@ void SVGStyledElement::detach()
     SVGElement::detach();
 }
 
-void SVGStyledElement::setInstanceUpdatesBlocked(bool blockUpdates)
+bool SVGStyledElement::instanceUpdatesBlocked() const
 {
-    if (blockUpdates) {
-        if (!gElementsWithInstanceUpdatesBlocked)
-            gElementsWithInstanceUpdatesBlocked = new HashSet<const SVGStyledElement*>;
-        gElementsWithInstanceUpdatesBlocked->add(this);
-    } else {
-        ASSERT(gElementsWithInstanceUpdatesBlocked);
-        ASSERT(gElementsWithInstanceUpdatesBlocked->contains(this));
-        gElementsWithInstanceUpdatesBlocked->remove(this);
-    }
+    return hasRareSVGData() && rareSVGData()->instanceUpdatesBlocked();
 }
-    
+
+void SVGStyledElement::setInstanceUpdatesBlocked(bool value)
+{
+    if (hasRareSVGData())
+        rareSVGData()->setInstanceUpdatesBlocked(value);
+}
+
 }
 
 #endif // ENABLE(SVG)

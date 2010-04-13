@@ -40,7 +40,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDocumentFragment);
 
 static const HashTableValue JSDocumentFragmentTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsDocumentFragmentConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDocumentFragmentConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -102,8 +102,8 @@ bool JSDocumentFragmentConstructor::getOwnPropertyDescriptor(ExecState* exec, co
 
 static const HashTableValue JSDocumentFragmentPrototypeTableValues[3] =
 {
-    { "querySelector", DontDelete|Function, (intptr_t)jsDocumentFragmentPrototypeFunctionQuerySelector, (intptr_t)1 },
-    { "querySelectorAll", DontDelete|Function, (intptr_t)jsDocumentFragmentPrototypeFunctionQuerySelectorAll, (intptr_t)1 },
+    { "querySelector", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsDocumentFragmentPrototypeFunctionQuerySelector), (intptr_t)1 },
+    { "querySelectorAll", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsDocumentFragmentPrototypeFunctionQuerySelectorAll), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -153,9 +153,9 @@ bool JSDocumentFragment::getOwnPropertyDescriptor(ExecState* exec, const Identif
     return getStaticValueDescriptor<JSDocumentFragment, Base>(exec, &JSDocumentFragmentTable, this, propertyName, descriptor);
 }
 
-JSValue jsDocumentFragmentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDocumentFragmentConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSDocumentFragment* domObject = static_cast<JSDocumentFragment*>(asObject(slot.slotBase()));
+    JSDocumentFragment* domObject = static_cast<JSDocumentFragment*>(asObject(slotBase));
     return JSDocumentFragment::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSDocumentFragment::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

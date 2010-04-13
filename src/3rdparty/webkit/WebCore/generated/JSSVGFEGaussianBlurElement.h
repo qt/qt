@@ -42,9 +42,10 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
@@ -60,7 +61,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSSVGFEGaussianBlurElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -73,16 +74,17 @@ JSC::JSValue JSC_HOST_CALL jsSVGFEGaussianBlurElementPrototypeFunctionSetStdDevi
 JSC::JSValue JSC_HOST_CALL jsSVGFEGaussianBlurElementPrototypeFunctionGetPresentationAttribute(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsSVGFEGaussianBlurElementIn1(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGFEGaussianBlurElementStdDeviationX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGFEGaussianBlurElementStdDeviationY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGFEGaussianBlurElementX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGFEGaussianBlurElementY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGFEGaussianBlurElementWidth(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGFEGaussianBlurElementHeight(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGFEGaussianBlurElementResult(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGFEGaussianBlurElementClassName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGFEGaussianBlurElementStyle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGFEGaussianBlurElementIn1(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGFEGaussianBlurElementStdDeviationX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGFEGaussianBlurElementStdDeviationY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGFEGaussianBlurElementX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGFEGaussianBlurElementY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGFEGaussianBlurElementWidth(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGFEGaussianBlurElementHeight(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGFEGaussianBlurElementResult(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGFEGaussianBlurElementClassName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGFEGaussianBlurElementStyle(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsSVGFEGaussianBlurElementConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

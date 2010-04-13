@@ -24,18 +24,16 @@
 #include "PluginDatabase.h"
 #include "PluginPackage.h"
 
-#if QT_VERSION >= 0x040400
+#include "Chrome.h"
 #include "ChromeClientQt.h"
 #include "Page.h"
 #include <qwebpage.h>
 #include <qwebpluginfactory.h>
-#endif
 
 namespace WebCore {
 
 void PluginData::initPlugins()
 {
-#if QT_VERSION >= 0x040400
     QWebPage* webPage = static_cast<ChromeClientQt*>(m_page->chrome()->client())->m_webPage;
     QWebPluginFactory* factory = webPage->pluginFactory();
     if (factory) {
@@ -62,7 +60,6 @@ void PluginData::initPlugins()
             m_plugins.append(info);
         }
     }
-#endif
 
     PluginDatabase *db = PluginDatabase::installedPlugins();
     const Vector<PluginPackage*> &plugins = db->plugins();

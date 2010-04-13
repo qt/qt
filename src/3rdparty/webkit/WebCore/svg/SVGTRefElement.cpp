@@ -1,8 +1,6 @@
 /*
-    Copyright (C) 2004, 2005 Nikolas Zimmermann <wildfox@kde.org>
+    Copyright (C) 2004, 2005 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006 Rob Buis <buis@kde.org>
-
-    This file is part of the KDE project
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -21,6 +19,7 @@
 */
 
 #include "config.h"
+
 #if ENABLE(SVG)
 #include "SVGTRefElement.h"
 
@@ -35,7 +34,6 @@ namespace WebCore {
 SVGTRefElement::SVGTRefElement(const QualifiedName& tagName, Document* doc)
     : SVGTextPositioningElement(tagName, doc)
     , SVGURIReference()
-    , m_href(this, XLinkNames::hrefAttr)
 {
 }
 
@@ -63,6 +61,25 @@ void SVGTRefElement::parseMappedAttribute(MappedAttribute* attr)
     SVGTextPositioningElement::parseMappedAttribute(attr);
 }
 
+void SVGTRefElement::svgAttributeChanged(const QualifiedName& attrName)
+{
+    SVGTextPositioningElement::svgAttributeChanged(attrName);
+
+    if (!renderer())
+        return;
+
+    if (SVGURIReference::isKnownAttribute(attrName))
+        renderer()->setNeedsLayout(true);
+}
+
+void SVGTRefElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGTextPositioningElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName() || SVGURIReference::isKnownAttribute(attrName))
+        synchronizeHref();
+}
+
 bool SVGTRefElement::childShouldCreateRenderer(Node* child) const
 {
     if (child->isTextNode() || child->hasTagName(SVGNames::tspanTag) ||
@@ -78,6 +95,4 @@ RenderObject* SVGTRefElement::createRenderer(RenderArena* arena, RenderStyle*)
 
 }
 
-// vim:ts=4:noet
 #endif // ENABLE(SVG)
-

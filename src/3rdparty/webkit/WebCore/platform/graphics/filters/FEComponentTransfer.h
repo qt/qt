@@ -25,7 +25,6 @@
 #if ENABLE(FILTERS)
 #include "FilterEffect.h"
 
-#include "SVGFEDisplacementMap.h"
 #include "Filter.h"
 #include <wtf/Vector.h>
 

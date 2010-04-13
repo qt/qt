@@ -53,6 +53,24 @@ typedef CALayer* NativeLayer;
 typedef void* PlatformLayer;
 typedef void* NativeLayer;
 #endif
+#elif PLATFORM(WIN)
+namespace WebCore {
+class WKCACFLayer;
+typedef WKCACFLayer PlatformLayer;
+typedef void* NativeLayer;
+}
+#elif PLATFORM(QT)
+QT_BEGIN_NAMESPACE
+class QGraphicsItem;
+QT_END_NAMESPACE
+typedef QGraphicsItem PlatformLayer;
+typedef QGraphicsItem* NativeLayer;
+#elif PLATFORM(CHROMIUM)
+namespace WebCore {
+class LayerSkia;
+typedef LayerSkia PlatformLayer;
+typedef void* NativeLayer;
+}
 #else
 typedef void* PlatformLayer;
 typedef void* NativeLayer;
@@ -64,7 +82,7 @@ class FloatPoint3D;
 class GraphicsContext;
 class Image;
 class TextStream;
-class TimingFunction;
+struct TimingFunction;
 
 // Base class for animation values (also used for transitions). Here to
 // represent values for properties being animated via the GraphicsLayer,
@@ -176,6 +194,8 @@ public:
     bool hasAncestor(GraphicsLayer*) const;
     
     const Vector<GraphicsLayer*>& children() const { return m_children; }
+    // Returns true if the child list changed.
+    virtual bool setChildren(const Vector<GraphicsLayer*>&);
 
     // Add child layers. If the child is already parented, it will be removed from its old parent.
     virtual void addChild(GraphicsLayer*);
@@ -190,6 +210,16 @@ public:
     GraphicsLayer* maskLayer() const { return m_maskLayer; }
     virtual void setMaskLayer(GraphicsLayer* layer) { m_maskLayer = layer; }
     
+    // The given layer will replicate this layer and its children; the replica renders behind this layer.
+    virtual void setReplicatedByLayer(GraphicsLayer*);
+    // Whether this layer is being replicated by another layer.
+    bool isReplicated() const { return m_replicaLayer; }
+    // The layer that replicates this layer (if any).
+    GraphicsLayer* replicaLayer() const { return m_replicaLayer; }
+
+    const FloatPoint& replicatedLayerPosition() const { return m_replicatedLayerPosition; }
+    void setReplicatedLayerPosition(const FloatPoint& p) { m_replicatedLayerPosition = p; }
+
     // Offset is origin of the renderer minus origin of the graphics layer (so either zero or negative).
     IntSize offsetFromRenderer() const { return m_offsetFromRenderer; }
     void setOffsetFromRenderer(const IntSize& offset) { m_offsetFromRenderer = offset; }
@@ -252,17 +282,17 @@ public:
     
     // Return true if the animation is handled by the compositing system. If this returns
     // false, the animation will be run by AnimationController.
-    virtual bool addAnimation(const KeyframeValueList&, const IntSize& /*boxSize*/, const Animation*, const String& /*keyframesName*/, double /*beginTime*/) { return false; }
+    virtual bool addAnimation(const KeyframeValueList&, const IntSize& /*boxSize*/, const Animation*, const String& /*keyframesName*/, double /*timeOffset*/) { return false; }
     virtual void removeAnimationsForProperty(AnimatedPropertyID) { }
     virtual void removeAnimationsForKeyframes(const String& /* keyframesName */) { }
-    virtual void pauseAnimation(const String& /* keyframesName */) { }
+    virtual void pauseAnimation(const String& /* keyframesName */, double /*timeOffset*/) { }
     
     virtual void suspendAnimations(double time);
     virtual void resumeAnimations();
     
     // Layer contents
     virtual void setContentsToImage(Image*) { }
-    virtual void setContentsToVideo(PlatformLayer*) { }
+    virtual void setContentsToMedia(PlatformLayer*) { } // video or plug-in
     virtual void setContentsBackgroundColor(const Color&) { }
     
 #if ENABLE(3D_CANVAS)
@@ -271,6 +301,8 @@ public:
 #endif
     // Callback from the underlying graphics system to draw layer contents.
     void paintGraphicsLayerContents(GraphicsContext&, const IntRect& clip);
+    // Callback from the underlying graphics system when the layer has been displayed
+    virtual void didDisplay(PlatformLayer*) { }
     
     virtual PlatformLayer* platformLayer() const { return 0; }
     
@@ -292,8 +324,8 @@ public:
     virtual void setContentsOrientation(CompositingCoordinatesOrientation orientation) { m_contentsOrientation = orientation; }
     CompositingCoordinatesOrientation contentsOrientation() const { return m_contentsOrientation; }
 
-    static bool showDebugBorders();
-    static bool showRepaintCounter();
+    bool showDebugBorders() { return m_client ? m_client->showDebugBorders() : false; }
+    bool showRepaintCounter() { return m_client ? m_client->showRepaintCounter() : false; }
     
     void updateDebugIndicators();
     
@@ -319,6 +351,10 @@ protected:
 
     virtual void setOpacityInternal(float) { }
     
+    // The layer being replicated.
+    GraphicsLayer* replicatedLayer() const { return m_replicatedLayer; }
+    virtual void setReplicatedLayer(GraphicsLayer* layer) { m_replicatedLayer = layer; }
+
     GraphicsLayer(GraphicsLayerClient*);
 
     void dumpProperties(TextStream&, int indent) const;
@@ -356,6 +392,11 @@ protected:
     GraphicsLayer* m_parent;
 
     GraphicsLayer* m_maskLayer; // Reference to mask layer. We don't own this.
+
+    GraphicsLayer* m_replicaLayer; // A layer that replicates this layer. We only allow one, for now.
+                                   // The replica is not parented; this is the primary reference to it.
+    GraphicsLayer* m_replicatedLayer; // For a replica layer, a reference to the original layer.
+    FloatPoint m_replicatedLayerPosition; // For a replica layer, the position of the replica.
 
     IntRect m_contentsRect;
 

@@ -67,23 +67,25 @@
 
     \section2 Carbon or Cocoa?
     
-    Qt supports building in two flavors, using either the Carbon or Cocoa APIs.
-    Using the Cocoa toolkit, Qt requires 10.5 and provides 64-bit support. With
-    Carbon Qt can be developed on and deployed to 10.4, but there is no 64-bit
+    Qt supports building in two flavors, using either the Carbon or Cocoa API.
+    Using the Cocoa API, Qt requires 10.5 and provides both 32-bit and 64-bit support. With
+    Carbon, Qt can be developed on and deployed to 10.4, but there is no 64-bit
     support.
 
-    With Qt 4.7 we now recommend using the Cocoa version of Qt for development,
-    unless you want to target the 10.4 platform. Qt now uses Cocoa by default,
-    both for the binary package and when configuring from source. Download the 
-    Carbon binary packages or configure with "-carbon" to use that version.
+    Note: There is no accessibility support in the Cocoa version. This is planned
+    for Qt 4.8.
+
+    With Qt 4.7 we recommend using the Cocoa version of Qt for development,
+    unless you want to target the 10.4 platform. Qt uses Cocoa by default,
+    both for the binary package and when configuring Qt from source (using the \c{configure}
+    script). To build Qt for Carbon, specify the \c{-carbon} flag to configure.
 
     There are two versions of the Qt binary, one with x86 and x86_64
     Cocoa and another with x86 and ppc Carbon. If you want a different setup
-    you must build from source. Carbon or Cocoa is chosen when
-    configuring the package for building. The configure process selects Carbon
-    by default, to specify Cocoa use the \c{-cocoa} flag.  configure for a
-    64-bit architecture using one of the \c{-arch} flags (see \l{universal
-    binaries}{Universal Binaries}).
+    you must build Qt yourself using the source package. To explicitly configure
+    Qt to build for 34-bit or 64-bit architectures (or both), use
+    the \c{-arch} flags (see \l{universal binaries}{Universal Binaries}).
+    For the Cocoa version, 64 bit is chosen by default.
 
     Currently, Apple's default GCC compiler is used by default (GCC 4.0.1 on
     10.4 and 10.5, GCC 4.2 on 10.6). You can specify alternate compilers
@@ -147,7 +149,7 @@
 
     Carbon and Cocoa both have their advantages and disadvantages. Probably the
     easiest way to determine is to look at the version of Mac OS X you are
-    targetting. If your application can target 10.5 and up, then we reccomend 
+    targetting. If your application can target 10.5 and up, then we recommend 
     using Cocoa. If you need to target earlier versions of the operating system
     and do not need access to 64-bit or newer Apple technologies, then Carbon 
     is a good fit. If your needs fall in between, you can go with a 64-bit Cocoa and 32-bit
@@ -159,6 +161,17 @@
     offerings have been 64-bit since 2007, and there is a cost for reading all
     the 32-bit libraries into memory if everything else is 64-bit.  If you want
     to follow this advice, there is only one choice, 64-bit Cocoa.
+
+
+    \section2 Building Qt statically
+
+    We recommend building Qt as shared frameworks. Static builds are only partially
+    supported, meaning that you can build most of Qt statically, but some modules,
+    like web-kit and Designer, will fail. You can specify which modules to build
+    from configure (e.g. -no-webkit -nomake tools). For Cocoa configurations, both
+    static and no-framework builds requires manually copying the
+    'src/gui/mac/qt_menu.nib/ directory into the " Resources" directory in
+    the application bundle.
 
     \target universal binaries
     \section1 Universal Binaries
@@ -194,8 +207,9 @@
             \o \c{-arch ppc64}
     \endtable
 
-    If there are no \c{-arch} flags specified, configure builds for the 32-bit
-    architecture, if you are currently on one. Universal binaries were initially
+    If there are no \c{-arch} flags specified, configure builds Qt for a 32-bit
+    architecture when using Carbon, and a 64-bit architecture when using Cocoa. Universal
+    binaries were initially
     used to simplify the PPC to Intel migration. You can use \c{-universal} to
     build for both the 32-bit Intel and PPC architectures.
 
@@ -208,6 +222,45 @@
     CONFIG += x86 ppc x86_64 ppc64
     \endcode
 
+    \section2 Working with several versions of Qt
+    You can only install one version of Qt at a time when using the binary
+    package. The reason for this is that a binary installation will install different parts of Qt
+    (frameworks, documentation, examples, tools, etc) to different
+    predefined locations on the OS, as described by Apple. If you want
+    to work against other versions at the same time, you need
+    to build the other versions explicitly from source. When doing so, you can
+    provide \c{-prefix} to configure to set install location. 
+    The binary package will install Qt to the following locations: 
+
+    \table
+        \header
+            \o Qt
+            \o Location
+        \row
+            \o Designer, Linguist ...
+            \o /Developer/Applications/Qt
+        \row
+            \o Documentation
+            \o /Developer/Documentation/Qt
+        \row
+            \o Examples
+            \o /Developer/Examples/Qt
+        \row
+            \o Plugins
+            \o /Developer/Applications/Qt/Plugins
+        \row
+            \o Frameworks
+            \o /Library/Frameworks
+        \row
+            \o Libraries
+            \o /usr/lib
+        \row
+            \o qmake, moc, uic ...
+            \o /Developer/Tools/Qt (symlink to /usr/bin)
+        \row
+            \o uninstall-qt.py, uninstall-qtsdk.py
+            \o /Developer/Tools
+    \endtable
 
     \section1 Day-to-Day Application Development on OS X
 

@@ -36,9 +36,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLUListElement);
 
 static const HashTableValue JSHTMLUListElementTableValues[4] =
 {
-    { "compact", DontDelete, (intptr_t)jsHTMLUListElementCompact, (intptr_t)setJSHTMLUListElementCompact },
-    { "type", DontDelete, (intptr_t)jsHTMLUListElementType, (intptr_t)setJSHTMLUListElementType },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLUListElementConstructor, (intptr_t)0 },
+    { "compact", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLUListElementCompact), (intptr_t)setJSHTMLUListElementCompact },
+    { "type", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLUListElementType), (intptr_t)setJSHTMLUListElementType },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLUListElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -139,25 +139,27 @@ bool JSHTMLUListElement::getOwnPropertyDescriptor(ExecState* exec, const Identif
     return getStaticValueDescriptor<JSHTMLUListElement, Base>(exec, &JSHTMLUListElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLUListElementCompact(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLUListElementCompact(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLUListElement* castedThis = static_cast<JSHTMLUListElement*>(asObject(slot.slotBase()));
+    JSHTMLUListElement* castedThis = static_cast<JSHTMLUListElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLUListElement* imp = static_cast<HTMLUListElement*>(castedThis->impl());
-    return jsBoolean(imp->compact());
+    JSValue result = jsBoolean(imp->compact());
+    return result;
 }
 
-JSValue jsHTMLUListElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLUListElementType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLUListElement* castedThis = static_cast<JSHTMLUListElement*>(asObject(slot.slotBase()));
+    JSHTMLUListElement* castedThis = static_cast<JSHTMLUListElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLUListElement* imp = static_cast<HTMLUListElement*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
-JSValue jsHTMLUListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLUListElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLUListElement* domObject = static_cast<JSHTMLUListElement*>(asObject(slot.slotBase()));
+    JSHTMLUListElement* domObject = static_cast<JSHTMLUListElement*>(asObject(slotBase));
     return JSHTMLUListElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLUListElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -167,13 +169,15 @@ void JSHTMLUListElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLUListElementCompact(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLUListElement* imp = static_cast<HTMLUListElement*>(static_cast<JSHTMLUListElement*>(thisObject)->impl());
+    JSHTMLUListElement* castedThisObj = static_cast<JSHTMLUListElement*>(thisObject);
+    HTMLUListElement* imp = static_cast<HTMLUListElement*>(castedThisObj->impl());
     imp->setCompact(value.toBoolean(exec));
 }
 
 void setJSHTMLUListElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLUListElement* imp = static_cast<HTMLUListElement*>(static_cast<JSHTMLUListElement*>(thisObject)->impl());
+    JSHTMLUListElement* castedThisObj = static_cast<JSHTMLUListElement*>(thisObject);
+    HTMLUListElement* imp = static_cast<HTMLUListElement*>(castedThisObj->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 

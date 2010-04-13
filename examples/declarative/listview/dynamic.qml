@@ -3,6 +3,7 @@ import "content"
 import "../scrollbar"
 
 Rectangle {
+    id: container
     width: 640; height: 480
     color: "#343434"
 
@@ -54,7 +55,7 @@ Rectangle {
         id: fruitDelegate
 
         Item {
-            width: parent.width; height: 55
+            width: container.width; height: 55
             
             Column {
                 id: moveButtons
@@ -174,9 +175,9 @@ Rectangle {
                 anchors.fill: parent
                 onClicked: {
                     fruitModel.append({
-                        "name":"Pizza Margarita",
-                        "cost":5.95,
-                        "attributes":[{"description": "Cheese"},{"description": "Tomato"}]
+                        "name": "Pizza Margarita",
+                        "cost": 5.95,
+                        "attributes": [{"description": "Cheese"},{"description": "Tomato"}]
                     })
                 }
             }
@@ -189,9 +190,9 @@ Rectangle {
                 anchors.fill: parent;
                 onClicked: {
                     fruitModel.insert(0, {
-                        "name":"Pizza Supreme",
-                        "cost":9.95,
-                        "attributes":[{"description": "Cheese"},{"description": "Tomato"},{"description": "The Works"}]
+                        "name": "Pizza Supreme",
+                        "cost": 9.95,
+                        "attributes": [{"description": "Cheese"},{"description": "Tomato"},{"description": "The Works"}]
                     })
                 }
             }

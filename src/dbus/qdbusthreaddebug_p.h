@@ -52,6 +52,10 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_DBUS
+
 #if !defined(QDBUS_THREAD_DEBUG) && defined(QT_BUILD_INTERNAL)
 # define QDBUS_THREAD_DEBUG 1
 #endif
@@ -227,4 +231,5 @@ struct QDBusWatchAndTimeoutLocker: QDBusMutexLocker
 # define SEM_RELEASE(action, sem)       sem.release()
 #endif
 
+#endif // QT_NO_DBUS
 #endif

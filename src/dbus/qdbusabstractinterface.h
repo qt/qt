@@ -51,6 +51,8 @@
 #include <QtDBus/qdbusextratypes.h>
 #include <QtDBus/qdbusconnection.h>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -159,4 +161,5 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
+#endif // QT_NO_DBUS
 #endif
