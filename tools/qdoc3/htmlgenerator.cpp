@@ -2070,7 +2070,6 @@ void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker
         Text headingText = Text::sectionHeading(atom);
         out() << "<li>";
         out() << "<a href=\""
-              << nodeName
               << "#"
               << Doc::canonicalTitle(headingText.toString())
               << "\">";
