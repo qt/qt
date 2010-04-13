@@ -66,6 +66,10 @@ QStringList Generator::imageFiles;
 QStringList Generator::imageDirs;
 QStringList Generator::exampleDirs;
 QStringList Generator::exampleImgExts;
+QStringList Generator::scriptFiles;
+QStringList Generator::scriptDirs;
+QStringList Generator::styleFiles;
+QStringList Generator::styleDirs;
 QString Generator::outDir;
 QString Generator::project;
 
@@ -124,10 +128,20 @@ void Generator::initialize(const Config &config)
         if (!dirInfo.mkdir(outDir + "/images/used-in-examples"))
             config.lastLocation().fatal(tr("Cannot create output directory '%1'")
                                         .arg(outDir + "/images/used-in-examples"));
+        if (!dirInfo.mkdir(outDir + "/scripts"))
+            config.lastLocation().fatal(tr("Cannot create output directory '%1'")
+                                        .arg(outDir + "/scripts"));
+        if (!dirInfo.mkdir(outDir + "/style"))
+            config.lastLocation().fatal(tr("Cannot create output directory '%1'")
+                                        .arg(outDir + "/style"));
     }
 
     imageFiles = config.getStringList(CONFIG_IMAGES);
     imageDirs = config.getStringList(CONFIG_IMAGEDIRS);
+    scriptFiles = config.getStringList(CONFIG_SCRIPTS);
+    scriptDirs = config.getStringList(CONFIG_SCRIPTDIRS);
+    styleFiles = config.getStringList(CONFIG_STYLES);
+    styleDirs = config.getStringList(CONFIG_STYLEDIRS);
     exampleDirs = config.getStringList(CONFIG_EXAMPLEDIRS);
     exampleImgExts = config.getStringList(CONFIG_EXAMPLES + Config::dot +
                                           CONFIG_IMAGEEXTENSIONS);
@@ -163,6 +177,47 @@ void Generator::initialize(const Config &config)
                                      userFriendlyFilePath,
                                      (*g)->outputDir() +
                                      "/images");
+                ++e;
+            }
+
+            QStringList noExts;
+            QStringList scripts =
+                config.getStringList(CONFIG_SCRIPTS+Config::dot+(*g)->format());
+            e = scripts.begin();
+            while (e != scripts.end()) {
+                QString userFriendlyFilePath;
+                QString filePath = Config::findFile(config.lastLocation(),
+                                                    scriptFiles,
+                                                    scriptDirs,
+                                                    *e,
+                                                    noExts,
+                                                    userFriendlyFilePath);
+                if (!filePath.isEmpty())
+                    Config::copyFile(config.lastLocation(),
+                                     filePath,
+                                     userFriendlyFilePath,
+                                     (*g)->outputDir() +
+                                     "/scripts");
+                ++e;
+            }
+
+            QStringList styles =
+                config.getStringList(CONFIG_STYLES+Config::dot+(*g)->format());
+            e = styles.begin();
+            while (e != styles.end()) {
+                QString userFriendlyFilePath;
+                QString filePath = Config::findFile(config.lastLocation(),
+                                                    styleFiles,
+                                                    styleDirs,
+                                                    *e,
+                                                    noExts,
+                                                    userFriendlyFilePath);
+                if (!filePath.isEmpty())
+                    Config::copyFile(config.lastLocation(),
+                                     filePath,
+                                     userFriendlyFilePath,
+                                     (*g)->outputDir() +
+                                     "/style");
                 ++e;
             }
         }

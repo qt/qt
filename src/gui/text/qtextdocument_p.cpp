@@ -870,6 +870,7 @@ int QTextDocumentPrivate::undoRedo(bool undo)
     undoEnabled = false;
     beginEditBlock();
     int editPos = -1;
+    int editLength = -1;
     while (1) {
         if (undo)
             --undoState;
@@ -882,12 +883,16 @@ int QTextDocumentPrivate::undoRedo(bool undo)
             PMDEBUG("   erase: from %d, length %d", c.pos, c.length);
             c.command = QTextUndoCommand::Removed;
             editPos = c.pos;
+            editLength = 0;
 	    break;
         case QTextUndoCommand::Removed:
             PMDEBUG("   insert: format %d (from %d, length %d, strpos=%d)", c.format, c.pos, c.length, c.strPos);
             insert_string(c.pos, c.strPos, c.length, c.format, (QTextUndoCommand::Operation)c.operation);
             c.command = QTextUndoCommand::Inserted;
-            editPos = c.pos + c.length;
+            if (editPos != (int)c.pos)
+                editLength = 0;
+            editPos = c.pos;
+            editLength += c.length;
 	    break;
 	case QTextUndoCommand::BlockInserted:
 	case QTextUndoCommand::BlockAdded:
@@ -898,6 +903,7 @@ int QTextDocumentPrivate::undoRedo(bool undo)
 	    else
 		c.command = QTextUndoCommand::BlockDeleted;
             editPos = c.pos;
+            editLength = 0;
 	    break;
 	case QTextUndoCommand::BlockRemoved:
 	case QTextUndoCommand::BlockDeleted:
@@ -908,7 +914,10 @@ int QTextDocumentPrivate::undoRedo(bool undo)
 		c.command = QTextUndoCommand::BlockInserted;
 	    else
 		c.command = QTextUndoCommand::BlockAdded;
-            editPos = c.pos + 1;
+            if (editPos != (int)c.pos)
+                editLength = 0;
+            editPos = c.pos;
+            editLength += 1;
 	    break;
 	case QTextUndoCommand::CharFormatChanged: {
             resetBlockRevision = -1; // ## TODO
@@ -919,7 +928,10 @@ int QTextDocumentPrivate::undoRedo(bool undo)
             int oldFormat = it.value()->format;
             setCharFormat(c.pos, c.length, formats.charFormat(c.format));
             c.format = oldFormat;
-            editPos = c.pos + c.length;
+            if (editPos != (int)c.pos)
+                editLength = 0;
+            editPos = c.pos;
+            editLength += c.length;
 	    break;
 	}
 	case QTextUndoCommand::BlockFormatChanged: {
@@ -987,13 +999,19 @@ int QTextDocumentPrivate::undoRedo(bool undo)
             break;
     }
     undoEnabled = true;
-    if (editPos < 0 && docChangeFrom >= 0) {
-        editPos = qMin(docChangeFrom + docChangeLength, length() - 1);
-    }
+
+    int newCursorPos = -1;
+
+    if (editPos >=0)
+        newCursorPos = editPos + editLength;
+    else if (docChangeFrom >= 0)
+        newCursorPos= qMin(docChangeFrom + docChangeLength, length() - 1);
+
     endEditBlock();
     emitUndoAvailable(isUndoAvailable());
     emitRedoAvailable(isRedoAvailable());
-    return editPos;
+
+    return newCursorPos;
 }
 
 /*!

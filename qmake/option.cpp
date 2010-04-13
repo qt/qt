@@ -613,7 +613,7 @@ bool Option::postProcessProject(QMakeProject *project)
 QString
 Option::fixString(QString string, uchar flags)
 {
-    const QString orig_string = string;
+    //const QString orig_string = string;
     static QHash<FixStringCacheKey, QString> *cache = 0;
     if(!cache) {
         cache = new QHash<FixStringCacheKey, QString>;

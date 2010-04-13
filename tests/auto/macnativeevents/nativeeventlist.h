@@ -43,22 +43,25 @@
 #define Q_NATIVE_PLAYBACK
 
 #include <QtCore>
-#include "qnativeinput.h"
+#include "qnativeevents.h"
 
-class QNativePlayer : public QObject
+class NativeEventList : public QObject
 {
     Q_OBJECT;
 
     public:
     enum Playback {ReturnImmediately, WaitUntilFinished};
 
-    QNativePlayer();
-    ~QNativePlayer();
+    NativeEventList(int defaultWaitMs = 20);
+    ~NativeEventList();
 
+    void append(QNativeEvent *event);
     void append(int waitMs, QNativeEvent *event = 0);
+    void append(int waitMs);
+
     void play(Playback playback = WaitUntilFinished);
     void stop();
-    float playbackMultiplier;
+    void setTimeMultiplier(float multiplier);
 
 signals:
     void done();
@@ -66,27 +69,14 @@ signals:
 private slots:
     void sendNextEvent();
 
-    private:
+private:
     void waitNextEvent();
 
     QList<QPair<int, QNativeEvent *> > eventList;
+    float playbackMultiplier;
     int currIndex;
     bool wait;
+    int defaultWaitMs;
 };
-
-// ******************************************************************
-
-class QEventOutputList : public QList<QEvent *>
-{
-public:
-    QEventOutputList();
-    ~QEventOutputList();
-    bool waitUntilEmpty(int maxEventWaitTime = 1000);
-    bool wait;
-
-    // Useful method. Just sleep and process events:
-    static void sleep(int sleepTime);
-};
-
 
 #endif
