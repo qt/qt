@@ -194,6 +194,9 @@ tst_QFileInfo::~tst_QFileInfo()
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QDir().rmdir("./.hidden-directory");
 #endif
+#ifdef Q_OS_WIN
+    QDir().rmdir("./hidden-directory");
+#endif
 }
 
 // Testing get/set functions
@@ -1056,14 +1059,6 @@ void tst_QFileInfo::isSymLink_data()
     QTest::newRow("existent file") << SRCDIR "tst_qfileinfo.cpp" << false << "";
     QTest::newRow("link") << "link.lnk" << true << QFileInfo(SRCDIR "tst_qfileinfo.cpp").absoluteFilePath();
     QTest::newRow("broken link") << "brokenlink.lnk" << true << QFileInfo("dummyfile").absoluteFilePath();
-
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_VISTA) {
-        QTest::newRow("Documents and Settings") << "C:/Documents and Settings" << true << "C:/Users";
-        QTest::newRow("All Users") << "C:/Users/All Users" << true << "C:/ProgramData";
-        QTest::newRow("Default User") << "C:/Users/Default User" << true << "C:/Users/Default";
-    }
-#endif
 }
 
 void tst_QFileInfo::isSymLink()
@@ -1086,9 +1081,10 @@ void tst_QFileInfo::isHidden_data()
     }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    QTest::newRow("C:/RECYCLER") << QString::fromLatin1("C:/RECYCLER") << true;
-    QTest::newRow("C:/RECYCLER/.") << QString::fromLatin1("C:/RECYCLER/.") << true;
-    QTest::newRow("C:/RECYCLER/..") << QString::fromLatin1("C:/RECYCLER/..") << true;
+    QVERIFY(QDir("./hidden-directory").exists() || QDir().mkdir("./hidden-directory"));
+    QVERIFY(SetFileAttributesW(QString("./hidden-directory").utf16(),FILE_ATTRIBUTE_HIDDEN));
+    QTest::newRow("C:/path/to/hidden-directory") << QDir::currentPath() + QString::fromLatin1("/hidden-directory") << true;
+    QTest::newRow("C:/path/to/hidden-directory/.") << QDir::currentPath() + QString::fromLatin1("/hidden-directory/.") << true;
 #endif
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
 
