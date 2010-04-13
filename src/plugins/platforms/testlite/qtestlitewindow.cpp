@@ -143,7 +143,7 @@ private:
 
 
 
-QTestLiteWindow::QTestLiteWindow(QTestLiteIntegration *platformIntegration,
+QTestLiteWindow::QTestLiteWindow(const QTestLiteIntegration *platformIntegration,
                                  QTestLiteScreen */*screen*/, QWidget *window)
     :QPlatformWindow(window)
 {
@@ -638,12 +638,12 @@ WId QTestLiteWindow::winId() const
 
 void QTestLiteWindow::raise()
 {
-    XRaiseWindow(mPlatformIntegration->xd->display, x_window);
+    XRaiseWindow(xd->display, x_window);
 }
 
 void QTestLiteWindow::lower()
 {
-    XLowerWindow(mPlatformIntegration->xd->display, x_window);
+    XLowerWindow(xd->display, x_window);
 }
 
 void QTestLiteWindow::setWindowTitle(const QString &title)

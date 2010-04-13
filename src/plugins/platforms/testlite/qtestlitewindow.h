@@ -99,7 +99,7 @@ class QWindowSurface;
 class QTestLiteWindow : public QPlatformWindow
 {
 public:
-    QTestLiteWindow(QTestLiteIntegration *platformIntegration,
+    QTestLiteWindow(const QTestLiteIntegration *platformIntegration,
          QTestLiteScreen *screen, QWidget *window);
     ~QTestLiteWindow();
 
@@ -143,7 +143,6 @@ private:
     QWindowSurface *windowSurface;
     MyDisplay *xd;
 
-    QTestLiteIntegration *mPlatformIntegration;
     QTestLiteScreen *mScreen;
     Qt::WindowFlags window_flags;
 

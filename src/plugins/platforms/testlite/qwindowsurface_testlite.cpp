@@ -137,7 +137,6 @@ QTestLiteWindowSurface::QTestLiteWindowSurface (QTestLiteScreen */*screen*/, QWi
 
 QTestLiteWindowSurface::~QTestLiteWindowSurface()
 {
-    qDebug() << "~QTestLiteWindowSurface";
     delete image_info;
 }
 

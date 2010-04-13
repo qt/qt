@@ -113,7 +113,7 @@ QWindowSurface *QTestLiteIntegration::createWindowSurfaceForWindow(QWidget *widg
 
 QPlatformWindow *QTestLiteIntegration::createPlatformWindow(QWidget *widget, WId /*winId*/) const
 {
-    return new QTestLiteWindow(const_cast<QTestLiteIntegration *>(this), mPrimaryScreen, widget);
+    return new QTestLiteWindow(this, mPrimaryScreen, widget);
 }
 
 
