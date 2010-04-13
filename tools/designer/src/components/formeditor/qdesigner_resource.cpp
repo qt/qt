@@ -53,7 +53,6 @@
 #include "qtresourcemodel_p.h"
 #include "qmdiarea_container.h"
 #include "qwizard_container.h"
-#include "itemview_propertysheet.h"
 #include "layout_propertysheet.h"
 
 #include <ui4_p.h>
@@ -106,8 +105,6 @@
 #include <QtGui/QMenuBar>
 #include <QtGui/QFileDialog>
 #include <QtGui/QHeaderView>
-#include <QtGui/QTreeView>
-#include <QtGui/QTableView>
 #include <QtGui/QWizardPage>
 #include <private/qlayoutengine_p.h>
 
@@ -1275,10 +1272,6 @@ DomWidget *QDesignerResource::createDom(QWidget *widget, DomWidget *ui_parentWid
         w = saveWidget(dockWidget, ui_parentWidget);
     else if (QDesignerContainerExtension *container = qt_extension<QDesignerContainerExtension*>(core()->extensionManager(), widget))
         w = saveWidget(widget, container, ui_parentWidget);
-    else if (QTreeView *treeView = qobject_cast<QTreeView*>(widget))
-        w = saveWidget(treeView, ui_parentWidget);
-    else if (QTableView *tableView = qobject_cast<QTableView*>(widget))
-        w = saveWidget(tableView, ui_parentWidget);
     else if (QWizardPage *wizardPage = qobject_cast<QWizardPage*>(widget))
         w = saveWidget(wizardPage, ui_parentWidget);
     else
@@ -1548,60 +1541,6 @@ DomWidget *QDesignerResource::saveWidget(QDesignerDockWidget *dockWidget, DomWid
         attr->setAttributeName(QLatin1String("dockWidgetArea"));
         attr->setElementNumber(int(area));
         ui_widget->setElementAttribute(ui_widget->elementAttribute() << attr);
-    }
-
-    return ui_widget;
-}
-
-DomWidget *QDesignerResource::saveWidget(QTreeView *treeView, DomWidget *ui_parentWidget)
-{
-    DomWidget *ui_widget = QAbstractFormBuilder::createDom(treeView, ui_parentWidget, true);
-
-    QDesignerPropertySheetExtension *sheet
-            = qt_extension<QDesignerPropertySheetExtension*>(core()->extensionManager(), treeView);
-    ItemViewPropertySheet *itemViewSheet = static_cast<ItemViewPropertySheet*>(sheet);
-
-    if (itemViewSheet) {
-        QHash<QString,QString> nameMap = itemViewSheet->propertyNameMap();
-        foreach (const QString &fakeName, nameMap.keys()) {
-            int index = itemViewSheet->indexOf(fakeName);
-            if (sheet->isChanged(index)) {
-                DomProperty *domAttr = createProperty(treeView->header(), nameMap.value(fakeName),
-                                                      itemViewSheet->property(index));
-                domAttr->setAttributeName(fakeName);
-                ui_widget->setElementAttribute(ui_widget->elementAttribute() << domAttr);
-            }
-        }
-    }
-
-    return ui_widget;
-}
-
-DomWidget *QDesignerResource::saveWidget(QTableView *tableView, DomWidget *ui_parentWidget)
-{
-    DomWidget *ui_widget = QAbstractFormBuilder::createDom(tableView, ui_parentWidget, true);
-
-    QDesignerPropertySheetExtension *sheet
-            = qt_extension<QDesignerPropertySheetExtension*>(core()->extensionManager(), tableView);
-    ItemViewPropertySheet *itemViewSheet = static_cast<ItemViewPropertySheet*>(sheet);
-
-    if (itemViewSheet) {
-        QHash<QString,QString> nameMap = itemViewSheet->propertyNameMap();
-        foreach (const QString &fakeName, nameMap.keys()) {
-            int index = itemViewSheet->indexOf(fakeName);
-            if (sheet->isChanged(index)) {
-                DomProperty *domAttr;
-                if (fakeName.startsWith(QLatin1String("horizontal"))) {
-                    domAttr = createProperty(tableView->horizontalHeader(), nameMap.value(fakeName),
-                                                      itemViewSheet->property(index));
-                } else {
-                    domAttr = createProperty(tableView->verticalHeader(), nameMap.value(fakeName),
-                                                      itemViewSheet->property(index));
-                }
-                domAttr->setAttributeName(fakeName);
-                ui_widget->setElementAttribute(ui_widget->elementAttribute() << domAttr);
-            }
-        }
     }
 
     return ui_widget;
