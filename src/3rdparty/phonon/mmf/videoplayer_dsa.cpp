@@ -296,7 +296,7 @@ bool MMF::DsaVideoPlayer::stopDirectScreenAccess()
 
     const bool dsaWasActive = m_dsaActive;
     if (m_dsaActive) {
-        TRAPD(err, m_player->StopDirectScreenAccessL());
+        TRAP(err, m_player->StopDirectScreenAccessL());
         if (KErrNone == err)
             m_dsaActive = false;
         else
