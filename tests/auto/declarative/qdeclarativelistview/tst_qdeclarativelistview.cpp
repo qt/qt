@@ -89,6 +89,7 @@ private slots:
     void propertyChanges();
     void componentChanges();
     void modelChanges();
+    void QTBUG_9791();
 
 private:
     template <class T> void items();
@@ -1424,6 +1425,44 @@ void tst_QDeclarativeListView::modelChanges()
 
     delete canvas;
 }
+
+void tst_QDeclarativeListView::QTBUG_9791()
+{
+    QDeclarativeView *canvas = createView();
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/strictlyenforcerange.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(canvas->rootObject());
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *viewport = listview->viewport();
+    QTRY_VERIFY(viewport != 0);
+    QTRY_VERIFY(listview->delegate() != 0);
+    QTRY_VERIFY(listview->model() != 0);
+
+    QMetaObject::invokeMethod(listview, "fillModel");
+    qApp->processEvents();
+
+    // Confirm items positioned correctly
+    int itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
+    QVERIFY(itemCount == 3);
+
+    for (int i = 0; i < itemCount; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->x(), i*300.0);
+    }
+
+    // check that view is positioned correctly
+    QTRY_COMPARE(listview->contentX(), 590.0);
+
+    delete canvas;
+}
+
 
 void tst_QDeclarativeListView::qListModelInterface_items()
 {

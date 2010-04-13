@@ -613,8 +613,6 @@ void QDeclarativeGridViewPrivate::updateTrackedItem()
     if (highlight)
         item = highlight;
 
-    FxGridItem *oldTracked = trackedItem;
-
     if (trackedItem && item != trackedItem) {
         QObject::disconnect(trackedItem->item, SIGNAL(yChanged()), q, SLOT(trackedPositionChanged()));
         QObject::disconnect(trackedItem->item, SIGNAL(xChanged()), q, SLOT(trackedPositionChanged()));
@@ -626,7 +624,7 @@ void QDeclarativeGridViewPrivate::updateTrackedItem()
         QObject::connect(trackedItem->item, SIGNAL(yChanged()), q, SLOT(trackedPositionChanged()));
         QObject::connect(trackedItem->item, SIGNAL(xChanged()), q, SLOT(trackedPositionChanged()));
     }
-    if (trackedItem && trackedItem != oldTracked)
+    if (trackedItem)
         q->trackedPositionChanged();
 }
 
