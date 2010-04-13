@@ -28,7 +28,8 @@ embedded:SUBDIRS += kmap2qmap
 
 contains(QT_CONFIG, declarative):SUBDIRS += qml
 contains(QT_CONFIG, dbus):SUBDIRS += qdbus
-!wince*:contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns xmlpatternsvalidator
+# We don't need these command line utilities on embedded platforms.
+!wince*:!symbian:contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns xmlpatternsvalidator
 embedded: SUBDIRS += makeqpf
 
 !wince*:!cross_compile:SUBDIRS += qdoc3
