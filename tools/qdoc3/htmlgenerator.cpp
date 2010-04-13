@@ -1489,10 +1489,12 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         generateStatus(fake, marker);
 
         if (moduleNamespaceMap.contains(fake->name())) {
+            out() << "<a name=\"" << registerRef("namespaces") << "\"></a>\n";
             out() << "<h2>Namespaces</h2>\n";
             generateAnnotatedList(fake, marker, moduleNamespaceMap[fake->name()]);
         }
         if (moduleClassMap.contains(fake->name())) {
+            out() << "<a name=\"" << registerRef("classes") << "\"></a>\n";
             out() << "<h2>Classes</h2>\n";
             generateAnnotatedList(fake, marker, moduleClassMap[fake->name()]);
         }
@@ -2045,7 +2047,14 @@ void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker
     inLink = true;
 
     out() << "<div class=\"toc\">\n";
-        
+#if 0
+        if (moduleNamespaceMap.contains(fake->name())) {
+            out() << "<a name=\"" << registerRef("namespaces") << "\"></a>\n";
+        }
+        if (moduleClassMap.contains(fake->name())) {
+            out() << "<a name=\"" << registerRef("classes") << "\"></a>\n";
+        }
+#endif
     for (int i = 0; i < toc.size(); ++i) {
         Atom *atom = toc.at(i);
 
@@ -2055,8 +2064,8 @@ void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker
 
         if (sectionNumber.size() < nextLevel) {
             do {
-                out() << "<ul>\n";
                 sectionNumber.append("1");
+                out() << "<ul class=\"level" << sectionNumber.size() << "\">\n";
             } while (sectionNumber.size() < nextLevel);
         }
         else {
