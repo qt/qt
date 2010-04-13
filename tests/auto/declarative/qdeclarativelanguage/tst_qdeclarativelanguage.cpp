@@ -52,6 +52,7 @@
 #include "testtypes.h"
 
 #include "../../../shared/util.h"
+#include "testhttpserver.h"
 
 /*
 This test case covers QML language issues.  This covers everything that does not
@@ -116,6 +117,8 @@ private slots:
     void defaultPropertyListOrder();
     void declaredPropertyValues();
 
+    void basicRemote_data();
+    void basicRemote();
     void importsBuiltin_data();
     void importsBuiltin();
     void importsLocal_data();
@@ -1298,6 +1301,40 @@ void tst_qdeclarativelanguage::importsLocal()
     testType(qml,type,error);
 }
 
+void tst_qdeclarativelanguage::basicRemote_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QString>("type");
+    QTest::addColumn<QString>("error");
+
+    QString serverdir = "http://127.0.0.1:14445/qtest/declarative/qmllanguage/";
+
+    QTest::newRow("no need for qmldir") << QUrl(serverdir+"Test.qml") << "" << "";
+    QTest::newRow("need qmldir") << QUrl(serverdir+"TestLocal.qml") << "" << "";
+}
+
+void tst_qdeclarativelanguage::basicRemote()
+{
+    QFETCH(QUrl, url);
+    QFETCH(QString, type);
+    QFETCH(QString, error);
+
+    TestHTTPServer server(14445);
+    server.serveDirectory(SRCDIR);
+
+    QDeclarativeComponent component(&engine, url);
+
+    QTRY_VERIFY(!component.isLoading());
+
+    if (error.isEmpty()) {
+        if (component.isError())
+            qDebug() << component.errors();
+        QVERIFY(!component.isError());
+    } else {
+        QVERIFY(component.isError());
+    }
+}
+
 void tst_qdeclarativelanguage::importsRemote_data()
 {
     QTest::addColumn<QString>("qml");
@@ -1319,8 +1356,6 @@ void tst_qdeclarativelanguage::importsRemote_data()
     QTest::newRow("wrong remote import of undeclared local") << "import \""+serverdir+"\"\nUndeclaredLocal {}" << ""
         << "UndeclaredLocal is not a type";
 }
-
-#include "testhttpserver.h"
 
 void tst_qdeclarativelanguage::importsRemote()
 {
