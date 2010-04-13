@@ -13,8 +13,8 @@ function index(column, row) {
 }
 
 function startNewGame() {
+    //Delete blocks from previous game
     for (var i = 0; i < maxIndex; i++) {
-        //Delete blocks from previous game
         if (board[i] != null)
             board[i].destroy();
     }
