@@ -1,4 +1,0 @@
-# To enable automatic merging of ChangeLog files, use the following command:
-# git config merge.changelog.driver "resolve-ChangeLogs --merge-driver %O %A %B"
-ChangeLog* merge=changelog
-

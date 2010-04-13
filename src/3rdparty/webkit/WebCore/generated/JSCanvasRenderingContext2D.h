@@ -40,7 +40,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -77,7 +77,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSCanvasRenderingContext2DPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -132,37 +132,37 @@ JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionGetImageDa
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionPutImageData(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsCanvasRenderingContext2DGlobalAlpha(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DGlobalAlpha(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DGlobalAlpha(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DGlobalCompositeOperation(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DGlobalCompositeOperation(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DGlobalCompositeOperation(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DLineWidth(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DLineWidth(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DLineWidth(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DLineCap(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DLineCap(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DLineCap(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DLineJoin(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DLineJoin(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DLineJoin(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DMiterLimit(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DMiterLimit(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DMiterLimit(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DShadowOffsetX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DShadowOffsetX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DShadowOffsetX(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DShadowOffsetY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DShadowOffsetY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DShadowOffsetY(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DShadowBlur(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DShadowBlur(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DShadowBlur(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DShadowColor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DShadowColor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DShadowColor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DFont(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DFont(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DFont(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DTextAlign(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DTextAlign(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DTextAlign(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DTextBaseline(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DTextBaseline(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DTextBaseline(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DStrokeStyle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DStrokeStyle(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DStrokeStyle(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DFillStyle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DFillStyle(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCanvasRenderingContext2DFillStyle(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCanvasRenderingContext2DConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCanvasRenderingContext2DConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

@@ -35,7 +35,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSNodeFilter);
 
 static const HashTableValue JSNodeFilterTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsNodeFilterConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -50,22 +50,22 @@ static JSC_CONST_HASHTABLE HashTable JSNodeFilterTable =
 
 static const HashTableValue JSNodeFilterConstructorTableValues[17] =
 {
-    { "FILTER_ACCEPT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterFILTER_ACCEPT, (intptr_t)0 },
-    { "FILTER_REJECT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterFILTER_REJECT, (intptr_t)0 },
-    { "FILTER_SKIP", DontDelete|ReadOnly, (intptr_t)jsNodeFilterFILTER_SKIP, (intptr_t)0 },
-    { "SHOW_ALL", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_ALL, (intptr_t)0 },
-    { "SHOW_ELEMENT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_ELEMENT, (intptr_t)0 },
-    { "SHOW_ATTRIBUTE", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_ATTRIBUTE, (intptr_t)0 },
-    { "SHOW_TEXT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_TEXT, (intptr_t)0 },
-    { "SHOW_CDATA_SECTION", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_CDATA_SECTION, (intptr_t)0 },
-    { "SHOW_ENTITY_REFERENCE", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_ENTITY_REFERENCE, (intptr_t)0 },
-    { "SHOW_ENTITY", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_ENTITY, (intptr_t)0 },
-    { "SHOW_PROCESSING_INSTRUCTION", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_PROCESSING_INSTRUCTION, (intptr_t)0 },
-    { "SHOW_COMMENT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_COMMENT, (intptr_t)0 },
-    { "SHOW_DOCUMENT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_DOCUMENT, (intptr_t)0 },
-    { "SHOW_DOCUMENT_TYPE", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_DOCUMENT_TYPE, (intptr_t)0 },
-    { "SHOW_DOCUMENT_FRAGMENT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_DOCUMENT_FRAGMENT, (intptr_t)0 },
-    { "SHOW_NOTATION", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_NOTATION, (intptr_t)0 },
+    { "FILTER_ACCEPT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterFILTER_ACCEPT), (intptr_t)0 },
+    { "FILTER_REJECT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterFILTER_REJECT), (intptr_t)0 },
+    { "FILTER_SKIP", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterFILTER_SKIP), (intptr_t)0 },
+    { "SHOW_ALL", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_ALL), (intptr_t)0 },
+    { "SHOW_ELEMENT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_ELEMENT), (intptr_t)0 },
+    { "SHOW_ATTRIBUTE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_ATTRIBUTE), (intptr_t)0 },
+    { "SHOW_TEXT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_TEXT), (intptr_t)0 },
+    { "SHOW_CDATA_SECTION", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_CDATA_SECTION), (intptr_t)0 },
+    { "SHOW_ENTITY_REFERENCE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_ENTITY_REFERENCE), (intptr_t)0 },
+    { "SHOW_ENTITY", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_ENTITY), (intptr_t)0 },
+    { "SHOW_PROCESSING_INSTRUCTION", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_PROCESSING_INSTRUCTION), (intptr_t)0 },
+    { "SHOW_COMMENT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_COMMENT), (intptr_t)0 },
+    { "SHOW_DOCUMENT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_DOCUMENT), (intptr_t)0 },
+    { "SHOW_DOCUMENT_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_DOCUMENT_TYPE), (intptr_t)0 },
+    { "SHOW_DOCUMENT_FRAGMENT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_DOCUMENT_FRAGMENT), (intptr_t)0 },
+    { "SHOW_NOTATION", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_NOTATION), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -90,7 +90,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -113,23 +113,23 @@ bool JSNodeFilterConstructor::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 static const HashTableValue JSNodeFilterPrototypeTableValues[18] =
 {
-    { "FILTER_ACCEPT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterFILTER_ACCEPT, (intptr_t)0 },
-    { "FILTER_REJECT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterFILTER_REJECT, (intptr_t)0 },
-    { "FILTER_SKIP", DontDelete|ReadOnly, (intptr_t)jsNodeFilterFILTER_SKIP, (intptr_t)0 },
-    { "SHOW_ALL", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_ALL, (intptr_t)0 },
-    { "SHOW_ELEMENT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_ELEMENT, (intptr_t)0 },
-    { "SHOW_ATTRIBUTE", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_ATTRIBUTE, (intptr_t)0 },
-    { "SHOW_TEXT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_TEXT, (intptr_t)0 },
-    { "SHOW_CDATA_SECTION", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_CDATA_SECTION, (intptr_t)0 },
-    { "SHOW_ENTITY_REFERENCE", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_ENTITY_REFERENCE, (intptr_t)0 },
-    { "SHOW_ENTITY", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_ENTITY, (intptr_t)0 },
-    { "SHOW_PROCESSING_INSTRUCTION", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_PROCESSING_INSTRUCTION, (intptr_t)0 },
-    { "SHOW_COMMENT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_COMMENT, (intptr_t)0 },
-    { "SHOW_DOCUMENT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_DOCUMENT, (intptr_t)0 },
-    { "SHOW_DOCUMENT_TYPE", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_DOCUMENT_TYPE, (intptr_t)0 },
-    { "SHOW_DOCUMENT_FRAGMENT", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_DOCUMENT_FRAGMENT, (intptr_t)0 },
-    { "SHOW_NOTATION", DontDelete|ReadOnly, (intptr_t)jsNodeFilterSHOW_NOTATION, (intptr_t)0 },
-    { "acceptNode", DontDelete|Function, (intptr_t)jsNodeFilterPrototypeFunctionAcceptNode, (intptr_t)1 },
+    { "FILTER_ACCEPT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterFILTER_ACCEPT), (intptr_t)0 },
+    { "FILTER_REJECT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterFILTER_REJECT), (intptr_t)0 },
+    { "FILTER_SKIP", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterFILTER_SKIP), (intptr_t)0 },
+    { "SHOW_ALL", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_ALL), (intptr_t)0 },
+    { "SHOW_ELEMENT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_ELEMENT), (intptr_t)0 },
+    { "SHOW_ATTRIBUTE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_ATTRIBUTE), (intptr_t)0 },
+    { "SHOW_TEXT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_TEXT), (intptr_t)0 },
+    { "SHOW_CDATA_SECTION", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_CDATA_SECTION), (intptr_t)0 },
+    { "SHOW_ENTITY_REFERENCE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_ENTITY_REFERENCE), (intptr_t)0 },
+    { "SHOW_ENTITY", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_ENTITY), (intptr_t)0 },
+    { "SHOW_PROCESSING_INSTRUCTION", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_PROCESSING_INSTRUCTION), (intptr_t)0 },
+    { "SHOW_COMMENT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_COMMENT), (intptr_t)0 },
+    { "SHOW_DOCUMENT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_DOCUMENT), (intptr_t)0 },
+    { "SHOW_DOCUMENT_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_DOCUMENT_TYPE), (intptr_t)0 },
+    { "SHOW_DOCUMENT_FRAGMENT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_DOCUMENT_FRAGMENT), (intptr_t)0 },
+    { "SHOW_NOTATION", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsNodeFilterSHOW_NOTATION), (intptr_t)0 },
+    { "acceptNode", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsNodeFilterPrototypeFunctionAcceptNode), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -185,9 +185,9 @@ bool JSNodeFilter::getOwnPropertyDescriptor(ExecState* exec, const Identifier& p
     return getStaticValueDescriptor<JSNodeFilter, Base>(exec, &JSNodeFilterTable, this, propertyName, descriptor);
 }
 
-JSValue jsNodeFilterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNodeFilterConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSNodeFilter* domObject = static_cast<JSNodeFilter*>(asObject(slot.slotBase()));
+    JSNodeFilter* domObject = static_cast<JSNodeFilter*>(asObject(slotBase));
     return JSNodeFilter::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSNodeFilter::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -206,82 +206,82 @@ JSValue JSC_HOST_CALL jsNodeFilterPrototypeFunctionAcceptNode(ExecState* exec, J
 
 // Constant getters
 
-JSValue jsNodeFilterFILTER_ACCEPT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterFILTER_ACCEPT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsNodeFilterFILTER_REJECT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterFILTER_REJECT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsNodeFilterFILTER_SKIP(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterFILTER_SKIP(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValue jsNodeFilterSHOW_ALL(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_ALL(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0xFFFFFFFF));
 }
 
-JSValue jsNodeFilterSHOW_ELEMENT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_ELEMENT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0x00000001));
 }
 
-JSValue jsNodeFilterSHOW_ATTRIBUTE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_ATTRIBUTE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0x00000002));
 }
 
-JSValue jsNodeFilterSHOW_TEXT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_TEXT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0x00000004));
 }
 
-JSValue jsNodeFilterSHOW_CDATA_SECTION(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_CDATA_SECTION(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0x00000008));
 }
 
-JSValue jsNodeFilterSHOW_ENTITY_REFERENCE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_ENTITY_REFERENCE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0x00000010));
 }
 
-JSValue jsNodeFilterSHOW_ENTITY(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_ENTITY(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0x00000020));
 }
 
-JSValue jsNodeFilterSHOW_PROCESSING_INSTRUCTION(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_PROCESSING_INSTRUCTION(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0x00000040));
 }
 
-JSValue jsNodeFilterSHOW_COMMENT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_COMMENT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0x00000080));
 }
 
-JSValue jsNodeFilterSHOW_DOCUMENT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_DOCUMENT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0x00000100));
 }
 
-JSValue jsNodeFilterSHOW_DOCUMENT_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_DOCUMENT_TYPE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0x00000200));
 }
 
-JSValue jsNodeFilterSHOW_DOCUMENT_FRAGMENT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_DOCUMENT_FRAGMENT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0x00000400));
 }
 
-JSValue jsNodeFilterSHOW_NOTATION(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsNodeFilterSHOW_NOTATION(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0x00000800));
 }

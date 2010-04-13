@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2007, 2008 Nikolas Zimmermann <zimmermann@kde.org>
+    Copyright (C) Research In Motion Limited 2010. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -33,26 +34,14 @@
 
 #include <wtf/RefCountedLeakCounter.h>
 
-#if USE(JSC)
-#include "GCController.h"
-#endif
-
 namespace WebCore {
 
 #ifndef NDEBUG
 static WTF::RefCountedLeakCounter instanceCounter("WebCoreSVGElementInstance");
 #endif
 
-static EventTargetData& dummyEventTargetData()
-{
-    DEFINE_STATIC_LOCAL(EventTargetData, dummyEventTargetData, ());
-    dummyEventTargetData.eventListenerMap.clear();
-    return dummyEventTargetData;
-}
-
 SVGElementInstance::SVGElementInstance(SVGUseElement* useElement, PassRefPtr<SVGElement> originalElement)
-    : m_needsUpdate(false)
-    , m_useElement(useElement)
+    : m_useElement(useElement)
     , m_element(originalElement)
     , m_previousSibling(0)
     , m_nextSibling(0)
@@ -93,20 +82,6 @@ void SVGElementInstance::setShadowTreeElement(SVGElement* element)
     m_shadowTreeElement = element;
 }
 
-void SVGElementInstance::forgetWrapper()
-{
-#if USE(JSC)
-    // FIXME: This is fragile, as discussed with Sam. Need to find a better solution.
-    // Think about the case where JS explicitely holds "var root = useElement.instanceRoot;".
-    // We still have to recreate this wrapper somehow. The gc collection below, won't catch it.
-
-    // If the use shadow tree has been rebuilt, just the JSSVGElementInstance objects
-    // are still holding RefPtrs of SVGElementInstance objects, which prevent us to
-    // be deleted (and the shadow tree is not destructed as well). Force JS GC.
-    gcController().garbageCollectNow();
-#endif
-}
-
 void SVGElementInstance::appendChild(PassRefPtr<SVGElementInstance> child)
 {
     appendChildToContainer<SVGElementInstance, SVGElementInstance>(child.get(), this);
@@ -117,52 +92,39 @@ void SVGElementInstance::invalidateAllInstancesOfElement(SVGElement* element)
     if (!element)
         return;
 
-    HashSet<SVGElementInstance*> set = element->instancesForElement();
+    if (element->isStyled() && static_cast<SVGStyledElement*>(element)->instanceUpdatesBlocked())
+        return;
+
+    const HashSet<SVGElementInstance*>& set = element->instancesForElement();
     if (set.isEmpty())
         return;
 
-    // Find all use elements referencing the instances - ask them _once_ to rebuild.
-    HashSet<SVGElementInstance*>::const_iterator it = set.begin();
+    // Mark all use elements referencing 'element' for rebuilding
     const HashSet<SVGElementInstance*>::const_iterator end = set.end();
-
-    for (; it != end; ++it)
-        (*it)->setNeedsUpdate(true);
-}
-
-void SVGElementInstance::setNeedsUpdate(bool value)
-{
-    m_needsUpdate = value;
-
-    if (m_needsUpdate)
-        correspondingUseElement()->setNeedsStyleRecalc();
+    for (HashSet<SVGElementInstance*>::const_iterator it = set.begin(); it != end; ++it) {
+        ASSERT((*it)->correspondingElement() == element);
+        (*it)->correspondingUseElement()->invalidateShadowTree();
+    }
 }
 
 ScriptExecutionContext* SVGElementInstance::scriptExecutionContext() const
 {
-    if (SVGElement* element = correspondingElement())
-        return element->document();
-    return 0;
+    return m_element->document();
 }
 
 bool SVGElementInstance::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
-    if (!correspondingElement())
-        return false;
-    return correspondingElement()->addEventListener(eventType, listener, useCapture);
+    return m_element->addEventListener(eventType, listener, useCapture);
 }
 
 bool SVGElementInstance::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
 {
-    if (!correspondingElement())
-        return false;
-    return correspondingElement()->removeEventListener(eventType, listener, useCapture);
+    return m_element->removeEventListener(eventType, listener, useCapture);
 }
 
 void SVGElementInstance::removeAllEventListeners()
 {
-    if (!correspondingElement())
-        return;
-    correspondingElement()->removeAllEventListeners();
+    m_element->removeAllEventListeners();
 }
 
 bool SVGElementInstance::dispatchEvent(PassRefPtr<Event> prpEvent)
@@ -182,14 +144,17 @@ bool SVGElementInstance::dispatchEvent(PassRefPtr<Event> prpEvent)
 
 EventTargetData* SVGElementInstance::eventTargetData()
 {
-    return correspondingElement() ? correspondingElement()->eventTargetData() : 0;
+    return m_element->eventTargetData();
 }
 
 EventTargetData* SVGElementInstance::ensureEventTargetData()
 {
-    return &dummyEventTargetData(); // return something, so we don't crash
+    // Avoid crashing - return a default dummy value
+    DEFINE_STATIC_LOCAL(EventTargetData, dummyEventTargetData, ());
+    dummyEventTargetData.eventListenerMap.clear();
+    return &dummyEventTargetData;
 }
 
-} // namespace WebCore
+}
 
-#endif // ENABLE(SVG)
+#endif

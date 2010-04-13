@@ -35,6 +35,7 @@
 #include "Page.h"
 #include "RenderView.h"
 #include "RenderWidgetProtector.h"
+#include "Settings.h"
 #include "Text.h"
 
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
@@ -48,287 +49,82 @@ using namespace HTMLNames;
 RenderPartObject::RenderPartObject(Element* element)
     : RenderPart(element)
 {
-    // init RenderObject attributes
-    setInline(true);
-    m_hasFallbackContent = false;
-    
-    if (element->hasTagName(embedTag) || element->hasTagName(objectTag))
-        view()->frameView()->setIsVisuallyNonEmpty();
 }
 
-RenderPartObject::~RenderPartObject()
+bool RenderPartObject::flattenFrame()
 {
-    if (frameView())
-        frameView()->removeWidgetToUpdate(this);
-}
-
-static bool isURLAllowed(Document* doc, const String& url)
-{
-    if (doc->frame()->page()->frameCount() >= 200)
+    if (!node() || !node()->hasTagName(iframeTag))
         return false;
 
-    // We allow one level of self-reference because some sites depend on that.
-    // But we don't allow more than one.
-    KURL completeURL = doc->completeURL(url);
-    bool foundSelfReference = false;
-    for (Frame* frame = doc->frame(); frame; frame = frame->tree()->parent()) {
-        if (equalIgnoringFragmentIdentifier(frame->loader()->url(), completeURL)) {
-            if (foundSelfReference)
-                return false;
-            foundSelfReference = true;
-        }
-    }
-    return true;
+    HTMLIFrameElement* element = static_cast<HTMLIFrameElement*>(node());
+    bool isScrollable = element->scrollingMode() != ScrollbarAlwaysOff;
+
+    if (!isScrollable && style()->width().isFixed()
+        && style()->height().isFixed())
+        return false;
+
+    Frame* frame = element->document()->frame();
+    bool enabled = frame && frame->settings()->frameFlatteningEnabled();
+
+    if (!enabled || !frame->page())
+        return false;
+
+    FrameView* view = frame->page()->mainFrame()->view();
+    if (!view)
+        return false;
+
+    // Do not flatten offscreen inner frames during frame flattening.
+    return absoluteBoundingBoxRect().intersects(IntRect(IntPoint(0, 0), view->contentsSize()));
 }
 
-typedef HashMap<String, String, CaseFoldingHash> ClassIdToTypeMap;
-
-static ClassIdToTypeMap* createClassIdToTypeMap()
+void RenderPartObject::calcHeight()
 {
-    ClassIdToTypeMap* map = new ClassIdToTypeMap;
-    map->add("clsid:D27CDB6E-AE6D-11CF-96B8-444553540000", "application/x-shockwave-flash");
-    map->add("clsid:CFCDAA03-8BE4-11CF-B84B-0020AFBBCCFA", "audio/x-pn-realaudio-plugin");
-    map->add("clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B", "video/quicktime");
-    map->add("clsid:166B1BCA-3F9C-11CF-8075-444553540000", "application/x-director");
-    map->add("clsid:6BF52A52-394A-11D3-B153-00C04F79FAA6", "application/x-mplayer2");
-    map->add("clsid:22D6F312-B0F6-11D0-94AB-0080C74C7E95", "application/x-mplayer2");
-    return map;
-}
+    RenderPart::calcHeight();
+    if (!flattenFrame())
+         return;
 
-static String serviceTypeForClassId(const String& classId)
-{
-    // Return early if classId is empty (since we won't do anything below).
-    // Furthermore, if classId is null, calling get() below will crash.
-    if (classId.isEmpty())
-        return String();
+    HTMLIFrameElement* frame = static_cast<HTMLIFrameElement*>(node());
+    bool isScrollable = frame->scrollingMode() != ScrollbarAlwaysOff;
 
-    static ClassIdToTypeMap* map = createClassIdToTypeMap();
-    return map->get(classId);
-}
-
-static void mapDataParamToSrc(Vector<String>* paramNames, Vector<String>* paramValues)
-{
-    // Some plugins don't understand the "data" attribute of the OBJECT tag (i.e. Real and WMP
-    // require "src" attribute).
-    int srcIndex = -1, dataIndex = -1;
-    for (unsigned int i = 0; i < paramNames->size(); ++i) {
-        if (equalIgnoringCase((*paramNames)[i], "src"))
-            srcIndex = i;
-        else if (equalIgnoringCase((*paramNames)[i], "data"))
-            dataIndex = i;
-    }
-
-    if (srcIndex == -1 && dataIndex != -1) {
-        paramNames->append("src");
-        paramValues->append((*paramValues)[dataIndex]);
+    if (isScrollable || !style()->height().isFixed()) {
+        FrameView* view = static_cast<FrameView*>(widget());
+        int border = borderTop() + borderBottom();
+        setHeight(max(height(), view->contentsHeight() + border));
     }
 }
 
-void RenderPartObject::updateWidget(bool onlyCreateNonNetscapePlugins)
+void RenderPartObject::calcWidth()
 {
-    String url;
-    String serviceType;
-    Vector<String> paramNames;
-    Vector<String> paramValues;
-    Frame* frame = frameView()->frame();
+    RenderPart::calcWidth();
+    if (!flattenFrame())
+        return;
 
-    // The calls to FrameLoader::requestObject within this function can result in a plug-in being initialized.
-    // This can run cause arbitrary JavaScript to run and may result in this RenderObject being detached from
-    // the render tree and destroyed, causing a crash like <rdar://problem/6954546>.  By extending our lifetime
-    // artifically to ensure that we remain alive for the duration of plug-in initialization.
-    RenderWidgetProtector protector(this);
+    HTMLIFrameElement* frame = static_cast<HTMLIFrameElement*>(node());
+    bool isScrollable = frame->scrollingMode() != ScrollbarAlwaysOff;
 
-    if (node()->hasTagName(objectTag)) {
-        HTMLObjectElement* o = static_cast<HTMLObjectElement*>(node());
-
-        o->setNeedWidgetUpdate(false);
-        if (!o->isFinishedParsingChildren())
-          return;
-
-        // Check for a child EMBED tag.
-        HTMLEmbedElement* embed = 0;
-        for (Node* child = o->firstChild(); child; ) {
-            if (child->hasTagName(embedTag)) {
-                embed = static_cast<HTMLEmbedElement*>(child);
-                break;
-            } else if (child->hasTagName(objectTag))
-                child = child->nextSibling();         // Don't descend into nested OBJECT tags
-            else
-                child = child->traverseNextNode(o);   // Otherwise descend (EMBEDs may be inside COMMENT tags)
-        }
-
-        // Use the attributes from the EMBED tag instead of the OBJECT tag including WIDTH and HEIGHT.
-        HTMLElement *embedOrObject;
-        if (embed) {
-            embedOrObject = (HTMLElement *)embed;
-            url = embed->url();
-            serviceType = embed->serviceType();
-        } else
-            embedOrObject = (HTMLElement *)o;
-
-        // If there was no URL or type defined in EMBED, try the OBJECT tag.
-        if (url.isEmpty())
-            url = o->url();
-        if (serviceType.isEmpty())
-            serviceType = o->serviceType();
-
-        HashSet<StringImpl*, CaseFoldingHash> uniqueParamNames;
-
-        // Scan the PARAM children.
-        // Get the URL and type from the params if we don't already have them.
-        // Get the attributes from the params if there is no EMBED tag.
-        Node *child = o->firstChild();
-        while (child && (url.isEmpty() || serviceType.isEmpty() || !embed)) {
-            if (child->hasTagName(paramTag)) {
-                HTMLParamElement* p = static_cast<HTMLParamElement*>(child);
-                String name = p->name();
-                if (url.isEmpty() && (equalIgnoringCase(name, "src") || equalIgnoringCase(name, "movie") || equalIgnoringCase(name, "code") || equalIgnoringCase(name, "url")))
-                    url = p->value();
-                if (serviceType.isEmpty() && equalIgnoringCase(name, "type")) {
-                    serviceType = p->value();
-                    int pos = serviceType.find(";");
-                    if (pos != -1)
-                        serviceType = serviceType.left(pos);
-                }
-                if (!embed && !name.isEmpty()) {
-                    uniqueParamNames.add(name.impl());
-                    paramNames.append(p->name());
-                    paramValues.append(p->value());
-                }
-            }
-            child = child->nextSibling();
-        }
-
-        // When OBJECT is used for an applet via Sun's Java plugin, the CODEBASE attribute in the tag
-        // points to the Java plugin itself (an ActiveX component) while the actual applet CODEBASE is
-        // in a PARAM tag. See <http://java.sun.com/products/plugin/1.2/docs/tags.html>. This means
-        // we have to explicitly suppress the tag's CODEBASE attribute if there is none in a PARAM,
-        // else our Java plugin will misinterpret it. [4004531]
-        String codebase;
-        if (!embed && MIMETypeRegistry::isJavaAppletMIMEType(serviceType)) {
-            codebase = "codebase";
-            uniqueParamNames.add(codebase.impl()); // pretend we found it in a PARAM already
-        }
-        
-        // Turn the attributes of either the EMBED tag or OBJECT tag into arrays, but don't override PARAM values.
-        NamedNodeMap* attributes = embedOrObject->attributes();
-        if (attributes) {
-            for (unsigned i = 0; i < attributes->length(); ++i) {
-                Attribute* it = attributes->attributeItem(i);
-                const AtomicString& name = it->name().localName();
-                if (embed || !uniqueParamNames.contains(name.impl())) {
-                    paramNames.append(name.string());
-                    paramValues.append(it->value().string());
-                }
-            }
-        }
-
-        mapDataParamToSrc(&paramNames, &paramValues);
-
-        // If we still don't have a type, try to map from a specific CLASSID to a type.
-        if (serviceType.isEmpty())
-            serviceType = serviceTypeForClassId(o->classId());
-
-        if (!isURLAllowed(document(), url))
-            return;
-
-        // Find out if we support fallback content.
-        m_hasFallbackContent = false;
-        for (Node *child = o->firstChild(); child && !m_hasFallbackContent; child = child->nextSibling()) {
-            if ((!child->isTextNode() && !child->hasTagName(embedTag) && !child->hasTagName(paramTag)) || // Discount <embed> and <param>
-                (child->isTextNode() && !static_cast<Text*>(child)->containsOnlyWhitespace()))
-                m_hasFallbackContent = true;
-        }
-
-        if (onlyCreateNonNetscapePlugins) {
-            KURL completedURL;
-            if (!url.isEmpty())
-                completedURL = frame->loader()->completeURL(url);
-
-            if (frame->loader()->client()->objectContentType(completedURL, serviceType) == ObjectContentNetscapePlugin)
-                return;
-        }
-
-        bool success = o->dispatchBeforeLoadEvent(url) &&
-                       frame->loader()->requestObject(this, url, o->getAttribute(nameAttr), serviceType, paramNames, paramValues);
-        if (!success && m_hasFallbackContent)
-            o->renderFallbackContent();
-    } else if (node()->hasTagName(embedTag)) {
-        HTMLEmbedElement *o = static_cast<HTMLEmbedElement*>(node());
-        o->setNeedWidgetUpdate(false);
-        url = o->url();
-        serviceType = o->serviceType();
-
-        if (url.isEmpty() && serviceType.isEmpty())
-            return;
-        if (!isURLAllowed(document(), url))
-            return;
-
-        // add all attributes set on the embed object
-        NamedNodeMap* a = o->attributes();
-        if (a) {
-            for (unsigned i = 0; i < a->length(); ++i) {
-                Attribute* it = a->attributeItem(i);
-                paramNames.append(it->name().localName().string());
-                paramValues.append(it->value().string());
-            }
-        }
-
-        if (onlyCreateNonNetscapePlugins) {
-            KURL completedURL;
-            if (!url.isEmpty())
-                completedURL = frame->loader()->completeURL(url);
-
-            if (frame->loader()->client()->objectContentType(completedURL, serviceType) == ObjectContentNetscapePlugin)
-                return;
-
-        }
-
-        if (o->dispatchBeforeLoadEvent(url))
-            frame->loader()->requestObject(this, url, o->getAttribute(nameAttr), serviceType, paramNames, paramValues);
+    if (isScrollable || !style()->width().isFixed()) {
+        FrameView* view = static_cast<FrameView*>(widget());
+        int border = borderLeft() + borderRight();
+        setWidth(max(width(), view->contentsWidth() + border));
     }
-#if ENABLE(PLUGIN_PROXY_FOR_VIDEO)        
-    else if (node()->hasTagName(videoTag) || node()->hasTagName(audioTag)) {
-        HTMLMediaElement* o = static_cast<HTMLMediaElement*>(node());
-
-        o->setNeedWidgetUpdate(false);
-        if (node()->hasTagName(videoTag)) {
-            HTMLVideoElement* vid = static_cast<HTMLVideoElement*>(node());
-            String poster = vid->poster();
-            if (!poster.isEmpty()) {
-                paramNames.append("_media_element_poster_");
-                paramValues.append(poster);
-            }
-        }
-
-        url = o->initialURL();
-        if (!url.isEmpty()) {
-            paramNames.append("_media_element_src_");
-            paramValues.append(url);
-        }
-
-        serviceType = "application/x-media-element-proxy-plugin";
-        
-        if (o->dispatchBeforeLoadEvent(url))
-            frame->loader()->requestObject(this, url, nullAtom, serviceType, paramNames, paramValues);
-    }
-#endif
 }
 
 void RenderPartObject::layout()
 {
     ASSERT(needsLayout());
 
-    calcWidth();
-    calcHeight();
+    RenderPart::calcWidth();
+    RenderPart::calcHeight();
+
+    if (flattenFrame()) {
+        layoutWithFlattening(style()->width().isFixed(), style()->height().isFixed());
+        return;
+    }
 
     RenderPart::layout();
 
     m_overflow.clear();
     addShadowOverflow();
-
-    if (!widget() && frameView())
-        frameView()->addWidgetToUpdate(this);
 
     setNeedsLayout(false);
 }

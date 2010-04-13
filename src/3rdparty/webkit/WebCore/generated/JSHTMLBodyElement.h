@@ -40,7 +40,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -57,7 +57,7 @@ public:
     static const JSC::ClassInfo s_info;
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSHTMLBodyElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -66,35 +66,37 @@ protected:
 
 // Attributes
 
-JSC::JSValue jsHTMLBodyElementALink(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementALink(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementALink(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementBackground(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementBackground(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementBackground(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementBgColor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementBgColor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementBgColor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementLink(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementLink(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementLink(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementText(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementText(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementText(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementVLink(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementVLink(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementVLink(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementOnbeforeunload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementOnbeforeunload(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementOnbeforeunload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementOnhashchange(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementOnhashchange(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementOnhashchange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementOnmessage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementOnmessage(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementOnmessage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementOnoffline(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementOnoffline(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementOnoffline(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementOnonline(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementOnonline(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementOnonline(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementOnresize(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementOnpopstate(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+void setJSHTMLBodyElementOnpopstate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLBodyElementOnresize(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementOnresize(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementOnstorage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementOnstorage(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementOnstorage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementOnunload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementOnunload(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLBodyElementOnunload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLBodyElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLBodyElementConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

@@ -26,7 +26,7 @@
 #define UnicodeGLib_h
 
 #include "UnicodeMacrosFromICU.h"
-#include <wtf/GOwnPtr.h>
+#include "GOwnPtr.h"
 
 #include <glib.h>
 #include <pango/pango.h>
@@ -150,6 +150,11 @@ inline UChar32 toTitleCase(UChar32 c)
 inline bool isArabicChar(UChar32 c)
 {
     return c >= 0x0600 && c <= 0x06FF;
+}
+
+inline bool isAlphanumeric(UChar32 c)
+{
+    return g_unichar_isalnum(c);
 }
 
 inline bool isFormatChar(UChar32 c)

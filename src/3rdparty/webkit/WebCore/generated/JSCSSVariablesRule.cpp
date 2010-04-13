@@ -38,9 +38,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSCSSVariablesRule);
 
 static const HashTableValue JSCSSVariablesRuleTableValues[4] =
 {
-    { "media", DontDelete|ReadOnly, (intptr_t)jsCSSVariablesRuleMedia, (intptr_t)0 },
-    { "variables", DontDelete|ReadOnly, (intptr_t)jsCSSVariablesRuleVariables, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCSSVariablesRuleConstructor, (intptr_t)0 },
+    { "media", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSVariablesRuleMedia), (intptr_t)0 },
+    { "variables", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSVariablesRuleVariables), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSVariablesRuleConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -141,25 +141,27 @@ bool JSCSSVariablesRule::getOwnPropertyDescriptor(ExecState* exec, const Identif
     return getStaticValueDescriptor<JSCSSVariablesRule, Base>(exec, &JSCSSVariablesRuleTable, this, propertyName, descriptor);
 }
 
-JSValue jsCSSVariablesRuleMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSVariablesRuleMedia(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSVariablesRule* castedThis = static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()));
+    JSCSSVariablesRule* castedThis = static_cast<JSCSSVariablesRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSVariablesRule* imp = static_cast<CSSVariablesRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
+    return result;
 }
 
-JSValue jsCSSVariablesRuleVariables(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSVariablesRuleVariables(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSVariablesRule* castedThis = static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()));
+    JSCSSVariablesRule* castedThis = static_cast<JSCSSVariablesRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSVariablesRule* imp = static_cast<CSSVariablesRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->variables()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->variables()));
+    return result;
 }
 
-JSValue jsCSSVariablesRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSVariablesRuleConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSVariablesRule* domObject = static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()));
+    JSCSSVariablesRule* domObject = static_cast<JSCSSVariablesRule*>(asObject(slotBase));
     return JSCSSVariablesRule::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSCSSVariablesRule::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

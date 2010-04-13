@@ -21,7 +21,6 @@
 #ifndef JSCoordinates_h
 #define JSCoordinates_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -43,7 +42,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
 
@@ -71,7 +70,7 @@ public:
     static const JSC::ClassInfo s_info;
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSCoordinatesPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -80,13 +79,13 @@ protected:
 
 // Attributes
 
-JSC::JSValue jsCoordinatesLatitude(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsCoordinatesLongitude(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsCoordinatesAltitude(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsCoordinatesAccuracy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsCoordinatesAltitudeAccuracy(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsCoordinatesHeading(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsCoordinatesSpeed(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCoordinatesLatitude(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsCoordinatesLongitude(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsCoordinatesAltitude(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsCoordinatesAccuracy(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsCoordinatesAltitudeAccuracy(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsCoordinatesHeading(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsCoordinatesSpeed(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

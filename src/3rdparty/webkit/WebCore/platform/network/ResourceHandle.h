@@ -27,6 +27,7 @@
 #define ResourceHandle_h
 
 #include "AuthenticationChallenge.h"
+#include "AuthenticationClient.h"
 #include "HTTPHeaderMap.h"
 #include "ThreadableLoader.h"
 #include <wtf/OwnPtr.h>
@@ -84,16 +85,20 @@ class KURL;
 class ResourceError;
 class ResourceHandleClient;
 class ResourceHandleInternal;
-struct ResourceRequest;
+class ResourceRequest;
 class ResourceResponse;
 class SchedulePair;
 class SharedBuffer;
 
 template <typename T> class Timer;
 
-class ResourceHandle : public RefCounted<ResourceHandle> {
+class ResourceHandle : public RefCounted<ResourceHandle>
+#if PLATFORM(MAC) || USE(CFNETWORK) || USE(CURL)
+    , public AuthenticationClient
+#endif
+    {
 private:
-    ResourceHandle(const ResourceRequest&, ResourceHandleClient*, bool defersLoading, bool shouldContentSniff, bool mightDownloadFromHandle);
+    ResourceHandle(const ResourceRequest&, ResourceHandleClient*, bool defersLoading, bool shouldContentSniff);
 
     enum FailureType {
         BlockedFailure,
@@ -102,15 +107,16 @@ private:
 
 public:
     // FIXME: should not need the Frame
-    static PassRefPtr<ResourceHandle> create(const ResourceRequest&, ResourceHandleClient*, Frame*, bool defersLoading, bool shouldContentSniff, bool mightDownloadFromHandle = false);
+    static PassRefPtr<ResourceHandle> create(const ResourceRequest&, ResourceHandleClient*, Frame*, bool defersLoading, bool shouldContentSniff);
 
     static void loadResourceSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data, Frame* frame);
+    static void prepareForURL(const KURL&);
     static bool willLoadFromCache(ResourceRequest&, Frame*);
 #if PLATFORM(MAC)
     static bool didSendBodyDataDelegateExists();
 #endif
 
-    ~ResourceHandle();
+    virtual ~ResourceHandle();
 
 #if PLATFORM(MAC) || USE(CFNETWORK)
     void willSendRequest(ResourceRequest&, const ResourceResponse& redirectResponse);
@@ -118,9 +124,9 @@ public:
 #endif
 #if PLATFORM(MAC) || USE(CFNETWORK) || USE(CURL)
     void didReceiveAuthenticationChallenge(const AuthenticationChallenge&);
-    void receivedCredential(const AuthenticationChallenge&, const Credential&);
-    void receivedRequestToContinueWithoutCredential(const AuthenticationChallenge&);
-    void receivedCancellation(const AuthenticationChallenge&);
+    virtual void receivedCredential(const AuthenticationChallenge&, const Credential&);
+    virtual void receivedRequestToContinueWithoutCredential(const AuthenticationChallenge&);
+    virtual void receivedCancellation(const AuthenticationChallenge&);
 #endif
 
 #if PLATFORM(MAC)
@@ -133,7 +139,6 @@ public:
     void schedule(SchedulePair*);
     void unschedule(SchedulePair*);
 #elif USE(CFNETWORK)
-    static CFRunLoopRef loaderRunLoop();
     CFURLConnectionRef connection() const;
     CFURLConnectionRef releaseConnectionForDownload();
     static void setHostAllowsAnyHTTPSCertificate(const String&);
@@ -166,7 +171,7 @@ public:
     friend LRESULT __stdcall ResourceHandleWndProc(HWND, unsigned message, WPARAM, LPARAM);
 #endif
 
-#if PLATFORM(QT) || USE(CURL) || USE(SOUP)
+#if PLATFORM(QT) || USE(CURL) || USE(SOUP) || PLATFORM(ANDROID)
     ResourceHandleInternal* getInternal() { return d.get(); }
 #endif
 
@@ -187,13 +192,20 @@ public:
     void setDefersLoading(bool);
       
     const ResourceRequest& request() const;
+    const String& lastHTTPMethod() const;
 
     void fireFailure(Timer<ResourceHandle>*);
+
+    using RefCounted<ResourceHandle>::ref;
+    using RefCounted<ResourceHandle>::deref;
 
 private:
     void scheduleFailure(FailureType);
 
     bool start(Frame*);
+
+    virtual void refAuthenticationClient() { ref(); }
+    virtual void derefAuthenticationClient() { deref(); }
 
     friend class ResourceHandleInternal;
     OwnPtr<ResourceHandleInternal> d;

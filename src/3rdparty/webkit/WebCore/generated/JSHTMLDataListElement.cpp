@@ -39,8 +39,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLDataListElement);
 
 static const HashTableValue JSHTMLDataListElementTableValues[3] =
 {
-    { "options", DontDelete|ReadOnly, (intptr_t)jsHTMLDataListElementOptions, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLDataListElementConstructor, (intptr_t)0 },
+    { "options", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataListElementOptions), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataListElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -141,17 +141,18 @@ bool JSHTMLDataListElement::getOwnPropertyDescriptor(ExecState* exec, const Iden
     return getStaticValueDescriptor<JSHTMLDataListElement, Base>(exec, &JSHTMLDataListElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLDataListElementOptions(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataListElementOptions(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataListElement* castedThis = static_cast<JSHTMLDataListElement*>(asObject(slot.slotBase()));
+    JSHTMLDataListElement* castedThis = static_cast<JSHTMLDataListElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataListElement* imp = static_cast<HTMLDataListElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->options()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->options()));
+    return result;
 }
 
-JSValue jsHTMLDataListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataListElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataListElement* domObject = static_cast<JSHTMLDataListElement*>(asObject(slot.slotBase()));
+    JSHTMLDataListElement* domObject = static_cast<JSHTMLDataListElement*>(asObject(slotBase));
     return JSHTMLDataListElement::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSHTMLDataListElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

@@ -37,6 +37,7 @@
 #include "ResourceRequest.h"
 #include "ResourceResponse.h"
 #include "SecurityOrigin.h"
+#include "SharedBuffer.h"
 #include "SubresourceLoader.h"
 #include <wtf/Assertions.h>
 #include <wtf/Vector.h>
@@ -61,7 +62,9 @@ Loader::Loader()
     , m_isSuspendingPendingRequests(false)
 {
     m_nonHTTPProtocolHost = Host::create(AtomicString(), maxRequestsInFlightForNonHTTPProtocols);
+#if REQUEST_MANAGEMENT_ENABLED
     maxRequestsInFlightPerHost = initializeMaximumHTTPConnectionCountPerHost();
+#endif
 }
 
 Loader::~Loader()
@@ -69,6 +72,27 @@ Loader::~Loader()
     ASSERT_NOT_REACHED();
 }
     
+static ResourceRequest::TargetType cachedResourceTypeToTargetType(CachedResource::Type type)
+{
+    switch (type) {
+    case CachedResource::CSSStyleSheet:
+#if ENABLE(XSLT)
+    case CachedResource::XSLStyleSheet:
+#endif
+#if ENABLE(XBL)
+    case CachedResource::XBL:
+#endif
+        return ResourceRequest::TargetIsStyleSheet;
+    case CachedResource::Script: 
+        return ResourceRequest::TargetIsScript;
+    case CachedResource::FontResource:
+        return ResourceRequest::TargetIsFontResource;
+    case CachedResource::ImageResource:
+        return ResourceRequest::TargetIsImage;
+    }
+    return ResourceRequest::TargetIsSubresource;
+}
+
 Loader::Priority Loader::determinePriority(const CachedResource* resource) const
 {
 #if REQUEST_MANAGEMENT_ENABLED
@@ -94,14 +118,15 @@ Loader::Priority Loader::determinePriority(const CachedResource* resource) const
 #endif
 }
 
-void Loader::load(DocLoader* docLoader, CachedResource* resource, bool incremental, bool skipCanLoadCheck, bool sendResourceLoadCallbacks)
+void Loader::load(DocLoader* docLoader, CachedResource* resource, bool incremental, SecurityCheckPolicy securityCheck, bool sendResourceLoadCallbacks)
 {
     ASSERT(docLoader);
-    Request* request = new Request(docLoader, resource, incremental, skipCanLoadCheck, sendResourceLoadCallbacks);
+    Request* request = new Request(docLoader, resource, incremental, securityCheck, sendResourceLoadCallbacks);
 
     RefPtr<Host> host;
     KURL url(ParsedURLString, resource->url());
     if (url.protocolInHTTPFamily()) {
+        m_hosts.checkConsistency();
         AtomicString hostName = url.host();
         host = m_hosts.get(hostName.impl());
         if (!host) {
@@ -146,6 +171,7 @@ void Loader::servePendingRequests(Priority minimumPriority)
     m_nonHTTPProtocolHost->servePendingRequests(minimumPriority);
 
     Vector<Host*> hostsToServe;
+    m_hosts.checkConsistency();
     HostMap::iterator i = m_hosts.begin();
     HostMap::iterator end = m_hosts.end();
     for (;i != end; ++i)
@@ -182,6 +208,7 @@ void Loader::nonCacheRequestInFlight(const KURL& url)
         return;
     
     AtomicString hostName = url.host();
+    m_hosts.checkConsistency();
     RefPtr<Host> host = m_hosts.get(hostName.impl());
     if (!host) {
         host = Host::create(hostName, maxRequestsInFlightPerHost);
@@ -197,6 +224,7 @@ void Loader::nonCacheRequestComplete(const KURL& url)
         return;
     
     AtomicString hostName = url.host();
+    m_hosts.checkConsistency();
     RefPtr<Host> host = m_hosts.get(hostName.impl());
     ASSERT(host);
     if (!host)
@@ -213,6 +241,7 @@ void Loader::cancelRequests(DocLoader* docLoader)
         m_nonHTTPProtocolHost->cancelRequests(docLoader);
     
     Vector<Host*> hostsToCancel;
+    m_hosts.checkConsistency();
     HostMap::iterator i = m_hosts.begin();
     HostMap::iterator end = m_hosts.end();
     for (;i != end; ++i)
@@ -258,6 +287,8 @@ void Loader::Host::nonCacheRequestComplete()
 {
     --m_nonCachedRequestsInFlight;
     ASSERT(m_nonCachedRequestsInFlight >= 0);
+
+    cache()->loader()->scheduleServePendingRequests();
 }
 
 bool Loader::Host::hasRequests() const
@@ -299,6 +330,7 @@ void Loader::Host::servePendingRequests(RequestQueue& requestsPending, bool& ser
         requestsPending.removeFirst();
         
         ResourceRequest resourceRequest(request->cachedResource()->url());
+        resourceRequest.setTargetType(cachedResourceTypeToTargetType(request->cachedResource()->type()));
         
         if (!request->cachedResource()->accept().isEmpty())
             resourceRequest.setHTTPAccept(request->cachedResource()->accept());
@@ -323,7 +355,7 @@ void Loader::Host::servePendingRequests(RequestQueue& requestsPending, bool& ser
         }
 
         RefPtr<SubresourceLoader> loader = SubresourceLoader::create(docLoader->doc()->frame(),
-            this, resourceRequest, request->shouldSkipCanLoadCheck(), request->sendResourceLoadCallbacks());
+            this, resourceRequest, request->shouldDoSecurityCheck(), request->sendResourceLoadCallbacks());
         if (loader) {
             m_requestsLoading.add(loader.release(), request);
             request->cachedResource()->setRequestedFromNetworkingLayer();
@@ -375,7 +407,7 @@ void Loader::Host::didFinishLoading(SubresourceLoader* loader)
     docLoader->checkForPendingPreloads();
 
 #if REQUEST_DEBUG
-    KURL u(resource->url());
+    KURL u(ParsedURLString, resource->url());
     printf("HOST %s COUNT %d RECEIVED %s\n", u.host().latin1().data(), m_requestsLoading.size(), resource->url().latin1().data());
 #endif
     servePendingRequests();

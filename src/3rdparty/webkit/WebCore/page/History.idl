@@ -32,13 +32,19 @@ module window {
         DelegatingGetOwnPropertySlot,
         DelegatingPutFunction,
         CustomDeleteProperty,
-        CustomGetPropertyNames
+        CustomGetPropertyNames,
+        OmitConstructor
     ] History {
         readonly attribute unsigned long length;
 
         [DoNotCheckDomainSecurity] void back();
         [DoNotCheckDomainSecurity] void forward();
         [DoNotCheckDomainSecurity] void go(in long distance);
+        
+        [Custom, EnabledAtRuntime] void pushState(in any data, in DOMString title, in optional DOMString url)
+            raises(DOMException);
+        [Custom, EnabledAtRuntime] void replaceState(in any data, in DOMString title, in optional DOMString url)
+            raises(DOMException);
     };
 
 }

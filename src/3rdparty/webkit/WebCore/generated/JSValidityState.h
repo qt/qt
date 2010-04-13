@@ -21,7 +21,6 @@
 #ifndef JSValidityState_h
 #define JSValidityState_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -43,7 +42,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     ValidityState* impl() const { return m_impl.get(); }
@@ -65,7 +64,7 @@ public:
     static const JSC::ClassInfo s_info;
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSValidityStatePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -74,15 +73,15 @@ protected:
 
 // Attributes
 
-JSC::JSValue jsValidityStateValueMissing(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsValidityStateTypeMismatch(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsValidityStatePatternMismatch(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsValidityStateTooLong(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsValidityStateRangeUnderflow(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsValidityStateRangeOverflow(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsValidityStateStepMismatch(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsValidityStateCustomError(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsValidityStateValid(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsValidityStateValueMissing(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsValidityStateTypeMismatch(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsValidityStatePatternMismatch(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsValidityStateTooLong(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsValidityStateRangeUnderflow(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsValidityStateRangeOverflow(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsValidityStateStepMismatch(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsValidityStateCustomError(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsValidityStateValid(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

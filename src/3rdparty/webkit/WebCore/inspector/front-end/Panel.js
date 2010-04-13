@@ -81,7 +81,7 @@ WebInspector.Panel.prototype = {
         if ("_toolbarItem" in this)
             this._toolbarItem.addStyleClass("toggled-on");
 
-        WebInspector.currentFocusElement = document.getElementById("main-panels");
+        WebInspector.currentFocusElement = this.defaultFocusedElement;
 
         this.updateSidebarWidth();
     },
@@ -95,6 +95,11 @@ WebInspector.Panel.prototype = {
         delete this._statusBarItemContainer;
         if ("_toolbarItem" in this)
             this._toolbarItem.removeStyleClass("toggled-on");
+    },
+
+    get defaultFocusedElement()
+    {
+        return this.sidebarTreeElement || this.element;
     },
 
     attach: function()
@@ -225,14 +230,18 @@ WebInspector.Panel.prototype = {
         var currentView = this._searchResults[this._currentSearchResultIndex];
 
         if (currentView.showingLastSearchResult()) {
-            if (++this._currentSearchResultIndex >= this._searchResults.length)
-                this._currentSearchResultIndex = 0;
-            currentView = this._searchResults[this._currentSearchResultIndex];
+            if (this.searchIteratesOverViews()) {
+                if (++this._currentSearchResultIndex >= this._searchResults.length)
+                    this._currentSearchResultIndex = 0;
+                currentView = this._searchResults[this._currentSearchResultIndex];
+            }
             showFirstResult = true;
         }
 
-        if (currentView !== this.visibleView)
+        if (currentView !== this.visibleView) {
             this.showView(currentView);
+            WebInspector.focusSearchField();
+        }
 
         if (showFirstResult)
             currentView.jumpToFirstSearchResult();
@@ -256,30 +265,23 @@ WebInspector.Panel.prototype = {
         var currentView = this._searchResults[this._currentSearchResultIndex];
 
         if (currentView.showingFirstSearchResult()) {
-            if (--this._currentSearchResultIndex < 0)
-                this._currentSearchResultIndex = (this._searchResults.length - 1);
-            currentView = this._searchResults[this._currentSearchResultIndex];
+            if (this.searchIteratesOverViews()) {
+                if (--this._currentSearchResultIndex < 0)
+                    this._currentSearchResultIndex = (this._searchResults.length - 1);
+                currentView = this._searchResults[this._currentSearchResultIndex];
+            }
             showLastResult = true;
         }
 
-        if (currentView !== this.visibleView)
+        if (currentView !== this.visibleView) {
             this.showView(currentView);
+            WebInspector.focusSearchField();
+        }
 
         if (showLastResult)
             currentView.jumpToLastSearchResult();
         else
             currentView.jumpToPreviousSearchResult();
-    },
-
-    handleKeyEvent: function(event)
-    {
-        this.handleSidebarKeyEvent(event);
-    },
-
-    handleSidebarKeyEvent: function(event)
-    {
-        if (this.hasSidebar && this.sidebarTree)
-            this.sidebarTree.handleKeyEvent(event);
     },
 
     createSidebar: function(parentElement, resizerParentElement)
@@ -351,10 +353,6 @@ WebInspector.Panel.prototype = {
         this.setSidebarWidth(width);
 
         this.updateMainViewWidth(width);
-
-        var visibleView = this.visibleView;
-        if (visibleView && "resize" in visibleView)
-            visibleView.resize();
     },
 
     setSidebarWidth: function(width)
@@ -366,6 +364,28 @@ WebInspector.Panel.prototype = {
     updateMainViewWidth: function(width)
     {
         // Should be implemented by ancestors.
+    },
+
+    resize: function()
+    {
+        var visibleView = this.visibleView;
+        if (visibleView && "resize" in visibleView)
+            visibleView.resize();
+    },
+
+    canShowSourceLine: function(url, line)
+    {
+        return false;
+    },
+
+    showSourceLine: function(url, line)
+    {
+        return false;
+    },
+
+    searchIteratesOverViews: function()
+    {
+        return false;
     }
 }
 

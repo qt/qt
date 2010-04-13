@@ -29,8 +29,8 @@
 #include "config.h"
 #include "AccessibilityTableHeaderContainer.h"
 
-#include "AccessibilityTable.h"
 #include "AXObjectCache.h"
+#include "AccessibilityTable.h"
 
 using namespace std;
 
@@ -68,6 +68,18 @@ IntSize AccessibilityTableHeaderContainer::size() const
     return elementRect().size();
 }
     
+bool AccessibilityTableHeaderContainer::accessibilityIsIgnored() const
+{
+    if (!m_parentTable)
+        return true;
+    
+#if PLATFORM(GTK)
+    return true;
+#endif
+
+    return m_parentTable->accessibilityIsIgnored();
+}
+
 void AccessibilityTableHeaderContainer::addChildren()
 {
     ASSERT(!m_haveChildren); 
@@ -79,9 +91,8 @@ void AccessibilityTableHeaderContainer::addChildren()
     static_cast<AccessibilityTable*>(m_parentTable)->columnHeaders(m_children);
     
     unsigned length = m_children.size();
-    for (unsigned k = 0; k < length; ++k) {
+    for (unsigned k = 0; k < length; ++k)
         m_headerRect.unite(m_children[k]->elementRect());
-    }
 }
 
 } // namespace WebCore

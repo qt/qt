@@ -39,7 +39,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -58,7 +58,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSUIEventPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -70,16 +70,16 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsUIEventPrototypeFunctionInitUIEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsUIEventView(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsUIEventDetail(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsUIEventKeyCode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsUIEventCharCode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsUIEventLayerX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsUIEventLayerY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsUIEventPageX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsUIEventPageY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsUIEventWhich(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsUIEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsUIEventView(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsUIEventDetail(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsUIEventKeyCode(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsUIEventCharCode(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsUIEventLayerX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsUIEventLayerY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsUIEventPageX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsUIEventPageY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsUIEventWhich(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsUIEventConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

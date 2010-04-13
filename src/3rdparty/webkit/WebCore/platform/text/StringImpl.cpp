@@ -33,7 +33,7 @@
 #include "StringHash.h"
 #include "TextBreakIterator.h"
 #include "TextEncoding.h"
-#include "ThreadGlobalData.h"
+#include <runtime/UString.h>
 #include <wtf/dtoa.h>
 #include <wtf/Assertions.h>
 #include <wtf/Threading.h>
@@ -46,74 +46,107 @@ namespace WebCore {
 
 static const unsigned minLengthToShare = 20;
 
-static inline UChar* newUCharVector(unsigned n)
-{
-    return static_cast<UChar*>(fastMalloc(sizeof(UChar) * n));
-}
-
-static inline void deleteUCharVector(const UChar* p)
-{
-    fastFree(const_cast<UChar*>(p));
-}
-
-// Some of the factory methods create buffers using fastMalloc.
-// We must ensure that all allocations of StringImpl are allocated using
-// fastMalloc so that we don't have mis-matched frees. We accomplish 
-// this by overriding the new and delete operators.
-void* StringImpl::operator new(size_t size, void* address)
-{
-    if (address)
-        return address;  // Allocating using an internal buffer
-    return fastMalloc(size);
-}
-
-void* StringImpl::operator new(size_t size)
-{
-    return fastMalloc(size);
-}
-
-void StringImpl::operator delete(void* address)
-{
-    fastFree(address);
-}
-
-// This constructor is used only to create the empty string.
-StringImpl::StringImpl()
-    : m_data(0)
-    , m_length(0)
-    , m_hash(0)
-{
-    // Ensure that the hash is computed so that AtomicStringHash can call existingHash()
-    // with impunity. The empty string is special because it is never entered into
-    // AtomicString's HashKey, but still needs to compare correctly.
-    hash();
-}
-
-inline StringImpl::StringImpl(const UChar* characters, unsigned length)
-    : m_data(characters)
-    , m_length(length)
-    , m_hash(0)
-{
-    ASSERT(characters);
-    ASSERT(length);
-}
-
 StringImpl::~StringImpl()
 {
+    ASSERT(!isStatic());
+
     if (inTable())
         AtomicString::remove(this);
-    if (!bufferIsInternal()) {
-        SharedUChar* sharedBuffer = m_sharedBufferAndFlags.get();
-        if (sharedBuffer)
-            sharedBuffer->deref();
-        else
-            deleteUCharVector(m_data);
+
+    BufferOwnership ownership = bufferOwnership();
+    if (ownership != BufferInternal) {
+        if (ownership == BufferOwned) {
+            ASSERT(!m_sharedBuffer);
+            ASSERT(m_data);
+            fastFree(const_cast<UChar*>(m_data));
+        } else {
+            ASSERT(ownership == BufferShared);
+            ASSERT(m_sharedBuffer);
+            m_sharedBuffer->deref();
+        }
     }
 }
 
 StringImpl* StringImpl::empty()
 {
-    return threadGlobalData().emptyString();
+    // A non-null pointer at an invalid address (in page zero) so that if it were to be accessed we
+    // should catch the error with fault (however it should be impossible to access, since length is zero).
+    static const UChar* invalidNonNullUCharPtr = reinterpret_cast<UChar*>(static_cast<intptr_t>(1));
+    DEFINE_STATIC_LOCAL(StringImpl, emptyString, (invalidNonNullUCharPtr, 0, ConstructStaticString));
+    return &emptyString;
+}
+
+PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, UChar*& data)
+{
+    if (!length) {
+        data = 0;
+        return empty();
+    }
+
+    // Allocate a single buffer large enough to contain the StringImpl
+    // struct as well as the data which it contains. This removes one 
+    // heap allocation from this call.
+    if (length > ((std::numeric_limits<size_t>::max() - sizeof(StringImpl)) / sizeof(UChar)))
+        CRASH();
+    size_t size = sizeof(StringImpl) + length * sizeof(UChar);
+    StringImpl* string = static_cast<StringImpl*>(fastMalloc(size));
+
+    data = reinterpret_cast<UChar*>(string + 1);
+    return adoptRef(new (string) StringImpl(length));
+}
+
+PassRefPtr<StringImpl> StringImpl::create(const UChar* characters, unsigned length)
+{
+    if (!characters || !length)
+        return empty();
+
+    UChar* data;
+    PassRefPtr<StringImpl> string = createUninitialized(length, data);
+    memcpy(data, characters, length * sizeof(UChar));
+    return string;
+}
+
+PassRefPtr<StringImpl> StringImpl::create(const char* characters, unsigned length)
+{
+    if (!characters || !length)
+        return empty();
+
+    UChar* data;
+    PassRefPtr<StringImpl> string = createUninitialized(length, data);
+    for (unsigned i = 0; i != length; ++i) {
+        unsigned char c = characters[i];
+        data[i] = c;
+    }
+    return string;
+}
+
+PassRefPtr<StringImpl> StringImpl::create(const char* string)
+{
+    if (!string)
+        return empty();
+    return create(string, strlen(string));
+}
+
+SharedUChar* StringImpl::sharedBuffer()
+{
+    if (m_length < minLengthToShare)
+        return 0;
+    // All static strings are smaller that the minimim length to share.
+    ASSERT(!isStatic());
+
+    BufferOwnership ownership = bufferOwnership();
+
+    if (ownership == BufferInternal)
+        return 0;
+    if (ownership == BufferOwned) {
+        ASSERT(!m_sharedBuffer);
+        m_sharedBuffer = SharedUChar::create(new SharableUChar(m_data)).releaseRef();
+        m_refCountAndFlags = (m_refCountAndFlags & ~s_refCountMaskBufferOwnership) | BufferShared;
+    }
+
+    ASSERT(bufferOwnership() == BufferShared);
+    ASSERT(m_sharedBuffer);
+    return m_sharedBuffer;
 }
 
 bool StringImpl::containsOnlyWhitespace()
@@ -905,73 +938,11 @@ PassRefPtr<StringImpl> StringImpl::adopt(StringBuffer& buffer)
     return adoptRef(new StringImpl(buffer.release(), length));
 }
 
-PassRefPtr<StringImpl> StringImpl::adopt(Vector<UChar>& vector)
-{
-    size_t size = vector.size();
-    if (size == 0)
-        return empty();
-    return adoptRef(new StringImpl(vector.releaseBuffer(), size));
-}
-
-PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, UChar*& data)
-{
-    if (!length) {
-        data = 0;
-        return empty();
-    }
-
-    // Allocate a single buffer large enough to contain the StringImpl
-    // struct as well as the data which it contains. This removes one 
-    // heap allocation from this call.
-    size_t size = sizeof(StringImpl) + length * sizeof(UChar);
-    StringImpl* string = static_cast<StringImpl*>(fastMalloc(size));
-    data = reinterpret_cast<UChar*>(string + 1);
-    string = new (string) StringImpl(data, length);
-    return adoptRef(string);
-}
-
-PassRefPtr<StringImpl> StringImpl::create(const UChar* characters, unsigned length)
-{
-    if (!characters || !length)
-        return empty();
-
-    UChar* data;
-    PassRefPtr<StringImpl> string = createUninitialized(length, data);
-    memcpy(data, characters, length * sizeof(UChar));
-    return string;
-}
-
-PassRefPtr<StringImpl> StringImpl::create(const char* characters, unsigned length)
-{
-    if (!characters || !length)
-        return empty();
-
-    UChar* data;
-    PassRefPtr<StringImpl> string = createUninitialized(length, data);
-    for (unsigned i = 0; i != length; ++i) {
-        unsigned char c = characters[i];
-        data[i] = c;
-    }
-    return string;
-}
-
-PassRefPtr<StringImpl> StringImpl::create(const char* string)
-{
-    if (!string)
-        return empty();
-    return create(string, strlen(string));
-}
-
 #if USE(JSC)
 PassRefPtr<StringImpl> StringImpl::create(const JSC::UString& str)
 {
-    SharedUChar* sharedBuffer = const_cast<JSC::UString*>(&str)->rep()->sharedBuffer();
-    if (sharedBuffer) {
-        PassRefPtr<StringImpl> impl = adoptRef(new StringImpl(str.data(), str.size()));
-        sharedBuffer->ref();
-        impl->m_sharedBufferAndFlags.set(sharedBuffer);
-        return impl;
-    }
+    if (SharedUChar* sharedBuffer = const_cast<JSC::UString*>(&str)->rep()->sharedBuffer())
+        return adoptRef(new StringImpl(str.data(), str.size(), sharedBuffer));
     return StringImpl::create(str.data(), str.size());
 }
 
@@ -979,7 +950,7 @@ JSC::UString StringImpl::ustring()
 {
     SharedUChar* sharedBuffer = this->sharedBuffer();
     if (sharedBuffer)
-        return JSC::UString::Rep::create(const_cast<UChar*>(m_data), m_length, sharedBuffer);
+        return JSC::UString::Rep::create(sharedBuffer, const_cast<UChar*>(m_data), m_length);
 
     return JSC::UString(m_data, m_length);
 }
@@ -996,40 +967,22 @@ PassRefPtr<StringImpl> StringImpl::createWithTerminatingNullCharacter(const Stri
     data[length] = 0;
     terminatedString->m_length--;
     terminatedString->m_hash = string.m_hash;
-    terminatedString->m_sharedBufferAndFlags.setFlag(HasTerminatingNullCharacter);
+    terminatedString->m_refCountAndFlags |= s_refCountFlagHasTerminatingNullCharacter;
     return terminatedString.release();
 }
 
 PassRefPtr<StringImpl> StringImpl::threadsafeCopy() const
 {
-    // Special-case empty strings to make sure that per-thread empty string instance isn't returned.
-    if (m_length == 0)
-        return adoptRef(new StringImpl);
     return create(m_data, m_length);
 }
 
 PassRefPtr<StringImpl> StringImpl::crossThreadString()
 {
-    SharedUChar* shared = sharedBuffer();
-    if (shared) {
-        RefPtr<StringImpl> impl = adoptRef(new StringImpl(m_data, m_length));
-        impl->m_sharedBufferAndFlags.set(shared->crossThreadCopy().releaseRef());
-        return impl.release();
-    }
+    if (SharedUChar* sharedBuffer = this->sharedBuffer())
+        return adoptRef(new StringImpl(m_data, m_length, sharedBuffer->crossThreadCopy()));
 
     // If no shared buffer is available, create a copy.
     return threadsafeCopy();
 }
-
-StringImpl::SharedUChar* StringImpl::sharedBuffer()
-{
-    if (m_length < minLengthToShare || bufferIsInternal())
-        return 0;
-
-    if (!m_sharedBufferAndFlags.get())
-        m_sharedBufferAndFlags.set(SharedUChar::create(new OwnFastMallocPtr<UChar>(const_cast<UChar*>(m_data))).releaseRef());
-    return m_sharedBufferAndFlags.get();
-}
-
 
 } // namespace WebCore

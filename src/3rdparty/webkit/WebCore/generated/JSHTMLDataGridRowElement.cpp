@@ -37,10 +37,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLDataGridRowElement);
 
 static const HashTableValue JSHTMLDataGridRowElementTableValues[5] =
 {
-    { "selected", DontDelete, (intptr_t)jsHTMLDataGridRowElementSelected, (intptr_t)setJSHTMLDataGridRowElementSelected },
-    { "focused", DontDelete, (intptr_t)jsHTMLDataGridRowElementFocused, (intptr_t)setJSHTMLDataGridRowElementFocused },
-    { "expanded", DontDelete, (intptr_t)jsHTMLDataGridRowElementExpanded, (intptr_t)setJSHTMLDataGridRowElementExpanded },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLDataGridRowElementConstructor, (intptr_t)0 },
+    { "selected", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridRowElementSelected), (intptr_t)setJSHTMLDataGridRowElementSelected },
+    { "focused", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridRowElementFocused), (intptr_t)setJSHTMLDataGridRowElementFocused },
+    { "expanded", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridRowElementExpanded), (intptr_t)setJSHTMLDataGridRowElementExpanded },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDataGridRowElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -141,33 +141,36 @@ bool JSHTMLDataGridRowElement::getOwnPropertyDescriptor(ExecState* exec, const I
     return getStaticValueDescriptor<JSHTMLDataGridRowElement, Base>(exec, &JSHTMLDataGridRowElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLDataGridRowElementSelected(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridRowElementSelected(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridRowElement* castedThis = static_cast<JSHTMLDataGridRowElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridRowElement* castedThis = static_cast<JSHTMLDataGridRowElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataGridRowElement* imp = static_cast<HTMLDataGridRowElement*>(castedThis->impl());
-    return jsBoolean(imp->selected());
+    JSValue result = jsBoolean(imp->selected());
+    return result;
 }
 
-JSValue jsHTMLDataGridRowElementFocused(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridRowElementFocused(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridRowElement* castedThis = static_cast<JSHTMLDataGridRowElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridRowElement* castedThis = static_cast<JSHTMLDataGridRowElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataGridRowElement* imp = static_cast<HTMLDataGridRowElement*>(castedThis->impl());
-    return jsBoolean(imp->focused());
+    JSValue result = jsBoolean(imp->focused());
+    return result;
 }
 
-JSValue jsHTMLDataGridRowElementExpanded(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridRowElementExpanded(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridRowElement* castedThis = static_cast<JSHTMLDataGridRowElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridRowElement* castedThis = static_cast<JSHTMLDataGridRowElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDataGridRowElement* imp = static_cast<HTMLDataGridRowElement*>(castedThis->impl());
-    return jsBoolean(imp->expanded());
+    JSValue result = jsBoolean(imp->expanded());
+    return result;
 }
 
-JSValue jsHTMLDataGridRowElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDataGridRowElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDataGridRowElement* domObject = static_cast<JSHTMLDataGridRowElement*>(asObject(slot.slotBase()));
+    JSHTMLDataGridRowElement* domObject = static_cast<JSHTMLDataGridRowElement*>(asObject(slotBase));
     return JSHTMLDataGridRowElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLDataGridRowElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -177,19 +180,22 @@ void JSHTMLDataGridRowElement::put(ExecState* exec, const Identifier& propertyNa
 
 void setJSHTMLDataGridRowElementSelected(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDataGridRowElement* imp = static_cast<HTMLDataGridRowElement*>(static_cast<JSHTMLDataGridRowElement*>(thisObject)->impl());
+    JSHTMLDataGridRowElement* castedThisObj = static_cast<JSHTMLDataGridRowElement*>(thisObject);
+    HTMLDataGridRowElement* imp = static_cast<HTMLDataGridRowElement*>(castedThisObj->impl());
     imp->setSelected(value.toBoolean(exec));
 }
 
 void setJSHTMLDataGridRowElementFocused(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDataGridRowElement* imp = static_cast<HTMLDataGridRowElement*>(static_cast<JSHTMLDataGridRowElement*>(thisObject)->impl());
+    JSHTMLDataGridRowElement* castedThisObj = static_cast<JSHTMLDataGridRowElement*>(thisObject);
+    HTMLDataGridRowElement* imp = static_cast<HTMLDataGridRowElement*>(castedThisObj->impl());
     imp->setFocused(value.toBoolean(exec));
 }
 
 void setJSHTMLDataGridRowElementExpanded(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDataGridRowElement* imp = static_cast<HTMLDataGridRowElement*>(static_cast<JSHTMLDataGridRowElement*>(thisObject)->impl());
+    JSHTMLDataGridRowElement* castedThisObj = static_cast<JSHTMLDataGridRowElement*>(thisObject);
+    HTMLDataGridRowElement* imp = static_cast<HTMLDataGridRowElement*>(castedThisObj->impl());
     imp->setExpanded(value.toBoolean(exec));
 }
 

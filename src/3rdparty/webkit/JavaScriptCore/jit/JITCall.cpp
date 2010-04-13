@@ -159,7 +159,7 @@ void JIT::emit_op_construct_verify(Instruction* currentInstruction)
     emitLoad(dst, regT1, regT0);
     addSlowCase(branch32(NotEqual, regT1, Imm32(JSValue::CellTag)));
     loadPtr(Address(regT0, OBJECT_OFFSETOF(JSCell, m_structure)), regT2);
-    addSlowCase(branch32(NotEqual, Address(regT2, OBJECT_OFFSETOF(Structure, m_typeInfo) + OBJECT_OFFSETOF(TypeInfo, m_type)), Imm32(ObjectType)));
+    addSlowCase(branch8(NotEqual, Address(regT2, OBJECT_OFFSETOF(Structure, m_typeInfo) + OBJECT_OFFSETOF(TypeInfo, m_type)), Imm32(ObjectType)));
 }
 
 void JIT::emitSlow_op_construct_verify(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
@@ -315,7 +315,13 @@ void JIT::compileOpCall(OpcodeID opcodeID, Instruction* instruction, unsigned ca
     emitLoad(callee, regT1, regT0);
 
     DataLabelPtr addressOfLinkedFunctionCheck;
+
+    BEGIN_UNINTERRUPTED_SEQUENCE(sequenceOpCall);
+
     Jump jumpToSlow = branchPtrWithPatch(NotEqual, regT0, addressOfLinkedFunctionCheck, ImmPtr(0));
+
+    END_UNINTERRUPTED_SEQUENCE(sequenceOpCall);
+
     addSlowCase(jumpToSlow);
     ASSERT(differenceBetween(addressOfLinkedFunctionCheck, jumpToSlow) == patchOffsetOpCallCompareToJump);
     m_callStructureStubCompilationInfo[callLinkInfoIndex].hotPathBegin = addressOfLinkedFunctionCheck;

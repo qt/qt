@@ -41,7 +41,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void pushEventHandlerScope(JSC::ExecState*, JSC::ScopeChain&) const;
@@ -67,7 +67,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSHTMLElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -81,33 +81,33 @@ JSC::JSValue JSC_HOST_CALL jsHTMLElementPrototypeFunctionInsertAdjacentHTML(JSC:
 JSC::JSValue JSC_HOST_CALL jsHTMLElementPrototypeFunctionInsertAdjacentText(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsHTMLElementId(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementId(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLElementId(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLElementTitle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementTitle(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLElementTitle(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLElementLang(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementLang(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLElementLang(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLElementDir(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementDir(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLElementDir(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLElementClassName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementClassName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLElementClassName(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLElementTabIndex(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementTabIndex(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLElementTabIndex(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLElementDraggable(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementDraggable(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLElementDraggable(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLElementInnerHTML(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementInnerHTML(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLElementInnerHTML(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLElementInnerText(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementInnerText(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLElementInnerText(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLElementOuterHTML(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementOuterHTML(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLElementOuterHTML(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLElementOuterText(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementOuterText(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLElementOuterText(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLElementChildren(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsHTMLElementContentEditable(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementChildren(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsHTMLElementContentEditable(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSHTMLElementContentEditable(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsHTMLElementIsContentEditable(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsHTMLElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLElementIsContentEditable(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsHTMLElementConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

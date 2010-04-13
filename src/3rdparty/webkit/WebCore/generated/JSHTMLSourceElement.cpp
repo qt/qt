@@ -39,10 +39,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLSourceElement);
 
 static const HashTableValue JSHTMLSourceElementTableValues[5] =
 {
-    { "src", DontDelete, (intptr_t)jsHTMLSourceElementSrc, (intptr_t)setJSHTMLSourceElementSrc },
-    { "type", DontDelete, (intptr_t)jsHTMLSourceElementType, (intptr_t)setJSHTMLSourceElementType },
-    { "media", DontDelete, (intptr_t)jsHTMLSourceElementMedia, (intptr_t)setJSHTMLSourceElementMedia },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLSourceElementConstructor, (intptr_t)0 },
+    { "src", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLSourceElementSrc), (intptr_t)setJSHTMLSourceElementSrc },
+    { "type", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLSourceElementType), (intptr_t)setJSHTMLSourceElementType },
+    { "media", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLSourceElementMedia), (intptr_t)setJSHTMLSourceElementMedia },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLSourceElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -143,33 +143,36 @@ bool JSHTMLSourceElement::getOwnPropertyDescriptor(ExecState* exec, const Identi
     return getStaticValueDescriptor<JSHTMLSourceElement, Base>(exec, &JSHTMLSourceElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLSourceElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLSourceElementSrc(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLSourceElement* castedThis = static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()));
+    JSHTMLSourceElement* castedThis = static_cast<JSHTMLSourceElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThis->impl());
-    return jsString(exec, imp->src());
+    JSValue result = jsString(exec, imp->src());
+    return result;
 }
 
-JSValue jsHTMLSourceElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLSourceElementType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLSourceElement* castedThis = static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()));
+    JSHTMLSourceElement* castedThis = static_cast<JSHTMLSourceElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
-JSValue jsHTMLSourceElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLSourceElementMedia(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLSourceElement* castedThis = static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()));
+    JSHTMLSourceElement* castedThis = static_cast<JSHTMLSourceElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThis->impl());
-    return jsString(exec, imp->media());
+    JSValue result = jsString(exec, imp->media());
+    return result;
 }
 
-JSValue jsHTMLSourceElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLSourceElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLSourceElement* domObject = static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()));
+    JSHTMLSourceElement* domObject = static_cast<JSHTMLSourceElement*>(asObject(slotBase));
     return JSHTMLSourceElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLSourceElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -179,19 +182,22 @@ void JSHTMLSourceElement::put(ExecState* exec, const Identifier& propertyName, J
 
 void setJSHTMLSourceElementSrc(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(thisObject)->impl());
+    JSHTMLSourceElement* castedThisObj = static_cast<JSHTMLSourceElement*>(thisObject);
+    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThisObj->impl());
     imp->setSrc(value.toString(exec));
 }
 
 void setJSHTMLSourceElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(thisObject)->impl());
+    JSHTMLSourceElement* castedThisObj = static_cast<JSHTMLSourceElement*>(thisObject);
+    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThisObj->impl());
     imp->setType(value.toString(exec));
 }
 
 void setJSHTMLSourceElementMedia(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(thisObject)->impl());
+    JSHTMLSourceElement* castedThisObj = static_cast<JSHTMLSourceElement*>(thisObject);
+    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThisObj->impl());
     imp->setMedia(value.toString(exec));
 }
 

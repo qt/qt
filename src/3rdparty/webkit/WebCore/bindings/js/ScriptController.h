@@ -62,12 +62,20 @@ class XSSAuditor;
 
 typedef HashMap<void*, RefPtr<JSC::Bindings::RootObject> > RootObjectMap;
 
+enum ReasonForCallingCanExecuteScripts {
+    AboutToExecuteScript,
+    NotAboutToExecuteScript
+};
+
 class ScriptController {
-    typedef WTF::HashMap<DOMWrapperWorld*, JSC::ProtectedPtr<JSDOMWindowShell> > ShellMap;
+    friend class ScriptCachedFrameData;
+    typedef WTF::HashMap< RefPtr<DOMWrapperWorld>, JSC::ProtectedPtr<JSDOMWindowShell> > ShellMap;
 
 public:
     ScriptController(Frame*);
     ~ScriptController();
+
+    static PassRefPtr<DOMWrapperWorld> createWorld();
 
     JSDOMWindowShell* windowShell(DOMWrapperWorld* world)
     {
@@ -83,17 +91,12 @@ public:
     {
         return windowShell(world)->window();
     }
-    JSDOMWindow* globalObject(unsigned worldID);
 
-    void forgetWorld(DOMWrapperWorld* world)
-    {
-        m_windowShells.remove(world);
-    }
+    static void getAllWorlds(Vector<DOMWrapperWorld*>&);
 
     ScriptValue executeScript(const ScriptSourceCode&);
     ScriptValue executeScript(const String& script, bool forceUserGesture = false);
-    ScriptValue executeScriptInIsolatedWorld(unsigned worldID, const String& script, bool forceUserGesture = false);
-    ScriptValue executeScriptInIsolatedWorld(DOMWrapperWorld* world, const String& script, bool forceUserGesture = false);
+    ScriptValue executeScriptInWorld(DOMWrapperWorld* world, const String& script, bool forceUserGesture = false);
 
     // Returns true if argument is a JavaScript URL.
     bool executeIfJavaScriptURL(const KURL&, bool userGesture = false, bool replaceDocument = true);
@@ -104,19 +107,19 @@ public:
 
     ScriptValue evaluate(const ScriptSourceCode&);
     ScriptValue evaluateInWorld(const ScriptSourceCode&, DOMWrapperWorld*);
-    ScriptValue evaluateInIsolatedWorld(unsigned /*worldID*/, const ScriptSourceCode&);
-    void evaluateInIsolatedWorld(unsigned /*worldID*/, const Vector<ScriptSourceCode>&);
 
     void setEventHandlerLineNumber(int lineno) { m_handlerLineNumber = lineno; }
     int eventHandlerLineNumber() { return m_handlerLineNumber; }
 
     void setProcessingTimerCallback(bool b) { m_processingTimerCallback = b; }
-    bool processingUserGesture() const;
+    bool processingUserGesture(DOMWrapperWorld*) const;
     bool anyPageIsProcessingUserGesture() const;
 
-    bool isEnabled();
+    bool canExecuteScripts(ReasonForCallingCanExecuteScripts);
 
-    void attachDebugger(JSC::Debugger*);
+    // Debugger can be 0 to detach any existing Debugger.
+    void attachDebugger(JSC::Debugger*); // Attaches/detaches in all worlds/window shells.
+    void attachDebugger(JSDOMWindowShell*, JSC::Debugger*);
 
     void setPaused(bool b) { m_paused = b; }
     bool isPaused() const { return m_paused; }
@@ -166,7 +169,7 @@ private:
 
     void disconnectPlatformScriptObjects();
 
-    bool processingUserGestureEvent() const;
+    bool processingUserGestureEvent(DOMWrapperWorld*) const;
     bool isJavaScriptAnchorNavigation() const;
 
     ShellMap m_windowShells;

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
  * Copyright (C) 2008-2009 Torch Mobile, Inc.
+ * Copyright (C) Research In Motion Limited 2009-2010. All rights reserved.
  * Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,18 +45,21 @@
 
 namespace WebCore {
 
-    // The RGBA32Buffer object represents the decoded image data in RGBA32 format.  This buffer is what all
-    // decoders write a single frame into.  Frames are then instantiated for drawing by being handed this buffer.
+    // The RGBA32Buffer object represents the decoded image data in RGBA32
+    // format.  This buffer is what all decoders write a single frame into.
+    // Frames are then instantiated for drawing by being handed this buffer.
     class RGBA32Buffer {
     public:
         enum FrameStatus { FrameEmpty, FramePartial, FrameComplete };
         enum FrameDisposalMethod {
-            // If you change the numeric values of these, make sure you audit all
-            // users, as some users may cast raw values to/from these constants.
-            DisposeNotSpecified,       // Leave frame in framebuffer
-            DisposeKeep,               // Leave frame in framebuffer
-            DisposeOverwriteBgcolor,   // Clear frame to transparent
-            DisposeOverwritePrevious,  // Clear frame to previous framebuffer contents
+            // If you change the numeric values of these, make sure you audit
+            // all users, as some users may cast raw values to/from these
+            // constants.
+            DisposeNotSpecified,      // Leave frame in framebuffer
+            DisposeKeep,              // Leave frame in framebuffer
+            DisposeOverwriteBgcolor,  // Clear frame to transparent
+            DisposeOverwritePrevious, // Clear frame to previous framebuffer
+                                      // contents
         };
 #if PLATFORM(SKIA) || PLATFORM(QT)
         typedef uint32_t PixelData;
@@ -65,15 +69,11 @@ namespace WebCore {
 
         RGBA32Buffer();
 
-        // For backends which refcount their data, this constructor doesn't need
-        // to create a new copy of the image data, only increase the ref count.
-        //
-        // This exists because ImageDecoder keeps a Vector<RGBA32Buffer>, and
-        // Vector requires this constructor.
-        RGBA32Buffer(const RGBA32Buffer& other)
-        {
-            operator=(other);
-        }
+        RGBA32Buffer(const RGBA32Buffer& other) { operator=(other); }
+
+        // For backends which refcount their data, this operator doesn't need to
+        // create a new copy of the image data, only increase the ref count.
+        RGBA32Buffer& operator=(const RGBA32Buffer& other);
 
         // Deletes the pixel data entirely; used by ImageDecoder to save memory
         // when we no longer need to display a frame and only need its metadata.
@@ -135,8 +135,6 @@ namespace WebCore {
 #endif
 
     private:
-        RGBA32Buffer& operator=(const RGBA32Buffer& other);
-
         int width() const;
         int height() const;
 
@@ -177,33 +175,39 @@ namespace WebCore {
         Vector<PixelData> m_bytes;
         IntSize m_size;       // The size of the buffer.  This should be the
                               // same as ImageDecoder::m_size.
-        bool m_hasAlpha;      // Whether or not any of the pixels in the buffer have transparency.
+        bool m_hasAlpha;      // Whether or not any of the pixels in the buffer
+                              // have transparency.
 #endif
-        IntRect m_rect;       // The rect of the original specified frame within the overall buffer.
-                              // This will always just be the entire buffer except for GIF frames
-                              // whose original rect was smaller than the overall image size.
-        FrameStatus m_status; // Whether or not this frame is completely finished decoding.
+        IntRect m_rect;       // The rect of the original specified frame within
+                              // the overall buffer.  This will always just be
+                              // the entire buffer except for GIF frames whose
+                              // original rect was smaller than the overall
+                              // image size.
+        FrameStatus m_status; // Whether or not this frame is completely
+                              // finished decoding.
         unsigned m_duration;  // The animation delay.
         FrameDisposalMethod m_disposalMethod;
-                              // What to do with this frame's data when initializing the next frame.
+                              // What to do with this frame's data when
+                              // initializing the next frame.
     };
 
-    // The ImageDecoder class represents a base class for specific image format decoders
-    // (e.g., GIF, JPG, PNG, ICO) to derive from.  All decoders decode into RGBA32 format
-    // and the base class manages the RGBA32 frame cache.
-    class ImageDecoder {
+    // The ImageDecoder class represents a base class for specific image format
+    // decoders (e.g., GIF, JPG, PNG, ICO) to derive from.  All decoders decode
+    // into RGBA32 format and the base class manages the RGBA32 frame cache.
+    //
+    // ENABLE(IMAGE_DECODER_DOWN_SAMPLING) allows image decoders to write
+    // directly to scaled output buffers by down sampling. Call
+    // setMaxNumPixels() to specify the biggest size that decoded images can
+    // have. Image decoders will deflate those images that are bigger than
+    // m_maxNumPixels. (Not supported by all image decoders yet)
+    class ImageDecoder : public Noncopyable {
     public:
-        // ENABLE(IMAGE_DECODER_DOWN_SAMPLING) allows image decoders to write directly to
-        // scaled output buffers by down sampling. Call setMaxNumPixels() to specify the
-        // biggest size that decoded images can have. Image decoders will deflate those
-        // images that are bigger than m_maxNumPixels. (Not supported by all image decoders yet)
         ImageDecoder()
-            : m_failed(false)
+            : m_scaled(false)
             , m_sizeAvailable(false)
-#if ENABLE(IMAGE_DECODER_DOWN_SAMPLING)
             , m_maxNumPixels(-1)
-            , m_scaled(false)
-#endif
+            , m_isAllDataReceived(false)
+            , m_failed(false)
         {
         }
 
@@ -214,16 +218,24 @@ namespace WebCore {
         // needing to write a dedicated setData() implementation.
         static ImageDecoder* create(const SharedBuffer& data);
 
-        // The the filename extension usually associated with an undecoded image of this type.
+        // The the filename extension usually associated with an undecoded image
+        // of this type.
         virtual String filenameExtension() const = 0;
 
-        // All specific decoder plugins must do something with the data they are given.
-        virtual void setData(SharedBuffer* data, bool allDataReceived) { m_data = data; }
+        bool isAllDataReceived() const { return m_isAllDataReceived; }
 
-        // Whether or not the size information has been decoded yet. This default
-        // implementation just returns true if the size has been set and we have not
-        // seen a failure. Decoders may want to override this to lazily decode
-        // enough of the image to get the size.
+        virtual void setData(SharedBuffer* data, bool allDataReceived)
+        {
+            if (failed())
+                return;
+            m_data = data;
+            m_isAllDataReceived = allDataReceived;
+        }
+
+        // Whether or not the size information has been decoded yet. This
+        // default implementation just returns true if the size has been set and
+        // we have not seen a failure. Decoders may want to override this to
+        // lazily decode enough of the image to get the size.
         virtual bool isSizeAvailable()
         {
             return !m_failed && m_sizeAvailable; 
@@ -232,9 +244,12 @@ namespace WebCore {
         // Returns the size of the image.
         virtual IntSize size() const
         {
-            // Requesting the size of an invalid bitmap is meaningless.
-            ASSERT(!m_failed);
             return m_size;
+        }
+
+        IntSize scaledSize() const
+        {
+            return m_scaled ? IntSize(m_scaledColumns.size(), m_scaledRows.size()) : size();
         }
 
         // Returns the size of frame |index|.  This will only differ from size()
@@ -248,44 +263,51 @@ namespace WebCore {
             return size();
         }
 
-        // Called by the image decoders to set their decoded size, this also check
-        // the size for validity. It will return true if the size was set, or false
-        // if there is an error. On error, the m_failed flag will be set and the
-        // caller should immediately stop decoding.
+        // Called by the image decoders to set their decoded size, this also
+        // checks the size for validity. It will return true if the size was
+        // set, or false if there is an error. On error, the m_failed flag will
+        // be set and the caller should immediately stop decoding.
         virtual bool setSize(unsigned width, unsigned height)
         {
-            if (isOverSize(width, height)) {
-                m_failed = true;
-                return false;
-            }
+            if (isOverSize(width, height))
+                return setFailed();
             m_size = IntSize(width, height);
             m_sizeAvailable = true;
             return true;
         }
 
-        // The total number of frames for the image.  Classes that support multiple frames
-        // will scan the image data for the answer if they need to (without necessarily
-        // decoding all of the individual frames).
+        // The total number of frames for the image.  Classes that support
+        // multiple frames will scan the image data for the answer if they need
+        // to (without necessarily decoding all of the individual frames).
         virtual size_t frameCount() { return 1; }
 
         // The number of repetitions to perform for an animation loop.
         virtual int repetitionCount() const { return cAnimationNone; }
 
-        // Called to obtain the RGBA32Buffer full of decoded data for rendering.  The
-        // decoder plugin will decode as much of the frame as it can before handing
-        // back the buffer.
+        // Called to obtain the RGBA32Buffer full of decoded data for rendering.
+        // The decoder plugin will decode as much of the frame as it can before
+        // handing back the buffer.
         virtual RGBA32Buffer* frameBufferAtIndex(size_t) = 0;
 
-        // Whether or not the underlying image format even supports alpha transparency.
+        // Whether or not the underlying image format even supports alpha
+        // transparency.
         virtual bool supportsAlpha() const { return true; }
 
+        // Sets the "decode failure" flag.  For caller convenience (since so
+        // many callers want to return false after calling this), returns false
+        // to enable easy tailcalling.
+        virtual bool setFailed()
+        {
+            m_failed = true;
+            return false;
+        }
+
         bool failed() const { return m_failed; }
-        void setFailed() { m_failed = true; }
 
         // Wipe out frames in the frame buffer cache before |clearBeforeFrame|,
-        // assuming this can be done without breaking decoding.  Different decoders
-        // place different restrictions on what frames are safe to destroy, so this
-        // is left to them to implement.
+        // assuming this can be done without breaking decoding.  Different
+        // decoders place different restrictions on what frames are safe to
+        // destroy, so this is left to them to implement.
         // For convenience's sake, we provide a default (empty) implementation,
         // since in practice only GIFs will ever use this.
         virtual void clearFrameBufferCache(size_t clearBeforeFrame) { }
@@ -295,22 +317,18 @@ namespace WebCore {
 #endif
 
     protected:
-#if ENABLE(IMAGE_DECODER_DOWN_SAMPLING)
         void prepareScaleDataIfNecessary();
         int upperBoundScaledX(int origX, int searchStart = 0);
         int lowerBoundScaledX(int origX, int searchStart = 0);
+        int upperBoundScaledY(int origY, int searchStart = 0);
+        int lowerBoundScaledY(int origY, int searchStart = 0);
         int scaledY(int origY, int searchStart = 0);
-#endif
 
         RefPtr<SharedBuffer> m_data; // The encoded data.
-#if ENABLE(IMAGE_DECODER_DOWN_SAMPLING)
-        int m_maxNumPixels;
+        Vector<RGBA32Buffer> m_frameBufferCache;
+        bool m_scaled;
         Vector<int> m_scaledColumns;
         Vector<int> m_scaledRows;
-        bool m_scaled;
-#endif
-        Vector<RGBA32Buffer> m_frameBufferCache;
-        bool m_failed;
 
     private:
         // Some code paths compute the size of the image as "width * height * 4"
@@ -326,6 +344,9 @@ namespace WebCore {
 
         IntSize m_size;
         bool m_sizeAvailable;
+        int m_maxNumPixels;
+        bool m_isAllDataReceived;
+        bool m_failed;
     };
 
 } // namespace WebCore

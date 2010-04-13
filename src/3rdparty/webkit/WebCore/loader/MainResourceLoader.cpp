@@ -38,6 +38,9 @@
 #include "FrameLoaderClient.h"
 #include "HTMLFormElement.h"
 #include "Page.h"
+#if PLATFORM(QT)
+#include "PluginDatabase.h"
+#endif
 #include "ResourceError.h"
 #include "ResourceHandle.h"
 #include "Settings.h"
@@ -279,6 +282,29 @@ void MainResourceLoader::continueAfterContentPolicy(PolicyAction policy)
     deref(); // balances ref in didReceiveResponse
 }
 
+#if PLATFORM(QT)
+void MainResourceLoader::substituteMIMETypeFromPluginDatabase(const ResourceResponse& r)
+{
+    if (!m_frame->loader()->allowPlugins(NotAboutToInstantiatePlugin))
+        return;
+
+    String filename = r.url().lastPathComponent();
+    if (filename.endsWith("/"))
+        return;
+
+    int extensionPos = filename.reverseFind('.');
+    if (extensionPos == -1)
+        return;
+
+    String extension = filename.substring(extensionPos + 1);
+    String mimeType = PluginDatabase::installedPlugins()->MIMETypeForExtension(extension);
+    if (!mimeType.isEmpty()) {
+        ResourceResponse* response = const_cast<ResourceResponse*>(&r);
+        response->setMimeType(mimeType);
+    }
+}
+#endif
+
 void MainResourceLoader::didReceiveResponse(const ResourceResponse& r)
 {
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
@@ -299,6 +325,11 @@ void MainResourceLoader::didReceiveResponse(const ResourceResponse& r)
     // See <rdar://problem/6304600> for more details.
 #if !PLATFORM(CF)
     ASSERT(shouldLoadAsEmptyDocument(r.url()) || !defersLoading());
+#endif
+
+#if PLATFORM(QT)
+    if (r.mimeType() == "application/octet-stream")
+        substituteMIMETypeFromPluginDatabase(r);
 #endif
 
     if (m_loadingMultipartContent) {
@@ -433,10 +464,6 @@ void MainResourceLoader::handleDataLoadNow(MainResourceLoaderTimer*)
     KURL url = m_substituteData.responseURL();
     if (url.isEmpty())
         url = m_initialRequest.url();
-
-    // Clear the initial request here so that subsequent entries into the
-    // loader will not think there's still a deferred load left to do.
-    m_initialRequest = ResourceRequest();
         
     ResourceResponse response(url, m_substituteData.mimeType(), m_substituteData.content()->size(), m_substituteData.textEncoding(), "");
     didReceiveResponse(response);
@@ -490,7 +517,7 @@ bool MainResourceLoader::loadNow(ResourceRequest& r)
     else if (shouldLoadEmpty || frameLoader()->representationExistsForURLScheme(url.protocol()))
         handleEmptyLoad(url, !shouldLoadEmpty);
     else
-        m_handle = ResourceHandle::create(r, this, m_frame.get(), false, true, true);
+        m_handle = ResourceHandle::create(r, this, m_frame.get(), false, true);
 
     return false;
 }

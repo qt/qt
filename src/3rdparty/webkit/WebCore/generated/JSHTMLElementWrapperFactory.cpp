@@ -82,6 +82,7 @@
 #include "JSHTMLOptionElement.h"
 #include "JSHTMLParagraphElement.h"
 #include "JSHTMLParamElement.h"
+#include "JSHTMLProgressElement.h"
 #include "JSHTMLQuoteElement.h"
 #include "JSHTMLScriptElement.h"
 #include "JSHTMLSourceElement.h"
@@ -150,6 +151,7 @@
 #include "HTMLOptionElement.h"
 #include "HTMLParagraphElement.h"
 #include "HTMLParamElement.h"
+#include "HTMLProgressElement.h"
 #include "HTMLQuoteElement.h"
 #include "HTMLScriptElement.h"
 #include "HTMLSelectElement.h"
@@ -460,6 +462,15 @@ static JSNode* createHTMLParamElementWrapper(ExecState* exec, JSDOMGlobalObject*
     return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLParamElement, element.get());
 }
 
+#if ENABLE(PROGRESS_TAG)
+
+static JSNode* createHTMLProgressElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
+{
+    return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLProgressElement, element.get());
+}
+
+#endif
+
 static JSNode* createHTMLQuoteElementWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
 {
     return CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLQuoteElement, element.get());
@@ -533,7 +544,7 @@ static JSNode* createHTMLVideoElementWrapper(ExecState* exec, JSDOMGlobalObject*
 #endif
 
 JSNode* createJSHTMLWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
-{   
+{
     typedef HashMap<WebCore::AtomicStringImpl*, CreateHTMLElementWrapperFunction> FunctionMap;
     DEFINE_STATIC_LOCAL(FunctionMap, map, ());
     if (map.isEmpty()) {
@@ -610,6 +621,9 @@ JSNode* createJSHTMLWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, Pa
        map.set(pTag.localName().impl(), createHTMLParagraphElementWrapper);
        map.set(paramTag.localName().impl(), createHTMLParamElementWrapper);
        map.set(preTag.localName().impl(), createHTMLPreElementWrapper);
+#if ENABLE(PROGRESS_TAG)
+       map.set(progressTag.localName().impl(), createHTMLProgressElementWrapper);
+#endif
        map.set(qTag.localName().impl(), createHTMLQuoteElementWrapper);
        map.set(scriptTag.localName().impl(), createHTMLScriptElementWrapper);
        map.set(selectTag.localName().impl(), createHTMLSelectElementWrapper);

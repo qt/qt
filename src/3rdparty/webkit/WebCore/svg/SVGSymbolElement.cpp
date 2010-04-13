@@ -1,8 +1,6 @@
 /*
-    Copyright (C) 2004, 2005 Nikolas Zimmermann <wildfox@kde.org>
+    Copyright (C) 2004, 2005 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006 Rob Buis <buis@kde.org>
-
-    This file is part of the KDE project
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -34,9 +32,6 @@ SVGSymbolElement::SVGSymbolElement(const QualifiedName& tagName, Document* doc)
     , SVGLangSpace()
     , SVGExternalResourcesRequired()
     , SVGFitToViewBox()
-    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
-    , m_viewBox(this, SVGNames::viewBoxAttr)
-    , m_preserveAspectRatio(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create())
 {
 }
 
@@ -56,8 +51,31 @@ void SVGSymbolElement::parseMappedAttribute(MappedAttribute* attr)
     SVGStyledElement::parseMappedAttribute(attr);
 }
 
+void SVGSymbolElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGStyledElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName()) {
+        synchronizePreserveAspectRatio();
+        synchronizeViewBox();
+        synchronizeExternalResourcesRequired();
+        synchronizeViewBox();
+        synchronizePreserveAspectRatio();
+        return;
+    }
+
+    if (attrName == SVGNames::preserveAspectRatioAttr)
+        synchronizePreserveAspectRatio();
+    else if (attrName == SVGNames::viewBoxAttr)
+        synchronizeViewBox();
+    else if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
+        synchronizeExternalResourcesRequired();
+    else if (SVGFitToViewBox::isKnownAttribute(attrName)) {
+        synchronizeViewBox();
+        synchronizePreserveAspectRatio();
+    } 
 }
 
-// vim:ts=4:noet
-#endif // ENABLE(SVG)
+}
 
+#endif // ENABLE(SVG)

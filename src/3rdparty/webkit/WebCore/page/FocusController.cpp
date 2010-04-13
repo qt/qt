@@ -38,8 +38,8 @@
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
-#include "FrameView.h"
 #include "FrameTree.h"
+#include "FrameView.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
@@ -49,18 +49,26 @@
 #include "RenderWidget.h"
 #include "SelectionController.h"
 #include "Settings.h"
+#include "SpatialNavigation.h"
 #include "Widget.h"
-#include <wtf/Platform.h>
 
 namespace WebCore {
 
 using namespace HTMLNames;
+using namespace std;
 
 static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool focused)
 {
     // If we have a focused node we should dispatch blur on it before we blur the window.
     // If we have a focused node we should dispatch focus on it after we focus the window.
     // https://bugs.webkit.org/show_bug.cgi?id=27105
+
+    // Do not fire events while modal dialogs are up.  See https://bugs.webkit.org/show_bug.cgi?id=33962
+    if (Page* page = document->page()) {
+        if (page->defersLoading())
+            return;
+    }
+
     if (!focused && document->focusedNode())
         document->focusedNode()->dispatchBlurEvent();
     document->dispatchWindowEvent(Event::create(focused ? eventNames().focusEvent : eventNames().blurEvent, false, false));
@@ -72,13 +80,16 @@ FocusController::FocusController(Page* page)
     : m_page(page)
     , m_isActive(false)
     , m_isFocused(false)
+    , m_isChangingFocusedFrame(false)
 {
 }
 
 void FocusController::setFocusedFrame(PassRefPtr<Frame> frame)
 {
-    if (m_focusedFrame == frame)
+    if (m_focusedFrame == frame || m_isChangingFocusedFrame)
         return;
+
+    m_isChangingFocusedFrame = true;
 
     RefPtr<Frame> oldFrame = m_focusedFrame;
     RefPtr<Frame> newFrame = frame;
@@ -95,6 +106,8 @@ void FocusController::setFocusedFrame(PassRefPtr<Frame> frame)
         newFrame->selection()->setFocused(true);
         newFrame->document()->dispatchWindowEvent(Event::create(eventNames().focusEvent, false, false));
     }
+
+    m_isChangingFocusedFrame = false;
 }
 
 Frame* FocusController::focusedOrMainFrame()
@@ -147,6 +160,24 @@ bool FocusController::setInitialFocus(FocusDirection direction, KeyboardEvent* e
 }
 
 bool FocusController::advanceFocus(FocusDirection direction, KeyboardEvent* event, bool initialFocus)
+{
+    switch (direction) {
+    case FocusDirectionForward:
+    case FocusDirectionBackward:
+        return advanceFocusInDocumentOrder(direction, event, initialFocus);
+    case FocusDirectionLeft:
+    case FocusDirectionRight:
+    case FocusDirectionUp:
+    case FocusDirectionDown:
+        return advanceFocusDirectionally(direction, event);
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
+    return false;
+}
+
+bool FocusController::advanceFocusInDocumentOrder(FocusDirection direction, KeyboardEvent* event, bool initialFocus)
 {
     Frame* frame = focusedOrMainFrame();
     ASSERT(frame);
@@ -250,6 +281,140 @@ bool FocusController::advanceFocus(FocusDirection direction, KeyboardEvent* even
 
     static_cast<Element*>(node)->focus(false);
     return true;
+}
+
+bool FocusController::advanceFocusDirectionally(FocusDirection direction, KeyboardEvent* event)
+{
+    Frame* frame = focusedOrMainFrame();
+    ASSERT(frame);
+    Document* focusedDocument = frame->document();
+    if (!focusedDocument)
+        return false;
+
+    Node* focusedNode = focusedDocument->focusedNode();
+    if (!focusedNode) {
+        // Just move to the first focusable node.
+        FocusDirection tabDirection = (direction == FocusDirectionUp || direction == FocusDirectionLeft) ?
+                                       FocusDirectionForward : FocusDirectionBackward;
+        // 'initialFocus' is set to true so the chrome is not focused.
+        return advanceFocusInDocumentOrder(tabDirection, event, true);
+    }
+
+    // Move up in the chain of nested frames.
+    frame = frame->tree()->top();
+
+    FocusCandidate focusCandidate;
+    findFocusableNodeInDirection(frame->document(), focusedNode, direction, event, focusCandidate);
+
+    Node* node = focusCandidate.node;
+    if (!node || !node->isElementNode()) {
+        // FIXME: May need a way to focus a document here.
+        Frame* frame = focusedOrMainFrame();
+        scrollInDirection(frame, direction);
+        return false;
+    }
+
+    // In order to avoid crazy jump between links that are either far away from each other,
+    // or just not currently visible, lets do a scroll in the given direction and bail out
+    // if |node| element is not in the viewport.
+    if (hasOffscreenRect(node)) {
+        Frame* frame = node->document()->view()->frame();
+        scrollInDirection(frame, direction);
+        return true;
+    }
+
+    Document* newDocument = node->document();
+
+    if (newDocument != focusedDocument) {
+        // Focus is going away from the originally focused document, so clear the focused node.
+        focusedDocument->setFocusedNode(0);
+    }
+
+    if (newDocument)
+        setFocusedFrame(newDocument->frame());
+
+    Element* element = static_cast<Element*>(node);
+    ASSERT(element);
+
+    scrollIntoView(element);
+    element->focus(false);
+    return true;
+}
+
+static void updateFocusCandidateIfCloser(Node* focusedNode, Node* candidate, long long distance, FocusCandidate& closestFocusCandidate)
+{
+    // Bail out if |distance| is bigger than the current closest candidate.
+    if (distance >= closestFocusCandidate.distance)
+        return;
+
+    // If |focusedNode| and |candidate| are in the same document AND
+    // current |closestFocusCandidadte| is not in an {i}frame that is
+    // preferable to get focused.
+    if (focusedNode->document() == candidate->document()
+        && distance < closestFocusCandidate.parentDistance) {
+        closestFocusCandidate.node = candidate;
+        closestFocusCandidate.distance = distance;
+        closestFocusCandidate.parentDistance = maxDistance();
+    } else if (focusedNode->document() != candidate->document()) {
+        // If the |focusedNode| is in an inner document and the |candidate| is
+        // in a different document, we only consider to change focus if there is
+        // not another already good focusable candidate in the same document as
+        // |focusedNode|.
+        if (!((isInRootDocument(candidate) && !isInRootDocument(focusedNode))
+            && focusedNode->document() == closestFocusCandidate.document())) {
+            closestFocusCandidate.node = candidate;
+            closestFocusCandidate.distance = distance;
+        }
+    }
+}
+
+void FocusController::findFocusableNodeInDirection(Document* document, Node* focusedNode, FocusDirection direction, KeyboardEvent* event, FocusCandidate& closestFocusCandidate)
+{
+    ASSERT(document);
+
+    // Walk all the child nodes and update focusCandidate if we find a nearer node.
+    for (Node* candidate = document->firstChild(); candidate; candidate = candidate->traverseNextNode()) {
+        // Inner documents case.
+        if (candidate->isFrameOwnerElement())
+            deepFindFocusableNodeInDirection(focusedNode, candidate, direction, event, closestFocusCandidate);
+        else if (candidate != focusedNode && candidate->isKeyboardFocusable(event)) {
+            long long distance = distanceInDirection(focusedNode, candidate,
+                                                     direction, closestFocusCandidate);
+            updateFocusCandidateIfCloser(focusedNode, candidate, distance, closestFocusCandidate);
+        }
+    }
+}
+
+void FocusController::deepFindFocusableNodeInDirection(Node* focusedNode, Node* candidate, FocusDirection direction, KeyboardEvent* event, FocusCandidate& closestFocusCandidate)
+{
+    HTMLFrameOwnerElement* owner = static_cast<HTMLFrameOwnerElement*>(candidate);
+    if (!owner->contentFrame())
+        return;
+
+    Document* innerDocument = owner->contentFrame()->document();
+    if (!innerDocument)
+        return;
+
+    if (innerDocument == focusedNode->document())
+        findFocusableNodeInDirection(innerDocument, focusedNode, direction, event, closestFocusCandidate);
+    else {
+        // Check if the current {i}frame element itself is a good candidate
+        // to move focus to. If it is, then we traverse its inner nodes.
+        // Lets pass a copy of the best candidate, to not get fooled by a
+        // frame without focusable elements.
+        FocusCandidate focusCandidateCopy = closestFocusCandidate;
+        long long distance = distanceInDirection(focusedNode, candidate, direction, focusCandidateCopy);
+        if (distance < focusCandidateCopy.distance) {
+            focusCandidateCopy.parentAlignment = focusCandidateCopy.alignment;
+            focusCandidateCopy.parentDistance = distance;
+
+            findFocusableNodeInDirection(innerDocument, focusedNode, direction, event, focusCandidateCopy);
+
+            // If we really have an inner closer focus candidate node, take it.
+            if (closestFocusCandidate.node != focusCandidateCopy.node)
+                closestFocusCandidate = focusCandidateCopy;
+        }
+    }
 }
 
 static bool relinquishesEditingFocus(Node *node)

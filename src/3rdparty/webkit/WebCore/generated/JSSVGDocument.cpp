@@ -40,24 +40,72 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGDocument);
 
 /* Hash table */
 
-static const HashTableValue JSSVGDocumentTableValues[2] =
+static const HashTableValue JSSVGDocumentTableValues[3] =
 {
-    { "rootElement", DontDelete|ReadOnly, (intptr_t)jsSVGDocumentRootElement, (intptr_t)0 },
+    { "rootElement", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGDocumentRootElement), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGDocumentConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGDocumentTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSSVGDocumentTableValues, 0 };
+    { 1, JSSVGDocumentTableValues, 0 };
 #else
-    { 2, 1, JSSVGDocumentTableValues, 0 };
+    { 4, 3, JSSVGDocumentTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGDocumentConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGDocumentConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGDocumentConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGDocumentConstructorTableValues, 0 };
+#endif
+
+class JSSVGDocumentConstructor : public DOMConstructorObject {
+public:
+    JSSVGDocumentConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGDocumentConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGDocumentPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGDocumentConstructor::s_info = { "SVGDocumentConstructor", 0, &JSSVGDocumentConstructorTable, 0 };
+
+bool JSSVGDocumentConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGDocumentConstructor, DOMObject>(exec, &JSSVGDocumentConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGDocumentConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGDocumentConstructor, DOMObject>(exec, &JSSVGDocumentConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
 static const HashTableValue JSSVGDocumentPrototypeTableValues[2] =
 {
-    { "createEvent", DontDelete|Function, (intptr_t)jsSVGDocumentPrototypeFunctionCreateEvent, (intptr_t)1 },
+    { "createEvent", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGDocumentPrototypeFunctionCreateEvent), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -107,12 +155,23 @@ bool JSSVGDocument::getOwnPropertyDescriptor(ExecState* exec, const Identifier& 
     return getStaticValueDescriptor<JSSVGDocument, Base>(exec, &JSSVGDocumentTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGDocumentRootElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGDocumentRootElement(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGDocument* castedThis = static_cast<JSSVGDocument*>(asObject(slot.slotBase()));
+    JSSVGDocument* castedThis = static_cast<JSSVGDocument*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGDocument* imp = static_cast<SVGDocument*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rootElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rootElement()));
+    return result;
+}
+
+JSValue jsSVGDocumentConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGDocument* domObject = static_cast<JSSVGDocument*>(asObject(slotBase));
+    return JSSVGDocument::getConstructor(exec, domObject->globalObject());
+}
+JSValue JSSVGDocument::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGDocumentConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGDocumentPrototypeFunctionCreateEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

@@ -25,8 +25,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __LP64__
-
 #include "config.h"
 #include "PluginPackage.h"
 
@@ -177,7 +175,7 @@ bool PluginPackage::fetchInfo()
 
             WTF::RetainPtr<CFDictionaryRef> extensionsDict = (CFDictionaryRef)values[i];
 
-            WTF:RetainPtr<CFNumberRef> enabled = (CFNumberRef)CFDictionaryGetValue(extensionsDict.get(), CFSTR("WebPluginTypeEnabled"));
+            WTF::RetainPtr<CFNumberRef> enabled = (CFNumberRef)CFDictionaryGetValue(extensionsDict.get(), CFSTR("WebPluginTypeEnabled"));
             if (enabled) {
                 int enabledValue = 0;
                 if (CFNumberGetValue(enabled.get(), kCFNumberIntType, &enabledValue) && enabledValue == 0)
@@ -302,10 +300,8 @@ abort:
     return false;
 }
 
+uint16 PluginPackage::NPVersion() const
+{
+    return NP_VERSION_MINOR;
+}
 } // namespace WebCore
-
-#else
-
-#include "../PluginPackageNone.cpp"
-
-#endif // !__LP64__

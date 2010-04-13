@@ -3,8 +3,6 @@
                   2004, 2005, 2007 Rob Buis <buis@kde.org>
                   2007 Eric Seidel <eric@webkit.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -53,9 +51,6 @@ SVGAElement::SVGAElement(const QualifiedName& tagName, Document *doc)
     , SVGTests()
     , SVGLangSpace()
     , SVGExternalResourcesRequired()
-    , m_target(this, SVGNames::targetAttr)
-    , m_href(this, XLinkNames::hrefAttr)
-    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
 {
 }
 
@@ -98,6 +93,25 @@ void SVGAElement::svgAttributeChanged(const QualifiedName& attrName)
         if (wasLink != isLink())
             setNeedsStyleRecalc();
     }
+}
+
+void SVGAElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGStyledTransformableElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName()) {
+        synchronizeTarget();
+        synchronizeHref();
+        synchronizeExternalResourcesRequired();
+        return;
+    }
+
+    if (attrName == SVGNames::targetAttr)
+        synchronizeTarget();
+    else if (SVGURIReference::isKnownAttribute(attrName))
+        synchronizeHref();
+    else if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
+        synchronizeExternalResourcesRequired();
 }
 
 RenderObject* SVGAElement::createRenderer(RenderArena* arena, RenderStyle*)

@@ -31,6 +31,7 @@
 #include "Element.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
+#include "FrameLoaderClient.h"
 #include "FTPDirectoryDocument.h"
 #include "HTMLDocument.h"
 #include "HTMLNames.h"
@@ -272,16 +273,6 @@ PassRefPtr<CSSStyleSheet> DOMImplementation::createCSSStyleSheet(const String&, 
     return sheet.release();
 }
 
-PassRefPtr<Document> DOMImplementation::createDocument(Frame* frame)
-{
-    return Document::create(frame);
-}
-
-PassRefPtr<HTMLDocument> DOMImplementation::createHTMLDocument(Frame* frame)
-{
-    return HTMLDocument::create(frame);
-}
-
 bool DOMImplementation::isXMLMIMEType(const String& mimeType)
 {
     if (mimeType == "text/xml" || mimeType == "application/xml" || mimeType == "text/xsl")
@@ -305,7 +296,8 @@ PassRefPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const String& tit
 {
     RefPtr<HTMLDocument> d = HTMLDocument::create(0);
     d->open();
-    d->write("<!doctype html><html><head><title>" + title + "</title></head><body></body></html>");
+    d->write("<!doctype html><html><body></body></html>");
+    d->setTitle(title);
     return d.release();
 }
 
@@ -336,7 +328,7 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& type, Frame
 #endif
 
     PluginData* pluginData = 0;
-    if (frame && frame->page() && frame->page()->settings()->arePluginsEnabled())
+    if (frame && frame->page() && frame->loader()->allowPlugins(NotAboutToInstantiatePlugin))
         pluginData = frame->page()->pluginData();
 
     // PDF is one image type for which a plugin can override built-in support.

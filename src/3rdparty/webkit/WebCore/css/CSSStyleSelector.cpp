@@ -28,14 +28,11 @@
 
 #include "CSSBorderImageValue.h"
 #include "CSSCursorImageValue.h"
-#include "CSSFontFace.h"
 #include "CSSFontFaceRule.h"
-#include "CSSFontFaceSource.h"
 #include "CSSImportRule.h"
 #include "CSSMediaRule.h"
 #include "CSSParser.h"
 #include "CSSPrimitiveValueMappings.h"
-#include "CSSProperty.h"
 #include "CSSPropertyNames.h"
 #include "CSSReflectValue.h"
 #include "CSSRuleList.h"
@@ -61,6 +58,7 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HTMLTextAreaElement.h"
+#include "KeyframeList.h"
 #include "LinkHash.h"
 #include "MappedAttribute.h"
 #include "MatrixTransformOperation.h"
@@ -350,7 +348,7 @@ if (id == propID) { \
     return; \
 }
 
-class CSSRuleSet {
+class CSSRuleSet : public Noncopyable {
 public:
     CSSRuleSet();
     ~CSSRuleSet();
@@ -416,7 +414,7 @@ CSSStyleSelector::CSSStyleSelector(Document* doc, StyleSheetList* styleSheets, C
     , m_fontSelector(CSSFontSelector::create(doc))
 {
     init();
-
+        
     m_matchAuthorAndUserStyles = matchAuthorAndUserStyles;
     
     Element* root = doc->documentElement();
@@ -443,7 +441,7 @@ CSSStyleSelector::CSSStyleSelector(Document* doc, StyleSheetList* styleSheets, C
         m_medium = new MediaQueryEvaluator("all");
 
     if (root)
-        m_rootDefaultStyle = styleForElement(root, 0, false, true); // dont ref, because the RenderStyle is allocated from global heap
+        m_rootDefaultStyle = styleForElement(root, 0, false, true); // don't ref, because the RenderStyle is allocated from global heap
 
     if (m_rootDefaultStyle && view) {
         delete m_medium;
@@ -465,7 +463,7 @@ CSSStyleSelector::CSSStyleSelector(Document* doc, StyleSheetList* styleSheets, C
     // add stylesheets from document
     m_authorStyle = new CSSRuleSet();
     
-    // Add rules from elments like SVG's <font-face>
+    // Add rules from elements like SVG's <font-face>
     if (mappedElementSheet)
         m_authorStyle->addRulesFromSheet(mappedElementSheet, *m_medium, this);
 
@@ -475,6 +473,9 @@ CSSStyleSelector::CSSStyleSelector(Document* doc, StyleSheetList* styleSheets, C
         if (sheet->isCSSStyleSheet() && !sheet->disabled())
             m_authorStyle->addRulesFromSheet(static_cast<CSSStyleSheet*>(sheet), *m_medium, this);
     }
+    
+    if (doc->renderer() && doc->renderer()->style())
+        doc->renderer()->style()->font().update(fontSelector());
 }
 
 // This is a simplified style setting function for keyframe styles
@@ -662,7 +663,7 @@ void CSSStyleSelector::matchRules(CSSRuleSet* rules, int& firstRuleIndex, int& l
         matchRulesForList(rules->getIDRules(m_element->getIDAttribute().impl()), firstRuleIndex, lastRuleIndex);
     if (m_element->hasClass()) {
         ASSERT(m_styledElement);
-        const ClassNames& classNames = m_styledElement->classNames();
+        const SpaceSplitString& classNames = m_styledElement->classNames();
         size_t size = classNames.size();
         for (size_t i = 0; i < size; ++i)
             matchRulesForList(rules->getClassRules(classNames[i].impl()), firstRuleIndex, lastRuleIndex);
@@ -761,7 +762,7 @@ void CSSStyleSelector::sortMatchedRules(unsigned start, unsigned end)
         return;
     }
 
-    // Peform a merge sort for larger lists.
+    // Perform a merge sort for larger lists.
     unsigned mid = (start + end) / 2;
     sortMatchedRules(start, mid);
     sortMatchedRules(mid, end);
@@ -1003,9 +1004,15 @@ bool CSSStyleSelector::canShareStyleWithElement(Node* n)
 
                 if (s->isDefaultButtonForForm() != m_element->isDefaultButtonForForm())
                     return false;
-
-                if ((s->willValidate() && s->isValidFormControlElement()) !=
-                    (m_element->willValidate() && m_element->isValidFormControlElement()))
+                
+                if (!m_element->document()->containsValidityStyleRules())
+                    return false;
+                
+                bool willValidate = s->willValidate();
+                if (willValidate != m_element->willValidate())
+                    return false;
+                
+                if (willValidate && (s->isValidFormControlElement() != m_element->isValidFormControlElement()))
                     return false;
             }
 
@@ -1089,6 +1096,39 @@ void CSSStyleSelector::matchUARules(int& firstUARule, int& lastUARule)
             loadViewSourceStyle();
         matchRules(defaultViewSourceStyle, firstUARule, lastUARule);
     }
+}
+
+PassRefPtr<RenderStyle> CSSStyleSelector::styleForDocument(Document* document)
+{
+    RefPtr<RenderStyle> documentStyle = RenderStyle::create();
+    documentStyle->setDisplay(BLOCK);
+    documentStyle->setVisuallyOrdered(document->visuallyOrdered());
+    documentStyle->setZoom(document->frame()->pageZoomFactor());
+    
+    FontDescription fontDescription;
+    fontDescription.setUsePrinterFont(document->printing());
+    if (Settings* settings = document->settings()) {
+        fontDescription.setRenderingMode(settings->fontRenderingMode());
+        if (document->printing() && !settings->shouldPrintBackgrounds())
+            documentStyle->setForceBackgroundsToWhite(true);
+        const AtomicString& stdfont = settings->standardFontFamily();
+        if (!stdfont.isEmpty()) {
+            fontDescription.firstFamily().setFamily(stdfont);
+            fontDescription.firstFamily().appendFamily(0);
+        }
+        fontDescription.setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
+        int size = CSSStyleSelector::fontSizeForKeyword(document, CSSValueMedium, false);
+        fontDescription.setSpecifiedSize(size);
+        bool useSVGZoomRules = document->isSVGDocument();
+        fontDescription.setComputedSize(CSSStyleSelector::getComputedSizeFromSpecifiedSize(document, documentStyle.get(), fontDescription.isAbsoluteSize(), size, useSVGZoomRules));
+    }
+
+    documentStyle->setFontDescription(fontDescription);
+    documentStyle->font().update(0);
+    if (document->inCompatMode())
+        documentStyle->setHtmlHacks(true); // enable html specific rendering tricks
+        
+    return documentStyle.release();
 }
 
 // If resolveForRootDefault is true, style based on user agent style sheet only. This is used in media queries, where
@@ -1297,7 +1337,9 @@ void CSSStyleSelector::keyframeStylesForAnimation(Element* e, const RenderStyle*
     // Get the keyframesRule for this name
     if (!e || list.animationName().isEmpty())
         return;
-            
+
+    m_keyframesRuleMap.checkConsistency();
+   
     if (!m_keyframesRuleMap.contains(list.animationName().impl()))
         return;
         
@@ -2368,15 +2410,8 @@ bool CSSStyleSelector::SelectorChecker::checkOneSelector(CSSSelector* sel, Eleme
                 }
                 break;
             case CSSSelector::PseudoEnabled:
-                if (e && e->isFormControlElement()) {
-                    InputElement* inputElement = toInputElement(e);
-                    if (inputElement && inputElement->isInputTypeHidden())
-                        break;
-                    // The UI spec states that you can't match :enabled unless you are an object that can
-                    // "receive focus and be activated."  We will limit matching of this pseudo-class to elements
-                    // that are non-"hidden" controls.
+                if (e && e->isFormControlElement())
                     return e->isEnabledFormControl();
-                }
                 break;
             case CSSSelector::PseudoFullPageMedia:
                 return e && e->document() && e->document()->isMediaDocument();
@@ -2384,16 +2419,8 @@ bool CSSStyleSelector::SelectorChecker::checkOneSelector(CSSSelector* sel, Eleme
             case CSSSelector::PseudoDefault:
                 return e && e->isDefaultButtonForForm();
             case CSSSelector::PseudoDisabled:
-                if (e && e->isFormControlElement()) {
-                    InputElement* inputElement = toInputElement(e);
-                    if (inputElement && inputElement->isInputTypeHidden())
-                        break;
-
-                    // The UI spec states that you can't match :enabled unless you are an object that can
-                    // "receive focus and be activated."  We will limit matching of this pseudo-class to elements
-                    // that are non-"hidden" controls.
+                if (e && e->isFormControlElement())
                     return !e->isEnabledFormControl();
-                }
                 break;
             case CSSSelector::PseudoReadOnly: {
                 if (!e || !e->isFormControlElement())
@@ -2409,11 +2436,17 @@ bool CSSStyleSelector::SelectorChecker::checkOneSelector(CSSSelector* sel, Eleme
                 return e && e->isOptionalFormControl();
             case CSSSelector::PseudoRequired:
                 return e && e->isRequiredFormControl();
-            case CSSSelector::PseudoValid:
-                return e && e->willValidate() && e->isValidFormControlElement();
-            case CSSSelector::PseudoInvalid:
-                return e && e->willValidate() && !e->isValidFormControlElement();
-            case CSSSelector::PseudoChecked: {
+            case CSSSelector::PseudoValid: {
+                if (!e)
+                    return false;
+                e->document()->setContainsValidityStyleRules();
+                return e->willValidate() && e->isValidFormControlElement();
+            } case CSSSelector::PseudoInvalid: {
+                if (!e)
+                    return false;
+                e->document()->setContainsValidityStyleRules();
+                return e->willValidate() && !e->isValidFormControlElement();
+            } case CSSSelector::PseudoChecked: {
                 if (!e || !e->isFormControlElement())
                     break;
                 // Even though WinIE allows checked and indeterminate to co-exist, the CSS selector spec says that
@@ -2556,6 +2589,9 @@ bool CSSStyleSelector::SelectorChecker::checkOneSelector(CSSSelector* sel, Eleme
             case CSSSelector::PseudoMediaControlsReturnToRealtimeButton:
                 dynamicPseudo = MEDIA_CONTROLS_RETURN_TO_REALTIME_BUTTON;
                 return true;
+            case CSSSelector::PseudoMediaControlsToggleClosedCaptions:
+                dynamicPseudo = MEDIA_CONTROLS_TOGGLE_CLOSED_CAPTIONS_BUTTON;
+                return true;
             case CSSSelector::PseudoMediaControlsStatusDisplay:
                 dynamicPseudo = MEDIA_CONTROLS_STATUS_DISPLAY;
                 return true;
@@ -2582,6 +2618,12 @@ bool CSSStyleSelector::SelectorChecker::checkOneSelector(CSSSelector* sel, Eleme
                 return true;
             case CSSSelector::PseudoResizer:
                 dynamicPseudo = RESIZER;
+                return true;
+            case CSSSelector::PseudoInnerSpinButton:
+                dynamicPseudo = INNER_SPIN_BUTTON;
+                return true;
+            case CSSSelector::PseudoOuterSpinButton:
+                dynamicPseudo = OUTER_SPIN_BUTTON;
                 return true;
             case CSSSelector::PseudoUnknown:
             case CSSSelector::PseudoNotParsed:
@@ -2864,7 +2906,7 @@ void CSSStyleSelector::applyDeclarations(bool applyFirst, bool isImportant,
                     case CSSPropertyFontVariant:
                     case CSSPropertyZoom:
                         // these have to be applied first, because other properties use the computed
-                        // values of these porperties.
+                        // values of these properties.
                         first = true;
                         break;
                     default:
@@ -2926,6 +2968,16 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
         primitiveValue = static_cast<CSSPrimitiveValue*>(value);
 
     float zoomFactor = m_style->effectiveZoom();
+
+    // SVG handles zooming in a different way compared to CSS. The whole document is scaled instead
+    // of each individual length value in the render style / tree. CSSPrimitiveValue::computeLength*()
+    // multiplies each resolved length with the zoom multiplier - so for SVG we need to disable that.
+    // Though all CSS values that can be applied to outermost <svg> elements (width/height/border/padding...)
+    // need to respect the scaling. RenderBox (the parent class of RenderSVGRoot) grabs values like
+    // width/height/border/padding/... from the RenderStyle -> for SVG these values would never scale,
+    // if we'd pass a 1.0 zoom factor everyhwere. So we only pass a zoom factor of 1.0 for specific
+    // properties that are NOT allowed to scale within a zoomed SVG document (letter/word-spacing/font-size).
+    bool useSVGZoomRules = m_element && m_element->isSVGElement();
 
     Length l;
     bool apply = false;
@@ -3029,7 +3081,7 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
 #if ENABLE(WCSS)
         if (primitiveValue) {
             if (primitiveValue->getIdent() == CSSValueWapMarquee) {
-                // Initialize Wap Marquee style
+                // Initialize WAP Marquee style
                 m_style->setOverflowX(OMARQUEE);
                 m_style->setOverflowY(OMARQUEE);
                 m_style->setWhiteSpace(NOWRAP);
@@ -3568,7 +3620,7 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
         } else {
             if (!primitiveValue)
                 return;
-            width = primitiveValue->computeLengthInt(style(), m_rootElementStyle, zoomFactor);
+            width = primitiveValue->computeLengthInt(style(), m_rootElementStyle, useSVGZoomRules ? 1.0f : zoomFactor);
         }
         switch (id) {
         case CSSPropertyLetterSpacing:
@@ -3878,7 +3930,7 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
             if (m_parentNode)
                 fontDescription.setKeywordSize(m_parentStyle->fontDescription().keywordSize());
         } else if (isInitial) {
-            size = fontSizeForKeyword(CSSValueMedium, m_style->htmlHacks(), fontDescription.useFixedDefaultSize());
+            size = fontSizeForKeyword(m_checker.m_document, CSSValueMedium, fontDescription.useFixedDefaultSize());
             fontDescription.setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
         } else if (primitiveValue->getIdent()) {
             // Keywords are being used.
@@ -3891,7 +3943,7 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
                 case CSSValueXLarge:
                 case CSSValueXxLarge:
                 case CSSValueWebkitXxxLarge:
-                    size = fontSizeForKeyword(primitiveValue->getIdent(), m_style->htmlHacks(), fontDescription.useFixedDefaultSize());
+                    size = fontSizeForKeyword(m_checker.m_document, primitiveValue->getIdent(), fontDescription.useFixedDefaultSize());
                     fontDescription.setKeywordSize(primitiveValue->getIdent() - CSSValueXxSmall + 1);
                     break;
                 case CSSValueLarger:
@@ -3978,7 +4030,7 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
         if (primitiveValue->getIdent() == CSSValueNormal)
             lineHeight = Length(-100.0, Percent);
         else if (CSSPrimitiveValue::isUnitTypeLength(type)) {
-            double multiplier = m_style->effectiveZoom();
+            double multiplier = zoomFactor;
             if (m_style->textSizeAdjust() && m_checker.m_document->frame() && m_checker.m_document->frame()->shouldApplyTextZoom())
                 multiplier *= m_checker.m_document->frame()->textZoomFactor();
             lineHeight = Length(primitiveValue->computeLengthIntForLength(style(), m_rootElementStyle,  multiplier), Fixed);
@@ -4140,7 +4192,7 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
             // We need to adjust the size to account for the generic family change from monospace
             // to non-monospace.
             if (fontDescription.keywordSize() && fontDescription.useFixedDefaultSize())
-                setFontSize(fontDescription, fontSizeForKeyword(CSSValueXxSmall + fontDescription.keywordSize() - 1, m_style->htmlHacks(), false));
+                setFontSize(fontDescription, fontSizeForKeyword(m_checker.m_document, CSSValueXxSmall + fontDescription.keywordSize() - 1, false));
             fontDescription.setGenericFamily(initialDesc.genericFamily());
             if (!initialDesc.firstFamily().familyIsEmpty())
                 fontDescription.setFamily(initialDesc.firstFamily());
@@ -4217,7 +4269,7 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
         // If currFamily is non-zero then we set at least one family on this description.
         if (currFamily) {
             if (fontDescription.keywordSize() && fontDescription.useFixedDefaultSize() != oldFamilyUsedFixedDefaultSize)
-                setFontSize(fontDescription, fontSizeForKeyword(CSSValueXxSmall + fontDescription.keywordSize() - 1, m_style->htmlHacks(), !oldFamilyUsedFixedDefaultSize));
+                setFontSize(fontDescription, fontSizeForKeyword(m_checker.m_document, CSSValueXxSmall + fontDescription.keywordSize() - 1, !oldFamilyUsedFixedDefaultSize));
 
             if (m_style->setFontDescription(fontDescription))
                 m_fontDirty = true;
@@ -4437,7 +4489,7 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
                 fontDescription.firstFamily().appendFamily(0);
             }
             fontDescription.setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
-            setFontSize(fontDescription, fontSizeForKeyword(CSSValueMedium, m_style->htmlHacks(), false));
+            setFontSize(fontDescription, fontSizeForKeyword(m_checker.m_document, CSSValueMedium, false));
             m_style->setLineHeight(RenderStyle::initialLineHeight());
             m_lineHeightValue = 0;
             if (m_style->setFontDescription(fontDescription))
@@ -4460,7 +4512,7 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
                 fontDescription.setUsePrinterFont(m_checker.m_document->printing());
            
                 // Handle the zoom factor.
-                fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(fontDescription.isAbsoluteSize(), fontDescription.specifiedSize()));
+                fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(m_checker.m_document, m_style.get(), fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), useSVGZoomRules));
                 if (m_style->setFontDescription(fontDescription))
                     m_fontDirty = true;
             }
@@ -5000,13 +5052,15 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
     case CSSPropertyWebkitMarginBottomCollapse:
         HANDLE_INHERIT_AND_INITIAL_AND_PRIMITIVE(marginBottomCollapse, MarginBottomCollapse)
         return;
-
-    // Apple-specific changes.  Do not merge these properties into KHTML.
     case CSSPropertyWebkitLineClamp: {
         HANDLE_INHERIT_AND_INITIAL(lineClamp, LineClamp)
         if (!primitiveValue)
             return;
-        m_style->setLineClamp(primitiveValue->getIntValue(CSSPrimitiveValue::CSS_PERCENTAGE));
+        int type = primitiveValue->primitiveType();
+        if (type == CSSPrimitiveValue::CSS_NUMBER)
+            m_style->setLineClamp(LineClampValue(primitiveValue->getIntValue(CSSPrimitiveValue::CSS_NUMBER), LineClampLineCount));
+        else if (type == CSSPrimitiveValue::CSS_PERCENTAGE)
+            m_style->setLineClamp(LineClampValue(primitiveValue->getIntValue(CSSPrimitiveValue::CSS_PERCENTAGE), LineClampPercentage));
         return;
     }
     case CSSPropertyWebkitHighlight: {
@@ -5222,6 +5276,9 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
     case CSSPropertyWebkitAnimationDuration:
         HANDLE_ANIMATION_VALUE(duration, Duration, value)
         return;
+    case CSSPropertyWebkitAnimationFillMode:
+        HANDLE_ANIMATION_VALUE(fillMode, FillMode, value)
+        return;
     case CSSPropertyWebkitAnimationIterationCount:
         HANDLE_ANIMATION_VALUE(iterationCount, IterationCount, value)
         return;
@@ -5267,6 +5324,17 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
         m_style->setPointerEvents(*primitiveValue);
         return;
     }
+    case CSSPropertyWebkitColorCorrection:
+        if (isInherit) 
+            m_style->setColorSpace(m_parentStyle->colorSpace());
+        else if (isInitial)
+            m_style->setColorSpace(DeviceColorSpace);
+        else {
+            if (!primitiveValue)
+                return;
+            m_style->setColorSpace(*primitiveValue);
+        }
+        return;
     case CSSPropertyInvalid:
         return;
     case CSSPropertyFontStretch:
@@ -5570,6 +5638,30 @@ void CSSStyleSelector::mapAnimationDuration(Animation* animation, CSSValue* valu
         animation->setDuration(primitiveValue->getFloatValue()/1000.0f);
 }
 
+void CSSStyleSelector::mapAnimationFillMode(Animation* layer, CSSValue* value)
+{
+    if (value->cssValueType() == CSSValue::CSS_INITIAL) {
+        layer->setFillMode(Animation::initialAnimationFillMode());
+        return;
+    }
+
+    CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
+    switch (primitiveValue->getIdent()) {
+    case CSSValueNone:
+        layer->setFillMode(AnimationFillModeNone);
+        break;
+    case CSSValueForwards:
+        layer->setFillMode(AnimationFillModeForwards);
+        break;
+    case CSSValueBackwards:
+        layer->setFillMode(AnimationFillModeBackwards);
+        break;
+    case CSSValueBoth:
+        layer->setFillMode(AnimationFillModeBoth);
+        break;
+    }
+}
+
 void CSSStyleSelector::mapAnimationIterationCount(Animation* animation, CSSValue* value)
 {
     if (value->cssValueType() == CSSValue::CSS_INITIAL) {
@@ -5769,7 +5861,7 @@ void CSSStyleSelector::checkForGenericFamilyChange(RenderStyle* style, RenderSty
     // multiplying by our scale factor.
     float size;
     if (childFont.keywordSize())
-        size = fontSizeForKeyword(CSSValueXxSmall + childFont.keywordSize() - 1, style->htmlHacks(), childFont.useFixedDefaultSize());
+        size = fontSizeForKeyword(m_checker.m_document, CSSValueXxSmall + childFont.keywordSize() - 1, childFont.useFixedDefaultSize());
     else {
         Settings* settings = m_checker.m_document->settings();
         float fixedScaleFactor = settings
@@ -5788,11 +5880,20 @@ void CSSStyleSelector::checkForGenericFamilyChange(RenderStyle* style, RenderSty
 void CSSStyleSelector::setFontSize(FontDescription& fontDescription, float size)
 {
     fontDescription.setSpecifiedSize(size);
-    fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(fontDescription.isAbsoluteSize(), size));
+
+    bool useSVGZoomRules = m_element && m_element->isSVGElement();
+    fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(m_checker.m_document, m_style.get(), fontDescription.isAbsoluteSize(), size, useSVGZoomRules)); 
 }
 
-float CSSStyleSelector::getComputedSizeFromSpecifiedSize(bool isAbsoluteSize, float specifiedSize)
+float CSSStyleSelector::getComputedSizeFromSpecifiedSize(Document* document, RenderStyle* style, bool isAbsoluteSize, float specifiedSize, bool useSVGZoomRules)
 {
+    float zoomFactor = 1.0f;
+    if (!useSVGZoomRules) {
+        zoomFactor = style->effectiveZoom();
+        if (document->frame() && document->frame()->shouldApplyTextZoom())
+            zoomFactor *= document->frame()->textZoomFactor();
+    }
+
     // We support two types of minimum font size.  The first is a hard override that applies to
     // all fonts.  This is "minSize."  The second type of minimum font size is a "smart minimum"
     // that is applied only when the Web page can't know what size it really asked for, e.g.,
@@ -5803,17 +5904,12 @@ float CSSStyleSelector::getComputedSizeFromSpecifiedSize(bool isAbsoluteSize, fl
     // However we always allow the page to set an explicit pixel size that is smaller,
     // since sites will mis-render otherwise (e.g., http://www.gamespot.com with a 9px minimum).
     
-    Settings* settings = m_checker.m_document->settings();
+    Settings* settings = document->settings();
     if (!settings)
         return 1.0f;
 
     int minSize = settings->minimumFontSize();
     int minLogicalSize = settings->minimumLogicalFontSize();
-
-    float zoomFactor = m_style->effectiveZoom();
-    if (m_checker.m_document->frame() && m_checker.m_document->frame()->shouldApplyTextZoom())
-        zoomFactor *= m_checker.m_document->frame()->textZoomFactor();
-
     float zoomedSize = specifiedSize * zoomFactor;
 
     // Apply the hard minimum first.  We only apply the hard minimum if after zooming we're still too small.
@@ -5874,12 +5970,13 @@ static const int strictFontSizeTable[fontSizeTableMax - fontSizeTableMin + 1][to
 // factors for each keyword value.
 static const float fontSizeFactors[totalKeywords] = { 0.60f, 0.75f, 0.89f, 1.0f, 1.2f, 1.5f, 2.0f, 3.0f };
 
-float CSSStyleSelector::fontSizeForKeyword(int keyword, bool quirksMode, bool fixed) const
+float CSSStyleSelector::fontSizeForKeyword(Document* document, int keyword, bool fixed)
 {
-    Settings* settings = m_checker.m_document->settings();
+    Settings* settings = document->settings();
     if (!settings)
         return 1.0f;
 
+    bool quirksMode = document->inCompatMode();
     int mediumSize = fixed ? settings->defaultFixedFontSize() : settings->defaultFontSize();
     if (mediumSize >= fontSizeTableMin && mediumSize <= fontSizeTableMax) {
         // Look up the entry in the table.
