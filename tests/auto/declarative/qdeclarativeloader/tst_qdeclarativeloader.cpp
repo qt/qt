@@ -48,7 +48,7 @@
 #include <private/qdeclarativeloader_p.h>
 #include "testhttpserver.h"
 
-#define SERVER_PORT 14445
+#define SERVER_PORT 14450
 
 inline QUrl TEST_FILE(const QString &filename)
 {
@@ -412,7 +412,7 @@ void tst_QDeclarativeLoader::networkRequestUrl()
     server.serveDirectory(SRCDIR "/data");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/Rect120x60.qml\" }"), QUrl(SRCDIR "/dummy.qml"));
+    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14450/Rect120x60.qml\" }"), QUrl(SRCDIR "/dummy.qml"));
     if (component.isError())
         qDebug() << component.errors();
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
@@ -437,7 +437,7 @@ void tst_QDeclarativeLoader::networkComponent()
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray(
                 "import Qt 4.6\n"
-                "import \"http://127.0.0.1:14445/\" as NW\n"
+                "import \"http://127.0.0.1:14450/\" as NW\n"
                 "Item {\n"
                 " Component { id: comp; NW.SlowRect {} }\n"
                 " Loader { sourceComponent: comp } }")
@@ -465,10 +465,10 @@ void tst_QDeclarativeLoader::failNetworkRequest()
     QVERIFY(server.isValid());
     server.serveDirectory(SRCDIR "/data");
 
-    QTest::ignoreMessage(QtWarningMsg, "(:-1: Network error for URL http://127.0.0.1:14445/IDontExist.qml) ");
+    QTest::ignoreMessage(QtWarningMsg, "(:-1: Network error for URL http://127.0.0.1:14450/IDontExist.qml) ");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/IDontExist.qml\" }"), QUrl("http://127.0.0.1:14445/dummy.qml"));
+    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14450/IDontExist.qml\" }"), QUrl("http://127.0.0.1:14450/dummy.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
 

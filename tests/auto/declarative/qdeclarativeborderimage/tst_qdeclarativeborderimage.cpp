@@ -55,8 +55,8 @@
 #include "../shared/testhttpserver.h"
 
 
-#define SERVER_PORT 14445
-#define SERVER_ADDR "http://127.0.0.1:14445"
+#define SERVER_PORT 14446
+#define SERVER_ADDR "http://127.0.0.1:14446"
 
 #define TRY_WAIT(expr) \
     do { \

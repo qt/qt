@@ -1307,7 +1307,7 @@ void tst_qdeclarativelanguage::basicRemote_data()
     QTest::addColumn<QString>("type");
     QTest::addColumn<QString>("error");
 
-    QString serverdir = "http://127.0.0.1:14445/qtest/declarative/qmllanguage/";
+    QString serverdir = "http://127.0.0.1:14447/qtest/declarative/qmllanguage/";
 
     QTest::newRow("no need for qmldir") << QUrl(serverdir+"Test.qml") << "" << "";
     QTest::newRow("need qmldir") << QUrl(serverdir+"TestLocal.qml") << "" << "";
@@ -1319,7 +1319,7 @@ void tst_qdeclarativelanguage::basicRemote()
     QFETCH(QString, type);
     QFETCH(QString, error);
 
-    TestHTTPServer server(14445);
+    TestHTTPServer server(14447);
     server.serveDirectory(SRCDIR);
 
     QDeclarativeComponent component(&engine, url);
@@ -1341,7 +1341,7 @@ void tst_qdeclarativelanguage::importsRemote_data()
     QTest::addColumn<QString>("type");
     QTest::addColumn<QString>("error");
 
-    QString serverdir = "http://127.0.0.1:14445/qtest/declarative/qmllanguage";
+    QString serverdir = "http://127.0.0.1:14447/qtest/declarative/qmllanguage";
 
     QTest::newRow("remote import") << "import \""+serverdir+"\"\nTest {}" << "QDeclarativeRectangle"
         << "";
@@ -1363,7 +1363,7 @@ void tst_qdeclarativelanguage::importsRemote()
     QFETCH(QString, type);
     QFETCH(QString, error);
 
-    TestHTTPServer server(14445);
+    TestHTTPServer server(14447);
     server.serveDirectory(SRCDIR);
 
     testType(qml,type,error);
