@@ -523,8 +523,6 @@ QCoreApplication::QCoreApplication(int &argc, char **argv)
 
 }
 
-extern void set_winapp_name();
-
 // ### move to QCoreApplicationPrivate constructor?
 void QCoreApplication::init()
 {
@@ -533,11 +531,6 @@ void QCoreApplication::init()
 #ifdef Q_OS_UNIX
     setlocale(LC_ALL, "");                // use correct char set mapping
     qt_locale_initialized = true;
-#endif
-
-#ifdef Q_WS_WIN
-    // Get the application name/instance if qWinMain() was not invoked
-    set_winapp_name();
 #endif
 
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");

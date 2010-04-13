@@ -81,7 +81,9 @@
 
 void QDeclarativeItemModule::defineModule()
 {
+#ifndef QT_NO_MOVIE
     qmlRegisterType<QDeclarativeAnimatedImage>("Qt",4,6,"AnimatedImage");
+#endif
     qmlRegisterType<QGraphicsBlurEffect>("Qt",4,6,"Blur");
     qmlRegisterType<QDeclarativeBorderImage>("Qt",4,6,"BorderImage");
     qmlRegisterType<QGraphicsColorizeEffect>("Qt",4,6,"Colorize");

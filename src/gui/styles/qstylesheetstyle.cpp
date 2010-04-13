@@ -3169,8 +3169,8 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 if (subRule1.hasDrawable()) {
                     QRect r(gr.topLeft(),
                             slider->orientation == Qt::Horizontal
-                                ? QPoint(hr.x()+hr.width()/2, gr.y()+gr.height())
-                                : QPoint(gr.x()+gr.width(), hr.y()+hr.height()/2));
+                                ? QPoint(hr.x()+hr.width()/2, gr.y()+gr.height() - 1)
+                                : QPoint(gr.x()+gr.width() - 1, hr.y()+hr.height()/2));
                     subRule1.drawRule(p, r);
                 }
 

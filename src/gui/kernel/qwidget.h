@@ -524,6 +524,7 @@ public:
 
     virtual QSize sizeHint() const;
     virtual QSize minimumSizeHint() const;
+    bool hasHeightForWidth() const;
 
     QSizePolicy sizePolicy() const;
     void setSizePolicy(QSizePolicy);
