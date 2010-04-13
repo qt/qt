@@ -9,7 +9,7 @@ Rectangle {
     property string darkCol: "darkgray"
     property string lightCol: "white"
 
-    width: txtItem.width + 20; height: txtItem.height + 6
+    width: buttonLabel.width + 20; height: buttonLabel.height + 6
     border { width: 1; color: Qt.darker(mainCol) } 
     radius: 8;
     color: mainCol
@@ -28,12 +28,10 @@ Rectangle {
     MouseArea { id: mr; anchors.fill: parent; onClicked: container.clicked() }
 
     Text {
-        id: txtItem
+        id: buttonLabel
 
         anchors.centerIn: container
         text: container.text;
-        color: "blue"
-        style: Text.Outline; styleColor: "white"
-        font.pixelSize: 14; font.bold: true
+        font.pixelSize: 14
     }
 }

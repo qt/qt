@@ -21,7 +21,9 @@ FocusScope {
         id: typeSomething
         anchors.fill: parent; anchors.leftMargin: 8
         verticalAlignment: Text.AlignVCenter
-        text: "Type something..."; color: "gray"; font.italic: true
+        text: "Type something..."
+        color: "gray"
+        font.italic: true
     }
 
     MouseArea { anchors.fill: parent; onClicked: focusScope.focus = true }
@@ -29,7 +31,7 @@ FocusScope {
     TextInput {
         id: textInput
         anchors { left: parent.left; leftMargin: 8; verticalCenter: parent.verticalCenter }
-        focus: if (1) true
+        focus: true
     }
 
     Image {

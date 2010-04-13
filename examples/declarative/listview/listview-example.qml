@@ -58,25 +58,33 @@ Rectangle {
     ListView {
         id: list1
         width: 200; height: parent.height
-        model: MyPetsModel; delegate: petDelegate
+        model: MyPetsModel
+        delegate: petDelegate
+
         highlight: petHighlight
         currentIndex: list3.currentIndex
         focus: true
     }
+
     ListView {
         id: list2
         x: 200; width: 200; height: parent.height
-        model: MyPetsModel; delegate: petDelegate
+        model: MyPetsModel
+        delegate: petDelegate
+
         highlight: petHighlight
         currentIndex: list1.currentIndex
         preferredHighlightBegin: 80; preferredHighlightEnd: 220
         highlightRangeMode: "ApplyRange"
     }
+
     ListView {
         id: list3
         x: 400; width: 200; height: parent.height
-        model: MyPetsModel; delegate: petDelegate
-        highlight: petHighlight
+        model: MyPetsModel
+        delegate: petDelegate
+
+        highlight: Rectangle { color: "lightsteelblue" }
         currentIndex: list1.currentIndex
         preferredHighlightBegin: 125; preferredHighlightEnd: 125
         highlightRangeMode: "StrictlyEnforceRange"
