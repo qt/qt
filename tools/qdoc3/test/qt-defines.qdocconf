@@ -1,4 +1,4 @@
-defines                 = Q_QDOC \
+﻿defines                 = Q_QDOC \
                           QT_.*_SUPPORT \
                           QT_.*_LIB \
                           QT_COMPAT \
