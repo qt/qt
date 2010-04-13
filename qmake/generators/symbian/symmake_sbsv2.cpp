@@ -75,7 +75,7 @@ void SymbianSbsv2MakefileGenerator::exportFlm()
 
         foreach(QFileInfo item, sourceInfos) {
             QFileInfo destInfo = QFileInfo(destDir.absolutePath() + "/" + item.fileName());
-            if (!destInfo.exists() || destInfo.lastModified() < item.lastModified()) {
+            if (!destInfo.exists() || destInfo.lastModified() != item.lastModified()) {
                 if (destInfo.exists())
                     QFile::remove(destInfo.absoluteFilePath());
                 if (QFile::copy(item.absoluteFilePath(), destInfo.absoluteFilePath()))

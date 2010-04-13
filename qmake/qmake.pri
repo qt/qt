@@ -130,6 +130,7 @@ bootstrap { #Qt code
     } else:win32 {
 	SOURCES += qfsfileengine_win.cpp qfsfileengine_iterator_win.cpp qsettings_win.cpp
         win32-msvc*:LIBS += ole32.lib advapi32.lib
+        win32-g++:LIBS += -lole32 -luuid
     }
 
     qnx {
