@@ -268,19 +268,15 @@ void QMenuBarPrivate::updateGeometries()
 
 QRect QMenuBarPrivate::actionRect(QAction *act) const
 {
-    Q_Q(const QMenuBar);
     const int index = actions.indexOf(act);
-    if (index == -1)
-        return QRect();
 
     //makes sure the geometries are up-to-date
     const_cast<QMenuBarPrivate*>(this)->updateGeometries();
 
-    if (index >= actionRects.count())
+    if (index < 0 || index >= actionRects.count())
         return QRect(); // that can happen in case of native menubar
 
-    QRect ret = actionRects.at(index);
-    return QStyle::visualRect(q->layoutDirection(), q->rect(), ret);
+    return actionRects.at(index);
 }
 
 void QMenuBarPrivate::focusFirstAction()
@@ -505,6 +501,9 @@ void QMenuBarPrivate::calcActionRects(int max_width, int start) const
 
         //keep moving along..
         x += rect.width() + itemSpacing;
+
+        //make sure we follow the layout direction
+        rect = QStyle::visualRect(q->layoutDirection(), q->rect(), rect);
     }
 }
 

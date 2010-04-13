@@ -217,7 +217,9 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         const QPixmap& texPixmap = currentBrush.texture();
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        QGLTexture *tex = ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
+        QGLTexture *tex = ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA,
+                                                     QGLContext::InternalBindOption |
+                                                     QGLContext::CanFlipNativePixmapBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         textureInvertedY = tex->options & QGLContext::InvertedYBindOption ? -1 : 1;
     }
@@ -1641,7 +1643,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         glBindTexture(GL_TEXTURE_2D, cache->texture());
         lastMaskTextureUsed = cache->texture();
     }
-    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
+    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, s->matrix.type() > QTransform::TxTranslate);
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)

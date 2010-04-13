@@ -3039,10 +3039,14 @@ QList<QTreeWidgetItem*> QTreeWidget::selectedItems() const
     Q_D(const QTreeWidget);
     QModelIndexList indexes = selectionModel()->selectedIndexes();
     QList<QTreeWidgetItem*> items;
+    items.reserve(indexes.count());
+    QSet<QTreeWidgetItem *> seen;
+    seen.reserve(indexes.count());
     for (int i = 0; i < indexes.count(); ++i) {
         QTreeWidgetItem *item = d->item(indexes.at(i));
-        if (isItemHidden(item) || items.contains(item)) // ### slow, optimize later
+        if (isItemHidden(item) || seen.contains(item))
             continue;
+        seen.insert(item);
         items.append(item);
     }
     return items;

@@ -114,6 +114,7 @@ namespace Phonon
 
             enum Task
             {
+                None,
                 Render,
                 Seek,
                 ChangeState,
@@ -122,6 +123,7 @@ namespace Phonon
 
             struct Work
             {
+                Work() : task(None), id(0), time(0) { }
                 Task task;
                 quint16 id;
                 Graph graph;
@@ -135,16 +137,14 @@ namespace Phonon
                 };
                 QList<Filter> decoders; //for the state change requests
             };
-            Work dequeueWork();
             void handleTask();
 
-            Graph m_currentRender;
-			qint16 m_currentRenderId;
+            Work m_currentWork;
             QQueue<Work> m_queue;
             bool m_finished;
             quint16 m_currentWorkId;
             QWinWaitCondition m_waitCondition;
-            QMutex m_mutex;
+            QMutex m_mutex; // mutex for the m_queue, m_finished and m_currentWorkId
 
             //this is for WaitForMultipleObjects
             struct

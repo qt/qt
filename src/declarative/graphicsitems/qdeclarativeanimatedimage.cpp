@@ -42,6 +42,8 @@
 #include "private/qdeclarativeanimatedimage_p.h"
 #include "private/qdeclarativeanimatedimage_p_p.h"
 
+#ifndef QT_NO_MOVIE
+
 #include <qdeclarativeengine.h>
 
 #include <QMovie>
@@ -320,3 +322,5 @@ void QDeclarativeAnimatedImage::componentComplete()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_MOVIE
