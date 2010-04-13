@@ -1087,11 +1087,7 @@ void tst_QFileInfo::isHidden_data()
     QTest::newRow("C:/path/to/hidden-directory/.") << QDir::currentPath() + QString::fromLatin1("/hidden-directory/.") << true;
 #endif
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-
-    if (!QDir("./.hidden-directory").exists()
-            && !QDir().mkdir("./.hidden-directory"))
-        qWarning("Unable to create directory './.hidden-directory'. Some tests will fail.");
-
+    QVERIFY(QDir("./.hidden-directory").exists() || QDir().mkdir("./.hidden-directory"));
     QTest::newRow("/path/to/.hidden-directory") << QDir::currentPath() + QString("/.hidden-directory") << true;
     QTest::newRow("/path/to/.hidden-directory/.") << QDir::currentPath() + QString("/.hidden-directory/.") << true;
     QTest::newRow("/path/to/.hidden-directory/..") << QDir::currentPath() + QString("/.hidden-directory/..") << true;
@@ -1119,34 +1115,24 @@ void tst_QFileInfo::isHidden_data()
 
     {
         QFile file(hiddenFileName);
-        if (file.open(QIODevice::WriteOnly)) {
-            QTextStream t(&file);
-            t << "foobar";
-        } else {
-            qWarning("Failed to create hidden file");
-        }
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QTextStream t(&file);
+        t << "foobar";
+
         QFile file2(notHiddenFileName);
-        if (file2.open(QIODevice::WriteOnly)) {
-            QTextStream t(&file);
-            t << "foobar";
-        } else {
-            qWarning("Failed to create non-hidden file");
-        }
+        QVERIFY(file2.open(QIODevice::WriteOnly))
+        QTextStream t(&file);
+        t << "foobar";
     }
 
     RFs rfs;
     TInt err = rfs.Connect();
-    if (err == KErrNone) {
-        HBufC* symFile = qt_QString2HBufC(hiddenFileName);
-        err = rfs.SetAtt(*symFile, KEntryAttHidden, 0);
-        rfs.Close();
-        delete symFile;
-        if (err != KErrNone) {
-            qWarning("Failed to set hidden attribute for test file");
-        }
-    } else {
-        qWarning("Failed to open RFs session");
-    }
+    QCOMPARE(err, KErrNone);
+    HBufC* symFile = qt_QString2HBufC(hiddenFileName);
+    err = rfs.SetAtt(*symFile, KEntryAttHidden, 0);
+    rfs.Close();
+    delete symFile;
+    QCOMPARE(err, KErrNone);
 #endif
 }
 
