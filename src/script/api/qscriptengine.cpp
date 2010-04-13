@@ -41,6 +41,7 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qmetaobject.h>
 
+#include "CodeBlock.h"
 #include "Error.h"
 #include "JSArray.h"
 #include "JSLock.h"
@@ -699,9 +700,18 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
         return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): third argument (n) must be a number");
 #ifndef QT_NO_QOBJECT
     QString context;
-    QScriptContext *ctx = QScriptEnginePrivate::contextForFrame(exec);
-    if (ctx && ctx->parentContext())
-        context = QFileInfo(QScriptContextInfo(ctx->parentContext()).fileName()).baseName();
+    // The first non-empty source URL in the call stack determines the translation context.
+    {
+        JSC::ExecState *frame = exec->removeHostCallFrameFlag();
+        while (frame) {
+            if (frame->codeBlock() && frame->codeBlock()->source()
+                && !frame->codeBlock()->source()->url().isEmpty()) {
+                context = QFileInfo(frame->codeBlock()->source()->url()).baseName();
+                break;
+            }
+            frame = frame->callerFrame()->removeHostCallFrameFlag();
+        }
+    }
 #endif
     QString text(args.at(0).toString(exec));
 #ifndef QT_NO_QOBJECT

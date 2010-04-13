@@ -4013,7 +4013,7 @@ public slots:
         }
     }
     void startOne() {
-        QUrl url = "http://" + QtNetworkSettings::serverName() + "/gif/fluke.gif";
+        QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/fluke.gif";
         QNetworkRequest request(url);
         QNetworkReply *reply = manager.get(request);
         reply->setParent(this);
