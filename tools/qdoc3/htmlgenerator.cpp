@@ -2030,31 +2030,37 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
  */
 void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker)
 {
-    if (!node->doc().hasTableOfContents())
-        return;
+    if (!node->doc().hasTableOfContents()) {
+        if (node->subType() !=  Node::Module)
+            return;
+    }
     QList<Atom *> toc = node->doc().tableOfContents();
-    if (toc.isEmpty())
-        return;
+    if (toc.isEmpty()) {
+        if (node->subType() !=  Node::Module)
+            return;
+    }
 
     Doc::SectioningUnit sectioningUnit =  Doc::Section4;
-    QString nodeName = node->name();
-
     QStringList sectionNumber;
-    int columnSize = 0;
 
     // disable nested links in table of contents
     inContents = true;
     inLink = true;
 
     out() << "<div class=\"toc\">\n";
-#if 0
-        if (moduleNamespaceMap.contains(fake->name())) {
-            out() << "<a name=\"" << registerRef("namespaces") << "\"></a>\n";
+    sectionNumber.append("1");
+    out() << "<ul class=\"level" << sectionNumber.size() << "\">\n";
+
+    if (node->subType() == Node::Module) {
+        if (moduleNamespaceMap.contains(node->name())) {
+            out() << "<li><a href=\"#" << registerRef("namespaces") << "\">Namespaces</a></li>\n";
         }
-        if (moduleClassMap.contains(fake->name())) {
-            out() << "<a name=\"" << registerRef("classes") << "\"></a>\n";
+        if (moduleClassMap.contains(node->name())) {
+            out() << "<li><a href=\"#" << registerRef("classes") << "\">Classes</a></li>\n";
         }
-#endif
+        out() << "<li><a href=\"#" << registerRef("details") << "\">Detailed Description</a></li>\n";
+    }
+
     for (int i = 0; i < toc.size(); ++i) {
         Atom *atom = toc.at(i);
 
@@ -2084,8 +2090,6 @@ void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker
               << "\">";
         generateAtomList(headingText.firstAtom(), node, marker, true, numAtoms);
         out() << "</a></li>\n";
-
-        ++columnSize;
     }
     while (!sectionNumber.isEmpty()) {
         out() << "</ul>\n";
