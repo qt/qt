@@ -38,7 +38,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSXMLSerializer);
 
 static const HashTableValue JSXMLSerializerTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsXMLSerializerConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXMLSerializerConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -109,7 +109,7 @@ bool JSXMLSerializerConstructor::getOwnPropertyDescriptor(ExecState* exec, const
 
 static const HashTableValue JSXMLSerializerPrototypeTableValues[2] =
 {
-    { "serializeToString", DontDelete|Function, (intptr_t)jsXMLSerializerPrototypeFunctionSerializeToString, (intptr_t)1 },
+    { "serializeToString", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXMLSerializerPrototypeFunctionSerializeToString), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -165,9 +165,9 @@ bool JSXMLSerializer::getOwnPropertyDescriptor(ExecState* exec, const Identifier
     return getStaticValueDescriptor<JSXMLSerializer, Base>(exec, &JSXMLSerializerTable, this, propertyName, descriptor);
 }
 
-JSValue jsXMLSerializerConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXMLSerializerConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXMLSerializer* domObject = static_cast<JSXMLSerializer*>(asObject(slot.slotBase()));
+    JSXMLSerializer* domObject = static_cast<JSXMLSerializer*>(asObject(slotBase));
     return JSXMLSerializer::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSXMLSerializer::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

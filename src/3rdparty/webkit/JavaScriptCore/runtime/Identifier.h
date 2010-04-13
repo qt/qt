@@ -22,6 +22,7 @@
 #define Identifier_h
 
 #include "JSGlobalData.h"
+#include "ThreadSpecific.h"
 #include "UString.h"
 
 namespace JSC {
@@ -53,9 +54,9 @@ namespace JSC {
         
         const char* ascii() const { return _ustring.ascii(); }
         
-        static Identifier from(ExecState* exec, unsigned y) { return Identifier(exec, UString::from(y)); }
-        static Identifier from(ExecState* exec, int y) { return Identifier(exec, UString::from(y)); }
-        static Identifier from(ExecState* exec, double y) { return Identifier(exec, UString::from(y)); }
+        static Identifier from(ExecState* exec, unsigned y);
+        static Identifier from(ExecState* exec, int y);
+        static Identifier from(ExecState* exec, double y);
         
         bool isNull() const { return _ustring.isNull(); }
         bool isEmpty() const { return _ustring.isEmpty(); }
@@ -75,7 +76,7 @@ namespace JSC {
         static void remove(UString::Rep*);
 
         static bool equal(const UString::Rep*, const char*);
-        static bool equal(const UString::Rep*, const UChar*, int length);
+        static bool equal(const UString::Rep*, const UChar*, unsigned length);
         static bool equal(const UString::Rep* a, const UString::Rep* b) { return JSC::equal(a, b); }
 
         static PassRefPtr<UString::Rep> add(ExecState*, const char*); // Only to be used with string literals.
@@ -92,30 +93,28 @@ namespace JSC {
 
         static PassRefPtr<UString::Rep> add(ExecState* exec, UString::Rep* r)
         {
-            if (r->identifierTable()) {
 #ifndef NDEBUG
-                checkSameIdentifierTable(exec, r);
+            checkCurrentIdentifierTable(exec);
 #endif
+            if (r->isIdentifier())
                 return r;
-            }
             return addSlowCase(exec, r);
         }
         static PassRefPtr<UString::Rep> add(JSGlobalData* globalData, UString::Rep* r)
         {
-            if (r->identifierTable()) {
 #ifndef NDEBUG
-                checkSameIdentifierTable(globalData, r);
+            checkCurrentIdentifierTable(globalData);
 #endif
+            if (r->isIdentifier())
                 return r;
-            }
             return addSlowCase(globalData, r);
         }
 
         static PassRefPtr<UString::Rep> addSlowCase(ExecState*, UString::Rep* r);
         static PassRefPtr<UString::Rep> addSlowCase(JSGlobalData*, UString::Rep* r);
 
-        static void checkSameIdentifierTable(ExecState*, UString::Rep*);
-        static void checkSameIdentifierTable(JSGlobalData*, UString::Rep*);
+        static void checkCurrentIdentifierTable(ExecState*);
+        static void checkCurrentIdentifierTable(JSGlobalData*);
     };
     
     inline bool operator==(const Identifier& a, const Identifier& b)
@@ -140,6 +139,67 @@ namespace JSC {
 
     IdentifierTable* createIdentifierTable();
     void deleteIdentifierTable(IdentifierTable*);
+
+    struct ThreadIdentifierTableData {
+        ThreadIdentifierTableData()
+            : defaultIdentifierTable(0)
+            , currentIdentifierTable(0)
+        {
+        }
+
+        IdentifierTable* defaultIdentifierTable;
+        IdentifierTable* currentIdentifierTable;
+    };
+
+    extern WTF::ThreadSpecific<ThreadIdentifierTableData>* g_identifierTableSpecific;
+    void createIdentifierTableSpecific();
+
+    inline IdentifierTable* defaultIdentifierTable()
+    {
+        if (!g_identifierTableSpecific)
+            createIdentifierTableSpecific();
+        ThreadIdentifierTableData& data = **g_identifierTableSpecific;
+
+        return data.defaultIdentifierTable;
+    }
+
+    inline void setDefaultIdentifierTable(IdentifierTable* identifierTable)
+    {
+        if (!g_identifierTableSpecific)
+            createIdentifierTableSpecific();
+        ThreadIdentifierTableData& data = **g_identifierTableSpecific;
+
+        data.defaultIdentifierTable = identifierTable;
+    }
+
+    inline IdentifierTable* currentIdentifierTable()
+    {
+        if (!g_identifierTableSpecific)
+            createIdentifierTableSpecific();
+        ThreadIdentifierTableData& data = **g_identifierTableSpecific;
+
+        return data.currentIdentifierTable;
+    }
+
+    inline IdentifierTable* setCurrentIdentifierTable(IdentifierTable* identifierTable)
+    {
+        if (!g_identifierTableSpecific)
+            createIdentifierTableSpecific();
+        ThreadIdentifierTableData& data = **g_identifierTableSpecific;
+
+        IdentifierTable* oldIdentifierTable = data.currentIdentifierTable;
+        data.currentIdentifierTable = identifierTable;
+        return oldIdentifierTable;
+    }
+
+    inline void resetCurrentIdentifierTable()
+    {
+        if (!g_identifierTableSpecific)
+            createIdentifierTableSpecific();
+        ThreadIdentifierTableData& data = **g_identifierTableSpecific;
+
+        data.currentIdentifierTable = data.defaultIdentifierTable;
+    }
 
 } // namespace JSC
 

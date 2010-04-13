@@ -36,8 +36,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLTitleElement);
 
 static const HashTableValue JSHTMLTitleElementTableValues[3] =
 {
-    { "text", DontDelete, (intptr_t)jsHTMLTitleElementText, (intptr_t)setJSHTMLTitleElementText },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLTitleElementConstructor, (intptr_t)0 },
+    { "text", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLTitleElementText), (intptr_t)setJSHTMLTitleElementText },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLTitleElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -138,17 +138,18 @@ bool JSHTMLTitleElement::getOwnPropertyDescriptor(ExecState* exec, const Identif
     return getStaticValueDescriptor<JSHTMLTitleElement, Base>(exec, &JSHTMLTitleElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLTitleElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTitleElementText(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLTitleElement* castedThis = static_cast<JSHTMLTitleElement*>(asObject(slot.slotBase()));
+    JSHTMLTitleElement* castedThis = static_cast<JSHTMLTitleElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLTitleElement* imp = static_cast<HTMLTitleElement*>(castedThis->impl());
-    return jsString(exec, imp->text());
+    JSValue result = jsString(exec, imp->text());
+    return result;
 }
 
-JSValue jsHTMLTitleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTitleElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLTitleElement* domObject = static_cast<JSHTMLTitleElement*>(asObject(slot.slotBase()));
+    JSHTMLTitleElement* domObject = static_cast<JSHTMLTitleElement*>(asObject(slotBase));
     return JSHTMLTitleElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLTitleElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -158,7 +159,8 @@ void JSHTMLTitleElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLTitleElementText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLTitleElement* imp = static_cast<HTMLTitleElement*>(static_cast<JSHTMLTitleElement*>(thisObject)->impl());
+    JSHTMLTitleElement* castedThisObj = static_cast<JSHTMLTitleElement*>(thisObject);
+    HTMLTitleElement* imp = static_cast<HTMLTitleElement*>(castedThisObj->impl());
     imp->setText(valueToStringWithNullCheck(exec, value));
 }
 

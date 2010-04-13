@@ -22,9 +22,15 @@
 
 #include <QObject>
 
+#if QT_VERSION < 0x040700
 namespace QtMobility {
 class QNetworkConfigurationManager;
 }
+#else
+QT_BEGIN_NAMESPACE
+class QNetworkConfigurationManager;
+QT_END_NAMESPACE
+#endif
 
 namespace WebCore {
 
@@ -40,7 +46,11 @@ public slots:
     void networkAccessPermissionChanged(bool);
 
 public:
+#if QT_VERSION < 0x040700
     QtMobility::QNetworkConfigurationManager* m_configurationManager;
+#else
+    QNetworkConfigurationManager* m_configurationManager;
+#endif
     bool m_online;
     bool m_networkAccessAllowed;
     NetworkStateNotifier* m_notifier;

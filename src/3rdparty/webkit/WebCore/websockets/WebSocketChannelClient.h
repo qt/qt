@@ -40,14 +40,15 @@ namespace WebCore {
         virtual ~WebSocketChannelClient() { }
         virtual void didConnect() { }
         virtual void didReceiveMessage(const String&) { }
-        virtual void didClose() { }
+        virtual void didReceiveMessageError() { }
+        virtual void didClose(unsigned long /* unhandledBufferedAmount */) { }
 
     protected:
         WebSocketChannelClient() { }
     };
 
-}  // namespace WebCore
+} // namespace WebCore
 
-#endif  // ENABLE(WEB_SOCKETS)
+#endif // ENABLE(WEB_SOCKETS)
 
-#endif  // WebSocketChannelClient_h
+#endif // WebSocketChannelClient_h

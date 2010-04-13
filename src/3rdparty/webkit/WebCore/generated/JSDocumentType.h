@@ -40,7 +40,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -62,7 +62,7 @@ public:
     static const JSC::ClassInfo s_info;
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSDocumentTypePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -71,13 +71,13 @@ protected:
 
 // Attributes
 
-JSC::JSValue jsDocumentTypeName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDocumentTypeEntities(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDocumentTypeNotations(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDocumentTypePublicId(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDocumentTypeSystemId(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDocumentTypeInternalSubset(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDocumentTypeConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDocumentTypeName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDocumentTypeEntities(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDocumentTypeNotations(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDocumentTypePublicId(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDocumentTypeSystemId(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDocumentTypeInternalSubset(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDocumentTypeConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

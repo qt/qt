@@ -23,7 +23,6 @@
 
 #if ENABLE(JAVASCRIPT_DEBUGGER)
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -45,7 +44,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
 
@@ -77,7 +76,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSJavaScriptCallFramePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -89,13 +88,13 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsJavaScriptCallFramePrototypeFunctionEvaluate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsJavaScriptCallFrameCaller(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsJavaScriptCallFrameSourceID(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsJavaScriptCallFrameLine(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsJavaScriptCallFrameScopeChain(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsJavaScriptCallFrameThisObject(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsJavaScriptCallFrameFunctionName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsJavaScriptCallFrameType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsJavaScriptCallFrameCaller(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsJavaScriptCallFrameSourceID(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsJavaScriptCallFrameLine(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsJavaScriptCallFrameScopeChain(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsJavaScriptCallFrameThisObject(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsJavaScriptCallFrameFunctionName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsJavaScriptCallFrameType(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

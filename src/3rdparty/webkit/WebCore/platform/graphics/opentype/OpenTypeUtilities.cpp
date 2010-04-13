@@ -401,7 +401,7 @@ static size_t renameFontInternal(SharedBuffer* fontData, const String& fontName,
     return nameTableSize;
 }
 
-#if PLATFORM(WINCE)
+#if OS(WINCE)
 // AddFontMemResourceEx does not exist on WinCE, so we must handle the font data manually
 // This function just renames the font and overwrites the old font data with the new
 bool renameFont(SharedBuffer* fontData, const String& fontName)
@@ -435,7 +435,7 @@ HANDLE renameAndActivateFont(SharedBuffer* fontData, const String& fontName)
     DWORD numFonts = 0;
     HANDLE fontHandle = AddFontMemResourceEx(rewrittenFontData.data(), fontData->size() + nameTableSize, 0, &numFonts);
 
-    if (fontHandle && numFonts != 1) {
+    if (fontHandle && numFonts < 1) {
         RemoveFontMemResourceEx(fontHandle);
         return 0;
     }

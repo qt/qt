@@ -36,20 +36,68 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGFEPointLightElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGFEPointLightElementTableValues[4] =
+static const HashTableValue JSSVGFEPointLightElementTableValues[5] =
 {
-    { "x", DontDelete|ReadOnly, (intptr_t)jsSVGFEPointLightElementX, (intptr_t)0 },
-    { "y", DontDelete|ReadOnly, (intptr_t)jsSVGFEPointLightElementY, (intptr_t)0 },
-    { "z", DontDelete|ReadOnly, (intptr_t)jsSVGFEPointLightElementZ, (intptr_t)0 },
+    { "x", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEPointLightElementX), (intptr_t)0 },
+    { "y", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEPointLightElementY), (intptr_t)0 },
+    { "z", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEPointLightElementZ), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEPointLightElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGFEPointLightElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 3, JSSVGFEPointLightElementTableValues, 0 };
+    { 15, JSSVGFEPointLightElementTableValues, 0 };
 #else
-    { 8, 7, JSSVGFEPointLightElementTableValues, 0 };
+    { 9, 7, JSSVGFEPointLightElementTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGFEPointLightElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGFEPointLightElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGFEPointLightElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGFEPointLightElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGFEPointLightElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGFEPointLightElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGFEPointLightElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGFEPointLightElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGFEPointLightElementConstructor::s_info = { "SVGFEPointLightElementConstructor", 0, &JSSVGFEPointLightElementConstructorTable, 0 };
+
+bool JSSVGFEPointLightElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGFEPointLightElementConstructor, DOMObject>(exec, &JSSVGFEPointLightElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGFEPointLightElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEPointLightElementConstructor, DOMObject>(exec, &JSSVGFEPointLightElementConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -94,31 +142,44 @@ bool JSSVGFEPointLightElement::getOwnPropertyDescriptor(ExecState* exec, const I
     return getStaticValueDescriptor<JSSVGFEPointLightElement, Base>(exec, &JSSVGFEPointLightElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGFEPointLightElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEPointLightElementX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEPointLightElement* castedThis = static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()));
+    JSSVGFEPointLightElement* castedThis = static_cast<JSSVGFEPointLightElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->xAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGFEPointLightElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEPointLightElementY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEPointLightElement* castedThis = static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()));
+    JSSVGFEPointLightElement* castedThis = static_cast<JSSVGFEPointLightElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->yAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGFEPointLightElementZ(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEPointLightElementZ(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEPointLightElement* castedThis = static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()));
+    JSSVGFEPointLightElement* castedThis = static_cast<JSSVGFEPointLightElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->zAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
+}
+
+JSValue jsSVGFEPointLightElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGFEPointLightElement* domObject = static_cast<JSSVGFEPointLightElement*>(asObject(slotBase));
+    return JSSVGFEPointLightElement::getConstructor(exec, domObject->globalObject());
+}
+JSValue JSSVGFEPointLightElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGFEPointLightElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

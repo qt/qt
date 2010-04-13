@@ -3,6 +3,7 @@
                   2004, 2005 Rob Buis <buis@kde.org>
                   2005 Eric Seidel <eric@webkit.org>
                   2009 Dirk Schulze <krit@webkit.org>
+    Copyright (C) Research In Motion Limited 2010. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -140,7 +141,8 @@ static void linear(unsigned char* values, const ComponentTransferFunction& trans
 static void gamma(unsigned char* values, const ComponentTransferFunction& transferFunction)
 {
     for (unsigned i = 0; i < 256; ++i) {
-        double val = 255.0 * (transferFunction.amplitude * pow((i / 255.0), transferFunction.exponent) + transferFunction.offset);
+        double exponent = transferFunction.exponent; // RCVT doesn't like passing a double and a float to pow, so promote this to double
+        double val = 255.0 * (transferFunction.amplitude * pow((i / 255.0), exponent) + transferFunction.offset);
         val = std::max(0.0, std::min(255.0, val));
         values[i] = static_cast<unsigned char>(val);
     }
@@ -165,7 +167,7 @@ void FEComponentTransfer::apply(Filter* filter)
     for (unsigned channel = 0; channel < 4; channel++)
         (*callEffect[transferFunction[channel].type])(tables[channel], transferFunction[channel]);
 
-    IntRect drawingRect = calculateDrawingIntRect(m_in->subRegion());
+    IntRect drawingRect = calculateDrawingIntRect(m_in->scaledSubRegion());
     RefPtr<ImageData> imageData(m_in->resultImage()->getUnmultipliedImageData(drawingRect));
     CanvasPixelArray* srcPixelArray(imageData->data());
 

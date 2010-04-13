@@ -36,7 +36,6 @@
 #include "JSGlobalObject.h"
 #include "JumpTable.h"
 #include "Nodes.h"
-#include "PtrAndFlags.h"
 #include "RegExp.h"
 #include "UString.h"
 #include <wtf/FastAllocBase.h>
@@ -110,44 +109,54 @@ namespace JSC {
         CodeLocationNearCall callReturnLocation;
         CodeLocationDataLabelPtr hotPathBegin;
         CodeLocationNearCall hotPathOther;
-        PtrAndFlags<CodeBlock, HasSeenShouldRepatch> ownerCodeBlock;
+        CodeBlock* ownerCodeBlock;
         CodeBlock* callee;
-        unsigned position;
+        unsigned position : 31;
+        unsigned hasSeenShouldRepatch : 1;
         
         void setUnlinked() { callee = 0; }
         bool isLinked() { return callee; }
 
         bool seenOnce()
         {
-            return ownerCodeBlock.isFlagSet(hasSeenShouldRepatch);
+            return hasSeenShouldRepatch;
         }
 
         void setSeen()
         {
-            ownerCodeBlock.setFlag(hasSeenShouldRepatch);
+            hasSeenShouldRepatch = true;
         }
     };
 
     struct MethodCallLinkInfo {
         MethodCallLinkInfo()
             : cachedStructure(0)
+            , cachedPrototypeStructure(0)
         {
         }
 
         bool seenOnce()
         {
-            return cachedPrototypeStructure.isFlagSet(hasSeenShouldRepatch);
+            ASSERT(!cachedStructure);
+            return cachedPrototypeStructure;
         }
 
         void setSeen()
         {
-            cachedPrototypeStructure.setFlag(hasSeenShouldRepatch);
+            ASSERT(!cachedStructure && !cachedPrototypeStructure);
+            // We use the values of cachedStructure & cachedPrototypeStructure to indicate the
+            // current state.
+            //     - In the initial state, both are null.
+            //     - Once this transition has been taken once, cachedStructure is
+            //       null and cachedPrototypeStructure is set to a nun-null value.
+            //     - Once the call is linked both structures are set to non-null values.
+            cachedPrototypeStructure = (Structure*)1;
         }
 
         CodeLocationCall callReturnLocation;
         CodeLocationDataLabelPtr structureLabel;
         Structure* cachedStructure;
-        PtrAndFlags<Structure, HasSeenShouldRepatch> cachedPrototypeStructure;
+        Structure* cachedPrototypeStructure;
     };
 
     struct FunctionRegisterInfo {
@@ -438,7 +447,7 @@ namespace JSC {
         size_t numberOfConstantRegisters() const { return m_constantRegisters.size(); }
         void addConstantRegister(const Register& r) { return m_constantRegisters.append(r); }
         Register& constantRegister(int index) { return m_constantRegisters[index - FirstConstantRegisterIndex]; }
-        ALWAYS_INLINE bool isConstantRegisterIndex(int index) { return index >= FirstConstantRegisterIndex; }
+        ALWAYS_INLINE bool isConstantRegisterIndex(int index) const { return index >= FirstConstantRegisterIndex; }
         ALWAYS_INLINE JSValue getConstant(int index) const { return m_constantRegisters[index - FirstConstantRegisterIndex].jsValue(); }
 
         unsigned addFunctionDecl(NonNullPassRefPtr<FunctionExecutable> n) { unsigned size = m_functionDecls.size(); m_functionDecls.append(n); return size; }
@@ -482,6 +491,13 @@ namespace JSC {
     private:
 #if !defined(NDEBUG) || ENABLE(OPCODE_SAMPLING)
         void dump(ExecState*, const Vector<Instruction>::const_iterator& begin, Vector<Instruction>::const_iterator&) const;
+
+        CString registerName(ExecState*, int r) const;
+        void printUnaryOp(ExecState*, int location, Vector<Instruction>::const_iterator&, const char* op) const;
+        void printBinaryOp(ExecState*, int location, Vector<Instruction>::const_iterator&, const char* op) const;
+        void printConditionalJump(ExecState*, const Vector<Instruction>::const_iterator&, Vector<Instruction>::const_iterator&, int location, const char* op) const;
+        void printGetByIdOp(ExecState*, int location, Vector<Instruction>::const_iterator&, const char* op) const;
+        void printPutByIdOp(ExecState*, int location, Vector<Instruction>::const_iterator&, const char* op) const;
 #endif
 
         void reparseForExceptionInfoIfNecessary(CallFrame*);

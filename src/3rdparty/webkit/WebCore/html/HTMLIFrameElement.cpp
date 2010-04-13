@@ -4,6 +4,7 @@
  *           (C) 2000 Simon Hausmann (hausmann@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  * Copyright (C) 2004, 2006, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Ericsson AB. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -66,6 +67,42 @@ bool HTMLIFrameElement::mapToEntry(const QualifiedName& attrName, MappedAttribut
     return HTMLFrameElementBase::mapToEntry(attrName, result);
 }
 
+#if ENABLE(SANDBOX)
+static SandboxFlags parseSandboxAttribute(MappedAttribute* attribute)
+{
+    if (attribute->isNull())
+        return SandboxNone;
+
+    // Parse the unordered set of unique space-separated tokens.
+    SandboxFlags flags = SandboxAll;
+    const UChar* characters = attribute->value().characters();
+    unsigned length = attribute->value().length();
+    unsigned start = 0;
+    while (true) {
+        while (start < length && isASCIISpace(characters[start]))
+            ++start;
+        if (start >= length)
+            break;
+        unsigned end = start + 1;
+        while (end < length && !isASCIISpace(characters[end]))
+            ++end;
+
+        // Turn off the corresponding sandbox flag if it's set as "allowed".
+        String sandboxToken = String(characters + start, end - start);
+        if (equalIgnoringCase(sandboxToken, "allow-same-origin"))
+            flags &= ~SandboxOrigin;
+        else if (equalIgnoringCase(sandboxToken, "allow-forms"))
+            flags &= ~SandboxForms;
+        else if (equalIgnoringCase(sandboxToken, "allow-scripts"))
+            flags &= ~SandboxScripts;
+
+        start = end + 1;
+    }
+    
+    return flags;
+}
+#endif
+
 void HTMLIFrameElement::parseMappedAttribute(MappedAttribute* attr)
 {
     if (attr->name() == widthAttr)
@@ -88,7 +125,12 @@ void HTMLIFrameElement::parseMappedAttribute(MappedAttribute* attr)
         if (!attr->isNull() && !attr->value().toInt())
             // Add a rule that nulls out our border width.
             addCSSLength(attr, CSSPropertyBorderWidth, "0");
-    } else
+    }
+#if ENABLE(SANDBOX)
+    else if (attr->name() == sandboxAttr)
+        setSandboxFlags(parseSandboxAttribute(attr));
+#endif
+    else
         HTMLFrameElementBase::parseMappedAttribute(attr);
 }
 
@@ -116,14 +158,6 @@ void HTMLIFrameElement::removedFromDocument()
         static_cast<HTMLDocument*>(document())->removeExtraNamedItem(m_name);
 
     HTMLFrameElementBase::removedFromDocument();
-}
-
-void HTMLIFrameElement::attach()
-{
-    HTMLFrameElementBase::attach();
-
-    if (RenderPartObject* renderPartObject = toRenderPartObject(renderer()))
-        renderPartObject->updateWidget(false);
 }
 
 bool HTMLIFrameElement::isURLAttribute(Attribute* attr) const

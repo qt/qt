@@ -38,8 +38,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSTextEvent);
 
 static const HashTableValue JSTextEventTableValues[3] =
 {
-    { "data", DontDelete|ReadOnly, (intptr_t)jsTextEventData, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsTextEventConstructor, (intptr_t)0 },
+    { "data", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTextEventData), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTextEventConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -78,7 +78,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -101,7 +101,7 @@ bool JSTextEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Ide
 
 static const HashTableValue JSTextEventPrototypeTableValues[2] =
 {
-    { "initTextEvent", DontDelete|Function, (intptr_t)jsTextEventPrototypeFunctionInitTextEvent, (intptr_t)5 },
+    { "initTextEvent", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsTextEventPrototypeFunctionInitTextEvent), (intptr_t)5 },
     { 0, 0, 0, 0 }
 };
 
@@ -151,17 +151,18 @@ bool JSTextEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& pr
     return getStaticValueDescriptor<JSTextEvent, Base>(exec, &JSTextEventTable, this, propertyName, descriptor);
 }
 
-JSValue jsTextEventData(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTextEventData(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSTextEvent* castedThis = static_cast<JSTextEvent*>(asObject(slot.slotBase()));
+    JSTextEvent* castedThis = static_cast<JSTextEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     TextEvent* imp = static_cast<TextEvent*>(castedThis->impl());
-    return jsString(exec, imp->data());
+    JSValue result = jsString(exec, imp->data());
+    return result;
 }
 
-JSValue jsTextEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTextEventConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSTextEvent* domObject = static_cast<JSTextEvent*>(asObject(slot.slotBase()));
+    JSTextEvent* domObject = static_cast<JSTextEvent*>(asObject(slotBase));
     return JSTextEvent::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSTextEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

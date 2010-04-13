@@ -51,7 +51,7 @@ public:
     void setHTMLElement(HTMLElement* element) { m_optionElement = element; }
     
     virtual AccessibilityRole roleValue() const { return ListBoxOptionRole; }
-    virtual bool accessibilityIsIgnored() const { return false; }
+    virtual bool accessibilityIsIgnored() const;
     virtual bool isSelected() const;
     virtual bool isEnabled() const;
     virtual String stringValue() const;
@@ -63,11 +63,12 @@ public:
     virtual IntRect elementRect() const;
     virtual IntSize size() const;
     virtual AccessibilityObject* parentObject() const;
-    bool isListBoxOption() const { return true; };
+    bool isListBoxOption() const { return true; }
     
 private:
     HTMLElement* m_optionElement;
     
+    virtual String language() const;
     virtual bool canHaveChildren() const { return false; }
     HTMLSelectElement* listBoxOptionParentNode() const;
     int listBoxOptionIndex() const;

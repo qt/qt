@@ -27,7 +27,7 @@
 #include "JIT.h"
 
 // This probably does not belong here; adding here for now as a quick Windows build fix.
-#if ENABLE(ASSEMBLER) && PLATFORM(X86) && !PLATFORM(MAC)
+#if ENABLE(ASSEMBLER) && CPU(X86) && !OS(MAC_OS_X)
 #include "MacroAssembler.h"
 JSC::MacroAssemblerX86Common::SSE2CheckState JSC::MacroAssemblerX86Common::s_sse2CheckState = NotCheckedSSE2;
 #endif
@@ -37,7 +37,6 @@ JSC::MacroAssemblerX86Common::SSE2CheckState JSC::MacroAssemblerX86Common::s_sse
 #include "CodeBlock.h"
 #include "Interpreter.h"
 #include "JITInlineMethods.h"
-#include "JITStubs.h"
 #include "JITStubCall.h"
 #include "JSArray.h"
 #include "JSFunction.h"
@@ -251,6 +250,7 @@ void JIT::privateCompileMainPass()
         DEFINE_OP(op_jneq_null)
         DEFINE_OP(op_jneq_ptr)
         DEFINE_OP(op_jnless)
+        DEFINE_OP(op_jless)
         DEFINE_OP(op_jnlesseq)
         DEFINE_OP(op_jsr)
         DEFINE_OP(op_jtrue)
@@ -259,6 +259,7 @@ void JIT::privateCompileMainPass()
         DEFINE_OP(op_loop_if_less)
         DEFINE_OP(op_loop_if_lesseq)
         DEFINE_OP(op_loop_if_true)
+        DEFINE_OP(op_loop_if_false)
         DEFINE_OP(op_lshift)
         DEFINE_OP(op_method_check)
         DEFINE_OP(op_mod)
@@ -321,6 +322,16 @@ void JIT::privateCompileMainPass()
         case op_get_by_id_proto_list:
         case op_get_by_id_self:
         case op_get_by_id_self_list:
+        case op_get_by_id_getter_chain:
+        case op_get_by_id_getter_proto:
+        case op_get_by_id_getter_proto_list:
+        case op_get_by_id_getter_self:
+        case op_get_by_id_getter_self_list:
+        case op_get_by_id_custom_chain:
+        case op_get_by_id_custom_proto:
+        case op_get_by_id_custom_proto_list:
+        case op_get_by_id_custom_self:
+        case op_get_by_id_custom_self_list:
         case op_get_string_length:
         case op_put_by_id_generic:
         case op_put_by_id_replace:
@@ -390,11 +401,13 @@ void JIT::privateCompileSlowCases()
         DEFINE_SLOWCASE_OP(op_instanceof)
         DEFINE_SLOWCASE_OP(op_jfalse)
         DEFINE_SLOWCASE_OP(op_jnless)
+        DEFINE_SLOWCASE_OP(op_jless)
         DEFINE_SLOWCASE_OP(op_jnlesseq)
         DEFINE_SLOWCASE_OP(op_jtrue)
         DEFINE_SLOWCASE_OP(op_loop_if_less)
         DEFINE_SLOWCASE_OP(op_loop_if_lesseq)
         DEFINE_SLOWCASE_OP(op_loop_if_true)
+        DEFINE_SLOWCASE_OP(op_loop_if_false)
         DEFINE_SLOWCASE_OP(op_lshift)
         DEFINE_SLOWCASE_OP(op_method_check)
         DEFINE_SLOWCASE_OP(op_mod)
@@ -579,7 +592,7 @@ void JIT::unlinkCall(CallLinkInfo* callLinkInfo)
     // When the JSFunction is deleted the pointer embedded in the instruction stream will no longer be valid
     // (and, if a new JSFunction happened to be constructed at the same location, we could get a false positive
     // match).  Reset the check so it no longer matches.
-    RepatchBuffer repatchBuffer(callLinkInfo->ownerCodeBlock.get());
+    RepatchBuffer repatchBuffer(callLinkInfo->ownerCodeBlock);
 #if USE(JSVALUE32_64)
     repatchBuffer.repatch(callLinkInfo->hotPathBegin, 0);
 #else

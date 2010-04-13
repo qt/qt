@@ -37,8 +37,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLBlockquoteElement);
 
 static const HashTableValue JSHTMLBlockquoteElementTableValues[3] =
 {
-    { "cite", DontDelete, (intptr_t)jsHTMLBlockquoteElementCite, (intptr_t)setJSHTMLBlockquoteElementCite },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLBlockquoteElementConstructor, (intptr_t)0 },
+    { "cite", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBlockquoteElementCite), (intptr_t)setJSHTMLBlockquoteElementCite },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBlockquoteElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -139,17 +139,18 @@ bool JSHTMLBlockquoteElement::getOwnPropertyDescriptor(ExecState* exec, const Id
     return getStaticValueDescriptor<JSHTMLBlockquoteElement, Base>(exec, &JSHTMLBlockquoteElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLBlockquoteElementCite(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBlockquoteElementCite(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLBlockquoteElement* castedThis = static_cast<JSHTMLBlockquoteElement*>(asObject(slot.slotBase()));
+    JSHTMLBlockquoteElement* castedThis = static_cast<JSHTMLBlockquoteElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLBlockquoteElement* imp = static_cast<HTMLBlockquoteElement*>(castedThis->impl());
-    return jsString(exec, imp->getAttribute(HTMLNames::citeAttr));
+    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::citeAttr));
+    return result;
 }
 
-JSValue jsHTMLBlockquoteElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBlockquoteElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLBlockquoteElement* domObject = static_cast<JSHTMLBlockquoteElement*>(asObject(slot.slotBase()));
+    JSHTMLBlockquoteElement* domObject = static_cast<JSHTMLBlockquoteElement*>(asObject(slotBase));
     return JSHTMLBlockquoteElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLBlockquoteElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -159,7 +160,8 @@ void JSHTMLBlockquoteElement::put(ExecState* exec, const Identifier& propertyNam
 
 void setJSHTMLBlockquoteElementCite(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLBlockquoteElement* imp = static_cast<HTMLBlockquoteElement*>(static_cast<JSHTMLBlockquoteElement*>(thisObject)->impl());
+    JSHTMLBlockquoteElement* castedThisObj = static_cast<JSHTMLBlockquoteElement*>(thisObject);
+    HTMLBlockquoteElement* imp = static_cast<HTMLBlockquoteElement*>(castedThisObj->impl());
     imp->setAttribute(HTMLNames::citeAttr, valueToStringWithNullCheck(exec, value));
 }
 

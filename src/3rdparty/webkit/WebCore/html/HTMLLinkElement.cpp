@@ -26,7 +26,6 @@
 
 #include "CSSHelper.h"
 #include "CachedCSSStyleSheet.h"
-#include "DNS.h"
 #include "DocLoader.h"
 #include "Document.h"
 #include "Frame.h"
@@ -38,8 +37,10 @@
 #include "MediaList.h"
 #include "MediaQueryEvaluator.h"
 #include "Page.h"
+#include "ResourceHandle.h"
 #include "ScriptEventListener.h"
 #include "Settings.h"
+#include <wtf/StdLibExtras.h>
 
 namespace WebCore {
 
@@ -182,13 +183,13 @@ void HTMLLinkElement::process()
         document()->setIconURL(m_url.string(), type);
 
     if (m_isDNSPrefetch && m_url.isValid() && !m_url.isEmpty())
-        prefetchDNS(m_url.host());
+        ResourceHandle::prepareForURL(m_url);
 
     bool acceptIfTypeContainsTextCSS = document()->page() && document()->page()->settings() && document()->page()->settings()->treatsAnyTextCSSLinkAsStylesheet();
 
     // Stylesheet
     // This was buggy and would incorrectly match <link rel="alternate">, which has a different specified meaning. -dwh
-    if (m_disabledState != 2 && (m_isStyleSheet || acceptIfTypeContainsTextCSS && type.contains("text/css")) && document()->frame() && m_url.isValid()) {
+    if (m_disabledState != 2 && (m_isStyleSheet || (acceptIfTypeContainsTextCSS && type.contains("text/css"))) && document()->frame() && m_url.isValid()) {
         // also, don't load style sheets for standalone documents
         
         String charset = getAttribute(charsetAttr);
@@ -253,28 +254,50 @@ void HTMLLinkElement::finishParsingChildren()
     HTMLElement::finishParsingChildren();
 }
 
-void HTMLLinkElement::setCSSStyleSheet(const String& url, const String& charset, const CachedCSSStyleSheet* sheet)
+void HTMLLinkElement::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CachedCSSStyleSheet* sheet)
 {
-    m_sheet = CSSStyleSheet::create(this, url, charset);
+    m_sheet = CSSStyleSheet::create(this, href, baseURL, charset);
 
     bool strictParsing = !document()->inCompatMode();
     bool enforceMIMEType = strictParsing;
+    bool crossOriginCSS = false;
+    bool validMIMEType = false;
+    bool needsSiteSpecificQuirks = document()->page() && document()->page()->settings()->needsSiteSpecificQuirks();
 
     // Check to see if we should enforce the MIME type of the CSS resource in strict mode.
     // Running in iWeb 2 is one example of where we don't want to - <rdar://problem/6099748>
     if (enforceMIMEType && document()->page() && !document()->page()->settings()->enforceCSSMIMETypeInStrictMode())
         enforceMIMEType = false;
 
-    String sheetText = sheet->sheetText(enforceMIMEType);
+#if defined(BUILDING_ON_TIGER) || defined(BUILDING_ON_LEOPARD)
+    if (enforceMIMEType && needsSiteSpecificQuirks) {
+        // Covers both http and https, with or without "www."
+        if (baseURL.string().contains("mcafee.com/japan/", false))
+            enforceMIMEType = false;
+    }
+#endif
+
+    String sheetText = sheet->sheetText(enforceMIMEType, &validMIMEType);
     m_sheet->parseString(sheetText, strictParsing);
 
-    if (strictParsing && document()->settings() && document()->settings()->needsSiteSpecificQuirks()) {
+    // If we're loading a stylesheet cross-origin, and the MIME type is not
+    // standard, require the CSS to at least start with a syntactically
+    // valid CSS rule.
+    // This prevents an attacker playing games by injecting CSS strings into
+    // HTML, XML, JSON, etc. etc.
+    if (!document()->securityOrigin()->canRequest(baseURL))
+        crossOriginCSS = true;
+
+    if (crossOriginCSS && !validMIMEType && !m_sheet->hasSyntacticallyValidCSSHeader())
+        m_sheet = CSSStyleSheet::create(this, href, baseURL, charset);
+
+    if (strictParsing && needsSiteSpecificQuirks) {
         // Work around <https://bugs.webkit.org/show_bug.cgi?id=28350>.
         DEFINE_STATIC_LOCAL(const String, slashKHTMLFixesDotCss, ("/KHTMLFixes.css"));
         DEFINE_STATIC_LOCAL(const String, mediaWikiKHTMLFixesStyleSheet, ("/* KHTML fix stylesheet */\n/* work around the horizontal scrollbars */\n#column-content { margin-left: 0; }\n\n"));
         // There are two variants of KHTMLFixes.css. One is equal to mediaWikiKHTMLFixesStyleSheet,
         // while the other lacks the second trailing newline.
-        if (url.endsWith(slashKHTMLFixesDotCss) && !sheetText.isNull() && mediaWikiKHTMLFixesStyleSheet.startsWith(sheetText)
+        if (baseURL.string().endsWith(slashKHTMLFixesDotCss) && !sheetText.isNull() && mediaWikiKHTMLFixesStyleSheet.startsWith(sheetText)
                 && sheetText.length() >= mediaWikiKHTMLFixesStyleSheet.length() - 1) {
             ASSERT(m_sheet->length() == 1);
             ExceptionCode ec;

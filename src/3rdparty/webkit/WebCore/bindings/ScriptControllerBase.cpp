@@ -22,6 +22,7 @@
 #include "ScriptController.h"
 
 #include "Frame.h"
+#include "FrameLoaderClient.h"
 #include "Page.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
@@ -30,6 +31,19 @@
 
 namespace WebCore {
 
+bool ScriptController::canExecuteScripts(ReasonForCallingCanExecuteScripts reason)
+{
+    // FIXME: We should get this information from the document instead of the frame.
+    if (m_frame->loader()->isSandboxed(SandboxScripts))
+        return false;
+
+    Settings* settings = m_frame->settings();
+    const bool allowed = m_frame->loader()->client()->allowJavaScript(settings && settings->isJavaScriptEnabled());
+    if (!allowed && reason == AboutToExecuteScript)
+        m_frame->loader()->client()->didNotAllowScript();
+    return allowed;
+}
+
 ScriptValue ScriptController::executeScript(const String& script, bool forceUserGesture)
 {
     return executeScript(ScriptSourceCode(script, forceUserGesture ? KURL() : m_frame->loader()->url()));
@@ -37,7 +51,7 @@ ScriptValue ScriptController::executeScript(const String& script, bool forceUser
 
 ScriptValue ScriptController::executeScript(const ScriptSourceCode& sourceCode)
 {
-    if (!isEnabled() || isPaused())
+    if (!canExecuteScripts(AboutToExecuteScript) || isPaused())
         return ScriptValue();
 
     bool wasInExecuteScript = m_inExecuteScript;
@@ -73,8 +87,15 @@ bool ScriptController::executeIfJavaScriptURL(const KURL& url, bool userGesture,
         result = executeScript(script, userGesture);
 
     String scriptResult;
+#if USE(JSC)
+    JSDOMWindowShell* shell = windowShell(mainThreadNormalWorld());
+    JSC::ExecState* exec = shell->window()->globalExec();
+    if (!result.getString(exec, scriptResult))
+        return true;
+#else
     if (!result.getString(scriptResult))
         return true;
+#endif
 
     // FIXME: We should always replace the document, but doing so
     //        synchronously can cause crashes:
