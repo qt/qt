@@ -39,34 +39,34 @@
 **
 ****************************************************************************/
 
-#include <private/qgraphicssystemplugin_p.h>
-#include "qgraphicssystem_qvfb.h"
+#include <QPlatformIntegrationPlugin>
+#include "qvfbintegration.h"
 #include <qstringlist.h>
 
 QT_BEGIN_NAMESPACE
 
-class QVFbGraphicsSystemPlugin : public QGraphicsSystemPlugin
+class QVFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
-    QGraphicsSystem *create(const QString&);
+    QPlatformIntegration *create(const QString&);
 };
 
-QStringList QVFbGraphicsSystemPlugin::keys() const
+QStringList QVFbIntegrationPlugin::keys() const
 {
     QStringList list;
     list << "QVFb";
     return list;
 }
 
-QGraphicsSystem* QVFbGraphicsSystemPlugin::create(const QString& system)
+QPlatformIntegration* QVFbIntegrationPlugin::create(const QString& system)
 {
     if (system.toLower() == "qvfb")
-        return new QVFbGraphicsSystem;
+        return new QVFbIntegration;
 
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(qvfb, QVFbGraphicsSystemPlugin)
+Q_EXPORT_PLUGIN2(qvfb, QVFbIntegrationPlugin)
 
 QT_END_NAMESPACE

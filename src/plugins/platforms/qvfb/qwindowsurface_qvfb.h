@@ -43,31 +43,37 @@
 #define QWINDOWSURFACE_QVFB_H
 
 #include <QtGui/private/qwindowsurface_p.h>
+#include <QPlatformWindow>
 
 QT_BEGIN_NAMESPACE
 
-class QVFbGraphicsSystem;
-class QVFbGraphicsSystemScreen;
+class QVFbIntegration;
+class QVFbScreen;
 
 class QVFbWindowSurface : public QWindowSurface
 {
 public:
-    QVFbWindowSurface(QVFbGraphicsSystem *graphicsSystem,
-         QVFbGraphicsSystemScreen *screen, QWidget *window);
+    QVFbWindowSurface(QVFbScreen *screen, QWidget *window);
     ~QVFbWindowSurface();
 
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void setGeometry(const QRect &rect);
-    bool scroll(const QRegion &area, int dx, int dy);
-
-    void beginPaint(const QRegion &region);
-    void endPaint(const QRegion &region);
+    void resize(const QSize &size);
 
 private:
-    QVFbGraphicsSystem *mGraphicsSystem;
-    QVFbGraphicsSystemScreen *mScreen;
+    QVFbScreen *mScreen;
 };
+
+class QVFbWindow : public QPlatformWindow
+{
+public:
+    QVFbWindow(QVFbScreen *screen, QWidget *window);
+    void setGeometry(const QRect &rect);
+
+private:
+    QVFbScreen *mScreen;
+};
+
 
 QT_END_NAMESPACE
 

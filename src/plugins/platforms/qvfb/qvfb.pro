@@ -1,12 +1,11 @@
-TARGET = qvfbgraphicssystem
+TARGET = qvfbintegration
 include(../../qpluginbase.pri)
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/graphicssystems
+QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 
+SOURCES = main.cpp qvfbintegration.cpp qwindowsurface_qvfb.cpp
+HEADERS = qvfbintegration.h qwindowsurface_qvfb.h
 
-SOURCES = main.cpp qgraphicssystem_qvfb.cpp qwindowsurface_qvfb.cpp
-HEADERS = qgraphicssystem_qvfb.h qwindowsurface_qvfb.h
-
-target.path += $$[QT_INSTALL_PLUGINS]/graphicssystems
+target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
