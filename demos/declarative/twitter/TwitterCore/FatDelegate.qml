@@ -1,23 +1,21 @@
-import Qt 4.6
+import Qt 4.7
 
 Component {
     id: listDelegate
     Item {
         id: wrapper; width: wrapper.ListView.view.width; height: if(txt.height > 58){txt.height+8}else{58}//50+4+4
-        Script {
-            function handleLink(link){
-                if(link.slice(0,3) == 'app'){
-                    setUser(link.slice(7));
-                    screen.setMode(true);
-                }else if(link.slice(0,4) == 'http'){
-                    Qt.openUrlExternally(link);
-                }
+        function handleLink(link){
+            if(link.slice(0,3) == 'app'){
+                screen.setUser(link.slice(7));
+                screen.setMode(true);
+            }else if(link.slice(0,4) == 'http'){
+                Qt.openUrlExternally(link);
             }
-            function addTags(str){
-                var ret = str.replace(/@[a-zA-Z0-9_]+/g, '<a href="app://$&">$&</a>');//click to jump to user?
-                var ret2 = ret.replace(/http:\/\/[^ \n\t]+/g, '<a href="$&">$&</a>');//surrounds http links with html link tags
-                return ret2;
-            }
+        }
+        function addTags(str){
+            var ret = str.replace(/@[a-zA-Z0-9_]+/g, '<a href="app://$&">$&</a>');//click to jump to user?
+            var ret2 = ret.replace(/http:\/\/[^ \n\t]+/g, '<a href="$&">$&</a>');//surrounds http links with html link tags
+            return ret2;
         }
         Item {
             id: moveMe; height: parent.height
@@ -35,11 +33,11 @@ Component {
             Text { id:txt; y:4; x: 56
                 text: '<html><style type="text/css">a:link {color:"#aaccaa"}; a:visited {color:"#336633"}</style>'
                     + '<a href="app://@'+userScreenName+'"><b>'+userScreenName + "</b></a>  from " +source
-                    + "<br /><b>" + addTags(statusText) + "</b></html>";
+                    + "<br /><b>" + wrapper.addTags(statusText) + "</b></html>";
                 textFormat: Qt.RichText
-                color: "#cccccc"; style: Text.Raised; styleColor: "black"; wrap: true
+                color: "#cccccc"; style: Text.Raised; styleColor: "black"; wrapMode: Text.WordWrap
                 anchors.left: whiteRect.right; anchors.right: blackRect.right; anchors.leftMargin: 6; anchors.rightMargin: 6
-                onLinkActivated: handleLink(link)
+                onLinkActivated: wrapper.handleLink(link)
             }
         }
     }

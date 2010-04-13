@@ -73,6 +73,7 @@ private slots:
     void createQmlObject();
     void consoleLog();
     void formatting();
+    void isQtObject();
 
 private:
     QDeclarativeEngine engine;
@@ -388,6 +389,21 @@ void tst_qdeclarativeqt::formatting()
     QCOMPARE(object->property("test8").toString(), dateTime1.toString(Qt::DefaultLocaleShortDate));
     QCOMPARE(object->property("test9").toString(), dateTime1.toString(Qt::DefaultLocaleLongDate));
     QCOMPARE(object->property("test10").toString(), dateTime1.toString("M/d/yy H:m:s a"));
+
+    delete object;
+}
+
+void tst_qdeclarativeqt::isQtObject()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("isQtObject.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), false);
+    QCOMPARE(object->property("test3").toBool(), false);
+    QCOMPARE(object->property("test4").toBool(), false);
+    QCOMPARE(object->property("test5").toBool(), false);
 
     delete object;
 }

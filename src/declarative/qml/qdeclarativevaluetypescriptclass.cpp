@@ -55,7 +55,7 @@ struct QDeclarativeValueTypeReference : public QScriptDeclarativeClass::Object {
 };
 
 QDeclarativeValueTypeScriptClass::QDeclarativeValueTypeScriptClass(QDeclarativeEngine *bindEngine)
-: QDeclarativeScriptClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine)
+: QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine)
 {
 }
 
@@ -100,7 +100,7 @@ QDeclarativeValueTypeScriptClass::queryProperty(Object *obj, const Identifier &n
     return rv;
 }
 
-QDeclarativeValueTypeScriptClass::ScriptValue QDeclarativeValueTypeScriptClass::property(Object *obj, const Identifier &)
+QDeclarativeValueTypeScriptClass::Value QDeclarativeValueTypeScriptClass::property(Object *obj, const Identifier &)
 {
     QDeclarativeValueTypeReference *ref = static_cast<QDeclarativeValueTypeReference *>(obj);
 
@@ -113,7 +113,7 @@ QDeclarativeValueTypeScriptClass::ScriptValue QDeclarativeValueTypeScriptClass::
 }
 
 void QDeclarativeValueTypeScriptClass::setProperty(Object *obj, const Identifier &, 
-                                          const QScriptValue &value)
+                                                   const QScriptValue &value)
 {
     QDeclarativeValueTypeReference *ref = static_cast<QDeclarativeValueTypeReference *>(obj);
 
@@ -122,7 +122,7 @@ void QDeclarativeValueTypeScriptClass::setProperty(Object *obj, const Identifier
     if (delBinding) 
         delBinding->destroy();
 
-    QVariant v = QDeclarativeScriptClass::toVariant(engine, value);
+    QVariant v = QDeclarativeEnginePrivate::get(engine)->scriptValueToVariant(value);
 
     ref->type->read(ref->object, ref->property);
     QMetaProperty p = ref->type->metaObject()->property(m_lastIndex);

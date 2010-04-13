@@ -65,13 +65,6 @@ static const int maxImageRequestCount = 8;
 
 QT_BEGIN_NAMESPACE
 
-#if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
-inline uint qHash(const QUrl &uri)
-{
-    return qHash(uri.toEncoded(QUrl::FormattingOption(0x100)));
-}
-#endif
-
 static QString toLocalFileOrQrc(const QUrl& url)
 {
     QString r = url.toLocalFile();

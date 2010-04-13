@@ -227,6 +227,7 @@ namespace QDeclarativeParser
             QByteArray name;
             QString body;
             QList<QByteArray> parameterNames;
+            LocationSpan location;
         };
 
         // The list of dynamic properties

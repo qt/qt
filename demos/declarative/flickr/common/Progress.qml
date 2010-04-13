@@ -1,7 +1,7 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
-    property var progress: 0
+    property variant progress: 0
 
     Rectangle {
         anchors.fill: parent; smooth: true

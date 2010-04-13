@@ -312,7 +312,7 @@ void QDeclarativeAnimatedImage::playingStatusChanged()
 void QDeclarativeAnimatedImage::componentComplete()
 {
     Q_D(QDeclarativeAnimatedImage);
-    QDeclarativeImage::componentComplete();
+    QDeclarativeItem::componentComplete(); // NOT QDeclarativeImage
     if (!d->reply) {
         setCurrentFrame(d->preset_currentframe);
         d->preset_currentframe = 0;

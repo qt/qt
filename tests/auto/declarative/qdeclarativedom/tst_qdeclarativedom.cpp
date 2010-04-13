@@ -274,7 +274,7 @@ void tst_qdeclarativedom::loadComposite()
 void tst_qdeclarativedom::testValueSource()
 {
     QByteArray qml = "import Qt 4.6\n"
-                     "Rectangle { SpringFollow on height { spring: 1.4; damping: .15; source: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
+                     "Rectangle { SpringFollow on height { spring: 1.4; damping: .15; to: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
 
     QDeclarativeEngine freshEngine;
     QDeclarativeDomDocument document;
@@ -297,7 +297,7 @@ void tst_qdeclarativedom::testValueSource()
     QVERIFY(springValue.isLiteral());
     QVERIFY(springValue.toLiteral().literal() == "1.4");
 
-    const QDeclarativeDomValue sourceValue = valueSourceObject.property("source").value();
+    const QDeclarativeDomValue sourceValue = valueSourceObject.property("to").value();
     QVERIFY(!sourceValue.isInvalid());
     QVERIFY(sourceValue.isBinding());
     QVERIFY(sourceValue.toBinding().binding() == "Math.min(Math.max(-130, value*2.2 - 130), 133)");
@@ -333,8 +333,8 @@ void tst_qdeclarativedom::testValueInterceptor()
 void tst_qdeclarativedom::loadImports()
 {
     QByteArray qml = "import Qt 4.6\n"
-                     "import importlib.sublib 4.7\n"
-                     "import importlib.sublib 4.6 as NewFoo\n"
+                     "import importlib.sublib 1.1\n"
+                     "import importlib.sublib 1.0 as NewFoo\n"
                      "import 'import'\n"
                      "import 'import' as X\n"
                      "Item {}";
@@ -356,13 +356,13 @@ void tst_qdeclarativedom::loadImports()
     QCOMPARE(import.type(), QDeclarativeDomImport::Library);
     QCOMPARE(import.uri(), QLatin1String("importlib.sublib"));
     QCOMPARE(import.qualifier(), QString());
-    QCOMPARE(import.version(), QLatin1String("4.7"));
+    QCOMPARE(import.version(), QLatin1String("1.1"));
 
     import = document.imports().at(2);
     QCOMPARE(import.type(), QDeclarativeDomImport::Library);
     QCOMPARE(import.uri(), QLatin1String("importlib.sublib"));
     QCOMPARE(import.qualifier(), QLatin1String("NewFoo"));
-    QCOMPARE(import.version(), QLatin1String("4.6"));
+    QCOMPARE(import.version(), QLatin1String("1.0"));
 
     import = document.imports().at(3);
     QCOMPARE(import.type(), QDeclarativeDomImport::File);
@@ -450,7 +450,7 @@ void tst_qdeclarativedom::loadDynamicProperty()
                          "    property url f\n"
                          "    property color g\n"
                          "    property date h\n"
-                         "    property var i\n"
+                         "    property variant i\n"
                          "    property QtObject j\n"
                          "}";
 
@@ -483,8 +483,8 @@ void tst_qdeclarativedom::loadDynamicProperty()
         DP_TEST(5, f, QVariant::Url, 128, 14, "url");
         DP_TEST(6, g, QVariant::Color, 147, 16, "color");
         DP_TEST(7, h, QVariant::DateTime, 168, 15, "date");
-        DP_TEST(8, i, qMetaTypeId<QVariant>(), 188, 14, "var");
-        DP_TEST(9, j, -1, 207, 19, "QtObject");
+        DP_TEST(8, i, qMetaTypeId<QVariant>(), 188, 18, "variant");
+        DP_TEST(9, j, -1, 211, 19, "QtObject");
     }
 
     {

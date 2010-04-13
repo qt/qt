@@ -1398,12 +1398,14 @@ QMenu::QMenu(QMenuPrivate &dd, QWidget *parent)
 QMenu::~QMenu()
 {
     Q_D(QMenu);
-    QHash<QAction *, QWidget *>::iterator it = d->widgetItems.begin();
-    for (; it != d->widgetItems.end(); ++it) {
-        if (QWidget *widget = it.value()) {
-            QWidgetAction *action = static_cast<QWidgetAction *>(it.key());
-            action->releaseWidget(widget);
-            *it = 0;
+    if (!d->widgetItems.isEmpty()) {  // avoid detach on shared null hash
+        QHash<QAction *, QWidget *>::iterator it = d->widgetItems.begin();
+        for (; it != d->widgetItems.end(); ++it) {
+            if (QWidget *widget = it.value()) {
+                QWidgetAction *action = static_cast<QWidgetAction *>(it.key());
+                action->releaseWidget(widget);
+                *it = 0;
+            }
         }
     }
 
@@ -1913,9 +1915,10 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
                 pos.setX(screen.left() + desktopFrame);
         }
         if (pos.y() + size.height() - 1 > screen.bottom() - desktopFrame) {
-            const int bestPos = (snapToMouse ? mouse.y() : p.y()) - desktopFrame - size.height() + 1;
-            const int fallbackPos = screen.bottom() - desktopFrame - size.height() + 1;
-            pos.setY(qMin(bestPos, fallbackPos));
+            if(snapToMouse)
+                pos.setY(qMin(mouse.y() - (size.height() + desktopFrame), screen.bottom()-desktopFrame-size.height()+1));
+            else
+                pos.setY(qMax(p.y() - (size.height() + desktopFrame), screen.bottom()-desktopFrame-size.height()+1));
         } else if (pos.y() < screen.top() + desktopFrame) {
             pos.setY(screen.top() + desktopFrame);
         }
