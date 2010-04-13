@@ -134,6 +134,38 @@ signals:
     void orientationChanged();
 };
 
+class Runtime : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(bool isActiveWindow READ isActiveWindow NOTIFY isActiveWindowChanged)
+
+public:
+    static Runtime* instance()
+    {
+        static Runtime *instance = 0;
+        if (!instance)
+            instance = new Runtime;
+        return instance;
+    }
+
+    bool isActiveWindow() const { return activeWindow; }
+    void setActiveWindow(bool active)
+    {
+        if (active == activeWindow)
+            return;
+        activeWindow = active;
+        emit isActiveWindowChanged();
+    }
+
+signals:
+    void isActiveWindowChanged();
+
+private:
+    Runtime(QObject *parent=0) : QObject(parent), activeWindow(false) {}
+
+    bool activeWindow;
+};
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(Screen)
@@ -1048,6 +1080,8 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
     ctxt->setContextProperty("qmlViewerFolder", QDir::currentPath());
 #endif
 
+    ctxt->setContextProperty("runtime", Runtime::instance());
+
     QString fileName = url.toLocalFile();
     if (!fileName.isEmpty()) {
         QFileInfo fi(fileName);
@@ -1247,6 +1281,16 @@ void QDeclarativeViewer::keyPressEvent(QKeyEvent *event)
     }
 
     QWidget::keyPressEvent(event);
+}
+
+bool QDeclarativeViewer::event(QEvent *event)
+{
+    if (event->type() == QEvent::WindowActivate) {
+        Runtime::instance()->setActiveWindow(true);
+    } else if (event->type() == QEvent::WindowDeactivate) {
+        Runtime::instance()->setActiveWindow(false);
+    }
+    return QWidget::event(event);
 }
 
 void QDeclarativeViewer::senseImageMagick()
