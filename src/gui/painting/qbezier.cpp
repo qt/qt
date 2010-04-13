@@ -118,7 +118,7 @@ QBezier QBezier::mapBy(const QTransform &transform) const
 }
 
 //0.05 is really low, but required for scaled-up beziers...
-static const qreal flatness = 0.05;
+static const qreal flatness = qreal(0.05);
 
 //based on "Fast, precise flattening of cubic Bezier path and offset curves"
 //      by T. F. Hain, A. L. Ahmad, S. V. R. Racherla and D. D. Langan
