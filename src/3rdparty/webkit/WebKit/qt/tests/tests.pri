@@ -8,8 +8,6 @@ INCLUDEPATH += \
     $$PWD \
     $$PWD/../Api
 
-exists($$_PRO_FILE_PWD_/$${TARGET}.qrc):RESOURCES += $$_PRO_FILE_PWD_/$${TARGET}.qrc
-
 include(../../../WebKit.pri)
 QT += testlib network
 
