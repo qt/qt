@@ -60,7 +60,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include <private/qgl_p.h>
 #include <private/qglpaintdevice_p.h>
 
-#if defined(Q_WS_X11) && !defined(QT_OPENGL_ES)
+#if defined(Q_WS_X11) && defined(QT_NO_EGL)
 #include <GL/glx.h>
 
 // The below is needed to for compilation on HPUX, due to broken GLX
@@ -127,10 +127,8 @@ struct GLXFBConfig {
 
 #elif defined(Q_WS_WIN)
 DECLARE_HANDLE(HPBUFFERARB);
-#elif defined(QT_OPENGL_ES_2)
-#include <EGL/egl.h>
-#elif defined(QT_OPENGL_ES)
-#include <GLES/egl.h>
+#elif !defined(QT_NO_EGL)
+#include <QtGui/private/qegl_p.h>
 #endif
 QT_END_INCLUDE_NAMESPACE
 
@@ -174,7 +172,7 @@ public:
     QPointer<QGLWidget> req_shareWidget;
     QSize req_size;
 
-#if defined(Q_WS_X11) && !defined(QT_OPENGL_ES)
+#if defined(Q_WS_X11) && defined(QT_NO_EGL)
     GLXPbuffer pbuf;
     GLXContext ctx;
 #elif defined(Q_WS_WIN)
@@ -195,7 +193,7 @@ public:
     AGLContext share_ctx;
 #  endif
 #endif
-#if defined(QT_OPENGL_ES)
+#ifndef QT_NO_EGL
     EGLSurface pbuf;
     QEglContext *ctx;
     int textureFormat;

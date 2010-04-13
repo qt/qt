@@ -49,7 +49,7 @@
 #include "private/qpixmap_x11_p.h"
 #define INT32 dummy_INT32
 #define INT8 dummy_INT8
-#if !defined(QT_OPENGL_ES)
+#ifdef QT_NO_EGL
 # include <GL/glx.h>
 #endif
 #undef INT32
@@ -1582,7 +1582,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
 #  endif
     vi = 0;
 #endif
-#if defined(QT_OPENGL_ES)
+#ifndef QT_NO_EGL
     ownsEglContext = false;
     eglContext = 0;
     eglSurface = EGL_NO_SURFACE;
@@ -3950,7 +3950,7 @@ bool QGLWidget::event(QEvent *e)
         }
     }
 
-#if defined(QT_OPENGL_ES)
+#ifndef QT_NO_EGL
     // A re-parent is likely to destroy the X11 window and re-create it. It is important
     // that we free the EGL surface _before_ the winID changes - otherwise we can leak.
     if (e->type() == QEvent::ParentAboutToChange)
@@ -4909,7 +4909,7 @@ void QGLWidget::drawTexture(const QPointF &point, QMacCompatGLuint textureId, QM
 }
 #endif
 
-#if !defined(QT_OPENGL_ES_1)
+#ifndef QT_OPENGL_ES_1
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_2_engine)
 #endif
 

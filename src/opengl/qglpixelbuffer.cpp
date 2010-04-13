@@ -137,14 +137,14 @@ void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &form
 #if defined(Q_WS_WIN) && !defined(QT_OPENGL_ES)
         qctx->d_func()->dc = dc;
         qctx->d_func()->rc = ctx;
-#elif (defined(Q_WS_X11) && !defined(QT_OPENGL_ES))
+#elif (defined(Q_WS_X11) && defined(QT_NO_EGL))
         qctx->d_func()->cx = ctx;
         qctx->d_func()->pbuf = (void *) pbuf;
         qctx->d_func()->vi = 0;
 #elif defined(Q_WS_MAC)
         qctx->d_func()->cx = ctx;
         qctx->d_func()->vi = 0;
-#elif defined(QT_OPENGL_ES)
+#elif !defined(QT_NO_EGL)
         qctx->d_func()->eglContext = ctx;
         qctx->d_func()->eglSurface = pbuf;
 #endif
@@ -254,7 +254,7 @@ bool QGLPixelBuffer::doneCurrent()
     \sa size()
 */
 
-#if (defined(Q_WS_X11) || defined(Q_WS_WIN)) && !defined(QT_OPENGL_ES)
+#if (defined(Q_WS_X11) || defined(Q_WS_WIN)) && defined(QT_NO_EGL)
 GLuint QGLPixelBuffer::generateDynamicTexture() const
 {
     Q_D(const QGLPixelBuffer);
