@@ -64,6 +64,10 @@ class QDeclarativeAbstractBinding;
 class QDeclarativeContext;
 class QDeclarativePropertyCache;
 class QDeclarativeContextData;
+// This class is structured in such a way, that simply zero'ing it is the
+// default state for elemental object allocations.  This is crucial in the
+// workings of the QDeclarativeInstruction::CreateSimpleObject instruction.
+// Don't change anything here without first considering that case!
 class Q_AUTOTEST_EXPORT QDeclarativeDeclarativeData : public QDeclarativeData
 {
 public:
@@ -71,10 +75,20 @@ public:
         : ownMemory(true), ownContext(false), indestructible(true), explicitIndestructibleSet(false), 
           context(0), outerContext(0), bindings(0), nextContextObject(0), prevContextObject(0), bindingBitsSize(0), 
           bindingBits(0), lineNumber(0), columnNumber(0), deferredComponent(0), deferredIdx(0), 
-          attachedProperties(0), propertyCache(0), guards(0) {}
+          attachedProperties(0), scriptValue(0), propertyCache(0), guards(0) { 
+          init(); 
+      }
 
-    virtual void destroyed(QObject *);
-    virtual void parentChanged(QObject *, QObject *);
+    static inline void init() {
+        QDeclarativeData::destroyed = destroyed;
+        QDeclarativeData::parentChanged = parentChanged;
+    }
+
+    static void destroyed(QDeclarativeData *, QObject *);
+    static void parentChanged(QDeclarativeData *, QObject *, QObject *);
+
+    void destroyed(QObject *);
+    void parentChanged(QObject *, QObject *);
 
     void setImplicitDestructible() {
         if (!explicitIndestructibleSet) indestructible = false;
@@ -109,7 +123,9 @@ public:
 
     QHash<int, QObject *> *attachedProperties;
 
-    QScriptValue scriptValue;
+    // ### Can we make this QScriptValuePrivate so we incur no additional allocation
+    // cost?
+    QScriptValue *scriptValue;
     QDeclarativePropertyCache *propertyCache;
 
     QDeclarativeGuard<QObject> *guards;

@@ -329,6 +329,10 @@ QLibraryInfo::location(LibraryLocation loc)
             key = QLatin1String("Plugins");
             defaultValue = QLatin1String("plugins");
             break;
+        case ImportsPath:
+            key = QLatin1String("Imports");
+            defaultValue = QLatin1String("imports");
+            break;
         case DataPath:
             key = QLatin1String("Data");
             break;

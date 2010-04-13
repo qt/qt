@@ -3,7 +3,7 @@ import Qt 4.6
 Item {
     id: root
 
-    property var item: child
+    property variant item: child
     Item { id: child }
 
     property bool test1: child == child

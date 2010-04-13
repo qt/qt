@@ -708,10 +708,20 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                 y2 = y1 + 1;
                 y2 %= image_height;
             } else {
-                x1 = qBound(0, x1, image_width - 1);
-                x2 = qMin(x1 + 1, image_width - 1);
-                y1 = qBound(0, y1, image_height - 1);
-                y2 = qMin(y1 + 1, image_height - 1);
+                if (x1 < 0) {
+                    x2 = x1 = 0;
+                } else if (x1 >= image_width - 1) {
+                    x2 = x1 = image_width - 1;
+                } else {
+                    x2 = x1 + 1;
+                }
+                if (y1 < 0) {
+                    y2 = y1 = 0;
+                } else if (y1 >= image_height - 1) {
+                    y2 = y1 = image_height - 1;
+                } else {
+                    y2 = y1 + 1;
+                }
             }
 
             Q_ASSERT(x1 >= 0 && x1 < image_width);
@@ -775,10 +785,20 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                 y2 = y1 + 1;
                 y2 %= image_height;
             } else {
-                x1 = qBound(0, x1, image_width - 1);
-                x2 = qMin(x1 + 1, image_width - 1);
-                y1 = qBound(0, y1, image_height - 1);
-                y2 = qMin(y1 + 1, image_height - 1);
+                if (x1 < 0) {
+                    x2 = x1 = 0;
+                } else if (x1 >= image_width - 1) {
+                    x2 = x1 = image_width - 1;
+                } else {
+                    x2 = x1 + 1;
+                }
+                if (y1 < 0) {
+                    y2 = y1 = 0;
+                } else if (y1 >= image_height - 1) {
+                    y2 = y1 = image_height - 1;
+                } else {
+                    y2 = y1 + 1;
+                }
             }
 
             Q_ASSERT(x1 >= 0 && x1 < image_width);
@@ -5211,10 +5231,20 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
                         Q_ASSERT(y1 >= 0 && y1 < image_height);
                         Q_ASSERT(y2 >= 0 && y2 < image_height);
                     } else {
-                        x1 = qBound(image_x1, x1, image_x2 - 1);
-                        x2 = qMin(x1 + 1, image_x2 - 1);
-                        y1 = qBound(image_y1, y1, image_y2 - 1);
-                        y2 = qMin(y1 + 1, image_y2 - 1);
+                        if (x1 < image_x1) {
+                            x2 = x1 = image_x1;
+                        } else if (x1 >= image_x2 - 1) {
+                            x2 = x1 = image_x2 - 1;
+                        } else {
+                            x2 = x1 + 1;
+                        }
+                        if (y1 < image_y1) {
+                            y2 = y1 = image_y1;
+                        } else if (y1 >= image_y2 - 1) {
+                            y2 = y1 = image_y2 - 1;
+                        } else {
+                            y2 = y1 + 1;
+                        }
                     }
 
                     int y1_offset = y1 * scanline_offset;
@@ -5311,10 +5341,20 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
                         Q_ASSERT(y1 >= 0 && y1 < image_height);
                         Q_ASSERT(y2 >= 0 && y2 < image_height);
                     } else {
-                        x1 = qBound(image_x1, x1, image_x2 - 1);
-                        x2 = qMin(x1 + 1, image_x2 - 1);
-                        y1 = qBound(image_y1, y1, image_y2 - 1);
-                        y2 = qMin(y1 + 1, image_y2 - 1);
+                        if (x1 < image_x1) {
+                            x2 = x1 = image_x1;
+                        } else if (x1 >= image_x2 - 1) {
+                            x2 = x1 = image_x2 - 1;
+                        } else {
+                            x2 = x1 + 1;
+                        }
+                        if (y1 < image_y1) {
+                            y2 = y1 = image_y1;
+                        } else if (y1 >= image_y2 - 1) {
+                            y2 = y1 = image_y2 - 1;
+                        } else {
+                            y2 = y1 + 1;
+                        }
                     }
 
                     int y1_offset = y1 * scanline_offset;
@@ -5404,18 +5444,27 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTransformedBilinear(int count, const QSpan 
                 SRC *b = buffer;
                 while (b < end) {
                     int x1 = (x >> 16);
-                    int x2 = x1 + 1;
+                    int x2;
                     int y1 = (y >> 16);
-                    int y2 = y1 + 1;
+                    int y2;
 
                     const int distx = (x & 0x0000ffff) >> 8;
                     const int disty = (y & 0x0000ffff) >> 8;
 
-                    x1 = qBound(src_minx, x1, src_maxx);
-                    x2 = qBound(src_minx, x2, src_maxx);
-                    y1 = qBound(src_miny, y1, src_maxy);
-                    y2 = qBound(src_miny, y2, src_maxy);
-
+                    if (x1 < src_minx) {
+                        x2 = x1 = src_minx;
+                    } else if (x1 >= src_maxx) {
+                        x2 = x1 = src_maxx;
+                    } else {
+                        x2 = x1 + 1;
+                    }
+                    if (y1 < src_miny) {
+                        y2 = y1 = src_miny;
+                    } else if (y1 >= src_maxy) {
+                        y2 = y1 = src_maxy;
+                    } else {
+                        y2 = y1 + 1;
+                    }
 #if 0
                     if (x1 == x2) {
                         if (y1 == y2) {
@@ -5506,17 +5555,27 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTransformedBilinear(int count, const QSpan 
                     const qreal py = y * iw - qreal(0.5);
 
                     int x1 = int(px) - (px < 0);
-                    int x2 = x1 + 1;
+                    int x2;
                     int y1 = int(py) - (py < 0);
-                    int y2 = y1 + 1;
+                    int y2;
 
                     const int distx = int((px - x1) * 256);
                     const int disty = int((py - y1) * 256);
 
-                    x1 = qBound(src_minx, x1, src_maxx);
-                    x2 = qBound(src_minx, x2, src_maxx);
-                    y1 = qBound(src_miny, y1, src_maxy);
-                    y2 = qBound(src_miny, y2, src_maxy);
+                    if (x1 < src_minx) {
+                        x2 = x1 = src_minx;
+                    } else if (x1 >= src_maxx) {
+                        x2 = x1 = src_maxx;
+                    } else {
+                        x2 = x1 + 1;
+                    }
+                    if (y1 < src_miny) {
+                        y2 = y1 = src_miny;
+                    } else if (y1 >= src_maxy) {
+                        y2 = y1 = src_maxy;
+                    } else {
+                        y2 = y1 + 1;
+                    }
 
                     const SRC *src1 = (SRC*)data->texture.scanLine(y1);
                     const SRC *src2 = (SRC*)data->texture.scanLine(y2);

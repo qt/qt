@@ -66,7 +66,6 @@ QT_MODULE(Declarative)
 
 class QDeclarativeListModel;
 
-// Currently this will leak as no-one releases it in the worker thread 
 class QDeclarativeListModelWorkerAgent : public QObject
 {
     Q_OBJECT

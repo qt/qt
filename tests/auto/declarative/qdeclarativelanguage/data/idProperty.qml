@@ -1,6 +1,6 @@
 import Test 1.0
 MyContainer {
-    property var object : myObjectId
+    property variant object : myObjectId
 
     MyTypeObject {
         id: "myObjectId"

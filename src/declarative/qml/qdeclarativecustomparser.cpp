@@ -108,6 +108,9 @@ QDeclarativeCustomParserNodePrivate::fromObject(QDeclarativeParser::Object *root
         rootNode.d->properties << fromProperty(p);
     }
 
+    if (root->defaultProperty)
+        rootNode.d->properties << fromProperty(root->defaultProperty);
+
     return rootNode;
 }
 
