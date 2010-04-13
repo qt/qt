@@ -67,6 +67,7 @@
 #ifdef Q_OS_SYMBIAN
 #  include <exception>
 #  include <f32file.h>
+#  include <e32ldr.h>
 #  include "qeventdispatcher_symbian_p.h"
 #  include "private/qcore_symbian_p.h"
 #elif defined(Q_OS_UNIX)
@@ -577,6 +578,27 @@ void QCoreApplication::init()
 #ifdef QT_EVAL
     extern void qt_core_eval_init(uint);
     qt_core_eval_init(d->application_type);
+#endif
+
+#if    defined(Q_OS_SYMBIAN)  \
+    && defined(Q_CC_NOKIAX86) \
+    && defined(QT_DEBUG)
+    /**
+     * Prevent the executable from being locked in the Symbian emulator. The
+     * code dramatically simplifies debugging on Symbian, but beyond that has
+     * no impact.
+     *
+     * Force the ZLazyUnloadTimer to fire and therefore unload code segments
+     * immediately. The code affects Symbian's file server and on the other
+     * hand needs only to be run once in each emulator run.
+     */
+    {
+        RLoader loader;
+        CleanupClosePushL(loader);
+        User::LeaveIfError(loader.Connect());
+        User::LeaveIfError(loader.CancelLazyDllUnload());
+        CleanupStack::PopAndDestroy(&loader);
+    }
 #endif
 
     qt_startup_hook();

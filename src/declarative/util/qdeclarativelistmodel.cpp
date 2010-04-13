@@ -219,13 +219,13 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     \tt dataloader.js, which appends the current time to the list model.
 
     Note the call to sync() from the \c WorkerScript.onMessage() handler.
-    Without this call, the changes made to the list are not reflected in the
-    list model in the main thread.
+    You must call sync() or else the changes made to the list from the external
+    thread will not be reflected in the list model in the main thread.
 
     \section3 Limitations
 
     If a list model is to be accessed from a WorkerScript, it \bold cannot
-    contain nested list data. So, the following model cannot be used from a WorkerScript
+    contain list data. So, the following model cannot be used from a WorkerScript
     because of the list contained in the "attributes" property:
 
     \code
@@ -242,7 +242,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     }
     \endcode
 
-    In addition, the WorkerScript cannot add any nested list data to the model.
+    In addition, the WorkerScript cannot add any list data to the model.
 
     \sa {qmlmodels}{Data Models}, WorkerScript
 */

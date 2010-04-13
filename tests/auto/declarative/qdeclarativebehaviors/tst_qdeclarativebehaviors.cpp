@@ -170,29 +170,24 @@ void tst_qdeclarativebehaviors::replaceBinding()
     QTRY_VERIFY(rect);
 
     rect->setState("moved");
-    //QTest::qWait(200);
     QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
     QTRY_VERIFY(innerRect);
     QTRY_VERIFY(innerRect->x() > 0);
     QTRY_VERIFY(innerRect->x() < 200);
     //i.e. the behavior has been triggered
-    //QTest::qWait(600);
     QTRY_COMPARE(innerRect->x(), (qreal)200);
     rect->setProperty("basex", 10);
     QTRY_COMPARE(innerRect->x(), (qreal)200);
     rect->setProperty("movedx", 210);
-    //QTest::qWait(600);
     QTRY_COMPARE(innerRect->x(), (qreal)210);
 
     rect->setState("");
     QTRY_VERIFY(innerRect->x() > 10);
     QTRY_VERIFY(innerRect->x() < 210);  //i.e. the behavior has been triggered
-    //QTest::qWait(600);
     QTRY_COMPARE(innerRect->x(), (qreal)10);
     rect->setProperty("movedx", 200);
     QTRY_COMPARE(innerRect->x(), (qreal)10);
     rect->setProperty("basex", 20);
-    //QTest::qWait(600);
     QTRY_COMPARE(innerRect->x(), (qreal)20);
 
     delete rect;

@@ -4,16 +4,19 @@ import "content/samegame.js" as SameGame
 
 Rectangle {
     id: screen
+
     width: 490; height: 720
 
     SystemPalette { id: activePalette }
 
     Item {
-        width: parent.width; anchors.top: parent.top; anchors.bottom: toolBar.top
+        width: parent.width
+        anchors { top: parent.top; bottom: toolBar.top }
 
         Image {
             id: background
-            anchors.fill: parent; source: "../shared/pics/background.jpg"
+            anchors.fill: parent
+            source: "../shared/pics/background.jpg"
             fillMode: Image.PreserveAspectCrop
         }
 
@@ -36,43 +39,49 @@ Rectangle {
 
     //![0]
     Dialog {
-        id: nameInputDialog; anchors.centerIn: parent; z: 22;
+        id: nameInputDialog
+
+        anchors.centerIn: parent
+        z: 22
+
         Text {
-            id: spacer
+            id: dialogText
             opacity: 0
             text: "   You won! Please enter your name:"
         }
+
         TextInput {
-            id: editor
+            id: nameInput
+            width: 72
+            anchors { verticalCenter: parent.verticalCenter; left: dialogText.right }
+            focus: true
+
             onAccepted: {
-                if(nameInputDialog.opacity==1&&editor.text!="")
-                    SameGame.saveHighScore(editor.text);
+                if (nameInputDialog.opacity == 1 && nameInput.text != "")
+                    SameGame.saveHighScore(nameInput.text);
                 nameInputDialog.forceClose();
             }
-            anchors.verticalCenter: parent.verticalCenter
-            width: 72; focus: true
-            anchors.left: spacer.right
         }
     }
     //![0]
 
     Rectangle {
         id: toolBar
+        width: parent.width; height: 32
         color: activePalette.window
-        height: 32; width: parent.width
         anchors.bottom: screen.bottom
 
         Button {
-            text: "New Game"; onClicked: SameGame.startNewGame();
-            anchors.left: parent.left; anchors.leftMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
+            anchors { left: parent.left; leftMargin: 3; verticalCenter: parent.verticalCenter }
+            text: "New Game" 
+            onClicked: SameGame.startNewGame()
         }
 
         Text {
             id: score
-            text: "Score: " + gameCanvas.score; font.bold: true
-            anchors.right: parent.right; anchors.rightMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
+            anchors { right: parent.right; rightMargin: 3; verticalCenter: parent.verticalCenter }
+            text: "Score: " + gameCanvas.score
+            font.bold: true
         }
     }
 }

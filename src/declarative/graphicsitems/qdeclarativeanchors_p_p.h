@@ -59,8 +59,9 @@
 
 QT_BEGIN_NAMESPACE
 
-struct QDeclarativeAnchorLine
+class QDeclarativeAnchorLine
 {
+public:
     QDeclarativeAnchorLine() : item(0), anchorLine(Invalid) {}
 
     enum AnchorLine {
