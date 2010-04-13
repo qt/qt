@@ -2,14 +2,17 @@ import Qt 4.7
 
 Rectangle {
     id: page
-    width: 640; height: 480; color: "#343434"
+    width: 640; height: 480
+    color: "#343434"
 
     // A target region.  Clicking in here sets the state to the default state
     Rectangle {
         id: initialPosition
         anchors { left: parent.left; top: parent.top; leftMargin: 10; topMargin: 20 }
-        width: 64; height: 64; radius: 6
+        width: 64; height: 64
+        radius: 6
         color: "Transparent"; border.color: "Gray"
+
         MouseArea { anchors.fill: parent; onClicked: page.state = '' }
     }
 
@@ -17,8 +20,10 @@ Rectangle {
     Rectangle {
         id: position1
         anchors { right: parent.right; verticalCenter: parent.verticalCenter; rightMargin: 20 }
-        width: 64; height: 64; radius: 6
+        width: 64; height: 64
+        radius: 6
         color: "Transparent"; border.color: "Gray"
+
         MouseArea { anchors.fill: parent; onClicked: page.state = 'Position1' }
     }
 
@@ -26,8 +31,10 @@ Rectangle {
     Rectangle {
         id: position2
         anchors { left: parent.left; bottom: parent.bottom; leftMargin: 10; bottomMargin: 20 }
-        width: 64; height: 64; radius: 6
+        width: 64; height: 64
+        radius: 6
         color: "Transparent"; border.color: "Gray"
+
         MouseArea { anchors.fill: parent; onClicked: page.state = 'Position2' }
     }
 

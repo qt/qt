@@ -1,9 +1,12 @@
 import Qt 4.7
 import Qt.widgets 4.6
+
 Item {
     id: resizable
+
     width:400
     height:400
+
     QGraphicsWidget {
         size.width:parent.width
         size.height:parent.height

@@ -60,7 +60,7 @@ Item {
         width: 480
         anchors { right: parent.right; top:parent.top; bottom: parent.bottom }
         Rectangle { //Not a child of any positioner
-            color: "white"; border.color: "black";
+            border.color: "black";
             width: toolRow.width + 4
             height: toolRow.height + 4
             x: toolboxPositioner.x + toolRow.x - 2
