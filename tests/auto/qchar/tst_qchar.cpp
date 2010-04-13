@@ -513,10 +513,7 @@ void tst_QChar::normalization()
     }
 
     QFile f(SRCDIR "NormalizationTest.txt");
-    if (!f.exists()) {
-        QFAIL("Couldn't find NormalizationTest.txt");
-        return;
-    }
+    QVERIFY(f.exists());
 
     f.open(QIODevice::ReadOnly);
 

@@ -83,12 +83,24 @@
        <property name="toolTip" >
         <string>Back</string>
        </property>
+       <property name="accessibleName">
+        <string>Back</string>
+       </property>
+       <property name="accessibleDescription">
+        <string>Go back</string>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QToolButton" name="forwardButton" >
        <property name="toolTip" >
         <string>Forward</string>
+       </property>
+       <property name="accessibleName">
+        <string>Forward</string>
+       </property>
+       <property name="accessibleDescription">
+        <string>Go forward</string>
        </property>
       </widget>
      </item>
@@ -97,12 +109,24 @@
        <property name="toolTip" >
         <string>Parent Directory</string>
        </property>
+       <property name="accessibleName">
+        <string>Parent Directory</string>
+       </property>
+       <property name="accessibleDescription">
+        <string>Go to the parent directory</string>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QToolButton" name="newFolderButton" >
        <property name="toolTip" >
         <string>Create New Folder</string>
+       </property>
+       <property name="accessibleName">
+        <string>Create New Folder</string>
+       </property>
+       <property name="accessibleDescription">
+        <string>Create a New Folder</string>
        </property>
       </widget>
      </item>
@@ -111,12 +135,24 @@
        <property name="toolTip" >
         <string>List View</string>
        </property>
+       <property name="accessibleName">
+        <string>List View</string>
+       </property>
+       <property name="accessibleDescription">
+        <string>Change to list view mode</string>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QToolButton" name="detailModeButton" >
        <property name="toolTip" >
         <string>Detail View</string>
+       </property>
+       <property name="accessibleName">
+        <string>Detail View</string>
+       </property>
+       <property name="accessibleDescription">
+        <string>Change to detail view mode</string>
        </property>
       </widget>
      </item>

@@ -122,6 +122,7 @@ public:
     int qtOwnsS60Environment : 1;
     int supportsPremultipliedAlpha : 1;
     int avkonComponentsSupportTransparency : 1;
+    int menuBeingConstructed : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     static inline void updateScreenSize();
     static inline RWsSession& wsSession();

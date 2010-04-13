@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 
 #include <stddef.h>
+#include <exception>
 
 QT_USE_NAMESPACE
 
@@ -285,8 +286,26 @@ void tst_ExceptionSafetyObjects::safeMessageHandler(QtMsgType type, const char *
     allocFailer.reactivateAt(currentIndex);
 }
 
+typedef void (*PVF)();
+PVF defaultTerminate;
+void debugTerminate()
+{
+    // you can detect uncaught exceptions with a breakpoint in here
+    (*defaultTerminate)();
+}
+
+PVF defaultUnexpected;
+void debugUnexpected()
+{
+    // you can detect unexpected exceptions with a breakpoint in here
+    (*defaultUnexpected)();
+}
+
 void tst_ExceptionSafetyObjects::initTestCase()
 {
+    // set handlers for bad exception cases, you might want to step in and breakpoint the default handlers too
+    defaultTerminate = std::set_terminate(&debugTerminate);
+    defaultUnexpected = std::set_unexpected(&debugUnexpected);
     testMessageHandler = qInstallMsgHandler(safeMessageHandler);
 
     QVERIFY(AllocFailer::initialize());

@@ -114,15 +114,14 @@ void QSpanCollection::updateSpan(QSpanCollection::Span *span, int old_height)
         }
     } else if (old_height > span->height()) {
         //remove the span from all the subspans lists that intersect the columns not covered anymore
-        Index::iterator it_y = index.lowerBound(-span->bottom());
-        if (it_y == index.end())
-            it_y = index.find(-span->top());    // This is the only span remaining and we are deleting it.
+        Index::iterator it_y = index.lowerBound(-qMax(span->bottom(), span->top())); //qMax usefull if height is 0
         Q_ASSERT(it_y != index.end()); //it_y must exist since the span is in the list
         while (-it_y.key() <= span->top() + old_height -1) {
             if (-it_y.key() > span->bottom()) {
-                (*it_y).remove(-span->left());
+                int removed = (*it_y).remove(-span->left());
+                Q_ASSERT(removed == 1); Q_UNUSED(removed);
                 if (it_y->isEmpty()) {
-                    it_y = index.erase(it_y) - 1;
+                    it_y = index.erase(it_y);
                 }
             }
             if(it_y == index.begin())
