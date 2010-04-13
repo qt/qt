@@ -168,6 +168,7 @@ private slots:
     void autoFillBackground();
     void initialShow();
     void initialShow2();
+    void itemChangeEvents();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -2942,6 +2943,91 @@ void tst_QGraphicsWidget::initialShow2()
     QTest::qWaitForWindowShown(&view);
 
     QTRY_COMPARE(widget->repaints, expectedRepaintCount);
+}
+
+void tst_QGraphicsWidget::itemChangeEvents()
+{
+    class TestGraphicsWidget : public QGraphicsWidget
+    { public:
+        TestGraphicsWidget() : QGraphicsWidget() {}
+        QHash<QEvent::Type, QVariant> valueDuringEvents;
+        bool event(QEvent *event) {
+            Q_UNUSED(event);
+            switch (event->type()) {
+            case QEvent::EnabledChange: {
+                valueDuringEvents.insert(QEvent::EnabledChange, isEnabled());
+                break;
+            }
+            case QEvent::ParentAboutToChange: {
+                valueDuringEvents.insert(QEvent::ParentAboutToChange, qVariantFromValue(parentItem()));
+                break;
+            }
+            case QEvent::ParentChange: {
+                valueDuringEvents.insert(QEvent::ParentChange, qVariantFromValue(parentItem()));
+                break;
+            }
+            case QEvent::CursorChange: {
+                valueDuringEvents.insert(QEvent::CursorChange, int(cursor().shape()));
+                break;
+            }
+            case QEvent::ToolTipChange: {
+                valueDuringEvents.insert(QEvent::ToolTipChange, toolTip());
+                break;
+            }
+            default: {
+                break;
+            }
+            }
+            return true;
+        }
+        void showEvent(QShowEvent *event) {
+            Q_UNUSED(event);
+            valueDuringEvents.insert(QEvent::Show, isVisible());
+        }
+        void hideEvent(QHideEvent *event) {
+            Q_UNUSED(event);
+            valueDuringEvents.insert(QEvent::Hide, isVisible());
+        }
+    };
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QGraphicsWidget *parent = new QGraphicsWidget;
+    scene.addItem(parent);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    TestGraphicsWidget *item = new TestGraphicsWidget;
+    item->setParentItem(parent);
+    // ParentAboutToChange should be triggered before the parent has changed
+    QTRY_COMPARE(qVariantValue<QGraphicsItem *>(item->valueDuringEvents.value(QEvent::ParentAboutToChange)),
+             static_cast<QGraphicsItem *>(0));
+    // ParentChange should be triggered after the parent has changed
+    QTRY_COMPARE(qVariantValue<QGraphicsItem *>(item->valueDuringEvents.value(QEvent::ParentChange)),
+             static_cast<QGraphicsItem *>(parent));
+
+    // ShowEvent should be triggered before the item is shown
+    QTRY_VERIFY(!item->valueDuringEvents.value(QEvent::Show).toBool());
+
+    // HideEvent should be triggered after the item is hidden
+    QVERIFY(item->isVisible());
+    item->setVisible(false);
+    QVERIFY(!item->isVisible());
+    QTRY_VERIFY(!item->valueDuringEvents.value(QEvent::Hide).toBool());
+
+    // CursorChange should be triggered after the cursor has changed
+    item->setCursor(Qt::PointingHandCursor);
+    QTRY_COMPARE(item->valueDuringEvents.value(QEvent::CursorChange).toInt(), int(item->cursor().shape()));
+
+    // ToolTipChange should be triggered after the tooltip has changed
+    item->setToolTip("tooltipText");
+    QTRY_COMPARE(item->valueDuringEvents.value(QEvent::ToolTipChange).toString(), item->toolTip());
+
+    // EnabledChange should be triggered after the enabled state has changed
+    QVERIFY(item->isEnabled());
+    item->setEnabled(false);
+    QVERIFY(!item->isEnabled());
+    QTRY_VERIFY(!item->valueDuringEvents.value(QEvent::EnabledChange).toBool());
 }
 
 void tst_QGraphicsWidget::QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems()
