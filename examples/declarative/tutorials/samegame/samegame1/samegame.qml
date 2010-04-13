@@ -29,7 +29,7 @@ Rectangle {
         Button {
             anchors { left: parent.left; leftMargin: 3; verticalCenter: parent.verticalCenter }
             text: "New Game" 
-            onClicked: console.log("Starting a new game...")
+            onClicked: console.log("This doesn't do anything yet...")
         }
 
         Text {
