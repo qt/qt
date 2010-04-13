@@ -15,6 +15,10 @@ CONFIG += depend_includepath
 
 contains(QT_CONFIG, embedded):CONFIG += embedded
 
+# Add these two lines both for QTDIR_build and not because we don't include qbase.pri
+contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
+unix:contains(QT_CONFIG, reduce_relocations):CONFIG += bsymbolic_functions
+
 CONFIG(QTDIR_build) {
     # Make sure we compile both debug and release on mac when inside Qt.
     # This line was extracted from qbase.pri instead of including the whole file
