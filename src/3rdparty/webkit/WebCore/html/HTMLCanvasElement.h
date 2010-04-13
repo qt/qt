@@ -27,7 +27,8 @@
 #ifndef HTMLCanvasElement_h
 #define HTMLCanvasElement_h
 
-#include "TransformationMatrix.h"
+#include "AffineTransform.h"
+#include "CanvasSurface.h"
 #include "FloatRect.h"
 #include "HTMLElement.h"
 #if ENABLE(3D_CANVAS)    
@@ -37,6 +38,7 @@
 
 namespace WebCore {
 
+class CanvasContextAttributes;
 class CanvasRenderingContext;
 class FloatPoint;
 class FloatRect;
@@ -56,7 +58,7 @@ public:
     virtual void canvasDestroyed(HTMLCanvasElement*) = 0;
 };
 
-class HTMLCanvasElement : public HTMLElement {
+class HTMLCanvasElement : public HTMLElement, public CanvasSurface {
 public:
     HTMLCanvasElement(const QualifiedName&, Document*);
     virtual ~HTMLCanvasElement();
@@ -68,7 +70,7 @@ public:
 
     String toDataURL(const String& mimeType, ExceptionCode&);
 
-    CanvasRenderingContext* getContext(const String&);
+    CanvasRenderingContext* getContext(const String&, CanvasContextAttributes* attributes = 0);
 
     const IntSize& size() const { return m_size; }
     void setSize(const IntSize& size)
@@ -99,7 +101,7 @@ public:
 
     void setObserver(CanvasObserver* observer) { m_observer = observer; }
 
-    TransformationMatrix baseTransform() const;
+    AffineTransform baseTransform() const;
 
     CanvasRenderingContext* renderingContext() const { return m_context.get(); }
 

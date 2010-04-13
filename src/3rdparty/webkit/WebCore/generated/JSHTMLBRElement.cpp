@@ -37,8 +37,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLBRElement);
 
 static const HashTableValue JSHTMLBRElementTableValues[3] =
 {
-    { "clear", DontDelete, (intptr_t)jsHTMLBRElementClear, (intptr_t)setJSHTMLBRElementClear },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLBRElementConstructor, (intptr_t)0 },
+    { "clear", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBRElementClear), (intptr_t)setJSHTMLBRElementClear },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLBRElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -139,17 +139,18 @@ bool JSHTMLBRElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier
     return getStaticValueDescriptor<JSHTMLBRElement, Base>(exec, &JSHTMLBRElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLBRElementClear(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBRElementClear(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLBRElement* castedThis = static_cast<JSHTMLBRElement*>(asObject(slot.slotBase()));
+    JSHTMLBRElement* castedThis = static_cast<JSHTMLBRElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLBRElement* imp = static_cast<HTMLBRElement*>(castedThis->impl());
-    return jsString(exec, imp->getAttribute(HTMLNames::clearAttr));
+    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::clearAttr));
+    return result;
 }
 
-JSValue jsHTMLBRElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLBRElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLBRElement* domObject = static_cast<JSHTMLBRElement*>(asObject(slot.slotBase()));
+    JSHTMLBRElement* domObject = static_cast<JSHTMLBRElement*>(asObject(slotBase));
     return JSHTMLBRElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLBRElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -159,7 +160,8 @@ void JSHTMLBRElement::put(ExecState* exec, const Identifier& propertyName, JSVal
 
 void setJSHTMLBRElementClear(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLBRElement* imp = static_cast<HTMLBRElement*>(static_cast<JSHTMLBRElement*>(thisObject)->impl());
+    JSHTMLBRElement* castedThisObj = static_cast<JSHTMLBRElement*>(thisObject);
+    HTMLBRElement* imp = static_cast<HTMLBRElement*>(castedThisObj->impl());
     imp->setAttribute(HTMLNames::clearAttr, valueToStringWithNullCheck(exec, value));
 }
 

@@ -34,7 +34,8 @@ module threads {
         ExtendsDOMGlobalObject,
         IsWorkerContext,
         LegacyParent=JSWorkerContextBase,
-        NoStaticTables
+        NoStaticTables,
+        OmitConstructor
     ] WorkerContext {
 
         // WorkerGlobalScope
@@ -61,12 +62,12 @@ module threads {
 
 
         // EventTarget interface
-        [Custom] void addEventListener(in DOMString type, 
-                                       in EventListener listener, 
-                                       in boolean useCapture);
-        [Custom] void removeEventListener(in DOMString type, 
+        [JSCCustom] void addEventListener(in DOMString type, 
                                           in EventListener listener, 
                                           in boolean useCapture);
+        [JSCCustom] void removeEventListener(in DOMString type, 
+                                             in EventListener listener, 
+                                             in boolean useCapture);
         boolean dispatchEvent(in Event evt)
             raises(EventException);
 
@@ -86,6 +87,9 @@ module threads {
         attribute [JSCCustomGetter] EventSourceConstructor EventSource;
 #endif
         attribute [JSCCustomGetter] XMLHttpRequestConstructor XMLHttpRequest;
+#if defined(ENABLE_WEB_SOCKETS) && ENABLE_WEB_SOCKETS
+        attribute [JSCCustomGetter,EnabledAtRuntime] WebSocketConstructor WebSocket; // Usable with the new operator
+#endif
     };
 
 }

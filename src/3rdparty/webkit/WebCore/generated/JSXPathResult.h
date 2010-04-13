@@ -23,7 +23,6 @@
 
 #if ENABLE(XPATH)
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -45,7 +44,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -70,7 +69,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSXPathResultPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -83,26 +82,26 @@ JSC::JSValue JSC_HOST_CALL jsXPathResultPrototypeFunctionIterateNext(JSC::ExecSt
 JSC::JSValue JSC_HOST_CALL jsXPathResultPrototypeFunctionSnapshotItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsXPathResultResultType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultNumberValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultStringValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultBooleanValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultSingleNodeValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultInvalidIteratorState(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultSnapshotLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultResultType(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultNumberValue(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultStringValue(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultBooleanValue(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultSingleNodeValue(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultInvalidIteratorState(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultSnapshotLength(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 // Constants
 
-JSC::JSValue jsXPathResultANY_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultNUMBER_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultSTRING_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultBOOLEAN_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultUNORDERED_NODE_ITERATOR_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultORDERED_NODE_ITERATOR_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultUNORDERED_NODE_SNAPSHOT_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultORDERED_NODE_SNAPSHOT_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultANY_UNORDERED_NODE_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsXPathResultFIRST_ORDERED_NODE_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultANY_TYPE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultNUMBER_TYPE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultSTRING_TYPE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultBOOLEAN_TYPE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultUNORDERED_NODE_ITERATOR_TYPE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultORDERED_NODE_ITERATOR_TYPE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultUNORDERED_NODE_SNAPSHOT_TYPE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultORDERED_NODE_SNAPSHOT_TYPE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultANY_UNORDERED_NODE_TYPE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsXPathResultFIRST_ORDERED_NODE_TYPE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

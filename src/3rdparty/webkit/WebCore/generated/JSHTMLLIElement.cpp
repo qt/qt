@@ -37,9 +37,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLLIElement);
 
 static const HashTableValue JSHTMLLIElementTableValues[4] =
 {
-    { "type", DontDelete, (intptr_t)jsHTMLLIElementType, (intptr_t)setJSHTMLLIElementType },
-    { "value", DontDelete, (intptr_t)jsHTMLLIElementValue, (intptr_t)setJSHTMLLIElementValue },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLLIElementConstructor, (intptr_t)0 },
+    { "type", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLIElementType), (intptr_t)setJSHTMLLIElementType },
+    { "value", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLIElementValue), (intptr_t)setJSHTMLLIElementValue },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLLIElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -78,7 +78,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -140,25 +140,27 @@ bool JSHTMLLIElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier
     return getStaticValueDescriptor<JSHTMLLIElement, Base>(exec, &JSHTMLLIElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLLIElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLIElementType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLIElement* castedThis = static_cast<JSHTMLLIElement*>(asObject(slot.slotBase()));
+    JSHTMLLIElement* castedThis = static_cast<JSHTMLLIElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLLIElement* imp = static_cast<HTMLLIElement*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
-JSValue jsHTMLLIElementValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLIElementValue(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLIElement* castedThis = static_cast<JSHTMLLIElement*>(asObject(slot.slotBase()));
+    JSHTMLLIElement* castedThis = static_cast<JSHTMLLIElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLLIElement* imp = static_cast<HTMLLIElement*>(castedThis->impl());
-    return jsNumber(exec, imp->value());
+    JSValue result = jsNumber(exec, imp->value());
+    return result;
 }
 
-JSValue jsHTMLLIElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLLIElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLLIElement* domObject = static_cast<JSHTMLLIElement*>(asObject(slot.slotBase()));
+    JSHTMLLIElement* domObject = static_cast<JSHTMLLIElement*>(asObject(slotBase));
     return JSHTMLLIElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLLIElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -168,13 +170,15 @@ void JSHTMLLIElement::put(ExecState* exec, const Identifier& propertyName, JSVal
 
 void setJSHTMLLIElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLLIElement* imp = static_cast<HTMLLIElement*>(static_cast<JSHTMLLIElement*>(thisObject)->impl());
+    JSHTMLLIElement* castedThisObj = static_cast<JSHTMLLIElement*>(thisObject);
+    HTMLLIElement* imp = static_cast<HTMLLIElement*>(castedThisObj->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLLIElementValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLLIElement* imp = static_cast<HTMLLIElement*>(static_cast<JSHTMLLIElement*>(thisObject)->impl());
+    JSHTMLLIElement* castedThisObj = static_cast<JSHTMLLIElement*>(thisObject);
+    HTMLLIElement* imp = static_cast<HTMLLIElement*>(castedThisObj->impl());
     imp->setValue(value.toInt32(exec));
 }
 

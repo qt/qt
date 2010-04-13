@@ -39,11 +39,11 @@ ASSERT_CLASS_FITS_IN_CELL(JSWorkerNavigator);
 
 static const HashTableValue JSWorkerNavigatorTableValues[6] =
 {
-    { "appName", DontDelete|ReadOnly, (intptr_t)jsWorkerNavigatorAppName, (intptr_t)0 },
-    { "appVersion", DontDelete|ReadOnly, (intptr_t)jsWorkerNavigatorAppVersion, (intptr_t)0 },
-    { "platform", DontDelete|ReadOnly, (intptr_t)jsWorkerNavigatorPlatform, (intptr_t)0 },
-    { "userAgent", DontDelete|ReadOnly, (intptr_t)jsWorkerNavigatorUserAgent, (intptr_t)0 },
-    { "onLine", DontDelete|ReadOnly, (intptr_t)jsWorkerNavigatorOnLine, (intptr_t)0 },
+    { "appName", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWorkerNavigatorAppName), (intptr_t)0 },
+    { "appVersion", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWorkerNavigatorAppVersion), (intptr_t)0 },
+    { "platform", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWorkerNavigatorPlatform), (intptr_t)0 },
+    { "userAgent", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWorkerNavigatorUserAgent), (intptr_t)0 },
+    { "onLine", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWorkerNavigatorOnLine), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -111,44 +111,49 @@ bool JSWorkerNavigator::getOwnPropertyDescriptor(ExecState* exec, const Identifi
     return getStaticValueDescriptor<JSWorkerNavigator, Base>(exec, getJSWorkerNavigatorTable(exec), this, propertyName, descriptor);
 }
 
-JSValue jsWorkerNavigatorAppName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerNavigatorAppName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()));
+    JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(castedThis->impl());
-    return jsString(exec, imp->appName());
+    JSValue result = jsString(exec, imp->appName());
+    return result;
 }
 
-JSValue jsWorkerNavigatorAppVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerNavigatorAppVersion(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()));
+    JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(castedThis->impl());
-    return jsString(exec, imp->appVersion());
+    JSValue result = jsString(exec, imp->appVersion());
+    return result;
 }
 
-JSValue jsWorkerNavigatorPlatform(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerNavigatorPlatform(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()));
+    JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(castedThis->impl());
-    return jsString(exec, imp->platform());
+    JSValue result = jsString(exec, imp->platform());
+    return result;
 }
 
-JSValue jsWorkerNavigatorUserAgent(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerNavigatorUserAgent(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()));
+    JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(castedThis->impl());
-    return jsString(exec, imp->userAgent());
+    JSValue result = jsString(exec, imp->userAgent());
+    return result;
 }
 
-JSValue jsWorkerNavigatorOnLine(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWorkerNavigatorOnLine(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()));
+    JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(castedThis->impl());
-    return jsBoolean(imp->onLine());
+    JSValue result = jsBoolean(imp->onLine());
+    return result;
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, WorkerNavigator* object)

@@ -39,10 +39,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSCSSImportRule);
 
 static const HashTableValue JSCSSImportRuleTableValues[5] =
 {
-    { "href", DontDelete|ReadOnly, (intptr_t)jsCSSImportRuleHref, (intptr_t)0 },
-    { "media", DontDelete|ReadOnly, (intptr_t)jsCSSImportRuleMedia, (intptr_t)0 },
-    { "styleSheet", DontDelete|ReadOnly, (intptr_t)jsCSSImportRuleStyleSheet, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCSSImportRuleConstructor, (intptr_t)0 },
+    { "href", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSImportRuleHref), (intptr_t)0 },
+    { "media", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSImportRuleMedia), (intptr_t)0 },
+    { "styleSheet", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSImportRuleStyleSheet), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSImportRuleConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -143,33 +143,36 @@ bool JSCSSImportRule::getOwnPropertyDescriptor(ExecState* exec, const Identifier
     return getStaticValueDescriptor<JSCSSImportRule, Base>(exec, &JSCSSImportRuleTable, this, propertyName, descriptor);
 }
 
-JSValue jsCSSImportRuleHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSImportRuleHref(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSImportRule* castedThis = static_cast<JSCSSImportRule*>(asObject(slot.slotBase()));
+    JSCSSImportRule* castedThis = static_cast<JSCSSImportRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSImportRule* imp = static_cast<CSSImportRule*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->href());
+    JSValue result = jsStringOrNull(exec, imp->href());
+    return result;
 }
 
-JSValue jsCSSImportRuleMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSImportRuleMedia(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSImportRule* castedThis = static_cast<JSCSSImportRule*>(asObject(slot.slotBase()));
+    JSCSSImportRule* castedThis = static_cast<JSCSSImportRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSImportRule* imp = static_cast<CSSImportRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
+    return result;
 }
 
-JSValue jsCSSImportRuleStyleSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSImportRuleStyleSheet(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSImportRule* castedThis = static_cast<JSCSSImportRule*>(asObject(slot.slotBase()));
+    JSCSSImportRule* castedThis = static_cast<JSCSSImportRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSImportRule* imp = static_cast<CSSImportRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->styleSheet()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->styleSheet()));
+    return result;
 }
 
-JSValue jsCSSImportRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSImportRuleConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSImportRule* domObject = static_cast<JSCSSImportRule*>(asObject(slot.slotBase()));
+    JSCSSImportRule* domObject = static_cast<JSCSSImportRule*>(asObject(slotBase));
     return JSCSSImportRule::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSCSSImportRule::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

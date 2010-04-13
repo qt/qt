@@ -41,12 +41,13 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGElementTableValues[5] =
+static const HashTableValue JSSVGElementTableValues[6] =
 {
-    { "id", DontDelete, (intptr_t)jsSVGElementId, (intptr_t)setJSSVGElementId },
-    { "xmlbase", DontDelete, (intptr_t)jsSVGElementXmlbase, (intptr_t)setJSSVGElementXmlbase },
-    { "ownerSVGElement", DontDelete|ReadOnly, (intptr_t)jsSVGElementOwnerSVGElement, (intptr_t)0 },
-    { "viewportElement", DontDelete|ReadOnly, (intptr_t)jsSVGElementViewportElement, (intptr_t)0 },
+    { "id", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGElementId), (intptr_t)setJSSVGElementId },
+    { "xmlbase", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGElementXmlbase), (intptr_t)setJSSVGElementXmlbase },
+    { "ownerSVGElement", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGElementOwnerSVGElement), (intptr_t)0 },
+    { "viewportElement", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGElementViewportElement), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -54,8 +55,55 @@ static JSC_CONST_HASHTABLE HashTable JSSVGElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGElementTableValues, 0 };
 #else
-    { 9, 7, JSSVGElementTableValues, 0 };
+    { 16, 15, JSSVGElementTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGElementConstructor::s_info = { "SVGElementConstructor", 0, &JSSVGElementConstructorTable, 0 };
+
+bool JSSVGElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGElementConstructor, DOMObject>(exec, &JSSVGElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGElementConstructor, DOMObject>(exec, &JSSVGElementConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -100,38 +148,47 @@ bool JSSVGElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& p
     return getStaticValueDescriptor<JSSVGElement, Base>(exec, &JSSVGElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGElementId(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementId(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
+    JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
-    return jsString(exec, imp->getAttribute(HTMLNames::idAttr));
+    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::idAttr));
+    return result;
 }
 
-JSValue jsSVGElementXmlbase(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementXmlbase(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
+    JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
-    return jsString(exec, imp->xmlbase());
+    JSValue result = jsString(exec, imp->xmlbase());
+    return result;
 }
 
-JSValue jsSVGElementOwnerSVGElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementOwnerSVGElement(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
+    JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerSVGElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerSVGElement()));
+    return result;
 }
 
-JSValue jsSVGElementViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementViewportElement(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
+    JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->viewportElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->viewportElement()));
+    return result;
 }
 
+JSValue jsSVGElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGElement* domObject = static_cast<JSSVGElement*>(asObject(slotBase));
+    return JSSVGElement::getConstructor(exec, domObject->globalObject());
+}
 void JSSVGElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGElement, Base>(exec, propertyName, value, &JSSVGElementTable, this, slot);
@@ -139,7 +196,8 @@ void JSSVGElement::put(ExecState* exec, const Identifier& propertyName, JSValue 
 
 void setJSSVGElementId(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(thisObject)->impl());
+    JSSVGElement* castedThisObj = static_cast<JSSVGElement*>(thisObject);
+    SVGElement* imp = static_cast<SVGElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setAttribute(HTMLNames::idAttr, valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);
@@ -147,10 +205,16 @@ void setJSSVGElementId(ExecState* exec, JSObject* thisObject, JSValue value)
 
 void setJSSVGElementXmlbase(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(thisObject)->impl());
+    JSSVGElement* castedThisObj = static_cast<JSSVGElement*>(thisObject);
+    SVGElement* imp = static_cast<SVGElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setXmlbase(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);
+}
+
+JSValue JSSVGElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 SVGElement* toSVGElement(JSC::JSValue value)

@@ -38,9 +38,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSWebKitAnimationEvent);
 
 static const HashTableValue JSWebKitAnimationEventTableValues[4] =
 {
-    { "animationName", DontDelete|ReadOnly, (intptr_t)jsWebKitAnimationEventAnimationName, (intptr_t)0 },
-    { "elapsedTime", DontDelete|ReadOnly, (intptr_t)jsWebKitAnimationEventElapsedTime, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsWebKitAnimationEventConstructor, (intptr_t)0 },
+    { "animationName", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitAnimationEventAnimationName), (intptr_t)0 },
+    { "elapsedTime", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitAnimationEventElapsedTime), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitAnimationEventConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -102,7 +102,7 @@ bool JSWebKitAnimationEventConstructor::getOwnPropertyDescriptor(ExecState* exec
 
 static const HashTableValue JSWebKitAnimationEventPrototypeTableValues[2] =
 {
-    { "initWebKitAnimationEvent", DontDelete|Function, (intptr_t)jsWebKitAnimationEventPrototypeFunctionInitWebKitAnimationEvent, (intptr_t)5 },
+    { "initWebKitAnimationEvent", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsWebKitAnimationEventPrototypeFunctionInitWebKitAnimationEvent), (intptr_t)5 },
     { 0, 0, 0, 0 }
 };
 
@@ -152,25 +152,27 @@ bool JSWebKitAnimationEvent::getOwnPropertyDescriptor(ExecState* exec, const Ide
     return getStaticValueDescriptor<JSWebKitAnimationEvent, Base>(exec, &JSWebKitAnimationEventTable, this, propertyName, descriptor);
 }
 
-JSValue jsWebKitAnimationEventAnimationName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitAnimationEventAnimationName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitAnimationEvent* castedThis = static_cast<JSWebKitAnimationEvent*>(asObject(slot.slotBase()));
+    JSWebKitAnimationEvent* castedThis = static_cast<JSWebKitAnimationEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitAnimationEvent* imp = static_cast<WebKitAnimationEvent*>(castedThis->impl());
-    return jsString(exec, imp->animationName());
+    JSValue result = jsString(exec, imp->animationName());
+    return result;
 }
 
-JSValue jsWebKitAnimationEventElapsedTime(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitAnimationEventElapsedTime(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitAnimationEvent* castedThis = static_cast<JSWebKitAnimationEvent*>(asObject(slot.slotBase()));
+    JSWebKitAnimationEvent* castedThis = static_cast<JSWebKitAnimationEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitAnimationEvent* imp = static_cast<WebKitAnimationEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->elapsedTime());
+    JSValue result = jsNumber(exec, imp->elapsedTime());
+    return result;
 }
 
-JSValue jsWebKitAnimationEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitAnimationEventConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitAnimationEvent* domObject = static_cast<JSWebKitAnimationEvent*>(asObject(slot.slotBase()));
+    JSWebKitAnimationEvent* domObject = static_cast<JSWebKitAnimationEvent*>(asObject(slotBase));
     return JSWebKitAnimationEvent::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSWebKitAnimationEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

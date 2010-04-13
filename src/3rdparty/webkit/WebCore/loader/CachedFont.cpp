@@ -27,21 +27,22 @@
 #include "config.h"
 #include "CachedFont.h"
 
-#if PLATFORM(CG) || PLATFORM(QT) || PLATFORM(GTK) || (PLATFORM(CHROMIUM) && (PLATFORM(WIN_OS) || PLATFORM(LINUX))) || PLATFORM(HAIKU) || PLATFORM(WINCE)
+#if PLATFORM(CG) || PLATFORM(QT) || PLATFORM(GTK) || (PLATFORM(CHROMIUM) && (OS(WINDOWS) || OS(LINUX))) || PLATFORM(HAIKU) || OS(WINCE)
 #define STORE_FONT_CUSTOM_PLATFORM_DATA
 #endif
 
 #include "Cache.h"
 #include "CachedResourceClient.h"
 #include "CachedResourceClientWalker.h"
-#include "DOMImplementation.h"
 #include "FontPlatformData.h"
-#ifdef STORE_FONT_CUSTOM_PLATFORM_DATA
-#include "FontCustomPlatformData.h"
-#endif
+#include "SharedBuffer.h"
 #include "TextResourceDecoder.h"
 #include "loader.h"
 #include <wtf/Vector.h>
+
+#ifdef STORE_FONT_CUSTOM_PLATFORM_DATA
+#include "FontCustomPlatformData.h"
+#endif
 
 #if ENABLE(SVG_FONTS)
 #include "HTMLNames.h"
@@ -165,7 +166,7 @@ SVGFontElement* CachedFont::getSVGFontById(const String& fontName) const
         Node* node = list->item(i);
         ASSERT(node);
 
-        if (static_cast<Element*>(node)->getAttribute(HTMLNames::idAttr) != fontName)
+        if (static_cast<Element*>(node)->getAttribute(static_cast<Element*>(node)->idAttributeName()) != fontName)
             continue;
 
         ASSERT(node->hasTagName(SVGNames::fontTag));

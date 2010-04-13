@@ -42,7 +42,7 @@ namespace WebCore {
     extern WTFLogChannel LogPopupBlocking;
     extern WTFLogChannel LogEvents;
     extern WTFLogChannel LogEditing;
-    extern WTFLogChannel LogTextConversion;
+    extern WTFLogChannel LogLiveConnect;
     extern WTFLogChannel LogIconDatabase;
     extern WTFLogChannel LogSQLDatabase;
     extern WTFLogChannel LogSpellingAndGrammar;
@@ -57,6 +57,7 @@ namespace WebCore {
     extern WTFLogChannel LogMedia;
     extern WTFLogChannel LogPlugins;
     extern WTFLogChannel LogArchives;
+    extern WTFLogChannel LogProgress;
 
     void InitializeLoggingChannelsIfNecessary();
     WTFLogChannel* getChannelFromName(const String& channelName);

@@ -29,7 +29,6 @@
 #include "JSAPIValueWrapper.h"
 #include "JSGlobalObject.h"
 #include "JSValue.h"
-#include <wtf/Platform.h>
 #include <wtf/UnusedParam.h>
 
 namespace JSC {
@@ -51,22 +50,40 @@ typedef struct OpaqueJSValue* JSObjectRef;
 
 inline JSC::ExecState* toJS(JSContextRef c)
 {
+    ASSERT(c);
     return reinterpret_cast<JSC::ExecState*>(const_cast<OpaqueJSContext*>(c));
 }
 
 inline JSC::ExecState* toJS(JSGlobalContextRef c)
 {
+    ASSERT(c);
     return reinterpret_cast<JSC::ExecState*>(c);
 }
 
-inline JSC::JSValue toJS(JSC::ExecState*, JSValueRef v)
+inline JSC::JSValue toJS(JSC::ExecState* exec, JSValueRef v)
 {
+    ASSERT_UNUSED(exec, exec);
+    ASSERT(v);
 #if USE(JSVALUE32_64)
     JSC::JSCell* jsCell = reinterpret_cast<JSC::JSCell*>(const_cast<OpaqueJSValue*>(v));
     if (!jsCell)
         return JSC::JSValue();
     if (jsCell->isAPIValueWrapper())
         return static_cast<JSC::JSAPIValueWrapper*>(jsCell)->value();
+    return jsCell;
+#else
+    return JSC::JSValue::decode(reinterpret_cast<JSC::EncodedJSValue>(const_cast<OpaqueJSValue*>(v)));
+#endif
+}
+
+inline JSC::JSValue toJSForGC(JSC::ExecState* exec, JSValueRef v)
+{
+    ASSERT_UNUSED(exec, exec);
+    ASSERT(v);
+#if USE(JSVALUE32_64)
+    JSC::JSCell* jsCell = reinterpret_cast<JSC::JSCell*>(const_cast<OpaqueJSValue*>(v));
+    if (!jsCell)
+        return JSC::JSValue();
     return jsCell;
 #else
     return JSC::JSValue::decode(reinterpret_cast<JSC::EncodedJSValue>(const_cast<OpaqueJSValue*>(v)));

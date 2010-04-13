@@ -151,6 +151,7 @@ zoom
 -webkit-animation-delay
 -webkit-animation-direction
 -webkit-animation-duration
+-webkit-animation-fill-mode
 -webkit-animation-iteration-count
 -webkit-animation-name
 -webkit-animation-play-state
@@ -185,6 +186,7 @@ zoom
 -webkit-box-reflect
 -webkit-box-shadow
 -webkit-box-sizing
+-webkit-color-correction
 -webkit-column-break-after
 -webkit-column-break-before
 -webkit-column-break-inside

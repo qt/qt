@@ -42,11 +42,11 @@ ASSERT_CLASS_FITS_IN_CELL(JSPlugin);
 
 static const HashTableValue JSPluginTableValues[6] =
 {
-    { "name", DontDelete|ReadOnly, (intptr_t)jsPluginName, (intptr_t)0 },
-    { "filename", DontDelete|ReadOnly, (intptr_t)jsPluginFilename, (intptr_t)0 },
-    { "description", DontDelete|ReadOnly, (intptr_t)jsPluginDescription, (intptr_t)0 },
-    { "length", DontDelete|ReadOnly, (intptr_t)jsPluginLength, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsPluginConstructor, (intptr_t)0 },
+    { "name", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPluginName), (intptr_t)0 },
+    { "filename", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPluginFilename), (intptr_t)0 },
+    { "description", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPluginDescription), (intptr_t)0 },
+    { "length", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPluginLength), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPluginConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -85,7 +85,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -108,8 +108,8 @@ bool JSPluginConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identi
 
 static const HashTableValue JSPluginPrototypeTableValues[3] =
 {
-    { "item", DontDelete|Function, (intptr_t)jsPluginPrototypeFunctionItem, (intptr_t)1 },
-    { "namedItem", DontDelete|Function, (intptr_t)jsPluginPrototypeFunctionNamedItem, (intptr_t)1 },
+    { "item", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsPluginPrototypeFunctionItem), (intptr_t)1 },
+    { "namedItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsPluginPrototypeFunctionNamedItem), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -210,48 +210,52 @@ bool JSPlugin::getOwnPropertySlot(ExecState* exec, unsigned propertyName, Proper
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValue jsPluginName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPluginName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slot.slotBase()));
+    JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Plugin* imp = static_cast<Plugin*>(castedThis->impl());
-    return jsString(exec, imp->name());
+    JSValue result = jsString(exec, imp->name());
+    return result;
 }
 
-JSValue jsPluginFilename(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPluginFilename(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slot.slotBase()));
+    JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Plugin* imp = static_cast<Plugin*>(castedThis->impl());
-    return jsString(exec, imp->filename());
+    JSValue result = jsString(exec, imp->filename());
+    return result;
 }
 
-JSValue jsPluginDescription(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPluginDescription(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slot.slotBase()));
+    JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Plugin* imp = static_cast<Plugin*>(castedThis->impl());
-    return jsString(exec, imp->description());
+    JSValue result = jsString(exec, imp->description());
+    return result;
 }
 
-JSValue jsPluginLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPluginLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slot.slotBase()));
+    JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Plugin* imp = static_cast<Plugin*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
-JSValue jsPluginConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPluginConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSPlugin* domObject = static_cast<JSPlugin*>(asObject(slot.slotBase()));
+    JSPlugin* domObject = static_cast<JSPlugin*>(asObject(slotBase));
     return JSPlugin::getConstructor(exec, domObject->globalObject());
 }
-void JSPlugin::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSPlugin::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<Plugin*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSPlugin::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -288,10 +292,10 @@ JSValue JSC_HOST_CALL jsPluginPrototypeFunctionNamedItem(ExecState* exec, JSObje
 }
 
 
-JSValue JSPlugin::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue JSPlugin::indexGetter(ExecState* exec, JSValue slotBase, unsigned index)
 {
-    JSPlugin* thisObj = static_cast<JSPlugin*>(asObject(slot.slotBase()));
-    return toJS(exec, thisObj->globalObject(), static_cast<Plugin*>(thisObj->impl())->item(slot.index()));
+    JSPlugin* thisObj = static_cast<JSPlugin*>(asObject(slotBase));
+    return toJS(exec, thisObj->globalObject(), static_cast<Plugin*>(thisObj->impl())->item(index));
 }
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Plugin* object)
 {

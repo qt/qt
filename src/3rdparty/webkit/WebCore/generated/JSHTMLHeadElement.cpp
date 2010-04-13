@@ -36,8 +36,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLHeadElement);
 
 static const HashTableValue JSHTMLHeadElementTableValues[3] =
 {
-    { "profile", DontDelete, (intptr_t)jsHTMLHeadElementProfile, (intptr_t)setJSHTMLHeadElementProfile },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLHeadElementConstructor, (intptr_t)0 },
+    { "profile", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLHeadElementProfile), (intptr_t)setJSHTMLHeadElementProfile },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLHeadElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -138,17 +138,18 @@ bool JSHTMLHeadElement::getOwnPropertyDescriptor(ExecState* exec, const Identifi
     return getStaticValueDescriptor<JSHTMLHeadElement, Base>(exec, &JSHTMLHeadElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLHeadElementProfile(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHeadElementProfile(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLHeadElement* castedThis = static_cast<JSHTMLHeadElement*>(asObject(slot.slotBase()));
+    JSHTMLHeadElement* castedThis = static_cast<JSHTMLHeadElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLHeadElement* imp = static_cast<HTMLHeadElement*>(castedThis->impl());
-    return jsString(exec, imp->profile());
+    JSValue result = jsString(exec, imp->profile());
+    return result;
 }
 
-JSValue jsHTMLHeadElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLHeadElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLHeadElement* domObject = static_cast<JSHTMLHeadElement*>(asObject(slot.slotBase()));
+    JSHTMLHeadElement* domObject = static_cast<JSHTMLHeadElement*>(asObject(slotBase));
     return JSHTMLHeadElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLHeadElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -158,7 +159,8 @@ void JSHTMLHeadElement::put(ExecState* exec, const Identifier& propertyName, JSV
 
 void setJSHTMLHeadElementProfile(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLHeadElement* imp = static_cast<HTMLHeadElement*>(static_cast<JSHTMLHeadElement*>(thisObject)->impl());
+    JSHTMLHeadElement* castedThisObj = static_cast<JSHTMLHeadElement*>(thisObject);
+    HTMLHeadElement* imp = static_cast<HTMLHeadElement*>(castedThisObj->impl());
     imp->setProfile(valueToStringWithNullCheck(exec, value));
 }
 

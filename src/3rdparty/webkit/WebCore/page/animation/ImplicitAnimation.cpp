@@ -55,7 +55,7 @@ ImplicitAnimation::~ImplicitAnimation()
 {
     // // Make sure to tell the renderer that we are ending. This will make sure any accelerated animations are removed.
     if (!postActive())
-        endAnimation(true);
+        endAnimation();
 }
 
 bool ImplicitAnimation::shouldSendEventForListener(Document::ListenerType inListenerType) const
@@ -106,21 +106,21 @@ void ImplicitAnimation::getAnimatedStyle(RefPtr<RenderStyle>& animatedStyle)
     blendProperties(this, m_animatingProperty, animatedStyle.get(), m_fromStyle.get(), m_toStyle.get(), progress(1, 0, 0));
 }
 
-bool ImplicitAnimation::startAnimation(double beginTime)
+bool ImplicitAnimation::startAnimation(double timeOffset)
 {
 #if USE(ACCELERATED_COMPOSITING)
     if (m_object && m_object->hasLayer()) {
         RenderLayer* layer = toRenderBoxModelObject(m_object)->layer();
         if (layer->isComposited())
-            return layer->backing()->startTransition(beginTime, m_animatingProperty, m_fromStyle.get(), m_toStyle.get());
+            return layer->backing()->startTransition(timeOffset, m_animatingProperty, m_fromStyle.get(), m_toStyle.get());
     }
 #else
-    UNUSED_PARAM(beginTime);
+    UNUSED_PARAM(timeOffset);
 #endif
     return false;
 }
 
-void ImplicitAnimation::endAnimation(bool /*reset*/)
+void ImplicitAnimation::endAnimation()
 {
 #if USE(ACCELERATED_COMPOSITING)
     if (m_object && m_object->hasLayer()) {
@@ -143,7 +143,7 @@ void ImplicitAnimation::onAnimationEnd(double elapsedTime)
         keyframeAnim->setUnanimatedStyle(m_toStyle);
     
     sendTransitionEvent(eventNames().webkitTransitionEndEvent, elapsedTime);
-    endAnimation(true);
+    endAnimation();
 }
 
 bool ImplicitAnimation::sendTransitionEvent(const AtomicString& eventType, double elapsedTime)
@@ -161,7 +161,7 @@ bool ImplicitAnimation::sendTransitionEvent(const AtomicString& eventType, doubl
             if (m_object->node() && m_object->node()->isElementNode())
                 element = static_cast<Element*>(m_object->node());
 
-            ASSERT(!element || element->document() && !element->document()->inPageCache());
+            ASSERT(!element || (element->document() && !element->document()->inPageCache()));
             if (!element)
                 return false;
 

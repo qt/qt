@@ -30,13 +30,12 @@
 #include "FloatSize.h"
 #include "IntPoint.h"
 #include <wtf/MathExtras.h>
-#include <wtf/Platform.h>
 
 #if PLATFORM(CG)
 typedef struct CGPoint CGPoint;
 #endif
 
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
 #ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 typedef struct CGPoint NSPoint;
 #else
@@ -61,6 +60,7 @@ struct SkPoint;
 
 namespace WebCore {
 
+class AffineTransform;
 class TransformationMatrix;
 class IntPoint;
 
@@ -85,7 +85,7 @@ public:
 #endif
 
 #if (PLATFORM(MAC) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)) \
-        || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
+        || (PLATFORM(CHROMIUM) && OS(DARWIN))
     FloatPoint(const NSPoint&);
     operator NSPoint() const;
 #endif
@@ -106,6 +106,7 @@ public:
 #endif
 
     FloatPoint matrixTransform(const TransformationMatrix&) const;
+    FloatPoint matrixTransform(const AffineTransform&) const;
 
 private:
     float m_x, m_y;

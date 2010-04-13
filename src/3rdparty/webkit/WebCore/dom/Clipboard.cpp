@@ -27,7 +27,6 @@
 #include "Clipboard.h"
 
 #include "CachedImage.h"
-#include "DOMImplementation.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "Image.h"
@@ -35,7 +34,9 @@
 namespace WebCore {
 
 Clipboard::Clipboard(ClipboardAccessPolicy policy, bool isForDragging) 
-    : m_policy(policy) 
+    : m_policy(policy)
+    , m_dropEffect("uninitialized")
+    , m_effectAllowed("uninitialized")
     , m_dragStarted(false)
     , m_forDragging(isForDragging)
     , m_dragImage(0)
@@ -55,6 +56,8 @@ void Clipboard::setAccessPolicy(ClipboardAccessPolicy policy)
 static DragOperation dragOpFromIEOp(const String& op)
 {
     // yep, it's really just this fixed set
+    if (op == "uninitialized")
+        return DragOperationEvery;
     if (op == "none")
         return DragOperationNone;
     if (op == "copy")
@@ -62,7 +65,7 @@ static DragOperation dragOpFromIEOp(const String& op)
     if (op == "link")
         return DragOperationLink;
     if (op == "move")
-        return DragOperationGeneric;
+        return DragOperationGeneric;    // FIXME: Why is this DragOperationGeneric? <http://webkit.org/b/33697>
     if (op == "copyLink")
         return (DragOperation)(DragOperationCopy | DragOperationLink);
     if (op == "copyMove")
@@ -96,35 +99,39 @@ static String IEOpFromDragOp(DragOperation op)
     return "none";
 }
 
-bool Clipboard::sourceOperation(DragOperation& op) const
+DragOperation Clipboard::sourceOperation() const
 {
-    if (m_effectAllowed.isNull())
-        return false;
-    op = dragOpFromIEOp(m_effectAllowed);
-    return true;
+    DragOperation op = dragOpFromIEOp(m_effectAllowed);
+    ASSERT(op != DragOperationPrivate);
+    return op;
 }
 
-bool Clipboard::destinationOperation(DragOperation& op) const
+DragOperation Clipboard::destinationOperation() const
 {
-    if (m_dropEffect.isNull())
-        return false;
-    op = dragOpFromIEOp(m_dropEffect);
-    return true;
+    DragOperation op = dragOpFromIEOp(m_dropEffect);
+    ASSERT(op == DragOperationCopy || op == DragOperationNone || op == DragOperationLink || op == DragOperationGeneric || op == DragOperationMove || op == DragOperationEvery);
+    return op;
 }
 
 void Clipboard::setSourceOperation(DragOperation op)
 {
+    ASSERT_ARG(op, op != DragOperationPrivate);
     m_effectAllowed = IEOpFromDragOp(op);
 }
 
 void Clipboard::setDestinationOperation(DragOperation op)
 {
+    ASSERT_ARG(op, op == DragOperationCopy || op == DragOperationNone || op == DragOperationLink || op == DragOperationGeneric || op == DragOperationMove);
     m_dropEffect = IEOpFromDragOp(op);
 }
 
 void Clipboard::setDropEffect(const String &effect)
 {
     if (!m_forDragging)
+        return;
+
+    // The attribute must ignore any attempts to set it to a value other than none, copy, link, and move. 
+    if (effect != "none" && effect != "copy"  && effect != "link" && effect != "move")
         return;
 
     if (m_policy == ClipboardReadable || m_policy == ClipboardTypesReadable)
@@ -135,6 +142,17 @@ void Clipboard::setEffectAllowed(const String &effect)
 {
     if (!m_forDragging)
         return;
+
+    if (dragOpFromIEOp(effect) == DragOperationPrivate) {
+        // This means that there was no conversion, and the effectAllowed that
+        // we are passed isn't a valid effectAllowed, so we should ignore it,
+        // and not set m_effectAllowed.
+
+        // The attribute must ignore any attempts to set it to a value other than 
+        // none, copy, copyLink, copyMove, link, linkMove, move, all, and uninitialized.
+        return;
+    }
+
 
     if (m_policy == ClipboardWritable)
         m_effectAllowed = effect;

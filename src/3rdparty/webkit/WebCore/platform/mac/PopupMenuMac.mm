@@ -20,6 +20,8 @@
 #import "config.h"
 #import "PopupMenu.h"
 
+#import "AXObjectCache.h"
+#import "Chrome.h"
 #import "ChromeClient.h"
 #import "EventHandler.h"
 #import "Frame.h"
@@ -80,8 +82,14 @@ void PopupMenu::populate()
         else {
             PopupMenuStyle style = client()->itemStyle(i);
             NSMutableDictionary* attributes = [[NSMutableDictionary alloc] init];
-            if (style.font() != Font())
-                [attributes setObject:style.font().primaryFont()->getNSFont() forKey:NSFontAttributeName];
+            if (style.font() != Font()) {
+                NSFont *font = style.font().primaryFont()->getNSFont();
+                if (!font) {
+                    CGFloat size = style.font().primaryFont()->platformData().size();
+                    font = style.font().weight() < FontWeightBold ? [NSFont systemFontOfSize:size] : [NSFont boldSystemFontOfSize:size];
+                }
+                [attributes setObject:font forKey:NSFontAttributeName];
+            }
             // FIXME: Add support for styling the foreground and background colors.
             // FIXME: Find a way to customize text color when an item is highlighted.
             NSAttributedString* string = [[NSAttributedString alloc] initWithString:client()->itemText(i) attributes:attributes];
@@ -93,11 +101,20 @@ void PopupMenu::populate()
             [menuItem setEnabled:client()->itemIsEnabled(i)];
             [menuItem setToolTip:client()->itemToolTip(i)];
             [string release];
+            
+            // Allow the accessible text of the item to be overriden if necessary.
+            if (AXObjectCache::accessibilityEnabled()) {
+                NSString *accessibilityOverride = client()->itemAccessibilityText(i);
+                if ([accessibilityOverride length])
+                    [menuItem accessibilitySetOverrideValue:accessibilityOverride forAttribute:NSAccessibilityDescriptionAttribute];
+            }
         }
     }
 
     [[m_popup.get() menu] setMenuChangedMessagesEnabled:messagesEnabled];
 }
+
+#if !ENABLE(EXPERIMENTAL_SINGLE_VIEW_MODE)
 
 void PopupMenu::show(const IntRect& r, FrameView* v, int index)
 {
@@ -178,6 +195,14 @@ void PopupMenu::show(const IntRect& r, FrameView* v, int index)
 
     [event release];
 }
+
+#else
+
+void PopupMenu::show(const IntRect&, FrameView*, int)
+{
+}
+
+#endif
 
 void PopupMenu::hide()
 {

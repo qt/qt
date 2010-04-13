@@ -27,15 +27,21 @@
 
 namespace WebCore {
 
+// Renderer for frames via RenderPartObject, and plug-ins via RenderEmbeddedObject.
+
+// FIXME: This class is subclassed in RenderPartObject for iframes, which is in turn
+// subclassed in RenderEmbeddedObject for object and embed. This class itself could be removed.
 class RenderPart : public RenderWidget {
 public:
     RenderPart(Element*);
     virtual ~RenderPart();
-    
+
     bool hasFallbackContent() const { return m_hasFallbackContent; }
 
     virtual void setWidget(PassRefPtr<Widget>);
     virtual void viewCleared();
+
+    void layoutWithFlattening(bool fixedWidth, bool fixedHeight);
 
 protected:
     bool m_hasFallbackContent;

@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Collabora Ltd. All rights reserved.
+ * Copyright (C) 2009 Girish Ramakrishnan <girish@forwardbias.in>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,15 +25,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#ifndef PluginView_H
-#define PluginView_H
+#ifndef PluginView_h
+#define PluginView_h
 
 #include "CString.h"
 #include "FrameLoadRequest.h"
 #include "HaltablePlugin.h"
 #include "IntRect.h"
-#include "KURL.h"
-#include "PlatformString.h"
+#include "MediaCanStartListener.h"
 #include "PluginStream.h"
 #include "ResourceRequest.h"
 #include "Timer.h"
@@ -45,11 +45,14 @@
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 
-#if PLATFORM(WIN_OS) && PLATFORM(QT)
+#if OS(WINDOWS) && (PLATFORM(QT) || PLATFORM(WX))
 typedef struct HWND__* HWND;
 typedef HWND PlatformPluginWidget;
 #else
 typedef PlatformWidget PlatformPluginWidget;
+#if defined(XP_MACOSX) && PLATFORM(QT)
+#include <QPixmap>
+#endif
 #endif
 
 namespace JSC {
@@ -65,7 +68,7 @@ namespace WebCore {
     class KeyboardEvent;
     class MouseEvent;
     class KURL;
-#if PLATFORM(WIN_OS) && !PLATFORM(WX) && ENABLE(NETSCAPE_PLUGIN_API)
+#if OS(WINDOWS) && ENABLE(NETSCAPE_PLUGIN_API)
     class PluginMessageThrottlerWin;
 #endif
     class PluginPackage;
@@ -80,7 +83,7 @@ namespace WebCore {
         PluginStatusLoadedSuccessfully
     };
 
-    class PluginRequest {
+    class PluginRequest : public Noncopyable {
     public:
         PluginRequest(const FrameLoadRequest& frameLoadRequest, bool sendNotification, void* notifyData, bool shouldAllowPopups)
             : m_frameLoadRequest(frameLoadRequest)
@@ -108,7 +111,7 @@ namespace WebCore {
         virtual void didFail(const ResourceError&) = 0;
     };
 
-    class PluginView : public Widget, private PluginStreamClient, public PluginManualLoader, private HaltablePlugin {
+    class PluginView : public Widget, private PluginStreamClient, public PluginManualLoader, private HaltablePlugin, private MediaCanStartListener {
     public:
         static PassRefPtr<PluginView> create(Frame* parentFrame, const IntSize&, Element*, const KURL&, const Vector<String>& paramNames, const Vector<String>& paramValues, const String& mimeType, bool loadManually);
         virtual ~PluginView();
@@ -153,6 +156,8 @@ namespace WebCore {
 
         void setJavaScriptPaused(bool);
 
+        void privateBrowsingStateChanged(bool);
+
         void disconnectStream(PluginStream*);
         void streamDidFinishLoading(PluginStream* stream) { disconnectStream(stream); }
 
@@ -175,7 +180,7 @@ namespace WebCore {
 
         virtual bool isPluginView() const { return true; }
 
-        Frame* parentFrame() const { return m_parentFrame; }
+        Frame* parentFrame() const { return m_parentFrame.get(); }
 
         void focusPluginElement();
 
@@ -183,7 +188,7 @@ namespace WebCore {
         const String& mimeType() const { return m_mimeType; }
         const KURL& url() const { return m_url; }
 
-#if PLATFORM(WIN_OS) && !PLATFORM(WX) && ENABLE(NETSCAPE_PLUGIN_API)
+#if OS(WINDOWS) && ENABLE(NETSCAPE_PLUGIN_API)
         static LRESULT CALLBACK PluginViewWndProc(HWND, UINT, WPARAM, LPARAM);
         LRESULT wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
         WNDPROC pluginWndProc() const { return m_pluginWndProc; }
@@ -199,6 +204,8 @@ namespace WebCore {
         virtual void halt();
         virtual void restart();
         virtual Node* node() const;
+        virtual bool isWindowed() const { return m_isWindowed; }
+        virtual String pluginName() const;
 
         bool isHalted() const { return m_isHalted; }
         bool hasBeenHalted() const { return m_hasBeenHalted; }
@@ -206,6 +213,11 @@ namespace WebCore {
         static bool isCallingPlugin();
 
         bool start();
+
+#if ENABLE(NETSCAPE_PLUGIN_API)
+        static void keepAlive(NPP);
+#endif
+        void keepAlive();
 
     private:
         PluginView(Frame* parentFrame, const IntSize&, PluginPackage*, Element*, const KURL&, const Vector<String>& paramNames, const Vector<String>& paramValues, const String& mimeType, bool loadManually);
@@ -226,13 +238,18 @@ namespace WebCore {
 
         void invalidateWindowlessPluginRect(const IntRect&);
 
-#if PLATFORM(WIN_OS) && !PLATFORM(WX) && ENABLE(NETSCAPE_PLUGIN_API)
+        virtual void mediaCanStart();
+
+#if OS(WINDOWS) && ENABLE(NETSCAPE_PLUGIN_API)
         void paintWindowedPluginIntoContext(GraphicsContext*, const IntRect&);
         static HDC WINAPI hookedBeginPaint(HWND, PAINTSTRUCT*);
         static BOOL WINAPI hookedEndPaint(HWND, const PAINTSTRUCT*);
 #endif
 
-        Frame* m_parentFrame;
+        static bool platformGetValueStatic(NPNVariable variable, void* value, NPError* result);
+        bool platformGetValue(NPNVariable variable, void* value, NPError* result);
+
+        RefPtr<Frame> m_parentFrame;
         RefPtr<PluginPackage> m_plugin;
         Element* m_element;
         bool m_isStarted;
@@ -251,6 +268,9 @@ namespace WebCore {
         void popPopupsStateTimerFired(Timer<PluginView>*);
         Timer<PluginView> m_popPopupsStateTimer;
 
+        void lifeSupportTimerFired(Timer<PluginView>*);
+        Timer<PluginView> m_lifeSupportTimer;
+
 #ifndef NP_NO_CARBON
         bool dispatchNPEvent(NPEvent&);
 #endif
@@ -259,12 +279,12 @@ namespace WebCore {
 
         void handleKeyboardEvent(KeyboardEvent*);
         void handleMouseEvent(MouseEvent*);
-#if defined(Q_WS_X11) && ENABLE(NETSCAPE_PLUGIN_API)
+#if defined(XP_UNIX) && ENABLE(NETSCAPE_PLUGIN_API)
         void handleFocusInEvent();
         void handleFocusOutEvent();
 #endif
 
-#if PLATFORM(WIN_OS)
+#if OS(WINDOWS)
         void paintIntoTransformedContext(HDC);
         PassRefPtr<Image> snapshot();
 #endif
@@ -292,11 +312,11 @@ namespace WebCore {
         bool m_haveInitialized;
         bool m_isWaitingToStart;
 
-#if defined(XP_UNIX) || defined(Q_WS_X11)
+#if defined(XP_UNIX)
         bool m_needsXEmbed;
 #endif
 
-#if PLATFORM(WIN_OS) && !PLATFORM(WX) && ENABLE(NETSCAPE_PLUGIN_API)
+#if OS(WINDOWS) && ENABLE(NETSCAPE_PLUGIN_API)
         OwnPtr<PluginMessageThrottlerWin> m_messageThrottler;
         WNDPROC m_pluginWndProc;
         unsigned m_lastMessage;
@@ -305,7 +325,7 @@ namespace WebCore {
         bool m_haveUpdatedPluginWidget;
 #endif
 
-#if (PLATFORM(QT) && PLATFORM(WIN_OS)) || defined(XP_MACOSX)
+#if ((PLATFORM(QT) || PLATFORM(WX)) && OS(WINDOWS)) || defined(XP_MACOSX)
         // On Mac OSX and Qt/Windows the plugin does not have its own native widget,
         // but is using the containing window as its reference for positioning/painting.
         PlatformPluginWidget m_window;
@@ -320,20 +340,27 @@ public:
 
 private:
 
-#if defined(XP_UNIX) || defined(Q_WS_X11) || PLATFORM(SYMBIAN)
+#if defined(XP_UNIX) || OS(SYMBIAN)
         void setNPWindowIfNeeded();
 #elif defined(XP_MACOSX)
         NP_CGContext m_npCgContext;
         OwnPtr<Timer<PluginView> > m_nullEventTimer;
         NPDrawingModel m_drawingModel;
         NPEventModel m_eventModel;
+        CGContextRef m_contextRef;
+        WindowRef m_fakeWindow;
+#if PLATFORM(QT)
+        QPixmap m_pixmap;
+#endif
 
+        Point m_lastMousePos;
         void setNPWindowIfNeeded();
         void nullEventTimerFired(Timer<PluginView>*);
         Point globalMousePosForPlugin() const;
+        Point mousePosForPlugin(MouseEvent* event = 0) const;
 #endif
 
-#if defined(Q_WS_X11) && ENABLE(NETSCAPE_PLUGIN_API)
+#if defined(XP_UNIX) && ENABLE(NETSCAPE_PLUGIN_API)
         bool m_hasPendingGeometryChange;
         Pixmap m_drawable;
         Visual* m_visual;

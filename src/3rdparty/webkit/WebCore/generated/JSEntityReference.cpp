@@ -34,7 +34,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSEntityReference);
 
 static const HashTableValue JSEntityReferenceTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsEntityReferenceConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsEntityReferenceConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -73,7 +73,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -135,9 +135,9 @@ bool JSEntityReference::getOwnPropertyDescriptor(ExecState* exec, const Identifi
     return getStaticValueDescriptor<JSEntityReference, Base>(exec, &JSEntityReferenceTable, this, propertyName, descriptor);
 }
 
-JSValue jsEntityReferenceConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEntityReferenceConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSEntityReference* domObject = static_cast<JSEntityReference*>(asObject(slot.slotBase()));
+    JSEntityReference* domObject = static_cast<JSEntityReference*>(asObject(slotBase));
     return JSEntityReference::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSEntityReference::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

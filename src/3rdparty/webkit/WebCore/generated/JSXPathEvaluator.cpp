@@ -47,7 +47,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSXPathEvaluator);
 
 static const HashTableValue JSXPathEvaluatorTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsXPathEvaluatorConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathEvaluatorConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -86,7 +86,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -118,9 +118,9 @@ bool JSXPathEvaluatorConstructor::getOwnPropertyDescriptor(ExecState* exec, cons
 
 static const HashTableValue JSXPathEvaluatorPrototypeTableValues[4] =
 {
-    { "createExpression", DontDelete|Function, (intptr_t)jsXPathEvaluatorPrototypeFunctionCreateExpression, (intptr_t)2 },
-    { "createNSResolver", DontDelete|Function, (intptr_t)jsXPathEvaluatorPrototypeFunctionCreateNSResolver, (intptr_t)1 },
-    { "evaluate", DontDelete|Function, (intptr_t)jsXPathEvaluatorPrototypeFunctionEvaluate, (intptr_t)5 },
+    { "createExpression", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXPathEvaluatorPrototypeFunctionCreateExpression), (intptr_t)2 },
+    { "createNSResolver", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXPathEvaluatorPrototypeFunctionCreateNSResolver), (intptr_t)1 },
+    { "evaluate", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXPathEvaluatorPrototypeFunctionEvaluate), (intptr_t)5 },
     { 0, 0, 0, 0 }
 };
 
@@ -176,9 +176,9 @@ bool JSXPathEvaluator::getOwnPropertyDescriptor(ExecState* exec, const Identifie
     return getStaticValueDescriptor<JSXPathEvaluator, Base>(exec, &JSXPathEvaluatorTable, this, propertyName, descriptor);
 }
 
-JSValue jsXPathEvaluatorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathEvaluatorConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXPathEvaluator* domObject = static_cast<JSXPathEvaluator*>(asObject(slot.slotBase()));
+    JSXPathEvaluator* domObject = static_cast<JSXPathEvaluator*>(asObject(slotBase));
     return JSXPathEvaluator::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSXPathEvaluator::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

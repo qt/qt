@@ -27,11 +27,13 @@
 #include "config.h"
 #include "HTMLCanvasElement.h"
 
+#include "CanvasContextAttributes.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "CanvasRenderingContext2D.h"
 #if ENABLE(3D_CANVAS)    
-#include "CanvasRenderingContext3D.h"
+#include "WebGLContextAttributes.h"
+#include "WebGLRenderingContext.h"
 #endif
 #include "CanvasStyle.h"
 #include "Chrome.h"
@@ -111,8 +113,8 @@ void HTMLCanvasElement::parseMappedAttribute(MappedAttribute* attr)
 
 RenderObject* HTMLCanvasElement::createRenderer(RenderArena* arena, RenderStyle* style)
 {
-    Settings* settings = document()->settings();
-    if (settings && settings->isJavaScriptEnabled()) {
+    Frame* frame = document()->frame();
+    if (frame && frame->script()->canExecuteScripts(NotAboutToExecuteScript)) {
         m_rendererIsCanvas = true;
         return new (arena) RenderHTMLCanvas(this);
     }
@@ -147,11 +149,11 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, ExceptionCode& ec)
     return buffer()->toDataURL(mimeType);
 }
 
-CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type)
+CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, CanvasContextAttributes* attrs)
 {
-    // A Canvas can either be "2D" or "3D" never both. If you request a 2D canvas and the existing
-    // context is already 2D, just return that. If the existing context is 3D, then destroy it
-    // before creating a new 2D context. Vice versa when requesting a 3D canvas. Requesting a
+    // A Canvas can either be "2D" or "webgl" but never both. If you request a 2D canvas and the existing
+    // context is already 2D, just return that. If the existing context is WebGL, then destroy it
+    // before creating a new 2D context. Vice versa when requesting a WebGL canvas. Requesting a
     // context with any other type string will destroy any existing context.
     
     // FIXME - The code depends on the context not going away once created, to prevent JS from
@@ -166,13 +168,15 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type)
     }
 #if ENABLE(3D_CANVAS)    
     Settings* settings = document()->settings();
-    if (settings && settings->webGLEnabled()) {
+    if (settings && settings->webGLEnabled() && settings->acceleratedCompositingEnabled()) {
+        // Accept the legacy "webkit-3d" name as well as the provisional "experimental-webgl" name.
+        // Once ratified, we will also accept "webgl" as the context name.
         if ((type == "webkit-3d") ||
-            (type == "GL")) {
+            (type == "experimental-webgl")) {
             if (m_context && !m_context->is3d())
                 return 0;
             if (!m_context) {
-                m_context = CanvasRenderingContext3D::create(this);
+                m_context = WebGLRenderingContext::create(this, static_cast<WebGLContextAttributes*>(attrs));
                 if (m_context) {
                     // Need to make sure a RenderLayer and compositing layer get created for the Canvas
                     setNeedsStyleRecalc(SyntheticStyleChange);
@@ -181,6 +185,8 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type)
             return m_context.get();
         }
     }
+#else
+    UNUSED_PARAM(attrs);
 #endif
     return 0;
 }
@@ -221,6 +227,11 @@ void HTMLCanvasElement::reset()
     IntSize oldSize = m_size;
     m_size = IntSize(w, h);
 
+#if ENABLE(3D_CANVAS)
+    if (m_context && m_context->is3d())
+        static_cast<WebGLRenderingContext*>(m_context.get())->reshape(width(), height());
+#endif
+
     bool hadImageBuffer = m_createdImageBuffer;
     m_createdImageBuffer = false;
     m_imageBuffer.clear();
@@ -249,9 +260,9 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const IntRect& r)
         return;
     
 #if ENABLE(3D_CANVAS)
-    CanvasRenderingContext3D* context3D = NULL;
+    WebGLRenderingContext* context3D = 0;
     if (m_context && m_context->is3d()) {
-        context3D = static_cast<CanvasRenderingContext3D*>(m_context.get());
+        context3D = static_cast<WebGLRenderingContext*>(m_context.get());
         context3D->beginPaint();
     }
 #endif
@@ -259,14 +270,12 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const IntRect& r)
     if (m_imageBuffer) {
         Image* image = m_imageBuffer->image();
         if (image)
-            context->drawImage(image, r);
+            context->drawImage(image, DeviceColorSpace, r);
     }
 
 #if ENABLE(3D_CANVAS)
-    if (context3D != NULL) {
-        context3D->reshape(r.width(), r.height());
+    if (context3D)
         context3D->endPaint();
-    }
 #endif
 }
 
@@ -328,12 +337,12 @@ ImageBuffer* HTMLCanvasElement::buffer() const
     return m_imageBuffer.get();
 }
     
-TransformationMatrix HTMLCanvasElement::baseTransform() const
+AffineTransform HTMLCanvasElement::baseTransform() const
 {
     ASSERT(m_createdImageBuffer);
     FloatSize unscaledSize(width(), height());
     IntSize size = convertLogicalToDevice(unscaledSize);
-    TransformationMatrix transform;
+    AffineTransform transform;
     if (size.width() && size.height())
         transform.scaleNonUniform(size.width() / unscaledSize.width(), size.height() / unscaledSize.height());
     transform.multiply(m_imageBuffer->baseTransform());

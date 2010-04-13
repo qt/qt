@@ -32,6 +32,7 @@
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
+#include "Chrome.h"
 #include "CreateLinkCommand.h"
 #include "DocumentFragment.h"
 #include "Editor.h"
@@ -256,10 +257,10 @@ static int verticalScrollDistance(Frame* frame)
     RenderStyle* style = renderer->style();
     if (!style)
         return 0;
-    if (!(style->overflowY() == OSCROLL || style->overflowY() == OAUTO || renderer->isTextArea()))
+    if (!(style->overflowY() == OSCROLL || style->overflowY() == OAUTO || focusedNode->isContentEditable()))
         return 0;
     int height = toRenderBox(renderer)->clientHeight();
-    return max((height + 1) / 2, height - cAmountToKeepWhenPaging);
+    return max(max<int>(height * Scrollbar::minFractionToStepWhenPaging(), height - Scrollbar::maxOverlapBetweenPages()), 1);
 }
 
 static RefPtr<Range> unionDOMRanges(Range* a, Range* b)
@@ -471,7 +472,7 @@ static bool executeInsertHorizontalRule(Frame* frame, Event*, EditorCommandSourc
 {
     RefPtr<HTMLHRElement> hr = new HTMLHRElement(hrTag, frame->document());
     if (!value.isEmpty())
-        hr->setAttribute(idAttr, value);
+        hr->setAttribute(hr->idAttributeName(), value);
     return executeInsertNode(frame, hr.release());
 }
 

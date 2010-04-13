@@ -34,6 +34,7 @@ namespace JSC {
     // This is an internal value object which stores getter and setter functions
     // for a property.
     class GetterSetter : public JSCell {
+        friend class JIT;
     public:
         GetterSetter(ExecState* exec)
             : JSCell(exec->globalData().getterSetterStructure.get())
@@ -50,7 +51,7 @@ namespace JSC {
         void setSetter(JSObject* setter) { m_setter = setter; }
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(GetterSetterType, OverridesMarkChildren));
+            return Structure::create(prototype, TypeInfo(GetterSetterType, OverridesMarkChildren), AnonymousSlotCount);
         }
     private:
         virtual bool isGetterSetter() const;

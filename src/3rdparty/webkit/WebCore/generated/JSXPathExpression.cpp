@@ -41,7 +41,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSXPathExpression);
 
 static const HashTableValue JSXPathExpressionTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsXPathExpressionConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathExpressionConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -103,7 +103,7 @@ bool JSXPathExpressionConstructor::getOwnPropertyDescriptor(ExecState* exec, con
 
 static const HashTableValue JSXPathExpressionPrototypeTableValues[2] =
 {
-    { "evaluate", DontDelete|Function, (intptr_t)jsXPathExpressionPrototypeFunctionEvaluate, (intptr_t)3 },
+    { "evaluate", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXPathExpressionPrototypeFunctionEvaluate), (intptr_t)3 },
     { 0, 0, 0, 0 }
 };
 
@@ -159,9 +159,9 @@ bool JSXPathExpression::getOwnPropertyDescriptor(ExecState* exec, const Identifi
     return getStaticValueDescriptor<JSXPathExpression, Base>(exec, &JSXPathExpressionTable, this, propertyName, descriptor);
 }
 
-JSValue jsXPathExpressionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathExpressionConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXPathExpression* domObject = static_cast<JSXPathExpression*>(asObject(slot.slotBase()));
+    JSXPathExpression* domObject = static_cast<JSXPathExpression*>(asObject(slotBase));
     return JSXPathExpression::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSXPathExpression::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

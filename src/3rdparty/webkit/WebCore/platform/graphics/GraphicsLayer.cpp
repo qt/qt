@@ -72,6 +72,8 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_contentsOrientation(CompositingCoordinatesTopDown)
     , m_parent(0)
     , m_maskLayer(0)
+    , m_replicaLayer(0)
+    , m_replicatedLayer(0)
     , m_repaintCount(0)
 {
 }
@@ -90,6 +92,21 @@ bool GraphicsLayer::hasAncestor(GraphicsLayer* ancestor) const
     }
     
     return false;
+}
+
+bool GraphicsLayer::setChildren(const Vector<GraphicsLayer*>& newChildren)
+{
+    // If the contents of the arrays are the same, nothing to do.
+    if (newChildren == m_children)
+        return false;
+
+    removeAllChildren();
+    
+    size_t listSize = newChildren.size();
+    for (size_t i = 0; i < listSize; ++i)
+        addChild(newChildren[i]);
+    
+    return true;
 }
 
 void GraphicsLayer::addChild(GraphicsLayer* childLayer)
@@ -197,6 +214,14 @@ void GraphicsLayer::removeFromParent()
 
         setParent(0);
     }
+}
+
+void GraphicsLayer::setReplicatedByLayer(GraphicsLayer* layer)
+{
+    if (layer)
+        layer->setReplicatedLayer(this);
+
+    m_replicaLayer = layer;
 }
 
 void GraphicsLayer::setBackgroundColor(const Color& color)
@@ -439,14 +464,27 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent) const
     }
     ts << ")\n";
 
-    writeIndent(ts, indent + 1);
-    ts << "(children " << m_children.size() << "\n";
+    if (m_replicaLayer) {
+        writeIndent(ts, indent + 1);
+        ts << "(replica layer " << m_replicaLayer << ")\n";
+        m_replicaLayer->dumpLayer(ts, indent+2);
+    }
+
+    if (m_replicatedLayer) {
+        writeIndent(ts, indent + 1);
+        ts << "(replicated layer " << m_replicatedLayer << ")\n";
+    }
     
-    unsigned i;
-    for (i = 0; i < m_children.size(); i++)
-        m_children[i]->dumpLayer(ts, indent+2);
-    writeIndent(ts, indent + 1);
-    ts << ")\n";
+    if (m_children.size()) {
+        writeIndent(ts, indent + 1);
+        ts << "(children " << m_children.size() << "\n";
+        
+        unsigned i;
+        for (i = 0; i < m_children.size(); i++)
+            m_children[i]->dumpLayer(ts, indent+2);
+        writeIndent(ts, indent + 1);
+        ts << ")\n";
+    }
 }
 
 } // namespace WebCore

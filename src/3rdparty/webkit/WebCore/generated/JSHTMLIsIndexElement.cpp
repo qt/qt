@@ -38,9 +38,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLIsIndexElement);
 
 static const HashTableValue JSHTMLIsIndexElementTableValues[4] =
 {
-    { "form", DontDelete|ReadOnly, (intptr_t)jsHTMLIsIndexElementForm, (intptr_t)0 },
-    { "prompt", DontDelete, (intptr_t)jsHTMLIsIndexElementPrompt, (intptr_t)setJSHTMLIsIndexElementPrompt },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLIsIndexElementConstructor, (intptr_t)0 },
+    { "form", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLIsIndexElementForm), (intptr_t)0 },
+    { "prompt", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLIsIndexElementPrompt), (intptr_t)setJSHTMLIsIndexElementPrompt },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLIsIndexElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -141,25 +141,27 @@ bool JSHTMLIsIndexElement::getOwnPropertyDescriptor(ExecState* exec, const Ident
     return getStaticValueDescriptor<JSHTMLIsIndexElement, Base>(exec, &JSHTMLIsIndexElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLIsIndexElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLIsIndexElementForm(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLIsIndexElement* castedThis = static_cast<JSHTMLIsIndexElement*>(asObject(slot.slotBase()));
+    JSHTMLIsIndexElement* castedThis = static_cast<JSHTMLIsIndexElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLIsIndexElement* imp = static_cast<HTMLIsIndexElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
+    return result;
 }
 
-JSValue jsHTMLIsIndexElementPrompt(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLIsIndexElementPrompt(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLIsIndexElement* castedThis = static_cast<JSHTMLIsIndexElement*>(asObject(slot.slotBase()));
+    JSHTMLIsIndexElement* castedThis = static_cast<JSHTMLIsIndexElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLIsIndexElement* imp = static_cast<HTMLIsIndexElement*>(castedThis->impl());
-    return jsString(exec, imp->prompt());
+    JSValue result = jsString(exec, imp->prompt());
+    return result;
 }
 
-JSValue jsHTMLIsIndexElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLIsIndexElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLIsIndexElement* domObject = static_cast<JSHTMLIsIndexElement*>(asObject(slot.slotBase()));
+    JSHTMLIsIndexElement* domObject = static_cast<JSHTMLIsIndexElement*>(asObject(slotBase));
     return JSHTMLIsIndexElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLIsIndexElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -169,7 +171,8 @@ void JSHTMLIsIndexElement::put(ExecState* exec, const Identifier& propertyName, 
 
 void setJSHTMLIsIndexElementPrompt(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLIsIndexElement* imp = static_cast<HTMLIsIndexElement*>(static_cast<JSHTMLIsIndexElement*>(thisObject)->impl());
+    JSHTMLIsIndexElement* castedThisObj = static_cast<JSHTMLIsIndexElement*>(thisObject);
+    HTMLIsIndexElement* imp = static_cast<HTMLIsIndexElement*>(castedThisObj->impl());
     imp->setPrompt(valueToStringWithNullCheck(exec, value));
 }
 

@@ -24,6 +24,7 @@
 #include "JSLocationCustom.h"
 
 #include "DOMWindow.h"
+#include "ExceptionCode.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "JSDOMBinding.h"
@@ -38,17 +39,17 @@ using namespace JSC;
 
 namespace WebCore {
 
-static JSValue nonCachingStaticReplaceFunctionGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot&)
+static JSValue nonCachingStaticReplaceFunctionGetter(ExecState* exec, JSValue, const Identifier& propertyName)
 {
     return new (exec) NativeFunctionWrapper(exec, exec->lexicalGlobalObject()->prototypeFunctionStructure(), 1, propertyName, jsLocationPrototypeFunctionReplace);
 }
 
-static JSValue nonCachingStaticReloadFunctionGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot&)
+static JSValue nonCachingStaticReloadFunctionGetter(ExecState* exec, JSValue, const Identifier& propertyName)
 {
     return new (exec) NativeFunctionWrapper(exec, exec->lexicalGlobalObject()->prototypeFunctionStructure(), 0, propertyName, jsLocationPrototypeFunctionReload);
 }
 
-static JSValue nonCachingStaticAssignFunctionGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot&)
+static JSValue nonCachingStaticAssignFunctionGetter(ExecState* exec, JSValue, const Identifier& propertyName)
 {
     return new (exec) NativeFunctionWrapper(exec, exec->lexicalGlobalObject()->prototypeFunctionStructure(), 1, propertyName, jsLocationPrototypeFunctionAssign);
 }
@@ -102,14 +103,9 @@ bool JSLocation::getOwnPropertyDescriptorDelegate(ExecState* exec, const Identif
         return true;
     }
     
-    // When accessing Location cross-domain, functions are always the native built-in ones.
-    // See JSDOMWindow::getOwnPropertySlotDelegate for additional details.
-    
-    // Our custom code is only needed to implement the Window cross-domain scheme, so if access is
-    // allowed, return false so the normal lookup will take place.
-    String message;
-    if (allowsAccessFromFrame(exec, frame, message))
-        return false;
+    // throw out all cross domain access
+    if (!allowsAccessFromFrame(exec, frame))
+        return true;
     
     // Check for the few functions that we allow, even when called cross-domain.
     const HashEntry* entry = JSLocationPrototype::s_info.propHashTable(exec)->entry(exec, propertyName);
@@ -133,8 +129,7 @@ bool JSLocation::getOwnPropertyDescriptorDelegate(ExecState* exec, const Identif
     // FIXME: Other implementers of the Window cross-domain scheme (Window, History) allow toString,
     // but for now we have decided not to, partly because it seems silly to return "[Object Location]" in
     // such cases when normally the string form of Location would be the URL.
-    
-    printErrorMessageForFrame(frame, message);
+
     descriptor.setUndefined();
     return true;
 }
@@ -174,12 +169,12 @@ bool JSLocation::deleteProperty(ExecState* exec, const Identifier& propertyName)
     return Base::deleteProperty(exec, propertyName);
 }
 
-void JSLocation::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSLocation::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     // Only allow the location object to enumerated by frames in the same origin.
     if (!allowsAccessFromFrame(exec, impl()->frame()))
         return;
-    Base::getOwnPropertyNames(exec, propertyNames);
+    Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 void JSLocation::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction, unsigned attributes)
@@ -220,7 +215,10 @@ void JSLocation::setProtocol(ExecState* exec, JSValue value)
     ASSERT(frame);
 
     KURL url = frame->loader()->url();
-    url.setProtocol(value.toString(exec));
+    if (!url.setProtocol(value.toString(exec))) {
+        setDOMException(exec, SYNTAX_ERR);
+        return;
+    }
 
     navigateIfAllowed(exec, frame, url, !frame->script()->anyPageIsProcessingUserGesture(), false);
 }
@@ -257,8 +255,9 @@ void JSLocation::setPort(ExecState* exec, JSValue value)
     const UString& portString = value.toString(exec);
     int port = charactersToInt(portString.data(), portString.size());
     if (port < 0 || port > 0xFFFF)
-        port = 0;
-    url.setPort(port);
+        url.removePort();
+    else
+        url.setPort(port);
 
     navigateIfAllowed(exec, frame, url, !frame->script()->anyPageIsProcessingUserGesture(), false);
 }
