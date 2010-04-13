@@ -7,6 +7,7 @@ Rectangle {
     color: "green"
     width: web.width
     height: web.height
+
     WebView {
         id: web
         html: "Hello <b>World!</b>"

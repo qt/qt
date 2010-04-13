@@ -5,3 +5,6 @@ macx:CONFIG -= app_bundle
 
 # Define SRCDIR equal to test's source directory
 DEFINES += SRCDIR=\\\"$$PWD\\\"
+
+CONFIG += parallel_test
+

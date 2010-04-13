@@ -9,3 +9,6 @@ macx:CONFIG -= app_bundle
 SOURCES += tst_qdeclarativexmllistmodel.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD\\\"
+
+CONFIG += parallel_test
+

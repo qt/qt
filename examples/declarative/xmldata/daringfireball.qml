@@ -24,15 +24,17 @@ Rectangle {
                 text: title; font.bold: true
             }
             Text {
+                anchors { left: titleText.right; leftMargin: 10 }
                 text: 'by ' + tagline
-                anchors.left: titleText.right; anchors.leftMargin: 10
                 font.italic: true
             }
             Text {
                 x: 10
-                text: content
+                width: 580
                 anchors.top: titleText.bottom
-                width: 580; wrapMode: Text.WordWrap
+                text: content
+                wrapMode: Text.WordWrap
+
                 onLinkActivated: { console.log('link clicked: ' + link) }
             }
         }
@@ -40,6 +42,7 @@ Rectangle {
 
     ListView {
         anchors.fill: parent
-        model: feedModel; delegate: feedDelegate
+        model: feedModel
+        delegate: feedDelegate
     }
 }

@@ -74,7 +74,7 @@ an example of loading a QML document, and creating an object from it.
 
 \code
 QDeclarativeEngine *engine = new QDeclarativeEngine(parent);
-QDeclarativeComponent component(engine, QUrl("main.qml"));
+QDeclarativeComponent component(engine, QUrl::fromLocalFile("main.qml"));
 QObject *myObject = component.create();
 \endcode
 
