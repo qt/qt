@@ -80,7 +80,7 @@ Rectangle {
         Text {
             id: score
             anchors { right: parent.right; rightMargin: 3; verticalCenter: parent.verticalCenter }
-            text: "Score: Who knows?"
+            text: "Score: " + gameCanvas.score
             font.bold: true
         }
     }
