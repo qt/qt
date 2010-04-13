@@ -1,4 +1,4 @@
-defines                 = Q_QDOC \
+﻿defines                 = Q_QDOC \
                           QT_.*_SUPPORT \
                           QT_.*_LIB \
                           QT_COMPAT \
@@ -29,6 +29,8 @@ extraimages.HTML        = qt-logo \
 			  bg_ll_blank.png \
 			  bg_ur.png \
 			  bullet_sq.png \
+			  bullet_dn.png \
+			  bullet_up.png \
 			  page_bg.png \
 			  qt_tools.png \
 			  api_topics.png \
