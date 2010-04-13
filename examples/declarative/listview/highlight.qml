@@ -43,6 +43,7 @@ Rectangle {
             SpringFollow on y { to: list1.currentItem.y; spring: 3; damping: 0.1 }
         }
     }
+
     ListView {
         id: list1
         width: 200; height: parent.height

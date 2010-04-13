@@ -5,8 +5,8 @@ import "content/tic-tac-toe.js" as Logic
 Item {
     id: game
 
-    property bool show: false;
-    property real difficulty: 1.0; //chance it will actually think
+    property bool show: false
+    property real difficulty: 1.0   //chance it will actually think
 
     width: 440
     height: 480
@@ -50,17 +50,17 @@ Item {
 
         Button {
             text: "Hard"
-            onClicked: game.difficulty=1.0;
+            onClicked: game.difficulty = 1.0;
             down: game.difficulty == 1.0
         }
         Button {
             text: "Moderate"
-            onClicked: game.difficulty=0.8;
+            onClicked: game.difficulty = 0.8;
             down: game.difficulty == 0.8
         }
         Button {
             text: "Easy"
-            onClicked: game.difficulty=0.2;
+            onClicked: game.difficulty = 0.2;
             down: game.difficulty == 0.2
         }
     }
