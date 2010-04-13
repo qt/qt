@@ -301,6 +301,22 @@ void HelpViewer::resetScale()
     setTextSizeMultiplier(1.0);
 }
 
+bool HelpViewer::handleForwardBackwardMouseButtons(QMouseEvent *e)
+{
+    TRACE_OBJ
+    if (e->button() == Qt::XButton1) {
+        triggerPageAction(QWebPage::Back);
+        return true;
+    }
+
+    if (e->button() == Qt::XButton2) {
+        triggerPageAction(QWebPage::Forward);
+        return true;
+    }
+
+    return false;
+}
+
 void HelpViewer::setSource(const QUrl &url)
 {
     TRACE_OBJ
@@ -328,15 +344,10 @@ void HelpViewer::wheelEvent(QWheelEvent *e)
 void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
 {
     TRACE_OBJ
-    if (e->button() == Qt::XButton1) {
-        triggerPageAction(QWebPage::Back);
+#ifndef Q_OS_LINUX
+    if (handleForwardBackwardMouseButtons(e))
         return;
-    }
-
-    if (e->button() == Qt::XButton2) {
-        triggerPageAction(QWebPage::Forward);
-        return;
-    }
+#endif
 
     QWebView::mouseReleaseEvent(e);
 }
@@ -356,6 +367,11 @@ void HelpViewer::actionChanged()
 void HelpViewer::mousePressEvent(QMouseEvent *event)
 {
     TRACE_OBJ
+#ifdef Q_OS_LINUX
+    if (handleForwardBackwardMouseButtons(event))
+        return;
+#endif
+
     HelpPage *currentPage = static_cast<HelpPage*>(page());
     if (currentPage) {
         currentPage->m_pressedButtons = event->buttons();

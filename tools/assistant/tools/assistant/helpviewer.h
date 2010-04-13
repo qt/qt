@@ -47,6 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QMouseEvent;
 class QUrl;
 
 class AbstractHelpViewer
@@ -63,6 +64,8 @@ public:
     
     virtual void resetScale() = 0;
     virtual qreal scale() const = 0;
+
+    virtual bool handleForwardBackwardMouseButtons(QMouseEvent *e) = 0;
 
     static QString AboutBlank;
     static QString LocalHelpFile;
