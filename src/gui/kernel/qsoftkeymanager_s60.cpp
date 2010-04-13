@@ -383,7 +383,7 @@ bool QSoftKeyManagerPrivateS60::handleCommand(int command)
 {
     QAction *action = realSoftKeyActions.value(command);
     if (action) {
-        bool property = QActionPrivate(action)->menuActionSoftkeys;
+        bool property = QActionPrivate::get(action)->menuActionSoftkeys;
         if (property) {
             QT_TRAP_THROWING(tryDisplayMenuBarL());
         } else if (action->menu()) {
