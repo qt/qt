@@ -46,6 +46,8 @@
 #include <QtScript/qscriptable.h>
 #include <QtScript/qscriptengine.h>
 
+#ifndef QT_NO_DBUS
+
 class QDBusConnectionConstructor : public QObject,
                                    public QScriptable
 {
@@ -173,4 +175,5 @@ private:
     QScriptValue proto;
 };
 
+#endif // QT_NO_DBUS
 #endif // QDBUSBINDING_H

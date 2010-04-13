@@ -333,6 +333,7 @@ QString HtmlGenerator::format()
  */
 void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
 {
+#if 0    
     // Copy the stylesheets from the directory containing the qdocconf file.
     // ### This should be changed to use a special directory in doc/src.
     QStringList::ConstIterator styleIter = stylesheets.begin();
@@ -342,7 +343,7 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
         Config::copyFile(Location(), filePath, filePath, outputDir());
         ++styleIter;
     }
-
+#endif
     myTree = tree;
     nonCompatClasses.clear();
     mainClasses.clear();
@@ -1356,10 +1357,10 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
 
     if (!inner->doc().isEmpty()) {
         out() << "<hr />\n"
-              << "<div class=\"descr\"/>\n"
+              << "<div class=\"descr\"/>\n" // QTBUG-9504
               << "<h2>" << "Detailed Description" << "</h2>\n";
         generateBody(inner, marker);
-        out() << "</div>\n";
+        out() << "</div>\n"; // QTBUG-9504
         generateAlsoList(inner, marker);
     }
 
@@ -1368,7 +1369,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     while (s != sections.end()) {
         out() << "<hr />\n";
         if (!(*s).divClass.isEmpty())
-            out() << "<div class=\"" << (*s).divClass << "\"/>\n";
+            out() << "<div class=\"" << (*s).divClass << "\"/>\n"; // QTBUG-9504
         out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
 
         NodeList::ConstIterator m = (*s).members.begin();
@@ -1419,7 +1420,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
             ++m;
         }
         if (!(*s).divClass.isEmpty())
-            out() << "</div>\n";
+            out() << "</div>\n"; // QTBUG-9504
         ++s;
     }
     generateFooter(inner);
@@ -1468,6 +1469,14 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     }
 
     generateHeader(htmlTitle, fake, marker, true);
+        
+    /*
+      Generate the TOC for the new doc format.
+      Don't generate a TOC for the home page.
+    */
+    if (fake->name() != QString("index.html"))
+        generateTableOfContents(fake,marker);
+
     generateTitle(fullTitle,
                   Text() << fake->subTitle(),
                   subTitleSize,
@@ -1591,10 +1600,14 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     Text brief = fake->doc().briefText();
     if (fake->subType() == Node::Module && !brief.isEmpty()) {
         out() << "<a name=\"" << registerRef("details") << "\"></a>\n";
+        out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
         out() << "<h2>" << "Detailed Description" << "</h2>\n";
     }
+    else
+        out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
 
     generateBody(fake, marker);
+    out() << "</div>\n"; // QTBUG-9504
     generateAlsoList(fake, marker);
 
     if (!fake->groupMembers().isEmpty()) {
@@ -1653,13 +1666,79 @@ QString HtmlGenerator::fileExtension(const Node * /* node */) const
     return "html";
 }
 
+#if 0
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Qt Reference Documentation</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+  <!--[if IE]>
+	<meta name="MSSmartTagsPreventParsing" content="true">
+	<meta http-equiv="imagetoolbar" content="no">
+	<![endif]-->
+  <!--[if lt IE 7]>
+	<link rel="stylesheet" type="text/css" href="style/style_ie6.css">
+	<![endif]-->
+  <!--[if IE 7]>
+	<link rel="stylesheet" type="text/css" href="style/style_ie7.css">
+	<![endif]-->
+  <!--[if IE 8]>
+	<link rel="stylesheet" type="text/css" href="style/style_ie8.css">
+	<![endif]-->
+
+  <script src="scripts/jquery.js" type="text/javascript"></script>
+
+</head>
+#endif
+
 void HtmlGenerator::generateHeader(const QString& title,
                                    const Node *node,
                                    CodeMarker *marker,
                                    bool mainPage)
 {
     out() << QString("<?xml version=\"1.0\" encoding=\"%1\"?>\n").arg(outputEncoding);
+    out() << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n";
+    out() << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
+    out() << "<head>\n";
+    out() << "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
+    QString shortVersion;
+    shortVersion = project + " " + shortVersion + ": ";
+    if (node && !node->doc().location().isEmpty())
+        out() << "<!-- " << node->doc().location().fileName() << " -->\n";
 
+    shortVersion = myTree->version();
+    if (shortVersion.count(QChar('.')) == 2)
+        shortVersion.truncate(shortVersion.lastIndexOf(QChar('.')));
+    if (!shortVersion.isEmpty()) {
+        if (project == "QSA")
+            shortVersion = "QSA " + shortVersion + ": ";
+        else
+            shortVersion = "Qt " + shortVersion + ": ";
+    }
+
+    out() << "  <title>" << shortVersion << protectEnc(title) << "</title>\n";
+
+    //out() << "  <title>Qt Reference Documentation</title>";
+    out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n";
+    out() << "  <!--[if IE]>\n";
+    out() << "	<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
+    out() << "	<meta http-equiv=\"imagetoolbar\" content=\"no\">\n";
+    out() << "	<![endif]-->\n";
+    out() << "  <!--[if lt IE 7]>\n";
+    out() << "	<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie6.css\">\n";
+    out() << "	<![endif]-->\n";
+    out() << "  <!--[if IE 7]>\n";
+    out() << "	<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie7.css\">\n";
+    out() << "	<![endif]-->\n";
+    out() << "  <!--[if IE 8]>\n";
+    out() << "	<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">\n";
+    out() << "	<![endif]-->\n";
+    out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
+    out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+    out() << "</head>\n";
+    
+#if 0    
     out() << "<!DOCTYPE html\n"
              "    PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"DTD/xhtml1-strict.dtd\">\n";
     out() << QString("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"%1\" lang=\"%1\">\n").arg(naturalLanguage);
@@ -1791,14 +1870,16 @@ void HtmlGenerator::generateHeader(const QString& title,
     }
 
     out() << "</head>\n"
-             "<body>\n";
+ #endif       
+        out() << "<body class=\"\">\n";
     if (mainPage)
         generateMacRef(node, marker);
     out() << QString(postHeader).replace("\\" + COMMAND_VERSION, myTree->version());
 
-
+#if 0
     if (node && !node->links().empty())
         out() << "<p>\n" << navigationLinks << "</p>\n";
+#endif    
 }
 
 void HtmlGenerator::generateTitle(const QString& title,
@@ -1857,6 +1938,9 @@ void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
     }
 }
 
+/*!
+  Generates a table of contents begining at \a node.
+ */
 void HtmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,
                                             Doc::SectioningUnit sectioningUnit,
@@ -1934,6 +2018,71 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
     if (numColumns > 1)
         out() << "</td></tr></table></p>\n";
 
+    inContents = false;
+    inLink = false;
+}
+
+/*!
+  Revised for the new doc format.
+  Generates a table of contents begining at \a node.
+ */
+void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker)
+{
+    if (!node->doc().hasTableOfContents())
+        return;
+    QList<Atom *> toc = node->doc().tableOfContents();
+    if (toc.isEmpty())
+        return;
+
+    Doc::SectioningUnit sectioningUnit =  Doc::Section4;
+    QString nodeName = node->name();
+
+    QStringList sectionNumber;
+    int columnSize = 0;
+
+    // disable nested links in table of contents
+    inContents = true;
+    inLink = true;
+
+    out() << "<div class=\"toc\">\n";
+        
+    for (int i = 0; i < toc.size(); ++i) {
+        Atom *atom = toc.at(i);
+
+        int nextLevel = atom->string().toInt();
+        if (nextLevel > (int)sectioningUnit)
+            continue;
+
+        if (sectionNumber.size() < nextLevel) {
+            do {
+                out() << "<ul>\n";
+                sectionNumber.append("1");
+            } while (sectionNumber.size() < nextLevel);
+        }
+        else {
+            while (sectionNumber.size() > nextLevel) {
+                out() << "</ul>\n";
+                sectionNumber.removeLast();
+            }
+            sectionNumber.last() = QString::number(sectionNumber.last().toInt() + 1);
+        }
+        int numAtoms;
+        Text headingText = Text::sectionHeading(atom);
+        out() << "<li>";
+        out() << "<a href=\""
+              << "#"
+              << Doc::canonicalTitle(headingText.toString())
+              << "\">";
+        generateAtomList(headingText.firstAtom(), node, marker, true, numAtoms);
+        out() << "</a></li>\n";
+
+        ++columnSize;
+    }
+    while (!sectionNumber.isEmpty()) {
+        out() << "</ul>\n";
+        sectionNumber.removeLast();
+    }
+    out() << "</div>\n";
     inContents = false;
     inLink = false;
 }
@@ -2172,7 +2321,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                                         QString commonPrefix)
 {
     const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
-    const int NumColumns = 4; // number of columns in the result
+    const int NumColumns = 3; // number of columns in the result
 
     if (classMap.isEmpty())
         return;

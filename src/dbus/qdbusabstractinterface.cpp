@@ -51,6 +51,8 @@
 
 #include <qdebug.h>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 static QDBusError checkIfValid(const QString &service, const QString &path,
@@ -764,5 +766,7 @@ QDBusMessage QDBusAbstractInterface::internalConstCall(QDBus::CallMode mode,
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS
 
 #include "moc_qdbusabstractinterface.cpp"

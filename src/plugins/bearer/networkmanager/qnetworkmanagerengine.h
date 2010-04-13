@@ -60,6 +60,8 @@
 #include <QMap>
 #include <QVariant>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 class QNetworkManagerEngine : public QBearerEngineImpl
@@ -136,6 +138,8 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS
 
 #endif
 

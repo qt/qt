@@ -1,11 +1,15 @@
 TEMPLATE      = subdirs
 SUBDIRS       = \
-                eventtransitions \
                 factorial \
-                pingpong \
+                pingpong
+
+!contains(QT_CONFIG, no-gui) {
+    SUBDIRS +=  \
+                eventtransitions \
                 rogue \
                 trafficlight \
                 twowaybutton
+}
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/statemachine

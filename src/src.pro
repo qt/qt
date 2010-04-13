@@ -3,21 +3,15 @@ TEMPLATE = subdirs
 # this order is important
 unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
-wince*:{
-  SRC_SUBDIRS += src_corelib src_xml src_gui src_sql src_network src_testlib
-} else:symbian {
-  SRC_SUBDIRS += src_s60main src_corelib src_xml src_gui src_network src_sql src_testlib
-  !symbian-abld:!symbian-sbsv2 {
-    include(tools/tools.pro)
-  }
-} else {
-    SRC_SUBDIRS += src_corelib src_xml src_network src_gui src_sql src_testlib
-    !vxworks:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
-    include(tools/tools.pro)
-}
+symbian:SRC_SUBDIRS += src_s60main
+SRC_SUBDIRS += src_corelib src_xml src_network src_sql src_testlib
 win32:SRC_SUBDIRS += src_activeqt
-
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
+!contains(QT_CONFIG, no-gui): SRC_SUBDIRS += src_gui
+!wince*:!symbian:!vxworks:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
+
+!wince*:!symbian-abld:!symbian-sbsv2:include(tools/tools.pro)
+
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
 contains(QT_CONFIG, openvg): SRC_SUBDIRS += src_openvg
 contains(QT_CONFIG, xmlpatterns): SRC_SUBDIRS += src_xmlpatterns
@@ -28,7 +22,7 @@ contains(QT_CONFIG, webkit)  {
     SRC_SUBDIRS += src_webkit
 }
 contains(QT_CONFIG, script): SRC_SUBDIRS += src_script
-contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
+!contains(QT_CONFIG, no-gui):contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
 contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_declarative
 contains(QT_CONFIG, multimedia): SRC_SUBDIRS += src_multimedia
 SRC_SUBDIRS += src_plugins

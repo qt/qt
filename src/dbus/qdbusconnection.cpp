@@ -54,6 +54,8 @@
 
 #include "qdbusthreaddebug_p.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 class QDBusConnectionManager
@@ -1048,3 +1050,5 @@ void QDBusConnectionPrivate::setBusService(const QDBusConnection &connection)
 */
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

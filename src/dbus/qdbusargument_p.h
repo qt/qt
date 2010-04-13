@@ -56,6 +56,8 @@
 #include <qdbusargument.h>
 #include "qdbus_symbols_p.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 class QDBusMarshaller;
@@ -206,4 +208,5 @@ inline QDBusDemarshaller *QDBusArgumentPrivate::demarshaller()
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_DBUS
 #endif

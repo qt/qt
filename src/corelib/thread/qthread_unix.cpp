@@ -136,6 +136,12 @@ static void create_current_thread_data_key()
     pthread_key_create(&current_thread_data_key, destroy_current_thread_data);
 }
 
+static void destroy_current_thread_data_key()
+{
+    pthread_key_delete(current_thread_data_key);
+}
+Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
+
 QThreadData *QThreadData::current()
 {
     pthread_once(&current_thread_data_once, create_current_thread_data_key);

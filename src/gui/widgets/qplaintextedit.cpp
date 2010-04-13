@@ -944,8 +944,8 @@ void QPlainTextEditPrivate::_q_adjustScrollbars()
     int vSliderLength = 0;
     if (!centerOnScroll && q->isVisible()) {
         QTextBlock block = doc->lastBlock();
-        const int visible = static_cast<int>(viewport->rect().height() - margin - 1);
-        int y = 0;
+        const qreal visible = viewport->rect().height() - margin - 1;
+        qreal y = 0;
         int visibleFromBottom = 0;
 
         while (block.isValid()) {
@@ -953,7 +953,7 @@ void QPlainTextEditPrivate::_q_adjustScrollbars()
                 block = block.previous();
                 continue;
             }
-            y += int(documentLayout->blockBoundingRect(block).height());
+            y += documentLayout->blockBoundingRect(block).height();
 
             QTextLayout *layout = block.layout();
             int layoutLineCount = layout->lineCount();
@@ -962,7 +962,7 @@ void QPlainTextEditPrivate::_q_adjustScrollbars()
                 while (lineNumber < layoutLineCount) {
                     QTextLine line = layout->lineAt(lineNumber);
                     const QRectF lr = line.naturalTextRect();
-                    if (int(lr.top()) >= y - visible)
+                    if (lr.top() >= y - visible)
                         break;
                     ++lineNumber;
                 }
