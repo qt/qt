@@ -19,6 +19,7 @@ file=ABI_DIR\BUILD_DIR\QtWebKit.dll          SHARED_LIB_DIR\QtWebKit.dll
 file=ABI_DIR\BUILD_DIR\phonon.dll            SHARED_LIB_DIR\phonon.dll
 file=ABI_DIR\BUILD_DIR\QtMultimedia.dll      SHARED_LIB_DIR\QtMultimedia.dll
 file=ABI_DIR\BUILD_DIR\QtXmlPatterns.dll     SHARED_LIB_DIR\QtXmlPatterns.dll
+file=ABI_DIR\BUILD_DIR\QtDeclarative.dll     SHARED_LIB_DIR\QtDeclarative.dll
 
 // imageformats
 file=ABI_DIR\BUILD_DIR\qgif.dll              SHARED_LIB_DIR\qgif.dll
