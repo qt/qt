@@ -101,11 +101,19 @@ void tst_qmlvisual::visual_data()
         files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
     else {
         //these are tests we think are stable and useful enough to be run by the CI system
+        files << QT_TEST_SOURCE_DIR "/animation/bindinganimation/bindinganimation.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/colorAnimation/colorAnimation-visual.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/easing/easing.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/loop/loop.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/parallelAnimation/parallelAnimation-visual.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/parentAnimation/parentAnimation-visual.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation-visual.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/propertyAction/propertyAction-visual.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/reanchor/reanchor.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/scriptAction/scriptAction-visual.qml";
         files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/mousearea-visual.qml";
         files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/drag.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation-visual.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/parentAnimation/parentAnimation-visual.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/reanchor/reanchor.qml";
+        files << QT_TEST_SOURCE_DIR "/fillmode/fillmode.qml";
     }
 
     foreach (const QString &file, files) {

@@ -13,6 +13,6 @@ MyTypeObject {
     property int f_capitalization: font.capitalization
     property real f_letterSpacing: font.letterSpacing
     property real f_wordSpacing: font.wordSpacing;
-    property var copy: font
+    property variant copy: font
 }
 

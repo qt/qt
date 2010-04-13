@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 import org.webkit 1.0
 
 WebView {
@@ -51,7 +51,7 @@ WebView {
             color: "white"
             font.pixelSize: 20
             width: webView.width*0.75
-            wrap: true
+            wrapMode: Text.WordWrap
             horizontalAlignment: "AlignHCenter"
         }
     }

@@ -1,5 +1,5 @@
-import Qt 4.6
-import "SamegameCore" 1.0
+import Qt 4.7
+import "SamegameCore"
 import "SamegameCore/samegame.js" as Logic
 
 Rectangle {

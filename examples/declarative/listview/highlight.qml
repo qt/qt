@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     width: 400; height: 300; color: "white"
@@ -44,7 +44,7 @@ Rectangle {
         id: petHighlight
         Rectangle {
             width: 200; height: 50; color: "#FFFF88"
-            SpringFollow on y { source: list1.currentItem.y; spring: 3; damping: 0.1 }
+            SpringFollow on y { to: list1.currentItem.y; spring: 3; damping: 0.1 }
         }
     }
     ListView {

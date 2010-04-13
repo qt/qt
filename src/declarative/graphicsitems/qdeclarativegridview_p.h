@@ -66,6 +66,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeGridView : public QDeclarativeFlickable
     Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight NOTIFY highlightChanged)
     Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightItemChanged)
     Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
+    Q_PROPERTY(int highlightMoveDuration READ highlightMoveDuration WRITE setHighlightMoveDuration NOTIFY highlightMoveDurationChanged)
 
     Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin NOTIFY preferredHighlightBeginChanged)
     Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd NOTIFY preferredHighlightEndChanged)
@@ -105,6 +106,9 @@ public:
 
     bool highlightFollowsCurrentItem() const;
     void setHighlightFollowsCurrentItem(bool);
+
+    int highlightMoveDuration() const;
+    void setHighlightMoveDuration(int);
 
     enum HighlightRangeMode { NoHighlightRange, ApplyRange, StrictlyEnforceRange };
     HighlightRangeMode highlightRangeMode() const;
@@ -161,6 +165,7 @@ Q_SIGNALS:
     void preferredHighlightBeginChanged();
     void preferredHighlightEndChanged();
     void highlightRangeModeChanged();
+    void highlightMoveDurationChanged();
     void modelChanged();
     void delegateChanged();
     void flowChanged();

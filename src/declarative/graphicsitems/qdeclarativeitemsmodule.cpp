@@ -57,7 +57,6 @@
 #include "private/qdeclarativeflipable_p.h"
 #include "private/qdeclarativefocuspanel_p.h"
 #include "private/qdeclarativefocusscope_p.h"
-#include "private/qdeclarativegraphicsobjectcontainer_p.h"
 #include "private/qdeclarativegridview_p.h"
 #include "private/qdeclarativeimage_p.h"
 #include "private/qdeclarativeitem_p.h"
@@ -96,13 +95,10 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeFocusScope>("Qt",4,6,"FocusScope");
     qmlRegisterType<QDeclarativeGradient>("Qt",4,6,"Gradient");
     qmlRegisterType<QDeclarativeGradientStop>("Qt",4,6,"GradientStop");
-    qmlRegisterType<QDeclarativeGraphicsObjectContainer>("Qt",4,6,"GraphicsObjectContainer");
     qmlRegisterType<QDeclarativeGrid>("Qt",4,6,"Grid");
     qmlRegisterType<QDeclarativeGridView>("Qt",4,6,"GridView");
     qmlRegisterType<QDeclarativeImage>("Qt",4,6,"Image");
     qmlRegisterType<QDeclarativeItem>("Qt",4,6,"Item");
-    qmlRegisterType<QDeclarativeKeyNavigationAttached>("Qt",4,6,"KeyNavigation");
-    qmlRegisterType<QDeclarativeKeysAttached>("Qt",4,6,"Keys");
     qmlRegisterType<QDeclarativeLayoutItem>("Qt",4,6,"LayoutItem");
     qmlRegisterType<QDeclarativeListView>("Qt",4,6,"ListView");
     qmlRegisterType<QDeclarativeLoader>("Qt",4,6,"Loader");
@@ -116,10 +112,8 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePathQuad>("Qt",4,6,"PathQuad");
     qmlRegisterType<QDeclarativePathView>("Qt",4,6,"PathView");
     qmlRegisterType<QIntValidator>("Qt",4,6,"IntValidator");
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
     qmlRegisterType<QDoubleValidator>("Qt",4,7,"DoubleValidator");
     qmlRegisterType<QRegExpValidator>("Qt",4,7,"RegExpValidator");
-#endif
     qmlRegisterType<QDeclarativeRectangle>("Qt",4,6,"Rectangle");
     qmlRegisterType<QDeclarativeRepeater>("Qt",4,6,"Repeater");
     qmlRegisterType<QGraphicsRotation>("Qt",4,6,"Rotation");
@@ -151,4 +145,7 @@ void QDeclarativeItemModule::defineModule()
 #ifdef QT_WEBKIT_LIB
     qmlRegisterType<QDeclarativeWebSettings>();
 #endif
+
+    qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("Qt",4,6,"KeyNavigation");
+    qmlRegisterUncreatableType<QDeclarativeKeysAttached>("Qt",4,6,"Keys");
 }

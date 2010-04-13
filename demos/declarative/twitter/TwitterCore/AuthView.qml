@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     id: wrapper
@@ -24,7 +24,8 @@ Item {
                     font.pixelSize: 16;
                     font.bold: true
                     color: "#151515"; selectionColor: "green"
-                    KeyNavigation.down: passIn
+                    KeyNavigation.tab: passIn
+                    KeyNavigation.backtab: guest
                     focus: true
                 }
             }
@@ -49,8 +50,8 @@ Item {
                     font.pixelSize: 16;
                     font.bold: true
                     color: "#151515"; selectionColor: "green"
-                    KeyNavigation.down: login
-                    KeyNavigation.up: nameIn
+                    KeyNavigation.tab: login
+                    KeyNavigation.backtab: nameIn
                 }
             }
         }
@@ -69,7 +70,8 @@ Item {
                 }
                 text: "Log in"
                 KeyNavigation.right: guest
-                KeyNavigation.up: passIn
+                KeyNavigation.tab: guest
+                KeyNavigation.backtab: passIn
                 Keys.onReturnPressed: login.doLogin();
                 Keys.onSelectPressed: login.doLogin();
                 Keys.onSpacePressed: login.doLogin();
@@ -88,7 +90,8 @@ Item {
                 }
                 text: "Guest"
                 KeyNavigation.left: login
-                KeyNavigation.up: passIn
+                KeyNavigation.tab: nameIn
+                KeyNavigation.backtab: login
                 Keys.onReturnPressed: guest.doGuest();
                 Keys.onSelectPressed: guest.doGuest();
                 Keys.onSpacePressed: guest.doGuest();

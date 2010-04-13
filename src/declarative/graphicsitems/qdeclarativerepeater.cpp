@@ -62,10 +62,10 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
 /*!
     \qmlclass Repeater QDeclarativeRepeater
-  \since 4.7
+    \since 4.7
     \inherits Item
 
-    \brief The Repeater item allows you to repeat a component based on a model.
+    \brief The Repeater item allows you to repeat an Item-based component using a model.
 
     The Repeater item is used when you want to create a large number of
     similar items.  For each entry in the model, an item is instantiated
@@ -102,15 +102,24 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     The repeater instance continues to own all items it instantiates, even
     if they are otherwise manipulated.  It is illegal to manually remove an item
     created by the Repeater.
+
+    \note Repeater is Item-based, and cannot be used to repeat non-Item-derived objects.
+    For example, it cannot be used to repeat QtObjects.
+    \badcode
+    Item {
+        //XXX illegal. Can't repeat QtObject as it doesn't derive from Item.
+        Repeater {
+            model: 10
+            QtObject {}
+        }
+    }
+    \endcode
  */
 
 /*!
     \internal
     \class QDeclarativeRepeater
     \qmlclass Repeater
-
-    XXX Repeater is very conservative in how it instatiates/deletes items.  Also
-    new model entries will not be created and old ones will not be removed.
  */
 
 /*!

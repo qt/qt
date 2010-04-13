@@ -44,20 +44,24 @@
 #include <private/qdeclarativemousearea_p.h>
 #include <private/qdeclarativerectangle_p.h>
 #include <QtDeclarative/qdeclarativeview.h>
+#include <QtDeclarative/qdeclarativecontext.h>
 
 class tst_QDeclarativeMouseArea: public QObject
 {
     Q_OBJECT
 private slots:
     void dragProperties();
+    void resetDrag();
     void updateMouseAreaPosOnClick();
+    void noOnClickedWithPressAndHold();
 private:
-    QDeclarativeView *createView(const QString &filename);
+    QDeclarativeView *createView();
 };
 
 void tst_QDeclarativeMouseArea::dragProperties()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/dragproperties.qml");
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/dragproperties.qml"));
     canvas->show();
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);
@@ -127,19 +131,49 @@ void tst_QDeclarativeMouseArea::dragProperties()
     delete canvas;
 }
 
-QDeclarativeView *tst_QDeclarativeMouseArea::createView(const QString &filename)
+void tst_QDeclarativeMouseArea::resetDrag()
+{
+    QDeclarativeView *canvas = createView();
+
+    canvas->rootContext()->setContextProperty("haveTarget", QVariant(true));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/dragreset.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeMouseArea *mouseRegion = canvas->rootObject()->findChild<QDeclarativeMouseArea*>("mouseregion");
+    QDeclarativeDrag *drag = mouseRegion->drag();
+    QVERIFY(mouseRegion != 0);
+    QVERIFY(drag != 0);
+
+    // target
+    QDeclarativeItem *blackRect = canvas->rootObject()->findChild<QDeclarativeItem*>("blackrect");
+    QVERIFY(blackRect != 0);
+    QVERIFY(blackRect == drag->target());
+    QDeclarativeItem *rootItem = qobject_cast<QDeclarativeItem*>(canvas->rootObject());
+    QVERIFY(rootItem != 0);
+    QSignalSpy targetSpy(drag, SIGNAL(targetChanged()));
+    QVERIFY(drag->target() != 0);
+    canvas->rootContext()->setContextProperty("haveTarget", QVariant(false));
+    QCOMPARE(targetSpy.count(),1);
+    QVERIFY(drag->target() == 0);
+
+    delete canvas;
+}
+
+
+QDeclarativeView *tst_QDeclarativeMouseArea::createView()
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setFixedSize(240,320);
-
-    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }
 
 void tst_QDeclarativeMouseArea::updateMouseAreaPosOnClick()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/updateMousePosOnClick.qml");
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/updateMousePosOnClick.qml"));
     canvas->show();
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);
@@ -167,6 +201,36 @@ void tst_QDeclarativeMouseArea::updateMouseAreaPosOnClick()
     QCOMPARE(mouseRegion->mouseY(), rect->y());
 
     delete canvas;
+}
+
+void tst_QDeclarativeMouseArea::noOnClickedWithPressAndHold()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/clickandhold.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
+    pressEvent.setScenePos(QPointF(100, 100));
+    pressEvent.setButton(Qt::LeftButton);
+    pressEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &pressEvent);
+
+    QVERIFY(!canvas->rootObject()->property("clicked").toBool());
+    QVERIFY(!canvas->rootObject()->property("held").toBool());
+
+    QTest::qWait(1000);
+
+    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMousePress);
+    releaseEvent.setScenePos(QPointF(100, 100));
+    releaseEvent.setButton(Qt::LeftButton);
+    releaseEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &releaseEvent);
+
+    QVERIFY(!canvas->rootObject()->property("clicked").toBool());
+    QVERIFY(canvas->rootObject()->property("held").toBool());
 }
 
 QTEST_MAIN(tst_QDeclarativeMouseArea)

@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     color: "white"
@@ -32,7 +32,7 @@ Rectangle {
                 x: 10
                 text: content
                 anchors.top: titleText.bottom
-                width: 580; wrap: true
+                width: 580; wrapMode: Text.WordWrap
                 onLinkActivated: { console.log('link clicked: ' + link) }
             }
         }

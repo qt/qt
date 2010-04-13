@@ -1,108 +1,46 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
-    color: "lightSteelBlue"
-    width: 800; height: 600
+    width: 800; height: 480; color: "#464646"
 
     ListModel {
         id: list
         ListElement {
             name: "Sunday"
-            dayColor: "#808080"
-            notes: [
-                ListElement {
-                    noteText: "Lunch"
-                    },
-                    ListElement {
-                        noteText: "Party"
-                    }
-            ]
+            notes: [ ListElement { noteText: "Lunch" }, ListElement { noteText: "Birthday Party" } ]
         }
         ListElement {
             name: "Monday"
-            dayColor: "blue"
-            notes: [
-                ListElement {
-                    noteText: "Pickup kids"
-                    },
-                    ListElement {
-                        noteText: "Checkout kinetic"
-                        },
-                        ListElement {
-                            noteText: "Read email"
-                        }
-            ]
+            notes: [ ListElement { noteText: "Pickup kids from\nschool\n4.30pm" },
+            ListElement { noteText: "Checkout Qt" }, ListElement { noteText: "Read email" } ]
         }
         ListElement {
             name: "Tuesday"
-            dayColor: "yellow"
-            notes: [
-                ListElement {
-                    noteText: "Walk dog"
-                    },
-                    ListElement {
-                        noteText: "Buy newspaper"
-                    }
-            ]
+            notes: [ ListElement { noteText: "Walk dog" }, ListElement { noteText: "Buy newspaper" } ]
         }
         ListElement {
-            name: "Wednesday"
-            dayColor: "purple"
-            notes: [
-                ListElement {
-                    noteText: "Cook dinner"
-                    },
-                    ListElement {
-                        noteText: "Eat dinner"
-                    }
-            ]
+            name: "Wednesday"; notes: [ ListElement { noteText: "Cook dinner" } ]
         }
         ListElement {
             name: "Thursday"
-            dayColor: "blue"
-            notes: [
-                ListElement {
-                    noteText: "5:30pm Meeting"
-                    },
-                    ListElement {
-                        noteText: "Weed garden"
-                    }
-            ]
+            notes: [ ListElement { noteText: "Meeting\n5.30pm" }, ListElement { noteText: "Weed garden" } ]
         }
         ListElement {
             name: "Friday"
-            dayColor: "green"
-            notes: [
-                ListElement {
-                    noteText: "Still work"
-                    },
-                    ListElement {
-                        noteText: "Drink"
-                    }
-            ]
+            notes: [ ListElement { noteText: "More work" }, ListElement { noteText: "Grocery shopping" } ]
         }
         ListElement {
             name: "Saturday"
-            dayColor: "orange"
-            notes: [
-                ListElement {
-                    noteText: "Drink"
-                    },
-                    ListElement {
-                        noteText: "Drink"
-                    }
-            ]
+            notes: [ ListElement { noteText: "Drink" }, ListElement { noteText: "Download Qt\nPlay with QML" } ]
         }
     }
-    Flickable {
+
+    ListView {
         id: flickable
-        anchors.fill: parent; contentWidth: lay.width
-        Row {
-            id: lay
-            Repeater {
-                model: list
-                Component { Day { day: name; color: dayColor; stickies: notes } }
-            }
-        }
+        anchors.fill: parent; focus: true
+        model: list; delegate: Day { }
+        highlightRangeMode: ListView.StrictlyEnforceRange
+        orientation: ListView.Horizontal
+        snapMode: ListView.SnapOneItem
     }
 }

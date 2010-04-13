@@ -5,6 +5,6 @@ MyTypeObject {
     property real r_y: rectf.y
     property real r_width: rectf.width
     property real r_height: rectf.height
-    property var copy: rectf
+    property variant copy: rectf
 }
 

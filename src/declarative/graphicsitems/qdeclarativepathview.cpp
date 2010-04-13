@@ -221,7 +221,7 @@ void QDeclarativePathViewPrivate::updateHighlight()
             tl.reset(moveHighlight);
             moveHighlight.setValue(highlightPosition);
 
-            const int duration = 300;
+            const int duration = highlightMoveDuration;
 
             if (target - highlightPosition > model->count()/2) {
                 highlightUp = false;
@@ -691,6 +691,31 @@ void QDeclarativePathView::setHighlightRangeMode(HighlightRangeMode mode)
     emit highlightRangeModeChanged();
 }
 
+
+/*!
+    \qmlproperty int PathView::highlightMoveDuration
+    This property holds the move animation duration of the highlight delegate.
+
+    If the highlightRangeMode is StrictlyEnforceRange then this property
+    determines the speed that the items move along the path.
+
+    The default value for the duration is 300ms.
+*/
+int QDeclarativePathView::highlightMoveDuration() const
+{
+    Q_D(const QDeclarativePathView);
+    return d->highlightMoveDuration;
+}
+
+void QDeclarativePathView::setHighlightMoveDuration(int duration)
+{
+    Q_D(QDeclarativePathView);
+    if (d->highlightMoveDuration == duration)
+        return;
+    d->highlightMoveDuration = duration;
+    emit highlightMoveDurationChanged();
+}
+
 /*!
     \qmlproperty real PathView::dragMargin
     This property holds the maximum distance from the path that initiate mouse dragging.
@@ -1130,7 +1155,7 @@ void QDeclarativePathView::refill()
         d->updateItem(d->highlightItem, d->highlightRangeStart);
         if (QDeclarativePathViewAttached *att = d->attached(d->highlightItem))
             att->setOnPath(true);
-    } else if (d->moveReason != QDeclarativePathViewPrivate::SetIndex) {
+    } else if (d->highlightItem && d->moveReason != QDeclarativePathViewPrivate::SetIndex) {
         d->updateItem(d->highlightItem, d->currentItemOffset);
         if (QDeclarativePathViewAttached *att = d->attached(d->highlightItem))
             att->setOnPath(currentVisible);
@@ -1316,7 +1341,7 @@ void QDeclarativePathViewPrivate::snapToCurrent()
     tl.reset(moveOffset);
     moveOffset.setValue(offset);
 
-    const int duration = 300;
+    const int duration = highlightMoveDuration;
 
     if (targetOffset - offset > model->count()/2) {
         qreal distance = model->count() - targetOffset + offset;

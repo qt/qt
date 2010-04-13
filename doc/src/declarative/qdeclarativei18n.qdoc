@@ -72,7 +72,7 @@ that needs to be translated is enclosed in a call to \c qsTr().
 
 hello.qml:
 \qml
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
  width: 200; height: 200

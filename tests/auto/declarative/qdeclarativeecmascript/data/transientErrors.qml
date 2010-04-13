@@ -1,9 +1,9 @@
 import Qt 4.6
 
 QtObject {
-    property var obj: nested
+    property variant obj: nested
 
-    property var obj2
+    property variant obj2
     obj2: NestedTypeTransientErrors {
         id: nested
     }

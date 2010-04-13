@@ -1,1 +1,0 @@
-4:5:JavaScript declaration outside Script element
