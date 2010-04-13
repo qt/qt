@@ -2,7 +2,9 @@ import Qt 4.7
 import "content"
 
 Rectangle {
-    id: window; width: 480; height: 320
+    id: window
+    
+    width: 480; height: 320
     color: "darkgreen"
 
     Row {

@@ -3363,7 +3363,7 @@ void tst_QNetworkReply::lastModifiedHeaderForFile()
 void tst_QNetworkReply::lastModifiedHeaderForHttp()
 {
     // Tue, 22 May 2007 12:04:57 GMT according to webserver
-    QUrl url = "http://" + QtNetworkSettings::serverName() + "/gif/fluke.gif";
+    QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/fluke.gif";
 
     QNetworkRequest request(url);
     QNetworkReplyPtr reply = manager.head(request);

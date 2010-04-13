@@ -44,6 +44,13 @@
 #include <QProcess>
 #include <QDebug>
 
+#define CONCURRENT
+
+#ifdef CONCURRENT
+#include <QFutureSynchronizer>
+#include <QtConcurrentRun>
+#endif
+
 class tst_examples : public QObject
 {
     Q_OBJECT
@@ -51,7 +58,9 @@ public:
     tst_examples();
 
 private slots:
+#ifndef CONCURRENT
     void examples_data();
+#endif
     void examples();
 
     void namingConvention();
@@ -163,6 +172,8 @@ QStringList tst_examples::findQmlFiles(const QDir &d)
     return rv;
 }
 
+
+
 /*
 This test runs all the examples in the declarative UI source tree and ensures 
 that they start and exit cleanly.
@@ -170,6 +181,7 @@ that they start and exit cleanly.
 Examples are any .qml files under the examples/ or demos/ directory that start
 with a lower case letter.  
 */
+#ifndef CONCURRENT
 void tst_examples::examples_data()
 {
     QTest::addColumn<QString>("file");
@@ -186,9 +198,95 @@ void tst_examples::examples_data()
     foreach (const QString &file, files)
         QTest::newRow(file.toLatin1().constData()) << file;
 }
+#endif
 
+#ifdef CONCURRENT
+#define THREADS 5
+
+struct Example {
+public:
+    Example() : result(Unknown) {}
+
+    enum Result { Pass, Unknown, Fail };
+    Result result;
+    QString file;
+    QString qmlruntime;
+
+    void run();
+};
+
+void Example::run()
+{
+    QFileInfo fi(file);
+    QFileInfo dir(fi.path());
+    QString script = SRCDIR "/data/"+dir.baseName()+"/"+fi.baseName();
+    QFileInfo testdata(script+".qml");
+    QStringList arguments;
+    arguments << "-script" << (testdata.exists() ? script : QLatin1String(SRCDIR "/data/dummytest"))
+              << "-scriptopts" << "play,testerror,exitoncomplete,exitonfailure" 
+              << file;
+#ifdef Q_WS_QWS
+    arguments << "-qws";
+#endif
+
+    QProcess p;
+    p.start(qmlruntime, arguments);
+    if (!p.waitForFinished()) {
+        result = Fail;
+        return;
+    }
+
+    if (p.exitStatus() != QProcess::NormalExit || p.exitCode() != 0)
+        qWarning() << p.readAllStandardOutput() << p.readAllStandardError();
+    
+    if (p.exitStatus() != QProcess::NormalExit ||
+        p.exitCode() != 0) {
+        result = Fail;
+        return;
+    } else {
+        result = Pass;
+        return;
+    }
+}
+
+#endif
 void tst_examples::examples()
 {
+#ifdef CONCURRENT
+    QThreadPool::globalInstance()->setMaxThreadCount(5);
+
+    QString examples = QLibraryInfo::location(QLibraryInfo::ExamplesPath);
+    QString demos = QLibraryInfo::location(QLibraryInfo::DemosPath);
+    QString snippets = QLatin1String(SRCDIR) + "/../../../../doc/src/snippets/";
+
+    QStringList files;
+    files << findQmlFiles(QDir(examples));
+    files << findQmlFiles(QDir(demos));
+    files << findQmlFiles(QDir(snippets));
+
+    QList<Example> tests;
+
+    for (int ii = 0; ii < files.count(); ++ii) {
+        Example e;
+        e.file = files.at(ii);
+        e.qmlruntime = qmlruntime;
+        tests << e;
+    }
+
+    QFutureSynchronizer<void> sync;
+
+    for (int ii = 0; ii < tests.count(); ++ii) {
+        QFuture<void> r = QtConcurrent::run(tests.at(ii), &Example::run);
+        sync.addFuture(r);
+    }
+
+    sync.waitForFinished();
+
+    for (int ii = 0; ii < tests.count(); ++ii) 
+        QVERIFY(tests.at(ii).result == Example::Pass);
+
+#else
+
     QFETCH(QString, file);
 
     QFileInfo fi(file);
@@ -210,6 +308,7 @@ void tst_examples::examples()
         qWarning() << p.readAllStandardOutput() << p.readAllStandardError();
     QCOMPARE(p.exitStatus(), QProcess::NormalExit);
     QCOMPARE(p.exitCode(), 0);
+#endif
 }
 
 QTEST_MAIN(tst_examples)

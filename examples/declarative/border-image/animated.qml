@@ -3,7 +3,6 @@ import "content"
 
 Rectangle {
     id: page
-    color: "white"
     width: 1030; height: 540
 
     MyBorderImage {
