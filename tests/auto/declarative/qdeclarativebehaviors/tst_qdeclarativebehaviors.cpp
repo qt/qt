@@ -95,7 +95,7 @@ void tst_qdeclarativebehaviors::scriptTriggered()
     QVERIFY(rect);
 
     rect->setColor(QColor("red"));
-    QTest::qWait(200);
+    QTest::qWait(400);
     qreal x = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 
@@ -175,29 +175,29 @@ void tst_qdeclarativebehaviors::replaceBinding()
     QVERIFY(rect);
 
     rect->setState("moved");
-    QTest::qWait(200);
+    QTest::qWait(400);
     QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
     QVERIFY(innerRect);
     qreal x = innerRect->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
-    QTest::qWait(600);
+    QTest::qWait(1000);
     QCOMPARE(innerRect->x(), (qreal)200);
     rect->setProperty("basex", 10);
     QCOMPARE(innerRect->x(), (qreal)200);
     rect->setProperty("movedx", 210);
-    QTest::qWait(600);
+    QTest::qWait(1400);
     QCOMPARE(innerRect->x(), (qreal)210);
 
     rect->setState("");
-    QTest::qWait(200);
+    QTest::qWait(400);
     x = innerRect->x();
     QVERIFY(x > 10 && x < 210);  //i.e. the behavior has been triggered
-    QTest::qWait(600);
+    QTest::qWait(1000);
     QCOMPARE(innerRect->x(), (qreal)10);
     rect->setProperty("movedx", 200);
     QCOMPARE(innerRect->x(), (qreal)10);
     rect->setProperty("basex", 20);
-    QTest::qWait(600);
+    QTest::qWait(1400);
     QCOMPARE(innerRect->x(), (qreal)20);
 
     delete rect;
