@@ -62,7 +62,7 @@ SUBDIRS += \
            qdeclarativexmlhttprequest \      # Cover
            qdeclarativeimageprovider \       # Cover
            qdeclarativestyledtext \          # Cover
-           sql \                      # Cover
+           qdeclarativesqldatabase \         # Cover
            qmlvisual                    # Cover
 
 contains(QT_CONFIG, webkit) {
