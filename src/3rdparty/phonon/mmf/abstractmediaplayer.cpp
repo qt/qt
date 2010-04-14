@@ -494,15 +494,14 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
     const Phonon::State newPhononState = phononState(newState);
 
     if (LoadingState == oldPhononState && StoppedState == newPhononState) {
-        // Ensure initial volume is set on MMF API before starting playback
-        doVolumeChanged();
-
         switch (m_pending) {
         case NothingPending:
             AbstractPlayer::changeState(newState);
             break;
 
         case PlayPending:
+            changeState(PlayingState); // necessary in order to apply initial volume
+            doVolumeChanged();
             startPlayback();
             break;
 
