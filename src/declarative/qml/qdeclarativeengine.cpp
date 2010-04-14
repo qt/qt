@@ -1949,6 +1949,8 @@ void QDeclarativeEngine::setPluginPathList(const QStringList &paths)
 /*!
   Imports the plugin named \a filePath with the \a uri provided.
   Returns true if the plugin was successfully imported; otherwise returns false.
+
+  The plugin has to be a Qt plugin which implements the QDeclarativeExtensionPlugin interface.
 */
 bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &uri, QString *errorString)
 {
