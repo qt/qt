@@ -758,6 +758,33 @@ void QVGEGLWindowSurfaceDirect::endPaint
     }
 }
 
+bool QVGEGLWindowSurfaceDirect::supportsStaticContents() const
+{
+#if defined(QVG_BUFFER_SCROLLING) && !defined(QVG_NO_PRESERVED_SWAP)
+    return true;
+#else
+    return QVGEGLWindowSurfacePrivate::supportsStaticContents();
+#endif
+}
+
+bool QVGEGLWindowSurfaceDirect::scroll(QWidget *widget, const QRegion& area, int dx, int dy)
+{
+#ifdef QVG_BUFFER_SCROLLING
+    QEglContext *context = ensureContext(widget);
+    if (context) {
+        context->makeCurrent(windowSurface);
+        QRect scrollRect = area.boundingRect();
+        int sx = scrollRect.x();
+        int sy = size.height() - scrollRect.y() - scrollRect.height();
+        vgSeti(VG_SCISSORING, VG_FALSE);
+        vgCopyPixels(sx + dx, sy - dy, sx, sy, scrollRect.width(), scrollRect.height());
+        context->lazyDoneCurrent();
+        return true;
+    }
+#endif
+    return false;
+}
+
 QT_END_NAMESPACE
 
 #endif
