@@ -285,10 +285,7 @@ void QDeclarativeCompiledBindingsPrivate::run(Binding *binding, QDeclarativeProp
         return;
 
     QDeclarativeContextData *context = q->QDeclarativeAbstractExpression::context();
-    if (!context) 
-        return;
-
-    if (!context->engine)
+    if (!context || !context->isValid()) 
         return;
 
     if (binding->updating) {

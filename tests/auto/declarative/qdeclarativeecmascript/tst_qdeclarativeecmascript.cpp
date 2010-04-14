@@ -142,6 +142,7 @@ private slots:
     void libraryScriptAssert();
     void variantsAssignedUndefined();
     void qtbug_9792();
+    void noSpuriousWarningsAtShutdown();
 
     void callQtInvokables();
 private:
@@ -2236,6 +2237,23 @@ void tst_qdeclarativeecmascript::qtbug_9792()
     QCOMPARE(transientErrorsMsgCount, 0);
 
     delete object;
+}
+
+// Test that we shut down without stupid warnings
+void tst_qdeclarativeecmascript::noSpuriousWarningsAtShutdown()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("noSpuriousWarningsAtShutdown.qml"));
+
+    QObject *o = component.create();
+
+    transientErrorsMsgCount = 0;
+    QtMsgHandler old = qInstallMsgHandler(transientErrorsMsgHandler);
+
+    delete o;
+
+    qInstallMsgHandler(old);
+
+    QCOMPARE(transientErrorsMsgCount, 0);
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

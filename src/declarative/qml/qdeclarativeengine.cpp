@@ -851,6 +851,9 @@ void QDeclarativeDeclarativeData::destroyed(QObject *object)
     if (propertyCache)
         propertyCache->release();
 
+    if (ownContext)
+        context->destroy();
+
     QDeclarativeGuard<QObject> *guard = guards;
     while (guard) {
         QDeclarativeGuard<QObject> *g = guard;
@@ -860,9 +863,6 @@ void QDeclarativeDeclarativeData::destroyed(QObject *object)
         g->next = 0;
         g->objectDestroyed(object);
     }
-
-    if (ownContext)
-        context->destroy();
 
     if (scriptValue)
         delete scriptValue;
