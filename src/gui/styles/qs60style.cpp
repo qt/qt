@@ -1542,7 +1542,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
                 const int tabOverlap =
                     QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap) - borderThickness;
-                //todo: draw navi wipe behind tabbar - must be drawn with first draw
 
                 if (skinElement==QS60StylePrivate::SE_TabBarTabEastInactive||
                         skinElement==QS60StylePrivate::SE_TabBarTabEastActive||
@@ -1646,7 +1645,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     painter->drawPixmap(tr.left() + tabOverlap,
                                         tr.center().y() - (tabIcon.height() >> 1),
                                         tabIcon);
-                tr.setLeft(tr.left() + iconSize.width() + 4);
+                tr.setLeft(tr.left() + iconSize.width() + 4); //todo: magic four
             }
 
             QCommonStyle::drawItemText(painter, tr, alignment, optionTab.palette, tab->state & State_Enabled, tab->text, QPalette::WindowText);
@@ -1965,14 +1964,14 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             // We need to reduce the focus frame size if LayoutSpacing is smaller than FocusFrameMargin
             // Otherwise, we would overlay adjacent widgets.
             const int frameHeightReduction =
-                    qMin(0, pixelMetric(QStyle::PM_LayoutVerticalSpacing)
-                            - pixelMetric(QStyle::PM_FocusFrameVMargin));
+                    qMin(0, pixelMetric(PM_LayoutVerticalSpacing)
+                            - pixelMetric(PM_FocusFrameVMargin));
             const int frameWidthReduction =
-                    qMin(0, pixelMetric(QStyle::PM_LayoutHorizontalSpacing)
-                            - pixelMetric(QStyle::PM_FocusFrameHMargin));
+                    qMin(0, pixelMetric(PM_LayoutHorizontalSpacing)
+                            - pixelMetric(PM_FocusFrameHMargin));
             const int rounding =
-                    qMin(pixelMetric(QStyle::PM_FocusFrameVMargin),
-                            pixelMetric(QStyle::PM_LayoutVerticalSpacing));
+                    qMin(pixelMetric(PM_FocusFrameVMargin),
+                            pixelMetric(PM_LayoutVerticalSpacing));
             const QRect frameRect =
                     option->rect.adjusted(-frameWidthReduction, -frameHeightReduction,
                             frameWidthReduction, frameHeightReduction);
@@ -2848,7 +2847,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                     const int tabOverlapNoBorder =
                         QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap);
                     const int tabOverlap =
-                        tabOverlapNoBorder-QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+                        tabOverlapNoBorder - QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
                     const QTabWidget *tab = qobject_cast<const QTabWidget *>(widget);
                     int gain = (tab) ? tabOverlap * tab->count() : 0;
                     switch (twf->shape) {
@@ -2914,7 +2913,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                         ret = QRect();
                     } else {
                         if (menuItem->direction == Qt::RightToLeft)
-                            ret.translate(ret.width()-indicatorWidth, 0);
+                            ret.translate(ret.width() - indicatorWidth, 0);
                         ret.setWidth(indicatorWidth);
                     }
                 } else {
