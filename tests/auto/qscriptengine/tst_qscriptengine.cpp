@@ -4317,6 +4317,11 @@ void tst_QScriptEngine::installTranslatorFunctions()
     }
 }
 
+static QScriptValue callQsTr(QScriptContext *ctx, QScriptEngine *eng)
+{
+    return eng->globalObject().property("qsTr").call(ctx->thisObject(), ctx->argumentsObject());
+}
+
 void tst_QScriptEngine::translateScript()
 {
     QScriptEngine engine;
@@ -4345,6 +4350,8 @@ void tst_QScriptEngine::translateScript()
 
     QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Goodbye', '', 'UnicodeUTF8')", fileName).toString(), QString::fromLatin1("Farvel"));
 
+    QCOMPARE(engine.evaluate("qsTr('One', 'not the same one')", fileName).toString(), QString::fromLatin1("Enda en"));
+
     QVERIFY(engine.evaluate("QT_TR_NOOP()").isUndefined());
     QCOMPARE(engine.evaluate("QT_TR_NOOP('One')").toString(), QString::fromLatin1("One"));
 
@@ -4361,6 +4368,41 @@ void tst_QScriptEngine::translateScript()
     // There is no context, but it shouldn't crash
     QCOMPARE(engine.globalObject().property("qsTr").call(
                  QScriptValue(), QScriptValueList() << "One").toString(), QString::fromLatin1("One"));
+
+    // Translate strings from the second script (translatable2.js)
+
+    QString fileName2 = QString::fromLatin1("translatable2.js");
+
+    QCOMPARE(engine.evaluate("qsTr('Three')", fileName2).toString(), QString::fromLatin1("Tre"));
+    QCOMPARE(engine.evaluate("qsTr('Happy birthday!')", fileName2).toString(), QString::fromLatin1("Gratulerer med dagen!"));
+
+    // Not translated because translation is only in translatable.js
+    QCOMPARE(engine.evaluate("qsTr('One')", fileName2).toString(), QString::fromLatin1("One"));
+    QCOMPARE(engine.evaluate("(function() { return qsTr('One'); })()", fileName2).toString(), QString::fromLatin1("One"));
+
+    // For qsTranslate() the filename shouldn't matter
+    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Two')", fileName2).toString(), QString::fromLatin1("To"));
+    QCOMPARE(engine.evaluate("qsTranslate('BarContext', 'Congratulations!')", fileName).toString(), QString::fromLatin1("Gratulerer!"));
+
+    // qsTr() should use the innermost filename as context
+    engine.evaluate("function foo(s) { return bar(s); }", fileName);
+    engine.evaluate("function bar(s) { return qsTr(s); }", fileName2);
+    QCOMPARE(engine.evaluate("bar('Three')", fileName2).toString(), QString::fromLatin1("Tre"));
+    QCOMPARE(engine.evaluate("bar('Three')", fileName).toString(), QString::fromLatin1("Tre"));
+    QCOMPARE(engine.evaluate("bar('One')", fileName2).toString(), QString::fromLatin1("One"));
+
+    engine.evaluate("function foo(s) { return bar(s); }", fileName2);
+    engine.evaluate("function bar(s) { return qsTr(s); }", fileName);
+    QCOMPARE(engine.evaluate("bar('Three')", fileName2).toString(), QString::fromLatin1("Three"));
+    QCOMPARE(engine.evaluate("bar('One')", fileName).toString(), QString::fromLatin1("En"));
+    QCOMPARE(engine.evaluate("bar('One')", fileName2).toString(), QString::fromLatin1("En"));
+
+    // Calling qsTr() from a native function
+    engine.globalObject().setProperty("qsTrProxy", engine.newFunction(callQsTr));
+    QCOMPARE(engine.evaluate("qsTrProxy('One')", fileName).toString(), QString::fromLatin1("En"));
+    QCOMPARE(engine.evaluate("qsTrProxy('One')", fileName2).toString(), QString::fromLatin1("One"));
+    QCOMPARE(engine.evaluate("qsTrProxy('Three')", fileName).toString(), QString::fromLatin1("Three"));
+    QCOMPARE(engine.evaluate("qsTrProxy('Three')", fileName2).toString(), QString::fromLatin1("Tre"));
 
     QCoreApplication::instance()->removeTranslator(&translator);
 }
