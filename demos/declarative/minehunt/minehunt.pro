@@ -27,7 +27,7 @@ symbian:{
     load(data_caging_paths)
     TARGET.EPOCALLOWDLLDATA = 1
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
-
+    TARGET.CAPABILITY = NetworkServices ReadUserData
     importFiles.sources = minehunt.dll \
     MinehuntCore/Explosion.qml \
     MinehuntCore/pics \
