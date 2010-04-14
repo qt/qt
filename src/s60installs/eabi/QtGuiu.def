@@ -11943,7 +11943,7 @@ EXPORTS
 	_ZN20QGraphicsItemPrivate14setFocusHelperEN2Qt11FocusReasonEbb @ 11942 NONAME
 	_ZN20QGraphicsItemPrivate16clearFocusHelperEb @ 11943 NONAME
 	_ZN20QGraphicsItemPrivate24prependGraphicsTransformEP18QGraphicsTransform @ 11944 NONAME
-	_ZN20QGraphicsItemPrivate6appendEP24QDeclarativeListPropertyI15QGraphicsObjectEPS1_ @ 11945 NONAME
+	_ZN20QGraphicsItemPrivate6appendEP24QDeclarativeListPropertyI15QGraphicsObjectEPS1_ @ 11945 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate8setWidthEf @ 11946 NONAME
 	_ZN20QGraphicsItemPrivate9setHeightEf @ 11947 NONAME
 	_ZN7QWizard11pageRemovedEi @ 11948 NONAME
@@ -11970,4 +11970,7 @@ EXPORTS
 	_ZNK12QPaintBuffer15frameStartIndexEi @ 11969 NONAME
 	_ZNK12QPaintBuffer15processCommandsEP8QPainterii @ 11970 NONAME
 	_ZNK12QPaintBuffer18commandDescriptionEi @ 11971 NONAME
+	_ZN20QGraphicsItemPrivate11children_atEP24QDeclarativeListPropertyI15QGraphicsObjectEi @ 11972 NONAME
+	_ZN20QGraphicsItemPrivate14children_countEP24QDeclarativeListPropertyI15QGraphicsObjectE @ 11973 NONAME
+	_ZN20QGraphicsItemPrivate15children_appendEP24QDeclarativeListPropertyI15QGraphicsObjectEPS1_ @ 11974 NONAME
 
