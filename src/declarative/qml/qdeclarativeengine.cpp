@@ -212,10 +212,13 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
         newQMetaObject(StaticQtMetaObject::get());
     globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
+#ifndef QT_NO_DESKTOPSERVICES
     offlineStoragePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation).replace(QLatin1Char('/'), QDir::separator())
         + QDir::separator() + QLatin1String("QML")
         + QDir::separator() + QLatin1String("OfflineStorage");
-
+#else
+    qWarning("offlineStoragePath is not set by default with QT_NO_DESKTOPSERVICES");
+#endif
 
     qt_add_qmlxmlhttprequest(this);
     qt_add_qmlsqldatabase(this);
@@ -1214,7 +1217,10 @@ QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QSc
 {
     if(ctxt->argumentCount() < 1)
         return e->newVariant(QVariant(false));
-    bool ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
+    bool ret = false;
+#ifndef QT_NO_DESKTOPSERVICES
+    ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
+#endif
     return e->newVariant(QVariant(ret));
 }
 
