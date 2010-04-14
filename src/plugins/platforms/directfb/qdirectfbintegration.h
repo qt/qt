@@ -54,6 +54,7 @@ class QDirectFBCursor;
 
 class QDirectFbScreen : public QPlatformScreen
 {
+Q_OBJECT
 public:
     QDirectFbScreen(int display);
     ~QDirectFbScreen();

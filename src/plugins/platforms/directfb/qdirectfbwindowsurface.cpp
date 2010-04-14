@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qwindowsurface_directfb.h"
-#include "qplatformintegration_directfb.h"
-#include "qblitter_directfb.h"
+#include "qdirectfbwindowsurface.h"
+#include "qdirectfbintegration.h"
+#include "qdirectfbblitter.h"
 #include "qdirectfbconvenience.h"
 #include <private/qpixmap_blitter_p.h>
 

@@ -13,16 +13,16 @@ INCLUDEPATH += $$DIRECTFB_INCLUDEPATH
 LIBS += $$DIRECTFB_LIBS
 
 SOURCES = main.cpp \
-    qplatformintegration_directfb.cpp \
-    qwindowsurface_directfb.cpp \
-    qblitter_directfb.cpp \
+    qdirectfbintegration.cpp \
+    qdirectfbwindowsurface.cpp \
+    qdirectfbblitter.cpp \
     qdirectfbconvenience.cpp \
     qdirectfbinput.cpp \
     qdirectfbcursor.cpp \
     qdirectfbwindow.cpp
-HEADERS = qplatformintegration_directfb.h \
-    qwindowsurface_directfb.h \
-    qblitter_directfb.h \
+HEADERS = qdirectfbintegration.h \
+    qdirectfbwindowsurface.h \
+    qdirectfbblitter.h \
     qdirectfbconvenience.h \
     qdirectfbinput.h \
     qdirectfbcursor.h \

@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui/QPlatformIntegrationPlugin>
-#include "qplatformintegration_directfb.h"
+#include "qdirectfbintegration.h"
 
 QT_BEGIN_NAMESPACE
 

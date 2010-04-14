@@ -1,9 +1,6 @@
 #include "qdirectfbcursor.h"
-#include "qblitter_directfb.h"
-#include "qplatformintegration_directfb.h"
 #include "qdirectfbconvenience.h"
 
-#include <private/qpixmap_blitter_p.h>
 
 QDirectFBCursor::QDirectFBCursor(QPlatformScreen* screen) :
         QGraphicsSystemCursor(screen), surface(0)

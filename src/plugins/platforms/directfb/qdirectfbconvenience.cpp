@@ -1,5 +1,5 @@
 #include "qdirectfbconvenience.h"
-#include "qblitter_directfb.h"
+#include "qdirectfbblitter.h"
 
 #include <private/qpixmap_blitter_p.h>
 
