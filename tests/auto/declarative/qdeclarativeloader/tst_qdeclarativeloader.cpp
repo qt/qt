@@ -412,7 +412,7 @@ void tst_QDeclarativeLoader::networkRequestUrl()
     server.serveDirectory(SRCDIR "/data");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14450/Rect120x60.qml\" }"), QUrl(SRCDIR "/dummy.qml"));
+    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14450/Rect120x60.qml\" }"), QUrl::fromLocalFile(SRCDIR "/dummy.qml"));
     if (component.isError())
         qDebug() << component.errors();
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
