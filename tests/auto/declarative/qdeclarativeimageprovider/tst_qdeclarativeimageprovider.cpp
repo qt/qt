@@ -114,7 +114,7 @@ void tst_qdeclarativeimageprovider::imageSource()
     engine.addImageProvider("test", new TestProvider);
     QVERIFY(engine.imageProvider("test") != 0);
 
-    QString componentStr = "import Qt 4.6\nImage { source: \"" + source + "\"; " + properties + " }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"" + source + "\"; " + properties + " }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -145,7 +145,7 @@ void tst_qdeclarativeimageprovider::removeProvider()
     QVERIFY(engine.imageProvider("test2") != 0);
 
     // add provider, confirm it works
-    QString componentStr = "import Qt 4.6\nImage { source: \"image://test2/exists1.png\" }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"image://test2/exists1.png\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
