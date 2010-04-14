@@ -21,6 +21,7 @@ QtObject {
             readyState = true;
 
         x.open("GET", url);
+        x.setRequestHeader("Accept-Language","en-US");
 
         x.setRequestHeader(header, "Value");
 
