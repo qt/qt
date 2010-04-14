@@ -27,6 +27,12 @@
         <translation>Hallo</translation>
     </message>
     <message>
+        <location filename="translatable.js" line="9"/>
+        <source>One</source>
+        <comment>not the same one</comment>
+        <translation>Enda en</translation>
+    </message>
+    <message>
         <source>Goodbye</source>
         <translation type="obsolete">Farvel</translation>
     </message>
