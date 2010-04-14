@@ -85,7 +85,7 @@ public:
     void setPluginPathList(const QStringList &paths);
     void addPluginPath(const QString& dir);
 
-    bool importPlugin(const QString &filePath, const QString &uri);
+    bool importPlugin(const QString &filePath, const QString &uri, QString *errorString);
 
     void setNetworkAccessManagerFactory(QDeclarativeNetworkAccessManagerFactory *);
     QDeclarativeNetworkAccessManagerFactory *networkAccessManagerFactory() const;
