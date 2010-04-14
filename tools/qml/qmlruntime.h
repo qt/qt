@@ -108,7 +108,6 @@ public:
 public slots:
     void sceneResized(QSize size);
     void open(const QString&);
-    void openWgt(const QString&);
     void openQml(const QString&);
     void openFile();
     void reload();
@@ -142,7 +141,6 @@ private slots:
     void toggleOrientation();
     void startNetwork();
     void toggleFullScreen();
-    void unpackWgt();
 
 private:
     QString getVideoFileName();
