@@ -157,12 +157,7 @@ public:
     bool isNativePaintingActive() const;
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
-    bool nativePaintingActive;
 };
-
-inline bool QGL2PaintEngineEx::isNativePaintingActive() const { 
-    return nativePaintingActive; 
-}
 
 class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate
 {
@@ -183,6 +178,7 @@ public:
             elementIndicesVBOId(0),
             snapToPixelGrid(false),
             addOffset(false),
+            nativePaintingActive(false),
             inverseScale(1),
             lastMaskTextureUsed(0)
     { }
@@ -285,6 +281,7 @@ public:
 
     bool snapToPixelGrid;
     bool addOffset; // When enabled, adds a 0.49,0.49 offset to matrix in updateMatrix
+    bool nativePaintingActive;
     GLfloat pmvMatrix[3][3];
     GLfloat inverseScale;
 

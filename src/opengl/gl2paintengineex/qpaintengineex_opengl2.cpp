@@ -516,7 +516,7 @@ void QGL2PaintEngineEx::beginNativePainting()
     ensureActive();
     d->transferMode(BrushDrawingMode);
 
-    nativePaintingActive = true;
+    d->nativePaintingActive = true;
 
     QGLContext *ctx = d->ctx;
     glUseProgram(0);
@@ -585,7 +585,12 @@ void QGL2PaintEngineEx::endNativePainting()
 {
     Q_D(QGL2PaintEngineEx);
     d->needsSync = true;
-    nativePaintingActive = false;
+    d->nativePaintingActive = false;
+}
+
+bool QGL2PaintEngineEx::isNativePaintingActive() const {
+    Q_D(const QGL2PaintEngineEx);
+    return d->nativePaintingActive;
 }
 
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
@@ -1104,8 +1109,7 @@ void QGL2PaintEngineExPrivate::drawVertexArrays(const float *data, int *stops, i
 /////////////////////////////////// Public Methods //////////////////////////////////////////
 
 QGL2PaintEngineEx::QGL2PaintEngineEx()
-    : QPaintEngineEx(*(new QGL2PaintEngineExPrivate(this))),
-      nativePaintingActive(false)
+    : QPaintEngineEx(*(new QGL2PaintEngineExPrivate(this)))
 {
 }
 
