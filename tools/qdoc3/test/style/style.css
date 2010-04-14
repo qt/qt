@@ -182,7 +182,7 @@
         width: 302px;
         height: 22px;
         text-indent: -999em;
-        background: url(../images/qt_ref_doc.png) no-repeat 0 0;
+        background: url(../images/header.png) no-repeat 0 0;
     }
     /* header elements */
     #nav-topright
@@ -781,11 +781,6 @@
         width: 200px;
     }
 
-    .toc h3
-    {
-		font:600 12px/1.2 Arial;
-    }
-	
     .toc ul
     {
         float: left;
@@ -796,7 +791,7 @@
 
     .content .toc li
     {
-        font: normal 10px/1.2 Verdana;
+        font: normal 12px/1.2 Verdana;
         background: url(../images/bullet_dn.png) no-repeat 0 5px;
     }
 
