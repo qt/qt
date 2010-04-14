@@ -58,6 +58,8 @@ MetaMakefileGenerator::~MetaMakefileGenerator()
         delete project;
 }
 
+#ifndef QT_QMAKE_PARSER_ONLY
+
 class BuildsMetaMakefileGenerator : public MetaMakefileGenerator
 {
 private:
@@ -489,6 +491,25 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
     return mkfile;
 }
 
+MetaMakefileGenerator *
+MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &name, bool op, bool *success)
+{
+    MetaMakefileGenerator *ret = 0;
+    if ((Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
+         Option::qmake_mode == Option::QMAKE_GENERATE_PRL)) {
+        if (proj->first("TEMPLATE").endsWith("subdirs"))
+            ret = new SubdirsMetaMakefileGenerator(proj, name, op);
+    }
+    if (!ret)
+        ret = new BuildsMetaMakefileGenerator(proj, name, op);
+    bool res = ret->init();
+    if (success)
+        *success = res;
+    return ret;
+}
+
+#endif // QT_QMAKE_PARSER_ONLY
+
 bool
 MetaMakefileGenerator::modesForGenerator(const QString &gen,
         Option::HOST_MODE *host_mode, Option::TARG_MODE *target_mode)
@@ -521,23 +542,6 @@ MetaMakefileGenerator::modesForGenerator(const QString &gen,
         return false;
     }
     return true;
-}
-
-MetaMakefileGenerator *
-MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &name, bool op, bool *success)
-{
-    MetaMakefileGenerator *ret = 0;
-    if ((Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
-         Option::qmake_mode == Option::QMAKE_GENERATE_PRL)) {
-        if (proj->first("TEMPLATE").endsWith("subdirs"))
-            ret = new SubdirsMetaMakefileGenerator(proj, name, op);
-    }
-    if (!ret)
-        ret = new BuildsMetaMakefileGenerator(proj, name, op);
-    bool res = ret->init();
-    if (success)
-        *success = res;
-    return ret;
 }
 
 QT_END_NAMESPACE

@@ -37,7 +37,7 @@ namespace Phonon
         class QMemInputPin : public QPin, public IMemInputPin
         {
         public:
-            QMemInputPin(QBaseFilter *, const QVector<AM_MEDIA_TYPE> &, bool transform);
+            QMemInputPin(QBaseFilter *, const QVector<AM_MEDIA_TYPE> &, bool transform, QPin *output);
             ~QMemInputPin();
 
             //reimplementation from IUnknown
@@ -60,18 +60,13 @@ namespace Phonon
             STDMETHODIMP ReceiveMultiple(IMediaSample **,long,long *);
             STDMETHODIMP ReceiveCanBlock();
 
-            //addition
-            void addOutput(QPin *output);
-            void removeOutput(QPin *output);
-            QList<QPin*> outputs() const;
-
         private:
             IMediaSample *duplicateSampleForOutput(IMediaSample *, IMemAllocator *);
             ALLOCATOR_PROPERTIES getDefaultAllocatorProperties() const;
 
             bool m_shouldDuplicateSamples;
             const bool m_transform; //defines if the pin is transforming the samples
-            QList<QPin*> m_outputs;
+            QPin* const m_output;
             QMutex m_mutexReceive;
         };
     }

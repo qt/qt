@@ -895,7 +895,7 @@ void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::Bord
         BorderData data = qvariant_cast<BorderData>(decl.d->parsed);
         *width = lengthValueFromData(data.width, f);
         *style = data.style;
-        *color = brushFromData(data.color, pal);
+        *color = data.color.type != BrushData::Invalid ? brushFromData(data.color, pal) : QBrush(QColor());
         return;
     }
 

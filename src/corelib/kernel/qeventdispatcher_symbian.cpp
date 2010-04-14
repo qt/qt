@@ -570,7 +570,13 @@ void QSelectThread::updateActivatedNotifiers(QSocketNotifier::Type type, fd_set 
              * check if socket is in exception set
              * then signal RequestComplete for it
              */
-            qWarning("exception on %d", i.key()->socket());
+            qWarning("exception on %d [will close the socket handle - hack]", i.key()->socket());
+            // quick fix; there is a bug
+            // when doing read on socket
+            // errors not preoperly mapped
+            // after offline-ing the device
+            // on some devices we do get exception
+            ::close(i.key()->socket());
             toRemove.append(i.key());
             TRequestStatus *status = i.value();
             QEventDispatcherSymbian::RequestComplete(d->threadData->symbian_thread_handle, status, KErrNone);

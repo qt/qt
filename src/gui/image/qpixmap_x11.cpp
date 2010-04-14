@@ -383,7 +383,7 @@ struct QX11AlphaDetector
             return has;
         // Will implicitly also check format and return quickly for opaque types...
         checked = true;
-        has = const_cast<QImage *>(image)->data_ptr()->checkForAlphaPixels();
+        has = image->isNull() ? false : const_cast<QImage *>(image)->data_ptr()->checkForAlphaPixels();
         return has;
     }
 

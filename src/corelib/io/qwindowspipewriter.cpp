@@ -128,11 +128,9 @@ void QWindowsPipeWriter::run()
         overl.OffsetHigh = 0;
         while ((!quitNow) && totalWritten < maxlen) {
             DWORD written = 0;
-            // Write 2k at a time to prevent flooding the pipe. If you
-            // write too much (4k-8k), the pipe can close
-            // unexpectedly.
             if (!WriteFile(writePipe, ptrData + totalWritten,
-                    qMin<int>(2048, maxlen - totalWritten), &written, &overl)) {
+                           maxlen - totalWritten, &written, &overl)) {
+
                 if (GetLastError() == 0xE8/*NT_STATUS_INVALID_USER_BUFFER*/) {
                     // give the os a rest
                     msleep(100);

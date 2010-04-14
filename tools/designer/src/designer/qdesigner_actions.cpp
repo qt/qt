@@ -107,6 +107,8 @@ QT_BEGIN_NAMESPACE
 
 using namespace qdesigner_internal;
 
+const char *QDesignerActions::defaultToolbarPropertyName = "__qt_defaultToolBarAction";
+
 //#ifdef Q_WS_MAC
 #  define NONMODAL_PREVIEW
 //#endif
@@ -236,6 +238,10 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
 
     m_helpActions = createHelpActions();
 
+    m_newFormAction->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    m_openFormAction->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    m_saveFormAction->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+
     QDesignerFormWindowManagerInterface *formWindowManager = m_core->formWindowManager();
     Q_ASSERT(formWindowManager != 0);
 
@@ -322,6 +328,9 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
     m_editActions->addAction(formWindowManager->actionLower());
     m_editActions->addAction(formWindowManager->actionRaise());
 
+    formWindowManager->actionLower()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionRaise()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+
 //
 // edit mode actions
 //
@@ -349,6 +358,7 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
         if (QDesignerFormEditorPluginInterface *formEditorPlugin = qobject_cast<QDesignerFormEditorPluginInterface*>(plugin)) {
             if (QAction *action = formEditorPlugin->action()) {
                 m_toolActions->addAction(action);
+                action->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
                 action->setCheckable(true);
             }
         }
@@ -375,6 +385,15 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
     m_formActions->addAction(formWindowManager->actionAdjustSize());
     m_formActions->addAction(formWindowManager->actionSimplifyLayout());
     m_formActions->addAction(createSeparator(this));
+
+    formWindowManager->actionHorizontalLayout()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionVerticalLayout()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionSplitHorizontal()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionSplitVertical()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionGridLayout()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionFormLayout()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionBreakLayout()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionAdjustSize()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
 
     m_previewFormAction->setShortcut(tr("CTRL+R"));
     m_formActions->addAction(m_previewFormAction);

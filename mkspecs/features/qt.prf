@@ -166,8 +166,14 @@ for(QTLIB, $$list($$lower($$unique(QT)))) {
        # we bump the values for all Symbian Phonon plugins.
        symbian:isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x040000 0x1600000
 
-   } else:isEqual(QTLIB, webkit):qlib = QtWebKit
-   else:isEqual(QTLIB, declarative):qlib = QtDeclarative
+   } else:isEqual(QTLIB, webkit) {
+       qlib = QtWebKit
+       aix-xlc {
+           # Flags recommended by IBM when using WebKit
+	   QMAKE_LFLAGS -= -bmaxdata:0x80000000
+	   QMAKE_LFLAGS += -bmaxdata:0xD0000000/dsa
+       }
+   } else:isEqual(QTLIB, declarative):qlib = QtDeclarative
    else:isEqual(QTLIB, multimedia):qlib = QtMultimedia
    else:message("Unknown QT: $$QTLIB"):qlib =
    !isEmpty(qlib) {
