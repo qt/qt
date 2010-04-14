@@ -64,6 +64,7 @@ class StringImpl : public Noncopyable {
     friend struct CStringTranslator;
     friend struct HashAndCharactersTranslator;
     friend struct UCharBufferTranslator;
+    friend class AtomicStringImpl;
 private:
     enum BufferOwnership {
         BufferInternal,
