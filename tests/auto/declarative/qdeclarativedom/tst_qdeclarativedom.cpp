@@ -94,7 +94,7 @@ void tst_qdeclarativedom::loadSimple()
     QVERIFY(!rootObject.isCustomType());
     QVERIFY(rootObject.objectType() == "Qt/Item");
     QVERIFY(rootObject.objectTypeMajorVersion() == 4);
-    QVERIFY(rootObject.objectTypeMinorVersion() == 6);
+    QVERIFY(rootObject.objectTypeMinorVersion() == 7);
 }
 
 // Test regular properties
@@ -291,7 +291,7 @@ void tst_qdeclarativedom::testValueSource()
     QVERIFY(valueSourceObject.isValid());
 
     QVERIFY(valueSourceObject.objectType() == "Qt/SpringFollow");
-    
+
     const QDeclarativeDomValue springValue = valueSourceObject.property("spring").value();
     QVERIFY(!springValue.isInvalid());
     QVERIFY(springValue.isLiteral());
@@ -350,7 +350,7 @@ void tst_qdeclarativedom::loadImports()
     QCOMPARE(import.type(), QDeclarativeDomImport::Library);
     QCOMPARE(import.uri(), QLatin1String("Qt"));
     QCOMPARE(import.qualifier(), QString());
-    QCOMPARE(import.version(), QLatin1String("4.6"));
+    QCOMPARE(import.version(), QLatin1String("4.7"));
 
     import = document.imports().at(1);
     QCOMPARE(import.type(), QDeclarativeDomImport::Library);
@@ -415,7 +415,7 @@ void tst_qdeclarativedom::loadSyntaxErrors()
     QCOMPARE(error.description(), QString("Syntax error"));
 }
 
-// Test attempting to load a file with remote references 
+// Test attempting to load a file with remote references
 void tst_qdeclarativedom::loadRemoteErrors()
 {
     QByteArray qml = "import Qt 4.7\n"
@@ -502,7 +502,7 @@ void tst_qdeclarativedom::loadDynamicProperty()
         QVERIFY(rootObject.isValid());
 
         QCOMPARE(rootObject.dynamicProperties().count(), 3);
-        
+
         {
             QDeclarativeDomDynamicProperty d = rootObject.dynamicProperties().at(0);
             QVERIFY(d.isDefaultProperty() == false);
@@ -563,7 +563,7 @@ void tst_qdeclarativedom::loadComponent()
         QVERIFY(component.isValid());
         QVERIFY(component.objectType() == "Qt/Component");
         QVERIFY(component.objectTypeMajorVersion() == 4);
-        QVERIFY(component.objectTypeMinorVersion() == 6);
+        QVERIFY(component.objectTypeMinorVersion() == 7);
         QVERIFY(component.objectClassName() == "Component");
         QVERIFY(component.objectId() == "myComponent");
         QVERIFY(component.properties().isEmpty());
@@ -760,7 +760,7 @@ void tst_qdeclarativedom::object_property()
         QVERIFY(y.value().toLiteral().literal() == "12");
         QCOMPARE(y.position(), 35);
         QCOMPARE(y.length(), 1);
-        
+
         QDeclarativeDomProperty data = rootObject.property("data");
         QVERIFY(data.isValid());
         QVERIFY(data.propertyName() == "data");
@@ -782,7 +782,7 @@ void tst_qdeclarativedom::object_url()
         QCOMPARE(object.url(), QUrl());
     }
 
-    // Valid builtin object 
+    // Valid builtin object
     {
         QByteArray qml = "import Qt 4.7\n"
                          "Item {}";
@@ -1029,7 +1029,7 @@ void tst_qdeclarativedom::copy()
         QDeclarativeDomObject object = document.rootObject();
         QDeclarativeDomProperty property = object.property("data");
         QCOMPARE(property.value().toList().values().count(), 1);
-        QDeclarativeDomComponent component = 
+        QDeclarativeDomComponent component =
             property.value().toList().values().at(0).toObject().toComponent();
         QCOMPARE(component.componentRoot().objectClassName(), QByteArray("Item"));
 
