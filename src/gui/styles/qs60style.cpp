@@ -1372,14 +1372,13 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             optionComboBox.palette.setColor(QPalette::Inactive, QPalette::WindowText,
                 optionComboBox.palette.text().color() );
             QRect editRect = subControlRect(CC_ComboBox, comboBox, SC_ComboBoxEditField, widget);
-            painter->save();
-            painter->setClipRect(editRect);
+            const int frameW = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
 
             if (!comboBox->currentIcon.isNull()) {
-                QIcon::Mode mode = comboBox->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
-                QPixmap pixmap = comboBox->currentIcon.pixmap(comboBox->iconSize, mode);
+                const QIcon::Mode mode = comboBox->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
+                const QPixmap pixmap = comboBox->currentIcon.pixmap(comboBox->iconSize, mode);
                 QRect iconRect(editRect);
-                iconRect.setWidth(comboBox->iconSize.width() + 4);
+                iconRect.setWidth(comboBox->iconSize.width() + frameW);
                 iconRect = alignedRect(comboBox->direction,
                                        Qt::AlignLeft | Qt::AlignVCenter,
                                        iconRect.size(), editRect);
@@ -1388,17 +1387,19 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
 
                 if (comboBox->direction == Qt::RightToLeft)
-                    editRect.translate(-4 - comboBox->iconSize.width(), 0);
+                    editRect.setRight(editRect.right() - frameW - comboBox->iconSize.width());
                 else
-                    editRect.translate(comboBox->iconSize.width() + 4, 0);
+                    editRect.setLeft(comboBox->iconSize.width() + frameW);
             }
             if (!comboBox->currentText.isEmpty() && !comboBox->editable) {
+                const Qt::TextElideMode elideMode = (comboBox->direction == Qt::LeftToRight) ? Qt::ElideRight : Qt::ElideLeft;
+                const QString text = comboBox->fontMetrics.elidedText(comboBox->currentText, elideMode, editRect.width());
+
                 QCommonStyle::drawItemText(painter,
                             editRect.adjusted(QS60StylePrivate::pixelMetric(PM_FrameCornerWidth), 0, -1, 0),
                             visualAlignment(comboBox->direction, Qt::AlignLeft | Qt::AlignVCenter),
-                            comboBox->palette, comboBox->state & State_Enabled, comboBox->currentText);
+                            comboBox->palette, comboBox->state & State_Enabled, text);
             }
-            painter->restore();
         }
         break;
 #endif //QT_NO_COMBOBOX
