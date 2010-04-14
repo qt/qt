@@ -328,6 +328,7 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     connect(m_player.data(), SIGNAL(aboutToFinish()), SIGNAL(aboutToFinish()));
     connect(m_player.data(), SIGNAL(prefinishMarkReached(qint32)), SIGNAL(prefinishMarkReached(qint32)));
     connect(m_player.data(), SIGNAL(prefinishMarkReached(qint32)), SLOT(handlePrefinishMarkReached(qint32)));
+    connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
 
     // We need to call setError() after doing the connects, otherwise the
     // error won't be received.
