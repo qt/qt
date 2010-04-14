@@ -6056,9 +6056,6 @@ void tst_QWidget::setToolTip()
 #ifdef Q_OS_WINCE_WM
     QSKIP("Mouse over doesn't work on Windows mobile.", SkipAll);
 #endif
-#ifdef QT_MAC_USE_COCOA
-    QSKIP("Temporarily disable the rest on cocoa due to QCursor::setPos problems.", SkipAll);
-#endif
 
     for (int pass = 0; pass < 2; ++pass) {
         QWidget *popup = new QWidget(0, Qt::Popup);

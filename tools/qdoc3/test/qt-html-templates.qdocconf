@@ -103,7 +103,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "        <div class=\"content\">\n"
 
 HTML.footer             = "        </div>\n" \
-			  "        <div class=\"feedback t_button\" onclick=\"$(\'#feedbackBox\').show();$(\'#blurpage\').show()\">\n" \
+			  "        <div class=\"feedback t_button\" onclick=\"\$(\'#feedbackBox\').show();\$(\'#blurpage\').show()\">\n" \
 			  "          [+] Documentation Feedback</div>\n" \
 			  "      </div>\n" \
 			  "    </div>\n" \
@@ -113,20 +113,20 @@ HTML.footer             = "        </div>\n" \
 			  "  </div>\n" \
 			  "  <div class=\"footer\">\n" \
 			  "    <p>\n" \
-			  "      <acronym title=\"Copyright\">&copy;</acronym> 2008-2010 Nokia Corporation and/or its>\n" \
+			  "      <acronym title=\"Copyright\">&copy;</acronym> 2008-2010 Nokia Corporation and/or its\n" \
 			  "      subsidiaries. Nokia, Qt and their respective logos are trademarks of Nokia Corporation>\n" \
 			  "      in Finland and/or other countries worldwide.</p>\n" \
 			  "    <p>\n" \
-			  "      All other trademarks are property of their respective owners. <a title=\"Privacy Policy\">\n" \
+			  "      All other trademarks are property of their respective owners. <a title=\"Privacy Policy\"\n" \
 			  "        href=\"http://qt.nokia.com/about/privacy-policy\">Privacy Policy</a></p>\n" \
 			  "  </div>\n" \
 			  "  <div id=\"feedbackBox\">\n" \
 			  "    <form action=\"#\">\n" \
 			  "      <div id=\"feedcloseX\">\n" \
-			  "        <a href=\"#\" onclick=\"$(\'#feedbackBox\').hide();$(\'#blurpage\').hide()\">X</a>\n" \
+			  "        <a href=\"#\" onclick=\"\$(\'#feedbackBox\').hide();\$(\'#blurpage\').hide()\">X</a>\n" \
 			  "      </div>\n" \
 			  "      <textarea id=\"feedbox\" rows=\"5\" cols=\"40\">Please submit you feedback...</textarea>\n" \
-			  "      <input id=\"feedsubmit\" type=\"submit\" onclick=\"$(\'#feedbackBox\').hide();$(\'#blurpage\').hide()\">\n" \
+			  "      <input id=\"feedsubmit\" type=\"submit\" onclick=\"\$(\'#feedbackBox\').hide();\$(\'#blurpage\').hide()\"\n" \
 			  "        name=\"feedback\" />\n" \
 			  "    </form>\n" \
 			  "  </div>\n" \
@@ -134,12 +134,12 @@ HTML.footer             = "        </div>\n" \
 			  "  </div>\n" \
 			  "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n" \
 			  "<script type=\"text/javascript\">\n" \
-			  "  var _gaq = _gaq || [];>\n" \
-			  "  _gaq.push([\'_setAccount\', \'UA-4457116-5\']);>\n" \
-			  "  _gaq.push([\'_trackPageview\']);>\n" \
-			  "  (function() {>\n" \
-			  "    var ga = document.createElement(\'script\'); ga.type = \'text/javascript\'; ga.async = true;>\n" \
-			  "    ga.src = (\'https:\' == document.location.protocol ? \'https://ssl\' : \'http://www\') + \'.google-analytics.com/ga.js\';>\n" \
-			  "    var s = document.getElementsByTagName(\'script\')[0]; s.parentNode.insertBefore(ga, s);>\n" \
-			  "  })();>\n" \
+			  "  var _gaq = _gaq || [];\n" \
+			  "  _gaq.push([\'_setAccount\', \'UA-4457116-5\']);\n" \
+			  "  _gaq.push([\'_trackPageview\']);\n" \
+			  "  (function() {\n" \
+			  "    var ga = document.createElement(\'script\'); ga.type = \'text/javascript\'; ga.async = true;\n" \
+			  "    ga.src = (\'https:\' == document.location.protocol ? \'https://ssl\' : \'http://www\') + \'.google-analytics.com/ga.js\';\n" \
+			  "    var s = document.getElementsByTagName(\'script\')[0]; s.parentNode.insertBefore(ga, s);\n" \
+			  "  })();\n" \
 			  "</script>\n"

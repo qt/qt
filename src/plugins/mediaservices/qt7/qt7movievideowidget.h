@@ -51,7 +51,7 @@
 #include <QtGui/qmacdefines_mac.h>
 #include "qt7videooutputcontrol.h"
 
-#include <CoreVideo/CVOpenGLTexture.h>
+#include <QuartzCore/CVOpenGLTexture.h>
 #include <QuickTime/QuickTime.h>
 
 

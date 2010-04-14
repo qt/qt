@@ -239,6 +239,9 @@ QBic::Info tst_Bic::getCurrentInfo(const QString &libName)
     QStringList args;
     args << "-c"
          << "-I" + qtDir + "/include"
+#ifdef Q_OS_MAC
+        << "-arch" << "i386" // Always use 32-bit data on Mac.
+#endif
 #ifndef Q_OS_WIN
          << "-I/usr/X11R6/include/"
 #endif
