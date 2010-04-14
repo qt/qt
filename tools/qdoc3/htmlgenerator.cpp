@@ -1891,7 +1891,8 @@ void HtmlGenerator::generateTitle(const QString& title,
                                   const Node *relative,
                                   CodeMarker *marker)
 {
-    out() << "<h1 class=\"title\">" << protectEnc(title);
+    if (!title.isEmpty())
+        out() << "<h1 class=\"title\">" << protectEnc(title);
     if (!subTitle.isEmpty()) {
         out() << "<br />";
         if (subTitleSize == SmallSubTitle)
@@ -1901,7 +1902,8 @@ void HtmlGenerator::generateTitle(const QString& title,
         generateText(subTitle, relative, marker);
         out() << "</span>\n";
     }
-    out() << "</h1>\n";
+    if (!title.isEmpty())
+        out() << "</h1>\n";
 }
 
 void HtmlGenerator::generateFooter(const Node *node)
