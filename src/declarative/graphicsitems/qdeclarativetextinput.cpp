@@ -611,8 +611,8 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
     This element provides a validator, which counts as valid any string which
     matches a specified regular expression.
 */
-/*
-   \qmlproperty string RegExpValidator::regExp
+/*!
+   \qmlproperty regExp RegExpValidator::regExp
 
    This property holds the regular expression used for validation.
 
