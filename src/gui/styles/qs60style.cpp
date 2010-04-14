@@ -1372,14 +1372,13 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             optionComboBox.palette.setColor(QPalette::Inactive, QPalette::WindowText,
                 optionComboBox.palette.text().color() );
             QRect editRect = subControlRect(CC_ComboBox, comboBox, SC_ComboBoxEditField, widget);
-            painter->save();
-            painter->setClipRect(editRect);
+            const int frameW = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
 
             if (!comboBox->currentIcon.isNull()) {
-                QIcon::Mode mode = comboBox->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
-                QPixmap pixmap = comboBox->currentIcon.pixmap(comboBox->iconSize, mode);
+                const QIcon::Mode mode = comboBox->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
+                const QPixmap pixmap = comboBox->currentIcon.pixmap(comboBox->iconSize, mode);
                 QRect iconRect(editRect);
-                iconRect.setWidth(comboBox->iconSize.width() + 4);
+                iconRect.setWidth(comboBox->iconSize.width() + frameW);
                 iconRect = alignedRect(comboBox->direction,
                                        Qt::AlignLeft | Qt::AlignVCenter,
                                        iconRect.size(), editRect);
@@ -1388,17 +1387,19 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
 
                 if (comboBox->direction == Qt::RightToLeft)
-                    editRect.translate(-4 - comboBox->iconSize.width(), 0);
+                    editRect.setRight(editRect.right() - frameW - comboBox->iconSize.width());
                 else
-                    editRect.translate(comboBox->iconSize.width() + 4, 0);
+                    editRect.setLeft(comboBox->iconSize.width() + frameW);
             }
             if (!comboBox->currentText.isEmpty() && !comboBox->editable) {
+                const Qt::TextElideMode elideMode = (comboBox->direction == Qt::LeftToRight) ? Qt::ElideRight : Qt::ElideLeft;
+                const QString text = comboBox->fontMetrics.elidedText(comboBox->currentText, elideMode, editRect.width());
+
                 QCommonStyle::drawItemText(painter,
                             editRect.adjusted(QS60StylePrivate::pixelMetric(PM_FrameCornerWidth), 0, -1, 0),
                             visualAlignment(comboBox->direction, Qt::AlignLeft | Qt::AlignVCenter),
-                            comboBox->palette, comboBox->state & State_Enabled, comboBox->currentText);
+                            comboBox->palette, comboBox->state & State_Enabled, text);
             }
-            painter->restore();
         }
         break;
 #endif //QT_NO_COMBOBOX
@@ -1541,7 +1542,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
                 const int tabOverlap =
                     QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap) - borderThickness;
-                //todo: draw navi wipe behind tabbar - must be drawn with first draw
 
                 if (skinElement==QS60StylePrivate::SE_TabBarTabEastInactive||
                         skinElement==QS60StylePrivate::SE_TabBarTabEastActive||
@@ -1645,7 +1645,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     painter->drawPixmap(tr.left() + tabOverlap,
                                         tr.center().y() - (tabIcon.height() >> 1),
                                         tabIcon);
-                tr.setLeft(tr.left() + iconSize.width() + 4);
+                tr.setLeft(tr.left() + iconSize.width() + 4); //todo: magic four
             }
 
             QCommonStyle::drawItemText(painter, tr, alignment, optionTab.palette, tab->state & State_Enabled, tab->text, QPalette::WindowText);
@@ -1964,14 +1964,14 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             // We need to reduce the focus frame size if LayoutSpacing is smaller than FocusFrameMargin
             // Otherwise, we would overlay adjacent widgets.
             const int frameHeightReduction =
-                    qMin(0, pixelMetric(QStyle::PM_LayoutVerticalSpacing)
-                            - pixelMetric(QStyle::PM_FocusFrameVMargin));
+                    qMin(0, pixelMetric(PM_LayoutVerticalSpacing)
+                            - pixelMetric(PM_FocusFrameVMargin));
             const int frameWidthReduction =
-                    qMin(0, pixelMetric(QStyle::PM_LayoutHorizontalSpacing)
-                            - pixelMetric(QStyle::PM_FocusFrameHMargin));
+                    qMin(0, pixelMetric(PM_LayoutHorizontalSpacing)
+                            - pixelMetric(PM_FocusFrameHMargin));
             const int rounding =
-                    qMin(pixelMetric(QStyle::PM_FocusFrameVMargin),
-                            pixelMetric(QStyle::PM_LayoutVerticalSpacing));
+                    qMin(pixelMetric(PM_FocusFrameVMargin),
+                            pixelMetric(PM_LayoutVerticalSpacing));
             const QRect frameRect =
                     option->rect.adjusted(-frameWidthReduction, -frameHeightReduction,
                             frameWidthReduction, frameHeightReduction);
@@ -2847,7 +2847,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                     const int tabOverlapNoBorder =
                         QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap);
                     const int tabOverlap =
-                        tabOverlapNoBorder-QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+                        tabOverlapNoBorder - QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
                     const QTabWidget *tab = qobject_cast<const QTabWidget *>(widget);
                     int gain = (tab) ? tabOverlap * tab->count() : 0;
                     switch (twf->shape) {
@@ -2913,7 +2913,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                         ret = QRect();
                     } else {
                         if (menuItem->direction == Qt::RightToLeft)
-                            ret.translate(ret.width()-indicatorWidth, 0);
+                            ret.translate(ret.width() - indicatorWidth, 0);
                         ret.setWidth(indicatorWidth);
                     }
                 } else {
@@ -3313,8 +3313,10 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
         break;
     case QEvent::Destroy:
     case QEvent::Hide:
-        d->stopAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim);
-        d->m_bars.removeAll(reinterpret_cast<QProgressBar *>(object));
+        if (QProgressBar *bar = reinterpret_cast<QProgressBar *>(object)) {
+            d->stopAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim);
+            d->m_bars.removeAll(bar);
+        }
         break;
     default:
         break;
