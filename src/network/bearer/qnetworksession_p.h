@@ -126,6 +126,8 @@ Q_SIGNALS:
     void preferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless);
 
 protected:
+    QNetworkSession *q;
+
     // The config set on QNetworkSession.
     QNetworkConfiguration publicConfig;
 
@@ -140,8 +142,6 @@ protected:
 
     QNetworkSession::State state;
     bool isOpen;
-
-    QNetworkSession *q;
 };
 
 QT_END_NAMESPACE
