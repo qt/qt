@@ -51,8 +51,7 @@ QPixmapData *QLiteGraphicsSystem::createPixmapData(QPixmapData::PixelType type) 
 
 QWindowSurface *QLiteGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
-    qFatal("should not use QLiteGraphicsSystem::createWindowSurface");
-    return 0;
+    return QApplicationPrivate::platformIntegration()->createWindowSurfaceForWindow(widget, widget->winId());
 }
 
 QBlittable *QLiteGraphicsSystem::createBlittable(const QSize &size) const
