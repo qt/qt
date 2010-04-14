@@ -46,6 +46,7 @@
 #include <QtCore/qobject.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_HEADER
 

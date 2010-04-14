@@ -112,33 +112,47 @@
 
 QT_BEGIN_NAMESPACE
 
-class Screen : public QObject
+class Runtime : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(Orientation orientation READ orientation NOTIFY orientationChanged)
-    Q_ENUMS(Orientation)
+    Q_PROPERTY(bool isActiveWindow READ isActiveWindow NOTIFY isActiveWindowChanged)
+    Q_PROPERTY(DeviceOrientation::Orientation orientation READ orientation NOTIFY orientationChanged)
 
 public:
-    Screen(QObject *parent=0) : QObject(parent) {
+    static Runtime* instance()
+    {
+        static Runtime *instance = 0;
+        if (!instance)
+            instance = new Runtime;
+        return instance;
+    }
+
+    bool isActiveWindow() const { return activeWindow; }
+    void setActiveWindow(bool active)
+    {
+        if (active == activeWindow)
+            return;
+        activeWindow = active;
+        emit isActiveWindowChanged();
+    }
+
+    DeviceOrientation::Orientation orientation() const { return DeviceOrientation::instance()->orientation(); }
+
+Q_SIGNALS:
+    void isActiveWindowChanged();
+    void orientationChanged();
+
+private:
+    Runtime(QObject *parent=0) : QObject(parent), activeWindow(false)
+    {
         connect(DeviceOrientation::instance(), SIGNAL(orientationChanged()),
                 this, SIGNAL(orientationChanged()));
     }
 
-    enum Orientation { UnknownOrientation = DeviceOrientation::UnknownOrientation,
-                       Portrait = DeviceOrientation::Portrait,
-                       Landscape = DeviceOrientation::Landscape };
-    Orientation orientation() const { return Orientation(DeviceOrientation::instance()->orientation()); }
-
-signals:
-    void orientationChanged();
+    bool activeWindow;
 };
 
-QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(Screen)
-
-QT_BEGIN_NAMESPACE
 
 class SizedMenuBar : public QMenuBar
 {
@@ -1035,7 +1049,7 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
         url = QUrl(file_or_url);
     setWindowTitle(tr("%1 - Qt Declarative UI Viewer").arg(file_or_url));
 
-    if (!m_script.isEmpty()) 
+    if (!m_script.isEmpty())
         tester = new QDeclarativeTester(m_script, m_scriptOptions, canvas);
 
     delete canvas->rootObject();
@@ -1047,6 +1061,8 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
 #else
     ctxt->setContextProperty("qmlViewerFolder", QDir::currentPath());
 #endif
+
+    ctxt->setContextProperty("runtime", Runtime::instance());
 
     QString fileName = url.toLocalFile();
     if (!fileName.isEmpty()) {
@@ -1247,6 +1263,16 @@ void QDeclarativeViewer::keyPressEvent(QKeyEvent *event)
     }
 
     QWidget::keyPressEvent(event);
+}
+
+bool QDeclarativeViewer::event(QEvent *event)
+{
+    if (event->type() == QEvent::WindowActivate) {
+        Runtime::instance()->setActiveWindow(true);
+    } else if (event->type() == QEvent::WindowDeactivate) {
+        Runtime::instance()->setActiveWindow(false);
+    }
+    return QWidget::event(event);
 }
 
 void QDeclarativeViewer::senseImageMagick()
@@ -1474,7 +1500,8 @@ void QDeclarativeViewer::setUseNativeFileBrowser(bool use)
 
 void QDeclarativeViewer::registerTypes()
 {
-    qmlRegisterType<Screen>("QDeclarativeViewer", 1, 0, "Screen");
+    // registering only for exposing the DeviceOrientation::Orientation enum
+    qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,6,"Orientation");
 }
 
 QT_END_NAMESPACE

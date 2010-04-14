@@ -644,7 +644,7 @@ void QDeclarativeParticlesPrivate::updateOpacity(QDeclarativeParticle &p, int ag
     snow, the lower one has particles expelled up like a fountain.
 
     \qml
-import Qt 4.6
+import Qt 4.7
 import Qt.labs.particles 1.0
 
 Rectangle {

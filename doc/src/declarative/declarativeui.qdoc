@@ -103,6 +103,7 @@ completely new applications.  QML is fully \l {Extending QML in C++}{extensible 
 \o \l {QML Elements}
 \o \l {QML Global Object}
 \o \l {Extending QML in C++}
+\o \l {Integrating QML with existing Qt UI code}
 \o \l {QML Internationalization}
 \o \l {QML Security}
 \o \l {QtDeclarative Module}
