@@ -64,6 +64,7 @@ private Q_SLOTS:
     void blockingPipelined();
     void blockingMultipleRequests();
     void connectDisconnect();
+    void parallelConnectDisconnect_data();
     void parallelConnectDisconnect();
 };
 
@@ -225,15 +226,26 @@ void tst_QTcpSocket_stresstest::connectDisconnect()
     }
 }
 
+void tst_QTcpSocket_stresstest::parallelConnectDisconnect_data()
+{
+    QTest::addColumn<int>("parallelAttempts");
+    QTest::newRow("1") << 1;
+    QTest::newRow("2") << 2;
+    QTest::newRow("4") << 4;
+    QTest::newRow("5") << 5;
+    QTest::newRow("10") << 10;
+    QTest::newRow("25") << 25;
+}
+
 void tst_QTcpSocket_stresstest::parallelConnectDisconnect()
 {
     QFETCH_GLOBAL(QString, hostname);
     QFETCH_GLOBAL(int, port);
+    QFETCH(int, parallelAttempts);
 
-    for (int i = 0; i < AttemptCount/4; ++i) {
+    for (int i = 0; i < AttemptCount/qMax(2, parallelAttempts/4); ++i) {
         qDebug("Attempt %d", i);
-        const int parallelAttempts = 6;
-        QTcpSocket socket[parallelAttempts];
+        QTcpSocket *socket = new QTcpSocket[parallelAttempts];
         for (int j = 0; j < parallelAttempts; ++j) {
             socket[j].connectToHost(hostname, port);
 
@@ -256,6 +268,7 @@ void tst_QTcpSocket_stresstest::parallelConnectDisconnect()
             if (done == parallelAttempts)
                 break;
         }
+        delete[] socket;
         QVERIFY2(!timeout.hasExpired(10000), "Timeout");
     }
 }
