@@ -141,6 +141,7 @@ private slots:
     void deletedEngine();
     void libraryScriptAssert();
     void variantsAssignedUndefined();
+    void qtbug_9792();
 
     void callQtInvokables();
 private:
@@ -2207,6 +2208,32 @@ void tst_qdeclarativeecmascript::variantsAssignedUndefined()
     QCOMPARE(object->property("test1"), QVariant());
     QCOMPARE(object->property("test2"), QVariant());
 
+
+    delete object;
+}
+
+void tst_qdeclarativeecmascript::qtbug_9792()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("qtbug_9792.qml"));
+
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create(context));
+    QVERIFY(object != 0);
+
+    QTest::ignoreMessage(QtDebugMsg, "Hello world!");
+    object->basicSignal();
+
+    delete context;
+
+    transientErrorsMsgCount = 0;
+    QtMsgHandler old = qInstallMsgHandler(transientErrorsMsgHandler);
+
+    object->basicSignal();
+    
+    qInstallMsgHandler(old);
+
+    QCOMPARE(transientErrorsMsgCount, 0);
 
     delete object;
 }
