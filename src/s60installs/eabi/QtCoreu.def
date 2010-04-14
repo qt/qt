@@ -803,9 +803,9 @@ EXPORTS
 	_ZN16QCoreApplicationD0Ev @ 802 NONAME
 	_ZN16QCoreApplicationD1Ev @ 803 NONAME
 	_ZN16QCoreApplicationD2Ev @ 804 NONAME
-	_ZN16QDeclarativeDataD0Ev @ 805 NONAME
-	_ZN16QDeclarativeDataD1Ev @ 806 NONAME
-	_ZN16QDeclarativeDataD2Ev @ 807 NONAME
+	_ZN16QDeclarativeDataD0Ev @ 805 NONAME ABSENT
+	_ZN16QDeclarativeDataD1Ev @ 806 NONAME ABSENT
+	_ZN16QDeclarativeDataD2Ev @ 807 NONAME ABSENT
 	_ZN16QEventTransition11qt_metacallEN11QMetaObject4CallEiPPv @ 808 NONAME
 	_ZN16QEventTransition11qt_metacastEPKc @ 809 NONAME
 	_ZN16QEventTransition12onTransitionEP6QEvent @ 810 NONAME
@@ -3332,7 +3332,7 @@ EXPORTS
 	_ZTI15QPauseAnimation @ 3331 NONAME
 	_ZTI15QSocketNotifier @ 3332 NONAME
 	_ZTI16QCoreApplication @ 3333 NONAME
-	_ZTI16QDeclarativeData @ 3334 NONAME
+	_ZTI16QDeclarativeData @ 3334 NONAME ABSENT
 	_ZTI16QEventTransition @ 3335 NONAME
 	_ZTI16QIODevicePrivate @ 3336 NONAME
 	_ZTI16QTextCodecPlugin @ 3337 NONAME
@@ -3407,7 +3407,7 @@ EXPORTS
 	_ZTV15QPauseAnimation @ 3406 NONAME
 	_ZTV15QSocketNotifier @ 3407 NONAME
 	_ZTV16QCoreApplication @ 3408 NONAME
-	_ZTV16QDeclarativeData @ 3409 NONAME
+	_ZTV16QDeclarativeData @ 3409 NONAME ABSENT
 	_ZTV16QEventTransition @ 3410 NONAME
 	_ZTV16QIODevicePrivate @ 3411 NONAME
 	_ZTV16QTextCodecPlugin @ 3412 NONAME
@@ -3692,4 +3692,7 @@ EXPORTS
 	_ZN9QDateTime18setMSecsSinceEpochEx @ 3691 NONAME
 	_ZN9QDateTime19fromMSecsSinceEpochEx @ 3692 NONAME
 	_ZNK9QDateTime17toMSecsSinceEpochEv @ 3693 NONAME
+	_ZN10QTextCodec11validCodecsEv @ 3694 NONAME
+	_ZN16QDeclarativeData13parentChangedE @ 3695 NONAME DATA 4
+	_ZN16QDeclarativeData9destroyedE @ 3696 NONAME DATA 4
 
