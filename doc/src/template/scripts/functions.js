@@ -39,7 +39,7 @@ function doSearch(str){
 
 if (str.length>3)
   {
-  alert('start search');
+  alert('Search is not yet activated.');
  // document.getElementById("refWrapper").innerHTML="";
   return;
   }
