@@ -1,6 +1,7 @@
 load(qttest_p4)
 QT = core gui script
 SOURCES += tst_qscriptengine.cpp 
+RESOURCES += qscriptengine.qrc
 
 wince* {
     DEFINES += SRCDIR=\\\"./\\\"
