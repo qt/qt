@@ -79,9 +79,7 @@ void MMF::AbstractMediaPlayer::play()
 
     case StoppedState:
     case PausedState:
-        doPlay();
-        startPositionTimer();
-        changeState(PlayingState);
+        startPlayback();
         break;
 
     case PlayingState:
@@ -441,6 +439,13 @@ void MMF::AbstractMediaPlayer::resetMarksIfRewound()
             m_aboutToFinishSent = false;
 }
 
+void MMF::AbstractMediaPlayer::startPlayback()
+{
+    doPlay();
+    startPositionTimer();
+    changeState(PlayingState);
+}
+
 void MMF::AbstractMediaPlayer::bufferStatusTick()
 {
     emit MMF::AbstractPlayer::bufferStatus(bufferStatus());
@@ -453,9 +458,6 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
     const Phonon::State oldPhononState = phononState(privateState());
     const Phonon::State newPhononState = phononState(newState);
 
-    // TODO: add some invariants to check that the transition is valid
-    AbstractPlayer::changeState(newState);
-
     if (LoadingState == oldPhononState && StoppedState == newPhononState) {
         // Ensure initial volume is set on MMF API before starting playback
         doVolumeChanged();
@@ -465,8 +467,12 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
         if (m_playPending) {
             TRACE_0("play was called while loading; starting playback now");
             m_playPending = false;
-            play();
+            startPlayback();
+        } else {
+            AbstractPlayer::changeState(newState);
         }
+    } else {
+        AbstractPlayer::changeState(newState);
     }
 }
 

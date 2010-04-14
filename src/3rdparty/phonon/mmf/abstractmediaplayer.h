@@ -70,7 +70,8 @@ protected:
     virtual int openUrl(const QString& url) = 0;
     virtual int bufferStatus() const = 0;
     virtual void close() = 0;
-    virtual void changeState(PrivateState newState);
+
+    void changeState(PrivateState newState);
 
     void updateMetaData();
     virtual int numberOfMetaDataEntries() const = 0;
@@ -93,6 +94,7 @@ private:
     void doVolumeChanged();
     void emitMarksIfReached(qint64 position);
     void resetMarksIfRewound();
+    void startPlayback();
 
 private Q_SLOTS:
     void positionTick();
