@@ -251,6 +251,13 @@ void tst_MediaObject::init()
         }
         m_stateChangedSignalSpy->clear();
     }
+
+    // Ensure that m_media is in StoppedState
+    if (m_media->state() != Phonon::StoppedState) {
+        m_media->stop();
+        QTest::waitForSignal(m_media, SIGNAL(stateChanged(Phonon::State, Phonon::State)));
+        QCOMPARE(m_media->state(), Phonon::StoppedState);
+    }
 }
 
 void tst_MediaObject::cleanup()
