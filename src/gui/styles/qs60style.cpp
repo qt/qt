@@ -3313,8 +3313,10 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
         break;
     case QEvent::Destroy:
     case QEvent::Hide:
-        d->stopAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim);
-        d->m_bars.removeAll(reinterpret_cast<QProgressBar *>(object));
+        if (QProgressBar *bar = reinterpret_cast<QProgressBar *>(object)) {
+            d->stopAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim);
+            d->m_bars.removeAll(bar);
+        }
         break;
     default:
         break;
