@@ -554,6 +554,75 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
 }
 
 /*!
+    \qmlclass IntValidator QIntValidator
+
+    This element provides a validator for integer values
+*/
+/*!
+    \qmlproperty int IntValidator::top
+
+    This property holds the validator's highest acceptable value.
+    By default, this property's value is derived from the highest signed integer available (typically 2147483647).
+*/
+/*!
+    \qmlproperty int IntValidator::bottom
+
+    This property holds the validator's lowest acceptable value.
+    By default, this property's value is derived from the lowest signed integer available (typically -2147483647).
+*/
+
+/*!
+    \qmlclass DoubleValidator QDoubleValidator
+
+    This element provides a validator for non-integer numbers.
+*/
+
+/*!
+    \qmlproperty real DoubleValidator::top
+
+    This property holds the validator's maximum acceptable value.
+    By default, this property contains a value of infinity.
+*/
+/*!
+    \qmlproperty real DoubleValidator::bottom
+
+    This property holds the validator's minimum acceptable value.
+    By default, this property contains a value of -infinity.
+*/
+/*!
+    \qmlproperty int DoubleValidator::decimals
+
+    This property holds the validator's maximum number of digits after the decimal point.
+    By default, this property contains a value of 1000.
+*/
+/*!
+    \qmlproperty enumeration DoubleValidator::notation
+    This property holds the notation of how a string can describe a number.
+
+    The values for this property are DoubleValidator.StandardNotation or DoubleValidator.ScientificNotation.
+    If this property is set to ScientificNotation, the written number may have an exponent part(i.e. 1.5E-2).
+
+    By default, this property is set to ScientificNotation.
+*/
+
+/*!
+    \qmlclass RegExpValidator QRegExpValidator
+
+    This element provides a validator, which counts as valid any string which
+    matches a specified regular expression.
+*/
+/*!
+   \qmlproperty regExp RegExpValidator::regExp
+
+   This property holds the regular expression used for validation.
+
+   Note that this property should be a regular expression in JS syntax, e.g /a/ for the regular expression
+   matching "a".
+
+   By default, this property contains a regular expression with the pattern .* that matches any string.
+*/
+
+/*!
     \qmlproperty Validator TextInput::validator
 
     Allows you to set a validator on the TextInput. When a validator is set
@@ -562,15 +631,7 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
     if the text is in an acceptable state when enter is pressed.
 
     Currently supported validators are IntValidator, DoubleValidator and
-    RegExpValidator. For details, refer to their C++ documentation (QIntValidator,
-    QDoubleValidator, and QRegExpValidator) and remember
-    that all Q_PROPERTIES are accessible from Qml. A brief usage guide follows:
-
-    IntValidator and DoubleValidator both are controllable through two properties,
-    top and bottom. The difference is that for IntValidator the top and bottom properties
-    should be integers, and for DoubleValidator they should be doubles. RegExpValidator
-    has a single string property, regExp, which should be set to the regular expression to
-    be used for validation. An example of using validators is shown below, which allows
+    RegExpValidator. An example of using validators is shown below, which allows
     input of integers between 11 and 31 into the text input:
 
     \code

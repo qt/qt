@@ -82,7 +82,9 @@
 
 void QDeclarativeItemModule::defineModule()
 {
+#ifndef QT_NO_MOVIE
     qmlRegisterType<QDeclarativeAnimatedImage>("Qt",4,6,"AnimatedImage");
+#endif
     qmlRegisterType<QDeclarativeBorderImage>("Qt",4,6,"BorderImage");
     qmlRegisterType<QDeclarativeColumn>("Qt",4,6,"Column");
     qmlRegisterType<QDeclarativeDrag>("Qt",4,6,"Drag");

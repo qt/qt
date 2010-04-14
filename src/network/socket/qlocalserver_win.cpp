@@ -65,8 +65,8 @@ bool QLocalServerPrivate::addListener()
     listener.handle = CreateNamedPipe(
                  (const wchar_t *)fullServerName.utf16(), // pipe name
                  PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,       // read/write access
-                 PIPE_TYPE_MESSAGE |       // message type pipe
-                 PIPE_READMODE_MESSAGE |   // message-read mode
+                 PIPE_TYPE_BYTE |          // byte type pipe
+                 PIPE_READMODE_BYTE |      // byte-read mode
                  PIPE_WAIT,                // blocking mode
                  PIPE_UNLIMITED_INSTANCES, // max. instances
                  BUFSIZE,                  // output buffer size

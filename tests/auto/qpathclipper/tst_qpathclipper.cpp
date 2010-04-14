@@ -95,6 +95,8 @@ private slots:
 
     void task209056();
     void task251909();
+
+    void qtbug3778();
 };
 
 Q_DECLARE_METATYPE(QPainterPath)
@@ -1344,6 +1346,33 @@ void tst_QPathClipper::task251909()
     QPainterPath result = p1.united(p2);
 
     QVERIFY(result.elementCount() <= 5);
+}
+
+void tst_QPathClipper::qtbug3778()
+{
+    QPainterPath path1;
+    path1.moveTo(200, 3.22409e-5);
+    // e-5 and higher leads to a bug
+    // Using 3.22409e-4 starts to work correctly
+    path1.lineTo(0, 0);
+    path1.lineTo(1.07025e-13, 1450);
+    path1.lineTo(750, 950);
+    path1.lineTo(950, 750);
+    path1.lineTo(200, 3.22409e-13);
+
+    QPainterPath path2;
+    path2.moveTo(0, 0);
+    path2.lineTo(200, 800);
+    path2.lineTo(600, 1500);
+    path2.lineTo(1500, 1400);
+    path2.lineTo(1900, 1200);
+    path2.lineTo(2000, 1000);
+    path2.lineTo(1400, 0);
+    path2.lineTo(0, 0);
+
+    QPainterPath p12 = path1.intersected(path2);
+
+    QVERIFY(p12.contains(QPointF(100, 100)));
 }
 
 QTEST_APPLESS_MAIN(tst_QPathClipper)

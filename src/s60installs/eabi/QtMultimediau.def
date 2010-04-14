@@ -972,4 +972,7 @@ EXPORTS
 	_ZNK12QSoundEffect7isMutedEv @ 971 NONAME
 	_ZTI12QSoundEffect @ 972 NONAME
 	_ZTV12QSoundEffect @ 973 NONAME
+	_ZN18QGraphicsVideoItem10sceneEventEP6QEvent @ 974 NONAME
+	_ZN18QGraphicsVideoItem5eventEP6QEvent @ 975 NONAME
+	_ZThn8_N18QGraphicsVideoItem10sceneEventEP6QEvent @ 976 NONAME
 

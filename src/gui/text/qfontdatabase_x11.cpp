@@ -1939,8 +1939,13 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
             fe = loadFc(d, script, req);
 
             if (fe != 0 && fe->fontDef.pixelSize != req.pixelSize) {
-                delete fe;
-                fe = loadXlfd(d->screen, script, req);
+                QFontEngine *xlfdFontEngine = loadXlfd(d->screen, script, req);
+                if (xlfdFontEngine->fontDef.family == fe->fontDef.family) {
+                    delete fe;
+                    fe = xlfdFontEngine;
+                } else {
+                    delete xlfdFontEngine;
+                }
             }
 
 

@@ -244,7 +244,7 @@ QFrame::~QFrame()
 /*!
     Returns the frame style.
 
-    The default value is QFrame::NoFrame.
+    The default value is QFrame::Plain.
 
     \sa setFrameStyle(), frameShape(), frameShadow()
 */

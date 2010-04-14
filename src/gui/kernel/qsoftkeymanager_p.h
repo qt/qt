@@ -63,9 +63,6 @@ QT_BEGIN_NAMESPACE
 
 class QSoftKeyManagerPrivate;
 
-const char MENU_ACTION_PROPERTY[] = "_q_menuAction";
-const char FORCE_ENABLED_PROPERTY[] = "_q_forceEnabledInSoftkeys";
-
 class Q_AUTOTEST_EXPORT QSoftKeyManager : public QObject
 {
     Q_OBJECT

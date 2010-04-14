@@ -601,10 +601,15 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
     // Peek 0 bytes into the next message. The size of the message may
     // well be 0, so we can't check recvfrom's return value.
     ssize_t readBytes;
+#ifdef Q_OS_SYMBIAN
+    char c;
+    readBytes = ::recvfrom(socketDescriptor, &c, 1, MSG_PEEK, &storage.a, &storageSize);
+#else
     do {
         char c;
         readBytes = ::recvfrom(socketDescriptor, &c, 1, MSG_PEEK, &storage.a, &storageSize);
     } while (readBytes == -1 && errno == EINTR);
+#endif
 
     // If there's no error, or if our buffer was too small, there must be a
     // pending datagram.
@@ -661,11 +666,17 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
     sz = sizeof(aa);
 
     ssize_t recvFromResult = 0;
+#ifdef Q_OS_SYMBIAN
+    char c;
+    recvFromResult = ::recvfrom(socketDescriptor, maxSize ? data : &c, maxSize ? maxSize : 1,
+                                0, &aa.a, &sz);
+#else
     do {
         char c;
         recvFromResult = ::recvfrom(socketDescriptor, maxSize ? data : &c, maxSize ? maxSize : 1,
                                     0, &aa.a, &sz);
     } while (recvFromResult == -1 && errno == EINTR);
+#endif
 
     if (recvFromResult == -1) {
         setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
@@ -832,17 +843,17 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
     // ignore the SIGPIPE signal
     qt_ignore_sigpipe();
 
+    ssize_t writtenBytes;
+#ifdef Q_OS_SYMBIAN
+    // Symbian does not support signals natively and Open C returns EINTR when moving to offline
+    writtenBytes = ::write(socketDescriptor, data, len);
+#else
     // loop while ::write() returns -1 and errno == EINTR, in case
     // of an interrupting signal.
-    ssize_t writtenBytes;
     do {
-#ifdef Q_OS_SYMBIAN
-	    writtenBytes = ::write(socketDescriptor, data, len);
-#else
         writtenBytes = qt_safe_write(socketDescriptor, data, len);
-#endif
-        // writtenBytes = QT_WRITE(socketDescriptor, data, len); ### TODO S60: Should this line be removed or the one above it?
     } while (writtenBytes < 0 && errno == EINTR);
+#endif
 
     if (writtenBytes < 0) {
         switch (errno) {
@@ -882,13 +893,13 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
     }
 
     ssize_t r = 0;
-    do {
 #ifdef Q_OS_SYMBIAN
-        r = ::read(socketDescriptor, data, maxSize);
+    r = ::read(socketDescriptor, data, maxSize);
 #else
+    do {
         r = qt_safe_read(socketDescriptor, data, maxSize);
-#endif
     } while (r == -1 && errno == EINTR);
+#endif
 
     if (r < 0) {
         r = -1;
