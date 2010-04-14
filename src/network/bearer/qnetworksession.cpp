@@ -225,6 +225,10 @@ QT_BEGIN_NAMESPACE
 QNetworkSession::QNetworkSession(const QNetworkConfiguration& connectionConfig, QObject* parent)
 :   QObject(parent), d(0)
 {
+    // invalid configuration
+    if (connectionConfig.identifier().isNull())
+        return;
+
     foreach (QBearerEngine *engine, qNetworkConfigurationManagerPrivate()->engines()) {
         if (engine->hasIdentifier(connectionConfig.identifier())) {
             d = engine->createSessionBackend();
