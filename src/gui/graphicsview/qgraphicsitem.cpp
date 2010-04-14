@@ -1408,8 +1408,16 @@ QGraphicsItem::QGraphicsItem(QGraphicsItemPrivate &dd, QGraphicsItem *parent,
 */
 QGraphicsItem::~QGraphicsItem()
 {
-    if (d_ptr->isObject)
-        QObjectPrivate::get(static_cast<QGraphicsObject *>(this))->wasDeleted = true;
+    if (d_ptr->isObject) {
+        QGraphicsObject *o = static_cast<QGraphicsObject *>(this);
+        QObjectPrivate *p = QObjectPrivate::get(o);
+        p->wasDeleted = true;
+        if (p->declarativeData) {
+            QDeclarativeData::destroyed(p->declarativeData, o);
+            p->declarativeData = 0;
+        }
+    }
+
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
 

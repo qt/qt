@@ -285,12 +285,7 @@ void QDeclarativeCompiledBindingsPrivate::run(Binding *binding, QDeclarativeProp
         return;
 
     QDeclarativeContextData *context = q->QDeclarativeAbstractExpression::context();
-    if (!context) {
-        qWarning("QDeclarativeCompiledBindings: Attempted to evaluate an expression in an invalid context");
-        return;
-    }
-
-    if (!context->engine)
+    if (!context || !context->isValid()) 
         return;
 
     if (binding->updating) {

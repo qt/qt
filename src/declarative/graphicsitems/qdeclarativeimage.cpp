@@ -311,6 +311,12 @@ void QDeclarativeImage::updatePaintedGeometry()
             d->paintedWidth = heightScale * qreal(d->pix.width());
             d->paintedHeight = height();
         }
+        if (widthValid() && !heightValid()) {
+            setImplicitHeight(d->paintedHeight);
+        }
+        if (heightValid() && !widthValid()) {
+            setImplicitWidth(d->paintedWidth);
+        }
     } else {
         d->paintedWidth = width();
         d->paintedHeight = height();

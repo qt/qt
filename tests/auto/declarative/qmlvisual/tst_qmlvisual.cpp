@@ -47,7 +47,7 @@
 #include <QProcess>
 #include <QFile>
 
-enum Mode { Record, RecordNoVisuals, Play, TestVisuals, RemoveVisuals, UpdateVisuals, UpdatePlatformVisuals, Test };
+enum Mode { Record, RecordNoVisuals, RecordSnapshot, Play, TestVisuals, RemoveVisuals, UpdateVisuals, UpdatePlatformVisuals, Test };
 
 static QString testdir;
 class tst_qmlvisual : public QObject
@@ -133,7 +133,7 @@ void tst_qmlvisual::visual()
     QStringList arguments;
     arguments << "-script" << testdata
               << "-scriptopts" << "play,testimages,testerror,exitoncomplete,exitonfailure" 
-              << file << "-graphicssystem" << "raster";
+              << file;
 #ifdef Q_WS_QWS
     arguments << "-qws";
 #endif
@@ -246,6 +246,11 @@ void action(Mode mode, const QString &file)
                   << "-scriptopts" << "record,saveonexit"
                   << file;
             break;
+        case RecordSnapshot:
+            arguments << "-script" << testdata
+                  << "-scriptopts" << "record,testimages,snapshot,saveonexit"
+                  << file;
+            break;
         case Play:
             arguments << "-script" << testdata
                   << "-scriptopts" << "play,testimages,testerror,exitoncomplete"
@@ -283,6 +288,7 @@ void usage()
     fprintf(stderr, " -listtests                  : list all the tests seen by tst_qmlvisual, and then exit immediately\n");
     fprintf(stderr, " -record file                : record new test data for file\n");
     fprintf(stderr, " -recordnovisuals file       : record new test data for file, but ignore visuals\n");
+    fprintf(stderr, " -recordsnapshot file        : record new snapshot for file (like record but only records a single frame and then exits)\n");
     fprintf(stderr, " -play file                  : playback test data for file, printing errors\n");
     fprintf(stderr, " -testvisuals file           : playback test data for file, without errors\n");
     fprintf(stderr, " -updatevisuals file         : playback test data for file, accept new visuals for file\n");
@@ -339,6 +345,9 @@ int main(int argc, char **argv)
             file = argv[++ii];
         } else if (arg == "-recordnovisuals" && (ii + 1) < argc) {
             mode = RecordNoVisuals;
+            file = argv[++ii];
+        }  else if (arg == "-recordsnapshot" && (ii + 1) < argc) {
+            mode = RecordSnapshot;
             file = argv[++ii];
         } else if (arg == "-testvisuals" && (ii + 1) < argc) {
             mode = TestVisuals;

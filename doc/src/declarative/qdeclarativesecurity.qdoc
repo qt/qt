@@ -70,7 +70,7 @@ perform appropriate checks on untrusted data it loads.
 A non-exhaustive list of the ways you could shoot yourself in the foot is:
 
 \list
-    \i Using \c import to import QML or JavaScropt you do not control. BAD
+    \i Using \c import to import QML or JavaScript you do not control. BAD
     \i Using \l Loader to import QML you do not control. BAD
     \i Using \l{XMLHttpRequest()}{XMLHttpRequest} to load data you do not control and executing it. BAD
 \endlist

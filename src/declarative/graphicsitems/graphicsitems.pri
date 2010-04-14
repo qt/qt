@@ -50,7 +50,8 @@ HEADERS += \
     $$PWD/qdeclarativelistview_p.h \
     $$PWD/qdeclarativelayoutitem_p.h \
     $$PWD/qdeclarativeitemchangelistener_p.h \
-    $$PWD/qdeclarativeeffects.cpp
+    $$PWD/qdeclarativeeffects.cpp \
+    $$PWD/qdeclarativegraphicswidget_p.h
 
 SOURCES += \
     $$PWD/qdeclarativeitemsmodule.cpp \
@@ -81,4 +82,5 @@ SOURCES += \
     $$PWD/qdeclarativetextedit.cpp \
     $$PWD/qdeclarativevisualitemmodel.cpp \
     $$PWD/qdeclarativelistview.cpp \
-    $$PWD/qdeclarativelayoutitem.cpp
+    $$PWD/qdeclarativelayoutitem.cpp \
+    $$PWD/qdeclarativegraphicswidget.cpp
