@@ -755,6 +755,7 @@ qint64 QIODevice::bytesToWrite() const
 qint64 QIODevice::read(char *data, qint64 maxSize)
 {
     Q_D(QIODevice);
+    CHECK_READABLE(read, qint64(-1));
 
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::read(%p, %d), d->pos = %d, d->buffer.size() = %d\n",
