@@ -902,17 +902,14 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         else if (atom->string() == ATOM_LIST_VALUE) {
             threeColumnEnumValueTable = isThreeColumnEnumValueTable(atom);
             if (threeColumnEnumValueTable) {
-                out() << "<p><table class=\"valuelist\" border=\"1\" cellpadding=\"2\" "
-                      << "cellspacing=\"1\" width=\"100%\">\n"
-                      << "<tr><th width=\"25%\">Constant</th>"
-                      << "<th width=\"15%\">Value</th>"
-                      << "<th width=\"60%\">Description</th></tr>\n";
+                out() << "<p><table class=\"valuelist\">"
+                      << "<tr><th>Constant</th>"
+                      << "<th>Value</th>"
+                      << "<th>Description</th></tr>\n";
             }
             else {
-                out() << "<p><table  class=\"valuelist\" border=\"1\" cellpadding=\"2\" "
-                      << "cellspacing=\"1\" width=\"40%\">\n"
-                      << "<tr><th width=\"60%\">Constant</th><th "
-                      << "width=\"40%\">Value</th></tr>\n";
+                out() << "<p><table class=\"valuelist\">"
+                      << "<tr><th>Constant</th><th>Value</th></tr>\n";
             }
         }
         else {
@@ -1087,16 +1084,13 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         if (!atom->string().isEmpty()) {
             if (atom->string().contains("%"))
                 out() << "<p><table class=\"generic\" width=\"" << atom->string() << "\" "
-                      << "align=\"center\" cellpadding=\"2\" "
-                      << "cellspacing=\"1\" border=\"0\">\n";
+                      << "align=\"center\">\n";
             else {
-                out() << "<p><table class=\"generic\" align=\"center\" cellpadding=\"2\" "
-                      << "cellspacing=\"1\" border=\"0\">\n";
+                out() << "<p><table class=\"generic\" align=\"center\">\n";
             }
         }
         else {
-            out() << "<p><table class=\"generic\" align=\"center\" cellpadding=\"2\" "
-                  << "cellspacing=\"1\" border=\"0\">\n";
+            out() << "<p><table class=\"generic\" align=\"center\">\n";
         }
         numTableRows = 0;
         break;
@@ -1953,6 +1947,7 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
                                             const Node *relative)
 
 {
+    return;
     if (!node->doc().hasTableOfContents())
         return;
     QList<Atom *> toc = node->doc().tableOfContents();
@@ -2286,8 +2281,7 @@ void HtmlGenerator::generateAnnotatedList(const Node *relative,
                                           CodeMarker *marker,
                                           const NodeMap &nodeMap)
 {
-    out() << "<p><table width=\"100%\" class=\"annotated\" cellpadding=\"2\" "
-          << "cellspacing=\"1\" border=\"0\">\n";
+    out() << "<p><table class=\"annotated\">\n";
 
     int row = 0;
     foreach (const QString &name, nodeMap.keys()) {
@@ -2472,7 +2466,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
     }
     firstOffset[NumColumns] = classMap.count();
 
-    out() << "<p><table class=\"generic\" width=\"100%\">\n";
+    out() << "<p><table class=\"generic\">\n";
     for (k = 0; k < numRows; k++) {
         out() << "<tr>\n";
         for (i = 0; i < NumColumns; i++) {
@@ -2811,15 +2805,12 @@ void HtmlGenerator::generateSection(const NodeList& nl,
             name_alignment = false;
         }
         if (name_alignment) {
-            out() << "<table class=\"alignedsummary\" border=\"0\" cellpadding=\"0\" "
-                  << "cellspacing=\"0\" width=\"100%\">\n";
+            out() << "<table class=\"alignedsummary\">\n";
         }
         else {
             if (twoColumn)
-                out() << "<p><table class=\"propsummary\" width=\"100%\" "
-                      << "border=\"0\" cellpadding=\"0\""
-                      << " cellspacing=\"0\">\n"
-                      << "<tr><td width=\"45%\" valign=\"top\">";
+                out() << "<p><table class=\"propsummary\">\n"
+                      << "<tr><td valign=\"top\">";
             out() << "<ul>\n";
         }
 
@@ -2876,15 +2867,12 @@ void HtmlGenerator::generateSectionList(const Section& section,
             name_alignment = false;
         }
         if (name_alignment) {
-            out() << "<table class=\"alignedsummary\" border=\"0\" cellpadding=\"0\" "
-                  << "cellspacing=\"0\" width=\"100%\">\n";
+            out() << "<table class=\"alignedsummary\">\n";
         }
         else {
             if (twoColumn)
-                out() << "<p><table class=\"propsummary\" width=\"100%\" "
-                      << "border=\"0\" cellpadding=\"0\""
-                      << " cellspacing=\"0\">\n"
-                      << "<tr><td width=\"45%\" valign=\"top\">";
+                out() << "<p><table class=\"propsummary\">\n"
+                      << "<tr><td valign=\"top\">";
             out() << "<ul>\n";
         }
 
@@ -3181,9 +3169,8 @@ void HtmlGenerator::generateSectionList(const Section& section,
             twoColumn = (section.members.count() >= 5);
         }
         if (twoColumn)
-            out() << "<p><table class=\"generic\" width=\"100%\" border=\"0\" "
-                  << "cellpadding=\"0\" cellspacing=\"0\">\n"
-                  << "<tr><td width=\"45%\" valign=\"top\">";
+            out() << "<p><table class=\"generic\">\n"
+                  << "<tr><td valign=\"top\">";
         out() << "<ul>\n";
 
         int i = 0;
@@ -4366,7 +4353,7 @@ QT_END_NAMESPACE
 #ifdef QDOC_QML
 
 /*!
-  Generates the summary for for the \a section. Only used for
+  Generates the summary for the \a section. Only used for
   sections of QML element documentation.
 
   Currently handles only the QML property group.
@@ -4383,9 +4370,8 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
             twoColumn = (count >= 5);
         }
         if (twoColumn)
-            out() << "<p><table width=\"100%\" border=\"0\" cellpadding=\"0\""
-                     " cellspacing=\"0\">\n"
-                  << "<tr><td width=\"45%\" valign=\"top\">";
+            out() << "<p><table class=\"qmlsummary\">\n"
+                  << "<tr><td valign=\"top\">";
         out() << "<ul>\n";
 
         int row = 0;
@@ -4420,7 +4406,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
         NodeList::ConstIterator p = qpgn->childNodes().begin();
         out() << "<div class=\"qmlproto\">";
-        out() << "<table width=\"100%\" class=\"qmlname\">";
+        out() << "<table class=\"qmlname\">";
 
         while (p != qpgn->childNodes().end()) {
             if ((*p)->type() == Node::QmlProperty) {
@@ -4437,8 +4423,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                           << "<div class=\"qmlitem\">"
                           << "<div class=\"qmlproto\">"
                           << "<table class=\"qmlname\">"
-                          << "<tr><td><font color=\"green\">"
-                          << "default</font></td></tr>";
+                          << "<tr><td>default</td></tr>";
                 }
             }
             ++p;
