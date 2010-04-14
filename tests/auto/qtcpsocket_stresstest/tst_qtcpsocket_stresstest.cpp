@@ -52,6 +52,7 @@ class tst_QTcpSocket_stresstest : public QObject
 {
     Q_OBJECT
 public:
+    enum { AttemptCount = 100 };
     tst_QTcpSocket_stresstest();
     MiniHttpServer server;
 
@@ -60,6 +61,8 @@ public slots:
 
 private Q_SLOTS:
     void blockingConnectDisconnect();
+    void blockingPipelined();
+    void blockingMultipleRequests();
 };
 
 tst_QTcpSocket_stresstest::tst_QTcpSocket_stresstest()
@@ -81,7 +84,7 @@ void tst_QTcpSocket_stresstest::blockingConnectDisconnect()
     QFETCH_GLOBAL(QString, hostname);
     QFETCH_GLOBAL(int, port);
 
-    for (int i = 0; i < 50; ++i) {
+    for (int i = 0; i < AttemptCount; ++i) {
         qDebug("Attempt %d", i);
         QTcpSocket socket;
         socket.connectToHost(hostname, port);
@@ -101,6 +104,100 @@ void tst_QTcpSocket_stresstest::blockingConnectDisconnect()
             socket.waitForReadyRead();
             socket.readAll(); // discard
         }
+    }
+}
+
+void tst_QTcpSocket_stresstest::blockingPipelined()
+{
+    QFETCH_GLOBAL(QString, hostname);
+    QFETCH_GLOBAL(int, port);
+
+    for (int i = 0; i < AttemptCount / 2; ++i) {
+        QTcpSocket socket;
+        socket.connectToHost(hostname, port);
+        QVERIFY2(socket.waitForConnected(), "Timeout");
+
+        for (int j = 0 ; j < 3; ++j) {
+            qDebug("Attempt %d%c", i, 'a' + j);
+            socket.write("GET /qtest/bigfile HTTP/1.1\r\n"
+                         "Connection: " + QByteArray(j == 2 ? "close" : "keep-alive") + "\r\n"
+                         "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
+                         "Host: " + hostname.toLatin1() + "\r\n"
+                         "\r\n");
+            while (socket.bytesToWrite())
+                QVERIFY2(socket.waitForBytesWritten(), "Timeout");
+        }
+
+        QElapsedTimer timeout;
+        timeout.start();
+        while (socket.state() == QAbstractSocket::ConnectedState && !timeout.hasExpired(10000)) {
+            socket.waitForReadyRead();
+            socket.readAll(); // discard
+        }
+    }
+}
+
+void tst_QTcpSocket_stresstest::blockingMultipleRequests()
+{
+    QFETCH_GLOBAL(QString, hostname);
+    QFETCH_GLOBAL(int, port);
+
+    for (int i = 0; i < AttemptCount / 5; ++i) {
+        QTcpSocket socket;
+        socket.connectToHost(hostname, port);
+        QVERIFY2(socket.waitForConnected(), "Timeout");
+
+        for (int j = 0 ; j < 5; ++j) {
+            qDebug("Attempt %d", i * 5 + j);
+
+            socket.write("GET /qtest/bigfile HTTP/1.1\r\n"
+                         "Connection: keep-alive\r\n"
+                         "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
+                         "Host: " + hostname.toLatin1() + "\r\n"
+                         "\r\n");
+            while (socket.bytesToWrite())
+                QVERIFY2(socket.waitForBytesWritten(), "Timeout");
+
+            QElapsedTimer timeout;
+            timeout.start();
+
+            qint64 bytesRead = 0;
+            qint64 bytesExpected = -1;
+            QByteArray buffer;
+            while (socket.state() == QAbstractSocket::ConnectedState && !timeout.hasExpired(10000)) {
+                socket.waitForReadyRead();
+                buffer += socket.readAll();
+                int pos = buffer.indexOf("\r\n\r\n");
+                if (pos == -1)
+                    continue;
+
+                bytesRead = buffer.length() - pos - 1;
+
+                buffer.truncate(pos);
+                buffer = buffer.toLower();
+                pos = buffer.indexOf("\r\ncontent-length: ");
+                if (pos == -1)
+                    break;
+                pos += strlen("\r\ncontent-length: ");
+
+                int eol = buffer.indexOf("\r\n", pos + 2);
+                if (eol == -1)
+                    break;
+
+                bytesExpected = buffer.mid(pos, eol - pos).toLongLong();
+                break;
+            }
+            QVERIFY2(!timeout.hasExpired(10000), "Timeout");
+
+            while (socket.state() == QAbstractSocket::ConnectedState && !timeout.hasExpired(10000) && bytesExpected > bytesRead) {
+                socket.waitForReadyRead();
+                bytesRead += socket.read(bytesExpected - bytesRead).length(); // discard
+            }
+            QVERIFY2(!timeout.hasExpired(10000), "Timeout");
+        }
+
+        socket.disconnectFromHost();
+        QVERIFY(socket.state() == QAbstractSocket::UnconnectedState);
     }
 }
 
