@@ -113,14 +113,6 @@ public:
 
 #ifndef QT_NO_THREAD
 
-class QThreadPrivateInternalObject : public QObject
-{
-    Q_OBJECT
-
-public slots:
-    void exit(int);
-};
-
 class QThreadPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QThread)
@@ -165,7 +157,6 @@ public:
     bool terminationEnabled, terminatePending;
 # endif
     QThreadData *data;
-    QThreadPrivateInternalObject *object;
 
     static void createEventDispatcher(QThreadData *data);
 };
