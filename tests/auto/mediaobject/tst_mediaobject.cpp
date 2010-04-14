@@ -193,16 +193,10 @@ static qint32 castQVariantToInt32(const QVariant &variant)
     return *reinterpret_cast<const qint32 *>(variant.constData());
 }
 
-static const char *const red    = "\033[0;31m";
-static const char *const normal = "\033[0m";
-
 void tst_MediaObject::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 {
-    if (newstate == Phonon::ErrorState) {
-        QWARN(QByteArray(QByteArray(red) + ".......................................................... ") + QByteArray(QTest::toString(oldstate)) + " to " + QByteArray(QTest::toString(newstate)) + normal);
-    } else {
-        //qDebug() << ".........................................................." << cyan << QTest::toString(oldstate) << "to" << QTest::toString(newstate) << normal;
-    }
+    if (newstate == Phonon::ErrorState)
+        QWARN(QByteArray(QByteArray(QTest::toString(oldstate)) + " to " + QByteArray(QTest::toString(newstate))));
 }
 
 void tst_MediaObject::testPlayFromResource()
