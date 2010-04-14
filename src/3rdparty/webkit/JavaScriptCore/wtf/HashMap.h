@@ -83,6 +83,25 @@ namespace WTF {
 
         MappedType take(const KeyType&); // efficient combination of get with remove
 
+        // An alternate version of find() that finds the object by hashing and comparing
+        // with some other type, to avoid the cost of type conversion. HashTranslator
+        // must have the following function members:
+        //   static unsigned hash(const T&);
+        //   static bool equal(const ValueType&, const T&);
+        template<typename T, typename HashTranslator> iterator find(const T&);
+        template<typename T, typename HashTranslator> const_iterator find(const T&) const;
+        template<typename T, typename HashTranslator> bool contains(const T&) const;
+
+        // An alternate version of add() that finds the object by hashing and comparing
+        // with some other type, to avoid the cost of type conversion if the object is already
+        // in the table. HashTranslator must have the following function members:
+        //   static unsigned hash(const T&);
+        //   static bool equal(const ValueType&, const T&);
+        //   static translate(ValueType&, const T&, unsigned hashCode);
+        template<typename T, typename HashTranslator> pair<iterator, bool> add(const T&, const MappedType&);
+
+        void checkConsistency() const;
+
     private:
         pair<iterator, bool> inlineAdd(const KeyType&, const MappedType&);
 
@@ -103,6 +122,20 @@ namespace WTF {
         static void translate(ValueType& location, const KeyType& key, const MappedType& mapped)
         {
             location.first = key;
+            location.second = mapped;
+        }
+    };
+
+    template<typename ValueType, typename ValueTraits, typename T, typename Translator>
+    struct HashMapTranslatorAdapter {
+        typedef typename ValueType::first_type KeyType;
+        typedef typename ValueType::second_type MappedType;
+
+        static unsigned hash(const T& key) { return Translator::hash(key); }
+        static bool equal(const KeyType& a, const T& b) { return Translator::equal(a, b); }
+        static void translate(ValueType& location, const T& key, const MappedType& mapped, unsigned hashCode)
+        {
+            Translator::translate(location.first, key, hashCode);
             location.second = mapped;
         }
     };
@@ -174,6 +207,33 @@ namespace WTF {
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
+    template<typename TYPE, typename HashTranslator>
+    inline typename HashMap<T, U, V, W, X>::iterator
+    HashMap<T, U, V, W, X>::find(const TYPE& value)
+    {
+        typedef HashMapTranslatorAdapter<ValueType, ValueTraits, TYPE, HashTranslator> Adapter;
+        return m_impl.template find<TYPE, Adapter>(value);
+    }
+
+    template<typename T, typename U, typename V, typename W, typename X>
+    template<typename TYPE, typename HashTranslator>
+    inline typename HashMap<T, U, V, W, X>::const_iterator 
+    HashMap<T, U, V, W, X>::find(const TYPE& value) const
+    {
+        typedef HashMapTranslatorAdapter<ValueType, ValueTraits, TYPE, HashTranslator> Adapter;
+        return m_impl.template find<TYPE, Adapter>(value);
+    }
+
+    template<typename T, typename U, typename V, typename W, typename X>
+    template<typename TYPE, typename HashTranslator>
+    inline bool
+    HashMap<T, U, V, W, X>::contains(const TYPE& value) const
+    {
+        typedef HashMapTranslatorAdapter<ValueType, ValueTraits, TYPE, HashTranslator> Adapter;
+        return m_impl.template contains<TYPE, Adapter>(value);
+    }
+
+    template<typename T, typename U, typename V, typename W, typename X>
     inline pair<typename HashMap<T, U, V, W, X>::iterator, bool>
     HashMap<T, U, V, W, X>::inlineAdd(const KeyType& key, const MappedType& mapped) 
     {
@@ -191,6 +251,15 @@ namespace WTF {
             result.first->second = mapped;
         }
         return result;
+    }
+
+    template<typename T, typename U, typename V, typename W, typename X>
+    template<typename TYPE, typename HashTranslator>
+    pair<typename HashMap<T, U, V, W, X>::iterator, bool>
+    HashMap<T, U, V, W, X>::add(const TYPE& key, const MappedType& value)
+    {
+        typedef HashMapTranslatorAdapter<ValueType, ValueTraits, TYPE, HashTranslator> Adapter;
+        return m_impl.template addPassingHashCode<TYPE, MappedType, Adapter>(key, value);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
@@ -215,7 +284,7 @@ namespace WTF {
     {
         if (it.m_impl == m_impl.end())
             return;
-        m_impl.checkTableConsistency();
+        m_impl.internalCheckTableConsistency();
         m_impl.removeWithoutEntryConsistencyCheck(it.m_impl);
     }
 
@@ -243,6 +312,13 @@ namespace WTF {
         remove(it);
         return result;
     }
+
+    template<typename T, typename U, typename V, typename W, typename X>
+    inline void HashMap<T, U, V, W, X>::checkConsistency() const
+    {
+        m_impl.checkTableConsistency();
+    }
+
 
     template<typename T, typename U, typename V, typename W, typename X>
     bool operator==(const HashMap<T, U, V, W, X>& a, const HashMap<T, U, V, W, X>& b)

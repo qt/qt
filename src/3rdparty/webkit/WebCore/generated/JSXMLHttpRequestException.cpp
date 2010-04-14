@@ -38,10 +38,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSXMLHttpRequestException);
 
 static const HashTableValue JSXMLHttpRequestExceptionTableValues[5] =
 {
-    { "code", DontDelete|ReadOnly, (intptr_t)jsXMLHttpRequestExceptionCode, (intptr_t)0 },
-    { "name", DontDelete|ReadOnly, (intptr_t)jsXMLHttpRequestExceptionName, (intptr_t)0 },
-    { "message", DontDelete|ReadOnly, (intptr_t)jsXMLHttpRequestExceptionMessage, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsXMLHttpRequestExceptionConstructor, (intptr_t)0 },
+    { "code", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXMLHttpRequestExceptionCode), (intptr_t)0 },
+    { "name", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXMLHttpRequestExceptionName), (intptr_t)0 },
+    { "message", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXMLHttpRequestExceptionMessage), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXMLHttpRequestExceptionConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -56,8 +56,8 @@ static JSC_CONST_HASHTABLE HashTable JSXMLHttpRequestExceptionTable =
 
 static const HashTableValue JSXMLHttpRequestExceptionConstructorTableValues[3] =
 {
-    { "NETWORK_ERR", DontDelete|ReadOnly, (intptr_t)jsXMLHttpRequestExceptionNETWORK_ERR, (intptr_t)0 },
-    { "ABORT_ERR", DontDelete|ReadOnly, (intptr_t)jsXMLHttpRequestExceptionABORT_ERR, (intptr_t)0 },
+    { "NETWORK_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXMLHttpRequestExceptionNETWORK_ERR), (intptr_t)0 },
+    { "ABORT_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXMLHttpRequestExceptionABORT_ERR), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -82,7 +82,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -105,9 +105,9 @@ bool JSXMLHttpRequestExceptionConstructor::getOwnPropertyDescriptor(ExecState* e
 
 static const HashTableValue JSXMLHttpRequestExceptionPrototypeTableValues[4] =
 {
-    { "NETWORK_ERR", DontDelete|ReadOnly, (intptr_t)jsXMLHttpRequestExceptionNETWORK_ERR, (intptr_t)0 },
-    { "ABORT_ERR", DontDelete|ReadOnly, (intptr_t)jsXMLHttpRequestExceptionABORT_ERR, (intptr_t)0 },
-    { "toString", DontDelete|DontEnum|Function, (intptr_t)jsXMLHttpRequestExceptionPrototypeFunctionToString, (intptr_t)0 },
+    { "NETWORK_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXMLHttpRequestExceptionNETWORK_ERR), (intptr_t)0 },
+    { "ABORT_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXMLHttpRequestExceptionABORT_ERR), (intptr_t)0 },
+    { "toString", DontDelete|DontEnum|Function, (intptr_t)static_cast<NativeFunction>(jsXMLHttpRequestExceptionPrototypeFunctionToString), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -171,33 +171,36 @@ bool JSXMLHttpRequestException::getOwnPropertyDescriptor(ExecState* exec, const 
     return getStaticValueDescriptor<JSXMLHttpRequestException, Base>(exec, getJSXMLHttpRequestExceptionTable(exec), this, propertyName, descriptor);
 }
 
-JSValue jsXMLHttpRequestExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXMLHttpRequestExceptionCode(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXMLHttpRequestException* castedThis = static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()));
+    JSXMLHttpRequestException* castedThis = static_cast<JSXMLHttpRequestException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(castedThis->impl());
-    return jsNumber(exec, imp->code());
+    JSValue result = jsNumber(exec, imp->code());
+    return result;
 }
 
-JSValue jsXMLHttpRequestExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXMLHttpRequestExceptionName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXMLHttpRequestException* castedThis = static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()));
+    JSXMLHttpRequestException* castedThis = static_cast<JSXMLHttpRequestException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(castedThis->impl());
-    return jsString(exec, imp->name());
+    JSValue result = jsString(exec, imp->name());
+    return result;
 }
 
-JSValue jsXMLHttpRequestExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXMLHttpRequestExceptionMessage(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXMLHttpRequestException* castedThis = static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()));
+    JSXMLHttpRequestException* castedThis = static_cast<JSXMLHttpRequestException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(castedThis->impl());
-    return jsString(exec, imp->message());
+    JSValue result = jsString(exec, imp->message());
+    return result;
 }
 
-JSValue jsXMLHttpRequestExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXMLHttpRequestExceptionConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXMLHttpRequestException* domObject = static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()));
+    JSXMLHttpRequestException* domObject = static_cast<JSXMLHttpRequestException*>(asObject(slotBase));
     return JSXMLHttpRequestException::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSXMLHttpRequestException::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -220,12 +223,12 @@ JSValue JSC_HOST_CALL jsXMLHttpRequestExceptionPrototypeFunctionToString(ExecSta
 
 // Constant getters
 
-JSValue jsXMLHttpRequestExceptionNETWORK_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXMLHttpRequestExceptionNETWORK_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(101));
 }
 
-JSValue jsXMLHttpRequestExceptionABORT_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXMLHttpRequestExceptionABORT_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(102));
 }

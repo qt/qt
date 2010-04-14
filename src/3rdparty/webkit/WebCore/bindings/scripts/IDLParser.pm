@@ -3,8 +3,6 @@
 #
 # Copyright (C) 2005 Nikolas Zimmermann <wildfox@kde.org>
 # 
-# This file is part of the KDE project
-# 
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
 # License as published by the Free Software Foundation; either
@@ -16,7 +14,7 @@
 # Library General Public License for more details.
 # 
 # You should have received a copy of the GNU Library General Public License
-# aint with this library; see the file COPYING.LIB.  If not, write to
+# along with this library; see the file COPYING.LIB.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 # 
@@ -66,7 +64,14 @@ sub Parse
     $parentsOnly = shift;
 
     if (!$preprocessor) {
-        $preprocessor = "/usr/bin/gcc -E -P -x c++";
+        require Config;
+        my $gccLocation = "";
+        if (($Config::Config{'osname'}) =~ /solaris/i) {
+            $gccLocation = "/usr/sfw/bin/gcc";
+        } else {
+            $gccLocation = "/usr/bin/gcc";
+        }
+        $preprocessor = $gccLocation . " -E -P -x c++";
     }
 
     if (!$defines) {
@@ -160,6 +165,7 @@ sub parseExtendedAttributes
         # Attributes with no value are set to be true
         $value = 1 unless defined $value;
         $attrs{$name} = $value;
+        die("Invalid extended attribute name: '$name'\n") if $name =~ /\s/;
     }
 
     return \%attrs;
@@ -372,7 +378,9 @@ sub DetermineParseMode
         $mode = MODE_INTERFACE;
     } elsif ($_ =~ /exception/) {
         $mode = MODE_EXCEPTION;
-    } elsif ($_ =~ /alias/) {
+    } elsif ($_ =~ /(\A|\b)alias/) {
+        # The (\A|\b) above is needed so we don't match attributes
+        # whose names contain the substring "alias".
         $mode = MODE_ALIAS;
     }
 

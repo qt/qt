@@ -320,7 +320,21 @@ void tst_qdeclarativexmllistmodel::source()
     QCOMPARE(model->progress(), qreal(0.0));
     QTRY_COMPARE(spy.count(), 1); spy.clear();
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Loading);
-    QTRY_COMPARE(spy.count(), 1); spy.clear();
+
+    QEventLoop loop;
+    QTimer timer;
+    timer.setSingleShot(true);
+    connect(model, SIGNAL(statusChanged(QDeclarativeXmlListModel::Status)), &loop, SLOT(quit()));
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+    timer.start(20000);
+    loop.exec();
+
+    if (spy.count() == 0 && status != QDeclarativeXmlListModel::Ready) {
+        qWarning("QDeclarativeXmlListModel invalid source test timed out");
+    } else {
+        QCOMPARE(spy.count(), 1); spy.clear();
+    }
+
     QCOMPARE(model->status(), status);
     QCOMPARE(model->count(), count);
     if (status == QDeclarativeXmlListModel::Ready)

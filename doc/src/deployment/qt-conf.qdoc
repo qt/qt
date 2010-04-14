@@ -87,6 +87,7 @@
     \row \o Libraries           \o \c lib
     \row \o Binaries            \o \c bin
     \row \o Plugins             \o \c plugins
+    \row \o Imports             \o \c imports
     \row \o Data                \o \c .
     \row \o Translations        \o \c translations
     \row \o Settings            \o \c .

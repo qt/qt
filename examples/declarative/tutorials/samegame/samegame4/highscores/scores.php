@@ -8,10 +8,7 @@
         $time = $_POST["time"];
         if($name == "")
             $name = "Anonymous";
-        //if($grid != "10x10"){
-        //Need a standard, so as to reject others?
-        //}
-	$file = fopen("score_data.xml", "a"); #It's XML. Happy?
+	$file = fopen("score_data.xml", "a");
         $ret = fwrite($file, "<record><score>". $score . "</score><name>" 
             . $name . "</name><gridSize>" . $grid . "</gridSize><seconds>"
             . $time . "</seconds></record>\n");

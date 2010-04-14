@@ -36,7 +36,7 @@ namespace JSC {
 
     class JSFunction : public InternalFunction {
         friend class JIT;
-        friend struct VPtrSet;
+        friend class JSGlobalData;
 
         typedef InternalFunction Base;
 
@@ -61,7 +61,7 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype) 
         { 
-            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags)); 
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
         }
 
         NativeFunction nativeFunction()
@@ -82,6 +82,7 @@ namespace JSC {
 
         virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
         virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
         virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
 
@@ -89,9 +90,9 @@ namespace JSC {
 
         virtual const ClassInfo* classInfo() const { return &info; }
 
-        static JSValue argumentsGetter(ExecState*, const Identifier&, const PropertySlot&);
-        static JSValue callerGetter(ExecState*, const Identifier&, const PropertySlot&);
-        static JSValue lengthGetter(ExecState*, const Identifier&, const PropertySlot&);
+        static JSValue argumentsGetter(ExecState*, JSValue, const Identifier&);
+        static JSValue callerGetter(ExecState*, JSValue, const Identifier&);
+        static JSValue lengthGetter(ExecState*, JSValue, const Identifier&);
 
         RefPtr<ExecutableBase> m_executable;
         ScopeChain& scopeChain()

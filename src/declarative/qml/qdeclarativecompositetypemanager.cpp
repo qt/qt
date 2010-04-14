@@ -55,13 +55,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
-inline uint qHash(const QUrl &uri)
-{
-    return qHash(uri.toEncoded(QUrl::FormattingOption(0x100)));
-}
-#endif
-
 QDeclarativeCompositeTypeData::QDeclarativeCompositeTypeData()
 : status(Invalid), errorType(NoError), component(0), compiledComponent(0)
 {
@@ -633,10 +626,12 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             //  - type with unknown namespace (UnknownNamespace.SomeType {})
             QDeclarativeError error;
             error.setUrl(unit->imports.baseUrl());
+            QString userTypeName = QString::fromUtf8(typeName);
+            userTypeName.replace(QLatin1Char('/'),QLatin1Char('.'));
             if (typeNamespace)
-                error.setDescription(tr("Namespace %1 cannot be used as a type").arg(QString::fromUtf8(typeName)));
+                error.setDescription(tr("Namespace %1 cannot be used as a type").arg(userTypeName));
             else
-                error.setDescription(tr("%1 is not a type").arg(QString::fromUtf8(typeName)));
+                error.setDescription(tr("%1 is not a type").arg(userTypeName));
             if (!parserRef->refObjects.isEmpty()) {
                 QDeclarativeParser::Object *obj = parserRef->refObjects.first();
                 error.setLine(obj->location.start.line);
@@ -727,6 +722,10 @@ void QDeclarativeCompositeTypeManager::compile(QDeclarativeCompositeTypeData *un
             }
         }
     }
+
+    QUrl importUrl = unit->imports.baseUrl().resolved(QUrl(QLatin1String("qmldir")));
+    if (toLocalFileOrQrc(importUrl).isEmpty())
+        resourceList.prepend(importUrl);
 
     for (int ii = 0; ii < resourceList.count(); ++ii) {
         QUrl url = unit->imports.baseUrl().resolved(resourceList.at(ii));

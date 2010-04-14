@@ -57,10 +57,13 @@ WebInspector.AbstractTimelinePanel.prototype = {
         // Should be implemented by the concrete subclasses.
     },
 
+    get items()
+    {
+        return this._items;
+    },
+
     createInterface: function()
     {
-        this._createFilterPanel();
-
         this.containerElement = document.createElement("div");
         this.containerElement.id = "resources-container";
         this.containerElement.addEventListener("scroll", this._updateDividersLabelBarPosition.bind(this), false);
@@ -70,10 +73,20 @@ WebInspector.AbstractTimelinePanel.prototype = {
         this.sidebarElement.id = "resources-sidebar";
         this.populateSidebar();
 
-        this._createGraph();
+        this._containerContentElement = document.createElement("div");
+        this._containerContentElement.id = "resources-container-content";
+        this.containerElement.appendChild(this._containerContentElement);
+
+        this.summaryBar = new WebInspector.SummaryBar(this.categories);
+        this.summaryBar.element.id = "resources-summary";
+        this._containerContentElement.appendChild(this.summaryBar.element);
+
+        this._timelineGrid = new WebInspector.TimelineGrid();
+        this._containerContentElement.appendChild(this._timelineGrid.element);
+        this.itemsGraphsElement = this._timelineGrid.itemsGraphsElement;
     },
 
-    _createFilterPanel: function()
+    createFilterPanel: function()
     {
         this.filterBarElement = document.createElement("div");
         this.filterBarElement.id = "resources-filter";
@@ -108,14 +121,14 @@ WebInspector.AbstractTimelinePanel.prototype = {
             createFilterElement.call(this, category);
     },
 
-    _showCategory: function(category)
+    showCategory: function(category)
     {
         var filterClass = "filter-" + category.toLowerCase();
         this.itemsGraphsElement.addStyleClass(filterClass);
         this.itemsTreeElement.childrenListElement.addStyleClass(filterClass);
     },
 
-    _hideCategory: function(category)
+    hideCategory: function(category)
     {
         var filterClass = "filter-" + category.toLowerCase();
         this.itemsGraphsElement.removeStyleClass(filterClass);
@@ -132,7 +145,7 @@ WebInspector.AbstractTimelinePanel.prototype = {
                     continue;
 
                 child.removeStyleClass("selected");
-                this._hideCategory(child.category);
+                this.hideCategory(child.category);
             }
         }
 
@@ -148,7 +161,7 @@ WebInspector.AbstractTimelinePanel.prototype = {
             // Something other than All is being selected, so we want to unselect All.
             if (this.filterAllElement.hasStyleClass("selected")) {
                 this.filterAllElement.removeStyleClass("selected");
-                this._hideCategory("all");
+                this.hideCategory("all");
             }
         }
 
@@ -158,7 +171,7 @@ WebInspector.AbstractTimelinePanel.prototype = {
             unselectAll.call(this);
 
             target.addStyleClass("selected");
-            this._showCategory(target.category);
+            this.showCategory(target.category);
             return;
         }
 
@@ -166,18 +179,18 @@ WebInspector.AbstractTimelinePanel.prototype = {
             // If selectMultiple is turned on, and we were selected, we just
             // want to unselect ourselves.
             target.removeStyleClass("selected");
-            this._hideCategory(target.category);
+            this.hideCategory(target.category);
         } else {
             // If selectMultiple is turned on, and we weren't selected, we just
             // want to select ourselves.
             target.addStyleClass("selected");
-            this._showCategory(target.category);
+            this.showCategory(target.category);
         }
     },
 
     _updateFilter: function(e)
     {
-        var isMac = InspectorController.platform().indexOf("mac-") === 0;
+        var isMac = WebInspector.isMac();
         var selectMultiple = false;
         if (isMac && e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey)
             selectMultiple = true;
@@ -191,83 +204,21 @@ WebInspector.AbstractTimelinePanel.prototype = {
         this.containerElement.scrollTop = 0;
     },
 
-    _createGraph: function()
-    {
-        this._containerContentElement = document.createElement("div");
-        this._containerContentElement.id = "resources-container-content";
-        this.containerElement.appendChild(this._containerContentElement);
-
-        this.summaryBar = new WebInspector.SummaryBar(this.categories);
-        this.summaryBar.element.id = "resources-summary";
-        this._containerContentElement.appendChild(this.summaryBar.element);
-
-        this.itemsGraphsElement = document.createElement("div");
-        this.itemsGraphsElement.id = "resources-graphs";
-        this._containerContentElement.appendChild(this.itemsGraphsElement);
-
-        this.dividersElement = document.createElement("div");
-        this.dividersElement.id = "resources-dividers";
-        this._containerContentElement.appendChild(this.dividersElement);
-
-        this.eventDividersElement = document.createElement("div");
-        this.eventDividersElement.id = "resources-event-dividers";
-        this._containerContentElement.appendChild(this.eventDividersElement);
-
-        this.dividersLabelBarElement = document.createElement("div");
-        this.dividersLabelBarElement.id = "resources-dividers-label-bar";
-        this._containerContentElement.appendChild(this.dividersLabelBarElement);
-    },
-
     updateGraphDividersIfNeeded: function(force)
     {
         if (!this.visible) {
             this.needsRefresh = true;
             return false;
         }
-
-        if (document.body.offsetWidth <= 0) {
-            // The stylesheet hasn't loaded yet or the window is closed,
-            // so we can't calculate what is need. Return early.
-            return false;
-        }
-
-        var dividerCount = Math.round(this.dividersElement.offsetWidth / 64);
-        var slice = this.calculator.boundarySpan / dividerCount;
-        if (!force && this._currentDividerSlice === slice)
-            return false;
-
-        this._currentDividerSlice = slice;
-
-        this.dividersElement.removeChildren();
-        this.eventDividersElement.removeChildren();
-        this.dividersLabelBarElement.removeChildren();
-
-        for (var i = 1; i <= dividerCount; ++i) {
-            var divider = document.createElement("div");
-            divider.className = "resources-divider";
-            if (i === dividerCount)
-                divider.addStyleClass("last");
-            divider.style.left = ((i / dividerCount) * 100) + "%";
-
-            this.dividersElement.appendChild(divider.cloneNode());
-
-            var label = document.createElement("div");
-            label.className = "resources-divider-label";
-            if (!isNaN(slice))
-                label.textContent = this.calculator.formatValue(slice * i);
-            divider.appendChild(label);
-
-            this.dividersLabelBarElement.appendChild(divider);
-        }
+        return this._timelineGrid.updateDividers(force, this.calculator);
     },
 
     _updateDividersLabelBarPosition: function()
     {
-        var scrollTop = this.containerElement.scrollTop;
-        var dividersTop = (scrollTop < this.summaryBar.element.offsetHeight ? this.summaryBar.element.offsetHeight : scrollTop);
-        this.dividersElement.style.top = scrollTop + "px";
-        this.eventDividersElement.style.top = scrollTop + "px";
-        this.dividersLabelBarElement.style.top = dividersTop + "px";
+        const scrollTop = this.containerElement.scrollTop;
+        const offsetHeight = this.summaryBar.element.offsetHeight;
+        const dividersTop = (scrollTop < offsetHeight ? offsetHeight : scrollTop);
+        this._timelineGrid.setScrollAndDividerTop(scrollTop, dividersTop);
     },
 
     get needsRefresh()
@@ -309,13 +260,20 @@ WebInspector.AbstractTimelinePanel.prototype = {
 
     resize: function()
     {
+        WebInspector.Panel.prototype.resize.call(this);
+
         this.updateGraphDividersIfNeeded();
     },
 
     updateMainViewWidth: function(width)
     {
         this._containerContentElement.style.left = width + "px";
-        this.updateGraphDividersIfNeeded();
+        this.resize();
+    },
+
+    invalidateAllItems: function()
+    {
+        this._staleItems = this._items.slice();
     },
 
     refresh: function()
@@ -323,21 +281,22 @@ WebInspector.AbstractTimelinePanel.prototype = {
         this.needsRefresh = false;
 
         var staleItemsLength = this._staleItems.length;
+
         var boundariesChanged = false;
 
         for (var i = 0; i < staleItemsLength; ++i) {
             var item = this._staleItems[i];
-            if (!item._itemTreeElement) {
+            if (!item._itemsTreeElement) {
                 // Create the timeline tree element and graph.
-                item._itemTreeElement = this.createItemTreeElement(item);
-                item._itemTreeElement._itemGraph = this.createItemGraph(item);
+                item._itemsTreeElement = this.createItemTreeElement(item);
+                item._itemsTreeElement._itemGraph = this.createItemGraph(item);
 
-                this.itemsTreeElement.appendChild(item._itemTreeElement);
-                this.itemsGraphsElement.appendChild(item._itemTreeElement._itemGraph.graphElement);
+                this.itemsTreeElement.appendChild(item._itemsTreeElement);
+                this.itemsGraphsElement.appendChild(item._itemsTreeElement._itemGraph.graphElement);
             }
 
-            if (item._itemTreeElement.refresh)
-                item._itemTreeElement.refresh();
+            if (item._itemsTreeElement.refresh)
+                item._itemsTreeElement.refresh();
 
             if (this.calculator.updateBoundaries(item))
                 boundariesChanged = true;
@@ -345,12 +304,14 @@ WebInspector.AbstractTimelinePanel.prototype = {
 
         if (boundariesChanged) {
             // The boundaries changed, so all item graphs are stale.
-            this._staleItems = this._items;
+            this._staleItems = this._items.slice();
             staleItemsLength = this._staleItems.length;
         }
 
+
+        const isBarOpaqueAtLeft = this.sidebarTree.selectedTreeElement && this.sidebarTree.selectedTreeElement.isBarOpaqueAtLeft;
         for (var i = 0; i < staleItemsLength; ++i)
-            this._staleItems[i]._itemTreeElement._itemGraph.refresh(this.calculator);
+            this._staleItems[i]._itemsTreeElement._itemGraph.refresh(this.calculator, isBarOpaqueAtLeft);
 
         this._staleItems = [];
 
@@ -394,7 +355,7 @@ WebInspector.AbstractTimelinePanel.prototype = {
         this._calculator = x;
         this._calculator.reset();
 
-        this._staleItems = this._items;
+        this._staleItems = this._items.slice();
         this.refresh();
     },
 
@@ -408,12 +369,12 @@ WebInspector.AbstractTimelinePanel.prototype = {
     {
         this._items.remove(item, true);
 
-        if (item._itemTreeElement) {
-            this.itemsTreeElement.removeChild(resource._itemTreeElement);
-            this.itemsGraphsElement.removeChild(resource._itemTreeElement._itemGraph.graphElement);
+        if (item._itemsTreeElement) {
+            this.itemsTreeElement.removeChild(item._itemsTreeElement);
+            this.itemsGraphsElement.removeChild(item._itemsTreeElement._itemGraph.graphElement);
         }
 
-        delete item._itemTreeElement;
+        delete item._itemsTreeElement;
         this.adjustScrollPosition();
     },
 
@@ -458,6 +419,11 @@ WebInspector.AbstractTimelinePanel.prototype = {
         // Prevent the container from being scrolled off the end.
         if ((this.containerElement.scrollTop + this.containerElement.offsetHeight) > this.sidebarElement.offsetHeight)
             this.containerElement.scrollTop = (this.sidebarElement.offsetHeight - this.containerElement.offsetHeight);
+    },
+
+    addEventDivider: function(divider)
+    {
+        this._timelineGrid.addEventDivider(divider);
     }
 }
 

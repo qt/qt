@@ -43,6 +43,7 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <private/qdeclarativeanchors_p_p.h>
 #include <private/qdeclarativerectangle_p.h>
+#include <private/qdeclarativeimage_p.h>
 #include <private/qdeclarativetext_p.h>
 #include <private/qdeclarativepropertychanges_p.h>
 #include <private/qdeclarativestategroup_p.h>
@@ -94,6 +95,7 @@ private slots:
     void anchorChanges3();
     void anchorChanges4();
     void anchorChanges5();
+    void anchorChangesCrash();
     void script();
     void restoreEntryValues();
     void explicitChanges();
@@ -107,6 +109,8 @@ private slots:
     void nonExistantProperty();
     void reset();
     void illegalObjectCreation();
+    void whenOrdering();
+    void urlResolution();
 };
 
 void tst_qdeclarativestates::initTestCase()
@@ -716,6 +720,20 @@ void tst_qdeclarativestates::anchorChanges5()
     delete rect;
 }
 
+//QTBUG-9609
+void tst_qdeclarativestates::anchorChangesCrash()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChangesCrash.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    rect->setState("reanchored");
+
+    delete rect;
+}
+
 void tst_qdeclarativestates::script()
 {
     QDeclarativeEngine engine;
@@ -976,6 +994,49 @@ void tst_qdeclarativestates::illegalObjectCreation()
     QCOMPARE(error.line(), 9);
     QCOMPARE(error.column(), 23);
     QCOMPARE(error.description().toUtf8().constData(), "PropertyChanges does not support creating state-specific objects.");
+}
+
+void tst_qdeclarativestates::whenOrdering()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/whenOrdering.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+
+    QCOMPARE(rect->state(), QLatin1String(""));
+    rect->setProperty("condition2", true);
+    QCOMPARE(rect->state(), QLatin1String("state2"));
+    rect->setProperty("condition1", true);
+    QCOMPARE(rect->state(), QLatin1String("state1"));
+    rect->setProperty("condition2", false);
+    QCOMPARE(rect->state(), QLatin1String("state1"));
+    rect->setProperty("condition2", true);
+    QCOMPARE(rect->state(), QLatin1String("state1"));
+    rect->setProperty("condition1", false);
+    rect->setProperty("condition2", false);
+    QCOMPARE(rect->state(), QLatin1String(""));
+}
+
+void tst_qdeclarativestates::urlResolution()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/urlResolution.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeItem *myType = rect->findChild<QDeclarativeItem*>("MyType");
+    QDeclarativeImage *image1 = rect->findChild<QDeclarativeImage*>("image1");
+    QDeclarativeImage *image2 = rect->findChild<QDeclarativeImage*>("image2");
+    QDeclarativeImage *image3 = rect->findChild<QDeclarativeImage*>("image3");
+    QVERIFY(myType != 0 && image1 != 0 && image2 != 0 && image3 != 0);
+
+    myType->setState("SetImageState");
+    QUrl resolved = QUrl::fromLocalFile(SRCDIR "/data/Implementation/images/qt-logo.png");
+    QCOMPARE(image1->source(), resolved);
+    QCOMPARE(image2->source(), resolved);
+    QCOMPARE(image3->source(), resolved);
 }
 
 QTEST_MAIN(tst_qdeclarativestates)

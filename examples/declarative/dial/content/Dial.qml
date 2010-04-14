@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     id: root
@@ -29,7 +29,7 @@ Item {
             SpringFollow on angle {
                 spring: 1.4
                 damping: .15
-                source: Math.min(Math.max(-130, root.value*2.6 - 130), 133)
+                to: Math.min(Math.max(-130, root.value*2.6 - 130), 133)
             }
         }
     }

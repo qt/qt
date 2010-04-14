@@ -68,18 +68,18 @@ AccessibilityOrientation AccessibilitySlider::orientation() const
     
     ControlPart styleAppearance = style->appearance();
     switch (styleAppearance) {
-        case SliderThumbHorizontalPart:
-        case SliderHorizontalPart:
-        case MediaSliderPart:
-            return AccessibilityOrientationHorizontal;
+    case SliderThumbHorizontalPart:
+    case SliderHorizontalPart:
+    case MediaSliderPart:
+        return AccessibilityOrientationHorizontal;
+    
+    case SliderThumbVerticalPart: 
+    case SliderVerticalPart:
+    case MediaVolumeSliderPart:
+        return AccessibilityOrientationVertical;
         
-        case SliderThumbVerticalPart: 
-        case SliderVerticalPart:
-        case MediaVolumeSliderPart:
-            return AccessibilityOrientationVertical;
-            
-        default:
-            return AccessibilityOrientationHorizontal;
+    default:
+        return AccessibilityOrientationHorizontal;
     }
 }
     
@@ -99,6 +99,17 @@ const AtomicString& AccessibilitySlider::getAttribute(const QualifiedName& attri
     return element()->getAttribute(attribute);
 }
 
+bool AccessibilitySlider::accessibilityIsIgnored() const
+{
+    AccessibilityObjectInclusion decision = accessibilityIsIgnoredBase();
+    if (decision == IncludeObject)
+        return false;
+    if (decision == IgnoreObject)
+        return true;
+    
+    return false;
+}
+    
 float AccessibilitySlider::valueForRange() const
 {
     return element()->value().toFloat();

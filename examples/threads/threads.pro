@@ -1,7 +1,8 @@
 TEMPLATE      = subdirs
-SUBDIRS       = mandelbrot \
-                semaphores \
+SUBDIRS       = semaphores \
                 waitconditions
+
+!contains(QT_CONFIG, no-gui):SUBDIRS += mandelbrot
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/threads

@@ -37,8 +37,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSMedia);
 
 static const HashTableValue JSMediaTableValues[3] =
 {
-    { "type", DontDelete|ReadOnly, (intptr_t)jsMediaType, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsMediaConstructor, (intptr_t)0 },
+    { "type", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaType), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsMediaConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -100,7 +100,7 @@ bool JSMediaConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identif
 
 static const HashTableValue JSMediaPrototypeTableValues[2] =
 {
-    { "matchMedium", DontDelete|Function, (intptr_t)jsMediaPrototypeFunctionMatchMedium, (intptr_t)1 },
+    { "matchMedium", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsMediaPrototypeFunctionMatchMedium), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -156,17 +156,18 @@ bool JSMedia::getOwnPropertyDescriptor(ExecState* exec, const Identifier& proper
     return getStaticValueDescriptor<JSMedia, Base>(exec, &JSMediaTable, this, propertyName, descriptor);
 }
 
-JSValue jsMediaType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMediaType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSMedia* castedThis = static_cast<JSMedia*>(asObject(slot.slotBase()));
+    JSMedia* castedThis = static_cast<JSMedia*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Media* imp = static_cast<Media*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
-JSValue jsMediaConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMediaConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSMedia* domObject = static_cast<JSMedia*>(asObject(slot.slotBase()));
+    JSMedia* domObject = static_cast<JSMedia*>(asObject(slotBase));
     return JSMedia::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSMedia::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

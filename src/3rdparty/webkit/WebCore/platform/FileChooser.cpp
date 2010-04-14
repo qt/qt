@@ -37,16 +37,16 @@ FileChooserClient::~FileChooserClient()
 {
 }
 
-inline FileChooser::FileChooser(FileChooserClient* client, const String& filename)
+inline FileChooser::FileChooser(FileChooserClient* client, const Vector<String>& initialFilenames)
     : m_client(client)
-    , m_icon(chooseIcon(filename))
 {
-    m_filenames.append(filename);
+    m_filenames = initialFilenames;
+    loadIcon();
 }
 
-PassRefPtr<FileChooser> FileChooser::create(FileChooserClient* client, const String& filename)
+PassRefPtr<FileChooser> FileChooser::create(FileChooserClient* client, const Vector<String>& initialFilenames)
 {
-    return adoptRef(new FileChooser(client, filename));
+    return adoptRef(new FileChooser(client, initialFilenames));
 }
 
 FileChooser::~FileChooser()
@@ -61,13 +61,9 @@ void FileChooser::clear()
 
 void FileChooser::chooseFile(const String& filename)
 {
-    if (m_filenames.size() == 1 && m_filenames[0] == filename)
-        return;
-    m_filenames.clear();
-    m_filenames.append(filename);
-    m_icon = chooseIcon(filename);
-    if (m_client)
-        m_client->valueChanged();
+    Vector<String> filenames;
+    filenames.append(filename);
+    chooseFiles(filenames);
 }
 
 void FileChooser::chooseFiles(const Vector<String>& filenames)
@@ -75,23 +71,22 @@ void FileChooser::chooseFiles(const Vector<String>& filenames)
     if (m_filenames == filenames)
         return;
     m_filenames = filenames;
-    m_icon = chooseIcon(filenames);
+    loadIcon();
     if (m_client)
         m_client->valueChanged();
 }
 
-PassRefPtr<Icon> FileChooser::chooseIcon(const String& filename)
+void FileChooser::loadIcon()
 {
-    return Icon::createIconForFile(filename);
+    if (m_filenames.size() && m_client)
+        m_client->chooseIconForFiles(m_filenames);
 }
 
-PassRefPtr<Icon> FileChooser::chooseIcon(Vector<String> filenames)
+void FileChooser::iconLoaded(PassRefPtr<Icon> icon)
 {
-    if (filenames.isEmpty())
-        return 0;
-    if (filenames.size() == 1)
-        return Icon::createIconForFile(filenames[0]);
-    return Icon::createIconForFiles(filenames);
+    m_icon = icon;
+    if (m_icon && m_client)
+        m_client->repaint();
 }
 
 }

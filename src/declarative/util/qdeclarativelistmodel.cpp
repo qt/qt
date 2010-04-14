@@ -219,13 +219,13 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     \tt dataloader.js, which appends the current time to the list model.
 
     Note the call to sync() from the \c WorkerScript.onMessage() handler.
-    Without this call, the changes made to the list are not reflected in the
-    list model in the main thread.
+    You must call sync() or else the changes made to the list from the external
+    thread will not be reflected in the list model in the main thread.
 
     \section3 Limitations
 
     If a list model is to be accessed from a WorkerScript, it \bold cannot
-    contain nested list data. So, the following model cannot be used from a WorkerScript
+    contain list data. So, the following model cannot be used from a WorkerScript
     because of the list contained in the "attributes" property:
 
     \code
@@ -242,11 +242,25 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     }
     \endcode
 
-    In addition, the WorkerScript cannot add any nested list data to the model.
+    In addition, the WorkerScript cannot add any list data to the model.
 
     \sa {qmlmodels}{Data Models}, WorkerScript
 */
 
+
+/*
+    A ListModel internally uses either a NestedListModel or FlatListModel.
+
+    A NestedListModel can contain lists of ListElements (which
+    when retrieved from get() is accessible as a list model within the list
+    model) whereas a FlatListModel cannot.
+
+    ListModel uses a NestedListModel to begin with, and if the model is later 
+    used from a WorkerScript, it changes to use a FlatListModel instead. This
+    is because ModelNode (which abstracts the nested list model data) needs
+    access to the declarative engine and script engine, which cannot be
+    safely used from outside of the main thread.
+*/
 
 QDeclarativeListModel::QDeclarativeListModel(QObject *parent)
 : QListModelInterface(parent), m_agent(0), m_nested(new NestedListModel(this)), m_flat(0), m_isWorkerCopy(false)
@@ -264,6 +278,9 @@ QDeclarativeListModel::QDeclarativeListModel(bool workerCopy, QObject *parent)
 
 QDeclarativeListModel::~QDeclarativeListModel()
 {
+    if (m_agent)
+        m_agent->release();
+
     delete m_nested;
     delete m_flat;
 }
@@ -622,6 +639,11 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
             QDeclarativeCustomParserNode node =
                 qvariant_cast<QDeclarativeCustomParserNode>(value);
 
+            if (node.name() != "ListElement") {
+                error(node, QDeclarativeListModel::tr("ListElement: cannot contain nested elements"));
+                return false;
+            }
+
             {
             ListInstruction li;
             li.type = ListInstruction::Push;
@@ -633,7 +655,7 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
             for(int jj = 0; jj < props.count(); ++jj) {
                 const QDeclarativeCustomParserProperty &nodeProp = props.at(jj);
                 if (nodeProp.name() == "") {
-                    error(nodeProp, QDeclarativeListModel::tr("ListElement: cannot use default property"));
+                    error(nodeProp, QDeclarativeListModel::tr("ListElement: cannot contain nested elements"));
                     return false;
                 }
                 if (nodeProp.name() == "id") {
@@ -1343,6 +1365,7 @@ ModelObject::ModelObject()
 void ModelObject::setValue(const QByteArray &name, const QVariant &val)
 {
     _mo->setValue(name, val);
+    setProperty(name.constData(), val);
 }
 
 

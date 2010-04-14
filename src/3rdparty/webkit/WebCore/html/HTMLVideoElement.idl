@@ -24,11 +24,23 @@
  */
 
 module html {
-    interface [GenerateConstructor, Conditional=VIDEO] HTMLVideoElement : HTMLMediaElement {
+    interface [Conditional=VIDEO] HTMLVideoElement : HTMLMediaElement {
         attribute unsigned long width;
         attribute unsigned long height;
         readonly attribute unsigned long videoWidth;
         readonly attribute unsigned long videoHeight;
                  attribute [ConvertNullToNullString] DOMString poster;
+
+        readonly attribute boolean webkitSupportsFullscreen;
+        readonly attribute boolean webkitDisplayingFullscreen;
+
+        [NeedsUserGestureCheck] void webkitEnterFullscreen()
+            raises (DOMException);
+        void webkitExitFullscreen();
+    
+        [NeedsUserGestureCheck] void webkitEnterFullScreen()
+            raises (DOMException);
+        void webkitExitFullScreen();
+
     };
 }

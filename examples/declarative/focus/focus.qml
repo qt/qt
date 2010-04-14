@@ -1,20 +1,35 @@
-import Qt 4.6
-import "Core" 1.0
+import Qt 4.7
+import "Core"
 
 Rectangle {
-    id: window; width: 800; height: 480; color: "#3E606F"
+    id: window
+    
+    width: 800; height: 480
+    color: "#3E606F"
 
     FocusScope {
-        id: mainView; focus: true; width: parent.width; height: parent.height
+        id: mainView
+
+        width: parent.width; height: parent.height
+        focus: true
 
         GridMenu {
-            id: gridMenu; focus: true
-            width: parent.width; height: 320; interactive: parent.wantsFocus
+            id: gridMenu
+
+            width: parent.width; height: 320
+            focus: true
+            interactive: parent.wantsFocus
         }
 
-        ListViews { id: listViews; y: 320; width: parent.width; height: 320 }
+        ListViews {
+            id: listViews
+            y: 320; width: parent.width; height: 320
+        }
 
-        Rectangle { id: shade; color: "black"; opacity: 0; anchors.fill: parent }
+        Rectangle { 
+            id: shade
+            color: "black"; opacity: 0; anchors.fill: parent
+        }
 
         states: State {
             name: "showListViews"
@@ -28,7 +43,10 @@ Rectangle {
     }
 
     Image {
-        source: "Core/images/arrow.png"; rotation: 90; anchors.verticalCenter: parent.verticalCenter
+        source: "Core/images/arrow.png"
+        rotation: 90
+        anchors.verticalCenter: parent.verticalCenter
+
         MouseArea {
             anchors { fill: parent; leftMargin: -10; topMargin: -10; rightMargin: -10; bottomMargin: -10 }
             onClicked: window.state = "contextMenuOpen"
@@ -38,7 +56,8 @@ Rectangle {
     ContextMenu { id: contextMenu; x: -265; width: 260; height: parent.height }
 
     states: State {
-        name: "contextMenuOpen"; when: !mainView.wantsFocus
+        name: "contextMenuOpen"
+        when: !mainView.wantsFocus
         PropertyChanges { target: contextMenu; x: 0; open: true }
         PropertyChanges { target: mainView; x: 130 }
         PropertyChanges { target: shade; opacity: 0.25 }

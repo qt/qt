@@ -830,7 +830,7 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
 
     \code
     // view.qml
-    import Qt 4.6
+    import Qt 4.7
 
     ListView {
         width: 200
@@ -1127,20 +1127,21 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                                          const QList<int> &roles)
 {
     Q_D(QDeclarativeVisualDataModel);
-    // XXX - highly inefficient
-    for (int ii = index; ii < index + count; ++ii) {
+    for (QHash<int,QDeclarativeVisualDataModelPrivate::ObjectRef>::ConstIterator iter = d->m_cache.begin();
+        iter != d->m_cache.end(); ++iter) {
+        const int idx = iter.key();
 
-        if (QObject *item = d->m_cache.item(ii)) {
-            QDeclarativeVisualDataModelData *data = d->data(item);
-
+        if (idx >= index && idx < index+count) {
+            QDeclarativeVisualDataModelPrivate::ObjectRef objRef = *iter;
+            QDeclarativeVisualDataModelData *data = d->data(objRef.obj);
             for (int roleIdx = 0; roleIdx < roles.count(); ++roleIdx) {
                 int role = roles.at(roleIdx);
                 int propId = data->propForRole(role);
                 if (propId != -1) {
                     if (d->m_listModelInterface) {
-                        data->setValue(propId, d->m_listModelInterface->data(ii, QList<int>() << role).value(role));
+                        data->setValue(propId, d->m_listModelInterface->data(idx, QList<int>() << role).value(role));
                     } else if (d->m_abstractItemModel) {
-                        QModelIndex index = d->m_abstractItemModel->index(ii, 0, d->m_root);
+                        QModelIndex index = d->m_abstractItemModel->index(idx, 0, d->m_root);
                         data->setValue(propId, d->m_abstractItemModel->data(index, role));
                     }
                 }
@@ -1152,6 +1153,8 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
 void QDeclarativeVisualDataModel::_q_itemsInserted(int index, int count)
 {
     Q_D(QDeclarativeVisualDataModel);
+    if (!count)
+        return;
     // XXX - highly inefficient
     QHash<int,QDeclarativeVisualDataModelPrivate::ObjectRef> items;
     for (QHash<int,QDeclarativeVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
@@ -1179,6 +1182,8 @@ void QDeclarativeVisualDataModel::_q_itemsInserted(int index, int count)
 void QDeclarativeVisualDataModel::_q_itemsRemoved(int index, int count)
 {
     Q_D(QDeclarativeVisualDataModel);
+    if (!count)
+        return;
     // XXX - highly inefficient
     QHash<int, QDeclarativeVisualDataModelPrivate::ObjectRef> items;
     for (QHash<int, QDeclarativeVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();

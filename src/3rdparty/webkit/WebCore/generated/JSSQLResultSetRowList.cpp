@@ -39,7 +39,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSSQLResultSetRowList);
 
 static const HashTableValue JSSQLResultSetRowListTableValues[2] =
 {
-    { "length", DontDelete|ReadOnly, (intptr_t)jsSQLResultSetRowListLength, (intptr_t)0 },
+    { "length", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSQLResultSetRowListLength), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -54,7 +54,7 @@ static JSC_CONST_HASHTABLE HashTable JSSQLResultSetRowListTable =
 
 static const HashTableValue JSSQLResultSetRowListPrototypeTableValues[2] =
 {
-    { "item", DontDelete|Function, (intptr_t)jsSQLResultSetRowListPrototypeFunctionItem, (intptr_t)1 },
+    { "item", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSQLResultSetRowListPrototypeFunctionItem), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -110,12 +110,13 @@ bool JSSQLResultSetRowList::getOwnPropertyDescriptor(ExecState* exec, const Iden
     return getStaticValueDescriptor<JSSQLResultSetRowList, Base>(exec, &JSSQLResultSetRowListTable, this, propertyName, descriptor);
 }
 
-JSValue jsSQLResultSetRowListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSQLResultSetRowListLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSQLResultSetRowList* castedThis = static_cast<JSSQLResultSetRowList*>(asObject(slot.slotBase()));
+    JSSQLResultSetRowList* castedThis = static_cast<JSSQLResultSetRowList*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SQLResultSetRowList* imp = static_cast<SQLResultSetRowList*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue JSC_HOST_CALL jsSQLResultSetRowListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

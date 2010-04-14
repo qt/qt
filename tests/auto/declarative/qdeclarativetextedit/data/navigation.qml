@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Rectangle {
-    property var myInput: input
+    property variant myInput: input
 
     width: 800; height: 600; color: "blue"
 

@@ -22,6 +22,7 @@
 #include "SelectElement.h"
 
 #include "CharacterNames.h"
+#include "Chrome.h"
 #include "ChromeClient.h"
 #include "Element.h"
 #include "EventHandler.h"
@@ -49,10 +50,10 @@
 
 // Configure platform-specific behavior when focused pop-up receives arrow/space/return keystroke.
 // (PLATFORM(MAC) and PLATFORM(GTK) are always false in Chromium, hence the extra tests.)
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
 #define ARROW_KEYS_POP_MENU 1
 #define SPACE_OR_RETURN_POP_MENU 0
-#elif PLATFORM(GTK) || (PLATFORM(CHROMIUM) && PLATFORM(LINUX))
+#elif PLATFORM(GTK) || (PLATFORM(CHROMIUM) && OS(LINUX))
 #define ARROW_KEYS_POP_MENU 0
 #define SPACE_OR_RETURN_POP_MENU 1
 #else
@@ -149,7 +150,7 @@ void SelectElement::setActiveSelectionEndIndex(SelectElementData& data, int inde
 
 void SelectElement::updateListBoxSelection(SelectElementData& data, Element* element, bool deselectOtherOptions)
 {
-    ASSERT(element->renderer() && element->renderer()->isListBox());
+    ASSERT(element->renderer() && (element->renderer()->isListBox() || data.multiple()));
     ASSERT(data.activeSelectionAnchorIndex() >= 0);
 
     unsigned start = min(data.activeSelectionAnchorIndex(), data.activeSelectionEndIndex());
@@ -175,7 +176,7 @@ void SelectElement::updateListBoxSelection(SelectElementData& data, Element* ele
 
 void SelectElement::listBoxOnChange(SelectElementData& data, Element* element)
 {
-    ASSERT(!data.usesMenuList());
+    ASSERT(!data.usesMenuList() || data.multiple());
 
     Vector<bool>& lastOnChangeSelection = data.lastOnChangeSelection(); 
     const Vector<Element*>& items = data.listItems(element);
@@ -221,28 +222,21 @@ void SelectElement::scrollToSelection(SelectElementData& data, Element* element)
         toRenderListBox(renderer)->selectionChanged();
 }
 
-void SelectElement::recalcStyle(SelectElementData& data, Element* element)
+void SelectElement::setOptionsChangedOnRenderer(SelectElementData& data, Element* element)
 {
-    RenderObject* renderer = element->renderer();
-    if (element->childNeedsStyleRecalc() && renderer) {
-        if (data.usesMenuList())
-            toRenderMenuList(renderer)->setOptionsChanged(true);
-        else
-            toRenderListBox(renderer)->setOptionsChanged(true);
-    } else if (data.shouldRecalcListItems())
-        recalcListItems(data, element);
-}
-
-void SelectElement::setRecalcListItems(SelectElementData& data, Element* element)
-{
-    data.setShouldRecalcListItems(true);
-    data.setActiveSelectionAnchorIndex(-1); // Manual selection anchor is reset when manipulating the select programmatically.
     if (RenderObject* renderer = element->renderer()) {
         if (data.usesMenuList())
             toRenderMenuList(renderer)->setOptionsChanged(true);
         else
             toRenderListBox(renderer)->setOptionsChanged(true);
     }
+}
+
+void SelectElement::setRecalcListItems(SelectElementData& data, Element* element)
+{
+    data.setShouldRecalcListItems(true);
+    data.setActiveSelectionAnchorIndex(-1); // Manual selection anchor is reset when manipulating the select programmatically.
+    setOptionsChangedOnRenderer(data, element);
     element->setNeedsStyleRecalc();
 }
 
@@ -250,6 +244,8 @@ void SelectElement::recalcListItems(SelectElementData& data, const Element* elem
 {
     Vector<Element*>& listItems = data.rawListItems();
     listItems.clear();
+
+    data.setShouldRecalcListItems(false);
 
     OptionElement* foundSelected = 0;
     for (Node* currentNode = element->firstChild(); currentNode;) {
@@ -296,8 +292,6 @@ void SelectElement::recalcListItems(SelectElementData& data, const Element* elem
         // <select>'s subtree at this point.
         currentNode = currentNode->traverseNextSibling(element);
     }
-
-    data.setShouldRecalcListItems(false);
 }
 
 int SelectElement::selectedIndex(const SelectElementData& data, const Element* element)
@@ -348,6 +342,8 @@ void SelectElement::setSelectedIndex(SelectElementData& data, Element* element, 
         data.setUserDrivenChange(userDrivenChange);
         if (fireOnChangeNow)
             menuListOnChange(data, element);
+        if (RenderMenuList* menuList = toRenderMenuList(element->renderer()))
+            menuList->didSetSelectedIndex();
     }
 
     if (Frame* frame = element->document()->frame())
@@ -444,7 +440,7 @@ void SelectElement::restoreFormControlState(SelectElementData& data, Element* el
             optionElement->setSelectedState(state[i] == 'X');
     }
 
-    element->setNeedsStyleRecalc();
+    setOptionsChangedOnRenderer(data, element);
 }
 
 void SelectElement::parseMultipleAttribute(SelectElementData& data, Element* element, MappedAttribute* attribute)
@@ -468,27 +464,15 @@ bool SelectElement::appendFormData(SelectElementData& data, Element* element, Fo
 
     for (unsigned i = 0; i < items.size(); ++i) {
         OptionElement* optionElement = toOptionElement(items[i]);
-        if (optionElement && optionElement->selected()) {
+        if (optionElement && optionElement->selected() && !optionElement->disabled()) {
             list.appendData(name, optionElement->value());
             successful = true;
         }
     }
 
-    // FIXME: This case should not happen. Make sure that we select the first option
-    // in any case, otherwise we have no consistency with the DOM interface.
-    // We return the first one if it was a combobox select
-    if (!successful && !data.multiple() && data.size() <= 1 && items.size()) {
-        OptionElement* optionElement = toOptionElement(items[0]);
-        if (optionElement) {
-            const AtomicString& value = optionElement->value();
-            if (value.isNull())
-                list.appendData(name, optionElement->text().stripWhiteSpace());
-            else
-                list.appendData(name, value);
-            successful = true;
-        }
-    }
-
+    // It's possible that this is a menulist with multiple options and nothing
+    // will be submitted (!successful). We won't send a unselected non-disabled
+    // option as fallback. This behavior matches to other browsers.
     return successful;
 } 
 
@@ -518,6 +502,7 @@ void SelectElement::reset(SelectElementData& data, Element* element)
     if (!selectedOption && firstOption && data.usesMenuList())
         firstOption->setSelectedState(true);
 
+    setOptionsChangedOnRenderer(data, element);
     element->setNeedsStyleRecalc();
 }
     
@@ -662,6 +647,52 @@ void SelectElement::menuListDefaultEventHandler(SelectElementData& data, Element
     }
 }
 
+void SelectElement::updateSelectedState(SelectElementData& data, Element* element, int listIndex,
+                                        bool multi, bool shift)
+{
+    ASSERT(listIndex >= 0);
+
+    // Save the selection so it can be compared to the new selection when dispatching change events during mouseup, or after autoscroll finishes.
+    saveLastSelection(data, element);
+
+    data.setActiveSelectionState(true);
+
+    bool shiftSelect = data.multiple() && shift;
+    bool multiSelect = data.multiple() && multi && !shift;
+
+    Element* clickedElement = data.listItems(element)[listIndex];
+    OptionElement* option = toOptionElement(clickedElement);
+    if (option) {
+        // Keep track of whether an active selection (like during drag selection), should select or deselect
+        if (option->selected() && multi)
+            data.setActiveSelectionState(false);
+
+        if (!data.activeSelectionState())
+            option->setSelectedState(false);
+    }
+
+    // If we're not in any special multiple selection mode, then deselect all other items, excluding the clicked option.
+    // If no option was clicked, then this will deselect all items in the list.
+    if (!shiftSelect && !multiSelect)
+        deselectItems(data, element, clickedElement);
+
+    // If the anchor hasn't been set, and we're doing a single selection or a shift selection, then initialize the anchor to the first selected index.
+    if (data.activeSelectionAnchorIndex() < 0 && !multiSelect)
+        setActiveSelectionAnchorIndex(data, element, selectedIndex(data, element));
+
+    // Set the selection state of the clicked option
+    if (option && !clickedElement->disabled())
+        option->setSelectedState(true);
+
+    // If there was no selectedIndex() for the previous initialization, or
+    // If we're doing a single selection, or a multiple selection (using cmd or ctrl), then initialize the anchor index to the listIndex that just got clicked.
+    if (data.activeSelectionAnchorIndex() < 0 || !shiftSelect)
+        setActiveSelectionAnchorIndex(data, element, listIndex);
+
+    setActiveSelectionEndIndex(data, listIndex);
+    updateListBoxSelection(data, element, !multiSelect);
+}
+
 void SelectElement::listBoxDefaultEventHandler(SelectElementData& data, Element* element, Event* event, HTMLFormElement* htmlForm)
 {
     const Vector<Element*>& listItems = data.listItems(element);
@@ -674,53 +705,11 @@ void SelectElement::listBoxDefaultEventHandler(SelectElementData& data, Element*
         IntPoint localOffset = roundedIntPoint(element->renderer()->absoluteToLocal(mouseEvent->absoluteLocation(), false, true));
         int listIndex = toRenderListBox(element->renderer())->listIndexAtOffset(localOffset.x(), localOffset.y());
         if (listIndex >= 0) {
-            // Save the selection so it can be compared to the new selection when dispatching change events during mouseup, or after autoscroll finishes.
-            saveLastSelection(data, element);
-
-            data.setActiveSelectionState(true);
-            
-            bool multiSelectKeyPressed = false;
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
-            multiSelectKeyPressed = mouseEvent->metaKey();
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
+            updateSelectedState(data, element, listIndex, mouseEvent->metaKey(), mouseEvent->shiftKey());
 #else
-            multiSelectKeyPressed = mouseEvent->ctrlKey();
+            updateSelectedState(data, element, listIndex, mouseEvent->ctrlKey(), mouseEvent->shiftKey());
 #endif
-
-            bool shiftSelect = data.multiple() && mouseEvent->shiftKey();
-            bool multiSelect = data.multiple() && multiSelectKeyPressed && !mouseEvent->shiftKey();
-
-            Element* clickedElement = listItems[listIndex];            
-            OptionElement* option = toOptionElement(clickedElement);
-            if (option) {
-                // Keep track of whether an active selection (like during drag selection), should select or deselect
-                if (option->selected() && multiSelectKeyPressed)
-                    data.setActiveSelectionState(false);
-
-                if (!data.activeSelectionState())
-                    option->setSelectedState(false);
-            }
-            
-            // If we're not in any special multiple selection mode, then deselect all other items, excluding the clicked option.
-            // If no option was clicked, then this will deselect all items in the list.
-            if (!shiftSelect && !multiSelect)
-                deselectItems(data, element, clickedElement);
-
-            // If the anchor hasn't been set, and we're doing a single selection or a shift selection, then initialize the anchor to the first selected index.
-            if (data.activeSelectionAnchorIndex() < 0 && !multiSelect)
-                setActiveSelectionAnchorIndex(data, element, selectedIndex(data, element));
-
-            // Set the selection state of the clicked option
-            if (option && !clickedElement->disabled())
-                option->setSelectedState(true);
-            
-            // If there was no selectedIndex() for the previous initialization, or
-            // If we're doing a single selection, or a multiple selection (using cmd or ctrl), then initialize the anchor index to the listIndex that just got clicked.
-            if (listIndex >= 0 && (data.activeSelectionAnchorIndex() < 0 || !shiftSelect))
-                setActiveSelectionAnchorIndex(data, element, listIndex);
-            
-            setActiveSelectionEndIndex(data, listIndex);
-            updateListBoxSelection(data, element, !multiSelect);
-
             if (Frame* frame = element->document()->frame())
                 frame->eventHandler()->setMouseDownMayStartAutoscroll();
 
@@ -753,7 +742,7 @@ void SelectElement::listBoxDefaultEventHandler(SelectElementData& data, Element*
             // Save the selection so it can be compared to the new selection when dispatching change events immediately after making the new selection.
             saveLastSelection(data, element);
 
-            ASSERT(endIndex >= 0 && (unsigned) endIndex < listItems.size()); 
+            ASSERT_UNUSED(listItems, endIndex >= 0 && (unsigned) endIndex < listItems.size());
             setActiveSelectionEndIndex(data, endIndex);
             
             // If the anchor is unitialized, or if we're going to deselect all other options, then set the anchor index equal to the end index.
@@ -892,6 +881,8 @@ void SelectElement::typeAheadFind(SelectElementData& data, Element* element, Key
             setSelectedIndex(data, element, listToOptionIndex(data, element, index));
             if (!data.usesMenuList())
                 listBoxOnChange(data, element);
+
+            setOptionsChangedOnRenderer(data, element);
             element->setNeedsStyleRecalc();
             return;
         }
@@ -954,8 +945,8 @@ SelectElementData::SelectElementData()
 
 void SelectElementData::checkListItems(const Element* element) const
 {
-#ifndef NDEBUG
-    const Vector<Element*>& items = m_listItems;
+#if !ASSERT_DISABLED
+    Vector<Element*> items = m_listItems;
     SelectElement::recalcListItems(*const_cast<SelectElementData*>(this), element, false);
     ASSERT(items == m_listItems);
 #else

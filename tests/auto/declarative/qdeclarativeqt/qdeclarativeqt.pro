@@ -7,3 +7,6 @@ DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
 # LIBS += -lgcov
+
+CONFIG += parallel_test
+

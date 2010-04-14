@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 // Here, we implement "Scale to Fit" behaviour, using the
 // fillMode property.

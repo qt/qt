@@ -23,7 +23,6 @@
 
 #if ENABLE(DATAGRID)
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -46,7 +45,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -71,7 +70,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSDataGridColumnPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -80,27 +79,27 @@ protected:
 
 // Attributes
 
-JSC::JSValue jsDataGridColumnId(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDataGridColumnId(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDataGridColumnId(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDataGridColumnLabel(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDataGridColumnLabel(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDataGridColumnLabel(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDataGridColumnType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDataGridColumnType(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDataGridColumnType(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDataGridColumnSortable(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDataGridColumnSortable(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDataGridColumnSortable(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDataGridColumnSortDirection(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDataGridColumnSortDirection(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDataGridColumnSortDirection(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDataGridColumnPrimary(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDataGridColumnPrimary(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDataGridColumnPrimary(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDataGridColumnConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDataGridColumnConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 // Constants
 
-JSC::JSValue jsDataGridColumnNEVER_SORTED(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDataGridColumnALWAYS_SORTED(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDataGridColumnSOMETIMES_SORTED(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDataGridColumnNATURAL_SORT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDataGridColumnSORT_ASCENDING(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDataGridColumnSORC_DESCENDING(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDataGridColumnNEVER_SORTED(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDataGridColumnALWAYS_SORTED(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDataGridColumnSOMETIMES_SORTED(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDataGridColumnNATURAL_SORT(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDataGridColumnSORT_ASCENDING(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDataGridColumnSORC_DESCENDING(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

@@ -27,8 +27,6 @@
 #ifndef Widget_h
 #define Widget_h
 
-#include <wtf/Platform.h>
-
 #if PLATFORM(MAC)
 #ifdef __OBJC__
 @class NSView;
@@ -163,6 +161,8 @@ public:
 
     virtual bool isFrameView() const { return false; }
     virtual bool isPluginView() const { return false; }
+    // FIXME: The Mac plug-in code should inherit from PluginView. When this happens PluginWidget and PluginView can become one class. 
+    virtual bool isPluginWidget() const { return false; }
     virtual bool isScrollbar() const { return false; }
 
     void removeFromParent();
@@ -184,7 +184,10 @@ public:
 
     virtual void frameRectsChanged() {}
 
-#if PLATFORM(MAC)    
+    // Notifies this widget that other widgets on the page have been repositioned.
+    virtual void widgetPositionsUpdated() {}
+
+#if PLATFORM(MAC)
     NSView* getOuterView() const;
     
     static void beforeMouseDown(NSView*, Widget*);

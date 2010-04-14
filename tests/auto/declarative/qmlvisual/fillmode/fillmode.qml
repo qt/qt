@@ -1,5 +1,10 @@
 import Qt 4.6
 
+/*
+    This is a static display test of the various Image fill modes. See the png file in the data
+    subdirectory to see what the image should look like.
+*/
+
 Rectangle {
     id: screen; width: 750; height: 600; color: "gray"
     property string source: "face.png"

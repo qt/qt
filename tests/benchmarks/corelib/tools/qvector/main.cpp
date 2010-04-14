@@ -208,7 +208,6 @@ private slots:
     void qvector_mutable_read_access();
     #ifdef TEST_RETURN
     void qvector_fill_and_return();
-    void qvector_fill_and_return2();
     #endif
 
     // Purre Standard solution
@@ -217,14 +216,12 @@ private slots:
     void stdvector_mutable_read_access();
     #ifdef TEST_RETURN
     void stdvector_fill_and_return();
-    void stdvector_fill_and_return2();
     #endif
 
     // Build using std, pass as QVector
     void mixedvector() { qWarning() << "mixed results: "; }
     #ifdef TEST_RETURN
     void mixedvector_fill_and_return();
-    void mixedvector_fill_and_return2();
     #endif
 
     // Alternative implementation
@@ -233,7 +230,6 @@ private slots:
     void qrawvector_mutable_read_access();
     #ifdef TEST_RETURN
     void qrawvector_fill_and_return();
-    void qrawvector_fill_and_return2();
     #endif
 };
 
@@ -280,7 +276,6 @@ void tst_QVector::qvector_mutable_read_access()
 
 #ifdef TEST_RETURN
 extern QVector<double> qvector_fill_and_return_helper();
-extern QVector<double> qvector_fill_and_return_helper2();
 
 void tst_QVector::qvector_fill_and_return()
 {
@@ -290,13 +285,6 @@ void tst_QVector::qvector_fill_and_return()
     }
 }
 
-void tst_QVector::qvector_fill_and_return2()
-{
-    QBENCHMARK {
-        QVector<double> v = qvector_fill_and_return_helper2();
-        s += v[1];
-    }
-}
 #endif
 
 
@@ -329,7 +317,6 @@ void tst_QVector::qrawvector_mutable_read_access()
 
 #ifdef TEST_RETURN
 extern QVector<double> qrawvector_fill_and_return_helper();
-extern QVector<double> qrawvector_fill_and_return_helper2();
 
 void tst_QVector::qrawvector_fill_and_return()
 {
@@ -339,13 +326,6 @@ void tst_QVector::qrawvector_fill_and_return()
     }
 }
 
-void tst_QVector::qrawvector_fill_and_return2()
-{
-    QBENCHMARK {
-        QVector<double> v = qrawvector_fill_and_return_helper();
-        s += v[1];
-    }
-}
 #endif
 
 
@@ -378,7 +358,6 @@ void tst_QVector::stdvector_mutable_read_access()
 
 #ifdef TEST_RETURN
 extern std::vector<double> stdvector_fill_and_return_helper();
-extern std::vector<double> stdvector_fill_and_return_helper2();
 
 void tst_QVector::stdvector_fill_and_return()
 {
@@ -388,13 +367,6 @@ void tst_QVector::stdvector_fill_and_return()
     }
 }
 
-void tst_QVector::stdvector_fill_and_return2()
-{
-    QBENCHMARK {
-        std::vector<double> v = stdvector_fill_and_return_helper2();
-        s += v[1];
-    }
-}
 #endif
 
 ///////////////////// mixed vector /////////////////////
@@ -402,7 +374,6 @@ void tst_QVector::stdvector_fill_and_return2()
 
 #ifdef TEST_RETURN
 extern QVector<double> mixedvector_fill_and_return_helper();
-extern QVector<double> mixedvector_fill_and_return_helper2();
 
 void tst_QVector::mixedvector_fill_and_return()
 {
@@ -412,13 +383,6 @@ void tst_QVector::mixedvector_fill_and_return()
     }
 }
 
-void tst_QVector::mixedvector_fill_and_return2()
-{
-    QBENCHMARK {
-        std::vector<double> v = stdvector_fill_and_return_helper2();
-        s += v[1];
-    }
-}
 #endif
 
 QTEST_MAIN(tst_QVector)

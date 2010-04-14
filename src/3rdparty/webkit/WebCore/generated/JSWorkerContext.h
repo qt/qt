@@ -44,7 +44,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -54,6 +54,7 @@ public:
     JSC::JSValue messageChannel(JSC::ExecState*) const;
     JSC::JSValue eventSource(JSC::ExecState*) const;
     JSC::JSValue xmlHttpRequest(JSC::ExecState*) const;
+    JSC::JSValue webSocket(JSC::ExecState*) const;
 
     // Custom functions
     JSC::JSValue importScripts(JSC::ExecState*, const JSC::ArgList&);
@@ -76,7 +77,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSWorkerContextPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -96,24 +97,26 @@ JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionRemoveEventListener(J
 JSC::JSValue JSC_HOST_CALL jsWorkerContextPrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsWorkerContextSelf(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWorkerContextSelf(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSWorkerContextSelf(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsWorkerContextLocation(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWorkerContextLocation(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSWorkerContextLocation(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsWorkerContextOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWorkerContextOnerror(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSWorkerContextOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsWorkerContextNavigator(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWorkerContextNavigator(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSWorkerContextNavigator(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsWorkerContextMessageEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWorkerContextMessageEventConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSWorkerContextMessageEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsWorkerContextWorkerLocationConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWorkerContextWorkerLocationConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSWorkerContextWorkerLocationConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsWorkerContextMessageChannelConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWorkerContextMessageChannelConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSWorkerContextMessageChannelConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsWorkerContextEventSourceConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWorkerContextEventSourceConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSWorkerContextEventSourceConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsWorkerContextXMLHttpRequestConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWorkerContextXMLHttpRequestConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSWorkerContextXMLHttpRequestConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsWorkerContextWebSocketConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+void setJSWorkerContextWebSocketConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 
 } // namespace WebCore
 

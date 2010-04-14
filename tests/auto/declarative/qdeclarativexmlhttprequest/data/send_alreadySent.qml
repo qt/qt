@@ -7,6 +7,7 @@ QtObject {
     Component.onCompleted: {
         var x = new XMLHttpRequest;
         x.open("GET", "testdocument.html");
+        x.setRequestHeader("Accept-Language","en-US");
 
         // Test to the end
         x.onreadystatechange = function() {

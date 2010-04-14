@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Component {
     Item {
@@ -7,8 +7,11 @@ Component {
 
         Rectangle {
             id: content
-            color: "transparent"; smooth: true
-            anchors.centerIn: parent; width: container.width - 40; height: container.height - 10; radius: 10
+            anchors.centerIn: parent; width: container.width - 40; height: container.height - 10
+            color: "transparent"
+            smooth: true
+            radius: 10
+
             Rectangle { color: "#91AA9D"; x: 3; y: 3; width: parent.width - 6; height: parent.height - 6; radius: 8 }
             Text {
                 text: "List element " + (index + 1); color: "#193441"; font.bold: false; anchors.centerIn: parent
@@ -17,7 +20,10 @@ Component {
         }
 
         MouseArea {
-            id: mouseArea; anchors.fill: parent; hoverEnabled: true
+            id: mouseArea
+            anchors.fill: parent
+            hoverEnabled: true
+
             onClicked: {
                 ListView.view.currentIndex = index
                 container.focus = true

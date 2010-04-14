@@ -79,6 +79,7 @@ private slots:
     void inputMethodHints();
 
     void cursorDelegate();
+    void delegateLoading_data();
     void delegateLoading();
     void navigation();
     void readOnly();
@@ -235,7 +236,7 @@ void tst_qdeclarativetextedit::wrap()
     // for specified width and wrap set true
     {
         QDeclarativeComponent texteditComponent(&engine);
-        texteditComponent.setData("import Qt 4.6\nTextEdit {  text: \"\"; wrap: true; width: 300 }", QUrl());
+        texteditComponent.setData("import Qt 4.6\nTextEdit {  text: \"\"; wrapMode: TextEdit.WordWrap; width: 300 }", QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
 
         QVERIFY(textEditObject != 0);
@@ -244,7 +245,7 @@ void tst_qdeclarativetextedit::wrap()
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "import Qt 4.6\nTextEdit {  wrap: true; width: 300; text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import Qt 4.6\nTextEdit {  wrapMode: TextEdit.WordWrap; width: 300; text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -255,7 +256,7 @@ void tst_qdeclarativetextedit::wrap()
 
     for (int i = 0; i < richText.size(); i++)
     {
-        QString componentStr = "import Qt 4.6\nTextEdit {  wrap: true; width: 300; text: \"" + richText.at(i) + "\" }";
+        QString componentStr = "import Qt 4.6\nTextEdit {  wrapMode: TextEdit.WordWrap; width: 300; text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -641,41 +642,60 @@ void tst_qdeclarativetextedit::cursorDelegate()
     QVERIFY(!textEditObject->findChild<QDeclarativeItem*>("cursorInstance"));
 }
 
+void tst_qdeclarativetextedit::delegateLoading_data()
+{
+    QTest::addColumn<QString>("qmlfile");
+    QTest::addColumn<QString>("error");
+
+    // import installed
+    QTest::newRow("pass") << "cursorHttpTestPass.qml" << "";
+    QTest::newRow("fail1") << "cursorHttpTestFail1.qml" << ":-1: Network error for URL http://localhost:42332/FailItem.qml ";
+    QTest::newRow("fail2") << "cursorHttpTestFail2.qml" << "http://localhost:42332/ErrItem.qml:4:5: Fungus is not a type ";
+}
+
 void tst_qdeclarativetextedit::delegateLoading()
 {
+    QFETCH(QString, qmlfile);
+    QFETCH(QString, error);
+
     TestHTTPServer server(42332);
     server.serveDirectory(SRCDIR "/data/httpfail", TestHTTPServer::Disconnect);
     server.serveDirectory(SRCDIR "/data/httpslow", TestHTTPServer::Delay);
     server.serveDirectory(SRCDIR "/data/http");
+
     QDeclarativeView* view = new QDeclarativeView(0);
-    view->setSource(QUrl("http://localhost:42332/cursorHttpTestPass.qml"));
+
+    view->setSource(QUrl(QLatin1String("http://localhost:42332/") + qmlfile));
     view->show();
     view->setFocus();
-    QTRY_VERIFY(view->rootObject());//Wait for loading to finish.
-    QDeclarativeTextEdit *textEditObject = view->rootObject()->findChild<QDeclarativeTextEdit*>("textEditObject");
-    //    view->rootObject()->dumpObjectTree();
-    QVERIFY(textEditObject != 0);
-    textEditObject->setFocus(true);
-    QDeclarativeItem *delegate;
-    delegate = view->rootObject()->findChild<QDeclarativeItem*>("delegateOkay");
-    QVERIFY(delegate);
-    delegate = view->rootObject()->findChild<QDeclarativeItem*>("delegateSlow");
-    QVERIFY(delegate);
-    view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail1.qml"));
-    view->show();
-    QTRY_VERIFY(view->status()==QDeclarativeView::Error);
-    view->setFocus();
-    QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
-    view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail2.qml"));
-    view->show();
-    QTRY_VERIFY(view->status()==QDeclarativeView::Error);
-    view->setFocus();
-    QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
+
+    if (!error.isEmpty()) {
+        QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
+        QTRY_VERIFY(view->status()==QDeclarativeView::Error);
+        QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
+    } else {
+        QTRY_VERIFY(view->rootObject());//Wait for loading to finish.
+        QDeclarativeTextEdit *textEditObject = view->rootObject()->findChild<QDeclarativeTextEdit*>("textEditObject");
+        //    view->rootObject()->dumpObjectTree();
+        QVERIFY(textEditObject != 0);
+        textEditObject->setFocus(true);
+        QDeclarativeItem *delegate;
+        delegate = view->rootObject()->findChild<QDeclarativeItem*>("delegateOkay");
+        QVERIFY(delegate);
+        delegate = view->rootObject()->findChild<QDeclarativeItem*>("delegateSlow");
+        QVERIFY(delegate);
+
+        delete delegate;
+    }
+
+
     //A test should be added here with a component which is ready but component.create() returns null
     //Not sure how to accomplish this with QDeclarativeTextEdits cursor delegate
     //###This was only needed for code coverage, and could be a case of overzealous defensive programming
     //delegate = view->rootObject()->findChild<QDeclarativeItem*>("delegateErrorB");
     //QVERIFY(!delegate);
+
+    delete view;
 }
 
 /*

@@ -34,7 +34,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSBarInfo);
 
 static const HashTableValue JSBarInfoTableValues[2] =
 {
-    { "visible", DontDelete|ReadOnly, (intptr_t)jsBarInfoVisible, (intptr_t)0 },
+    { "visible", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsBarInfoVisible), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -94,12 +94,13 @@ bool JSBarInfo::getOwnPropertyDescriptor(ExecState* exec, const Identifier& prop
     return getStaticValueDescriptor<JSBarInfo, Base>(exec, &JSBarInfoTable, this, propertyName, descriptor);
 }
 
-JSValue jsBarInfoVisible(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsBarInfoVisible(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSBarInfo* castedThis = static_cast<JSBarInfo*>(asObject(slot.slotBase()));
+    JSBarInfo* castedThis = static_cast<JSBarInfo*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     BarInfo* imp = static_cast<BarInfo*>(castedThis->impl());
-    return jsBoolean(imp->visible());
+    JSValue result = jsBoolean(imp->visible());
+    return result;
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, BarInfo* object)

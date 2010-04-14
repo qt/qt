@@ -47,7 +47,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ScheduledAction* ScheduledAction::create(ExecState* exec, const ArgList& args, DOMWrapperWorld* isolatedWorld)
+PassOwnPtr<ScheduledAction> ScheduledAction::create(ExecState* exec, const ArgList& args, DOMWrapperWorld* isolatedWorld)
 {
     JSValue v = args.at(0);
     CallData callData;
@@ -103,7 +103,7 @@ void ScheduledAction::executeFunctionInContext(JSGlobalObject* globalObject, JSV
         args.append(m_args[i]);
 
     globalObject->globalData()->timeoutChecker.start();
-    callInWorld(exec, m_function, callType, callData, thisValue, args, m_isolatedWorld.get());
+    JSC::call(exec, m_function, callType, callData, thisValue, args);
     globalObject->globalData()->timeoutChecker.stop();
 
     if (exec->hadException())
@@ -117,7 +117,7 @@ void ScheduledAction::execute(Document* document)
         return;
 
     RefPtr<Frame> frame = window->impl()->frame();
-    if (!frame || !frame->script()->isEnabled())
+    if (!frame || !frame->script()->canExecuteScripts(AboutToExecuteScript))
         return;
 
     frame->script()->setProcessingTimerCallback(true);
@@ -126,7 +126,7 @@ void ScheduledAction::execute(Document* document)
         executeFunctionInContext(window, window->shell());
         Document::updateStyleForAllDocuments();
     } else
-        frame->script()->executeScriptInIsolatedWorld(m_isolatedWorld.get(), m_code);
+        frame->script()->executeScriptInWorld(m_isolatedWorld.get(), m_code);
 
     frame->script()->setProcessingTimerCallback(false);
 }

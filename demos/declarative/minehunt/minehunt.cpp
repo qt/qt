@@ -48,11 +48,11 @@
 #include <QTime>
 #include <QTimer>
 
-class Tile : public QObject
+class TileData : public QObject
 {
     Q_OBJECT
 public:
-    Tile() : _hasFlag(false), _hasMine(false), _hint(-1), _flipped(false) {}
+    TileData() : _hasFlag(false), _hasMine(false), _hint(-1), _flipped(false) {}
 
     Q_PROPERTY(bool hasFlag READ hasFlag WRITE setHasFlag NOTIFY hasFlagChanged)
     bool hasFlag() const { return _hasFlag; }
@@ -91,8 +91,8 @@ class MinehuntGame : public QObject
 public:
     MinehuntGame();
 
-    Q_PROPERTY(QDeclarativeListProperty<Tile> tiles READ tiles CONSTANT)
-    QDeclarativeListProperty<Tile> tiles();
+    Q_PROPERTY(QDeclarativeListProperty<TileData> tiles READ tiles CONSTANT)
+    QDeclarativeListProperty<TileData> tiles();
 
     Q_PROPERTY(bool isPlaying READ isPlaying NOTIFY isPlayingChanged)
     bool isPlaying() {return playing;}
@@ -120,11 +120,11 @@ signals:
 
 private:
     bool onBoard( int r, int c ) const { return r >= 0 && r < numRows && c >= 0 && c < numCols; }
-    Tile *tile( int row, int col ) { return onBoard(row, col) ? _tiles[col+numRows*row] : 0; }
+    TileData *tile( int row, int col ) { return onBoard(row, col) ? _tiles[col+numRows*row] : 0; }
     int getHint(int row, int col);
     void setPlaying(bool b){if(b==playing) return; playing=b; emit isPlayingChanged();}
 
-    QList<Tile *> _tiles;
+    QList<TileData *> _tiles;
     int numCols;
     int numRows;
     bool playing;
@@ -134,25 +134,25 @@ private:
     int nFlags;
 };
 
-void tilesPropAppend(QDeclarativeListProperty<Tile>* prop, Tile* value)
+void tilesPropAppend(QDeclarativeListProperty<TileData>* prop, TileData* value)
 {
     Q_UNUSED(prop);
     Q_UNUSED(value);
     return; //Append not supported
 }
 
-int tilesPropCount(QDeclarativeListProperty<Tile>* prop)
+int tilesPropCount(QDeclarativeListProperty<TileData>* prop)
 {
-    return static_cast<QList<Tile*>*>(prop->data)->count();
+    return static_cast<QList<TileData*>*>(prop->data)->count();
 }
 
-Tile* tilesPropAt(QDeclarativeListProperty<Tile>* prop, int index)
+TileData* tilesPropAt(QDeclarativeListProperty<TileData>* prop, int index)
 {
-    return static_cast<QList<Tile*>*>(prop->data)->at(index);
+    return static_cast<QList<TileData*>*>(prop->data)->at(index);
 }
 
-QDeclarativeListProperty<Tile> MinehuntGame::tiles(){
-    return QDeclarativeListProperty<Tile>(this, &_tiles, &tilesPropAppend,
+QDeclarativeListProperty<TileData> MinehuntGame::tiles(){
+    return QDeclarativeListProperty<TileData>(this, &_tiles, &tilesPropAppend,
             &tilesPropCount, &tilesPropAt, 0);
 }
 
@@ -164,7 +164,7 @@ MinehuntGame::MinehuntGame()
 
     //initialize array
     for(int ii = 0; ii < numRows * numCols; ++ii) {
-        _tiles << new Tile;
+        _tiles << new TileData;
     }
     reset();
 
@@ -172,7 +172,7 @@ MinehuntGame::MinehuntGame()
 
 void MinehuntGame::setBoard()
 {
-    foreach(Tile* t, _tiles){
+    foreach(TileData* t, _tiles){
         t->setHasMine(false);
         t->setHint(-1);
     }
@@ -183,7 +183,7 @@ void MinehuntGame::setBoard()
         int col = int((double(rand()) / double(RAND_MAX)) * numCols);
         int row = int((double(rand()) / double(RAND_MAX)) * numRows);
 
-        Tile* t = tile( row, col );
+        TileData* t = tile( row, col );
 
         if (t && !t->hasMine()) {
             t->setHasMine( true );
@@ -194,7 +194,7 @@ void MinehuntGame::setBoard()
     //set hints
     for (int r = 0; r < numRows; r++)
         for (int c = 0; c < numCols; c++) {
-            Tile* t = tile(r, c);
+            TileData* t = tile(r, c);
             if (t && !t->hasMine()) {
                 int hint = getHint(r,c);
                 t->setHint(hint);
@@ -206,7 +206,7 @@ void MinehuntGame::setBoard()
 
 void MinehuntGame::reset()
 {
-    foreach(Tile* t, _tiles){
+    foreach(TileData* t, _tiles){
         t->unflip();
         t->setHasFlag(false);
     }
@@ -221,7 +221,7 @@ int MinehuntGame::getHint(int row, int col)
     int hint = 0;
     for (int c = col-1; c <= col+1; c++)
         for (int r = row-1; r <= row+1; r++) {
-            Tile* t = tile(r, c);
+            TileData* t = tile(r, c);
             if (t && t->hasMine())
                 hint++;
         }
@@ -233,7 +233,7 @@ bool MinehuntGame::flip(int row, int col)
     if(!playing)
         return false;
 
-    Tile *t = tile(row, col);
+    TileData *t = tile(row, col);
     if (!t || t->hasFlag())
         return false;
 
@@ -241,7 +241,7 @@ bool MinehuntGame::flip(int row, int col)
         int flags = 0;
         for (int c = col-1; c <= col+1; c++)
             for (int r = row-1; r <= row+1; r++) {
-                Tile *nearT = tile(r, c);
+                TileData *nearT = tile(r, c);
                 if(!nearT || nearT == t)
                     continue;
                 if(nearT->hasFlag())
@@ -251,7 +251,7 @@ bool MinehuntGame::flip(int row, int col)
             return false;
         for (int c = col-1; c <= col+1; c++)
             for (int r = row-1; r <= row+1; r++) {
-                Tile *nearT = tile(r, c);
+                TileData *nearT = tile(r, c);
                 if (nearT && !nearT->flipped() && !nearT->hasFlag()) {
                     flip( r, c );
                 }
@@ -264,7 +264,7 @@ bool MinehuntGame::flip(int row, int col)
     if (t->hint() == 0) {
         for (int c = col-1; c <= col+1; c++)
             for (int r = row-1; r <= row+1; r++) {
-                Tile* t = tile(r, c);
+                TileData* t = tile(r, c);
                 if (t && !t->flipped()) {
                     flip( r, c );
                 }
@@ -274,7 +274,7 @@ bool MinehuntGame::flip(int row, int col)
     if(t->hasMine()){
         for (int r = 0; r < numRows; r++)//Flip all other mines
             for (int c = 0; c < numCols; c++) {
-                Tile* t = tile(r, c);
+                TileData* t = tile(r, c);
                 if (t && t->hasMine()) {
                     flip(r, c);
                 }
@@ -295,7 +295,7 @@ bool MinehuntGame::flip(int row, int col)
 
 bool MinehuntGame::flag(int row, int col)
 {
-    Tile *t = tile(row, col);
+    TileData *t = tile(row, col);
     if(!t)
         return false;
 
@@ -305,8 +305,7 @@ bool MinehuntGame::flag(int row, int col)
     return true;
 }
 
-QML_DECLARE_TYPE(Tile);
-QML_DECLARE_TYPE(MinehuntGame);
+QML_DECLARE_TYPE(TileData);
 
 class MinehuntExtensionPlugin : public QDeclarativeExtensionPlugin
 {
@@ -314,8 +313,8 @@ class MinehuntExtensionPlugin : public QDeclarativeExtensionPlugin
 
     public:
     void registerTypes(const char *uri) {
-        qmlRegisterType<Tile>(uri, 0, 1, "Tile");
-        qmlRegisterType<MinehuntGame>(uri, 0, 1, "Game");
+        Q_UNUSED(uri);
+        qmlRegisterType<TileData>();
     }
 
     void initializeEngine(QDeclarativeEngine *engine, const char *uri) {

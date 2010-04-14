@@ -1,19 +1,20 @@
-import Qt 4.6
+import Qt 4.7
 import org.webkit 1.0
 
 // The WebView size is determined by the width, height,
 // preferredWidth, and preferredHeight properties.
 Rectangle {
     id: rect
-    color: "white"
     width: 200
     height: layout.height
+
     Column {
         id: layout
         spacing: 2
         WebView {
             html: "No width defined."
-            Rectangle {                color: "#10000000"
+            Rectangle {
+                color: "#10000000"
                 anchors.fill: parent
             }
         }

@@ -119,7 +119,7 @@ void tst_QHelpGenerator::checkNamespace()
 {
     m_query->exec("SELECT Id, Name FROM NamespaceTable");
     if (m_query->next()
-        && m_query->value(1).toString() == QLatin1String("trolltech.com.1_0_0.test"))
+        && m_query->value(1).toString() == QLatin1String("trolltech.com.1.0.0.test"))
         return;
     QFAIL("Namespace Error!");
 }

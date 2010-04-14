@@ -55,8 +55,8 @@
 #include "../shared/testhttpserver.h"
 
 
-#define SERVER_PORT 14445
-#define SERVER_ADDR "http://127.0.0.1:14445"
+#define SERVER_PORT 14446
+#define SERVER_ADDR "http://127.0.0.1:14446"
 
 #define TRY_WAIT(expr) \
     do { \
@@ -148,7 +148,7 @@ void tst_qdeclarativeborderimage::imageSource()
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeBorderImage *obj = qobject_cast<QDeclarativeBorderImage*>(component.create());
     QVERIFY(obj != 0);
-    
+
     if (remote)
         TRY_WAIT(obj->status() == QDeclarativeBorderImage::Loading);
 
@@ -267,14 +267,14 @@ void tst_qdeclarativeborderimage::sciSource()
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeBorderImage *obj = qobject_cast<QDeclarativeBorderImage*>(component.create());
     QVERIFY(obj != 0);
-    
+
     if (remote)
         TRY_WAIT(obj->status() == QDeclarativeBorderImage::Loading);
-    
+
     QCOMPARE(obj->source(), remote ? source : QUrl(source));
     QCOMPARE(obj->width(), 300.);
     QCOMPARE(obj->height(), 300.);
-    
+
     if (valid) {
         TRY_WAIT(obj->status() == QDeclarativeBorderImage::Ready);
         QCOMPARE(obj->border()->left(), 10);
@@ -342,8 +342,8 @@ void tst_qdeclarativeborderimage::pendingRemoteRequest_data()
 {
     QTest::addColumn<QString>("source");
 
-    QTest::newRow("png file") << "http://no-such-qt-server-like-this/none.png";
-    QTest::newRow("sci file") << "http://no-such-qt-server-like-this/none.sci";
+    QTest::newRow("png file") << "http://localhost/none.png";
+    QTest::newRow("sci file") << "http://localhost/none.sci";
 }
 
 QTEST_MAIN(tst_qdeclarativeborderimage)

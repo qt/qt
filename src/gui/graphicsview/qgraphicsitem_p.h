@@ -237,6 +237,7 @@ public:
         scenePosDescendants(0),
         pendingPolish(0),
         mayHaveChildWithGraphicsEffect(0),
+        isDeclarativeItem(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -480,9 +481,12 @@ public:
     void resetFocusProxy();
     virtual void subFocusItemChange();
 
+    static void children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item);
+    static int children_count(QDeclarativeListProperty<QGraphicsObject> *list);
+    static QGraphicsObject *children_at(QDeclarativeListProperty<QGraphicsObject> *list, int);
+
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
-    static void append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item);
     static inline bool insertionOrder(QGraphicsItem *a, QGraphicsItem *b);
     void ensureSequentialSiblingIndex();
     inline void sendScenePosChange();
@@ -573,7 +577,8 @@ public:
     quint32 scenePosDescendants : 1;
     quint32 pendingPolish : 1;
     quint32 mayHaveChildWithGraphicsEffect : 1;
-    quint32 padding : 25;
+    quint32 isDeclarativeItem : 1;
+    quint32 padding : 24;
 
     // Optional stacking order
     int globalStackingOrder;

@@ -8,3 +8,6 @@ HEADERS += testtypes.h
 
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
 # LIBS += -lgcov
+
+CONFIG += parallel_test
+

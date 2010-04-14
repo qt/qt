@@ -19,6 +19,9 @@
 */
 
 #include "config.h"
+
+#if ENABLE(GEOLOCATION)
+
 #include "JSGeoposition.h"
 
 #include "Coordinates.h"
@@ -37,8 +40,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSGeoposition);
 
 static const HashTableValue JSGeopositionTableValues[3] =
 {
-    { "coords", DontDelete|ReadOnly, (intptr_t)jsGeopositionCoords, (intptr_t)0 },
-    { "timestamp", DontDelete|ReadOnly, (intptr_t)jsGeopositionTimestamp, (intptr_t)0 },
+    { "coords", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsGeopositionCoords), (intptr_t)0 },
+    { "timestamp", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsGeopositionTimestamp), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -98,20 +101,22 @@ bool JSGeoposition::getOwnPropertyDescriptor(ExecState* exec, const Identifier& 
     return getStaticValueDescriptor<JSGeoposition, Base>(exec, &JSGeopositionTable, this, propertyName, descriptor);
 }
 
-JSValue jsGeopositionCoords(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsGeopositionCoords(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSGeoposition* castedThis = static_cast<JSGeoposition*>(asObject(slot.slotBase()));
+    JSGeoposition* castedThis = static_cast<JSGeoposition*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Geoposition* imp = static_cast<Geoposition*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->coords()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->coords()));
+    return result;
 }
 
-JSValue jsGeopositionTimestamp(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsGeopositionTimestamp(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSGeoposition* castedThis = static_cast<JSGeoposition*>(asObject(slot.slotBase()));
+    JSGeoposition* castedThis = static_cast<JSGeoposition*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Geoposition* imp = static_cast<Geoposition*>(castedThis->impl());
-    return jsNumber(exec, imp->timestamp());
+    JSValue result = jsNumber(exec, imp->timestamp());
+    return result;
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Geoposition* object)
@@ -124,3 +129,5 @@ Geoposition* toGeoposition(JSC::JSValue value)
 }
 
 }
+
+#endif // ENABLE(GEOLOCATION)

@@ -47,22 +47,22 @@ ASSERT_CLASS_FITS_IN_CELL(JSCanvasRenderingContext2D);
 
 static const HashTableValue JSCanvasRenderingContext2DTableValues[17] =
 {
-    { "globalAlpha", DontDelete, (intptr_t)jsCanvasRenderingContext2DGlobalAlpha, (intptr_t)setJSCanvasRenderingContext2DGlobalAlpha },
-    { "globalCompositeOperation", DontDelete, (intptr_t)jsCanvasRenderingContext2DGlobalCompositeOperation, (intptr_t)setJSCanvasRenderingContext2DGlobalCompositeOperation },
-    { "lineWidth", DontDelete, (intptr_t)jsCanvasRenderingContext2DLineWidth, (intptr_t)setJSCanvasRenderingContext2DLineWidth },
-    { "lineCap", DontDelete, (intptr_t)jsCanvasRenderingContext2DLineCap, (intptr_t)setJSCanvasRenderingContext2DLineCap },
-    { "lineJoin", DontDelete, (intptr_t)jsCanvasRenderingContext2DLineJoin, (intptr_t)setJSCanvasRenderingContext2DLineJoin },
-    { "miterLimit", DontDelete, (intptr_t)jsCanvasRenderingContext2DMiterLimit, (intptr_t)setJSCanvasRenderingContext2DMiterLimit },
-    { "shadowOffsetX", DontDelete, (intptr_t)jsCanvasRenderingContext2DShadowOffsetX, (intptr_t)setJSCanvasRenderingContext2DShadowOffsetX },
-    { "shadowOffsetY", DontDelete, (intptr_t)jsCanvasRenderingContext2DShadowOffsetY, (intptr_t)setJSCanvasRenderingContext2DShadowOffsetY },
-    { "shadowBlur", DontDelete, (intptr_t)jsCanvasRenderingContext2DShadowBlur, (intptr_t)setJSCanvasRenderingContext2DShadowBlur },
-    { "shadowColor", DontDelete, (intptr_t)jsCanvasRenderingContext2DShadowColor, (intptr_t)setJSCanvasRenderingContext2DShadowColor },
-    { "font", DontDelete, (intptr_t)jsCanvasRenderingContext2DFont, (intptr_t)setJSCanvasRenderingContext2DFont },
-    { "textAlign", DontDelete, (intptr_t)jsCanvasRenderingContext2DTextAlign, (intptr_t)setJSCanvasRenderingContext2DTextAlign },
-    { "textBaseline", DontDelete, (intptr_t)jsCanvasRenderingContext2DTextBaseline, (intptr_t)setJSCanvasRenderingContext2DTextBaseline },
-    { "strokeStyle", DontDelete, (intptr_t)jsCanvasRenderingContext2DStrokeStyle, (intptr_t)setJSCanvasRenderingContext2DStrokeStyle },
-    { "fillStyle", DontDelete, (intptr_t)jsCanvasRenderingContext2DFillStyle, (intptr_t)setJSCanvasRenderingContext2DFillStyle },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCanvasRenderingContext2DConstructor, (intptr_t)0 },
+    { "globalAlpha", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DGlobalAlpha), (intptr_t)setJSCanvasRenderingContext2DGlobalAlpha },
+    { "globalCompositeOperation", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DGlobalCompositeOperation), (intptr_t)setJSCanvasRenderingContext2DGlobalCompositeOperation },
+    { "lineWidth", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DLineWidth), (intptr_t)setJSCanvasRenderingContext2DLineWidth },
+    { "lineCap", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DLineCap), (intptr_t)setJSCanvasRenderingContext2DLineCap },
+    { "lineJoin", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DLineJoin), (intptr_t)setJSCanvasRenderingContext2DLineJoin },
+    { "miterLimit", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DMiterLimit), (intptr_t)setJSCanvasRenderingContext2DMiterLimit },
+    { "shadowOffsetX", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DShadowOffsetX), (intptr_t)setJSCanvasRenderingContext2DShadowOffsetX },
+    { "shadowOffsetY", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DShadowOffsetY), (intptr_t)setJSCanvasRenderingContext2DShadowOffsetY },
+    { "shadowBlur", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DShadowBlur), (intptr_t)setJSCanvasRenderingContext2DShadowBlur },
+    { "shadowColor", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DShadowColor), (intptr_t)setJSCanvasRenderingContext2DShadowColor },
+    { "font", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DFont), (intptr_t)setJSCanvasRenderingContext2DFont },
+    { "textAlign", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DTextAlign), (intptr_t)setJSCanvasRenderingContext2DTextAlign },
+    { "textBaseline", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DTextBaseline), (intptr_t)setJSCanvasRenderingContext2DTextBaseline },
+    { "strokeStyle", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DStrokeStyle), (intptr_t)setJSCanvasRenderingContext2DStrokeStyle },
+    { "fillStyle", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DFillStyle), (intptr_t)setJSCanvasRenderingContext2DFillStyle },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCanvasRenderingContext2DConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -101,7 +101,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -124,50 +124,50 @@ bool JSCanvasRenderingContext2DConstructor::getOwnPropertyDescriptor(ExecState* 
 
 static const HashTableValue JSCanvasRenderingContext2DPrototypeTableValues[45] =
 {
-    { "save", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionSave, (intptr_t)0 },
-    { "restore", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionRestore, (intptr_t)0 },
-    { "scale", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionScale, (intptr_t)2 },
-    { "rotate", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionRotate, (intptr_t)1 },
-    { "translate", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionTranslate, (intptr_t)2 },
-    { "transform", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionTransform, (intptr_t)6 },
-    { "setTransform", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionSetTransform, (intptr_t)6 },
-    { "createLinearGradient", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionCreateLinearGradient, (intptr_t)4 },
-    { "createRadialGradient", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionCreateRadialGradient, (intptr_t)6 },
-    { "clearRect", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionClearRect, (intptr_t)4 },
-    { "fillRect", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionFillRect, (intptr_t)4 },
-    { "beginPath", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionBeginPath, (intptr_t)0 },
-    { "closePath", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionClosePath, (intptr_t)0 },
-    { "moveTo", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionMoveTo, (intptr_t)2 },
-    { "lineTo", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionLineTo, (intptr_t)2 },
-    { "quadraticCurveTo", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionQuadraticCurveTo, (intptr_t)4 },
-    { "bezierCurveTo", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionBezierCurveTo, (intptr_t)6 },
-    { "arcTo", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionArcTo, (intptr_t)5 },
-    { "rect", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionRect, (intptr_t)4 },
-    { "arc", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionArc, (intptr_t)6 },
-    { "fill", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionFill, (intptr_t)0 },
-    { "stroke", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionStroke, (intptr_t)0 },
-    { "clip", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionClip, (intptr_t)0 },
-    { "isPointInPath", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionIsPointInPath, (intptr_t)2 },
-    { "fillText", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionFillText, (intptr_t)0 },
-    { "strokeText", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionStrokeText, (intptr_t)0 },
-    { "measureText", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionMeasureText, (intptr_t)1 },
-    { "setAlpha", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionSetAlpha, (intptr_t)1 },
-    { "setCompositeOperation", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionSetCompositeOperation, (intptr_t)1 },
-    { "setLineWidth", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionSetLineWidth, (intptr_t)1 },
-    { "setLineCap", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionSetLineCap, (intptr_t)1 },
-    { "setLineJoin", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionSetLineJoin, (intptr_t)1 },
-    { "setMiterLimit", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionSetMiterLimit, (intptr_t)1 },
-    { "clearShadow", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionClearShadow, (intptr_t)0 },
-    { "setStrokeColor", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionSetStrokeColor, (intptr_t)0 },
-    { "setFillColor", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionSetFillColor, (intptr_t)0 },
-    { "strokeRect", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionStrokeRect, (intptr_t)0 },
-    { "drawImage", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionDrawImage, (intptr_t)0 },
-    { "drawImageFromRect", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionDrawImageFromRect, (intptr_t)0 },
-    { "setShadow", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionSetShadow, (intptr_t)0 },
-    { "createPattern", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionCreatePattern, (intptr_t)0 },
-    { "createImageData", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionCreateImageData, (intptr_t)2 },
-    { "getImageData", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionGetImageData, (intptr_t)4 },
-    { "putImageData", DontDelete|Function, (intptr_t)jsCanvasRenderingContext2DPrototypeFunctionPutImageData, (intptr_t)0 },
+    { "save", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionSave), (intptr_t)0 },
+    { "restore", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionRestore), (intptr_t)0 },
+    { "scale", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionScale), (intptr_t)2 },
+    { "rotate", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionRotate), (intptr_t)1 },
+    { "translate", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionTranslate), (intptr_t)2 },
+    { "transform", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionTransform), (intptr_t)6 },
+    { "setTransform", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionSetTransform), (intptr_t)6 },
+    { "createLinearGradient", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionCreateLinearGradient), (intptr_t)4 },
+    { "createRadialGradient", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionCreateRadialGradient), (intptr_t)6 },
+    { "clearRect", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionClearRect), (intptr_t)4 },
+    { "fillRect", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionFillRect), (intptr_t)4 },
+    { "beginPath", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionBeginPath), (intptr_t)0 },
+    { "closePath", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionClosePath), (intptr_t)0 },
+    { "moveTo", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionMoveTo), (intptr_t)2 },
+    { "lineTo", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionLineTo), (intptr_t)2 },
+    { "quadraticCurveTo", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionQuadraticCurveTo), (intptr_t)4 },
+    { "bezierCurveTo", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionBezierCurveTo), (intptr_t)6 },
+    { "arcTo", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionArcTo), (intptr_t)5 },
+    { "rect", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionRect), (intptr_t)4 },
+    { "arc", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionArc), (intptr_t)6 },
+    { "fill", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionFill), (intptr_t)0 },
+    { "stroke", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionStroke), (intptr_t)0 },
+    { "clip", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionClip), (intptr_t)0 },
+    { "isPointInPath", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionIsPointInPath), (intptr_t)2 },
+    { "fillText", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionFillText), (intptr_t)0 },
+    { "strokeText", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionStrokeText), (intptr_t)0 },
+    { "measureText", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionMeasureText), (intptr_t)1 },
+    { "setAlpha", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionSetAlpha), (intptr_t)1 },
+    { "setCompositeOperation", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionSetCompositeOperation), (intptr_t)1 },
+    { "setLineWidth", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionSetLineWidth), (intptr_t)1 },
+    { "setLineCap", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionSetLineCap), (intptr_t)1 },
+    { "setLineJoin", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionSetLineJoin), (intptr_t)1 },
+    { "setMiterLimit", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionSetMiterLimit), (intptr_t)1 },
+    { "clearShadow", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionClearShadow), (intptr_t)0 },
+    { "setStrokeColor", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionSetStrokeColor), (intptr_t)0 },
+    { "setFillColor", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionSetFillColor), (intptr_t)0 },
+    { "strokeRect", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionStrokeRect), (intptr_t)0 },
+    { "drawImage", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionDrawImage), (intptr_t)0 },
+    { "drawImageFromRect", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionDrawImageFromRect), (intptr_t)0 },
+    { "setShadow", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionSetShadow), (intptr_t)0 },
+    { "createPattern", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionCreatePattern), (intptr_t)0 },
+    { "createImageData", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionCreateImageData), (intptr_t)2 },
+    { "getImageData", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionGetImageData), (intptr_t)4 },
+    { "putImageData", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionPutImageData), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -217,125 +217,138 @@ bool JSCanvasRenderingContext2D::getOwnPropertyDescriptor(ExecState* exec, const
     return getStaticValueDescriptor<JSCanvasRenderingContext2D, Base>(exec, &JSCanvasRenderingContext2DTable, this, propertyName, descriptor);
 }
 
-JSValue jsCanvasRenderingContext2DGlobalAlpha(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DGlobalAlpha(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsNumber(exec, imp->globalAlpha());
+    JSValue result = jsNumber(exec, imp->globalAlpha());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DGlobalCompositeOperation(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DGlobalCompositeOperation(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsString(exec, imp->globalCompositeOperation());
+    JSValue result = jsString(exec, imp->globalCompositeOperation());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DLineWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DLineWidth(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsNumber(exec, imp->lineWidth());
+    JSValue result = jsNumber(exec, imp->lineWidth());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DLineCap(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DLineCap(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsString(exec, imp->lineCap());
+    JSValue result = jsString(exec, imp->lineCap());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DLineJoin(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DLineJoin(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsString(exec, imp->lineJoin());
+    JSValue result = jsString(exec, imp->lineJoin());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DMiterLimit(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DMiterLimit(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsNumber(exec, imp->miterLimit());
+    JSValue result = jsNumber(exec, imp->miterLimit());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DShadowOffsetX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DShadowOffsetX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsNumber(exec, imp->shadowOffsetX());
+    JSValue result = jsNumber(exec, imp->shadowOffsetX());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DShadowOffsetY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DShadowOffsetY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsNumber(exec, imp->shadowOffsetY());
+    JSValue result = jsNumber(exec, imp->shadowOffsetY());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DShadowBlur(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DShadowBlur(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsNumber(exec, imp->shadowBlur());
+    JSValue result = jsNumber(exec, imp->shadowBlur());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DShadowColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DShadowColor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsString(exec, imp->shadowColor());
+    JSValue result = jsString(exec, imp->shadowColor());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DFont(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DFont(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsString(exec, imp->font());
+    JSValue result = jsString(exec, imp->font());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DTextAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DTextAlign(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsString(exec, imp->textAlign());
+    JSValue result = jsString(exec, imp->textAlign());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DTextBaseline(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DTextBaseline(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return jsString(exec, imp->textBaseline());
+    JSValue result = jsString(exec, imp->textBaseline());
+    return result;
 }
 
-JSValue jsCanvasRenderingContext2DStrokeStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DStrokeStyle(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     return castedThis->strokeStyle(exec);
 }
 
-JSValue jsCanvasRenderingContext2DFillStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DFillStyle(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     return castedThis->fillStyle(exec);
 }
 
-JSValue jsCanvasRenderingContext2DConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCanvasRenderingContext2DConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCanvasRenderingContext2D* domObject = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    JSCanvasRenderingContext2D* domObject = static_cast<JSCanvasRenderingContext2D*>(asObject(slotBase));
     return JSCanvasRenderingContext2D::getConstructor(exec, domObject->globalObject());
 }
 void JSCanvasRenderingContext2D::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -345,79 +358,92 @@ void JSCanvasRenderingContext2D::put(ExecState* exec, const Identifier& property
 
 void setJSCanvasRenderingContext2DGlobalAlpha(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setGlobalAlpha(value.toFloat(exec));
 }
 
 void setJSCanvasRenderingContext2DGlobalCompositeOperation(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setGlobalCompositeOperation(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSCanvasRenderingContext2DLineWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setLineWidth(value.toFloat(exec));
 }
 
 void setJSCanvasRenderingContext2DLineCap(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setLineCap(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSCanvasRenderingContext2DLineJoin(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setLineJoin(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSCanvasRenderingContext2DMiterLimit(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setMiterLimit(value.toFloat(exec));
 }
 
 void setJSCanvasRenderingContext2DShadowOffsetX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setShadowOffsetX(value.toFloat(exec));
 }
 
 void setJSCanvasRenderingContext2DShadowOffsetY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setShadowOffsetY(value.toFloat(exec));
 }
 
 void setJSCanvasRenderingContext2DShadowBlur(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setShadowBlur(value.toFloat(exec));
 }
 
 void setJSCanvasRenderingContext2DShadowColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setShadowColor(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSCanvasRenderingContext2DFont(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setFont(value.toString(exec));
 }
 
 void setJSCanvasRenderingContext2DTextAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setTextAlign(value.toString(exec));
 }
 
 void setJSCanvasRenderingContext2DTextBaseline(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(thisObject)->impl());
+    JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(thisObject);
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
     imp->setTextBaseline(value.toString(exec));
 }
 

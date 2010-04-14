@@ -30,6 +30,7 @@
 #include "NP_jsobject.h"
 
 #include "PlatformString.h"
+#include "PluginView.h"
 #include "StringSourceProvider.h"
 #include "c_utility.h"
 #include "c_instance.h"
@@ -50,6 +51,64 @@ using namespace JSC;
 using namespace JSC::Bindings;
 using namespace WebCore;
 
+class ObjectMap {
+public:
+    NPObject* get(RootObject* rootObject, JSObject* jsObject)
+    {
+        return m_map.get(rootObject).get(jsObject);
+    }
+
+    void add(RootObject* rootObject, JSObject* jsObject, NPObject* npObject)
+    {
+        HashMap<RootObject*, JSToNPObjectMap>::iterator iter = m_map.find(rootObject);
+        if (iter == m_map.end()) {
+            rootObject->addInvalidationCallback(&m_invalidationCallback);
+            iter = m_map.add(rootObject, JSToNPObjectMap()).first;
+        }
+
+        ASSERT(iter->second.find(jsObject) == iter->second.end());
+        iter->second.add(jsObject, npObject);
+    }
+
+    void remove(RootObject* rootObject)
+    {
+        HashMap<RootObject*, JSToNPObjectMap>::iterator iter = m_map.find(rootObject);
+        ASSERT(iter != m_map.end());
+        m_map.remove(iter);
+    }
+
+    void remove(RootObject* rootObject, JSObject* jsObject)
+    {
+        HashMap<RootObject*, JSToNPObjectMap>::iterator iter = m_map.find(rootObject);
+        ASSERT(iter != m_map.end());
+        ASSERT(iter->second.find(jsObject) != iter->second.end());
+
+        iter->second.remove(jsObject);
+    }
+
+private:
+    struct RootObjectInvalidationCallback : public RootObject::InvalidationCallback {
+        virtual void operator()(RootObject*);
+    };
+    RootObjectInvalidationCallback m_invalidationCallback;
+
+    // JSObjects are protected by RootObject.
+    typedef HashMap<JSObject*, NPObject*> JSToNPObjectMap;
+    HashMap<RootObject*, JSToNPObjectMap> m_map;
+};
+
+
+static ObjectMap& objectMap()
+{
+    DEFINE_STATIC_LOCAL(ObjectMap, map, ());
+    return map;
+}
+
+void ObjectMap::RootObjectInvalidationCallback::operator()(RootObject* rootObject)
+{
+    objectMap().remove(rootObject);
+}
+
 static void getListFromVariantArgs(ExecState* exec, const NPVariant* args, unsigned argCount, RootObject* rootObject, MarkedArgumentBuffer& aList)
 {
     for (unsigned i = 0; i < argCount; ++i)
@@ -65,8 +124,10 @@ static void jsDeallocate(NPObject* npObj)
 {
     JavaScriptObject* obj = reinterpret_cast<JavaScriptObject*>(npObj);
 
-    if (obj->rootObject && obj->rootObject->isValid())
+    if (obj->rootObject && obj->rootObject->isValid()) {
+        objectMap().remove(obj->rootObject, obj->imp);
         obj->rootObject->gcUnprotect(obj->imp);
+    }
 
     if (obj->rootObject)
         obj->rootObject->deref();
@@ -82,12 +143,18 @@ static NPClass* NPNoScriptObjectClass = &noScriptClass;
 
 NPObject* _NPN_CreateScriptObject(NPP npp, JSObject* imp, PassRefPtr<RootObject> rootObject)
 {
+    if (NPObject* object = objectMap().get(rootObject.get(), imp))
+        return _NPN_RetainObject(object);
+
     JavaScriptObject* obj = reinterpret_cast<JavaScriptObject*>(_NPN_CreateObject(npp, NPScriptObjectClass));
 
     obj->rootObject = rootObject.releaseRef();
 
-    if (obj->rootObject)
+    if (obj->rootObject) {
         obj->rootObject->gcProtect(imp);
+        objectMap().add(obj->rootObject, imp, reinterpret_cast<NPObject*>(obj));
+    }
+
     obj->imp = imp;
 
     return reinterpret_cast<NPObject*>(obj);
@@ -124,7 +191,7 @@ bool _NPN_InvokeDefault(NPP, NPObject* o, const NPVariant* args, uint32_t argCou
         getListFromVariantArgs(exec, args, argCount, rootObject, argList);
         ProtectedPtr<JSGlobalObject> globalObject = rootObject->globalObject();
         globalObject->globalData()->timeoutChecker.start();
-        JSValue resultV = callInWorld(exec, function, callType, callData, function, argList, pluginWorld());
+        JSValue resultV = JSC::call(exec, function, callType, callData, function, argList);
         globalObject->globalData()->timeoutChecker.stop();
 
         // Convert and return the result of the function call.
@@ -174,7 +241,7 @@ bool _NPN_Invoke(NPP npp, NPObject* o, NPIdentifier methodName, const NPVariant*
         getListFromVariantArgs(exec, args, argCount, rootObject, argList);
         ProtectedPtr<JSGlobalObject> globalObject = rootObject->globalObject();
         globalObject->globalData()->timeoutChecker.start();
-        JSValue resultV = callInWorld(exec, function, callType, callData, obj->imp, argList, pluginWorld());
+        JSValue resultV = JSC::call(exec, function, callType, callData, obj->imp, argList);
         globalObject->globalData()->timeoutChecker.stop();
 
         // Convert and return the result of the function call.
@@ -190,7 +257,7 @@ bool _NPN_Invoke(NPP npp, NPObject* o, NPIdentifier methodName, const NPVariant*
     return true;
 }
 
-bool _NPN_Evaluate(NPP, NPObject* o, NPString* s, NPVariant* variant)
+bool _NPN_Evaluate(NPP instance, NPObject* o, NPString* s, NPVariant* variant)
 {
     if (o->_class == NPScriptObjectClass) {
         JavaScriptObject* obj = reinterpret_cast<JavaScriptObject*>(o); 
@@ -199,12 +266,16 @@ bool _NPN_Evaluate(NPP, NPObject* o, NPString* s, NPVariant* variant)
         if (!rootObject || !rootObject->isValid())
             return false;
 
+        // There is a crash in Flash when evaluating a script that destroys the
+        // PluginView, so we destroy it asynchronously.
+        PluginView::keepAlive(instance);
+
         ExecState* exec = rootObject->globalObject()->globalExec();
         JSLock lock(SilenceAssertionsOnly);
         String scriptString = convertNPStringToUTF16(s);
         ProtectedPtr<JSGlobalObject> globalObject = rootObject->globalObject();
         globalObject->globalData()->timeoutChecker.start();
-        Completion completion = evaluateInWorld(globalObject->globalExec(), globalObject->globalScopeChain(), makeSource(scriptString), JSC::JSValue(), pluginWorld());
+        Completion completion = JSC::evaluate(globalObject->globalExec(), globalObject->globalScopeChain(), makeSource(scriptString), JSC::JSValue());
         globalObject->globalData()->timeoutChecker.stop();
         ComplType type = completion.complType();
         
@@ -379,7 +450,7 @@ bool _NPN_HasMethod(NPP, NPObject* o, NPIdentifier methodName)
 
 void _NPN_SetException(NPObject*, const NPUTF8* message)
 {
-    // Ignorning the NPObject param is consistent with the Mozilla implementation.
+    // Ignoring the NPObject param is consistent with the Mozilla implementation.
     UString exception(message);
     CInstance::setGlobalException(exception);
 }
@@ -444,7 +515,7 @@ bool _NPN_Construct(NPP, NPObject* o, const NPVariant* args, uint32_t argCount, 
         getListFromVariantArgs(exec, args, argCount, rootObject, argList);
         ProtectedPtr<JSGlobalObject> globalObject = rootObject->globalObject();
         globalObject->globalData()->timeoutChecker.start();
-        JSValue resultV = constructInWorld(exec, constructor, constructType, constructData, argList, pluginWorld());
+        JSValue resultV = JSC::construct(exec, constructor, constructType, constructData, argList);
         globalObject->globalData()->timeoutChecker.stop();
         
         // Convert and return the result.

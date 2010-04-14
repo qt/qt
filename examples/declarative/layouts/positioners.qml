@@ -1,32 +1,41 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     id: page
-    width: 420
-    height: 420
-    color: "white"
+    width: 420; height: 420
 
     Column {
         id: layout1
         y: 0
         move: Transition {
-            NumberAnimation {
-                properties: "y"; easing.type: "OutBounce"
-            }
+            NumberAnimation { properties: "y"; easing.type: "OutBounce" }
         }
         add: Transition {
-            NumberAnimation {
-                properties: "y"; easing.type: "OutQuad"
-            }
+            NumberAnimation { properties: "y"; easing.type: "OutQuad" }
         }
+
         Rectangle { color: "red"; width: 100; height: 50; border.color: "black"; radius: 15 }
-        Rectangle { id: blueV1; color: "lightsteelblue"; width: 100; height: 50; border.color: "black"; radius: 15 
-            Behavior on opacity {NumberAnimation{}}
+
+        Rectangle {
+            id: blueV1
+            width: 100; height: 50
+            color: "lightsteelblue"
+            border.color: "black"
+            radius: 15 
+            Behavior on opacity { NumberAnimation {} }
         }
+
         Rectangle { color: "green"; width: 100; height: 50; border.color: "black"; radius: 15 }
-        Rectangle { id: blueV2; color: "lightsteelblue"; width: 100; height: 50; border.color: "black"; radius: 15 
-            Behavior on opacity {NumberAnimation{}}
+
+        Rectangle {
+            id: blueV2
+            width: 100; height: 50
+            color: "lightsteelblue"
+            border.color: "black"
+            radius: 15 
+            Behavior on opacity { NumberAnimation {} }
         }
+
         Rectangle { color: "orange"; width: 100; height: 50; border.color: "black"; radius: 15 }
     }
 
@@ -34,31 +43,41 @@ Rectangle {
         id: layout2
         y: 300 
         move: Transition {
-            NumberAnimation {
-                properties: "x"; easing.type: "OutBounce"
-            }
+            NumberAnimation { properties: "x"; easing.type: "OutBounce" }
         }
         add: Transition {
-            NumberAnimation {
-                properties: "x"; easing.type: "OutQuad"
-            }
+            NumberAnimation { properties: "x"; easing.type: "OutQuad" }
         }
+
         Rectangle { color: "red"; width: 50; height: 100; border.color: "black"; radius: 15 }
-        Rectangle { id: blueH1; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15
-            Behavior on opacity {NumberAnimation{}}
+
+        Rectangle {
+            id: blueH1
+            width: 50; height: 100
+            color: "lightsteelblue"
+            border.color: "black"
+            radius: 15
+            Behavior on opacity { NumberAnimation {} }
         }
+
         Rectangle { color: "green"; width: 50; height: 100; border.color: "black"; radius: 15 }
-        Rectangle { id: blueH2; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15 
-            Behavior on opacity {NumberAnimation{}}
+
+        Rectangle {
+            id: blueH2
+            width: 50; height: 100
+            color: "lightsteelblue"
+            border.color: "black"
+            radius: 15 
+            Behavior on opacity { NumberAnimation {} }
         }
+
         Rectangle { color: "orange"; width: 50; height: 100; border.color: "black"; radius: 15 }
     }
 
     Button {
+        x: 135; y: 90
         text: "Remove"
         icon: "del.png"
-        x: 135
-        y: 90
 
         onClicked: {
             blueH2.opacity = 0
@@ -75,10 +94,9 @@ Rectangle {
     }
 
     Button {
+        x: 145; y: 140
         text: "Add"
         icon: "add.png"
-        x: 145
-        y: 140
 
         onClicked: {
             blueH2.opacity = 1
@@ -95,34 +113,50 @@ Rectangle {
     }
 
     Grid {
-        x: 260
-        y: 0
+        x: 260; y: 0
         columns: 3
 
         move: Transition {
-            NumberAnimation {
-                properties: "x,y"; easing.type: "OutBounce"
-            }
+            NumberAnimation { properties: "x,y"; easing.type: "OutBounce" }
         }
 
         add: Transition {
-            NumberAnimation {
-                properties: "x,y"; easing.type: "OutBounce"
-            }
+            NumberAnimation { properties: "x,y"; easing.type: "OutBounce" }
         }
 
         Rectangle { color: "red"; width: 50; height: 50; border.color: "black"; radius: 15 }
-        Rectangle { id: blueG1; color: "lightsteelblue"; width: 50; height: 50; border.color: "black"; radius: 15 
-            Behavior on opacity {NumberAnimation{}}
+
+        Rectangle {
+            id: blueG1
+            width: 50; height: 50
+            color: "lightsteelblue"
+            border.color: "black"
+            radius: 15 
+            Behavior on opacity { NumberAnimation {} }
         }
+
         Rectangle { color: "green"; width: 50; height: 50; border.color: "black"; radius: 15 }
-        Rectangle { id: blueG2; color: "lightsteelblue"; width: 50; height: 50; border.color: "black"; radius: 15 
-            Behavior on opacity {NumberAnimation{}}
+
+        Rectangle {
+            id: blueG2
+            width: 50; height: 50
+            color: "lightsteelblue"
+            border.color: "black"
+            radius: 15 
+            Behavior on opacity { NumberAnimation {} }
         }
+
         Rectangle { color: "orange"; width: 50; height: 50; border.color: "black"; radius: 15 }
-        Rectangle { id: blueG3; color: "lightsteelblue"; width: 50; height: 50; border.color: "black"; radius: 15 
-            Behavior on opacity {NumberAnimation{}}
+
+        Rectangle {
+            id: blueG3
+            width: 50; height: 50
+            color: "lightsteelblue"
+            border.color: "black"
+            radius: 15 
+            Behavior on opacity { NumberAnimation {} }
         }
+
         Rectangle { color: "red"; width: 50; height: 50; border.color: "black"; radius: 15 }
         Rectangle { color: "green"; width: 50; height: 50; border.color: "black"; radius: 15 }
         Rectangle { color: "orange"; width: 50; height: 50; border.color: "black"; radius: 15 }
@@ -130,33 +164,49 @@ Rectangle {
 
     Flow {
         id: layout4
-        x: 260
-        y: 250
-        width: 150
+        x: 260; y: 250; width: 150
 
         move: Transition {
-            NumberAnimation {
-                properties: "x,y"; easing.type: "OutBounce"
-            }
+            NumberAnimation { properties: "x,y"; easing.type: "OutBounce" }
         }
 
         add: Transition {
-            NumberAnimation {
-                properties: "x,y"; easing.type: "OutBounce"
-            }
+            NumberAnimation { properties: "x,y"; easing.type: "OutBounce" }
         }
+
         Rectangle { color: "red"; width: 50; height: 50; border.color: "black"; radius: 15 }
-        Rectangle { id: blueF1; color: "lightsteelblue"; width: 60; height: 50; border.color: "black"; radius: 15 
-            Behavior on opacity {NumberAnimation{}}
+
+        Rectangle {
+            id: blueF1
+            width: 60; height: 50
+            color: "lightsteelblue"
+            border.color: "black"
+            radius: 15 
+            Behavior on opacity { NumberAnimation {} }
         }
+
         Rectangle { color: "green"; width: 30; height: 50; border.color: "black"; radius: 15 }
-        Rectangle { id: blueF2; color: "lightsteelblue"; width: 60; height: 50; border.color: "black"; radius: 15 
-            Behavior on opacity {NumberAnimation{}}
+
+        Rectangle {
+            id: blueF2
+            width: 60; height: 50
+            color: "lightsteelblue"
+            border.color: "black"
+            radius: 15 
+            Behavior on opacity { NumberAnimation {} }
         }
+
         Rectangle { color: "orange"; width: 50; height: 50; border.color: "black"; radius: 15 }
-        Rectangle { id: blueF3; color: "lightsteelblue"; width: 40; height: 50; border.color: "black"; radius: 15 
-            Behavior on opacity {NumberAnimation{}}
+
+        Rectangle { 
+            id: blueF3
+            width: 40; height: 50
+            color: "lightsteelblue"
+            border.color: "black"
+            radius: 15 
+            Behavior on opacity { NumberAnimation {} }
         }
+
         Rectangle { color: "red"; width: 80; height: 50; border.color: "black"; radius: 15 }
     }
 

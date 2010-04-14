@@ -94,13 +94,10 @@ namespace WebCore {
         float duration() const;
         float currentTime() const;
         void seek(float);
-        void setEndTime(float);
 
         void setRate(float);
         void setVolume(float);
         void setMuted(bool);
-
-        int dataRate() const;
 
         MediaPlayer::NetworkState networkState() const;
         MediaPlayer::ReadyState readyState() const;
@@ -108,7 +105,6 @@ namespace WebCore {
         PassRefPtr<TimeRanges> buffered() const;
         float maxTimeSeekable() const;
         unsigned bytesLoaded() const;
-        bool totalBytesKnown() const;
         unsigned totalBytes() const;
 
         void setVisible(bool);
@@ -136,6 +132,7 @@ namespace WebCore {
 
         static void getSupportedTypes(HashSet<String>&);
         static MediaPlayer::SupportsType supportsType(const String& type, const String& codecs);
+        static HashSet<String>& supportedTypesCache();
         static bool isAvailable() { return true; }
 
         void updateStates();

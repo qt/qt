@@ -54,13 +54,13 @@
 //
 
 
-#include <private/qdeclarativescriptclass_p.h>
+#include <private/qscriptdeclarativeclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeEngine;
 class QDeclarativeValueType;
-class QDeclarativeValueTypeScriptClass : public QDeclarativeScriptClass
+class QDeclarativeValueTypeScriptClass : public QScriptDeclarativeClass
 {
 public:
     QDeclarativeValueTypeScriptClass(QDeclarativeEngine *);
@@ -70,7 +70,7 @@ public:
 
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
-    virtual ScriptValue property(Object *, const Identifier &);
+    virtual Value property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
 
     virtual QVariant toVariant(Object *, bool *ok = 0);

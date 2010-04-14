@@ -40,10 +40,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGTransform);
 
 static const HashTableValue JSSVGTransformTableValues[5] =
 {
-    { "type", DontDelete|ReadOnly, (intptr_t)jsSVGTransformType, (intptr_t)0 },
-    { "matrix", DontDelete|ReadOnly, (intptr_t)jsSVGTransformMatrix, (intptr_t)0 },
-    { "angle", DontDelete|ReadOnly, (intptr_t)jsSVGTransformAngle, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGTransformConstructor, (intptr_t)0 },
+    { "type", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformType), (intptr_t)0 },
+    { "matrix", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformMatrix), (intptr_t)0 },
+    { "angle", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformAngle), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -58,13 +58,13 @@ static JSC_CONST_HASHTABLE HashTable JSSVGTransformTable =
 
 static const HashTableValue JSSVGTransformConstructorTableValues[8] =
 {
-    { "SVG_TRANSFORM_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_UNKNOWN, (intptr_t)0 },
-    { "SVG_TRANSFORM_MATRIX", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_MATRIX, (intptr_t)0 },
-    { "SVG_TRANSFORM_TRANSLATE", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_TRANSLATE, (intptr_t)0 },
-    { "SVG_TRANSFORM_SCALE", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_SCALE, (intptr_t)0 },
-    { "SVG_TRANSFORM_ROTATE", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_ROTATE, (intptr_t)0 },
-    { "SVG_TRANSFORM_SKEWX", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_SKEWX, (intptr_t)0 },
-    { "SVG_TRANSFORM_SKEWY", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_SKEWY, (intptr_t)0 },
+    { "SVG_TRANSFORM_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_UNKNOWN), (intptr_t)0 },
+    { "SVG_TRANSFORM_MATRIX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_MATRIX), (intptr_t)0 },
+    { "SVG_TRANSFORM_TRANSLATE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_TRANSLATE), (intptr_t)0 },
+    { "SVG_TRANSFORM_SCALE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_SCALE), (intptr_t)0 },
+    { "SVG_TRANSFORM_ROTATE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_ROTATE), (intptr_t)0 },
+    { "SVG_TRANSFORM_SKEWX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_SKEWX), (intptr_t)0 },
+    { "SVG_TRANSFORM_SKEWY", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_SKEWY), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -89,7 +89,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -112,19 +112,19 @@ bool JSSVGTransformConstructor::getOwnPropertyDescriptor(ExecState* exec, const 
 
 static const HashTableValue JSSVGTransformPrototypeTableValues[14] =
 {
-    { "SVG_TRANSFORM_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_UNKNOWN, (intptr_t)0 },
-    { "SVG_TRANSFORM_MATRIX", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_MATRIX, (intptr_t)0 },
-    { "SVG_TRANSFORM_TRANSLATE", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_TRANSLATE, (intptr_t)0 },
-    { "SVG_TRANSFORM_SCALE", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_SCALE, (intptr_t)0 },
-    { "SVG_TRANSFORM_ROTATE", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_ROTATE, (intptr_t)0 },
-    { "SVG_TRANSFORM_SKEWX", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_SKEWX, (intptr_t)0 },
-    { "SVG_TRANSFORM_SKEWY", DontDelete|ReadOnly, (intptr_t)jsSVGTransformSVG_TRANSFORM_SKEWY, (intptr_t)0 },
-    { "setMatrix", DontDelete|Function, (intptr_t)jsSVGTransformPrototypeFunctionSetMatrix, (intptr_t)1 },
-    { "setTranslate", DontDelete|Function, (intptr_t)jsSVGTransformPrototypeFunctionSetTranslate, (intptr_t)2 },
-    { "setScale", DontDelete|Function, (intptr_t)jsSVGTransformPrototypeFunctionSetScale, (intptr_t)2 },
-    { "setRotate", DontDelete|Function, (intptr_t)jsSVGTransformPrototypeFunctionSetRotate, (intptr_t)3 },
-    { "setSkewX", DontDelete|Function, (intptr_t)jsSVGTransformPrototypeFunctionSetSkewX, (intptr_t)1 },
-    { "setSkewY", DontDelete|Function, (intptr_t)jsSVGTransformPrototypeFunctionSetSkewY, (intptr_t)1 },
+    { "SVG_TRANSFORM_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_UNKNOWN), (intptr_t)0 },
+    { "SVG_TRANSFORM_MATRIX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_MATRIX), (intptr_t)0 },
+    { "SVG_TRANSFORM_TRANSLATE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_TRANSLATE), (intptr_t)0 },
+    { "SVG_TRANSFORM_SCALE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_SCALE), (intptr_t)0 },
+    { "SVG_TRANSFORM_ROTATE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_ROTATE), (intptr_t)0 },
+    { "SVG_TRANSFORM_SKEWX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_SKEWX), (intptr_t)0 },
+    { "SVG_TRANSFORM_SKEWY", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGTransformSVG_TRANSFORM_SKEWY), (intptr_t)0 },
+    { "setMatrix", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGTransformPrototypeFunctionSetMatrix), (intptr_t)1 },
+    { "setTranslate", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGTransformPrototypeFunctionSetTranslate), (intptr_t)2 },
+    { "setScale", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGTransformPrototypeFunctionSetScale), (intptr_t)2 },
+    { "setRotate", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGTransformPrototypeFunctionSetRotate), (intptr_t)3 },
+    { "setSkewX", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGTransformPrototypeFunctionSetSkewX), (intptr_t)1 },
+    { "setSkewY", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGTransformPrototypeFunctionSetSkewY), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -154,8 +154,8 @@ bool JSSVGTransformPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSSVGTransform::s_info = { "SVGTransform", 0, &JSSVGTransformTable, 0 };
 
-JSSVGTransform::JSSVGTransform(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<SVGTransform> > impl, SVGElement* context)
-    : DOMObjectWithSVGContext(structure, globalObject, context)
+JSSVGTransform::JSSVGTransform(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<SVGTransform> > impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -163,6 +163,7 @@ JSSVGTransform::JSSVGTransform(NonNullPassRefPtr<Structure> structure, JSDOMGlob
 JSSVGTransform::~JSSVGTransform()
 {
     forgetDOMObject(this, impl());
+    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGTransform::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -180,34 +181,37 @@ bool JSSVGTransform::getOwnPropertyDescriptor(ExecState* exec, const Identifier&
     return getStaticValueDescriptor<JSSVGTransform, Base>(exec, &JSSVGTransformTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGTransformType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTransformType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGTransform* castedThis = static_cast<JSSVGTransform*>(asObject(slot.slotBase()));
+    JSSVGTransform* castedThis = static_cast<JSSVGTransform*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGTransform imp(*castedThis->impl());
-    return jsNumber(exec, imp.type());
+    JSValue result =  jsNumber(exec, imp.type());
+    return result;
 }
 
-JSValue jsSVGTransformMatrix(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTransformMatrix(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGTransform* castedThis = static_cast<JSSVGTransform*>(asObject(slot.slotBase()));
+    JSSVGTransform* castedThis = static_cast<JSSVGTransform*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGTransform imp(*castedThis->impl());
-    return toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGStaticPODTypeWrapperWithPODTypeParent<TransformationMatrix, SVGTransform>::create(imp.matrix(), castedThis->impl()).get(), castedThis->context());
+    JSValue result =  toJS(exec, castedThis->globalObject(), JSSVGStaticPODTypeWrapperWithPODTypeParent<AffineTransform, SVGTransform>::create(imp.matrix(), castedThis->impl()).get(), JSSVGContextCache::svgContextForDOMObject(castedThis));
+    return result;
 }
 
-JSValue jsSVGTransformAngle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTransformAngle(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGTransform* castedThis = static_cast<JSSVGTransform*>(asObject(slot.slotBase()));
+    JSSVGTransform* castedThis = static_cast<JSSVGTransform*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGTransform imp(*castedThis->impl());
-    return jsNumber(exec, imp.angle());
+    JSValue result =  jsNumber(exec, imp.angle());
+    return result;
 }
 
-JSValue jsSVGTransformConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTransformConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    UNUSED_PARAM(slot);
-    return JSSVGTransform::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
+    JSSVGTransform* domObject = static_cast<JSSVGTransform*>(asObject(slotBase));
+    return JSSVGTransform::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSSVGTransform::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
@@ -220,12 +224,12 @@ JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetMatrix(ExecState* exec, 
     if (!thisValue.inherits(&JSSVGTransform::s_info))
         return throwError(exec, TypeError);
     JSSVGTransform* castedThisObj = static_cast<JSSVGTransform*>(asObject(thisValue));
-    JSSVGPODTypeWrapper<SVGTransform>* wrapper = castedThisObj->impl();
-    SVGTransform imp(*wrapper);
-    TransformationMatrix matrix = toSVGMatrix(args.at(0));
+    JSSVGPODTypeWrapper<SVGTransform> * imp = static_cast<JSSVGPODTypeWrapper<SVGTransform> *>(castedThisObj->impl());
+    SVGTransform podImp(*imp);
+    AffineTransform matrix = toSVGMatrix(args.at(0));
 
-    imp.setMatrix(matrix);
-    wrapper->commitChange(imp, castedThisObj->context());
+    podImp.setMatrix(matrix);
+    imp->commitChange(podImp, castedThisObj);
     return jsUndefined();
 }
 
@@ -235,13 +239,13 @@ JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetTranslate(ExecState* exe
     if (!thisValue.inherits(&JSSVGTransform::s_info))
         return throwError(exec, TypeError);
     JSSVGTransform* castedThisObj = static_cast<JSSVGTransform*>(asObject(thisValue));
-    JSSVGPODTypeWrapper<SVGTransform>* wrapper = castedThisObj->impl();
-    SVGTransform imp(*wrapper);
+    JSSVGPODTypeWrapper<SVGTransform> * imp = static_cast<JSSVGPODTypeWrapper<SVGTransform> *>(castedThisObj->impl());
+    SVGTransform podImp(*imp);
     float tx = args.at(0).toFloat(exec);
     float ty = args.at(1).toFloat(exec);
 
-    imp.setTranslate(tx, ty);
-    wrapper->commitChange(imp, castedThisObj->context());
+    podImp.setTranslate(tx, ty);
+    imp->commitChange(podImp, castedThisObj);
     return jsUndefined();
 }
 
@@ -251,13 +255,13 @@ JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetScale(ExecState* exec, J
     if (!thisValue.inherits(&JSSVGTransform::s_info))
         return throwError(exec, TypeError);
     JSSVGTransform* castedThisObj = static_cast<JSSVGTransform*>(asObject(thisValue));
-    JSSVGPODTypeWrapper<SVGTransform>* wrapper = castedThisObj->impl();
-    SVGTransform imp(*wrapper);
+    JSSVGPODTypeWrapper<SVGTransform> * imp = static_cast<JSSVGPODTypeWrapper<SVGTransform> *>(castedThisObj->impl());
+    SVGTransform podImp(*imp);
     float sx = args.at(0).toFloat(exec);
     float sy = args.at(1).toFloat(exec);
 
-    imp.setScale(sx, sy);
-    wrapper->commitChange(imp, castedThisObj->context());
+    podImp.setScale(sx, sy);
+    imp->commitChange(podImp, castedThisObj);
     return jsUndefined();
 }
 
@@ -267,14 +271,14 @@ JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetRotate(ExecState* exec, 
     if (!thisValue.inherits(&JSSVGTransform::s_info))
         return throwError(exec, TypeError);
     JSSVGTransform* castedThisObj = static_cast<JSSVGTransform*>(asObject(thisValue));
-    JSSVGPODTypeWrapper<SVGTransform>* wrapper = castedThisObj->impl();
-    SVGTransform imp(*wrapper);
+    JSSVGPODTypeWrapper<SVGTransform> * imp = static_cast<JSSVGPODTypeWrapper<SVGTransform> *>(castedThisObj->impl());
+    SVGTransform podImp(*imp);
     float angle = args.at(0).toFloat(exec);
     float cx = args.at(1).toFloat(exec);
     float cy = args.at(2).toFloat(exec);
 
-    imp.setRotate(angle, cx, cy);
-    wrapper->commitChange(imp, castedThisObj->context());
+    podImp.setRotate(angle, cx, cy);
+    imp->commitChange(podImp, castedThisObj);
     return jsUndefined();
 }
 
@@ -284,12 +288,12 @@ JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetSkewX(ExecState* exec, J
     if (!thisValue.inherits(&JSSVGTransform::s_info))
         return throwError(exec, TypeError);
     JSSVGTransform* castedThisObj = static_cast<JSSVGTransform*>(asObject(thisValue));
-    JSSVGPODTypeWrapper<SVGTransform>* wrapper = castedThisObj->impl();
-    SVGTransform imp(*wrapper);
+    JSSVGPODTypeWrapper<SVGTransform> * imp = static_cast<JSSVGPODTypeWrapper<SVGTransform> *>(castedThisObj->impl());
+    SVGTransform podImp(*imp);
     float angle = args.at(0).toFloat(exec);
 
-    imp.setSkewX(angle);
-    wrapper->commitChange(imp, castedThisObj->context());
+    podImp.setSkewX(angle);
+    imp->commitChange(podImp, castedThisObj);
     return jsUndefined();
 }
 
@@ -299,48 +303,48 @@ JSValue JSC_HOST_CALL jsSVGTransformPrototypeFunctionSetSkewY(ExecState* exec, J
     if (!thisValue.inherits(&JSSVGTransform::s_info))
         return throwError(exec, TypeError);
     JSSVGTransform* castedThisObj = static_cast<JSSVGTransform*>(asObject(thisValue));
-    JSSVGPODTypeWrapper<SVGTransform>* wrapper = castedThisObj->impl();
-    SVGTransform imp(*wrapper);
+    JSSVGPODTypeWrapper<SVGTransform> * imp = static_cast<JSSVGPODTypeWrapper<SVGTransform> *>(castedThisObj->impl());
+    SVGTransform podImp(*imp);
     float angle = args.at(0).toFloat(exec);
 
-    imp.setSkewY(angle);
-    wrapper->commitChange(imp, castedThisObj->context());
+    podImp.setSkewY(angle);
+    imp->commitChange(podImp, castedThisObj);
     return jsUndefined();
 }
 
 // Constant getters
 
-JSValue jsSVGTransformSVG_TRANSFORM_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_UNKNOWN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsSVGTransformSVG_TRANSFORM_MATRIX(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_MATRIX(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsSVGTransformSVG_TRANSFORM_TRANSLATE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_TRANSLATE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsSVGTransformSVG_TRANSFORM_SCALE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_SCALE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValue jsSVGTransformSVG_TRANSFORM_ROTATE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_ROTATE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSValue jsSVGTransformSVG_TRANSFORM_SKEWX(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_SKEWX(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(5));
 }
 
-JSValue jsSVGTransformSVG_TRANSFORM_SKEWY(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGTransformSVG_TRANSFORM_SKEWY(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(6));
 }

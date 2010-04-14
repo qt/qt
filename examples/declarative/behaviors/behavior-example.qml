@@ -1,40 +1,38 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
-    color: "#343434"
     width: 600; height: 400
+    color: "#343434"
 
     Rectangle {
         anchors.centerIn: parent
-        width: 200; height: 200; radius: 30
-        color: "transparent"; border.width: 4; border.color: "white"
+        width: 200; height: 200
+        radius: 30
+        color: "transparent"
+        border.width: 4; border.color: "white"
 
 
         SideRect {
             id: leftRect
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.horizontalCenter: parent.left
+            anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.left }
             text: "Left"
         }
 
         SideRect {
             id: rightRect
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.horizontalCenter: parent.right
+            anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.right }
             text: "Right"
         }
 
         SideRect {
             id: topRect
-            anchors.verticalCenter: parent.top
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors { verticalCenter: parent.top; horizontalCenter: parent.horizontalCenter }
             text: "Top"
         }
 
         SideRect {
             id: bottomRect
-            anchors.verticalCenter: parent.bottom
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors { verticalCenter: parent.bottom; horizontalCenter: parent.horizontalCenter }
             text: "Bottom"
         }
 
@@ -44,9 +42,10 @@ Rectangle {
 
             property string text
 
-            color: "firebrick"
             x: 62.5; y: 75; width: 75; height: 50
-            radius: 6; border.width: 4; border.color: "white"
+            radius: 6
+            border.width: 4; border.color: "white"
+            color: "firebrick"
 
             // Setting an 'elastic' behavior on the focusRect's x property.
             Behavior on x {
@@ -62,7 +61,8 @@ Rectangle {
                 id: focusText
                 text: focusRect.text
                 anchors.centerIn: parent
-                color: "white"; font.pixelSize: 16; font.bold: true
+                color: "white"
+                font.pixelSize: 16; font.bold: true
 
                 // Setting a behavior on the focusText's x property:
                 // Set the opacity to 0, set the new text value, then set the opacity back to 1.

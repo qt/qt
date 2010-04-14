@@ -81,7 +81,8 @@ public:
         TestErrorProperty = 0x00000008,
         SaveOnExit = 0x00000010,
         ExitOnComplete = 0x00000020,
-        ExitOnFailure = 0x00000040
+        ExitOnFailure = 0x00000040,
+        Snapshot = 0x00000080
     };
     Q_DECLARE_FLAGS(ScriptOptions, ScriptOption)
     void setScript(const QString &s) { m_script = s; }
@@ -96,6 +97,7 @@ public:
     void setDeviceKeys(bool);
     void setNetworkCacheSize(int size);
     void addLibraryPath(const QString& lib);
+    void addPluginPath(const QString& plugin);
     void setUseGL(bool use);
     void setUseNativeFileBrowser(bool);
 

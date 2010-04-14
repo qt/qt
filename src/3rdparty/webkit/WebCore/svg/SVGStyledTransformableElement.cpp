@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -25,22 +23,20 @@
 #if ENABLE(SVG)
 #include "SVGStyledTransformableElement.h"
 
+#include "AffineTransform.h"
 #include "Attr.h"
 #include "MappedAttribute.h"
 #include "RenderPath.h"
 #include "SVGDocument.h"
 #include "SVGStyledElement.h"
 #include "SVGTransformList.h"
-#include "TransformationMatrix.h"
 
 namespace WebCore {
-
-char SVGStyledTransformableElementIdentifier[] = "SVGStyledTransformableElement";
 
 SVGStyledTransformableElement::SVGStyledTransformableElement(const QualifiedName& tagName, Document* doc)
     : SVGStyledLocatableElement(tagName, doc)
     , SVGTransformable()
-    , m_transform(this, SVGNames::transformAttr, SVGTransformList::create(SVGNames::transformAttr))
+    , m_transform(SVGTransformList::create(SVGNames::transformAttr))
 {
 }
 
@@ -48,42 +44,46 @@ SVGStyledTransformableElement::~SVGStyledTransformableElement()
 {
 }
 
-TransformationMatrix SVGStyledTransformableElement::getCTM() const
+AffineTransform SVGStyledTransformableElement::getCTM() const
 {
     return SVGTransformable::getCTM(this);
 }
 
-TransformationMatrix SVGStyledTransformableElement::getScreenCTM() const
+AffineTransform SVGStyledTransformableElement::getScreenCTM() const
 {
     return SVGTransformable::getScreenCTM(this);
 }
 
-TransformationMatrix SVGStyledTransformableElement::animatedLocalTransform() const
+AffineTransform SVGStyledTransformableElement::animatedLocalTransform() const
 {
     return m_supplementalTransform ? transform()->concatenate().matrix() * *m_supplementalTransform : transform()->concatenate().matrix();
 }
     
-TransformationMatrix* SVGStyledTransformableElement::supplementalTransform()
+AffineTransform* SVGStyledTransformableElement::supplementalTransform()
 {
     if (!m_supplementalTransform)
-        m_supplementalTransform.set(new TransformationMatrix());
+        m_supplementalTransform.set(new AffineTransform());
     return m_supplementalTransform.get();
 }
 
 void SVGStyledTransformableElement::parseMappedAttribute(MappedAttribute* attr)
 {
-    if (attr->name() == SVGNames::transformAttr) {
+    if (SVGTransformable::isKnownAttribute(attr->name())) {
         SVGTransformList* localTransforms = transformBaseValue();
-
-        ExceptionCode ec = 0;
-        localTransforms->clear(ec);
- 
-        if (!SVGTransformable::parseTransformAttribute(localTransforms, attr->value()))
+        if (!SVGTransformable::parseTransformAttribute(localTransforms, attr->value())) {
+            ExceptionCode ec = 0;
             localTransforms->clear(ec);
-        else
-            setTransformBaseValue(localTransforms);
-    } else
+        }
+    } else 
         SVGStyledLocatableElement::parseMappedAttribute(attr);
+}
+
+void SVGStyledTransformableElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGStyledLocatableElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName() || SVGTransformable::isKnownAttribute(attrName))
+        synchronizeTransform();
 }
 
 bool SVGStyledTransformableElement::isKnownAttribute(const QualifiedName& attrName)

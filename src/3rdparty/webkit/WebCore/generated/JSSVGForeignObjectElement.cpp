@@ -53,23 +53,24 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGForeignObjectElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGForeignObjectElementTableValues[16] =
+static const HashTableValue JSSVGForeignObjectElementTableValues[17] =
 {
-    { "x", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementX, (intptr_t)0 },
-    { "y", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementY, (intptr_t)0 },
-    { "width", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementWidth, (intptr_t)0 },
-    { "height", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementHeight, (intptr_t)0 },
-    { "requiredFeatures", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementRequiredFeatures, (intptr_t)0 },
-    { "requiredExtensions", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementRequiredExtensions, (intptr_t)0 },
-    { "systemLanguage", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementSystemLanguage, (intptr_t)0 },
-    { "xmllang", DontDelete, (intptr_t)jsSVGForeignObjectElementXmllang, (intptr_t)setJSSVGForeignObjectElementXmllang },
-    { "xmlspace", DontDelete, (intptr_t)jsSVGForeignObjectElementXmlspace, (intptr_t)setJSSVGForeignObjectElementXmlspace },
-    { "externalResourcesRequired", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementExternalResourcesRequired, (intptr_t)0 },
-    { "className", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementClassName, (intptr_t)0 },
-    { "style", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementStyle, (intptr_t)0 },
-    { "transform", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementTransform, (intptr_t)0 },
-    { "nearestViewportElement", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementNearestViewportElement, (intptr_t)0 },
-    { "farthestViewportElement", DontDelete|ReadOnly, (intptr_t)jsSVGForeignObjectElementFarthestViewportElement, (intptr_t)0 },
+    { "x", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementX), (intptr_t)0 },
+    { "y", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementY), (intptr_t)0 },
+    { "width", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementWidth), (intptr_t)0 },
+    { "height", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementHeight), (intptr_t)0 },
+    { "requiredFeatures", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementRequiredFeatures), (intptr_t)0 },
+    { "requiredExtensions", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementRequiredExtensions), (intptr_t)0 },
+    { "systemLanguage", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementSystemLanguage), (intptr_t)0 },
+    { "xmllang", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementXmllang), (intptr_t)setJSSVGForeignObjectElementXmllang },
+    { "xmlspace", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementXmlspace), (intptr_t)setJSSVGForeignObjectElementXmlspace },
+    { "externalResourcesRequired", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementExternalResourcesRequired), (intptr_t)0 },
+    { "className", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementClassName), (intptr_t)0 },
+    { "style", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementStyle), (intptr_t)0 },
+    { "transform", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementTransform), (intptr_t)0 },
+    { "nearestViewportElement", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementNearestViewportElement), (intptr_t)0 },
+    { "farthestViewportElement", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementFarthestViewportElement), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGForeignObjectElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -77,19 +78,66 @@ static JSC_CONST_HASHTABLE HashTable JSSVGForeignObjectElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSSVGForeignObjectElementTableValues, 0 };
 #else
-    { 36, 31, JSSVGForeignObjectElementTableValues, 0 };
+    { 37, 31, JSSVGForeignObjectElementTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGForeignObjectElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGForeignObjectElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGForeignObjectElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGForeignObjectElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGForeignObjectElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGForeignObjectElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGForeignObjectElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGForeignObjectElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGForeignObjectElementConstructor::s_info = { "SVGForeignObjectElementConstructor", 0, &JSSVGForeignObjectElementConstructorTable, 0 };
+
+bool JSSVGForeignObjectElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGForeignObjectElementConstructor, DOMObject>(exec, &JSSVGForeignObjectElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGForeignObjectElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGForeignObjectElementConstructor, DOMObject>(exec, &JSSVGForeignObjectElementConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
 static const HashTableValue JSSVGForeignObjectElementPrototypeTableValues[7] =
 {
-    { "hasExtension", DontDelete|Function, (intptr_t)jsSVGForeignObjectElementPrototypeFunctionHasExtension, (intptr_t)1 },
-    { "getPresentationAttribute", DontDelete|Function, (intptr_t)jsSVGForeignObjectElementPrototypeFunctionGetPresentationAttribute, (intptr_t)1 },
-    { "getBBox", DontDelete|Function, (intptr_t)jsSVGForeignObjectElementPrototypeFunctionGetBBox, (intptr_t)0 },
-    { "getCTM", DontDelete|Function, (intptr_t)jsSVGForeignObjectElementPrototypeFunctionGetCTM, (intptr_t)0 },
-    { "getScreenCTM", DontDelete|Function, (intptr_t)jsSVGForeignObjectElementPrototypeFunctionGetScreenCTM, (intptr_t)0 },
-    { "getTransformToElement", DontDelete|Function, (intptr_t)jsSVGForeignObjectElementPrototypeFunctionGetTransformToElement, (intptr_t)1 },
+    { "hasExtension", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGForeignObjectElementPrototypeFunctionHasExtension), (intptr_t)1 },
+    { "getPresentationAttribute", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGForeignObjectElementPrototypeFunctionGetPresentationAttribute), (intptr_t)1 },
+    { "getBBox", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGForeignObjectElementPrototypeFunctionGetBBox), (intptr_t)0 },
+    { "getCTM", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGForeignObjectElementPrototypeFunctionGetCTM), (intptr_t)0 },
+    { "getScreenCTM", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGForeignObjectElementPrototypeFunctionGetScreenCTM), (intptr_t)0 },
+    { "getTransformToElement", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGForeignObjectElementPrototypeFunctionGetTransformToElement), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -139,133 +187,153 @@ bool JSSVGForeignObjectElement::getOwnPropertyDescriptor(ExecState* exec, const 
     return getStaticValueDescriptor<JSSVGForeignObjectElement, Base>(exec, &JSSVGForeignObjectElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGForeignObjectElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementWidth(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementHeight(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementRequiredFeatures(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementRequiredExtensions(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementSystemLanguage(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementXmllang(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
-    return jsString(exec, imp->xmllang());
+    JSValue result = jsString(exec, imp->xmllang());
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementXmlspace(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
-    return jsString(exec, imp->xmlspace());
+    JSValue result = jsString(exec, imp->xmlspace());
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementExternalResourcesRequired(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementClassName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementStyle(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementTransform(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
     RefPtr<SVGAnimatedTransformList> obj = imp->transformAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementNearestViewportElement(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nearestViewportElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nearestViewportElement()));
+    return result;
 }
 
-JSValue jsSVGForeignObjectElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGForeignObjectElementFarthestViewportElement(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slot.slotBase()));
+    JSSVGForeignObjectElement* castedThis = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->farthestViewportElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->farthestViewportElement()));
+    return result;
 }
 
+JSValue jsSVGForeignObjectElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGForeignObjectElement* domObject = static_cast<JSSVGForeignObjectElement*>(asObject(slotBase));
+    return JSSVGForeignObjectElement::getConstructor(exec, domObject->globalObject());
+}
 void JSSVGForeignObjectElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGForeignObjectElement, Base>(exec, propertyName, value, &JSSVGForeignObjectElementTable, this, slot);
@@ -273,14 +341,21 @@ void JSSVGForeignObjectElement::put(ExecState* exec, const Identifier& propertyN
 
 void setJSSVGForeignObjectElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(static_cast<JSSVGForeignObjectElement*>(thisObject)->impl());
+    JSSVGForeignObjectElement* castedThisObj = static_cast<JSSVGForeignObjectElement*>(thisObject);
+    SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThisObj->impl());
     imp->setXmllang(value.toString(exec));
 }
 
 void setJSSVGForeignObjectElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(static_cast<JSSVGForeignObjectElement*>(thisObject)->impl());
+    JSSVGForeignObjectElement* castedThisObj = static_cast<JSSVGForeignObjectElement*>(thisObject);
+    SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThisObj->impl());
     imp->setXmlspace(value.toString(exec));
+}
+
+JSValue JSSVGForeignObjectElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGForeignObjectElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGForeignObjectElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -320,7 +395,7 @@ JSValue JSC_HOST_CALL jsSVGForeignObjectElementPrototypeFunctionGetBBox(ExecStat
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -333,7 +408,7 @@ JSValue JSC_HOST_CALL jsSVGForeignObjectElementPrototypeFunctionGetCTM(ExecState
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<AffineTransform>::create(imp->getCTM()).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -346,7 +421,7 @@ JSValue JSC_HOST_CALL jsSVGForeignObjectElementPrototypeFunctionGetScreenCTM(Exe
     SVGForeignObjectElement* imp = static_cast<SVGForeignObjectElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<AffineTransform>::create(imp->getScreenCTM()).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -361,7 +436,7 @@ JSValue JSC_HOST_CALL jsSVGForeignObjectElementPrototypeFunctionGetTransformToEl
     SVGElement* element = toSVGElement(args.at(0));
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<AffineTransform>::create(imp->getTransformToElement(element, ec)).get(), 0 /* no context on purpose */);
     setDOMException(exec, ec);
     return result;
 }

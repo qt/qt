@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 TabWidget {
     id: tabs
@@ -6,28 +6,36 @@ TabWidget {
 
     Rectangle {
         property string title: "Red"
-        anchors.fill: parent; color: "#e3e3e3"
+        anchors.fill: parent
+        color: "#e3e3e3"
+
         Rectangle {
             anchors { fill: parent; topMargin: 20; leftMargin: 20; rightMargin: 20; bottomMargin: 20 }
             color: "#ff7f7f"
             Text {
+                width: parent.width - 20
                 anchors.centerIn: parent; horizontalAlignment: Qt.AlignHCenter
-                text: "Roses are red"; font.pixelSize: 20
-                wrap: true; width: parent.width - 20
+                text: "Roses are red"
+                font.pixelSize: 20
+                wrapMode: Text.WordWrap
             }
         }
     }
 
     Rectangle {
         property string title: "Green"
-        anchors.fill: parent; color: "#e3e3e3"
+        anchors.fill: parent
+        color: "#e3e3e3"
+
         Rectangle {
             anchors { fill: parent; topMargin: 20; leftMargin: 20; rightMargin: 20; bottomMargin: 20 }
             color: "#7fff7f"
             Text {
+                width: parent.width - 20
                 anchors.centerIn: parent; horizontalAlignment: Qt.AlignHCenter
-                text: "Flower stems are green"; font.pixelSize: 20
-                wrap: true; width: parent.width - 20
+                text: "Flower stems are green"
+                font.pixelSize: 20
+                wrapMode: Text.WordWrap
             }
         }
     }
@@ -35,13 +43,16 @@ TabWidget {
     Rectangle {
         property string title: "Blue"
         anchors.fill: parent; color: "#e3e3e3"
+
         Rectangle {
             anchors { fill: parent; topMargin: 20; leftMargin: 20; rightMargin: 20; bottomMargin: 20 }
             color: "#7f7fff"
             Text {
+                width: parent.width - 20
                 anchors.centerIn: parent; horizontalAlignment: Qt.AlignHCenter
-                text: "Violets are blue"; font.pixelSize: 20
-                wrap: true; width: parent.width - 20
+                text: "Violets are blue"
+                font.pixelSize: 20
+                wrapMode: Text.WordWrap
             }
         }
     }
