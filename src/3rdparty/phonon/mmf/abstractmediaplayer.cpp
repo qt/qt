@@ -386,6 +386,7 @@ void MMF::AbstractMediaPlayer::playbackComplete(int error)
     }
     else {
         setError(tr("Playback complete"), error);
+        emit finished();
     }
 }
 
