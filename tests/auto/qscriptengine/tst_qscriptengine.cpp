@@ -155,6 +155,8 @@ private slots:
     void installTranslatorFunctions_data();
     void installTranslatorFunctions();
     void translateScript();
+    void translateWithInvalidArgs_data();
+    void translateWithInvalidArgs();
     void functionScopes();
     void nativeFunctionScopes();
     void evaluateProgram();
@@ -4341,6 +4343,15 @@ void tst_QScriptEngine::translateScript()
     QCOMPARE(engine.evaluate("eval('qsTranslate(\\'FooContext\\', \\'Two\\')')", fileName).toString(), QString::fromLatin1("To"));
     QCOMPARE(engine.evaluate("eval('qsTranslate(\\'FooContext\\', \\'Goodbye\\')')", fileName).toString(), QString::fromLatin1("Farvel"));
 
+    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Goodbye', '', 'UnicodeUTF8')", fileName).toString(), QString::fromLatin1("Farvel"));
+
+    QVERIFY(engine.evaluate("QT_TR_NOOP()").isUndefined());
+    QCOMPARE(engine.evaluate("QT_TR_NOOP('One')").toString(), QString::fromLatin1("One"));
+
+    QVERIFY(engine.evaluate("QT_TRANSLATE_NOOP()").isUndefined());
+    QVERIFY(engine.evaluate("QT_TRANSLATE_NOOP('FooContext')").isUndefined());
+    QCOMPARE(engine.evaluate("QT_TRANSLATE_NOOP('FooContext', 'Two')").toString(), QString::fromLatin1("Two"));
+
     // Don't exist in translation
     QCOMPARE(engine.evaluate("qsTr('Three')", fileName).toString(), QString::fromLatin1("Three"));
     QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'So long')", fileName).toString(), QString::fromLatin1("So long"));
@@ -4352,6 +4363,37 @@ void tst_QScriptEngine::translateScript()
                  QScriptValue(), QScriptValueList() << "One").toString(), QString::fromLatin1("One"));
 
     QCoreApplication::instance()->removeTranslator(&translator);
+}
+
+void tst_QScriptEngine::translateWithInvalidArgs_data()
+{
+    QTest::addColumn<QString>("expression");
+    QTest::addColumn<QString>("expectedError");
+
+    QTest::newRow("qsTr()")  << "qsTr()" << "Error: qsTr() requires at least one argument";
+    QTest::newRow("qsTr(123)")  << "qsTr(123)" << "Error: qsTr(): first argument (text) must be a string";
+    QTest::newRow("qsTr('foo', 123)")  << "qsTr('foo', 123)" << "Error: qsTr(): second argument (comment) must be a string";
+    QTest::newRow("qsTr('foo', 'bar', 'baz')")  << "qsTr('foo', 'bar', 'baz')" << "Error: qsTr(): third argument (n) must be a number";
+    QTest::newRow("qsTr('foo', 'bar', true)")  << "qsTr('foo', 'bar', true)" << "Error: qsTr(): third argument (n) must be a number";
+
+    QTest::newRow("qsTranslate()")  << "qsTranslate()" << "Error: qsTranslate() requires at least two arguments";
+    QTest::newRow("qsTranslate('foo')")  << "qsTranslate('foo')" << "Error: qsTranslate() requires at least two arguments";
+    QTest::newRow("qsTranslate('foo', 123)")  << "qsTranslate('foo', 123)" << "Error: qsTranslate(): second argument (text) must be a string";
+    QTest::newRow("qsTranslate('foo', 'bar', 123)")  << "qsTranslate('foo', 'bar', 123)" << "Error: qsTranslate(): third argument (comment) must be a string";
+    QTest::newRow("qsTranslate('foo', 'bar', 'baz', 123)")  << "qsTranslate('foo', 'bar', 'baz', 123)" << "Error: qsTranslate(): fourth argument (encoding) must be a string";
+    QTest::newRow("qsTranslate('foo', 'bar', 'baz', 'zab', 'rab')")  << "qsTranslate('foo', 'bar', 'baz', 'zab', 'rab')" << "Error: qsTranslate(): fifth argument (n) must be a number";
+    QTest::newRow("qsTranslate('foo', 'bar', 'baz', 'zab', 123)")  << "qsTranslate('foo', 'bar', 'baz', 'zab', 123)" << "Error: qsTranslate(): invalid encoding 'zab'";
+}
+
+void tst_QScriptEngine::translateWithInvalidArgs()
+{
+    QFETCH(QString, expression);
+    QFETCH(QString, expectedError);
+    QScriptEngine engine;
+    engine.installTranslatorFunctions();
+    QScriptValue result = engine.evaluate(expression);
+    QVERIFY(result.isError());
+    QCOMPARE(result.toString(), expectedError);
 }
 
 void tst_QScriptEngine::functionScopes()

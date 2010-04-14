@@ -663,7 +663,7 @@ JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState *exec, JSC::JSObje
         else if (encStr == QLatin1String("UnicodeUTF8"))
             encoding = QCoreApplication::UnicodeUTF8;
         else
-            return JSC::throwError(exec, JSC::GeneralError, QString::fromLatin1("qsTranslate(): invalid encoding '%s'").arg(encStr));
+            return JSC::throwError(exec, JSC::GeneralError, QString::fromLatin1("qsTranslate(): invalid encoding '%0'").arg(encStr));
     }
     int n = -1;
     if (args.size() > 4)
@@ -697,7 +697,7 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
     if ((args.size() > 1) && !args.at(1).isString())
         return JSC::throwError(exec, JSC::GeneralError, "qsTr(): second argument (comment) must be a string");
     if ((args.size() > 2) && !args.at(2).isNumber())
-        return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): third argument (n) must be a number");
+        return JSC::throwError(exec, JSC::GeneralError, "qsTr(): third argument (n) must be a number");
 #ifndef QT_NO_QOBJECT
     QString context;
     // The first non-empty source URL in the call stack determines the translation context.
