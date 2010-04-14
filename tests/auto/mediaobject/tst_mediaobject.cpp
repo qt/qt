@@ -575,7 +575,7 @@ void tst_MediaObject::playSDP()
 
     // MediaObject should have loaded the SDP, but be in error state due to absent media
     const bool stateMatch = (m_media->state() == Phonon::ErrorState);
-    const bool errorStringMatch = (m_media->errorString() == QString::fromLatin1("Buffering clip failed: Unknown error (-39)"));
+    const bool errorStringMatch = (m_media->errorString() == QString::fromLatin1("Loading clip failed: Unknown error (-39)"));
 
     // Ensure that m_media is back in ground state prior to starting next test step
     m_media->setCurrentSource(oldSource);

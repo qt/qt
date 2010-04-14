@@ -60,6 +60,8 @@ public:
 protected:
     // AbstractPlayer
     virtual void doSetTickInterval(qint32 interval);
+    virtual Phonon::State phononState(PrivateState state) const;
+    virtual void changeState(PrivateState newState);
 
     virtual void doPlay() = 0;
     virtual void doPause() = 0;
@@ -71,8 +73,6 @@ protected:
     virtual int bufferStatus() const = 0;
     virtual void close() = 0;
 
-    void changeState(PrivateState newState);
-
     void updateMetaData();
     virtual int numberOfMetaDataEntries() const = 0;
     virtual QPair<QString, QString> metaDataEntry(int index) const = 0;
@@ -81,6 +81,7 @@ protected:
     void bufferingStarted();
     void bufferingComplete();
     void maxVolumeChanged(int maxVolume);
+    void loadingComplete(int error);
     void playbackComplete(int error);
 
     static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
@@ -96,6 +97,14 @@ private:
     void resetMarksIfRewound();
     void startPlayback();
 
+    enum Pending {
+        NothingPending,
+        PausePending,
+        PlayPending
+    };
+
+    void setPending(Pending pending);
+
 private Q_SLOTS:
     void positionTick();
     void bufferStatusTick();
@@ -103,12 +112,7 @@ private Q_SLOTS:
 private:
     MediaObject *const          m_parent;
 
-    /**
-     * This flag is set to true if play is called when the object is
-     * in a Loading state.  Once loading is complete, playback will
-     * be started.
-     */
-    bool                        m_playPending;
+    Pending                     m_pending;
 
     QScopedPointer<QTimer>      m_positionTimer;
 

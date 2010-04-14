@@ -141,7 +141,7 @@ Phonon::State MMF::AbstractPlayer::phononState() const
     return phononState(m_state);
 }
 
-Phonon::State MMF::AbstractPlayer::phononState(PrivateState state)
+Phonon::State MMF::AbstractPlayer::phononState(PrivateState state) const
 {
     const Phonon::State phononState =
         GroundState == state

@@ -133,7 +133,7 @@ protected:
     /**
      * Converts PrivateState into the corresponding Phonon::State
      */
-    static Phonon::State phononState(PrivateState state);
+    virtual Phonon::State phononState(PrivateState state) const;
 
     virtual void videoOutputChanged();
 
