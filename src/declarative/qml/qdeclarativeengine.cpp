@@ -1486,13 +1486,17 @@ public:
 
     QSet<QString> qmlDirFilesForWhichPluginsHaveBeenLoaded;
 
-    QDeclarativeDirComponents importExtension(const QString &absoluteFilePath, const QString &uri, QDeclarativeEngine *engine) {
+    bool importExtension(const QString &absoluteFilePath, const QString &uri, QDeclarativeEngine *engine, QDeclarativeDirComponents* components, QString *errorString) {
         QFile file(absoluteFilePath);
         QString filecontent;
         if (file.open(QFile::ReadOnly)) {
             filecontent = QString::fromUtf8(file.readAll());
             if (qmlImportTrace())
                 qDebug() << "QDeclarativeEngine::add: loaded" << absoluteFilePath;
+        } else {
+            if (errorString)
+                *errorString = QDeclarativeEngine::tr("module \"%1\" definition \"%2\" not readable").arg(uri).arg(absoluteFilePath);
+            return false;
         }
         QDir dir = QFileInfo(file).dir();
 
@@ -1512,11 +1516,23 @@ public:
                                         plugin.name);
 
                 if (!resolvedFilePath.isEmpty()) {
-                    engine->importPlugin(resolvedFilePath, uri);
+                    if (!engine->importPlugin(resolvedFilePath, uri, errorString)) {
+                        if (errorString)
+                            *errorString = QDeclarativeEngine::tr("plugin cannot be loaded for module \"%1\": %2").arg(uri).arg(*errorString);
+                        return false;
+                    }
+                } else {
+                    if (errorString)
+                        *errorString = QDeclarativeEngine::tr("module \"%1\" plugin \"%2\" not found").arg(uri).arg(plugin.name);
+                    return false;
                 }
             }
         }
-        return qmldirParser.components();
+
+        if (components)
+            *components = qmldirParser.components();
+
+        return true;
     }
 
     QString resolvedUri(const QString &dir_arg, QDeclarativeEngine *engine)
@@ -1577,7 +1593,8 @@ public:
 
                     url = QUrl::fromLocalFile(fi.absolutePath()).toString();
                     uri = resolvedUri(dir, engine);
-                    qmldircomponents = importExtension(absoluteFilePath, uri, engine);
+                    if (!importExtension(absoluteFilePath, uri, engine, &qmldircomponents, errorString))
+                        return false;
                     break;
                 }
             }
@@ -1608,12 +1625,12 @@ public:
                         return false; // local import dirs must exist
                     }
                     uri = resolvedUri(toLocalFileOrQrc(base.resolved(QUrl(uri))), engine);
-                    qmldircomponents = importExtension(localFileOrQrc,
-                                                    uri,
-                                                    engine);
-
                     if (uri.endsWith(QLatin1Char('/')))
                         uri.chop(1);
+                    if (QFile::exists(localFileOrQrc)) {
+                        if (!importExtension(localFileOrQrc,uri,engine,&qmldircomponents,errorString))
+                            return false;
+                    }
                 } else {
                     if (prefix.isEmpty()) {
                         // directory must at least exist for valid import
@@ -1927,7 +1944,7 @@ void QDeclarativeEngine::setPluginPathList(const QStringList &paths)
   Imports the plugin named \a filePath with the \a uri provided.
   Returns true if the plugin was successfully imported; otherwise returns false.
 */
-bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &uri)
+bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &uri, QString *errorString)
 {
     if (qmlImportTrace())
         qDebug() << "QDeclarativeEngine::importPlugin" << uri << "from" << filePath;
@@ -1948,9 +1965,8 @@ bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &ur
         QPluginLoader loader(absoluteFilePath);
 
         if (!loader.load()) {
-            if (qmlImportTrace()) {
-                qDebug() << "QDeclarativeEngine::importPlugin: " << loader.errorString();
-            }
+            if (errorString)
+                *errorString = loader.errorString();
             return false;
         }
 
@@ -1972,8 +1988,8 @@ bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &ur
                 iface->initializeEngine(this, moduleId);
             }
         } else {
-            if (qmlImportTrace())
-                qDebug() << "QDeclarativeEngine::importPlugin: no DeclarativeExtensionInterface error";
+            if (errorString)
+                *errorString = loader.errorString();
             return false;
         }
     }
