@@ -186,11 +186,9 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
     gestureManager = 0;
     gestureWidget = 0;
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN)
     move_cursor = 0;
     copy_cursor = 0;
     link_cursor = 0;
-#endif
 #if defined(Q_WS_WIN)
     ignore_cursor = 0;
 #endif
@@ -1045,11 +1043,9 @@ QApplication::~QApplication()
     qt_clipboard = 0;
 #endif
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN)
     delete d->move_cursor; d->move_cursor = 0;
     delete d->copy_cursor; d->copy_cursor = 0;
     delete d->link_cursor; d->link_cursor = 0;
-#endif
 #if defined(Q_WS_WIN)
     delete d->ignore_cursor; d->ignore_cursor = 0;
 #endif
