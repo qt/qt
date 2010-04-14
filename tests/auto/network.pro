@@ -34,6 +34,8 @@ SUBDIRS=\
     qsslerror \
     qsslkey \
     qsslsocket \
+    qtcpsocket_stresstest \
+
 
 contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qhttpnetworkconnection \

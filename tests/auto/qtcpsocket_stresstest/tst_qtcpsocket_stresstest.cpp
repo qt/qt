@@ -58,6 +58,7 @@ public:
 
 public slots:
     void initTestCase_data();
+    void init();
 
     void slotReadAll() { static_cast<QTcpSocket *>(sender())->readAll(); }
 
@@ -82,6 +83,12 @@ void tst_QTcpSocket_stresstest::initTestCase_data()
 
     QTest::newRow("localhost") << false << "localhost" << server.port();
     QTest::newRow("remote") << true << QtNetworkSettings::serverName() << 80;
+}
+
+void tst_QTcpSocket_stresstest::init()
+{
+    if (qgetenv("QTCPSOCKET_STRESSTEST").toInt() == 0)
+        QSKIP("Stress test disabled", SkipAll);
 }
 
 void tst_QTcpSocket_stresstest::blockingConnectDisconnect()
