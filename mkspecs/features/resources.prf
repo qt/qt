@@ -1,6 +1,6 @@
 isEmpty(QMAKE_RCC) {
-    win32:QMAKE_RCC = $$[QT_INSTALL_BINS]\rcc.exe
-    else:QMAKE_RCC = $$[QT_INSTALL_BINS]/rcc
+    win32:QMAKE_RCC = $$[QT_INSTALL_BINS]$${DIR_SEPARATOR}rcc.exe
+    else:QMAKE_RCC = $$[QT_INSTALL_BINS]$${DIR_SEPARATOR}rcc
 }
 
 isEmpty(RCC_DIR):RCC_DIR = .

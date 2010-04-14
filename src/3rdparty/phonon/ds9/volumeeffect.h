@@ -47,7 +47,7 @@ namespace Phonon
         private:
             float m_volume;
 
-            //parameters used to fade
+            //paramaters used to fade
             Phonon::VolumeFaderEffect::FadeCurve m_fadeCurve;
 
             bool m_fading; //determines if we should be fading.

@@ -15,8 +15,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PHONON_VIDEORENDERER_VMR9_H
-#define PHONON_VIDEORENDERER_VMR9_H
+#ifndef PHONON_VIDEORENDERER_DEFAULT_H
+#define PHONON_VIDEORENDERER_DEFAULT_H
 
 #include "abstractvideorenderer.h"
 
@@ -28,11 +28,11 @@ namespace Phonon
 {
     namespace DS9
     {
-        class VideoRendererVMR9 : public AbstractVideoRenderer
+        class VideoRendererDefault : public AbstractVideoRenderer
         {
         public:
-            VideoRendererVMR9(QWidget *target);
-            ~VideoRendererVMR9();
+            VideoRendererDefault(QWidget *target);
+            ~VideoRendererDefault();
 
             //Implementation from AbstractVideoRenderer
             void repaintCurrentFrame(QWidget *target, const QRect &rect);
