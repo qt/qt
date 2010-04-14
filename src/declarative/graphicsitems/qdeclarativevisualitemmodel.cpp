@@ -243,7 +243,7 @@ public:
     QString m_part;
 
     QDeclarativeComponent *m_delegate;
-    QDeclarativeContext *m_context;
+    QDeclarativeGuard<QDeclarativeContext> m_context;
     QList<int> m_roles;
     QHash<QByteArray,int> m_roleNames;
     void ensureRoles() {

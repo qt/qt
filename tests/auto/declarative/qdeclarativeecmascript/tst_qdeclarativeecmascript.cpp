@@ -2242,6 +2242,7 @@ void tst_qdeclarativeecmascript::qtbug_9792()
 // Test that we shut down without stupid warnings
 void tst_qdeclarativeecmascript::noSpuriousWarningsAtShutdown()
 {
+    {
     QDeclarativeComponent component(&engine, TEST_FILE("noSpuriousWarningsAtShutdown.qml"));
 
     QObject *o = component.create();
@@ -2254,6 +2255,23 @@ void tst_qdeclarativeecmascript::noSpuriousWarningsAtShutdown()
     qInstallMsgHandler(old);
 
     QCOMPARE(transientErrorsMsgCount, 0);
+    }
+
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("noSpuriousWarningsAtShutdown.2.qml"));
+
+    QObject *o = component.create();
+
+    transientErrorsMsgCount = 0;
+    QtMsgHandler old = qInstallMsgHandler(transientErrorsMsgHandler);
+
+    delete o;
+
+    qInstallMsgHandler(old);
+
+    QCOMPARE(transientErrorsMsgCount, 0);
+    }
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

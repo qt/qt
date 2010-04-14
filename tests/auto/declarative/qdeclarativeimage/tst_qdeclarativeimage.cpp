@@ -46,6 +46,7 @@
 
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
+#include <QtDeclarative/qdeclarativeview.h>
 #include <private/qdeclarativeimage_p.h>
 #include <private/qdeclarativeimagebase_p.h>
 #include <private/qdeclarativeloader_p.h>
@@ -80,6 +81,7 @@ private slots:
     void imageSource_data();
     void clearSource();
     void resized();
+    void preserveAspectRatio();
     void smooth();
     void pixmap();
     void svg();
@@ -209,8 +211,29 @@ void tst_qdeclarativeimage::resized()
     QCOMPARE(obj->width(), 300.);
     QCOMPARE(obj->height(), 300.);
     QCOMPARE(obj->fillMode(), QDeclarativeImage::Stretch);
-
     delete obj;
+}
+
+
+void tst_qdeclarativeimage::preserveAspectRatio()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->show();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/aspectratio.qml"));
+    QDeclarativeImage *image = qobject_cast<QDeclarativeImage*>(canvas->rootObject());
+    QVERIFY(image != 0);
+    image->setWidth(80.0);
+    QCOMPARE(image->width(), 80.);
+    QCOMPARE(image->height(), 80.);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/aspectratio.qml"));
+    image = qobject_cast<QDeclarativeImage*>(canvas->rootObject());
+    image->setHeight(60.0);
+    QVERIFY(image != 0);
+    QCOMPARE(image->height(), 60.);
+    QCOMPARE(image->width(), 60.);
+    delete canvas;
 }
 
 void tst_qdeclarativeimage::smooth()

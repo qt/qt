@@ -71,6 +71,8 @@ public:
     QDeclarativeContext(QDeclarativeContext *parent, QObject *objParent=0);
     virtual ~QDeclarativeContext();
 
+    bool isValid() const;
+
     QDeclarativeEngine *engine() const;
     QDeclarativeContext *parentContext() const;
 
