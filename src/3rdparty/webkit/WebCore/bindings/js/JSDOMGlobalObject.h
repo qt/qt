@@ -70,6 +70,9 @@ namespace WebCore {
         virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
         static const JSC::ClassInfo s_info;
 
+    private:
+        static void destroyJSDOMGlobalObjectData(void*);
+
     protected:
         struct JSDOMGlobalObjectData : public JSC::JSGlobalObject::JSGlobalObjectData {
             JSDOMGlobalObjectData(DOMWrapperWorld* world, Destructor destructor = destroyJSDOMGlobalObjectData)
@@ -89,8 +92,6 @@ namespace WebCore {
         };
 
     private:
-        static void destroyJSDOMGlobalObjectData(void*);
-
         JSDOMGlobalObjectData* d() const { return static_cast<JSDOMGlobalObjectData*>(JSC::JSVariableObject::d); }
     };
 
