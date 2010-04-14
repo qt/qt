@@ -320,6 +320,9 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeEngine *engine, QObject
     Create a QDeclarativeComponent from the given \a url and give it the
     specified \a parent and \a engine.
 
+    Ensure that the URL provided is full and correct, in particular, use
+    \l QUrl::fromLocalFile() when loading a file from the local filesystem.
+
     \sa loadUrl()
 */
 QDeclarativeComponent::QDeclarativeComponent(QDeclarativeEngine *engine, const QUrl &url, QObject *parent)
@@ -409,6 +412,9 @@ QDeclarativeContext *QDeclarativeComponent::creationContext() const
 
 /*!
     Load the QDeclarativeComponent from the provided \a url.
+
+    Ensure that the URL provided is full and correct, in particular, use
+    \l QUrl::fromLocalFile() when loading a file from the local filesystem.
 */
 void QDeclarativeComponent::loadUrl(const QUrl &url)
 {
