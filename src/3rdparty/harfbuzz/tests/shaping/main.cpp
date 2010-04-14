@@ -136,13 +136,13 @@ HB_Error hb_getPointInOutline(HB_Font font, HB_Glyph glyph, int flags, hb_uint32
     return HB_Err_Ok;
 }
 
-void hb_getGlyphMetrics(HB_Font font, HB_Glyph glyph, HB_GlyphMetrics *metrics)
+void hb_getGlyphMetrics(HB_Font, HB_Glyph, HB_GlyphMetrics *metrics)
 {
     // ###
     metrics->x = metrics->y = metrics->width = metrics->height = metrics->xOffset = metrics->yOffset = 0;
 }
 
-HB_Fixed hb_getFontMetric(HB_Font font, HB_FontMetric metric)
+HB_Fixed hb_getFontMetric(HB_Font, HB_FontMetric )
 {
     return 0; // ####
 }
@@ -169,6 +169,8 @@ public slots:
     void initTestCase();
     void cleanupTestCase();
 private slots:
+    void greek();
+
     void devanagari();
     void bengali();
     void gurmukhi();
@@ -203,18 +205,25 @@ void tst_QScriptEngine::cleanupTestCase()
     FT_Done_FreeType(freetype);
 }
 
-struct ShapeTable {
-    unsigned short unicode[16];
-    unsigned short glyphs[16];
-};
-
-static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
+class Shaper
 {
-    QString str = QString::fromUtf16( s->unicode );
-
-    HB_Face hbFace = HB_NewFace(face, hb_getSFntTable);
+public:
+    Shaper(FT_Face face, HB_Script script, const QString &str);
 
     HB_FontRec hbFont;
+    HB_ShaperItem shaper_item;
+    QVarLengthArray<HB_Glyph> hb_glyphs;
+    QVarLengthArray<HB_GlyphAttributes> hb_attributes;
+    QVarLengthArray<HB_Fixed> hb_advances;
+    QVarLengthArray<HB_FixedPoint> hb_offsets;
+    QVarLengthArray<unsigned short> hb_logClusters;
+
+};
+
+Shaper::Shaper(FT_Face face, HB_Script script, const QString &str)
+{
+    HB_Face hbFace = HB_NewFace(face, hb_getSFntTable);
+
     hbFont.klass = &hb_fontClass;
     hbFont.userData = face;
     hbFont.x_ppem  = face->size->metrics.x_ppem;
@@ -222,7 +231,6 @@ static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
     hbFont.x_scale = face->size->metrics.x_scale;
     hbFont.y_scale = face->size->metrics.y_scale;
 
-    HB_ShaperItem shaper_item;
     shaper_item.kerning_applied = false;
     shaper_item.string = reinterpret_cast<const HB_UChar16 *>(str.constData());
     shaper_item.stringLength = str.length();
@@ -237,11 +245,6 @@ static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
     shaper_item.glyphIndicesPresent = false;
     shaper_item.initialGlyphCount = 0;
 
-    QVarLengthArray<HB_Glyph> hb_glyphs(shaper_item.num_glyphs);
-    QVarLengthArray<HB_GlyphAttributes> hb_attributes(shaper_item.num_glyphs);
-    QVarLengthArray<HB_Fixed> hb_advances(shaper_item.num_glyphs);
-    QVarLengthArray<HB_FixedPoint> hb_offsets(shaper_item.num_glyphs);
-    QVarLengthArray<unsigned short> hb_logClusters(shaper_item.num_glyphs);
 
     while (1) {
         hb_glyphs.resize(shaper_item.num_glyphs);
@@ -263,10 +266,66 @@ static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
 
         if (HB_ShapeItem(&shaper_item))
             break;
-
     }
 
     HB_FreeFace(hbFace);
+}
+
+
+static bool decomposedShaping(FT_Face face, HB_Script script, const QChar &ch)
+{
+    QString uc = QString().append(ch);
+    Shaper shaper(face, script, uc);
+
+    uc = uc.normalized(QString::NormalizationForm_D);
+    Shaper decomposed(face, script, uc);
+
+    if( shaper.shaper_item.num_glyphs != decomposed.shaper_item.num_glyphs )
+        goto error;
+
+    for (unsigned int i = 0; i < shaper.shaper_item.num_glyphs; ++i) {
+        if ((shaper.shaper_item.glyphs[i]&0xffffff) != (decomposed.shaper_item.glyphs[i]&0xffffff))
+            goto error;
+    }
+    return true;
+ error:
+    QString str = "";
+    int i = 0;
+    while (i < uc.length()) {
+        str += QString("%1 ").arg(uc[i].unicode(), 4, 16);
+        ++i;
+    }
+    qDebug("%s: decomposedShaping of char %4x failed\n    decomposedString: %s\n   nglyphs=%d, decomposed nglyphs %d",
+           face->family_name,
+           ch.unicode(), str.toLatin1().data(),
+           shaper.shaper_item.num_glyphs,
+           decomposed.shaper_item.num_glyphs);
+
+    str = "";
+    i = 0;
+    while (i < shaper.shaper_item.num_glyphs) {
+        str += QString("%1 ").arg(shaper.shaper_item.glyphs[i], 4, 16);
+        ++i;
+    }
+    qDebug("    composed glyph result   = %s", str.toLatin1().constData());
+    str = "";
+    i = 0;
+    while (i < decomposed.shaper_item.num_glyphs) {
+        str += QString("%1 ").arg(decomposed.shaper_item.glyphs[i], 4, 16);
+        ++i;
+    }
+    qDebug("    decomposed glyph result = %s", str.toLatin1().constData());
+    return false;
+}
+
+struct ShapeTable {
+    unsigned short unicode[16];
+    unsigned short glyphs[16];
+};
+
+static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
+{
+    Shaper shaper(face, script, QString::fromUtf16( s->unicode ));
 
     hb_uint32 nglyphs = 0;
     const unsigned short *g = s->glyphs;
@@ -275,16 +334,16 @@ static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
 	g++;
     }
 
-    if( nglyphs != shaper_item.num_glyphs )
+    if( nglyphs != shaper.shaper_item.num_glyphs )
 	goto error;
 
     for (hb_uint32 i = 0; i < nglyphs; ++i) {
-	if ((shaper_item.glyphs[i]&0xffffff) != s->glyphs[i])
+        if ((shaper.shaper_item.glyphs[i]&0xffffff) != s->glyphs[i])
 	    goto error;
     }
     return true;
  error:
-    str = "";
+    QString str = "";
     const unsigned short *uc = s->unicode;
     while (*uc) {
 	str += QString("%1 ").arg(*uc, 4, 16);
@@ -293,17 +352,77 @@ static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
     qDebug("%s: shaping of string %s failed, nglyphs=%d, expected %d",
            face->family_name,
            str.toLatin1().constData(),
-           shaper_item.num_glyphs, nglyphs);
+           shaper.shaper_item.num_glyphs, nglyphs);
 
     str = "";
     hb_uint32 i = 0;
-    while (i < shaper_item.num_glyphs) {
-	str += QString("%1 ").arg(shaper_item.glyphs[i], 4, 16);
+    while (i < shaper.shaper_item.num_glyphs) {
+        str += QString("%1 ").arg(shaper.shaper_item.glyphs[i], 4, 16);
 	++i;
     }
     qDebug("    glyph result = %s", str.toLatin1().constData());
     return false;
 }
+
+
+void tst_QScriptEngine::greek()
+{
+    FT_Face face = loadFace("DejaVuSans.ttf");
+    if (face) {
+        for (int uc = 0x1f00; uc <= 0x1fff; ++uc) {
+            QString str;
+            str.append(uc);
+            if (str.normalized(QString::NormalizationForm_D).normalized(QString::NormalizationForm_C) != str) {
+                //qDebug() << "skipping" << hex << uc;
+                continue;
+            }
+            if (uc == 0x1fc1 || uc == 0x1fed)
+                continue;
+            QVERIFY( decomposedShaping(face, HB_Script_Greek, QChar(uc)) );
+        }
+        FT_Done_Face(face);
+    } else {
+        QSKIP("couln't find DejaVu Sans", SkipAll);
+    }
+
+
+    face = loadFace("SBL_grk.ttf");
+    if (face) {
+        for (int uc = 0x1f00; uc <= 0x1fff; ++uc) {
+            QString str;
+            str.append(uc);
+            if (str.normalized(QString::NormalizationForm_D).normalized(QString::NormalizationForm_C) != str) {
+                //qDebug() << "skipping" << hex << uc;
+                continue;
+            }
+            if (uc == 0x1fc1 || uc == 0x1fed)
+                continue;
+            QVERIFY( decomposedShaping(face, HB_Script_Greek, QChar(uc)) );
+
+        }
+
+        const ShapeTable shape_table [] = {
+            { { 0x3b1, 0x300, 0x313, 0x0 },
+              { 0xb8, 0x3d3, 0x3c7, 0x0 } },
+            { { 0x3b1, 0x313, 0x300, 0x0 },
+              { 0xd4, 0x0 } },
+
+            { {0}, {0} }
+        };
+
+
+        const ShapeTable *s = shape_table;
+        while (s->unicode[0]) {
+            QVERIFY( shaping(face, s, HB_Script_Greek) );
+            ++s;
+        }
+
+        FT_Done_Face(face);
+    } else {
+        QSKIP("couln't find DejaVu Sans", SkipAll);
+    }
+}
+
 
 void tst_QScriptEngine::devanagari()
 {
@@ -1011,6 +1130,8 @@ void tst_QScriptEngine::malayalam()
                   { 0x3f8, 0x0 } },
                 { { 0xd2f, 0xd4d, 0xd15, 0xd4d, 0xd15, 0xd41, 0x0 },
                   { 0x2ff, 0x0 } },
+                { { 0xd30, 0xd4d, 0x200d, 0xd35, 0xd4d, 0xd35, 0x0 },
+                  { 0xf3, 0x350, 0x0 } },
 
                 { {0}, {0} }
             };
