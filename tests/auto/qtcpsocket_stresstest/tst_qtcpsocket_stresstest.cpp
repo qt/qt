@@ -59,6 +59,8 @@ public:
 public slots:
     void initTestCase_data();
 
+    void slotReadAll() { static_cast<QTcpSocket *>(sender())->readAll(); }
+
 private Q_SLOTS:
     void blockingConnectDisconnect();
     void blockingPipelined();
@@ -219,6 +221,7 @@ void tst_QTcpSocket_stresstest::connectDisconnect()
                      "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
                      "Host: " + hostname.toLatin1() + "\r\n"
                      "\r\n");
+        connect(&socket, SIGNAL(readyRead()), SLOT(slotReadAll()));
 
         QTestEventLoop::instance().connect(&socket, SIGNAL(disconnected()), SLOT(exitLoop()));
         QTestEventLoop::instance().enterLoop(30);
@@ -235,6 +238,7 @@ void tst_QTcpSocket_stresstest::parallelConnectDisconnect_data()
     QTest::newRow("5") << 5;
     QTest::newRow("10") << 10;
     QTest::newRow("25") << 25;
+    QTest::newRow("100") << 100;
 }
 
 void tst_QTcpSocket_stresstest::parallelConnectDisconnect()
@@ -254,13 +258,14 @@ void tst_QTcpSocket_stresstest::parallelConnectDisconnect()
                             "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
                             "Host: " + hostname.toLatin1() + "\r\n"
                             "\r\n");
+            connect(&socket[j], SIGNAL(readyRead()), SLOT(slotReadAll()));
 
             QTestEventLoop::instance().connect(&socket[j], SIGNAL(disconnected()), SLOT(exitLoop()));
         }
 
         QElapsedTimer timeout;
         timeout.start();
-        while (!timeout.hasExpired(10000)) {
+        while (!timeout.hasExpired(30000)) {
             QTestEventLoop::instance().enterLoop(10);
             int done = 0;
             for (int j = 0; j < parallelAttempts; ++j)
@@ -269,7 +274,8 @@ void tst_QTcpSocket_stresstest::parallelConnectDisconnect()
                 break;
         }
         delete[] socket;
-        QVERIFY2(!timeout.hasExpired(10000), "Timeout");
+        QVERIFY2(!timeout.hasExpired(30000), "Timeout");
+        //qDebug() << "Run-time was" << timeout.elapsed();
     }
 }
 
