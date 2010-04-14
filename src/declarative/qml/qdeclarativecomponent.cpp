@@ -597,6 +597,11 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
         return 0;
     }
 
+    if (!context->isValid()) {
+        qWarning("QDeclarativeComponent::beginCreate(): Cannot create a component in an invalid context");
+        return 0;
+    }
+
     if (context->engine != engine) {
         qWarning("QDeclarativeComponent::beginCreate(): Must create component in context from the same QDeclarativeEngine");
         return 0;
