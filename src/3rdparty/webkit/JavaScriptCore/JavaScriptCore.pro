@@ -221,3 +221,6 @@ SOURCES += \
 !contains(DEFINES, USE_SYSTEM_MALLOC) {
     SOURCES += wtf/TCSystemAlloc.cpp
 }
+
+# JavaScriptCore is not going to build with C++0x any time soon
+*-g++*:QMAKE_CXXFLAGS -= -std=c++0x -std=gnu++0x
