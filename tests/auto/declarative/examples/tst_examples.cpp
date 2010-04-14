@@ -294,8 +294,6 @@ void tst_examples::examples()
     sync.waitForFinished();
 
     for (int ii = 0; ii < tests.count(); ++ii) {
-        if (tests.at(ii).result != Example::Pass)
-            qWarning() << tests.at(ii).file << ":failed";
         if (tests.at(ii).result != Example::Pass) 
             QFAIL(qPrintable(tests.at(ii).file));
     }
