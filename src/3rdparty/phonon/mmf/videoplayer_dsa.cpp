@@ -226,38 +226,40 @@ void MMF::DsaVideoPlayer::handleParametersChanged(VideoParameters parameters)
     getDsaRegion(m_wsSession, *m_window);
 #endif
 
-    static const TBool antialias = ETrue;
-    int err = KErrNone;
+    if (m_player) {
+        static const TBool antialias = ETrue;
+        int err = KErrNone;
 
-    if (parameters & ScaleFactors) {
-        TRAP(err, m_player->SetScaleFactorL(m_scaleWidth, m_scaleHeight,
-                                            antialias));
-        if(KErrNone != err) {
-            TRACE("SetScaleFactorL (1) err %d", err);
-            setError(tr("Video display error"), err);
-        }
-    }
-
-    if (KErrNone == err) {
-        if (parameters & WindowHandle || parameters & WindowScreenRect) {
-            TRAP(err,
-                m_player->SetDisplayWindowL(m_wsSession, m_screenDevice,
-                                            *m_window,
-                                            m_videoScreenRect,
-                                            m_videoScreenRect));
+        if (parameters & ScaleFactors) {
+            TRAP(err, m_player->SetScaleFactorL(m_scaleWidth, m_scaleHeight,
+                                                antialias));
+            if(KErrNone != err) {
+                TRACE("SetScaleFactorL (1) err %d", err);
+                setError(tr("Video display error"), err);
+            }
         }
 
-        if (KErrNone != err) {
-            TRACE("SetDisplayWindowL err %d", err);
-            setError(tr("Video display error"), err);
-        } else {
-            m_dsaActive = true;
-            if (parameters & ScaleFactors) {
-                TRAP(err, m_player->SetScaleFactorL(m_scaleWidth, m_scaleHeight,
-                                                    antialias));
-                if (KErrNone != err) {
-                    TRACE("SetScaleFactorL (2) err %d", err);
-                    setError(tr("Video display error"), err);
+        if (KErrNone == err) {
+            if (parameters & WindowHandle || parameters & WindowScreenRect) {
+                TRAP(err,
+                    m_player->SetDisplayWindowL(m_wsSession, m_screenDevice,
+                                                *m_window,
+                                                m_videoScreenRect,
+                                                m_videoScreenRect));
+            }
+
+            if (KErrNone != err) {
+                TRACE("SetDisplayWindowL err %d", err);
+                setError(tr("Video display error"), err);
+            } else {
+                m_dsaActive = true;
+                if (parameters & ScaleFactors) {
+                    TRAP(err, m_player->SetScaleFactorL(m_scaleWidth, m_scaleHeight,
+                                                        antialias));
+                    if (KErrNone != err) {
+                        TRACE("SetScaleFactorL (2) err %d", err);
+                        setError(tr("Video display error"), err);
+                    }
                 }
             }
         }
