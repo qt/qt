@@ -196,7 +196,7 @@ void tst_qdeclarativeanimatedimage::invalidSource()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl::fromLocalFile(""));
     QVERIFY(component.isReady());
 
     QTest::ignoreMessage(QtWarningMsg, "Error Reading Animated Image File  QUrl( \"file:no-such-file.gif\" )  ");
