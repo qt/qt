@@ -1257,12 +1257,12 @@ void tst_qdeclarativelanguage::importsLocal_data()
         << "QDeclarativeRectangle"
         << "";
     QTest::newRow("local import second")
-        << "import Qt 4.6\nimport \"subdir\"\n"
+        << "import Qt 4.7\nimport \"subdir\"\n"
            "Test {}"
         << "QDeclarativeRectangle"
         << "";
     QTest::newRow("local import subsubdir")
-        << "import Qt 4.6\nimport \"subdir/subsubdir\"\n"
+        << "import Qt 4.7\nimport \"subdir/subsubdir\"\n"
            "SubTest {}"
         << "QDeclarativeRectangle"
         << "";
@@ -1465,24 +1465,24 @@ void tst_qdeclarativelanguage::importsOrder_data()
 
     QTest::newRow("installed import versus builtin 1") <<
            "import com.nokia.installedtest 1.5\n"
-           "import Qt 4.6\n"
+           "import Qt 4.7\n"
            "Rectangle {}"
         << "QDeclarativeRectangle"
         << "";
     QTest::newRow("installed import versus builtin 2") <<
-           "import Qt 4.6\n"
+           "import Qt 4.7\n"
            "import com.nokia.installedtest 1.5\n"
            "Rectangle {}"
         << "QDeclarativeText"
         << "";
     QTest::newRow("namespaces cannot be overridden by types 1") <<
-           "import Qt 4.6 as Rectangle\n"
+           "import Qt 4.7 as Rectangle\n"
            "import com.nokia.installedtest 1.5\n"
            "Rectangle {}"
         << ""
         << "Namespace Rectangle cannot be used as a type";
     QTest::newRow("namespaces cannot be overridden by types 2") <<
-           "import Qt 4.6 as Rectangle\n"
+           "import Qt 4.7 as Rectangle\n"
            "import com.nokia.installedtest 1.5\n"
            "Rectangle.Image {}"
         << "QDeclarativeImage"
@@ -1537,7 +1537,7 @@ void tst_qdeclarativelanguage::qmlAttachedPropertiesObjectMethod()
 void tst_qdeclarativelanguage::crash1()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6\nComponent {}", QUrl());
+    component.setData("import Qt 4.7\nComponent {}", QUrl());
 }
 
 void tst_qdeclarativelanguage::crash2()

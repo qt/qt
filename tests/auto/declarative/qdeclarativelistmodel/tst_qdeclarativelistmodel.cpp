@@ -118,7 +118,7 @@ void tst_QDeclarativeListModel::waitForWorker(QDeclarativeItem *item)
 void tst_QDeclarativeListModel::static_i18n()
 {
     QString expect = QString::fromUtf8("na\303\257ve");
-    QString componentStr = "import Qt 4.6\nListModel { ListElement { prop1: \""+expect+"\" } }";
+    QString componentStr = "import Qt 4.7\nListModel { ListElement { prop1: \""+expect+"\" } }";
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toUtf8(), QUrl::fromLocalFile(""));
@@ -139,7 +139,7 @@ void tst_QDeclarativeListModel::static_nestedElements()
     QString elementsStr = elements.join(",\n") + "\n";
 
     QString componentStr = 
-        "import Qt 4.6\n"
+        "import Qt 4.7\n"
         "ListModel {\n"
         "   ListElement {\n"
         "       attributes: [\n";
@@ -468,7 +468,7 @@ void tst_QDeclarativeListModel::static_types()
     QFETCH(QString, qml);
     QFETCH(QVariant, value);
 
-    qml = "import Qt 4.6\nListModel { " + qml + " }";
+    qml = "import Qt 4.7\nListModel { " + qml + " }";
 
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
@@ -500,35 +500,35 @@ void tst_QDeclarativeListModel::error_data()
     QTest::addColumn<QString>("error");
 
     QTest::newRow("id not allowed in ListElement")
-        << "import Qt 4.6\nListModel { ListElement { id: fred } }"
+        << "import Qt 4.7\nListModel { ListElement { id: fred } }"
         << "ListElement: cannot use reserved \"id\" property";
 
     QTest::newRow("id allowed in ListModel")
-        << "import Qt 4.6\nListModel { id:model }"
+        << "import Qt 4.7\nListModel { id:model }"
         << "";
 
     QTest::newRow("random properties not allowed in ListModel")
-        << "import Qt 4.6\nListModel { foo:123 }"
+        << "import Qt 4.7\nListModel { foo:123 }"
         << "ListModel: undefined property 'foo'";
 
     QTest::newRow("random properties allowed in ListElement")
-        << "import Qt 4.6\nListModel { ListElement { foo:123 } }"
+        << "import Qt 4.7\nListModel { ListElement { foo:123 } }"
         << "";
 
     QTest::newRow("bindings not allowed in ListElement")
-        << "import Qt 4.6\nRectangle { id: rect; ListModel { ListElement { foo: rect.color } } }"
+        << "import Qt 4.7\nRectangle { id: rect; ListModel { ListElement { foo: rect.color } } }"
         << "ListElement: cannot use script for property value";
 
     QTest::newRow("random object list properties allowed in ListElement")
-        << "import Qt 4.6\nListModel { ListElement { foo: [ ListElement { bar: 123 } ] } }"
+        << "import Qt 4.7\nListModel { ListElement { foo: [ ListElement { bar: 123 } ] } }"
         << "";
 
     QTest::newRow("default properties not allowed in ListElement")
-        << "import Qt 4.6\nListModel { ListElement { Item { } } }"
+        << "import Qt 4.7\nListModel { ListElement { Item { } } }"
         << "ListElement: cannot contain nested elements";
 
     QTest::newRow("QML elements not allowed in ListElement")
-        << "import Qt 4.6\nListModel { ListElement { a: Item { } } }"
+        << "import Qt 4.7\nListModel { ListElement { a: Item { } } }"
         << "ListElement: cannot contain nested elements";
 }
 

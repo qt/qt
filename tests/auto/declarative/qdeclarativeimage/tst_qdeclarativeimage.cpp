@@ -95,7 +95,7 @@ tst_qdeclarativeimage::tst_qdeclarativeimage()
 
 void tst_qdeclarativeimage::noSource()
 {
-    QString componentStr = "import Qt 4.6\nImage { source: \"\" }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -149,7 +149,7 @@ void tst_qdeclarativeimage::imageSource()
     if (!error.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
-    QString componentStr = "import Qt 4.6\nImage { source: \"" + source + "\"; asynchronous: "
+    QString componentStr = "import Qt 4.7\nImage { source: \"" + source + "\"; asynchronous: "
         + (async ? QLatin1String("true") : QLatin1String("false")) + " }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
@@ -179,7 +179,7 @@ void tst_qdeclarativeimage::imageSource()
 
 void tst_qdeclarativeimage::clearSource()
 {
-    QString componentStr = "import Qt 4.6\nImage { source: srcImage }";
+    QString componentStr = "import Qt 4.7\nImage { source: srcImage }";
     QDeclarativeContext *ctxt = engine.rootContext();
     ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/colors.png"));
     QDeclarativeComponent component(&engine);
@@ -201,7 +201,7 @@ void tst_qdeclarativeimage::clearSource()
 
 void tst_qdeclarativeimage::resized()
 {
-    QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/colors.png\"; width: 300; height: 300 }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"" SRCDIR "/data/colors.png\"; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -215,7 +215,7 @@ void tst_qdeclarativeimage::resized()
 
 void tst_qdeclarativeimage::smooth()
 {
-    QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/colors.png\"; smooth: true; width: 300; height: 300 }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"" SRCDIR "/data/colors.png\"; smooth: true; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -230,7 +230,7 @@ void tst_qdeclarativeimage::smooth()
 
 void tst_qdeclarativeimage::pixmap()
 {
-    QString componentStr = "import Qt 4.6\nImage { pixmap: testPixmap }";
+    QString componentStr = "import Qt 4.7\nImage { pixmap: testPixmap }";
 
     QPixmap pixmap;
     QDeclarativeContext *ctxt = engine.rootContext();
@@ -261,7 +261,7 @@ void tst_qdeclarativeimage::pixmap()
 void tst_qdeclarativeimage::svg()
 {
     QString src = QUrl::fromLocalFile(SRCDIR "/data/heart.svg").toString();
-    QString componentStr = "import Qt 4.6\nImage { source: \"" + src + "\"; sourceSize.width: 300; sourceSize.height: 300 }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"" + src + "\"; sourceSize.width: 300; sourceSize.height: 300 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -300,7 +300,7 @@ void tst_qdeclarativeimage::big()
     // have to build a 400 MB image. That would be a bug in the JPEG loader.
 
     QString src = QUrl::fromLocalFile(SRCDIR "/data/big.jpeg").toString();
-    QString componentStr = "import Qt 4.6\nImage { source: \"" + src + "\"; sourceSize.width: 256; sourceSize.height: 256 }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"" + src + "\"; sourceSize.width: 256; sourceSize.height: 256 }";
 
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));

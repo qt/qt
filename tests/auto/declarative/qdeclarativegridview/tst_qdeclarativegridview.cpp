@@ -825,10 +825,10 @@ void tst_QDeclarativeGridView::componentChanges()
     QTRY_VERIFY(gridView);
 
     QDeclarativeComponent component(canvas->engine());
-    component.setData("import Qt 4.6; Rectangle { color: \"blue\"; }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7; Rectangle { color: \"blue\"; }", QUrl::fromLocalFile(""));
 
     QDeclarativeComponent delegateComponent(canvas->engine());
-    delegateComponent.setData("import Qt 4.6; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
+    delegateComponent.setData("import Qt 4.7; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
 
     QSignalSpy highlightSpy(gridView, SIGNAL(highlightChanged()));
     QSignalSpy delegateSpy(gridView, SIGNAL(delegateChanged()));
