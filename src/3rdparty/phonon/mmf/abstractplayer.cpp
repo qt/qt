@@ -48,6 +48,11 @@ MMF::AbstractPlayer::AbstractPlayer(const AbstractPlayer *player)
         m_tickInterval = player->m_tickInterval;
         m_transitionTime = player->m_transitionTime;
         m_prefinishMark = player->m_prefinishMark;
+
+        // This is to prevent unwanted state transitions occurring as a result
+        // of MediaObject::switchToNextSource() during playlist playback.
+        if (StoppedState == player->m_state)
+            m_state = player->m_state;
     }
 }
 
