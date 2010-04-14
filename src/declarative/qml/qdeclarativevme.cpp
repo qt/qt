@@ -246,12 +246,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
             {
                 QObject *o = (QObject *)operator new(instr.createSimple.typeSize + 
                                                      sizeof(QDeclarativeDeclarativeData));   
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
                 ::memset(o, 0, instr.createSimple.typeSize + sizeof(QDeclarativeDeclarativeData));
-#else
-                // faster than memset
-                ::bzero(o, instr.createSimple.typeSize + sizeof(QDeclarativeDeclarativeData));
-#endif
                 instr.createSimple.create(o);
 
                 QDeclarativeDeclarativeData *ddata = 

@@ -80,6 +80,7 @@ namespace JSC {
         enum JSUndefinedTag { JSUndefined };
         enum JSTrueTag { JSTrue };
         enum JSFalseTag { JSFalse };
+        enum EncodeAsDoubleTag { EncodeAsDouble };
 
         JSValue();
         JSValue(JSNullTag);
@@ -90,6 +91,7 @@ namespace JSC {
         JSValue(const JSCell* ptr);
 
         // Numbers
+        JSValue(EncodeAsDoubleTag, ExecState*, double);
         JSValue(ExecState*, double);
         JSValue(ExecState*, char);
         JSValue(ExecState*, unsigned char);
@@ -135,8 +137,8 @@ namespace JSC {
         bool getBoolean() const; // false if not a boolean
         bool getNumber(double&) const;
         double uncheckedGetNumber() const;
-        bool getString(UString&) const;
-        UString getString() const; // null string if not a string
+        bool getString(ExecState* exec, UString&) const;
+        UString getString(ExecState* exec) const; // null string if not a string
         JSObject* getObject() const; // 0 if not an object
 
         CallType getCallData(CallData&);
@@ -156,6 +158,7 @@ namespace JSC {
         double toNumber(ExecState*) const;
         JSValue toJSNumber(ExecState*) const; // Fast path for when you expect that the value is an immediate number.
         UString toString(ExecState*) const;
+        UString toPrimitiveString(ExecState*) const;
         JSObject* toObject(ExecState*) const;
 
         // Integer conversions.
@@ -165,6 +168,10 @@ namespace JSC {
         int32_t toInt32(ExecState*, bool& ok) const;
         uint32_t toUInt32(ExecState*) const;
         uint32_t toUInt32(ExecState*, bool& ok) const;
+
+#if ENABLE(JSC_ZOMBIES)
+        bool isZombie() const;
+#endif
 
         // Floating point conversions (this is a convenience method for webcore;
         // signle precision float is not a representation used in JS or JSC).
@@ -186,9 +193,9 @@ namespace JSC {
         static bool equal(ExecState* exec, JSValue v1, JSValue v2);
         static bool equalSlowCase(ExecState* exec, JSValue v1, JSValue v2);
         static bool equalSlowCaseInline(ExecState* exec, JSValue v1, JSValue v2);
-        static bool strictEqual(JSValue v1, JSValue v2);
-        static bool strictEqualSlowCase(JSValue v1, JSValue v2);
-        static bool strictEqualSlowCaseInline(JSValue v1, JSValue v2);
+        static bool strictEqual(ExecState* exec, JSValue v1, JSValue v2);
+        static bool strictEqualSlowCase(ExecState* exec, JSValue v1, JSValue v2);
+        static bool strictEqualSlowCaseInline(ExecState* exec, JSValue v1, JSValue v2);
 
         JSValue getJSNumber(); // JSValue() if this is not a JSNumber or number object
 
@@ -228,7 +235,7 @@ namespace JSC {
         union {
             EncodedJSValue asEncodedJSValue;
             double asDouble;
-#if PLATFORM(BIG_ENDIAN)
+#if CPU(BIG_ENDIAN)
             struct {
                 int32_t tag;
                 int32_t payload;
@@ -277,6 +284,11 @@ namespace JSC {
     inline JSValue jsBoolean(bool b)
     {
         return b ? JSValue(JSValue::JSTrue) : JSValue(JSValue::JSFalse);
+    }
+
+    ALWAYS_INLINE JSValue jsDoubleNumber(ExecState* exec, double d)
+    {
+        return JSValue(JSValue::EncodeAsDouble, exec, d);
     }
 
     ALWAYS_INLINE JSValue jsNumber(ExecState* exec, double d)
@@ -431,6 +443,9 @@ namespace JSC {
     {
         JSValue v;
         v.u.asEncodedJSValue = encodedJSValue;
+#if ENABLE(JSC_ZOMBIES)
+        ASSERT(!v.isZombie());
+#endif
         return v;
     }
 
@@ -477,6 +492,9 @@ namespace JSC {
         else
             u.asBits.tag = EmptyValueTag;
         u.asBits.payload = reinterpret_cast<int32_t>(ptr);
+#if ENABLE(JSC_ZOMBIES)
+        ASSERT(!isZombie());
+#endif
     }
 
     inline JSValue::JSValue(const JSCell* ptr)
@@ -486,6 +504,9 @@ namespace JSC {
         else
             u.asBits.tag = EmptyValueTag;
         u.asBits.payload = reinterpret_cast<int32_t>(const_cast<JSCell*>(ptr));
+#if ENABLE(JSC_ZOMBIES)
+        ASSERT(!isZombie());
+#endif
     }
 
     inline JSValue::operator bool() const
@@ -581,6 +602,11 @@ namespace JSC {
     {
         ASSERT(isCell());
         return reinterpret_cast<JSCell*>(u.asBits.payload);
+    }
+
+    ALWAYS_INLINE JSValue::JSValue(EncodeAsDoubleTag, ExecState*, double d)
+    {
+        u.asDouble = d;
     }
 
     inline JSValue::JSValue(ExecState* exec, double d)
@@ -781,11 +807,17 @@ namespace JSC {
     inline JSValue::JSValue(JSCell* ptr)
         : m_ptr(ptr)
     {
+#if ENABLE(JSC_ZOMBIES)
+        ASSERT(!isZombie());
+#endif
     }
 
     inline JSValue::JSValue(const JSCell* ptr)
         : m_ptr(const_cast<JSCell*>(ptr))
     {
+#if ENABLE(JSC_ZOMBIES)
+        ASSERT(!isZombie());
+#endif
     }
 
     inline JSValue::operator bool() const

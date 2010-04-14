@@ -47,13 +47,13 @@ ASSERT_CLASS_FITS_IN_CELL(JSRange);
 
 static const HashTableValue JSRangeTableValues[8] =
 {
-    { "startContainer", DontDelete|ReadOnly, (intptr_t)jsRangeStartContainer, (intptr_t)0 },
-    { "startOffset", DontDelete|ReadOnly, (intptr_t)jsRangeStartOffset, (intptr_t)0 },
-    { "endContainer", DontDelete|ReadOnly, (intptr_t)jsRangeEndContainer, (intptr_t)0 },
-    { "endOffset", DontDelete|ReadOnly, (intptr_t)jsRangeEndOffset, (intptr_t)0 },
-    { "collapsed", DontDelete|ReadOnly, (intptr_t)jsRangeCollapsed, (intptr_t)0 },
-    { "commonAncestorContainer", DontDelete|ReadOnly, (intptr_t)jsRangeCommonAncestorContainer, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsRangeConstructor, (intptr_t)0 },
+    { "startContainer", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeStartContainer), (intptr_t)0 },
+    { "startOffset", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeStartOffset), (intptr_t)0 },
+    { "endContainer", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeEndContainer), (intptr_t)0 },
+    { "endOffset", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeEndOffset), (intptr_t)0 },
+    { "collapsed", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeCollapsed), (intptr_t)0 },
+    { "commonAncestorContainer", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeCommonAncestorContainer), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -68,14 +68,14 @@ static JSC_CONST_HASHTABLE HashTable JSRangeTable =
 
 static const HashTableValue JSRangeConstructorTableValues[9] =
 {
-    { "START_TO_START", DontDelete|ReadOnly, (intptr_t)jsRangeSTART_TO_START, (intptr_t)0 },
-    { "START_TO_END", DontDelete|ReadOnly, (intptr_t)jsRangeSTART_TO_END, (intptr_t)0 },
-    { "END_TO_END", DontDelete|ReadOnly, (intptr_t)jsRangeEND_TO_END, (intptr_t)0 },
-    { "END_TO_START", DontDelete|ReadOnly, (intptr_t)jsRangeEND_TO_START, (intptr_t)0 },
-    { "NODE_BEFORE", DontDelete|ReadOnly, (intptr_t)jsRangeNODE_BEFORE, (intptr_t)0 },
-    { "NODE_AFTER", DontDelete|ReadOnly, (intptr_t)jsRangeNODE_AFTER, (intptr_t)0 },
-    { "NODE_BEFORE_AND_AFTER", DontDelete|ReadOnly, (intptr_t)jsRangeNODE_BEFORE_AND_AFTER, (intptr_t)0 },
-    { "NODE_INSIDE", DontDelete|ReadOnly, (intptr_t)jsRangeNODE_INSIDE, (intptr_t)0 },
+    { "START_TO_START", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeSTART_TO_START), (intptr_t)0 },
+    { "START_TO_END", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeSTART_TO_END), (intptr_t)0 },
+    { "END_TO_END", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeEND_TO_END), (intptr_t)0 },
+    { "END_TO_START", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeEND_TO_START), (intptr_t)0 },
+    { "NODE_BEFORE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeNODE_BEFORE), (intptr_t)0 },
+    { "NODE_AFTER", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeNODE_AFTER), (intptr_t)0 },
+    { "NODE_BEFORE_AND_AFTER", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeNODE_BEFORE_AND_AFTER), (intptr_t)0 },
+    { "NODE_INSIDE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeNODE_INSIDE), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -100,7 +100,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -123,40 +123,40 @@ bool JSRangeConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identif
 
 static const HashTableValue JSRangePrototypeTableValues[35] =
 {
-    { "START_TO_START", DontDelete|ReadOnly, (intptr_t)jsRangeSTART_TO_START, (intptr_t)0 },
-    { "START_TO_END", DontDelete|ReadOnly, (intptr_t)jsRangeSTART_TO_END, (intptr_t)0 },
-    { "END_TO_END", DontDelete|ReadOnly, (intptr_t)jsRangeEND_TO_END, (intptr_t)0 },
-    { "END_TO_START", DontDelete|ReadOnly, (intptr_t)jsRangeEND_TO_START, (intptr_t)0 },
-    { "NODE_BEFORE", DontDelete|ReadOnly, (intptr_t)jsRangeNODE_BEFORE, (intptr_t)0 },
-    { "NODE_AFTER", DontDelete|ReadOnly, (intptr_t)jsRangeNODE_AFTER, (intptr_t)0 },
-    { "NODE_BEFORE_AND_AFTER", DontDelete|ReadOnly, (intptr_t)jsRangeNODE_BEFORE_AND_AFTER, (intptr_t)0 },
-    { "NODE_INSIDE", DontDelete|ReadOnly, (intptr_t)jsRangeNODE_INSIDE, (intptr_t)0 },
-    { "setStart", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionSetStart, (intptr_t)2 },
-    { "setEnd", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionSetEnd, (intptr_t)2 },
-    { "setStartBefore", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionSetStartBefore, (intptr_t)1 },
-    { "setStartAfter", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionSetStartAfter, (intptr_t)1 },
-    { "setEndBefore", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionSetEndBefore, (intptr_t)1 },
-    { "setEndAfter", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionSetEndAfter, (intptr_t)1 },
-    { "collapse", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionCollapse, (intptr_t)1 },
-    { "selectNode", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionSelectNode, (intptr_t)1 },
-    { "selectNodeContents", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionSelectNodeContents, (intptr_t)1 },
-    { "compareBoundaryPoints", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionCompareBoundaryPoints, (intptr_t)2 },
-    { "deleteContents", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionDeleteContents, (intptr_t)0 },
-    { "extractContents", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionExtractContents, (intptr_t)0 },
-    { "cloneContents", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionCloneContents, (intptr_t)0 },
-    { "insertNode", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionInsertNode, (intptr_t)1 },
-    { "surroundContents", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionSurroundContents, (intptr_t)1 },
-    { "cloneRange", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionCloneRange, (intptr_t)0 },
-    { "toString", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionToString, (intptr_t)0 },
-    { "detach", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionDetach, (intptr_t)0 },
-    { "getClientRects", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionGetClientRects, (intptr_t)0 },
-    { "getBoundingClientRect", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionGetBoundingClientRect, (intptr_t)0 },
-    { "createContextualFragment", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionCreateContextualFragment, (intptr_t)1 },
-    { "intersectsNode", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionIntersectsNode, (intptr_t)1 },
-    { "compareNode", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionCompareNode, (intptr_t)1 },
-    { "comparePoint", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionComparePoint, (intptr_t)2 },
-    { "isPointInRange", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionIsPointInRange, (intptr_t)2 },
-    { "expand", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionExpand, (intptr_t)1 },
+    { "START_TO_START", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeSTART_TO_START), (intptr_t)0 },
+    { "START_TO_END", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeSTART_TO_END), (intptr_t)0 },
+    { "END_TO_END", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeEND_TO_END), (intptr_t)0 },
+    { "END_TO_START", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeEND_TO_START), (intptr_t)0 },
+    { "NODE_BEFORE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeNODE_BEFORE), (intptr_t)0 },
+    { "NODE_AFTER", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeNODE_AFTER), (intptr_t)0 },
+    { "NODE_BEFORE_AND_AFTER", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeNODE_BEFORE_AND_AFTER), (intptr_t)0 },
+    { "NODE_INSIDE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsRangeNODE_INSIDE), (intptr_t)0 },
+    { "setStart", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionSetStart), (intptr_t)2 },
+    { "setEnd", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionSetEnd), (intptr_t)2 },
+    { "setStartBefore", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionSetStartBefore), (intptr_t)1 },
+    { "setStartAfter", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionSetStartAfter), (intptr_t)1 },
+    { "setEndBefore", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionSetEndBefore), (intptr_t)1 },
+    { "setEndAfter", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionSetEndAfter), (intptr_t)1 },
+    { "collapse", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionCollapse), (intptr_t)1 },
+    { "selectNode", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionSelectNode), (intptr_t)1 },
+    { "selectNodeContents", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionSelectNodeContents), (intptr_t)1 },
+    { "compareBoundaryPoints", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionCompareBoundaryPoints), (intptr_t)2 },
+    { "deleteContents", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionDeleteContents), (intptr_t)0 },
+    { "extractContents", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionExtractContents), (intptr_t)0 },
+    { "cloneContents", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionCloneContents), (intptr_t)0 },
+    { "insertNode", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionInsertNode), (intptr_t)1 },
+    { "surroundContents", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionSurroundContents), (intptr_t)1 },
+    { "cloneRange", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionCloneRange), (intptr_t)0 },
+    { "toString", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionToString), (intptr_t)0 },
+    { "detach", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionDetach), (intptr_t)0 },
+    { "getClientRects", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionGetClientRects), (intptr_t)0 },
+    { "getBoundingClientRect", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionGetBoundingClientRect), (intptr_t)0 },
+    { "createContextualFragment", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionCreateContextualFragment), (intptr_t)1 },
+    { "intersectsNode", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionIntersectsNode), (intptr_t)1 },
+    { "compareNode", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionCompareNode), (intptr_t)1 },
+    { "comparePoint", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionComparePoint), (intptr_t)2 },
+    { "isPointInRange", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionIsPointInRange), (intptr_t)2 },
+    { "expand", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsRangePrototypeFunctionExpand), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -212,9 +212,9 @@ bool JSRange::getOwnPropertyDescriptor(ExecState* exec, const Identifier& proper
     return getStaticValueDescriptor<JSRange, Base>(exec, &JSRangeTable, this, propertyName, descriptor);
 }
 
-JSValue jsRangeStartContainer(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeStartContainer(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSRange* castedThis = static_cast<JSRange*>(asObject(slot.slotBase()));
+    JSRange* castedThis = static_cast<JSRange*>(asObject(slotBase));
     ExceptionCode ec = 0;
     Range* imp = static_cast<Range*>(castedThis->impl());
     JSC::JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->startContainer(ec)));
@@ -222,9 +222,9 @@ JSValue jsRangeStartContainer(ExecState* exec, const Identifier&, const Property
     return result;
 }
 
-JSValue jsRangeStartOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeStartOffset(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSRange* castedThis = static_cast<JSRange*>(asObject(slot.slotBase()));
+    JSRange* castedThis = static_cast<JSRange*>(asObject(slotBase));
     ExceptionCode ec = 0;
     Range* imp = static_cast<Range*>(castedThis->impl());
     JSC::JSValue result = jsNumber(exec, imp->startOffset(ec));
@@ -232,9 +232,9 @@ JSValue jsRangeStartOffset(ExecState* exec, const Identifier&, const PropertySlo
     return result;
 }
 
-JSValue jsRangeEndContainer(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeEndContainer(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSRange* castedThis = static_cast<JSRange*>(asObject(slot.slotBase()));
+    JSRange* castedThis = static_cast<JSRange*>(asObject(slotBase));
     ExceptionCode ec = 0;
     Range* imp = static_cast<Range*>(castedThis->impl());
     JSC::JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->endContainer(ec)));
@@ -242,9 +242,9 @@ JSValue jsRangeEndContainer(ExecState* exec, const Identifier&, const PropertySl
     return result;
 }
 
-JSValue jsRangeEndOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeEndOffset(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSRange* castedThis = static_cast<JSRange*>(asObject(slot.slotBase()));
+    JSRange* castedThis = static_cast<JSRange*>(asObject(slotBase));
     ExceptionCode ec = 0;
     Range* imp = static_cast<Range*>(castedThis->impl());
     JSC::JSValue result = jsNumber(exec, imp->endOffset(ec));
@@ -252,9 +252,9 @@ JSValue jsRangeEndOffset(ExecState* exec, const Identifier&, const PropertySlot&
     return result;
 }
 
-JSValue jsRangeCollapsed(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeCollapsed(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSRange* castedThis = static_cast<JSRange*>(asObject(slot.slotBase()));
+    JSRange* castedThis = static_cast<JSRange*>(asObject(slotBase));
     ExceptionCode ec = 0;
     Range* imp = static_cast<Range*>(castedThis->impl());
     JSC::JSValue result = jsBoolean(imp->collapsed(ec));
@@ -262,9 +262,9 @@ JSValue jsRangeCollapsed(ExecState* exec, const Identifier&, const PropertySlot&
     return result;
 }
 
-JSValue jsRangeCommonAncestorContainer(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeCommonAncestorContainer(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSRange* castedThis = static_cast<JSRange*>(asObject(slot.slotBase()));
+    JSRange* castedThis = static_cast<JSRange*>(asObject(slotBase));
     ExceptionCode ec = 0;
     Range* imp = static_cast<Range*>(castedThis->impl());
     JSC::JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->commonAncestorContainer(ec)));
@@ -272,9 +272,9 @@ JSValue jsRangeCommonAncestorContainer(ExecState* exec, const Identifier&, const
     return result;
 }
 
-JSValue jsRangeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsRangeConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSRange* domObject = static_cast<JSRange*>(asObject(slot.slotBase()));
+    JSRange* domObject = static_cast<JSRange*>(asObject(slotBase));
     return JSRange::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSRange::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -679,42 +679,42 @@ JSValue JSC_HOST_CALL jsRangePrototypeFunctionExpand(ExecState* exec, JSObject*,
 
 // Constant getters
 
-JSValue jsRangeSTART_TO_START(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsRangeSTART_TO_START(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsRangeSTART_TO_END(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsRangeSTART_TO_END(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsRangeEND_TO_END(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsRangeEND_TO_END(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsRangeEND_TO_START(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsRangeEND_TO_START(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValue jsRangeNODE_BEFORE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsRangeNODE_BEFORE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsRangeNODE_AFTER(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsRangeNODE_AFTER(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsRangeNODE_BEFORE_AND_AFTER(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsRangeNODE_BEFORE_AND_AFTER(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsRangeNODE_INSIDE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsRangeNODE_INSIDE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }

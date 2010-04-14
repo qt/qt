@@ -50,6 +50,8 @@
 #include "qdbusmetatype_p.h"
 #include "qdbusabstractadaptor_p.h" // for QCLASSINFO_DBUS_*
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 bool qDBusCheckAsyncTag(const char *tag)
@@ -195,3 +197,5 @@ int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

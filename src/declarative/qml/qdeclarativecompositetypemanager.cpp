@@ -723,7 +723,7 @@ void QDeclarativeCompositeTypeManager::compile(QDeclarativeCompositeTypeData *un
         }
     }
 
-    QUrl importUrl = unit->imports.baseUrl().resolved(QUrl("qmldir"));
+    QUrl importUrl = unit->imports.baseUrl().resolved(QUrl(QLatin1String("qmldir")));
     if (toLocalFileOrQrc(importUrl).isEmpty())
         resourceList.prepend(importUrl);
 

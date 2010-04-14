@@ -28,7 +28,7 @@
 
 #include "config.h"
 
-#if PLATFORM(SYMBIAN)
+#if OS(SYMBIAN)
 
 #include "BlockAllocatorSymbian.h"
 

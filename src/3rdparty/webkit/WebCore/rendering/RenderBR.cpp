@@ -1,6 +1,4 @@
 /**
- * This file is part of the DOM implementation for KDE.
- *
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2006 Apple Computer, Inc.
  *
@@ -64,7 +62,7 @@ int RenderBR::lineHeight(bool firstLine, bool /*isRootLineBox*/) const
             return s->font().lineSpacing();
         }
         if (lh.isPercent())
-            return lh.calcMinValue(s->fontSize(), true);
+            return lh.calcMinValue(s->fontSize());
         return lh.value();
     }
 

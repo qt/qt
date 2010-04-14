@@ -44,7 +44,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDOMImplementation);
 
 static const HashTableValue JSDOMImplementationTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsDOMImplementationConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMImplementationConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -83,7 +83,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -106,11 +106,11 @@ bool JSDOMImplementationConstructor::getOwnPropertyDescriptor(ExecState* exec, c
 
 static const HashTableValue JSDOMImplementationPrototypeTableValues[6] =
 {
-    { "hasFeature", DontDelete|Function, (intptr_t)jsDOMImplementationPrototypeFunctionHasFeature, (intptr_t)2 },
-    { "createDocumentType", DontDelete|Function, (intptr_t)jsDOMImplementationPrototypeFunctionCreateDocumentType, (intptr_t)3 },
-    { "createDocument", DontDelete|Function, (intptr_t)jsDOMImplementationPrototypeFunctionCreateDocument, (intptr_t)3 },
-    { "createCSSStyleSheet", DontDelete|Function, (intptr_t)jsDOMImplementationPrototypeFunctionCreateCSSStyleSheet, (intptr_t)2 },
-    { "createHTMLDocument", DontDelete|Function, (intptr_t)jsDOMImplementationPrototypeFunctionCreateHTMLDocument, (intptr_t)1 },
+    { "hasFeature", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsDOMImplementationPrototypeFunctionHasFeature), (intptr_t)2 },
+    { "createDocumentType", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsDOMImplementationPrototypeFunctionCreateDocumentType), (intptr_t)3 },
+    { "createDocument", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsDOMImplementationPrototypeFunctionCreateDocument), (intptr_t)3 },
+    { "createCSSStyleSheet", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsDOMImplementationPrototypeFunctionCreateCSSStyleSheet), (intptr_t)2 },
+    { "createHTMLDocument", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsDOMImplementationPrototypeFunctionCreateHTMLDocument), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -166,9 +166,9 @@ bool JSDOMImplementation::getOwnPropertyDescriptor(ExecState* exec, const Identi
     return getStaticValueDescriptor<JSDOMImplementation, Base>(exec, &JSDOMImplementationTable, this, propertyName, descriptor);
 }
 
-JSValue jsDOMImplementationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMImplementationConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSDOMImplementation* domObject = static_cast<JSDOMImplementation*>(asObject(slot.slotBase()));
+    JSDOMImplementation* domObject = static_cast<JSDOMImplementation*>(asObject(slotBase));
     return JSDOMImplementation::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSDOMImplementation::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

@@ -53,6 +53,8 @@
 #include "qdbusintrospection_p.h"
 #include "qdbusabstractinterface_p.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 class QDBusMetaObjectGenerator
@@ -677,3 +679,4 @@ int QDBusMetaObject::propertyMetaType(int id) const
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_DBUS

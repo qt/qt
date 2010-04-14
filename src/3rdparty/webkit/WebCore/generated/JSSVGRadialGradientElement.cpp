@@ -36,13 +36,14 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGRadialGradientElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGRadialGradientElementTableValues[6] =
+static const HashTableValue JSSVGRadialGradientElementTableValues[7] =
 {
-    { "cx", DontDelete|ReadOnly, (intptr_t)jsSVGRadialGradientElementCx, (intptr_t)0 },
-    { "cy", DontDelete|ReadOnly, (intptr_t)jsSVGRadialGradientElementCy, (intptr_t)0 },
-    { "r", DontDelete|ReadOnly, (intptr_t)jsSVGRadialGradientElementR, (intptr_t)0 },
-    { "fx", DontDelete|ReadOnly, (intptr_t)jsSVGRadialGradientElementFx, (intptr_t)0 },
-    { "fy", DontDelete|ReadOnly, (intptr_t)jsSVGRadialGradientElementFy, (intptr_t)0 },
+    { "cx", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGRadialGradientElementCx), (intptr_t)0 },
+    { "cy", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGRadialGradientElementCy), (intptr_t)0 },
+    { "r", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGRadialGradientElementR), (intptr_t)0 },
+    { "fx", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGRadialGradientElementFx), (intptr_t)0 },
+    { "fy", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGRadialGradientElementFy), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGRadialGradientElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -52,6 +53,53 @@ static JSC_CONST_HASHTABLE HashTable JSSVGRadialGradientElementTable =
 #else
     { 18, 15, JSSVGRadialGradientElementTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGRadialGradientElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGRadialGradientElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGRadialGradientElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGRadialGradientElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGRadialGradientElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGRadialGradientElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGRadialGradientElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGRadialGradientElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGRadialGradientElementConstructor::s_info = { "SVGRadialGradientElementConstructor", 0, &JSSVGRadialGradientElementConstructorTable, 0 };
+
+bool JSSVGRadialGradientElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGRadialGradientElementConstructor, DOMObject>(exec, &JSSVGRadialGradientElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGRadialGradientElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGRadialGradientElementConstructor, DOMObject>(exec, &JSSVGRadialGradientElementConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -96,49 +144,64 @@ bool JSSVGRadialGradientElement::getOwnPropertyDescriptor(ExecState* exec, const
     return getStaticValueDescriptor<JSSVGRadialGradientElement, Base>(exec, &JSSVGRadialGradientElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGRadialGradientElementCx(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGRadialGradientElementCx(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGRadialGradientElement* castedThis = static_cast<JSSVGRadialGradientElement*>(asObject(slot.slotBase()));
+    JSSVGRadialGradientElement* castedThis = static_cast<JSSVGRadialGradientElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGRadialGradientElement* imp = static_cast<SVGRadialGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->cxAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGRadialGradientElementCy(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGRadialGradientElementCy(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGRadialGradientElement* castedThis = static_cast<JSSVGRadialGradientElement*>(asObject(slot.slotBase()));
+    JSSVGRadialGradientElement* castedThis = static_cast<JSSVGRadialGradientElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGRadialGradientElement* imp = static_cast<SVGRadialGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->cyAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGRadialGradientElementR(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGRadialGradientElementR(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGRadialGradientElement* castedThis = static_cast<JSSVGRadialGradientElement*>(asObject(slot.slotBase()));
+    JSSVGRadialGradientElement* castedThis = static_cast<JSSVGRadialGradientElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGRadialGradientElement* imp = static_cast<SVGRadialGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->rAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGRadialGradientElementFx(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGRadialGradientElementFx(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGRadialGradientElement* castedThis = static_cast<JSSVGRadialGradientElement*>(asObject(slot.slotBase()));
+    JSSVGRadialGradientElement* castedThis = static_cast<JSSVGRadialGradientElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGRadialGradientElement* imp = static_cast<SVGRadialGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->fxAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGRadialGradientElementFy(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGRadialGradientElementFy(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGRadialGradientElement* castedThis = static_cast<JSSVGRadialGradientElement*>(asObject(slot.slotBase()));
+    JSSVGRadialGradientElement* castedThis = static_cast<JSSVGRadialGradientElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGRadialGradientElement* imp = static_cast<SVGRadialGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->fyAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
+}
+
+JSValue jsSVGRadialGradientElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGRadialGradientElement* domObject = static_cast<JSSVGRadialGradientElement*>(asObject(slotBase));
+    return JSSVGRadialGradientElement::getConstructor(exec, domObject->globalObject());
+}
+JSValue JSSVGRadialGradientElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGRadialGradientElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

@@ -141,12 +141,12 @@ void tst_qdeclarativeanimatedimage::remote()
     QFETCH(QString, fileName);
     QFETCH(bool, paused);
 
-    TestHTTPServer server(14445);
+    TestHTTPServer server(14449);
     QVERIFY(server.isValid());
     server.serveDirectory(SRCDIR "/data");
 
     QDeclarativeEngine engine;
-    QDeclarativeComponent component(&engine, QUrl("http://127.0.0.1:14445/" + fileName));
+    QDeclarativeComponent component(&engine, QUrl("http://127.0.0.1:14449/" + fileName));
     TRY_WAIT(component.isReady());
 
     QDeclarativeAnimatedImage *anim = qobject_cast<QDeclarativeAnimatedImage *>(component.create());

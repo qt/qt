@@ -52,8 +52,6 @@
     issues that you may encounter. It also explains how to turn on Qt
     3 compatibility support.
 
-    \tableofcontents
-
     \section1 New Technologies in Qt 4
 
     Qt 4 introduces the following core technologies:
@@ -467,10 +465,6 @@
     A list of other Qt 4 features can be found on the \bold{\l{What's
     New in Qt 4}} page.
 
-    \bold{Highlights}
-
-    \tableofcontents
-
     \section1 Declarative UI development with Qt Quick
 
     \image quick_screens.png
@@ -548,10 +542,6 @@
 
     A list of other Qt 4 features can be found on the \bold{\l{What's
     New in Qt 4}} page.
-
-    \bold{Highlights}
-
-    \tableofcontents
 
     \section1 Support for Symbian
 
@@ -761,10 +751,6 @@
 
     A list of other Qt 4 features can be found on the
     \bold{\l{What's New in Qt 4}} page.
-
-    \bold{Highlights}
-
-    \tableofcontents
 
     \section1 Qt WebKit Integration
 

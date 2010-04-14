@@ -57,9 +57,9 @@ TextStream& operator<<(TextStream& ts, const SVGPaintServer& paintServer)
     return paintServer.externalRepresentation(ts);
 }
 
-SVGPaintServer* getPaintServerById(Document* document, const AtomicString& id)
+SVGPaintServer* getPaintServerById(Document* document, const AtomicString& id, const RenderObject* object)
 {
-    SVGResource* resource = getResourceById(document, id);
+    SVGResource* resource = getResourceById(document, id, object);
     if (resource && resource->isPaintServer())
         return static_cast<SVGPaintServer*>(resource);
 
@@ -85,7 +85,7 @@ SVGPaintServer* SVGPaintServer::fillPaintServer(const RenderStyle* style, const 
     if (paintType == SVGPaint::SVG_PAINTTYPE_URI ||
         paintType == SVGPaint::SVG_PAINTTYPE_URI_RGBCOLOR) {
         AtomicString id(SVGURIReference::getTarget(fill->uri()));
-        fillPaintServer = getPaintServerById(item->document(), id);
+        fillPaintServer = getPaintServerById(item->document(), id, item);
 
         SVGElement* svgElement = static_cast<SVGElement*>(item->node());
         ASSERT(svgElement && svgElement->document() && svgElement->isStyled());
@@ -123,10 +123,12 @@ SVGPaintServer* SVGPaintServer::strokePaintServer(const RenderStyle* style, cons
 
     SVGPaintServer* strokePaintServer = 0;
     SVGPaint::SVGPaintType paintType = stroke->paintType();
-    if (paintType == SVGPaint::SVG_PAINTTYPE_URI ||
-        paintType == SVGPaint::SVG_PAINTTYPE_URI_RGBCOLOR) {
+    if ((paintType == SVGPaint::SVG_PAINTTYPE_URI
+        || paintType == SVGPaint::SVG_PAINTTYPE_URI_RGBCOLOR)
+        && item->objectBoundingBox().width() != 0
+        && item->objectBoundingBox().height() != 0) {
         AtomicString id(SVGURIReference::getTarget(stroke->uri()));
-        strokePaintServer = getPaintServerById(item->document(), id);
+        strokePaintServer = getPaintServerById(item->document(), id, item);
 
         SVGElement* svgElement = static_cast<SVGElement*>(item->node());
         ASSERT(svgElement && svgElement->document() && svgElement->isStyled());
@@ -147,11 +149,16 @@ SVGPaintServer* SVGPaintServer::strokePaintServer(const RenderStyle* style, cons
         if (!strokePaintServerSolid->color().isValid())
             strokePaintServer = 0;
     }
+    if (!strokePaintServer) {
+        // default value (black), see bug 11017
+        strokePaintServer = sharedSolidPaintServer();
+        static_cast<SVGPaintServerSolid*>(strokePaintServer)->setColor(Color::black);
+    }
 
     return strokePaintServer;
 }
 
-void applyStrokeStyleToContext(GraphicsContext* context, RenderStyle* style, const RenderObject* object)
+void applyStrokeStyleToContext(GraphicsContext* context, const RenderStyle* style, const RenderObject* object)
 {
     context->setStrokeThickness(SVGRenderStyle::cssPrimitiveToLength(object, style->svgStyle()->strokeWidth(), 1.0f));
     context->setLineCap(style->svgStyle()->capStyle());
@@ -162,6 +169,11 @@ void applyStrokeStyleToContext(GraphicsContext* context, RenderStyle* style, con
     const DashArray& dashes = dashArrayFromRenderingStyle(object->style(), object->document()->documentElement()->renderStyle());
     float dashOffset = SVGRenderStyle::cssPrimitiveToLength(object, style->svgStyle()->strokeDashOffset(), 0.0f);
     context->setLineDash(dashes, dashOffset);
+}
+
+bool SVGPaintServer::setup(GraphicsContext*& context, const RenderObject* object, SVGPaintTargetType type, bool isPaintingText) const
+{
+    return setup(context, object, object ? object->style() : 0, type, isPaintingText);
 }
 
 void SVGPaintServer::draw(GraphicsContext*& context, const RenderObject* path, SVGPaintTargetType type) const

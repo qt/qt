@@ -23,7 +23,6 @@
 #define CSSStyleSelector_h
 
 #include "CSSFontSelector.h"
-#include "KeyframeList.h"
 #include "LinkHash.h"
 #include "MediaQueryExp.h"
 #include "RenderStyle.h"
@@ -56,6 +55,7 @@ class Element;
 class Frame;
 class FrameView;
 class KURL;
+class KeyframeList;
 class MediaQueryEvaluator;
 class Node;
 class Settings;
@@ -65,7 +65,7 @@ class StyleSheetList;
 class StyledElement;
 class WebKitCSSKeyframesRule;
 
-class MediaQueryResult {
+class MediaQueryResult : public Noncopyable {
 public:
     MediaQueryResult(const MediaQueryExp& expr, bool result)
         : m_expression(expr)
@@ -92,6 +92,8 @@ public:
 
         PassRefPtr<RenderStyle> pseudoStyleForElement(PseudoId, Element*, RenderStyle* parentStyle = 0);
 
+        static PassRefPtr<RenderStyle> styleForDocument(Document*);
+
 #if ENABLE(DATAGRID)
         // Datagrid style computation (uses unique pseudo elements and structures)
         PassRefPtr<RenderStyle> pseudoStyleForDataGridColumn(DataGridColumn*, RenderStyle* parentStyle);
@@ -112,8 +114,8 @@ public:
 
         // Given a CSS keyword in the range (xx-small to -webkit-xxx-large), this function will return
         // the correct font size scaled relative to the user's default (medium).
-        float fontSizeForKeyword(int keyword, bool quirksMode, bool monospace) const;
-
+        static float fontSizeForKeyword(Document*, int keyword, bool monospace);
+        
     private:
         // When the CSS keyword "larger" is used, this function will attempt to match within the keyword
         // table, and failing that, will simply multiply by 1.2.
@@ -129,7 +131,7 @@ public:
         void applyPropertyToStyle(int id, CSSValue*, RenderStyle*);
 
     private:
-        float getComputedSizeFromSpecifiedSize(bool isAbsoluteSize, float specifiedSize);
+        static float getComputedSizeFromSpecifiedSize(Document*, RenderStyle*, bool isAbsoluteSize, float specifiedSize, bool useSVGZoomRules);
 
     public:
         Color getColorFromPrimitiveValue(CSSPrimitiveValue*);
@@ -233,6 +235,7 @@ public:
         void mapAnimationDelay(Animation*, CSSValue*);
         void mapAnimationDirection(Animation*, CSSValue*);
         void mapAnimationDuration(Animation*, CSSValue*);
+        void mapAnimationFillMode(Animation*, CSSValue*);
         void mapAnimationIterationCount(Animation*, CSSValue*);
         void mapAnimationName(Animation*, CSSValue*);
         void mapAnimationPlayState(Animation*, CSSValue*);
@@ -286,7 +289,7 @@ public:
         HashMap<CSSMutableStyleDeclaration*, RefPtr<CSSMutableStyleDeclaration> > m_resolvedVariablesDeclarations;
     };
 
-    class CSSRuleData {
+    class CSSRuleData : public Noncopyable {
     public:
         CSSRuleData(unsigned pos, CSSStyleRule* r, CSSSelector* sel, CSSRuleData* prev = 0)
             : m_position(pos)
@@ -314,7 +317,7 @@ public:
         CSSRuleData* m_next;
     };
 
-    class CSSRuleDataList {
+    class CSSRuleDataList : public Noncopyable {
     public:
         CSSRuleDataList(unsigned pos, CSSStyleRule* rule, CSSSelector* sel)
             : m_first(new CSSRuleData(pos, rule, sel))

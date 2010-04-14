@@ -54,6 +54,7 @@ namespace WebCore {
     class EditorClientQt;
     class FrameLoaderClientQt;
     class InspectorClientQt;
+    class InspectorFrontendClientQt;
     class ResourceHandle;
     class HitTestResult;
     class QNetworkReplyHandler;
@@ -208,20 +209,8 @@ public:
     QUndoStack *undoStack() const;
 #endif
 
-#if QT_VERSION < 0x040400 && !defined(qdoc)
-    void setNetworkInterface(QWebNetworkInterface *interface);
-    QWebNetworkInterface *networkInterface() const;
-
-    // #### why is this in the page itself?
-#ifndef QT_NO_NETWORKPROXY
-    void setNetworkProxy(const QNetworkProxy& proxy);
-    QNetworkProxy networkProxy() const;
-#endif
-
-#else
     void setNetworkAccessManager(QNetworkAccessManager *manager);
     QNetworkAccessManager *networkAccessManager() const;
-#endif
 
     void setPluginFactory(QWebPluginFactory *factory);
     QWebPluginFactory *pluginFactory() const;
@@ -231,7 +220,9 @@ public:
 
     QString selectedText() const;
 
+#ifndef QT_NO_ACTION
     QAction *action(WebAction action) const;
+#endif
     virtual void triggerAction(WebAction action, bool checked = false);
 
     QSize viewportSize() const;
@@ -334,10 +325,8 @@ Q_SIGNALS:
     void statusBarVisibilityChangeRequested(bool visible);
     void menuBarVisibilityChangeRequested(bool visible);
 
-#if QT_VERSION >= 0x040400
     void unsupportedContent(QNetworkReply *reply);
     void downloadRequested(const QNetworkRequest &request);
-#endif
 
     void microFocusChanged();
     void contentsChanged();
@@ -350,11 +339,7 @@ protected:
     virtual QWebPage *createWindow(WebWindowType type);
     virtual QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
 
-#if QT_VERSION >= 0x040400
     virtual bool acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &request, NavigationType type);
-#else
-    virtual bool acceptNavigationRequest(QWebFrame *frame, const QWebNetworkRequest &request, NavigationType type);
-#endif
     virtual QString chooseFile(QWebFrame *originatingFrame, const QString& oldFile);
     virtual void javaScriptAlert(QWebFrame *originatingFrame, const QString& msg);
     virtual bool javaScriptConfirm(QWebFrame *originatingFrame, const QString& msg);
@@ -365,7 +350,9 @@ protected:
 
 private:
     Q_PRIVATE_SLOT(d, void _q_onLoadProgressChanged(int))
+#ifndef QT_NO_ACTION
     Q_PRIVATE_SLOT(d, void _q_webActionTriggered(bool checked))
+#endif
     Q_PRIVATE_SLOT(d, void _q_cleanupLeakMessages())
 
     QWebPagePrivate *d;
@@ -373,12 +360,15 @@ private:
     friend class QWebFrame;
     friend class QWebPagePrivate;
     friend class QWebView;
+    friend class QWebViewPrivate;
     friend class QGraphicsWebView;
+    friend class QGraphicsWebViewPrivate;
     friend class QWebInspector;
     friend class WebCore::ChromeClientQt;
     friend class WebCore::EditorClientQt;
     friend class WebCore::FrameLoaderClientQt;
     friend class WebCore::InspectorClientQt;
+    friend class WebCore::InspectorFrontendClientQt;
     friend class WebCore::ResourceHandle;
     friend class WebCore::QNetworkReplyHandler;
 };

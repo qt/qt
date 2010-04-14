@@ -168,16 +168,18 @@ public slots:
 class Exit_Thread : public Simple_Thread
 {
 public:
+    Exit_Object *object;
     int code;
     int result;
 
     void run()
     {
-        Simple_Thread::run();
-        Exit_Object o;
-        o.thread = this;
-        o.code = code;
-        QTimer::singleShot(100, &o, SLOT(slot()));
+        if (object) {
+            Simple_Thread::run();
+            object->thread = this;
+            object->code = code;
+            QTimer::singleShot(100, object, SLOT(slot()));
+        }
         result = exec();
     }
 };
@@ -211,17 +213,16 @@ public slots:
 class Quit_Thread : public Simple_Thread
 {
 public:
+    Quit_Object *object;
     int result;
 
     void run()
     {
-        {
-            QMutexLocker locker(&mutex);
-            cond.wakeOne();
+        if (object) {
+            Simple_Thread::run();
+            object->thread = this;
+            QTimer::singleShot(100, object, SLOT(slot()));
         }
-        Quit_Object o;
-        o.thread = this;
-        QTimer::singleShot(100, &o, SLOT(slot()));
         result = exec();
     }
 };
@@ -420,6 +421,8 @@ void tst_QThread::stackSize()
 void tst_QThread::exit()
 {
     Exit_Thread thread;
+    thread.object = new Exit_Object;
+    thread.object->moveToThread(&thread);
     thread.code = 42;
     thread.result = 0;
     QVERIFY(!thread.isFinished());
@@ -432,6 +435,16 @@ void tst_QThread::exit()
     QVERIFY(thread.wait(five_minutes));
     QVERIFY(thread.isFinished());
     QVERIFY(!thread.isRunning());
+    QCOMPARE(thread.result, thread.code);
+    delete thread.object;
+
+    Exit_Thread thread2;
+    thread2.object = 0;
+    thread2.code = 53;
+    thread2.result = 0;
+    thread2.start();
+    thread2.exit(thread.code);
+    QVERIFY(thread2.wait(five_minutes));
     QCOMPARE(thread.result, thread.code);
 }
 
@@ -480,6 +493,9 @@ void tst_QThread::terminate()
 void tst_QThread::quit()
 {
     Quit_Thread thread;
+    thread.object = new Quit_Object;
+    thread.object->moveToThread(&thread);
+    thread.result = -1;
     QVERIFY(!thread.isFinished());
     QVERIFY(!thread.isRunning());
     QMutexLocker locker(&thread.mutex);
@@ -490,6 +506,15 @@ void tst_QThread::quit()
     QVERIFY(thread.wait(five_minutes));
     QVERIFY(thread.isFinished());
     QVERIFY(!thread.isRunning());
+    QCOMPARE(thread.result, 0);
+    delete thread.object;
+
+    Quit_Thread thread2;
+    thread2.object = 0;
+    thread2.result = -1;
+    thread2.start();
+    thread2.quit();
+    QVERIFY(thread2.wait(five_minutes));
     QCOMPARE(thread.result, 0);
 }
 

@@ -36,6 +36,7 @@ ASSERT_CLASS_FITS_IN_CELL(ObjectConstructor);
 
 static JSValue JSC_HOST_CALL objectConstructorGetPrototypeOf(ExecState*, JSObject*, JSValue, const ArgList&);
 static JSValue JSC_HOST_CALL objectConstructorGetOwnPropertyDescriptor(ExecState*, JSObject*, JSValue, const ArgList&);
+static JSValue JSC_HOST_CALL objectConstructorGetOwnPropertyNames(ExecState*, JSObject*, JSValue, const ArgList&);
 static JSValue JSC_HOST_CALL objectConstructorKeys(ExecState*, JSObject*, JSValue, const ArgList&);
 static JSValue JSC_HOST_CALL objectConstructorDefineProperty(ExecState*, JSObject*, JSValue, const ArgList&);
 static JSValue JSC_HOST_CALL objectConstructorDefineProperties(ExecState*, JSObject*, JSValue, const ArgList&);
@@ -52,6 +53,7 @@ ObjectConstructor::ObjectConstructor(ExecState* exec, NonNullPassRefPtr<Structur
     
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 1, exec->propertyNames().getPrototypeOf, objectConstructorGetPrototypeOf), DontEnum);
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 2, exec->propertyNames().getOwnPropertyDescriptor, objectConstructorGetOwnPropertyDescriptor), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 1, exec->propertyNames().getOwnPropertyNames, objectConstructorGetOwnPropertyNames), DontEnum);
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 1, exec->propertyNames().keys, objectConstructorKeys), DontEnum);
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 3, exec->propertyNames().defineProperty, objectConstructorDefineProperty), DontEnum);
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 2, exec->propertyNames().defineProperties, objectConstructorDefineProperties), DontEnum);
@@ -126,6 +128,20 @@ JSValue JSC_HOST_CALL objectConstructorGetOwnPropertyDescriptor(ExecState* exec,
 }
 
 // FIXME: Use the enumeration cache.
+JSValue JSC_HOST_CALL objectConstructorGetOwnPropertyNames(ExecState* exec, JSObject*, JSValue, const ArgList& args)
+{
+    if (!args.at(0).isObject())
+        return throwError(exec, TypeError, "Requested property names of a value that is not an object.");
+    PropertyNameArray properties(exec);
+    asObject(args.at(0))->getOwnPropertyNames(exec, properties, IncludeDontEnumProperties);
+    JSArray* names = constructEmptyArray(exec);
+    size_t numProperties = properties.size();
+    for (size_t i = 0; i < numProperties; i++)
+        names->push(exec, jsOwnedString(exec, properties[i].ustring()));
+    return names;
+}
+
+// FIXME: Use the enumeration cache.
 JSValue JSC_HOST_CALL objectConstructorKeys(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
     if (!args.at(0).isObject())
@@ -148,14 +164,14 @@ static bool toPropertyDescriptor(ExecState* exec, JSValue in, PropertyDescriptor
     }
     JSObject* description = asObject(in);
 
-    PropertySlot enumerableSlot;
+    PropertySlot enumerableSlot(description);
     if (description->getPropertySlot(exec, exec->propertyNames().enumerable, enumerableSlot)) {
         desc.setEnumerable(enumerableSlot.getValue(exec, exec->propertyNames().enumerable).toBoolean(exec));
         if (exec->hadException())
             return false;
     }
 
-    PropertySlot configurableSlot;
+    PropertySlot configurableSlot(description);
     if (description->getPropertySlot(exec, exec->propertyNames().configurable, configurableSlot)) {
         desc.setConfigurable(configurableSlot.getValue(exec, exec->propertyNames().configurable).toBoolean(exec));
         if (exec->hadException())
@@ -163,21 +179,21 @@ static bool toPropertyDescriptor(ExecState* exec, JSValue in, PropertyDescriptor
     }
 
     JSValue value;
-    PropertySlot valueSlot;
+    PropertySlot valueSlot(description);
     if (description->getPropertySlot(exec, exec->propertyNames().value, valueSlot)) {
         desc.setValue(valueSlot.getValue(exec, exec->propertyNames().value));
         if (exec->hadException())
             return false;
     }
 
-    PropertySlot writableSlot;
+    PropertySlot writableSlot(description);
     if (description->getPropertySlot(exec, exec->propertyNames().writable, writableSlot)) {
         desc.setWritable(writableSlot.getValue(exec, exec->propertyNames().writable).toBoolean(exec));
         if (exec->hadException())
             return false;
     }
 
-    PropertySlot getSlot;
+    PropertySlot getSlot(description);
     if (description->getPropertySlot(exec, exec->propertyNames().get, getSlot)) {
         JSValue get = getSlot.getValue(exec, exec->propertyNames().get);
         if (exec->hadException())
@@ -193,7 +209,7 @@ static bool toPropertyDescriptor(ExecState* exec, JSValue in, PropertyDescriptor
         desc.setGetter(get);
     }
 
-    PropertySlot setSlot;
+    PropertySlot setSlot(description);
     if (description->getPropertySlot(exec, exec->propertyNames().set, setSlot)) {
         JSValue set = setSlot.getValue(exec, exec->propertyNames().set);
         if (exec->hadException())

@@ -62,7 +62,7 @@ namespace WebCore {
         virtual bool isValid() const { return SVGTests::isValid(); }
         float getTotalLength();
         FloatPoint getPointAtLength(float distance);
-        unsigned long getPathSegAtLength(float distance);
+        unsigned long getPathSegAtLength(float distance, ExceptionCode&);
 
         static PassRefPtr<SVGPathSegClosePath> createSVGPathSegClosePath();
         static PassRefPtr<SVGPathSegMovetoAbs> createSVGPathSegMovetoAbs(float x, float y);
@@ -92,6 +92,7 @@ namespace WebCore {
 
         virtual void parseMappedAttribute(MappedAttribute*);
         virtual void svgAttributeChanged(const QualifiedName&);
+        virtual void synchronizeProperty(const QualifiedName&);
 
         virtual Path toPathData() const;
 
@@ -100,12 +101,10 @@ namespace WebCore {
     private:
         mutable RefPtr<SVGPathSegList> m_pathSegList;
 
-        ANIMATED_PROPERTY_DECLARATIONS(SVGPathElement, SVGNames::pathTagString, SVGNames::pathLengthAttrString, float, PathLength, pathLength)
+        DECLARE_ANIMATED_PROPERTY(SVGPathElement, SVGNames::pathLengthAttr, float, PathLength, pathLength)
 
         // SVGExternalResourcesRequired
-        ANIMATED_PROPERTY_DECLARATIONS(SVGPathElement, SVGExternalResourcesRequiredIdentifier,
-                                       SVGNames::externalResourcesRequiredAttrString, bool,
-                                       ExternalResourcesRequired, externalResourcesRequired)
+        DECLARE_ANIMATED_PROPERTY(SVGPathElement, SVGNames::externalResourcesRequiredAttr, bool, ExternalResourcesRequired, externalResourcesRequired)
     };
 
 } // namespace WebCore

@@ -26,6 +26,9 @@
 #define Element_h
 
 #include "ContainerNode.h"
+#include "Document.h"
+#include "HTMLNames.h"
+#include "MappedAttributeEntry.h"
 #include "QualifiedName.h"
 #include "ScrollTypes.h"
 
@@ -71,7 +74,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(select);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(submit);
 
-    // These 4 attribute event handler attributes are overrided by HTMLBodyElement
+    // These four attribute event handler attributes are overridden by HTMLBodyElement
     // and HTMLFrameSetElement to forward to the DOMWindow.
     DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(blur);
     DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(error);
@@ -88,6 +91,14 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(reset);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart);
+#if ENABLE(TOUCH_EVENTS)
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(touchstart);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(touchmove);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
+#endif
+
+    virtual PassRefPtr<DocumentFragment> createContextualFragment(const String&, FragmentScriptingPermission = FragmentScriptingAllowed);
 
     const AtomicString& getIDAttribute() const;
     bool hasAttribute(const QualifiedName&) const;
@@ -104,7 +115,9 @@ public:
     const AtomicString& getAttributeNS(const String& namespaceURI, const String& localName) const;
 
     void setAttribute(const AtomicString& name, const AtomicString& value, ExceptionCode&);
-    void setAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& value, ExceptionCode&);
+    void setAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& value, ExceptionCode&, FragmentScriptingPermission = FragmentScriptingAllowed);
+
+    const QualifiedName& idAttributeName() const;
 
     void scrollIntoView(bool alignToTop = true);
     void scrollIntoViewIfNeeded(bool centerIfNeeded = true);
@@ -167,6 +180,9 @@ public:
     // convenience methods which ignore exceptions
     void setAttribute(const QualifiedName&, const AtomicString& value);
     void setBooleanAttribute(const QualifiedName& name, bool);
+    // Please don't use setCStringAttribute in performance-sensitive code;
+    // use a static AtomicString value instead to avoid the conversion overhead.
+    void setCStringAttribute(const QualifiedName&, const char* cStringValue);
 
     virtual NamedNodeMap* attributes() const;
     NamedNodeMap* attributes(bool readonly) const;
@@ -175,7 +191,7 @@ public:
     virtual void attributeChanged(Attribute*, bool preserveDecls = false);
 
     // not part of the DOM
-    void setAttributeMap(PassRefPtr<NamedNodeMap>);
+    void setAttributeMap(PassRefPtr<NamedNodeMap>, FragmentScriptingPermission = FragmentScriptingAllowed);
     NamedNodeMap* attributeMap() const { return namedAttrMap.get(); }
 
     virtual void copyNonAttributeProperties(const Element* /*source*/) { }
@@ -274,6 +290,7 @@ private:
     virtual bool childTypeAllowed(NodeType);
 
     virtual PassRefPtr<Attribute> createAttribute(const QualifiedName&, const AtomicString& value);
+    const QualifiedName& rareIDAttributeName() const;
     
 #ifndef NDEBUG
     virtual void formatForDebugger(char* buffer, unsigned length) const;
@@ -286,10 +303,9 @@ private:
     virtual void updateStyleAttribute() const { }
 
 #if ENABLE(SVG)
-    virtual void updateAnimatedSVGAttribute(const String&) const { }
+    virtual void updateAnimatedSVGAttribute(const QualifiedName&) const { }
 #endif
 
-    void updateFocusAppearanceSoonAfterAttach();
     void cancelFocusAppearanceUpdate();
 
     virtual const AtomicString& virtualPrefix() const { return prefix(); }
@@ -329,6 +345,41 @@ inline Element* Node::parentElement() const
 {
     Node* parent = parentNode();
     return parent && parent->isElementNode() ? static_cast<Element*>(parent) : 0;
+}
+
+inline const QualifiedName& Element::idAttributeName() const
+{
+    return hasRareData() ? rareIDAttributeName() : HTMLNames::idAttr;
+}
+
+inline NamedNodeMap* Element::attributes(bool readonly) const
+{
+    if (!m_isStyleAttributeValid)
+        updateStyleAttribute();
+
+#if ENABLE(SVG)
+    if (!m_areSVGAttributesValid)
+        updateAnimatedSVGAttribute(anyQName());
+#endif
+
+    if (!readonly && !namedAttrMap)
+        createAttributeMap();
+    return namedAttrMap.get();
+}
+
+inline void Element::updateId(const AtomicString& oldId, const AtomicString& newId)
+{
+    if (!inDocument())
+        return;
+
+    if (oldId == newId)
+        return;
+
+    Document* doc = document();
+    if (!oldId.isEmpty())
+        doc->removeElementById(oldId, this);
+    if (!newId.isEmpty())
+        doc->addElementById(newId, this);
 }
 
 } //namespace

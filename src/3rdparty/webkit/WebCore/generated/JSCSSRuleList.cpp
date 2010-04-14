@@ -39,8 +39,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSCSSRuleList);
 
 static const HashTableValue JSCSSRuleListTableValues[3] =
 {
-    { "length", DontDelete|ReadOnly, (intptr_t)jsCSSRuleListLength, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCSSRuleListConstructor, (intptr_t)0 },
+    { "length", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleListLength), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSRuleListConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -102,7 +102,7 @@ bool JSCSSRuleListConstructor::getOwnPropertyDescriptor(ExecState* exec, const I
 
 static const HashTableValue JSCSSRuleListPrototypeTableValues[2] =
 {
-    { "item", DontDelete|Function, (intptr_t)jsCSSRuleListPrototypeFunctionItem, (intptr_t)1 },
+    { "item", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCSSRuleListPrototypeFunctionItem), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -193,24 +193,25 @@ bool JSCSSRuleList::getOwnPropertySlot(ExecState* exec, unsigned propertyName, P
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValue jsCSSRuleListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSRuleListLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSRuleList* castedThis = static_cast<JSCSSRuleList*>(asObject(slot.slotBase()));
+    JSCSSRuleList* castedThis = static_cast<JSCSSRuleList*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSRuleList* imp = static_cast<CSSRuleList*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
-JSValue jsCSSRuleListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSRuleListConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSRuleList* domObject = static_cast<JSCSSRuleList*>(asObject(slot.slotBase()));
+    JSCSSRuleList* domObject = static_cast<JSCSSRuleList*>(asObject(slotBase));
     return JSCSSRuleList::getConstructor(exec, domObject->globalObject());
 }
-void JSCSSRuleList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSCSSRuleList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<CSSRuleList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSCSSRuleList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -233,10 +234,10 @@ JSValue JSC_HOST_CALL jsCSSRuleListPrototypeFunctionItem(ExecState* exec, JSObje
 }
 
 
-JSValue JSCSSRuleList::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue JSCSSRuleList::indexGetter(ExecState* exec, JSValue slotBase, unsigned index)
 {
-    JSCSSRuleList* thisObj = static_cast<JSCSSRuleList*>(asObject(slot.slotBase()));
-    return toJS(exec, thisObj->globalObject(), static_cast<CSSRuleList*>(thisObj->impl())->item(slot.index()));
+    JSCSSRuleList* thisObj = static_cast<JSCSSRuleList*>(asObject(slotBase));
+    return toJS(exec, thisObj->globalObject(), static_cast<CSSRuleList*>(thisObj->impl())->item(index));
 }
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, CSSRuleList* object)
 {

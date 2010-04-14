@@ -39,30 +39,78 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGStringList);
 
 /* Hash table */
 
-static const HashTableValue JSSVGStringListTableValues[2] =
+static const HashTableValue JSSVGStringListTableValues[3] =
 {
-    { "numberOfItems", DontDelete|ReadOnly, (intptr_t)jsSVGStringListNumberOfItems, (intptr_t)0 },
+    { "numberOfItems", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGStringListNumberOfItems), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGStringListConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGStringListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSSVGStringListTableValues, 0 };
+    { 3, JSSVGStringListTableValues, 0 };
 #else
-    { 2, 1, JSSVGStringListTableValues, 0 };
+    { 4, 3, JSSVGStringListTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGStringListConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGStringListConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGStringListConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGStringListConstructorTableValues, 0 };
+#endif
+
+class JSSVGStringListConstructor : public DOMConstructorObject {
+public:
+    JSSVGStringListConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGStringListConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGStringListPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGStringListConstructor::s_info = { "SVGStringListConstructor", 0, &JSSVGStringListConstructorTable, 0 };
+
+bool JSSVGStringListConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGStringListConstructor, DOMObject>(exec, &JSSVGStringListConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGStringListConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGStringListConstructor, DOMObject>(exec, &JSSVGStringListConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
 static const HashTableValue JSSVGStringListPrototypeTableValues[8] =
 {
-    { "clear", DontDelete|Function, (intptr_t)jsSVGStringListPrototypeFunctionClear, (intptr_t)0 },
-    { "initialize", DontDelete|Function, (intptr_t)jsSVGStringListPrototypeFunctionInitialize, (intptr_t)1 },
-    { "getItem", DontDelete|Function, (intptr_t)jsSVGStringListPrototypeFunctionGetItem, (intptr_t)1 },
-    { "insertItemBefore", DontDelete|Function, (intptr_t)jsSVGStringListPrototypeFunctionInsertItemBefore, (intptr_t)2 },
-    { "replaceItem", DontDelete|Function, (intptr_t)jsSVGStringListPrototypeFunctionReplaceItem, (intptr_t)2 },
-    { "removeItem", DontDelete|Function, (intptr_t)jsSVGStringListPrototypeFunctionRemoveItem, (intptr_t)1 },
-    { "appendItem", DontDelete|Function, (intptr_t)jsSVGStringListPrototypeFunctionAppendItem, (intptr_t)1 },
+    { "clear", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGStringListPrototypeFunctionClear), (intptr_t)0 },
+    { "initialize", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGStringListPrototypeFunctionInitialize), (intptr_t)1 },
+    { "getItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGStringListPrototypeFunctionGetItem), (intptr_t)1 },
+    { "insertItemBefore", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGStringListPrototypeFunctionInsertItemBefore), (intptr_t)2 },
+    { "replaceItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGStringListPrototypeFunctionReplaceItem), (intptr_t)2 },
+    { "removeItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGStringListPrototypeFunctionRemoveItem), (intptr_t)1 },
+    { "appendItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGStringListPrototypeFunctionAppendItem), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -92,8 +140,8 @@ bool JSSVGStringListPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSSVGStringList::s_info = { "SVGStringList", 0, &JSSVGStringListTable, 0 };
 
-JSSVGStringList::JSSVGStringList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGStringList> impl, SVGElement* context)
-    : DOMObjectWithSVGContext(structure, globalObject, context)
+JSSVGStringList::JSSVGStringList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGStringList> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -101,6 +149,7 @@ JSSVGStringList::JSSVGStringList(NonNullPassRefPtr<Structure> structure, JSDOMGl
 JSSVGStringList::~JSSVGStringList()
 {
     forgetDOMObject(this, impl());
+    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGStringList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -118,12 +167,23 @@ bool JSSVGStringList::getOwnPropertyDescriptor(ExecState* exec, const Identifier
     return getStaticValueDescriptor<JSSVGStringList, Base>(exec, &JSSVGStringListTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGStringListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGStringListNumberOfItems(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGStringList* castedThis = static_cast<JSSVGStringList*>(asObject(slot.slotBase()));
+    JSSVGStringList* castedThis = static_cast<JSSVGStringList*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGStringList* imp = static_cast<SVGStringList*>(castedThis->impl());
-    return jsNumber(exec, imp->numberOfItems());
+    JSValue result = jsNumber(exec, imp->numberOfItems());
+    return result;
+}
+
+JSValue jsSVGStringListConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGStringList* domObject = static_cast<JSSVGStringList*>(asObject(slotBase));
+    return JSSVGStringList::getConstructor(exec, domObject->globalObject());
+}
+JSValue JSSVGStringList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGStringListConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionClear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

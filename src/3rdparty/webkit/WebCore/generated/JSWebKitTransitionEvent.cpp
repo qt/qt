@@ -38,9 +38,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSWebKitTransitionEvent);
 
 static const HashTableValue JSWebKitTransitionEventTableValues[4] =
 {
-    { "propertyName", DontDelete|ReadOnly, (intptr_t)jsWebKitTransitionEventPropertyName, (intptr_t)0 },
-    { "elapsedTime", DontDelete|ReadOnly, (intptr_t)jsWebKitTransitionEventElapsedTime, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsWebKitTransitionEventConstructor, (intptr_t)0 },
+    { "propertyName", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitTransitionEventPropertyName), (intptr_t)0 },
+    { "elapsedTime", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitTransitionEventElapsedTime), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitTransitionEventConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -102,7 +102,7 @@ bool JSWebKitTransitionEventConstructor::getOwnPropertyDescriptor(ExecState* exe
 
 static const HashTableValue JSWebKitTransitionEventPrototypeTableValues[2] =
 {
-    { "initWebKitTransitionEvent", DontDelete|Function, (intptr_t)jsWebKitTransitionEventPrototypeFunctionInitWebKitTransitionEvent, (intptr_t)5 },
+    { "initWebKitTransitionEvent", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsWebKitTransitionEventPrototypeFunctionInitWebKitTransitionEvent), (intptr_t)5 },
     { 0, 0, 0, 0 }
 };
 
@@ -152,25 +152,27 @@ bool JSWebKitTransitionEvent::getOwnPropertyDescriptor(ExecState* exec, const Id
     return getStaticValueDescriptor<JSWebKitTransitionEvent, Base>(exec, &JSWebKitTransitionEventTable, this, propertyName, descriptor);
 }
 
-JSValue jsWebKitTransitionEventPropertyName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitTransitionEventPropertyName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitTransitionEvent* castedThis = static_cast<JSWebKitTransitionEvent*>(asObject(slot.slotBase()));
+    JSWebKitTransitionEvent* castedThis = static_cast<JSWebKitTransitionEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitTransitionEvent* imp = static_cast<WebKitTransitionEvent*>(castedThis->impl());
-    return jsString(exec, imp->propertyName());
+    JSValue result = jsString(exec, imp->propertyName());
+    return result;
 }
 
-JSValue jsWebKitTransitionEventElapsedTime(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitTransitionEventElapsedTime(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitTransitionEvent* castedThis = static_cast<JSWebKitTransitionEvent*>(asObject(slot.slotBase()));
+    JSWebKitTransitionEvent* castedThis = static_cast<JSWebKitTransitionEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitTransitionEvent* imp = static_cast<WebKitTransitionEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->elapsedTime());
+    JSValue result = jsNumber(exec, imp->elapsedTime());
+    return result;
 }
 
-JSValue jsWebKitTransitionEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitTransitionEventConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitTransitionEvent* domObject = static_cast<JSWebKitTransitionEvent*>(asObject(slot.slotBase()));
+    JSWebKitTransitionEvent* domObject = static_cast<JSWebKitTransitionEvent*>(asObject(slotBase));
     return JSWebKitTransitionEvent::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSWebKitTransitionEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

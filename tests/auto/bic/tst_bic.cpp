@@ -147,7 +147,9 @@ void tst_Bic::initTestCase_data()
     QTest::newRow("QtXmlPatterns") << "QtXmlPatterns";
     QTest::newRow("Qt3Support") << "Qt3Support";
     QTest::newRow("QtTest") << "QtTest";
+#ifndef QT_NO_DBUS
     QTest::newRow("QtDBus") << "QtDBus";
+#endif
     QTest::newRow("QtDesigner") << "QtDesigner";
 }
 

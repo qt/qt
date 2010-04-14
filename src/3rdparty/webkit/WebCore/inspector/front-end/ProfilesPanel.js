@@ -70,6 +70,11 @@ WebInspector.ProfileType.prototype = {
         return profile._profileView;
     },
 
+    get welcomeMessage()
+    {
+        return "";
+    },
+
     // Must be implemented by subclasses.
     createView: function(profile)
     {
@@ -111,7 +116,11 @@ WebInspector.ProfilesPanel = function()
     this.profileViewStatusBarItemsContainer = document.createElement("div");
     this.profileViewStatusBarItemsContainer.id = "profile-view-status-bar-items";
 
+    this.welcomeView = new WebInspector.WelcomeView("profiles", WebInspector.UIString("Welcome to the Profiles panel"));
+    this.element.appendChild(this.welcomeView.element);
+
     this._profiles = [];
+    this._profilerEnabled = Preferences.profilerAlwaysEnabled;
     this.reset();
 }
 
@@ -163,12 +172,20 @@ WebInspector.ProfilesPanel.prototype = {
 
     profilerWasEnabled: function()
     {
+        if (this._profilerEnabled)
+            return;
+
+        this._profilerEnabled = true;
         this.reset();
         this.populateInterface();
     },
 
     profilerWasDisabled: function()
     {
+        if (!this._profilerEnabled)
+            return;
+
+        this._profilerEnabled = false;
         this.reset();
     },
 
@@ -176,6 +193,7 @@ WebInspector.ProfilesPanel.prototype = {
     {
         for (var i = 0; i < this._profiles.length; ++i)
             delete this._profiles[i]._profileView;
+        delete this.visibleView;
 
         delete this.currentQuery;
         this.searchCanceled();
@@ -195,6 +213,7 @@ WebInspector.ProfilesPanel.prototype = {
         this.profileViewStatusBarItemsContainer.removeChildren();
 
         this._updateInterface();
+        this.welcomeView.show();
     },
 
     registerProfileType: function(profileType)
@@ -203,6 +222,32 @@ WebInspector.ProfilesPanel.prototype = {
         profileType.treeElement = new WebInspector.SidebarSectionTreeElement(profileType.name, null, true);
         this.sidebarTree.appendChild(profileType.treeElement);
         profileType.treeElement.expand();
+        this._addWelcomeMessage(profileType);
+    },
+
+    _addWelcomeMessage: function(profileType)
+    {
+        var message = profileType.welcomeMessage;
+        // Message text is supposed to have a '%s' substring as a placeholder
+        // for a status bar button. If it is there, we split the message in two
+        // parts, and insert the button between them.
+        var buttonPos = message.indexOf("%s");
+        if (buttonPos > -1) {
+            var container = document.createDocumentFragment();
+            var part1 = document.createElement("span");
+            part1.innerHTML = message.substr(0, buttonPos);
+            container.appendChild(part1);
+     
+            var button = new WebInspector.StatusBarButton(profileType.buttonTooltip, profileType.buttonStyle, profileType.buttonCaption);
+            button.element.addEventListener("click", profileType.buttonClicked.bind(profileType), false);
+            container.appendChild(button.element);
+       
+            var part2 = document.createElement("span");
+            part2.innerHTML = message.substr(buttonPos + 2);
+            container.appendChild(part2);
+            this.welcomeView.addMessage(container);
+        } else
+            this.welcomeView.addMessage(message);
     },
 
     _makeKey: function(text, profileTypeId)
@@ -210,8 +255,9 @@ WebInspector.ProfilesPanel.prototype = {
         return escape(text) + '/' + escape(profileTypeId);
     },
 
-    addProfileHeader: function(typeId, profile)
+    addProfileHeader: function(profile)
     {
+        var typeId = profile.typeId;
         var profileType = this.getProfileType(typeId);
         var sidebarParent = profileType.treeElement;
         var small = false;
@@ -266,6 +312,7 @@ WebInspector.ProfilesPanel.prototype = {
         profile._profilesTreeElement = profileTreeElement;
 
         sidebarParent.appendChild(profileTreeElement);
+        this.welcomeView.hide();
         if (!this.visibleView)
             this.showProfile(profile);
     },
@@ -275,8 +322,7 @@ WebInspector.ProfilesPanel.prototype = {
         if (!profile)
             return;
 
-        if (this.visibleView)
-            this.visibleView.hide();
+        this.closeVisibleView();
 
         var view = profile.__profilesPanelProfileType.viewForProfile(profile);
 
@@ -361,7 +407,8 @@ WebInspector.ProfilesPanel.prototype = {
 
         var profilesLength = this._profiles.length;
         for (var i = 0; i < profilesLength; ++i) {
-            var view = this._profiles[i].viewForProfile();
+            var profile = this._profiles[i];
+            var view = profile.__profilesPanelProfileType.viewForProfile(profile);
             if (!view.performSearch || view === visibleView)
                 continue;
             views.push(view);
@@ -388,17 +435,10 @@ WebInspector.ProfilesPanel.prototype = {
         }
     },
 
-    resize: function()
-    {
-        var visibleView = this.visibleView;
-        if (visibleView && "resize" in visibleView)
-            visibleView.resize();
-    },
-
     _updateInterface: function()
     {
         // FIXME: Replace ProfileType-specific button visibility changes by a single ProfileType-agnostic "combo-button" visibility change.
-        if (InspectorController.profilerEnabled()) {
+        if (this._profilerEnabled) {
             this.enableToggleButton.title = WebInspector.UIString("Profiling enabled. Click to disable.");
             this.enableToggleButton.toggled = true;
             for (var typeId in this._profileTypeButtonsByIdMap)
@@ -417,26 +457,27 @@ WebInspector.ProfilesPanel.prototype = {
 
     _enableProfiling: function()
     {
-        if (InspectorController.profilerEnabled())
+        if (this._profilerEnabled)
             return;
         this._toggleProfiling(this.panelEnablerView.alwaysEnabled);
     },
 
     _toggleProfiling: function(optionalAlways)
     {
-        if (InspectorController.profilerEnabled())
-            InspectorController.disableProfiler(true);
+        if (this._profilerEnabled)
+            InspectorBackend.disableProfiler(true);
         else
-            InspectorController.enableProfiler(!!optionalAlways);
+            InspectorBackend.enableProfiler(!!optionalAlways);
     },
 
     _populateProfiles: function()
     {
-        // FIXME: This code needs to be adjusted when more profiling types are added.
-        // Currently defaults to CPU profiles.
-        var cpuProfiles = this.getProfileType(WebInspector.CPUProfileType.TypeId).treeElement;
-        if (cpuProfiles.children.length)
-            return;
+        var sidebarTreeChildrenCount = this.sidebarTree.children.length;
+        for (var i = 0; i < sidebarTreeChildrenCount; ++i) {
+            var treeElement = this.sidebarTree.children[i];
+            if (treeElement.children.length)
+                return;
+        }
 
         function populateCallback(profileHeaders) {
             profileHeaders.sort(function(a, b) { return a.uid - b.uid; });
@@ -446,15 +487,17 @@ WebInspector.ProfilesPanel.prototype = {
         }
 
         var callId = WebInspector.Callback.wrap(populateCallback);
-        InspectorController.getProfileHeaders(callId);
+        InspectorBackend.getProfileHeaders(callId);
 
         delete this._shouldPopulateProfiles;
     },
 
     updateMainViewWidth: function(width)
     {
+        this.welcomeView.element.style.left = width + "px";
         this.profileViews.style.left = width + "px";
         this.profileViewStatusBarItemsContainer.style.left = width + "px";
+        this.resize();
     }
 }
 

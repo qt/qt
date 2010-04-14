@@ -47,13 +47,13 @@
 #include <pthread.h>
 #elif PLATFORM(QT)
 #include <QThreadStorage>
-#elif PLATFORM(WIN_OS)
+#elif OS(WINDOWS)
 #include <windows.h>
 #endif
 
 namespace WTF {
 
-#if !USE(PTHREADS) && !PLATFORM(QT) && PLATFORM(WIN_OS)
+#if !USE(PTHREADS) && !PLATFORM(QT) && OS(WINDOWS)
 // ThreadSpecificThreadExit should be called each time when a thread is detached.
 // This is done automatically for threads created with WTF::createThread.
 void ThreadSpecificThreadExit();
@@ -68,7 +68,7 @@ public:
     ~ThreadSpecific();
 
 private:
-#if !USE(PTHREADS) && !PLATFORM(QT) && PLATFORM(WIN_OS)
+#if !USE(PTHREADS) && !PLATFORM(QT) && OS(WINDOWS)
     friend void ThreadSpecificThreadExit();
 #endif
     
@@ -76,7 +76,7 @@ private:
     void set(T*);
     void static destroy(void* ptr);
 
-#if USE(PTHREADS) || PLATFORM(QT) || PLATFORM(WIN_OS)
+#if USE(PTHREADS) || PLATFORM(QT) || OS(WINDOWS)
     struct Data : Noncopyable {
         Data(T* value, ThreadSpecific<T>* owner) : value(value), owner(owner) {}
 #if PLATFORM(QT)
@@ -91,15 +91,44 @@ private:
     };
 #endif
 
+#if ENABLE(SINGLE_THREADED)
+    T* m_value;
+#else
 #if USE(PTHREADS)
     pthread_key_t m_key;
 #elif PLATFORM(QT)
     QThreadStorage<Data*> m_key;
-#elif PLATFORM(WIN_OS)
+#elif OS(WINDOWS)
     int m_index;
+#endif
 #endif
 };
 
+#if ENABLE(SINGLE_THREADED)
+template<typename T>
+inline ThreadSpecific<T>::ThreadSpecific()
+    : m_value(0)
+{
+}
+
+template<typename T>
+inline ThreadSpecific<T>::~ThreadSpecific()
+{
+}
+
+template<typename T>
+inline T* ThreadSpecific<T>::get()
+{
+    return m_value;
+}
+
+template<typename T>
+inline void ThreadSpecific<T>::set(T* ptr)
+{
+    ASSERT(!get());
+    m_value = ptr;
+}
+#else
 #if USE(PTHREADS)
 template<typename T>
 inline ThreadSpecific<T>::ThreadSpecific()
@@ -157,7 +186,12 @@ inline void ThreadSpecific<T>::set(T* ptr)
     m_key.setLocalData(data);
 }
 
-#elif PLATFORM(WIN_OS)
+#elif OS(WINDOWS)
+
+// TLS_OUT_OF_INDEXES is not defined on WinCE.
+#ifndef TLS_OUT_OF_INDEXES
+#define TLS_OUT_OF_INDEXES 0xffffffff
+#endif
 
 // The maximum number of TLS keys that can be created. For simplification, we assume that:
 // 1) Once the instance of ThreadSpecific<> is created, it will not be destructed until the program dies.
@@ -171,14 +205,14 @@ template<typename T>
 inline ThreadSpecific<T>::ThreadSpecific()
     : m_index(-1)
 {
-    DWORD tls_key = TlsAlloc();
-    if (tls_key == TLS_OUT_OF_INDEXES)
+    DWORD tlsKey = TlsAlloc();
+    if (tlsKey == TLS_OUT_OF_INDEXES)
         CRASH();
 
     m_index = InterlockedIncrement(&tlsKeyCount()) - 1;
     if (m_index >= kMaxTlsKeySize)
         CRASH();
-    tlsKeys()[m_index] = tls_key;
+    tlsKeys()[m_index] = tlsKey;
 }
 
 template<typename T>
@@ -207,10 +241,12 @@ inline void ThreadSpecific<T>::set(T* ptr)
 #else
 #error ThreadSpecific is not implemented for this platform.
 #endif
+#endif
 
 template<typename T>
 inline void ThreadSpecific<T>::destroy(void* ptr)
 {
+#if !ENABLE(SINGLE_THREADED)
     Data* data = static_cast<Data*>(ptr);
 
 #if USE(PTHREADS)
@@ -230,7 +266,7 @@ inline void ThreadSpecific<T>::destroy(void* ptr)
     pthread_setspecific(data->owner->m_key, 0);
 #elif PLATFORM(QT)
     // Do nothing here
-#elif PLATFORM(WIN_OS)
+#elif OS(WINDOWS)
     TlsSetValue(tlsKeys()[data->owner->m_index], 0);
 #else
 #error ThreadSpecific is not implemented for this platform.
@@ -238,6 +274,7 @@ inline void ThreadSpecific<T>::destroy(void* ptr)
 
 #if !PLATFORM(QT)
     delete data;
+#endif
 #endif
 }
 

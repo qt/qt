@@ -21,7 +21,6 @@
 #ifndef JSNavigator_h
 #define JSNavigator_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -43,7 +42,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -69,7 +68,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSNavigatorPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -80,22 +79,24 @@ protected:
 
 JSC::JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionJavaEnabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionGetStorageUpdates(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionRegisterProtocolHandler(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionRegisterContentHandler(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsNavigatorAppCodeName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorAppName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorAppVersion(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorLanguage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorUserAgent(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorPlatform(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorPlugins(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorMimeTypes(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorProduct(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorProductSub(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorVendor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorVendorSub(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorCookieEnabled(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNavigatorOnLine(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsNavigatorAppCodeName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorAppName(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorAppVersion(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorLanguage(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorUserAgent(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorPlatform(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorPlugins(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorMimeTypes(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorProduct(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorProductSub(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorVendor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorVendorSub(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorCookieEnabled(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNavigatorOnLine(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

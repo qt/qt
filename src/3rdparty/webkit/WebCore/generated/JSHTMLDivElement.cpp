@@ -36,8 +36,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLDivElement);
 
 static const HashTableValue JSHTMLDivElementTableValues[3] =
 {
-    { "align", DontDelete, (intptr_t)jsHTMLDivElementAlign, (intptr_t)setJSHTMLDivElementAlign },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLDivElementConstructor, (intptr_t)0 },
+    { "align", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDivElementAlign), (intptr_t)setJSHTMLDivElementAlign },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLDivElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -138,17 +138,18 @@ bool JSHTMLDivElement::getOwnPropertyDescriptor(ExecState* exec, const Identifie
     return getStaticValueDescriptor<JSHTMLDivElement, Base>(exec, &JSHTMLDivElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLDivElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDivElementAlign(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDivElement* castedThis = static_cast<JSHTMLDivElement*>(asObject(slot.slotBase()));
+    JSHTMLDivElement* castedThis = static_cast<JSHTMLDivElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLDivElement* imp = static_cast<HTMLDivElement*>(castedThis->impl());
-    return jsString(exec, imp->align());
+    JSValue result = jsString(exec, imp->align());
+    return result;
 }
 
-JSValue jsHTMLDivElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDivElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLDivElement* domObject = static_cast<JSHTMLDivElement*>(asObject(slot.slotBase()));
+    JSHTMLDivElement* domObject = static_cast<JSHTMLDivElement*>(asObject(slotBase));
     return JSHTMLDivElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLDivElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -158,7 +159,8 @@ void JSHTMLDivElement::put(ExecState* exec, const Identifier& propertyName, JSVa
 
 void setJSHTMLDivElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLDivElement* imp = static_cast<HTMLDivElement*>(static_cast<JSHTMLDivElement*>(thisObject)->impl());
+    JSHTMLDivElement* castedThisObj = static_cast<JSHTMLDivElement*>(thisObject);
+    HTMLDivElement* imp = static_cast<HTMLDivElement*>(castedThisObj->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 

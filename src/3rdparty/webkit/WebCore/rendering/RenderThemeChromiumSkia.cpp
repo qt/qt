@@ -217,6 +217,22 @@ int RenderThemeChromiumSkia::minimumMenuListSize(RenderStyle* style) const
     return 0;
 }
 
+// These are the default dimensions of radio buttons and checkboxes.
+static const int widgetStandardWidth = 13;
+static const int widgetStandardHeight = 13;
+
+// Return a rectangle that has the same center point as |original|, but with a
+// size capped at |width| by |height|.
+IntRect center(const IntRect& original, int width, int height)
+{
+    width = std::min(original.width(), width);
+    height = std::min(original.height(), height);
+    int x = original.x() + (original.width() - width) / 2;
+    int y = original.y() + (original.height() - height) / 2;
+
+    return IntRect(x, y, width, height);
+}
+
 bool RenderThemeChromiumSkia::paintCheckbox(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& rect)
 {
     static Image* const checkedImage = Image::loadPlatformResource("linuxCheckboxOn").releaseRef();
@@ -231,7 +247,7 @@ bool RenderThemeChromiumSkia::paintCheckbox(RenderObject* o, const RenderObject:
     else
         image = this->isChecked(o) ? disabledCheckedImage : disabledUncheckedImage;
 
-    i.context->drawImage(image, rect);
+    i.context->drawImage(image, o->style()->colorSpace(), center(rect, widgetStandardHeight, widgetStandardWidth));
     return false;
 }
 
@@ -246,7 +262,7 @@ void RenderThemeChromiumSkia::setCheckboxSize(RenderStyle* style) const
     // querying the theme gives you a larger size that accounts for the higher
     // DPI.  Until our entire engine honors a DPI setting other than 96, we
     // can't rely on the theme's metrics.
-    const IntSize size(13, 13);
+    const IntSize size(widgetStandardHeight, widgetStandardWidth);
     setSizeIfAuto(style, size);
 }
 
@@ -263,7 +279,7 @@ bool RenderThemeChromiumSkia::paintRadio(RenderObject* o, const RenderObject::Pa
     else
         image = this->isChecked(o) ? disabledCheckedImage : disabledUncheckedImage;
 
-    i.context->drawImage(image, rect);
+    i.context->drawImage(image, o->style()->colorSpace(), center(rect, widgetStandardHeight, widgetStandardWidth));
     return false;
 }
 
@@ -348,6 +364,15 @@ bool RenderThemeChromiumSkia::paintButton(RenderObject* o, const RenderObject::P
     return false;
 }
 
+void RenderThemeChromiumSkia::adjustButtonStyle(CSSStyleSelector*, RenderStyle* style, Element*) const
+{
+    if (style->appearance() == PushButtonPart) {
+        // Ignore line-height.
+        style->setLineHeight(RenderStyle::initialLineHeight());
+    }
+}
+
+
 bool RenderThemeChromiumSkia::paintTextField(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& rect)
 {
     return true;
@@ -356,6 +381,12 @@ bool RenderThemeChromiumSkia::paintTextField(RenderObject* o, const RenderObject
 bool RenderThemeChromiumSkia::paintTextArea(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
 {
     return paintTextField(o, i, r);
+}
+
+void RenderThemeChromiumSkia::adjustSearchFieldStyle(CSSStyleSelector*, RenderStyle* style, Element*) const
+{
+     // Ignore line-height.
+     style->setLineHeight(RenderStyle::initialLineHeight());
 }
 
 bool RenderThemeChromiumSkia::paintSearchField(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
@@ -372,28 +403,41 @@ void RenderThemeChromiumSkia::adjustSearchFieldCancelButtonStyle(CSSStyleSelecto
     style->setHeight(Length(cancelButtonSize, Fixed));
 }
 
-bool RenderThemeChromiumSkia::paintSearchFieldCancelButton(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
+IntRect RenderThemeChromiumSkia::convertToPaintingRect(RenderObject* inputRenderer, const RenderObject* partRenderer, IntRect partRect, const IntRect& localOffset) const
 {
-    IntRect bounds = r;
-    ASSERT(o->parent());
-    if (!o->parent() || !o->parent()->isBox())
+    // Compute an offset between the part renderer and the input renderer.
+    IntSize offsetFromInputRenderer = -(partRenderer->offsetFromAncestorContainer(inputRenderer));
+    // Move the rect into partRenderer's coords.
+    partRect.move(offsetFromInputRenderer);
+    // Account for the local drawing offset.
+    partRect.move(localOffset.x(), localOffset.y());
+
+    return partRect;
+}
+
+bool RenderThemeChromiumSkia::paintSearchFieldCancelButton(RenderObject* cancelButtonObject, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
+{
+    // Get the renderer of <input> element.
+    Node* input = cancelButtonObject->node()->shadowAncestorNode();
+    if (!input->renderer()->isBox())
         return false;
+    RenderBox* inputRenderBox = toRenderBox(input->renderer());
+    IntRect inputContentBox = inputRenderBox->contentBoxRect();
 
-    RenderBox* parentRenderBox = toRenderBox(o->parent());
-
-    IntRect parentBox = parentRenderBox->absoluteContentBox();
-
-    // Make sure the scaled button stays square and will fit in its parent's box
-    bounds.setHeight(std::min(parentBox.width(), std::min(parentBox.height(), bounds.height())));
-    bounds.setWidth(bounds.height());
-
+    // Make sure the scaled button stays square and will fit in its parent's box.
+    int cancelButtonSize = std::min(inputContentBox.width(), std::min(inputContentBox.height(), r.height()));
+    // Calculate cancel button's coordinates relative to the input element.
     // Center the button vertically.  Round up though, so if it has to be one pixel off-center, it will
     // be one pixel closer to the bottom of the field.  This tends to look better with the text.
-    bounds.setY(parentBox.y() + (parentBox.height() - bounds.height() + 1) / 2);
+    IntRect cancelButtonRect(cancelButtonObject->offsetFromAncestorContainer(inputRenderBox).width(),
+                             inputContentBox.y() + (inputContentBox.height() - cancelButtonSize + 1) / 2,
+                             cancelButtonSize, cancelButtonSize);
+    IntRect paintingRect = convertToPaintingRect(inputRenderBox, cancelButtonObject, cancelButtonRect, r);
 
     static Image* cancelImage = Image::loadPlatformResource("searchCancel").releaseRef();
     static Image* cancelPressedImage = Image::loadPlatformResource("searchCancelPressed").releaseRef();
-    i.context->drawImage(isPressed(o) ? cancelPressedImage : cancelImage, bounds);
+    paintInfo.context->drawImage(isPressed(cancelButtonObject) ? cancelPressedImage : cancelImage,
+                                 cancelButtonObject->style()->colorSpace(), paintingRect);
     return false;
 }
 
@@ -414,26 +458,27 @@ void RenderThemeChromiumSkia::adjustSearchFieldResultsDecorationStyle(CSSStyleSe
     style->setHeight(Length(magnifierSize, Fixed));
 }
 
-bool RenderThemeChromiumSkia::paintSearchFieldResultsDecoration(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
+bool RenderThemeChromiumSkia::paintSearchFieldResultsDecoration(RenderObject* magnifierObject, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
 {
-    IntRect bounds = r;
-    ASSERT(o->parent());
-    if (!o->parent() || !o->parent()->isBox())
+    // Get the renderer of <input> element.
+    Node* input = magnifierObject->node()->shadowAncestorNode();
+    if (!input->renderer()->isBox())
         return false;
+    RenderBox* inputRenderBox = toRenderBox(input->renderer());
+    IntRect inputContentBox = inputRenderBox->contentBoxRect();
 
-    RenderBox* parentRenderBox = toRenderBox(o->parent());
-    IntRect parentBox = parentRenderBox->absoluteContentBox();
-
-    // Make sure the scaled decoration stays square and will fit in its parent's box
-    bounds.setHeight(std::min(parentBox.width(), std::min(parentBox.height(), bounds.height())));
-    bounds.setWidth(bounds.height());
-
+    // Make sure the scaled decoration stays square and will fit in its parent's box.
+    int magnifierSize = std::min(inputContentBox.width(), std::min(inputContentBox.height(), r.height()));
+    // Calculate decoration's coordinates relative to the input element.
     // Center the decoration vertically.  Round up though, so if it has to be one pixel off-center, it will
     // be one pixel closer to the bottom of the field.  This tends to look better with the text.
-    bounds.setY(parentBox.y() + (parentBox.height() - bounds.height() + 1) / 2);
+    IntRect magnifierRect(magnifierObject->offsetFromAncestorContainer(inputRenderBox).width(),
+                          inputContentBox.y() + (inputContentBox.height() - magnifierSize + 1) / 2,
+                          magnifierSize, magnifierSize);
+    IntRect paintingRect = convertToPaintingRect(inputRenderBox, magnifierObject, magnifierRect, r);
 
     static Image* magnifierImage = Image::loadPlatformResource("searchMagnifier").releaseRef();
-    i.context->drawImage(magnifierImage, bounds);
+    paintInfo.context->drawImage(magnifierImage, magnifierObject->style()->colorSpace(), paintingRect);
     return false;
 }
 
@@ -448,28 +493,25 @@ void RenderThemeChromiumSkia::adjustSearchFieldResultsButtonStyle(CSSStyleSelect
     style->setHeight(Length(magnifierHeight, Fixed));
 }
 
-bool RenderThemeChromiumSkia::paintSearchFieldResultsButton(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
+bool RenderThemeChromiumSkia::paintSearchFieldResultsButton(RenderObject* magnifierObject, const RenderObject::PaintInfo& paintInfo, const IntRect& r)
 {
-    IntRect bounds = r;
-    ASSERT(o->parent());
-    if (!o->parent())
+    // Get the renderer of <input> element.
+    Node* input = magnifierObject->node()->shadowAncestorNode();
+    if (!input->renderer()->isBox())
         return false;
-    if (!o->parent() || !o->parent()->isBox())
-        return false;
+    RenderBox* inputRenderBox = toRenderBox(input->renderer());
+    IntRect inputContentBox = inputRenderBox->contentBoxRect();
 
-    RenderBox* parentRenderBox = toRenderBox(o->parent());
-    IntRect parentBox = parentRenderBox->absoluteContentBox();
-
-    // Make sure the scaled decoration will fit in its parent's box
-    bounds.setHeight(std::min(parentBox.height(), bounds.height()));
-    bounds.setWidth(std::min(parentBox.width(), static_cast<int>(bounds.height() * defaultSearchFieldResultsButtonWidth / defaultSearchFieldResultsDecorationSize)));
-
-    // Center the button vertically.  Round up though, so if it has to be one pixel off-center, it will
-    // be one pixel closer to the bottom of the field.  This tends to look better with the text.
-    bounds.setY(parentBox.y() + (parentBox.height() - bounds.height() + 1) / 2);
+    // Make sure the scaled decoration will fit in its parent's box.
+    int magnifierHeight = std::min(inputContentBox.height(), r.height());
+    int magnifierWidth = std::min(inputContentBox.width(), static_cast<int>(magnifierHeight * defaultSearchFieldResultsButtonWidth / defaultSearchFieldResultsDecorationSize));
+    IntRect magnifierRect(magnifierObject->offsetFromAncestorContainer(inputRenderBox).width(),
+                          inputContentBox.y() + (inputContentBox.height() - magnifierHeight + 1) / 2,
+                          magnifierWidth, magnifierHeight);
+    IntRect paintingRect = convertToPaintingRect(inputRenderBox, magnifierObject, magnifierRect, r);
 
     static Image* magnifierImage = Image::loadPlatformResource("searchMagnifierResults").releaseRef();
-    i.context->drawImage(magnifierImage, bounds);
+    paintInfo.context->drawImage(magnifierImage, magnifierObject->style()->colorSpace(), paintingRect);
     return false;
 }
 
@@ -688,26 +730,6 @@ int RenderThemeChromiumSkia::popupInternalPaddingTop(RenderStyle* style) const
 int RenderThemeChromiumSkia::popupInternalPaddingBottom(RenderStyle* style) const
 {
     return menuListInternalPadding(style, BottomPadding);
-}
-
-int RenderThemeChromiumSkia::buttonInternalPaddingLeft() const
-{
-    return 3;
-}
-
-int RenderThemeChromiumSkia::buttonInternalPaddingRight() const
-{
-    return 3;
-}
-
-int RenderThemeChromiumSkia::buttonInternalPaddingTop() const
-{
-    return 1;
-}
-
-int RenderThemeChromiumSkia::buttonInternalPaddingBottom() const
-{
-    return 1;
 }
 
 #if ENABLE(VIDEO)

@@ -271,24 +271,29 @@ static RenderObject* findBeforeAfterParent(RenderObject* object)
     return beforeAfterParent;
 }
 
-static void invalidateCountersInContainer(RenderObject* container)
+static void invalidateCountersInContainer(RenderObject* container, const AtomicString& identifier)
 {
     if (!container)
         return;
     container = findBeforeAfterParent(container);
     if (!container)
         return;
+    // Sometimes the counter is attached directly on the container.
+    if (container->isCounter()) {
+        toRenderCounter(container)->invalidate(identifier);
+        return;
+    }
     for (RenderObject* content = container->firstChild(); content; content = content->nextSibling()) {
         if (content->isCounter())
-            toRenderCounter(content)->invalidate();
+            toRenderCounter(content)->invalidate(identifier);
     }
 }
 
-void RenderObjectChildList::invalidateCounters(RenderObject* owner)
+void RenderObjectChildList::invalidateCounters(RenderObject* owner, const AtomicString& identifier)
 {
     ASSERT(!owner->documentBeingDestroyed());
-    invalidateCountersInContainer(beforeAfterContainer(owner, BEFORE));
-    invalidateCountersInContainer(beforeAfterContainer(owner, AFTER));
+    invalidateCountersInContainer(beforeAfterContainer(owner, BEFORE), identifier);
+    invalidateCountersInContainer(beforeAfterContainer(owner, AFTER), identifier);
 }
 
 void RenderObjectChildList::updateBeforeAfterContent(RenderObject* owner, PseudoId type, RenderObject* styledObject)
@@ -369,9 +374,11 @@ void RenderObjectChildList::updateBeforeAfterContent(RenderObject* owner, Pseudo
                     RefPtr<RenderStyle> style = RenderStyle::create();
                     style->inheritFrom(pseudoElementStyle);
                     genChild->setStyle(style.release());
-                } else
-                    // Must be a first-letter container. updateFirstLetter() will take care of it.
-                    ASSERT(genChild->style()->styleType() == FIRST_LETTER);
+                } else {
+                    // RenderListItem may insert a list marker here. We do not need to care about this case.
+                    // Otherwise, genChild must be a first-letter container. updateFirstLetter() will take care of it.
+                    ASSERT(genChild->isListMarker() || genChild->style()->styleType() == FIRST_LETTER);
+                }
             }
         }
         return; // We've updated the generated content. That's all we needed to do.

@@ -297,8 +297,6 @@
 	QtScriptTools module provides additional Qt Script-related
 	components that application developers may find useful.
 
-	\tableofcontents
-
 	To include the definitions of the module's classes, use the
 	following directive:
 
@@ -354,8 +352,6 @@
   \ingroup modules
 
   \brief The QtScriptTools module provides additional components for applications that use Qt Script.
-
-  \tableofcontents
 
   \section1 Configuring the Build Process
 

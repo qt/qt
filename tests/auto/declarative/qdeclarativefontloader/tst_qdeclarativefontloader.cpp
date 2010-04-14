@@ -45,7 +45,7 @@
 #include "../../../shared/util.h"
 #include "../shared/testhttpserver.h"
 
-#define SERVER_PORT 14445
+#define SERVER_PORT 14448
 
 class tst_qdeclarativefontloader : public QObject
 
@@ -134,7 +134,7 @@ void tst_qdeclarativefontloader::failLocalFont()
 
 void tst_qdeclarativefontloader::webFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://localhost:14445/tarzeau_ocr_a.ttf\" }";
+    QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://localhost:14448/tarzeau_ocr_a.ttf\" }";
     QDeclarativeComponent component(&engine);
 
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
@@ -150,7 +150,7 @@ void tst_qdeclarativefontloader::redirWebFont()
 {
     server.addRedirect("olddir/oldname.ttf","../tarzeau_ocr_a.ttf");
 
-    QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://localhost:14445/olddir/oldname.ttf\" }";
+    QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://localhost:14448/olddir/oldname.ttf\" }";
     QDeclarativeComponent component(&engine);
 
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
@@ -164,8 +164,8 @@ void tst_qdeclarativefontloader::redirWebFont()
 
 void tst_qdeclarativefontloader::failWebFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://localhost:14445/nonexist.ttf\" }";
-    QTest::ignoreMessage(QtWarningMsg, "Cannot load font:  QUrl( \"http://localhost:14445/nonexist.ttf\" )  ");
+    QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://localhost:14448/nonexist.ttf\" }";
+    QTest::ignoreMessage(QtWarningMsg, "Cannot load font:  QUrl( \"http://localhost:14448/nonexist.ttf\" )  ");
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeFontLoader *fontObject = qobject_cast<QDeclarativeFontLoader*>(component.create());

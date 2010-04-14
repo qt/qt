@@ -21,7 +21,9 @@
 #include "config.h"
 #include "JSWheelEvent.h"
 
+#include "JSDOMWindow.h"
 #include "WheelEvent.h"
+#include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <wtf/GetPtr.h>
 
@@ -35,22 +37,22 @@ ASSERT_CLASS_FITS_IN_CELL(JSWheelEvent);
 
 static const HashTableValue JSWheelEventTableValues[17] =
 {
-    { "screenX", DontDelete|ReadOnly, (intptr_t)jsWheelEventScreenX, (intptr_t)0 },
-    { "screenY", DontDelete|ReadOnly, (intptr_t)jsWheelEventScreenY, (intptr_t)0 },
-    { "clientX", DontDelete|ReadOnly, (intptr_t)jsWheelEventClientX, (intptr_t)0 },
-    { "clientY", DontDelete|ReadOnly, (intptr_t)jsWheelEventClientY, (intptr_t)0 },
-    { "ctrlKey", DontDelete|ReadOnly, (intptr_t)jsWheelEventCtrlKey, (intptr_t)0 },
-    { "shiftKey", DontDelete|ReadOnly, (intptr_t)jsWheelEventShiftKey, (intptr_t)0 },
-    { "altKey", DontDelete|ReadOnly, (intptr_t)jsWheelEventAltKey, (intptr_t)0 },
-    { "metaKey", DontDelete|ReadOnly, (intptr_t)jsWheelEventMetaKey, (intptr_t)0 },
-    { "wheelDelta", DontDelete|ReadOnly, (intptr_t)jsWheelEventWheelDelta, (intptr_t)0 },
-    { "wheelDeltaX", DontDelete|ReadOnly, (intptr_t)jsWheelEventWheelDeltaX, (intptr_t)0 },
-    { "wheelDeltaY", DontDelete|ReadOnly, (intptr_t)jsWheelEventWheelDeltaY, (intptr_t)0 },
-    { "offsetX", DontDelete|ReadOnly, (intptr_t)jsWheelEventOffsetX, (intptr_t)0 },
-    { "offsetY", DontDelete|ReadOnly, (intptr_t)jsWheelEventOffsetY, (intptr_t)0 },
-    { "x", DontDelete|ReadOnly, (intptr_t)jsWheelEventX, (intptr_t)0 },
-    { "y", DontDelete|ReadOnly, (intptr_t)jsWheelEventY, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsWheelEventConstructor, (intptr_t)0 },
+    { "screenX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventScreenX), (intptr_t)0 },
+    { "screenY", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventScreenY), (intptr_t)0 },
+    { "clientX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventClientX), (intptr_t)0 },
+    { "clientY", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventClientY), (intptr_t)0 },
+    { "ctrlKey", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventCtrlKey), (intptr_t)0 },
+    { "shiftKey", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventShiftKey), (intptr_t)0 },
+    { "altKey", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventAltKey), (intptr_t)0 },
+    { "metaKey", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventMetaKey), (intptr_t)0 },
+    { "wheelDelta", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventWheelDelta), (intptr_t)0 },
+    { "wheelDeltaX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventWheelDeltaX), (intptr_t)0 },
+    { "wheelDeltaY", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventWheelDeltaY), (intptr_t)0 },
+    { "offsetX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventOffsetX), (intptr_t)0 },
+    { "offsetY", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventOffsetY), (intptr_t)0 },
+    { "x", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventX), (intptr_t)0 },
+    { "y", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventY), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWheelEventConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -89,7 +91,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -110,8 +112,9 @@ bool JSWheelEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 /* Hash table for prototype */
 
-static const HashTableValue JSWheelEventPrototypeTableValues[1] =
+static const HashTableValue JSWheelEventPrototypeTableValues[2] =
 {
+    { "initWebKitWheelEvent", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsWheelEventPrototypeFunctionInitWebKitWheelEvent), (intptr_t)11 },
     { 0, 0, 0, 0 }
 };
 
@@ -119,7 +122,7 @@ static JSC_CONST_HASHTABLE HashTable JSWheelEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSWheelEventPrototypeTableValues, 0 };
 #else
-    { 1, 0, JSWheelEventPrototypeTableValues, 0 };
+    { 2, 1, JSWheelEventPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSWheelEventPrototype::s_info = { "WheelEventPrototype", 0, &JSWheelEventPrototypeTable, 0 };
@@ -127,6 +130,16 @@ const ClassInfo JSWheelEventPrototype::s_info = { "WheelEventPrototype", 0, &JSW
 JSObject* JSWheelEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
     return getDOMPrototype<JSWheelEvent>(exec, globalObject);
+}
+
+bool JSWheelEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticFunctionSlot<JSObject>(exec, &JSWheelEventPrototypeTable, this, propertyName, slot);
+}
+
+bool JSWheelEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSWheelEventPrototypeTable, this, propertyName, descriptor);
 }
 
 const ClassInfo JSWheelEvent::s_info = { "WheelEvent", &JSUIEvent::s_info, &JSWheelEventTable, 0 };
@@ -151,134 +164,172 @@ bool JSWheelEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& p
     return getStaticValueDescriptor<JSWheelEvent, Base>(exec, &JSWheelEventTable, this, propertyName, descriptor);
 }
 
-JSValue jsWheelEventScreenX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventScreenX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->screenX());
+    JSValue result = jsNumber(exec, imp->screenX());
+    return result;
 }
 
-JSValue jsWheelEventScreenY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventScreenY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->screenY());
+    JSValue result = jsNumber(exec, imp->screenY());
+    return result;
 }
 
-JSValue jsWheelEventClientX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventClientX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->clientX());
+    JSValue result = jsNumber(exec, imp->clientX());
+    return result;
 }
 
-JSValue jsWheelEventClientY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventClientY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->clientY());
+    JSValue result = jsNumber(exec, imp->clientY());
+    return result;
 }
 
-JSValue jsWheelEventCtrlKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventCtrlKey(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsBoolean(imp->ctrlKey());
+    JSValue result = jsBoolean(imp->ctrlKey());
+    return result;
 }
 
-JSValue jsWheelEventShiftKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventShiftKey(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsBoolean(imp->shiftKey());
+    JSValue result = jsBoolean(imp->shiftKey());
+    return result;
 }
 
-JSValue jsWheelEventAltKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventAltKey(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsBoolean(imp->altKey());
+    JSValue result = jsBoolean(imp->altKey());
+    return result;
 }
 
-JSValue jsWheelEventMetaKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventMetaKey(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsBoolean(imp->metaKey());
+    JSValue result = jsBoolean(imp->metaKey());
+    return result;
 }
 
-JSValue jsWheelEventWheelDelta(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventWheelDelta(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->wheelDelta());
+    JSValue result = jsNumber(exec, imp->wheelDelta());
+    return result;
 }
 
-JSValue jsWheelEventWheelDeltaX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventWheelDeltaX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->wheelDeltaX());
+    JSValue result = jsNumber(exec, imp->wheelDeltaX());
+    return result;
 }
 
-JSValue jsWheelEventWheelDeltaY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventWheelDeltaY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->wheelDeltaY());
+    JSValue result = jsNumber(exec, imp->wheelDeltaY());
+    return result;
 }
 
-JSValue jsWheelEventOffsetX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventOffsetX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->offsetX());
+    JSValue result = jsNumber(exec, imp->offsetX());
+    return result;
 }
 
-JSValue jsWheelEventOffsetY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventOffsetY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->offsetY());
+    JSValue result = jsNumber(exec, imp->offsetY());
+    return result;
 }
 
-JSValue jsWheelEventX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->x());
+    JSValue result = jsNumber(exec, imp->x());
+    return result;
 }
 
-JSValue jsWheelEventY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->y());
+    JSValue result = jsNumber(exec, imp->y());
+    return result;
 }
 
-JSValue jsWheelEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWheelEventConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWheelEvent* domObject = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
+    JSWheelEvent* domObject = static_cast<JSWheelEvent*>(asObject(slotBase));
     return JSWheelEvent::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSWheelEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
     return getDOMConstructor<JSWheelEventConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
+}
+
+JSValue JSC_HOST_CALL jsWheelEventPrototypeFunctionInitWebKitWheelEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSWheelEvent::s_info))
+        return throwError(exec, TypeError);
+    JSWheelEvent* castedThisObj = static_cast<JSWheelEvent*>(asObject(thisValue));
+    WheelEvent* imp = static_cast<WheelEvent*>(castedThisObj->impl());
+    int wheelDeltaX = args.at(0).toInt32(exec);
+    int wheelDeltaY = args.at(1).toInt32(exec);
+    DOMWindow* view = toDOMWindow(args.at(2));
+    int screenX = args.at(3).toInt32(exec);
+    int screenY = args.at(4).toInt32(exec);
+    int clientX = args.at(5).toInt32(exec);
+    int clientY = args.at(6).toInt32(exec);
+    bool ctrlKey = args.at(7).toBoolean(exec);
+    bool altKey = args.at(8).toBoolean(exec);
+    bool shiftKey = args.at(9).toBoolean(exec);
+    bool metaKey = args.at(10).toBoolean(exec);
+
+    imp->initWebKitWheelEvent(wheelDeltaX, wheelDeltaY, view, screenX, screenY, clientX, clientY, ctrlKey, altKey, shiftKey, metaKey);
+    return jsUndefined();
 }
 
 

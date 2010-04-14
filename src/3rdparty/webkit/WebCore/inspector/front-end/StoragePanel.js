@@ -97,7 +97,6 @@ WebInspector.StoragePanel.prototype = {
 
         this._domStorage = [];
 
-        this._cookieDomains = {};
         this._cookieViews = {};
 
         this.databasesListTreeElement.removeChildren();
@@ -124,13 +123,8 @@ WebInspector.StoragePanel.prototype = {
     
     addCookieDomain: function(domain)
     {
-        // Eliminate duplicate domains from the list.
-        if (typeof this._cookieDomains[domain] !== "undefined")
-            return;
-
         var cookieDomainTreeElement = new WebInspector.CookieSidebarTreeElement(domain);
         this.cookieListTreeElement.appendChild(cookieDomainTreeElement);
-        this._cookieDomains[domain] = true;
     },
 
     addDOMStorage: function(domStorage)
@@ -226,14 +220,14 @@ WebInspector.StoragePanel.prototype = {
             this.storageViewStatusBarItemsContainer.appendChild(statusBarItems[i]);
     },
 
-    showCookies: function(cookieDomain)
+    showCookies: function(treeElement, cookieDomain)
     {
         if (this.visibleView)
             this.visibleView.hide();
 
         var view = this._cookieViews[cookieDomain];
         if (!view) {
-            view = new WebInspector.CookieItemsView(cookieDomain);
+            view = new WebInspector.CookieItemsView(treeElement, cookieDomain);
             this._cookieViews[cookieDomain] = view;
         }
 
@@ -306,51 +300,13 @@ WebInspector.StoragePanel.prototype = {
             var data = {};
 
             var row = rows[i];
-            for (var columnIdentifier in row) {
-                var text = row[columnIdentifier];
-                data[columnIdentifier] = text;
-                if (text.length > columns[columnIdentifier].width)
-                    columns[columnIdentifier].width = text.length;
-            }
+            for (var columnIdentifier in row)
+                data[columnIdentifier] = row[columnIdentifier];
 
             var node = new WebInspector.DataGridNode(data, false);
             node.selectable = false;
             nodes.push(node);
         }
-
-        var totalColumnWidths = 0;
-        for (var columnIdentifier in columns)
-            totalColumnWidths += columns[columnIdentifier].width;
-
-        // Calculate the percentage width for the columns.
-        const minimumPrecent = Math.min(5, Math.floor(100/numColumns));
-        var recoupPercent = 0;
-        for (var columnIdentifier in columns) {
-            var width = columns[columnIdentifier].width;
-            width = Math.round((width / totalColumnWidths) * 100);
-            if (width < minimumPrecent) {
-                recoupPercent += (minimumPrecent - width);
-                width = minimumPrecent;
-            }
-
-            columns[columnIdentifier].width = width;
-        }
-
-        // Enforce the minimum percentage width.
-        while (recoupPercent > 0) {
-            for (var columnIdentifier in columns) {
-                if (columns[columnIdentifier].width > minimumPrecent) {
-                    --columns[columnIdentifier].width;
-                    --recoupPercent;
-                    if (!recoupPercent)
-                        break;
-                }
-            }
-        }
-
-        // Change the width property to a string suitable for a style width.
-        for (var columnIdentifier in columns)
-            columns[columnIdentifier].width += "%";
 
         var dataGrid = new WebInspector.DataGrid(columns);
         var length = nodes.length;
@@ -358,13 +314,6 @@ WebInspector.StoragePanel.prototype = {
             dataGrid.appendChild(nodes[i]);
 
         return dataGrid;
-    },
-
-    resize: function()
-    {
-        var visibleView = this.visibleView;
-        if (visibleView && "resize" in visibleView)
-            visibleView.resize();
     },
 
     updateDOMStorage: function(storageId)
@@ -395,6 +344,7 @@ WebInspector.StoragePanel.prototype = {
     {
         this.storageViews.style.left = width + "px";
         this.storageViewStatusBarItemsContainer.style.left = width + "px";
+        this.resize();
     }
 }
 
@@ -519,6 +469,7 @@ WebInspector.CookieSidebarTreeElement = function(cookieDomain)
 {
     WebInspector.SidebarTreeElement.call(this, "cookie-sidebar-tree-item", cookieDomain, "", null, false);
     this._cookieDomain = cookieDomain;
+    this._subtitle = "";
 
     this.refreshTitles();
 }
@@ -526,9 +477,9 @@ WebInspector.CookieSidebarTreeElement = function(cookieDomain)
 WebInspector.CookieSidebarTreeElement.prototype = {
     onselect: function()
     {
-        WebInspector.panels.storage.showCookies(this._cookieDomain);
+        WebInspector.panels.storage.showCookies(this, this._cookieDomain);
     },
-    
+
     get mainTitle()
     {
         return this._cookieDomain ? this._cookieDomain : WebInspector.UIString("Local Files");
@@ -541,12 +492,13 @@ WebInspector.CookieSidebarTreeElement.prototype = {
 
     get subtitle()
     {
-        return "";
+        return this._subtitle;
     },
 
     set subtitle(x)
     {
-        // Do nothing.
+        this._subtitle = x;
+        this.refreshTitles();
     }
 }
 

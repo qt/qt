@@ -19,11 +19,12 @@
 */
 
 #include "config.h"
+
+#if ENABLE(GEOLOCATION)
+
 #include "JSGeolocation.h"
 
 #include "Geolocation.h"
-#include "Geoposition.h"
-#include "JSGeoposition.h"
 #include <runtime/Error.h>
 #include <wtf/GetPtr.h>
 
@@ -33,28 +34,13 @@ namespace WebCore {
 
 ASSERT_CLASS_FITS_IN_CELL(JSGeolocation);
 
-/* Hash table */
-
-static const HashTableValue JSGeolocationTableValues[2] =
-{
-    { "lastPosition", DontDelete|ReadOnly, (intptr_t)jsGeolocationLastPosition, (intptr_t)0 },
-    { 0, 0, 0, 0 }
-};
-
-static JSC_CONST_HASHTABLE HashTable JSGeolocationTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSGeolocationTableValues, 0 };
-#else
-    { 2, 1, JSGeolocationTableValues, 0 };
-#endif
-
 /* Hash table for prototype */
 
 static const HashTableValue JSGeolocationPrototypeTableValues[4] =
 {
-    { "getCurrentPosition", DontDelete|Function, (intptr_t)jsGeolocationPrototypeFunctionGetCurrentPosition, (intptr_t)3 },
-    { "watchPosition", DontDelete|Function, (intptr_t)jsGeolocationPrototypeFunctionWatchPosition, (intptr_t)3 },
-    { "clearWatch", DontDelete|Function, (intptr_t)jsGeolocationPrototypeFunctionClearWatch, (intptr_t)1 },
+    { "getCurrentPosition", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsGeolocationPrototypeFunctionGetCurrentPosition), (intptr_t)3 },
+    { "watchPosition", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsGeolocationPrototypeFunctionWatchPosition), (intptr_t)3 },
+    { "clearWatch", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsGeolocationPrototypeFunctionClearWatch), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -82,7 +68,7 @@ bool JSGeolocationPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ide
     return getStaticFunctionDescriptor<JSObject>(exec, &JSGeolocationPrototypeTable, this, propertyName, descriptor);
 }
 
-const ClassInfo JSGeolocation::s_info = { "Geolocation", 0, &JSGeolocationTable, 0 };
+const ClassInfo JSGeolocation::s_info = { "Geolocation", 0, 0, 0 };
 
 JSGeolocation::JSGeolocation(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Geolocation> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
@@ -98,24 +84,6 @@ JSGeolocation::~JSGeolocation()
 JSObject* JSGeolocation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
     return new (exec) JSGeolocationPrototype(JSGeolocationPrototype::createStructure(globalObject->objectPrototype()));
-}
-
-bool JSGeolocation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
-{
-    return getStaticValueSlot<JSGeolocation, Base>(exec, &JSGeolocationTable, this, propertyName, slot);
-}
-
-bool JSGeolocation::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
-{
-    return getStaticValueDescriptor<JSGeolocation, Base>(exec, &JSGeolocationTable, this, propertyName, descriptor);
-}
-
-JSValue jsGeolocationLastPosition(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSGeolocation* castedThis = static_cast<JSGeolocation*>(asObject(slot.slotBase()));
-    UNUSED_PARAM(exec);
-    Geolocation* imp = static_cast<Geolocation*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->lastPosition()));
 }
 
 JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionGetCurrentPosition(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -159,3 +127,5 @@ Geolocation* toGeolocation(JSC::JSValue value)
 }
 
 }
+
+#endif // ENABLE(GEOLOCATION)
