@@ -4242,8 +4242,15 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         if (const QAbstractScrollArea *sa = qobject_cast<const QAbstractScrollArea *>(w)) {
             const QAbstractScrollAreaPrivate *sap = sa->d_func();
             rule.drawBackground(p, opt->rect, sap->contentsOffset());
-            if (rule.hasBorder())
-                rule.drawBorder(p, rule.borderRect(opt->rect));
+            if (rule.hasBorder()) {
+                QRect brect = rule.borderRect(opt->rect);
+                if (styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents, opt, w)) {
+                    QRect r = brect.adjusted(0, 0, sa->verticalScrollBar()->isVisible() ? -sa->verticalScrollBar()->width() : 0,
+                                             sa->horizontalScrollBar()->isVisible() ? -sa->horizontalScrollBar()->height() : 0);
+                    brect = QStyle::visualRect(opt->direction, brect, r);
+                }
+                rule.drawBorder(p, brect);
+            }
             break;
         }
 #endif
@@ -4627,6 +4634,11 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
                 return sb->orientation == Qt::Horizontal ? msz.width() : msz.height();
             return msz.width() == -1 ? msz.height() : msz.width();
         }
+        break;
+
+    case PM_ScrollView_ScrollBarSpacing:
+        if(!rule.hasNativeBorder() || rule.hasBox())
+            return 0;
         break;
 #endif // QT_NO_SCROLLBAR
 
