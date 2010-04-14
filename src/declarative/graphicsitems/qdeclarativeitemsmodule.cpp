@@ -73,6 +73,7 @@
 #include "private/qdeclarativetextedit_p.h"
 #include "private/qdeclarativetextinput_p.h"
 #include "private/qdeclarativevisualitemmodel_p.h"
+#include "private/qdeclarativegraphicswidget_p.h"
 #ifdef QT_WEBKIT_LIB
 #include "private/qdeclarativewebview_p.h"
 #include "private/qdeclarativewebview_p_p.h"
@@ -132,7 +133,8 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeKeyEvent>();
     qmlRegisterType<QDeclarativeMouseEvent>();
     qmlRegisterType<QGraphicsObject>();
-    qmlRegisterType<QGraphicsWidget>();
+    qmlRegisterType<QGraphicsWidget>("Qt",4,6,"QGraphicsWidget");
+    qmlRegisterExtendedType<QGraphicsWidget,QDeclarativeGraphicsWidget>("Qt",4,6,"QGraphicsWidget");
     qmlRegisterType<QGraphicsTransform>();
     qmlRegisterType<QDeclarativePathElement>();
     qmlRegisterType<QDeclarativeCurve>();

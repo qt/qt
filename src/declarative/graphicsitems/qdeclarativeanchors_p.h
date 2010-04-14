@@ -75,12 +75,12 @@ class Q_DECLARATIVE_EXPORT QDeclarativeAnchors : public QObject
     Q_PROPERTY(qreal bottomMargin READ bottomMargin WRITE setBottomMargin NOTIFY bottomMarginChanged)
     Q_PROPERTY(qreal verticalCenterOffset READ verticalCenterOffset WRITE setVerticalCenterOffset NOTIFY verticalCenterOffsetChanged())
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged())
-    Q_PROPERTY(QDeclarativeItem *fill READ fill WRITE setFill RESET resetFill NOTIFY fillChanged)
-    Q_PROPERTY(QDeclarativeItem *centerIn READ centerIn WRITE setCenterIn RESET resetCenterIn NOTIFY centerInChanged)
+    Q_PROPERTY(QGraphicsObject *fill READ fill WRITE setFill RESET resetFill NOTIFY fillChanged)
+    Q_PROPERTY(QGraphicsObject *centerIn READ centerIn WRITE setCenterIn RESET resetCenterIn NOTIFY centerInChanged)
 
 public:
     QDeclarativeAnchors(QObject *parent=0);
-    QDeclarativeAnchors(QDeclarativeItem *item, QObject *parent=0);
+    QDeclarativeAnchors(QGraphicsObject *item, QObject *parent=0);
     virtual ~QDeclarativeAnchors();
 
     enum UsedAnchor { 
@@ -148,12 +148,12 @@ public:
     qreal baselineOffset() const;
     void setBaselineOffset(qreal);
 
-    QDeclarativeItem *fill() const;
-    void setFill(QDeclarativeItem *);
+    QGraphicsObject *fill() const;
+    void setFill(QGraphicsObject *);
     void resetFill();
 
-    QDeclarativeItem *centerIn() const;
-    void setCenterIn(QDeclarativeItem *);
+    QGraphicsObject *centerIn() const;
+    void setCenterIn(QGraphicsObject *);
     void resetCenterIn();
 
     UsedAnchors usedAnchors() const;
@@ -182,8 +182,11 @@ Q_SIGNALS:
 
 private:
     friend class QDeclarativeItem;
+    friend class QDeclarativeGraphicsWidget;
     Q_DISABLE_COPY(QDeclarativeAnchors)
     Q_DECLARE_PRIVATE(QDeclarativeAnchors)
+    Q_PRIVATE_SLOT(d_func(), void _q_widgetGeometryChanged())
+    Q_PRIVATE_SLOT(d_func(), void _q_widgetDestroyed(QObject *obj))
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeAnchors::UsedAnchors)
 
