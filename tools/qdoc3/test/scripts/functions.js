@@ -20,7 +20,6 @@ $('#medA').click(function() {
 		$('.content p').css('font','13px/20px Verdana');
 		$('.content li').css('font','400 13px/1 Verdana');
 		$('.content li').css('line-height','14px');
-		$('.content .toc li').css('font', 'normal 10px/1.2 Verdana');
 		$('.content table').css('font','13px/1.2 Verdana');
 		$('.content .heading').css('font','600 16px/1 Arial');
 		$('.content .indexboxcont li').css('font','600 13px/1 Verdana');

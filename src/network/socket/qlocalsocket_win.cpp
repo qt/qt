@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include "qlocalsocket.h"
 #include "qlocalsocket_p.h"
 
 #include <private/qthread_p.h>
@@ -425,6 +424,15 @@ bool QLocalSocket::flush()
 void QLocalSocket::disconnectFromServer()
 {
     Q_D(QLocalSocket);
+
+    // Are we still connected?
+    if (!isValid()) {
+        // If we have unwritten data, the pipeWriter is still present.
+        // It must be destroyed before close() to prevent an infinite loop.
+        delete d->pipeWriter;
+        d->pipeWriter = 0;
+    }
+
     flush();
     if (d->pipeWriter && d->pipeWriter->bytesToWrite() != 0) {
         d->state = QLocalSocket::ClosingState;

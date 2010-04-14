@@ -1381,6 +1381,13 @@ void tst_QCssParser::shorthandBackgroundProperty()
     QTEST(image, "expectedImage");
     QTEST(int(repeat), "expectedRepeatValue");
     QTEST(int(alignment), "expectedAlignment");
+
+    //QTBUG-9674  : a second evaluation should give the same results
+    QVERIFY(v.extractBackground(&brush, &image, &repeat, &alignment, &origin, &attachment, &ignoredOrigin));
+    QVERIFY(expectedBrush.color() == brush.color());
+    QTEST(image, "expectedImage");
+    QTEST(int(repeat), "expectedRepeatValue");
+    QTEST(int(alignment), "expectedAlignment");
 }
 
 void tst_QCssParser::pseudoElement_data()
@@ -1641,6 +1648,12 @@ void tst_QCssParser::extractBorder()
     QSize radii[4];
 
     extractor.extractBorder(widths, colors, styles, radii);
+    QVERIFY(widths[QCss::TopEdge] == expectedTopWidth);
+    QVERIFY(styles[QCss::TopEdge] == expectedTopStyle);
+    QVERIFY(colors[QCss::TopEdge] == expectedTopColor);
+
+    //QTBUG-9674  : a second evaluation should give the same results
+    QVERIFY(extractor.extractBorder(widths, colors, styles, radii));
     QVERIFY(widths[QCss::TopEdge] == expectedTopWidth);
     QVERIFY(styles[QCss::TopEdge] == expectedTopStyle);
     QVERIFY(colors[QCss::TopEdge] == expectedTopColor);
