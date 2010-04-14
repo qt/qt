@@ -1262,6 +1262,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     }
 
     generateHeader(title, inner, marker, true);
+    generateTableOfContents(inner,marker);
     generateTitle(title, subtitleText, SmallSubTitle, inner, marker);
 
 #ifdef QDOC_QML
