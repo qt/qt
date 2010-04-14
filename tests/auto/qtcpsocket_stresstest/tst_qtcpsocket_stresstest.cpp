@@ -64,6 +64,7 @@ private Q_SLOTS:
     void blockingPipelined();
     void blockingMultipleRequests();
     void connectDisconnect();
+    void parallelConnectDisconnect();
 };
 
 tst_QTcpSocket_stresstest::tst_QTcpSocket_stresstest()
@@ -211,9 +212,6 @@ void tst_QTcpSocket_stresstest::connectDisconnect()
         qDebug("Attempt %d", i);
         QTcpSocket socket;
         socket.connectToHost(hostname, port);
-        QTestEventLoop::instance().connect(&socket, SIGNAL(connected()), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(30);
-        QVERIFY2(!QTestEventLoop::instance().timeout(), "Timeout");
 
         socket.write("GET /qtest/bigfile HTTP/1.1\r\n"
                      "Connection: close\r\n"
@@ -224,6 +222,41 @@ void tst_QTcpSocket_stresstest::connectDisconnect()
         QTestEventLoop::instance().connect(&socket, SIGNAL(disconnected()), SLOT(exitLoop()));
         QTestEventLoop::instance().enterLoop(30);
         QVERIFY2(!QTestEventLoop::instance().timeout(), "Timeout");
+    }
+}
+
+void tst_QTcpSocket_stresstest::parallelConnectDisconnect()
+{
+    QFETCH_GLOBAL(QString, hostname);
+    QFETCH_GLOBAL(int, port);
+
+    for (int i = 0; i < AttemptCount/4; ++i) {
+        qDebug("Attempt %d", i);
+        const int parallelAttempts = 6;
+        QTcpSocket socket[parallelAttempts];
+        for (int j = 0; j < parallelAttempts; ++j) {
+            socket[j].connectToHost(hostname, port);
+
+            socket[j].write("GET /qtest/bigfile HTTP/1.1\r\n"
+                            "Connection: close\r\n"
+                            "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
+                            "Host: " + hostname.toLatin1() + "\r\n"
+                            "\r\n");
+
+            QTestEventLoop::instance().connect(&socket[j], SIGNAL(disconnected()), SLOT(exitLoop()));
+        }
+
+        QElapsedTimer timeout;
+        timeout.start();
+        while (!timeout.hasExpired(10000)) {
+            QTestEventLoop::instance().enterLoop(10);
+            int done = 0;
+            for (int j = 0; j < parallelAttempts; ++j)
+                done += socket[j].state() == QAbstractSocket::UnconnectedState ? 1 : 0;
+            if (done == parallelAttempts)
+                break;
+        }
+        QVERIFY2(!timeout.hasExpired(10000), "Timeout");
     }
 }
 
