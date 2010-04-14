@@ -63,6 +63,7 @@ private Q_SLOTS:
     void blockingConnectDisconnect();
     void blockingPipelined();
     void blockingMultipleRequests();
+    void connectDisconnect();
 };
 
 tst_QTcpSocket_stresstest::tst_QTcpSocket_stresstest()
@@ -198,6 +199,31 @@ void tst_QTcpSocket_stresstest::blockingMultipleRequests()
 
         socket.disconnectFromHost();
         QVERIFY(socket.state() == QAbstractSocket::UnconnectedState);
+    }
+}
+
+void tst_QTcpSocket_stresstest::connectDisconnect()
+{
+    QFETCH_GLOBAL(QString, hostname);
+    QFETCH_GLOBAL(int, port);
+
+    for (int i = 0; i < AttemptCount; ++i) {
+        qDebug("Attempt %d", i);
+        QTcpSocket socket;
+        socket.connectToHost(hostname, port);
+        QTestEventLoop::instance().connect(&socket, SIGNAL(connected()), SLOT(exitLoop()));
+        QTestEventLoop::instance().enterLoop(30);
+        QVERIFY2(!QTestEventLoop::instance().timeout(), "Timeout");
+
+        socket.write("GET /qtest/bigfile HTTP/1.1\r\n"
+                     "Connection: close\r\n"
+                     "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
+                     "Host: " + hostname.toLatin1() + "\r\n"
+                     "\r\n");
+
+        QTestEventLoop::instance().connect(&socket, SIGNAL(disconnected()), SLOT(exitLoop()));
+        QTestEventLoop::instance().enterLoop(30);
+        QVERIFY2(!QTestEventLoop::instance().timeout(), "Timeout");
     }
 }
 
