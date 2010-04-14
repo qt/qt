@@ -16,6 +16,7 @@ target.path = $$[QT_INSTALL_DEMOS]/declarative/minehunt/MinehuntCore
 
 MinehuntCore_sources.files = \
     MinehuntCore/Explosion.qml \
+    MinehuntCore/Tile.qml \
     MinehuntCore/pics \
     MinehuntCore/qmldir
 MinehuntCore_sources.path = $$[QT_INSTALL_DEMOS]/declarative/minehunt/MinehuntCore
