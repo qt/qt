@@ -375,7 +375,7 @@ void MMF::AbstractMediaPlayer::playbackComplete(int error)
     }
 
     if (KErrNone == error) {
-        changeState(StoppedState);
+        changeState(PausedState);
 
         // MediaObject::switchToNextSource deletes the current player, so we
         // call it via delayed slot invokation to ensure that this object does
