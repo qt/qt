@@ -10,6 +10,7 @@ CONFIG += staticlib
 TARGET = $$JAVASCRIPTCORE_TARGET
 DESTDIR = $$JAVASCRIPTCORE_DESTDIR
 QT += core
+QT -= gui
 
 CONFIG += depend_includepath
 
