@@ -71,9 +71,11 @@ const int QHttpNetworkConnectionPrivate::defaultChannelCount = 3;
 const int QHttpNetworkConnectionPrivate::defaultChannelCount = 6;
 #endif
 
-// the maximum amount of requests that might be pipelined into a socket
-// from what was suggested, 3 seems to be OK
+// The pipeline length. So there will be 4 requests in flight.
 const int QHttpNetworkConnectionPrivate::defaultPipelineLength = 3;
+// Only re-fill the pipeline if there's defaultRePipelineLength slots free in the pipeline.
+// This means that there are 2 requests in flight and 2 slots free that will be re-filled.
+const int QHttpNetworkConnectionPrivate::defaultRePipelineLength = 2;
 
 
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt)
@@ -487,54 +489,68 @@ void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
 
     int i = indexOf(socket);
 
-    bool highPriorityQueueProcessingDone = false;
-    bool lowPriorityQueueProcessingDone = false;
+    if (! (defaultPipelineLength - channels[i].alreadyPipelinedRequests.length() >= 2)) {
+        return;
+    }
 
-    while (!highPriorityQueueProcessingDone && !lowPriorityQueueProcessingDone) {
-        // this loop runs once per request we intend to pipeline in.
+    if (channels[i].pipeliningSupported != QHttpNetworkConnectionChannel::PipeliningProbablySupported)
+        return;
 
-        if (channels[i].pipeliningSupported != QHttpNetworkConnectionChannel::PipeliningProbablySupported)
-            return;
+    // the current request that is in must already support pipelining
+    if (!channels[i].request.isPipeliningAllowed())
+        return;
 
-        // the current request that is in must already support pipelining
-        if (!channels[i].request.isPipeliningAllowed())
-            return;
+    // the current request must be a idempotent (right now we only check GET)
+    if (channels[i].request.operation() != QHttpNetworkRequest::Get)
+        return;
 
-        // the current request must be a idempotent (right now we only check GET)
-        if (channels[i].request.operation() != QHttpNetworkRequest::Get)
-            return;
+    // check if socket is connected
+    if (socket->state() != QAbstractSocket::ConnectedState)
+        return;
 
-        // check if socket is connected
-        if (socket->state() != QAbstractSocket::ConnectedState)
-            return;
+    // check for resendCurrent
+    if (channels[i].resendCurrent)
+        return;
 
-        // check for resendCurrent
-        if (channels[i].resendCurrent)
-            return;
+    // we do not like authentication stuff
+    // ### make sure to be OK with this in later releases
+    if (!channels[i].authenticator.isNull() || !channels[i].authenticator.user().isEmpty())
+        return;
+    if (!channels[i].proxyAuthenticator.isNull() || !channels[i].proxyAuthenticator.user().isEmpty())
+        return;
 
-        // we do not like authentication stuff
-        // ### make sure to be OK with this in later releases
-        if (!channels[i].authenticator.isNull() || !channels[i].authenticator.user().isEmpty())
-            return;
-        if (!channels[i].proxyAuthenticator.isNull() || !channels[i].proxyAuthenticator.user().isEmpty())
-            return;
+    // must be in ReadingState or WaitingState
+    if (! (channels[i].state == QHttpNetworkConnectionChannel::WaitingState
+           || channels[i].state == QHttpNetworkConnectionChannel::ReadingState))
+        return;
 
-        // check for pipeline length
+
+    //qDebug() << "QHttpNetworkConnectionPrivate::fillPipeline processing highPriorityQueue, size=" << highPriorityQueue.size() << " alreadyPipelined=" << channels[i].alreadyPipelinedRequests.length();
+    int lengthBefore;
+    while (!highPriorityQueue.isEmpty()) {
+        lengthBefore = channels[i].alreadyPipelinedRequests.length();
+        fillPipeline(highPriorityQueue, channels[i]);
+
         if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength)
             return;
 
-        // must be in ReadingState or WaitingState
-        if (! (channels[i].state == QHttpNetworkConnectionChannel::WaitingState
-               || channels[i].state == QHttpNetworkConnectionChannel::ReadingState))
+        if (lengthBefore == channels[i].alreadyPipelinedRequests.length())
+            break; // did not process anything, now do the low prio queue
+    }
+
+    //qDebug() << "QHttpNetworkConnectionPrivate::fillPipeline processing lowPriorityQueue, size=" << lowPriorityQueue.size() << " alreadyPipelined=" << channels[i].alreadyPipelinedRequests.length();
+    while (!lowPriorityQueue.isEmpty()) {
+        lengthBefore = channels[i].alreadyPipelinedRequests.length();
+        fillPipeline(lowPriorityQueue, channels[i]);
+
+        if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength)
             return;
 
-        highPriorityQueueProcessingDone = fillPipeline(highPriorityQueue, channels[i]);
-        // not finished with highPriorityQueue? then loop again
-        if (!highPriorityQueueProcessingDone)
-            continue;
-        // highPriorityQueue was processed, now deal with the lowPriorityQueue
-        lowPriorityQueueProcessingDone = fillPipeline(lowPriorityQueue, channels[i]);
+        if (lengthBefore == channels[i].alreadyPipelinedRequests.length())
+            break; // did not process anything
     }
+
+
 }
 
 // returns true when the processing of a queue has been done
@@ -707,7 +723,6 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
             // if this is not possible, error will be emitted and connection terminated
             if (!channels[i].resetUploadData())
                 continue;
-
             channels[i].sendRequest();
         }
     }
@@ -747,8 +762,9 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     // return fast if there is nothing to pipeline
     if (highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty())
         return;
-    for (int j = 0; j < channelCount; j++)
-        fillPipeline(channels[j].socket);
+    for (int i = 0; i < channelCount; i++)
+        if (channels[i].socket->state() == QAbstractSocket::ConnectedState)
+            fillPipeline(channels[i].socket);
 }
 
 void QHttpNetworkConnectionPrivate::_q_restartAuthPendingRequests()
