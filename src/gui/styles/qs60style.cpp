@@ -548,11 +548,11 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
     startEndSize.scale(rect.size(), Qt::KeepAspectRatio);
 
     QRect startRect = QRect(rect.topLeft(), startEndSize);
-    startRect.setHeight(rect.height());
     QRect middleRect = rect;
     QRect endRect;
 
     if (orientation == Qt::Horizontal) {
+        startRect.setHeight(rect.height());
         startRect.setWidth(qMin((rect.width() >> 1) - 1, startRect.width()));
         endRect = startRect.translated(rect.width() - startRect.width(), 0);
         middleRect.adjust(startRect.width(), 0, -startRect.width(), 0);
@@ -562,6 +562,7 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
             endRect.adjust(overlap, 0, 0, 0);
         }
     } else {
+        startRect.setWidth(rect.width());
         startRect.setHeight(qMin((rect.height() >> 1) - 1, startRect.height()));
         endRect = startRect.translated(0, rect.height() - startRect.height());
         middleRect.adjust(0, startRect.height(), 0, -startRect.height());
