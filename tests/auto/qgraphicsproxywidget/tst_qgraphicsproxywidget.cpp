@@ -2645,25 +2645,6 @@ void tst_QGraphicsProxyWidget::tooltip_basic()
         QVERIFY(foundView);
         QVERIFY(foundTipLabel);
     }
-
-    {
-        QHelpEvent helpEvent(QEvent::ToolTip, view.viewport()->rect().topLeft(),
-                             view.viewport()->mapToGlobal(view.viewport()->rect().topLeft()));
-        QApplication::sendEvent(view.viewport(), &helpEvent);
-        // Wait 350ms because the tooltip only hides after 300ms...
-        QTest::qWait(350);
-
-        bool foundView = false;
-        bool foundTipLabel = false;
-        foreach (QWidget *widget, QApplication::topLevelWidgets()) {
-            if (widget == &view)
-                foundView = true;
-            if (widget->inherits("QTipLabel") && widget->isVisible())
-                foundTipLabel = true;
-        }
-        QVERIFY(foundView);
-        QVERIFY(!foundTipLabel);
-    }
 }
 
 void tst_QGraphicsProxyWidget::childPos_data()
