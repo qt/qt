@@ -548,6 +548,7 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
     startEndSize.scale(rect.size(), Qt::KeepAspectRatio);
 
     QRect startRect = QRect(rect.topLeft(), startEndSize);
+    startRect.setHeight(rect.height());
     QRect middleRect = rect;
     QRect endRect;
 
