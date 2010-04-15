@@ -1167,6 +1167,17 @@ CGContextRef qt_mac_graphicsContextFor(QWidget *widget)
     return context;
 }
 
+void qt_mac_dispatchPendingUpdateRequests(QWidget *widget)
+{
+    if (!widget)
+        return;
+#ifndef QT_MAC_USE_COCOA
+    HIViewRender(qt_mac_nativeview_for(widget));
+#else
+    [qt_mac_nativeview_for(widget) displayIfNeeded];
+#endif
+}
+
 CGFloat qt_mac_get_scalefactor()
 {
 #ifndef QT_MAC_USE_COCOA
