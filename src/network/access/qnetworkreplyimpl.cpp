@@ -67,8 +67,6 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
 
 void QNetworkReplyImplPrivate::_q_startOperation()
 {
-    Q_Q(QNetworkReplyImpl);
-
     // ensure this function is only being called once
     if (state == Working) {
         qDebug("QNetworkReplyImpl::_q_startOperation was called more than once");
@@ -96,6 +94,8 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         QNetworkSession *session = manager->d_func()->networkSession;
 
         if (session) {
+            Q_Q(QNetworkReplyImpl);
+
             QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
                              q, SLOT(_q_networkSessionFailed()));
 
@@ -104,6 +104,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         } else {
             qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
         }
+
         return;
     }
 #endif
@@ -233,6 +234,7 @@ void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
     }
 }
 
+#ifndef QT_NO_BEARERMANAGEMENT
 void QNetworkReplyImplPrivate::_q_networkSessionConnected()
 {
     Q_Q(QNetworkReplyImpl);
@@ -273,6 +275,7 @@ void QNetworkReplyImplPrivate::_q_networkSessionFailed()
         finished();
     }
 }
+#endif
 
 void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const QNetworkRequest &req,
                                      QIODevice *data)
@@ -892,6 +895,7 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     return true;
 }
 
+#ifndef QT_NO_BEARERMANAGEMENT
 QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
                                              const QNetworkRequest &req,
                                              QNetworkAccessManager::Operation op)
@@ -915,6 +919,7 @@ QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
 QDisabledNetworkReply::~QDisabledNetworkReply()
 {
 }
+#endif
 
 QT_END_NAMESPACE
 

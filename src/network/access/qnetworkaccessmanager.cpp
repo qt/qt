@@ -917,18 +917,14 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         return new QFileNetworkReply(this, req, op);
     }
 
+#ifndef QT_NO_BEARERMANAGEMENT
     // Return a disabled network reply if network access is disabled.
     // Except if the scheme is empty or file://.
-    if (
-#ifndef QT_NO_BEARERMANAGEMENT
-        !d->networkAccessible &&
-#endif
-        !(req.url().scheme() == QLatin1String("file") ||
+    if (!d->networkAccessible && !(req.url().scheme() == QLatin1String("file") ||
                                       req.url().scheme().isEmpty())) {
         return new QDisabledNetworkReply(this, req, op);
     }
 
-#ifndef QT_NO_BEARERMANAGEMENT
     if (!d->networkSession && (d->initializeSession || !d->networkConfiguration.isEmpty())) {
         QNetworkConfigurationManager manager;
         if (!d->networkConfiguration.isEmpty()) {
@@ -961,10 +957,12 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     // first step: create the reply
     QUrl url = request.url();
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
+#ifndef QT_NO_BEARERMANAGEMENT
     if (req.url().scheme() != QLatin1String("file") && !req.url().scheme().isEmpty()) {
         connect(this, SIGNAL(networkSessionConnected()),
                 reply, SLOT(_q_networkSessionConnected()));
     }
+#endif
     QNetworkReplyImplPrivate *priv = reply->d_func();
     priv->manager = this;
 

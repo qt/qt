@@ -69,6 +69,8 @@
     #include <aputils.h> 
 #endif
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 static const int KValueThatWillBeAddedToSNAPId = 1000;
@@ -1130,3 +1132,5 @@ void AccessPointsAvailabilityScanner::RunL()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT

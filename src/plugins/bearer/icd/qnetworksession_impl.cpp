@@ -52,6 +52,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 QDBusArgument &operator<<(QDBusArgument &argument,
@@ -1044,3 +1046,5 @@ void QNetworkSessionPrivateImpl::clearProxyInformation()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT

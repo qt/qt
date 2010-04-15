@@ -72,7 +72,9 @@ class Q_NETWORK_EXPORT QNetworkAccessManager: public QObject
 {
     Q_OBJECT
 
+#ifndef QT_NO_BEARERMANAGEMENT
     Q_PROPERTY(NetworkAccessibility networkAccessible READ networkAccessible WRITE setNetworkAccessible NOTIFY networkAccessibleChanged)
+#endif
 
 public:
     enum Operation {
@@ -86,11 +88,13 @@ public:
         UnknownOperation = 0
     };
 
+#ifndef QT_NO_BEARERMANAGEMENT
     enum NetworkAccessibility {
         UnknownAccessibility = -1,
         NotAccessible = 0,
         Accessible = 1
     };
+#endif
 
     explicit QNetworkAccessManager(QObject *parent = 0);
     ~QNetworkAccessManager();
@@ -136,9 +140,11 @@ Q_SIGNALS:
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 #endif
 
+#ifndef QT_NO_BEARERMANAGEMENT
     void networkSessionConnected();
 
     void networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
+#endif
 
 protected:
     virtual QNetworkReply *createRequest(Operation op, const QNetworkRequest &request,

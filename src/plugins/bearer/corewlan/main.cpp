@@ -45,6 +45,8 @@
 
 #include <QtCore/qdebug.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QCoreWlanEnginePlugin : public QBearerEnginePlugin
@@ -82,3 +84,5 @@ Q_EXPORT_STATIC_PLUGIN(QCoreWlanEnginePlugin)
 Q_EXPORT_PLUGIN2(qcorewlanbearer, QCoreWlanEnginePlugin)
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
