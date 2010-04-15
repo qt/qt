@@ -63,7 +63,7 @@ extern void qt_format_text(const QFont& font, const QRectF &_r,
                            int tf, const QString &text, QRectF *brect,
                            int tabStops, int *tabArray, int tabArrayLen,
                            QPainter *painter);
-extern int qt_defaultDpi();
+Q_GUI_EXPORT extern int qt_defaultDpi();
 
 /*****************************************************************************
   QFontMetrics member functions

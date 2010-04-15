@@ -138,7 +138,7 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
-extern void qt_call_post_routines();
+Q_DECL_IMPORT extern void qt_call_post_routines();
 
 int QApplicationPrivate::app_compile_version = 0x040000; //we don't know exactly, but it's at least 4.0.0
 
