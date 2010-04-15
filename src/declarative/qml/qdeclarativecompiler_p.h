@@ -159,8 +159,6 @@ public:
     static bool isAttachedPropertyName(const QByteArray &);
     static bool isSignalPropertyName(const QByteArray &);
 
-    static QMetaMethod findSignalByName(const QMetaObject *, const QByteArray &name);
-
     int evaluateEnum(const QByteArray& script) const; // for QDeclarativeCustomParser::evaluateEnum
 
 private:

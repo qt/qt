@@ -147,7 +147,7 @@ QDeclarativePropertyCache::Data QDeclarativePropertyCache::create(const QMetaObj
     }
 
     int methodCount = metaObject->methodCount();
-    for (int ii = methodCount - 1; ii >= 0; --ii) {
+    for (int ii = methodCount - 1; ii >= 2; --ii) { // >=2 to block the destroyed signal
         QMetaMethod m = metaObject->method(ii);
         if (m.access() == QMetaMethod::Private)
             continue;
@@ -216,7 +216,7 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
     }
 
     int methodCount = metaObject->methodCount();
-    int methodOffset = metaObject->methodOffset();
+    int methodOffset = qMax(2, metaObject->methodOffset()); // 2 to block the destroyed signal
     for (int ii = methodOffset; ii < methodCount; ++ii) {
         QMetaMethod m = metaObject->method(ii);
         if (m.access() == QMetaMethod::Private)
@@ -289,7 +289,7 @@ void QDeclarativePropertyCache::update(QDeclarativeEngine *engine, const QMetaOb
     }
 
     int methodCount = metaObject->methodCount();
-    for (int ii = methodCount - 1; ii >= 0; --ii) {
+    for (int ii = methodCount - 1; ii >= 2; --ii) { // >=2 to block the destroyed signal
         QMetaMethod m = metaObject->method(ii);
         if (m.access() == QMetaMethod::Private)
             continue;

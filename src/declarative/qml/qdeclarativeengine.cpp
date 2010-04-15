@@ -155,7 +155,7 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 : captureProperties(false), rootContext(0), currentExpression(0), isDebugging(false), 
   contextClass(0), sharedContext(0), sharedScope(0), objectClass(0), valueTypeClass(0), 
   globalClass(0), cleanup(0), erroredBindings(0), inProgressCreations(0), 
-  scriptEngine(this), workerScriptEngine(0), componentAttacheds(0), inBeginCreate(false), 
+  scriptEngine(this), workerScriptEngine(0), componentAttached(0), inBeginCreate(false), 
   networkAccessManager(0), networkAccessManagerFactory(0),
   typeManager(e), uniqueId(1)
 {
@@ -350,8 +350,13 @@ typedef QMap<QString, QString> StringStringMap;
 Q_GLOBAL_STATIC(StringStringMap, qmlEnginePluginsWithRegisteredTypes); // stores the uri
 
 
-void QDeclarativePrivate::qdeclarativeelement_destructor(QObject *)
+void QDeclarativePrivate::qdeclarativeelement_destructor(QObject *o)
 {
+    QObjectPrivate *p = QObjectPrivate::get(o);
+    Q_ASSERT(p->declarativeData);
+    QDeclarativeData *d = static_cast<QDeclarativeData*>(p->declarativeData);
+    if (d->ownContext) 
+        d->context->destroy();
 }
 
 void QDeclarativeData::destroyed(QAbstractDeclarativeData *d, QObject *o)
@@ -855,7 +860,7 @@ void QDeclarativeData::destroyed(QObject *object)
     if (propertyCache)
         propertyCache->release();
 
-    if (ownContext)
+    if (ownContext && context)
         context->destroy();
 
     QDeclarativeGuard<QObject> *guard = guards;
