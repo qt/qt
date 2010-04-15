@@ -65,47 +65,44 @@ static QString MagicComment(QLatin1String("TRANSLATOR"));
 
 class HashString {
 public:
-    HashString() : m_hashed(false) {}
-    explicit HashString(const QString &str) : m_str(str), m_hashed(false) {}
-    void setValue(const QString &str) { m_str = str; m_hashed = false; }
+    HashString() : m_hash(0x80000000) {}
+    explicit HashString(const QString &str) : m_str(str), m_hash(0x80000000) {}
+    void setValue(const QString &str) { m_str = str; m_hash = 0x80000000; }
     const QString &value() const { return m_str; }
     bool operator==(const HashString &other) const { return m_str == other.m_str; }
 private:
     QString m_str;
+    // qHash() of a QString is only 28 bits wide, so we can use
+    // the highest bit(s) as the "hash valid" flag.
     mutable uint m_hash;
-    mutable bool m_hashed;
     friend uint qHash(const HashString &str);
 };
 
 uint qHash(const HashString &str)
 {
-    if (!str.m_hashed) {
-        str.m_hashed = true;
+    if (str.m_hash & 0x80000000)
         str.m_hash = qHash(str.m_str);
-    }
     return str.m_hash;
 }
 
 class HashStringList {
 public:
-    explicit HashStringList(const QList<HashString> &list) : m_list(list), m_hashed(false) {}
+    explicit HashStringList(const QList<HashString> &list) : m_list(list), m_hash(0x80000000) {}
     const QList<HashString> &value() const { return m_list; }
     bool operator==(const HashStringList &other) const { return m_list == other.m_list; }
 private:
     QList<HashString> m_list;
     mutable uint m_hash;
-    mutable bool m_hashed;
     friend uint qHash(const HashStringList &list);
 };
 
 uint qHash(const HashStringList &list)
 {
-    if (!list.m_hashed) {
-        list.m_hashed = true;
+    if (list.m_hash & 0x80000000) {
         uint hash = 0;
         foreach (const HashString &qs, list.m_list) {
-            hash ^= qHash(qs) ^ 0xa09df22f;
-            hash = (hash << 13) | (hash >> 19);
+            hash ^= qHash(qs) ^ 0x0ad9f526;
+            hash = ((hash << 13) & 0x0fffffff) | (hash >> 15);
         }
         list.m_hash = hash;
     }
