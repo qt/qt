@@ -43,7 +43,15 @@
 #include <QtCore/QThread>
 #include <QtCore/QSemaphore>
 #include <QtCore/QElapsedTimer>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QVector>
 #include <QtNetwork/QTcpSocket>
+#include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkAccessManager>
+
+#ifdef QT_BUILD_INTERNAL
+# include <private/qnetworkaccessmanager_p.h>
+#endif
 
 #include "minihttpserver.h"
 #include "../network-settings.h"
@@ -77,12 +85,17 @@ public:
     MiniHttpServer server;
 
     qint64 byteCounter;
+    QNetworkAccessManager manager;
+    bool intermediateDebug;
+
+private:
+    void clearManager();
 
 public slots:
     void initTestCase_data();
     void init();
 
-    void slotReadAll() { byteCounter += static_cast<QTcpSocket *>(sender())->readAll().size(); }
+    void slotReadAll() { byteCounter += static_cast<QIODevice *>(sender())->readAll().size(); }
 
 private Q_SLOTS:
     void nativeBlockingConnectDisconnect();
@@ -93,9 +106,12 @@ private Q_SLOTS:
     void connectDisconnect();
     void parallelConnectDisconnect_data();
     void parallelConnectDisconnect();
+    void namGet_data();
+    void namGet();
 };
 
 tst_QTcpSocket_stresstest::tst_QTcpSocket_stresstest()
+    : intermediateDebug(qgetenv("QTCPSOCKET_STRESSTEST").toInt() > 1)
 {
 #ifdef Q_OS_WIN
     WSAData wsadata;
@@ -114,13 +130,28 @@ void tst_QTcpSocket_stresstest::initTestCase_data()
     QTest::addColumn<int>("port");
 
     QTest::newRow("localhost") << true << "localhost" << server.port();
-    QTest::newRow("remote") << false << QtNetworkSettings::serverName() << 80;
+//    QTest::newRow("remote") << false << QtNetworkSettings::serverName() << 80;
 }
 
 void tst_QTcpSocket_stresstest::init()
 {
     if (qgetenv("QTCPSOCKET_STRESSTEST").toInt() == 0)
         QSKIP("Stress test disabled", SkipAll);
+
+    // clear the internal cache
+#ifndef QT_BUILD_INTERNAL
+    if (strncmp(QTest::currentTestFunction(), "nam") == 0)
+        QSKIP("QNetworkAccessManager tests disabled", SkipAll);
+#endif
+}
+
+void tst_QTcpSocket_stresstest::clearManager()
+{
+#ifdef QT_BUILD_INTERNAL
+    QNetworkAccessManagerPrivate::clearCache(&manager);
+    manager.setProxy(QNetworkProxy());
+    manager.setCache(0);
+#endif
 }
 
 bool nativeLookup(const char *hostname, int port, QByteArray &buf)
@@ -241,8 +272,9 @@ void tst_QTcpSocket_stresstest::nativeBlockingConnectDisconnect()
 
         double rate = (byteCounter / timeout.elapsed());
         avg = (i * avg + rate) / (i + 1);
-        qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
-                << (rate / 1024.0 / 1024 * 1000) << "MB/s";
+        if (intermediateDebug)
+            qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
+                    << (rate / 1024.0 / 1024 * 1000) << "MB/s";
     }
     qDebug() << "Average transfer rate was" << (avg / 1024.0 / 1024 * 1000) << "MB/s";
 
@@ -354,8 +386,9 @@ void tst_QTcpSocket_stresstest::nativeNonBlockingConnectDisconnect()
 
         double rate = (byteCounter / timeout.elapsed());
         avg = (i * avg + rate) / (i + 1);
-        qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
-                << (rate / 1024.0 / 1024 * 1000) << "MB/s";
+        if (intermediateDebug)
+            qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
+                    << (rate / 1024.0 / 1024 * 1000) << "MB/s";
     }
     qDebug() << "Average transfer rate was" << (avg / 1024.0 / 1024 * 1000) << "MB/s";
 }
@@ -389,8 +422,9 @@ void tst_QTcpSocket_stresstest::blockingConnectDisconnect()
         }
         double rate = (byteCounter / timeout.elapsed());
         avg = (i * avg + rate) / (i + 1);
-        qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
-                << (rate / 1024.0 / 1024 * 1000) << "MB/s";
+        if (intermediateDebug)
+            qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
+                    << (rate / 1024.0 / 1024 * 1000) << "MB/s";
     }
     qDebug() << "Average transfer rate was" << (avg / 1024.0 / 1024 * 1000) << "MB/s";
 }
@@ -411,7 +445,8 @@ void tst_QTcpSocket_stresstest::blockingPipelined()
         QVERIFY2(socket.waitForConnected(), "Timeout");
 
         for (int j = 0 ; j < 3; ++j) {
-            qDebug("Attempt %d%c", i, 'a' + j);
+            if (intermediateDebug)
+                qDebug("Attempt %d%c", i, 'a' + j);
             socket.write("GET /qtest/mediumfile HTTP/1.1\r\n"
                          "Connection: " + QByteArray(j == 2 ? "close" : "keep-alive") + "\r\n"
                          "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
@@ -428,8 +463,9 @@ void tst_QTcpSocket_stresstest::blockingPipelined()
 
         double rate = (byteCounter / timeout.elapsed());
         avg = (i * avg + rate) / (i + 1);
-        qDebug() << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
-                << (rate / 1024.0 / 1024 * 1000) << "MB/s";
+        if (intermediateDebug)
+            qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
+                    << (rate / 1024.0 / 1024 * 1000) << "MB/s";
     }
     qDebug() << "Average transfer rate was" << (avg / 1024.0 / 1024 * 1000) << "MB/s";
 }
@@ -503,8 +539,9 @@ void tst_QTcpSocket_stresstest::blockingMultipleRequests()
 
             double rate = (byteCounter / timeout.elapsed());
             avg = (i * avg + rate) / (i + 1);
-            qDebug() << i * 5 + j << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
-                    << (rate / 1024.0 / 1024 * 1000) << "MB/s";
+            if (intermediateDebug)
+                qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
+                        << (rate / 1024.0 / 1024 * 1000) << "MB/s";
         }
 
         socket.disconnectFromHost();
@@ -539,8 +576,9 @@ void tst_QTcpSocket_stresstest::connectDisconnect()
         QVERIFY2(!QTestEventLoop::instance().timeout(), "Timeout");
         double rate = (byteCounter / timeout.elapsed());
         avg = (i * avg + rate) / (i + 1);
-        qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
-                << (rate / 1024.0 / 1024 * 1000) << "MB/s";
+        if (intermediateDebug)
+            qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
+                    << (rate / 1024.0 / 1024 * 1000) << "MB/s";
     }
     qDebug() << "Average transfer rate was" << (avg / 1024.0 / 1024 * 1000) << "MB/s";
 }
@@ -604,8 +642,94 @@ void tst_QTcpSocket_stresstest::parallelConnectDisconnect()
         QVERIFY2(!timeout.hasExpired(30000), "Timeout");
         double rate = (byteCounter / timeout.elapsed());
         avg = (i * avg + rate) / (i + 1);
-        qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
-                << (rate / 1024.0 / 1024 * 1000) << "MB/s";
+        if (intermediateDebug)
+            qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
+                    << (rate / 1024.0 / 1024 * 1000) << "MB/s";
+    }
+    qDebug() << "Average transfer rate was" << (avg / 1024.0 / 1024 * 1000) << "MB/s";
+}
+
+void tst_QTcpSocket_stresstest::namGet_data()
+{
+    QTest::addColumn<int>("parallelAttempts");
+    QTest::addColumn<bool>("pipelineAllowed");
+
+    QTest::newRow("1") << 1 << false;
+    QTest::newRow("1p") << 1 << true;
+    QTest::newRow("2") << 2 << false;
+    QTest::newRow("2p") << 2 << true;
+    QTest::newRow("4") << 4 << false;
+    QTest::newRow("4p") << 4 << true;
+    QTest::newRow("5") << 5 << false;
+    QTest::newRow("5p") << 5 << true;
+    QTest::newRow("6") << 6 << false;
+    QTest::newRow("6p") << 6 << true;
+    QTest::newRow("8") << 8 << false;
+    QTest::newRow("8p") << 8 << true;
+    QTest::newRow("10") << 10 << false;
+    QTest::newRow("10p") << 10 << true;
+    QTest::newRow("25") << 25 << false;
+    QTest::newRow("25p") << 25 << true;
+    QTest::newRow("100") << 100 << false;
+    QTest::newRow("100p") << 100 << true;
+    QTest::newRow("500") << 500 << false;
+    QTest::newRow("500p") << 500 << true;
+}
+
+void tst_QTcpSocket_stresstest::namGet()
+{
+    QFETCH_GLOBAL(QString, hostname);
+    QFETCH_GLOBAL(int, port);
+    QFETCH(int, parallelAttempts);
+    QFETCH(bool, pipelineAllowed);
+
+    if (parallelAttempts > 100) {
+        QFETCH_GLOBAL(bool, isLocalhost);
+        if (!isLocalhost)
+            QSKIP("Localhost-only test", SkipSingle);
+    }
+
+    double avg = 0;
+    for (int i = 0; i < qMax(2, AttemptCount/qMax(2, parallelAttempts/4)); ++i) {
+        QElapsedTimer timeout;
+        byteCounter = 0;
+        timeout.start();
+
+        QUrl url;
+        url.setScheme("http");
+        url.setHost(hostname);
+        url.setPort(port);
+        url.setEncodedPath("/qtest/mediumfile");
+        QNetworkRequest req(url);
+        req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, pipelineAllowed);
+
+        QVector<QSharedPointer<QNetworkReply> > replies;
+        replies.resize(parallelAttempts);
+        for (int j = 0; j < parallelAttempts; ++j) {
+            QNetworkReply *r = manager.get(req);
+
+            connect(r, SIGNAL(readyRead()), SLOT(slotReadAll()));
+            QTestEventLoop::instance().connect(r, SIGNAL(finished()), SLOT(exitLoop()));
+
+            replies[j] = QSharedPointer<QNetworkReply>(r);
+        }
+
+        while (!timeout.hasExpired(30000)) {
+            QTestEventLoop::instance().enterLoop(10);
+            int done = 0;
+            for (int j = 0; j < parallelAttempts; ++j)
+                done += replies[j]->isFinished() ? 1 : 0;
+            if (done == parallelAttempts)
+                break;
+        }
+        replies.clear();
+
+        QVERIFY2(!timeout.hasExpired(30000), "Timeout");
+        double rate = (byteCounter / timeout.elapsed());
+        avg = (i * avg + rate) / (i + 1);
+        if (intermediateDebug)
+            qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
+                    << (rate / 1024.0 / 1024 * 1000) << "MB/s";
     }
     qDebug() << "Average transfer rate was" << (avg / 1024.0 / 1024 * 1000) << "MB/s";
 }

@@ -9,3 +9,4 @@ HEADERS += \
     minihttpserver.h
 
 RESOURCES += wwwfiles.qrc
+QMAKE_RESOURCE_FLAGS += -no-compress
