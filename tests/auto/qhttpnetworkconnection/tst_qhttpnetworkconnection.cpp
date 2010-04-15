@@ -801,7 +801,7 @@ void tst_QHttpNetworkConnection::getMultiple_data()
 
     QTest::newRow("6 connections, no pipelining, 100 requests")  << quint16(6) << false << 100;
     QTest::newRow("1 connection, no pipelining, 100 requests")  << quint16(1) << false << 100;
-    QTest::newRow("6 connections, pipelining allowed, 100 requests")  << quint16(2) << true << 100;
+    QTest::newRow("6 connections, pipelining allowed, 100 requests")  << quint16(6) << true << 100;
     QTest::newRow("1 connection, pipelining allowed, 100 requests")  << quint16(1) << true << 100;
 }
 
