@@ -350,6 +350,10 @@ typedef QMap<QString, QString> StringStringMap;
 Q_GLOBAL_STATIC(StringStringMap, qmlEnginePluginsWithRegisteredTypes); // stores the uri
 
 
+void QDeclarativePrivate::qdeclarativeelement_destructor(QObject *)
+{
+}
+
 void QDeclarativeDeclarativeData::destroyed(QDeclarativeData *d, QObject *o)
 {
     static_cast<QDeclarativeDeclarativeData *>(d)->destroyed(o);
