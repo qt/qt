@@ -218,7 +218,6 @@ static OPENFILENAME* qt_win_make_OFN(QWidget *parent,
     memset(ofn, 0, sizeof(OPENFILENAME));
 
     ofn->lStructSize = sizeof(OPENFILENAME);
-    Q_ASSERT(!parent ||parent->testAttribute(Qt::WA_WState_Created));
     ofn->hwndOwner = parent ? parent->winId() : 0;
     ofn->lpstrFilter = (wchar_t*)tFilters.utf16();
     ofn->lpstrFile = tInitSel;

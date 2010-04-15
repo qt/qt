@@ -70,7 +70,7 @@ tst_qdeclarativesystempalette::tst_qdeclarativesystempalette()
 
 void tst_qdeclarativesystempalette::activePalette()
 {
-    QString componentStr = "import Qt 4.6\nSystemPalette { }";
+    QString componentStr = "import Qt 4.7\nSystemPalette { }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeSystemPalette *object = qobject_cast<QDeclarativeSystemPalette*>(component.create());
@@ -99,7 +99,7 @@ void tst_qdeclarativesystempalette::activePalette()
 
 void tst_qdeclarativesystempalette::inactivePalette()
 {
-    QString componentStr = "import Qt 4.6\nSystemPalette { colorGroup: SystemPalette.Inactive }";
+    QString componentStr = "import Qt 4.7\nSystemPalette { colorGroup: SystemPalette.Inactive }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeSystemPalette *object = qobject_cast<QDeclarativeSystemPalette*>(component.create());
@@ -129,7 +129,7 @@ void tst_qdeclarativesystempalette::inactivePalette()
 
 void tst_qdeclarativesystempalette::disabledPalette()
 {
-    QString componentStr = "import Qt 4.6\nSystemPalette { colorGroup: SystemPalette.Disabled }";
+    QString componentStr = "import Qt 4.7\nSystemPalette { colorGroup: SystemPalette.Disabled }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeSystemPalette *object = qobject_cast<QDeclarativeSystemPalette*>(component.create());
@@ -159,7 +159,7 @@ void tst_qdeclarativesystempalette::disabledPalette()
 
 void tst_qdeclarativesystempalette::paletteChanged()
 {
-    QString componentStr = "import Qt 4.6\nSystemPalette { }";
+    QString componentStr = "import Qt 4.7\nSystemPalette { }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeSystemPalette *object = qobject_cast<QDeclarativeSystemPalette*>(component.create());

@@ -4,3 +4,6 @@ SOURCES += tst_qdeclarativeanimations.cpp
 macx:CONFIG -= app_bundle
 
 DEFINES += SRCDIR=\\\"$$PWD\\\"
+
+CONFIG += parallel_test
+

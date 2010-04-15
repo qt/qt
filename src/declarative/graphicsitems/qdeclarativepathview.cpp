@@ -1102,7 +1102,6 @@ void QDeclarativePathView::refill()
 //            qDebug() << "append" << idx;
             QDeclarativeItem *item = d->getItem(idx);
             item->setZValue(idx+1);
-            d->model->completeItem();
             if (d->currentIndex == idx) {
                 item->setFocus(true);
                 if (QDeclarativePathViewAttached *att = d->attached(item))
@@ -1115,6 +1114,7 @@ void QDeclarativePathView::refill()
                 d->firstIndex = idx;
             d->items.append(item);
             d->updateItem(item, pos);
+            d->model->completeItem();
             ++idx;
             if (idx >= d->model->count())
                 idx = 0;
@@ -1129,7 +1129,6 @@ void QDeclarativePathView::refill()
 //            qDebug() << "prepend" << idx;
             QDeclarativeItem *item = d->getItem(idx);
             item->setZValue(idx+1);
-            d->model->completeItem();
             if (d->currentIndex == idx) {
                 item->setFocus(true);
                 if (QDeclarativePathViewAttached *att = d->attached(item))
@@ -1140,6 +1139,7 @@ void QDeclarativePathView::refill()
             }
             d->items.prepend(item);
             d->updateItem(item, pos);
+            d->model->completeItem();
             d->firstIndex = idx;
             idx = d->firstIndex - 1;
             if (idx < 0)

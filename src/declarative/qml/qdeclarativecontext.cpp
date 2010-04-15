@@ -202,6 +202,12 @@ QDeclarativeContext::~QDeclarativeContext()
         d->data->destroy();
 }
 
+bool QDeclarativeContext::isValid() const
+{
+    Q_D(const QDeclarativeContext);
+    return d->data && d->data->isValid();
+}
+
 /*!
     Return the context's QDeclarativeEngine, or 0 if the context has no QDeclarativeEngine or the
     QDeclarativeEngine was destroyed.
@@ -245,6 +251,11 @@ void QDeclarativeContext::setContextObject(QObject *object)
         return;
     }
 
+    if (!isValid()) {
+        qWarning("QDeclarativeContext: Cannot set context object on invalid context.");
+        return;
+    }
+
     data->contextObject = object;
 }
 
@@ -261,6 +272,11 @@ void QDeclarativeContext::setContextProperty(const QString &name, const QVariant
 
     if (data->isInternal) {
         qWarning("QDeclarativeContext: Cannot set property on internal context.");
+        return;
+    }
+
+    if (!isValid()) {
+        qWarning("QDeclarativeContext: Cannot set property on invalid context.");
         return;
     }
 
@@ -302,6 +318,11 @@ void QDeclarativeContext::setContextProperty(const QString &name, QObject *value
 
     if (data->isInternal) {
         qWarning("QDeclarativeContext: Cannot set property on internal context.");
+        return;
+    }
+
+    if (!isValid()) {
+        qWarning("QDeclarativeContext: Cannot set property on invalid context.");
         return;
     }
 

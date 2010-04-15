@@ -147,7 +147,7 @@ void tst_qdeclarativeflickable::properties()
 void tst_qdeclarativeflickable::overShoot()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6; Flickable { overShoot: false; }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7; Flickable { overShoot: false; }", QUrl::fromLocalFile(""));
     QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(overShootChanged()));
 
@@ -170,7 +170,7 @@ void tst_qdeclarativeflickable::overShoot()
 void tst_qdeclarativeflickable::maximumFlickVelocity()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6; Flickable { maximumFlickVelocity: 1.0; }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7; Flickable { maximumFlickVelocity: 1.0; }", QUrl::fromLocalFile(""));
     QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(maximumFlickVelocityChanged()));
 
@@ -187,7 +187,7 @@ void tst_qdeclarativeflickable::maximumFlickVelocity()
 void tst_qdeclarativeflickable::flickDeceleration()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6; Flickable { flickDeceleration: 1.0; }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7; Flickable { flickDeceleration: 1.0; }", QUrl::fromLocalFile(""));
     QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(flickDecelerationChanged()));
 
@@ -204,7 +204,7 @@ void tst_qdeclarativeflickable::flickDeceleration()
 void tst_qdeclarativeflickable::pressDelay()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6; Flickable { pressDelay: 100; }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7; Flickable { pressDelay: 100; }", QUrl::fromLocalFile(""));
     QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(pressDelayChanged()));
 

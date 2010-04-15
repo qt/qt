@@ -505,6 +505,11 @@
 #define QT_NO_XMLSTREAMWRITER
 #endif
 
+// Bearer Management
+#if !defined(QT_NO_BEARERMANAGEMENT) && (defined(QT_NO_LIBRARY))
+#define QT_NO_BEARERMANAGEMENT
+#endif
+
 // Context menu
 #if !defined(QT_NO_CONTEXTMENU) && (defined(QT_NO_MENU))
 #define QT_NO_CONTEXTMENU

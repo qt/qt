@@ -12724,7 +12724,7 @@ EXPORTS
 	?visibilityChanged@QToolBar@@IAEX_N@Z @ 12723 NONAME ; void QToolBar::visibilityChanged(bool)
 	??0FileInfo@QZipReader@@QAE@ABU01@@Z @ 12724 NONAME ; QZipReader::FileInfo::FileInfo(struct QZipReader::FileInfo const &)
 	??0QStaticText@@QAE@ABVQString@@@Z @ 12725 NONAME ; QStaticText::QStaticText(class QString const &)
-	?append@QGraphicsItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@PAVQGraphicsObject@@@Z @ 12726 NONAME ; void QGraphicsItemPrivate::append(class QDeclarativeListProperty<class QGraphicsObject> *, class QGraphicsObject *)
+	?append@QGraphicsItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@PAVQGraphicsObject@@@Z @ 12726 NONAME ABSENT ; void QGraphicsItemPrivate::append(class QDeclarativeListProperty<class QGraphicsObject> *, class QGraphicsObject *)
 	?bitPlaneCount@QImage@@QBEHXZ @ 12727 NONAME ; int QImage::bitPlaneCount(void) const
 	?childrenChanged@QGraphicsObject@@IAEXXZ @ 12728 NONAME ; void QGraphicsObject::childrenChanged(void)
 	?childrenList@QGraphicsItemPrivate@@QAE?AV?$QDeclarativeListProperty@VQGraphicsObject@@@@XZ @ 12729 NONAME ; class QDeclarativeListProperty<class QGraphicsObject> QGraphicsItemPrivate::childrenList(void)
@@ -12767,4 +12767,7 @@ EXPORTS
 	?updateMicroFocus@QGraphicsObject@@IAEXXZ @ 12766 NONAME ; void QGraphicsObject::updateMicroFocus(void)
 	?width@QGraphicsItemPrivate@@UBEMXZ @ 12767 NONAME ; float QGraphicsItemPrivate::width(void) const
 	?widthChanged@QGraphicsObject@@IAEXXZ @ 12768 NONAME ; void QGraphicsObject::widthChanged(void)
+	?children_append@QGraphicsItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@PAVQGraphicsObject@@@Z @ 12769 NONAME ; void QGraphicsItemPrivate::children_append(class QDeclarativeListProperty<class QGraphicsObject> *, class QGraphicsObject *)
+	?children_at@QGraphicsItemPrivate@@SAPAVQGraphicsObject@@PAV?$QDeclarativeListProperty@VQGraphicsObject@@@@H@Z @ 12770 NONAME ; class QGraphicsObject * QGraphicsItemPrivate::children_at(class QDeclarativeListProperty<class QGraphicsObject> *, int)
+	?children_count@QGraphicsItemPrivate@@SAHPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@@Z @ 12771 NONAME ; int QGraphicsItemPrivate::children_count(class QDeclarativeListProperty<class QGraphicsObject> *)
 

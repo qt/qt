@@ -59,6 +59,8 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qset.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QBearerEngine;
@@ -78,7 +80,7 @@ public:
 
     bool isOnline();
 
-    QNetworkConfigurationManager::Capabilities capFlags;
+    QNetworkConfigurationManager::Capabilities capabilities();
 
     void performAsyncConfigurationUpdate();
 
@@ -102,19 +104,18 @@ Q_SIGNALS:
     void abort();
 
 private:
-    QMutex mutex;
-
     QTimer *pollTimer;
+
+    QMutex mutex;
 
     QList<QBearerEngine *> sessionEngines;
 
     QSet<QString> onlineConfigurations;
 
-    QSet<int> updatingEngines;
-    bool updating;
-
     QSet<int> pollingEngines;
+    QSet<int> updatingEngines;
     int forcedPolling;
+    bool updating;
 
     bool firstUpdate;
 
@@ -129,5 +130,7 @@ private Q_SLOTS:
 Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate();
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKCONFIGURATIONMANAGERPRIVATE_H

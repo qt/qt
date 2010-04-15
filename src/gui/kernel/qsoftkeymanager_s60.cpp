@@ -46,6 +46,7 @@
 #include "qmenubar.h"
 #include "private/qt_s60_p.h"
 #include "private/qmenu_p.h"
+#include "private/qaction_p.h"
 #include "private/qsoftkeymanager_p.h"
 #include "private/qsoftkeymanager_s60_p.h"
 #include "private/qobject_p.h"
@@ -382,8 +383,8 @@ bool QSoftKeyManagerPrivateS60::handleCommand(int command)
 {
     QAction *action = realSoftKeyActions.value(command);
     if (action) {
-        QVariant property = action->property(MENU_ACTION_PROPERTY);
-        if (property.isValid() && property.toBool()) {
+        bool property = QActionPrivate::get(action)->menuActionSoftkeys;
+        if (property) {
             QT_TRAP_THROWING(tryDisplayMenuBarL());
         } else if (action->menu()) {
             // TODO: This is hack, in order to use exising QMenuBar implementation for Symbian

@@ -49,6 +49,8 @@
 #include <QtCore/qobject.h>
 #include <QtNetwork/qnetworkconfiguration.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_HEADER
 
 #ifndef QT_MOBILITY_BEARER
@@ -110,6 +112,8 @@ QTM_END_NAMESPACE
 #endif
 
 QT_END_HEADER
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKCONFIGURATIONMANAGER_H
 

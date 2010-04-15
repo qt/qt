@@ -6,3 +6,4 @@ SOURCES += tst_qdeclarativetextinput.cpp
 
 # Define SRCDIR equal to test's source directory
 DEFINES += SRCDIR=\\\"$$PWD\\\"
+

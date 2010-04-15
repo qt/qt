@@ -150,7 +150,6 @@ public:
     int columnAt(int x) const;
     bool hasVisibleChildren( const QModelIndex& parent) const;
 
-    void relayout(const QModelIndex &parent);
     bool expandOrCollapseItemAtPos(const QPoint &pos);
 
     void updateScrollBars();

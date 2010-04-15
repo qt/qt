@@ -66,6 +66,8 @@
 
 #include <icd/dbus_api.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QIcdEngine;
@@ -209,6 +211,8 @@ Q_DECLARE_METATYPE(ICd2DetailsDBusStruct);
 Q_DECLARE_METATYPE(ICd2DetailsList);
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKSESSIONPRIVATE_H
 

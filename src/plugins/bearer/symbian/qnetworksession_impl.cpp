@@ -48,6 +48,8 @@
 #include <stdapis/sys/socket.h>
 #include <stdapis/net/if.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
@@ -1367,3 +1369,6 @@ void ConnectionProgressNotifier::RunL()
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_BEARERMANAGEMENT
+

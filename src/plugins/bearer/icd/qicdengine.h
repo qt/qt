@@ -67,13 +67,13 @@ public:
     QByteArray network_id;  // typically WLAN ssid or similar
     QString iap_type;       // is this one WLAN or GPRS
 
-    // Network attributes for this IAP, this is the value returned by icd and
-    // passed to it when connecting.
-    uint32_t network_attrs;
-
     QString service_type;
     QString service_id;
     uint32_t service_attrs;
+
+    // Network attributes for this IAP, this is the value returned by icd and
+    // passed to it when connecting.
+    uint32_t network_attrs;
 };
 
 inline IcdNetworkConfigurationPrivate *toIcdConfig(QNetworkConfigurationPrivatePointer ptr)

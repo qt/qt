@@ -101,6 +101,9 @@ One item you may not recognize here
 is the \l SystemPalette item. This provides access to the Qt system palette
 and is used to give the button a more native look-and-feel.
 
+Notice the anchors for the \c Item, \c Button and \c Text elements are set using
+\l {Grouped Properties}{group notation} for readability.
+
 \section2 Adding \c Button and \c Block components
 
 The \c Button item in the code above is defined in a separate file named \c Button.qml.

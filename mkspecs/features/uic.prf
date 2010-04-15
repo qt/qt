@@ -1,11 +1,11 @@
 
 isEmpty(QMAKE_UIC3) {
-    contains(QMAKE_HOST.os,Windows):QMAKE_UIC3 = $$[QT_INSTALL_BINS]\uic3.exe
+    contains(QMAKE_HOST.os,Windows):QMAKE_UIC3 = $$[QT_INSTALL_BINS]$${DIR_SEPARATOR}uic3.exe
     else:QMAKE_UIC3 = $$[QT_INSTALL_BINS]/uic3
 }
 
 isEmpty(QMAKE_UIC) {
-   contains(QMAKE_HOST.os,Windows):QMAKE_UIC = $$[QT_INSTALL_BINS]\uic.exe
+   contains(QMAKE_HOST.os,Windows):QMAKE_UIC = $$[QT_INSTALL_BINS]$${DIR_SEPARATOR}uic.exe
    else:QMAKE_UIC = $$[QT_INSTALL_BINS]/uic
 }
 

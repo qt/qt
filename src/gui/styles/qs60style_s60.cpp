@@ -377,6 +377,27 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrButtonSideRInactive */    {KAknsIIDQsnFrButtonTbSideR,           ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x21b8},
     /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,          EDrawIcon,   ES60_3_X,    EAknsMajorSkin, 0x21b9},
 
+    // No pressed down grid in 3.1/3.2
+    /* SP_QsnFrGridCornerTlPressed */    {KAknsIIDQsnFrGridCornerTl,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2681}, /*KAknsIIDQsnFrGridCornerTlPressed*/
+    /* SP_QsnFrGridCornerTrPressed */    {KAknsIIDQsnFrGridCornerTr,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2682},
+    /* SP_QsnFrGridCornerBlPressed */    {KAknsIIDQsnFrGridCornerBl,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2683},
+    /* SP_QsnFrGridCornerBrPressed */    {KAknsIIDQsnFrGridCornerBr,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2684},
+    /* SP_QsnFrGridSideTPressed */       {KAknsIIDQsnFrGridSideT,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2685},
+    /* SP_QsnFrGridSideBPressed */       {KAknsIIDQsnFrGridSideB,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2686},
+    /* SP_QsnFrGridSideLPressed */       {KAknsIIDQsnFrGridSideL,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2687},
+    /* SP_QsnFrGridSideRPressed */       {KAknsIIDQsnFrGridSideR,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2688},
+    /* SP_QsnFrGridCenterPressed */      {KAknsIIDQsnFrGridCenter,      ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2689},
+
+    // No pressed down list in 3.1/3.2
+    /* SP_QsnFrListCornerTlPressed */    {KAknsIIDQsnFrListCornerTl,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x268b}, /*KAknsIIDQsnFrListCornerTlPressed*/
+    /* SP_QsnFrListCornerTrPressed */    {KAknsIIDQsnFrListCornerTr,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x268c},
+    /* SP_QsnFrListCornerBlPressed */    {KAknsIIDQsnFrListCornerBl,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x268d},
+    /* SP_QsnFrListCornerBrPressed */    {KAknsIIDQsnFrListCornerBr,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x268e},
+    /* SP_QsnFrListSideTPressed */       {KAknsIIDQsnFrListSideT,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x268f},
+    /* SP_QsnFrListSideBPressed */       {KAknsIIDQsnFrListSideB,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2690},
+    /* SP_QsnFrListSideLPressed */       {KAknsIIDQsnFrListSideL,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2691},
+    /* SP_QsnFrListSideRPressed */       {KAknsIIDQsnFrListSideR,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2692},
+    /* SP_QsnFrListPressed */            {KAknsIIDQsnFrList,            ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2693},
 };
 
 QPixmap QS60StyleModeSpecifics::skinnedGraphics(

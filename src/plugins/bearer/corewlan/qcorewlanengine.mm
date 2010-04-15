@@ -67,6 +67,10 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include "private/qcore_mac_p.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
+QT_BEGIN_NAMESPACE
+
 @interface QNSListener : NSObject
 {
     NSNotificationCenter *center;
@@ -125,8 +129,6 @@
 @end
 
 QNSListener *listener = 0;
-
-QT_BEGIN_NAMESPACE
 
 void networkChangeCallback(SCDynamicStoreRef/* store*/, CFArrayRef changedKeys, void *info)
 {
@@ -778,3 +780,5 @@ void QCoreWlanEngine::getUserConfigurations()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT

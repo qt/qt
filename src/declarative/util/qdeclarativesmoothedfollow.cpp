@@ -86,7 +86,7 @@ public:
 
     The follow example shows one rectangle tracking the position of another.
 \code
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     width: 800; height: 600; color: "blue"

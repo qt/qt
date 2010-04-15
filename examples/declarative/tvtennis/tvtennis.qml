@@ -8,13 +8,14 @@ Rectangle {
 
     // Make a ball to bounce
     Rectangle {
+        id: ball
+
         // Add a property for the target y coordinate
         property int targetY : page.height - 10
         property variant direction : "right"
 
-        id: ball
-        color: "Lime"
         x: 20; width: 20; height: 20; z: 1
+        color: "Lime"
 
         SoundEffect { id: paddle; source: "paddle.wav" }
         SoundEffect { id: wall; source: "click.wav" }

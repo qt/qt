@@ -7,3 +7,6 @@ SOURCES += tst_qdeclarativelistmodel.cpp
 
 # Define SRCDIR equal to test's source directory
 DEFINES += SRCDIR=\\\"$$PWD\\\"
+
+CONFIG += parallel_test
+

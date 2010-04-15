@@ -786,10 +786,18 @@
 		font:600 12px/1.2 Arial;
     }
 	
-    .toc ul
+    .wrap .content .toc ul
     {
-        float: left;
-        padding: 15px;
+       /* float: left;*/
+        padding-left: 0px;
+        
+    }
+
+
+    .wrap .content .toc .level2
+    {
+       /* float: left;*/
+        padding-left: 15px;
         
     }
   

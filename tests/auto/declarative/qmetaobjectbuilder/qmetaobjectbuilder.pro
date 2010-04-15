@@ -5,3 +5,4 @@ macx:CONFIG -= app_bundle
 SOURCES += \
     tst_qmetaobjectbuilder.cpp
 
+CONFIG += parallel_test

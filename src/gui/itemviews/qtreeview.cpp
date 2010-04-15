@@ -3194,12 +3194,16 @@ void QTreeViewPrivate::layout(int i, bool recursiveExpanding, bool afterIsUninit
 int QTreeViewPrivate::pageUp(int i) const
 {
     int index = itemAtCoordinate(coordinateForItem(i) - viewport->height());
+    while (isItemHiddenOrDisabled(index))
+        index--;
     return index == -1 ? 0 : index;
 }
 
 int QTreeViewPrivate::pageDown(int i) const
 {
     int index = itemAtCoordinate(coordinateForItem(i) + viewport->height());
+    while (isItemHiddenOrDisabled(index))
+        index++;
     return index == -1 ? viewItems.count() - 1 : index;
 }
 
@@ -3423,25 +3427,6 @@ int QTreeViewPrivate::columnAt(int x) const
 {
     return header->logicalIndexAt(x);
 }
-
-void QTreeViewPrivate::relayout(const QModelIndex &parent)
-{
-    Q_Q(QTreeView);
-    // do a local relayout of the items
-    if (parent.isValid()) {
-        int parentViewIndex = viewIndex(parent);
-        if (parentViewIndex > -1 && viewItems.at(parentViewIndex).expanded) {
-            collapse(parentViewIndex, false); // remove the current layout
-            expand(parentViewIndex, false); // do the relayout
-            q->updateGeometries();
-            viewport->update();
-        }
-    } else {
-        viewItems.clear();
-        q->doItemsLayout();
-    }
-}
-
 
 void QTreeViewPrivate::updateScrollBars()
 {
