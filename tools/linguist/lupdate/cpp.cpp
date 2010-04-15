@@ -280,14 +280,14 @@ private:
 
     enum {
         Tok_Eof, Tok_class, Tok_friend, Tok_namespace, Tok_using, Tok_return,
-        Tok_tr = 10, Tok_trUtf8, Tok_translate, Tok_translateUtf8, Tok_trid,
-        Tok_Q_OBJECT = 20, Tok_Q_DECLARE_TR_FUNCTIONS,
+        Tok_tr, Tok_trUtf8, Tok_translate, Tok_translateUtf8, Tok_trid,
+        Tok_Q_OBJECT, Tok_Q_DECLARE_TR_FUNCTIONS,
         Tok_Ident, Tok_Comment, Tok_String, Tok_Arrow, Tok_Colon, Tok_ColonColon,
         Tok_Equals,
-        Tok_LeftBrace = 30, Tok_RightBrace, Tok_LeftParen, Tok_RightParen, Tok_Comma, Tok_Semicolon,
-        Tok_Null = 40, Tok_Integer,
-        Tok_QuotedInclude = 50, Tok_AngledInclude,
-        Tok_Other = 99
+        Tok_LeftBrace, Tok_RightBrace, Tok_LeftParen, Tok_RightParen, Tok_Comma, Tok_Semicolon,
+        Tok_Null, Tok_Integer,
+        Tok_QuotedInclude, Tok_AngledInclude,
+        Tok_Other
     };
 
     // Tokenizer state
