@@ -126,19 +126,20 @@ void tst_qdeclarativepixmapcache::single()
     QFETCH(bool, exists);
     QFETCH(bool, neterror);
 
+    QString expectedError;
     if (neterror) {
-        QString expected = "\"Error downloading " + target.toString() + " - server replied: Not found\" ";
-        QTest::ignoreMessage(QtWarningMsg, expected.toLatin1());
+        expectedError = "Error downloading " + target.toString() + " - server replied: Not found";
     } else if (!exists) {
-        QString expected = "Cannot open  QUrl( \"" + target.toString() + "\" )  ";
-        QTest::ignoreMessage(QtWarningMsg, expected.toLatin1());
+        expectedError = "Cannot open: " + target.toString();
     }
 
     QPixmap pixmap;
     QVERIFY(pixmap.width() <= 0); // Check Qt assumption
-    QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(target, &pixmap);
+    QString errorString;
+    QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(target, &pixmap, &errorString);
 
     if (incache) {
+        QCOMPARE(errorString, expectedError);
         if (exists) {
             QVERIFY(status == QDeclarativePixmapReply::Ready);
             QVERIFY(pixmap.width() > 0);
@@ -156,13 +157,15 @@ void tst_qdeclarativepixmapcache::single()
         QTestEventLoop::instance().enterLoop(10);
         QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(getter.gotslot);
+        QString errorString;
         if (exists) {
-            QVERIFY(QDeclarativePixmapCache::get(target, &pixmap) == QDeclarativePixmapReply::Ready);
+            QVERIFY(QDeclarativePixmapCache::get(target, &pixmap, &errorString) == QDeclarativePixmapReply::Ready);
             QVERIFY(pixmap.width() > 0);
         } else {
-            QVERIFY(QDeclarativePixmapCache::get(target, &pixmap) == QDeclarativePixmapReply::Error);
+            QVERIFY(QDeclarativePixmapCache::get(target, &pixmap, &errorString) == QDeclarativePixmapReply::Error);
             QVERIFY(pixmap.width() <= 0);
         }
+        QCOMPARE(errorString, expectedError);
     }
 
     QCOMPARE(QDeclarativePixmapCache::pendingRequests(), 0);
@@ -236,7 +239,8 @@ void tst_qdeclarativepixmapcache::parallel()
     for (int i=0; i<targets.count(); ++i) {
         QUrl target = targets.at(i);
         QPixmap pixmap;
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(target, &pixmap);
+        QString errorString;
+        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(target, &pixmap, &errorString);
         QDeclarativePixmapReply *reply = 0;
         QVERIFY(status != QDeclarativePixmapReply::Error);
         if (status != QDeclarativePixmapReply::Error && status != QDeclarativePixmapReply::Ready)
@@ -273,7 +277,8 @@ void tst_qdeclarativepixmapcache::parallel()
             } else {
                 QVERIFY(getters[i]->gotslot);
                 QPixmap pixmap;
-                QVERIFY(QDeclarativePixmapCache::get(targets[i], &pixmap) == QDeclarativePixmapReply::Ready);
+                QString errorString;
+                QVERIFY(QDeclarativePixmapCache::get(targets[i], &pixmap, &errorString) == QDeclarativePixmapReply::Ready);
                 QVERIFY(pixmap.width() > 0);
             }
             delete getters[i];

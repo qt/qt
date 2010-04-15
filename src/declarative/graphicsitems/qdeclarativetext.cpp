@@ -45,6 +45,7 @@
 #include <qdeclarativeinfo.h>
 #include <qdeclarativepixmapcache_p.h>
 
+#include <QSet>
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
@@ -75,10 +76,16 @@ protected:
 
         if (type == QTextDocument::ImageResource) {
             QPixmap pm;
-            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(url, &pm, 0, true, 0, 0);
+            QString errorString;
+            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(url, &pm, &errorString, 0, true, 0, 0);
             if (status == QDeclarativePixmapReply::Ready)
                 return pm;
-            if (status != QDeclarativePixmapReply::Error) {
+            if (status == QDeclarativePixmapReply::Error) {
+                if (!errors.contains(url)) {
+                    errors.insert(url);
+                    qmlInfo(parent()) << errorString;
+                }
+            } else {
                 QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(parent()), url);
                 connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
                 outstanding++;
@@ -98,7 +105,10 @@ private slots:
 
 private:
     int outstanding;
+    static QSet<QUrl> errors;
 };
+
+QSet<QUrl> QTextDocumentWithImageResources::errors;
 
 /*!
     \qmlclass Text QDeclarativeText
