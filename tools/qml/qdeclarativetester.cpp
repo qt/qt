@@ -332,6 +332,24 @@ void QDeclarativeTester::updateCurrentTime(int msec)
                     qWarning() << "QDeclarativeTester: Image mismatch.  Reject saved to:" 
                                << reject;
                     img.save(reject);
+                    bool doDiff = (goodImage.size() == img.size());
+                    if (doDiff) {
+                        QImage diffimg(m_view->width(), m_view->height(), QImage::Format_RGB32);
+                        diffimg.fill(qRgb(255,255,255));
+                        QPainter p(&diffimg);
+                        int diffCount = 0;
+                        for (int x = 0; x < img.width(); ++x) {
+                            for (int y = 0; y < img.height(); ++y) {
+                                if (goodImage.pixel(x,y) != img.pixel(x,y)) {
+                                    ++diffCount;
+                                    p.drawPoint(x,y);
+                                }
+                            }
+                        }
+                        QString diff(frame->image().toLocalFile() + ".diff.png");
+                        diffimg.save(diff);
+                        qWarning().nospace() << "                    Diff (" << diffCount << " pixels differed) saved to: " << diff;
+                    }
                     imagefailure();
                 }
             }
