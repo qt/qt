@@ -378,8 +378,6 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
         // eglCreateImageKHR & eglDestroyImageKHR without support for pixmaps, so we must
         // check we have the EGLImage from pixmap functionality.
         if (QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_pixmap")) {
-            Q_ASSERT(eglCreateImageKHR);
-            Q_ASSERT(eglDestroyImageKHR);
 
             // Being able to create an EGLImage from a native pixmap is also pretty useless
             // without the ability to bind that EGLImage as a texture, which is provided by
@@ -436,15 +434,13 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
     // If the pixmap doesn't already have a valid surface, try binding it via EGLImage
     // first, as going through EGLImage should be faster and better supported:
     if (!textureIsBound && haveEglImageTFP) {
-        Q_ASSERT(eglCreateImageKHR);
-
         EGLImageKHR eglImage;
 
         EGLint attribs[] = {
             EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
             EGL_NONE
         };
-        eglImage = eglCreateImageKHR(QEgl::display(), EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR,
+        eglImage = QEgl::eglCreateImageKHR(QEgl::display(), EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR,
                                      (EGLClientBuffer)QEgl::nativePixmap(pixmap), attribs);
 
         QGLContext* ctx = q;
@@ -457,7 +453,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
         // Once the egl image is bound, the texture becomes a new sibling image and we can safely
         // destroy the EGLImage we created for the pixmap:
         if (eglImage != EGL_NO_IMAGE_KHR)
-            eglDestroyImageKHR(QEgl::display(), eglImage);
+            QEgl::eglDestroyImageKHR(QEgl::display(), eglImage);
     }
 
     if (!textureIsBound && haveTFP) {
