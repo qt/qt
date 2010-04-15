@@ -56,7 +56,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QBearerEngineFactoryInterface_iid, QLatin1String("/bearer")))
 
 QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
-:   capFlags(0), mutex(QMutex::Recursive), pollTimer(0), forcedPolling(0), firstUpdate(true)
+:   pollTimer(0), mutex(QMutex::Recursive), forcedPolling(0), firstUpdate(true)
 {
     qRegisterMetaType<QNetworkConfiguration>("QNetworkConfiguration");
 
@@ -265,6 +265,18 @@ bool QNetworkConfigurationManagerPrivate::isOnline()
     return !onlineConfigurations.isEmpty();
 }
 
+QNetworkConfigurationManager::Capabilities QNetworkConfigurationManagerPrivate::capabilities()
+{
+    QMutexLocker locker(&mutex);
+
+    QNetworkConfigurationManager::Capabilities capFlags;
+
+    foreach (QBearerEngine *engine, sessionEngines)
+        capFlags |= engine->capabilities();
+
+    return capFlags;
+}
+
 void QNetworkConfigurationManagerPrivate::configurationAdded(QNetworkConfigurationPrivatePointer ptr)
 {
     QMutexLocker locker(&mutex);
@@ -366,8 +378,6 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                         this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
                 connect(engine, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
                         this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
-
-                capFlags |= engine->capabilities();
 
                 QMetaObject::invokeMethod(engine, "requestUpdate");
             }

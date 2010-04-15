@@ -78,7 +78,7 @@ public:
 
     bool isOnline();
 
-    QNetworkConfigurationManager::Capabilities capFlags;
+    QNetworkConfigurationManager::Capabilities capabilities();
 
     void performAsyncConfigurationUpdate();
 
@@ -102,19 +102,18 @@ Q_SIGNALS:
     void abort();
 
 private:
-    QMutex mutex;
-
     QTimer *pollTimer;
+
+    QMutex mutex;
 
     QList<QBearerEngine *> sessionEngines;
 
     QSet<QString> onlineConfigurations;
 
-    QSet<int> updatingEngines;
-    bool updating;
-
     QSet<int> pollingEngines;
+    QSet<int> updatingEngines;
     int forcedPolling;
+    bool updating;
 
     bool firstUpdate;
 

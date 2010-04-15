@@ -116,15 +116,15 @@ private Q_SLOTS:
     void decrementTimeout();
 
 private:
-    bool opened;
-
     QBearerEngineImpl *engine;
-
-    QNetworkSession::SessionError lastError;
 
     quint64 startTime;
 
+    QNetworkSession::SessionError lastError;
+
     int sessionTimeout;
+
+    bool opened;
 };
 
 QT_END_NAMESPACE

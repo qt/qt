@@ -278,7 +278,7 @@ bool QNetworkConfigurationManager::isOnline() const
 */
 QNetworkConfigurationManager::Capabilities QNetworkConfigurationManager::capabilities() const
 {
-    return connManager()->capFlags;
+    return connManager()->capabilities();
 }
 
 /*!
