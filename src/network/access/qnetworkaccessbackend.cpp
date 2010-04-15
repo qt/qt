@@ -346,6 +346,8 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 #endif
 }
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 /*!
     Starts the backend.  Returns true if the backend is started.  Returns false if the backend
     could not be started due to an unopened or roaming session.  The caller should recall this
@@ -376,5 +378,6 @@ bool QNetworkAccessBackend::start()
 
     return false;
 }
+#endif
 
 QT_END_NAMESPACE

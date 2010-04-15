@@ -42,9 +42,10 @@
 #include <QCoreApplication>
 #include <QStringList>
 #include <QLocalSocket>
-#include <qnetworkconfigmanager.h>
-#include <qnetworkconfiguration.h>
-#include <qnetworksession.h>
+
+#include <QtNetwork/qnetworkconfiguration.h>
+#include <QtNetwork/qnetworkconfigmanager.h>
+#include <QtNetwork/qnetworksession.h>
 
 #include <QDebug>
 

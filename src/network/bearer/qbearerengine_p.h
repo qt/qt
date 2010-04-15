@@ -65,6 +65,8 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qmutex.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfiguration;
@@ -109,5 +111,7 @@ protected:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif

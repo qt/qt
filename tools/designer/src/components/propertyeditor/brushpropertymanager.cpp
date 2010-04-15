@@ -119,21 +119,31 @@ Qt::BrushStyle BrushPropertyManager::brushStyleIndexToStyle(int brushStyleIndex)
     return Qt::NoBrush;
 }
 
+
+typedef QMap<int, QIcon> EnumIndexIconMap;
+
+static void clearBrushIcons();
+Q_GLOBAL_STATIC_WITH_INITIALIZER(EnumIndexIconMap, brushIcons, qAddPostRoutine(clearBrushIcons))
+
+static void clearBrushIcons()
+{
+    brushIcons()->clear();
+}
+
 const BrushPropertyManager::EnumIndexIconMap &BrushPropertyManager::brushStyleIcons()
 {
     // Create a map of icons for the brush style editor
-    static EnumIndexIconMap rc;
-    if (rc.empty()) {
+    if (brushIcons()->empty()) {
         const int brushStyleCount = sizeof(brushStyles)/sizeof(const char *);
         QBrush brush(Qt::black);
         const QIcon solidIcon = QtPropertyBrowserUtils::brushValueIcon(brush);
         for (int i = 0; i < brushStyleCount; i++) {
             const Qt::BrushStyle style = brushStyleIndexToStyle(i);
             brush.setStyle(style);
-            rc.insert(i, QtPropertyBrowserUtils::brushValueIcon(brush));
+            brushIcons()->insert(i, QtPropertyBrowserUtils::brushValueIcon(brush));
         }
     }
-    return rc;
+    return *(brushIcons());
 }
 
 QString BrushPropertyManager::brushStyleIndexToString(int brushStyleIndex)

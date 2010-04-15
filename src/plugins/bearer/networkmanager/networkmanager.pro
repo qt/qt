@@ -1,7 +1,7 @@
 TARGET = qnmbearer
 include(../../qpluginbase.pri)
 
-QT += network dbus
+QT = core network dbus
 
 HEADERS += qnmdbushelper.h \
            qnetworkmanagerservice.h \

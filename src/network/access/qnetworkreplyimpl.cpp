@@ -67,8 +67,6 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
 
 void QNetworkReplyImplPrivate::_q_startOperation()
 {
-    Q_Q(QNetworkReplyImpl);
-
     // ensure this function is only being called once
     if (state == Working) {
         qDebug("QNetworkReplyImpl::_q_startOperation was called more than once");
@@ -86,6 +84,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     }
 
+#ifndef QT_NO_BEARERMANAGEMENT
     if (!backend->start()) {
         // backend failed to start because the session state is not Connected.
         // QNetworkAccessManager will call reply->backend->start() again for us when the session
@@ -95,6 +94,8 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         QNetworkSession *session = manager->d_func()->networkSession;
 
         if (session) {
+            Q_Q(QNetworkReplyImpl);
+
             QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
                              q, SLOT(_q_networkSessionFailed()));
 
@@ -106,6 +107,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 
         return;
     }
+#endif
 
     if (state != Finished) {
         if (operation == QNetworkAccessManager::GetOperation)
@@ -232,6 +234,7 @@ void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
     }
 }
 
+#ifndef QT_NO_BEARERMANAGEMENT
 void QNetworkReplyImplPrivate::_q_networkSessionConnected()
 {
     Q_Q(QNetworkReplyImpl);
@@ -272,6 +275,7 @@ void QNetworkReplyImplPrivate::_q_networkSessionFailed()
         finished();
     }
 }
+#endif
 
 void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const QNetworkRequest &req,
                                      QIODevice *data)
@@ -581,6 +585,7 @@ void QNetworkReplyImplPrivate::finished()
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
 
     if (!manager.isNull()) {
+#ifndef QT_NO_BEARERMANAGEMENT
         QNetworkSession *session = manager->d_func()->networkSession;
         if (session && session->state() == QNetworkSession::Roaming &&
             state == Working && errorCode != QNetworkReply::OperationCanceledError) {
@@ -600,6 +605,7 @@ void QNetworkReplyImplPrivate::finished()
                 }
             }
         }
+#endif
     }
     resumeNotificationHandling();
 
@@ -889,6 +895,7 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     return true;
 }
 
+#ifndef QT_NO_BEARERMANAGEMENT
 QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
                                              const QNetworkRequest &req,
                                              QNetworkAccessManager::Operation op)
@@ -912,6 +919,7 @@ QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
 QDisabledNetworkReply::~QDisabledNetworkReply()
 {
 }
+#endif
 
 QT_END_NAMESPACE
 

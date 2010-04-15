@@ -47,6 +47,8 @@
 #include "qnetworkconfigmanager_p.h"
 #include "qnetworksession_p.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -225,6 +227,10 @@ QT_BEGIN_NAMESPACE
 QNetworkSession::QNetworkSession(const QNetworkConfiguration& connectionConfig, QObject* parent)
 :   QObject(parent), d(0)
 {
+    // invalid configuration
+    if (connectionConfig.identifier().isNull())
+        return;
+
     foreach (QBearerEngine *engine, qNetworkConfigurationManagerPrivate()->engines()) {
         if (engine->hasIdentifier(connectionConfig.identifier())) {
             d = engine->createSessionBackend();
@@ -702,3 +708,5 @@ void QNetworkSession::disconnectNotify(const char *signal)
 #include "moc_qnetworksession.cpp"
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT

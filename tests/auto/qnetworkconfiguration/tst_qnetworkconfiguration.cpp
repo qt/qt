@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,10 +41,11 @@
 
 #include <QtTest/QtTest>
 #include "../qbearertestcommon.h"
-#include "qnetworkconfiguration.h"
-#include "qnetworkconfigmanager.h"
 
-#ifdef Q_WS_MAEMO_6
+#include <QtNetwork/qnetworkconfiguration.h>
+#include <QtNetwork/qnetworkconfigmanager.h>
+
+#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
 #include <stdio.h>
 #include <iapconf.h>
 #endif
@@ -65,7 +66,7 @@ private slots:
     void isRoamingAvailable();
 
 private:
-#ifdef Q_WS_MAEMO_6
+#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
     Maemo::IAPConf *iapconf;
     Maemo::IAPConf *iapconf2;
     Maemo::IAPConf *gprsiap;
@@ -77,7 +78,7 @@ private:
 
 void tst_QNetworkConfiguration::initTestCase()
 {
-#ifdef Q_WS_MAEMO_6
+#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
     iapconf = new Maemo::IAPConf("007");
     iapconf->setValue("ipv4_type", "AUTO");
     iapconf->setValue("wlan_wepkey1", "connt");
@@ -150,7 +151,7 @@ void tst_QNetworkConfiguration::initTestCase()
 
 void tst_QNetworkConfiguration::cleanupTestCase()
 {
-#ifdef Q_WS_MAEMO_6
+#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
     iapconf->clear();
     delete iapconf;
     iapconf2->clear();

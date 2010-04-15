@@ -60,7 +60,6 @@ private slots:
     
     void dummy();
     void splashScreenModality();
-    void dialogModality();
     void nonModalOrder();
 
     void spinBoxArrowButtons();
@@ -153,32 +152,6 @@ void tst_MacGui::splashScreenModality()
     // Show dialog and and enter event loop.
     connect(wn.getWidget(interface), SIGNAL(clicked()), SLOT(exitLoopSlot()));
     const int timeout = 4;
-    QTestEventLoop::instance().enterLoop(timeout);
-    QVERIFY(QTestEventLoop::instance().timeout() == false);
-}
-
-
-/*
-    Test that a non-modal dialog created as a child of a modal dialog is
-    shown in front.
-*/
-void tst_MacGui::dialogModality()
-{ 
-    QDialog d;
-    d.setModal(true);
-    d.show();
-    
-    QProgressDialog progress(&d);
-    progress.setValue(2);
-
-    InterfaceChildPair interface = wn.find(QAccessible::Name, "Cancel", &progress);
-    QVERIFY(interface.iface);
-    const int delay = 2000;
-    clickLater(interface, Qt::LeftButton, delay);
-    
-    connect(&progress, SIGNAL(canceled()), SLOT(exitLoopSlot()));
-
-    const int timeout = 3;
     QTestEventLoop::instance().enterLoop(timeout);
     QVERIFY(QTestEventLoop::instance().timeout() == false);
 }
