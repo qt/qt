@@ -662,7 +662,7 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
         } else if (pixmap->isNull()) {
             status = QDeclarativePixmapReply::Error;
             if (errorString)
-                *errorString = QDeclarativeImageRequestHandler::tr("Unknown Error loading %1").arg(url);
+                *errorString = QDeclarativeImageRequestHandler::tr("Unknown Error loading %1").arg(url.toString());
         } else {
             status = QDeclarativePixmapReply::Ready;
         }
