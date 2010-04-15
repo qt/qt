@@ -767,7 +767,7 @@ void qmlExecuteDeferred(QObject *object)
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(data->context->engine);
 
         QDeclarativeComponentPrivate::ConstructionState state;
-        QDeclarativeComponentPrivate::beginDeferred(data->context, ep, object, &state);
+        QDeclarativeComponentPrivate::beginDeferred(ep, object, &state);
 
         data->deferredComponent->release();
         data->deferredComponent = 0;

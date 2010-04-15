@@ -671,7 +671,7 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *ctxt, QDe
     return rv;
 }
 
-void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeContextData *, QDeclarativeEnginePrivate *enginePriv,
+void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *enginePriv,
                                                  QObject *object, ConstructionState *state)
 {
     bool isRoot = !enginePriv->inBeginCreate;

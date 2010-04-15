@@ -111,8 +111,8 @@ public:
     static QObject *begin(QDeclarativeContextData *ctxt, QDeclarativeEnginePrivate *enginePriv,
                           QDeclarativeCompiledData *component, int start, int count,
                           ConstructionState *state, const QBitField &bindings = QBitField());
-    static void beginDeferred(QDeclarativeContextData *ctxt, QDeclarativeEnginePrivate *enginePriv,
-                              QObject *object, ConstructionState *state);
+    static void beginDeferred(QDeclarativeEnginePrivate *enginePriv, QObject *object, 
+                              ConstructionState *state);
     static void complete(QDeclarativeEnginePrivate *enginePriv, ConstructionState *state);
 
     QDeclarativeEngine *engine;
