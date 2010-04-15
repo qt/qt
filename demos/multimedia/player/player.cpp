@@ -45,8 +45,8 @@
 #include "playlistmodel.h"
 #include "videowidget.h"
 
-#include <QtMultimedia/qmediaservice.h>
-#include <QtMultimedia/qmediaplaylist.h>
+#include <QtMediaservices/qmediaservice.h>
+#include <QtMediaservices/qmediaplaylist.h>
 
 #include <QtGui>
 
@@ -204,14 +204,14 @@ void Player::positionChanged(qint64 progress)
 
 void Player::metaDataChanged()
 {
-    //qDebug() << "update metadata" << player->metaData(QtMultimedia::Title).toString();
+    //qDebug() << "update metadata" << player->metaData(QtMediaservices::Title).toString();
     if (player->isMetaDataAvailable()) {
         setTrackInfo(QString("%1 - %2")
-                .arg(player->metaData(QtMultimedia::AlbumArtist).toString())
-                .arg(player->metaData(QtMultimedia::Title).toString()));
+                .arg(player->metaData(QtMediaservices::AlbumArtist).toString())
+                .arg(player->metaData(QtMediaservices::Title).toString()));
 
         if (coverLabel) {
-            QUrl url = player->metaData(QtMultimedia::CoverArtUrlLarge).value<QUrl>();
+            QUrl url = player->metaData(QtMediaservices::CoverArtUrlLarge).value<QUrl>();
 
             coverLabel->setPixmap(!url.isEmpty()
                     ? QPixmap(url.toString())

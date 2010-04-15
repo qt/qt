@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = player
 
-QT += gui multimedia
+QT += gui mediaservices
 
 
 HEADERS = \

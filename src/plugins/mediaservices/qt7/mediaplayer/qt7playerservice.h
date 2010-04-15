@@ -43,7 +43,7 @@
 #define QT7PLAYERSERVICE_H
 
 #include <QtCore/qobject.h>
-#include <QtMultimedia/qmediaservice.h>
+#include <QtMediaservices/qmediaservice.h>
 
 
 QT_BEGIN_HEADER

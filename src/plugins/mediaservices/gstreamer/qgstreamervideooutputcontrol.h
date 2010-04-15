@@ -42,7 +42,7 @@
 #ifndef QGSTREAMERVIDEOOUTPUTCONTROL_H
 #define QGSTREAMERVIDEOOUTPUTCONTROL_H
 
-#include <QtMultimedia/qvideooutputcontrol.h>
+#include <QtMediaservices/qvideooutputcontrol.h>
 
 #include <gst/gst.h>
 

@@ -1,7 +1,7 @@
-TARGET = qt7
+TARGET = qqt7
 include(../../qpluginbase.pri)
 
-QT += opengl multimedia
+QT += opengl mediaservices
 
 LIBS += -framework AppKit -framework AudioUnit \
         -framework AudioToolbox -framework CoreAudio \
