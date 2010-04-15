@@ -105,10 +105,11 @@ public:
 
     QMenuBar *menuBar() const;
 
+    QDeclarativeView *view() const;
+
 public slots:
     void sceneResized(QSize size);
-    void open(const QString&);
-    void openQml(const QString&);
+    bool open(const QString&);
     void openFile();
     void reload();
     void takeSnapShot();
