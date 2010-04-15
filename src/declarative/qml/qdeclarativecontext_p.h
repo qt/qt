@@ -55,7 +55,7 @@
 
 #include "qdeclarativecontext.h"
 
-#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativedata_p.h"
 #include "private/qdeclarativeintegercache_p.h"
 #include "private/qdeclarativetypenamecache_p.h"
 #include "private/qdeclarativenotifier_p.h"
@@ -166,7 +166,7 @@ public:
     QDeclarativeAbstractExpression *expressions;
 
     // Doubly-linked list of objects that are owned by this context
-    QDeclarativeDeclarativeData *contextObjects;
+    QDeclarativeData *contextObjects;
 
     // Doubly-linked list of context guards (XXX merge with contextObjects)
     QDeclarativeGuardedContextData *contextGuards;

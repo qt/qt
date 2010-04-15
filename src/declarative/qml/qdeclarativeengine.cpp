@@ -354,14 +354,14 @@ void QDeclarativePrivate::qdeclarativeelement_destructor(QObject *)
 {
 }
 
-void QDeclarativeDeclarativeData::destroyed(QAbstractDeclarativeData *d, QObject *o)
+void QDeclarativeData::destroyed(QAbstractDeclarativeData *d, QObject *o)
 {
-    static_cast<QDeclarativeDeclarativeData *>(d)->destroyed(o);
+    static_cast<QDeclarativeData *>(d)->destroyed(o);
 }
 
-void QDeclarativeDeclarativeData::parentChanged(QAbstractDeclarativeData *d, QObject *o, QObject *p)
+void QDeclarativeData::parentChanged(QAbstractDeclarativeData *d, QObject *o, QObject *p)
 {
-    static_cast<QDeclarativeDeclarativeData *>(d)->parentChanged(o, p);
+    static_cast<QDeclarativeData *>(d)->parentChanged(o, p);
 }
 
 void QDeclarativeEnginePrivate::init()
@@ -371,7 +371,7 @@ void QDeclarativeEnginePrivate::init()
     qRegisterMetaType<QDeclarativeScriptString>("QDeclarativeScriptString");
     qRegisterMetaType<QScriptValue>("QScriptValue");
 
-    QDeclarativeDeclarativeData::init();
+    QDeclarativeData::init();
 
     contextClass = new QDeclarativeContextScriptClass(q);
     objectClass = new QDeclarativeObjectScriptClass(q);
@@ -663,8 +663,8 @@ QDeclarativeContext *QDeclarativeEngine::contextForObject(const QObject *object)
 
     QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
 
-    QDeclarativeDeclarativeData *data =
-        static_cast<QDeclarativeDeclarativeData *>(priv->declarativeData);
+    QDeclarativeData *data =
+        static_cast<QDeclarativeData *>(priv->declarativeData);
 
     if (!data)
         return 0;
@@ -687,7 +687,7 @@ void QDeclarativeEngine::setContextForObject(QObject *object, QDeclarativeContex
     if (!object || !context)
         return;
 
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object, true);
+    QDeclarativeData *data = QDeclarativeData::get(object, true);
     if (data->context) {
         qWarning("QDeclarativeEngine::setContextForObject(): Object already has a QDeclarativeContext");
         return;
@@ -738,7 +738,7 @@ void QDeclarativeEngine::setContextForObject(QObject *object, QDeclarativeContex
 */
 void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership ownership)
 {
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object, true);
+    QDeclarativeData *ddata = QDeclarativeData::get(object, true);
     if (!ddata)
         return;
 
@@ -751,7 +751,7 @@ void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership own
 */
 QDeclarativeEngine::ObjectOwnership QDeclarativeEngine::objectOwnership(QObject *object)
 {
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object, false);
+    QDeclarativeData *ddata = QDeclarativeData::get(object, false);
     if (!ddata) 
         return CppOwnership;
     else
@@ -760,7 +760,7 @@ QDeclarativeEngine::ObjectOwnership QDeclarativeEngine::objectOwnership(QObject 
 
 void qmlExecuteDeferred(QObject *object)
 {
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object);
+    QDeclarativeData *data = QDeclarativeData::get(object);
 
     if (data && data->deferredComponent) {
 
@@ -793,7 +793,7 @@ QDeclarativeEngine *qmlEngine(const QObject *obj)
 
 QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool create)
 {
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object);
+    QDeclarativeData *data = QDeclarativeData::get(object);
     if (!data)
         return 0; // Attached properties are only on objects created by QML
 
@@ -828,7 +828,7 @@ QObject *qmlAttachedPropertiesObject(int *idCache, const QObject *object,
     return qmlAttachedPropertiesObjectById(*idCache, object, create);
 }
 
-void QDeclarativeDeclarativeData::destroyed(QObject *object)
+void QDeclarativeData::destroyed(QObject *object)
 {
     if (deferredComponent)
         deferredComponent->release();
@@ -875,12 +875,12 @@ void QDeclarativeDeclarativeData::destroyed(QObject *object)
         delete this;
 }
 
-void QDeclarativeDeclarativeData::parentChanged(QObject *, QObject *parent)
+void QDeclarativeData::parentChanged(QObject *, QObject *parent)
 {
     if (!parent && scriptValue) { delete scriptValue; scriptValue = 0; }
 }
 
-bool QDeclarativeDeclarativeData::hasBindingBit(int bit) const
+bool QDeclarativeData::hasBindingBit(int bit) const
 {
     if (bindingBitsSize > bit) 
         return bindingBits[bit / 32] & (1 << (bit % 32));
@@ -888,13 +888,13 @@ bool QDeclarativeDeclarativeData::hasBindingBit(int bit) const
         return false;
 }
 
-void QDeclarativeDeclarativeData::clearBindingBit(int bit)
+void QDeclarativeData::clearBindingBit(int bit)
 {
     if (bindingBitsSize > bit) 
         bindingBits[bit / 32] &= ~(1 << (bit % 32));
 }
 
-void QDeclarativeDeclarativeData::setBindingBit(QObject *obj, int bit)
+void QDeclarativeData::setBindingBit(QObject *obj, int bit)
 {
     if (bindingBitsSize <= bit) {
         int props = obj->metaObject()->propertyCount();
@@ -960,7 +960,7 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
         QUrl url = QUrl(context->resolvedUrl(QUrl(arg)));
         QDeclarativeComponent *c = new QDeclarativeComponent(activeEngine, url, activeEngine);
         QDeclarativeComponentPrivate::get(c)->creationContext = context;
-        QDeclarativeDeclarativeData::get(c, true)->setImplicitDestructible();
+        QDeclarativeData::get(c, true)->setImplicitDestructible();
         return activeEnginePriv->objectClass->newQObject(c, qMetaTypeId<QDeclarativeComponent*>());
     }
 }
@@ -1031,7 +1031,7 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
     if(gobj && gparent)
         gobj->setParentItem(gparent);
 
-    QDeclarativeDeclarativeData::get(obj, true)->setImplicitDestructible();
+    QDeclarativeData::get(obj, true)->setImplicitDestructible();
     return activeEnginePriv->objectClass->newQObject(obj, QMetaType::QObjectStar);
 }
 

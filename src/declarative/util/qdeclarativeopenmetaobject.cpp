@@ -41,7 +41,7 @@
 
 #include "private/qdeclarativeopenmetaobject_p.h"
 #include "private/qdeclarativepropertycache_p.h"
-#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativedata_p.h"
 #include <qmetaobjectbuilder_p.h>
 #include <qdebug.h>
 
@@ -302,7 +302,7 @@ void QDeclarativeOpenMetaObject::setCached(bool c)
 
     d->cacheProperties = c;
 
-    QDeclarativeDeclarativeData *qmldata = QDeclarativeDeclarativeData::get(d->object, true);
+    QDeclarativeData *qmldata = QDeclarativeData::get(d->object, true);
     if (d->cacheProperties) {
         if (!d->type->d->cache)
             d->type->d->cache = QDeclarativePropertyCache::create(d->type->d->engine, this);

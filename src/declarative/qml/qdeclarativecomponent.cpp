@@ -518,7 +518,7 @@ QScriptValue QDeclarativeComponent::createObject()
     if (!ret)
         return QScriptValue();
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
-    QDeclarativeDeclarativeData::get(ret, true)->setImplicitDestructible();
+    QDeclarativeData::get(ret, true)->setImplicitDestructible();
     return priv->objectClass->newQObject(ret, QMetaType::QObjectStar);
 }
 
@@ -581,7 +581,7 @@ QObject *QDeclarativeComponent::beginCreate(QDeclarativeContext *context)
     Q_D(QDeclarativeComponent);
     QObject *rv = d->beginCreate(context?QDeclarativeContextData::get(context):0, QBitField());
     if (rv) {
-        QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(rv);
+        QDeclarativeData *ddata = QDeclarativeData::get(rv);
         Q_ASSERT(ddata);
         ddata->indestructible = true;
     }

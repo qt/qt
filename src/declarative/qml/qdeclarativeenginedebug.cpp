@@ -264,7 +264,7 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDecla
 QDeclarativeEngineDebugServer::QDeclarativeObjectData 
 QDeclarativeEngineDebugServer::objectData(QObject *object)
 {
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object);
+    QDeclarativeData *ddata = QDeclarativeData::get(object);
     QDeclarativeObjectData rv;
     if (ddata && ddata->outerContext) {
         rv.url = ddata->outerContext->url;

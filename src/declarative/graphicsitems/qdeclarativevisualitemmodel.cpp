@@ -50,7 +50,7 @@
 #include <qdeclarativeopenmetaobject_p.h>
 #include <qdeclarativelistaccessor_p.h>
 #include <qdeclarativeinfo.h>
-#include <qdeclarativedeclarativedata_p.h>
+#include <qdeclarativedata_p.h>
 #include <qdeclarativepropertycache_p.h>
 #include <qdeclarativeguard_p.h>
 #include <qdeclarativeglobal_p.h>
@@ -1058,7 +1058,7 @@ QString QDeclarativeVisualDataModel::stringValue(int index, const QString &name)
         tempData = true;
     }
 
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(data);
+    QDeclarativeData *ddata = QDeclarativeData::get(data);
     if (ddata && ddata->propertyCache) {
         QDeclarativePropertyCache::Data *prop = ddata->propertyCache->property(name);
         if (prop) {

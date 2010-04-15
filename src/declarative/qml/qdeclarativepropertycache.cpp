@@ -368,7 +368,7 @@ QDeclarativePropertyCache::Data *QDeclarativePropertyCache::property(QDeclarativ
     QDeclarativeEnginePrivate *enginePrivate = QDeclarativeEnginePrivate::get(engine);
 
     QDeclarativePropertyCache *cache = 0;
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(obj);
+    QDeclarativeData *ddata = QDeclarativeData::get(obj);
     if (ddata && ddata->propertyCache && ddata->propertyCache->qmlEngine() == engine)
         cache = ddata->propertyCache;
     if (!cache) {
@@ -400,7 +400,7 @@ QDeclarativePropertyCache::Data *QDeclarativePropertyCache::property(QDeclarativ
         QDeclarativeEnginePrivate *enginePrivate = QDeclarativeEnginePrivate::get(engine);
 
         QDeclarativePropertyCache *cache = 0;
-        QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(obj);
+        QDeclarativeData *ddata = QDeclarativeData::get(obj);
         if (ddata && ddata->propertyCache && ddata->propertyCache->qmlEngine() == engine)
             cache = ddata->propertyCache;
         if (!cache) {

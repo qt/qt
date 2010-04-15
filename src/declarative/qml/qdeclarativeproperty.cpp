@@ -50,7 +50,7 @@
 #include "private/qdeclarativeboundsignal_p.h"
 #include "qdeclarativeengine.h"
 #include "private/qdeclarativeengine_p.h"
-#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativedata_p.h"
 #include "private/qdeclarativestringconverters_p.h"
 #include "private/qdeclarativelist_p.h"
 #include "private/qdeclarativecompiler_p.h"
@@ -606,7 +606,7 @@ QDeclarativePropertyPrivate::binding(const QDeclarativeProperty &that)
     if (!that.isProperty() || !that.d->object)
         return 0;
 
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(that.d->object);
+    QDeclarativeData *data = QDeclarativeData::get(that.d->object);
     if (!data) 
         return 0;
 
@@ -660,7 +660,7 @@ QDeclarativeAbstractBinding *
 QDeclarativePropertyPrivate::setBinding(QObject *object, int coreIndex, int valueTypeIndex,
                                         QDeclarativeAbstractBinding *newBinding, WriteFlags flags)
 {
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object, 0 != newBinding);
+    QDeclarativeData *data = QDeclarativeData::get(object, 0 != newBinding);
     QDeclarativeAbstractBinding *binding = 0;
 
     if (data && data->hasBindingBit(coreIndex)) {

@@ -525,7 +525,7 @@ void QDeclarativeContextData::destroy()
     expressions = 0;
 
     while (contextObjects) {
-        QDeclarativeDeclarativeData *co = contextObjects;
+        QDeclarativeData *co = contextObjects;
         contextObjects = contextObjects->nextContextObject;
 
         co->context = 0;
@@ -608,7 +608,7 @@ void QDeclarativeContextData::refreshExpressions()
 
 void QDeclarativeContextData::addObject(QObject *o)
 {
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(o, true);
+    QDeclarativeData *data = QDeclarativeData::get(o, true);
 
     Q_ASSERT(data->context == 0);
 
