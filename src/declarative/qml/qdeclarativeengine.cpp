@@ -1365,7 +1365,9 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
             rv.setProperty(ii, objectClass->newQObject(object));
         }
         return rv;
-    } 
+    } else if (QDeclarativeValueType *vt = valueTypes[val.userType()]) {
+        return valueTypeClass->newObject(val, vt);
+    }
 
     bool objOk;
     QObject *obj = QDeclarativeMetaType::toQObject(val, &objOk);
