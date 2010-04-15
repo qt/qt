@@ -48,6 +48,17 @@
 #include "minihttpserver.h"
 #include "../network-settings.h"
 
+#include <qplatformdefs.h>
+#ifdef Q_OS_UNIX
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <netdb.h>
+# include <unistd.h>
+#elif defined(Q_OS_WIN)
+# include <winsock2.h>
+#endif
+
 class tst_QTcpSocket_stresstest : public QObject
 {
     Q_OBJECT
@@ -65,6 +76,7 @@ public slots:
     void slotReadAll() { byteCounter += static_cast<QTcpSocket *>(sender())->readAll().size(); }
 
 private Q_SLOTS:
+    void nativeBlockingConnectDisconnect();
     void blockingConnectDisconnect();
     void blockingPipelined();
     void blockingMultipleRequests();
@@ -75,6 +87,12 @@ private Q_SLOTS:
 
 tst_QTcpSocket_stresstest::tst_QTcpSocket_stresstest()
 {
+#ifdef Q_OS_WIN
+    WSAData wsadata;
+
+    // IPv6 requires Winsock v2.0 or better.
+    WSAStartup(MAKEWORD(2,0), &wsadata);
+#endif
 }
 
 void tst_QTcpSocket_stresstest::initTestCase_data()
@@ -91,6 +109,114 @@ void tst_QTcpSocket_stresstest::init()
 {
     if (qgetenv("QTCPSOCKET_STRESSTEST").toInt() == 0)
         QSKIP("Stress test disabled", SkipAll);
+}
+
+void tst_QTcpSocket_stresstest::nativeBlockingConnectDisconnect()
+{
+    QFETCH_GLOBAL(QString, hostname);
+    QFETCH_GLOBAL(int, port);
+
+    double avg = 0;
+    for (int i = 0; i < AttemptCount; ++i) {
+        QElapsedTimer timeout;
+        byteCounter = 0;
+        timeout.start();
+
+        // look up the host
+#ifdef Q_OS_WIN
+        SOCKET fd;
+#else
+        int fd;
+#endif
+        {
+#if !defined(QT_NO_GETADDRINFO) && 0
+            addrinfo *res = 0;
+            struct addrinfo hints;
+            memset(&hints, 0, sizeof(hints));
+            hints.ai_family = PF_UNSPEC;
+
+            int result = getaddrinfo(QUrl::toAce(hostname).constData(), QByteArray::number(port).constData(), &hints, &res);
+            QCOMPARE(result, 0);
+
+            // connect loop
+            fd = -1;
+            for (addrinfo *node = res; fd == -1 && node; node = node->ai_next) {
+                fd = ::socket(node->ai_family, node->ai_socktype, node->ai_protocol);
+                if (fd == -1)
+                    continue;
+                if (::connect(fd, node->ai_addr, node->ai_addrlen) == -1) {
+                    ::close(fd);
+                    fd = -1;
+                } else {
+                    break;
+                }
+            }
+            QVERIFY(fd != -1);
+#else
+            hostent *result = gethostbyname(QUrl::toAce(hostname).constData());
+            QVERIFY(result);
+            QCOMPARE(result->h_addrtype, AF_INET);
+            struct sockaddr_in s;
+            QT_SOCKLEN_T len = sizeof s;
+            s.sin_family = AF_INET;
+
+            fd = ::socket(AF_INET, SOCK_STREAM, 0);
+# ifdef Q_OS_WIN
+            QVERIFY(fd != INVALID_SOCKET);
+
+            WSAHtons(fd, port, &(s.sin_port));
+            s.sin_addr.s_addr = *(u_long *) result->h_addr_list[0]
+
+            QVERIFY(::connect(fd, (sockaddr*)&s, len) != SOCKET_ERROR);
+# else
+            QVERIFY(fd != -1);
+
+            s.sin_port = htons(port);
+            s.sin_addr =  *(struct in_addr *) result->h_addr_list[0];
+
+            QVERIFY(::connect(fd, (sockaddr*)&s, len) == 0);
+#endif
+#endif
+        }
+
+        // send request
+        {
+            QByteArray request = "GET /qtest/mediumfile HTTP/1.1\r\n"
+                                 "Connection: close\r\n"
+                                 "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
+                                 "Host: " + hostname.toLatin1() + "\r\n"
+                                 "\r\n";
+            qint64 bytesWritten = 0;
+            while (bytesWritten < request.size()) {
+                qint64 ret = ::write(fd, request.constData() + bytesWritten, request.size() - bytesWritten);
+                if (ret == -1) {
+                    ::close(fd);
+                    QFAIL("Timeout");
+                }
+                bytesWritten += ret;
+            }
+        }
+
+        // receive reply
+        char buf[16384];
+        while (true) {
+            qint64 ret = ::read(fd, buf, sizeof buf);
+            if (ret == -1) {
+                ::close(fd);
+                QFAIL("Timeout");
+            } else if (ret == 0) {
+                break; // EOF
+            }
+            byteCounter += ret;
+        }
+        ::close(fd);
+
+        double rate = (byteCounter / timeout.elapsed());
+        avg = (i * avg + rate) / (i + 1);
+        qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
+                << (rate / 1024.0 / 1024 * 1000) << "MB/s";
+    }
+    qDebug() << "Average transfer rate was" << (avg / 1024.0 / 1024 * 1000) << "MB/s";
 }
 
 void tst_QTcpSocket_stresstest::blockingConnectDisconnect()
