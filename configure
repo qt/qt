@@ -937,7 +937,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-mediaservice|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-mediaservice|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1246,6 +1246,9 @@ while [ "$#" -gt 0 ]; do
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
             [ "$VAL" = "es1" ] || [ "$VAL" = "es2" ]; then
             CFG_OPENGL="$VAL"
+            if  [ "$VAL" = "es1" ] || [ "$VAL" = "es2" ]; then
+                CFG_EGL="yes"
+            fi
         else
             UNKNOWN_OPT=yes
         fi
@@ -1253,6 +1256,7 @@ while [ "$#" -gt 0 ]; do
     openvg)
         if [ "$VAL" = "auto" ] || [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_OPENVG="$VAL"
+            CFG_EGL="auto"
         else
             UNKNOWN_OPT=yes
         fi
@@ -1565,6 +1569,13 @@ while [ "$#" -gt 0 ]; do
     xinput)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "runtime" ]; then
             CFG_XINPUT="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    egl)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_EGL="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3810,6 +3821,12 @@ Qt/X11 only:
     -system-nas-sound .. Use NAS libaudio from the operating system.
                          See http://radscan.com/nas.html
 
+    -egl ............... Use EGL instead of GLX to manage contexts.
+                         When building for desktop OpenGL, this option will
+                         make Qt use EGL to manage contexts rather than the
+                         GLX, which is the default. Note: For OpenGL ES, EGL
+                         is always used.
+
     -no-opengl ......... Do not support OpenGL.
  +  -opengl <api> ...... Enable OpenGL support.
                          With no parameter, this will auto-detect the "best"
@@ -3817,8 +3834,6 @@ Qt/X11 only:
                          will be used. Use desktop, es1, or es2 for <api>
                          to force the use of the Desktop (OpenGL 1.x or 2.x),
                          OpenGL ES 1.x Common profile, or 2.x APIs instead.
-                         On X11, the EGL API will be used to manage GL
-                         contexts in the case of OpenGL ES
 
      -no-openvg ........ Do not support OpenVG.
  +   -openvg ........... Enable OpenVG support.
@@ -5121,26 +5136,6 @@ fi
 
 if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
 
-    # detect EGL support
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl" "EGL (EGL/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
-        # EGL specified by QMAKE_*_EGL, included with <EGL/egl.h>
-        CFG_EGL=yes
-        CFG_EGL_GLES_INCLUDES=no
-    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl4gles1" "EGL (GLES/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
-        # EGL specified by QMAKE_*_EGL, included with <GLES/egl.h>
-        CFG_EGL=yes
-        CFG_EGL_GLES_INCLUDES=yes
-    fi
-    if ( [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es2" ] ) && [ "$CFG_EGL" != "yes" ]; then
-        echo "The EGL functionality test failed!"
-        echo " EGL is required for OpenGL ES to manage contexts & surfaces."
-        echo " You might need to modify the include and library search paths by editing"
-        echo " QMAKE_INCDIR_EGL, QMAKE_LIBDIR_EGL and QMAKE_LIBS_EGL in"
-        echo " ${XQMAKESPEC}."
-        exit 1
-    fi
-
-
     # auto-detect Glib support
     if [ "$CFG_GLIB" != "no" ]; then
         if [ -n "$PKG_CONFIG" ]; then
@@ -5354,8 +5349,14 @@ if [ "$PLATFORM_X11" = "yes" ]; then
             CFG_OPENGL=desktop
         elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es2
-	elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            if [ "$CFG_EGL" = "no" ]; then
+                CFG_EGL=auto
+            fi
+        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es1
+            if [ "$CFG_EGL" = "no" ]; then
+                CFG_EGL=auto
+            fi
         else
             if [ "$CFG_OPENGL" = "yes" ]; then
                 echo "All the OpenGL functionality tests failed!"
@@ -5366,24 +5367,24 @@ if [ "$PLATFORM_X11" = "yes" ]; then
             fi
             CFG_OPENGL=no
         fi
-       case "$PLATFORM" in
-       hpux*)
-           # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
-           if [ "$CFG_OPENGL" = "desktop" ]; then
-               "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
-               if [ $? != "0" ]; then
-                   QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
-               fi
-           fi
-	   ;;
-       *)
-           ;;
-       esac
+        case "$PLATFORM" in
+        hpux*)
+            # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
+            if [ "$CFG_OPENGL" = "desktop" ]; then
+                "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+                if [ $? != "0" ]; then
+                    QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
+                fi
+            fi
+            ;;
+        *)
+            ;;
+        esac
     elif [ "$CFG_OPENGL" = "es1" ]; then
         # OpenGL ES 1.x
-	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
         if [ $? != "0" ]; then
-	    echo "The OpenGL ES 1.x functionality test failed!"
+            echo "The OpenGL ES 1.x functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
             echo " QMAKE_INCDIR_OPENGL_ES1, QMAKE_LIBDIR_OPENGL_ES1 and QMAKE_LIBS_OPENGL_ES1 in"
             echo " ${XQMAKESPEC}."
@@ -5391,9 +5392,9 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
-	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
         if [ $? != "0" ]; then
-	    echo "The OpenGL ES 2.0 functionality test failed!"
+            echo "The OpenGL ES 2.0 functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
             echo " QMAKE_INCDIR_OPENGL_ES2, QMAKE_LIBDIR_OPENGL_ES2 and QMAKE_LIBS_OPENGL_ES2 in"
             echo " ${XQMAKESPEC}."
@@ -5403,7 +5404,7 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         # Desktop OpenGL support
         "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
         if [ $? != "0" ]; then
-	    echo "The OpenGL functionality test failed!"
+            echo "The OpenGL functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
             echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
             echo " ${XQMAKESPEC}."
@@ -5416,7 +5417,7 @@ if [ "$PLATFORM_X11" = "yes" ]; then
             if [ $? != "0" ]; then
                 QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
             fi
-	    ;;
+            ;;
         *)
             ;;
         esac
@@ -5725,9 +5726,10 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
         fi
     fi
     if [ "$CFG_OPENGL" = "yes" ]; then
+        CFG_EGL=auto
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es2
-	elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es1
         else
             echo "All the OpenGL ES functionality tests failed!"
@@ -5738,24 +5740,26 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "es1" ]; then
         # OpenGL ES 1.x
-	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
         if [ $? != "0" ]; then
-	    echo "The OpenGL ES 1.x functionality test failed!"
+            echo "The OpenGL ES 1.x functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
-	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
-	    echo " ${XQMAKESPEC}."
+            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " ${XQMAKESPEC}."
             exit 1
         fi
+        CFG_EGL=yes
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
-	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
         if [ $? != "0" ]; then
-	    echo "The OpenGL ES 2.0 functionality test failed!"
+            echo "The OpenGL ES 2.0 functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
-	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
-	    echo " ${XQMAKESPEC}."
+            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " ${XQMAKESPEC}."
             exit 1
         fi
+        CFG_EGL=yes
     elif [ "$CFG_OPENGL" = "desktop" ]; then
         # Desktop OpenGL support
         echo "Desktop OpenGL support is not avaliable on Qt for Embedded Linux"
@@ -5841,6 +5845,36 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     fi
 
 fi # QWS
+
+# EGL Support
+if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
+    if [ "$CFG_EGL" != "no" ]; then
+        # detect EGL support
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl" "EGL (EGL/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            # EGL specified by QMAKE_*_EGL, included with <EGL/egl.h>
+            CFG_EGL=yes
+            CFG_EGL_GLES_INCLUDES=no
+        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl4gles1" "EGL (GLES/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            # EGL specified by QMAKE_*_EGL, included with <GLES/egl.h>
+            CFG_EGL=yes
+            CFG_EGL_GLES_INCLUDES=yes
+        else
+            if [ "$CFG_EGL" = "yes" ]; then
+                echo "The EGL functionality test failed!"
+                echo " EGL is required for OpenGL ES to manage contexts & surfaces."
+                echo " You might need to modify the include and library search paths by editing"
+                echo " QMAKE_INCDIR_EGL, QMAKE_LIBDIR_EGL and QMAKE_LIBS_EGL in"
+                echo " ${XQMAKESPEC}."
+                exit 1
+            fi
+            CFG_EGL=no
+            # If QtOpenGL would be built against OpenGL ES, disable it as we can't to that if EGL is missing
+            if [ "$CFG_OPENGL" = "es1" ||  "$CFG_OPENGL" = "es2" ]; then
+                CFG_OPENGL=no
+            fi
+        fi
+    fi
+fi
 
 # freetype support
 [ "x$CFG_EMBEDDED" != "xno" ] && CFG_LIBFREETYPE="$CFG_QWS_FREETYPE"

@@ -363,7 +363,7 @@ QSizeF QStaticText::size() const
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
-        : items(0), itemCount(0), glyphPool(0), positionPool(0), textWidth(-1.0),
+        : textWidth(-1.0), items(0), itemCount(0), glyphPool(0), positionPool(0),
           needsRelayout(true), useBackendOptimizations(false), textFormat(Qt::AutoText)
 {
 }
