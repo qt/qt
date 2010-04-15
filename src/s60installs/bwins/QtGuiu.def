@@ -11922,7 +11922,7 @@ EXPORTS
 	?updateCachedClipPathFromSetPosHelper@QGraphicsItemPrivate@@QAEXABVQPointF@@@Z @ 11921 NONAME ABSENT ; void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(class QPointF const &)
 	?updateCell@QCalendarWidget@@IAEXABVQDate@@@Z @ 11922 NONAME ; void QCalendarWidget::updateCell(class QDate const &)
 	?updateCells@QCalendarWidget@@IAEXXZ @ 11923 NONAME ; void QCalendarWidget::updateCells(void)
-	?updateDisplayText@QLineControl@@AAEXXZ @ 11924 NONAME ; void QLineControl::updateDisplayText(void)
+	?updateDisplayText@QLineControl@@AAEXXZ @ 11924 NONAME ABSENT ; void QLineControl::updateDisplayText(void)
 	?updateEditorData@QAbstractItemView@@MAEXXZ @ 11925 NONAME ; void QAbstractItemView::updateEditorData(void)
 	?updateEditorGeometries@QAbstractItemView@@MAEXXZ @ 11926 NONAME ; void QAbstractItemView::updateEditorGeometries(void)
 	?updateEditorGeometry@QAbstractItemDelegate@@UBEXPAVQWidget@@ABVQStyleOptionViewItem@@ABVQModelIndex@@@Z @ 11927 NONAME ; void QAbstractItemDelegate::updateEditorGeometry(class QWidget *, class QStyleOptionViewItem const &, class QModelIndex const &) const
@@ -12601,5 +12601,17 @@ EXPORTS
 	?setPixelFormat@QEglProperties@@QAEXW4Format@QImage@@@Z @ 12600 NONAME ABSENT ; void QEglProperties::setPixelFormat(enum QImage::Format)
 	?currentContext@QEglContext@@CAPAV1@W4API@QEgl@@@Z @ 12601 NONAME ABSENT ; class QEglContext * QEglContext::currentContext(enum QEgl::API)
 	?errorString@QEglContext@@SA?AVQString@@H@Z @ 12602 NONAME ABSENT ; class QString QEglContext::errorString(int)
-	?removeAllApplicationFonts@QFontDatabase@@SA_NXZ @12603 ; NONAME ; bool QFontDatabase::removeAllApplicationFonts()
+	?removeAllApplicationFonts@QFontDatabase@@SA_NXZ @ 12603 NONAME ; bool QFontDatabase::removeAllApplicationFonts()
+	?display@QEglContext@@SAHXZ @ 12604 NONAME ABSENT ; int QEglContext::display(void)
+	?clearFocusHelper@QGraphicsItemPrivate@@QAEX_N@Z @ 12605 NONAME ; void QGraphicsItemPrivate::clearFocusHelper(bool)
+	?canKeypadNavigate@QWidgetPrivate@@SA_NW4Orientation@Qt@@@Z @ 12606 NONAME ; bool QWidgetPrivate::canKeypadNavigate(enum Qt::Orientation)
+	?updateDisplayText@QLineControl@@AAEX_N@Z @ 12607 NONAME ; void QLineControl::updateDisplayText(bool)
+	?isPixmapCached@QImagePixmapCleanupHooks@@SA_NABVQPixmap@@@Z @ 12608 NONAME ; bool QImagePixmapCleanupHooks::isPixmapCached(class QPixmap const &)
+	?nativeDisplay@QEglContext@@CAHXZ @ 12609 NONAME ABSENT ; int QEglContext::nativeDisplay(void)
+	?getGlyphBearings@QFontEngine@@UAEXIPAM0@Z @ 12610 NONAME ; void QFontEngine::getGlyphBearings(unsigned int, float *, float *)
+	?inTabWidget@QWidgetPrivate@@SA_NPAVQWidget@@@Z @ 12611 NONAME ; bool QWidgetPrivate::inTabWidget(class QWidget *)
+	?destroyContext@QEglContext@@QAEXXZ @ 12612 NONAME ABSENT ; void QEglContext::destroyContext(void)
+	?isImageCached@QImagePixmapCleanupHooks@@SA_NABVQImage@@@Z @ 12613 NONAME ; bool QImagePixmapCleanupHooks::isImageCached(class QImage const &)
+	?dpy@QEglContext@@0HA @ 12614 NONAME ; int QEglContext::dpy
+	?setFocusHelper@QGraphicsItemPrivate@@QAEXW4FocusReason@Qt@@_N1@Z @ 12615 NONAME ; void QGraphicsItemPrivate::setFocusHelper(enum Qt::FocusReason, bool, bool)
 

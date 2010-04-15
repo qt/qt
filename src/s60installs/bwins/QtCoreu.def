@@ -4417,4 +4417,6 @@ EXPORTS
 	?QBasicAtomicInt_testAndSetRelease@@YA_NPCHHH@Z @ 4416 NONAME ; bool QBasicAtomicInt_testAndSetRelease(int volatile *, int, int)
 	?QBasicAtomicInt_fetchAndStoreAcquire@@YAHPCHH@Z @ 4417 NONAME ; int QBasicAtomicInt_fetchAndStoreAcquire(int volatile *, int)
 	?QBasicAtomicInt_fetchAndAddAcquire@@YAHPCHH@Z @ 4418 NONAME ; int QBasicAtomicInt_fetchAndAddAcquire(int volatile *, int)
+	?validCodecs@QTextCodec@@CA_NXZ @ 4419 NONAME ; bool QTextCodec::validCodecs(void)
+	?clearHistory@QStateMachinePrivate@@QAEXXZ @ 4420 NONAME ; void QStateMachinePrivate::clearHistory(void)
 
