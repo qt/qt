@@ -129,6 +129,9 @@ public:
 signals:
     void changed();
     void runScript();
+
+public slots:
+    QSize method() { return QSize(13, 14); }
 };
 QML_DECLARE_TYPE(MyTypeObject);
 

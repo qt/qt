@@ -521,7 +521,6 @@ void QDeclarativeListViewPrivate::clear()
     trackedItem = 0;
     minExtentDirty = true;
     maxExtentDirty = true;
-    setPosition(0);
     itemCount = 0;
 }
 
@@ -708,6 +707,7 @@ void QDeclarativeListViewPrivate::layout()
     layoutScheduled = false;
     if (!isValid()) {
         clear();
+        setPosition(0);
         return;
     }
     updateSections();
@@ -1416,6 +1416,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
         disconnect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
     }
     d->clear();
+    d->setPosition(0);
     d->modelVariant = model;
     QObject *object = qvariant_cast<QObject*>(model);
     QDeclarativeVisualModel *vim = 0;
@@ -1770,6 +1771,7 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
             setFlickDirection(HorizontalFlick);
         }
         d->clear();
+        d->setPosition(0);
         refill();
         emit orientationChanged();
         d->updateCurrent(d->currentIndex);
@@ -2791,6 +2793,7 @@ void QDeclarativeListView::modelReset()
 {
     Q_D(QDeclarativeListView);
     d->clear();
+    d->setPosition(0);
     refill();
     d->moveReason = QDeclarativeListViewPrivate::SetIndex;
     d->updateCurrent(d->currentIndex);

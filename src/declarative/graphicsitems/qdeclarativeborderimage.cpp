@@ -43,6 +43,7 @@
 #include "private/qdeclarativeborderimage_p_p.h"
 
 #include <qdeclarativeengine.h>
+#include <qdeclarativeinfo.h>
 
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -218,7 +219,8 @@ void QDeclarativeBorderImage::load()
             }
         } else {
             QSize impsize;
-            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, &impsize, d->async);
+            QString errorString;
+            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, &errorString, &impsize, d->async);
             if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
                 QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->url);
                 d->pendingPixmapCache = true;
@@ -230,8 +232,10 @@ void QDeclarativeBorderImage::load()
                 setImplicitWidth(impsize.width());
                 setImplicitHeight(impsize.height());
 
-                if (d->pix.isNull())
+                if (d->pix.isNull()) {
                     d->status = Error;
+                    qmlInfo(this) << errorString;
+                }
                 if (d->status == Loading)
                     d->status = Ready;
                 d->progress = 1.0;
@@ -338,7 +342,8 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
         QSize impsize;
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->sciurl, &d->pix, &impsize, d->async);
+        QString errorString;
+        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->sciurl, &d->pix, &errorString, &impsize, d->async);
         if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
             QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->sciurl);
             d->sciPendingPixmapCache = true;
@@ -367,8 +372,10 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
             setImplicitWidth(impsize.width());
             setImplicitHeight(impsize.height());
 
-            if (d->pix.isNull())
+            if (d->pix.isNull()) {
                 d->status = Error;
+                qmlInfo(this) << errorString;
+            }
             if (d->status == Loading)
                 d->status = Ready;
             d->progress = 1.0;
@@ -386,11 +393,18 @@ void QDeclarativeBorderImage::requestFinished()
     QSize impsize;
     if (d->url.path().endsWith(QLatin1String(".sci"))) {
         d->sciPendingPixmapCache = false;
-        QDeclarativePixmapCache::get(d->sciurl, &d->pix, &impsize, d->async);
+        QString errorString;
+        if (QDeclarativePixmapCache::get(d->sciurl, &d->pix, &errorString, &impsize, d->async) != QDeclarativePixmapReply::Ready) {
+            d->status = Error;
+            qmlInfo(this) << errorString;
+        }
     } else {
         d->pendingPixmapCache = false;
-        if (QDeclarativePixmapCache::get(d->url, &d->pix, &impsize, d->async) != QDeclarativePixmapReply::Ready)
+        QString errorString;
+        if (QDeclarativePixmapCache::get(d->url, &d->pix, &errorString, &impsize, d->async) != QDeclarativePixmapReply::Ready) {
             d->status = Error;
+            qmlInfo(this) << errorString;
+        }
     }
     setImplicitWidth(impsize.width());
     setImplicitHeight(impsize.height());

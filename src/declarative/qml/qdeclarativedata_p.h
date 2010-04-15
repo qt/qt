@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEDECLARATIVEDATA_P_H
-#define QDECLARATIVEDECLARATIVEDATA_P_H
+#ifndef QDECLARATIVEDATA_P_H
+#define QDECLARATIVEDATA_P_H
 
 //
 //  W A R N I N G
@@ -68,10 +68,10 @@ class QDeclarativeContextData;
 // default state for elemental object allocations.  This is crucial in the
 // workings of the QDeclarativeInstruction::CreateSimpleObject instruction.
 // Don't change anything here without first considering that case!
-class Q_AUTOTEST_EXPORT QDeclarativeDeclarativeData : public QDeclarativeData
+class Q_AUTOTEST_EXPORT QDeclarativeData : public QAbstractDeclarativeData
 {
 public:
-    QDeclarativeDeclarativeData()
+    QDeclarativeData()
         : ownMemory(true), ownContext(false), indestructible(true), explicitIndestructibleSet(false), 
           context(0), outerContext(0), bindings(0), nextContextObject(0), prevContextObject(0), bindingBitsSize(0), 
           bindingBits(0), lineNumber(0), columnNumber(0), deferredComponent(0), deferredIdx(0), 
@@ -80,12 +80,12 @@ public:
       }
 
     static inline void init() {
-        QDeclarativeData::destroyed = destroyed;
-        QDeclarativeData::parentChanged = parentChanged;
+        QAbstractDeclarativeData::destroyed = destroyed;
+        QAbstractDeclarativeData::parentChanged = parentChanged;
     }
 
-    static void destroyed(QDeclarativeData *, QObject *);
-    static void parentChanged(QDeclarativeData *, QObject *, QObject *);
+    static void destroyed(QAbstractDeclarativeData *, QObject *);
+    static void parentChanged(QAbstractDeclarativeData *, QObject *, QObject *);
 
     void destroyed(QObject *);
     void parentChanged(QObject *, QObject *);
@@ -100,14 +100,16 @@ public:
     quint32 explicitIndestructibleSet:1;
     quint32 dummy:28;
 
-    QDeclarativeContextData *context;
+    // The context that created the C++ object
+    QDeclarativeContextData *context; 
+    // The outermost context in which this object lives
     QDeclarativeContextData *outerContext;
 
     QDeclarativeAbstractBinding *bindings;
 
     // Linked list for QDeclarativeContext::contextObjects
-    QDeclarativeDeclarativeData *nextContextObject;
-    QDeclarativeDeclarativeData**prevContextObject;
+    QDeclarativeData *nextContextObject;
+    QDeclarativeData**prevContextObject;
 
     int bindingBitsSize;
     quint32 *bindingBits; 
@@ -130,16 +132,16 @@ public:
 
     QDeclarativeGuard<QObject> *guards;
 
-    static QDeclarativeDeclarativeData *get(const QObject *object, bool create = false) {
+    static QDeclarativeData *get(const QObject *object, bool create = false) {
         QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
         if (priv->wasDeleted) {
             Q_ASSERT(!create);
             return 0;
         } else if (priv->declarativeData) {
-            return static_cast<QDeclarativeDeclarativeData *>(priv->declarativeData);
+            return static_cast<QDeclarativeData *>(priv->declarativeData);
         } else if (create) {
-            priv->declarativeData = new QDeclarativeDeclarativeData;
-            return static_cast<QDeclarativeDeclarativeData *>(priv->declarativeData);
+            priv->declarativeData = new QDeclarativeData;
+            return static_cast<QDeclarativeData *>(priv->declarativeData);
         } else {
             return 0;
         }
@@ -154,7 +156,7 @@ void QDeclarativeGuard<T>::addGuard()
         return;
     }
    
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(o, true);
+    QDeclarativeData *data = QDeclarativeData::get(o, true);
     next = data->guards;
     if (next) reinterpret_cast<QDeclarativeGuard<T> *>(next)->prev = &next;
     data->guards = reinterpret_cast<QDeclarativeGuard<QObject> *>(this);
@@ -172,4 +174,4 @@ void QDeclarativeGuard<T>::remGuard()
 
 QT_END_NAMESPACE
 
-#endif // QDECLARATIVEDECLARATIVEDATA_P_H
+#endif // QDECLARATIVEDATA_P_H

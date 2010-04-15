@@ -46,7 +46,7 @@
 #include "qdeclarativecontext.h"
 #include "qdeclarativeinfo.h"
 #include "private/qdeclarativecontext_p.h"
-#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativedata_p.h"
 #include "private/qdeclarativestringconverters_p.h"
 
 #include <QVariant>
@@ -296,7 +296,7 @@ void QDeclarativeAbstractBinding::addToObject(QObject *object)
     Q_ASSERT(!m_prevBinding);
 
     m_object = object;
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object, true);
+    QDeclarativeData *data = QDeclarativeData::get(object, true);
 
     if (index & 0xFF000000) {
         // Value type
@@ -348,7 +348,7 @@ void QDeclarativeAbstractBinding::removeFromObject()
             // Value type - we don't remove the proxy from the object.  It will sit their happily
             // doing nothing for ever more.
         } else {
-            QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(m_object, false);
+            QDeclarativeData *data = QDeclarativeData::get(m_object, false);
             if (data) data->clearBindingBit(index);
         }
 

@@ -101,7 +101,6 @@ inline QUrl TEST_FILE(const QString &filename)
 
 void tst_qdeclarativemoduleplugin::importsPlugin()
 {
-QSKIP("Fix me", SkipAll);
     QDeclarativeEngine engine;
     engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
     QTest::ignoreMessage(QtWarningMsg, "plugin created");

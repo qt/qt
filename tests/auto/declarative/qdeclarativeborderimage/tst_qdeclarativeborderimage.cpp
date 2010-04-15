@@ -121,10 +121,10 @@ void tst_qdeclarativeborderimage::imageSource_data()
 
     QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << false << "";
     QTest::newRow("local not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() << false
-        << "Cannot open  QUrl( \"" + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() + "\" )  ";
+        << "QML BorderImage (file::2:1) Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString();
     QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << "";
     QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true
-        << "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
+        << "QML BorderImage (file::2:1) Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found";
 }
 
 void tst_qdeclarativeborderimage::imageSource()

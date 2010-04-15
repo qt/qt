@@ -1478,7 +1478,7 @@ QWidget::~QWidget()
     QObjectPrivate::clearGuards(this);
 
     if (d->declarativeData) {
-        QDeclarativeData::destroyed(d->declarativeData, this);
+        QAbstractDeclarativeData::destroyed(d->declarativeData, this);
         d->declarativeData = 0;                 // don't activate again in ~QObject
     }
 
