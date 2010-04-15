@@ -962,4 +962,6 @@ EXPORTS
 	?staticMetaObject@QTcpServer@@2UQMetaObject@@B @ 961 NONAME ; struct QMetaObject const QTcpServer::staticMetaObject
 	?staticMetaObject@QUdpSocket@@2UQMetaObject@@B @ 962 NONAME ; struct QMetaObject const QUdpSocket::staticMetaObject
 	?staticMetaObject@QAbstractSocket@@2UQMetaObject@@B @ 963 NONAME ; struct QMetaObject const QAbstractSocket::staticMetaObject
+	?qt_qhostinfo_clear_cache@@YAXXZ @ 964 NONAME ; void qt_qhostinfo_clear_cache(void)
+	?qt_qhostinfo_lookup@@YA?AVQHostInfo@@ABVQString@@PAVQObject@@PBDPA_NPAH@Z @ 965 NONAME ; class QHostInfo qt_qhostinfo_lookup(class QString const &, class QObject *, char const *, bool *, int *)
 
