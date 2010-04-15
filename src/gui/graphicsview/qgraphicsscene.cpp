@@ -3772,6 +3772,12 @@ void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
     QGraphicsItem *toolTipItem = 0;
     for (int i = 0; i < itemsAtPos.size(); ++i) {
         QGraphicsItem *tmp = itemsAtPos.at(i);
+        if (tmp->d_func()->isProxyWidget()) {
+            // if the item is a proxy widget, the event is forwarded to it
+            sendEvent(tmp, helpEvent);
+            if (helpEvent->isAccepted())
+                return;
+        }
         if (!tmp->toolTip().isEmpty()) {
             toolTipItem = tmp;
             break;
