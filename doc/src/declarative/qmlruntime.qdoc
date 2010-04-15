@@ -164,7 +164,7 @@
 
     The runtime.isActiveWindow property tells whether the main window of the qml runtime is currently active
     or not. This is specially useful for embedded devices when you want to pause parts of your application,
-    including animations, when your application looses focus or goes to the background.
+    including animations, when your application loses focus or goes to the background.
 
     The example below, stops the animation when the application's window is deactivated and resumes on activation:
 
