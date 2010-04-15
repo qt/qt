@@ -84,11 +84,11 @@ extern QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set;
 
 enum { QObjectPrivateVersion = QT_VERSION };
 
-class Q_CORE_EXPORT QDeclarativeData
+class Q_CORE_EXPORT QAbstractDeclarativeData
 {
 public:
-    static void (*destroyed)(QDeclarativeData *, QObject *);
-    static void (*parentChanged)(QDeclarativeData *, QObject *, QObject *);
+    static void (*destroyed)(QAbstractDeclarativeData *, QObject *);
+    static void (*parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *);
 };
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData
@@ -194,7 +194,7 @@ public:
     QList<QPointer<QObject> > eventFilters;
     union {
         QObject *currentChildBeingDeleted;
-        QDeclarativeData *declarativeData; //extra data used by the DeclarativeUI project.
+        QAbstractDeclarativeData *declarativeData; //extra data used by the declarative module
     };
 
     // these objects are all used to indicate that a QObject was deleted

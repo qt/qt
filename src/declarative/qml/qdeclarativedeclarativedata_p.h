@@ -68,7 +68,7 @@ class QDeclarativeContextData;
 // default state for elemental object allocations.  This is crucial in the
 // workings of the QDeclarativeInstruction::CreateSimpleObject instruction.
 // Don't change anything here without first considering that case!
-class Q_AUTOTEST_EXPORT QDeclarativeDeclarativeData : public QDeclarativeData
+class Q_AUTOTEST_EXPORT QDeclarativeDeclarativeData : public QAbstractDeclarativeData
 {
 public:
     QDeclarativeDeclarativeData()
@@ -80,12 +80,12 @@ public:
       }
 
     static inline void init() {
-        QDeclarativeData::destroyed = destroyed;
-        QDeclarativeData::parentChanged = parentChanged;
+        QAbstractDeclarativeData::destroyed = destroyed;
+        QAbstractDeclarativeData::parentChanged = parentChanged;
     }
 
-    static void destroyed(QDeclarativeData *, QObject *);
-    static void parentChanged(QDeclarativeData *, QObject *, QObject *);
+    static void destroyed(QAbstractDeclarativeData *, QObject *);
+    static void parentChanged(QAbstractDeclarativeData *, QObject *, QObject *);
 
     void destroyed(QObject *);
     void parentChanged(QObject *, QObject *);

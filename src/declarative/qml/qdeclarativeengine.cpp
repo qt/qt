@@ -354,12 +354,12 @@ void QDeclarativePrivate::qdeclarativeelement_destructor(QObject *)
 {
 }
 
-void QDeclarativeDeclarativeData::destroyed(QDeclarativeData *d, QObject *o)
+void QDeclarativeDeclarativeData::destroyed(QAbstractDeclarativeData *d, QObject *o)
 {
     static_cast<QDeclarativeDeclarativeData *>(d)->destroyed(o);
 }
 
-void QDeclarativeDeclarativeData::parentChanged(QDeclarativeData *d, QObject *o, QObject *p)
+void QDeclarativeDeclarativeData::parentChanged(QAbstractDeclarativeData *d, QObject *o, QObject *p)
 {
     static_cast<QDeclarativeDeclarativeData *>(d)->parentChanged(o, p);
 }
