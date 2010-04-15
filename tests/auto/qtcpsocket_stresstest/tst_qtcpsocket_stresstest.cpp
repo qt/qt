@@ -52,10 +52,13 @@
 #ifdef Q_OS_UNIX
 # include <sys/types.h>
 # include <sys/socket.h>
+# include <sys/select.h>
 # include <netinet/in.h>
+# include <errno.h>
 # include <netdb.h>
 # include <signal.h>
 # include <unistd.h>
+# include <fcntl.h>
 
 typedef int SOCKET;
 # define INVALID_SOCKET -1
@@ -83,6 +86,7 @@ public slots:
 
 private Q_SLOTS:
     void nativeBlockingConnectDisconnect();
+    void nativeNonBlockingConnectDisconnect();
     void blockingConnectDisconnect();
     void blockingPipelined();
     void blockingMultipleRequests();
@@ -119,8 +123,7 @@ void tst_QTcpSocket_stresstest::init()
         QSKIP("Stress test disabled", SkipAll);
 }
 
-
-void nativeConnect(SOCKET &fd, const char *hostname, int port)
+bool nativeLookup(const char *hostname, int port, QByteArray &buf)
 {
 #if !defined(QT_NO_GETADDRINFO) && 0
     addrinfo *res = 0;
@@ -129,41 +132,54 @@ void nativeConnect(SOCKET &fd, const char *hostname, int port)
     hints.ai_family = PF_UNSPEC;
 
     int result = getaddrinfo(QUrl::toAce(hostname).constData(), QByteArray::number(port).constData(), &hints, &res);
-    QCOMPARE(result, 0);
-
-    // connect loop
-    fd = -1;
-    for (addrinfo *node = res; fd == -1 && node; node = node->ai_next) {
-        fd = ::socket(node->ai_family, node->ai_socktype, node->ai_protocol);
-        if (fd == -1)
-            continue;
-        if (::connect(fd, node->ai_addr, node->ai_addrlen) == -1) {
-            ::close(fd);
-            fd = -1;
-        } else {
+    if (!result)
+        return false;
+    for (addrinfo *node = res; node; node = node->ai_next) {
+        if (node->ai_family == AF_INET) {
+            buf = QByteArray((char *)node->ai_addr, node->ai_addrlen);
             break;
         }
     }
-    QVERIFY(fd != -1);
+    freeaddrinfo(res);
 #else
     hostent *result = gethostbyname(hostname);
-    QVERIFY(result);
-    QCOMPARE(result->h_addrtype, AF_INET);
-    struct sockaddr_in s;
-    QT_SOCKLEN_T len = sizeof s;
-    s.sin_family = AF_INET;
+    if (!result || result->h_addrtype != AF_INET)
+        return false;
 
-    fd = ::socket(AF_INET, SOCK_STREAM, 0);
-    QVERIFY(fd != INVALID_SOCKET);
-# ifdef Q_OS_WIN
-    WSAHtons(fd, port, &(s.sin_port));
-    s.sin_addr.s_addr = *(u_long *) result->h_addr_list[0];
-# else
+    struct sockaddr_in s;
+    s.sin_family = AF_INET;
     s.sin_port = htons(port);
     s.sin_addr =  *(struct in_addr *) result->h_addr_list[0];
+
+    buf = QByteArray((char *)&s, sizeof s);
 #endif
-    QVERIFY(::connect(fd, (sockaddr*)&s, len) != SOCKET_ERROR);
-#endif
+
+    return !buf.isEmpty();
+}
+
+bool nativeSelect(int fd, int timeout, bool selectForWrite)
+{
+    if (timeout < 0)
+        return false;
+
+    // wait for connected
+    fd_set fds, fde;
+    FD_ZERO(&fds);
+    FD_ZERO(&fde);
+    FD_SET(fd, &fds);
+    FD_SET(fd, &fde);
+
+    int ret;
+    do {
+        struct timeval tv;
+        tv.tv_sec = timeout / 1000;
+        tv.tv_usec = timeout % 1000;
+        if (selectForWrite)
+            ret = ::select(fd + 1, 0, &fds, &fde, &tv);
+        else
+            ret = ::select(fd + 1, &fds, 0, &fde, &tv);
+    } while (ret == -1 && errno == EINTR);
+    return ret != 0;
 }
 
 void tst_QTcpSocket_stresstest::nativeBlockingConnectDisconnect()
@@ -182,10 +198,14 @@ void tst_QTcpSocket_stresstest::nativeBlockingConnectDisconnect()
 #endif
 
         // look up the host
-        SOCKET fd;
-        nativeConnect(fd, QUrl::toAce(hostname).constData(), port);
-        if (fd == INVALID_SOCKET)
-            return;
+        QByteArray addr;
+        if (!nativeLookup(QUrl::toAce(hostname).constData(), port, addr))
+            QFAIL("Lookup failed");
+
+        // connect
+        SOCKET fd = ::socket(AF_INET, SOCK_STREAM, 0);
+        QVERIFY(fd != INVALID_SOCKET);
+        QVERIFY(::connect(fd, (sockaddr *)addr.data(), addr.size()) != SOCKET_ERROR);
 
         // send request
         {
@@ -196,7 +216,7 @@ void tst_QTcpSocket_stresstest::nativeBlockingConnectDisconnect()
                                  "\r\n";
             qint64 bytesWritten = 0;
             while (bytesWritten < request.size()) {
-                qint64 ret = ::write(fd, request.constData() + bytesWritten, request.size() - bytesWritten);
+                qint64 ret = ::send(fd, request.constData() + bytesWritten, request.size() - bytesWritten, 0);
                 if (ret == -1) {
                     ::close(fd);
                     QFAIL("Timeout");
@@ -208,7 +228,7 @@ void tst_QTcpSocket_stresstest::nativeBlockingConnectDisconnect()
         // receive reply
         char buf[16384];
         while (true) {
-            qint64 ret = ::read(fd, buf, sizeof buf);
+            qint64 ret = ::recv(fd, buf, sizeof buf, 0);
             if (ret == -1) {
                 ::close(fd);
                 QFAIL("Timeout");
@@ -229,6 +249,115 @@ void tst_QTcpSocket_stresstest::nativeBlockingConnectDisconnect()
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     alarm(0);
 #endif
+}
+
+void tst_QTcpSocket_stresstest::nativeNonBlockingConnectDisconnect()
+{
+    QFETCH_GLOBAL(QString, hostname);
+    QFETCH_GLOBAL(int, port);
+
+    double avg = 0;
+    for (int i = 0; i < AttemptCount; ++i) {
+        QElapsedTimer timeout;
+        byteCounter = 0;
+        timeout.start();
+
+        // look up the host
+        QByteArray addr;
+        if (!nativeLookup(QUrl::toAce(hostname).constData(), port, addr))
+            QFAIL("Lookup failed");
+
+        SOCKET fd;
+
+        {
+#if defined(Q_OS_UNIX)
+            fd = ::socket(AF_INET, SOCK_STREAM, 0);
+            QVERIFY(fd != INVALID_SOCKET);
+
+            // set the socket to non-blocking and start connecting
+# if !defined(Q_OS_VXWORKS)
+            int flags = ::fcntl(fd, F_GETFL, 0);
+            QVERIFY(flags != -1);
+            QVERIFY(::fcntl(fd, F_SETFL, flags | O_NONBLOCK) != -1);
+# else // Q_OS_VXWORKS
+            int onoff = 1;
+            QVERIFY(::ioctl(socketDescriptor, FIONBIO, &onoff) >= 0);
+# endif // Q_OS_VXWORKS
+            while (true) {
+                if (::connect(fd, (sockaddr *)addr.data(), addr.size()) == -1) {
+                    QVERIFY2(errno == EINPROGRESS, QByteArray("Error connecting: ").append(strerror(errno)).constData());
+                    QVERIFY2(nativeSelect(fd, 10000 - timeout.elapsed(), true), "Timeout");
+                } else {
+                    break; // connected
+                }
+            }
+#elif defined(Q_OS_WIN)
+            fd = ::WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
+            QVERIFY(fd != INVALID_SOCKET);
+
+            // set the socket to non-blocking and start connecting
+            unsigned long buf = v;
+            unsigned long outBuf;
+            DWORD sizeWritten = 0;
+            QVERIFY(::WSAIoctl(fd, FIONBIO, &buf, sizeof(unsigned long), &outBuf, sizeof(unsigned long), &sizeWritten, 0,0) != SOCKET_ERROR);
+
+            while (true) {
+                int connectResult = ::WSAConnect(fd, sockAddrPtr, sockAddrSize, 0,0,0,0);
+                if (connectResult == 0 || WSAGetLastError() == WSAEISCONN) {
+                    break; // connected
+                } else {
+                    QVERIFY2(WSAGetLastError() == WSAEINPROGRESS, "Unexpected error");
+                    QVERIFY2(nativeSelect(fd, 10000 - timeout.elapsed(), true), "Timeout");
+                }
+            }
+#endif
+        }
+
+        // send request
+        {
+            QByteArray request = "GET /qtest/mediumfile HTTP/1.1\r\n"
+                                 "Connection: close\r\n"
+                                 "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
+                                 "Host: " + hostname.toLatin1() + "\r\n"
+                                 "\r\n";
+            qint64 bytesWritten = 0;
+            while (bytesWritten < request.size()) {
+                qint64 ret = ::send(fd, request.constData() + bytesWritten, request.size() - bytesWritten, 0);
+                if (ret == -1 && errno != EWOULDBLOCK) {
+                    ::close(fd);
+                    QFAIL(QByteArray("Error writing: ").append(strerror(errno)).constData());
+                } else if (ret == -1) {
+                    // wait for writing
+                    QVERIFY2(nativeSelect(fd, 10000 - timeout.elapsed(), true), "Timeout");
+                    continue;
+                }
+                bytesWritten += ret;
+            }
+        }
+
+        // receive reply
+        char buf[16384];
+        while (true) {
+            qint64 ret = ::recv(fd, buf, sizeof buf, 0);
+            if (ret == -1 && errno != EWOULDBLOCK) {
+                ::close(fd);
+                QFAIL("Timeout");
+            } else if (ret == -1) {
+                // wait for reading
+                QVERIFY2(nativeSelect(fd, 10000 - timeout.elapsed(), false), "Timeout");
+            } else if (ret == 0) {
+                break; // EOF
+            }
+            byteCounter += ret;
+        }
+        ::close(fd);
+
+        double rate = (byteCounter / timeout.elapsed());
+        avg = (i * avg + rate) / (i + 1);
+        qDebug() << i << byteCounter << "bytes in" << timeout.elapsed() << "ms:"
+                << (rate / 1024.0 / 1024 * 1000) << "MB/s";
+    }
+    qDebug() << "Average transfer rate was" << (avg / 1024.0 / 1024 * 1000) << "MB/s";
 }
 
 void tst_QTcpSocket_stresstest::blockingConnectDisconnect()
