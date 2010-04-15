@@ -770,8 +770,6 @@ void QDeclarativeListViewPrivate::updateTrackedItem()
     if (highlight)
         item = highlight;
 
-    FxListItem *oldTracked = trackedItem;
-
     const char *notifier1 = orient == QDeclarativeListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
     const char *notifier2 = orient == QDeclarativeListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
 
@@ -786,7 +784,7 @@ void QDeclarativeListViewPrivate::updateTrackedItem()
         QObject::connect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
         QObject::connect(trackedItem->item, notifier2, q, SLOT(trackedPositionChanged()));
     }
-    if (trackedItem && trackedItem != oldTracked)
+    if (trackedItem)
         q->trackedPositionChanged();
 }
 
@@ -1364,10 +1362,10 @@ QDeclarativeListView::~QDeclarativeListView()
         id: myDelegate
         Item {
             id: wrapper
-            SequentialAnimation on ListView.onRemove {
-                PropertyAction { target: wrapper.ListView; property: "delayRemove"; value: true }
+            ListView.onRemove: SequentialAnimation {
+                PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: true }
                 NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing.type: "InOutQuad" }
-                PropertyAction { target: wrapper.ListView; property: "delayRemove"; value: false }
+                PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: false }
             }
         }
     }

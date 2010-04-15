@@ -12,3 +12,5 @@ HEADERS += ../shared/testhttpserver.h
 SOURCES += ../shared/testhttpserver.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD\\\"
+
+CONFIG += parallel_test

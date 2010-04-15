@@ -8,3 +8,6 @@ SOURCES += tst_qdeclarativevaluetypes.cpp \
            testtypes.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD\\\"
+
+CONFIG += parallel_test
+

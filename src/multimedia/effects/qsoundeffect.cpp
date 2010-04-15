@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     The following example plays a wav file on mouse click.
 
     \qml
-    import Qt 4.6
+    import Qt 4.7
     import Qt.multimedia 4.7
 
     Item {

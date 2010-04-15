@@ -700,14 +700,15 @@ void QDeclarativeGrid::setRows(const int rows)
 
 void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
 {
-    int c=_columns,r=_rows;//Actual number of rows/columns
+    int c = _columns;
+    int r = _rows;
     int numVisible = positionedItems.count();
-    if (_columns==-1 && _rows==-1){
+    if (_columns <= 0 && _rows <= 0){
         c = 4;
         r = (numVisible+3)/4;
-    }else if (_rows==-1){
+    } else if (_rows <= 0){
         r = (numVisible+(_columns-1))/_columns;
-    }else if (_columns==-1){
+    } else if (_columns <= 0){
         c = (numVisible+(_rows-1))/_rows;
     }
 

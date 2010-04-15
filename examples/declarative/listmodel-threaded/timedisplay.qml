@@ -22,7 +22,9 @@ ListView {
 
     Timer {
         id: timer
-        interval: 2000; repeat: true; running: true; triggeredOnStart: true
+        interval: 2000; repeat: true
+        running: true
+        triggeredOnStart: true
 
         onTriggered: {
             var msg = {'action': 'appendCurrentTime', 'model': listModel};

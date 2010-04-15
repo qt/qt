@@ -18,10 +18,11 @@ Component {
         Repeater {
             model: notes
             Item {
+                id: stickyPage
+
                 property int randomX: Math.random() * 500 + 100
                 property int randomY: Math.random() * 200 + 50
 
-                id: stickyPage
                 x: randomX; y: randomY
 
                 SpringFollow on rotation {
@@ -32,26 +33,32 @@ Component {
                 Item {
                     id: sticky
                     scale: 0.7
+
                     Image {
                         id: stickyImage
-                        source: "note-yellow.png"; transformOrigin: Item.TopLeft
-                        smooth: true; y: -20; x: 8 + -width * 0.6 / 2; scale: 0.6
+                        x: 8 + -width * 0.6 / 2; y: -20
+                        source: "note-yellow.png"
+                        scale: 0.6; transformOrigin: Item.TopLeft
+                        smooth: true
                     }
 
                     TextEdit {
-                        id: myText; smooth: true; font.pixelSize: 24
-                        readOnly: false; x: -104; y: 36
-                        rotation: -8; text: noteText; width: 215; height: 200
+                        id: myText
+                        x: -104; y: 36; width: 215; height: 200
+                        smooth: true
+                        font.pixelSize: 24
+                        readOnly: false
+                        rotation: -8
+                        text: noteText
                     }
 
                     Item {
-                        y: -20
-                        x: stickyImage.x
+                        x: stickyImage.x; y: -20
                         width: stickyImage.width * stickyImage.scale
                         height: stickyImage.height * stickyImage.scale
+
                         MouseArea {
                             id: mouse
-                            onClicked: { myText.focus = true }
                             anchors.fill: parent
                             drag.target: stickyPage
                             drag.axis: "XandYAxis"
@@ -59,13 +66,15 @@ Component {
                             drag.maximumY: page.height - 80
                             drag.minimumX: 100
                             drag.maximumX: page.width - 140
+                            onClicked: { myText.focus = true }
                         }
                     }
                 }
 
                 Image {
-                    source: "tack.png"; transformOrigin: Item.TopLeft
-                    x: -width / 2; y: -height * 0.5 / 2; scale: 0.7
+                    x: -width / 2; y: -height * 0.5 / 2
+                    source: "tack.png"
+                    scale: 0.7; transformOrigin: Item.TopLeft
                 }
 
                 states: State {

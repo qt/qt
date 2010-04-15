@@ -3,3 +3,6 @@ contains(QT_CONFIG,declarative): QT += declarative gui
 macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativetext.cpp
+
+CONFIG += parallel_test
+

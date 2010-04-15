@@ -121,6 +121,8 @@ void scriptOptsUsage()
     qWarning("  play ..................................... playback an existing script");
     qWarning("  testimages ............................... record images or compare images on playback");
     qWarning("  testerror ................................ test 'error' property of root item on playback");
+    qWarning("  snapshot ................................. file being recorded is static,");
+    qWarning("                                             only one frame will be recorded or tested");
     qWarning("  exitoncomplete ........................... cleanly exit the viewer on script completion");
     qWarning("  exitonfailure ............................ immediately exit the viewer on script failure");
     qWarning("  saveonexit ............................... save recording on viewer exit");
@@ -309,6 +311,8 @@ int main(int argc, char ** argv)
                 scriptOptions |= QDeclarativeViewer::ExitOnFailure;
             } else if (option == QLatin1String("saveonexit")) {
                 scriptOptions |= QDeclarativeViewer::SaveOnExit;
+            } else if (option == QLatin1String("snapshot")) {
+                scriptOptions |= QDeclarativeViewer::Snapshot;
             } else {
                 scriptOptsUsage();
             }

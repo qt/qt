@@ -240,6 +240,8 @@ void QDeclarativeTester::save()
 void QDeclarativeTester::updateCurrentTime(int msec)
 {
     QDeclarativeItemPrivate::setConsistentTime(msec);
+    if (!testscript && msec > 16 && options & QDeclarativeViewer::Snapshot)
+        return;
 
     QImage img(m_view->width(), m_view->height(), QImage::Format_RGB32);
 
@@ -249,11 +251,13 @@ void QDeclarativeTester::updateCurrentTime(int msec)
         m_view->render(&p);
     }
 
+    bool snapshot = msec == 16 && options & QDeclarativeViewer::Snapshot;
+
     FrameEvent fe;
     fe.msec = msec;
     if (msec == 0 || !(options & QDeclarativeViewer::TestImages)) {
         // Skip first frame, skip if not doing images
-    } else if (0 == (m_savedFrameEvents.count() % 60)) {
+    } else if (0 == (m_savedFrameEvents.count() % 60) || snapshot) {
         fe.image = img;
     } else {
         QCryptographicHash hash(QCryptographicHash::Md5);
@@ -366,8 +370,11 @@ void QDeclarativeTester::updateCurrentTime(int msec)
 
     filterEvents = true;
 
-    if (testscript && testscript->count() <= testscriptidx)
+    if (testscript && testscript->count() <= testscriptidx) {
+        //if (msec == 16) //for a snapshot, leave it up long enough to see
+        //    (void)::sleep(1);
         complete();
+    }
 }
 
 void QDeclarativeTester::registerTypes()

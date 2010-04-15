@@ -56,7 +56,7 @@ symbian {
     INCLUDEPATH += $$QT_SOURCE_TREE/examples/network/qftp/
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
     LIBS += -lesock -lcommdb -lconnmon -linsock
-    TARGET.CAPABILITY = "All -TCB"
+    TARGET.CAPABILITY = NetworkServices ReadUserData
 }
 mac {
     QMAKE_INFO_PLIST=Info_mac.plist

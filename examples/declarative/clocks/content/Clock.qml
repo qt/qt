@@ -14,7 +14,7 @@ Item {
     function timeChanged() {
         var date = new Date;
         hours = shift ? date.getUTCHours() + Math.floor(clock.shift) : date.getHours()
-        if ( hours < 7 || hours > 19 ) night = true; else night = false
+        night = ( hours < 7 || hours > 19 )
         minutes = shift ? date.getUTCMinutes() + ((clock.shift % 1) * 60) : date.getMinutes()
         seconds = date.getUTCSeconds();
     }
@@ -74,7 +74,10 @@ Item {
     }
 
     Text {
-        id: cityLabel; font.bold: true; font.pixelSize: 14; y: 200; color: "white"
-        anchors.horizontalCenter: parent.horizontalCenter; style: Text.Raised; styleColor: "black"
+        id: cityLabel
+        y: 200; anchors.horizontalCenter: parent.horizontalCenter
+        color: "white"
+        font.bold: true; font.pixelSize: 14
+        style: Text.Raised; styleColor: "black"
     }
 }

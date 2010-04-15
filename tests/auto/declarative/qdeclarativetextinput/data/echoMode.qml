@@ -1,7 +1,7 @@
 import Qt 4.7
 
 Rectangle {
-    property var myInput: input
+    property QtObject myInput: input
 
     width: 400; height: 200; color: "green"
 

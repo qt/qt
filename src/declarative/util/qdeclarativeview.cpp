@@ -204,7 +204,7 @@ void QDeclarativeViewPrivate::execute()
     QDeclarativeView *view = new QDeclarativeView(this);
     vbox->addWidget(view);
 
-    QUrl url(fileName);
+    QUrl url = QUrl::fromLocalFile(fileName);
     view->setSource(url);
     view->show();
     \endcode
@@ -279,10 +279,16 @@ QDeclarativeView::~QDeclarativeView()
   \brief The URL of the source of the QML component.
 
   Changing this property causes the QML component to be reloaded.
+
+    Ensure that the URL provided is full and correct, in particular, use
+    \l QUrl::fromLocalFile() when loading a file from the local filesystem.
  */
 
 /*!
     Sets the source to the \a url, loads the QML component and instantiates it.
+
+    Ensure that the URL provided is full and correct, in particular, use
+    \l QUrl::fromLocalFile() when loading a file from the local filesystem.
 
     Calling this methods multiple times with the same url will result
     in the QML being reloaded.

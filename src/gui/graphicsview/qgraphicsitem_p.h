@@ -237,6 +237,7 @@ public:
         scenePosDescendants(0),
         pendingPolish(0),
         mayHaveChildWithGraphicsEffect(0),
+        isDeclarativeItem(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -576,7 +577,8 @@ public:
     quint32 scenePosDescendants : 1;
     quint32 pendingPolish : 1;
     quint32 mayHaveChildWithGraphicsEffect : 1;
-    quint32 padding : 25;
+    quint32 isDeclarativeItem : 1;
+    quint32 padding : 24;
 
     // Optional stacking order
     int globalStackingOrder;
