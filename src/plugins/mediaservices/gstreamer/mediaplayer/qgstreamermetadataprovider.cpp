@@ -172,7 +172,7 @@ QList<QtMediaservices::MetaData> QGstreamerMetaDataProvider::availableMetaData()
 
     QList<QtMediaservices::MetaData> res;
     foreach (const QByteArray &key, m_session->tags().keys()) {
-        QtMediaservices::MetaData tag = keysMap.value(key, QtMultimedia::MetaData(-1));
+        QtMediaservices::MetaData tag = keysMap.value(key, QtMediaservices::MetaData(-1));
         if (tag != -1)
             res.append(tag);
     }
