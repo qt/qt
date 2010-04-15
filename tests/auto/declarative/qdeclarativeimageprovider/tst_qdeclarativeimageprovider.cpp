@@ -96,9 +96,10 @@ void tst_qdeclarativeimageprovider::imageSource_data()
     QTest::newRow("exists") << "image://test/exists.png" << "" << QSize(100,100) << "";
     QTest::newRow("scaled") << "image://test/exists.png" << "sourceSize: \"80x30\"" << QSize(80,30) << "";
     QTest::newRow("missing") << "image://test/no-such-file.png" << "" << QSize()
-        << "\"Failed to get image from provider: image://test/no-such-file.png\" ";
+        << "QML Image (file::2:1) Failed to get image from provider: image://test/no-such-file.png";
     QTest::newRow("unknown provider") << "image://bogus/exists.png" << "" << QSize()
-        << "\"Failed to get image from provider: image://bogus/exists.png\" ";
+        << "QML Image (file::2:1) Failed to get image from provider: image://bogus/exists.png";
+
 }
     
 void tst_qdeclarativeimageprovider::imageSource()
@@ -157,7 +158,8 @@ void tst_qdeclarativeimageprovider::removeProvider()
     QCOMPARE(obj->width(), 100.0);
 
     // remove the provider and confirm
-    QString error("\"Failed to get image from provider: image://test2/exists2.png\" ");
+    QString error("QML Image (file::2:1) Failed to get image from provider: image://test2/exists2.png");
+
     QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
     engine.removeImageProvider("test2");

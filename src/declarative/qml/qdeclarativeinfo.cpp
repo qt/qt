@@ -41,7 +41,7 @@
 
 #include "qdeclarativeinfo.h"
 
-#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativedata_p.h"
 #include "qdeclarativecontext.h"
 #include "private/qdeclarativecontext_p.h"
 #include "private/qdeclarativemetatype_p.h"
@@ -100,7 +100,7 @@ QDeclarativeInfo::QDeclarativeInfo(const QObject *object)
 
         pos += typeName;
     }
-    QDeclarativeDeclarativeData *ddata = object?QDeclarativeDeclarativeData::get(object):0;
+    QDeclarativeData *ddata = object?QDeclarativeData::get(object):0;
     pos += QLatin1String(" (");
     if (ddata) {
         if (ddata->outerContext && !ddata->outerContext->url.isEmpty()) {

@@ -43,7 +43,7 @@
 
 #include "private/qdeclarativeengine_p.h"
 #include "private/qdeclarativecontext_p.h"
-#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativedata_p.h"
 #include "private/qdeclarativetypenamescriptclass_p.h"
 #include "private/qdeclarativelistscriptclass_p.h"
 #include "private/qdeclarativebinding_p.h"
@@ -63,7 +63,7 @@ struct ObjectData : public QScriptDeclarativeClass::Object {
 
     virtual ~ObjectData() {
         if (object && !object->parent()) {
-            QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object, false);
+            QDeclarativeData *ddata = QDeclarativeData::get(object, false);
             if (ddata && !ddata->indestructible)
                 object->deleteLater();
         }
@@ -104,7 +104,7 @@ QScriptValue QDeclarativeObjectScriptClass::newQObject(QObject *object, int type
     if (QObjectPrivate::get(object)->wasDeleted)
        return scriptEngine->undefinedValue();
 
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object, true);
+    QDeclarativeData *ddata = QDeclarativeData::get(object, true);
 
     if (!ddata) {
        return scriptEngine->undefinedValue();
@@ -428,7 +428,7 @@ QScriptValue QDeclarativeObjectScriptClass::destroy(QScriptContext *context, QSc
     if (!data->object)
         return engine->undefinedValue();
 
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(data->object, false);
+    QDeclarativeData *ddata = QDeclarativeData::get(data->object, false);
     if (!ddata || ddata->indestructible)
         return engine->currentContext()->throwError(QLatin1String("Invalid attempt  to destroy() an indestructible object"));
 
@@ -453,7 +453,7 @@ QStringList QDeclarativeObjectScriptClass::propertyNames(Object *object)
     QDeclarativeEnginePrivate *enginePrivate = QDeclarativeEnginePrivate::get(engine);
 
     QDeclarativePropertyCache *cache = 0;
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(obj);
+    QDeclarativeData *ddata = QDeclarativeData::get(obj);
     if (ddata)
         cache = ddata->propertyCache;
     if (!cache) {
@@ -752,7 +752,7 @@ QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
         return QScriptDeclarativeClass::Value(engine, *((QString *)&data));
     } else if (type == QMetaType::QObjectStar) {
         QObject *object = *((QObject **)&data);
-        QDeclarativeDeclarativeData::get(object, true)->setImplicitDestructible();
+        QDeclarativeData::get(object, true)->setImplicitDestructible();
         QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(e);
         return QScriptDeclarativeClass::Value(engine, priv->objectClass->newQObject(object));
     } else if (type == qMetaTypeId<QList<QObject *> >()) {
@@ -761,7 +761,7 @@ QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
         QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(e);
         for (int ii = 0; ii < list.count(); ++ii) {
             QObject *object = list.at(ii);
-            QDeclarativeDeclarativeData::get(object, true)->setImplicitDestructible();
+            QDeclarativeData::get(object, true)->setImplicitDestructible();
             rv.setProperty(ii, priv->objectClass->newQObject(object));
         }
         return QScriptDeclarativeClass::Value(engine, rv);

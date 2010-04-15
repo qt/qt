@@ -113,6 +113,7 @@ private slots:
     void i18n();
     void i18n_data();
     void onCompleted();
+    void onDestruction();
     void scriptString();
     void defaultPropertyListOrder();
     void declaredPropertyValues();
@@ -329,6 +330,7 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("missingValueTypeProperty") << "missingValueTypeProperty.qml" << "missingValueTypeProperty.errors.txt" << false;
     QTest::newRow("objectValueTypeProperty") << "objectValueTypeProperty.qml" << "objectValueTypeProperty.errors.txt" << false;
     QTest::newRow("enumTypes") << "enumTypes.qml" << "enumTypes.errors.txt" << false;
+    QTest::newRow("destroyedSignal") << "destroyedSignal.qml" << "destroyedSignal.errors.txt" << false;
 }
 
 
@@ -1047,6 +1049,20 @@ void tst_qdeclarativelanguage::onCompleted()
     QTest::ignoreMessage(QtDebugMsg, "Completed 10 11");
     QObject *object = component.create();
     QVERIFY(object != 0);
+}
+
+// Check that the Component::onDestruction attached property works
+void tst_qdeclarativelanguage::onDestruction()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("onDestruction.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QTest::ignoreMessage(QtDebugMsg, "Destruction 6 10");
+    QTest::ignoreMessage(QtDebugMsg, "Destruction 6 10");
+    QTest::ignoreMessage(QtDebugMsg, "Destruction 10 11");
+    delete object;
 }
 
 // Check that assignments to QDeclarativeScriptString properties work

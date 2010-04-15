@@ -1413,7 +1413,7 @@ QGraphicsItem::~QGraphicsItem()
         QObjectPrivate *p = QObjectPrivate::get(o);
         p->wasDeleted = true;
         if (p->declarativeData) {
-            QDeclarativeData::destroyed(p->declarativeData, o);
+            QAbstractDeclarativeData::destroyed(p->declarativeData, o);
             p->declarativeData = 0;
         }
     }

@@ -1,40 +1,15 @@
 TEMPLATE = app
-CONFIG += qt \
-    uic
+CONFIG += qt uic
 DESTDIR = ../../bin
-QT += declarative \
-    script \
-    network \
-    sql
 
-contains(QT_CONFIG, opengl) {
-    QT += opengl
-    DEFINES += GL_SUPPORTED
-}
+include(qml.pri)
 
-# Input
-HEADERS += qmlruntime.h \
-           proxysettings.h \
-           qdeclarativetester.h \
-           deviceorientation.h \
-           qdeclarativefolderlistmodel.h
-SOURCES += main.cpp \
-           qmlruntime.cpp \
-           proxysettings.cpp \
-           qdeclarativetester.cpp \
-           qdeclarativefolderlistmodel.cpp
-RESOURCES = qmlruntime.qrc
-maemo5 {
-    SOURCES += deviceorientation_maemo.cpp
-} else {
-    SOURCES += deviceorientation.cpp
-}
-FORMS = recopts.ui \
-    proxysettings.ui
+SOURCES += main.cpp 
+
 INCLUDEPATH += ../../include/QtDeclarative
 INCLUDEPATH += ../../src/declarative/util
 INCLUDEPATH += ../../src/declarative/graphicsitems
-include(../shared/deviceskin/deviceskin.pri)
+
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
 

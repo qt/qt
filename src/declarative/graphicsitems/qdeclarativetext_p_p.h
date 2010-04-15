@@ -63,7 +63,7 @@
 QT_BEGIN_NAMESPACE
 
 class QTextLayout;
-class QTextDocument;
+class QTextDocumentWithImageResources;
 
 class QDeclarativeTextPrivate : public QDeclarativeItemPrivate
 {
@@ -84,6 +84,7 @@ public:
 
     ~QDeclarativeTextPrivate();
 
+    void ensureDoc();
     void updateSize();
     void updateLayout();
     void markImgDirty() {
@@ -118,7 +119,7 @@ public:
     bool richText:1;
     bool singleline:1;
     bool cache:1;
-    QTextDocument *doc;
+    QTextDocumentWithImageResources *doc;
     QTextLayout layout;
     QSize cachedLayoutSize;
     QDeclarativeText::TextFormat format;

@@ -4,6 +4,8 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_examples.cpp 
 
+include(../../../../tools/qml/qml.pri)
+
 DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 CONFIG += parallel_test

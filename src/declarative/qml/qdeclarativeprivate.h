@@ -69,11 +69,18 @@ public:
 class QDeclarativeCustomParser;
 namespace QDeclarativePrivate
 {
+    void Q_DECLARATIVE_EXPORT qdeclarativeelement_destructor(QObject *);
     template<typename T>
-    QObject *create() { return new T; }
+    class QDeclarativeElement : public T
+    {
+    public:
+        virtual ~QDeclarativeElement() { 
+            QDeclarativePrivate::qdeclarativeelement_destructor(this); 
+        }
+    };
 
     template<typename T>
-    void createInto(void *memory) { new (memory) T; }
+    void createInto(void *memory) { new (memory) QDeclarativeElement<T>; }
 
     template<typename T>
     QObject *createParent(QObject *p) { return new T(p); }
