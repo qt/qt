@@ -258,7 +258,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "colorAnimation.0.png"
+        image: "colorAnimation-visual.0.png"
     }
     Frame {
         msec: 976
@@ -270,7 +270,7 @@ VisualTest {
     }
     Frame {
         msec: 1008
-        hash: "243dbffcf416926242bbcb7348974c4c"
+        hash: "e0f53c5605116a30d9bf3c031c63d958"
     }
     Frame {
         msec: 1024
@@ -370,7 +370,7 @@ VisualTest {
     }
     Frame {
         msec: 1408
-        hash: "7178bfe86fd2fd513218b33760460f8d"
+        hash: "45770fe0d61c485c13992d0f98b2a3ba"
     }
     Frame {
         msec: 1424
@@ -470,7 +470,7 @@ VisualTest {
     }
     Frame {
         msec: 1808
-        hash: "8593a81be812edf54ec94da8ae9c1314"
+        hash: "a2fa71b4147372175774250501b6625e"
     }
     Frame {
         msec: 1824
@@ -498,7 +498,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "colorAnimation.1.png"
+        image: "colorAnimation-visual.1.png"
     }
     Frame {
         msec: 1936
@@ -570,7 +570,7 @@ VisualTest {
     }
     Frame {
         msec: 2208
-        hash: "e5dc5450604a491cc24a0dcf5c278b58"
+        hash: "10d46d2862e333e5136b1c046dabb33b"
     }
     Frame {
         msec: 2224
@@ -738,7 +738,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "colorAnimation.2.png"
+        image: "colorAnimation-visual.2.png"
     }
     Frame {
         msec: 2896

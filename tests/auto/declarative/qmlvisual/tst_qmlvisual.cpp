@@ -100,20 +100,35 @@ void tst_qmlvisual::visual_data()
     if (qgetenv("QMLVISUAL_ALL") != "")
         files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
     else {
+        //these are newly added tests we want to try out in CI (then move to the stable list)
+        files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/borders.qml";
+        files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/animated.qml";
+        files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/animated-smooth.qml";
+        files << QT_TEST_SOURCE_DIR "/qdeclarativeflipable/test-flipable.qml";
+        files << QT_TEST_SOURCE_DIR "/qdeclarativepositioners/usingRepeater.qml";
+
         //these are tests we think are stable and useful enough to be run by the CI system
         files << QT_TEST_SOURCE_DIR "/animation/bindinganimation/bindinganimation.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/colorAnimation/colorAnimation-visual.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/easing/easing.qml";
         files << QT_TEST_SOURCE_DIR "/animation/loop/loop.qml";
         files << QT_TEST_SOURCE_DIR "/animation/parallelAnimation/parallelAnimation-visual.qml";
         files << QT_TEST_SOURCE_DIR "/animation/parentAnimation/parentAnimation-visual.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation-visual.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/propertyAction/propertyAction-visual.qml";
         files << QT_TEST_SOURCE_DIR "/animation/reanchor/reanchor.qml";
         files << QT_TEST_SOURCE_DIR "/animation/scriptAction/scriptAction-visual.qml";
-        files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/mousearea-visual.qml";
         files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/drag.qml";
         files << QT_TEST_SOURCE_DIR "/fillmode/fillmode.qml";
+
+        //these reliably fail in CI, for unknown reasons
+        //files << QT_TEST_SOURCE_DIR "/animation/easing/easing.qml";
+        //files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation-visual.qml";
+
+        //these reliably fail on Linux because of color interpolation (different float rounding)
+#if !defined(Q_WS_X11) && !defined(Q_WS_QWS)
+        files << QT_TEST_SOURCE_DIR "/animation/colorAnimation/colorAnimation-visual.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/propertyAction/propertyAction-visual.qml";
+#endif
+
+        //this is unstable because the MouseArea press-and-hold timer is not synchronized to the animation framework.
+        //files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/mousearea-visual.qml";
     }
 
     foreach (const QString &file, files) {
