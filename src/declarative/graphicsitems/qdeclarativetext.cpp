@@ -677,7 +677,7 @@ void QDeclarativeTextPrivate::updateSize()
             QTextOption option((Qt::Alignment)int(hAlign | vAlign));
             option.setWrapMode(QTextOption::WrapMode(wrapMode));
             doc->setDefaultTextOption(option);
-            if (wrapMode != QDeclarativeText::NoWrap && !q->heightValid() && q->widthValid())
+            if (wrapMode != QDeclarativeText::NoWrap && q->widthValid())
                 doc->setTextWidth(q->width());
             else
                 doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
