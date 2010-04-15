@@ -675,6 +675,7 @@ QMakeProject::init(QMakeProperty *p, const QMap<QString, QStringList> *vars)
         prop = p;
         own_prop = false;
     }
+    recursive = false;
     reset();
 }
 
@@ -699,7 +700,6 @@ QMakeProject::reset()
     scope_blocks.push(ScopeBlock());
     iterator = 0;
     function = 0;
-    recursive = false;
 }
 
 bool
