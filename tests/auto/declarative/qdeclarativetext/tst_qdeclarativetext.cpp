@@ -286,8 +286,28 @@ void tst_qdeclarativetext::wrap()
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), 30.);
         QVERIFY(textObject->height() > textHeight);
+
+        qreal oldHeight = textObject->height();
+        textObject->setWidth(100);
+        QVERIFY(textObject->height() < oldHeight);
     }
 
+    // richtext again with a fixed height
+    for (int i = 0; i < richText.size(); i++)
+    {
+        QString componentStr = "import Qt 4.7\nText { wrapMode: Text.WordWrap; width: 30; height: 50; text: \"" + richText.at(i) + "\" }";
+        QDeclarativeComponent textComponent(&engine);
+        textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+        QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->width(), 30.);
+        QVERIFY(textObject->implicitHeight() > textHeight);
+
+        qreal oldHeight = textObject->implicitHeight();
+        textObject->setWidth(100);
+        QVERIFY(textObject->implicitHeight() < oldHeight);
+    }
 }
 
 void tst_qdeclarativetext::elide()
