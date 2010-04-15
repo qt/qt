@@ -56,6 +56,8 @@
 #include "qnetworksession.h"
 #include "qnetworkconfiguration_p.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class Q_NETWORK_EXPORT QNetworkSessionPrivate : public QObject
@@ -145,6 +147,8 @@ protected:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKSESSIONPRIVATE_H
 

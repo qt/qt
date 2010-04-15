@@ -47,6 +47,8 @@
 #include "qnetworkconfigmanager_p.h"
 #include "qnetworksession_p.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -706,3 +708,5 @@ void QNetworkSession::disconnectNotify(const char *signal)
 #include "moc_qnetworksession.cpp"
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT

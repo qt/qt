@@ -59,6 +59,8 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qset.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QBearerEngine;
@@ -128,5 +130,7 @@ private Q_SLOTS:
 Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate();
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKCONFIGURATIONMANAGERPRIVATE_H

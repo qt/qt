@@ -49,6 +49,8 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qmutex.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 static QBearerEngineImpl *getEngineFromId(const QString &id)
@@ -439,3 +441,6 @@ void QNetworkSessionPrivateImpl::decrementTimeout()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
+
