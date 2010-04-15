@@ -54,7 +54,13 @@
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <netdb.h>
+# include <signal.h>
 # include <unistd.h>
+
+typedef int SOCKET;
+# define INVALID_SOCKET -1
+# define SOCKET_ERROR -1
+
 #elif defined(Q_OS_WIN)
 # include <winsock2.h>
 #endif
@@ -92,6 +98,8 @@ tst_QTcpSocket_stresstest::tst_QTcpSocket_stresstest()
 
     // IPv6 requires Winsock v2.0 or better.
     WSAStartup(MAKEWORD(2,0), &wsadata);
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    ::signal(SIGALRM, SIG_IGN);
 #endif
 }
 
@@ -111,6 +119,53 @@ void tst_QTcpSocket_stresstest::init()
         QSKIP("Stress test disabled", SkipAll);
 }
 
+
+void nativeConnect(SOCKET &fd, const char *hostname, int port)
+{
+#if !defined(QT_NO_GETADDRINFO) && 0
+    addrinfo *res = 0;
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
+
+    int result = getaddrinfo(QUrl::toAce(hostname).constData(), QByteArray::number(port).constData(), &hints, &res);
+    QCOMPARE(result, 0);
+
+    // connect loop
+    fd = -1;
+    for (addrinfo *node = res; fd == -1 && node; node = node->ai_next) {
+        fd = ::socket(node->ai_family, node->ai_socktype, node->ai_protocol);
+        if (fd == -1)
+            continue;
+        if (::connect(fd, node->ai_addr, node->ai_addrlen) == -1) {
+            ::close(fd);
+            fd = -1;
+        } else {
+            break;
+        }
+    }
+    QVERIFY(fd != -1);
+#else
+    hostent *result = gethostbyname(hostname);
+    QVERIFY(result);
+    QCOMPARE(result->h_addrtype, AF_INET);
+    struct sockaddr_in s;
+    QT_SOCKLEN_T len = sizeof s;
+    s.sin_family = AF_INET;
+
+    fd = ::socket(AF_INET, SOCK_STREAM, 0);
+    QVERIFY(fd != INVALID_SOCKET);
+# ifdef Q_OS_WIN
+    WSAHtons(fd, port, &(s.sin_port));
+    s.sin_addr.s_addr = *(u_long *) result->h_addr_list[0];
+# else
+    s.sin_port = htons(port);
+    s.sin_addr =  *(struct in_addr *) result->h_addr_list[0];
+#endif
+    QVERIFY(::connect(fd, (sockaddr*)&s, len) != SOCKET_ERROR);
+#endif
+}
+
 void tst_QTcpSocket_stresstest::nativeBlockingConnectDisconnect()
 {
     QFETCH_GLOBAL(QString, hostname);
@@ -122,62 +177,15 @@ void tst_QTcpSocket_stresstest::nativeBlockingConnectDisconnect()
         byteCounter = 0;
         timeout.start();
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+        alarm(10);
+#endif
+
         // look up the host
-#ifdef Q_OS_WIN
         SOCKET fd;
-#else
-        int fd;
-#endif
-        {
-#if !defined(QT_NO_GETADDRINFO) && 0
-            addrinfo *res = 0;
-            struct addrinfo hints;
-            memset(&hints, 0, sizeof(hints));
-            hints.ai_family = PF_UNSPEC;
-
-            int result = getaddrinfo(QUrl::toAce(hostname).constData(), QByteArray::number(port).constData(), &hints, &res);
-            QCOMPARE(result, 0);
-
-            // connect loop
-            fd = -1;
-            for (addrinfo *node = res; fd == -1 && node; node = node->ai_next) {
-                fd = ::socket(node->ai_family, node->ai_socktype, node->ai_protocol);
-                if (fd == -1)
-                    continue;
-                if (::connect(fd, node->ai_addr, node->ai_addrlen) == -1) {
-                    ::close(fd);
-                    fd = -1;
-                } else {
-                    break;
-                }
-            }
-            QVERIFY(fd != -1);
-#else
-            hostent *result = gethostbyname(QUrl::toAce(hostname).constData());
-            QVERIFY(result);
-            QCOMPARE(result->h_addrtype, AF_INET);
-            struct sockaddr_in s;
-            QT_SOCKLEN_T len = sizeof s;
-            s.sin_family = AF_INET;
-
-            fd = ::socket(AF_INET, SOCK_STREAM, 0);
-# ifdef Q_OS_WIN
-            QVERIFY(fd != INVALID_SOCKET);
-
-            WSAHtons(fd, port, &(s.sin_port));
-            s.sin_addr.s_addr = *(u_long *) result->h_addr_list[0]
-
-            QVERIFY(::connect(fd, (sockaddr*)&s, len) != SOCKET_ERROR);
-# else
-            QVERIFY(fd != -1);
-
-            s.sin_port = htons(port);
-            s.sin_addr =  *(struct in_addr *) result->h_addr_list[0];
-
-            QVERIFY(::connect(fd, (sockaddr*)&s, len) == 0);
-#endif
-#endif
-        }
+        nativeConnect(fd, QUrl::toAce(hostname).constData(), port);
+        if (fd == INVALID_SOCKET)
+            return;
 
         // send request
         {
@@ -217,6 +225,10 @@ void tst_QTcpSocket_stresstest::nativeBlockingConnectDisconnect()
                 << (rate / 1024.0 / 1024 * 1000) << "MB/s";
     }
     qDebug() << "Average transfer rate was" << (avg / 1024.0 / 1024 * 1000) << "MB/s";
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    alarm(0);
+#endif
 }
 
 void tst_QTcpSocket_stresstest::blockingConnectDisconnect()
