@@ -42,7 +42,7 @@
 #ifndef QGSTREAMERMETADATAPROVIDER_H
 #define QGSTREAMERMETADATAPROVIDER_H
 
-#include <QtMultimedia/qmetadatacontrol.h>
+#include <QtMediaservices/qmetadatacontrol.h>
 
 
 QT_BEGIN_HEADER
@@ -61,9 +61,9 @@ public:
     bool isMetaDataAvailable() const;
     bool isWritable() const;
 
-    QVariant metaData(QtMultimedia::MetaData key) const;
-    void setMetaData(QtMultimedia::MetaData key, const QVariant &value);
-    QList<QtMultimedia::MetaData> availableMetaData() const;
+    QVariant metaData(QtMediaservices::MetaData key) const;
+    void setMetaData(QtMediaservices::MetaData key, const QVariant &value);
+    QList<QtMediaservices::MetaData> availableMetaData() const;
 
     QVariant extendedMetaData(const QString &key) const ;
     void setExtendedMetaData(const QString &key, const QVariant &value);

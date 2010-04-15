@@ -42,7 +42,7 @@
 #ifndef DIRECTSHOWVIDEOUTPUTCONTROL_H
 #define DIRECTSHOWVIDEOOUPUTCONTROL_H
 
-#include <QtMultimedia/qvideooutputcontrol.h>
+#include <QtMediaservices/qvideooutputcontrol.h>
 
 
 QT_BEGIN_HEADER

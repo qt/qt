@@ -41,7 +41,7 @@
 
 #include "qdeclarativeaudio_p.h"
 
-#include <QtMultimedia/qmediaplayercontrol.h>
+#include <QtMediaservices/qmediaplayercontrol.h>
 
 QT_BEGIN_NAMESPACE
 

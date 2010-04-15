@@ -42,7 +42,7 @@
 #ifndef DIRECTSHOWVIDEORENDERERCONTROL_H
 #define DIRECTSHOWVIDEORENDERERCONTROL_H
 
-#include <QtMultimedia/qvideorenderercontrol.h>
+#include <QtMediaservices/qvideorenderercontrol.h>
 
 #include <dshow.h>
 

@@ -45,7 +45,7 @@
 #include "qt7serviceplugin.h"
 #include "qt7playerservice.h"
 
-#include <QtMultimedia/qmediaserviceprovider.h>
+#include <QtMediaservices/qmediaserviceprovider.h>
 
 QT_BEGIN_NAMESPACE
 
