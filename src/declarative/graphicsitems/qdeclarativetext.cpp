@@ -77,7 +77,7 @@ protected:
         if (type == QTextDocument::ImageResource) {
             QPixmap pm;
             QString errorString;
-            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(url, &pm, &errorString, 0, true, 0, 0);
+            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(url, &pm, &errorString, 0, false, 0, 0);
             if (status == QDeclarativePixmapReply::Ready)
                 return pm;
             if (status == QDeclarativePixmapReply::Error) {
@@ -89,7 +89,6 @@ protected:
                 QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(parent()), url);
                 connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
                 outstanding++;
-                static_cast<QDeclarativeText*>(parent())->reloadWithResources();
             }
         }
 
@@ -100,7 +99,8 @@ private slots:
     void requestFinished()
     {
         outstanding--;
-        static_cast<QDeclarativeText*>(parent())->reloadWithResources();
+        if (outstanding == 0)
+            static_cast<QDeclarativeText*>(parent())->reloadWithResources();
     }
 
 private:
@@ -968,24 +968,19 @@ void QDeclarativeText::reloadWithResources()
     Q_D(QDeclarativeText);
     if (!d->richText)
         return;
-    if (resourcesLoading()!=0)
-        return;
-    emit resourcesLoadingChanged();
     d->doc->setHtml(d->text);
     d->updateLayout();
     d->markImgDirty();
 }
 
 /*!
-    \qmlproperty int Text::resourcesLoading
-    This property is the number of resources (images) that are being loaded asynchronously.
+    Returns the number of resources (images) that are being loaded asynchronously.
 */
 int QDeclarativeText::resourcesLoading() const
 {
     Q_D(const QDeclarativeText);
     return d->doc ? d->doc->resourcesLoading() : 0;
 }
-
 
 void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
