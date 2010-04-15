@@ -1631,7 +1631,7 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
     painter->restore();
 }
 
-extern int qt_defaultDpi();
+Q_GUI_EXPORT extern int qt_defaultDpi();
 
 /*!
     Prints the document to the given \a printer. The QPrinter must be

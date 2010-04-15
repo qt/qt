@@ -102,7 +102,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+Q_GUI_EXPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 
 #define qreal_to_fixed_26_6(f) (int(f * 64))
 #define qt_swap_int(x, y) { int tmp = (x); (x) = (y); (y) = tmp; }
@@ -4977,7 +4977,7 @@ void QSpanData::init(QRasterBuffer *rb, const QRasterPaintEngine *pe)
     clip = pe ? pe->d_func()->clip() : 0;
 }
 
-extern QImage qt_imageForBrush(int brushStyle, bool invert);
+Q_GUI_EXPORT extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
 void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode compositionMode)
 {

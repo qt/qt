@@ -357,8 +357,8 @@ QPaintEngine* QRasterPixmapData::paintEngine() const
     return image.paintEngine();
 }
 
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_GUI_EXPORT extern int qt_defaultDpiX();
+Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 int QRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {

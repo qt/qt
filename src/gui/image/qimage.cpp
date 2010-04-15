@@ -118,8 +118,8 @@ const QVector<QRgb> *qt_image_colortable(const QImage &image)
     return &image.d->colortable;
 }
 
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_GUI_EXPORT extern int qt_defaultDpiX();
+Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 QBasicAtomicInt qimage_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
 
