@@ -7,7 +7,7 @@ Rectangle {
     color: "steelblue"
 
     FontLoader { id: fixedFont; name: "Courier" }
-    FontLoader { id: localFont; source: "fonts/tarzenau-ocr-a.ttf" }
+    FontLoader { id: localFont; source: "fonts/tarzeau_ocr_a.ttf" }
     FontLoader { id: webFont; source: "http://www.princexml.com/fonts/steffmann/Starburst.ttf" }
 
     Column {
@@ -19,7 +19,7 @@ Rectangle {
             color: "lightsteelblue"
             width: parent.width
             elide: Text.ElideRight
-            font.family: "Times"; font.pointSize: 42 
+            font.family: "Times"; font.pointSize: 42
         }
         Text {
             text: myText
