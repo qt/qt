@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
 
 #define SMOOTH_SCALABLE 0xffff
 
-extern int qt_defaultDpiY(); // in qfont.cpp
+Q_GUI_EXPORT extern int qt_defaultDpiY(); // in qfont.cpp
 
 bool qt_enable_test_font = false;
 
