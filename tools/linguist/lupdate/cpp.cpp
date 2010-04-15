@@ -212,13 +212,15 @@ public:
 private:
     struct IfdefState {
         IfdefState() {}
-        IfdefState(int _braceDepth, int _parenDepth) :
+        IfdefState(int _bracketDepth, int _braceDepth, int _parenDepth) :
+            bracketDepth(_bracketDepth),
             braceDepth(_braceDepth),
             parenDepth(_parenDepth),
             elseLine(-1)
         {}
 
         SavedState state;
+        int bracketDepth, bracketDepth1st;
         int braceDepth, braceDepth1st;
         int parenDepth, parenDepth1st;
         int elseLine;
@@ -280,7 +282,7 @@ private:
         Tok_tr, Tok_trUtf8, Tok_translate, Tok_translateUtf8, Tok_trid,
         Tok_Q_OBJECT, Tok_Q_DECLARE_TR_FUNCTIONS,
         Tok_Ident, Tok_Comment, Tok_String, Tok_Arrow, Tok_Colon, Tok_ColonColon,
-        Tok_Equals,
+        Tok_Equals, Tok_LeftBracket, Tok_RightBracket,
         Tok_LeftBrace, Tok_RightBrace, Tok_LeftParen, Tok_RightParen, Tok_Comma, Tok_Semicolon,
         Tok_Null, Tok_Integer,
         Tok_QuotedInclude, Tok_AngledInclude,
@@ -296,10 +298,12 @@ private:
     QString yyWord;
     qlonglong yyInteger;
     QStack<IfdefState> yyIfdefStack;
+    int yyBracketDepth;
     int yyBraceDepth;
     int yyParenDepth;
     int yyLineNo;
     int yyCurLineNo;
+    int yyBracketLineNo;
     int yyBraceLineNo;
     int yyParenLineNo;
 
@@ -336,9 +340,11 @@ CppParser::CppParser(ParseResults *_results)
         results = new ParseResults;
         directInclude = false;
     }
+    yyBracketDepth = 0;
     yyBraceDepth = 0;
     yyParenDepth = 0;
     yyCurLineNo = 1;
+    yyBracketLineNo = 1;
     yyBraceLineNo = 1;
     yyParenLineNo = 1;
     yyAtNewline = true;
@@ -565,7 +571,7 @@ uint CppParser::getToken()
                 yyCh = getChar();
                 if (yyCh == 'f') {
                     // if, ifdef, ifndef
-                    yyIfdefStack.push(IfdefState(yyBraceDepth, yyParenDepth));
+                    yyIfdefStack.push(IfdefState(yyBracketDepth, yyBraceDepth, yyParenDepth));
                     yyCh = getChar();
                 } else if (yyCh == 'n') {
                     // include
@@ -604,16 +610,20 @@ uint CppParser::getToken()
                     if (!yyIfdefStack.isEmpty()) {
                         IfdefState &is = yyIfdefStack.top();
                         if (is.elseLine != -1) {
-                            if (yyBraceDepth != is.braceDepth1st || yyParenDepth != is.parenDepth1st)
-                                qWarning("%s:%d: Parenthesis/brace mismatch between "
+                            if (yyBracketDepth != is.bracketDepth1st
+                                || yyBraceDepth != is.braceDepth1st
+                                || yyParenDepth != is.parenDepth1st)
+                                qWarning("%s:%d: Parenthesis/bracket/brace mismatch between "
                                          "#if and #else branches; using #if branch\n",
                                          qPrintable(yyFileName), is.elseLine);
                         } else {
+                            is.bracketDepth1st = yyBracketDepth;
                             is.braceDepth1st = yyBraceDepth;
                             is.parenDepth1st = yyParenDepth;
                             saveState(&is.state);
                         }
                         is.elseLine = yyLineNo;
+                        yyBracketDepth = is.bracketDepth;
                         yyBraceDepth = is.braceDepth;
                         yyParenDepth = is.parenDepth;
                     }
@@ -623,10 +633,13 @@ uint CppParser::getToken()
                     if (!yyIfdefStack.isEmpty()) {
                         IfdefState is = yyIfdefStack.pop();
                         if (is.elseLine != -1) {
-                            if (yyBraceDepth != is.braceDepth1st || yyParenDepth != is.parenDepth1st)
+                            if (yyBracketDepth != is.bracketDepth1st
+                                || yyBraceDepth != is.braceDepth1st
+                                || yyParenDepth != is.parenDepth1st)
                                 qWarning("%s:%d: Parenthesis/brace mismatch between "
                                          "#if and #else branches; using #if branch\n",
                                          qPrintable(yyFileName), is.elseLine);
+                            yyBracketDepth = is.bracketDepth1st;
                             yyBraceDepth = is.braceDepth1st;
                             yyParenDepth = is.parenDepth1st;
                             loadState(&is.state);
@@ -899,6 +912,21 @@ uint CppParser::getToken()
                     yyParenDepth--;
                 yyCh = getChar();
                 return Tok_RightParen;
+            case '[':
+                if (yyBracketDepth == 0)
+                    yyBracketLineNo = yyCurLineNo;
+                yyBracketDepth++;
+                yyCh = getChar();
+                return Tok_LeftBracket;
+            case ']':
+                if (yyBracketDepth == 0)
+                    qWarning("%s:%d: Excess closing bracket in C++ code"
+                             " (or abuse of the C++ preprocessor)\n",
+                             qPrintable(yyFileName), yyCurLineNo);
+                else
+                    yyBracketDepth--;
+                yyCh = getChar();
+                return Tok_RightBracket;
             case ',':
                 yyCh = getChar();
                 return Tok_Comma;
@@ -1534,6 +1562,12 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
     yyCh = getChar();
     yyTok = getToken();
     while (yyTok != Tok_Eof) {
+        // these are array indexing operations. we ignore them entirely
+        // so they don't confuse our scoping of static initializers.
+        // we enter the loop by either reading a left bracket or by an
+        // #else popping the state.
+        while (yyBracketDepth)
+            yyTok = getToken();
         //qDebug() << "TOKEN: " << yyTok;
         switch (yyTok) {
         case Tok_QuotedInclude: {
@@ -2074,6 +2108,9 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
         default:
             if (!yyParenDepth)
                 prospectiveContext.clear();
+            // fallthrough
+        case Tok_Equals: // for static initializers; other cases make no difference
+        case Tok_RightBracket: // ignoring indexing; same reason
         case_default:
             yyTok = getToken();
             break;
@@ -2088,6 +2125,10 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
         qWarning("%s:%d: Unbalanced opening parenthesis in C++ code"
                  " (or abuse of the C++ preprocessor)\n",
                  qPrintable(yyFileName), yyParenLineNo);
+    else if (yyBracketDepth != 0)
+        qWarning("%s:%d: Unbalanced opening bracket in C++ code"
+                 " (or abuse of the C++ preprocessor)\n",
+                 qPrintable(yyFileName), yyBracketLineNo);
 }
 
 const ParseResults *CppParser::recordResults(bool isHeader)
