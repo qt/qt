@@ -77,7 +77,7 @@ SOURCES	+= qgl.cpp \
 }
 
 x11 {
-    contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2) {
+    contains(QT_CONFIG, egl) {
         SOURCES +=  qgl_x11egl.cpp \
                     qglpixelbuffer_egl.cpp \
                     qgl_egl.cpp \

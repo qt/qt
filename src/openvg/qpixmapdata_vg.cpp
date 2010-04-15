@@ -42,7 +42,9 @@
 #include "qpixmapdata_vg_p.h"
 #include "qpaintengine_vg_p.h"
 #include <QtGui/private/qdrawhelper_p.h>
+#if !defined(QT_NO_EGL)
 #include <QtGui/private/qegl_p.h>
+#endif
 #include "qvg_p.h"
 #include "qvgimagepool_p.h"
 

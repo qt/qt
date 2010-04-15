@@ -326,10 +326,17 @@ EGLSurface QEglContext::createSurface(QPaintDevice* device, const QEglProperties
 bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties *properties)
 {
     // We need to select the correct API before calling eglCreateContext().
+#ifdef QT_OPENGL_ES
 #ifdef EGL_OPENGL_ES_API
     if (apiType == QEgl::OpenGL)
         eglBindAPI(EGL_OPENGL_ES_API);
 #endif
+#else
+#ifdef EGL_OPENGL_API
+    if (apiType == QEgl::OpenGL)
+        eglBindAPI(EGL_OPENGL_API);
+#endif
+#endif //defined(QT_OPENGL_ES)
 #ifdef EGL_OPENVG_API
     if (apiType == QEgl::OpenVG)
         eglBindAPI(EGL_OPENVG_API);
@@ -339,7 +346,7 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
     QEglProperties contextProps;
     if (properties)
         contextProps = *properties;
-#if defined(QT_OPENGL_ES_2)
+#ifdef QT_OPENGL_ES_2
     if (apiType == QEgl::OpenGL)
         contextProps.setValue(EGL_CONTEXT_CLIENT_VERSION, 2);
 #endif
