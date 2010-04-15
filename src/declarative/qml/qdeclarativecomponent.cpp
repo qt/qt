@@ -120,6 +120,26 @@ Item {
         }
     }
     \endqml
+
+    \e onDestruction
+
+    Emitted as the component begins destruction.  This can be used to undo
+    work done in the onCompleted signal, or other imperative code in your
+    application.
+
+    The \c {Component::onDestruction} attached property can be applied to
+    any element.  However, it applies to the destruction of the component as
+    a whole, and not the destruction of the specific object.  The order of 
+    running the \c onDestruction scripts is undefined.
+
+    \qml
+    Rectangle {
+        Component.onDestruction: console.log("Destruction Beginning!")
+        Rectangle {
+            Component.onDestruction: console.log("Nested Destruction Beginning!")
+        }
+    }
+    \endqml
 */
 
 /*!
