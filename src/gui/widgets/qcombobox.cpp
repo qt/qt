@@ -76,6 +76,10 @@
 #ifndef QT_NO_EFFECTS
 # include <private/qeffects_p.h>
 #endif
+#if defined(Q_WS_S60)
+#include "private/qt_s60_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QComboBoxPrivate::QComboBoxPrivate()
@@ -2449,11 +2453,16 @@ void QComboBox::showPopup()
             // in portait, menu should be positioned above softkeys
             listRect.moveBottom(screen.bottom());
         } else {
-            // landscape, menu should be at the right and horizontally centered
+            TRect staConTopRect = TRect();
+            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStaconTop, staConTopRect);
             listRect.setWidth(listRect.height());
+            //by default popup is centered on screen in landscape
             listRect.moveCenter(screen.center());
-            (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
-                                                 listRect.setLeft(screen.left());
+            if (staConTopRect.IsEmpty()) {
+                // landscape without stacon, menu should be at the right
+                (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
+                                                     listRect.setLeft(screen.left());
+            }
         }
 #endif
     } else if (!boundToScreen || listRect.height() <= belowHeight) {
@@ -2681,13 +2690,18 @@ void QComboBox::changeEvent(QEvent *e)
                     // in portait, menu should be positioned above softkeys
                     listRect.moveBottom(screen.bottom());
                 } else {
-                    // landscape, menu should be at the right and horizontally centered
+                    TRect staConTopRect = TRect();
+                    AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStaconTop, staConTopRect);
                     listRect.setWidth(listRect.height());
+                    //by default popup is centered on screen in landscape
                     listRect.moveCenter(screen.center());
-                    (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
-                                                         listRect.setLeft(screen.left());
+                    if (staConTopRect.IsEmpty()) {
+                        // landscape without stacon, menu should be at the right
+                        (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
+                                                             listRect.setLeft(screen.left());
+                    }
+                    d->container->setGeometry(listRect);
                 }
-                d->container->setGeometry(listRect);
             }
         }
 #endif
