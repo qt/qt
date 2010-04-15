@@ -2035,9 +2035,14 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     } else {
                         context = comment.left(k);
                         comment.remove(0, k + 1);
-                        recordMessage(yyLineNo, context, QString(), comment, extracomment,
-                                      QString(), TranslatorMessage::ExtraData(), false, false);
+                        TranslatorMessage msg(
+                                transcode(context, false), QString(),
+                                transcode(comment, false), QString(),
+                                yyFileName, yyLineNo, QStringList(),
+                                TranslatorMessage::Finished, false);
+                        msg.setExtraComment(transcode(extracomment.simplified(), false));
                         extracomment.clear();
+                        tor->append(msg);
                         tor->setExtras(extra);
                         extra.clear();
                     }
