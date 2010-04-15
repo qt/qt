@@ -3,7 +3,7 @@ contains(QT_CONFIG,declarative): QT += declarative
 QT += sql script
 macx:CONFIG -= app_bundle
 
-SOURCES += tst_sql.cpp
+SOURCES += tst_qdeclarativesqldatabase.cpp
 
 # Define SRCDIR equal to test's source directory
 DEFINES += SRCDIR=\\\"$$PWD\\\"

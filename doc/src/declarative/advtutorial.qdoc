@@ -46,27 +46,34 @@
 \nextpage QML Advanced Tutorial 1 - Creating the Game Canvas and Blocks
 
 This tutorial walks step-by-step through the creation of a full application using QML.
+It assumes that you already know the basics of QML (for example, from reading the
+\l{QML Tutorial}{simple tutorial}). 
 
-It is assumed that you already know the basics of QML (for example, from reading the \l{QML Tutorial}{simple tutorial}) and this
-tutorial focuses on using that knowledge to produce a complete and functioning application.
+In this tutorial we write a game, \e {Same Game}, based on the Same Game application
+included in the declarative \c demos directory, which looks like this:
 
-The tutorial involves a significant amount of JavaScript to implement the game logic. An understanding of JavaScript is helpful to understand parts of this tutorial, but if you don't understand JavaScript you can still get a feel for how you can integrate backend logic to create and control QML elements. From the QML perspective, there is little difference between integrating QML with backend logic written in C++ and backend logic written in JavaScript.
+\image declarative-samegame.png
 
-In this tutorial we recreate, step by step, a version of the Same Game demo in $QTDIR/demos/declarative/samegame.qml.
-The results of the individual steps are in the $QTDIR/examples/declarative/tutorials/samegame directory.
+We will cover concepts for producing a fully functioning application, including
+JavaScript integration, using QML  \l States and \l {Behavior}{Behaviors} to 
+manage components and enhance your interface, and storing persistent application data.
 
-The Same Game demo has been extended since this tutorial was written. This tutorial only covers the version in 
-the $QTDIR/examples/declarative/tutorials/samegame directory. However once you have completed the tutorial you should be able
-to understand the extensions in the most recent Same Game demo, and even extend it yourself.
+An understanding of JavaScript is helpful to understand parts of this tutorial, but if you don't
+know JavaScript you can still get a feel for how you can integrate backend logic to create and
+control QML elements.
+
 
 Tutorial chapters:
 
-\list
-\o \l {QML Advanced Tutorial 1 - Creating the Game Canvas and Blocks}
-\o \l {QML Advanced Tutorial 2 - Populating the Game Canvas}
-\o \l {QML Advanced Tutorial 3 - Implementing the Game Logic}
-\o \l {QML Advanced Tutorial 4 - Finishing Touches}
+\list 1
+\o \l {QML Advanced Tutorial 1 - Creating the Game Canvas and Blocks}{Creating the Game Canvas and Blocks}
+\o \l {QML Advanced Tutorial 2 - Populating the Game Canvas}{Populating the Game Canvas}}
+\o \l {QML Advanced Tutorial 3 - Implementing the Game Logic}{Implementing the Game Logic}
+\o \l {QML Advanced Tutorial 4 - Finishing Touches}{Finishing Touches}
 \endlist
+
+All the code in this tutorial can be found in the $QTDIR/examples/declarative/tutorials/samegame
+directory.
 */
 
 /*!
