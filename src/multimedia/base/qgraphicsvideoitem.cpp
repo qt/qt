@@ -52,6 +52,8 @@
 #include <QtOpenGL/qgl.h>
 #endif
 
+#ifndef QT_NO_GRAPHICSVIEW
+
 QT_BEGIN_NAMESPACE
 
 
@@ -434,4 +436,7 @@ bool QGraphicsVideoItem::sceneEvent(QEvent *event)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GRAPHICSVIEW
+
 #include "moc_qgraphicsvideoitem.cpp"

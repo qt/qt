@@ -64,7 +64,7 @@
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
-#if defined(QT_OPENGL_ES) || defined(QT_OPENGL_ES_2)
+#ifndef QT_NO_EGL
 #include <QtGui/private/qegl_p.h>
 #endif
 
@@ -96,7 +96,7 @@ class QMacWindowChangeEvent;
 class QWSGLWindowSurface;
 #endif
 
-#if defined(QT_OPENGL_ES)
+#ifndef QT_NO_EGL
 class QEglContext;
 #endif
 
@@ -164,7 +164,7 @@ public:
 #ifdef Q_WS_QWS
                        , wsurf(0)
 #endif
-#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
+#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
                        , eglSurfaceWindowId(0)
 #endif
     {
@@ -194,7 +194,7 @@ public:
     QGLContext *olcx;
 #elif defined(Q_WS_X11)
     QGLOverlayWidget *olw;
-#if defined(QT_OPENGL_ES)
+#ifndef QT_NO_EGL
     void recreateEglSurface(bool force);
     WId eglSurfaceWindowId;
 #endif
@@ -344,7 +344,7 @@ public:
     HBITMAP hbitmap;
     HDC hbitmap_hdc;
 #endif
-#if defined(QT_OPENGL_ES)
+#ifndef QT_NO_EGL
     bool ownsEglContext;
     QEglContext *eglContext;
     EGLSurface eglSurface;

@@ -516,6 +516,8 @@ void QGL2PaintEngineEx::beginNativePainting()
     ensureActive();
     d->transferMode(BrushDrawingMode);
 
+    d->nativePaintingActive = true;
+
     QGLContext *ctx = d->ctx;
     glUseProgram(0);
 
@@ -583,6 +585,12 @@ void QGL2PaintEngineEx::endNativePainting()
 {
     Q_D(QGL2PaintEngineEx);
     d->needsSync = true;
+    d->nativePaintingActive = false;
+}
+
+bool QGL2PaintEngineEx::isNativePaintingActive() const {
+    Q_D(const QGL2PaintEngineEx);
+    return d->nativePaintingActive;
 }
 
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
