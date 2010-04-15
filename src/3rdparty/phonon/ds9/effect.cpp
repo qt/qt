@@ -82,7 +82,7 @@ namespace Phonon
                         current += wcslen(current) + 1; //skip the name
                         current += wcslen(current) + 1; //skip the unit
                         for(; *current; current += wcslen(current) + 1) {
-                            values.append( QString::fromUtf16((unsigned short*)current) );
+                            values.append( QString::fromWCharArray(current) );
                         }
                     }
                     //FALLTHROUGH
@@ -107,7 +107,7 @@ namespace Phonon
                 Phonon::EffectParameter::Hints hint = info.mopCaps == MP_CAPS_CURVE_INVSQUARE ?
                     Phonon::EffectParameter::LogarithmicHint : Phonon::EffectParameter::Hints(0);
 
-                const QString n = QString::fromUtf16((unsigned short*)name);
+                const QString n = QString::fromWCharArray(name);
                 ret.append(Phonon::EffectParameter(i, n, hint, def, min, max, values));
                 ::CoTaskMemFree(name); //let's free the memory
             }

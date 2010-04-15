@@ -36,17 +36,19 @@ namespace Phonon
         //these mediatypes define a stream, its type will be autodetected by DirectShow
         static QVector<AM_MEDIA_TYPE> getMediaTypes()
         {
-            AM_MEDIA_TYPE mt = { MEDIATYPE_Stream, MEDIASUBTYPE_NULL, TRUE, FALSE, 1, GUID_NULL, 0, 0, 0};
+            //the order here is important because otherwise,
+            //directshow might not be able to detect the stream type correctly
+
+            AM_MEDIA_TYPE mt = { MEDIATYPE_Stream, MEDIASUBTYPE_Avi, TRUE, FALSE, 1, GUID_NULL, 0, 0, 0};
 
             QVector<AM_MEDIA_TYPE> ret;
-            //normal auto-detect stream
-            mt.subtype = MEDIASUBTYPE_NULL;
-            ret << mt;
             //AVI stream
-            mt.subtype = MEDIASUBTYPE_Avi;
             ret << mt;
             //WAVE stream
             mt.subtype = MEDIASUBTYPE_WAVE;
+            ret << mt;
+            //normal auto-detect stream (must be at the end!)
+            mt.subtype = MEDIASUBTYPE_NULL;
             ret << mt;
             return ret;
         }
@@ -64,7 +66,6 @@ namespace Phonon
               //for Phonon::StreamInterface
               void writeData(const QByteArray &data)
               {
-                  QWriteLocker locker(&m_lock);
                   m_pos += data.size();
                   m_buffer += data;
               }
@@ -75,46 +76,14 @@ namespace Phonon
 
               void setStreamSize(qint64 newSize)
               {
-                  QWriteLocker locker(&m_lock);
+                  QMutexLocker locker(&m_mutex);
                   m_size = newSize;
-              }
-
-              qint64 streamSize() const
-              {
-                  QReadLocker locker(&m_lock);
-                  return m_size;
               }
 
               void setStreamSeekable(bool s)
               {
-                  QWriteLocker locker(&m_lock);
+                  QMutexLocker locker(&m_mutex);
                   m_seekable = s;
-              }
-
-              bool streamSeekable() const
-              {
-                  QReadLocker locker(&m_lock);
-                  return m_seekable;
-              }
-
-              void setCurrentPos(qint64 pos)
-              {
-                  QWriteLocker locker(&m_lock);
-                  m_pos = pos;
-                  seekStream(pos);
-                  m_buffer.clear();
-              }
-
-              qint64 currentPos() const
-              {
-                  QReadLocker locker(&m_lock);
-                  return m_pos;
-              }
-
-              int currentBufferSize() const
-              {
-                  QReadLocker locker(&m_lock);
-                  return m_buffer.size();
               }
 
               //virtual pure members
@@ -122,7 +91,7 @@ namespace Phonon
               //implementation from IAsyncReader
               STDMETHODIMP Length(LONGLONG *total, LONGLONG *available)
               {
-                  QReadLocker locker(&m_lock);
+                  QMutexLocker locker(&m_mutex);
                   if (total) {
                       *total = m_size;
                   }
@@ -137,37 +106,39 @@ namespace Phonon
 
               HRESULT read(LONGLONG pos, LONG length, BYTE *buffer, LONG *actual)
               {
-                  QMutexLocker locker(&m_mutexRead);
+                  Q_ASSERT(!m_mutex.tryLock());
+                  if (m_mediaGraph->isStopping()) {
+                      return VFW_E_WRONG_STATE;
+                  }
 
-                  if(streamSize() != 1 && pos + length > streamSize()) {
+                  if(m_size != 1 && pos + length > m_size) {
                       //it tries to read outside of the boundaries
                       return E_FAIL;
                   }
 
-                  if (currentPos() - currentBufferSize() != pos) {
-                      if (!streamSeekable()) {
+                  if (m_pos - m_buffer.size() != pos) {
+                      if (!m_seekable) {
                           return S_FALSE;
                       }
-                      setCurrentPos(pos);
+                      m_pos = pos;
+                      seekStream(pos);
+                      m_buffer.clear();
                   }
 
-                  int oldSize = currentBufferSize();
-                  while (currentBufferSize() < int(length)) {
+                  int oldSize = m_buffer.size();
+                  while (m_buffer.size() < int(length)) {
                       needData();
 
-                      if (oldSize == currentBufferSize()) {
+                      if (oldSize == m_buffer.size()) {
                           break; //we didn't get any data
                       }
-                      oldSize = currentBufferSize();
+                      oldSize = m_buffer.size();
                   }
 
-                  DWORD bytesRead = qMin(currentBufferSize(), int(length));
-                  {
-                      QWriteLocker locker(&m_lock);
-                      qMemCopy(buffer, m_buffer.data(), bytesRead);
-                      //truncate the buffer
-                      m_buffer = m_buffer.mid(bytesRead);
-                  }
+                  int bytesRead = qMin(m_buffer.size(), int(length));
+                  qMemCopy(buffer, m_buffer.data(), bytesRead);
+                  //truncate the buffer
+                  m_buffer = m_buffer.mid(bytesRead);
 
                   if (actual) {
                       *actual = bytesRead; //initialization
@@ -183,7 +154,6 @@ namespace Phonon
             qint64 m_pos;
             qint64 m_size;
 
-            QMutex m_mutexRead;
             const MediaGraph *m_mediaGraph;
         };
 
@@ -197,14 +167,6 @@ namespace Phonon
         IODeviceReader::~IODeviceReader()
         {
         }
-
-        STDMETHODIMP IODeviceReader::Stop()
-        {
-            HRESULT hr = QBaseFilter::Stop();
-            m_streamReader->enoughData(); //this asks to cancel any blocked call to needData
-            return hr;
-        }
-
     }
 }
 

@@ -15,10 +15,11 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PHONON_VIDEORENDERER_VMR9_H
-#define PHONON_VIDEORENDERER_VMR9_H
+#ifndef PHONON_VIDEORENDERER_EVR_H
+#define PHONON_VIDEORENDERER_EVR_H
 
 #include "abstractvideorenderer.h"
+#include "compointer.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -28,11 +29,11 @@ namespace Phonon
 {
     namespace DS9
     {
-        class VideoRendererVMR9 : public AbstractVideoRenderer
+        class VideoRendererEVR : public AbstractVideoRenderer
         {
         public:
-            VideoRendererVMR9(QWidget *target);
-            ~VideoRendererVMR9();
+            VideoRendererEVR(QWidget *target);
+            ~VideoRendererEVR();
 
             //Implementation from AbstractVideoRenderer
             void repaintCurrentFrame(QWidget *target, const QRect &rect);
