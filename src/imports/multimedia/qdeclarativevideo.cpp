@@ -76,7 +76,7 @@ void QDeclarativeVideo::_q_error(int errorCode, const QString &errorString)
     This element is part of the \bold{Qt.multimedia 4.7} module.
 
     \qml
-    import Qt 4.6
+    import Qt 4.7
     import Qt.multimedia 4.7
 
     Video { source: "video/movie.mpg" }

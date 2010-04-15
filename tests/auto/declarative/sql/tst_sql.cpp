@@ -196,7 +196,7 @@ void tst_sql::testQml()
     QFETCH(QString, jsfile);
 
     QString qml=
-        "import Qt 4.6\n"
+        "import Qt 4.7\n"
         "import \""+jsfile+"\" as JS\n"
         "Text { text: JS.test() }";
 

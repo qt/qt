@@ -114,6 +114,10 @@ public:
     QDeclarativeContextData(QDeclarativeContext *);
     void destroy();
 
+    inline bool isValid() const {
+        return engine && (!isInternal || !contextObject || !QObjectPrivate::get(contextObject)->wasDeleted);
+    }
+
     // My parent context and engine
     QDeclarativeContextData *parent;
     QDeclarativeEngine *engine;

@@ -946,4 +946,6 @@ EXPORTS
 	?volume@QSoundEffect@@QBEHXZ @ 945 NONAME ; int QSoundEffect::volume(void) const
 	?volumeChanged@QSoundEffect@@IAEXXZ @ 946 NONAME ; void QSoundEffect::volumeChanged(void)
 	?staticMetaObject@QSoundEffect@@2UQMetaObject@@B @ 947 NONAME ; struct QMetaObject const QSoundEffect::staticMetaObject
+	?event@QGraphicsVideoItem@@MAE_NPAVQEvent@@@Z @ 948 NONAME ; bool QGraphicsVideoItem::event(class QEvent *)
+	?sceneEvent@QGraphicsVideoItem@@MAE_NPAVQEvent@@@Z @ 949 NONAME ; bool QGraphicsVideoItem::sceneEvent(class QEvent *)
 

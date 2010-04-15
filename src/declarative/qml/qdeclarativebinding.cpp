@@ -126,7 +126,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 
     QDeclarativeBindingData *data = d->bindingData();
 
-    if (!data->enabled || !data->context() || !data->context()->engine)
+    if (!data->enabled || !data->context() || !data->context()->isValid())
         return;
 
     data->addref();

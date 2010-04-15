@@ -73,6 +73,7 @@
 #include "private/qdeclarativetextedit_p.h"
 #include "private/qdeclarativetextinput_p.h"
 #include "private/qdeclarativevisualitemmodel_p.h"
+#include "private/qdeclarativegraphicswidget_p.h"
 #ifdef QT_WEBKIT_LIB
 #include "private/qdeclarativewebview_p.h"
 #include "private/qdeclarativewebview_p_p.h"
@@ -84,12 +85,9 @@ void QDeclarativeItemModule::defineModule()
 #ifndef QT_NO_MOVIE
     qmlRegisterType<QDeclarativeAnimatedImage>("Qt",4,6,"AnimatedImage");
 #endif
-    qmlRegisterType<QGraphicsBlurEffect>("Qt",4,6,"Blur");
     qmlRegisterType<QDeclarativeBorderImage>("Qt",4,6,"BorderImage");
-    qmlRegisterType<QGraphicsColorizeEffect>("Qt",4,6,"Colorize");
     qmlRegisterType<QDeclarativeColumn>("Qt",4,6,"Column");
     qmlRegisterType<QDeclarativeDrag>("Qt",4,6,"Drag");
-    qmlRegisterType<QGraphicsDropShadowEffect>("Qt",4,6,"DropShadow");
     qmlRegisterType<QDeclarativeFlickable>("Qt",4,6,"Flickable");
     qmlRegisterType<QDeclarativeFlipable>("Qt",4,6,"Flipable");
     qmlRegisterType<QDeclarativeFlow>("Qt",4,6,"Flow");
@@ -105,7 +103,6 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeListView>("Qt",4,6,"ListView");
     qmlRegisterType<QDeclarativeLoader>("Qt",4,6,"Loader");
     qmlRegisterType<QDeclarativeMouseArea>("Qt",4,6,"MouseArea");
-    qmlRegisterType<QGraphicsOpacityEffect>("Qt",4,6,"Opacity");
     qmlRegisterType<QDeclarativePath>("Qt",4,6,"Path");
     qmlRegisterType<QDeclarativePathAttribute>("Qt",4,6,"PathAttribute");
     qmlRegisterType<QDeclarativePathCubic>("Qt",4,6,"PathCubic");
@@ -130,11 +127,11 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeVisualItemModel>("Qt",4,6,"VisualItemModel");
 
     qmlRegisterType<QDeclarativeAnchors>();
-    qmlRegisterType<QGraphicsEffect>();
     qmlRegisterType<QDeclarativeKeyEvent>();
     qmlRegisterType<QDeclarativeMouseEvent>();
     qmlRegisterType<QGraphicsObject>();
-    qmlRegisterType<QGraphicsWidget>();
+    qmlRegisterType<QGraphicsWidget>("Qt",4,6,"QGraphicsWidget");
+    qmlRegisterExtendedType<QGraphicsWidget,QDeclarativeGraphicsWidget>("Qt",4,6,"QGraphicsWidget");
     qmlRegisterType<QGraphicsTransform>();
     qmlRegisterType<QDeclarativePathElement>();
     qmlRegisterType<QDeclarativeCurve>();
@@ -144,6 +141,13 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QAction>();
     qmlRegisterType<QDeclarativePen>();
     qmlRegisterType<QDeclarativeFlickableVisibleArea>();
+#ifndef QT_NO_GRAPHICSEFFECT
+    qmlRegisterType<QGraphicsEffect>();
+    qmlRegisterType<QGraphicsBlurEffect>("Qt",4,6,"Blur");
+    qmlRegisterType<QGraphicsColorizeEffect>("Qt",4,6,"Colorize");
+    qmlRegisterType<QGraphicsDropShadowEffect>("Qt",4,6,"DropShadow");
+    qmlRegisterType<QGraphicsOpacityEffect>("Qt",4,6,"Opacity");
+#endif
 #ifdef QT_WEBKIT_LIB
     qmlRegisterType<QDeclarativeWebSettings>();
 #endif

@@ -16,6 +16,7 @@ target.path = $$[QT_INSTALL_DEMOS]/declarative/minehunt/MinehuntCore
 
 MinehuntCore_sources.files = \
     MinehuntCore/Explosion.qml \
+    MinehuntCore/Tile.qml \
     MinehuntCore/pics \
     MinehuntCore/qmldir
 MinehuntCore_sources.path = $$[QT_INSTALL_DEMOS]/declarative/minehunt/MinehuntCore
@@ -26,7 +27,7 @@ symbian:{
     load(data_caging_paths)
     TARGET.EPOCALLOWDLLDATA = 1
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
-
+    TARGET.CAPABILITY = NetworkServices ReadUserData
     importFiles.sources = minehunt.dll \
     MinehuntCore/Explosion.qml \
     MinehuntCore/pics \

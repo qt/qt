@@ -46,6 +46,7 @@
 #include <QtCore/qobject.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_HEADER
 
@@ -69,6 +70,8 @@ public:
     QDeclarativeContext(QDeclarativeEngine *parent, QObject *objParent=0);
     QDeclarativeContext(QDeclarativeContext *parent, QObject *objParent=0);
     virtual ~QDeclarativeContext();
+
+    bool isValid() const;
 
     QDeclarativeEngine *engine() const;
     QDeclarativeContext *parentContext() const;

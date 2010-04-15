@@ -320,7 +320,21 @@ void tst_qdeclarativexmllistmodel::source()
     QCOMPARE(model->progress(), qreal(0.0));
     QTRY_COMPARE(spy.count(), 1); spy.clear();
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Loading);
-    QTRY_COMPARE(spy.count(), 1); spy.clear();
+
+    QEventLoop loop;
+    QTimer timer;
+    timer.setSingleShot(true);
+    connect(model, SIGNAL(statusChanged(QDeclarativeXmlListModel::Status)), &loop, SLOT(quit()));
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+    timer.start(20000);
+    loop.exec();
+
+    if (spy.count() == 0 && status != QDeclarativeXmlListModel::Ready) {
+        qWarning("QDeclarativeXmlListModel invalid source test timed out");
+    } else {
+        QCOMPARE(spy.count(), 1); spy.clear();
+    }
+
     QCOMPARE(model->status(), status);
     QCOMPARE(model->count(), count);
     if (status == QDeclarativeXmlListModel::Ready)
@@ -336,9 +350,7 @@ void tst_qdeclarativexmllistmodel::source_data()
     QTest::addColumn<QDeclarativeXmlListModel::Status>("status");
 
     QTest::newRow("valid") << QUrl::fromLocalFile(SRCDIR "/data/model2.xml") << 2 << QDeclarativeXmlListModel::Ready;
-
-    // XXX This test fails on the rare occasion due to networking, fix the test for Error status signal (323)
-    //QTest::newRow("invalid") << QUrl("http://blah.blah/blah.xml") << 0 << QDeclarativeXmlListModel::Error;
+    QTest::newRow("invalid") << QUrl("http://blah.blah/blah.xml") << 0 << QDeclarativeXmlListModel::Error;
 
     // empty file
     QTemporaryFile *temp = new QTemporaryFile(this);
