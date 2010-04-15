@@ -67,7 +67,6 @@
 #include "private/qdeclarativecompiledbindings_p.h"
 #include "private/qdeclarativeglobalscriptclass_p.h"
 
-#include <QCoreApplication>
 #include <QColor>
 #include <QDebug>
 #include <QPointF>
@@ -2945,11 +2944,6 @@ QStringList QDeclarativeCompiler::deferredProperties(QDeclarativeParser::Object 
     QMetaClassInfo classInfo = mo->classInfo(idx);
     QStringList rv = QString::fromUtf8(classInfo.value()).split(QLatin1Char(','));
     return rv;
-}
-
-QString QDeclarativeCompiler::tr(const char *str)
-{
-    return QCoreApplication::translate("QDeclarativeCompiler", str);
 }
 
 QT_END_NAMESPACE

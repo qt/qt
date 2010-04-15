@@ -66,6 +66,7 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qset.h>
+#include <QtCore/QCoreApplication>
 
 QT_BEGIN_NAMESPACE
 
@@ -148,6 +149,7 @@ private:
 class QMetaObjectBuilder;
 class Q_DECLARATIVE_EXPORT QDeclarativeCompiler
 {
+    Q_DECLARE_TR_FUNCTIONS(QDeclarativeCompiler)
 public:
     QDeclarativeCompiler();
 
@@ -278,8 +280,6 @@ private:
     QStringList deferredProperties(QDeclarativeParser::Object *);
 
     void addId(const QString &, QDeclarativeParser::Object *);
-
-    QString tr(const char *);
 
     void dumpStats();
 
