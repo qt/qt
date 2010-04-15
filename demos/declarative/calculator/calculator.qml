@@ -36,28 +36,28 @@ Rectangle {
                 id: column; spacing: 6
 
                 property real h: ((box.height - 72) / 6) - ((spacing * (6 - 1)) / 6)
+                property real w: (box.width / 4) - ((spacing * (4 - 1)) / 4)
 
                 Row {
                     spacing: 6
-                    property real w: (box.width / 4) - ((spacing * (4 - 1)) / 4)
 
                     Button {
                         id: rotateButton
-                        width: parent.w; height: column.h; color: 'purple'; operation: rotateLeft
+                        width: column.w; height: column.h; color: 'purple'; operation: rotateLeft
                     }
-                    Button { width: parent.w; height: column.h; color: 'purple'; operation: leftArrow }
-                    Button { width: parent.w; height: column.h; color: 'purple'; operation: "C" }
-                    Button { width: parent.w; height: column.h; color: 'purple'; operation: "AC" }
+                    Button { width: column.w; height: column.h; color: 'purple'; operation: leftArrow }
+                    Button { width: column.w; height: column.h; color: 'purple'; operation: "C" }
+                    Button { width: column.w; height: column.h; color: 'purple'; operation: "AC" }
                 }
 
                 Row {
                     spacing: 6
                     property real w: (box.width / 4) - ((spacing * (4 - 1)) / 4)
 
-                    Button { width: parent.w; height: column.h; color: 'green'; operation: "mc" }
-                    Button { width: parent.w; height: column.h; color: 'green'; operation: "m+" }
-                    Button { width: parent.w; height: column.h; color: 'green'; operation: "m-" }
-                    Button { width: parent.w; height: column.h; color: 'green'; operation: "mr" }
+                    Button { width: column.w; height: column.h; color: 'green'; operation: "mc" }
+                    Button { width: column.w; height: column.h; color: 'green'; operation: "m+" }
+                    Button { width: column.w; height: column.h; color: 'green'; operation: "m-" }
+                    Button { width: column.w; height: column.h; color: 'green'; operation: "mr" }
                 }
 
                 Grid {

@@ -54,7 +54,7 @@ function doOperation(op) {
 
     if (op == "1/x") {
         display.text = (1 / display.text.valueOf()).toString()
-    } else if (op == "^2") {
+    } else if (op == "x^2") {
         display.text = (display.text.valueOf() * display.text.valueOf()).toString()
     } else if (op == "Abs") {
         display.text = (Math.abs(display.text.valueOf())).toString()
