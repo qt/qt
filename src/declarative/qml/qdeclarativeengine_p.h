@@ -215,7 +215,7 @@ public:
 
     QList<SimpleList<QDeclarativeAbstractBinding> > bindValues;
     QList<SimpleList<QDeclarativeParserStatus> > parserStatus;
-    QDeclarativeComponentAttached *componentAttacheds;
+    QDeclarativeComponentAttached *componentAttached;
 
     bool inBeginCreate;
 

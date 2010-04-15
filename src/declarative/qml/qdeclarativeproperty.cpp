@@ -286,7 +286,7 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
         QString signalName = terminal.mid(2);
         signalName[0] = signalName.at(0).toLower();
 
-        QMetaMethod method = QDeclarativeCompiler::findSignalByName(currentObject->metaObject(), signalName.toLatin1().constData());
+        QMetaMethod method = findSignalByName(currentObject->metaObject(), signalName.toLatin1().constData());
         if (method.signature()) {
             object = currentObject;
             core.load(method);
@@ -1351,6 +1351,38 @@ bool QDeclarativePropertyPrivate::canConvert(const QMetaObject *from, const QMet
     }
     
     return false;
+}
+
+/*!
+    Return the signal corresponding to \a name
+*/
+QMetaMethod QDeclarativePropertyPrivate::findSignalByName(const QMetaObject *mo, const QByteArray &name)
+{
+    Q_ASSERT(mo);
+    int methods = mo->methodCount();
+    for (int ii = methods - 1; ii >= 2; --ii) { // >= 2 to block the destroyed signal
+        QMetaMethod method = mo->method(ii);
+        QByteArray methodName = method.signature();
+        int idx = methodName.indexOf('(');
+        methodName = methodName.left(idx);
+
+        if (methodName == name)
+            return method;
+    }
+
+    // If no signal is found, but the signal is of the form "onBlahChanged",
+    // return the notify signal for the property "Blah"
+    if (name.endsWith("Changed")) {
+        QByteArray propName = name.mid(0, name.length() - 7);
+        int propIdx = mo->indexOfProperty(propName.constData());
+        if (propIdx >= 0) {
+            QMetaProperty prop = mo->property(propIdx);
+            if (prop.hasNotifySignal())
+                return prop.notifySignal();
+        }
+    }
+
+    return QMetaMethod();
 }
 
 QT_END_NAMESPACE
