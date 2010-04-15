@@ -138,25 +138,34 @@ class Q_DECLARATIVE_EXPORT QDeclarativeGrid : public QDeclarativeBasePositioner
     Q_OBJECT
     Q_PROPERTY(int rows READ rows WRITE setRows NOTIFY rowChanged)
     Q_PROPERTY(int columns READ columns WRITE setColumns NOTIFY columnsChanged)
+    Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
+
 public:
     QDeclarativeGrid(QDeclarativeItem *parent=0);
 
-    int rows() const {return _rows;}
+    int rows() const {return m_rows;}
     void setRows(const int rows);
 
-    int columns() const {return _columns;}
+    int columns() const {return m_columns;}
     void setColumns(const int columns);
+
+    Q_ENUMS(Flow)
+    enum Flow { LeftToRight, TopToBottom };
+    Flow flow() const;
+    void setFlow(Flow);
 
 Q_SIGNALS:
     void rowsChanged();
     void columnsChanged();
+    void flowChanged();
 
 protected:
     virtual void doPositioning(QSizeF *contentSize);
 
 private:
-    int _rows;
-    int _columns;
+    int m_rows;
+    int m_columns;
+    Flow m_flow;
     Q_DISABLE_COPY(QDeclarativeGrid)
 };
 
