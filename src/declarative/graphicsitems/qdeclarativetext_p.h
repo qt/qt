@@ -72,6 +72,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeText : public QDeclarativeItem
     Q_PROPERTY(bool wrap READ wrap WRITE setWrap NOTIFY wrapModeChanged)
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
     Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode NOTIFY elideModeChanged) //### elideMode?
+    Q_PROPERTY(int resourcesLoading READ resourcesLoading NOTIFY resourcesLoadingChanged)
 
 public:
     QDeclarativeText(QDeclarativeItem *parent=0);
@@ -138,6 +139,8 @@ public:
 
     virtual void componentComplete();
 
+    int resourcesLoading() const;
+
 Q_SIGNALS:
     void textChanged(const QString &text);
     void linkActivated(const QString &link);
@@ -150,6 +153,7 @@ Q_SIGNALS:
     void wrapModeChanged();
     void textFormatChanged(TextFormat textFormat);
     void elideModeChanged(TextElideMode mode);
+    void resourcesLoadingChanged();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -160,6 +164,9 @@ protected:
 private:
     Q_DISABLE_COPY(QDeclarativeText)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeText)
+
+    friend class QTextDocumentWithImageResources;
+    void reloadWithResources();
 };
 
 QT_END_NAMESPACE

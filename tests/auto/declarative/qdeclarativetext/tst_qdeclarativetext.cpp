@@ -48,6 +48,9 @@
 #include <QGraphicsSceneMouseEvent>
 #include <qmath.h>
 
+#include "../../../shared/util.h"
+#include "testhttpserver.h"
+
 class tst_qdeclarativetext : public QObject
 
 {
@@ -61,6 +64,9 @@ private slots:
     void wrap();
     void elide();
     void textFormat();
+
+    void embeddedImages_data();
+    void embeddedImages();
 
     // ### these tests may be trivial    
     void horizontalAlignment();
@@ -856,6 +862,45 @@ void tst_qdeclarativetext::clickLink()
         }
 
         QCOMPARE(test.link, QLatin1String("http://qt.nokia.com"));
+    }
+}
+
+void tst_qdeclarativetext::embeddedImages_data()
+{
+    QTest::addColumn<QUrl>("qmlfile");
+    QTest::addColumn<QString>("error");
+    QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesLocal.qml") << "";
+    QTest::newRow("local-error") << QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesLocalError.qml")
+        << "\"Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/http/notexists.png").toString() + "\" ";
+    QTest::newRow("remote") << QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesRemote.qml") << "";
+    QTest::newRow("remote-error") << QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesRemoteError.qml")
+        << "\"Error downloading http://127.0.0.1:14453/notexists.png - server replied: Not found\" ";
+}
+
+void tst_qdeclarativetext::embeddedImages()
+{
+    // Tests QTBUG-9900
+
+    QFETCH(QUrl, qmlfile);
+    QFETCH(QString, error);
+
+    TestHTTPServer server(14453);
+    server.serveDirectory(SRCDIR "/data/http");
+
+    if (!error.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, error.toLatin1());
+    
+    QDeclarativeComponent textComponent(&engine, qmlfile);
+    QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
+
+    QVERIFY(textObject != 0);
+
+    QTRY_COMPARE(textObject->resourcesLoading(), 0);
+
+    if (error.isEmpty()) {
+        QPixmap pm(SRCDIR "/data/http/exists.png");
+        QCOMPARE(textObject->width(), double(pm.width()));
+        QCOMPARE(textObject->height(), double(pm.height()));
     }
 }
 
