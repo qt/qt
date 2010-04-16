@@ -53,6 +53,7 @@ private slots:
     void dragProperties();
     void resetDrag();
     void updateMouseAreaPosOnClick();
+    void updateMouseAreaPosOnResize();
     void noOnClickedWithPressAndHold();
 private:
     QDeclarativeView *createView();
@@ -196,6 +197,46 @@ void tst_QDeclarativeMouseArea::updateMouseAreaPosOnClick()
 
     QCOMPARE(mouseRegion->mouseX(), 100.0);
     QCOMPARE(mouseRegion->mouseY(), 100.0);
+
+    QCOMPARE(mouseRegion->mouseX(), rect->x());
+    QCOMPARE(mouseRegion->mouseY(), rect->y());
+
+    delete canvas;
+}
+
+void tst_QDeclarativeMouseArea::updateMouseAreaPosOnResize()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/updateMousePosOnResize.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeMouseArea *mouseRegion = canvas->rootObject()->findChild<QDeclarativeMouseArea*>("mouseregion");
+    QVERIFY(mouseRegion != 0);
+
+    QDeclarativeRectangle *rect = canvas->rootObject()->findChild<QDeclarativeRectangle*>("brother");
+    QVERIFY(rect != 0);
+
+    QCOMPARE(mouseRegion->mouseX(), 0.0);
+    QCOMPARE(mouseRegion->mouseY(), 0.0);
+
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+    event.setScenePos(rect->pos());
+    event.setButton(Qt::LeftButton);
+    event.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &event);
+
+    QVERIFY(!mouseRegion->property("emitPositionChanged").toBool());
+    QVERIFY(mouseRegion->property("mouseMatchesPos").toBool());
+
+    QCOMPARE(mouseRegion->property("x1").toInt(), 0);
+    QCOMPARE(mouseRegion->property("y1").toInt(), 0);
+
+    // XXX: is it on purpose that mouseX is real and mouse.x is int?
+    QCOMPARE(mouseRegion->property("x2").toInt(), (int) rect->x());
+    QCOMPARE(mouseRegion->property("y2").toInt(), (int) rect->y());
 
     QCOMPARE(mouseRegion->mouseX(), rect->x());
     QCOMPARE(mouseRegion->mouseY(), rect->y());
