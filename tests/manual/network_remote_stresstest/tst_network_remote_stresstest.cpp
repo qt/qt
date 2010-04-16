@@ -142,7 +142,7 @@ void tst_NetworkRemoteStressTest::initTestCase_data()
     QTest::addColumn<QVector<QUrl> >("urlList");
     QTest::addColumn<bool>("useSslSocket");
 
-//    QTest::newRow("no-ssl") << httpUrls << false;
+    QTest::newRow("no-ssl") << httpUrls << false;
 //    QTest::newRow("no-ssl-in-sslsocket") << httpUrls << true;
     QTest::newRow("ssl") << httpsUrls << true;
     QTest::newRow("mixed") << mixedUrls << false;
@@ -404,13 +404,12 @@ void tst_NetworkRemoteStressTest::parallelRemoteHosts()
             if (done == sockets.size())
                 break;
         }
-        if (timeout.hasExpired(10000)) {
-            for (int j = 0; j < sockets.size(); ++j)
-                if (sockets[j]->state() != QAbstractSocket::UnconnectedState)
-                    qDebug() << "Socket to" << sockets[j]->property("remoteUrl").toUrl() << "still open with"
-                            << sockets[j]->bytesToWrite() << "bytes to write";
-            QFAIL("Timed out");
-        }
+        for (int j = 0; j < sockets.size(); ++j)
+            if (sockets[j]->state() != QAbstractSocket::UnconnectedState) {
+                qDebug() << "Socket to" << sockets[j]->property("remoteUrl").toUrl() << "still open with"
+                        << sockets[j]->bytesToWrite() << "bytes to write";
+                QFAIL("Timed out");
+            }
 
         totalBytes += byteCounter;
         if (intermediateDebug) {
