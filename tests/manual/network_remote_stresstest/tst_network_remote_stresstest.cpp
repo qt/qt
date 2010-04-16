@@ -85,7 +85,7 @@ public:
 
     qint64 byteCounter;
     QNetworkAccessManager manager;
-    QVector<QUrl> httpUrls;
+    QVector<QUrl> httpUrls, httpsUrls, mixedUrls;
     bool intermediateDebug;
 
 private:
@@ -125,17 +125,26 @@ tst_NetworkRemoteStressTest::tst_NetworkRemoteStressTest()
             QUrl url = QUrl::fromEncoded(line);
             if (url.scheme() == "http")
                 httpUrls << url;
+            else if (url.scheme() == "https")
+                httpsUrls << url;
+            mixedUrls << url;
         }
     }
 
     httpUrls << httpUrls;
+    httpsUrls << httpsUrls;
 }
 
 void tst_NetworkRemoteStressTest::initTestCase_data()
 {
     QTest::addColumn<QVector<QUrl> >("urlList");
+    QTest::addColumn<bool>("useSslSocket");
 
-    QTest::newRow("no-ssl") << httpUrls;
+//    QTest::newRow("no-ssl") << httpUrls << false;
+//    QTest::newRow("no-ssl-in-sslsocket") << httpUrls << true;
+    QTest::newRow("ssl") << httpsUrls << true;
+    QTest::newRow("mixed") << mixedUrls << false;
+//    QTest::newRow("mixed-in-sslsocket") << mixedUrls << true;
 }
 
 void tst_NetworkRemoteStressTest::init()
@@ -145,7 +154,6 @@ void tst_NetworkRemoteStressTest::init()
     if (strncmp(QTest::currentTestFunction(), "nam") == 0)
         QSKIP("QNetworkAccessManager tests disabled", SkipAll);
 #endif
-    qDebug() << QTest::currentTestFunction() << QTest::currentDataTag();
 }
 
 void tst_NetworkRemoteStressTest::clearManager()
@@ -219,6 +227,7 @@ bool nativeSelect(int fd, int timeout, bool selectForWrite)
 void tst_NetworkRemoteStressTest::blockingSequentialRemoteHosts()
 {
     QFETCH_GLOBAL(QVector<QUrl>, urlList);
+    QFETCH_GLOBAL(bool, useSslSocket);
 
     qint64 totalBytes = 0;
     QElapsedTimer outerTimer;
@@ -226,27 +235,41 @@ void tst_NetworkRemoteStressTest::blockingSequentialRemoteHosts()
 
     for (int i = 0; i < urlList.size(); ++i) {
         const QUrl &url = urlList.at(i);
+        bool isHttps = url.scheme() == "https";
         QElapsedTimer timeout;
         byteCounter = 0;
         timeout.start();
 
-        QTcpSocket socket;
-        socket.connectToHost(url.host(), url.port(80));
-        QVERIFY2(socket.waitForConnected(10000), "Timeout connecting");
-
-        socket.write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment) + " HTTP/1.0\r\n"
-                     "Connection: close\r\n"
-                     "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
-                     "Host: " + url.encodedHost() + "\r\n"
-                     "\r\n");
-        while (socket.bytesToWrite())
-            QVERIFY2(socket.waitForBytesWritten(10000), "Timeout writing");
-
-        while (socket.state() == QAbstractSocket::ConnectedState && !timeout.hasExpired(10000)) {
-            socket.waitForReadyRead(10000);
-            byteCounter += socket.readAll().size(); // discard
+        QSharedPointer<QTcpSocket> socket;
+        if (useSslSocket || isHttps) {
+            socket = QSharedPointer<QTcpSocket>(new QSslSocket);
+        } else {
+            socket = QSharedPointer<QTcpSocket>(new QTcpSocket);
         }
-        QVERIFY2(!timeout.hasExpired(10000), "Timeout reading");
+
+        socket->connectToHost(url.host(), url.port(isHttps ? 443 : 80));
+        QVERIFY2(socket->waitForConnected(10000), "Timeout connecting to " + url.encodedHost());
+
+        if (isHttps) {
+            static_cast<QSslSocket *>(socket.data())->setProtocol(QSsl::TlsV1);
+            static_cast<QSslSocket *>(socket.data())->startClientEncryption();
+            static_cast<QSslSocket *>(socket.data())->ignoreSslErrors();
+            QVERIFY2(static_cast<QSslSocket *>(socket.data())->waitForEncrypted(10000), "Timeout starting TLS with " + url.encodedHost());
+        }
+
+        socket->write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment) + " HTTP/1.0\r\n"
+                      "Connection: close\r\n"
+                      "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
+                      "Host: " + url.encodedHost() + "\r\n"
+                      "\r\n");
+        while (socket->bytesToWrite())
+            QVERIFY2(socket->waitForBytesWritten(10000), "Timeout writing to " + url.encodedHost());
+
+        while (socket->state() == QAbstractSocket::ConnectedState && !timeout.hasExpired(10000)) {
+            socket->waitForReadyRead(10000);
+            byteCounter += socket->readAll().size(); // discard
+        }
+        QVERIFY2(!timeout.hasExpired(10000), "Timeout reading from " + url.encodedHost());
 
         totalBytes += byteCounter;
         if (intermediateDebug) {
@@ -261,6 +284,7 @@ void tst_NetworkRemoteStressTest::blockingSequentialRemoteHosts()
 void tst_NetworkRemoteStressTest::sequentialRemoteHosts()
 {
     QFETCH_GLOBAL(QVector<QUrl>, urlList);
+    QFETCH_GLOBAL(bool, useSslSocket);
 
     qint64 totalBytes = 0;
     QElapsedTimer outerTimer;
@@ -268,23 +292,35 @@ void tst_NetworkRemoteStressTest::sequentialRemoteHosts()
 
     for (int i = 0; i < urlList.size(); ++i) {
         const QUrl &url = urlList.at(i);
+        bool isHttps = url.scheme() == "https";
         QElapsedTimer timeout;
         byteCounter = 0;
         timeout.start();
 
-        QTcpSocket socket;
-        socket.connectToHost(url.host(), url.port(80));
+        QSharedPointer<QTcpSocket> socket;
+        if (useSslSocket || isHttps) {
+            socket = QSharedPointer<QTcpSocket>(new QSslSocket);
+        } else {
+            socket = QSharedPointer<QTcpSocket>(new QTcpSocket);
+        }
+        socket->connectToHost(url.host(), url.port(isHttps ? 443 : 80));
+        if (isHttps) {
+            static_cast<QSslSocket *>(socket.data())->setProtocol(QSsl::TlsV1);
+            static_cast<QSslSocket *>(socket.data())->startClientEncryption();
+            static_cast<QSslSocket *>(socket.data())->ignoreSslErrors();
+        }
 
-        socket.write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment) + " HTTP/1.0\r\n"
-                     "Connection: close\r\n"
-                     "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
-                     "Host: " + url.encodedHost() + "\r\n"
-                     "\r\n");
-        connect(&socket, SIGNAL(readyRead()), SLOT(slotReadAll()));
+        socket->write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment) + " HTTP/1.0\r\n"
+                      "Connection: close\r\n"
+                      "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
+                      "Host: " + url.encodedHost() + "\r\n"
+                      "\r\n");
+        connect(socket.data(), SIGNAL(readyRead()), SLOT(slotReadAll()));
 
-        QTestEventLoop::instance().connect(&socket, SIGNAL(disconnected()), SLOT(exitLoop()));
+        QTestEventLoop::instance().connect(socket.data(), SIGNAL(disconnected()), SLOT(exitLoop()));
         QTestEventLoop::instance().enterLoop(30);
-        QVERIFY2(!QTestEventLoop::instance().timeout(), "Timeout");
+        QVERIFY2(!QTestEventLoop::instance().timeout(), "Timeout with " + url.encodedHost() + "; "
+                 + QByteArray::number(socket->bytesToWrite()) + " bytes to write");
 
         totalBytes += byteCounter;
         if (intermediateDebug) {
@@ -313,6 +349,7 @@ void tst_NetworkRemoteStressTest::parallelRemoteHosts_data()
 void tst_NetworkRemoteStressTest::parallelRemoteHosts()
 {
     QFETCH_GLOBAL(QVector<QUrl>, urlList);
+    QFETCH_GLOBAL(bool, useSslSocket);
 
     QFETCH(int, parallelAttempts);
 
@@ -330,8 +367,18 @@ void tst_NetworkRemoteStressTest::parallelRemoteHosts()
         sockets.reserve(parallelAttempts);
         for (int j = 0; j < parallelAttempts && it != urlList.constEnd(); ++j, ++it) {
             const QUrl &url = *it;
-            QTcpSocket *socket = new QTcpSocket;
-            socket->connectToHost(url.host(), url.port(80));
+            bool isHttps = url.scheme() == "https";
+            QTcpSocket *socket;
+            if (useSslSocket || isHttps)
+                socket = new QSslSocket;
+            else
+                socket = new QTcpSocket;
+            socket->connectToHost(url.host(), url.port(isHttps ? 443 : 80));
+            if (isHttps) {
+                static_cast<QSslSocket *>(socket)->setProtocol(QSsl::TlsV1);
+                static_cast<QSslSocket *>(socket)->startClientEncryption();
+                static_cast<QSslSocket *>(socket)->ignoreSslErrors();
+            }
 
             socket->write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment) + " HTTP/1.0\r\n"
                           "Connection: close\r\n"
@@ -340,17 +387,25 @@ void tst_NetworkRemoteStressTest::parallelRemoteHosts()
                           "\r\n");
             connect(socket, SIGNAL(readyRead()), SLOT(slotReadAll()));
             QTestEventLoop::instance().connect(socket, SIGNAL(disconnected()), SLOT(exitLoop()));
+            socket->setProperty("remoteUrl", url);
 
             sockets.append(QSharedPointer<QTcpSocket>(socket));
         }
 
-        while (!timeout.hasExpired(30000)) {
+        while (!timeout.hasExpired(10000)) {
             QTestEventLoop::instance().enterLoop(10);
             int done = 0;
             for (int j = 0; j < sockets.size(); ++j)
                 done += sockets[j]->state() == QAbstractSocket::UnconnectedState ? 1 : 0;
             if (done == sockets.size())
                 break;
+        }
+        if (timeout.hasExpired(10000)) {
+            for (int j = 0; j < sockets.size(); ++j)
+                if (sockets[j]->state() != QAbstractSocket::UnconnectedState)
+                    qDebug() << "Socket to" << sockets[j]->property("remoteUrl").toUrl() << "still open with"
+                            << sockets[j]->bytesToWrite() << "bytes to write";
+            QFAIL("Timed out");
         }
 
         totalBytes += byteCounter;
@@ -402,6 +457,7 @@ void tst_NetworkRemoteStressTest::namRemoteGet()
         for (int j = 0; j < parallelAttempts && it != urlList.constEnd(); ++j) {
             req.setUrl(*it++);
             QNetworkReply *r = manager.get(req);
+            r->ignoreSslErrors();
 
             connect(r, SIGNAL(readyRead()), SLOT(slotReadAll()));
             QTestEventLoop::instance().connect(r, SIGNAL(finished()), SLOT(exitLoop()));
@@ -409,7 +465,7 @@ void tst_NetworkRemoteStressTest::namRemoteGet()
             replies.append(QSharedPointer<QNetworkReply>(r));
         }
 
-        while (!timeout.hasExpired(30000)) {
+        while (!timeout.hasExpired(10000)) {
             QTestEventLoop::instance().enterLoop(10);
             int done = 0;
             for (int j = 0; j < replies.size(); ++j)
@@ -417,9 +473,14 @@ void tst_NetworkRemoteStressTest::namRemoteGet()
             if (done == replies.size())
                 break;
         }
+        if (timeout.hasExpired(10000)) {
+            for (int j = 0; j < replies.size(); ++j)
+                if (!replies[j]->isFinished())
+                    qDebug() << "Request" << replies[j]->url() << "not finished";
+            QFAIL("Timed out");
+        }
         replies.clear();
 
-        QVERIFY2(!timeout.hasExpired(30000), "Timeout");
         totalBytes += byteCounter;
         if (intermediateDebug) {
             double rate = (byteCounter * 1.0 / timeout.elapsed());
