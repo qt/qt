@@ -305,11 +305,12 @@ void tst_NetworkRemoteStressTest::sequentialRemoteHosts()
         } else {
             socket = QSharedPointer<QTcpSocket>(new QTcpSocket);
         }
-        socket->connectToHost(url.host(), url.port(isHttps ? 443 : 80));
         if (isHttps) {
             static_cast<QSslSocket *>(socket.data())->setProtocol(QSsl::TlsV1);
-            static_cast<QSslSocket *>(socket.data())->startClientEncryption();
+            static_cast<QSslSocket *>(socket.data())->connectToHostEncrypted(url.host(), url.port(443));
             static_cast<QSslSocket *>(socket.data())->ignoreSslErrors();
+        } else {
+            socket->connectToHost(url.host(), url.port(80));
         }
 
         socket->write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment) + " HTTP/1.0\r\n"
@@ -375,11 +376,12 @@ void tst_NetworkRemoteStressTest::parallelRemoteHosts()
                 socket = new QSslSocket;
             else
                 socket = new QTcpSocket;
-            socket->connectToHost(url.host(), url.port(isHttps ? 443 : 80));
             if (isHttps) {
                 static_cast<QSslSocket *>(socket)->setProtocol(QSsl::TlsV1);
-                static_cast<QSslSocket *>(socket)->startClientEncryption();
+                static_cast<QSslSocket *>(socket)->connectToHostEncrypted(url.host(), url.port(443));
                 static_cast<QSslSocket *>(socket)->ignoreSslErrors();
+            } else {
+                socket->connectToHost(url.host(), url.port(isHttps ? 443 : 80));
             }
 
             socket->write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment) + " HTTP/1.0\r\n"
