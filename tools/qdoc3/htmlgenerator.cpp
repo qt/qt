@@ -1256,7 +1256,8 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     }
 
     generateHeader(title, inner, marker, true);
-    generateTableOfContents(inner,marker);
+    sections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
+    generateTableOfContents(inner,marker,&sections);
     generateTitle(title, subtitleText, SmallSubTitle, inner, marker);
 
 #ifdef QDOC_QML
@@ -1300,7 +1301,9 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
 
     bool needOtherSection = false;
 
-    sections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
+    /*
+      sections is built above for the call to generateTableOfContents().
+     */
     s = sections.begin();
     while (s != sections.end()) {
         if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
@@ -2026,7 +2029,9 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
   Revised for the new doc format.
   Generates a table of contents begining at \a node.
  */
-void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker)
+void HtmlGenerator::generateTableOfContents(const Node *node,
+                                            CodeMarker *marker,
+                                            QList<Section>* sections)
 {
     if (!node->doc().hasTableOfContents()) {
         if (node->subType() !=  Node::Module)
@@ -2038,14 +2043,15 @@ void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker
             return;
     }
 
-    Doc::SectioningUnit sectioningUnit =  Doc::Section4;
     QStringList sectionNumber;
+    int detailsBase = 0;
 
     // disable nested links in table of contents
     inContents = true;
     inLink = true;
 
     out() << "<div class=\"toc\">\n";
+    out() << "<h3>Table of Contents</h3>\n";
     sectionNumber.append("1");
     out() << "<ul class=\"level" << sectionNumber.size() << "\">\n";
 
@@ -2057,15 +2063,36 @@ void HtmlGenerator::generateTableOfContents(const Node *node, CodeMarker *marker
             out() << "<li><a href=\"#" << registerRef("classes") << "\">Classes</a></li>\n";
         }
         out() << "<li><a href=\"#" << registerRef("details") << "\">Detailed Description</a></li>\n";
+        for (int i = 0; i < toc.size(); ++i) {
+            if (toc.at(i)->string().toInt() == 1) {
+                detailsBase = 1;
+                break;
+            }
+        }
+    }
+    else if (sections && (node->type() == Node::Class)) {
+        QList<Section>::ConstIterator s = sections->begin();
+        while (s != sections->end()) {
+            if (!s->members.isEmpty() || !s->reimpMembers.isEmpty()) {
+                out() << "<li><a href=\"#"
+                      << registerRef((*s).pluralMember)
+                      << "\">" << (*s).name
+                      << "</a></li>\n";
+            }
+            ++s;
+        }
+        out() << "<li><a href=\"#" << registerRef("details") << "\">Detailed Description</a></li>\n";
+        for (int i = 0; i < toc.size(); ++i) {
+            if (toc.at(i)->string().toInt() == 1) {
+                detailsBase = 1;
+                break;
+            }
+        }
     }
 
     for (int i = 0; i < toc.size(); ++i) {
         Atom *atom = toc.at(i);
-
-        int nextLevel = atom->string().toInt();
-        if (nextLevel > (int)sectioningUnit)
-            continue;
-
+        int nextLevel = atom->string().toInt() + detailsBase;
         if (sectionNumber.size() < nextLevel) {
             do {
                 sectionNumber.append("1");
