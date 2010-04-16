@@ -482,14 +482,14 @@ void QScrollArea::ensureWidgetVisible(QWidget *childWidget, int xmargin, int yma
         d->hbar->setValue(focusRect.center().x() - d->viewport->width() / 2);
     else if (focusRect.right() > visibleRect.right())
         d->hbar->setValue(focusRect.right() - d->viewport->width());
-    else
+    else if (focusRect.left() < visibleRect.left())
         d->hbar->setValue(focusRect.left());
 
     if (focusRect.height() > visibleRect.height())
         d->vbar->setValue(focusRect.center().y() - d->viewport->height() / 2);
     else if (focusRect.bottom() > visibleRect.bottom())
         d->vbar->setValue(focusRect.bottom() - d->viewport->height());
-    else
+    else if (focusRect.top() < visibleRect.top())
         d->vbar->setValue(focusRect.top());
 }
 
