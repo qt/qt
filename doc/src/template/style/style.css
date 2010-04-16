@@ -904,6 +904,12 @@
         color: red;
     }
 
+    .qmldefault
+    {
+        float: right;
+        color: red;
+    }
+
     .qmldoc
     {
     }
