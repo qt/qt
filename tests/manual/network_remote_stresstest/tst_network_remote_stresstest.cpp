@@ -468,15 +468,15 @@ void tst_NetworkRemoteStressTest::namRemoteGet()
             replies.append(QSharedPointer<QNetworkReply>(r));
         }
 
-        while (!timeout.hasExpired(10000)) {
-            QTestEventLoop::instance().enterLoop(10);
+        while (!timeout.hasExpired(30000)) {
+            QTestEventLoop::instance().enterLoop(30 - timeout.elapsed() / 1000);
             int done = 0;
             for (int j = 0; j < replies.size(); ++j)
                 done += replies[j]->isFinished() ? 1 : 0;
             if (done == replies.size())
                 break;
         }
-        if (timeout.hasExpired(10000)) {
+        if (timeout.hasExpired(30000)) {
             for (int j = 0; j < replies.size(); ++j)
                 if (!replies[j]->isFinished())
                     qDebug() << "Request" << replies[j]->url() << "not finished";
