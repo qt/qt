@@ -44,7 +44,7 @@
 
 #include <QtCore/qobject.h>
 
-#include <QtMediaservies/qmediaplayercontrol.h>
+#include <QtMediaservices/qmediaplayercontrol.h>
 #include <QtMediaservices/qmediaplayer.h>
 
 #include <limits.h>
