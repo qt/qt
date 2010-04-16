@@ -111,12 +111,20 @@ void QTestXmlStreamer::formatStart(const QTestElement *element, QTestCharBuffer 
         QXmlTestLogger::xmlQuote(&quotedFile, element->attributeValue(QTest::AI_File));
         QXmlTestLogger::xmlCdata(&cdataDesc, element->attributeValue(QTest::AI_Description));
 
-        QTest::qt_asprintf(formatted, "<Message type=\"%s\" %s=\"%s\" %s=\"%s\">\n    <Description><![CDATA[%s]]></Description>\n</Message>\n",
+        QTestCharBuffer tagbuf;
+        if (element->attribute(QTest::AI_Tag)) {
+            QTestCharBuffer cdataTag;
+            QXmlTestLogger::xmlCdata(&cdataTag, element->attributeValue(QTest::AI_Tag));
+            QTest::qt_asprintf(&tagbuf, "    <DataTag><![CDATA[%s]]></DataTag>\n", cdataTag.constData());
+        }
+
+        QTest::qt_asprintf(formatted, "<Message type=\"%s\" %s=\"%s\" %s=\"%s\">\n%s    <Description><![CDATA[%s]]></Description>\n</Message>\n",
                            element->attributeValue(QTest::AI_Type),
                            element->attributeName(QTest::AI_File),
                            quotedFile.constData(),
                            element->attributeName(QTest::AI_Line),
                            element->attributeValue(QTest::AI_Line),
+                           tagbuf.constData(),
                            cdataDesc.constData());
         break;
     }
