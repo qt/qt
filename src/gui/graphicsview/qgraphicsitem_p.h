@@ -284,6 +284,7 @@ public:
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     bool discardUpdateRequest(bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
+    virtual void transformChanged() {}
     int depth() const;
 #ifndef QT_NO_GRAPHICSEFFECT
     enum InvalidateReason {
