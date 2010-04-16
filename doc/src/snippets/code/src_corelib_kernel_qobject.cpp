@@ -374,10 +374,13 @@ Q_PROPERTY(type name
            READ getFunction
            [WRITE setFunction]
            [RESET resetFunction]
+           [NOTIFY notifySignal]
            [DESIGNABLE bool]
            [SCRIPTABLE bool]
            [STORED bool]
-	   [USER bool])
+	   [USER bool]
+           [CONSTANT]
+           [FINAL])
 //! [36]
 
 
