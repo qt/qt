@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMediaservices module of the Qt Toolkit.
+** This file is part of the QtMediaServices module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -46,7 +46,7 @@
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 
-#include <QtMediaservices/qmediaserviceprovider.h>
+#include <QtMediaServices/qmediaserviceprovider.h>
 
 #ifdef Q_MOC_RUN
 # pragma Q_MOC_EXPAND_MACROS
@@ -76,7 +76,7 @@ Q_DECLARE_INTERFACE(QMediaServiceProviderFactoryInterface, QMediaServiceProvider
 struct Q_MULTIMEDIA_EXPORT QMediaServiceSupportedFormatsInterface
 {
     virtual ~QMediaServiceSupportedFormatsInterface() {}
-    virtual QtMediaservices::SupportEstimate hasSupport(const QString &mimeType, const QStringList& codecs) const = 0;
+    virtual QtMediaServices::SupportEstimate hasSupport(const QString &mimeType, const QStringList& codecs) const = 0;
     virtual QStringList supportedMimeTypes() const = 0;
 };
 

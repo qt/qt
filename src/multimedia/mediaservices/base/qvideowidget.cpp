@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMediaservices module of the Qt Toolkit.
+** This file is part of the QtMediaServices module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -41,14 +41,14 @@
 
 #include "qvideowidget_p.h"
 
-#include <QtMediaservices/qmediaobject.h>
-#include <QtMediaservices/qmediaservice.h>
-#include <QtMediaservices/qvideooutputcontrol.h>
-#include <QtMediaservices/qvideowindowcontrol.h>
-#include <QtMediaservices/qvideowidgetcontrol.h>
+#include <QtMediaServices/qmediaobject.h>
+#include <QtMediaServices/qmediaservice.h>
+#include <QtMediaServices/qvideooutputcontrol.h>
+#include <QtMediaServices/qvideowindowcontrol.h>
+#include <QtMediaServices/qvideowidgetcontrol.h>
 
 #include "qpaintervideosurface_p.h"
-#include <QtMediaservices/qvideorenderercontrol.h>
+#include <QtMediaServices/qvideorenderercontrol.h>
 #include <QtMultimedia/qvideosurfaceformat.h>
 #include <qpainter.h>
 

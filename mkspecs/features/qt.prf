@@ -175,7 +175,7 @@ for(QTLIB, $$list($$lower($$unique(QT)))) {
        }
    } else:isEqual(QTLIB, declarative):qlib = QtDeclarative
    else:isEqual(QTLIB, multimedia):qlib = QtMultimedia
-   else:isEqual(QTLIB, mediaservices):qlib = QtMediaservices
+   else:isEqual(QTLIB, mediaservices):qlib = QtMediaServices
    else:message("Unknown QT: $$QTLIB"):qlib =
    !isEmpty(qlib) {
       target_qt:isEqual(TARGET, qlib) {

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMediaservices module of the Qt Toolkit.
+** This file is part of the QtMediaServices module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -43,8 +43,8 @@
 #ifndef QMEDIAPLAYLISTCONTROL_H
 #define QMEDIAPLAYLISTCONTROL_H
 
-#include <QtMediaservices/qmediacontrol.h>
-#include <QtMediaservices/qmediaplaylistnavigator.h>
+#include <QtMediaServices/qmediacontrol.h>
+#include <QtMediaServices/qmediaplaylistnavigator.h>
 
 
 QT_BEGIN_HEADER

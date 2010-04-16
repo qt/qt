@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMediaservices module of the Qt Toolkit.
+** This file is part of the QtMediaServices module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -45,7 +45,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qshareddata.h>
 
-#include <QtMediaservices/qtmedianamespace.h>
+#include <QtMediaServices/qtmedianamespace.h>
 
 QT_BEGIN_HEADER
 
@@ -106,7 +106,7 @@ public:
     virtual QMediaService* requestService(const QByteArray &type, const QMediaServiceProviderHint &hint = QMediaServiceProviderHint()) = 0;
     virtual void releaseService(QMediaService *service) = 0;
 
-    virtual QtMediaservices::SupportEstimate hasSupport(const QByteArray &serviceType,
+    virtual QtMediaServices::SupportEstimate hasSupport(const QByteArray &serviceType,
                                              const QString &mimeType,
                                              const QStringList& codecs,
                                              int flags = 0) const;

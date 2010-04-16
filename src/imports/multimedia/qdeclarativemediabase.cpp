@@ -44,10 +44,10 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qurl.h>
 
-#include <QtMediaservices/qmediaplayercontrol.h>
-#include <QtMediaservices/qmediaservice.h>
-#include <QtMediaservices/qmediaserviceprovider.h>
-#include <QtMediaservices/qmetadatacontrol.h>
+#include <QtMediaServices/qmediaplayercontrol.h>
+#include <QtMediaServices/qmediaservice.h>
+#include <QtMediaServices/qmediaserviceprovider.h>
+#include <QtMediaServices/qmetadatacontrol.h>
 #include "qmetadatacontrolmetaobject_p.h"
 
 

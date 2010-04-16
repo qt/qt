@@ -42,7 +42,7 @@
 #ifndef DIRECTSHOWAUDIOENDPOINTCONTROL_H
 #define DIRECTSHOWAUDIOENDPOINTCONTROL_H
 
-#include <QtMediaservices/qmediacontrol.h>
+#include <QtMediaServices/qmediacontrol.h>
 
 #include <dshow.h>
 

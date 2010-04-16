@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMediaservices module of the Qt Toolkit.
+** This file is part of the QtMediaServices module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtMediaservices/qmetadatacontrol.h>
+#include <QtMediaServices/qmetadatacontrol.h>
 #include "qmediacontrol_p.h"
 
 
@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     its current media it will implement QMetaDataControl.  This control
     provides functions for both retrieving and setting meta-data values.
     Meta-data may be addressed by the well defined keys in the
-    QtMediaservices::MetaData enumeration using the metaData() functions, or by
+    QtMediaServices::MetaData enumeration using the metaData() functions, or by
     string keys using the extendedMetaData() functions.
 
     The functionality provided by this control is exposed to application
@@ -117,13 +117,13 @@ QMetaDataControl::~QMetaDataControl()
 */
 
 /*!
-    \fn QVariant QMetaDataControl::metaData(QtMediaservices::MetaData key) const
+    \fn QVariant QMetaDataControl::metaData(QtMediaServices::MetaData key) const
 
     Returns the meta-data for the given \a key.
 */
 
 /*!
-    \fn void QMetaDataControl::setMetaData(QtMediaservices::MetaData key, const QVariant &value)
+    \fn void QMetaDataControl::setMetaData(QtMediaServices::MetaData key, const QVariant &value)
 
     Sets the \a value of the meta-data element with the given \a key.
 */

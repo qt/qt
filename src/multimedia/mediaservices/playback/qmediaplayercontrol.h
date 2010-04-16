@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMediaservices module of the Qt Toolkit.
+** This file is part of the QtMediaServices module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -44,9 +44,9 @@
 
 #include <QtCore/qpair.h>
 
-#include <QtMediaservices/qmediacontrol.h>
-#include <QtMediaservices/qmediaplayer.h>
-#include <QtMediaservices/qmediatimerange.h>
+#include <QtMediaServices/qmediacontrol.h>
+#include <QtMediaServices/qmediaplayer.h>
+#include <QtMediaServices/qmediatimerange.h>
 
 
 QT_BEGIN_HEADER

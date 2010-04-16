@@ -44,8 +44,8 @@
 
 #include <QtCore/qobject.h>
 
-#include <QtMediaservices/qvideowindowcontrol.h>
-#include <QtMediaservices/qmediaplayer.h>
+#include <QtMediaServices/qvideowindowcontrol.h>
+#include <QtMediaServices/qmediaplayer.h>
 
 #include <QtGui/qmacdefines_mac.h>
 #include "qt7videooutputcontrol.h"

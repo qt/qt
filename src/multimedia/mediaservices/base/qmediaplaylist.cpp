@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMediaservices module of the Qt Toolkit.
+** This file is part of the QtMediaServices module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -45,14 +45,14 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qcoreapplication.h>
 
-#include <QtMediaservices/qmediaplaylist.h>
+#include <QtMediaServices/qmediaplaylist.h>
 #include "qmediaplaylist_p.h"
-#include <QtMediaservices/qmediaplaylistprovider.h>
-#include <QtMediaservices/qlocalmediaplaylistprovider.h>
-#include <QtMediaservices/qmediaplaylistioplugin.h>
-#include <QtMediaservices/qmediaservice.h>
-#include <QtMediaservices/qmediaplaylistcontrol.h>
-#include <QtMediaservices/qmediaplayercontrol.h>
+#include <QtMediaServices/qmediaplaylistprovider.h>
+#include <QtMediaServices/qlocalmediaplaylistprovider.h>
+#include <QtMediaServices/qmediaplaylistioplugin.h>
+#include <QtMediaServices/qmediaservice.h>
+#include <QtMediaServices/qmediaplaylistcontrol.h>
+#include <QtMediaServices/qmediaplayercontrol.h>
 
 #include "qmediapluginloader_p.h"
 

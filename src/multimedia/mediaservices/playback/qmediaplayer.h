@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMediaservices module of the Qt Toolkit.
+** This file is part of the QtMediaServices module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -42,9 +42,9 @@
 #ifndef QMEDIAPLAYER_H
 #define QMEDIAPLAYER_H
 
-#include <QtMediaservices/qmediaserviceprovider.h>
-#include <QtMediaservices/qmediaobject.h>
-#include <QtMediaservices/qmediacontent.h>
+#include <QtMediaServices/qmediaserviceprovider.h>
+#include <QtMediaServices/qmediaobject.h>
+#include <QtMediaServices/qmediacontent.h>
 
 
 QT_BEGIN_HEADER
@@ -117,7 +117,7 @@ public:
     QMediaPlayer(QObject *parent = 0, Flags flags = 0, QMediaServiceProvider *provider = QMediaServiceProvider::defaultServiceProvider());
     ~QMediaPlayer();
 
-    static QtMediaservices::SupportEstimate hasSupport(const QString &mimeType,
+    static QtMediaServices::SupportEstimate hasSupport(const QString &mimeType,
                                             const QStringList& codecs = QStringList(),
                                             Flags flags = 0);
     static QStringList supportedMimeTypes(Flags flags = 0);
