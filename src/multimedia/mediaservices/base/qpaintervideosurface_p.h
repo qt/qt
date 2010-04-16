@@ -89,7 +89,7 @@ public:
     virtual void updateColors(int brightness, int contrast, int hue, int saturation) = 0;
 };
 
-class Q_MULTIMEDIA_EXPORT QPainterVideoSurface : public QAbstractVideoSurface
+class Q_MEDIASERVICES_EXPORT QPainterVideoSurface : public QAbstractVideoSurface
 {
     Q_OBJECT
 public:

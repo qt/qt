@@ -54,7 +54,7 @@ QT_MODULE(Multimedia)
 
 class QMediaTimeRangePrivate;
 
-class Q_MULTIMEDIA_EXPORT QMediaTimeInterval
+class Q_MEDIASERVICES_EXPORT QMediaTimeInterval
 {
 public:
     QMediaTimeInterval();
@@ -78,10 +78,10 @@ private:
     qint64 e;
 };
 
-Q_MULTIMEDIA_EXPORT bool operator==(const QMediaTimeInterval&, const QMediaTimeInterval&);
-Q_MULTIMEDIA_EXPORT bool operator!=(const QMediaTimeInterval&, const QMediaTimeInterval&);
+Q_MEDIASERVICES_EXPORT bool operator==(const QMediaTimeInterval&, const QMediaTimeInterval&);
+Q_MEDIASERVICES_EXPORT bool operator!=(const QMediaTimeInterval&, const QMediaTimeInterval&);
 
-class Q_MULTIMEDIA_EXPORT QMediaTimeRange
+class Q_MEDIASERVICES_EXPORT QMediaTimeRange
 {
 public:
 
@@ -122,10 +122,10 @@ private:
     QSharedDataPointer<QMediaTimeRangePrivate> d;
 };
 
-Q_MULTIMEDIA_EXPORT bool operator==(const QMediaTimeRange&, const QMediaTimeRange&);
-Q_MULTIMEDIA_EXPORT bool operator!=(const QMediaTimeRange&, const QMediaTimeRange&);
-Q_MULTIMEDIA_EXPORT QMediaTimeRange operator+(const QMediaTimeRange&, const QMediaTimeRange&);
-Q_MULTIMEDIA_EXPORT QMediaTimeRange operator-(const QMediaTimeRange&, const QMediaTimeRange&);
+Q_MEDIASERVICES_EXPORT bool operator==(const QMediaTimeRange&, const QMediaTimeRange&);
+Q_MEDIASERVICES_EXPORT bool operator!=(const QMediaTimeRange&, const QMediaTimeRange&);
+Q_MEDIASERVICES_EXPORT QMediaTimeRange operator+(const QMediaTimeRange&, const QMediaTimeRange&);
+Q_MEDIASERVICES_EXPORT QMediaTimeRange operator-(const QMediaTimeRange&, const QMediaTimeRange&);
 
 
 QT_END_NAMESPACE

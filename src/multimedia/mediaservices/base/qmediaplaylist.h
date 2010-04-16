@@ -57,7 +57,7 @@ QT_MODULE(Multimedia)
 class QMediaPlaylistProvider;
 
 class QMediaPlaylistPrivate;
-class Q_MULTIMEDIA_EXPORT QMediaPlaylist : public QObject
+class Q_MEDIASERVICES_EXPORT QMediaPlaylist : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QMediaPlaylist::PlaybackMode playbackMode READ playbackMode WRITE setPlaybackMode NOTIFY playbackModeChanged)

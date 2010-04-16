@@ -58,7 +58,7 @@ QT_MODULE(Multimedia)
 
 class QMediaPlaylist;
 
-class Q_MULTIMEDIA_EXPORT QMediaPlayerControl : public QMediaControl
+class Q_MEDIASERVICES_EXPORT QMediaPlayerControl : public QMediaControl
 {
     Q_OBJECT
 

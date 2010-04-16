@@ -57,7 +57,7 @@ QT_MODULE(Multimedia)
 class QVideoSurfaceFormat;
 
 class QGraphicsVideoItemPrivate;
-class Q_MULTIMEDIA_EXPORT QGraphicsVideoItem : public QGraphicsObject
+class Q_MEDIASERVICES_EXPORT QGraphicsVideoItem : public QGraphicsObject
 {
     Q_OBJECT
     Q_PROPERTY(QMediaObject* mediaObject READ mediaObject WRITE setMediaObject)

@@ -63,7 +63,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QSoundEffectPrivate;
-class Q_MULTIMEDIA_EXPORT QSoundEffect : public QObject
+class Q_MEDIASERVICES_EXPORT QSoundEffect : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)

@@ -56,7 +56,7 @@ QT_MODULE(Multimedia)
 class QMediaService;
 
 class QMediaObjectPrivate;
-class Q_MULTIMEDIA_EXPORT QMediaObject : public QObject
+class Q_MEDIASERVICES_EXPORT QMediaObject : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int notifyInterval READ notifyInterval WRITE setNotifyInterval NOTIFY notifyIntervalChanged)

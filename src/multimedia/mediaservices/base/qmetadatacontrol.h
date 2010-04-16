@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Multimedia)
 
-class Q_MULTIMEDIA_EXPORT QMetaDataControl : public QMediaControl
+class Q_MEDIASERVICES_EXPORT QMetaDataControl : public QMediaControl
 {
     Q_OBJECT
 

@@ -58,7 +58,7 @@ class QString;
 
 
 class QMediaPlaylistProviderPrivate;
-class Q_MULTIMEDIA_EXPORT QMediaPlaylistProvider : public QObject
+class Q_MEDIASERVICES_EXPORT QMediaPlaylistProvider : public QObject
 {
     Q_OBJECT
 
