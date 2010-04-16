@@ -49,13 +49,19 @@ QT_BEGIN_NAMESPACE
 class QWindowSurfacePrivate
 {
 public:
-    QWindowSurfacePrivate(QWidget *w) : window(w), staticContentsSupport(false) {}
+    QWindowSurfacePrivate(QWidget *w)
+        : window(w)
+        , staticContentsSupport(0)
+        , partialUpdateSupport(1)
+    {
+    }
 
     QWidget *window;
     QRect geometry;
     QRegion staticContents;
     QList<QImage*> bufferImages;
-    bool staticContentsSupport;
+    uint staticContentsSupport : 1;
+    uint partialUpdateSupport : 1;
 };
 
 /*!
@@ -284,6 +290,10 @@ bool QWindowSurface::hasStaticContentsSupport() const
 
 void QWindowSurface::setStaticContentsSupport(bool enable)
 {
+    if (enable && !d_ptr->partialUpdateSupport) {
+        qWarning("QWindowSurface::setStaticContentsSupport: static contents support requires partial update support");
+        return;
+    }
     d_ptr->staticContentsSupport = enable;
 }
 
@@ -300,6 +310,20 @@ QRegion QWindowSurface::staticContents() const
 bool QWindowSurface::hasStaticContents() const
 {
     return d_ptr->staticContentsSupport && !d_ptr->staticContents.isEmpty();
+}
+
+bool QWindowSurface::hasPartialUpdateSupport() const
+{
+    return d_ptr->partialUpdateSupport;
+}
+
+void QWindowSurface::setPartialUpdateSupport(bool enable)
+{
+    if (!enable && d_ptr->staticContentsSupport) {
+        qWarning("QWindowSurface::setPartialUpdateSupport: static contents support requires partial update support");
+        return;
+    }
+    d_ptr->partialUpdateSupport = enable;
 }
 
 void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
