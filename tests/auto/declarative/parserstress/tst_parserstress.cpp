@@ -65,7 +65,7 @@ QStringList tst_parserstress::findJSFiles(const QDir &d)
 {
     QStringList rv;
 
-    QStringList files = d.entryList(QStringList() << QLatin1String("*.js"), 
+    QStringList files = d.entryList(QStringList() << QLatin1String("*.js"),
                                     QDir::Files);
     foreach (const QString &file, files) {
         if (file == "browser.js")
@@ -73,7 +73,7 @@ QStringList tst_parserstress::findJSFiles(const QDir &d)
         rv << d.absoluteFilePath(file);
     }
 
-    QStringList dirs = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot | 
+    QStringList dirs = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot |
                                    QDir::NoSymLinks);
     foreach (const QString &dir, dirs) {
         QDir sub = d;
@@ -132,7 +132,7 @@ void tst_parserstress::ecmascript()
     component.setData(qmlData, QUrl::fromLocalFile(SRCDIR + QString("/dummy.qml")));
     QSet<QString> failingTests;
     failingTests << "uc-003.js" << "uc-005.js" << "regress-352044-02-n.js"
-                 << "regress-334158.js" << "regress-58274.js" << "dowhile-006.js" << "dowhile-005.js";
+                 << "regress-334158.js" << "regress-58274.js";
     QFileInfo info(file);
     foreach (const QString &failing, failingTests) {
         if (info.fileName().endsWith(failing)) {
