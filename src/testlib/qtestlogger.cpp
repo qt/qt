@@ -297,7 +297,7 @@ void QTestLogger::addMessage(MessageTypes type, const char *message, const char 
         break;
     case QAbstractTestLogger::QWarning:
         ++qwarnCounter;
-        typeBuf = "qwarning";
+        typeBuf = "qwarn";
         break;
     case QAbstractTestLogger::QFatal:
         ++qfatalCounter;
