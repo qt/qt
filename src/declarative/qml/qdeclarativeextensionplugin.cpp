@@ -59,6 +59,11 @@ QT_BEGIN_NAMESPACE
     function, and exporting the class using the Q_EXPORT_PLUGIN2()
     macro.
 
+    QML extension plugins can be used to provide either application-specific or
+    library-like plugins. Library plugins should limit themselves to registering types,
+    as any manipulation of the engine's root context may cause conflicts
+    or other issues in the library user's code.
+
     See \l {Extending QML in C++} for details how to write a QML extension plugin.
     See \l {How to Create Qt Plugins} for general Qt plugin documentation.
 
@@ -85,7 +90,7 @@ QDeclarativeExtensionPlugin::QDeclarativeExtensionPlugin(QObject *parent)
 }
 
 /*!
-  Destructor.
+  Destroys the plugin.
  */
 QDeclarativeExtensionPlugin::~QDeclarativeExtensionPlugin()
 {
@@ -94,7 +99,9 @@ QDeclarativeExtensionPlugin::~QDeclarativeExtensionPlugin()
 /*!
     \fn void QDeclarativeExtensionPlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)
 
-    Initializes the extension from the \a uri using the \a engine.
+    Initializes the extension from the \a uri using the \a engine. Here an application
+    plugin might, for example, expose some data or objects to QML,
+    as context properties on the engine's root context.
 */
 
 void QDeclarativeExtensionPlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)

@@ -114,7 +114,7 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     \endcode
 
     All properties added explicitly by QDeclarativeContext::setContextProperty() take 
-    precedence over context object's properties.
+    precedence over the context object's properties.
 
     Contexts form a hierarchy.  The root of this heirarchy is the QDeclarativeEngine's
     \l {QDeclarativeEngine::rootContext()}{root context}.  A component instance can 
@@ -140,6 +140,11 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     While QML objects instantiated in a context are not strictly owned by that 
     context, their bindings are.  If a context is destroyed, the property bindings of 
     outstanding QML objects will stop evaluating.
+
+    \note Setting the context object or adding new context properties after an object
+    has been created in that context is an expensive operation (essentially forcing all bindings
+    to reevaluate). Thus whenever possible you should complete "setup" of the context
+    before using it to create any objects.
 */
 
 /*! \internal */
