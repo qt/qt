@@ -105,11 +105,11 @@ public:
 
     QMenuBar *menuBar() const;
 
+    QDeclarativeView *view() const;
+
 public slots:
     void sceneResized(QSize size);
-    void open(const QString&);
-    void openWgt(const QString&);
-    void openQml(const QString&);
+    bool open(const QString&);
     void openFile();
     void reload();
     void takeSnapShot();
@@ -142,7 +142,6 @@ private slots:
     void toggleOrientation();
     void startNetwork();
     void toggleFullScreen();
-    void unpackWgt();
 
 private:
     QString getVideoFileName();

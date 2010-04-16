@@ -99,12 +99,6 @@ void QDeclarativeValueTypeFactory::registerValueTypes()
     qmlRegisterValueTypeEnums<QDeclarativeFontValueType>("Font");
 }
 
-QDeclarativeValueType *QDeclarativeValueTypeFactory::operator[](int idx) const
-{
-    return valueTypes[idx];
-}
-
-
 QDeclarativeValueType *QDeclarativeValueTypeFactory::valueType(int t)
 {
     switch (t) {

@@ -53,19 +53,19 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qfile.h>
 
-class tst_sql : public QObject
+class tst_qdeclarativesqldatabase : public QObject
 {
     Q_OBJECT
 public:
-    tst_sql()
+    tst_qdeclarativesqldatabase()
     {
-        qApp->setApplicationName("tst_sql");
+        qApp->setApplicationName("tst_qdeclarativesqldatabase");
         qApp->setOrganizationName("Nokia");
         qApp->setOrganizationDomain("nokia.com");
         engine = new QDeclarativeEngine;
     }
 
-    ~tst_sql()
+    ~tst_qdeclarativesqldatabase()
     {
         delete engine;
     }
@@ -108,33 +108,33 @@ void removeRecursive(const QString& dirname)
     QDir().rmdir(dirname);
 }
 
-void tst_sql::initTestCase()
+void tst_qdeclarativesqldatabase::initTestCase()
 {
     removeRecursive(dbDir());
     QDir().mkpath(dbDir());
 }
 
-void tst_sql::cleanupTestCase()
+void tst_qdeclarativesqldatabase::cleanupTestCase()
 {
     removeRecursive(dbDir());
 }
 
-QString tst_sql::dbDir() const
+QString tst_qdeclarativesqldatabase::dbDir() const
 {
-    static QString tmpd = QDir::tempPath()+"/tst_sql_output-"
+    static QString tmpd = QDir::tempPath()+"/tst_qdeclarativesqldatabase_output-"
         + QDateTime::currentDateTime().toString(QLatin1String("yyyyMMddhhmmss"));
     return tmpd;
 }
 
-void tst_sql::checkDatabasePath()
+void tst_qdeclarativesqldatabase::checkDatabasePath()
 {
     // Check default storage path (we can't use it since we don't want to mess with user's data)
-    QVERIFY(engine->offlineStoragePath().contains("tst_sql"));
+    QVERIFY(engine->offlineStoragePath().contains("tst_qdeclarativesqldatabase"));
     QVERIFY(engine->offlineStoragePath().contains("OfflineStorage"));
 }
 
 static const int total_databases_created_by_tests = 12;
-void tst_sql::testQml_data()
+void tst_qdeclarativesqldatabase::testQml_data()
 {
     QTest::addColumn<QString>("jsfile"); // The input file
 
@@ -161,7 +161,7 @@ void tst_sql::testQml_data()
 }
 
 /*
-void tst_sql::validateAgainstWebkit()
+void tst_qdeclarativesqldatabase::validateAgainstWebkit()
 {
     // Validates tests against WebKit (HTML5) support.
     //
@@ -188,7 +188,7 @@ void tst_sql::validateAgainstWebkit()
 }
 */
 
-void tst_sql::testQml()
+void tst_qdeclarativesqldatabase::testQml()
 {
     // Tests QML SQL Database support with tests
     // that have been validated against Webkit.
@@ -209,7 +209,7 @@ void tst_sql::testQml()
     QCOMPARE(text->text(),QString("passed"));
 }
 
-void tst_sql::testQml_cleanopen_data()
+void tst_qdeclarativesqldatabase::testQml_cleanopen_data()
 {
     QTest::addColumn<QString>("jsfile"); // The input file
     QTest::newRow("reopen1") << "data/reopen1.js";
@@ -217,7 +217,7 @@ void tst_sql::testQml_cleanopen_data()
     QTest::newRow("error-creation") << "data/error-creation.js"; // re-uses creation DB
 }
 
-void tst_sql::testQml_cleanopen()
+void tst_qdeclarativesqldatabase::testQml_cleanopen()
 {
     // Same as testQml, but clean connections between tests,
     // making it more like the tests are running in new processes.
@@ -229,11 +229,11 @@ void tst_sql::testQml_cleanopen()
     }
 }
 
-void tst_sql::totalDatabases()
+void tst_qdeclarativesqldatabase::totalDatabases()
 {
     QCOMPARE(QDir(dbDir()+"/Databases").entryInfoList(QDir::Files|QDir::NoDotAndDotDot).count(), total_databases_created_by_tests*2);
 }
 
-QTEST_MAIN(tst_sql)
+QTEST_MAIN(tst_qdeclarativesqldatabase)
 
-#include "tst_sql.moc"
+#include "tst_qdeclarativesqldatabase.moc"

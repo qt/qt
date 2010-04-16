@@ -41,7 +41,7 @@
 
 #include "private/qdeclarativelistmodelworkeragent_p.h"
 #include "private/qdeclarativelistmodel_p_p.h"
-#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativedata_p.h"
 #include "private/qdeclarativeengine_p.h"
 #include "qdeclarativeinfo.h"
 

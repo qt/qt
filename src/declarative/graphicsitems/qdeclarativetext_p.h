@@ -138,6 +138,8 @@ public:
 
     virtual void componentComplete();
 
+    int resourcesLoading() const; // mainly for testing
+
 Q_SIGNALS:
     void textChanged(const QString &text);
     void linkActivated(const QString &link);
@@ -160,6 +162,9 @@ protected:
 private:
     Q_DISABLE_COPY(QDeclarativeText)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeText)
+
+    friend class QTextDocumentWithImageResources;
+    void reloadWithResources();
 };
 
 QT_END_NAMESPACE

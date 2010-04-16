@@ -44,6 +44,7 @@
 
 #include "private/qdeclarativebehavior_p.h"
 #include "private/qdeclarativestateoperations_p.h"
+#include "private/qdeclarativecontext_p.h"
 
 #include <qdeclarativepropertyvaluesource.h>
 #include <qdeclarative.h>
@@ -767,6 +768,7 @@ void QDeclarativeScriptAction::setStateChangeScriptName(const QString &name)
 
 void QDeclarativeScriptActionPrivate::execute()
 {
+    Q_Q(QDeclarativeScriptAction);
     if (hasRunScriptScript && reversing)
         return;
 
@@ -775,7 +777,12 @@ void QDeclarativeScriptActionPrivate::execute()
     const QString &str = scriptStr.script();
     if (!str.isEmpty()) {
         QDeclarativeExpression expr(scriptStr.context(), str, scriptStr.scopeObject());
+        QDeclarativeData *ddata = QDeclarativeData::get(q);
+        if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
+            expr.setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
         expr.value();
+        if (expr.hasError())
+            qWarning() << expr.error();
     }
 }
 
