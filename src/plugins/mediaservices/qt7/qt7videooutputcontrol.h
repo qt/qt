@@ -45,11 +45,11 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qsize.h>
 
-#include <QtMultimedia/qvideooutputcontrol.h>
-#include <QtMultimedia/qvideowindowcontrol.h>
-#include <QtMultimedia/qvideowidgetcontrol.h>
-#include <QtMultimedia/qvideorenderercontrol.h>
-#include <QtMultimedia/qmediaplayer.h>
+#include <QtMediaServices/qvideooutputcontrol.h>
+#include <QtMediaServices/qvideowindowcontrol.h>
+#include <QtMediaServices/qvideowidgetcontrol.h>
+#include <QtMediaServices/qvideorenderercontrol.h>
+#include <QtMediaServices/qmediaplayer.h>
 
 #include <QtGui/qmacdefines_mac.h>
 

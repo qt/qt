@@ -2,7 +2,7 @@ load(qttest_p4)
 
 SOURCES += tst_qsoundeffect.cpp
 
-QT = core multimedia
+QT = core media
 
 wince* {
     deploy.sources += 4.wav

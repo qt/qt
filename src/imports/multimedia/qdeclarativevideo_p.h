@@ -55,7 +55,7 @@
 
 #include "qdeclarativemediabase_p.h"
 
-#include <QtMultimedia/qgraphicsvideoitem.h>
+#include <QtMediaServices/qgraphicsvideoitem.h>
 
 #include <QtCore/qbasictimer.h>
 #include <QtDeclarative/qdeclarativeitem.h>

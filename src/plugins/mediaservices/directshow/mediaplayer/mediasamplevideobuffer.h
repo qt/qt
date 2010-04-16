@@ -42,7 +42,7 @@
 #ifndef MEDIASAMPLEVIDEOBUFFER_H
 #define MEDIASAMPLEVIDEOBUFFER_H
 
-#include <QtMultimedia/qabstractvideobuffer.h>
+#include <QtMediaServices/qabstractvideobuffer.h>
 
 #include <dshow.h>
 
