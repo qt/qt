@@ -41,6 +41,7 @@
 
 #include <QApplication>
 #include <QWidget>
+#include <QDialog>
 #include <QPushButton>
 #include <QtTest/QtTest>
 
@@ -65,6 +66,7 @@ private slots:
     void testMouseDragToNonClientArea();
     void testDragWindow();
     void testMouseEnter();
+    void testChildDialogInFrontOfModalParent();
 };
 
 void tst_MacNativeEvents::testMouseMoveLocation()
@@ -282,6 +284,28 @@ void tst_MacNativeEvents::testMouseEnter()
     QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
 }
 
+void tst_MacNativeEvents::testChildDialogInFrontOfModalParent()
+{
+    // Test that a child dialog of a modal parent dialog is 
+    // in front of the parent, and active:
+    QDialog parent;
+    parent.setWindowModality(Qt::ApplicationModal);
+    QDialog child(&parent);
+    QPushButton button("close", &child);
+    connect(&button, SIGNAL(clicked()), &child, SLOT(close()));
+    parent.show();
+    child.show();
+    QPoint inside = button.mapToGlobal(button.geometry().center());
+
+    // Post a click on the button to close the child dialog:
+    NativeEventList native;
+    native.append(new QNativeMouseButtonEvent(inside, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(inside, Qt::LeftButton, 0, Qt::NoModifier));
+
+    native.play();
+    QTest::qWait(100);
+    QVERIFY(!child.isVisible());
+}
 
 #include "tst_macnativeevents.moc"
 

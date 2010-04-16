@@ -1,7 +1,7 @@
 
 /* START non link areas where cursor should change to pointing hand */
 $('.t_button').mouseover(function() {
-    $(this).css('cursor','pointer');
+    $('.t_button').css('cursor','pointer');
 		/*document.getElementById(this.id).style.cursor='pointer';*/
 });
 
@@ -17,17 +17,20 @@ $('#medA').click(function() {
 		$('.content h1').css('font','600 18px/1.2 Arial');
 		$('.content h2').css('font','600 16px/1.2 Arial');
 		$('.content h3').css('font','600 14px/1.2 Arial');
-		$('.content p').css('font','13px/1.2 Verdana');
-		$('.content li').css('font','600 10pt/1 Verdana');
+		$('.content p').css('font','13px/20px Verdana');
+		$('.content li').css('font','400 13px/1 Verdana');
 		$('.content li').css('line-height','14px');
+		$('.content .toc li').css('font', 'normal 10px/1.2 Verdana');
 		$('.content table').css('font','13px/1.2 Verdana');
+		$('.content .heading').css('font','600 16px/1 Arial');
+		$('.content .indexboxcont li').css('font','600 13px/1 Verdana');
 		$('.t_button').removeClass('active')
 		$(this).addClass('active')
 });
 
 $('#bigA').click(function() {
 		$('.content .heading,.content h1, .content h2, .content h3, .content p, .content li, .content table').css('font-size','large');
-		$('.content li').css('line-height','14px');
+		$('.content .heading,.content h1, .content h2, .content h3, .content p, .content li, .content table').css('line-height','25px');
 		$('.t_button').removeClass('active')
 		$(this).addClass('active')
 });
@@ -36,7 +39,7 @@ function doSearch(str){
 
 if (str.length>3)
   {
-  alert('start search');
+  alert('Search is not yet activated.');
  // document.getElementById("refWrapper").innerHTML="";
   return;
   }

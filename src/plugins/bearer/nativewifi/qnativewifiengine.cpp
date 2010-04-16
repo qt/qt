@@ -49,6 +49,8 @@
 
 #include <QtCore/qdebug.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 WlanOpenHandleProto local_WlanOpenHandle = 0;
@@ -558,3 +560,5 @@ bool QNativeWifiEngine::requiresPolling() const
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT

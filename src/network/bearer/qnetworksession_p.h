@@ -56,6 +56,8 @@
 #include "qnetworksession.h"
 #include "qnetworkconfiguration_p.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class Q_NETWORK_EXPORT QNetworkSessionPrivate : public QObject
@@ -126,6 +128,8 @@ Q_SIGNALS:
     void preferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless);
 
 protected:
+    QNetworkSession *q;
+
     // The config set on QNetworkSession.
     QNetworkConfiguration publicConfig;
 
@@ -140,11 +144,11 @@ protected:
 
     QNetworkSession::State state;
     bool isOpen;
-
-    QNetworkSession *q;
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKSESSIONPRIVATE_H
 

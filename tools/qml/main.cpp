@@ -245,7 +245,7 @@ int main(int argc, char ** argv)
             useNativeFileBrowser = false;
         } else if (arg == "-I" || arg == "-L") {
             if (arg == "-L")
-                fprintf(stderr, "-L option provided for compatibility only, use -I instead");
+                fprintf(stderr, "-L option provided for compatibility only, use -I instead\n");
             if (lastArg) {
                 QDeclarativeEngine tmpEngine;
                 QString paths = tmpEngine.importPathList().join(QLatin1String(":"));
