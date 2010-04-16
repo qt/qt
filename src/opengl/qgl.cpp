@@ -49,7 +49,7 @@
 #include "private/qpixmap_x11_p.h"
 #define INT32 dummy_INT32
 #define INT8 dummy_INT8
-#if !defined(QT_OPENGL_ES)
+#ifdef QT_NO_EGL
 # include <GL/glx.h>
 #endif
 #undef INT32
@@ -1582,7 +1582,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
 #  endif
     vi = 0;
 #endif
-#if defined(QT_OPENGL_ES)
+#ifndef QT_NO_EGL
     ownsEglContext = false;
     eglContext = 0;
     eglSurface = EGL_NO_SURFACE;
@@ -2767,6 +2767,18 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
         return;
     }
 #else
+
+     if (d_ptr->active_engine && 
+         d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
+         QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
+         if (!eng->isNativePaintingActive()) {
+            QRectF src(0, 0, target.width(), target.height());
+            QSize size(target.width(), target.height());
+            eng->drawTexture(target, textureId, size, src);
+            return;
+        }
+     }
+
     const bool wasEnabled = glIsEnabled(GL_TEXTURE_2D);
     GLint oldTexture;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
@@ -2817,6 +2829,7 @@ void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum text
     Q_UNUSED(textureTarget);
     qWarning("drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget) not supported with OpenGL ES, use rect version instead");
 #else
+
     const bool wasEnabled = glIsEnabled(GL_TEXTURE_2D);
     GLint oldTexture;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
@@ -2829,6 +2842,18 @@ void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum text
 
     glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_WIDTH, &textureWidth);
     glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT, &textureHeight);
+
+    if (d_ptr->active_engine && 
+        d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
+        QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
+        if (!eng->isNativePaintingActive()) {
+            QRectF dest(point, QSizeF(textureWidth, textureHeight));
+            QRectF src(0, 0, textureWidth, textureHeight);
+            QSize size(textureWidth, textureHeight);
+            eng->drawTexture(dest, textureId, size, src);
+            return;
+        }
+    }
 
     qDrawTextureRect(QRectF(point, QSizeF(textureWidth, textureHeight)), textureWidth, textureHeight, textureTarget);
 
@@ -3950,7 +3975,7 @@ bool QGLWidget::event(QEvent *e)
         }
     }
 
-#if defined(QT_OPENGL_ES)
+#ifndef QT_NO_EGL
     // A re-parent is likely to destroy the X11 window and re-create it. It is important
     // that we free the EGL surface _before_ the winID changes - otherwise we can leak.
     if (e->type() == QEvent::ParentAboutToChange)
@@ -4909,7 +4934,7 @@ void QGLWidget::drawTexture(const QPointF &point, QMacCompatGLuint textureId, QM
 }
 #endif
 
-#if !defined(QT_OPENGL_ES_1)
+#ifndef QT_OPENGL_ES_1
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_2_engine)
 #endif
 

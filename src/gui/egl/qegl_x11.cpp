@@ -210,6 +210,11 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
         }
         XFree(chosenVisualInfo);
     }
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+    else
+        qDebug("EGL did not suggest a VisualID (EGL_NATIVE_VISUAL_ID was zero) for EGLConfig %d", configId);
+#endif
+
     if (visualId) {
 #ifdef QT_DEBUG_X11_VISUAL_SELECTION
         if (configAlphaSize > 0)
@@ -263,6 +268,11 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
 # endif // QT_DEBUG_X11_VISUAL_SELECTION
         return visualId;
     }
+# ifdef QT_DEBUG_X11_VISUAL_SELECTION
+    else
+        qDebug("Failed to find an XVisual which matches EGL config %d using XRender", configId);
+# endif // QT_DEBUG_X11_VISUAL_SELECTION
+
 #endif //!defined(QT_NO_XRENDER)
 
 

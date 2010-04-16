@@ -326,10 +326,17 @@ EGLSurface QEglContext::createSurface(QPaintDevice* device, const QEglProperties
 bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties *properties)
 {
     // We need to select the correct API before calling eglCreateContext().
+#ifdef QT_OPENGL_ES
 #ifdef EGL_OPENGL_ES_API
     if (apiType == QEgl::OpenGL)
         eglBindAPI(EGL_OPENGL_ES_API);
 #endif
+#else
+#ifdef EGL_OPENGL_API
+    if (apiType == QEgl::OpenGL)
+        eglBindAPI(EGL_OPENGL_API);
+#endif
+#endif //defined(QT_OPENGL_ES)
 #ifdef EGL_OPENVG_API
     if (apiType == QEgl::OpenVG)
         eglBindAPI(EGL_OPENVG_API);
@@ -339,7 +346,7 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
     QEglProperties contextProps;
     if (properties)
         contextProps = *properties;
-#if defined(QT_OPENGL_ES_2)
+#ifdef QT_OPENGL_ES_2
     if (apiType == QEgl::OpenGL)
         contextProps.setValue(EGL_CONTEXT_CLIENT_VERSION, 2);
 #endif
@@ -528,10 +535,14 @@ QEglProperties QEglContext::configProperties() const
     return QEglProperties(config());
 }
 
-#if (defined(EGL_KHR_image) || defined(EGL_KHR_image_base)) && !defined(EGL_EGLEXT_PROTOTYPES)
-_eglCreateImageKHR eglCreateImageKHR = 0;
-_eglDestroyImageKHR eglDestroyImageKHR = 0;
-#endif
+
+typedef EGLImageKHR (EGLAPIENTRY *_eglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, const EGLint*);
+typedef EGLBoolean (EGLAPIENTRY *_eglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
+
+// Defined in qegl.cpp:
+static _eglCreateImageKHR qt_eglCreateImageKHR = 0;
+static _eglDestroyImageKHR qt_eglDestroyImageKHR = 0;
+
 
 EGLDisplay QEgl::display()
 {
@@ -558,14 +569,41 @@ EGLDisplay QEgl::display()
         // Resolve the egl extension function pointers:
 #if (defined(EGL_KHR_image) || defined(EGL_KHR_image_base)) && !defined(EGL_EGLEXT_PROTOTYPES)
         if (QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_base")) {
-            eglCreateImageKHR = (_eglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
-            eglDestroyImageKHR = (_eglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
+            qt_eglCreateImageKHR = (_eglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
+            qt_eglDestroyImageKHR = (_eglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
         }
 #endif
     }
 
     return dpy;
 }
+
+EGLImageKHR QEgl::eglCreateImageKHR(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list)
+{
+    if (qt_eglCreateImageKHR)
+        return qt_eglCreateImageKHR(dpy, ctx, target, buffer, attrib_list);
+
+    QEgl::display(); // Initialises function pointers
+    if (qt_eglCreateImageKHR)
+        return qt_eglCreateImageKHR(dpy, ctx, target, buffer, attrib_list);
+
+    qWarning("QEgl::eglCreateImageKHR() called but EGL_KHR_image(_base) extension not present");
+    return 0;
+}
+
+EGLBoolean QEgl::eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR img)
+{
+    if (qt_eglDestroyImageKHR)
+        return qt_eglDestroyImageKHR(dpy, img);
+
+    QEgl::display(); // Initialises function pointers
+    if (qt_eglDestroyImageKHR)
+        return qt_eglDestroyImageKHR(dpy, img);
+
+    qWarning("QEgl::eglDestroyImageKHR() called but EGL_KHR_image(_base) extension not present");
+    return 0;
+}
+
 
 #ifndef Q_WS_X11
 EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglProperties *properties)

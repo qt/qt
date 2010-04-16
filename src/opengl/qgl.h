@@ -376,7 +376,7 @@ protected:
 #if defined(Q_WS_WIN)
     virtual int choosePixelFormat(void* pfd, HDC pdc);
 #endif
-#if defined(Q_WS_X11) && !defined(QT_OPENGL_ES)
+#if defined(Q_WS_X11) && defined(QT_NO_EGL)
     virtual void* tryVisual(const QGLFormat& f, int bufDepth = 1);
     virtual void* chooseVisual();
 #endif

@@ -147,20 +147,6 @@ typedef void *EGLImageKHR;
 #define EGL_KHR_image_pixmap
 #endif
 
-// It is possible that something has included eglext.h (like Symbian 10.1's broken egl.h), in
-// which case, EGL_KHR_image/EGL_KHR_image_base will be defined. They may have also defined
-// the actual function prototypes, but generally EGL_EGLEXT_PROTOTYPES will be defined in that
-// case and we shouldn't re-define them here.
-#if (defined(EGL_KHR_image) || defined(EGL_KHR_image_base)) && !defined(EGL_EGLEXT_PROTOTYPES)
-typedef EGLImageKHR (EGLAPIENTRY *_eglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, EGLint*);
-typedef EGLBoolean (EGLAPIENTRY *_eglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
-
-// Defined in qegl.cpp:
-extern Q_GUI_EXPORT _eglCreateImageKHR eglCreateImageKHR;
-extern Q_GUI_EXPORT _eglDestroyImageKHR eglDestroyImageKHR;
-#endif // (defined(EGL_KHR_image) || defined(EGL_KHR_image_base)) && !defined(EGL_EGLEXT_PROTOTYPES)
-
-
 
 class QEglProperties;
 
@@ -209,6 +195,10 @@ namespace QEgl {
     Q_GUI_EXPORT EGLNativeDisplayType nativeDisplay();
     Q_GUI_EXPORT EGLNativeWindowType  nativeWindow(QWidget*);
     Q_GUI_EXPORT EGLNativePixmapType  nativePixmap(QPixmap*);
+
+    // Extension functions
+    Q_GUI_EXPORT EGLImageKHR eglCreateImageKHR(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list);
+    Q_GUI_EXPORT EGLBoolean  eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR img);
 
 #ifdef Q_WS_X11
     Q_GUI_EXPORT VisualID getCompatibleVisualId(EGLConfig config);
