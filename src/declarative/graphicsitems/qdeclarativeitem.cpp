@@ -1415,7 +1415,7 @@ QDeclarativeItem::~QDeclarativeItem()
 }
 
 /*!
-    \qmlproperty enum Item::transformOrigin
+    \qmlproperty enumeration Item::transformOrigin
     This property holds the origin point around which scale and rotation transform.
 
     Nine transform origins are available, as shown in the image below.

@@ -390,8 +390,6 @@ void QDeclarativeEnginePrivate::init()
         qmlEngineDebugServer();
         isDebugging = true;
         QDeclarativeEngineDebugServer::addEngine(q);
-
-        qmlEngineDebugServer()->waitForClients();
     }
 }
 

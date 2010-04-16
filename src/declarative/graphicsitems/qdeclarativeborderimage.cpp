@@ -82,7 +82,7 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
         QDeclarativePixmapCache::cancel(d->sciurl, this);
 }
 /*!
-    \qmlproperty enum BorderImage::status
+    \qmlproperty enumeration BorderImage::status
 
     This property holds the status of image loading.  It can be one of:
     \list

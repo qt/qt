@@ -667,7 +667,7 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
 }
 
 /*!
-    \qmlproperty enum XmlListModel::status
+    \qmlproperty enumeration XmlListModel::status
     Specifies the model loading status, which can be one of the following:
 
     \list

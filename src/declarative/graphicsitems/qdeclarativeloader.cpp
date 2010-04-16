@@ -325,7 +325,7 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
 }
 
 /*!
-    \qmlproperty enum Loader::status
+    \qmlproperty enumeration Loader::status
 
     This property holds the status of QML loading.  It can be one of:
     \list
@@ -383,7 +383,7 @@ qreal QDeclarativeLoader::progress() const
 }
 
 /*!
-    \qmlproperty enum Loader::resizeMode
+    \qmlproperty enumeration Loader::resizeMode
 
     This property determines how the Loader or item are resized:
     \list
