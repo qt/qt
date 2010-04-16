@@ -131,8 +131,8 @@ void tst_parserstress::ecmascript()
     QDeclarativeComponent component(&engine);
     component.setData(qmlData, QUrl::fromLocalFile(SRCDIR + QString("/dummy.qml")));
     QSet<QString> failingTests;
-    failingTests << "uc-003.js" << "uc-005.js" << "regress-352044-02-n.js"
-                 << "regress-334158.js" << "regress-58274.js";
+    failingTests << "regress-352044-02-n.js"
+                 << "regress-334158.js";
     QFileInfo info(file);
     foreach (const QString &failing, failingTests) {
         if (info.fileName().endsWith(failing)) {
