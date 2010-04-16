@@ -70,9 +70,7 @@
   \macro QML_DECLARE_TYPE()
   \relates QDeclarativeEngine
 
-  Declares a C++ type to be usable in the QML system. In addition
-  to this, a type must also be registered with the QML system using
-  qmlRegisterType().
+  Equivalent to  Q_DECLARE_METATYPE(TYPE) and Q_DECLARE_METATYPE(QDeclarativeListProperty<TYPE>)
 */
 
 
@@ -83,7 +81,6 @@
   This template function registers the C++ type in the QML system with
   the name \a qmlName. in the library imported from \a uri having the
   version number composed from \a versionMajor and \a versionMinor.
-  The type should also haved been declared with the QML_DECLARE_TYPE() macro.
 
   Returns the QML type id.
 
@@ -114,7 +111,6 @@
 
   This template function registers the C++ type in the QML system
   under the name \a typeName.
-  The type should also haved been declared with the QML_DECLARE_TYPE() macro.
 
 
   Returns the QML type id.
