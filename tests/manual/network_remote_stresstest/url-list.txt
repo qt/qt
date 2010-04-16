@@ -37,13 +37,11 @@ https://bugzilla.mozilla.org/attachment.cgi?id=277051
 http://www.ssi.gouv.fr/IMG/crt/igca-rsa.crt
 http://www.e-szigno.hu/RootCA.crt
 http://www.s-trust.de/service_support/zertifikatsmanagement/verzeichnisdienste/download_wurzelzertifikate/ordner_crt_dateien/authentication.crt
-http://public.wisekey.com/crt/owgrgaca.crt
 http://www.trustcenter.de/media/class_2_ii.der
 http://www.trustcenter.de/media/class_3_ii.der
 http://www.trustcenter.de/media/Universal_CA-I.der
 http://www.certigna.fr/ca/ACcertigna.crt
 https://repository.secomtrust.net/EV-Root1/EVRoot1ca.cer
-http://www.certicamara.com/ac_offline_raiz_certicamara.crt
 http://fedir.comsign.co.il/cacert/ComsignCA.crt
 http://fedir.comsign.co.il/cacert/ComsignSecuredCA.crt
 http://crl.pki.wellsfargo.com/wsprca.crt
