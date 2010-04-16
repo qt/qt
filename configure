@@ -5196,7 +5196,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
     fi
 
     # Auto-detect GStreamer support (needed for both Phonon & QtMultimedia)
-    if [ "$CFG_PHONON" = "yes" -o "$CFG_MULTIMEDIA" = "yes" ]; then
+    if [ "$CFG_PHONON" = "yes" -o "$CFG_MEDIASERVICES" = "yes" ]; then
         if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
             if [ -n "$PKG_CONFIG" ]; then
                 QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
@@ -6872,7 +6872,7 @@ if [ "$CFG_MEDIASERVICES" = "no" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MEDIASERVICES"
 else
     QT_CONFIG="$QT_CONFIG mediaservices"
-    if [ "$CFG_MEDIA_BACKEND" = "yes" ]; then
+    if [ "$CFG_MEDIA_BACKEND" != "no" ]; then
         QT_CONFIG="$QT_CONFIG media-backend"
     fi
 fi
