@@ -46,8 +46,6 @@
 
 The following table lists the QML elements provided by the Qt Declarative module.
 
-\bold {Standard Qt Declarative Elements}
-
 \table 80%
 \header
 \o \bold {States}
@@ -81,6 +79,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l PropertyAction
 \o \l ScriptAction
 \o \l Transition
+\o \l SmoothedFollow
 \o \l SpringFollow
 \o \l Behavior
 \endlist
@@ -109,11 +108,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l QtObject
 \o \l WorkerScript
 \endlist
-\endtable
 
-\bold {QML Items}
-
-\table 80%
 \header
 \o \bold {Basic Visual Items}
 \o \bold {Basic Interaction Items}

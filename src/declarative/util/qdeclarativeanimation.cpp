@@ -1316,7 +1316,7 @@ void QDeclarativeRotationAnimation::setTo(qreal t)
 }
 
 /*!
-    \qmlproperty enum RotationAnimation::direction
+    \qmlproperty enumeration RotationAnimation::direction
     The direction in which to rotate.
     Possible values are Numerical, Clockwise, Counterclockwise,
     or Shortest.
@@ -1741,7 +1741,7 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
 }
 
 /*!
-    \qmlproperty enum PropertyAnimation::easing.type
+    \qmlproperty enumeration PropertyAnimation::easing.type
     \qmlproperty real PropertyAnimation::easing.amplitude
     \qmlproperty real PropertyAnimation::easing.overshoot
     \qmlproperty real PropertyAnimation::easing.period
