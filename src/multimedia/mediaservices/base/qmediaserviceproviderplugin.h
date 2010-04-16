@@ -61,7 +61,7 @@ QT_MODULE(Multimedia)
 class QMediaService;
 
 
-struct Q_MULTIMEDIA_EXPORT QMediaServiceProviderFactoryInterface : public QFactoryInterface
+struct Q_MEDIASERVICES_EXPORT QMediaServiceProviderFactoryInterface : public QFactoryInterface
 {
     virtual QStringList keys() const = 0;
     virtual QMediaService* create(QString const& key) = 0;
@@ -73,7 +73,7 @@ struct Q_MULTIMEDIA_EXPORT QMediaServiceProviderFactoryInterface : public QFacto
 Q_DECLARE_INTERFACE(QMediaServiceProviderFactoryInterface, QMediaServiceProviderFactoryInterface_iid)
 
 
-struct Q_MULTIMEDIA_EXPORT QMediaServiceSupportedFormatsInterface
+struct Q_MEDIASERVICES_EXPORT QMediaServiceSupportedFormatsInterface
 {
     virtual ~QMediaServiceSupportedFormatsInterface() {}
     virtual QtMediaServices::SupportEstimate hasSupport(const QString &mimeType, const QStringList& codecs) const = 0;
@@ -85,7 +85,7 @@ struct Q_MULTIMEDIA_EXPORT QMediaServiceSupportedFormatsInterface
 Q_DECLARE_INTERFACE(QMediaServiceSupportedFormatsInterface, QMediaServiceSupportedFormatsInterface_iid)
 
 
-struct Q_MULTIMEDIA_EXPORT QMediaServiceSupportedDevicesInterface
+struct Q_MEDIASERVICES_EXPORT QMediaServiceSupportedDevicesInterface
 {
     virtual ~QMediaServiceSupportedDevicesInterface() {}
     virtual QList<QByteArray> devices(const QByteArray &service) const = 0;
@@ -97,7 +97,7 @@ struct Q_MULTIMEDIA_EXPORT QMediaServiceSupportedDevicesInterface
 Q_DECLARE_INTERFACE(QMediaServiceSupportedDevicesInterface, QMediaServiceSupportedDevicesInterface_iid)
 
 
-struct Q_MULTIMEDIA_EXPORT QMediaServiceFeaturesInterface
+struct Q_MEDIASERVICES_EXPORT QMediaServiceFeaturesInterface
 {
     virtual ~QMediaServiceFeaturesInterface() {}
     virtual QMediaServiceProviderHint::Features supportedFeatures(const QByteArray &service) const = 0;
@@ -107,7 +107,7 @@ struct Q_MULTIMEDIA_EXPORT QMediaServiceFeaturesInterface
     "com.nokia.Qt.QMediaServiceFeaturesInterface/1.0"
 Q_DECLARE_INTERFACE(QMediaServiceFeaturesInterface, QMediaServiceFeaturesInterface_iid)
 
-class Q_MULTIMEDIA_EXPORT QMediaServiceProviderPlugin : public QObject, public QMediaServiceProviderFactoryInterface
+class Q_MEDIASERVICES_EXPORT QMediaServiceProviderPlugin : public QObject, public QMediaServiceProviderFactoryInterface
 {
     Q_OBJECT
     Q_INTERFACES(QMediaServiceProviderFactoryInterface:QFactoryInterface)

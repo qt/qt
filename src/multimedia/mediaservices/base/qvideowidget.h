@@ -55,7 +55,7 @@ QT_MODULE(Multimedia)
 class QMediaObject;
 
 class QVideoWidgetPrivate;
-class Q_MULTIMEDIA_EXPORT QVideoWidget : public QWidget
+class Q_MEDIASERVICES_EXPORT QVideoWidget : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(QMediaObject* mediaObject READ mediaObject WRITE setMediaObject)

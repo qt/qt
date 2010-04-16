@@ -52,7 +52,7 @@ QT_MODULE(Multimedia)
 
 
 class QLocalMediaPlaylistProviderPrivate;
-class Q_MULTIMEDIA_EXPORT QLocalMediaPlaylistProvider : public QMediaPlaylistProvider
+class Q_MEDIASERVICES_EXPORT QLocalMediaPlaylistProvider : public QMediaPlaylistProvider
 {
     Q_OBJECT
 

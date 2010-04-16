@@ -53,7 +53,7 @@ QT_MODULE(Multimedia)
 
 class QAbstractVideoSurface;
 
-class Q_MULTIMEDIA_EXPORT QVideoRendererControl : public QMediaControl
+class Q_MEDIASERVICES_EXPORT QVideoRendererControl : public QMediaControl
 {
     Q_OBJECT
 

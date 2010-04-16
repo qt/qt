@@ -57,7 +57,7 @@ QT_MODULE(Multimedia)
 class QMediaService;
 
 class QMediaServiceProviderHintPrivate;
-class Q_MULTIMEDIA_EXPORT QMediaServiceProviderHint
+class Q_MEDIASERVICES_EXPORT QMediaServiceProviderHint
 {
 public:
     enum Type { Null, ContentType, Device, SupportedFeatures };
@@ -98,7 +98,7 @@ private:
     QSharedDataPointer<QMediaServiceProviderHintPrivate> d;
 };
 
-class Q_MULTIMEDIA_EXPORT QMediaServiceProvider : public QObject
+class Q_MEDIASERVICES_EXPORT QMediaServiceProvider : public QObject
 {
     Q_OBJECT
 
