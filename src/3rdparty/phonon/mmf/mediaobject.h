@@ -107,6 +107,9 @@ Q_SIGNALS:
     void finished();
     void tick(qint64 time);
 
+private Q_SLOTS:
+    void handlePrefinishMarkReached(qint32);
+
 private:
     void switchToSource(const MediaSource &source);
     void createPlayer(const MediaSource &source);

@@ -268,10 +268,9 @@ void MMF::AbstractVideoPlayer::MvpuoPrepareComplete(TInt aError)
         handlePendingParametersChanged();
 
         emit totalTimeChanged(totalTime());
-        changeState(StoppedState);
-    } else {
-        setError(tr("Buffering clip failed"), err);
     }
+
+    loadingComplete(aError);
 
     TRACE_EXIT_0();
 }
