@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>qtest</file>
+        <file>url-list.txt</file>
     </qresource>
 </RCC>
