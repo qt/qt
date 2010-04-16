@@ -11,7 +11,6 @@ Item {
     property QtObject errors: createQmlObject("import Qt 4.6\nQtObject{\nproperty int test: 13\nproperty int test: 13\n}", root, "main.qml")
 
     property bool emptyArg: false
-    property bool runtimeError: false
 
     property bool success: false
 
