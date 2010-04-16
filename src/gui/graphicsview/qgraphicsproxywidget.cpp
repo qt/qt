@@ -189,7 +189,7 @@ QT_BEGIN_NAMESPACE
 */
 
 extern bool qt_sendSpontaneousEvent(QObject *, QEvent *);
-extern bool qt_tab_all_widgets;
+Q_GUI_EXPORT extern bool qt_tab_all_widgets;
 
 /*!
     \internal
@@ -897,6 +897,29 @@ bool QGraphicsProxyWidget::event(QEvent *event)
         }
         break;
     }
+#ifndef QT_NO_TOOLTIP
+    case QEvent::GraphicsSceneHelp: {
+        // Propagate the help event (for tooltip) to the widget under mouse
+        if (d->lastWidgetUnderMouse) {
+            QGraphicsSceneHelpEvent *he = static_cast<QGraphicsSceneHelpEvent *>(event);
+            QPoint pos = d->mapToReceiver(mapFromScene(he->scenePos()), d->lastWidgetUnderMouse).toPoint();
+            QHelpEvent e(QEvent::ToolTip, pos, he->screenPos());
+            QApplication::sendEvent(d->lastWidgetUnderMouse, &e);
+            event->setAccepted(e.isAccepted());
+            return e.isAccepted();
+        }
+        break;
+    }
+    case QEvent::ToolTipChange: {
+        // Propagate tooltip change to the widget
+        if (!d->tooltipChangeMode) {
+            d->tooltipChangeMode = QGraphicsProxyWidgetPrivate::ProxyToWidgetMode;
+            d->widget->setToolTip(toolTip());
+            d->tooltipChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
+        }
+        break;
+    }
+#endif
     default:
         break;
     }
@@ -950,6 +973,14 @@ bool QGraphicsProxyWidget::eventFilter(QObject *object, QEvent *event)
                 d->styleChangeMode = QGraphicsProxyWidgetPrivate::WidgetToProxyMode;
                 setStyle(d->widget->style());
                 d->styleChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
+            }
+            break;
+        case QEvent::ToolTipChange:
+            // Propagate tooltip change to the proxy.
+            if (!d->tooltipChangeMode) {
+                d->tooltipChangeMode = QGraphicsProxyWidgetPrivate::WidgetToProxyMode;
+                setToolTip(d->widget->toolTip());
+                d->tooltipChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
             }
             break;
         default:

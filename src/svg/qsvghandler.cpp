@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 static const char *qt_inherit_text = "inherit";
 #define QT_INHERIT QLatin1String(qt_inherit_text)
 
-double qstrtod(const char *s00, char const **se, bool *ok);
+Q_DECL_IMPORT double qstrtod(const char *s00, char const **se, bool *ok);
 
 // ======== duplicated from qcolor_p
 

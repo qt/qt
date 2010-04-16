@@ -72,6 +72,7 @@ public:
           enabledChangeMode(NoMode),
           styleChangeMode(NoMode),
           paletteChangeMode(NoMode),
+          tooltipChangeMode(NoMode),
           focusFromWidgetToProxy(0)
     { }
     void init();
@@ -117,6 +118,7 @@ public:
     quint32 enabledChangeMode : 2;
     quint32 styleChangeMode : 2;
     quint32 paletteChangeMode : 2;
+    quint32 tooltipChangeMode : 2;
     quint32 focusFromWidgetToProxy : 1;
     quint32 proxyIsGivingFocus : 1;
 };

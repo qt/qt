@@ -1818,7 +1818,7 @@ EXPORTS
 	_ZN12QLineControl17_q_deleteSelectedEv @ 1817 NONAME
 	_ZN12QLineControl17processMouseEventEP11QMouseEvent @ 1818 NONAME
 	_ZN12QLineControl17resetInputContextEv @ 1819 NONAME
-	_ZN12QLineControl17updateDisplayTextEv @ 1820 NONAME
+	_ZN12QLineControl17updateDisplayTextEv @ 1820 NONAME ABSENT
 	_ZN12QLineControl18displayTextChangedERK7QString @ 1821 NONAME
 	_ZN12QLineControl18removeSelectedTextEv @ 1822 NONAME
 	_ZN12QLineControl19_q_clipboardChangedEv @ 1823 NONAME
@@ -11806,4 +11806,16 @@ EXPORTS
 	_ZN9QS60Style10timerEventEP11QTimerEvent @ 11805 NONAME
 	_ZN9QS60Style11eventFilterEP7QObjectP6QEvent @ 11806 NONAME
 	_ZN13QFontDatabase25removeAllApplicationFontsEv @ 11807 NONAME
+	_ZN11QEglContext13nativeDisplayEv @ 11808 NONAME ABSENT
+	_ZN11QEglContext14destroyContextEv @ 11809 NONAME ABSENT
+	_ZN11QEglContext3dpyE @ 11810 NONAME DATA 4 ABSENT
+	_ZN11QEglContext7displayEv @ 11811 NONAME ABSENT
+	_ZN11QFontEngine16getGlyphBearingsEjPfS0_ @ 11812 NONAME
+	_ZN12QLineControl17updateDisplayTextEb @ 11813 NONAME
+	_ZN14QWidgetPrivate11inTabWidgetEP7QWidget @ 11814 NONAME
+	_ZN14QWidgetPrivate17canKeypadNavigateEN2Qt11OrientationE @ 11815 NONAME
+	_ZN20QGraphicsItemPrivate14setFocusHelperEN2Qt11FocusReasonEbb @ 11816 NONAME
+	_ZN20QGraphicsItemPrivate16clearFocusHelperEb @ 11817 NONAME
+	_ZN24QImagePixmapCleanupHooks13isImageCachedERK6QImage @ 11818 NONAME
+	_ZN24QImagePixmapCleanupHooks14isPixmapCachedERK7QPixmap @ 11819 NONAME
 

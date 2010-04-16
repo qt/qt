@@ -52,8 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_GUI_EXPORT extern int qt_defaultDpiX();
+Q_GUI_EXPORT extern int qt_defaultDpiY();
 extern void qt_format_text(const QFont &font,
                            const QRectF &_r, int tf, const QTextOption *option, const QString& str, QRectF *brect,
                            int tabstops, int* tabarray, int tabarraylen,
