@@ -23,7 +23,6 @@ HEADERS += \
            $$PHONON_DS9_DIR/videowidget.h \
            $$PHONON_DS9_DIR/videorenderer_soft.h \
            $$PHONON_DS9_DIR/videorenderer_vmr9.h \
-           $$PHONON_DS9_DIR/videorenderer_evr.h \
            $$PHONON_DS9_DIR/volumeeffect.h \
            $$PHONON_DS9_DIR/qbasefilter.h \
            $$PHONON_DS9_DIR/qpin.h \
@@ -47,7 +46,6 @@ SOURCES += \
            $$PHONON_DS9_DIR/videowidget.cpp \
            $$PHONON_DS9_DIR/videorenderer_soft.cpp \
            $$PHONON_DS9_DIR/videorenderer_vmr9.cpp \
-           $$PHONON_DS9_DIR/videorenderer_evr.cpp \
            $$PHONON_DS9_DIR/volumeeffect.cpp \
            $$PHONON_DS9_DIR/qbasefilter.cpp \
            $$PHONON_DS9_DIR/qpin.cpp \

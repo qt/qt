@@ -103,8 +103,8 @@ namespace Phonon
 
         private:
             HANDLE m_cddrive;
-            CDROM_TOC m_toc;
-            WaveStructure m_waveHeader;
+            CDROM_TOC *m_toc;
+            WaveStructure *m_waveHeader;
             qint64 m_trackAddress;
         };
 
@@ -112,8 +112,19 @@ namespace Phonon
 #define SECTOR_SIZE 2352
 #define NB_SECTORS_READ 20
 
-        static const AM_MEDIA_TYPE audioCDMediaType = { MEDIATYPE_Stream, MEDIASUBTYPE_WAVE, TRUE, FALSE, 1, GUID_NULL, 0, 0, 0};
- 
+        static AM_MEDIA_TYPE getAudioCDMediaType()
+        {
+            AM_MEDIA_TYPE mt;
+            qMemSet(&mt, 0, sizeof(AM_MEDIA_TYPE));
+            mt.majortype = MEDIATYPE_Stream;
+            mt.subtype = MEDIASUBTYPE_WAVE;
+            mt.bFixedSizeSamples = TRUE;
+            mt.bTemporalCompression = FALSE;
+            mt.lSampleSize = 1;
+            mt.formattype = GUID_NULL;
+            return mt;
+        }
+
         int addressToSectors(UCHAR address[4])
         {
             return ((address[0] * 60 + address[1]) * 60 + address[2]) * 75 + address[3] - 150;
@@ -130,8 +141,11 @@ namespace Phonon
         }
 
 
-        QAudioCDReader::QAudioCDReader(QBaseFilter *parent, QChar drive) : QAsyncReader(parent, QVector<AM_MEDIA_TYPE>() << audioCDMediaType)
+        QAudioCDReader::QAudioCDReader(QBaseFilter *parent, QChar drive) : QAsyncReader(parent, QVector<AM_MEDIA_TYPE>() << getAudioCDMediaType())
         {
+            m_toc = new CDROM_TOC;
+            m_waveHeader = new WaveStructure;
+
             //now open the cd-drive
             QString path; 
             if (drive.isNull()) {
@@ -140,30 +154,36 @@ namespace Phonon
                 path = QString::fromLatin1("\\\\.\\%1:").arg(drive); 	 
             }
 
-            m_cddrive = ::CreateFile((const wchar_t *)path.utf16(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+            m_cddrive = QT_WA_INLINE (
+			::CreateFile( (TCHAR*)path.utf16(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL ),
+			::CreateFileA( path.toLocal8Bit().constData(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )
+	                );
 
-            qMemSet(&m_toc, 0, sizeof(CDROM_TOC));
+            qMemSet(m_toc, 0, sizeof(CDROM_TOC));
             //read the TOC
             DWORD bytesRead = 0;
-            bool tocRead = ::DeviceIoControl(m_cddrive, IOCTL_CDROM_READ_TOC, 0, 0, &m_toc, sizeof(CDROM_TOC), &bytesRead, 0);
+            bool tocRead = ::DeviceIoControl(m_cddrive, IOCTL_CDROM_READ_TOC, 0, 0, m_toc, sizeof(CDROM_TOC), &bytesRead, 0);
 
             if (!tocRead) {
                 qWarning("unable to load the TOC from the CD");
                 return;
             }
 
-            m_trackAddress = addressToSectors(m_toc.TrackData[0].Address);
-            const qint32 nbSectorsToRead = (addressToSectors(m_toc.TrackData[m_toc.LastTrack + 1 - m_toc.FirstTrack].Address) 
+            m_trackAddress = addressToSectors(m_toc->TrackData[0].Address);
+            const qint32 nbSectorsToRead = (addressToSectors(m_toc->TrackData[m_toc->LastTrack + 1 - m_toc->FirstTrack].Address) 
                 - m_trackAddress);
             const qint32 dataLength = nbSectorsToRead * SECTOR_SIZE;
 
-            m_waveHeader.chunksize = 4 + (8 + m_waveHeader.chunksize2) + (8 + dataLength);
-            m_waveHeader.dataLength = dataLength;
+            m_waveHeader->chunksize = 4 + (8 + m_waveHeader->chunksize2) + (8 + dataLength);
+            m_waveHeader->dataLength = dataLength;
         }
 
         QAudioCDReader::~QAudioCDReader()
         {
             ::CloseHandle(m_cddrive);
+            delete m_toc;
+            delete m_waveHeader;
+
         }
 
         STDMETHODIMP_(ULONG) QAudioCDReader::AddRef()
@@ -179,7 +199,7 @@ namespace Phonon
 
         STDMETHODIMP QAudioCDReader::Length(LONGLONG *total,LONGLONG *available)
         {
-            const LONGLONG length = sizeof(WaveStructure) + m_waveHeader.dataLength;
+            const LONGLONG length = sizeof(WaveStructure) + m_waveHeader->dataLength;
             if (total) {
                 *total = length;
             }
@@ -218,11 +238,11 @@ namespace Phonon
             if (pos < sizeof(WaveStructure)) {
                 //we first copy the content of the structure
                 nbRead = qMin(LONG(sizeof(WaveStructure) - pos), length);
-                qMemCopy(buffer, reinterpret_cast<char*>(&m_waveHeader) + pos, nbRead);
+                qMemCopy(buffer, reinterpret_cast<char*>(m_waveHeader) + pos, nbRead);
             }
 
             const LONGLONG posInTrack = pos - sizeof(WaveStructure) + nbRead;
-            const int bytesLeft = qMin(m_waveHeader.dataLength - posInTrack, LONGLONG(length - nbRead));
+            const int bytesLeft = qMin(m_waveHeader->dataLength - posInTrack, LONGLONG(length - nbRead));
 
             if (bytesLeft > 0) {
 
@@ -277,8 +297,8 @@ namespace Phonon
         {
             QList<qint64> ret;
             ret << 0;
-            for(int i = m_toc.FirstTrack; i <= m_toc.LastTrack ; ++i) {
-                const uchar *address = m_toc.TrackData[i].Address;
+            for(int i = m_toc->FirstTrack; i <= m_toc->LastTrack ; ++i) {
+                const uchar *address = m_toc->TrackData[i].Address;
                 ret << ((address[0] * 60 + address[1]) * 60 + address[2]) * 1000 + address[3]*1000/75 - 2000;
 
             }
