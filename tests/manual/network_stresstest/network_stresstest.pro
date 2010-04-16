@@ -2,7 +2,7 @@ load(qttest_p4)
 
 QT = core network
 
-SOURCES  += tst_qtcpsocket_stresstest.cpp \
+SOURCES  += tst_network_stresstest.cpp \
     minihttpserver.cpp
 
 HEADERS += \

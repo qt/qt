@@ -54,7 +54,7 @@
 #endif
 
 #include "minihttpserver.h"
-#include "../network-settings.h"
+#include "../../auto/network-settings.h"
 
 #include <qplatformdefs.h>
 #ifdef Q_OS_UNIX
@@ -111,7 +111,7 @@ private Q_SLOTS:
 };
 
 tst_QTcpSocket_stresstest::tst_QTcpSocket_stresstest()
-    : intermediateDebug(qgetenv("QTCPSOCKET_STRESSTEST").toInt() > 1)
+    : intermediateDebug(qgetenv("STRESSDEBUG").toInt() > 0)
 {
 #ifdef Q_OS_WIN
     WSAData wsadata;
@@ -135,9 +135,6 @@ void tst_QTcpSocket_stresstest::initTestCase_data()
 
 void tst_QTcpSocket_stresstest::init()
 {
-    if (qgetenv("QTCPSOCKET_STRESSTEST").toInt() == 0)
-        QSKIP("Stress test disabled", SkipAll);
-
     // clear the internal cache
 #ifndef QT_BUILD_INTERNAL
     if (strncmp(QTest::currentTestFunction(), "nam") == 0)
@@ -736,4 +733,4 @@ void tst_QTcpSocket_stresstest::namGet()
 
 QTEST_MAIN(tst_QTcpSocket_stresstest);
 
-#include "tst_qtcpsocket_stresstest.moc"
+#include "tst_network_stresstest.moc"
