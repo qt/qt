@@ -871,10 +871,10 @@ void tst_qdeclarativetext::embeddedImages_data()
     QTest::addColumn<QString>("error");
     QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesLocal.qml") << "";
     QTest::newRow("local-error") << QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesLocalError.qml")
-        << "\"Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/http/notexists.png").toString() + "\" ";
+        << "QML Text ("+QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesLocalError.qml").toString()+":3:1) Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/http/notexists.png").toString();
     QTest::newRow("remote") << QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesRemote.qml") << "";
     QTest::newRow("remote-error") << QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesRemoteError.qml")
-        << "\"Error downloading http://127.0.0.1:14453/notexists.png - server replied: Not found\" ";
+        << "QML Text ("+QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesRemoteError.qml").toString()+":3:1) Error downloading http://127.0.0.1:14453/notexists.png - server replied: Not found";
 }
 
 void tst_qdeclarativetext::embeddedImages()
@@ -897,10 +897,14 @@ void tst_qdeclarativetext::embeddedImages()
 
     QTRY_COMPARE(textObject->resourcesLoading(), 0);
 
+    QPixmap pm(SRCDIR "/data/http/exists.png");
     if (error.isEmpty()) {
-        QPixmap pm(SRCDIR "/data/http/exists.png");
         QCOMPARE(textObject->width(), double(pm.width()));
         QCOMPARE(textObject->height(), double(pm.height()));
+    } else {
+        QVERIFY(16 != pm.width()); // check test is effective
+        QCOMPARE(textObject->width(), 16.0); // default size of QTextDocument broken image icon
+        QCOMPARE(textObject->height(), 16.0);
     }
 }
 

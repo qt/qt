@@ -42,6 +42,7 @@
 #include "qdeclarativecontext.h"
 #include "private/qdeclarativecontext_p.h"
 
+#include "private/qdeclarativecomponent_p.h"
 #include "private/qdeclarativeexpression_p.h"
 #include "private/qdeclarativeengine_p.h"
 #include "qdeclarativeengine.h"
@@ -476,21 +477,34 @@ QObject *QDeclarativeContextPrivate::context_at(QDeclarativeListProperty<QObject
 QDeclarativeContextData::QDeclarativeContextData()
 : parent(0), engine(0), isInternal(false), publicContext(0), propertyNames(0), contextObject(0),
   imports(0), childContexts(0), nextChild(0), prevChild(0), expressions(0), contextObjects(0),
-  contextGuards(0), idValues(0), idValueCount(0), optimizedBindings(0), linkedContext(0)
+  contextGuards(0), idValues(0), idValueCount(0), optimizedBindings(0), linkedContext(0),
+  componentAttached(0)
 {
 }
 
 QDeclarativeContextData::QDeclarativeContextData(QDeclarativeContext *ctxt)
 : parent(0), engine(0), isInternal(false), publicContext(ctxt), propertyNames(0), contextObject(0),
   imports(0), childContexts(0), nextChild(0), prevChild(0), expressions(0), contextObjects(0),
-  contextGuards(0), idValues(0), idValueCount(0), optimizedBindings(0), linkedContext(0)
+  contextGuards(0), idValues(0), idValueCount(0), optimizedBindings(0), linkedContext(0),
+  componentAttached(0)
 {
 }
 
-void QDeclarativeContextData::destroy()
+void QDeclarativeContextData::invalidate()
 {
-    if (linkedContext) 
-        linkedContext->destroy();
+    while (childContexts) 
+        childContexts->invalidate();
+
+    while (componentAttached) {
+        QDeclarativeComponentAttached *a = componentAttached;
+        componentAttached = a->next;
+        if (componentAttached) componentAttached->prev = &componentAttached;
+
+        a->next = 0;
+        a->prev = 0;
+
+        emit a->destruction();
+    }
 
     if (prevChild) {
         *prevChild = nextChild;
@@ -498,19 +512,17 @@ void QDeclarativeContextData::destroy()
         nextChild = 0;
         prevChild = 0;
     }
-    
-    QDeclarativeContextData *child = childContexts;
-    while (child) {
-        QDeclarativeContextData *next = child->nextChild;
 
-        child->invalidateEngines();
-        child->parent = 0;
-        child->nextChild = 0;
-        child->prevChild = 0;
+    engine = 0;
+    parent = 0;
+}
 
-        child = next;
-    }
-    childContexts = 0;
+void QDeclarativeContextData::destroy()
+{
+    if (linkedContext) 
+        linkedContext->destroy();
+
+    if (engine) invalidate();
 
     QDeclarativeAbstractExpression *expression = expressions;
     while (expression) {
@@ -570,19 +582,6 @@ void QDeclarativeContextData::setParent(QDeclarativeContextData *p)
         if (nextChild) nextChild->prevChild = &nextChild;
         prevChild = &p->childContexts;
         p->childContexts = this;
-    }
-}
-
-void QDeclarativeContextData::invalidateEngines()
-{
-    if (!engine)
-        return;
-    engine = 0;
-
-    QDeclarativeContextData *child = childContexts;
-    while (child) {
-        child->invalidateEngines();
-        child = child->nextChild;
     }
 }
 

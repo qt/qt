@@ -550,6 +550,11 @@ QMenuBar *QDeclarativeViewer::menuBar() const
     return mb;
 }
 
+QDeclarativeView *QDeclarativeViewer::view() const
+{
+    return canvas;
+}
+
 void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 {
     QObject *parent = flatmenu ? (QObject*)flatmenu : (QObject*)menu;
@@ -888,24 +893,19 @@ void QDeclarativeViewer::addPluginPath(const QString& plugin)
 
 void QDeclarativeViewer::reload()
 {
-    openQml(currentFileOrUrl);
-}
-
-void QDeclarativeViewer::open(const QString& doc)
-{
-    openQml(doc);
+    open(currentFileOrUrl);
 }
 
 void QDeclarativeViewer::openFile()
 {
     QString cur = canvas->source().toLocalFile();
     if (useQmlFileBrowser) {
-        openQml("qrc:/content/Browser.qml");
+        open("qrc:/content/Browser.qml");
     } else {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), cur, tr("QML Files (*.qml)"));
         if (!fileName.isEmpty()) {
             QFileInfo fi(fileName);
-            openQml(fi.absoluteFilePath());
+            open(fi.absoluteFilePath());
         }
     }
 }
@@ -935,10 +935,10 @@ void QDeclarativeViewer::statusChanged()
 
 void QDeclarativeViewer::launch(const QString& file_or_url)
 {
-    QMetaObject::invokeMethod(this, "openQml", Qt::QueuedConnection, Q_ARG(QString, file_or_url));
+    QMetaObject::invokeMethod(this, "open", Qt::QueuedConnection, Q_ARG(QString, file_or_url));
 }
 
-void QDeclarativeViewer::openQml(const QString& file_or_url)
+bool QDeclarativeViewer::open(const QString& file_or_url)
 {
     currentFileOrUrl = file_or_url;
 
@@ -971,7 +971,7 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
         if (fi.exists()) {
             if (fi.suffix().toLower() != QLatin1String("qml")) {
                 qWarning() << "qml cannot open non-QML file" << fileName;
-                return;
+                return false;
             }
 
             QDir dir(fi.path()+"/dummydata", "*.qml");
@@ -1002,7 +1002,7 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
             }
         } else {
             qWarning() << "qml cannot find file:" << fileName;
-            return;
+            return false;
         }
     }
 
@@ -1013,9 +1013,7 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
 
     qWarning() << "Wall startup time:" << t.elapsed();
 
-#ifdef QTOPIA
-    show();
-#endif
+    return true;
 }
 
 void QDeclarativeViewer::startNetwork()

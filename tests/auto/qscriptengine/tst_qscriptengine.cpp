@@ -155,6 +155,7 @@ private slots:
     void incDecNonObjectProperty();
     void installTranslatorFunctions_data();
     void installTranslatorFunctions();
+    void translateScript();
     void functionScopes();
     void nativeFunctionScopes();
     void evaluateProgram();
@@ -4333,6 +4334,45 @@ void tst_QScriptEngine::installTranslatorFunctions()
         QVERIFY(ret.isString());
         QCOMPARE(ret.toString(), QString::fromLatin1("foobar"));
     }
+}
+
+void tst_QScriptEngine::translateScript()
+{
+    QScriptEngine engine;
+
+    QTranslator translator;
+    translator.load(":/translations/translatable_la");
+    QCoreApplication::instance()->installTranslator(&translator);
+    engine.installTranslatorFunctions();
+
+    QString fileName = QString::fromLatin1("translatable.js");
+    // Top-level
+    QCOMPARE(engine.evaluate("qsTr('One')", fileName).toString(), QString::fromLatin1("En"));
+    QCOMPARE(engine.evaluate("qsTr('Hello')", fileName).toString(), QString::fromLatin1("Hallo"));
+    // From function
+    QCOMPARE(engine.evaluate("(function() { return qsTr('One'); })()", fileName).toString(), QString::fromLatin1("En"));
+    QCOMPARE(engine.evaluate("(function() { return qsTr('Hello'); })()", fileName).toString(), QString::fromLatin1("Hallo"));
+    // From eval
+    QCOMPARE(engine.evaluate("eval('qsTr(\\'One\\')')", fileName).toString(), QString::fromLatin1("En"));
+    QCOMPARE(engine.evaluate("eval('qsTr(\\'Hello\\')')", fileName).toString(), QString::fromLatin1("Hallo"));
+
+    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Two')", fileName).toString(), QString::fromLatin1("To"));
+    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Goodbye')", fileName).toString(), QString::fromLatin1("Farvel"));
+    // From eval
+    QCOMPARE(engine.evaluate("eval('qsTranslate(\\'FooContext\\', \\'Two\\')')", fileName).toString(), QString::fromLatin1("To"));
+    QCOMPARE(engine.evaluate("eval('qsTranslate(\\'FooContext\\', \\'Goodbye\\')')", fileName).toString(), QString::fromLatin1("Farvel"));
+
+    // Don't exist in translation
+    QCOMPARE(engine.evaluate("qsTr('Three')", fileName).toString(), QString::fromLatin1("Three"));
+    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'So long')", fileName).toString(), QString::fromLatin1("So long"));
+    QCOMPARE(engine.evaluate("qsTranslate('BarContext', 'Goodbye')", fileName).toString(), QString::fromLatin1("Goodbye"));
+
+    // From C++
+    // There is no context, but it shouldn't crash
+    QCOMPARE(engine.globalObject().property("qsTr").call(
+                 QScriptValue(), QScriptValueList() << "One").toString(), QString::fromLatin1("One"));
+
+    QCoreApplication::instance()->removeTranslator(&translator);
 }
 
 void tst_QScriptEngine::functionScopes()

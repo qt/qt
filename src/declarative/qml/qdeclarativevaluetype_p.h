@@ -86,7 +86,10 @@ public:
 
     static void registerValueTypes();
 
-    QDeclarativeValueType *operator[](int idx) const;
+    QDeclarativeValueType *operator[](int idx) const {
+        if (idx >= (int)QVariant::UserType) return 0;
+        else return valueTypes[idx];
+    }
 
 private:
     QDeclarativeValueType *valueTypes[QVariant::UserType - 1]; 

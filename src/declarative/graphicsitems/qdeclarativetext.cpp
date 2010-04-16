@@ -45,6 +45,7 @@
 #include <qdeclarativeinfo.h>
 #include <qdeclarativepixmapcache_p.h>
 
+#include <QSet>
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
@@ -75,14 +76,19 @@ protected:
 
         if (type == QTextDocument::ImageResource) {
             QPixmap pm;
-            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(url, &pm, 0, true, 0, 0);
+            QString errorString;
+            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(url, &pm, &errorString, 0, false, 0, 0);
             if (status == QDeclarativePixmapReply::Ready)
                 return pm;
-            if (status != QDeclarativePixmapReply::Error) {
+            if (status == QDeclarativePixmapReply::Error) {
+                if (!errors.contains(url)) {
+                    errors.insert(url);
+                    qmlInfo(parent()) << errorString;
+                }
+            } else {
                 QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(parent()), url);
                 connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
                 outstanding++;
-                static_cast<QDeclarativeText*>(parent())->reloadWithResources();
             }
         }
 
@@ -93,12 +99,16 @@ private slots:
     void requestFinished()
     {
         outstanding--;
-        static_cast<QDeclarativeText*>(parent())->reloadWithResources();
+        if (outstanding == 0)
+            static_cast<QDeclarativeText*>(parent())->reloadWithResources();
     }
 
 private:
     int outstanding;
+    static QSet<QUrl> errors;
 };
+
+QSet<QUrl> QTextDocumentWithImageResources::errors;
 
 /*!
     \qmlclass Text QDeclarativeText
@@ -958,24 +968,19 @@ void QDeclarativeText::reloadWithResources()
     Q_D(QDeclarativeText);
     if (!d->richText)
         return;
-    if (resourcesLoading()!=0)
-        return;
-    emit resourcesLoadingChanged();
     d->doc->setHtml(d->text);
     d->updateLayout();
     d->markImgDirty();
 }
 
 /*!
-    \qmlproperty int Text::resourcesLoading
-    This property is the number of resources (images) that are being loaded asynchronously.
+    Returns the number of resources (images) that are being loaded asynchronously.
 */
 int QDeclarativeText::resourcesLoading() const
 {
     Q_D(const QDeclarativeText);
     return d->doc ? d->doc->resourcesLoading() : 0;
 }
-
 
 void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {

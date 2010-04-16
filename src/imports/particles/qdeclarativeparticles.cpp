@@ -41,6 +41,7 @@
 
 #include "qdeclarativeparticles_p.h"
 
+#include <qdeclarativeinfo.h>
 #include <private/qdeclarativeitem_p.h>
 
 #include <private/qdeclarativepixmapcache_p.h>
@@ -730,7 +731,9 @@ void QDeclarativeParticles::imageLoaded()
 {
     Q_D(QDeclarativeParticles);
     d->pendingPixmapCache = false;
-    QDeclarativePixmapCache::get(d->url, &d->image);
+    QString errorString;
+    if (QDeclarativePixmapCache::get(d->url, &d->image, &errorString)==QDeclarativePixmapReply::Error)
+        qmlInfo(this) << errorString;
     d->paintItem->updateSize();
     d->paintItem->update();
 }
@@ -754,12 +757,15 @@ void QDeclarativeParticles::setSource(const QUrl &name)
     } else {
         d->url = name;
         Q_ASSERT(!name.isRelative());
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->image);
+        QString errorString;
+        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->image, &errorString);
         if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
             QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->url);
             connect(reply, SIGNAL(finished()), this, SLOT(imageLoaded()));
             d->pendingPixmapCache = true;
         } else {
+            if (status == QDeclarativePixmapReply::Error)
+                qmlInfo(this) << errorString;
             //### unify with imageLoaded
             d->paintItem->updateSize();
             d->paintItem->update();

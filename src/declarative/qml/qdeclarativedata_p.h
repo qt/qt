@@ -100,7 +100,9 @@ public:
     quint32 explicitIndestructibleSet:1;
     quint32 dummy:28;
 
-    QDeclarativeContextData *context;
+    // The context that created the C++ object
+    QDeclarativeContextData *context; 
+    // The outermost context in which this object lives
     QDeclarativeContextData *outerContext;
 
     QDeclarativeAbstractBinding *bindings;
