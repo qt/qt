@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include <QtMediaservices/qgraphicsvideoitem.h>
+#include <QtMediaServices/qgraphicsvideoitem.h>
 
-#include <QtMediaservices/qmediaobject.h>
-#include <QtMediaservices/qmediaservice.h>
-#include <QtMediaservices/private/qpaintervideosurface_p.h>
-#include <QtMediaservices/qvideooutputcontrol.h>
-#include <QtMediaservices/qvideorenderercontrol.h>
+#include <QtMediaServices/qmediaobject.h>
+#include <QtMediaServices/qmediaservice.h>
+#include <QtMediaServices/private/qpaintervideosurface_p.h>
+#include <QtMediaServices/qvideooutputcontrol.h>
+#include <QtMediaServices/qvideorenderercontrol.h>
 #include <QtMultimedia/qvideosurfaceformat.h>
 
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)

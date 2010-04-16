@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMediaservices module of the Qt Toolkit.
+** This file is part of the QtMediaServices module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -45,7 +45,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qstringlist.h>
 
-#include <QtMediaservices/qtmedianamespace.h>
+#include <QtMediaServices/qtmedianamespace.h>
 
 QT_BEGIN_HEADER
 
@@ -67,7 +67,7 @@ public:
     ~QMediaObject();
 
     virtual bool isAvailable() const;
-    virtual QtMediaservices::AvailabilityError availabilityError() const;
+    virtual QtMediaServices::AvailabilityError availabilityError() const;
 
     virtual QMediaService* service() const;
 
@@ -80,9 +80,9 @@ public:
     bool isMetaDataAvailable() const;
     bool isMetaDataWritable() const;
 
-    QVariant metaData(QtMediaservices::MetaData key) const;
-    void setMetaData(QtMediaservices::MetaData key, const QVariant &value);
-    QList<QtMediaservices::MetaData> availableMetaData() const;
+    QVariant metaData(QtMediaServices::MetaData key) const;
+    void setMetaData(QtMediaServices::MetaData key, const QVariant &value);
+    QList<QtMediaServices::MetaData> availableMetaData() const;
 
     QVariant extendedMetaData(const QString &key) const;
     void setExtendedMetaData(const QString &key, const QVariant &value);

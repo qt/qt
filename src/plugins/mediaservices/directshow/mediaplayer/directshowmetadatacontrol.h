@@ -44,7 +44,7 @@
 
 #include "directshowglobal.h"
 
-#include <QtMediaservices/qmetadatacontrol.h>
+#include <QtMediaServices/qmetadatacontrol.h>
 
 #include <qnetwork.h>
 
@@ -72,9 +72,9 @@ public:
     bool isWritable() const;
     bool isMetaDataAvailable() const;
 
-    QVariant metaData(QtMediaservices::MetaData key) const;
-    void setMetaData(QtMediaservices::MetaData key, const QVariant &value);
-    QList<QtMediaservices::MetaData> availableMetaData() const;
+    QVariant metaData(QtMediaServices::MetaData key) const;
+    void setMetaData(QtMediaServices::MetaData key, const QVariant &value);
+    QList<QtMediaServices::MetaData> availableMetaData() const;
 
     QVariant extendedMetaData(const QString &key) const;
     void setExtendedMetaData(const QString &key, const QVariant &value);

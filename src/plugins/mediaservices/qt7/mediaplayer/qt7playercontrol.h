@@ -45,8 +45,8 @@
 #include <QtCore/qobject.h>
 #include <QtGui/qmacdefines_mac.h>
 
-#include <QtMediaservices/qmediaplayercontrol.h>
-#include <QtMediaservices/qmediaplayer.h>
+#include <QtMediaServices/qmediaplayercontrol.h>
+#include <QtMediaServices/qmediaplayer.h>
 
 
 QT_BEGIN_HEADER

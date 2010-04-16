@@ -3544,8 +3544,8 @@ fi
     -no-audio-backend .. Do not build the platform audio backend into QtMultimedia.
  +  -audio-backend ..... Build the platform audio backend into QtMultimedia if available.
 
-    -no-mediaservices... Do not build the QtMediaservices module.
- +  -mediaservices...... Build the QtMediaservices module.
+    -no-mediaservices... Do not build the QtMediaServices module.
+ +  -mediaservices...... Build the QtMediaServices module.
 
     -no-media-backend... Do not build platform mediaservices plugin.
  +  -media-backend..... Build the platform mediaservices plugin.

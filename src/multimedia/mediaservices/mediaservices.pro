@@ -1,4 +1,4 @@
-TARGET = QtMediaservices
+TARGET = QtMediaServices
 QPRO_PWD = $$PWD
 QT = core gui multimedia
 

@@ -812,7 +812,7 @@ void QGstreamerPlayerSession::getStreamsInfo()
 
     for (int i=0; i<m_streamTypes.count(); i++) {
         QMediaStreamsControl::StreamType streamType = m_streamTypes[i];
-        QMap<QtMediaservices::MetaData, QVariant> streamProperties;
+        QMap<QtMediaServices::MetaData, QVariant> streamProperties;
 
         int streamIndex = i - m_playbin2StreamOffset[streamType];
 
@@ -834,7 +834,7 @@ void QGstreamerPlayerSession::getStreamsInfo()
         if (tags && gst_is_tag_list(tags)) {
             gchar *languageCode = 0;
             if (gst_tag_list_get_string(tags, GST_TAG_LANGUAGE_CODE, &languageCode))
-                streamProperties[QtMediaservices::Language] = QString::fromUtf8(languageCode);
+                streamProperties[QtMediaServices::Language] = QString::fromUtf8(languageCode);
 
             //qDebug() << "language for setream" << i << QString::fromUtf8(languageCode);
             g_free (languageCode);
@@ -889,8 +889,8 @@ void QGstreamerPlayerSession::getStreamsInfo()
 //            break;
 //        }
 //
-//        QMap<QtMediaservices::MetaData, QVariant> streamProperties;
-//        streamProperties[QtMediaservices::Language] = QString::fromUtf8(languageCode);
+//        QMap<QtMediaServices::MetaData, QVariant> streamProperties;
+//        streamProperties[QtMediaServices::Language] = QString::fromUtf8(languageCode);
 //
 //        m_streamProperties.append(streamProperties);
 //        m_streamTypes.append(streamType);

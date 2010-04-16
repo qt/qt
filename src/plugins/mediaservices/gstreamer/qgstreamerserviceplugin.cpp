@@ -52,7 +52,7 @@
 #ifdef QMEDIA_GSTREAMER_CAPTURE
 #include "qgstreamercaptureservice.h"
 #endif
-#include <QtMediaservices/qmediaserviceprovider.h>
+#include <QtMediaServices/qmediaserviceprovider.h>
 
 #ifdef QMEDIA_GSTREAMER_CAPTURE
 #include <linux/types.h>

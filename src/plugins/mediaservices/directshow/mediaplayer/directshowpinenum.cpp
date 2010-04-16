@@ -41,7 +41,7 @@
 
 #include "directshowpinenum.h"
 
-#include <QtMediaservices>
+#include <QtMediaServices>
 
 
 QT_BEGIN_NAMESPACE

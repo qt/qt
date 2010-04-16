@@ -1788,10 +1788,10 @@ bool Configure::displayHelp()
         desc("MULTIMEDIA", "yes","-multimedia",         "Compile in multimedia module");
         desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into QtMultimedia");
         desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into QtMultimedia");
-        desc("MEDIASERVICES", "no", "-no-mediaservices","Do not compile the QtMediaservices module");
-        desc("MEDIASERVICES", "yes","-mediaservices",   "Compile in QtMediaservices module");
-        desc("MEDIA_BACKEND", "no","-no-media-backend", "Do not compile in the platform-specific QtMediaservices media service.");
-        desc("MEDIA_BACKEND", "yes","-media-backend",   "Compile in the platform-specific QtMediaservices media service.");
+        desc("MEDIASERVICES", "no", "-no-mediaservices","Do not compile the QtMediaServices module");
+        desc("MEDIASERVICES", "yes","-mediaservices",   "Compile in QtMediaServices module");
+        desc("MEDIA_BACKEND", "no","-no-media-backend", "Do not compile in the platform-specific QtMediaServices media service.");
+        desc("MEDIA_BACKEND", "yes","-media-backend",   "Compile in the platform-specific QtMediaServices media service.");
         desc("WEBKIT", "no",    "-no-webkit",           "Do not compile in the WebKit module");
         desc("WEBKIT", "yes",   "-webkit",              "Compile in the WebKit module (WebKit is built if a decent C++ compiler is used.)");
         desc("SCRIPT", "no",    "-no-script",           "Do not build the QtScript module.");
@@ -3347,7 +3347,7 @@ void Configure::displayConfig()
     cout << "QtXmlPatterns support......." << dictionary[ "XMLPATTERNS" ] << endl;
     cout << "Phonon support.............." << dictionary[ "PHONON" ] << endl;
     cout << "QtMultimedia support........" << dictionary[ "MULTIMEDIA" ] << endl;
-    cout << "QtMediaservices support....." << dictionary[ "MEDIASERVICES" ] << endl;
+    cout << "QtMediaServices support....." << dictionary[ "MEDIASERVICES" ] << endl;
     cout << "WebKit support.............." << dictionary[ "WEBKIT" ] << endl;
     cout << "Declarative support........." << dictionary[ "DECLARATIVE" ] << endl;
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
