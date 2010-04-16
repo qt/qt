@@ -46,6 +46,8 @@
 #
 #######################################################################
 
+use File::Copy;
+
 sub Usage() {
     print("This script can be used to set capabilities of all binaries\n");
     print("specified for deployment in a .pkg file.\n");
@@ -107,6 +109,9 @@ if (@ARGV)
     # If the specified ".pkg" file exists (and can be read),
     if (($pkgFileName =~ m|\.pkg$|i) && -r($pkgFileName))
     {
+        print ("\n");
+        print ("Patching package file and relevant binaries...\n");
+
         # If there are more arguments given, parse them as capabilities.
         if (@ARGV)
         {
@@ -180,15 +185,10 @@ if (@ARGV)
                 $manufacturerElseBlock = 0;
             }
 
-            print NEW_PKG $newLine;
-
-            chomp ($line);
-
             # If the line specifies a file, parse the source and destination locations.
             if ($line =~ m|\"([^\"]+)\"\s*\-\s*\"([^\"]+)\"|)
             {
                 my $sourcePath = $1;
-                my $destinationPath = $2;
 
                 # If the given file is a binary, check the target and binary type (+ the actual filename) from its path.
                 if ($sourcePath =~ m:\w+(\.dll|\.exe)$:i)
@@ -201,9 +201,22 @@ if (@ARGV)
                         $sourcePath =~ s/\$\(TARGET\)/$target/gm;
                     }
 
-                    push (@binaries, $sourcePath);
+                    # Change the source file name (but only if not already patched)
+                    my $patchedSourcePath = $sourcePath;
+                    if ($patchedSourcePath !~ m/_patched_caps/)
+                    {
+                        $newLine =~ s/(^.*)(\.dll|\.exe)(.*)(\.dll|\.exe)/$1_patched_caps$2$3$4/i;
+                        $patchedSourcePath =~ s/(^.*)(\.dll|\.exe)/$1_patched_caps$2/i;
+
+                        copy($sourcePath, $patchedSourcePath) or die "$sourcePath cannot be copied for patching.";
+                    }
+                    push (@binaries, $patchedSourcePath);
                 }
             }
+
+            print NEW_PKG $newLine;
+
+            chomp ($line);
         }
 
         close (PKG);
@@ -255,6 +268,8 @@ if (@ARGV)
             #$commandToExecute = "elftran -dump s ".$binaryPath;
         }
 
+        print ("\n");
+        print ("NOTE: A patched package should not be used for distribution!\n");
         print ("\n");
     }
 }
