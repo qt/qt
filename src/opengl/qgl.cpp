@@ -5377,6 +5377,15 @@ void QGLContextResource::cleanup(const QGLContext *ctx, void *value)
     active.deref();
 }
 
+void QGLContextResource::remove(const QGLContext *ctx)
+{
+    if (ctx) {
+        QGLContextGroup *group = QGLContextPrivate::contextGroup(ctx);
+        group->m_resources.remove(this);
+        active.deref();
+    }
+}
+
 void QGLContextGroup::cleanupResources(const QGLContext *ctx)
 {
     // If there are still shares, then no cleanup to be done yet.

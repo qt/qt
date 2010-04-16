@@ -624,6 +624,8 @@ public:
     void *value(const QGLContext *key);
     // Cleanup 'value' in response to a context group being destroyed.
     void cleanup(const QGLContext *ctx, void *value);
+    // Remove this resource from the group's resource list.
+    void remove(const QGLContext *ctx);
 private:
     FreeFunc free;
     QAtomicInt active;
