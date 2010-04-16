@@ -1,7 +1,7 @@
 TARGET = qdsengine
 include(../../qpluginbase.pri)
 
-QT += mediaservices
+QT += multimedia mediaservices
 
 HEADERS += dsserviceplugin.h
 SOURCES += dsserviceplugin.cpp
