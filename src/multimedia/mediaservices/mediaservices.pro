@@ -12,5 +12,10 @@ include(base/base.pri)
 include(playback/playback.pri)
 include(effects/effects.pri)
 
-symbian: TARGET.UID3 = 0x2001E631
+symbian: {
+    TARGET.UID3 = 0x2001E631
+    contains(CONFIG, def_files) {
+        DEF_FILE=../../s60installs
+    }
+}
 
