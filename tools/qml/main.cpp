@@ -88,6 +88,8 @@ void usage()
     qWarning("  -skin <qvfbskindir> ...................... run with a skin window frame");
     qWarning("                                             \"list\" for a list of built-ins");
     qWarning("  -resizeview .............................. resize the view, not the skin");
+    qWarning("  -sizeviewtorootobject .................... the view resizes to the changes in the content");
+    qWarning("  -sizerootobjecttoview .................... the content resizes to the changes in the view");
     qWarning("  -qmlbrowser .............................. use a QML-based file browser");
     qWarning("  -recordfile <output> ..................... set video recording file");
     qWarning("                                              - ImageMagick 'convert' for GIF)");
@@ -184,6 +186,7 @@ int main(int argc, char ** argv)
     bool stayOnTop = false;
     bool maximized = false;
     bool useNativeFileBrowser = true;
+    bool sizeToView = true;
 
 #if defined(Q_OS_SYMBIAN)
     maximized = true;
@@ -270,6 +273,10 @@ int main(int argc, char ** argv)
             if (lastArg) usage();
             script = QString(argv[++i]);
             runScript = true;
+        } else if (arg == "-sizeviewtorootobject") {
+            sizeToView = false;
+        } else if (arg == "-sizerootobjecttoview") {
+            sizeToView = true;
         } else if (arg[0] != '-') {
             fileName = arg;
         } else if (1 || arg == "-help") {
@@ -339,6 +346,7 @@ int main(int argc, char ** argv)
 
     viewer.setNetworkCacheSize(cache);
     viewer.setRecordFile(recordfile);
+    viewer.setSizeToView(sizeToView);
     if (resizeview)
         viewer.setScaleView();
     if (fps>0)
@@ -390,6 +398,5 @@ int main(int argc, char ** argv)
     }
     viewer.setUseGL(useGL);
     viewer.raise();
-
     return app.exec();
 }
