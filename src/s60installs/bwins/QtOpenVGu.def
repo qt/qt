@@ -123,7 +123,7 @@ EXPORTS
 	?destroyPaintEngine@QVGEGLWindowSurfacePrivate@@IAEXXZ @ 122 NONAME ; void QVGEGLWindowSurfacePrivate::destroyPaintEngine(void)
 	?qt_vg_shared_surface@@YAHXZ @ 123 NONAME ; int qt_vg_shared_surface(void)
 	?drawCursorPixmap@QVGCompositionHelper@@QAEXABVQPixmap@@ABVQPoint@@@Z @ 124 NONAME ; void QVGCompositionHelper::drawCursorPixmap(class QPixmap const &, class QPoint const &)
-	?drawPixmaps@QVGPaintEngine@@UAEXPBUData@QDrawPixmaps@@HABVQPixmap@@V?$QFlags@W4DrawingHint@QDrawPixmaps@@@@@Z @ 125 NONAME ; void QVGPaintEngine::drawPixmaps(struct QDrawPixmaps::Data const *, int, class QPixmap const &, class QFlags<enum QDrawPixmaps::DrawingHint>)
+	?drawPixmaps@QVGPaintEngine@@UAEXPBUData@QDrawPixmaps@@HABVQPixmap@@V?$QFlags@W4DrawingHint@QDrawPixmaps@@@@@Z @ 125 NONAME ABSENT ; void QVGPaintEngine::drawPixmaps(struct QDrawPixmaps::Data const *, int, class QPixmap const &, class QFlags<enum QDrawPixmaps::DrawingHint>)
 	?drawPolygon@QVGPaintEngine@@UAEXPBVQPointF@@HW4PolygonDrawMode@QPaintEngine@@@Z @ 126 NONAME ; void QVGPaintEngine::drawPolygon(class QPointF const *, int, enum QPaintEngine::PolygonDrawMode)
 	?toVGImage@QVGPixmapData@@UAEKXZ @ 127 NONAME ; unsigned long QVGPixmapData::toVGImage(void)
 	?end@QVGPaintEngine@@UAE_NXZ @ 128 NONAME ; bool QVGPaintEngine::end(void)
@@ -164,4 +164,7 @@ EXPORTS
 	?qt_vg_create_context@@YAPAVQEglContext@@PAVQPaintDevice@@H@Z @ 163 NONAME ; class QEglContext * qt_vg_create_context(class QPaintDevice *, int)
 	?reclaimImages@QVGPixmapData@@UAEXXZ @ 164 NONAME ; void QVGPixmapData::reclaimImages(void)
 	?hibernate@QVGPixmapData@@UAEXXZ @ 165 NONAME ; void QVGPixmapData::hibernate(void)
+	?drawStaticTextItem@QVGPaintEngine@@UAEXPAVQStaticTextItem@@@Z @ 166 NONAME ; void QVGPaintEngine::drawStaticTextItem(class QStaticTextItem *)
+	?drawPixmapFragments@QVGPaintEngine@@UAEXPBVPixmapFragment@QPainter@@HABVQPixmap@@V?$QFlags@W4PixmapFragmentHint@QPainter@@@@@Z @ 167 NONAME ; void QVGPaintEngine::drawPixmapFragments(class QPainter::PixmapFragment const *, int, class QPixmap const &, class QFlags<enum QPainter::PixmapFragmentHint>)
+	?drawCachedGlyphs@QVGPaintEngine@@QAE_NHPBIABVQFont@@PAVQFontEngine@@ABVQPointF@@@Z @ 168 NONAME ; bool QVGPaintEngine::drawCachedGlyphs(int, unsigned int const *, class QFont const &, class QFontEngine *, class QPointF const &)
 

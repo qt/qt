@@ -12601,7 +12601,7 @@ EXPORTS
 	?setPixelFormat@QEglProperties@@QAEXW4Format@QImage@@@Z @ 12600 NONAME ABSENT ; void QEglProperties::setPixelFormat(enum QImage::Format)
 	?currentContext@QEglContext@@CAPAV1@W4API@QEgl@@@Z @ 12601 NONAME ABSENT ; class QEglContext * QEglContext::currentContext(enum QEgl::API)
 	?errorString@QEglContext@@SA?AVQString@@H@Z @ 12602 NONAME ABSENT ; class QString QEglContext::errorString(int)
-	?removeAllApplicationFonts@QFontDatabase@@SA_NXZ @ 12603 NONAME ; NONAME ; bool QFontDatabase::removeAllApplicationFonts()
+	?removeAllApplicationFonts@QFontDatabase@@SA_NXZ @ 12603 NONAME ; bool QFontDatabase::removeAllApplicationFonts()
 	??0FileInfo@QZipReader@@QAE@XZ @ 12604 NONAME ; QZipReader::FileInfo::FileInfo(void)
 	??0QAbstractScrollAreaPrivate@@QAE@XZ @ 12605 NONAME ; QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate(void)
 	??0QGraphicsViewPrivate@@QAE@XZ @ 12606 NONAME ; QGraphicsViewPrivate::QGraphicsViewPrivate(void)
@@ -12770,4 +12770,27 @@ EXPORTS
 	?children_append@QGraphicsItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@PAVQGraphicsObject@@@Z @ 12769 NONAME ; void QGraphicsItemPrivate::children_append(class QDeclarativeListProperty<class QGraphicsObject> *, class QGraphicsObject *)
 	?children_at@QGraphicsItemPrivate@@SAPAVQGraphicsObject@@PAV?$QDeclarativeListProperty@VQGraphicsObject@@@@H@Z @ 12770 NONAME ; class QGraphicsObject * QGraphicsItemPrivate::children_at(class QDeclarativeListProperty<class QGraphicsObject> *, int)
 	?children_count@QGraphicsItemPrivate@@SAHPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@@Z @ 12771 NONAME ; int QGraphicsItemPrivate::children_count(class QDeclarativeListProperty<class QGraphicsObject> *)
+	?display@QEglContext@@QAEHXZ @ 12772 NONAME  ABSENT ; int QEglContext::display(void)
+	?defaultConfig@QEgl@@YAHHW4API@1@V?$QFlags@W4ConfigOption@QEgl@@@@@Z @ 12773 NONAME ABSENT ; int QEgl::defaultConfig(int, enum QEgl::API, class QFlags<enum QEgl::ConfigOption>)
+	?configAttrib@QEglContext@@QBEHH@Z @ 12774 NONAME ABSENT ; int QEglContext::configAttrib(int) const
+	?error@QEgl@@YAHXZ @ 12775 NONAME ABSENT ; int QEgl::error(void)
+	?errorString@QEgl@@YA?AVQString@@XZ @ 12776 NONAME ABSENT ; class QString QEgl::errorString(void)
+	?configProperties@QEglContext@@QBE?AVQEglProperties@@XZ @ 12777 NONAME ABSENT ; class QEglProperties QEglContext::configProperties(void) const
+	?extensions@QEgl@@YA?AVQString@@XZ @ 12778 NONAME ABSENT ; class QString QEgl::extensions(void)
+	?nativePixmap@QEgl@@YAPAXPAVQPixmap@@@Z @ 12779 NONAME ABSENT ; void * QEgl::nativePixmap(class QPixmap *)
+	?display@QEgl@@YAHXZ @ 12780 NONAME ABSENT ; int QEgl::display(void)
+	?eglCreateImageKHR@QEgl@@YAHHHHHPBH@Z @ 12781 NONAME ABSENT ; int QEgl::eglCreateImageKHR(int, int, int, int, int const *)
+	?hasExtension@QEgl@@YA_NPBD@Z @ 12782 NONAME ABSENT ; bool QEgl::hasExtension(char const *)
+	?destroyContext@QEglContext@@QAEXXZ @ 12783 NONAME ABSENT ; void QEglContext::destroyContext(void)
+	?nativeWindow@QEgl@@YAPAXPAVQWidget@@@Z @ 12784 NONAME ABSENT ; void * QEgl::nativeWindow(class QWidget *)
+	?errorString@QEgl@@YA?AVQString@@H@Z @ 12785 NONAME ABSENT ; class QString QEgl::errorString(int)
+	?chooseConfig@QEgl@@YAHPBVQEglProperties@@W4PixelFormatMatch@1@@Z @ 12786 NONAME ABSENT ; int QEgl::chooseConfig(class QEglProperties const *, enum QEgl::PixelFormatMatch)
+	?eglDestroyImageKHR@QEgl@@YAHHH@Z @ 12787 NONAME ABSENT ; int QEgl::eglDestroyImageKHR(int, int)
+	?isEmpty@QItemSelectionRange@@QBE_NXZ @ 12788 NONAME ; bool QItemSelectionRange::isEmpty(void) const
+	?clearError@QEgl@@YAXXZ @ 12789 NONAME ABSENT ; void QEgl::clearError(void)
+	?nativeDisplay@QEgl@@YAHXZ @ 12790 NONAME ABSENT ; int QEgl::nativeDisplay(void)
+	?dumpAllConfigs@QEgl@@YAXXZ @ 12791 NONAME ABSENT ; void QEgl::dumpAllConfigs(void)
+	?setDeviceType@QEglProperties@@QAEXH@Z @ 12792 NONAME ABSENT ; void QEglProperties::setDeviceType(int)
+	?glyphPadding@QTextureGlyphCache@@UBEHXZ @ 12793 NONAME ; int QTextureGlyphCache::glyphPadding(void) const
+	?createSurface@QEgl@@YAHPAVQPaintDevice@@HPBVQEglProperties@@@Z @ 12794 NONAME ABSENT ; int QEgl::createSurface(class QPaintDevice *, int, class QEglProperties const *)
 

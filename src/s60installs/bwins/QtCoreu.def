@@ -4458,6 +4458,8 @@ EXPORTS
 	?toMSecsSinceEpoch@QDateTime@@QBE_JXZ @ 4457 NONAME ; long long QDateTime::toMSecsSinceEpoch(void) const
 	?transitions@QState@@QBE?AV?$QList@PAVQAbstractTransition@@@@XZ @ 4458 NONAME ; class QList<class QAbstractTransition *> QState::transitions(void) const
 	?validCodecs@QTextCodec@@CA_NXZ @ 4459 NONAME ; bool QTextCodec::validCodecs(void)
-	?destroyed@QDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4460 NONAME ; void (*QDeclarativeData::destroyed)(class QDeclarativeData *, class QObject *)
-	?parentChanged@QDeclarativeData@@2P6AXPAV1@PAVQObject@@1@ZA @ 4461 NONAME ; void (*QDeclarativeData::parentChanged)(class QDeclarativeData *, class QObject *, class QObject *)
+	?destroyed@QDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4460 NONAME ABSENT ; void (*QDeclarativeData::destroyed)(class QDeclarativeData *, class QObject *)
+	?parentChanged@QDeclarativeData@@2P6AXPAV1@PAVQObject@@1@ZA @ 4461 NONAME ABSENT ; void (*QDeclarativeData::parentChanged)(class QDeclarativeData *, class QObject *, class QObject *)
+	?parentChanged@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@1@ZA @ 4462 NONAME ; void (*QAbstractDeclarativeData::parentChanged)(class QAbstractDeclarativeData *, class QObject *, class QObject *)
+	?destroyed@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4463 NONAME ; void (*QAbstractDeclarativeData::destroyed)(class QAbstractDeclarativeData *, class QObject *)
 

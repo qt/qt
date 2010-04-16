@@ -3,7 +3,7 @@ EXPORTS
 	??0QDeclarativeAction@@QAE@PAVQObject@@ABVQString@@ABVQVariant@@@Z @ 2 NONAME ; QDeclarativeAction::QDeclarativeAction(class QObject *, class QString const &, class QVariant const &)
 	??0QDeclarativeAction@@QAE@XZ @ 3 NONAME ; QDeclarativeAction::QDeclarativeAction(void)
 	??0QDeclarativeAnchorChanges@@QAE@PAVQObject@@@Z @ 4 NONAME ; QDeclarativeAnchorChanges::QDeclarativeAnchorChanges(class QObject *)
-	??0QDeclarativeAnchors@@QAE@PAVQDeclarativeItem@@PAVQObject@@@Z @ 5 NONAME ; QDeclarativeAnchors::QDeclarativeAnchors(class QDeclarativeItem *, class QObject *)
+	??0QDeclarativeAnchors@@QAE@PAVQDeclarativeItem@@PAVQObject@@@Z @ 5 NONAME ABSENT ; QDeclarativeAnchors::QDeclarativeAnchors(class QDeclarativeItem *, class QObject *)
 	??0QDeclarativeAnchors@@QAE@PAVQObject@@@Z @ 6 NONAME ; QDeclarativeAnchors::QDeclarativeAnchors(class QObject *)
 	??0QDeclarativeAnimatedImage@@QAE@PAVQDeclarativeItem@@@Z @ 7 NONAME ; QDeclarativeAnimatedImage::QDeclarativeAnimatedImage(class QDeclarativeItem *)
 	??0QDeclarativeBasePositioner@@IAE@AAVQDeclarativeBasePositionerPrivate@@W4PositionerType@0@PAVQDeclarativeItem@@@Z @ 8 NONAME ; QDeclarativeBasePositioner::QDeclarativeBasePositioner(class QDeclarativeBasePositionerPrivate &, enum QDeclarativeBasePositioner::PositionerType, class QDeclarativeItem *)
@@ -673,7 +673,7 @@ EXPORTS
 	?cellHeightChanged@QDeclarativeGridView@@IAEXXZ @ 672 NONAME ; void QDeclarativeGridView::cellHeightChanged(void)
 	?cellWidth@QDeclarativeGridView@@QBEHXZ @ 673 NONAME ; int QDeclarativeGridView::cellWidth(void) const
 	?cellWidthChanged@QDeclarativeGridView@@IAEXXZ @ 674 NONAME ; void QDeclarativeGridView::cellWidthChanged(void)
-	?centerIn@QDeclarativeAnchors@@QBEPAVQDeclarativeItem@@XZ @ 675 NONAME ; class QDeclarativeItem * QDeclarativeAnchors::centerIn(void) const
+	?centerIn@QDeclarativeAnchors@@QBEPAVQDeclarativeItem@@XZ @ 675 NONAME ABSENT ; class QDeclarativeItem * QDeclarativeAnchors::centerIn(void) const
 	?centerInChanged@QDeclarativeAnchors@@IAEXXZ @ 676 NONAME ; void QDeclarativeAnchors::centerInChanged(void)
 	?changed@QDeclarativePath@@IAEXXZ @ 677 NONAME ; void QDeclarativePath::changed(void)
 	?changed@QDeclarativePathElement@@IAEXXZ @ 678 NONAME ; void QDeclarativePathElement::changed(void)
@@ -1113,13 +1113,13 @@ EXPORTS
 	?fadeInDurationChanged@QDeclarativeParticles@@IAEXXZ @ 1112 NONAME ABSENT ; void QDeclarativeParticles::fadeInDurationChanged(void)
 	?fadeOutDuration@QDeclarativeParticles@@QBEHXZ @ 1113 NONAME ABSENT ; int QDeclarativeParticles::fadeOutDuration(void) const
 	?fadeOutDurationChanged@QDeclarativeParticles@@IAEXXZ @ 1114 NONAME ABSENT ; void QDeclarativeParticles::fadeOutDurationChanged(void)
-	?fill@QDeclarativeAnchors@@QBEPAVQDeclarativeItem@@XZ @ 1115 NONAME ; class QDeclarativeItem * QDeclarativeAnchors::fill(void) const
+	?fill@QDeclarativeAnchors@@QBEPAVQDeclarativeItem@@XZ @ 1115 NONAME ABSENT ; class QDeclarativeItem * QDeclarativeAnchors::fill(void) const
 	?fillChanged@QDeclarativeAnchors@@IAEXXZ @ 1116 NONAME ; void QDeclarativeAnchors::fillChanged(void)
 	?fillColor@QDeclarativePaintedItem@@QBE?AVQColor@@XZ @ 1117 NONAME ; class QColor QDeclarativePaintedItem::fillColor(void) const
 	?fillColorChanged@QDeclarativePaintedItem@@IAEXXZ @ 1118 NONAME ; void QDeclarativePaintedItem::fillColorChanged(void)
 	?fillMode@QDeclarativeImage@@QBE?AW4FillMode@1@XZ @ 1119 NONAME ; enum QDeclarativeImage::FillMode QDeclarativeImage::fillMode(void) const
 	?fillModeChanged@QDeclarativeImage@@IAEXXZ @ 1120 NONAME ; void QDeclarativeImage::fillModeChanged(void)
-	?findSignalByName@QDeclarativeCompiler@@SA?AVQMetaMethod@@PBUQMetaObject@@ABVQByteArray@@@Z @ 1121 NONAME ; class QMetaMethod QDeclarativeCompiler::findSignalByName(struct QMetaObject const *, class QByteArray const &)
+	?findSignalByName@QDeclarativeCompiler@@SA?AVQMetaMethod@@PBUQMetaObject@@ABVQByteArray@@@Z @ 1121 NONAME ABSENT ; class QMetaMethod QDeclarativeCompiler::findSignalByName(struct QMetaObject const *, class QByteArray const &)
 	?findState@QDeclarativeStateGroup@@QBEPAVQDeclarativeState@@ABVQString@@@Z @ 1122 NONAME ; class QDeclarativeState * QDeclarativeStateGroup::findState(class QString const &) const
 	?finishApplyTransitions@QDeclarativeBasePositioner@@IAEXXZ @ 1123 NONAME ; void QDeclarativeBasePositioner::finishApplyTransitions(void)
 	?finished@QDeclarativePixmapReply@@IAEXXZ @ 1124 NONAME ; void QDeclarativePixmapReply::finished(void)
@@ -2333,7 +2333,7 @@ EXPORTS
 	?setCached@QDeclarativeOpenMetaObject@@QAEX_N@Z @ 2332 NONAME ; void QDeclarativeOpenMetaObject::setCached(bool)
 	?setCellHeight@QDeclarativeGridView@@QAEXH@Z @ 2333 NONAME ; void QDeclarativeGridView::setCellHeight(int)
 	?setCellWidth@QDeclarativeGridView@@QAEXH@Z @ 2334 NONAME ; void QDeclarativeGridView::setCellWidth(int)
-	?setCenterIn@QDeclarativeAnchors@@QAEXPAVQDeclarativeItem@@@Z @ 2335 NONAME ; void QDeclarativeAnchors::setCenterIn(class QDeclarativeItem *)
+	?setCenterIn@QDeclarativeAnchors@@QAEXPAVQDeclarativeItem@@@Z @ 2335 NONAME ABSENT ; void QDeclarativeAnchors::setCenterIn(class QDeclarativeItem *)
 	?setClassName@QMetaObjectBuilder@@QAEXABVQByteArray@@@Z @ 2336 NONAME ; void QMetaObjectBuilder::setClassName(class QByteArray const &)
 	?setClip@QDeclarativeItem@@QAEX_N@Z @ 2337 NONAME ; void QDeclarativeItem::setClip(bool)
 	?setColor@QDeclarativeGradientStop@@QAEXABVQColor@@@Z @ 2338 NONAME ; void QDeclarativeGradientStop::setColor(class QColor const &)
@@ -2411,7 +2411,7 @@ EXPORTS
 	?setExtends@QDeclarativeState@@QAEXABVQString@@@Z @ 2410 NONAME ; void QDeclarativeState::setExtends(class QString const &)
 	?setFadeInDuration@QDeclarativeParticles@@QAEXH@Z @ 2411 NONAME ABSENT ; void QDeclarativeParticles::setFadeInDuration(int)
 	?setFadeOutDuration@QDeclarativeParticles@@QAEXH@Z @ 2412 NONAME ABSENT ; void QDeclarativeParticles::setFadeOutDuration(int)
-	?setFill@QDeclarativeAnchors@@QAEXPAVQDeclarativeItem@@@Z @ 2413 NONAME ; void QDeclarativeAnchors::setFill(class QDeclarativeItem *)
+	?setFill@QDeclarativeAnchors@@QAEXPAVQDeclarativeItem@@@Z @ 2413 NONAME ABSENT ; void QDeclarativeAnchors::setFill(class QDeclarativeItem *)
 	?setFillColor@QDeclarativePaintedItem@@QAEXABVQColor@@@Z @ 2414 NONAME ; void QDeclarativePaintedItem::setFillColor(class QColor const &)
 	?setFillMode@QDeclarativeImage@@QAEXW4FillMode@1@@Z @ 2415 NONAME ; void QDeclarativeImage::setFillMode(enum QDeclarativeImage::FillMode)
 	?setFlags@QMetaObjectBuilder@@QAEXV?$QFlags@W4MetaObjectFlag@QMetaObjectBuilder@@@@@Z @ 2416 NONAME ; void QMetaObjectBuilder::setFlags(class QFlags<enum QMetaObjectBuilder::MetaObjectFlag>)
@@ -3543,13 +3543,13 @@ EXPORTS
 	?asString@Variant@QDeclarativeParser@@QBE?AVQString@@XZ @ 3542 NONAME ; class QString QDeclarativeParser::Variant::asString(void) const
 	?asStringList@Variant@QDeclarativeParser@@QBE?AVQStringList@@XZ @ 3543 NONAME ; class QStringList QDeclarativeParser::Variant::asStringList(void) const
 	?back@QDeclarativeFlipable@@QAEPAVQGraphicsObject@@XZ @ 3544 NONAME ; class QGraphicsObject * QDeclarativeFlipable::back(void)
-	?baseline@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3545 NONAME ; struct QDeclarativeAnchorLine QDeclarativeAnchors::baseline(void) const
-	?baseline@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3546 NONAME ; struct QDeclarativeAnchorLine QDeclarativeItem::baseline(void) const
+	?baseline@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3545 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeAnchors::baseline(void) const
+	?baseline@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3546 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeItem::baseline(void) const
 	?baselineOffsetChanged@QDeclarativeItem@@IAEXM@Z @ 3547 NONAME ; void QDeclarativeItem::baselineOffsetChanged(float)
 	?bindingIndex@QDeclarativePropertyPrivate@@SAHABVQDeclarativeProperty@@@Z @ 3548 NONAME ; int QDeclarativePropertyPrivate::bindingIndex(class QDeclarativeProperty const &)
 	?bindingType@QDeclarativeAbstractBinding@@UBE?AW4Type@1@XZ @ 3549 NONAME ; enum QDeclarativeAbstractBinding::Type QDeclarativeAbstractBinding::bindingType(void) const
-	?bottom@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3550 NONAME ; struct QDeclarativeAnchorLine QDeclarativeAnchors::bottom(void) const
-	?bottom@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3551 NONAME ; struct QDeclarativeAnchorLine QDeclarativeItem::bottom(void) const
+	?bottom@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3550 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeAnchors::bottom(void) const
+	?bottom@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3551 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeItem::bottom(void) const
 	?buildPropertyOnAssignment@QDeclarativeCompiler@@AAE_NPAVProperty@QDeclarativeParser@@PAVObject@3@1PAVValue@3@ABUBindingContext@1@@Z @ 3552 NONAME ; bool QDeclarativeCompiler::buildPropertyOnAssignment(class QDeclarativeParser::Property *, class QDeclarativeParser::Object *, class QDeclarativeParser::Object *, class QDeclarativeParser::Value *, struct QDeclarativeCompiler::BindingContext const &)
 	?cacheBufferChanged@QDeclarativeGridView@@IAEXXZ @ 3553 NONAME ; void QDeclarativeGridView::cacheBufferChanged(void)
 	?cacheBufferChanged@QDeclarativeListView@@IAEXXZ @ 3554 NONAME ; void QDeclarativeListView::cacheBufferChanged(void)
@@ -3608,7 +3608,7 @@ EXPORTS
 	?fromChanged@QDeclarativeTransition@@IAEXXZ @ 3607 NONAME ; void QDeclarativeTransition::fromChanged(void)
 	?front@QDeclarativeFlipable@@QAEPAVQGraphicsObject@@XZ @ 3608 NONAME ; class QGraphicsObject * QDeclarativeFlipable::front(void)
 	?geometryChanged@QDeclarativeFlickable@@MAEXABVQRectF@@0@Z @ 3609 NONAME ; void QDeclarativeFlickable::geometryChanged(class QRectF const &, class QRectF const &)
-	?get@QDeclarativePixmapCache@@SA?AW4Status@QDeclarativePixmapReply@@ABVQUrl@@PAVQPixmap@@PAVQSize@@_NHH@Z @ 3610 NONAME ; enum QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(class QUrl const &, class QPixmap *, class QSize *, bool, int, int)
+	?get@QDeclarativePixmapCache@@SA?AW4Status@QDeclarativePixmapReply@@ABVQUrl@@PAVQPixmap@@PAVQSize@@_NHH@Z @ 3610 NONAME ABSENT ; enum QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(class QUrl const &, class QPixmap *, class QSize *, bool, int, int)
 	?getStaticMetaObject@QDeclarativeSmoothedAnimation@@SAABUQMetaObject@@XZ @ 3611 NONAME ; struct QMetaObject const & QDeclarativeSmoothedAnimation::getStaticMetaObject(void)
 	?getStaticMetaObject@QDeclarativeTranslate@@SAABUQMetaObject@@XZ @ 3612 NONAME ; struct QMetaObject const & QDeclarativeTranslate::getStaticMetaObject(void)
 	?getStaticMetaObject@QDeclarativeWorkerScript@@SAABUQMetaObject@@XZ @ 3613 NONAME ; struct QMetaObject const & QDeclarativeWorkerScript::getStaticMetaObject(void)
@@ -3626,8 +3626,8 @@ EXPORTS
 	?highlightRangeModeChanged@QDeclarativeGridView@@IAEXXZ @ 3625 NONAME ; void QDeclarativeGridView::highlightRangeModeChanged(void)
 	?highlightRangeModeChanged@QDeclarativeListView@@IAEXXZ @ 3626 NONAME ; void QDeclarativeListView::highlightRangeModeChanged(void)
 	?highlightRangeModeChanged@QDeclarativePathView@@IAEXXZ @ 3627 NONAME ; void QDeclarativePathView::highlightRangeModeChanged(void)
-	?horizontalCenter@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3628 NONAME ; struct QDeclarativeAnchorLine QDeclarativeAnchors::horizontalCenter(void) const
-	?horizontalCenter@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3629 NONAME ; struct QDeclarativeAnchorLine QDeclarativeItem::horizontalCenter(void) const
+	?horizontalCenter@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3628 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeAnchors::horizontalCenter(void) const
+	?horizontalCenter@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3629 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeItem::horizontalCenter(void) const
 	?idString@QDeclarativeDebugObjectReference@@QBE?AVQString@@XZ @ 3630 NONAME ; class QString QDeclarativeDebugObjectReference::idString(void) const
 	?implicitSize@QDeclarativePixmapReply@@QBE?AVQSize@@XZ @ 3631 NONAME ; class QSize QDeclarativePixmapReply::implicitSize(void) const
 	?importPathList@QDeclarativeEngine@@QBE?AVQStringList@@XZ @ 3632 NONAME ; class QStringList QDeclarativeEngine::importPathList(void) const
@@ -3649,8 +3649,8 @@ EXPORTS
 	?itemsMoved@QDeclarativePathView@@AAEXHHH@Z @ 3648 NONAME ; void QDeclarativePathView::itemsMoved(int, int, int)
 	?keyNavigationWrapsChanged@QDeclarativeGridView@@IAEXXZ @ 3649 NONAME ; void QDeclarativeGridView::keyNavigationWrapsChanged(void)
 	?keyNavigationWrapsChanged@QDeclarativeListView@@IAEXXZ @ 3650 NONAME ; void QDeclarativeListView::keyNavigationWrapsChanged(void)
-	?left@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3651 NONAME ; struct QDeclarativeAnchorLine QDeclarativeAnchors::left(void) const
-	?left@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3652 NONAME ; struct QDeclarativeAnchorLine QDeclarativeItem::left(void) const
+	?left@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3651 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeAnchors::left(void) const
+	?left@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3652 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeItem::left(void) const
 	?mapFromItem@QDeclarativeItem@@QBE?AVQScriptValue@@ABV2@MM@Z @ 3653 NONAME ; class QScriptValue QDeclarativeItem::mapFromItem(class QScriptValue const &, float, float) const
 	?mapToItem@QDeclarativeItem@@QBE?AVQScriptValue@@ABV2@MM@Z @ 3654 NONAME ; class QScriptValue QDeclarativeItem::mapToItem(class QScriptValue const &, float, float) const
 	?maximumEasingTime@QDeclarativeSmoothedAnimation@@QBEHXZ @ 3655 NONAME ; int QDeclarativeSmoothedAnimation::maximumEasingTime(void) const
@@ -3716,15 +3716,15 @@ EXPORTS
 	?reversibleChanged@QDeclarativeTransition@@IAEXXZ @ 3715 NONAME ; void QDeclarativeTransition::reversibleChanged(void)
 	?reversingMode@QDeclarativeSmoothedAnimation@@QBE?AW4ReversingMode@1@XZ @ 3716 NONAME ; enum QDeclarativeSmoothedAnimation::ReversingMode QDeclarativeSmoothedAnimation::reversingMode(void) const
 	?reversingModeChanged@QDeclarativeSmoothedAnimation@@IAEXXZ @ 3717 NONAME ; void QDeclarativeSmoothedAnimation::reversingModeChanged(void)
-	?right@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3718 NONAME ; struct QDeclarativeAnchorLine QDeclarativeAnchors::right(void) const
-	?right@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3719 NONAME ; struct QDeclarativeAnchorLine QDeclarativeItem::right(void) const
+	?right@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3718 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeAnchors::right(void) const
+	?right@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3719 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeItem::right(void) const
 	?roleObjects@QDeclarativeXmlListModel@@QAE?AV?$QDeclarativeListProperty@VQDeclarativeXmlListModelRole@@@@XZ @ 3720 NONAME ; class QDeclarativeListProperty<class QDeclarativeXmlListModelRole> QDeclarativeXmlListModel::roleObjects(void)
 	?saveTargetValues@QDeclarativeAnchorChanges@@UAEXXZ @ 3721 NONAME ; void QDeclarativeAnchorChanges::saveTargetValues(void)
 	?sendMessage@QDeclarativeWorkerScript@@QAEXABVQScriptValue@@@Z @ 3722 NONAME ; void QDeclarativeWorkerScript::sendMessage(class QScriptValue const &)
 	?setBack@QDeclarativeFlipable@@QAEXPAVQGraphicsObject@@@Z @ 3723 NONAME ; void QDeclarativeFlipable::setBack(class QGraphicsObject *)
-	?setBaseline@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3724 NONAME ; void QDeclarativeAnchors::setBaseline(struct QDeclarativeAnchorLine const &)
+	?setBaseline@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3724 NONAME ABSENT ; void QDeclarativeAnchors::setBaseline(struct QDeclarativeAnchorLine const &)
 	?setBinding@QDeclarativePropertyPrivate@@SAPAVQDeclarativeAbstractBinding@@PAVQObject@@HHPAV2@V?$QFlags@W4WriteFlag@QDeclarativePropertyPrivate@@@@@Z @ 3725 NONAME ; class QDeclarativeAbstractBinding * QDeclarativePropertyPrivate::setBinding(class QObject *, int, int, class QDeclarativeAbstractBinding *, class QFlags<enum QDeclarativePropertyPrivate::WriteFlag>)
-	?setBottom@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3726 NONAME ; void QDeclarativeAnchors::setBottom(struct QDeclarativeAnchorLine const &)
+	?setBottom@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3726 NONAME ABSENT ; void QDeclarativeAnchors::setBottom(struct QDeclarativeAnchorLine const &)
 	?setContextObject@QDeclarativeContext@@QAEXPAVQObject@@@Z @ 3727 NONAME ; void QDeclarativeContext::setContextObject(class QObject *)
 	?setDuration@QDeclarativeSmoothedAnimation@@UAEXH@Z @ 3728 NONAME ; void QDeclarativeSmoothedAnimation::setDuration(int)
 	?setFlickDeceleration@QDeclarativePathView@@QAEXM@Z @ 3729 NONAME ; void QDeclarativePathView::setFlickDeceleration(float)
@@ -3733,10 +3733,10 @@ EXPORTS
 	?setHighlight@QDeclarativePathView@@QAEXPAVQDeclarativeComponent@@@Z @ 3732 NONAME ; void QDeclarativePathView::setHighlight(class QDeclarativeComponent *)
 	?setHighlightRangeMode@QDeclarativeGridView@@QAEXW4HighlightRangeMode@1@@Z @ 3733 NONAME ; void QDeclarativeGridView::setHighlightRangeMode(enum QDeclarativeGridView::HighlightRangeMode)
 	?setHighlightRangeMode@QDeclarativePathView@@QAEXW4HighlightRangeMode@1@@Z @ 3734 NONAME ; void QDeclarativePathView::setHighlightRangeMode(enum QDeclarativePathView::HighlightRangeMode)
-	?setHorizontalCenter@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3735 NONAME ; void QDeclarativeAnchors::setHorizontalCenter(struct QDeclarativeAnchorLine const &)
+	?setHorizontalCenter@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3735 NONAME ABSENT ; void QDeclarativeAnchors::setHorizontalCenter(struct QDeclarativeAnchorLine const &)
 	?setImportPathList@QDeclarativeEngine@@QAEXABVQStringList@@@Z @ 3736 NONAME ; void QDeclarativeEngine::setImportPathList(class QStringList const &)
 	?setInteractive@QDeclarativePathView@@QAEX_N@Z @ 3737 NONAME ; void QDeclarativePathView::setInteractive(bool)
-	?setLeft@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3738 NONAME ; void QDeclarativeAnchors::setLeft(struct QDeclarativeAnchorLine const &)
+	?setLeft@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3738 NONAME ABSENT ; void QDeclarativeAnchors::setLeft(struct QDeclarativeAnchorLine const &)
 	?setMaximumEasingTime@QDeclarativeSmoothedAnimation@@QAEXH@Z @ 3739 NONAME ; void QDeclarativeSmoothedAnimation::setMaximumEasingTime(int)
 	?setObjectOwnership@QDeclarativeEngine@@SAXPAVQObject@@W4ObjectOwnership@1@@Z @ 3740 NONAME ; void QDeclarativeEngine::setObjectOwnership(class QObject *, enum QDeclarativeEngine::ObjectOwnership)
 	?setPosHelper@QDeclarativeItemPrivate@@UAEXABVQPointF@@@Z @ 3741 NONAME ; void QDeclarativeItemPrivate::setPosHelper(class QPointF const &)
@@ -3745,15 +3745,15 @@ EXPORTS
 	?setPreferredHighlightEnd@QDeclarativeGridView@@QAEXM@Z @ 3744 NONAME ; void QDeclarativeGridView::setPreferredHighlightEnd(float)
 	?setPreferredHighlightEnd@QDeclarativePathView@@QAEXM@Z @ 3745 NONAME ; void QDeclarativePathView::setPreferredHighlightEnd(float)
 	?setReversingMode@QDeclarativeSmoothedAnimation@@QAEXW4ReversingMode@1@@Z @ 3746 NONAME ; void QDeclarativeSmoothedAnimation::setReversingMode(enum QDeclarativeSmoothedAnimation::ReversingMode)
-	?setRight@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3747 NONAME ; void QDeclarativeAnchors::setRight(struct QDeclarativeAnchorLine const &)
+	?setRight@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3747 NONAME ABSENT ; void QDeclarativeAnchors::setRight(struct QDeclarativeAnchorLine const &)
 	?setSize@QDeclarativeItem@@QAEXABVQSizeF@@@Z @ 3748 NONAME ; void QDeclarativeItem::setSize(class QSizeF const &)
 	?setSnapMode@QDeclarativeGridView@@QAEXW4SnapMode@1@@Z @ 3749 NONAME ; void QDeclarativeGridView::setSnapMode(enum QDeclarativeGridView::SnapMode)
 	?setSource@QDeclarativeWorkerScript@@QAEXABVQUrl@@@Z @ 3750 NONAME ; void QDeclarativeWorkerScript::setSource(class QUrl const &)
 	?setSourceSize@QDeclarativeImageBase@@QAEXABVQSize@@@Z @ 3751 NONAME ABSENT ; void QDeclarativeImageBase::setSourceSize(class QSize const &)
 	?setTarget@QDeclarativeDrag@@QAEXPAVQGraphicsObject@@@Z @ 3752 NONAME ; void QDeclarativeDrag::setTarget(class QGraphicsObject *)
-	?setTop@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3753 NONAME ; void QDeclarativeAnchors::setTop(struct QDeclarativeAnchorLine const &)
+	?setTop@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3753 NONAME ABSENT ; void QDeclarativeAnchors::setTop(struct QDeclarativeAnchorLine const &)
 	?setVelocity@QDeclarativeSmoothedAnimation@@QAEXM@Z @ 3754 NONAME ; void QDeclarativeSmoothedAnimation::setVelocity(float)
-	?setVerticalCenter@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3755 NONAME ; void QDeclarativeAnchors::setVerticalCenter(struct QDeclarativeAnchorLine const &)
+	?setVerticalCenter@QDeclarativeAnchors@@QAEXABUQDeclarativeAnchorLine@@@Z @ 3755 NONAME ABSENT ; void QDeclarativeAnchors::setVerticalCenter(struct QDeclarativeAnchorLine const &)
 	?setWidth@QDeclarativeItemPrivate@@UAEXM@Z @ 3756 NONAME ; void QDeclarativeItemPrivate::setWidth(float)
 	?setX@QDeclarativeTranslate@@QAEXM@Z @ 3757 NONAME ; void QDeclarativeTranslate::setX(float)
 	?setY@QDeclarativeTranslate@@QAEXM@Z @ 3758 NONAME ; void QDeclarativeTranslate::setY(float)
@@ -3779,8 +3779,8 @@ EXPORTS
 	?sync@QDeclarativeListModel@@QAEXXZ @ 3778 NONAME ; void QDeclarativeListModel::sync(void)
 	?target@QDeclarativeDrag@@QBEPAVQGraphicsObject@@XZ @ 3779 NONAME ; class QGraphicsObject * QDeclarativeDrag::target(void) const
 	?toChanged@QDeclarativeTransition@@IAEXXZ @ 3780 NONAME ; void QDeclarativeTransition::toChanged(void)
-	?top@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3781 NONAME ; struct QDeclarativeAnchorLine QDeclarativeAnchors::top(void) const
-	?top@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3782 NONAME ; struct QDeclarativeAnchorLine QDeclarativeItem::top(void) const
+	?top@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3781 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeAnchors::top(void) const
+	?top@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3782 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeItem::top(void) const
 	?tr@QDeclarativeSmoothedAnimation@@SA?AVQString@@PBD0@Z @ 3783 NONAME ; class QString QDeclarativeSmoothedAnimation::tr(char const *, char const *)
 	?tr@QDeclarativeSmoothedAnimation@@SA?AVQString@@PBD0H@Z @ 3784 NONAME ; class QString QDeclarativeSmoothedAnimation::tr(char const *, char const *, int)
 	?tr@QDeclarativeTranslate@@SA?AVQString@@PBD0@Z @ 3785 NONAME ; class QString QDeclarativeTranslate::tr(char const *, char const *)
@@ -3806,8 +3806,8 @@ EXPORTS
 	?valueChanged@QDeclarativePropertyMap@@IAEXABVQString@@ABVQVariant@@@Z @ 3805 NONAME ; void QDeclarativePropertyMap::valueChanged(class QString const &, class QVariant const &)
 	?velocity@QDeclarativeSmoothedAnimation@@QBEMXZ @ 3806 NONAME ; float QDeclarativeSmoothedAnimation::velocity(void) const
 	?velocityChanged@QDeclarativeSmoothedAnimation@@IAEXXZ @ 3807 NONAME ; void QDeclarativeSmoothedAnimation::velocityChanged(void)
-	?verticalCenter@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3808 NONAME ; struct QDeclarativeAnchorLine QDeclarativeAnchors::verticalCenter(void) const
-	?verticalCenter@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3809 NONAME ; struct QDeclarativeAnchorLine QDeclarativeItem::verticalCenter(void) const
+	?verticalCenter@QDeclarativeAnchors@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3808 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeAnchors::verticalCenter(void) const
+	?verticalCenter@QDeclarativeItem@@QBE?AUQDeclarativeAnchorLine@@XZ @ 3809 NONAME ABSENT ; struct QDeclarativeAnchorLine QDeclarativeItem::verticalCenter(void) const
 	?wantsFocusChanged@QDeclarativeItem@@IAEX_N@Z @ 3810 NONAME ; void QDeclarativeItem::wantsFocusChanged(bool)
 	?width@QDeclarativeItemPrivate@@UBEMXZ @ 3811 NONAME ; float QDeclarativeItemPrivate::width(void) const
 	?write@QDeclarativePropertyPrivate@@SA_NPAVQObject@@ABUData@QDeclarativePropertyCache@@ABVQVariant@@PAVQDeclarativeContextData@@V?$QFlags@W4WriteFlag@QDeclarativePropertyPrivate@@@@@Z @ 3812 NONAME ; bool QDeclarativePropertyPrivate::write(class QObject *, struct QDeclarativePropertyCache::Data const &, class QVariant const &, class QDeclarativeContextData *, class QFlags<enum QDeclarativePropertyPrivate::WriteFlag>)
@@ -3844,7 +3844,7 @@ EXPORTS
 	?highlightMoveDurationChanged@QDeclarativePathView@@IAEXXZ @ 3843 NONAME ; void QDeclarativePathView::highlightMoveDurationChanged(void)
 	?highlightResizeDuration@QDeclarativeListView@@QBEHXZ @ 3844 NONAME ; int QDeclarativeListView::highlightResizeDuration(void) const
 	?highlightResizeDurationChanged@QDeclarativeListView@@IAEXXZ @ 3845 NONAME ; void QDeclarativeListView::highlightResizeDurationChanged(void)
-	?importPlugin@QDeclarativeEngine@@QAE_NABVQString@@0@Z @ 3846 NONAME ; bool QDeclarativeEngine::importPlugin(class QString const &, class QString const &)
+	?importPlugin@QDeclarativeEngine@@QAE_NABVQString@@0@Z @ 3846 NONAME ABSENT ; bool QDeclarativeEngine::importPlugin(class QString const &, class QString const &)
 	?isExtendedType@QDeclarativeType@@QBE_NXZ @ 3847 NONAME ; bool QDeclarativeType::isExtendedType(void) const
 	?maximumEasingTime@QDeclarativeSmoothedFollow@@QBEHXZ @ 3848 NONAME ; int QDeclarativeSmoothedFollow::maximumEasingTime(void) const
 	?maximumEasingTimeChanged@QDeclarativeSmoothedFollow@@IAEXXZ @ 3849 NONAME ; void QDeclarativeSmoothedFollow::maximumEasingTimeChanged(void)
@@ -3880,7 +3880,7 @@ EXPORTS
 	?sourceSizeChanged@QDeclarativeAnimatedImage@@IAEXXZ @ 3879 NONAME ; void QDeclarativeAnimatedImage::sourceSizeChanged(void)
 	?to@QDeclarativeSmoothedFollow@@QBEMXZ @ 3880 NONAME ; float QDeclarativeSmoothedFollow::to(void) const
 	?to@QDeclarativeSpringFollow@@QBEMXZ @ 3881 NONAME ; float QDeclarativeSpringFollow::to(void) const
-	?tr@QDeclarativeCompiler@@AAE?AVQString@@PBD@Z @ 3882 NONAME ; class QString QDeclarativeCompiler::tr(char const *)
+	?tr@QDeclarativeCompiler@@AAE?AVQString@@PBD@Z @ 3882 NONAME ABSENT ; class QString QDeclarativeCompiler::tr(char const *)
 	?tr@QDeclarativeSmoothedFollow@@SA?AVQString@@PBD0@Z @ 3883 NONAME ; class QString QDeclarativeSmoothedFollow::tr(char const *, char const *)
 	?tr@QDeclarativeSmoothedFollow@@SA?AVQString@@PBD0H@Z @ 3884 NONAME ; class QString QDeclarativeSmoothedFollow::tr(char const *, char const *, int)
 	?trUtf8@QDeclarativeSmoothedFollow@@SA?AVQString@@PBD0@Z @ 3885 NONAME ; class QString QDeclarativeSmoothedFollow::trUtf8(char const *, char const *)
@@ -3893,4 +3893,28 @@ EXPORTS
 	?wrapModeChanged@QDeclarativeTextEdit@@IAEXXZ @ 3892 NONAME ; void QDeclarativeTextEdit::wrapModeChanged(void)
 	?xToPosition@QDeclarativeTextInput@@QAEHH@Z @ 3893 NONAME ; int QDeclarativeTextInput::xToPosition(int)
 	?staticMetaObject@QDeclarativeSmoothedFollow@@2UQMetaObject@@B @ 3894 NONAME ; struct QMetaObject const QDeclarativeSmoothedFollow::staticMetaObject
+	?trUtf8@QDeclarativeCompiler@@SA?AVQString@@PBD0H@Z @ 3895 NONAME ; class QString QDeclarativeCompiler::trUtf8(char const *, char const *, int)
+	?findSignalByName@QDeclarativePropertyPrivate@@SA?AVQMetaMethod@@PBUQMetaObject@@ABVQByteArray@@@Z @ 3896 NONAME ; class QMetaMethod QDeclarativePropertyPrivate::findSignalByName(struct QMetaObject const *, class QByteArray const &)
+	?reloadWithResources@QDeclarativeText@@AAEXXZ @ 3897 NONAME ; void QDeclarativeText::reloadWithResources(void)
+	?setFlow@QDeclarativeGrid@@QAEXW4Flow@1@@Z @ 3898 NONAME ; void QDeclarativeGrid::setFlow(enum QDeclarativeGrid::Flow)
+	?fill@QDeclarativeAnchors@@QBEPAVQGraphicsObject@@XZ @ 3899 NONAME ; class QGraphicsObject * QDeclarativeAnchors::fill(void) const
+	?get@QDeclarativePixmapCache@@SA?AW4Status@QDeclarativePixmapReply@@ABVQUrl@@PAVQPixmap@@PAVQString@@PAVQSize@@_NHH@Z @ 3900 NONAME ; enum QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(class QUrl const &, class QPixmap *, class QString *, class QSize *, bool, int, int)
+	?resourcesLoading@QDeclarativeText@@QBEHXZ @ 3901 NONAME ; int QDeclarativeText::resourcesLoading(void) const
+	?trUtf8@QDeclarativeCompiler@@SA?AVQString@@PBD0@Z @ 3902 NONAME ; class QString QDeclarativeCompiler::trUtf8(char const *, char const *)
+	?tr@QDeclarativePixmapCache@@SA?AVQString@@PBD0H@Z @ 3903 NONAME ; class QString QDeclarativePixmapCache::tr(char const *, char const *, int)
+	?flow@QDeclarativeGrid@@QBE?AW4Flow@1@XZ @ 3904 NONAME ; enum QDeclarativeGrid::Flow QDeclarativeGrid::flow(void) const
+	?trUtf8@QDeclarativePixmapCache@@SA?AVQString@@PBD0@Z @ 3905 NONAME ; class QString QDeclarativePixmapCache::trUtf8(char const *, char const *)
+	?isValid@QDeclarativeContext@@QBE_NXZ @ 3906 NONAME ; bool QDeclarativeContext::isValid(void) const
+	?tr@QDeclarativeCompiler@@SA?AVQString@@PBD0H@Z @ 3907 NONAME ; class QString QDeclarativeCompiler::tr(char const *, char const *, int)
+	?flowChanged@QDeclarativeGrid@@IAEXXZ @ 3908 NONAME ; void QDeclarativeGrid::flowChanged(void)
+	?qdeclarativeelement_destructor@QDeclarativePrivate@@YAXPAVQObject@@@Z @ 3909 NONAME ; void QDeclarativePrivate::qdeclarativeelement_destructor(class QObject *)
+	?errorString@QDeclarativePixmapReply@@QBE?AVQString@@XZ @ 3910 NONAME ; class QString QDeclarativePixmapReply::errorString(void) const
+	?tr@QDeclarativeCompiler@@SA?AVQString@@PBD0@Z @ 3911 NONAME ; class QString QDeclarativeCompiler::tr(char const *, char const *)
+	?tr@QDeclarativePixmapCache@@SA?AVQString@@PBD0@Z @ 3912 NONAME ; class QString QDeclarativePixmapCache::tr(char const *, char const *)
+	?centerIn@QDeclarativeAnchors@@QBEPAVQGraphicsObject@@XZ @ 3913 NONAME ; class QGraphicsObject * QDeclarativeAnchors::centerIn(void) const
+	??0QDeclarativeAnchors@@QAE@PAVQGraphicsObject@@PAVQObject@@@Z @ 3914 NONAME ; QDeclarativeAnchors::QDeclarativeAnchors(class QGraphicsObject *, class QObject *)
+	?importPlugin@QDeclarativeEngine@@QAE_NABVQString@@0PAV2@@Z @ 3915 NONAME ; bool QDeclarativeEngine::importPlugin(class QString const &, class QString const &, class QString *)
+	?setFill@QDeclarativeAnchors@@QAEXPAVQGraphicsObject@@@Z @ 3916 NONAME ; void QDeclarativeAnchors::setFill(class QGraphicsObject *)
+	?trUtf8@QDeclarativePixmapCache@@SA?AVQString@@PBD0H@Z @ 3917 NONAME ; class QString QDeclarativePixmapCache::trUtf8(char const *, char const *, int)
+	?setCenterIn@QDeclarativeAnchors@@QAEXPAVQGraphicsObject@@@Z @ 3918 NONAME ; void QDeclarativeAnchors::setCenterIn(class QGraphicsObject *)
 
