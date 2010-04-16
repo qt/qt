@@ -1284,7 +1284,7 @@ QScriptValue QDeclarativeEnginePrivate::consoleLog(QScriptContext *ctxt, QScript
     return e->newVariant(QVariant(true));
 }
 
-void QDeclarativeEnginePrivate::sendQuit ()
+void QDeclarativeEnginePrivate::sendQuit()
 {
     Q_Q(QDeclarativeEngine);
     emit q->quit();
@@ -1293,7 +1293,7 @@ void QDeclarativeEnginePrivate::sendQuit ()
 QScriptValue QDeclarativeEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptEngine *e)
 {
     QDeclarativeEnginePrivate *qe = get (e);
-    qe->sendQuit ();
+    qe->sendQuit();
     return QScriptValue();
 }
 

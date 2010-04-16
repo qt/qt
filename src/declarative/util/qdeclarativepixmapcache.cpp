@@ -194,7 +194,7 @@ static bool readImage(const QUrl& url, QIODevice *dev, QImage *image, QString *e
         return true;
     } else {
         if (errorString)
-            *errorString = QDeclarativeImageRequestHandler::tr("Error decoding: %1: %2").arg(url.toString())
+            *errorString = QDeclarativePixmapCache::tr("Error decoding: %1: %2").arg(url.toString())
                                 .arg(imgio.errorString());
         return false;
     }
@@ -264,7 +264,7 @@ bool QDeclarativeImageRequestHandler::event(QEvent *event)
                 QString errorStr;
                 if (image.isNull()) {
                     errorCode = QDeclarativeImageReaderEvent::Loading;
-                    errorStr = QDeclarativeImageRequestHandler::tr("Failed to get image from provider: %1").arg(url.toString());
+                    errorStr = QDeclarativePixmapCache::tr("Failed to get image from provider: %1").arg(url.toString());
                 }
                 QCoreApplication::postEvent(runningJob, new QDeclarativeImageReaderEvent(errorCode, errorStr, image));
             } else {
@@ -283,7 +283,7 @@ bool QDeclarativeImageRequestHandler::event(QEvent *event)
                             errorCode = QDeclarativeImageReaderEvent::Loading;
                         }
                     } else {
-                        errorStr = QDeclarativeImageRequestHandler::tr("Cannot open: %1").arg(url.toString());
+                        errorStr = QDeclarativePixmapCache::tr("Cannot open: %1").arg(url.toString());
                         errorCode = QDeclarativeImageReaderEvent::Loading;
                     }
                     QCoreApplication::postEvent(runningJob, new QDeclarativeImageReaderEvent(errorCode, errorStr, image));
@@ -625,7 +625,7 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
                     }
                 } else {
                     if (errorString)
-                        *errorString = QDeclarativeImageRequestHandler::tr("Cannot open: %1").arg(url.toString());
+                        *errorString = tr("Cannot open: %1").arg(url.toString());
                     *pixmap = QPixmap();
                     status = QDeclarativePixmapReply::Error;
                 }
@@ -662,7 +662,7 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
         } else if (pixmap->isNull()) {
             status = QDeclarativePixmapReply::Error;
             if (errorString)
-                *errorString = QDeclarativeImageRequestHandler::tr("Unknown Error loading %1").arg(url.toString());
+                *errorString = tr("Unknown Error loading %1").arg(url.toString());
         } else {
             status = QDeclarativePixmapReply::Ready;
         }

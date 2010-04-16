@@ -338,15 +338,15 @@ QDeclarativeContext* QDeclarativeView::rootContext()
     \value Null This QDeclarativeView has no source set.
     \value Ready This QDeclarativeView has loaded and created the QML component.
     \value Loading This QDeclarativeView is loading network data.
-    \value Error An error has occured.  Calling errorDescription() to retrieve a description.
+    \value Error An error has occured.  Call errorDescription() to retrieve a description.
 */
 
 /*! \enum QDeclarativeView::ResizeMode
 
   This enum specifies how to resize the view.
 
-  \value SizeViewToRootObject
-  \value SizeRootObjectToView
+  \value SizeViewToRootObject The view resizes with the root item in the QML.
+  \value SizeRootObjectToView The view will automatically resize the root item to the size of the view.
 */
 
 /*!
