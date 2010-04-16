@@ -52,21 +52,19 @@
 #include <private/qdeclarativedebugclient_p.h>
 #include <private/qdeclarativedebugservice_p.h>
 
+#include "../../../shared/util.h"
 #include "../shared/debugutil_p.h"
+
 
 class tst_QDeclarativeDebugService : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QDeclarativeDebugService(QDeclarativeDebugTestData *data)
-    {
-        m_conn = data->conn;
-    }
-
+private:
     QDeclarativeDebugConnection *m_conn;
 
 private slots:
+    void initTestCase();
+
     void name();
     void isEnabled();
     void enabledChanged();
@@ -75,6 +73,19 @@ private slots:
     void objectForId();
     void objectToString();
 };
+
+void tst_QDeclarativeDebugService::initTestCase()
+{
+    qputenv("QML_DEBUG_SERVER_PORT", "3768");
+    new QDeclarativeEngine(this);
+
+    m_conn = new QDeclarativeDebugConnection(this);
+    m_conn->connectToHost("127.0.0.1", 3768);
+    bool ok = m_conn->waitForConnected();
+    Q_ASSERT(ok);
+
+    QTRY_VERIFY(QDeclarativeDebugService::hasDebuggingClient());
+}
 
 void tst_QDeclarativeDebugService::name()
 {
@@ -170,21 +181,6 @@ void tst_QDeclarativeDebugService::objectToString()
     delete obj;
 }
 
-
-class tst_QDeclarativeDebugService_Factory : public QDeclarativeTestFactory
-{
-public:
-    QObject *createTest(QDeclarativeDebugTestData *data) { return new tst_QDeclarativeDebugService(data); }
-};
-
-// This does not use QTEST_MAIN because the test has to be created and run
-// in a separate thread.
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
-
-    tst_QDeclarativeDebugService_Factory factory;
-    return QDeclarativeDebugTest::runTests(&factory);
-}
+QTEST_MAIN(tst_QDeclarativeDebugService)
 
 #include "tst_qdeclarativedebugservice.moc"
