@@ -123,11 +123,13 @@ tst_NetworkRemoteStressTest::tst_NetworkRemoteStressTest()
         while (!urlList.atEnd()) {
             QByteArray line = urlList.readLine().trimmed();
             QUrl url = QUrl::fromEncoded(line);
-            if (url.scheme() == "http")
+            if (url.scheme() == "http") {
                 httpUrls << url;
-            else if (url.scheme() == "https")
+                mixedUrls << url;
+            } else if (url.scheme() == "https") {
                 httpsUrls << url;
-            mixedUrls << url;
+                mixedUrls << url;
+            }
         }
     }
 
