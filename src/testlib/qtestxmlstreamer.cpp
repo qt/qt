@@ -172,7 +172,7 @@ void QTestXmlStreamer::formatBeforeAttributes(const QTestElement *element, QTest
                            element->attributeValue(QTest::AI_Line));
 
         if( !element->childElements() ) {
-            QTest::qt_asprintf(formatted, "<Incident type=\"%s\" %s/>\n",
+            QTest::qt_asprintf(formatted, "<Incident type=\"%s\" %s />\n",
                                element->attributeValue(QTest::AI_Result), buf.constData());
         } else {
             formatted->data()[0] = '\0';
