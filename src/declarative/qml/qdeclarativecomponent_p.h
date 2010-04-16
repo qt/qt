@@ -99,10 +99,10 @@ public:
     QDeclarativeCompiledData *cc;
 
     struct ConstructionState {
-        ConstructionState() : componentAttacheds(0), completePending(false) {}
+        ConstructionState() : componentAttached(0), completePending(false) {}
         QList<QDeclarativeEnginePrivate::SimpleList<QDeclarativeAbstractBinding> > bindValues;
         QList<QDeclarativeEnginePrivate::SimpleList<QDeclarativeParserStatus> > parserStatus;
-        QDeclarativeComponentAttached *componentAttacheds;
+        QDeclarativeComponentAttached *componentAttached;
         QList<QDeclarativeError> errors;
         bool completePending;
     };
@@ -111,8 +111,8 @@ public:
     static QObject *begin(QDeclarativeContextData *ctxt, QDeclarativeEnginePrivate *enginePriv,
                           QDeclarativeCompiledData *component, int start, int count,
                           ConstructionState *state, const QBitField &bindings = QBitField());
-    static void beginDeferred(QDeclarativeContextData *ctxt, QDeclarativeEnginePrivate *enginePriv,
-                              QObject *object, ConstructionState *state);
+    static void beginDeferred(QDeclarativeEnginePrivate *enginePriv, QObject *object, 
+                              ConstructionState *state);
     static void complete(QDeclarativeEnginePrivate *enginePriv, ConstructionState *state);
 
     QDeclarativeEngine *engine;
@@ -132,13 +132,24 @@ public:
     QDeclarativeComponentAttached(QObject *parent = 0);
     ~QDeclarativeComponentAttached();
 
+    void add(QDeclarativeComponentAttached **a) {
+        prev = a; next = *a; *a = this;
+        if (next) next->prev = &next;
+    }
+    void rem() {
+        if (next) next->prev = prev;
+        *prev = next;
+        next = 0; prev = 0;
+    }
     QDeclarativeComponentAttached **prev;
     QDeclarativeComponentAttached *next;
 
 Q_SIGNALS:
     void completed();
+    void destruction();
 
 private:
+    friend class QDeclarativeContextData;;
     friend class QDeclarativeComponentPrivate;
 };
 

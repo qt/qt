@@ -253,6 +253,7 @@ void *QThreadPrivate::start(void *arg)
     pthread_setspecific(current_thread_data_key, data);
 
     data->ref();
+    data->quitNow = false;
 
     // ### TODO: allow the user to create a custom event dispatcher
     createEventDispatcher(data);
@@ -494,7 +495,6 @@ void QThread::start(Priority priority)
     d->running = true;
     d->finished = false;
     d->terminated = false;
-    d->data->quitNow = false;
 
     pthread_attr_t attr;
     pthread_attr_init(&attr);

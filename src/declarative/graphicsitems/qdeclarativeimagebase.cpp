@@ -43,6 +43,7 @@
 #include "private/qdeclarativeimagebase_p_p.h"
 
 #include <qdeclarativeengine.h>
+#include <qdeclarativeinfo.h>
 #include <qdeclarativepixmapcache_p.h>
 
 #include <QFile>
@@ -154,7 +155,8 @@ void QDeclarativeImageBase::load()
         int reqwidth = d->sourcesize.width();
         int reqheight = d->sourcesize.height();
         QSize impsize;
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, &impsize, d->async, reqwidth, reqheight);
+        QString errorString;
+        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, &errorString, &impsize, d->async, reqwidth, reqheight);
         if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
             QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->url, reqwidth, reqheight);
             d->pendingPixmapCache = true;
@@ -191,6 +193,7 @@ void QDeclarativeImageBase::load()
                     emit sourceSizeChanged();
             } else {
                 d->status = Error;
+                qmlInfo(this) << errorString;
             }
             d->progress = 1.0;
             emit statusChanged(d->status);
@@ -210,8 +213,11 @@ void QDeclarativeImageBase::requestFinished()
     d->pendingPixmapCache = false;
 
     QSize impsize;
-    if (QDeclarativePixmapCache::get(d->url, &d->pix, &impsize, d->async, d->sourcesize.width(), d->sourcesize.height()) != QDeclarativePixmapReply::Ready)
+    QString errorString;
+    if (QDeclarativePixmapCache::get(d->url, &d->pix, &errorString, &impsize, d->async, d->sourcesize.width(), d->sourcesize.height()) != QDeclarativePixmapReply::Ready) {
         d->status = Error;
+        qmlInfo(this) << errorString;
+    }
     setImplicitWidth(impsize.width());
     setImplicitHeight(impsize.height());
 

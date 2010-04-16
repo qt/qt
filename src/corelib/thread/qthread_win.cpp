@@ -298,6 +298,7 @@ unsigned int __stdcall QThreadPrivate::start(void *arg)
 
     QThread::setTerminationEnabled(false);
 
+    data->quitNow = false;
     // ### TODO: allow the user to create a custom event dispatcher
     createEventDispatcher(data);
 
@@ -404,7 +405,6 @@ void QThread::start(Priority priority)
     d->running = true;
     d->finished = false;
     d->terminated = false;
-    d->data->quitNow = false;
 
     /*
       NOTE: we create the thread in the suspended state, set the

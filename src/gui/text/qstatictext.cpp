@@ -363,7 +363,7 @@ QSizeF QStaticText::size() const
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
-        : items(0), itemCount(0), glyphPool(0), positionPool(0), textWidth(-1.0),
+        : textWidth(-1.0), items(0), itemCount(0), glyphPool(0), positionPool(0),
           needsRelayout(true), useBackendOptimizations(false), textFormat(Qt::AutoText)
 {
 }
@@ -584,11 +584,13 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
         textLayout.draw(p, topLeftPosition);
     } else {
         QTextDocument document;
+#ifndef QT_NO_CSSPARSER
         QColor color = p->pen().color();
         document.setDefaultStyleSheet(QString::fromLatin1("body { color: #%1%2%3 }")
                                       .arg(QString::number(color.red(), 16), 2, QLatin1Char('0'))
                                       .arg(QString::number(color.green(), 16), 2, QLatin1Char('0'))
                                       .arg(QString::number(color.blue(), 16), 2, QLatin1Char('0')));
+#endif
         document.setDefaultFont(font);
         document.setDocumentMargin(0.0);
         if (textWidth >= 0.0)

@@ -101,7 +101,7 @@ we will write this:
 \snippet doc/src/snippets/declarative/codingconventions/lists.qml 1
 
 
-\section1 Javascript
+\section1 Javascript code
 
 If the script is a single expression, we recommend writing it inline:
 

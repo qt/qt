@@ -125,8 +125,8 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
     }
 }
 
-void (*QDeclarativeData::destroyed)(QDeclarativeData *, QObject *) = 0;
-void (*QDeclarativeData::parentChanged)(QDeclarativeData *, QObject *, QObject *) = 0;
+void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = 0;
+void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
 
 QObjectData::~QObjectData() {}
 
@@ -878,7 +878,7 @@ QObject::~QObject()
     }
 
     if (d->declarativeData)
-        QDeclarativeData::destroyed(d->declarativeData, this);
+        QAbstractDeclarativeData::destroyed(d->declarativeData, this);
 
     {
         QMutex *signalSlotMutex = 0;
@@ -2027,7 +2027,7 @@ void QObjectPrivate::setParent_helper(QObject *o)
         }
     }
     if (!wasDeleted && declarativeData)
-        QDeclarativeData::parentChanged(declarativeData, q, o);
+        QAbstractDeclarativeData::parentChanged(declarativeData, q, o);
 }
 
 /*!

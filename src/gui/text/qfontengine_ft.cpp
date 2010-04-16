@@ -1368,7 +1368,7 @@ QFontEngineFT::QGlyphSet *QFontEngineFT::loadTransformedGlyphSet(const QTransfor
 
     if (!gs) {
         // don't try to load huge fonts
-        bool draw_as_outline = fontDef.pixelSize * qSqrt(matrix.det()) >= 64;
+        bool draw_as_outline = fontDef.pixelSize * qSqrt(qAbs(matrix.det())) >= 64;
         if (draw_as_outline)
             return 0;
 

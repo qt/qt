@@ -312,6 +312,7 @@ int QPaintBuffer::processCommands(QPainter *painter, int begin, int end) const
     return depth;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 QString QPaintBuffer::commandDescription(int command) const
 {
     QString desc;
@@ -563,6 +564,7 @@ QString QPaintBuffer::commandDescription(int command) const
 
     return desc;
 }
+#endif
 
 QRectF QPaintBuffer::boundingRect() const
 {

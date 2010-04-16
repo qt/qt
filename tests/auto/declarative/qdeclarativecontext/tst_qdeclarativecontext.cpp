@@ -172,8 +172,8 @@ void tst_qdeclarativecontext::parentContext()
     delete ctxt2; ctxt2 = 0;
 
     QCOMPARE(ctxt->parentContext(), engine->rootContext());
-    QCOMPARE(ctxt3->parentContext(), ctxt2);
-    QCOMPARE(ctxt4->parentContext(), ctxt2);
+    QCOMPARE(ctxt3->parentContext(), (QDeclarativeContext *)0);
+    QCOMPARE(ctxt4->parentContext(), (QDeclarativeContext *)0);
     QCOMPARE(ctxt5->parentContext(), ctxt);
     QCOMPARE(ctxt6->parentContext(), engine->rootContext());
     QCOMPARE(ctxt7->parentContext(), engine->rootContext());
@@ -181,9 +181,9 @@ void tst_qdeclarativecontext::parentContext()
     delete engine; engine = 0;
 
     QCOMPARE(ctxt->parentContext(), (QDeclarativeContext *)0);
-    QCOMPARE(ctxt3->parentContext(), ctxt2);
-    QCOMPARE(ctxt4->parentContext(), ctxt2);
-    QCOMPARE(ctxt5->parentContext(), ctxt);
+    QCOMPARE(ctxt3->parentContext(), (QDeclarativeContext *)0);
+    QCOMPARE(ctxt4->parentContext(), (QDeclarativeContext *)0);
+    QCOMPARE(ctxt5->parentContext(), (QDeclarativeContext *)0);
     QCOMPARE(ctxt6->parentContext(), (QDeclarativeContext *)0);
     QCOMPARE(ctxt7->parentContext(), (QDeclarativeContext *)0);
 

@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "propertyAction.0.png"
+        image: "propertyAction-visual.0.png"
     }
     Frame {
         msec: 976
@@ -490,7 +490,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "propertyAction.1.png"
+        image: "propertyAction-visual.1.png"
     }
     Frame {
         msec: 1936
@@ -738,7 +738,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "propertyAction.2.png"
+        image: "propertyAction-visual.2.png"
     }
     Frame {
         msec: 2896
@@ -810,7 +810,7 @@ VisualTest {
     }
     Frame {
         msec: 3168
-        hash: "dcc79277fdb8966e5a3f2ed1b2fc4292"
+        hash: "38b7e5894cf49a19ac055264d6447b9f"
     }
     Frame {
         msec: 3184

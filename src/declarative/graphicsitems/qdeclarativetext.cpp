@@ -43,7 +43,9 @@
 #include "private/qdeclarativetext_p_p.h"
 #include <qdeclarativestyledtext_p.h>
 #include <qdeclarativeinfo.h>
+#include <qdeclarativepixmapcache_p.h>
 
+#include <QSet>
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
@@ -54,6 +56,59 @@
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
+
+class QTextDocumentWithImageResources : public QTextDocument {
+    Q_OBJECT
+
+public:
+    QTextDocumentWithImageResources(QDeclarativeText *parent) :
+        QTextDocument(parent),
+        outstanding(0)
+    {
+    }
+
+    int resourcesLoading() const { return outstanding; }
+
+protected:
+    QVariant loadResource(int type, const QUrl &name)
+    {
+        QUrl url = qmlContext(parent())->resolvedUrl(name);
+
+        if (type == QTextDocument::ImageResource) {
+            QPixmap pm;
+            QString errorString;
+            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(url, &pm, &errorString, 0, false, 0, 0);
+            if (status == QDeclarativePixmapReply::Ready)
+                return pm;
+            if (status == QDeclarativePixmapReply::Error) {
+                if (!errors.contains(url)) {
+                    errors.insert(url);
+                    qmlInfo(parent()) << errorString;
+                }
+            } else {
+                QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(parent()), url);
+                connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+                outstanding++;
+            }
+        }
+
+        return QTextDocument::loadResource(type,url); // The *resolved* URL
+    }
+
+private slots:
+    void requestFinished()
+    {
+        outstanding--;
+        if (outstanding == 0)
+            static_cast<QDeclarativeText*>(parent())->reloadWithResources();
+    }
+
+private:
+    int outstanding;
+    static QSet<QUrl> errors;
+};
+
+QSet<QUrl> QTextDocumentWithImageResources::errors;
 
 /*!
     \qmlclass Text QDeclarativeText
@@ -76,6 +131,9 @@ QT_BEGIN_NAMESPACE
 
     The \c elide property can alternatively be used to fit a single line of
     plain text to a set width.
+
+    Note that the \l{Supported HTML Subset} is limited, and that if IMG tags
+    load remote images, the text reloads (see resourcesLoading).
 
     Text provides read-only text. For editable text, see \l TextEdit.
 */
@@ -259,11 +317,10 @@ void QDeclarativeText::setText(const QString &n)
 
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(n));
     if (d->richText) {
-        if (!d->doc) {
-            d->doc = new QTextDocument(this);
-            d->doc->setDocumentMargin(0);
+        if (isComponentComplete()) {
+            d->ensureDoc();
+            d->doc->setHtml(n);
         }
-        d->doc->setHtml(n);
     }
 
     d->text = n;
@@ -550,11 +607,10 @@ void QDeclarativeText::setTextFormat(TextFormat format)
         d->updateLayout();
         d->markImgDirty();
     } else if (!wasRich && d->richText) {
-        if (!d->doc) {
-            d->doc = new QTextDocument(this);
-            d->doc->setDocumentMargin(0);
+        if (isComponentComplete()) {
+            d->ensureDoc();
+            d->doc->setHtml(d->text);
         }
-        d->doc->setHtml(d->text);
         d->updateLayout();
         d->markImgDirty();
     }
@@ -677,7 +733,7 @@ void QDeclarativeTextPrivate::updateSize()
             QTextOption option((Qt::Alignment)int(hAlign | vAlign));
             option.setWrapMode(QTextOption::WrapMode(wrapMode));
             doc->setDefaultTextOption(option);
-            if (wrapMode != QDeclarativeText::NoWrap && !q->heightValid() && q->widthValid())
+            if (wrapMode != QDeclarativeText::NoWrap && q->widthValid())
                 doc->setTextWidth(q->width());
             else
                 doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
@@ -898,6 +954,34 @@ void QDeclarativeTextPrivate::checkImgCache()
     imgDirty = false;
 }
 
+void QDeclarativeTextPrivate::ensureDoc()
+{
+    if (!doc) {
+        Q_Q(QDeclarativeText);
+        doc = new QTextDocumentWithImageResources(q);
+        doc->setDocumentMargin(0);
+    }
+}
+
+void QDeclarativeText::reloadWithResources()
+{
+    Q_D(QDeclarativeText);
+    if (!d->richText)
+        return;
+    d->doc->setHtml(d->text);
+    d->updateLayout();
+    d->markImgDirty();
+}
+
+/*!
+    Returns the number of resources (images) that are being loaded asynchronously.
+*/
+int QDeclarativeText::resourcesLoading() const
+{
+    Q_D(const QDeclarativeText);
+    return d->doc ? d->doc->resourcesLoading() : 0;
+}
+
 void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeText);
@@ -1011,6 +1095,10 @@ void QDeclarativeText::componentComplete()
     Q_D(QDeclarativeText);
     QDeclarativeItem::componentComplete();
     if (d->dirty) {
+        if (d->richText) {
+            d->ensureDoc();
+            d->doc->setHtml(d->text);
+        }
         d->updateLayout();
         d->dirty = false;
     }
@@ -1061,4 +1149,7 @@ void QDeclarativeText::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (!event->isAccepted())
         QDeclarativeItem::mouseReleaseEvent(event);
 }
+
 QT_END_NAMESPACE
+
+#include "qdeclarativetext.moc"

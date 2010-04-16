@@ -127,6 +127,9 @@ public:
     bool finished;
     bool terminated;
 
+    bool exited;
+    int returnCode;
+
     uint stackSize;
     QThread::Priority priority;
 

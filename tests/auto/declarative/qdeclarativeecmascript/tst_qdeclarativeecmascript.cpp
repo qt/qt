@@ -1382,7 +1382,6 @@ void tst_qdeclarativeecmascript::callQtInvokables()
     o.reset();
     {
     QScriptValue ret = engine->evaluate("object.method_NoArgs_QPointF()");
-    QVERIFY(ret.isVariant());
     QCOMPARE(ret.toVariant(), QVariant(QPointF(123, 4.5)));
     QCOMPARE(o.error(), false);
     QCOMPARE(o.invoked(), 3);

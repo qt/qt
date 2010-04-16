@@ -55,11 +55,6 @@
 #include <QAbstractAnimation>
 #include "deviceskin.h"
 
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 3))
-#include <private/qzipreader_p.h>
-#define QDECLARATIVEVIEWER_ZIP_SUPPORT
-#endif
-
 #include <QSettings>
 #include <QXmlStreamReader>
 #include <QBuffer>
@@ -470,6 +465,8 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
       , portraitOrientation(0), landscapeOrientation(0)
       , m_scriptOptions(0), tester(0), useQmlFileBrowser(true)
 {
+    QDeclarativeViewer::registerTypes();
+
     devicemode = false;
     skin = 0;
     canvas = 0;
@@ -551,6 +548,11 @@ QMenuBar *QDeclarativeViewer::menuBar() const
 #endif
 
     return mb;
+}
+
+QDeclarativeView *QDeclarativeViewer::view() const
+{
+    return canvas;
 }
 
 void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
@@ -891,120 +893,19 @@ void QDeclarativeViewer::addPluginPath(const QString& plugin)
 
 void QDeclarativeViewer::reload()
 {
-    openQml(currentFileOrUrl);
-}
-
-void QDeclarativeViewer::open(const QString& doc)
-{
-#ifdef QDECLARATIVEVIEWER_ZIP_SUPPORT
-    if (doc.endsWith(".wgt",Qt::CaseInsensitive)
-     || doc.endsWith(".wgz",Qt::CaseInsensitive)
-     || doc.endsWith(".zip",Qt::CaseInsensitive))
-        openWgt(doc);
-    else
-#endif
-        openQml(doc);
-}
-
-void QDeclarativeViewer::openWgt(const QString& doc)
-{
-#ifdef QDECLARATIVEVIEWER_ZIP_SUPPORT
-    // XXX This functionality could be migrated to QDeclarativeView once refined
-
-    QUrl url(doc);
-    if (url.isRelative())
-        url = QUrl::fromLocalFile(doc);
-    delete canvas->rootObject();
-    canvas->engine()->clearComponentCache();
-    QNetworkAccessManager * nam = canvas->engine()->networkAccessManager();
-    wgtreply = nam->get(QNetworkRequest(url));
-    connect(wgtreply,SIGNAL(finished()),this,SLOT(unpackWgt()));
-#endif
-}
-
-#ifdef QDECLARATIVEVIEWER_ZIP_SUPPORT
-static void removeRecursive(const QString& dirname)
-{
-    QDir dir(dirname);
-    QFileInfoList entries(dir.entryInfoList(QDir::Dirs|QDir::Files|QDir::NoDotAndDotDot));
-    for (int i = 0; i < entries.count(); ++i)
-        if (entries[i].isDir())
-            removeRecursive(entries[i].filePath());
-        else
-            dir.remove(entries[i].fileName());
-    QDir().rmdir(dirname);
-}
-#endif
-
-void QDeclarativeViewer::unpackWgt()
-{
-#ifdef QDECLARATIVEVIEWER_ZIP_SUPPORT
-    QByteArray all = wgtreply->readAll();
-    QBuffer buf(&all);
-    buf.open(QIODevice::ReadOnly);
-    QZipReader zip(&buf);
-    /*
-    for (int i=0; i<zip.count(); ++i) {
-        QZipReader::FileInfo info = zip.entryInfoAt(i);
-        qDebug() << "zip:" << info.filePath;
-    }
-    */
-    wgtdir = QDir::tempPath()+QDir::separator()+QLatin1String("qml-wgt");
-    removeRecursive(wgtdir);
-    QDir().mkpath(wgtdir);
-    zip.extractAll(wgtdir);
-
-    QString rootfile;
-
-    if (wgtreply->header(QNetworkRequest::ContentTypeHeader).toString() == "application/widget" || wgtreply->url().path().endsWith(".wgt",Qt::CaseInsensitive)) {
-        // W3C Draft http://www.w3.org/TR/2009/CR-widgets-20091201
-        QFile configfile(wgtdir+QDir::separator()+"config.xml");
-        if (configfile.open(QIODevice::ReadOnly)) {
-            QXmlStreamReader config(&configfile);
-            if (config.readNextStartElement() && config.name() == "widget") {
-                while (config.readNextStartElement()) {
-                    if (config.name() == "content") {
-                        rootfile = wgtdir + QDir::separator();
-                        rootfile += config.attributes().value(QLatin1String("src"));
-                    }
-                    // XXX process other config
-
-                    config.skipCurrentElement();
-                }
-            }
-        } else {
-            qWarning("No config.xml found - non-standard WGT file");
-        }
-        if (rootfile.isEmpty()) {
-            QString def = wgtdir+QDir::separator()+"index.qml";
-            if (QFile::exists(def))
-                rootfile = def;
-        }
-    } else {
-        // Just find index.qml, preferably at the root
-        for (int i=0; i<zip.count(); ++i) {
-            QZipReader::FileInfo info = zip.entryInfoAt(i);
-            if (info.filePath.compare(QLatin1String("index.qml"),Qt::CaseInsensitive)==0)
-                rootfile = wgtdir+QDir::separator()+info.filePath;
-            if (rootfile.isEmpty() && info.filePath.endsWith("/index.qml",Qt::CaseInsensitive))
-                rootfile = wgtdir+QDir::separator()+info.filePath;
-        }
-    }
-
-    openQml(rootfile);
-#endif
+    open(currentFileOrUrl);
 }
 
 void QDeclarativeViewer::openFile()
 {
     QString cur = canvas->source().toLocalFile();
     if (useQmlFileBrowser) {
-        openQml("qrc:/content/Browser.qml");
+        open("qrc:/content/Browser.qml");
     } else {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), cur, tr("QML Files (*.qml)"));
         if (!fileName.isEmpty()) {
             QFileInfo fi(fileName);
-            openQml(fi.absoluteFilePath());
+            open(fi.absoluteFilePath());
         }
     }
 }
@@ -1034,10 +935,10 @@ void QDeclarativeViewer::statusChanged()
 
 void QDeclarativeViewer::launch(const QString& file_or_url)
 {
-    QMetaObject::invokeMethod(this, "openQml", Qt::QueuedConnection, Q_ARG(QString, file_or_url));
+    QMetaObject::invokeMethod(this, "open", Qt::QueuedConnection, Q_ARG(QString, file_or_url));
 }
 
-void QDeclarativeViewer::openQml(const QString& file_or_url)
+bool QDeclarativeViewer::open(const QString& file_or_url)
 {
     currentFileOrUrl = file_or_url;
 
@@ -1070,7 +971,7 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
         if (fi.exists()) {
             if (fi.suffix().toLower() != QLatin1String("qml")) {
                 qWarning() << "qml cannot open non-QML file" << fileName;
-                return;
+                return false;
             }
 
             QDir dir(fi.path()+"/dummydata", "*.qml");
@@ -1101,7 +1002,7 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
             }
         } else {
             qWarning() << "qml cannot find file:" << fileName;
-            return;
+            return false;
         }
     }
 
@@ -1112,9 +1013,7 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
 
     qWarning() << "Wall startup time:" << t.elapsed();
 
-#ifdef QTOPIA
-    show();
-#endif
+    return true;
 }
 
 void QDeclarativeViewer::startNetwork()
@@ -1500,8 +1399,13 @@ void QDeclarativeViewer::setUseNativeFileBrowser(bool use)
 
 void QDeclarativeViewer::registerTypes()
 {
-    // registering only for exposing the DeviceOrientation::Orientation enum
-    qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,6,"Orientation");
+    static bool registered = false;
+
+    if (!registered) {
+        // registering only for exposing the DeviceOrientation::Orientation enum
+        qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,6,"Orientation");
+        registered = true;
+    }
 }
 
 QT_END_NAMESPACE

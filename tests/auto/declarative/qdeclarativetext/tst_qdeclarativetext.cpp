@@ -48,6 +48,9 @@
 #include <QGraphicsSceneMouseEvent>
 #include <qmath.h>
 
+#include "../../../shared/util.h"
+#include "testhttpserver.h"
+
 class tst_qdeclarativetext : public QObject
 
 {
@@ -61,6 +64,9 @@ private slots:
     void wrap();
     void elide();
     void textFormat();
+
+    void embeddedImages_data();
+    void embeddedImages();
 
     // ### these tests may be trivial    
     void horizontalAlignment();
@@ -286,8 +292,28 @@ void tst_qdeclarativetext::wrap()
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), 30.);
         QVERIFY(textObject->height() > textHeight);
+
+        qreal oldHeight = textObject->height();
+        textObject->setWidth(100);
+        QVERIFY(textObject->height() < oldHeight);
     }
 
+    // richtext again with a fixed height
+    for (int i = 0; i < richText.size(); i++)
+    {
+        QString componentStr = "import Qt 4.7\nText { wrapMode: Text.WordWrap; width: 30; height: 50; text: \"" + richText.at(i) + "\" }";
+        QDeclarativeComponent textComponent(&engine);
+        textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+        QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->width(), 30.);
+        QVERIFY(textObject->implicitHeight() > textHeight);
+
+        qreal oldHeight = textObject->implicitHeight();
+        textObject->setWidth(100);
+        QVERIFY(textObject->implicitHeight() < oldHeight);
+    }
 }
 
 void tst_qdeclarativetext::elide()
@@ -836,6 +862,49 @@ void tst_qdeclarativetext::clickLink()
         }
 
         QCOMPARE(test.link, QLatin1String("http://qt.nokia.com"));
+    }
+}
+
+void tst_qdeclarativetext::embeddedImages_data()
+{
+    QTest::addColumn<QUrl>("qmlfile");
+    QTest::addColumn<QString>("error");
+    QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesLocal.qml") << "";
+    QTest::newRow("local-error") << QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesLocalError.qml")
+        << "QML Text ("+QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesLocalError.qml").toString()+":3:1) Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/http/notexists.png").toString();
+    QTest::newRow("remote") << QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesRemote.qml") << "";
+    QTest::newRow("remote-error") << QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesRemoteError.qml")
+        << "QML Text ("+QUrl::fromLocalFile(SRCDIR "/data/embeddedImagesRemoteError.qml").toString()+":3:1) Error downloading http://127.0.0.1:14453/notexists.png - server replied: Not found";
+}
+
+void tst_qdeclarativetext::embeddedImages()
+{
+    // Tests QTBUG-9900
+
+    QFETCH(QUrl, qmlfile);
+    QFETCH(QString, error);
+
+    TestHTTPServer server(14453);
+    server.serveDirectory(SRCDIR "/data/http");
+
+    if (!error.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, error.toLatin1());
+    
+    QDeclarativeComponent textComponent(&engine, qmlfile);
+    QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
+
+    QVERIFY(textObject != 0);
+
+    QTRY_COMPARE(textObject->resourcesLoading(), 0);
+
+    QPixmap pm(SRCDIR "/data/http/exists.png");
+    if (error.isEmpty()) {
+        QCOMPARE(textObject->width(), double(pm.width()));
+        QCOMPARE(textObject->height(), double(pm.height()));
+    } else {
+        QVERIFY(16 != pm.width()); // check test is effective
+        QCOMPARE(textObject->width(), 16.0); // default size of QTextDocument broken image icon
+        QCOMPARE(textObject->height(), 16.0);
     }
 }
 

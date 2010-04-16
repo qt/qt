@@ -120,6 +120,26 @@ Item {
         }
     }
     \endqml
+
+    \e onDestruction
+
+    Emitted as the component begins destruction.  This can be used to undo
+    work done in the onCompleted signal, or other imperative code in your
+    application.
+
+    The \c {Component::onDestruction} attached property can be applied to
+    any element.  However, it applies to the destruction of the component as
+    a whole, and not the destruction of the specific object.  The order of 
+    running the \c onDestruction scripts is undefined.
+
+    \qml
+    Rectangle {
+        Component.onDestruction: console.log("Destruction Beginning!")
+        Rectangle {
+            Component.onDestruction: console.log("Nested Destruction Beginning!")
+        }
+    }
+    \endqml
 */
 
 /*!
@@ -518,7 +538,7 @@ QScriptValue QDeclarativeComponent::createObject()
     if (!ret)
         return QScriptValue();
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
-    QDeclarativeDeclarativeData::get(ret, true)->setImplicitDestructible();
+    QDeclarativeData::get(ret, true)->setImplicitDestructible();
     return priv->objectClass->newQObject(ret, QMetaType::QObjectStar);
 }
 
@@ -581,7 +601,7 @@ QObject *QDeclarativeComponent::beginCreate(QDeclarativeContext *context)
     Q_D(QDeclarativeComponent);
     QObject *rv = d->beginCreate(context?QDeclarativeContextData::get(context):0, QBitField());
     if (rv) {
-        QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(rv);
+        QDeclarativeData *ddata = QDeclarativeData::get(rv);
         Q_ASSERT(ddata);
         ddata->indestructible = true;
     }
@@ -657,11 +677,11 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *ctxt, QDe
 
         state->bindValues = enginePriv->bindValues;
         state->parserStatus = enginePriv->parserStatus;
-        state->componentAttacheds = enginePriv->componentAttacheds;
-        if (state->componentAttacheds)
-            state->componentAttacheds->prev = &state->componentAttacheds;
+        state->componentAttached = enginePriv->componentAttached;
+        if (state->componentAttached)
+            state->componentAttached->prev = &state->componentAttached;
 
-        enginePriv->componentAttacheds = 0;
+        enginePriv->componentAttached = 0;
         enginePriv->bindValues.clear();
         enginePriv->parserStatus.clear();
         state->completePending = true;
@@ -671,7 +691,7 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *ctxt, QDe
     return rv;
 }
 
-void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeContextData *, QDeclarativeEnginePrivate *enginePriv,
+void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *enginePriv,
                                                  QObject *object, ConstructionState *state)
 {
     bool isRoot = !enginePriv->inBeginCreate;
@@ -688,11 +708,11 @@ void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeContextData *, QDec
 
         state->bindValues = enginePriv->bindValues;
         state->parserStatus = enginePriv->parserStatus;
-        state->componentAttacheds = enginePriv->componentAttacheds;
-        if (state->componentAttacheds)
-            state->componentAttacheds->prev = &state->componentAttacheds;
+        state->componentAttached = enginePriv->componentAttached;
+        if (state->componentAttached)
+            state->componentAttached->prev = &state->componentAttached;
 
-        enginePriv->componentAttacheds = 0;
+        enginePriv->componentAttached = 0;
         enginePriv->bindValues.clear();
         enginePriv->parserStatus.clear();
         state->completePending = true;
@@ -729,11 +749,13 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
             QDeclarativeEnginePrivate::clear(ps);
         }
 
-        while (state->componentAttacheds) {
-            QDeclarativeComponentAttached *a = state->componentAttacheds;
-            if (a->next) a->next->prev = &state->componentAttacheds;
-            state->componentAttacheds = a->next;
-            a->prev = 0; a->next = 0;
+        while (state->componentAttached) {
+            QDeclarativeComponentAttached *a = state->componentAttached;
+            a->rem();
+            QDeclarativeData *d = QDeclarativeData::get(a->parent());
+            Q_ASSERT(d);
+            Q_ASSERT(d->context);
+            a->add(&d->context->componentAttached);
             emit a->completed();
         }
 
@@ -793,15 +815,18 @@ QDeclarativeComponentAttached *QDeclarativeComponent::qmlAttachedProperties(QObj
     QDeclarativeComponentAttached *a = new QDeclarativeComponentAttached(obj);
 
     QDeclarativeEngine *engine = qmlEngine(obj);
-    if (!engine || !QDeclarativeEnginePrivate::get(engine)->inBeginCreate)
+    if (!engine)
         return a;
 
-    QDeclarativeEnginePrivate *p = QDeclarativeEnginePrivate::get(engine);
-
-    a->next = p->componentAttacheds;
-    a->prev = &p->componentAttacheds;
-    if (a->next) a->next->prev = &a->next;
-    p->componentAttacheds = a;
+    if (QDeclarativeEnginePrivate::get(engine)->inBeginCreate) {
+        QDeclarativeEnginePrivate *p = QDeclarativeEnginePrivate::get(engine);
+        a->add(&p->componentAttached);
+    } else {
+        QDeclarativeData *d = QDeclarativeData::get(obj);
+        Q_ASSERT(d);
+        Q_ASSERT(d->context);
+        a->add(&d->context->componentAttached);
+    }
 
     return a;
 }

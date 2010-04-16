@@ -94,7 +94,7 @@ HEADERS += \
     $$PWD/qdeclarativecompositetypemanager_p.h \
     $$PWD/qdeclarativelist.h \
     $$PWD/qdeclarativelist_p.h \
-    $$PWD/qdeclarativedeclarativedata_p.h \
+    $$PWD/qdeclarativedata_p.h \
     $$PWD/qdeclarativeerror.h \
     $$PWD/qdeclarativescriptparser_p.h \
     $$PWD/qdeclarativeenginedebug_p.h \

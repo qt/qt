@@ -145,7 +145,9 @@ public:
 
     QMediaPlaylist *playlist;
     QPointer<QVideoWidget> videoWidget;
+#ifndef QT_NO_GRAPHICSVIEW
     QPointer<QGraphicsVideoItem> videoItem;
+#endif
 
     void _q_stateChanged(QMediaPlayer::State state);
     void _q_mediaStatusChanged(QMediaPlayer::MediaStatus status);
@@ -618,26 +620,36 @@ void QMediaPlayer::bind(QObject *obj)
         }
 
         QVideoWidget *videoWidget = qobject_cast<QVideoWidget*>(obj);
+#ifndef QT_NO_GRAPHICSVIEW
         QGraphicsVideoItem *videoItem = qobject_cast<QGraphicsVideoItem*>(obj);
+#endif
 
-        if (videoWidget || videoItem) {
+        if (videoWidget
+#ifndef QT_NO_GRAPHICSVIEW
+            || videoItem
+#endif
+            ) {
             //detach the current video output
             if (d->videoWidget) {
                 d->videoWidget->setMediaObject(0);
                 d->videoWidget = 0;
             }
 
+#ifndef QT_NO_GRAPHICSVIEW
             if (d->videoItem) {
                 d->videoItem->setMediaObject(0);
                 d->videoItem = 0;
             }
+#endif
         }
 
         if (videoWidget)
             d->videoWidget = videoWidget;
 
+#ifndef QT_NO_GRAPHICSVIEW
         if (videoItem)
             d->videoItem = videoItem;
+#endif
     }
 }
 
@@ -651,8 +663,10 @@ void QMediaPlayer::unbind(QObject *obj)
 
     if (obj == d->videoWidget) {
         d->videoWidget = 0;
+#ifndef QT_NO_GRAPHICSVIEW
     } else if (obj == d->videoItem) {
         d->videoItem = 0;
+#endif
     } else if (obj == d->playlist) {
         disconnect(d->playlist, SIGNAL(currentMediaChanged(QMediaContent)),
                 this, SLOT(_q_updateMedia(QMediaContent)));

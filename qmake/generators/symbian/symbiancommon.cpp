@@ -362,8 +362,10 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
 
     // deploy any additional DEPLOYMENT  files
     QString remoteTestPath;
+    QString zDir;
     remoteTestPath = QString("!:\\private\\%1").arg(privateDirUid);
-    QString zDir = epocRoot() + QLatin1String("epoc32/data/z");
+    if (epocBuild)
+        zDir = epocRoot() + QLatin1String("epoc32/data/z");
 
     DeploymentList depList;
     initProjectDeploySymbian(project, depList, remoteTestPath, true, epocBuild, "$(PLATFORM)", "$(TARGET)", generatedDirs, generatedFiles);

@@ -124,13 +124,14 @@ void tst_qdeclarativeimage::imageSource_data()
     QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << 120.0 << 120.0 << false << false << "";
     QTest::newRow("local async") << QUrl::fromLocalFile(SRCDIR "/data/colors1.png").toString() << 120.0 << 120.0 << false << true << "";
     QTest::newRow("local not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() << 0.0 << 0.0 << false
-        << false << "Cannot open  QUrl( \"" + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() + "\" )  ";
+        << false << "QML Image (file::2:1) Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString();
     QTest::newRow("local async not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString() << 0.0 << 0.0 << false
-        << true << "\"Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString() + "\" ";
+        << true << "QML Image (file::2:1) Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString();
     QTest::newRow("remote") << SERVER_ADDR "/colors.png" << 120.0 << 120.0 << true << false << "";
     QTest::newRow("remote svg") << SERVER_ADDR "/heart.svg" << 550.0 << 500.0 << true << false << "";
-    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << 0.0 << 0.0 << true << false
-        << "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
+    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << 0.0 << 0.0 << true
+        << false << "QML Image (file::2:1) Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found";
+
 }
 
 void tst_qdeclarativeimage::imageSource()
