@@ -305,7 +305,7 @@ Qt::LayoutDirection QTextInlineObject::textDirection() const
     Once the layout is done, these lines can be drawn on a paint
     device.
 
-    Here's some pseudo code that presents the layout phase:
+    Here's some code snippet that presents the layout phase:
     \snippet doc/src/snippets/code/src_gui_text_qtextlayout.cpp 0
 
     The text can be drawn by calling the layout's draw() function:

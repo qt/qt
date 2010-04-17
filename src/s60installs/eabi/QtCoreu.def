@@ -3693,6 +3693,8 @@ EXPORTS
 	_ZN9QDateTime19fromMSecsSinceEpochEx @ 3692 NONAME
 	_ZNK9QDateTime17toMSecsSinceEpochEv @ 3693 NONAME
 	_ZN10QTextCodec11validCodecsEv @ 3694 NONAME
-	_ZN16QDeclarativeData13parentChangedE @ 3695 NONAME DATA 4
-	_ZN16QDeclarativeData9destroyedE @ 3696 NONAME DATA 4
+	_ZN16QDeclarativeData13parentChangedE @ 3695 NONAME DATA 4 ABSENT
+	_ZN16QDeclarativeData9destroyedE @ 3696 NONAME DATA 4 ABSENT
+	_ZN24QAbstractDeclarativeData13parentChangedE @ 3697 NONAME DATA 4
+	_ZN24QAbstractDeclarativeData9destroyedE @ 3698 NONAME DATA 4
 
