@@ -1511,7 +1511,7 @@ void QScriptEnginePrivate::detachAllRegisteredScriptStrings()
 
 #ifndef QT_NO_REGEXP
 
-extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
+Q_DECL_IMPORT extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
 
 JSC::JSValue QScriptEnginePrivate::newRegExp(JSC::ExecState *exec, const QRegExp &regexp)
 {
