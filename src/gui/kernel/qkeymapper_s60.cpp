@@ -144,7 +144,7 @@ static const KeyMapping keyMapping[] = {
     {EKeyDevice0, EStdKeyDevice0, Key_Context1}, // Found by manual testing.
     {EKeyDevice1, EStdKeyDevice1, Key_Context2}, // Found by manual testing.
     {EKeyDevice3, EStdKeyDevice3, Key_Select},
-//    {EKeyDevice7, EStdKeyDevice7, Key_Camera},  //not supported by qt yet
+    {EKeyDevice7, EStdKeyDevice7, Key_Camera},  
     {EKeyApplication0, EStdKeyApplication0, Key_Menu}, // Found by manual testing.
     {EKeyApplication1, EStdKeyApplication1, Key_Launch1}, // Found by manual testing.
     {EKeyApplication2, EStdKeyApplication2, Key_MediaPlay}, // Found by manual testing.
@@ -161,7 +161,7 @@ static const KeyMapping keyMapping[] = {
     {EKeyApplicationD, EStdKeyApplicationD, Key_LaunchD},
     {EKeyApplicationE, EStdKeyApplicationE, Key_LaunchE},
     {EKeyApplicationF, EStdKeyApplicationF, Key_LaunchF},
-//    {EKeyApplication19, EStdKeyApplication19, Key_CameraFocus},  //not supported by qt yet
+    {EKeyApplication19, EStdKeyApplication19, Key_CameraFocus}, 
     {EKeyYes, EStdKeyYes, Key_Yes},
     {EKeyNo, EStdKeyNo, Key_No},
     {TKeyCode(0), TStdScanCode(0), Qt::Key(0)}

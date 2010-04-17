@@ -303,3 +303,5 @@ bool HelpViewer::eventFilter(QObject *obj, QEvent *event)
         return true;
     return QTextBrowser::eventFilter(obj, event);
 }
+
+QT_END_NAMESPACE

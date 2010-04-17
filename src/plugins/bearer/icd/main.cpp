@@ -45,6 +45,8 @@
 
 #include <QtCore/qdebug.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QIcdEnginePlugin : public QBearerEnginePlugin
@@ -82,3 +84,5 @@ Q_EXPORT_STATIC_PLUGIN(QIcdEnginePlugin)
 Q_EXPORT_PLUGIN2(qicdbearer, QIcdEnginePlugin)
 
 QT_END_NAMESPACE
+
+#endif

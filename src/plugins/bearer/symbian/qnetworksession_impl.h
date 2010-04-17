@@ -64,8 +64,9 @@
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     #include <comms-infras/cs_mobility_apiext.h>
 #endif
-
-typedef int(*TOpenCSetdefaultifFunction)(const struct ifreq*);
+#ifdef OCC_FUNCTIONALITY_AVAILABLE
+    #include <extendedconnpref.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -152,9 +153,6 @@ private: // data
 
     QDateTime startTime;
 
-    RLibrary iOpenCLibrary;
-    TOpenCSetdefaultifFunction iDynamicSetdefaultif;
-
     mutable RSocketServ iSocketServ;
     mutable RConnection iConnection;
     mutable RConnectionMonitor iConnectionMonitor;
@@ -166,6 +164,7 @@ private: // data
     QNetworkSession::SessionError iError;
     TInt iALREnabled;
     TBool iALRUpgradingConnection;
+    TBool iConnectInBackground;
     
     QList<QString> iKnownConfigsBeforeConnectionStart;
     

@@ -42,8 +42,11 @@
 #ifndef SESSIONWIDGET_H
 #define SESSIONWIDGET_H
 
+#if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
+#include "ui_sessionwidget_maemo.h"
+#else
 #include "ui_sessionwidget.h"
-
+#endif
 #include <qnetworksession.h>
 
 QT_USE_NAMESPACE
@@ -68,7 +71,9 @@ private Q_SLOTS:
     void closeSession();
     void stopSession();
     void updateSession();
-
+#if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
+    void deleteSession();
+#endif
 private:
     QNetworkSession *session;
     int statsTimer;
