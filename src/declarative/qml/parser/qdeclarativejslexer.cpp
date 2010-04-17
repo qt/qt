@@ -484,6 +484,8 @@ int Lexer::lex()
         stackToken = -1;
     }
 
+    bool identifierWithEscapedUnicode = false;
+
     while (!done) {
         switch (state) {
         case Start:
@@ -523,7 +525,26 @@ int Lexer::lex()
                 state = InString;
                 multiLineString = false;
                 stringType = current;
+            } else if (current == '\\' && next1 == 'u') {
+                identifierWithEscapedUnicode = true;
+                recordStartPos();
+
+                shift(2); // skip the unicode escape prefix `\u'
+
+                if (isHexDigit(current) && isHexDigit(next1) &&
+                     isHexDigit(next2) && isHexDigit(next3)) {
+                    record16(convertUnicode(current, next1, next2, next3));
+                    shift(3);
+                    state = InIdentifier;
+                } else {
+                    setDone(Bad);
+                    err = IllegalUnicodeEscapeSequence;
+                    errmsg = QCoreApplication::translate("QDeclarativeParser", "Illegal unicode escape sequence");
+                    break;
+                }
+
             } else if (isIdentLetter(current)) {
+                identifierWithEscapedUnicode = false;
                 recordStartPos();
                 record16(current);
                 state = InIdentifier;
@@ -683,6 +704,21 @@ int Lexer::lex()
             if (isIdentLetter(current) || isDecimalDigit(current)) {
                 record16(current);
                 break;
+            } else if (current == '\\' && next1 == 'u') {
+                identifierWithEscapedUnicode = true;
+                shift(2); // skip the unicode escape prefix `\u'
+
+                if (isHexDigit(current) && isHexDigit(next1) &&
+                     isHexDigit(next2) && isHexDigit(next3)) {
+                    record16(convertUnicode(current, next1, next2, next3));
+                    shift(3);
+                    break;
+                } else {
+                    setDone(Bad);
+                    err = IllegalUnicodeEscapeSequence;
+                    errmsg = QCoreApplication::translate("QDeclarativeParser", "Illegal unicode escape sequence");
+                    break;
+                }
             }
             setDone(Identifier);
             break;
@@ -825,7 +861,11 @@ int Lexer::lex()
             delimited = true;
         return token;
     case Identifier:
-        if ((token = findReservedWord(buffer16, pos16)) < 0) {
+        token = -1;
+        if (! identifierWithEscapedUnicode)
+            token = findReservedWord(buffer16, pos16);
+
+        if (token < 0) {
             /* TODO: close leak on parse error. same holds true for String */
             if (driver)
                 qsyylval.ustr = driver->intern(buffer16, pos16);

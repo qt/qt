@@ -311,7 +311,7 @@ public:
     QScriptValue scriptValueFromVariant(const QVariant &);
     QVariant scriptValueToVariant(const QScriptValue &, int hint = QVariant::Invalid);
 
-    void sendQuit ();
+    void sendQuit();
 
     static QScriptValue qmlScriptObject(QObject*, QDeclarativeEngine*);
 

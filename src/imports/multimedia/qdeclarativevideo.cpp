@@ -82,11 +82,11 @@ void QDeclarativeVideo::_q_error(int errorCode, const QString &errorString)
     Video { source: "video/movie.mpg" }
     \endqml
 
-    The video item supports untransformed, stretched, and uniformly scaled video presentation.
+    The Video item supports untransformed, stretched, and uniformly scaled video presentation.
     For a description of stretched uniformly scaled presentation, see the \l fillMode property
     description.
 
-    The video item is only visible when the \l hasVideo property is true and the video is playing.
+    The Video item is only visible when the \l hasVideo property is true and the video is playing.
 
     \sa Audio
 */
@@ -169,7 +169,7 @@ QDeclarativeVideo::~QDeclarativeVideo()
 */
 
 /*!
-    \qmlproperty enum Video::status
+    \qmlproperty enumeration Video::status
 
     This property holds the status of media loading. It can be one of:
 
@@ -236,7 +236,7 @@ QDeclarativeVideo::Status QDeclarativeVideo::status() const
 */
 
 /*!
-    \qmlproperty qreal Video::volume
+    \qmlproperty real Video::volume
 
     This property holds the volume of the audio output, from 0.0 (silent) to 1.0 (maximum volume).
 */
@@ -270,7 +270,7 @@ bool QDeclarativeVideo::hasVideo() const
 }
 
 /*!
-    \qmlproperty qreal Video::bufferProgress
+    \qmlproperty real Video::bufferProgress
 
     This property holds how much of the data buffer is currently filled, from 0.0 (empty) to 1.0
     (full).
@@ -283,13 +283,13 @@ bool QDeclarativeVideo::hasVideo() const
 */
 
 /*!
-    \qmlproperty qreal Video::playbackRate
+    \qmlproperty real Video::playbackRate
 
     This property holds the rate at which video is played at as a multiple of the normal rate.
 */
 
 /*!
-    \qmlproperty enum Video::error
+    \qmlproperty enumeration Video::error
 
     This property holds the error state of the video.  It can be one of:
 
@@ -325,7 +325,7 @@ QDeclarativeVideo::Error QDeclarativeVideo::error() const
 */
 
 /*!
-    \qmlproperty enum Video::fillMode
+    \qmlproperty enumeration Video::fillMode
 
     Set this property to define how the video is scaled to fit the target area.
 

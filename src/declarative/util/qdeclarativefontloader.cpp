@@ -181,7 +181,7 @@ void QDeclarativeFontLoader::setName(const QString &name)
 }
 
 /*!
-    \qmlproperty enum FontLoader::status
+    \qmlproperty enumeration FontLoader::status
 
     This property holds the status of font loading.  It can be one of:
     \list

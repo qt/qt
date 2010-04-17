@@ -189,13 +189,13 @@ void QDeclarativeParticleMotionLinear::advance(QDeclarativeParticle &p, int inte
 */
 
 /*!
-    \qmlproperty qreal ParticleMotionGravity::xattractor
-    \qmlproperty qreal ParticleMotionGravity::yattractor
+    \qmlproperty real ParticleMotionGravity::xattractor
+    \qmlproperty real ParticleMotionGravity::yattractor
     These properties hold the x and y coordinates of the point attracting the particles.
 */
 
 /*!
-    \qmlproperty qreal ParticleMotionGravity::acceleration
+    \qmlproperty real ParticleMotionGravity::acceleration
     This property holds the acceleration to apply to the particles.
 */
 
@@ -303,14 +303,14 @@ Rectangle {
 */
 
 /*!
-    \qmlproperty qreal QDeclarativeParticleMotionWander::xvariance
-    \qmlproperty qreal QDeclarativeParticleMotionWander::yvariance
+    \qmlproperty real QDeclarativeParticleMotionWander::xvariance
+    \qmlproperty real QDeclarativeParticleMotionWander::yvariance
 
     These properties set the amount to wander in the x and y directions.
 */
 
 /*!
-    \qmlproperty qreal QDeclarativeParticleMotionWander::pace
+    \qmlproperty real QDeclarativeParticleMotionWander::pace
     This property holds how quickly the paricles will move from side to side.
 */
 
@@ -859,7 +859,7 @@ void QDeclarativeParticles::setEmissionRate(int er)
 }
 
 /*!
-    \qmlproperty qreal Particles::emissionVariance
+    \qmlproperty real Particles::emissionVariance
     This property holds how inconsistent the rate of particle emissions are.
     It is a number between 0 (no variance) and 1 (some variance).
 

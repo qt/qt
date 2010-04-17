@@ -87,12 +87,13 @@ void QTestLightXmlStreamer::formatStart(const QTestElement *element, QTestCharBu
         QXmlTestLogger::xmlQuote(&quotedFile, element->attributeValue(QTest::AI_File));
         QXmlTestLogger::xmlCdata(&cdataDesc, element->attributeValue(QTest::AI_Description));
 
-        QTest::qt_asprintf(formatted, "<Message type=\"%s\" %s=\"%s\" %s=\"%s\">\n    <Description><![CDATA[%s]]></Description>\n</Message>\n",
+        QTest::qt_asprintf(formatted, "<Message type=\"%s\" %s=\"%s\" %s=\"%s\">\n    <DataTag>%s</DataTag><Description><![CDATA[%s]]></Description>\n</Message>\n",
                            element->attributeValue(QTest::AI_Type),
                            element->attributeName(QTest::AI_File),
                            quotedFile.constData(),
                            element->attributeName(QTest::AI_Line),
                            element->attributeValue(QTest::AI_Line),
+                           element->attributeValue(QTest::AI_Tag) ? element->attributeValue(QTest::AI_Tag) : "",
                            cdataDesc.constData());
         break;
     }
