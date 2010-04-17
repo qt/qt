@@ -1473,7 +1473,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
       Don't generate a TOC for the home page.
     */
     if (fake->name() != QString("index.html"))
-        generateTableOfContents(fake,marker);
+        generateTableOfContents(fake,marker,0);
 
     generateTitle(fullTitle,
                   Text() << fake->subTitle(),
@@ -2033,15 +2033,11 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,
                                             QList<Section>* sections)
 {
-    if (!node->doc().hasTableOfContents()) {
-        if (node->subType() !=  Node::Module)
-            return;
-    }
-    QList<Atom *> toc = node->doc().tableOfContents();
-    if (toc.isEmpty()) {
-        if (node->subType() !=  Node::Module)
-            return;
-    }
+    QList<Atom*> toc;
+    if (node->doc().hasTableOfContents()) 
+        toc = node->doc().tableOfContents();
+    if (toc.isEmpty() && !sections && (node->subType() != Node::Module))
+        return;
 
     QStringList sectionNumber;
     int detailsBase = 0;

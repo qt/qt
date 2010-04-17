@@ -156,6 +156,7 @@ class QHttpNetworkConnectionPrivate : public QObjectPrivate
 public:
     static const int defaultChannelCount;
     static const int defaultPipelineLength;
+    static const int defaultRePipelineLength;
 
     QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt);
     QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt);

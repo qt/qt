@@ -252,3 +252,26 @@ class YetAnotherTest : QObject {
 
 //: This is a message without a source string
 QString test = qtTrId("yet_another_id");
+
+
+
+// QTBUG-9276: context in static initializers
+class Bogus : QObject {
+    Q_OBJECT
+
+    static const char * const s_strings[];
+};
+
+const char * const Bogus::s_strings[] = {
+    QT_TR_NOOP("this should be in Bogus")
+};
+
+const char * const Bogus::s_strings[SIZE] = {
+    QT_TR_NOOP("this should be in Bogus")
+};
+
+void bogosity()
+{
+    // no spaces here. test collateral damage from ignoring equal sign
+    Class::member=QObject::tr("just QObject");
+}

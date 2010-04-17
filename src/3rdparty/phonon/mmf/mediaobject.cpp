@@ -323,11 +323,12 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     connect(m_player.data(), SIGNAL(totalTimeChanged(qint64)), SIGNAL(totalTimeChanged(qint64)));
     connect(m_player.data(), SIGNAL(stateChanged(Phonon::State,Phonon::State)), SIGNAL(stateChanged(Phonon::State,Phonon::State)));
     connect(m_player.data(), SIGNAL(finished()), SIGNAL(finished()));
-    connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
     connect(m_player.data(), SIGNAL(bufferStatus(int)), SIGNAL(bufferStatus(int)));
     connect(m_player.data(), SIGNAL(metaDataChanged(QMultiMap<QString,QString>)), SIGNAL(metaDataChanged(QMultiMap<QString,QString>)));
     connect(m_player.data(), SIGNAL(aboutToFinish()), SIGNAL(aboutToFinish()));
-    connect(m_player.data(), SIGNAL(prefinishMarkReached(qint32)), SIGNAL(tick(qint32)));
+    connect(m_player.data(), SIGNAL(prefinishMarkReached(qint32)), SIGNAL(prefinishMarkReached(qint32)));
+    connect(m_player.data(), SIGNAL(prefinishMarkReached(qint32)), SLOT(handlePrefinishMarkReached(qint32)));
+    connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
 
     // We need to call setError() after doing the connects, otherwise the
     // error won't be received.
@@ -414,8 +415,20 @@ void MMF::MediaObject::switchToNextSource()
         m_nextSourceSet = false;
         switchToSource(m_nextSource);
         play();
+    } else {
+        emit finished();
     }
 }
+
+//-----------------------------------------------------------------------------
+// Other private functions
+//-----------------------------------------------------------------------------
+
+void MMF::MediaObject::handlePrefinishMarkReached(qint32 time)
+{
+    emit tick(time);
+}
+
 
 QT_END_NAMESPACE
 

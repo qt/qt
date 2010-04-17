@@ -77,6 +77,8 @@ public:
         (QWidget *widget, const QRegion& region, QImage *image = 0) = 0;
     virtual VGImage surfaceImage() const;
     virtual QSize surfaceSize() const = 0;
+    virtual bool supportsStaticContents() const { return false; }
+    virtual bool scroll(QWidget *, const QRegion&, int, int) { return false; }
 
 private:
     QVGPaintEngine *engine;
@@ -128,6 +130,8 @@ public:
     void beginPaint(QWidget *widget);
     void endPaint(QWidget *widget, const QRegion& region, QImage *image);
     QSize surfaceSize() const { return size; }
+    bool supportsStaticContents() const;
+    bool scroll(QWidget *widget, const QRegion& area, int dx, int dy);
 
 protected:
     QEglContext *context;

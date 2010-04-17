@@ -315,7 +315,7 @@ bool isFormatSupported(const QAudioFormat &formatQt,
     TUint32 fourCC;
 
     bool result = false;
-    if (formatQt.codec() == "audio/pcm" &&
+    if (formatQt.codec() == QString::fromAscii("audio/pcm") &&
         formatQtToNative(formatQt, fourCC, formatNative)) {
         result =
                 (formatNative.iRate & caps.caps().iRate)
@@ -337,7 +337,7 @@ bool formatQtToNative(const QAudioFormat &inputFormat,
     TMMFMonoStereo outputChannels;
     TMMFSoundEncoding outputEncoding;
 
-    if (inputFormat.codec() == "audio/pcm") {
+    if (inputFormat.codec() == QString::fromAscii("audio/pcm")) {
         result =
                 sampleRateQtToNative(inputFormat.frequency(), outputSampleRate)
             &&  channelsQtToNative(inputFormat.channels(), outputChannels)

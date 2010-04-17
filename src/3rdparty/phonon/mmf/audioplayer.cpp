@@ -203,11 +203,9 @@ void MMF::AudioPlayer::MapcInitComplete(TInt aError,
         maxVolumeChanged(m_player->MaxVolume());
         m_totalTime = toMilliSeconds(m_player->Duration());
         emit totalTimeChanged(m_totalTime);
-        updateMetaData();
-        changeState(StoppedState);
-    } else {
-        setError(tr("Opening clip failed"), aError);
     }
+
+    loadingComplete(aError);
 
     TRACE_EXIT_0();
 }

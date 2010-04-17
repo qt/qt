@@ -285,8 +285,8 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         }
 
         // HTTP pipelining
-        connection->d_func()->fillPipeline(socket);
-        socket->flush();
+        //connection->d_func()->fillPipeline(socket);
+        //socket->flush();
 
         // ensure we try to receive a reply in all cases, even if _q_readyRead_ hat not been called
         // this is needed if the sends an reply before we have finished sending the request. In that
@@ -661,7 +661,8 @@ void QHttpNetworkConnectionChannel::allDone()
             connection->d_func()->fillPipeline(socket);
 
             // continue reading
-            _q_receiveReply();
+            //_q_receiveReply();
+            // this was wrong, allDone gets called from that function anyway.
         }
     } else if (alreadyPipelinedRequests.isEmpty() && socket->bytesAvailable() > 0) {
         eatWhitespace();

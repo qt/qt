@@ -1092,6 +1092,8 @@ public:
         Key_Call = 0x01100004,
         Key_Hangup = 0x01100005,
         Key_Flip = 0x01100006,
+        Key_Camera = 0x01100007,
+        Key_CameraFocus = 0x01100008,
 
         Key_unknown = 0x01ffffff
     };

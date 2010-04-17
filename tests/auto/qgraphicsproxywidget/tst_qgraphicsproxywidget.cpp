@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 #include <QtGui>
 #include "../../shared/util.h"
+#include <private/qgraphicsproxywidget_p.h>
 #include <private/qlayoutengine_p.h>    // qSmartMin functions...
 #if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
@@ -2582,33 +2583,68 @@ void tst_QGraphicsProxyWidget::changingCursor_basic()
 
 void tst_QGraphicsProxyWidget::tooltip_basic()
 {
-    // Confirm that mouse events are working properly by checking that
-    // when moving the mouse over a label with a tooptip the tooltip appears
+    QString toolTip = "Qt rocks!";
+    QString toolTip2 = "Qt rocks even more!";
+
+    QPushButton *button = new QPushButton("button");
+    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget;
+    QGraphicsProxyWidgetPrivate *proxyd = static_cast<QGraphicsProxyWidgetPrivate *>(QGraphicsItemPrivate::get(proxy));
+    proxy->setWidget(button);
+    proxyd->lastWidgetUnderMouse = button; // force widget under mouse
+
+    QVERIFY(button->toolTip().isEmpty());
+    QVERIFY(proxy->toolTip().isEmpty());
+    // Check that setting the tooltip on the proxy also set it on the widget
+    proxy->setToolTip(toolTip);
+    QCOMPARE(proxy->toolTip(), toolTip);
+    QCOMPARE(button->toolTip(), toolTip);
+    // Check that setting the tooltip on the widget also set it on the proxy
+    button->setToolTip(toolTip2);
+    QCOMPARE(proxy->toolTip(), toolTip2);
+    QCOMPARE(button->toolTip(), toolTip2);
+
     QGraphicsScene scene;
-    QGraphicsView view(&scene);
-    view.show();
-
-    QSKIP("Tooltips don't work yet", SkipAll);
-
-    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
-    QLabel *widget = new QLabel;
-    widget->setText("If it ain't tested it's broken");
-    widget->setToolTip("When in doubt, test");
-    proxy->setWidget(widget);
-    widget->show();
     scene.addItem(proxy);
-    QTest::qWait(125);
 
-    // in
-    QTest::mouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
+    QGraphicsView view(&scene);
+    view.setFixedSize(200, 200);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    {
+        QHelpEvent helpEvent(QEvent::ToolTip, view.viewport()->rect().topLeft(),
+                             view.viewport()->mapToGlobal(view.viewport()->rect().topLeft()));
+        QApplication::sendEvent(view.viewport(), &helpEvent);
+        QTest::qWait(350);
 
-    QTRY_COMPARE(proxy->childItems().count(), 1);
-    QGraphicsProxyWidget *child = (QGraphicsProxyWidget*)(proxy->childItems())[0];
-    QVERIFY(child->isWidget());
-    QVERIFY(child->widget());
-    QCOMPARE(child->widget()->parent(), static_cast<QObject*>(widget));
-    QCOMPARE(child->widget()->x(), widget->x()); // ### ???
-    QCOMPARE(child->widget()->y(), widget->y() + widget->height()); // ### ???
+        bool foundView = false;
+        bool foundTipLabel = false;
+        foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+            if (widget == &view)
+                foundView = true;
+            if (widget->inherits("QTipLabel"))
+                foundTipLabel = true;
+        }
+        QVERIFY(foundView);
+        QVERIFY(!foundTipLabel);
+    }
+
+    {
+        QHelpEvent helpEvent(QEvent::ToolTip, view.mapFromScene(proxy->boundingRect().center()),
+                             view.viewport()->mapToGlobal(view.mapFromScene(proxy->boundingRect().center())));
+        QApplication::sendEvent(view.viewport(), &helpEvent);
+        QTest::qWait(350);
+
+        bool foundView = false;
+        bool foundTipLabel = false;
+        foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+            if (widget == &view)
+                foundView = true;
+            if (widget->inherits("QTipLabel"))
+                foundTipLabel = true;
+        }
+        QVERIFY(foundView);
+        QVERIFY(foundTipLabel);
+    }
 }
 
 void tst_QGraphicsProxyWidget::childPos_data()
