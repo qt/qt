@@ -1,3 +1,29 @@
+2010-04-08  Joe Ligman  <joseph.ligman@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] qtwebkit_webframe_scrollRecursively scrolls when body.style.overflow="hidden"
+        https://bugs.webkit.org/show_bug.cgi?id=36674
+
+        The scrolling check was based on the frameview's scrolloffset, and
+        maximumScrollPosition, which does not acknowledge the overflow properties.
+
+        I am now basing the scrolling off the scrollbar position. The scrollbars are
+        affected by the overflow properties indicating when not to scroll. The scrollbar
+        positions also continue to work for CSS ::-webkit-scrollbar styles.
+
+        * Api/qwebframe.cpp:
+        (qtwebkit_webframe_scrollRecursively):
+
+2010-03-24  Viatcheslav Ostapenko  <ostapenko.viatcheslav@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        Auto-uppercase and predictive text need to be disabled for S60 (as for maemo)
+        https://bugs.webkit.org/show_bug.cgi?id=33176
+
+        * WebCoreSupport/EditorClientQt.cpp:
+
 2010-03-22  Jakub Wieczorek  <jwieczorek@webkit.org>
 
         Reviewed by Simon Hausmann.
