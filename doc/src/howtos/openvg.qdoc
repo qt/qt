@@ -295,6 +295,16 @@
     Convolution, colorize, drop shadow, and blur filters are accelerated
     using OpenVG operations.
 
+    \section2 Scrolling
+
+    By default, accelerated scrolling is not enabled because the impact on
+    performance is very much tied to the hardware platform. To enable
+    accelerated scrolling, you should ensure that QVG_BUFFER_SCROLLING is
+    defined when compiling the QtOpenVG module.
+
+    You should only enable this feature if vgCopyPixels() is known to be
+    efficient on your hardware platform.
+
     \section1 Known issues
 
     Performance of copying the contents of an OpenVG-rendered window to the

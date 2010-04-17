@@ -782,7 +782,6 @@ void QCoeFepInputContext::commitCurrentString(bool cancelFepTransaction)
             if (w->inputMethodQuery(Qt::ImCursorPosition).toInt() != m_cursorPos)
                 longPress = 1;
         }
-        return;
     }
 
     QList<QInputMethodEvent::Attribute> attributes;

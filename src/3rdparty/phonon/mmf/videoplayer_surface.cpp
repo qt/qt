@@ -104,44 +104,43 @@ void MMF::SurfaceVideoPlayer::handleVideoWindowChanged()
 
 void MMF::SurfaceVideoPlayer::handleParametersChanged(VideoParameters parameters)
 {
-    CVideoPlayerUtility2 *player = static_cast<CVideoPlayerUtility2 *>(m_player.data());
-
-    int err = KErrNone;
-
     TRect rect;
-
     if (m_videoOutput) {
         m_videoOutput->dump();
         const QSize size = m_videoOutput->videoWindowSize();
         rect.SetSize(TSize(size.width(), size.height()));
     }
 
-    if (parameters & WindowHandle) {
-        if (m_displayWindow)
-            player->RemoveDisplayWindow(*m_displayWindow);
+    CVideoPlayerUtility2 *player = static_cast<CVideoPlayerUtility2 *>(m_player.data());
+    if (player) {
+        int err = KErrNone;
+        if (parameters & WindowHandle) {
+            if (m_displayWindow)
+                player->RemoveDisplayWindow(*m_displayWindow);
 
-        RWindow *window = static_cast<RWindow *>(m_window);
-        if (window) {
-            window->SetBackgroundColor(TRgb(0, 0, 0, 255));
-            TRAP(err, player->AddDisplayWindowL(m_wsSession, m_screenDevice, *window, rect, rect));
-            if (KErrNone != err) {
-                setError(tr("Video display error"), err);
-                window = 0;
+            RWindow *window = static_cast<RWindow *>(m_window);
+            if (window) {
+                window->SetBackgroundColor(TRgb(0, 0, 0, 255));
+                TRAP(err, player->AddDisplayWindowL(m_wsSession, m_screenDevice, *window, rect, rect));
+                if (KErrNone != err) {
+                    setError(tr("Video display error"), err);
+                    window = 0;
+                }
             }
+            m_displayWindow = window;
         }
-        m_displayWindow = window;
-    }
 
-    if (KErrNone == err) {
-        if (parameters & ScaleFactors) {
-            Q_ASSERT(m_displayWindow);
-            TRAP(err, player->SetVideoExtentL(*m_displayWindow, rect));
-            if (KErrNone == err)
-                TRAP(err, player->SetWindowClipRectL(*m_displayWindow, rect));
-            if (KErrNone == err)
-                TRAP(err, player->SetScaleFactorL(*m_displayWindow, m_scaleWidth, m_scaleHeight));
-            if (KErrNone != err)
-                setError(tr("Video display error"), err);
+        if (KErrNone == err) {
+            if (parameters & ScaleFactors) {
+                Q_ASSERT(m_displayWindow);
+                TRAP(err, player->SetVideoExtentL(*m_displayWindow, rect));
+                if (KErrNone == err)
+                    TRAP(err, player->SetWindowClipRectL(*m_displayWindow, rect));
+                if (KErrNone == err)
+                    TRAP(err, player->SetScaleFactorL(*m_displayWindow, m_scaleWidth, m_scaleHeight));
+                if (KErrNone != err)
+                    setError(tr("Video display error"), err);
+            }
         }
     }
 }

@@ -347,8 +347,8 @@ void QVGPixmapData::reclaimImages()
     destroyImages();
 }
 
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_DECL_IMPORT extern int qt_defaultDpiX();
+Q_DECL_IMPORT extern int qt_defaultDpiY();
 
 int QVGPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
