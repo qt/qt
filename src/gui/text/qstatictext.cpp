@@ -387,8 +387,8 @@ QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
     return q->data.data();
 }
 
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_GUI_EXPORT extern int qt_defaultDpiX();
+Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 namespace {
 
