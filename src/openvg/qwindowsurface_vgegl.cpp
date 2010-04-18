@@ -71,18 +71,13 @@ VGImageFormat qt_vg_config_to_vg_format(QEglContext *context)
 
 QImage::Format qt_vg_config_to_image_format(QEglContext *context)
 {
-    EGLint red = 0;
-    EGLint green = 0;
-    EGLint blue = 0;
-    EGLint alpha = 0;
-    context->configAttrib(EGL_RED_SIZE, &red);
-    context->configAttrib(EGL_GREEN_SIZE, &green);
-    context->configAttrib(EGL_BLUE_SIZE, &blue);
-    context->configAttrib(EGL_ALPHA_SIZE, &alpha);
+    EGLint red = context->configAttrib(EGL_RED_SIZE);
+    EGLint green = context->configAttrib(EGL_GREEN_SIZE);
+    EGLint blue = context->configAttrib(EGL_BLUE_SIZE);
+    EGLint alpha = context->configAttrib(EGL_ALPHA_SIZE);
     QImage::Format argbFormat;
 #ifdef EGL_VG_ALPHA_FORMAT_PRE_BIT
-    EGLint type = 0;
-    context->configAttrib(EGL_SURFACE_TYPE, &type);
+    EGLint type = context->configAttrib(EGL_SURFACE_TYPE);
     if ((type & EGL_VG_ALPHA_FORMAT_PRE_BIT) != 0)
         argbFormat = QImage::Format_ARGB32_Premultiplied;
     else
@@ -210,11 +205,7 @@ void qt_vg_unregister_pixmap(QVGPixmapData *pd)
 
 static bool isPremultipliedContext(const QEglContext *context)
 {
-    EGLint value = 0;
-    if (context->configAttrib(EGL_SURFACE_TYPE, &value))
-        return (value & EGL_VG_ALPHA_FORMAT_PRE_BIT) != 0;
-    else
-        return false;
+    return context->configAttrib(EGL_SURFACE_TYPE) & EGL_VG_ALPHA_FORMAT_PRE_BIT;
 }
 
 #endif
