@@ -41,6 +41,8 @@
 
 #include "qbearerengine_p.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 QBearerEngine::QBearerEngine(QObject *parent)
@@ -109,5 +111,7 @@ bool QBearerEngine::configurationsInUse() const
 }
 
 #include "moc_qbearerengine_p.cpp"
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 QT_END_NAMESPACE

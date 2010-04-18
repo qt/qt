@@ -44,6 +44,8 @@
 
 #include <QtNetwork/private/qbearerengine_p.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QBearerEngineImpl : public QBearerEngine
@@ -78,4 +80,5 @@ Q_SIGNALS:
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_BEARERMANAGEMENT
 #endif

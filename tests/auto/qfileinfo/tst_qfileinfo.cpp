@@ -1189,7 +1189,7 @@ void tst_QFileInfo::isLocalFs()
 
 void tst_QFileInfo::refresh()
 {
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_WIN)
     int sleepTime = 3000;
 #else
     int sleepTime = 2000;

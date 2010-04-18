@@ -1098,6 +1098,14 @@ Requires: TEMPORARYFILE
 Name: QNetworkDiskCache
 SeeAlso: ???
 
+Feature: BEARERMANAGEMENT
+Description: Provides bearer management support
+Section: Networking
+Requires: LIBRARY
+Name: Bearer Management
+SeeAlso: ???
+
+
 # Utilities
 
 Feature: COMPLETER

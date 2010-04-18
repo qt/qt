@@ -58,6 +58,8 @@
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -89,5 +91,6 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif
+#endif // QT_NO_BEARERMANAGEMENT
 
+#endif

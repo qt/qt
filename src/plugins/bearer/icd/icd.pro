@@ -7,12 +7,10 @@ QMAKE_CXXFLAGS += $$QT_CFLAGS_ICD
 LIBS += $$QT_LIBS_ICD
 
 HEADERS += qicdengine.h \
-           monitor.h \
            qnetworksession_impl.h
 
 SOURCES += main.cpp \
            qicdengine.cpp \
-           monitor.cpp \
            qnetworksession_impl.cpp
 
 #DEFINES += BEARER_MANAGEMENT_DEBUG

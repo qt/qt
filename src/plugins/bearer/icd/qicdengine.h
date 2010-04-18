@@ -44,10 +44,15 @@
 
 #include <QtNetwork/private/qbearerengine_p.h>
 
+#include <QtCore/qtimer.h>
+
+#include <maemo_icd.h>
+
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
 class IapMonitor;
+class QDBusInterface;
 
 class IcdNetworkConfigurationPrivate : public QNetworkConfigurationPrivate
 {
@@ -62,13 +67,13 @@ public:
     QByteArray network_id;  // typically WLAN ssid or similar
     QString iap_type;       // is this one WLAN or GPRS
 
-    // Network attributes for this IAP, this is the value returned by icd and
-    // passed to it when connecting.
-    uint32_t network_attrs;
-
     QString service_type;
     QString service_id;
     uint32_t service_attrs;
+
+    // Network attributes for this IAP, this is the value returned by icd and
+    // passed to it when connecting.
+    uint32_t network_attrs;
 };
 
 inline IcdNetworkConfigurationPrivate *toIcdConfig(QNetworkConfigurationPrivatePointer ptr)
@@ -118,11 +123,35 @@ public:
         emit configurationChanged(ptr);
     }
 
+    void init();
+    void cleanup();
+
+    void addConfiguration(QString &iap_id);
+
+Q_SIGNALS:
+    void iapStateChanged(const QString& iapid, uint icd_connection_state);
+
 private Q_SLOTS:
-    void doRequestUpdate();
+    void doRequestUpdate(QList<Maemo::IcdScanResult> scanned = QList<Maemo::IcdScanResult>());
+    void cancelAsyncConfigurationUpdate();
+    void finishAsyncConfigurationUpdate();
+    void asyncUpdateConfigurationsSlot(QDBusMessage msg);
+    void connectionStateSignalsSlot(QDBusMessage msg);
+
+private:
+    void startListeningStateSignalsForAllConnections();
 
 private:
     IapMonitor *iapMonitor;
+    QDBusInterface *m_dbusInterface;
+    QTimer m_scanTimer;
+    QString m_onlineIapId;
+    QStringList m_typesToBeScanned;
+    QList<Maemo::IcdScanResult> m_scanResult;
+
+    bool firstUpdate;
+    bool m_gettingInitialConnectionState;
+    bool m_scanGoingOn;
 };
 
 QT_END_NAMESPACE

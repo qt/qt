@@ -5236,25 +5236,47 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
     if [ "$CFG_GLIB" = "yes" -a "$CFG_ICD" != "no" ]; then
         # ICD support has a cyclic dependency on Qt.
         if [ -n "$PKG_CONFIG" ]; then
-            QT_CFLAGS_ICD=`$PKG_CONFIG --cflags dbus-glib-1 gconf-2.0 osso-ic conninet 2>/dev/null`
-            QT_LIBS_ICD=`$PKG_CONFIG --libs dbus-glib-1 gconf-2.0 osso-ic conninet 2>/dev/null`
+            QT_CFLAGS_ICD=`$PKG_CONFIG --cflags osso-ic conninet 2>/dev/null`
+            QT_LIBS_ICD=`$PKG_CONFIG --libs osso-ic conninet 2>/dev/null`
             QT_CFLAGS_QTNETWORK=`$PKG_CONFIG --cflags QtNetwork 2>/dev/null`
             QT_LIBS_QTNETWORK=`$PKG_CONFIG --libs QtNetwork 2>/dev/null`
         else
-            QT_CFLAGS_QTNETOWRK=
+            QT_CFLAGS_QTNETWORK=
             QT_LIBS_QTNETWORK=
         fi
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icd "ICD" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_ICD $QT_LIBS_ICD $QT_CFLAGS_QTNETWORK $QT_LIBS_QTNETWORK; then
             [ "$CFG_ICD" = "auto" ] && CFG_ICD=yes
-            QMakeVar set QT_CFLAGS_ICD "$QT_CFLAGS_ICD"
-            QMakeVar set QT_LIBS_ICD "$QT_LIBS_ICD"
+            # remove system Qt includes and libraries
+            QT_CFLAGS_ICD_TRIMMED=
+            for i in $QT_CFLAGS_ICD; do
+                case $i in
+                    *qt*)
+                        ;;
+                    *)
+                        QT_CFLAGS_ICD_TRIMMED="$QT_CFLAGS_ICD_TRIMMED $i"
+                        ;;
+                esac
+            done
+            QT_LIBS_ICD_TRIMMED=
+            for i in $QT_LIBS_ICD; do
+                case $i in
+                    *qt*|-lQt*)
+                        ;;
+                    *)
+                        QT_LIBS_ICD_TRIMMED="$QT_LIBS_ICD_TRIMMED $i"
+                        ;;
+                esac
+            done
+
+            QMakeVar set QT_CFLAGS_ICD "$QT_CFLAGS_ICD_TRIMMED"
+            QMakeVar set QT_LIBS_ICD "$QT_LIBS_ICD_TRIMMED"
         else
             if [ "$CFG_ICD" = "auto" ]; then
                 CFG_ICD=no
             elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
                 # CFG_ICD is "yes"
 
-                echo "The ICD Bearer Management plugin cannot be enabled because dbus-glib-1, gconf-2.0, osso-ic or conninet was not found."
+                echo "The ICD Bearer Management plugin cannot be enabled because osso-ic or conninet was not found."
                 echo " Turn on verbose messaging (-v) to $0 to see the final report."
                 echo " If you believe this message is in error you may use the continue"
                 echo " switch (-continue) to $0 to continue."
@@ -7980,8 +8002,10 @@ if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
 fi
 if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_DEBUG" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "no" ]; then
     echo
-    echo "NOTE: Mac OS X frameworks implicitly build debug and release Qt libraries."
+    echo "Error: debug-only framework builds are not supported. Configure with -no-framework"
+    echo "if you want a pure debug build."
     echo
+    exit 1
 fi
 
 sepath=`echo "$relpath" | sed -e 's/\\./\\\\./g'`

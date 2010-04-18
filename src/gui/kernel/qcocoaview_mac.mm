@@ -673,13 +673,14 @@ static int qCocoaViewCount = 0;
 
         // Send mouse move and hover events as well:
         if (!qAppInstance()->activePopupWidget() || qAppInstance()->activePopupWidget() == qwidget->window()) {
-            if (qwidget->testAttribute(Qt::WA_MouseTracking)) {
-                NSEvent *mouseEvent = [NSEvent mouseEventWithType:NSMouseMoved
-                    location:windowPoint modifierFlags:[event modifierFlags] timestamp:[event timestamp]
-                    windowNumber:[event windowNumber] context:[event context] eventNumber:[event eventNumber]
-                    clickCount:0 pressure:0];
-                qt_mac_handleMouseEvent(self, mouseEvent, QEvent::MouseMove, Qt::NoButton);
-            }
+            // This mouse move event should be sendt, even when mouse
+            // tracking is switched off (to trigger tooltips):
+            NSEvent *mouseEvent = [NSEvent mouseEventWithType:NSMouseMoved
+                location:windowPoint modifierFlags:[event modifierFlags] timestamp:[event timestamp]
+                windowNumber:[event windowNumber] context:[event context] eventNumber:[event eventNumber]
+                clickCount:0 pressure:0];
+            qt_mac_handleMouseEvent(self, mouseEvent, QEvent::MouseMove, Qt::NoButton);
+
             if (qwidget->testAttribute(Qt::WA_Hover)) {
                 QHoverEvent he(QEvent::HoverEnter, QPoint(viewPoint.x, viewPoint.y), QPoint(-1, -1));
                 QApplicationPrivate::instance()->notify_helper(qwidget, &he);
