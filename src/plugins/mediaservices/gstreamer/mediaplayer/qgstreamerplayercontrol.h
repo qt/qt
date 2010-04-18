@@ -44,8 +44,8 @@
 
 #include <QtCore/qobject.h>
 
-#include <QtMultimedia/qmediaplayercontrol.h>
-#include <QtMultimedia/qmediaplayer.h>
+#include <QtMediaServices/qmediaplayercontrol.h>
+#include <QtMediaServices/qmediaplayer.h>
 
 #include <limits.h>
 
@@ -114,11 +114,13 @@ private Q_SLOTS:
 private:
     bool openFifo();
     void closeFifo();
+    void playOrPause(QMediaPlayer::State state);
 
     QGstreamerPlayerSession *m_session;
     QMediaPlayer::State m_state;
     QMediaPlayer::MediaStatus m_mediaStatus;
     int m_bufferProgress;
+    bool m_seekToStartPending;
     QMediaContent m_currentResource;
     QIODevice *m_stream;
     QSocketNotifier *m_fifoNotifier;
