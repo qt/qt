@@ -67,12 +67,11 @@ that derive from QObject.
 The QML engine has no intrinsic knowledge of any class types.  Instead the
 programmer must define the C++ types, and their corresponding QML name.
 
-Custom C++ types are declared QML types using a macro and a template function:
+Custom C++ types are registered using a template function:
 
 \quotation
 
 \code
-#define QML_DECLARE_TYPE(T)
 template<typename T>
 int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
 \endcode
@@ -80,10 +79,6 @@ int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const c
 Calling qmlRegisterType() registers the C++ type \a T with the QML system, and makes it available in QML
 under the name \a qmlName in library \a uri version \a versionMajor.versionMinor.
 The \a qmlName can be the same as the C++ type name.
-
-Generally the QML_DECLARE_TYPE() macro should be included immediately following
-the type declaration (usually in its header file), and the template function qmlRegisterType()
-called by the implementation.
 
 Type \a T must be a concrete type that inherits QObject and has a default
 constructor.
@@ -149,20 +144,15 @@ property can be assigned.
 QML also supports assigning Qt interfaces.  To assign to a property whose type
 is a Qt interface pointer, the interface must also be registered with QML.  As
 they cannot be instantiated directly, registering a Qt interface is different
-from registering a new QML type.  The following macro and function are used instead:
+from registering a new QML type. The following function is used instead:
 
 \quotation
 \code
-#define QML_DECLARE_INTERFACE(T)
 template<typename T>
 int qmlRegisterInterface(const char *typeName)
 \endcode
 
 Registers the C++ interface \a T with the QML system as \a typeName.
-
-Generally the QML_DECLARE_INTERFACE() macro should be included immediately
-following the interface declaration (usually in its header file), and the
-qmlRegisterInterface() template function called by the implementation.
 
 Following registration, QML can coerce objects that implement this interface
 for assignment to appropriately typed properties.
@@ -198,11 +188,10 @@ To assign to a property, the property's type must have been registered with QML.
 Both the qmlRegisterType() and qmlRegisterInterface() template functions already
 shown can be used to register a type with QML.  Additionally, if a type that acts purely
 as a base class that cannot be instantiated from QML needs to be
-registered these macro and function can be used:
+registered, the following function can be used:
 
 \quotation
 \code
-    #define QML_DECLARE_TYPE(T)
     template<typename T>
     int qmlRegisterType()
 \endcode
@@ -211,10 +200,6 @@ Registers the C++ type \a T with the QML system. The parameterless call to the t
 function qmlRegisterType() does not define a mapping between the
 C++ class and a QML element name, so the type is not instantiable from QML, but
 it is available for type coercion.
-
-Generally the QML_DECLARE_TYPE() macro should be included immediately following
-the type declaration (usually in its header file), and the
-qmlRegisterType() template function called from the implementation.
 
 Type \a T must inherit QObject, but there are no restrictions on whether it is
 concrete or the signature of its constructor.

@@ -221,7 +221,7 @@ qreal QDeclarativeImage::paintedHeight() const
 }
 
 /*!
-    \qmlproperty enum Image::status
+    \qmlproperty enumeration Image::status
 
     This property holds the status of image loading.  It can be one of:
     \list
