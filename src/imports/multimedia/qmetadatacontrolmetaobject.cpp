@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qmetadatacontrolmetaobject_p.h"
-#include <QtMultimedia/qmetadatacontrol.h>
+#include <QtMediaServices/qmetadatacontrol.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -106,101 +106,101 @@ namespace
 {
     struct MetaDataKey
     {
-        QtMultimedia::MetaData key;
+        QtMediaServices::MetaData key;
         const char *name;
     };
 
     const MetaDataKey qt_metaDataKeys[] =
     {
-        { QtMultimedia::Title, "title" },
-        { QtMultimedia::SubTitle, "subTitle" },
-        { QtMultimedia::Author, "author" },
-        { QtMultimedia::Comment, "comment" },
-        { QtMultimedia::Description, "description" },
-        { QtMultimedia::Category, "category" },
-        { QtMultimedia::Genre, "genre" },
-        { QtMultimedia::Year, "year" },
-        { QtMultimedia::Date, "date" },
-        { QtMultimedia::UserRating, "userRating" },
-        { QtMultimedia::Keywords, "keywords" },
-        { QtMultimedia::Language, "language" },
-        { QtMultimedia::Publisher, "publisher" },
-        { QtMultimedia::Copyright, "copyright" },
-        { QtMultimedia::ParentalRating, "parentalRating" },
-        { QtMultimedia::RatingOrganisation, "ratingOrganisation" },
+        { QtMediaServices::Title, "title" },
+        { QtMediaServices::SubTitle, "subTitle" },
+        { QtMediaServices::Author, "author" },
+        { QtMediaServices::Comment, "comment" },
+        { QtMediaServices::Description, "description" },
+        { QtMediaServices::Category, "category" },
+        { QtMediaServices::Genre, "genre" },
+        { QtMediaServices::Year, "year" },
+        { QtMediaServices::Date, "date" },
+        { QtMediaServices::UserRating, "userRating" },
+        { QtMediaServices::Keywords, "keywords" },
+        { QtMediaServices::Language, "language" },
+        { QtMediaServices::Publisher, "publisher" },
+        { QtMediaServices::Copyright, "copyright" },
+        { QtMediaServices::ParentalRating, "parentalRating" },
+        { QtMediaServices::RatingOrganisation, "ratingOrganisation" },
 
         // Media
-        { QtMultimedia::Size, "size" },
-        { QtMultimedia::MediaType, "mediaType" },
-//        { QtMultimedia::Duration, "duration" },
+        { QtMediaServices::Size, "size" },
+        { QtMediaServices::MediaType, "mediaType" },
+//        { QtMediaServices::Duration, "duration" },
 
         // Audio
-        { QtMultimedia::AudioBitRate, "audioBitRate" },
-        { QtMultimedia::AudioCodec, "audioCodec" },
-        { QtMultimedia::AverageLevel, "averageLevel" },
-        { QtMultimedia::ChannelCount, "channelCount" },
-        { QtMultimedia::PeakValue, "peakValue" },
-        { QtMultimedia::SampleRate, "sampleRate" },
+        { QtMediaServices::AudioBitRate, "audioBitRate" },
+        { QtMediaServices::AudioCodec, "audioCodec" },
+        { QtMediaServices::AverageLevel, "averageLevel" },
+        { QtMediaServices::ChannelCount, "channelCount" },
+        { QtMediaServices::PeakValue, "peakValue" },
+        { QtMediaServices::SampleRate, "sampleRate" },
 
         // Music
-        { QtMultimedia::AlbumTitle, "albumTitle" },
-        { QtMultimedia::AlbumArtist, "albumArtist" },
-        { QtMultimedia::ContributingArtist, "contributingArtist" },
-        { QtMultimedia::Composer, "composer" },
-        { QtMultimedia::Conductor, "conductor" },
-        { QtMultimedia::Lyrics, "lyrics" },
-        { QtMultimedia::Mood, "mood" },
-        { QtMultimedia::TrackNumber, "trackNumber" },
-        { QtMultimedia::TrackCount, "trackCount" },
+        { QtMediaServices::AlbumTitle, "albumTitle" },
+        { QtMediaServices::AlbumArtist, "albumArtist" },
+        { QtMediaServices::ContributingArtist, "contributingArtist" },
+        { QtMediaServices::Composer, "composer" },
+        { QtMediaServices::Conductor, "conductor" },
+        { QtMediaServices::Lyrics, "lyrics" },
+        { QtMediaServices::Mood, "mood" },
+        { QtMediaServices::TrackNumber, "trackNumber" },
+        { QtMediaServices::TrackCount, "trackCount" },
 
-        { QtMultimedia::CoverArtUrlSmall, "coverArtUrlSmall" },
-        { QtMultimedia::CoverArtUrlLarge, "coverArtUrlLarge" },
+        { QtMediaServices::CoverArtUrlSmall, "coverArtUrlSmall" },
+        { QtMediaServices::CoverArtUrlLarge, "coverArtUrlLarge" },
 
         // Image/Video
-        { QtMultimedia::Resolution, "resolution" },
-        { QtMultimedia::PixelAspectRatio, "pixelAspectRatio" },
+        { QtMediaServices::Resolution, "resolution" },
+        { QtMediaServices::PixelAspectRatio, "pixelAspectRatio" },
 
         // Video
-        { QtMultimedia::VideoFrameRate, "videoFrameRate" },
-        { QtMultimedia::VideoBitRate, "videoBitRate" },
-        { QtMultimedia::VideoCodec, "videoCodec" },
+        { QtMediaServices::VideoFrameRate, "videoFrameRate" },
+        { QtMediaServices::VideoBitRate, "videoBitRate" },
+        { QtMediaServices::VideoCodec, "videoCodec" },
 
-        { QtMultimedia::PosterUrl, "posterUrl" },
+        { QtMediaServices::PosterUrl, "posterUrl" },
 
         // Movie
-        { QtMultimedia::ChapterNumber, "chapterNumber" },
-        { QtMultimedia::Director, "director" },
-        { QtMultimedia::LeadPerformer, "leadPerformer" },
-        { QtMultimedia::Writer, "writer" },
+        { QtMediaServices::ChapterNumber, "chapterNumber" },
+        { QtMediaServices::Director, "director" },
+        { QtMediaServices::LeadPerformer, "leadPerformer" },
+        { QtMediaServices::Writer, "writer" },
 
         // Photos
-        { QtMultimedia::CameraManufacturer, "cameraManufacturer" },
-        { QtMultimedia::CameraModel, "cameraModel" },
-        { QtMultimedia::Event, "event" },
-        { QtMultimedia::Subject, "subject" },
-        { QtMultimedia::Orientation, "orientation" },
-        { QtMultimedia::ExposureTime, "exposureTime" },
-        { QtMultimedia::FNumber, "fNumber" },
-        { QtMultimedia::ExposureProgram, "exposureProgram" },
-        { QtMultimedia::ISOSpeedRatings, "isoSpeedRatings" },
-        { QtMultimedia::ExposureBiasValue, "exposureBiasValue" },
-        { QtMultimedia::DateTimeOriginal, "dateTimeOriginal" },
-        { QtMultimedia::DateTimeDigitized, "dateTimeDigitized" },
-        { QtMultimedia::SubjectDistance, "subjectDistance" },
-        { QtMultimedia::MeteringMode, "meteringMode" },
-        { QtMultimedia::LightSource, "lightSource" },
-        { QtMultimedia::Flash, "flash" },
-        { QtMultimedia::FocalLength, "focalLength" },
-        { QtMultimedia::ExposureMode, "exposureMode" },
-        { QtMultimedia::WhiteBalance, "whiteBalance" },
-        { QtMultimedia::DigitalZoomRatio, "digitalZoomRatio" },
-        { QtMultimedia::FocalLengthIn35mmFilm, "focalLengthIn35mmFilm" },
-        { QtMultimedia::SceneCaptureType, "sceneCaptureType" },
-        { QtMultimedia::GainControl, "gainControl" },
-        { QtMultimedia::Contrast, "contrast" },
-        { QtMultimedia::Saturation, "saturation" },
-        { QtMultimedia::Sharpness, "sharpness" },
-        { QtMultimedia::DeviceSettingDescription, "deviceSettingDescription" }
+        { QtMediaServices::CameraManufacturer, "cameraManufacturer" },
+        { QtMediaServices::CameraModel, "cameraModel" },
+        { QtMediaServices::Event, "event" },
+        { QtMediaServices::Subject, "subject" },
+        { QtMediaServices::Orientation, "orientation" },
+        { QtMediaServices::ExposureTime, "exposureTime" },
+        { QtMediaServices::FNumber, "fNumber" },
+        { QtMediaServices::ExposureProgram, "exposureProgram" },
+        { QtMediaServices::ISOSpeedRatings, "isoSpeedRatings" },
+        { QtMediaServices::ExposureBiasValue, "exposureBiasValue" },
+        { QtMediaServices::DateTimeOriginal, "dateTimeOriginal" },
+        { QtMediaServices::DateTimeDigitized, "dateTimeDigitized" },
+        { QtMediaServices::SubjectDistance, "subjectDistance" },
+        { QtMediaServices::MeteringMode, "meteringMode" },
+        { QtMediaServices::LightSource, "lightSource" },
+        { QtMediaServices::Flash, "flash" },
+        { QtMediaServices::FocalLength, "focalLength" },
+        { QtMediaServices::ExposureMode, "exposureMode" },
+        { QtMediaServices::WhiteBalance, "whiteBalance" },
+        { QtMediaServices::DigitalZoomRatio, "digitalZoomRatio" },
+        { QtMediaServices::FocalLengthIn35mmFilm, "focalLengthIn35mmFilm" },
+        { QtMediaServices::SceneCaptureType, "sceneCaptureType" },
+        { QtMediaServices::GainControl, "gainControl" },
+        { QtMediaServices::Contrast, "contrast" },
+        { QtMediaServices::Saturation, "saturation" },
+        { QtMediaServices::Sharpness, "sharpness" },
+        { QtMediaServices::DeviceSettingDescription, "deviceSettingDescription" }
     };
 
     class QMetaDataControlObject : public QObject

@@ -43,7 +43,7 @@
 #ifndef QT7SERVICEPLUGIN_H
 #define QT7SERVICEPLUGIN_H
 
-#include <QtMultimedia/qmediaserviceproviderplugin.h>
+#include <QtMediaServices/qmediaserviceproviderplugin.h>
 
 QT_BEGIN_HEADER
 
