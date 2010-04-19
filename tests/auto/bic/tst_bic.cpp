@@ -315,13 +315,14 @@ void tst_Bic::sizesAndVTables()
     }
 
     if (!diff.modifiedVTables.isEmpty()) {
-        foreach(QStringPair entry, diff.modifiedVTables)
-            qWarning() << "modified VTable:\n    Old: " << entry.first
-                       << "\n    New: " << entry.second;
         if (diff.modifiedVTables.size() != 1 ||
             strcmp(QTest::currentDataTag(), "4.4") != 0 ||
-            diff.modifiedVTables.at(0).first != "QGraphicsProxyWidget")
+            diff.modifiedVTables.at(0).first != "QGraphicsProxyWidget") {
+            foreach(QStringPair entry, diff.modifiedVTables)
+                qWarning() << "modified VTable:\n    Old: " << entry.first
+                           << "\n    New: " << entry.second;
             isFailed = true;
+        }
     }
 
     if (isPatchRelease && !diff.addedVTables.isEmpty()) {
