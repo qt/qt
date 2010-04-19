@@ -204,10 +204,18 @@ static void addLink(const QString &linkTarget,
 
 
 HtmlGenerator::HtmlGenerator()
-    : helpProjectWriter(0), inLink(false), inContents(false),
-      inSectionHeading(false), inTableHeader(false), numTableRows(0),
-      threeColumnEnumValueTable(true), funcLeftParen("\\S(\\()"),
-      myTree(0), slow(false), obsoleteLinks(false)
+    : helpProjectWriter(0),
+      inLink(false),
+      inContents(false),
+      inSectionHeading(false),
+      inTableHeader(false),
+      numTableRows(0),
+      threeColumnEnumValueTable(true),
+      offlineDocs(true),
+      funcLeftParen("\\S(\\()"),
+      myTree(0),
+      slow(false),
+      obsoleteLinks(false)
 {
 }
 
@@ -262,7 +270,7 @@ void HtmlGenerator::initializeGenerator(const Config &config)
                                           HTMLGENERATOR_GENERATEMACREFS);
 
     project = config.getString(CONFIG_PROJECT);
-
+    offlineDocs = !config.getBool(CONFIG_ONLINE);
     projectDescription = config.getString(CONFIG_DESCRIPTION);
     if (projectDescription.isEmpty() && !project.isEmpty())
         projectDescription = project + " Reference Documentation";
@@ -1737,146 +1745,17 @@ void HtmlGenerator::generateHeader(const QString& title,
     out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
     out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
     out() << "</head>\n";
-    
-#if 0    
-    out() << "<!DOCTYPE html\n"
-             "    PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"DTD/xhtml1-strict.dtd\">\n";
-    out() << QString("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"%1\" lang=\"%1\">\n").arg(naturalLanguage);
 
-    QString shortVersion;
-    if ((project != "Qtopia") && (project != "Qt Extended")) {
-        shortVersion = project + " " + shortVersion + ": ";
-        if (node && !node->doc().location().isEmpty())
-            out() << "<!-- " << node->doc().location().fileName() << " -->\n";
-
-        shortVersion = myTree->version();
-        if (shortVersion.count(QChar('.')) == 2)
-            shortVersion.truncate(shortVersion.lastIndexOf(QChar('.')));
-        if (!shortVersion.isEmpty()) {
-            if (project == "QSA")
-                shortVersion = "QSA " + shortVersion + ": ";
-            else
-                shortVersion = "Qt " + shortVersion + ": ";
-        }
-    }
-
-    out() << "<head>\n"
-             "  <title>" << shortVersion << protectEnc(title) << "</title>\n";
-    out() << QString("<meta http-equiv=\"Content-type\" content=\"text/html; charset=%1\" />").arg(outputEncoding);
-
-    if (!style.isEmpty())
-        out() << "    <style type=\"text/css\">" << style << "</style>\n";
-
-    const QMap<QString, QString> &metaMap = node->doc().metaTagMap();
-    if (!metaMap.isEmpty()) {
-        QMapIterator<QString, QString> i(metaMap);
-        while (i.hasNext()) {
-            i.next();
-            out() << "    <meta name=\"" << protectEnc(i.key()) << "\" contents=\""
-                  << protectEnc(i.value()) << "\" />\n";
-        }
-    }
-
-    navigationLinks.clear();
-
-    if (node && !node->links().empty()) {
-        QPair<QString,QString> linkPair;
-        QPair<QString,QString> anchorPair;
-        const Node *linkNode;
-
-        if (node->links().contains(Node::PreviousLink)) {
-            linkPair = node->links()[Node::PreviousLink];
-            linkNode = findNodeForTarget(linkPair.first, node, marker);
-            if (!linkNode || linkNode == node)
-                anchorPair = linkPair;
-            else
-                anchorPair = anchorForNode(linkNode);
-
-            out() << "  <link rel=\"prev\" href=\""
-                  << anchorPair.first << "\" />\n";
-
-            navigationLinks += "[Previous: <a href=\"" + anchorPair.first + "\">";
-            if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
-                navigationLinks += protectEnc(anchorPair.second);
-            else
-                navigationLinks += protectEnc(linkPair.second);
-            navigationLinks += "</a>]\n";
-        }
-        if (node->links().contains(Node::ContentsLink)) {
-            linkPair = node->links()[Node::ContentsLink];
-            linkNode = findNodeForTarget(linkPair.first, node, marker);
-            if (!linkNode || linkNode == node)
-                anchorPair = linkPair;
-            else
-                anchorPair = anchorForNode(linkNode);
-
-            out() << "  <link rel=\"contents\" href=\""
-                  << anchorPair.first << "\" />\n";
-
-            navigationLinks += "[<a href=\"" + anchorPair.first + "\">";
-            if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
-                navigationLinks += protectEnc(anchorPair.second);
-            else
-                navigationLinks += protectEnc(linkPair.second);
-            navigationLinks += "</a>]\n";
-        }
-        if (node->links().contains(Node::NextLink)) {
-            linkPair = node->links()[Node::NextLink];
-            linkNode = findNodeForTarget(linkPair.first, node, marker);
-            if (!linkNode || linkNode == node)
-                anchorPair = linkPair;
-            else
-                anchorPair = anchorForNode(linkNode);
-
-            out() << "  <link rel=\"next\" href=\""
-                  << anchorPair.first << "\" />\n";
-
-            navigationLinks += "[Next: <a href=\"" + anchorPair.first + "\">";
-            if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
-                navigationLinks += protectEnc(anchorPair.second);
-            else
-                navigationLinks += protectEnc(linkPair.second);
-            navigationLinks += "</a>]\n";
-        }
-        if (node->links().contains(Node::IndexLink)) {
-            linkPair = node->links()[Node::IndexLink];
-            linkNode = findNodeForTarget(linkPair.first, node, marker);
-            if (!linkNode || linkNode == node)
-                anchorPair = linkPair;
-            else
-                anchorPair = anchorForNode(linkNode);
-            out() << "  <link rel=\"index\" href=\""
-                  << anchorPair.first << "\" />\n";
-        }
-        if (node->links().contains(Node::StartLink)) {
-            linkPair = node->links()[Node::StartLink];
-            linkNode = findNodeForTarget(linkPair.first, node, marker);
-            if (!linkNode || linkNode == node)
-                anchorPair = linkPair;
-            else
-                anchorPair = anchorForNode(linkNode);
-            out() << "  <link rel=\"start\" href=\""
-                  << anchorPair.first << "\" />\n";
-        }
-    }
-
-    foreach (const QString &stylesheet, stylesheets) {
-        out() << "  <link href=\"" << stylesheet << "\" rel=\"stylesheet\" "
-              << "type=\"text/css\" />\n";
-    }
-
-    foreach (const QString &customHeadElement, customHeadElements) {
-        out() << "  " << customHeadElement << "\n";
-    }
-
-    out() << "</head>\n"
- #endif       
+    if (offlineDocs)
+        out() << "<body class=\"offline\">\n";
+    else
         out() << "<body class=\"\">\n";
+
     if (mainPage)
         generateMacRef(node, marker);
     out() << QString(postHeader).replace("\\" + COMMAND_VERSION, myTree->version());
 
-#if 0
+#if 0 // Removed for new docf format. MWS
     if (node && !node->links().empty())
         out() << "<p>\n" << navigationLinks << "</p>\n";
 #endif    
@@ -4371,8 +4250,6 @@ void HtmlGenerator::endLink()
     inObsoleteLink = false;
 }
 
-QT_END_NAMESPACE
-
 #ifdef QDOC_QML
 
 /*!
@@ -4724,3 +4601,139 @@ void HtmlGenerator::generatePageIndex(const QString& fileName, CodeMarker* marke
 }
 
 #endif
+
+#if 0 // fossil removed for new doc format MWS 19/04/2010
+    out() << "<!DOCTYPE html\n"
+             "    PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"DTD/xhtml1-strict.dtd\">\n";
+    out() << QString("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"%1\" lang=\"%1\">\n").arg(naturalLanguage);
+
+    QString shortVersion;
+    if ((project != "Qtopia") && (project != "Qt Extended")) {
+        shortVersion = project + " " + shortVersion + ": ";
+        if (node && !node->doc().location().isEmpty())
+            out() << "<!-- " << node->doc().location().fileName() << " -->\n";
+
+        shortVersion = myTree->version();
+        if (shortVersion.count(QChar('.')) == 2)
+            shortVersion.truncate(shortVersion.lastIndexOf(QChar('.')));
+        if (!shortVersion.isEmpty()) {
+            if (project == "QSA")
+                shortVersion = "QSA " + shortVersion + ": ";
+            else
+                shortVersion = "Qt " + shortVersion + ": ";
+        }
+    }
+
+    out() << "<head>\n"
+             "  <title>" << shortVersion << protectEnc(title) << "</title>\n";
+    out() << QString("<meta http-equiv=\"Content-type\" content=\"text/html; charset=%1\" />").arg(outputEncoding);
+
+    if (!style.isEmpty())
+        out() << "    <style type=\"text/css\">" << style << "</style>\n";
+
+    const QMap<QString, QString> &metaMap = node->doc().metaTagMap();
+    if (!metaMap.isEmpty()) {
+        QMapIterator<QString, QString> i(metaMap);
+        while (i.hasNext()) {
+            i.next();
+            out() << "    <meta name=\"" << protectEnc(i.key()) << "\" contents=\""
+                  << protectEnc(i.value()) << "\" />\n";
+        }
+    }
+
+    navigationLinks.clear();
+
+    if (node && !node->links().empty()) {
+        QPair<QString,QString> linkPair;
+        QPair<QString,QString> anchorPair;
+        const Node *linkNode;
+
+        if (node->links().contains(Node::PreviousLink)) {
+            linkPair = node->links()[Node::PreviousLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+
+            out() << "  <link rel=\"prev\" href=\""
+                  << anchorPair.first << "\" />\n";
+
+            navigationLinks += "[Previous: <a href=\"" + anchorPair.first + "\">";
+            if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
+                navigationLinks += protectEnc(anchorPair.second);
+            else
+                navigationLinks += protectEnc(linkPair.second);
+            navigationLinks += "</a>]\n";
+        }
+        if (node->links().contains(Node::ContentsLink)) {
+            linkPair = node->links()[Node::ContentsLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+
+            out() << "  <link rel=\"contents\" href=\""
+                  << anchorPair.first << "\" />\n";
+
+            navigationLinks += "[<a href=\"" + anchorPair.first + "\">";
+            if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
+                navigationLinks += protectEnc(anchorPair.second);
+            else
+                navigationLinks += protectEnc(linkPair.second);
+            navigationLinks += "</a>]\n";
+        }
+        if (node->links().contains(Node::NextLink)) {
+            linkPair = node->links()[Node::NextLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+
+            out() << "  <link rel=\"next\" href=\""
+                  << anchorPair.first << "\" />\n";
+
+            navigationLinks += "[Next: <a href=\"" + anchorPair.first + "\">";
+            if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
+                navigationLinks += protectEnc(anchorPair.second);
+            else
+                navigationLinks += protectEnc(linkPair.second);
+            navigationLinks += "</a>]\n";
+        }
+        if (node->links().contains(Node::IndexLink)) {
+            linkPair = node->links()[Node::IndexLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+            out() << "  <link rel=\"index\" href=\""
+                  << anchorPair.first << "\" />\n";
+        }
+        if (node->links().contains(Node::StartLink)) {
+            linkPair = node->links()[Node::StartLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+            out() << "  <link rel=\"start\" href=\""
+                  << anchorPair.first << "\" />\n";
+        }
+    }
+
+    foreach (const QString &stylesheet, stylesheets) {
+        out() << "  <link href=\"" << stylesheet << "\" rel=\"stylesheet\" "
+              << "type=\"text/css\" />\n";
+    }
+
+    foreach (const QString &customHeadElement, customHeadElements) {
+        out() << "  " << customHeadElement << "\n";
+    }
+
+    out() << "</head>\n"
+ #endif       
+
+ QT_END_NAMESPACE
