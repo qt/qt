@@ -2813,7 +2813,9 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
 
     QAction *action = d->actionAt(e->pos());
     if (!action) {
-        if (d->hasHadMouse)
+        if (d->hasHadMouse
+            && (!d->currentAction
+                || !(d->currentAction->menu() && d->currentAction->menu()->isVisible())))
             d->setCurrentAction(0);
         return;
     } else if(e->buttons()) {
