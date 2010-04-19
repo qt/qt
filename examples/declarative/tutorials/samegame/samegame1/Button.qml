@@ -18,9 +18,9 @@ Rectangle {
         GradientStop {
             position: 0.0
             color: {
-                if (mouseArea.pressed) 
+                if (mouseArea.pressed)
                     return activePalette.dark
-                else 
+                else
                     return activePalette.light
             }
         }
