@@ -81,6 +81,7 @@ public:
 
     void saveEvent(QGraphicsSceneMouseEvent *event) {
         lastPos = event->pos();
+        lastScenePos = event->scenePos();
         lastButton = event->button();
         lastButtons = event->buttons();
         lastModifiers = event->modifiers();
@@ -105,6 +106,7 @@ public:
     qreal startX;
     qreal startY;
     QPointF lastPos;
+    QDeclarativeNullableValue<QPointF> lastScenePos;
     Qt::MouseButton lastButton;
     Qt::MouseButtons lastButtons;
     Qt::KeyboardModifiers lastModifiers;

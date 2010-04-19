@@ -108,8 +108,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeMouseArea : public QDeclarativeItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(qreal mouseX READ mouseX NOTIFY positionChanged)
-    Q_PROPERTY(qreal mouseY READ mouseY NOTIFY positionChanged)
+    Q_PROPERTY(qreal mouseX READ mouseX NOTIFY mousePosChanged)
+    Q_PROPERTY(qreal mouseY READ mouseY NOTIFY mousePosChanged)
     Q_PROPERTY(bool containsMouse READ hovered NOTIFY hoveredChanged)
     Q_PROPERTY(bool pressed READ pressed NOTIFY pressedChanged)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
@@ -144,6 +144,7 @@ Q_SIGNALS:
     void enabledChanged();
     void acceptedButtonsChanged();
     void positionChanged(QDeclarativeMouseEvent *mouse);
+    void mousePosChanged(QDeclarativeMouseEvent *mouse);
 
     void pressed(QDeclarativeMouseEvent *mouse);
     void pressAndHold(QDeclarativeMouseEvent *mouse);
@@ -166,6 +167,9 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     bool sceneEvent(QEvent *);
     void timerEvent(QTimerEvent *event);
+
+    virtual void geometryChanged(const QRectF &newGeometry,
+                                 const QRectF &oldGeometry);
 
 private:
     void handlePress();
