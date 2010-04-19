@@ -1000,7 +1000,6 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
     t.start();
 
     canvas->setSource(url);
-    qWarning() << "Wall startup time:" << t.elapsed();
 
     return true;
 }

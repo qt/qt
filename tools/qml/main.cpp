@@ -1,4 +1,4 @@
-/****************************************************************************
+/*
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
@@ -42,15 +42,19 @@
 #include "qdeclarative.h"
 #include "qmlruntime.h"
 #include "qdeclarativeengine.h"
+#include "loggerwidget.h"
 #include <QWidget>
 #include <QDir>
 #include <QApplication>
 #include <QTranslator>
 #include <QDebug>
+#include <QMessageBox>
 #include "qdeclarativetester.h"
 #include "qdeclarativefolderlistmodel.h"
 
 QT_USE_NAMESPACE
+
+QtMsgHandler systemMsgOutput;
 
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
@@ -73,6 +77,35 @@ void myMessageOutput(QtMsgType type, const char *msg)
         abort();
     }
 }
+
+#else // !defined (Q_OS_SYMBIAN)
+
+QWeakPointer<LoggerWidget> logger;
+
+QString warnings;
+void showWarnings()
+{
+    if (!warnings.isEmpty()) {
+        QMessageBox::warning(0, QApplication::tr("Qt Declarative UI Runtime"), warnings);
+    }
+}
+
+void myMessageOutput(QtMsgType type, const char *msg)
+{
+    if (!logger.isNull()) {
+        logger.data()->append(type, msg);
+    } else {
+        warnings += msg;
+        warnings += QLatin1Char('\n');
+    }
+    if (systemMsgOutput) { // Windows
+        systemMsgOutput(type, msg);
+    } else { // Unix
+        fprintf(stderr, "%s\n",msg);
+        fflush(stderr);
+    }
+}
+
 #endif
 
 void usage()
@@ -91,6 +124,7 @@ void usage()
     qWarning("  -sizeviewtorootobject .................... the view resizes to the changes in the content");
     qWarning("  -sizerootobjecttoview .................... the content resizes to the changes in the view");
     qWarning("  -qmlbrowser .............................. use a QML-based file browser");
+    qWarning("  -nolog ................................... do not show log window");
     qWarning("  -recordfile <output> ..................... set video recording file");
     qWarning("                                              - ImageMagick 'convert' for GIF)");
     qWarning("                                              - png file for raw frames");
@@ -137,6 +171,14 @@ int main(int argc, char ** argv)
 {
 #if defined (Q_OS_SYMBIAN)
     qInstallMsgHandler(myMessageOutput);
+#else
+    systemMsgOutput = qInstallMsgHandler(myMessageOutput);
+#endif
+
+#if defined (Q_OS_WIN)
+    // Debugging output is not visible by default on Windows -
+    // therefore show modal dialog with errors instad.
+    atexit(showWarnings);
 #endif
 
 #if defined (Q_WS_X11)
@@ -186,6 +228,7 @@ int main(int argc, char ** argv)
     bool stayOnTop = false;
     bool maximized = false;
     bool useNativeFileBrowser = true;
+    bool showLogWidget = true;
     bool sizeToView = true;
 
 #if defined(Q_OS_SYMBIAN)
@@ -237,8 +280,8 @@ int main(int argc, char ** argv)
             if (lastArg) usage();
             app.setStartDragDistance(QString(argv[++i]).toInt());
         } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
-            fprintf(stderr, "Qt Declarative UI Viewer version %s\n", QT_VERSION_STR);
-            return 0;
+            qWarning("Qt Declarative UI Viewer version %s", QT_VERSION_STR);
+            exit(0);
         } else if (arg == "-translation") {
             if (lastArg) usage();
             translationFile = argv[++i];
@@ -246,14 +289,16 @@ int main(int argc, char ** argv)
             useGL = true;
         } else if (arg == "-qmlbrowser") {
             useNativeFileBrowser = false;
+        } else if (arg == "-nolog") {
+            showLogWidget = false;
         } else if (arg == "-I" || arg == "-L") {
             if (arg == "-L")
-                fprintf(stderr, "-L option provided for compatibility only, use -I instead\n");
+                qWarning("-L option provided for compatibility only, use -I instead");
             if (lastArg) {
                 QDeclarativeEngine tmpEngine;
                 QString paths = tmpEngine.importPathList().join(QLatin1String(":"));
-                fprintf(stderr, "Current search path: %s\n", paths.toLocal8Bit().constData());
-                return 0;
+                qWarning("Current search path: %s", paths.toLocal8Bit().constData());
+                exit(0);
             }
             imports << QString(argv[++i]);
         } else if (arg == "-P") {
@@ -293,6 +338,13 @@ int main(int argc, char ** argv)
     Qt::WFlags wflags = (frameless ? Qt::FramelessWindowHint : Qt::Widget);
     if (stayOnTop)
         wflags |= Qt::WindowStaysOnTopHint;
+
+#if !defined(Q_OS_SYMBIAN)
+    LoggerWidget loggerWidget(0);
+    if (showLogWidget) {
+        logger = &loggerWidget;
+    }
+#endif
 
     QDeclarativeViewer viewer(0, wflags);
     if (!scriptopts.isEmpty()) {
@@ -398,5 +450,6 @@ int main(int argc, char ** argv)
     }
     viewer.setUseGL(useGL);
     viewer.raise();
-    return app.exec();
+
+    exit(app.exec());
 }
