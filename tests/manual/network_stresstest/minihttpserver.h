@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the FOO module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,76 +39,61 @@
 **
 ****************************************************************************/
 
-#ifndef MONITOR_H
-#define MONITOR_H
 
-#include <QtCore/qhash.h>
-#include <QtCore/qtimer.h>
+#ifndef MINIHTTPSERVER_H
+#define MINIHTTPSERVER_H
 
-#include <gconf/gconf.h>
-#include <gconf/gconf-client.h>
+#include <QtCore/QThread>
+#include <QtCore/QFile>
+#include <QtCore/QTimer>
 
-#include <iapmonitor.h>
+class QFile;
+class QSemaphore;
+class QTcpServer;
+class QTcpSocket;
 
-class QIcdEngine;
-
-/* The IapAddTimer is a helper class that makes sure we update
- * the configuration only after all db additions to certain
- * iap are finished (after a certain timeout)
- */
-class _IapAddTimer : public QObject
+class MiniHttpServer : public QThread
 {
     Q_OBJECT
-
 public:
-    _IapAddTimer() {}
-    ~_IapAddTimer()
-    {
-        if (timer.isActive()) {
-            QObject::disconnect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
-            timer.stop();
-        }
-    }
+    explicit MiniHttpServer(QObject *parent = 0);
+    ~MiniHttpServer();
 
-    void add(QString& iap_id, QIcdEngine *d);
-
-    QString iap_id;
-    QTimer timer;
-    QIcdEngine *d;
-
-public Q_SLOTS:
-    void timeout();
-};
-
-class IapAddTimer {
-    QHash<QString, _IapAddTimer* > timers;
-
-public:
-    IapAddTimer() {}
-    ~IapAddTimer() {}
-
-    void add(QString& iap_id, QIcdEngine *d);
-    void del(QString& iap_id);
-    void removeAll();
-};
-
-class IapMonitor : public Maemo::IAPMonitor
-{
-public:
-    IapMonitor() : first_call(true) { }
-
-    void setup(QIcdEngine *d);
-    void cleanup();
+    int port() { return portnum; }
 
 protected:
-    void iapAdded(const QString &iapId);
-    void iapRemoved(const QString &iapId);
+    void run();
+
+private slots:
+    void handleConnection();
 
 private:
-    bool first_call;
-
-    QIcdEngine *d;
-    IapAddTimer timers;
+    QTcpServer *server;
+    QObject *quitObject;
+    QSemaphore *readyToGo;
+    int portnum;
 };
 
-#endif // MONITOR_H
+class MiniHttpServerConnection: public QObject
+{
+    Q_OBJECT
+    QTcpSocket * const socket;
+    QFile source;
+    QTimer timeout;
+    QByteArray buffer;
+    bool connectionClose;
+public:
+    explicit MiniHttpServerConnection(QTcpSocket *socket);
+
+    void sendError500();
+    void sendError404();
+    void handlePendingRequest();
+
+public slots:
+    void handleReadyRead();
+    void handleBytesWritten();
+    void handleDisconnected();
+    void handleTimeout();
+};
+
+#endif // MINIHTTPSERVER_H

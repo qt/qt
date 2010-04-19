@@ -1527,7 +1527,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_ICONV" ]            = "no";
 
         dictionary["DECORATIONS"]           = "default windows styled";
-        dictionary[ "QMAKEADDITIONALARGS" ] = "-unix";
     }
 }
 

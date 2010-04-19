@@ -55,6 +55,9 @@
 #include <QtMultimedia/qabstractvideosurface.h>
 #include <QtMultimedia/qvideosurfaceformat.h>
 
+#include <QuartzCore/CIFilter.h>
+#include <QuartzCore/CIVector.h>
+
 
 QT_BEGIN_NAMESPACE
 

@@ -1611,6 +1611,7 @@ QString QTime::toString(Qt::DateFormat format) const
          \i use AM/PM display. \e AP will be replaced by either "AM" or "PM".
     \row \i ap or a
          \i use am/pm display. \e ap will be replaced by either "am" or "pm".
+    \row \i t \i the timezone (for example "CEST")
     \endtable
 
     All other input characters will be ignored. Any sequence of characters that
