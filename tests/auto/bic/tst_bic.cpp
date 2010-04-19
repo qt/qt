@@ -156,6 +156,7 @@ void tst_Bic::initTestCase_data()
     QTest::newRow("QtWebKit") << "QtWebKit";
     QTest::newRow("QtXml") << "QtXml";
     QTest::newRow("QtXmlPatterns") << "QtXmlPatterns";
+    QTest::newRow("phonon") << "phonon";
 }
 
 void tst_Bic::initTestCase()
