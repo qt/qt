@@ -50,6 +50,7 @@
 #include <qlistmodelinterface_p.h>
 #include <QKeyEvent>
 
+#include <qmath.h>
 #include <math.h>
 
 QT_BEGIN_NAMESPACE
@@ -834,7 +835,15 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             if (v > 0)
                 dist = -dist;
             data.flickTarget = -snapPosAt(-(data.move.value() - highlightRangeStart) + dist) + highlightRangeStart;
-            dist = -data.flickTarget + data.move.value();
+            qreal adjDist = -data.flickTarget + data.move.value();
+            if (qAbs(adjDist) > qAbs(dist)) {
+                // Prevent painfully slow flicking - adjust velocity to suit flickDeceleration
+                v2 = accel * 2.0f * qAbs(dist);
+                v = qSqrt(v2);
+                if (dist > 0)
+                    v = -v;
+            }
+            dist = adjDist;
             accel = v2 / (2.0f * qAbs(dist));
         } else {
             data.flickTarget = velocity > 0 ? minExtent : maxExtent;
