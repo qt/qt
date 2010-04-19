@@ -493,10 +493,10 @@ void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, QTextBlockFormat
                 format.nonBreakableLines() ? QString::fromLatin1("true") : QString::fromLatin1("false"));
     if (format.hasProperty(QTextFormat::TabPositions)) {
         QList<QTextOption::Tab> tabs = format.tabPositions();
-        writer.writeStartElement(styleNS, QString::fromLatin1("style-tab-stops"));
+        writer.writeStartElement(styleNS, QString::fromLatin1("tab-stops"));
         QList<QTextOption::Tab>::Iterator iterator = tabs.begin();
         while(iterator != tabs.end()) {
-            writer.writeEmptyElement(styleNS, QString::fromLatin1("style-tab-stop"));
+            writer.writeEmptyElement(styleNS, QString::fromLatin1("tab-stop"));
             writer.writeAttribute(styleNS, QString::fromLatin1("position"), pixelToPoint(iterator->position) );
             QString type;
             switch(iterator->type) {
@@ -511,7 +511,7 @@ void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, QTextBlockFormat
             ++iterator;
         }
 
-        writer.writeEndElement(); // style-tab-stops
+        writer.writeEndElement(); // tab-stops
     }
 
     writer.writeEndElement(); // paragraph-properties
@@ -698,11 +698,11 @@ void QTextOdfWriter::writeTableCellFormat(QXmlStreamWriter &writer, QTextTableCe
         if (padding > 0)
             writer.writeAttribute(foNS, QString::fromLatin1("padding-top"), pixelToPoint(padding));
         if (format.bottomPadding() > 0)
-            writer.writeAttribute(foNS, QString::fromLatin1("padding-top"), pixelToPoint(format.bottomPadding()));
+            writer.writeAttribute(foNS, QString::fromLatin1("padding-bottom"), pixelToPoint(format.bottomPadding()));
         if (format.leftPadding() > 0)
-            writer.writeAttribute(foNS, QString::fromLatin1("padding-top"), pixelToPoint(format.leftPadding()));
+            writer.writeAttribute(foNS, QString::fromLatin1("padding-left"), pixelToPoint(format.leftPadding()));
         if (format.rightPadding() > 0)
-            writer.writeAttribute(foNS, QString::fromLatin1("padding-top"), pixelToPoint(format.rightPadding()));
+            writer.writeAttribute(foNS, QString::fromLatin1("padding-right"), pixelToPoint(format.rightPadding()));
     }
 
     if (format.hasProperty(QTextFormat::TextVerticalAlignment)) {
