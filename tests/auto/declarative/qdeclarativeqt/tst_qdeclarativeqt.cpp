@@ -354,11 +354,11 @@ void tst_qdeclarativeqt::createQmlObject()
     QDeclarativeComponent component(&engine, TEST_FILE("createQmlObject.qml"));
 
     QString warning1 = component.url().toString() + ":7: Error: expected 2 or 3 parameters";
-    QString warning2 = component.url().toString()+ ":10: Error: Qt.createQmlObject():     " + TEST_FILE("inline").toString() + ":2:10: Blah is not a type\n";
-    QString warning3 = component.url().toString()+ ":11: Error: Qt.createQmlObject():     " + TEST_FILE("main.qml").toString() + ":4:1: Duplicate property name\n";
+    QString warning2 = component.url().toString()+ ":10: Error: Qt.createQmlObject() failed to create object :     " + TEST_FILE("inline").toString() + ":2:10: Blah is not a type\n";
+    QString warning3 = component.url().toString()+ ":11: Error: Qt.createQmlObject() failed to create object :     " + TEST_FILE("main.qml").toString() + ":4:1: Duplicate property name\n";
     QString warning4 = component.url().toString()+ ":9: Error: parent object not found";
     QString warning5 = component.url().toString()+ ":8: Error: expected 2 or 3 parameters";
-    QString warning6 = "RunTimeError:  Qt.createQmlObject():     " + TEST_FILE("inline").toString() + ":3: Cannot assign object type QObject with no default method\n";
+    QString warning6 = "RunTimeError:  Qt.createQmlObject() failed to create object:     " + TEST_FILE("inline").toString() + ":3: Cannot assign object type QObject with no default method\n";
 
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));

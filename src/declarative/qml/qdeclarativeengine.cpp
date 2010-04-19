@@ -254,18 +254,18 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
     qtObject.setProperty(QLatin1String("quit"), newFunction(QDeclarativeEnginePrivate::quit, 0));
     qtObject.setProperty(QLatin1String("resolvedUrl"),newFunction(QDeclarativeScriptEngine::resolvedUrl, 1));
 
+    if (mainthread) {
+        qtObject.setProperty(QLatin1String("createQmlObject"),
+                newFunction(QDeclarativeEnginePrivate::createQmlObject, 1));
+        qtObject.setProperty(QLatin1String("createComponent"),
+                newFunction(QDeclarativeEnginePrivate::createComponent, 1));
+    }
+
     //firebug/webkit compat
     QScriptValue consoleObject = newObject();
     consoleObject.setProperty(QLatin1String("log"),newFunction(QDeclarativeEnginePrivate::consoleLog, 1));
     consoleObject.setProperty(QLatin1String("debug"),newFunction(QDeclarativeEnginePrivate::consoleLog, 1));
     globalObject().setProperty(QLatin1String("console"), consoleObject);
-
-    if (mainthread) {
-        globalObject().setProperty(QLatin1String("createQmlObject"),
-                newFunction(QDeclarativeEnginePrivate::createQmlObject, 1));
-        globalObject().setProperty(QLatin1String("createComponent"),
-                newFunction(QDeclarativeEnginePrivate::createComponent, 1));
-    }
 
     // translation functions need to be installed
     // before the global script class is constructed (QTBUG-6437)
@@ -1019,7 +1019,7 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
         url = context->resolvedUrl(url);
 
     QObject *parentArg = activeEnginePriv->objectClass->toQObject(ctxt->argument(1));
-    if(!parentArg) 
+    if(!parentArg)
         return ctxt->throwError(QDeclarativeEngine::tr("parent object not found"));
 
     QDeclarativeComponent component(activeEngine);
@@ -1027,10 +1027,21 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
 
     if(component.isError()) {
         QList<QDeclarativeError> errors = component.errors();
-        QString errstr = QLatin1String("Qt.createQmlObject(): ");
-        foreach (const QDeclarativeError &error, errors)
+        QString errstr = QLatin1String("Qt.createQmlObject() failed to create object: ");
+        QScriptValue arr = ctxt->engine()->newArray(errors.length());
+        int i = 0;
+        foreach (const QDeclarativeError &error, errors){
             errstr += QLatin1String("    ") + error.toString() + QLatin1String("\n");
-        return ctxt->throwError(errstr);
+            QScriptValue qmlErrObject = ctxt->engine()->newObject();
+            qmlErrObject.setProperty("lineNumber", QScriptValue(error.line()));
+            qmlErrObject.setProperty("columnNumber", QScriptValue(error.column()));
+            qmlErrObject.setProperty("fileName", QScriptValue(error.url()));
+            qmlErrObject.setProperty("message", QScriptValue(error.description()));
+            arr.setProperty(i++, qmlErrObject);
+        }
+        QScriptValue err = ctxt->throwError(errstr);
+        err.setProperty("qmlErrors",arr);
+        return err;
     }
 
     if (!component.isReady())
@@ -1040,10 +1051,21 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
 
     if(component.isError()) {
         QList<QDeclarativeError> errors = component.errors();
-        QString errstr = QLatin1String("Qt.createQmlObject(): ");
-        foreach (const QDeclarativeError &error, errors)
+        QString errstr = QLatin1String("Qt.createQmlObject() failed to create object: ");
+        QScriptValue arr = ctxt->engine()->newArray(errors.length());
+        int i = 0;
+        foreach (const QDeclarativeError &error, errors){
             errstr += QLatin1String("    ") + error.toString() + QLatin1String("\n");
-        return ctxt->throwError(errstr);
+            QScriptValue qmlErrObject = ctxt->engine()->newObject();
+            qmlErrObject.setProperty("lineNumber", QScriptValue(error.line()));
+            qmlErrObject.setProperty("columnNumber", QScriptValue(error.column()));
+            qmlErrObject.setProperty("fileName", QScriptValue(error.url()));
+            qmlErrObject.setProperty("message", QScriptValue(error.description()));
+            arr.setProperty(i++, qmlErrObject);
+        }
+        QScriptValue err = ctxt->throwError(errstr);
+        err.setProperty("qmlErrors",arr);
+        return err;
     }
 
     Q_ASSERT(obj);
