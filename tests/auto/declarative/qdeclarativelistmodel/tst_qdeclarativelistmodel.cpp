@@ -51,11 +51,11 @@
 
 #include "../../../shared/util.h"
 
-class tst_QDeclarativeListModel : public QObject
+class tst_qdeclarativelistmodel : public QObject
 {
     Q_OBJECT
 public:
-    tst_QDeclarativeListModel() {}
+    tst_qdeclarativelistmodel() {}
 
 private:
     QScriptValue nestedListValue(QScriptEngine *eng) const;
@@ -76,12 +76,13 @@ private slots:
     void convertNestedToFlat_fail_data();
     void convertNestedToFlat_ok();
     void convertNestedToFlat_ok_data();
+    void enumerate();
     void error_data();
     void error();
     void set();
 };
 
-QScriptValue tst_QDeclarativeListModel::nestedListValue(QScriptEngine *eng) const
+QScriptValue tst_qdeclarativelistmodel::nestedListValue(QScriptEngine *eng) const
 {
     QScriptValue list = eng->newArray();
     list.setProperty(0, eng->newObject());
@@ -91,7 +92,7 @@ QScriptValue tst_QDeclarativeListModel::nestedListValue(QScriptEngine *eng) cons
     return sv;
 }
 
-QDeclarativeItem *tst_QDeclarativeListModel::createWorkerTest(QDeclarativeEngine *eng, QDeclarativeComponent *component, QDeclarativeListModel *model)
+QDeclarativeItem *tst_qdeclarativelistmodel::createWorkerTest(QDeclarativeEngine *eng, QDeclarativeComponent *component, QDeclarativeListModel *model)
 {
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component->create());
     QDeclarativeEngine::setContextForObject(model, eng->rootContext());
@@ -100,7 +101,7 @@ QDeclarativeItem *tst_QDeclarativeListModel::createWorkerTest(QDeclarativeEngine
     return item;
 }
 
-void tst_QDeclarativeListModel::waitForWorker(QDeclarativeItem *item)
+void tst_qdeclarativelistmodel::waitForWorker(QDeclarativeItem *item)
 {
     QEventLoop loop;
     QTimer timer;
@@ -115,7 +116,7 @@ void tst_QDeclarativeListModel::waitForWorker(QDeclarativeItem *item)
     QVERIFY(timer.isActive());
 }
 
-void tst_QDeclarativeListModel::static_i18n()
+void tst_qdeclarativelistmodel::static_i18n()
 {
     QString expect = QString::fromUtf8("na\303\257ve");
     QString componentStr = "import Qt 4.7\nListModel { ListElement { prop1: \""+expect+"\" } }";
@@ -129,7 +130,7 @@ void tst_QDeclarativeListModel::static_i18n()
     delete obj;
 }
 
-void tst_QDeclarativeListModel::static_nestedElements()
+void tst_qdeclarativelistmodel::static_nestedElements()
 {
     QFETCH(int, elementCount);
 
@@ -163,7 +164,7 @@ void tst_QDeclarativeListModel::static_nestedElements()
     delete obj;
 }
 
-void tst_QDeclarativeListModel::static_nestedElements_data()
+void tst_qdeclarativelistmodel::static_nestedElements_data()
 {
     QTest::addColumn<int>("elementCount");
 
@@ -173,7 +174,7 @@ void tst_QDeclarativeListModel::static_nestedElements_data()
     QTest::newRow("many items") << 5;
 }
 
-void tst_QDeclarativeListModel::dynamic_data()
+void tst_qdeclarativelistmodel::dynamic_data()
 {
     QTest::addColumn<QString>("script");
     QTest::addColumn<int>("result");
@@ -264,7 +265,7 @@ void tst_QDeclarativeListModel::dynamic_data()
     //QTest::newRow("nested-setprop") << "{append({'foo':123});setProperty(0,'foo',[{'x':123}]);get(0).foo.get(0).x}" << 123 << "";
 }
 
-void tst_QDeclarativeListModel::dynamic()
+void tst_qdeclarativelistmodel::dynamic()
 {
     QFETCH(QString, script);
     QFETCH(int, result);
@@ -285,12 +286,12 @@ void tst_QDeclarativeListModel::dynamic()
     QCOMPARE(actual,result);
 }
 
-void tst_QDeclarativeListModel::dynamic_worker_data()
+void tst_qdeclarativelistmodel::dynamic_worker_data()
 {
     dynamic_data();
 }
 
-void tst_QDeclarativeListModel::dynamic_worker()
+void tst_qdeclarativelistmodel::dynamic_worker()
 {
     QFETCH(QString, script);
     QFETCH(int, result);
@@ -340,7 +341,7 @@ void tst_QDeclarativeListModel::dynamic_worker()
     qApp->processEvents();
 }
 
-void tst_QDeclarativeListModel::convertNestedToFlat_fail()
+void tst_qdeclarativelistmodel::convertNestedToFlat_fail()
 {
     // If a model has nested data, it cannot be used at all from a worker script
 
@@ -369,7 +370,7 @@ void tst_QDeclarativeListModel::convertNestedToFlat_fail()
     qApp->processEvents();
 }
 
-void tst_QDeclarativeListModel::convertNestedToFlat_fail_data()
+void tst_qdeclarativelistmodel::convertNestedToFlat_fail_data()
 {
     QTest::addColumn<QString>("script");
 
@@ -383,7 +384,7 @@ void tst_QDeclarativeListModel::convertNestedToFlat_fail_data()
     QTest::newRow("get") << "get(0)";
 }
 
-void tst_QDeclarativeListModel::convertNestedToFlat_ok()
+void tst_qdeclarativelistmodel::convertNestedToFlat_ok()
 {
     // If a model only has plain data, it can be modified from a worker script. However,
     // once the model is used from a worker script, it no longer accepts nested data
@@ -428,12 +429,12 @@ void tst_QDeclarativeListModel::convertNestedToFlat_ok()
     qApp->processEvents();
 }
 
-void tst_QDeclarativeListModel::convertNestedToFlat_ok_data()
+void tst_qdeclarativelistmodel::convertNestedToFlat_ok_data()
 {
     convertNestedToFlat_fail_data();
 }
 
-void tst_QDeclarativeListModel::static_types_data()
+void tst_qdeclarativelistmodel::static_types_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QVariant>("value");
@@ -463,7 +464,7 @@ void tst_QDeclarativeListModel::static_types_data()
         << QVariant(double(QDeclarativeText::AlignHCenter));
 }
 
-void tst_QDeclarativeListModel::static_types()
+void tst_qdeclarativelistmodel::static_types()
 {
     QFETCH(QString, qml);
     QFETCH(QVariant, value);
@@ -494,7 +495,24 @@ void tst_QDeclarativeListModel::static_types()
     delete obj;
 }
 
-void tst_QDeclarativeListModel::error_data()
+void tst_qdeclarativelistmodel::enumerate()
+{
+    QDeclarativeEngine eng;
+    QDeclarativeComponent component(&eng, QUrl::fromLocalFile(SRCDIR "/data/enumerate.qml"));
+    QVERIFY(!component.isError());
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item != 0);
+    QStringList r = item->property("result").toString().split(":");
+    QCOMPARE(r[0],QLatin1String("val1=1Y"));
+    QCOMPARE(r[1],QLatin1String("val2=2Y"));
+    QCOMPARE(r[2],QLatin1String("val3=strY"));
+    QCOMPARE(r[3],QLatin1String("val4=falseN"));
+    QCOMPARE(r[4],QLatin1String("val5=trueY"));
+    delete item;
+}
+
+
+void tst_qdeclarativelistmodel::error_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("error");
@@ -532,7 +550,7 @@ void tst_QDeclarativeListModel::error_data()
         << "ListElement: cannot contain nested elements";
 }
 
-void tst_QDeclarativeListModel::error()
+void tst_qdeclarativelistmodel::error()
 {
     QFETCH(QString, qml);
     QFETCH(QString, error);
@@ -551,7 +569,7 @@ void tst_QDeclarativeListModel::error()
     }
 }
 
-void tst_QDeclarativeListModel::set()
+void tst_qdeclarativelistmodel::set()
 {
     QDeclarativeEngine engine;
     QDeclarativeListModel model;
@@ -575,6 +593,6 @@ void tst_QDeclarativeListModel::set()
 }
 
 
-QTEST_MAIN(tst_QDeclarativeListModel)
+QTEST_MAIN(tst_qdeclarativelistmodel)
 
 #include "tst_qdeclarativelistmodel.moc"

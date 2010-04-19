@@ -71,7 +71,6 @@ private:
     QString m_brand;
     qreal m_price;
 };
-QML_DECLARE_TYPE(ShoeDescription);
 
 class Person : public QObject {
 Q_OBJECT
@@ -88,20 +87,17 @@ private:
     QString m_name;
     ShoeDescription m_shoe;
 };
-QML_DECLARE_TYPE(Person);
 
 class Boy : public Person {
 Q_OBJECT
 public:
     Boy(QObject * parent = 0);
 };
-QML_DECLARE_TYPE(Boy);
 
 class Girl : public Person {
 Q_OBJECT
 public:
     Girl(QObject * parent = 0);
 };
-QML_DECLARE_TYPE(Girl);
 
 #endif // PERSON_H

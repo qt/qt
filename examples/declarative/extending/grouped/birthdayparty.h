@@ -65,6 +65,6 @@ private:
     Person *m_celebrant;
     QList<Person *> m_guests;
 };
-QML_DECLARE_TYPE(BirthdayParty);
+
 
 #endif // BIRTHDAYPARTY_H

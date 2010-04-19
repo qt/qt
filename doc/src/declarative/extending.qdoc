@@ -305,7 +305,6 @@ public:
 };
 
 QML_DECLARE_TYPEINFO(MyType, QML_HAS_ATTACHED_PROPERTIES)
-QML_DECLARE_TYPE(MyType)
 \endcode
 Return an attachment object, of type \a AttachedPropertiesType, for the
 attachee \a object instance.  It is customary, though not strictly required, for

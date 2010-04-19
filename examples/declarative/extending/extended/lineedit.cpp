@@ -102,4 +102,4 @@ void LineEditExtension::setBottomMargin(int m)
     m_lineedit->setTextMargins(l, t, r, m);
 }
 
-QML_DECLARE_TYPE(QLineEdit);
+

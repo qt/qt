@@ -60,7 +60,7 @@ private:
     QString m_name;
     int m_shoeSize;
 };
-QML_DECLARE_TYPE(Person);
+
 
 // ![0]
 class Boy : public Person {
@@ -68,14 +68,14 @@ Q_OBJECT
 public:
     Boy(QObject * parent = 0);
 };
-QML_DECLARE_TYPE(Boy);
+
 
 class Girl : public Person {
 Q_OBJECT
 public:
     Girl(QObject * parent = 0);
 };
-QML_DECLARE_TYPE(Girl);
+
 // ![0]
 
 #endif // PERSON_H

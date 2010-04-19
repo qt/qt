@@ -463,12 +463,21 @@ QStringList QDeclarativeObjectScriptClass::propertyNames(Object *object)
         cache = ddata->propertyCache;
     if (!cache) {
         cache = enginePrivate->cache(obj);
-        if (cache && ddata) { cache->addref(); ddata->propertyCache = cache; }
+        if (cache) {
+            if (ddata) { cache->addref(); ddata->propertyCache = cache; }
+        } else {
+            // Not cachable - fall back to QMetaObject (eg. dynamic meta object)
+            // XXX QDeclarativeOpenMetaObject has a cache, so this is suboptimal.
+            // XXX This is a workaround for QTBUG-9420.
+            const QMetaObject *mo = obj->metaObject();
+            QStringList r;
+            int pc = mo->propertyCount();
+            int po = mo->propertyOffset();
+            for (int i=po; i<pc; ++i)
+                r += QString::fromUtf8(mo->property(i).name());
+            return r;
+        }
     }
-
-    if (!cache)
-        return QStringList();
-
     return cache->propertyNames();
 }
 

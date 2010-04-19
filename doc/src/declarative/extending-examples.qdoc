@@ -57,11 +57,6 @@ element, the C++ class can be named differently, or appear in a namespace.
 
 \snippet examples/declarative/extending/adding/person.h 0
 
-Following the class declaration, we include the QML_DECLARE_TYPE() macro.  This
-is necessary to declare the type to QML.  It also includes the logic necessary
-to expose the class to Qt's meta system - that is, it includes the 
-Q_DECLARE_METATYPE() functionality.
-
 \section1 Define the Person class
 
 \snippet examples/declarative/extending/adding/person.cpp 0
