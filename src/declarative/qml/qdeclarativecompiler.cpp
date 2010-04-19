@@ -1218,7 +1218,14 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
 
 bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclarativeParser::Object *script)
 {
-    qWarning().nospace() << qPrintable(output->url.toString()) << ":" << obj->location.start.line << ":" << obj->location.start.column << ": Script blocks have been deprecated.  Support will be removed entirely shortly.";
+    {
+        QDeclarativeError warning;
+        warning.setUrl(output->url);
+        warning.setLine(obj->location.start.line);
+        warning.setColumn(obj->location.start.column);
+        warning.setDescription(tr("Script blocks have been deprecated.  Support will be removed entirely shortly."));
+        qWarning() << warning.toString();
+    }
 
     Object::ScriptBlock scriptBlock;
 

@@ -183,58 +183,58 @@ void tst_QDeclarativeListModel::dynamic_data()
 
     QTest::newRow("count") << "count" << 0 << "";
 
-    QTest::newRow("get1") << "{get(0)}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
-    QTest::newRow("get2") << "{get(-1)}" << 0 << "QML ListModel (unknown location) get: index -1 out of range";
+    QTest::newRow("get1") << "{get(0)}" << 0 << "<Unknown File>: QML ListModel: get: index 0 out of range";
+    QTest::newRow("get2") << "{get(-1)}" << 0 << "<Unknown File>: QML ListModel: get: index -1 out of range";
 
     QTest::newRow("append1") << "{append({'foo':123});count}" << 1 << "";
     QTest::newRow("append2") << "{append({'foo':123,'bar':456});count}" << 1 << "";
     QTest::newRow("append3a") << "{append({'foo':123});append({'foo':456});get(0).foo}" << 123 << "";
     QTest::newRow("append3b") << "{append({'foo':123});append({'foo':456});get(1).foo}" << 456 << "";
-    QTest::newRow("append4a") << "{append(123)}" << 0 << "QML ListModel (unknown location) append: value is not an object";
-    QTest::newRow("append4b") << "{append([1,2,3])}" << 0 << "QML ListModel (unknown location) append: value is not an object";
+    QTest::newRow("append4a") << "{append(123)}" << 0 << "<Unknown File>: QML ListModel: append: value is not an object";
+    QTest::newRow("append4b") << "{append([1,2,3])}" << 0 << "<Unknown File>: QML ListModel: append: value is not an object";
 
     QTest::newRow("clear1") << "{append({'foo':456});clear();count}" << 0 << "";
     QTest::newRow("clear2") << "{append({'foo':123});append({'foo':456});clear();count}" << 0 << "";
-    QTest::newRow("clear3") << "{append({'foo':123});clear();get(0).foo}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
+    QTest::newRow("clear3") << "{append({'foo':123});clear();get(0).foo}" << 0 << "<Unknown File>: QML ListModel: get: index 0 out of range";
 
     QTest::newRow("remove1") << "{append({'foo':123});remove(0);count}" << 0 << "";
     QTest::newRow("remove2a") << "{append({'foo':123});append({'foo':456});remove(0);count}" << 1 << "";
     QTest::newRow("remove2b") << "{append({'foo':123});append({'foo':456});remove(0);get(0).foo}" << 456 << "";
     QTest::newRow("remove2c") << "{append({'foo':123});append({'foo':456});remove(1);get(0).foo}" << 123 << "";
-    QTest::newRow("remove3") << "{append({'foo':123});remove(0);get(0).foo}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
-    QTest::newRow("remove3a") << "{append({'foo':123});remove(-1);count}" << 1 << "QML ListModel (unknown location) remove: index -1 out of range";
-    QTest::newRow("remove4a") << "{remove(0)}" << 0 << "QML ListModel (unknown location) remove: index 0 out of range";
-    QTest::newRow("remove4b") << "{append({'foo':123});remove(0);remove(0);count}" << 0 << "QML ListModel (unknown location) remove: index 0 out of range";
-    QTest::newRow("remove4c") << "{append({'foo':123});remove(1);count}" << 1 << "QML ListModel (unknown location) remove: index 1 out of range";
+    QTest::newRow("remove3") << "{append({'foo':123});remove(0);get(0).foo}" << 0 << "<Unknown File>: QML ListModel: get: index 0 out of range";
+    QTest::newRow("remove3a") << "{append({'foo':123});remove(-1);count}" << 1 << "<Unknown File>: QML ListModel: remove: index -1 out of range";
+    QTest::newRow("remove4a") << "{remove(0)}" << 0 << "<Unknown File>: QML ListModel: remove: index 0 out of range";
+    QTest::newRow("remove4b") << "{append({'foo':123});remove(0);remove(0);count}" << 0 << "<Unknown File>: QML ListModel: remove: index 0 out of range";
+    QTest::newRow("remove4c") << "{append({'foo':123});remove(1);count}" << 1 << "<Unknown File>: QML ListModel: remove: index 1 out of range";
 
     QTest::newRow("insert1") << "{insert(0,{'foo':123});count}" << 1 << "";
-    QTest::newRow("insert2") << "{insert(1,{'foo':123});count}" << 0 << "QML ListModel (unknown location) insert: index 1 out of range";
+    QTest::newRow("insert2") << "{insert(1,{'foo':123});count}" << 0 << "<Unknown File>: QML ListModel: insert: index 1 out of range";
     QTest::newRow("insert3a") << "{append({'foo':123});insert(1,{'foo':456});count}" << 2 << "";
     QTest::newRow("insert3b") << "{append({'foo':123});insert(1,{'foo':456});get(0).foo}" << 123 << "";
     QTest::newRow("insert3c") << "{append({'foo':123});insert(1,{'foo':456});get(1).foo}" << 456 << "";
     QTest::newRow("insert3d") << "{append({'foo':123});insert(0,{'foo':456});get(0).foo}" << 456 << "";
     QTest::newRow("insert3e") << "{append({'foo':123});insert(0,{'foo':456});get(1).foo}" << 123 << "";
-    QTest::newRow("insert4") << "{append({'foo':123});insert(-1,{'foo':456});count}" << 1 << "QML ListModel (unknown location) insert: index -1 out of range";
-    QTest::newRow("insert5a") << "{insert(0,123)}" << 0 << "QML ListModel (unknown location) insert: value is not an object";
-    QTest::newRow("insert5b") << "{insert(0,[1,2,3])}" << 0 << "QML ListModel (unknown location) insert: value is not an object";
+    QTest::newRow("insert4") << "{append({'foo':123});insert(-1,{'foo':456});count}" << 1 << "<Unknown File>: QML ListModel: insert: index -1 out of range";
+    QTest::newRow("insert5a") << "{insert(0,123)}" << 0 << "<Unknown File>: QML ListModel: insert: value is not an object";
+    QTest::newRow("insert5b") << "{insert(0,[1,2,3])}" << 0 << "<Unknown File>: QML ListModel: insert: value is not an object";
 
     QTest::newRow("set1") << "{append({'foo':123});set(0,{'foo':456});count}" << 1 << "";
     QTest::newRow("set2") << "{append({'foo':123});set(0,{'foo':456});get(0).foo}" << 456 << "";
     QTest::newRow("set3a") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).foo}" << 999 << "";
     QTest::newRow("set3b") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).bar}" << 456 << "";
-    QTest::newRow("set4a") << "{set(0,{'foo':456})}" << 0 << "QML ListModel (unknown location) set: index 0 out of range";
-    QTest::newRow("set4c") << "{set(-1,{'foo':456})}" << 0 << "QML ListModel (unknown location) set: index -1 out of range";
-    QTest::newRow("set5a") << "{append({'foo':123,'bar':456});set(0,123);count}" << 1 << "QML ListModel (unknown location) set: value is not an object";
-    QTest::newRow("set5b") << "{append({'foo':123,'bar':456});set(0,[1,2,3]);count}" << 1 << "QML ListModel (unknown location) set: value is not an object";
+    QTest::newRow("set4a") << "{set(0,{'foo':456})}" << 0 << "<Unknown File>: QML ListModel: set: index 0 out of range";
+    QTest::newRow("set4c") << "{set(-1,{'foo':456})}" << 0 << "<Unknown File>: QML ListModel: set: index -1 out of range";
+    QTest::newRow("set5a") << "{append({'foo':123,'bar':456});set(0,123);count}" << 1 << "<Unknown File>: QML ListModel: set: value is not an object";
+    QTest::newRow("set5b") << "{append({'foo':123,'bar':456});set(0,[1,2,3]);count}" << 1 << "<Unknown File>: QML ListModel: set: value is not an object";
     QTest::newRow("set6") << "{append({'foo':123});set(1,{'foo':456});count}" << 2 << "";
 
     QTest::newRow("setprop1") << "{append({'foo':123});setProperty(0,'foo',456);count}" << 1 << "";
     QTest::newRow("setprop2") << "{append({'foo':123});setProperty(0,'foo',456);get(0).foo}" << 456 << "";
     QTest::newRow("setprop3a") << "{append({'foo':123,'bar':456});setProperty(0,'foo',999);get(0).foo}" << 999 << "";
     QTest::newRow("setprop3b") << "{append({'foo':123,'bar':456});setProperty(0,'foo',999);get(0).bar}" << 456 << "";
-    QTest::newRow("setprop4a") << "{setProperty(0,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index 0 out of range";
-    QTest::newRow("setprop4b") << "{setProperty(-1,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index -1 out of range";
-    QTest::newRow("setprop4c") << "{append({'foo':123,'bar':456});setProperty(1,'foo',456);count}" << 1 << "QML ListModel (unknown location) set: index 1 out of range";
+    QTest::newRow("setprop4a") << "{setProperty(0,'foo',456)}" << 0 << "<Unknown File>: QML ListModel: set: index 0 out of range";
+    QTest::newRow("setprop4b") << "{setProperty(-1,'foo',456)}" << 0 << "<Unknown File>: QML ListModel: set: index -1 out of range";
+    QTest::newRow("setprop4c") << "{append({'foo':123,'bar':456});setProperty(1,'foo',456);count}" << 1 << "<Unknown File>: QML ListModel: set: index 1 out of range";
     QTest::newRow("setprop5") << "{append({'foo':123,'bar':456});append({'foo':111});setProperty(1,'bar',222);get(1).bar}" << 222 << "";
 
     QTest::newRow("move1a") << "{append({'foo':123});append({'foo':456});move(0,1,1);count}" << 2 << "";
@@ -246,10 +246,10 @@ void tst_QDeclarativeListModel::dynamic_data()
     QTest::newRow("move2b") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,1,2);get(0).foo}" << 789 << "";
     QTest::newRow("move2c") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,1,2);get(1).foo}" << 123 << "";
     QTest::newRow("move2d") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,1,2);get(2).foo}" << 456 << "";
-    QTest::newRow("move3a") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,0,3);count}" << 3 << "QML ListModel (unknown location) move: out of range";
-    QTest::newRow("move3b") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,-1,1);count}" << 3 << "QML ListModel (unknown location) move: out of range";
-    QTest::newRow("move3c") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,0,-1);count}" << 3 << "QML ListModel (unknown location) move: out of range";
-    QTest::newRow("move3d") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,3,1);count}" << 3 << "QML ListModel (unknown location) move: out of range";
+    QTest::newRow("move3a") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,0,3);count}" << 3 << "<Unknown File>: QML ListModel: move: out of range";
+    QTest::newRow("move3b") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,-1,1);count}" << 3 << "<Unknown File>: QML ListModel: move: out of range";
+    QTest::newRow("move3c") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,0,-1);count}" << 3 << "<Unknown File>: QML ListModel: move: out of range";
+    QTest::newRow("move3d") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,3,1);count}" << 3 << "<Unknown File>: QML ListModel: move: out of range";
 
     // Nested models
 
@@ -323,7 +323,7 @@ void tst_QDeclarativeListModel::dynamic_worker()
         // execute a set of commands on the worker list model, then check the
         // changes are reflected in the list model in the main thread
         if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
-            QTest::ignoreMessage(QtWarningMsg, "QML ListModel (unknown location) Cannot add nested list values when modifying or after modification from a worker script");
+            QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML ListModel: Cannot add nested list values when modifying or after modification from a worker script");
 
         QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", 
                 Q_ARG(QVariant, operations.mid(0, operations.length()-1))));
@@ -359,7 +359,7 @@ void tst_QDeclarativeListModel::convertNestedToFlat_fail()
     model.append(nestedListValue(&s_eng));
     QCOMPARE(model.count(), 2);
 
-    QTest::ignoreMessage(QtWarningMsg, "QML ListModel (unknown location) List contains nested list values and cannot be used from a worker script");
+    QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML ListModel: List contains nested list values and cannot be used from a worker script");
     QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", Q_ARG(QVariant, script)));
     waitForWorker(item);
 
@@ -411,7 +411,7 @@ void tst_QDeclarativeListModel::convertNestedToFlat_ok()
     QCOMPARE(model.count(), count+1);
 
     QScriptValue nested = nestedListValue(&s_eng);
-    const char *warning = "QML ListModel (unknown location) Cannot add nested list values when modifying or after modification from a worker script";
+    const char *warning = "<Unknown File>: QML ListModel: Cannot add nested list values when modifying or after modification from a worker script";
 
     QTest::ignoreMessage(QtWarningMsg, warning);
     model.append(nested);

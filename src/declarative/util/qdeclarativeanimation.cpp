@@ -185,7 +185,7 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
         return;
 
     if (d->group || d->disableUserControl) {
-        qWarning("QDeclarativeAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
+        qmlInfo(this) << "setRunning() cannot be used on non-root animation nodes.";
         return;
     }
 
@@ -245,7 +245,7 @@ void QDeclarativeAbstractAnimation::setPaused(bool p)
         return;
 
     if (d->group || d->disableUserControl) {
-        qWarning("QDeclarativeAbstractAnimation: setPaused() cannot be used on non-root animation nodes");
+        qmlInfo(this) << "setPaused() cannot be used on non-root animation nodes.";
         return;
     }
 
@@ -781,8 +781,8 @@ void QDeclarativeScriptActionPrivate::execute()
         if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
             expr.setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
         expr.value();
-        if (expr.hasError())
-            qWarning() << expr.error();
+        if (expr.hasError()) 
+            qmlInfo(q) << expr.error();
     }
 }
 

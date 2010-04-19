@@ -277,7 +277,7 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
 
     if (component) {
         if (!component->errors().isEmpty()) {
-            qWarning() << component->errors();
+            QDeclarativeEnginePrivate::warning(qmlEngine(q), component->errors());
             emit q->sourceChanged();
             emit q->statusChanged();
             emit q->progressChanged();
@@ -312,7 +312,7 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
             }
         } else {
             if (!component->errors().isEmpty())
-                qWarning() << component->errors();
+                QDeclarativeEnginePrivate::warning(qmlEngine(q), component->errors());
             delete obj;
             delete ctxt;
             source = QUrl();

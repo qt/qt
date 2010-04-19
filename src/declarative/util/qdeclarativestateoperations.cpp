@@ -577,7 +577,7 @@ void QDeclarativeStateChangeScript::execute()
             expr.setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
         expr.value();
         if (expr.hasError())
-            qWarning() << expr.error();
+            qmlInfo(this, expr.error());
     }
 }
 

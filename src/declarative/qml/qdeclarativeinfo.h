@@ -43,6 +43,7 @@
 #define QDECLARATIVEINFO_H
 
 #include <QtCore/qdebug.h>
+#include <QtDeclarative/qdeclarativeerror.h>
 
 QT_BEGIN_HEADER
 
@@ -50,10 +51,13 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QDeclarativeInfoPrivate;
 class Q_DECLARATIVE_EXPORT QDeclarativeInfo : public QDebug
 {
 public:
     QDeclarativeInfo(const QObject *);
+    QDeclarativeInfo(const QObject *, const QDeclarativeError &);
+    QDeclarativeInfo(const QObject *, const QList<QDeclarativeError> &);
     ~QDeclarativeInfo();
 
     inline QDeclarativeInfo &operator<<(QChar t) { QDebug::operator<<(t); return *this; }
@@ -78,11 +82,24 @@ public:
     inline QDeclarativeInfo &operator<<(const void * t) { QDebug::operator<<(t); return *this; }
     inline QDeclarativeInfo &operator<<(QTextStreamFunction f) { QDebug::operator<<(f); return *this; }
     inline QDeclarativeInfo &operator<<(QTextStreamManipulator m) { QDebug::operator<<(m); return *this; }
+
+private:
+    QDeclarativeInfoPrivate *d;
 };
 
 Q_DECLARATIVE_EXPORT inline QDeclarativeInfo qmlInfo(const QObject *me)
 {
     return QDeclarativeInfo(me);
+}
+
+Q_DECLARATIVE_EXPORT inline QDeclarativeInfo qmlInfo(const QObject *me, const QDeclarativeError &error)
+{
+    return QDeclarativeInfo(me, error);
+}
+
+Q_DECLARATIVE_EXPORT inline QDeclarativeInfo qmlInfo(const QObject *me, const QList<QDeclarativeError> &errors)
+{
+    return QDeclarativeInfo(me, errors);
 }
 
 QT_END_NAMESPACE

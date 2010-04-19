@@ -466,6 +466,9 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         d->moved = true;
     }
     QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
+    emit mousePosChanged(&me);
+    me.setX(d->lastPos.x());
+    me.setY(d->lastPos.y());
     emit positionChanged(&me);
 }
 
@@ -518,6 +521,9 @@ void QDeclarativeMouseArea::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     } else {
         d->lastPos = event->pos();
         QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, d->lastButtons, d->lastModifiers, false, d->longPress);
+        emit mousePosChanged(&me);
+        me.setX(d->lastPos.x());
+        me.setY(d->lastPos.y());
         emit positionChanged(&me);
     }
 }
@@ -559,6 +565,18 @@ void QDeclarativeMouseArea::timerEvent(QTimerEvent *event)
             emit pressAndHold(&me);
         }
     }
+}
+
+void QDeclarativeMouseArea::geometryChanged(const QRectF &newGeometry,
+                                            const QRectF &oldGeometry)
+{
+    Q_D(QDeclarativeMouseArea);
+    QDeclarativeItem::geometryChanged(newGeometry, oldGeometry);
+
+    if (d->lastScenePos.isNull)
+        d->lastScenePos = mapToScene(d->lastPos);
+    else if (newGeometry.x() != oldGeometry.x() || newGeometry.y() != oldGeometry.y())
+        d->lastPos = mapFromScene(d->lastScenePos);
 }
 
 /*!
@@ -648,9 +666,13 @@ bool QDeclarativeMouseArea::setPressed(bool p)
         QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, isclick, d->longPress);
         if (d->pressed) {
             emit pressed(&me);
-            emit positionChanged(&me);
+            me.setX(d->lastPos.x());
+            me.setY(d->lastPos.y());
+            emit mousePosChanged(&me);
         } else {
             emit released(&me);
+            me.setX(d->lastPos.x());
+            me.setY(d->lastPos.y());
             if (isclick && !d->longPress)
                 emit clicked(&me);
         }
