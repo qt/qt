@@ -172,6 +172,8 @@ void QDeclarativeGradient::doUpdate()
     \image declarative-rect.png
 */
 
+int QDeclarativeRectanglePrivate::doUpdateSlotIdx = -1;
+
 /*!
     \internal
     \class QDeclarativeRectangle
@@ -252,11 +254,16 @@ void QDeclarativeRectangle::setGradient(QDeclarativeGradient *gradient)
     Q_D(QDeclarativeRectangle);
     if (d->gradient == gradient)
         return;
+    static int updatedSignalIdx = -1;
+    if (updatedSignalIdx < 0)
+        updatedSignalIdx = QDeclarativeGradient::staticMetaObject.indexOfSignal("updated()");
+    if (d->doUpdateSlotIdx < 0)
+        d->doUpdateSlotIdx = QDeclarativeRectangle::staticMetaObject.indexOfSlot("doUpdate()");
     if (d->gradient)
-        disconnect(d->gradient, SIGNAL(updated()), this, SLOT(doUpdate()));
+        QMetaObject::disconnect(d->gradient, updatedSignalIdx, this, d->doUpdateSlotIdx);
     d->gradient = gradient;
     if (d->gradient)
-        connect(d->gradient, SIGNAL(updated()), this, SLOT(doUpdate()));
+        QMetaObject::connect(d->gradient, updatedSignalIdx, this, d->doUpdateSlotIdx);
     update();
 }
 
@@ -350,7 +357,9 @@ void QDeclarativeRectangle::generateBorderedRect()
     Q_D(QDeclarativeRectangle);
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
-        d->rectImage = QPixmap(pw*2 + 3, pw*2 + 3);
+        // Adding 5 here makes qDrawBorderPixmap() paint correctly with smooth: true
+        // Ideally qDrawBorderPixmap() would be fixed - QTBUG-7999
+        d->rectImage = QPixmap(pw*2 + 5, pw*2 + 5);
         d->rectImage.fill(Qt::transparent);
         QPainter p(&(d->rectImage));
         p.setRenderHint(QPainter::Antialiasing);

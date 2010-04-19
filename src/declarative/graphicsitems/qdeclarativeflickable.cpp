@@ -248,18 +248,12 @@ void QDeclarativeFlickablePrivate::fixupX_callback(void *data)
 void QDeclarativeFlickablePrivate::fixupX()
 {
     Q_Q(QDeclarativeFlickable);
-    if (!q->xflick() || hData.move.timeLine())
-        return;
-
     fixup(hData, q->minXExtent(), q->maxXExtent());
 }
 
 void QDeclarativeFlickablePrivate::fixupY()
 {
     Q_Q(QDeclarativeFlickable);
-    if (!q->yflick() || vData.move.timeLine())
-        return;
-
     fixup(vData, q->minYExtent(), q->maxYExtent());
 }
 
@@ -1059,8 +1053,12 @@ void QDeclarativeFlickable::setContentWidth(qreal w)
     else
         d->viewport->setWidth(w);
     // Make sure that we're entirely in view.
-    if (!d->pressed)
+    if (!d->pressed) {
+        int oldDuration = d->fixupDuration;
+        d->fixupDuration = 0;
         d->fixupX();
+        d->fixupDuration = oldDuration;
+    }
     emit contentWidthChanged();
     d->updateBeginningEnd();
 }
@@ -1082,8 +1080,12 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
     else
         d->viewport->setHeight(h);
     // Make sure that we're entirely in view.
-    if (!d->pressed)
+    if (!d->pressed) {
+        int oldDuration = d->fixupDuration;
+        d->fixupDuration = 0;
         d->fixupY();
+        d->fixupDuration = oldDuration;
+    }
     emit contentHeightChanged();
     d->updateBeginningEnd();
 }
