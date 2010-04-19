@@ -1,9 +1,4 @@
 
-
-
-
-
-
 Class QSysInfo
    size=1 align=1
    base size=0 base align=1
@@ -23,21 +18,6 @@ Class qIsNull(float)::U
    size=4 align=4
    base size=4 base align=4
 qIsNull(float)::U (0xb6e557bc) 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Class QFlag
    size=4 align=4
@@ -74,7 +54,6 @@ Class QChar
    size=2 align=2
    base size=2 base align=2
 QChar (0xb69484ec) 0
-
 
 Vtable for std::exception
 std::exception::_ZTVSt9exception: 5u entries
@@ -137,19 +116,6 @@ Class QListData
    base size=4 base align=4
 QListData (0xb69d6294) 0
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 Class QInternal
    size=1 align=1
    base size=0 base align=1
@@ -165,7 +131,6 @@ Class QGenericReturnArgument
    base size=8 base align=4
 QGenericReturnArgument (0xb6768140) 0
   QGenericArgument (0xb68ff8e8) 0
-
 
 Class QMetaObject
    size=16 align=4
@@ -197,7 +162,6 @@ Class QByteRef
    base size=8 base align=4
 QByteRef (0xb67f20b4) 0
 
-
 Class QString::Null
    size=1 align=1
    base size=0 base align=1
@@ -212,7 +176,6 @@ Class QString
    size=4 align=4
    base size=4 base align=4
 QString (0xb6826924) 0
-
 
 Class QLatin1String
    size=4 align=4
@@ -230,13 +193,10 @@ Class QConstString
 QConstString (0xb65cf840) 0
   QString (0xb65f1924) 0
 
-
 Class QStringRef
    size=12 align=4
    base size=12 base align=4
 QStringRef (0xb65f1d5c) 0
-
-
 
 Vtable for QObjectData
 QObjectData::_ZTV11QObjectData: 4u entries
@@ -328,7 +288,6 @@ QIODevice (0xb645bf80) 0
   QObject (0xb64916cc) 0
       primary-for QIODevice (0xb645bf80)
 
-
 Vtable for QDataStream
 QDataStream::_ZTV11QDataStream: 4u entries
 0     (int (*)(...))0
@@ -356,7 +315,6 @@ Class QHashDummyValue
    size=1 align=1
    base size=0 base align=1
 QHashDummyValue (0xb6526654) 0 empty
-
 
 Class QMapData::Node
    size=8 align=4
@@ -388,14 +346,10 @@ Class QLocale::Data
    base size=4 base align=2
 QLocale::Data (0xb623712c) 0
 
-
 Class QLocale
    size=4 align=4
    base size=4 base align=4
 QLocale (0xb62370f0) 0
-
-
-
 
 Class QTextCodec::ConverterState
    size=28 align=4
@@ -420,8 +374,6 @@ Class QTextCodec
 QTextCodec (0xb6237744) 0 nearly-empty
     vptr=((& QTextCodec::_ZTV10QTextCodec) + 8u)
 
-
-
 Class QTextEncoder
    size=32 align=4
    base size=32 base align=4
@@ -432,11 +384,6 @@ Class QTextDecoder
    base size=32 base align=4
 QTextDecoder (0xb62c05dc) 0
 
-
-
-
-
-
 Class _IO_marker
    size=12 align=4
    base size=12 base align=4
@@ -446,7 +393,6 @@ Class _IO_FILE
    size=148 align=4
    base size=148 base align=4
 _IO_FILE (0xb62c099c) 0
-
 
 Vtable for QTextStream
 QTextStream::_ZTV11QTextStream: 4u entries
@@ -460,7 +406,6 @@ Class QTextStream
    base size=8 base align=4
 QTextStream (0xb62c0a14) 0
     vptr=((& QTextStream::_ZTV11QTextStream) + 8u)
-
 
 Class QTextStreamManipulator
    size=24 align=4
@@ -497,16 +442,10 @@ QTextOStream (0xb6149780) 0
   QTextStream (0xb61527bc) 0
       primary-for QTextOStream (0xb6149780)
 
-
-
 Class wait
    size=4 align=4
    base size=4 base align=4
 wait (0xb6152e4c) 0
-
-
-
-
 
 Class timespec
    size=8 align=4
@@ -518,24 +457,10 @@ Class timeval
    base size=8 base align=4
 timeval (0xb617503c) 0
 
-
-
 Class __pthread_internal_slist
    size=4 align=4
    base size=4 base align=4
 __pthread_internal_slist (0xb61750f0) 0
-
-
-
-
-
-
-
-
-
-
-
-
 
 Class random_data
    size=28 align=4
@@ -572,60 +497,6 @@ Class QMetaType
    base size=0 base align=1
 QMetaType (0xb608b528) 0 empty
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Class QVariant::PrivateShared
    size=8 align=4
    base size=8 base align=4
@@ -651,38 +522,16 @@ Class QVariant
    base size=12 base align=4
 QVariant (0xb60d6f3c) 0
 
-
-
-
-
-
-
 Class QVariantComparisonHelper
    size=4 align=4
    base size=4 base align=4
 QVariantComparisonHelper (0xb5f72618) 0
-
-
-
-
 
 Class Phonon::ObjectDescriptionData
    size=8 align=4
    base size=8 base align=4
 Phonon::ObjectDescriptionData (0xb5f75dc0) 0
   QSharedData (0xb5f72ac8) 0
-
-
-
-
-
-
-
-
-
-
-
-
 
 Class Phonon::Path
    size=4 align=4
@@ -716,10 +565,6 @@ Phonon::AbstractVideoOutput (0xb5fcc180) 0
     vptr=((& Phonon::AbstractVideoOutput::_ZTVN6Phonon19AbstractVideoOutputE) + 8u)
   Phonon::MediaNode (0xb5fbe4ec) 0
       primary-for Phonon::AbstractVideoOutput (0xb5fcc180)
-
-
-
-
 
 Class Phonon::MediaSource
    size=4 align=4
@@ -762,36 +607,30 @@ Class QSize
    base size=8 base align=4
 QSize (0xb600c294) 0
 
-
 Class QSizeF
    size=16 align=4
    base size=16 base align=4
 QSizeF (0xb5e27d20) 0
-
 
 Class QPoint
    size=8 align=4
    base size=8 base align=4
 QPoint (0xb5e54924) 0
 
-
 Class QPointF
    size=16 align=4
    base size=16 base align=4
 QPointF (0xb5e6eec4) 0
-
 
 Class QRect
    size=16 align=4
    base size=16 base align=4
 QRect (0xb5e965dc) 0
 
-
 Class QRectF
    size=32 align=4
    base size=32 base align=4
 QRectF (0xb5ef821c) 0
-
 
 Vtable for QPaintDevice
 QPaintDevice::_ZTV12QPaintDevice: 7u entries
@@ -814,15 +653,10 @@ Class QRegExp
    base size=4 base align=4
 QRegExp (0xb5d4ea8c) 0
 
-
-
-
 Class QStringMatcher
    size=1036 align=4
    base size=1036 base align=4
 QStringMatcher (0xb5d72438) 0
-
-
 
 Class QStringList
    size=4 align=4
@@ -830,26 +664,16 @@ Class QStringList
 QStringList (0xb5d5ba40) 0
   QList<QString> (0xb5d725a0) 0
 
-
-
-
-
-
-
 Class QColor
    size=16 align=4
    base size=14 base align=4
 QColor (0xb5da5b04) 0
-
-
 
 Class QPolygon
    size=4 align=4
    base size=4 base align=4
 QPolygon (0xb5df61c0) 0
   QVector<QPoint> (0xb5df7168) 0
-
-
 
 Class QPolygonF
    size=4 align=4
@@ -872,18 +696,15 @@ Class QLine
    base size=16 base align=4
 QLine (0xb5c39780) 0
 
-
 Class QLineF
    size=32 align=4
    base size=32 base align=4
 QLineF (0xb5c6f4b0) 0
 
-
 Class QMatrix
    size=48 align=4
    base size=48 base align=4
 QMatrix (0xb5c9f5a0) 0
-
 
 Class QPainterPath::Element
    size=20 align=4
@@ -895,13 +716,10 @@ Class QPainterPath
    base size=4 base align=4
 QPainterPath (0xb5c9fce4) 0
 
-
-
 Class QPainterPathPrivate
    size=8 align=4
    base size=8 base align=4
 QPainterPathPrivate (0xb5cea1a4) 0
-
 
 Class QPainterPathStroker
    size=4 align=4
@@ -912,7 +730,6 @@ Class QTransform
    size=80 align=4
    base size=80 base align=4
 QTransform (0xb5b1a168) 0
-
 
 Class QImageTextKeyLang
    size=8 align=4
@@ -937,7 +754,6 @@ QImage (0xb5b4cb40) 0
   QPaintDevice (0xb5b87168) 0
       primary-for QImage (0xb5b4cb40)
 
-
 Vtable for QPixmap
 QPixmap::_ZTV7QPixmap: 7u entries
 0     (int (*)(...))0
@@ -961,17 +777,10 @@ Class QBrush
    base size=4 base align=4
 QBrush (0xb5bf0474) 0
 
-
 Class QBrushData
    size=104 align=4
    base size=104 base align=4
 QBrushData (0xb5bf06cc) 0
-
-
-
-
-
-
 
 Class QGradient
    size=56 align=4
@@ -1032,7 +841,6 @@ Class QSizePolicy
    base size=4 base align=4
 QSizePolicy (0xb5a77d5c) 0
 
-
 Class QCursor
    size=4 align=4
    base size=4 base align=4
@@ -1042,7 +850,6 @@ Class QKeySequence
    size=4 align=4
    base size=4 base align=4
 QKeySequence (0xb5af9c6c) 0
-
 
 Class QWidgetData
    size=64 align=4
@@ -1124,7 +931,6 @@ QWidget (0xb5948410) 0
       primary-for QWidget (0xb5948410)
   QPaintDevice (0xb5951000) 8
       vptr=((& QWidget::_ZTV7QWidget) + 232u)
-
 
 Vtable for Phonon::VideoPlayer
 Phonon::VideoPlayer::_ZTVN6Phonon11VideoPlayerE: 63u entries
@@ -1273,12 +1079,10 @@ Class QModelIndex
    base size=16 base align=4
 QModelIndex (0xb59f1c30) 0
 
-
 Class QPersistentModelIndex
    size=4 align=4
    base size=4 base align=4
 QPersistentModelIndex (0xb58380f0) 0
-
 
 Vtable for QAbstractItemModel
 QAbstractItemModel::_ZTV18QAbstractItemModel: 42u entries
@@ -1448,12 +1252,6 @@ Class Phonon::ObjectDescriptionModelData
    base size=4 base align=4
 Phonon::ObjectDescriptionModelData (0xb5885bb8) 0
 
-
-
-
-
-
-
 Vtable for Phonon::StreamInterface
 Phonon::StreamInterface::_ZTVN6Phonon15StreamInterfaceE: 8u entries
 0     (int (*)(...))0
@@ -1574,8 +1372,6 @@ Class Phonon::PlatformPlugin
 Phonon::PlatformPlugin (0xb58e1294) 0 nearly-empty
     vptr=((& Phonon::PlatformPlugin::_ZTVN6Phonon14PlatformPluginE) + 8u)
 
-
-
 Vtable for Phonon::MediaController
 Phonon::MediaController::_ZTVN6Phonon15MediaControllerE: 14u entries
 0     (int (*)(...))0
@@ -1600,7 +1396,6 @@ Phonon::MediaController (0xb58f82c0) 0
     vptr=((& Phonon::MediaController::_ZTVN6Phonon15MediaControllerE) + 8u)
   QObject (0xb58e17bc) 0
       primary-for Phonon::MediaController (0xb58f82c0)
-
 
 Vtable for Phonon::VolumeSlider
 Phonon::VolumeSlider::_ZTVN6Phonon12VolumeSliderE: 63u entries
@@ -1789,12 +1584,10 @@ Phonon::EffectWidget (0xb58f8b80) 0
     QPaintDevice (0xb58e1e4c) 8
         vptr=((& Phonon::EffectWidget::_ZTVN6Phonon12EffectWidgetE) + 232u)
 
-
 Class Phonon::EffectParameter
    size=4 align=4
    base size=4 base align=4
 Phonon::EffectParameter (0xb575c000) 0
-
 
 Vtable for Phonon::VolumeFaderInterface
 Phonon::VolumeFaderInterface::_ZTVN6Phonon20VolumeFaderInterfaceE: 9u entries
@@ -2135,41 +1928,4 @@ Class Phonon::MediaObjectInterface
    base size=4 base align=4
 Phonon::MediaObjectInterface (0xb57e50f0) 0 nearly-empty
     vptr=((& Phonon::MediaObjectInterface::_ZTVN6Phonon20MediaObjectInterfaceE) + 8u)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
