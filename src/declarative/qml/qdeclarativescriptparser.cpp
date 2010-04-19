@@ -516,7 +516,6 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         // { "time", Object::DynamicProperty::Time, "QTime" },
         // { "date", Object::DynamicProperty::Date, "QDate" },
         { "date", Object::DynamicProperty::DateTime, "QDateTime" },
-        { "var", Object::DynamicProperty::Variant, "QVariant" },
         { "variant", Object::DynamicProperty::Variant, "QVariant" }
     };
     const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) /
@@ -627,11 +626,6 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         property.name = name.toUtf8();
         property.location = location(node->firstSourceLocation(),
                                      node->lastSourceLocation());
-
-        if (memberType == QLatin1String("var")) 
-            qWarning().nospace() << qPrintable(_parser->_scriptFile) << ":" << property.location.start.line << ":" 
-                                 << property.location.start.column << ": var type has been replaced by variant.  "
-                                 << "Support will be removed entirely shortly.";
 
         if (node->expression) { // default value
             property.defaultValue = new Property;
