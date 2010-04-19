@@ -67,6 +67,7 @@ public:
 
     virtual bool handleForwardBackwardMouseButtons(QMouseEvent *e) = 0;
 
+    static QString DocPath;
     static QString AboutBlank;
     static QString LocalHelpFile;
     static QString PageNotFoundMessage;
