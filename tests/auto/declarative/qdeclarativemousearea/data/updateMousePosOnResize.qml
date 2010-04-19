@@ -29,7 +29,7 @@ Rectangle {
             anchors.fill = parent
         }
         onPositionChanged: { emitPositionChanged = true }
-        onMousePosChanged: {
+        onMousePositionChanged: {
             if (mouse.x != mouseX || mouse.y != mouseY)
                 mouseMatchesPos = false
             x2 = mouseX; y2 = mouseY

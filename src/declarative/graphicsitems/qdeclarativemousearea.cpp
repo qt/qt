@@ -466,7 +466,7 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         d->moved = true;
     }
     QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
-    emit mousePosChanged(&me);
+    emit mousePositionChanged(&me);
     me.setX(d->lastPos.x());
     me.setY(d->lastPos.y());
     emit positionChanged(&me);
@@ -521,7 +521,7 @@ void QDeclarativeMouseArea::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     } else {
         d->lastPos = event->pos();
         QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, d->lastButtons, d->lastModifiers, false, d->longPress);
-        emit mousePosChanged(&me);
+        emit mousePositionChanged(&me);
         me.setX(d->lastPos.x());
         me.setY(d->lastPos.y());
         emit positionChanged(&me);
@@ -668,7 +668,7 @@ bool QDeclarativeMouseArea::setPressed(bool p)
             emit pressed(&me);
             me.setX(d->lastPos.x());
             me.setY(d->lastPos.y());
-            emit mousePosChanged(&me);
+            emit mousePositionChanged(&me);
         } else {
             emit released(&me);
             me.setX(d->lastPos.x());
