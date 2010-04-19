@@ -43,6 +43,7 @@
 #define QDECLARATIVEINFO_H
 
 #include <QtCore/qdebug.h>
+#include <QtCore/qurl.h>
 #include <QtDeclarative/qdeclarativeerror.h>
 
 QT_BEGIN_HEADER
@@ -82,6 +83,7 @@ public:
     inline QDeclarativeInfo &operator<<(const void * t) { QDebug::operator<<(t); return *this; }
     inline QDeclarativeInfo &operator<<(QTextStreamFunction f) { QDebug::operator<<(f); return *this; }
     inline QDeclarativeInfo &operator<<(QTextStreamManipulator m) { QDebug::operator<<(m); return *this; }
+    inline QDeclarativeInfo &operator<<(const QUrl &t) { static_cast<QDebug &>(*this) << t; return *this; }
 
 private:
     QDeclarativeInfoPrivate *d;
