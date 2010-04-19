@@ -42,8 +42,8 @@
 #include <QtTest/QtTest>
 #include <QDebug>
 
-#include <QtMultimedia/private/qmediapluginloader_p.h>
-#include <QtMultimedia/qmediaserviceproviderplugin.h>
+#include <QtMediaServices/private/qmediapluginloader_p.h>
+#include <QtMediaServices/qmediaserviceproviderplugin.h>
 
 
 
