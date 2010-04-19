@@ -170,7 +170,6 @@ private:
 };
 
 QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)
-QML_DECLARE_TYPE(MyQmlObject);
 
 class MyQmlContainer : public QObject
 {
@@ -185,7 +184,6 @@ private:
     QList<MyQmlObject*> m_children;
 };
 
-QML_DECLARE_TYPE(MyQmlContainer);
 
 class MyExpression : public QDeclarativeExpression
 {
@@ -258,7 +256,6 @@ private:
     QObject *m_object;
     QObject *m_object2;
 };
-QML_DECLARE_TYPE(MyDeferredObject);
 
 class MyBaseExtendedObject : public QObject
 {
@@ -273,7 +270,6 @@ public:
 private:
     int m_value;
 };
-QML_DECLARE_TYPE(MyBaseExtendedObject);
 
 class MyExtendedObject : public MyBaseExtendedObject
 {
@@ -288,7 +284,6 @@ public:
 private:
     int m_value;
 };
-QML_DECLARE_TYPE(MyExtendedObject);
 
 class MyTypeObject : public QObject
 {
@@ -555,7 +550,6 @@ signals:
     void rectPropertyChanged();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(MyTypeObject::MyFlags)
-QML_DECLARE_TYPE(MyTypeObject);
 
 Q_DECLARE_METATYPE(QScriptValue);
 class MyInvokableObject : public QObject

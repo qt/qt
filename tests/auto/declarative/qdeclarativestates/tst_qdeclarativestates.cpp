@@ -68,8 +68,6 @@ private:
     int m_prop;
 };
 
-QML_DECLARE_TYPE(MyRect)
-
 
 class tst_qdeclarativestates : public QObject
 {

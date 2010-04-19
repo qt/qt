@@ -1132,8 +1132,6 @@ void tst_qdeclarativelanguage::testType(const QString& qml, const QString& type,
     }
 }
 
-QML_DECLARE_TYPE(TestType)
-QML_DECLARE_TYPE(TestType2)
 
 // Import tests (QT-558)
 

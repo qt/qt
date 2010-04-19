@@ -167,8 +167,9 @@ private:
     MyCustomVariantType m_custom;
     int m_propertyWithNotify;
 };
+QML_DECLARE_TYPE(MyQmlObject)
 QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)
-QML_DECLARE_TYPE(MyQmlObject);
+
 
 class MyGroupedObject : public QObject
 {
@@ -186,8 +187,6 @@ private:
     int m_value;
     QDeclarativeScriptString m_script;
 };
-
-QML_DECLARE_TYPE(MyGroupedObject);
 
 
 class MyTypeObject : public QObject
@@ -462,7 +461,7 @@ signals:
     void rectPropertyChanged();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(MyTypeObject::MyFlags)
-QML_DECLARE_TYPE(MyTypeObject);
+
 
 class MyContainer : public QObject
 {
@@ -482,8 +481,6 @@ public:
     QList<MyInterface *> m_interfaces;
 };
 
-QML_DECLARE_TYPE(MyContainer);
-
 
 class MyPropertyValueSource : public QObject, public QDeclarativePropertyValueSource
 {
@@ -499,7 +496,7 @@ public:
         prop = p;
     }
 };
-QML_DECLARE_TYPE(MyPropertyValueSource);
+
 
 class MyDotPropertyObject : public QObject
 {
@@ -540,7 +537,6 @@ private:
     bool m_ownRWObj;
 };
 
-QML_DECLARE_TYPE(MyDotPropertyObject);
 
 namespace MyNamespace {
     class MyNamespacedType : public QObject
@@ -559,8 +555,6 @@ namespace MyNamespace {
         QList<MyNamespacedType *> m_list;
     };
 }
-QML_DECLARE_TYPE(MyNamespace::MyNamespacedType);
-QML_DECLARE_TYPE(MyNamespace::MySecondNamespacedType);
 
 class MyCustomParserType : public QObject
 {
@@ -573,8 +567,6 @@ public:
     QByteArray compile(const QList<QDeclarativeCustomParserProperty> &) { return QByteArray(); }
     void setCustomData(QObject *, const QByteArray &) {}
 };
-
-QML_DECLARE_TYPE(MyCustomParserType);
 
 void registerTypes();
 
