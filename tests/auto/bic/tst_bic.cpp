@@ -119,6 +119,7 @@ tst_Bic::tst_Bic()
     bic.addBlacklistedClass(QLatin1String("QAtomic"));
     bic.addBlacklistedClass(QLatin1String("QBasicAtomic"));
     bic.addBlacklistedClass(QLatin1String("QRegion::QRegionData"));
+    bic.addBlacklistedClass(QLatin1String("QtConcurrent::ThreadEngineSemaphore"));
 
     /* Jambi-related classes in Designer */
     bic.addBlacklistedClass(QLatin1String("QDesignerLanguageExtension"));
@@ -138,17 +139,22 @@ void tst_Bic::initTestCase_data()
 
     QTest::newRow("QtCore") << "QtCore";
     QTest::newRow("QtGui") << "QtGui";
-    QTest::newRow("QtScript") << "QtScript";
-    QTest::newRow("QtSql") << "QtSql";
-    QTest::newRow("QtSvg") << "QtSvg";
-    QTest::newRow("QtNetwork") << "QtNetwork";
-    QTest::newRow("QtOpenGL") << "QtOpenGL";
-    QTest::newRow("QtXml") << "QtXml";
-    QTest::newRow("QtXmlPatterns") << "QtXmlPatterns";
+
     QTest::newRow("Qt3Support") << "Qt3Support";
-    QTest::newRow("QtTest") << "QtTest";
     QTest::newRow("QtDBus") << "QtDBus";
     QTest::newRow("QtDesigner") << "QtDesigner";
+    QTest::newRow("QtMultimedia") << "QtMultimedia";
+    QTest::newRow("QtNetwork") << "QtNetwork";
+    QTest::newRow("QtOpenGL") << "QtOpenGL";
+    QTest::newRow("QtScript") << "QtScript";
+    QTest::newRow("QtScriptTools") << "QtScriptTools";
+    QTest::newRow("QtSql") << "QtSql";
+    QTest::newRow("QtSvg") << "QtSvg";
+    QTest::newRow("QtTest") << "QtTest";
+    QTest::newRow("QtWebKit") << "QtWebKit";
+    QTest::newRow("QtXml") << "QtXml";
+    QTest::newRow("QtXmlPatterns") << "QtXmlPatterns";
+
 }
 
 void tst_Bic::initTestCase()
@@ -166,55 +172,39 @@ void tst_Bic::sizesAndVTables_data()
     QSKIP("Test not implemented for this compiler/platform", SkipAll);
 #else
 
-    QString archFileName400;
-    QString archFileName410;
-    QString archFileName420;
-    QString archFileName430;
-
 #if defined Q_OS_LINUX && defined Q_WS_X11
 # if defined(__powerpc__) && !defined(__powerpc64__)
-    archFileName400 = SRCDIR "data/%1.4.0.0.linux-gcc-ppc32.txt";
-    archFileName410 = SRCDIR "data/%1.4.1.0.linux-gcc-ppc32.txt";
-    archFileName420 = SRCDIR "data/%1.4.2.0.linux-gcc-ppc32.txt";
+#  define FILESUFFIX "linux-gcc-ppc32"
 # elif defined(__amd64__)
-    archFileName400 = SRCDIR "data/%1.4.0.0.linux-gcc-amd64.txt";
+#  define FILESUFFIX "linux-gcc-amd64"
 # elif defined(__i386__)
-    archFileName400 = SRCDIR "data/%1.4.0.0.linux-gcc-ia32.txt";
-    archFileName410 = SRCDIR "data/%1.4.1.0.linux-gcc-ia32.txt";
-    archFileName420 = SRCDIR "data/%1.4.2.0.linux-gcc-ia32.txt";
-    archFileName430 = SRCDIR "data/%1.4.3.0.linux-gcc-ia32.txt";
+#  define FILESUFFIX "linux-gcc-ia32"
 # endif
-#elif defined Q_OS_AIX
-    if (sizeof(void*) == 4)
-        archFileName400 = SRCDIR "data/%1.4.0.0.aix-gcc-power32.txt";
 #elif defined Q_OS_MAC && defined(__powerpc__)
-    archFileName400 = SRCDIR "data/%1.4.0.0.macx-gcc-ppc32.txt";
-    archFileName410 = SRCDIR "data/%1.4.1.0.macx-gcc-ppc32.txt";
-    archFileName420 = SRCDIR "data/%1.4.2.0.macx-gcc-ppc32.txt";
+#  define FILESUFFIX "macx-gcc-ppc32"
 #elif defined Q_OS_MAC && defined(__i386__)
-    archFileName410 = SRCDIR "data/%1.4.1.0.macx-gcc-ia32.txt";
-    archFileName420 = SRCDIR "data/%1.4.2.0.macx-gcc-ia32.txt";
+#  define FILESUFFIX "macx-gcc-ia32"
+#elif defined Q_OS_MAC && defined(__amd64__)
+#  define FILESUFFIX "macx-gcc-amd64";
 #elif defined Q_OS_WIN && defined Q_CC_GNU
-    archFileName410 = SRCDIR "data/%1.4.1.0.win32-gcc-ia32.txt";
-    archFileName420 = SRCDIR "data/%1.4.2.0.win32-gcc-ia32.txt";
+#  define FILESUFFIX "win32-gcc-ia32"
+#else
+    QSKIP("No reference files found for this platform", SkipAll);
 #endif
-
-    if (archFileName400.isEmpty() && archFileName410.isEmpty()
-        && archFileName420.isEmpty())
-        QSKIP("No reference files found for this platform", SkipAll);
-
-    bool isPatchRelease400 = false;
-    bool isPatchRelease410 = false;
-    bool isPatchRelease420 = false;
-    bool isPatchRelease430 = false;
 
     QTest::addColumn<QString>("oldLib");
     QTest::addColumn<bool>("isPatchRelease");
 
-    QTest::newRow("4.0") << archFileName400 << isPatchRelease400;
-    QTest::newRow("4.1") << archFileName410 << isPatchRelease410;
-    QTest::newRow("4.2") << archFileName420 << isPatchRelease420;
-    QTest::newRow("4.3") << archFileName430 << isPatchRelease430;
+    int minor = (QT_VERSION >> 8) & 0xFF;
+    int patch = QT_VERSION & 0xFF;
+    for (int i = 0; i <= minor; ++i) {
+        if (i != minor || patch)
+            QTest::newRow("4." + QByteArray::number(i))
+                << (QString(SRCDIR "data/%1.4.")
+                    + QString::number(i)
+                    + QString(".0." FILESUFFIX ".txt"))
+                << (i == minor && patch);
+    }
 #endif
 }
 
