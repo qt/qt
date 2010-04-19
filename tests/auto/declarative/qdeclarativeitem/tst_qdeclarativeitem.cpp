@@ -385,12 +385,15 @@ void tst_QDeclarativeItem::mapCoordinates()
             Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
     QCOMPARE(result.value<QPointF>(), qobject_cast<QGraphicsItem*>(a)->mapFromScene(x, y));
 
-    QTest::ignoreMessage(QtWarningMsg, "mapToItem() given argument \"1122\" which is neither null nor an Item");
+    QString warning1 = QUrl::fromLocalFile(SRCDIR "/data/mapCoordinates.qml").toString() + ":7:5: QML Item: mapToItem() given argument \"1122\" which is neither null nor an Item";
+    QString warning2 = QUrl::fromLocalFile(SRCDIR "/data/mapCoordinates.qml").toString() + ":7:5: QML Item: mapFromItem() given argument \"1122\" which is neither null nor an Item";
+
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QVERIFY(QMetaObject::invokeMethod(root, "checkMapAToInvalid",
             Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
     QVERIFY(result.toBool());
 
-    QTest::ignoreMessage(QtWarningMsg, "mapFromItem() given argument \"1122\" which is neither null nor an Item");
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
     QVERIFY(QMetaObject::invokeMethod(root, "checkMapAFromInvalid",
             Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
     QVERIFY(result.toBool());

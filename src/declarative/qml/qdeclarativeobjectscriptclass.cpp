@@ -59,12 +59,17 @@ Q_DECLARE_METATYPE(QScriptValue);
 QT_BEGIN_NAMESPACE
 
 struct ObjectData : public QScriptDeclarativeClass::Object {
-    ObjectData(QObject *o, int t) : object(o), type(t) {}
+    ObjectData(QObject *o, int t) : object(o), type(t) {
+        if (o) {
+            QDeclarativeData *ddata = QDeclarativeData::get(object, true);
+            if (ddata) ddata->objectDataRefCount++;
+        }
+    }
 
     virtual ~ObjectData() {
         if (object && !object->parent()) {
             QDeclarativeData *ddata = QDeclarativeData::get(object, false);
-            if (ddata && !ddata->indestructible)
+            if (ddata && !ddata->indestructible && 0 == --ddata->objectDataRefCount)
                 object->deleteLater();
         }
     }

@@ -403,10 +403,8 @@ int QDeclarativeType::index() const
 
 int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterInterface &interface)
 {
-    if (interface.version > 0) {
-        qWarning("Cannot mix incompatible QML versions.");
-        return -1;
-    }
+    if (interface.version > 0) 
+        qFatal("qmlRegisterType(): Cannot mix incompatible QML versions.");
 
     QWriteLocker lock(metaTypeDataLock());
     QDeclarativeMetaTypeData *data = metaTypeData();
@@ -437,7 +435,7 @@ int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &t
     if (type.elementName) {
         for (int ii = 0; type.elementName[ii]; ++ii) {
             if (!isalnum(type.elementName[ii])) {
-                qWarning("QDeclarativeMetaType: Invalid QML element name %s", type.elementName);
+                qWarning("qmlRegisterType(): Invalid QML element name \"%s\"", type.elementName);
                 return -1;
             }
         }

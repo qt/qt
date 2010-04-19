@@ -695,14 +695,13 @@ void QDeclarativeExpressionPrivate::updateGuards(const QPODVector<QDeclarativeEn
             if (!outputWarningHeader) {
                 outputWarningHeader = true;
                 qWarning() << "QDeclarativeExpression: Expression" << q->expression()
-                    << "depends on non-NOTIFYable properties:";
+                           << "depends on non-NOTIFYable properties:";
             }
 
             const QMetaObject *metaObj = property.object->metaObject();
             QMetaProperty metaProp = metaObj->property(property.coreIndex);
 
-            qWarning().nospace() << "    " << metaObj->className()
-                                 << "::" << metaProp.name();
+            qWarning().nospace() << "    " << metaObj->className() << "::" << metaProp.name();
         }
     }
 }

@@ -210,8 +210,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
             }
 
             if (data->error.isValid()) {
-               if (!data->addError(ep)) 
-                   qWarning().nospace() << qPrintable(this->error().toString());
+               if (!data->addError(ep)) ep->warning(this->error());
             } else {
                 data->removeError();
             }

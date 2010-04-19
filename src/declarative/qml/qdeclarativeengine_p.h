@@ -162,6 +162,8 @@ public:
     QDeclarativeExpression *currentExpression;
     bool isDebugging;
 
+    bool outputWarningsToStdErr;
+
     struct ImportedNamespace;
     QDeclarativeContextScriptClass *contextClass;
     QDeclarativeContextData *sharedContext;
@@ -312,6 +314,12 @@ public:
     QVariant scriptValueToVariant(const QScriptValue &, int hint = QVariant::Invalid);
 
     void sendQuit();
+    void warning(const QDeclarativeError &);
+    void warning(const QList<QDeclarativeError> &);
+    static void warning(QDeclarativeEngine *, const QDeclarativeError &);
+    static void warning(QDeclarativeEngine *, const QList<QDeclarativeError> &);
+    static void warning(QDeclarativeEnginePrivate *, const QDeclarativeError &);
+    static void warning(QDeclarativeEnginePrivate *, const QList<QDeclarativeError> &);
 
     static QScriptValue qmlScriptObject(QObject*, QDeclarativeEngine*);
 

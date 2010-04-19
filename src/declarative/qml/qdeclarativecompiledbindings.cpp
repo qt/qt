@@ -938,7 +938,7 @@ static void throwException(int id, QDeclarativeDelayedError *error,
         error->error.setColumn(-1);
     }
     if (!context->engine || !error->addError(QDeclarativeEnginePrivate::get(context->engine)))
-        qWarning() << error->error;
+        QDeclarativeEnginePrivate::warning(context->engine, error->error);
 }
 
 static void dumpInstruction(const Instr *instr)
