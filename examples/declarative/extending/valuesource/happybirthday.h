@@ -74,7 +74,6 @@ private:
 // ![2]
 };
 // ![2]
-QML_DECLARE_TYPE(HappyBirthday);
 
 #endif // HAPPYBIRTHDAY_H
 

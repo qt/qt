@@ -60,6 +60,5 @@ private:
     QString m_name;
     int m_shoeSize;
 };
-QML_DECLARE_TYPE(Person);
 
 #endif // PERSON_H

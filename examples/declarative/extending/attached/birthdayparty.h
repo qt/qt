@@ -59,7 +59,6 @@ public:
 private:
     QDate m_rsvp;
 };
-QML_DECLARE_TYPE(BirthdayPartyAttached)
 
 class BirthdayParty : public QObject
 {
@@ -84,6 +83,5 @@ private:
 };
 
 QML_DECLARE_TYPEINFO(BirthdayParty, QML_HAS_ATTACHED_PROPERTIES)
-QML_DECLARE_TYPE(BirthdayParty)
 
 #endif // BIRTHDAYPARTY_H

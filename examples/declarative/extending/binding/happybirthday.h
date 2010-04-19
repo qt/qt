@@ -51,6 +51,7 @@ class HappyBirthday : public QObject, public QDeclarativePropertyValueSource
 {
 Q_OBJECT
 Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+Q_INTERFACES(QDeclarativePropertyValueSource)
 public:
     HappyBirthday(QObject *parent = 0);
 
@@ -70,7 +71,6 @@ private:
     QDeclarativeProperty m_target;
     QString m_name;
 };
-QML_DECLARE_TYPE(HappyBirthday);
 
 #endif // HAPPYBIRTHDAY_H
 
