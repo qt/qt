@@ -1,7 +1,7 @@
-import Qt 4.6
+import Qt 4.7
 
 Item { id: wrapper
-    property var model: xmlModel
+    property variant model: xmlModel
     property string tags : ""
     property string authName : ""
     property string authPass : ""

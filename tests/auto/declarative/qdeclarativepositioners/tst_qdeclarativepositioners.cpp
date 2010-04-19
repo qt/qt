@@ -61,8 +61,10 @@ private slots:
     void test_vertical_spacing();
     void test_vertical_animated();
     void test_grid();
+    void test_grid_topToBottom();
     void test_grid_spacing();
     void test_grid_animated();
+    void test_grid_zero_columns();
     void test_propertychanges();
     void test_repeater();
     void test_flow();
@@ -304,6 +306,37 @@ void tst_QDeclarativePositioners::test_grid()
     QCOMPARE(grid->height(), 100.0);
 }
 
+void tst_QDeclarativePositioners::test_grid_topToBottom()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/grid-toptobottom.qml");
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 0.0);
+    QCOMPARE(two->y(), 50.0);
+    QCOMPARE(three->x(), 0.0);
+    QCOMPARE(three->y(), 100.0);
+    QCOMPARE(four->x(), 50.0);
+    QCOMPARE(four->y(), 0.0);
+    QCOMPARE(five->x(), 50.0);
+    QCOMPARE(five->y(), 50.0);
+
+    QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
+    QCOMPARE(grid->width(), 100.0);
+    QCOMPARE(grid->height(), 120.0);
+}
+
 void tst_QDeclarativePositioners::test_grid_spacing()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/grid-spacing.qml");
@@ -414,6 +447,38 @@ void tst_QDeclarativePositioners::test_grid_animated()
     QTRY_COMPARE(five->y(), 50.0);
 
 }
+
+void tst_QDeclarativePositioners::test_grid_zero_columns()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/gridzerocolumns.qml");
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 70.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 120.0);
+    QCOMPARE(four->y(), 0.0);
+    QCOMPARE(five->x(), 0.0);
+    QCOMPARE(five->y(), 50.0);
+
+    QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
+    QCOMPARE(grid->width(), 170.0);
+    QCOMPARE(grid->height(), 60.0);
+}
+
 void tst_QDeclarativePositioners::test_propertychanges()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/propertychangestest.qml");

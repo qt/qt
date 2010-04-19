@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,28 +26,24 @@
 #ifndef WTF_MathExtras_h
 #define WTF_MathExtras_h
 
-#include <math.h>
+#include <cmath>
+#include <float.h>
 #include <stdlib.h>
 
-#if PLATFORM(SOLARIS)
+#if OS(SOLARIS)
 #include <ieeefp.h>
 #endif
 
-#if PLATFORM(OPENBSD)
+#if OS(OPENBSD)
 #include <sys/types.h>
 #include <machine/ieee.h>
 #endif
 
 #if COMPILER(MSVC)
-#if PLATFORM(WINCE)
+#if OS(WINCE)
 #include <stdlib.h>
 #endif
 #include <limits>
-
-#if HAVE(FLOAT_H)
-#include <float.h>
-#endif
-
 #endif
 
 #ifndef M_PI
@@ -66,7 +62,7 @@ const double piOverFourDouble = M_PI_4;
 const float piOverFourFloat = static_cast<float>(M_PI_4);
 #endif
 
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
 
 // Work around a bug in the Mac OS X libc where ceil(-0.1) return +0.
 inline double wtf_ceil(double x) { return copysign(ceil(x), x); }
@@ -75,7 +71,7 @@ inline double wtf_ceil(double x) { return copysign(ceil(x), x); }
 
 #endif
 
-#if PLATFORM(SOLARIS)
+#if OS(SOLARIS)
 
 #ifndef isfinite
 inline bool isfinite(double x) { return finite(x) && !isnand(x); }
@@ -89,7 +85,7 @@ inline bool signbit(double x) { return x < 0.0; } // FIXME: Wrong for negative 0
 
 #endif
 
-#if PLATFORM(OPENBSD)
+#if OS(OPENBSD)
 
 #ifndef isfinite
 inline bool isfinite(double x) { return finite(x); }
@@ -102,17 +98,32 @@ inline bool signbit(double x) { struct ieee_double *p = (struct ieee_double *)&x
 
 #if COMPILER(MSVC) || COMPILER(RVCT)
 
-inline long long llround(double num) { return static_cast<long long>(num > 0 ? num + 0.5 : ceil(num - 0.5)); }
-inline long long llroundf(float num) { return static_cast<long long>(num > 0 ? num + 0.5f : ceil(num - 0.5f)); }
-inline long lround(double num) { return static_cast<long>(num > 0 ? num + 0.5 : ceil(num - 0.5)); }
-inline long lroundf(float num) { return static_cast<long>(num > 0 ? num + 0.5f : ceilf(num - 0.5f)); }
-inline double round(double num) { return num > 0 ? floor(num + 0.5) : ceil(num - 0.5); }
-inline float roundf(float num) { return num > 0 ? floorf(num + 0.5f) : ceilf(num - 0.5f); }
+// We must not do 'num + 0.5' or 'num - 0.5' because they can cause precision loss.
+static double round(double num)
+{
+    double integer = ceil(num);
+    if (num > 0)
+        return integer - num > 0.5 ? integer - 1.0 : integer;
+    return integer - num >= 0.5 ? integer - 1.0 : integer;
+}
+static float roundf(float num)
+{
+    float integer = ceilf(num);
+    if (num > 0)
+        return integer - num > 0.5f ? integer - 1.0f : integer;
+    return integer - num >= 0.5f ? integer - 1.0f : integer;
+}
+inline long long llround(double num) { return static_cast<long long>(round(num)); }
+inline long long llroundf(float num) { return static_cast<long long>(roundf(num)); }
+inline long lround(double num) { return static_cast<long>(round(num)); }
+inline long lroundf(float num) { return static_cast<long>(roundf(num)); }
 inline double trunc(double num) { return num > 0 ? floor(num) : ceil(num); }
 
 #endif
 
 #if COMPILER(MSVC)
+
+inline long long abs(long long num) { return _abs64(num); }
 
 inline bool isinf(double num) { return !_finite(num) && !_isnan(num); }
 inline bool isnan(double num) { return !!_isnan(num); }
@@ -176,5 +187,12 @@ inline float turn2deg(float t) { return t * 360.0f; }
 inline float deg2turn(float d) { return d / 360.0f; }
 inline float rad2grad(float r) { return r * 200.0f / piFloat; }
 inline float grad2rad(float g) { return g * piFloat / 200.0f; }
+
+#if !COMPILER(MSVC) && !COMPILER(RVCT) && !OS(ANDROID) && !COMPILER(WINSCW)
+using std::isfinite;
+using std::isinf;
+using std::isnan;
+using std::signbit;
+#endif
 
 #endif // #ifndef WTF_MathExtras_h

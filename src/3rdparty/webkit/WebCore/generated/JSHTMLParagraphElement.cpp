@@ -36,8 +36,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLParagraphElement);
 
 static const HashTableValue JSHTMLParagraphElementTableValues[3] =
 {
-    { "align", DontDelete, (intptr_t)jsHTMLParagraphElementAlign, (intptr_t)setJSHTMLParagraphElementAlign },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLParagraphElementConstructor, (intptr_t)0 },
+    { "align", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLParagraphElementAlign), (intptr_t)setJSHTMLParagraphElementAlign },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLParagraphElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -138,17 +138,18 @@ bool JSHTMLParagraphElement::getOwnPropertyDescriptor(ExecState* exec, const Ide
     return getStaticValueDescriptor<JSHTMLParagraphElement, Base>(exec, &JSHTMLParagraphElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLParagraphElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLParagraphElementAlign(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLParagraphElement* castedThis = static_cast<JSHTMLParagraphElement*>(asObject(slot.slotBase()));
+    JSHTMLParagraphElement* castedThis = static_cast<JSHTMLParagraphElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLParagraphElement* imp = static_cast<HTMLParagraphElement*>(castedThis->impl());
-    return jsString(exec, imp->align());
+    JSValue result = jsString(exec, imp->align());
+    return result;
 }
 
-JSValue jsHTMLParagraphElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLParagraphElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLParagraphElement* domObject = static_cast<JSHTMLParagraphElement*>(asObject(slot.slotBase()));
+    JSHTMLParagraphElement* domObject = static_cast<JSHTMLParagraphElement*>(asObject(slotBase));
     return JSHTMLParagraphElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLParagraphElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -158,7 +159,8 @@ void JSHTMLParagraphElement::put(ExecState* exec, const Identifier& propertyName
 
 void setJSHTMLParagraphElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLParagraphElement* imp = static_cast<HTMLParagraphElement*>(static_cast<JSHTMLParagraphElement*>(thisObject)->impl());
+    JSHTMLParagraphElement* castedThisObj = static_cast<JSHTMLParagraphElement*>(thisObject);
+    HTMLParagraphElement* imp = static_cast<HTMLParagraphElement*>(castedThisObj->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 

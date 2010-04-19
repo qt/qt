@@ -46,27 +46,34 @@
 \nextpage QML Advanced Tutorial 1 - Creating the Game Canvas and Blocks
 
 This tutorial walks step-by-step through the creation of a full application using QML.
+It assumes that you already know the basics of QML (for example, from reading the
+\l{QML Tutorial}{simple tutorial}). 
 
-It is assumed that you already know the basics of QML (for example, from reading the \l{QML Tutorial}{simple tutorial}) and this
-tutorial focuses on using that knowledge to produce a complete and functioning application.
+In this tutorial we write a game, \e {Same Game}, based on the Same Game application
+included in the declarative \c demos directory, which looks like this:
 
-The tutorial involves a significant amount of JavaScript to implement the game logic. An understanding of JavaScript is helpful to understand parts of this tutorial, but if you don't understand JavaScript you can still get a feel for how you can integrate backend logic to create and control QML elements. From the QML perspective, there is little difference between integrating QML with backend logic written in C++ and backend logic written in JavaScript.
+\image declarative-samegame.png
 
-In this tutorial we recreate, step by step, a version of the Same Game demo in $QTDIR/demos/declarative/samegame.qml.
-The results of the individual steps are in the $QTDIR/examples/declarative/tutorials/samegame directory.
+We will cover concepts for producing a fully functioning application, including
+JavaScript integration, using QML  \l States and \l {Behavior}{Behaviors} to 
+manage components and enhance your interface, and storing persistent application data.
 
-The Same Game demo has been extended since this tutorial was written. This tutorial only covers the version in 
-the $QTDIR/examples/declarative/tutorials/samegame directory. However once you have completed the tutorial you should be able
-to understand the extensions in the most recent Same Game demo, and even extend it yourself.
+An understanding of JavaScript is helpful to understand parts of this tutorial, but if you don't
+know JavaScript you can still get a feel for how you can integrate backend logic to create and
+control QML elements.
+
 
 Tutorial chapters:
 
-\list
-\o \l {QML Advanced Tutorial 1 - Creating the Game Canvas and Blocks}
-\o \l {QML Advanced Tutorial 2 - Populating the Game Canvas}
-\o \l {QML Advanced Tutorial 3 - Implementing the Game Logic}
-\o \l {QML Advanced Tutorial 4 - Finishing Touches}
+\list 1
+\o \l {QML Advanced Tutorial 1 - Creating the Game Canvas and Blocks}{Creating the Game Canvas and Blocks}
+\o \l {QML Advanced Tutorial 2 - Populating the Game Canvas}{Populating the Game Canvas}}
+\o \l {QML Advanced Tutorial 3 - Implementing the Game Logic}{Implementing the Game Logic}
+\o \l {QML Advanced Tutorial 4 - Finishing Touches}{Finishing Touches}
 \endlist
+
+All the code in this tutorial can be found in the $QTDIR/examples/declarative/tutorials/samegame
+directory.
 */
 
 /*!
@@ -100,6 +107,9 @@ blocks, a "New Game" button and a score display.
 One item you may not recognize here
 is the \l SystemPalette item. This provides access to the Qt system palette
 and is used to give the button a more native look-and-feel.
+
+Notice the anchors for the \c Item, \c Button and \c Text elements are set using
+\l {Grouped Properties}{group notation} for readability.
 
 \section2 Adding \c Button and \c Block components
 
@@ -160,25 +170,25 @@ we cannot use \l Repeater to define the blocks. Instead, we will
 create the blocks in JavaScript.
 
 Here is the JavaScript code for generating the blocks, contained in a new
-file, \c samegame.js:
+file, \c samegame.js. The code is explained below.
 
 \snippet declarative/tutorials/samegame/samegame2/samegame.js 0
 
-The main function here is \c initBoard(). It creates an array to store all the game
-blocks, then calls \c createBlock() to create enough blocks to fill the game canvas.
+The \c startNewGame() function deletes the blocks created in the previous game and
+calculates the number of rows and columns of blocks required to fill the game window for the new game.
+Then, it creates an array to store all the game
+blocks, and calls \c createBlock() to create enough blocks to fill the game window.
 
-The \c createBlock() function creates a block using the \c Block.qml file
+The \c createBlock() function creates a block from the \c Block.qml file
 and moves the new block to its position on the game canvas. This involves several steps:
 
 \list
-\o \l {createComponent(url file)} is called to generate an element from \c Block.qml.
+\o \l {createComponent(url file)}{createComponent()} is called to generate an element from \c Block.qml.
    If the component is ready, we can call \c createObject() to create an instance of the \c Block item.
-   (If a component is loaded remotely - over HTTP for example - then we would have to wait for the
-   component to finish loading before calling \c createObject()).
 \o If \c createObject() returned null (i.e. if there was an error while
    loading the object), print the error information.
 \o Place the block in its position on the board and set its width and height.
-   Also, store in the blocks array for future reference.
+   Also, store it in the blocks array for future reference.
 \o Finally, print error information to the console if the component could not be
    loaded for some reason (for example, if the file is missing).
 \endlist
@@ -193,13 +203,13 @@ the JavaScript file as a \l{Modules#QML Modules}{module}:
 \snippet declarative/tutorials/samegame/samegame2/samegame.qml 2
 
 This allows us to refer to any functions within \c samegame.js using "SameGame"
-as a prefix: for example, \c SameGame.initBoard() or \c SameGame.createBlock().  
-This means we can now connect the New Game button's \c onClicked handler to the \c initBoard()
+as a prefix: for example, \c SameGame.startNewGame() or \c SameGame.createBlock().  
+This means we can now connect the New Game button's \c onClicked handler to the \c startNewGame()
 function, like this:
 
 \snippet declarative/tutorials/samegame/samegame2/samegame.qml 1
 
-So, when you click the New Game button, \c initBoard() is called and generates a field of blocks, like this:
+So, when you click the New Game button, \c startNewGame() is called and generates a field of blocks, like this:
 
 \image declarative-adv-tutorial2.png
 
@@ -240,17 +250,17 @@ As this is a tutorial about QML, not game design, we will only discuss \c handle
 
 \section3 Enabling mouse click interaction
 
-To make it easier for the JavaScript code to interface with the QML elements, we have added an Item called \c gameCanvas to \c samegame.qml. It replaces the background as the item which contains the blocks, and accepts mouse input from the user.  Here is the item code:
+To make it easier for the JavaScript code to interface with the QML elements, we have added an Item called \c gameCanvas to \c samegame.qml. It replaces the background as the item which contains the blocks. It also accepts mouse input from the user.  Here is the item code:
 
 \snippet declarative/tutorials/samegame/samegame3/samegame.qml 1
 
-The \c gameCanvas item is the exact size of the board, and has a \c score property and a \l MouseArea for input.
+The \c gameCanvas item is the exact size of the board, and has a \c score property and a \l MouseArea to handle mouse clicks.
 The blocks are now created as its children, and its dimensions are used to determine the board size so that
 the application scales to the available screen size.
-Since its size is bound to a multiple of \c tileSize, \c tileSize needs to be moved out of \c samegame.js and into \c samegame.qml as a QML property.
+Since its size is bound to a multiple of \c blockSize, \c blockSize was moved out of \c samegame.js and into \c samegame.qml as a QML property.
 Note that it can still be accessed from the script.
 
-The \l MouseArea simply calls \c{handleClick()} in \c samegame.js, which determines whether the player's click should cause any blocks to be removed, and updates \c gameCanvas.score with the current score if necessary. Here is the \c handleClick() function:
+When clicked, the \l MouseArea calls \c{handleClick()} in \c samegame.js, which determines whether the player's click should cause any blocks to be removed, and updates \c gameCanvas.score with the current score if necessary. Here is the \c handleClick() function:
 
 \snippet declarative/tutorials/samegame/samegame3/samegame.js 1
 
@@ -258,7 +268,7 @@ Note that if \c score was a global variable in the \c{samegame.js} file you woul
 
 \section3 Updating the score
 
-When the player clicks a block and triggers \c handleClick(), \c handleClick() also calls victoryCheck() to update the score and to check whether the player has completed the game. Here is the \c victoryCheck() code:
+When the player clicks a block and triggers \c handleClick(), \c handleClick() also calls \c victoryCheck() to update the score and to check whether the player has completed the game. Here is the \c victoryCheck() code:
 
 \snippet declarative/tutorials/samegame/samegame3/samegame.js 2
 
@@ -287,7 +297,7 @@ Here is a screenshot of what has been accomplished so far:
 
 \image declarative-adv-tutorial3.png
 
-Here is the QML code as it is now in \c samegame.qml:
+This is what \c samegame.qml looks like now:
 
 \snippet declarative/tutorials/samegame/samegame3/samegame.qml 0
 
@@ -439,7 +449,7 @@ By following this tutorial you've seen how you can write a fully functional appl
 \o Build your application with \l {{QML Elements}}{QML elements}
 \o Add application logic \l{Integrating JavaScript}{with JavaScript code}
 \o Add animations with \l {Behavior}{Behaviors} and \l{QML States}{states}
-\o Store persistent application data through online and offline methods
+\o Store persistent application data using, for example, the \l{Offline Storage API} or \l XMLHttpRequest
 \endlist
 
 There is so much more to learn about QML that we haven't been able to cover in this tutorial. Check out all the

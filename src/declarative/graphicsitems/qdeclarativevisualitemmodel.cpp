@@ -50,7 +50,7 @@
 #include <qdeclarativeopenmetaobject_p.h>
 #include <qdeclarativelistaccessor_p.h>
 #include <qdeclarativeinfo.h>
-#include <qdeclarativedeclarativedata_p.h>
+#include <qdeclarativedata_p.h>
 #include <qdeclarativepropertycache_p.h>
 #include <qdeclarativeguard_p.h>
 #include <qdeclarativeglobal_p.h>
@@ -243,7 +243,7 @@ public:
     QString m_part;
 
     QDeclarativeComponent *m_delegate;
-    QDeclarativeContext *m_context;
+    QDeclarativeGuard<QDeclarativeContext> m_context;
     QList<int> m_roles;
     QHash<QByteArray,int> m_roleNames;
     void ensureRoles() {
@@ -353,6 +353,7 @@ public:
     friend class QDeclarativeVisualDataModelData;
     bool m_metaDataCreated;
     bool m_metaDataCacheable;
+    bool m_delegateValidated;
 
     QDeclarativeVisualDataModelData *data(QObject *item);
 
@@ -560,7 +561,7 @@ QDeclarativeVisualDataModelParts::QDeclarativeVisualDataModelParts(QDeclarativeV
 QDeclarativeVisualDataModelPrivate::QDeclarativeVisualDataModelPrivate(QDeclarativeContext *ctxt)
 : m_listModelInterface(0), m_abstractItemModel(0), m_visualItemModel(0), m_delegate(0)
 , m_context(ctxt), m_parts(0), m_delegateDataType(0), m_metaDataCreated(false)
-, m_metaDataCacheable(false), m_listAccessor(0)
+, m_metaDataCacheable(false), m_delegateValidated(false), m_listAccessor(0)
 {
 }
 
@@ -768,6 +769,7 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
     Q_D(QDeclarativeVisualDataModel);
     bool wasValid = d->m_delegate != 0;
     d->m_delegate = delegate;
+    d->m_delegateValidated = false;
     if (!wasValid && d->modelCount() && d->m_delegate) {
         emit itemsInserted(0, d->modelCount());
         emit countChanged();
@@ -830,7 +832,7 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
 
     \code
     // view.qml
-    import Qt 4.6
+    import Qt 4.7
 
     ListView {
         width: 200
@@ -987,6 +989,7 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
     if (d->modelCount() <= 0 || !d->m_delegate)
         return 0;
     QObject *nobj = d->m_cache.getItem(index);
+    bool needComplete = false;
     if (!nobj) {
         QDeclarativeContext *ccontext = d->m_context;
         if (!ccontext) ccontext = qmlContext(this);
@@ -997,6 +1000,8 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
         nobj = d->m_delegate->beginCreate(ctxt);
         if (complete)
             d->m_delegate->completeCreate();
+        else
+            needComplete = true;
         if (nobj) {
             QDeclarative_setParent_noEvent(ctxt, nobj);
             QDeclarative_setParent_noEvent(data, nobj);
@@ -1020,8 +1025,13 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
         }
     }
     if (!item) {
+        if (needComplete)
+            d->m_delegate->completeCreate();
         d->m_cache.releaseItem(nobj);
-        qmlInfo(d->m_delegate) << QDeclarativeVisualDataModel::tr("Delegate component must be Item type.");
+        if (!d->m_delegateValidated) {
+            qmlInfo(d->m_delegate) << QDeclarativeVisualDataModel::tr("Delegate component must be Item type.");
+            d->m_delegateValidated = true;
+        }
     }
 
     return item;
@@ -1058,7 +1068,7 @@ QString QDeclarativeVisualDataModel::stringValue(int index, const QString &name)
         tempData = true;
     }
 
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(data);
+    QDeclarativeData *ddata = QDeclarativeData::get(data);
     if (ddata && ddata->propertyCache) {
         QDeclarativePropertyCache::Data *prop = ddata->propertyCache->property(name);
         if (prop) {
@@ -1127,20 +1137,21 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                                          const QList<int> &roles)
 {
     Q_D(QDeclarativeVisualDataModel);
-    // XXX - highly inefficient
-    for (int ii = index; ii < index + count; ++ii) {
+    for (QHash<int,QDeclarativeVisualDataModelPrivate::ObjectRef>::ConstIterator iter = d->m_cache.begin();
+        iter != d->m_cache.end(); ++iter) {
+        const int idx = iter.key();
 
-        if (QObject *item = d->m_cache.item(ii)) {
-            QDeclarativeVisualDataModelData *data = d->data(item);
-
+        if (idx >= index && idx < index+count) {
+            QDeclarativeVisualDataModelPrivate::ObjectRef objRef = *iter;
+            QDeclarativeVisualDataModelData *data = d->data(objRef.obj);
             for (int roleIdx = 0; roleIdx < roles.count(); ++roleIdx) {
                 int role = roles.at(roleIdx);
                 int propId = data->propForRole(role);
                 if (propId != -1) {
                     if (d->m_listModelInterface) {
-                        data->setValue(propId, d->m_listModelInterface->data(ii, QList<int>() << role).value(role));
+                        data->setValue(propId, d->m_listModelInterface->data(idx, QList<int>() << role).value(role));
                     } else if (d->m_abstractItemModel) {
-                        QModelIndex index = d->m_abstractItemModel->index(ii, 0, d->m_root);
+                        QModelIndex index = d->m_abstractItemModel->index(idx, 0, d->m_root);
                         data->setValue(propId, d->m_abstractItemModel->data(index, role));
                     }
                 }
@@ -1152,6 +1163,8 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
 void QDeclarativeVisualDataModel::_q_itemsInserted(int index, int count)
 {
     Q_D(QDeclarativeVisualDataModel);
+    if (!count)
+        return;
     // XXX - highly inefficient
     QHash<int,QDeclarativeVisualDataModelPrivate::ObjectRef> items;
     for (QHash<int,QDeclarativeVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
@@ -1179,6 +1192,8 @@ void QDeclarativeVisualDataModel::_q_itemsInserted(int index, int count)
 void QDeclarativeVisualDataModel::_q_itemsRemoved(int index, int count)
 {
     Q_D(QDeclarativeVisualDataModel);
+    if (!count)
+        return;
     // XXX - highly inefficient
     QHash<int, QDeclarativeVisualDataModelPrivate::ObjectRef> items;
     for (QHash<int, QDeclarativeVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();

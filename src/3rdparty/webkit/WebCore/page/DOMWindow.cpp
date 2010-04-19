@@ -26,6 +26,7 @@
 #include "config.h"
 #include "DOMWindow.h"
 
+#include "Base64.h"
 #include "BarInfo.h"
 #include "BeforeUnloadEvent.h"
 #include "CSSComputedStyleDeclaration.h"
@@ -35,6 +36,7 @@
 #include "Chrome.h"
 #include "Console.h"
 #include "Database.h"
+#include "DatabaseCallback.h"
 #include "DOMApplicationCache.h"
 #include "DOMSelection.h"
 #include "DOMTimer.h"
@@ -53,6 +55,7 @@
 #include "HTMLFrameOwnerElement.h"
 #include "History.h"
 #include "InspectorController.h"
+#include "InspectorTimelineAgent.h"
 #include "Location.h"
 #include "Media.h"
 #include "MessageEvent.h"
@@ -262,7 +265,7 @@ void DOMWindow::dispatchAllPendingUnloadEvents()
         if (!set.contains(window))
             continue;
 
-        window->dispatchEvent(PageTransitionEvent::create(EventNames().pagehideEvent, false), window->document());
+        window->dispatchEvent(PageTransitionEvent::create(eventNames().pagehideEvent, false), window->document());
         window->dispatchEvent(Event::create(eventNames().unloadEvent, false, false), window->document());
     }
 
@@ -341,8 +344,6 @@ void DOMWindow::parseModalDialogFeatures(const String& featuresArg, HashMap<Stri
 bool DOMWindow::allowPopUp(Frame* activeFrame)
 {
     ASSERT(activeFrame);
-    if (activeFrame->script()->processingUserGesture())
-        return true;
     Settings* settings = activeFrame->settings();
     return settings && settings->javaScriptCanOpenWindowsAutomatically();
 }
@@ -441,6 +442,10 @@ void DOMWindow::clear()
     if (m_location)
         m_location->disconnectFrame();
     m_location = 0;
+
+    if (m_media)
+        m_media->disconnectFrame();
+    m_media = 0;
     
 #if ENABLE(DOM_STORAGE)
     if (m_sessionStorage)
@@ -459,6 +464,8 @@ void DOMWindow::clear()
 #endif
 
 #if ENABLE(NOTIFICATIONS)
+    if (m_notifications)
+        m_notifications->disconnectFrame();
     m_notifications = 0;
 #endif
 }
@@ -573,9 +580,6 @@ Storage* DOMWindow::sessionStorage() const
     if (!page)
         return 0;
 
-    if (!page->settings()->sessionStorageEnabled())
-        return 0;
-
     RefPtr<StorageArea> storageArea = page->sessionStorage()->storageArea(document->securityOrigin());
 #if ENABLE(INSPECTOR)
     page->inspectorController()->didUseDOMStorage(storageArea.get(), false, m_frame);
@@ -585,7 +589,7 @@ Storage* DOMWindow::sessionStorage() const
     return m_sessionStorage.get();
 }
 
-Storage* DOMWindow::localStorage() const
+Storage* DOMWindow::localStorage(ExceptionCode& ec) const
 {
     if (m_localStorage)
         return m_localStorage.get();
@@ -593,6 +597,11 @@ Storage* DOMWindow::localStorage() const
     Document* document = this->document();
     if (!document)
         return 0;
+    
+    if (!document->securityOrigin()->canAccessLocalStorage()) {
+        ec = SECURITY_ERR;
+        return 0;
+    }
         
     Page* page = document->page();
     if (!page)
@@ -625,14 +634,18 @@ NotificationCenter* DOMWindow::webkitNotifications() const
     if (!page)
         return 0;
 
-    if (!page->settings()->experimentalNotificationsEnabled())
-        return 0;
-
     NotificationPresenter* provider = page->chrome()->notificationPresenter();
     if (provider) 
         m_notifications = NotificationCenter::create(document, provider);    
       
     return m_notifications.get();
+}
+#endif
+
+#if ENABLE(INDEXED_DATABASE)
+IndexedDatabaseRequest* DOMWindow::indexedDB() const
+{
+    return 0;
 }
 #endif
 
@@ -812,6 +825,57 @@ String DOMWindow::prompt(const String& message, const String& defaultValue)
         return returnValue;
 
     return String();
+}
+
+static bool isSafeToConvertCharList(const String& string)
+{
+    for (unsigned i = 0; i < string.length(); i++) {
+        if (string[i] > 0xFF)
+            return false;
+    }
+
+    return true;
+}
+
+String DOMWindow::btoa(const String& stringToEncode, ExceptionCode& ec)
+{
+    if (stringToEncode.isNull())
+        return String();
+
+    if (!isSafeToConvertCharList(stringToEncode)) {
+        ec = INVALID_CHARACTER_ERR;
+        return String();
+    }
+
+    Vector<char> in;
+    in.append(stringToEncode.characters(), stringToEncode.length());
+    Vector<char> out;
+
+    base64Encode(in, out);
+
+    return String(out.data(), out.size());
+}
+
+String DOMWindow::atob(const String& encodedString, ExceptionCode& ec)
+{
+    if (encodedString.isNull())
+        return String();
+
+    if (!isSafeToConvertCharList(encodedString)) {
+        ec = INVALID_CHARACTER_ERR;
+        return String();
+    }
+
+    Vector<char> in;
+    in.append(encodedString.characters(), encodedString.length());
+    Vector<char> out;
+
+    if (!base64Decode(in, out)) {
+        ec = INVALID_CHARACTER_ERR;
+        return String();
+    }
+
+    return String(out.data(), out.size());
 }
 
 bool DOMWindow::find(const String& string, bool caseSensitive, bool backwards, bool wrap, bool /*wholeWord*/, bool /*searchInFrames*/, bool /*showDialog*/) const
@@ -1050,7 +1114,9 @@ Document* DOMWindow::document() const
 
 PassRefPtr<Media> DOMWindow::media() const
 {
-    return Media::create(const_cast<DOMWindow*>(this));
+    if (!m_media)
+        m_media = Media::create(m_frame);
+    return m_media.get();
 }
 
 PassRefPtr<CSSStyleDeclaration> DOMWindow::getComputedStyle(Element* elt, const String&) const
@@ -1078,7 +1144,9 @@ PassRefPtr<WebKitPoint> DOMWindow::webkitConvertPointFromNodeToPage(Node* node, 
 {
     if (!node || !p)
         return 0;
-        
+
+    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+
     FloatPoint pagePoint(p->x(), p->y());
     pagePoint = node->convertToPage(pagePoint);
     return WebKitPoint::create(pagePoint.x(), pagePoint.y());
@@ -1088,7 +1156,9 @@ PassRefPtr<WebKitPoint> DOMWindow::webkitConvertPointFromPageToNode(Node* node, 
 {
     if (!node || !p)
         return 0;
-        
+
+    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+
     FloatPoint nodePoint(p->x(), p->y());
     nodePoint = node->convertFromPage(nodePoint);
     return WebKitPoint::create(nodePoint.x(), nodePoint.y());
@@ -1107,18 +1177,21 @@ double DOMWindow::devicePixelRatio() const
 }
 
 #if ENABLE(DATABASE)
-PassRefPtr<Database> DOMWindow::openDatabase(const String& name, const String& version, const String& displayName, unsigned long estimatedSize, ExceptionCode& ec)
+PassRefPtr<Database> DOMWindow::openDatabase(const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionCode& ec)
 {
     if (!m_frame)
         return 0;
 
-    Document* doc = m_frame->document();
-
-    Settings* settings = m_frame->settings();
-    if (!settings || !settings->databasesEnabled())
+    if (!Database::isAvailable())
         return 0;
 
-    return Database::openDatabase(doc, name, version, displayName, estimatedSize, ec);
+    Document* document = m_frame->document();
+    if (!document->securityOrigin()->canAccessDatabase()) {
+        ec = SECURITY_ERR;
+        return 0;
+    }
+
+    return Database::openDatabase(document, name, version, displayName, estimatedSize, creationCallback, ec);
 }
 #endif
 
@@ -1232,24 +1305,40 @@ void DOMWindow::resizeTo(float width, float height) const
     page->chrome()->setWindowRect(fr);
 }
 
-int DOMWindow::setTimeout(ScheduledAction* action, int timeout)
+int DOMWindow::setTimeout(PassOwnPtr<ScheduledAction> action, int timeout, ExceptionCode& ec)
 {
-    return DOMTimer::install(scriptExecutionContext(), action, timeout, true);
+    ScriptExecutionContext* context = scriptExecutionContext();
+    if (!context) {
+        ec = INVALID_ACCESS_ERR;
+        return -1;
+    }
+    return DOMTimer::install(context, action, timeout, true);
 }
 
 void DOMWindow::clearTimeout(int timeoutId)
 {
-    DOMTimer::removeById(scriptExecutionContext(), timeoutId);
+    ScriptExecutionContext* context = scriptExecutionContext();
+    if (!context)
+        return;
+    DOMTimer::removeById(context, timeoutId);
 }
 
-int DOMWindow::setInterval(ScheduledAction* action, int timeout)
+int DOMWindow::setInterval(PassOwnPtr<ScheduledAction> action, int timeout, ExceptionCode& ec)
 {
-    return DOMTimer::install(scriptExecutionContext(), action, timeout, false);
+    ScriptExecutionContext* context = scriptExecutionContext();
+    if (!context) {
+        ec = INVALID_ACCESS_ERR;
+        return -1;
+    }
+    return DOMTimer::install(context, action, timeout, false);
 }
 
 void DOMWindow::clearInterval(int timeoutId)
 {
-    DOMTimer::removeById(scriptExecutionContext(), timeoutId);
+    ScriptExecutionContext* context = scriptExecutionContext();
+    if (!context)
+        return;
+    DOMTimer::removeById(context, timeoutId);
 }
 
 bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
@@ -1304,6 +1393,15 @@ void DOMWindow::dispatchLoadEvent()
 #endif
 }
 
+#if ENABLE(INSPECTOR)
+InspectorTimelineAgent* DOMWindow::inspectorTimelineAgent() 
+{
+    if (frame() && frame()->page())
+        return frame()->page()->inspectorTimelineAgent();
+    return 0;
+}
+#endif
+
 bool DOMWindow::dispatchEvent(PassRefPtr<Event> prpEvent, PassRefPtr<EventTarget> prpTarget)
 {
     RefPtr<EventTarget> protect = this;
@@ -1313,7 +1411,24 @@ bool DOMWindow::dispatchEvent(PassRefPtr<Event> prpEvent, PassRefPtr<EventTarget
     event->setCurrentTarget(this);
     event->setEventPhase(Event::AT_TARGET);
 
-    return fireEventListeners(event.get());
+#if ENABLE(INSPECTOR)
+    InspectorTimelineAgent* timelineAgent = inspectorTimelineAgent();
+    bool timelineAgentIsActive = timelineAgent && hasEventListeners(event->type());
+    if (timelineAgentIsActive)
+        timelineAgent->willDispatchEvent(*event);
+#endif
+
+    bool result = fireEventListeners(event.get());
+
+#if ENABLE(INSPECTOR)
+    if (timelineAgentIsActive) {
+      timelineAgent = inspectorTimelineAgent();
+      if (timelineAgent)
+            timelineAgent->didDispatchEvent();
+    }
+#endif
+
+    return result;
 }
 
 void DOMWindow::removeAllEventListeners()

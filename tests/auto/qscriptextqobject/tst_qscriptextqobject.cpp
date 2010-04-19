@@ -534,6 +534,7 @@ private slots:
     void connectToDestroyedSignal();
     void emitAfterReceiverDeleted();
     void inheritedSlots();
+    void enumerateMetaObject();
 
 private:
     QScriptEngine *m_engine;
@@ -3128,6 +3129,39 @@ void tst_QScriptExtQObject::inheritedSlots()
     scriptButton.property("click").call(scriptButton);
     QCOMPARE(buttonClickedSpy.count(), 1);
     QCOMPARE(prototypeButtonClickedSpy.count(), 0);
+}
+
+void tst_QScriptExtQObject::enumerateMetaObject()
+{
+    QScriptValue myClass = m_engine->newQMetaObject(m_myObject->metaObject(), m_engine->undefinedValue());
+
+    QStringList expectedNames;
+    expectedNames << "FooPolicy" << "BarPolicy" << "BazPolicy"
+                  << "FooStrategy" << "BarStrategy" << "BazStrategy"
+                  << "NoAbility" << "FooAbility" << "BarAbility" << "BazAbility" << "AllAbility";
+
+    for (int x = 0; x < 2; ++x) {
+        QSet<QString> actualNames;
+        if (x == 0) {
+            // From C++
+            QScriptValueIterator it(myClass);
+            while (it.hasNext()) {
+                it.next();
+                actualNames.insert(it.name());
+            }
+        } else {
+            // From JS
+            m_engine->globalObject().setProperty("MyClass", myClass);
+            QScriptValue ret = m_engine->evaluate("a=[]; for (var p in MyClass) if (MyClass.hasOwnProperty(p)) a.push(p); a");
+            QVERIFY(ret.isArray());
+            QStringList strings = qscriptvalue_cast<QStringList>(ret);
+            for (int i = 0; i < strings.size(); ++i)
+                actualNames.insert(strings.at(i));
+        }
+        QCOMPARE(actualNames.size(), expectedNames.size());
+        for (int i = 0; i < expectedNames.size(); ++i)
+            QVERIFY(actualNames.contains(expectedNames.at(i)));
+    }
 }
 
 QTEST_MAIN(tst_QScriptExtQObject)

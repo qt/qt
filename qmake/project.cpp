@@ -675,6 +675,7 @@ QMakeProject::init(QMakeProperty *p, const QMap<QString, QStringList> *vars)
         prop = p;
         own_prop = false;
     }
+    recursive = false;
     reset();
 }
 
@@ -699,7 +700,6 @@ QMakeProject::reset()
     scope_blocks.push(ScopeBlock());
     iterator = 0;
     function = 0;
-    recursive = false;
 }
 
 bool
@@ -1245,8 +1245,7 @@ QMakeProject::read(const QString &file, QMap<QString, QStringList> &place)
     reset();
 
     const QString oldpwd = qmake_getpwd();
-    QString filename = Option::fixPathToLocalOS(file);
-    doVariableReplace(filename, place);
+    QString filename = Option::fixPathToLocalOS(file, false);
     bool ret = false, using_stdin = false;
     QFile qfile;
     if(!strcmp(filename.toLatin1(), "-")) {
@@ -2516,8 +2515,6 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
     case T_BREAK:
         if(iterator)
             iterator->cause_break = true;
-        else if(!scope_blocks.isEmpty())
-            scope_blocks.top().ignore = true;
         else
             fprintf(stderr, "%s:%d unexpected break()\n",
                     parser.file.toLatin1().constData(), parser.line_no);

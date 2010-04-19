@@ -81,7 +81,11 @@ public:
     void setImportPathList(const QStringList &paths);
     void addImportPath(const QString& dir);
 
-    bool importExtension(const QString &fileName, const QString &uri);
+    QStringList pluginPathList() const;
+    void setPluginPathList(const QStringList &paths);
+    void addPluginPath(const QString& dir);
+
+    bool importPlugin(const QString &filePath, const QString &uri, QString *errorString);
 
     void setNetworkAccessManagerFactory(QDeclarativeNetworkAccessManagerFactory *);
     QDeclarativeNetworkAccessManagerFactory *networkAccessManagerFactory() const;

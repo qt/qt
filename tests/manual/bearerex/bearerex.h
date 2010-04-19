@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,10 +44,15 @@
 
 #include <QtGui>
 
-#include "ui_bearerex.h"
 #include "ui_detailedinfodialog.h"
-#include "ui_sessiondialog.h"
 
+#if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
+#include "ui_bearerex_maemo.h"
+#include "ui_sessiondialog_maemo.h"
+#else
+#include "ui_bearerex.h"
+#include "ui_sessiondialog.h"
+#endif
 #include "qnetworkconfigmanager.h"
 #include "qnetworksession.h"
 #include "xqlistwidget.h"

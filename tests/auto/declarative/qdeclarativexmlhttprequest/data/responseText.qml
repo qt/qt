@@ -22,6 +22,7 @@ QtObject {
         unsent = (x.responseText == "");
 
         x.open("GET", url);
+        x.setRequestHeader("Accept-Language", "en-US");
 
         opened = (x.responseText == "");
 
@@ -39,6 +40,7 @@ QtObject {
                 dataOK = (x.responseText == expectedText);
 
                 x.open("GET", url);
+                x.setRequestHeader("Accept-Language", "en-US");
 
                 reset = (x.responseText == "");
             }

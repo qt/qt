@@ -61,7 +61,6 @@
 #include "private/qdeclarativeglobal_p.h"
 #include "private/qdeclarativeworkerscript_p.h"
 #include "private/qdeclarativecomponent_p.h"
-#include "private/qdeclarativescriptclass_p.h"
 #include "qdeclarativenetworkaccessmanagerfactory.h"
 #include "qdeclarativeimageprovider.h"
 #include "private/qdeclarativedirparser_p.h"
@@ -156,7 +155,7 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 : captureProperties(false), rootContext(0), currentExpression(0), isDebugging(false), 
   contextClass(0), sharedContext(0), sharedScope(0), objectClass(0), valueTypeClass(0), 
   globalClass(0), cleanup(0), erroredBindings(0), inProgressCreations(0), 
-  scriptEngine(this), workerScriptEngine(0), componentAttacheds(0), inBeginCreate(false), 
+  scriptEngine(this), workerScriptEngine(0), componentAttached(0), inBeginCreate(false), 
   networkAccessManager(0), networkAccessManagerFactory(0),
   typeManager(e), uniqueId(1)
 {
@@ -183,11 +182,11 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
                 fileImportPath.append(canonicalPath);
         }
     }
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
     QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
     if (!builtinPath.isEmpty())
         fileImportPath += builtinPath;
-#endif
+
+    filePluginPath += QLatin1String(".");
 
 }
 
@@ -213,10 +212,13 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
         newQMetaObject(StaticQtMetaObject::get());
     globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
+#ifndef QT_NO_DESKTOPSERVICES
     offlineStoragePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation).replace(QLatin1Char('/'), QDir::separator())
         + QDir::separator() + QLatin1String("QML")
         + QDir::separator() + QLatin1String("OfflineStorage");
-
+#else
+    qWarning("offlineStoragePath is not set by default with QT_NO_DESKTOPSERVICES");
+#endif
 
     qt_add_qmlxmlhttprequest(this);
     qt_add_qmlsqldatabase(this);
@@ -226,6 +228,7 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
     // XXX used to add Qt.Sound class.
 
     //types
+    qtObject.setProperty(QLatin1String("isQtObject"), newFunction(QDeclarativeEnginePrivate::isQtObject, 1));
     qtObject.setProperty(QLatin1String("rgba"), newFunction(QDeclarativeEnginePrivate::rgba, 4));
     qtObject.setProperty(QLatin1String("hsla"), newFunction(QDeclarativeEnginePrivate::hsla, 4));
     qtObject.setProperty(QLatin1String("rect"), newFunction(QDeclarativeEnginePrivate::rect, 4));
@@ -346,12 +349,34 @@ Q_GLOBAL_STATIC(QDeclarativeEngineDebugServer, qmlEngineDebugServer);
 typedef QMap<QString, QString> StringStringMap;
 Q_GLOBAL_STATIC(StringStringMap, qmlEnginePluginsWithRegisteredTypes); // stores the uri
 
+
+void QDeclarativePrivate::qdeclarativeelement_destructor(QObject *o)
+{
+    QObjectPrivate *p = QObjectPrivate::get(o);
+    Q_ASSERT(p->declarativeData);
+    QDeclarativeData *d = static_cast<QDeclarativeData*>(p->declarativeData);
+    if (d->ownContext) 
+        d->context->destroy();
+}
+
+void QDeclarativeData::destroyed(QAbstractDeclarativeData *d, QObject *o)
+{
+    static_cast<QDeclarativeData *>(d)->destroyed(o);
+}
+
+void QDeclarativeData::parentChanged(QAbstractDeclarativeData *d, QObject *o, QObject *p)
+{
+    static_cast<QDeclarativeData *>(d)->parentChanged(o, p);
+}
+
 void QDeclarativeEnginePrivate::init()
 {
     Q_Q(QDeclarativeEngine);
     qRegisterMetaType<QVariant>("QVariant");
     qRegisterMetaType<QDeclarativeScriptString>("QDeclarativeScriptString");
     qRegisterMetaType<QScriptValue>("QScriptValue");
+
+    QDeclarativeData::init();
 
     contextClass = new QDeclarativeContextScriptClass(q);
     objectClass = new QDeclarativeObjectScriptClass(q);
@@ -396,7 +421,7 @@ QDeclarativeWorkerScriptEngine *QDeclarativeEnginePrivate::getWorkerScriptEngine
   \code
   QDeclarativeEngine engine;
   QDeclarativeComponent component(&engine);
-  component.setData("import Qt 4.6\nText { text: \"Hello world!\" }", QUrl());
+  component.setData("import Qt 4.7\nText { text: \"Hello world!\" }", QUrl());
   QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(component.create());
   
   //add item to view, etc
@@ -643,8 +668,8 @@ QDeclarativeContext *QDeclarativeEngine::contextForObject(const QObject *object)
 
     QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
 
-    QDeclarativeDeclarativeData *data =
-        static_cast<QDeclarativeDeclarativeData *>(priv->declarativeData);
+    QDeclarativeData *data =
+        static_cast<QDeclarativeData *>(priv->declarativeData);
 
     if (!data)
         return 0;
@@ -667,7 +692,7 @@ void QDeclarativeEngine::setContextForObject(QObject *object, QDeclarativeContex
     if (!object || !context)
         return;
 
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object, true);
+    QDeclarativeData *data = QDeclarativeData::get(object, true);
     if (data->context) {
         qWarning("QDeclarativeEngine::setContextForObject(): Object already has a QDeclarativeContext");
         return;
@@ -718,7 +743,7 @@ void QDeclarativeEngine::setContextForObject(QObject *object, QDeclarativeContex
 */
 void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership ownership)
 {
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object, true);
+    QDeclarativeData *ddata = QDeclarativeData::get(object, true);
     if (!ddata)
         return;
 
@@ -731,7 +756,7 @@ void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership own
 */
 QDeclarativeEngine::ObjectOwnership QDeclarativeEngine::objectOwnership(QObject *object)
 {
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object, false);
+    QDeclarativeData *ddata = QDeclarativeData::get(object, false);
     if (!ddata) 
         return CppOwnership;
     else
@@ -740,14 +765,14 @@ QDeclarativeEngine::ObjectOwnership QDeclarativeEngine::objectOwnership(QObject 
 
 void qmlExecuteDeferred(QObject *object)
 {
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object);
+    QDeclarativeData *data = QDeclarativeData::get(object);
 
     if (data && data->deferredComponent) {
 
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(data->context->engine);
 
         QDeclarativeComponentPrivate::ConstructionState state;
-        QDeclarativeComponentPrivate::beginDeferred(data->context, ep, object, &state);
+        QDeclarativeComponentPrivate::beginDeferred(ep, object, &state);
 
         data->deferredComponent->release();
         data->deferredComponent = 0;
@@ -773,7 +798,7 @@ QDeclarativeEngine *qmlEngine(const QObject *obj)
 
 QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool create)
 {
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object);
+    QDeclarativeData *data = QDeclarativeData::get(object);
     if (!data)
         return 0; // Attached properties are only on objects created by QML
 
@@ -808,7 +833,7 @@ QObject *qmlAttachedPropertiesObject(int *idCache, const QObject *object,
     return qmlAttachedPropertiesObjectById(*idCache, object, create);
 }
 
-void QDeclarativeDeclarativeData::destroyed(QObject *object)
+void QDeclarativeData::destroyed(QObject *object)
 {
     if (deferredComponent)
         deferredComponent->release();
@@ -835,6 +860,9 @@ void QDeclarativeDeclarativeData::destroyed(QObject *object)
     if (propertyCache)
         propertyCache->release();
 
+    if (ownContext && context)
+        context->destroy();
+
     QDeclarativeGuard<QObject> *guard = guards;
     while (guard) {
         QDeclarativeGuard<QObject> *g = guard;
@@ -845,21 +873,19 @@ void QDeclarativeDeclarativeData::destroyed(QObject *object)
         g->objectDestroyed(object);
     }
 
-    if (ownContext)
-        context->destroy();
+    if (scriptValue)
+        delete scriptValue;
 
     if (ownMemory)
         delete this;
-    else 
-        this->~QDeclarativeDeclarativeData();
 }
 
-void QDeclarativeDeclarativeData::parentChanged(QObject *, QObject *parent)
+void QDeclarativeData::parentChanged(QObject *, QObject *parent)
 {
-    if (!parent && scriptValue.isValid()) scriptValue = QScriptValue();
+    if (!parent && scriptValue) { delete scriptValue; scriptValue = 0; }
 }
 
-bool QDeclarativeDeclarativeData::hasBindingBit(int bit) const
+bool QDeclarativeData::hasBindingBit(int bit) const
 {
     if (bindingBitsSize > bit) 
         return bindingBits[bit / 32] & (1 << (bit % 32));
@@ -867,13 +893,13 @@ bool QDeclarativeDeclarativeData::hasBindingBit(int bit) const
         return false;
 }
 
-void QDeclarativeDeclarativeData::clearBindingBit(int bit)
+void QDeclarativeData::clearBindingBit(int bit)
 {
     if (bindingBitsSize > bit) 
         bindingBits[bit / 32] &= ~(1 << (bit % 32));
 }
 
-void QDeclarativeDeclarativeData::setBindingBit(QObject *obj, int bit)
+void QDeclarativeData::setBindingBit(QObject *obj, int bit)
 {
     if (bindingBitsSize <= bit) {
         int props = obj->metaObject()->propertyCount();
@@ -939,7 +965,7 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
         QUrl url = QUrl(context->resolvedUrl(QUrl(arg)));
         QDeclarativeComponent *c = new QDeclarativeComponent(activeEngine, url, activeEngine);
         QDeclarativeComponentPrivate::get(c)->creationContext = context;
-        QDeclarativeDeclarativeData::get(c, true)->setImplicitDestructible();
+        QDeclarativeData::get(c, true)->setImplicitDestructible();
         return activeEnginePriv->objectClass->newQObject(c, qMetaTypeId<QDeclarativeComponent*>());
     }
 }
@@ -1010,8 +1036,16 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
     if(gobj && gparent)
         gobj->setParentItem(gparent);
 
-    QDeclarativeDeclarativeData::get(obj, true)->setImplicitDestructible();
+    QDeclarativeData::get(obj, true)->setImplicitDestructible();
     return activeEnginePriv->objectClass->newQObject(obj, QMetaType::QObjectStar);
+}
+
+QScriptValue QDeclarativeEnginePrivate::isQtObject(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    if (ctxt->argumentCount() == 0)
+        return QScriptValue(engine, false);
+
+    return QScriptValue(engine, 0 != ctxt->argument(0).toQObject());
 }
 
 QScriptValue QDeclarativeEnginePrivate::vector(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1192,7 +1226,10 @@ QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QSc
 {
     if(ctxt->argumentCount() < 1)
         return e->newVariant(QVariant(false));
-    bool ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
+    bool ret = false;
+#ifndef QT_NO_DESKTOPSERVICES
+    ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
+#endif
     return e->newVariant(QVariant(ret));
 }
 
@@ -1310,7 +1347,6 @@ QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine
     return qScriptValueFromValue(engine, qVariantFromValue(finalColor));
 }
 
-
 QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &val)
 {
     if (val.userType() == qMetaTypeId<QDeclarativeListReference>()) {
@@ -1321,7 +1357,17 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
         } else {
             return scriptEngine.nullValue();
         }
-    } 
+    } else if (val.userType() == qMetaTypeId<QList<QObject *> >()) {
+        const QList<QObject *> &list = *(QList<QObject *>*)val.constData();
+        QScriptValue rv = scriptEngine.newArray(list.count());
+        for (int ii = 0; ii < list.count(); ++ii) {
+            QObject *object = list.at(ii);
+            rv.setProperty(ii, objectClass->newQObject(object));
+        }
+        return rv;
+    } else if (QDeclarativeValueType *vt = valueTypes[val.userType()]) {
+        return valueTypeClass->newObject(val, vt);
+    }
 
     bool objOk;
     QObject *obj = QDeclarativeMetaType::toQObject(val, &objOk);
@@ -1332,35 +1378,29 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
     }
 }
 
-QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val)
+QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val, int hint)
 {
     QScriptDeclarativeClass *dc = QScriptDeclarativeClass::scriptClass(val);
     if (dc == objectClass)
         return QVariant::fromValue(objectClass->toQObject(val));
+    else if (dc == valueTypeClass) 
+        return valueTypeClass->toVariant(val);
     else if (dc == contextClass)
         return QVariant();
 
-    QScriptDeclarativeClass *sc = QScriptDeclarativeClass::scriptClass(val);
-    if (!sc) {
-        return val.toVariant();
-    } else if (sc == valueTypeClass) {
-        return valueTypeClass->toVariant(val);
-    } else {
-        return QVariant();
+    // Convert to a QList<QObject*> only if val is an array and we were explicitly hinted
+    if (hint == qMetaTypeId<QList<QObject *> >() && val.isArray()) {
+        QList<QObject *> list;
+        int length = val.property(QLatin1String("length")).toInt32();
+        for (int ii = 0; ii < length; ++ii) {
+            QScriptValue arrayItem = val.property(ii);
+            QObject *d = arrayItem.toQObject();
+            list << d;
+        }
+        return QVariant::fromValue(list);
     }
-}
 
-QDeclarativeScriptClass::QDeclarativeScriptClass(QScriptEngine *engine)
-: QScriptDeclarativeClass(engine)
-{
-}
-
-QVariant QDeclarativeScriptClass::toVariant(QDeclarativeEngine *engine, const QScriptValue &val)
-{
-    QDeclarativeEnginePrivate *ep =
-        static_cast<QDeclarativeEnginePrivate *>(QObjectPrivate::get(engine));
-
-    return ep->scriptValueToVariant(val);
+    return val.toVariant();
 }
 
 // XXX this beyonds in QUrl::toLocalFile()
@@ -1463,13 +1503,17 @@ public:
 
     QSet<QString> qmlDirFilesForWhichPluginsHaveBeenLoaded;
 
-    QDeclarativeDirComponents importExtension(const QString &absoluteFilePath, const QString &uri, QDeclarativeEngine *engine) {
+    bool importExtension(const QString &absoluteFilePath, const QString &uri, QDeclarativeEngine *engine, QDeclarativeDirComponents* components, QString *errorString) {
         QFile file(absoluteFilePath);
         QString filecontent;
         if (file.open(QFile::ReadOnly)) {
             filecontent = QString::fromUtf8(file.readAll());
             if (qmlImportTrace())
                 qDebug() << "QDeclarativeEngine::add: loaded" << absoluteFilePath;
+        } else {
+            if (errorString)
+                *errorString = QDeclarativeEngine::tr("module \"%1\" definition \"%2\" not readable").arg(uri).arg(absoluteFilePath);
+            return false;
         }
         QDir dir = QFileInfo(file).dir();
 
@@ -1483,23 +1527,29 @@ public:
 
             foreach (const QDeclarativeDirParser::Plugin &plugin, qmldirParser.plugins()) {
 
-                QDir pluginDir = dir.absoluteFilePath(plugin.path);
-
-                // hack for resources, should probably go away
-                if (absoluteFilePath.startsWith(QLatin1Char(':')))
-                    pluginDir = QDir(QCoreApplication::applicationDirPath());
-
                 QString resolvedFilePath =
                         QDeclarativeEnginePrivate::get(engine)
-                        ->resolvePlugin(pluginDir,
+                        ->resolvePlugin(dir, plugin.path,
                                         plugin.name);
 
                 if (!resolvedFilePath.isEmpty()) {
-                    engine->importExtension(resolvedFilePath, uri);
+                    if (!engine->importPlugin(resolvedFilePath, uri, errorString)) {
+                        if (errorString)
+                            *errorString = QDeclarativeEngine::tr("plugin cannot be loaded for module \"%1\": %2").arg(uri).arg(*errorString);
+                        return false;
+                    }
+                } else {
+                    if (errorString)
+                        *errorString = QDeclarativeEngine::tr("module \"%1\" plugin \"%2\" not found").arg(uri).arg(plugin.name);
+                    return false;
                 }
             }
         }
-        return qmldirParser.components();
+
+        if (components)
+            *components = qmldirParser.components();
+
+        return true;
     }
 
     QString resolvedUri(const QString &dir_arg, QDeclarativeEngine *engine)
@@ -1560,7 +1610,8 @@ public:
 
                     url = QUrl::fromLocalFile(fi.absolutePath()).toString();
                     uri = resolvedUri(dir, engine);
-                    qmldircomponents = importExtension(absoluteFilePath, uri, engine);
+                    if (!importExtension(absoluteFilePath, uri, engine, &qmldircomponents, errorString))
+                        return false;
                     break;
                 }
             }
@@ -1591,12 +1642,12 @@ public:
                         return false; // local import dirs must exist
                     }
                     uri = resolvedUri(toLocalFileOrQrc(base.resolved(QUrl(uri))), engine);
-                    qmldircomponents = importExtension(localFileOrQrc,
-                                                    uri,
-                                                    engine);
-
                     if (uri.endsWith(QLatin1Char('/')))
                         uri.chop(1);
+                    if (QFile::exists(localFileOrQrc)) {
+                        if (!importExtension(localFileOrQrc,uri,engine,&qmldircomponents,errorString))
+                            return false;
+                    }
                 } else {
                     if (prefix.isEmpty()) {
                         // directory must at least exist for valid import
@@ -1617,6 +1668,18 @@ public:
             url = base.resolved(QUrl(url)).toString();
             if (url.endsWith(QLatin1Char('/')))
                 url.chop(1);
+        }
+
+        if (vmaj > -1 && vmin > -1 && !qmldircomponents.isEmpty()) {
+            QList<QDeclarativeDirParser::Component>::ConstIterator it = qmldircomponents.begin();
+            for (; it != qmldircomponents.end(); ++it) {
+                if (it->majorVersion > vmaj || (it->majorVersion == vmaj && it->minorVersion >= vmin))
+                    break;
+            }
+            if (it == qmldircomponents.end()) {
+                *errorString = QDeclarativeEngine::tr("module \"%1\" version %2.%3 is not installed").arg(uri_arg).arg(vmaj).arg(vmin);
+                return false;
+            }
         }
 
         s->uris.prepend(uri);
@@ -1778,8 +1841,8 @@ QUrl QDeclarativeEnginePrivate::Imports::baseUrl() const
 }
 
 /*!
-  Adds \a path as a directory where installed QML components are
-  defined in a URL-based directory structure.
+  Adds \a path as a directory where the engine searches for
+  installed modules in a URL-based directory structure.
 
   The newly added \a path will be first in the importPathList().
 
@@ -1802,7 +1865,7 @@ void QDeclarativeEngine::addImportPath(const QString& path)
 
 /*!
   Returns the list of directories where the engine searches for
-  installed modules.
+  installed modules in a URL-based directory structure.
 
   For example, if \c /opt/MyApp/lib/imports is in the path, then QML that
   imports \c com.mycompany.Feature will cause the QDeclarativeEngine to look
@@ -1823,7 +1886,7 @@ QStringList QDeclarativeEngine::importPathList() const
 
 /*!
   Sets the list of directories where the engine searches for
-  installed modules.
+  installed modules in a URL-based directory structure.
 
   By default, the list contains the paths specified in the \c QML_IMPORT_PATH environment
   variable, then the builtin \c ImportsPath from QLibraryInfo.
@@ -1836,15 +1899,75 @@ void QDeclarativeEngine::setImportPathList(const QStringList &paths)
     d->fileImportPath = paths;
 }
 
+
 /*!
-  Imports the extension named \a fileName from the \a uri provided.
-  Returns true if the extension was successfully imported.
+  Adds \a path as a directory where the engine searches for
+  native plugins for imported modules (referenced in the \c qmldir file).
+
+  By default, the list contains only \c .,  i.e. the engine searches
+  in the directory of the \c qmldir file itself.
+
+  The newly added \a path will be first in the pluginPathList().
+
+  \sa setPluginPathList()
 */
-bool QDeclarativeEngine::importExtension(const QString &fileName, const QString &uri)
+void QDeclarativeEngine::addPluginPath(const QString& path)
 {
     if (qmlImportTrace())
-        qDebug() << "QDeclarativeEngine::importExtension" << uri << "from" << fileName;
-    QFileInfo fileInfo(fileName);
+        qDebug() << "QDeclarativeEngine::addPluginPath" << path;
+    Q_D(QDeclarativeEngine);
+    QUrl url = QUrl(path);
+    if (url.isRelative() || url.scheme() == QString::fromLocal8Bit("file")) {
+        QDir dir = QDir(path);
+        d->filePluginPath.prepend(dir.canonicalPath());
+    } else {
+        d->filePluginPath.prepend(path);
+    }
+}
+
+
+/*!
+  Returns the list of directories where the engine searches for
+  native plugins for imported modules (referenced in the \c qmldir file).
+
+  By default, the list contains only \c .,  i.e. the engine searches
+  in the directory of the \c qmldir file itself.
+
+  \sa addPluginPath() setPluginPathList()
+*/
+QStringList QDeclarativeEngine::pluginPathList() const
+{
+    Q_D(const QDeclarativeEngine);
+    return d->filePluginPath;
+}
+
+/*!
+  Sets the list of directories where the engine searches for
+  native plugins for imported modules (referenced in the \c qmldir file).
+
+  By default, the list contains only \c .,  i.e. the engine searches
+  in the directory of the \c qmldir file itself.
+
+  \sa pluginPathList() addPluginPath()
+  */
+void QDeclarativeEngine::setPluginPathList(const QStringList &paths)
+{
+    Q_D(QDeclarativeEngine);
+    d->filePluginPath = paths;
+}
+
+
+/*!
+  Imports the plugin named \a filePath with the \a uri provided.
+  Returns true if the plugin was successfully imported; otherwise returns false.
+
+  The plugin has to be a Qt plugin which implements the QDeclarativeExtensionPlugin interface.
+*/
+bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &uri, QString *errorString)
+{
+    if (qmlImportTrace())
+        qDebug() << "QDeclarativeEngine::importPlugin" << uri << "from" << filePath;
+    QFileInfo fileInfo(filePath);
     const QString absoluteFilePath = fileInfo.absoluteFilePath();
 
     QDeclarativeEnginePrivate *d = QDeclarativeEnginePrivate::get(this);
@@ -1859,6 +1982,12 @@ bool QDeclarativeEngine::importExtension(const QString &fileName, const QString 
 
     if (!engineInitialized || !typesRegistered) {
         QPluginLoader loader(absoluteFilePath);
+
+        if (!loader.load()) {
+            if (errorString)
+                *errorString = loader.errorString();
+            return false;
+        }
 
         if (QDeclarativeExtensionInterface *iface = qobject_cast<QDeclarativeExtensionInterface *>(loader.instance())) {
 
@@ -1878,6 +2007,8 @@ bool QDeclarativeEngine::importExtension(const QString &fileName, const QString 
                 iface->initializeEngine(this, moduleId);
             }
         } else {
+            if (errorString)
+                *errorString = loader.errorString();
             return false;
         }
     }
@@ -1917,27 +2048,53 @@ QString QDeclarativeEngine::offlineStoragePath() const
 /*!
   \internal
 
-  Returns the result of the merge of \a baseName with \a dir, \a suffixes, and \a prefix.
+  Returns the result of the merge of \a baseName with \a path, \a suffixes, and \a prefix.
   The \a prefix must contain the dot.
+
+  \a qmldirPath is the location of the qmldir file.
  */
-QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString &baseName,
+QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName,
                                         const QStringList &suffixes,
                                         const QString &prefix)
 {
-    foreach (const QString &suffix, suffixes) {
-        QString pluginFileName = prefix;
+    QStringList searchPaths = filePluginPath;
+    bool qmldirPluginPathIsRelative = QDir::isRelativePath(qmldirPluginPath);
+    if (!qmldirPluginPathIsRelative)
+        searchPaths.prepend(qmldirPluginPath);
 
-        pluginFileName += baseName;
-        pluginFileName += suffix;
+    foreach (const QString &pluginPath, searchPaths) {
 
-        QFileInfo fileInfo(dir, pluginFileName);
+        QString resolvedPath;
 
-        if (fileInfo.exists())
-            return fileInfo.absoluteFilePath();
+        if (pluginPath == QLatin1String(".")) {
+            if (qmldirPluginPathIsRelative)
+                resolvedPath = qmldirPath.absoluteFilePath(qmldirPluginPath);
+            else
+                resolvedPath = qmldirPath.absolutePath();
+        } else {
+            resolvedPath = pluginPath;
+        }
+
+        // hack for resources, should probably go away
+        if (resolvedPath.startsWith(QLatin1Char(':')))
+            resolvedPath = QCoreApplication::applicationDirPath();
+
+        QDir dir(resolvedPath);
+        foreach (const QString &suffix, suffixes) {
+            QString pluginFileName = prefix;
+
+            pluginFileName += baseName;
+            pluginFileName += suffix;
+
+            QFileInfo fileInfo(dir, pluginFileName);
+
+            if (fileInfo.exists())
+                return fileInfo.absoluteFilePath();
+        }
     }
 
     if (qmlImportTrace())
-        qDebug() << "QDeclarativeEngine::resolvePlugin: Could not resolve plugin" << baseName << "in" << dir.absolutePath();
+        qDebug() << "QDeclarativeEngine::resolvePlugin: Could not resolve plugin" << baseName << "in" << qmldirPath.absolutePath();
     return QString();
 }
 
@@ -1958,17 +2115,17 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
 
   Version number on unix are ignored.
 */
-QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString &baseName)
+QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName)
 {
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    return resolvePlugin(dir, baseName,
+    return resolvePlugin(qmldirPath, qmldirPluginPath, baseName,
                          QStringList()
 # ifdef QT_DEBUG
                          << QLatin1String("d.dll") // try a qmake-style debug build first
 # endif
                          << QLatin1String(".dll"));
 #elif defined(Q_OS_SYMBIAN)
-    return resolvePlugin(dir, baseName,
+    return resolvePlugin(qmldirPath, qmldirPluginPath, baseName,
                          QStringList()
                          << QLatin1String(".dll")
                          << QLatin1String(".qtplugin"));
@@ -1976,7 +2133,7 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
 
 # if defined(Q_OS_DARWIN)
 
-    return resolvePlugin(dir, baseName,
+    return resolvePlugin(qmldirPath, qmldirPluginPath, baseName,
                          QStringList()
 # ifdef QT_DEBUG
                          << QLatin1String("_debug.dylib") // try a qmake-style debug build first
@@ -2010,7 +2167,7 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
     // Examples of valid library names:
     //  libfoo.so
 
-    return resolvePlugin(dir, baseName, validSuffixList, QLatin1String("lib"));
+    return resolvePlugin(qmldirPath, qmldirPluginPath, baseName, validSuffixList, QLatin1String("lib"));
 # endif
 
 #endif

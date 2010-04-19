@@ -66,6 +66,7 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qset.h>
+#include <QtCore/QCoreApplication>
 
 QT_BEGIN_NAMESPACE
 
@@ -148,6 +149,7 @@ private:
 class QMetaObjectBuilder;
 class Q_DECLARATIVE_EXPORT QDeclarativeCompiler
 {
+    Q_DECLARE_TR_FUNCTIONS(QDeclarativeCompiler)
 public:
     QDeclarativeCompiler();
 
@@ -158,8 +160,6 @@ public:
 
     static bool isAttachedPropertyName(const QByteArray &);
     static bool isSignalPropertyName(const QByteArray &);
-
-    static QMetaMethod findSignalByName(const QMetaObject *, const QByteArray &name);
 
     int evaluateEnum(const QByteArray& script) const; // for QDeclarativeCustomParser::evaluateEnum
 

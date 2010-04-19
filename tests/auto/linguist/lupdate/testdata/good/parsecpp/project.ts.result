@@ -26,6 +26,15 @@ backslashed \ stuff.</source>
     </message>
 </context>
 <context>
+    <name>Bogus</name>
+    <message>
+        <location filename="main.cpp" line="266"/>
+        <location filename="main.cpp" line="270"/>
+        <source>this should be in Bogus</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Dialog2</name>
     <message numerus="yes">
         <location filename="main.cpp" line="70"/>
@@ -180,6 +189,14 @@ backslashed \ stuff.</source>
     <message>
         <location filename="finddialog.cpp" line="178"/>
         <source>encoding, using QApplication</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="main.cpp" line="276"/>
+        <source>just QObject</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

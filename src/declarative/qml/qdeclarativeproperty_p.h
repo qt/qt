@@ -96,8 +96,6 @@ public:
     void initProperty(QObject *obj, const QString &name);
     void initDefault(QObject *obj);
 
-    QMetaMethod findSignal(QObject *, const QString &);
-
     bool isValueType() const;
     int propertyType() const;
     QDeclarativeProperty::PropertyTypeCategory propertyTypeCategory() const;
@@ -134,6 +132,7 @@ public:
     static bool write(const QDeclarativeProperty &that, const QVariant &, WriteFlags);
     static int valueTypeCoreIndex(const QDeclarativeProperty &that);
     static int bindingIndex(const QDeclarativeProperty &that);
+    static QMetaMethod findSignalByName(const QMetaObject *mo, const QByteArray &);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativePropertyPrivate::WriteFlags)

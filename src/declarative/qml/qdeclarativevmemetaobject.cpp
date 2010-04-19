@@ -379,7 +379,7 @@ QDeclarativeVMEMetaObject::QDeclarativeVMEMetaObject(QObject *obj,
                                                      const QMetaObject *other, 
                                                      const QDeclarativeVMEMetaData *meta,
                                                      QDeclarativeCompiledData *cdata)
-: object(obj), compiledData(cdata), ctxt(QDeclarativeDeclarativeData::get(obj)->outerContext), 
+: object(obj), compiledData(cdata), ctxt(QDeclarativeData::get(obj)->outerContext), 
   metaData(meta), data(0), methods(0), parent(0)
 {
     compiledData->addref();
@@ -671,7 +671,8 @@ QScriptValue QDeclarativeVMEMetaObject::method(int index)
         // XXX We should evaluate all methods in a single big script block to 
         // improve the call time between dynamic methods defined on the same
         // object
-        methods[index] = QDeclarativeExpressionPrivate::evalInObjectScope(ctxt, object, code);
+        methods[index] = QDeclarativeExpressionPrivate::evalInObjectScope(ctxt, object, code, ctxt->url.toString(),
+                                                                          data->lineNumber, 0);
     }
 
     return methods[index];

@@ -113,7 +113,7 @@ void tst_parserstress::ecmascript()
 
     QString dataStr = QString::fromUtf8(data);
 
-    QString qml = "import Qt 4.6\n";
+    QString qml = "import Qt 4.7\n";
             qml+= "\n";
             qml+= "QtObject {\n";
             qml+= "    property int test\n";
@@ -121,10 +121,8 @@ void tst_parserstress::ecmascript()
             qml+= dataStr + "\n";
             qml+= "        return 1;\n";
             qml+= "    }\n";
-            qml+= "    Script {\n";
-            qml+= "        function stress() {\n";
+            qml+= "    function stress() {\n";
             qml+= dataStr;
-            qml+= "        }\n";
             qml+= "    }\n";
             qml+= "}\n";
 

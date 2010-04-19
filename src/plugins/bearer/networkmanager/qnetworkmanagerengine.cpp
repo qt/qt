@@ -56,6 +56,9 @@
 #include <QDBusMessage>
 #include <QDBusReply>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
@@ -915,3 +918,5 @@ QNetworkConfigurationPrivatePointer QNetworkManagerEngine::defaultConfiguration(
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_DBUS
+#endif // QT_NO_BEARERMANAGEMENT

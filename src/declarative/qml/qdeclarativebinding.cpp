@@ -46,7 +46,7 @@
 #include "qdeclarativecontext.h"
 #include "qdeclarativeinfo.h"
 #include "private/qdeclarativecontext_p.h"
-#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativedata_p.h"
 #include "private/qdeclarativestringconverters_p.h"
 
 #include <QVariant>
@@ -126,7 +126,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 
     QDeclarativeBindingData *data = d->bindingData();
 
-    if (!data->enabled)
+    if (!data->enabled || !data->context() || !data->context()->isValid())
         return;
 
     data->addref();
@@ -148,14 +148,37 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                                   idx, a);
 
         } else {
-            bool isUndefined = false;
-            QVariant value = this->value(&isUndefined);
+            QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(data->context()->engine);
 
-            if (isUndefined && !data->error.isValid() && data->property.isResettable()) {
+            bool isUndefined = false;
+            QVariant value;
+
+            QScriptValue scriptValue = d->scriptValue(0, &isUndefined);
+            if (data->property.propertyTypeCategory() == QDeclarativeProperty::List) {
+                value = ep->scriptValueToVariant(scriptValue, qMetaTypeId<QList<QObject *> >());
+            } else {
+                value = ep->scriptValueToVariant(scriptValue, data->property.propertyType());
+                if (value.userType() == QMetaType::QObjectStar && !qvariant_cast<QObject*>(value)) {
+                    // If the object is null, we extract the predicted type.  While this isn't
+                    // 100% reliable, in many cases it gives us better error messages if we
+                    // assign this null-object to an incompatible property
+                    int type = ep->objectClass->objectType(scriptValue);
+                    QObject *o = 0;
+                    value = QVariant(type, (void *)&o);
+                }
+            }
+
+            if (data->error.isValid()) {
+
+            } else if (isUndefined && data->property.isResettable()) {
 
                 data->property.reset();
 
-            } else if (isUndefined && !data->error.isValid()) {
+            } else if (isUndefined && data->property.propertyType() == qMetaTypeId<QVariant>()) {
+
+                QDeclarativePropertyPrivate::write(data->property, QVariant(), flags);
+
+            } else if (isUndefined) {
 
                 QUrl url = QUrl(data->url);
                 int line = data->line;
@@ -166,7 +189,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                 data->error.setColumn(-1);
                 data->error.setDescription(QLatin1String("Unable to assign [undefined] to ") + QLatin1String(QMetaType::typeName(data->property.propertyType())));
 
-            } else if (!isUndefined && data->property.object() && 
+            } else if (data->property.object() && 
                        !QDeclarativePropertyPrivate::write(data->property, value, flags)) {
 
                 QUrl url = QUrl(data->url);
@@ -187,9 +210,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
             }
 
             if (data->error.isValid()) {
-                QDeclarativeEnginePrivate *p = (data->context() && data->context()->engine)?
-                    QDeclarativeEnginePrivate::get(data->context()->engine):0;
-               if (!data->addError(p)) 
+               if (!data->addError(ep)) 
                    qWarning().nospace() << qPrintable(this->error().toString());
             } else {
                 data->removeError();
@@ -275,7 +296,7 @@ void QDeclarativeAbstractBinding::addToObject(QObject *object)
     Q_ASSERT(!m_prevBinding);
 
     m_object = object;
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object, true);
+    QDeclarativeData *data = QDeclarativeData::get(object, true);
 
     if (index & 0xFF000000) {
         // Value type
@@ -327,7 +348,7 @@ void QDeclarativeAbstractBinding::removeFromObject()
             // Value type - we don't remove the proxy from the object.  It will sit their happily
             // doing nothing for ever more.
         } else {
-            QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(m_object, false);
+            QDeclarativeData *data = QDeclarativeData::get(m_object, false);
             if (data) data->clearBindingBit(index);
         }
 

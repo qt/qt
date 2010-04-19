@@ -45,7 +45,7 @@
 #include "private/qdeclarativeboundsignal_p.h"
 #include "private/qdeclarativestringconverters_p.h"
 #include "private/qmetaobjectbuilder_p.h"
-#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativedata_p.h"
 #include "qdeclarative.h"
 #include "private/qdeclarativecustomparser_p.h"
 #include "qdeclarativeengine.h"
@@ -112,7 +112,7 @@ QObject *QDeclarativeVME::run(QDeclarativeContextData *ctxt, QDeclarativeCompile
 
 void QDeclarativeVME::runDeferred(QObject *object)
 {
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object);
+    QDeclarativeData *data = QDeclarativeData::get(object);
 
     if (!data || !data->context || !data->deferredComponent)
         return;
@@ -194,7 +194,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                     VME_EXCEPTION(QCoreApplication::translate("QDeclarativeVME","Unable to create object of type %1").arg(QString::fromLatin1(types.at(instr.create.type).className)));
                 }
 
-                QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(o);
+                QDeclarativeData *ddata = QDeclarativeData::get(o);
                 Q_ASSERT(ddata);
 
                 if (stack.isEmpty()) {
@@ -236,9 +236,35 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                         } 
                     } else { 
 			    QDeclarative_setParent_noEvent(o, parent);
-       //                 o->setParent(parent); 
                     } 
                 }
+                stack.push(o);
+            }
+            break;
+
+        case QDeclarativeInstruction::CreateSimpleObject:
+            {
+                QObject *o = (QObject *)operator new(instr.createSimple.typeSize + 
+                                                     sizeof(QDeclarativeData));   
+                ::memset(o, 0, instr.createSimple.typeSize + sizeof(QDeclarativeData));
+                instr.createSimple.create(o);
+
+                QDeclarativeData *ddata = 
+                    (QDeclarativeData *)(((const char *)o) + instr.createSimple.typeSize);
+                ddata->lineNumber = instr.line;
+                ddata->columnNumber = instr.createSimple.column;
+
+                QObjectPrivate::get(o)->declarativeData = ddata;                                                      
+                ddata->context = ddata->outerContext = ctxt;
+                ddata->nextContextObject = ctxt->contextObjects; 
+                if (ddata->nextContextObject) 
+                    ddata->nextContextObject->prevContextObject = &ddata->nextContextObject; 
+                ddata->prevContextObject = &ctxt->contextObjects; 
+                ctxt->contextObjects = ddata; 
+
+                QObject *parent = stack.top();                                                                    
+                QDeclarative_setParent_noEvent(o, parent);                                                        
+
                 stack.push(o);
             }
             break;
@@ -263,7 +289,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                     new QDeclarativeComponent(ctxt->engine, comp, ii + 1, instr.createComponent.count,
                                               stack.isEmpty() ? 0 : stack.top());
 
-                QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(qcomp, true);
+                QDeclarativeData *ddata = QDeclarativeData::get(qcomp, true);
                 Q_ASSERT(ddata);
 
                 ctxt->addObject(qcomp);
@@ -296,7 +322,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
                 (void)new QDeclarativeVMEMetaObject(target, &mo, data, comp);
 
-                QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(target, true);
+                QDeclarativeData *ddata = QDeclarativeData::get(target, true);
                 if (ddata->propertyCache) ddata->propertyCache->release();
                 ddata->propertyCache = propertyCaches.at(instr.storeMeta.propertyCache);
                 ddata->propertyCache->addref();
@@ -308,6 +334,26 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                 QObject *target = stack.top();
                 // XXX - can be more efficient
                 QVariant v = QDeclarativeStringConverters::variantFromString(primitives.at(instr.storeString.value));
+                void *a[] = { &v, 0, &status, &flags };
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeString.propertyIndex, a);
+            }
+            break;
+
+        case QDeclarativeInstruction::StoreVariantInteger:
+            {
+                QObject *target = stack.top();
+                QVariant v(instr.storeInteger.value);
+                void *a[] = { &v, 0, &status, &flags };
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeString.propertyIndex, a);
+            }
+            break;
+
+        case QDeclarativeInstruction::StoreVariantDouble:
+            {
+                QObject *target = stack.top();
+                QVariant v(instr.storeDouble.value);
                 void *a[] = { &v, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeString.propertyIndex, a);
@@ -808,8 +854,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
             {
                 if (instr.defer.deferCount) {
                     QObject *target = stack.top();
-                    QDeclarativeDeclarativeData *data = 
-                        QDeclarativeDeclarativeData::get(target, true);
+                    QDeclarativeData *data = 
+                        QDeclarativeData::get(target, true);
                     comp->addref();
                     data->deferredComponent = comp;
                     data->deferredIdx = ii;
@@ -889,8 +935,8 @@ QDeclarativeCompiledData::TypeReference::createInstance(QDeclarativeContextData 
         QObject *rv = 0;
         void *memory = 0;
 
-        type->create(&rv, &memory, sizeof(QDeclarativeDeclarativeData));
-        QDeclarativeDeclarativeData *ddata = new (memory) QDeclarativeDeclarativeData;
+        type->create(&rv, &memory, sizeof(QDeclarativeData));
+        QDeclarativeData *ddata = new (memory) QDeclarativeData;
         ddata->ownMemory = false;
         QObjectPrivate::get(rv)->declarativeData = ddata;
 

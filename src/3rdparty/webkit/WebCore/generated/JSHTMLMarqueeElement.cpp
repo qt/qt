@@ -35,7 +35,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLMarqueeElement);
 
 static const HashTableValue JSHTMLMarqueeElementTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLMarqueeElementConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLMarqueeElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -74,7 +74,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -97,8 +97,8 @@ bool JSHTMLMarqueeElementConstructor::getOwnPropertyDescriptor(ExecState* exec, 
 
 static const HashTableValue JSHTMLMarqueeElementPrototypeTableValues[3] =
 {
-    { "start", DontDelete|Function, (intptr_t)jsHTMLMarqueeElementPrototypeFunctionStart, (intptr_t)0 },
-    { "stop", DontDelete|Function, (intptr_t)jsHTMLMarqueeElementPrototypeFunctionStop, (intptr_t)0 },
+    { "start", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLMarqueeElementPrototypeFunctionStart), (intptr_t)0 },
+    { "stop", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLMarqueeElementPrototypeFunctionStop), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -148,9 +148,9 @@ bool JSHTMLMarqueeElement::getOwnPropertyDescriptor(ExecState* exec, const Ident
     return getStaticValueDescriptor<JSHTMLMarqueeElement, Base>(exec, &JSHTMLMarqueeElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLMarqueeElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLMarqueeElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLMarqueeElement* domObject = static_cast<JSHTMLMarqueeElement*>(asObject(slot.slotBase()));
+    JSHTMLMarqueeElement* domObject = static_cast<JSHTMLMarqueeElement*>(asObject(slotBase));
     return JSHTMLMarqueeElement::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSHTMLMarqueeElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

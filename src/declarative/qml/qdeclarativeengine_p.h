@@ -215,7 +215,7 @@ public:
 
     QList<SimpleList<QDeclarativeAbstractBinding> > bindValues;
     QList<SimpleList<QDeclarativeParserStatus> > parserStatus;
-    QDeclarativeComponentAttached *componentAttacheds;
+    QDeclarativeComponentAttached *componentAttached;
 
     bool inBeginCreate;
 
@@ -231,6 +231,7 @@ public:
 
     QDeclarativeCompositeTypeManager typeManager;
     QStringList fileImportPath;
+    QStringList filePluginPath;
     QString offlineStoragePath;
 
     mutable quint32 uniqueId;
@@ -274,10 +275,10 @@ public:
 
     QSet<QString> initializedPlugins;
 
-    QString resolvePlugin(const QDir &dir, const QString &baseName,
+    QString resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName,
                           const QStringList &suffixes,
                           const QString &prefix = QString());
-    QString resolvePlugin(const QDir &dir, const QString &baseName);
+    QString resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName);
 
 
     bool addToImport(Imports*, const QDeclarativeDirComponents &qmldircomponentsnetwork, 
@@ -308,7 +309,7 @@ public:
     QHash<QString, QScriptValue> m_sharedScriptImports;
 
     QScriptValue scriptValueFromVariant(const QVariant &);
-    QVariant scriptValueToVariant(const QScriptValue &);
+    QVariant scriptValueToVariant(const QScriptValue &, int hint = QVariant::Invalid);
 
     void sendQuit ();
 
@@ -316,6 +317,7 @@ public:
 
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
     static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
+    static QScriptValue isQtObject(QScriptContext*, QScriptEngine*);
     static QScriptValue vector(QScriptContext*, QScriptEngine*);
     static QScriptValue rgba(QScriptContext*, QScriptEngine*);
     static QScriptValue hsla(QScriptContext*, QScriptEngine*);

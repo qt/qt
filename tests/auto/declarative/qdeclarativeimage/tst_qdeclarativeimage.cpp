@@ -46,6 +46,7 @@
 
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
+#include <QtDeclarative/qdeclarativeview.h>
 #include <private/qdeclarativeimage_p.h>
 #include <private/qdeclarativeimagebase_p.h>
 #include <private/qdeclarativeloader_p.h>
@@ -54,8 +55,8 @@
 #include "../shared/testhttpserver.h"
 
 
-#define SERVER_PORT 14445
-#define SERVER_ADDR "http://127.0.0.1:14445"
+#define SERVER_PORT 14451
+#define SERVER_ADDR "http://127.0.0.1:14451"
 
 #define TRY_WAIT(expr) \
     do { \
@@ -80,6 +81,7 @@ private slots:
     void imageSource_data();
     void clearSource();
     void resized();
+    void preserveAspectRatio();
     void smooth();
     void pixmap();
     void svg();
@@ -95,7 +97,7 @@ tst_qdeclarativeimage::tst_qdeclarativeimage()
 
 void tst_qdeclarativeimage::noSource()
 {
-    QString componentStr = "import Qt 4.6\nImage { source: \"\" }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -122,13 +124,14 @@ void tst_qdeclarativeimage::imageSource_data()
     QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << 120.0 << 120.0 << false << false << "";
     QTest::newRow("local async") << QUrl::fromLocalFile(SRCDIR "/data/colors1.png").toString() << 120.0 << 120.0 << false << true << "";
     QTest::newRow("local not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() << 0.0 << 0.0 << false
-        << false << "Cannot open  QUrl( \"" + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() + "\" )  ";
+        << false << "QML Image (file::2:1) Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString();
     QTest::newRow("local async not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString() << 0.0 << 0.0 << false
-        << true << "\"Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString() + "\" ";
+        << true << "QML Image (file::2:1) Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString();
     QTest::newRow("remote") << SERVER_ADDR "/colors.png" << 120.0 << 120.0 << true << false << "";
     QTest::newRow("remote svg") << SERVER_ADDR "/heart.svg" << 550.0 << 500.0 << true << false << "";
-    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << 0.0 << 0.0 << true << false
-        << "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
+    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << 0.0 << 0.0 << true
+        << false << "QML Image (file::2:1) Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found";
+
 }
 
 void tst_qdeclarativeimage::imageSource()
@@ -149,7 +152,7 @@ void tst_qdeclarativeimage::imageSource()
     if (!error.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
-    QString componentStr = "import Qt 4.6\nImage { source: \"" + source + "\"; asynchronous: "
+    QString componentStr = "import Qt 4.7\nImage { source: \"" + source + "\"; asynchronous: "
         + (async ? QLatin1String("true") : QLatin1String("false")) + " }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
@@ -179,7 +182,7 @@ void tst_qdeclarativeimage::imageSource()
 
 void tst_qdeclarativeimage::clearSource()
 {
-    QString componentStr = "import Qt 4.6\nImage { source: srcImage }";
+    QString componentStr = "import Qt 4.7\nImage { source: srcImage }";
     QDeclarativeContext *ctxt = engine.rootContext();
     ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/colors.png"));
     QDeclarativeComponent component(&engine);
@@ -201,7 +204,7 @@ void tst_qdeclarativeimage::clearSource()
 
 void tst_qdeclarativeimage::resized()
 {
-    QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/colors.png\"; width: 300; height: 300 }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"" SRCDIR "/data/colors.png\"; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -209,13 +212,34 @@ void tst_qdeclarativeimage::resized()
     QCOMPARE(obj->width(), 300.);
     QCOMPARE(obj->height(), 300.);
     QCOMPARE(obj->fillMode(), QDeclarativeImage::Stretch);
-
     delete obj;
+}
+
+
+void tst_qdeclarativeimage::preserveAspectRatio()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->show();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/aspectratio.qml"));
+    QDeclarativeImage *image = qobject_cast<QDeclarativeImage*>(canvas->rootObject());
+    QVERIFY(image != 0);
+    image->setWidth(80.0);
+    QCOMPARE(image->width(), 80.);
+    QCOMPARE(image->height(), 80.);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/aspectratio.qml"));
+    image = qobject_cast<QDeclarativeImage*>(canvas->rootObject());
+    image->setHeight(60.0);
+    QVERIFY(image != 0);
+    QCOMPARE(image->height(), 60.);
+    QCOMPARE(image->width(), 60.);
+    delete canvas;
 }
 
 void tst_qdeclarativeimage::smooth()
 {
-    QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/colors.png\"; smooth: true; width: 300; height: 300 }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"" SRCDIR "/data/colors.png\"; smooth: true; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -230,7 +254,7 @@ void tst_qdeclarativeimage::smooth()
 
 void tst_qdeclarativeimage::pixmap()
 {
-    QString componentStr = "import Qt 4.6\nImage { pixmap: testPixmap }";
+    QString componentStr = "import Qt 4.7\nImage { pixmap: testPixmap }";
 
     QPixmap pixmap;
     QDeclarativeContext *ctxt = engine.rootContext();
@@ -261,7 +285,7 @@ void tst_qdeclarativeimage::pixmap()
 void tst_qdeclarativeimage::svg()
 {
     QString src = QUrl::fromLocalFile(SRCDIR "/data/heart.svg").toString();
-    QString componentStr = "import Qt 4.6\nImage { source: \"" + src + "\"; sourceSize.width: 300; sourceSize.height: 300 }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"" + src + "\"; sourceSize.width: 300; sourceSize.height: 300 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -300,7 +324,7 @@ void tst_qdeclarativeimage::big()
     // have to build a 400 MB image. That would be a bug in the JPEG loader.
 
     QString src = QUrl::fromLocalFile(SRCDIR "/data/big.jpeg").toString();
-    QString componentStr = "import Qt 4.6\nImage { source: \"" + src + "\"; sourceSize.width: 256; sourceSize.height: 256 }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"" + src + "\"; sourceSize.width: 256; sourceSize.height: 256 }";
 
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));

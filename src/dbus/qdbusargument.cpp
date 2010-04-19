@@ -56,6 +56,8 @@
 #include "qdbusmetatype_p.h"
 #include "qdbusutil_p.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 QDBusArgumentPrivate::~QDBusArgumentPrivate()
@@ -1328,3 +1330,5 @@ QDBusArgument &operator<<(QDBusArgument &a, const QLineF &line)
 #endif
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

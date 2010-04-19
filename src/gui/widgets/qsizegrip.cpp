@@ -78,6 +78,15 @@ static QWidget *qt_sizegrip_topLevelWidget(QWidget* w)
     return w;
 }
 
+static inline bool hasHeightForWidth(QWidget *widget)
+{
+    if (!widget)
+        return false;
+    if (QLayout *layout = widget->layout())
+        return layout->hasHeightForWidth();
+    return widget->sizePolicy().hasHeightForWidth();
+}
+
 class QSizeGripPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QSizeGrip)
@@ -309,7 +318,7 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
 #ifdef Q_WS_X11
     // Use a native X11 sizegrip for "real" top-level windows if supported.
     if (tlw->isWindow() && X11->isSupportedByWM(ATOM(_NET_WM_MOVERESIZE))
-        && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !tlw->hasHeightForWidth()) {
+        && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !hasHeightForWidth(tlw)) {
         XEvent xev;
         xev.xclient.type = ClientMessage;
         xev.xclient.message_type = ATOM(_NET_WM_MOVERESIZE);
@@ -331,7 +340,7 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
     }
 #endif // Q_WS_X11
 #ifdef Q_WS_WIN
-    if (tlw->isWindow() && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !tlw->hasHeightForWidth()) {
+    if (tlw->isWindow() && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !hasHeightForWidth(tlw)) {
         uint orientation = 0;
         if (d->atBottom())
             orientation = d->atLeft() ? SZ_SIZEBOTTOMLEFT : SZ_SIZEBOTTOMRIGHT;
@@ -420,12 +429,12 @@ void QSizeGrip::mouseMoveEvent(QMouseEvent * e)
 
 #ifdef Q_WS_X11
     if (tlw->isWindow() && X11->isSupportedByWM(ATOM(_NET_WM_MOVERESIZE))
-        && tlw->isTopLevel() && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !tlw->hasHeightForWidth())
+        && tlw->isTopLevel() && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !hasHeightForWidth(tlw))
         return;
 #endif
 #ifdef Q_WS_WIN
     if (tlw->isWindow() && GetSystemMenu(tlw->winId(), FALSE) != 0 && internalWinId()
-        && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !tlw->hasHeightForWidth()) {
+        && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !hasHeightForWidth(tlw)) {
         MSG msg;
         while(PeekMessage(&msg, winId(), WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE));
         return;

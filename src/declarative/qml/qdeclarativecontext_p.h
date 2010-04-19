@@ -55,7 +55,7 @@
 
 #include "qdeclarativecontext.h"
 
-#include "private/qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativedata_p.h"
 #include "private/qdeclarativeintegercache_p.h"
 #include "private/qdeclarativetypenamecache_p.h"
 #include "private/qdeclarativenotifier_p.h"
@@ -106,6 +106,7 @@ public:
     static QObject *context_at(QDeclarativeListProperty<QObject> *, int);
 };
 
+class QDeclarativeComponentAttached;
 class QDeclarativeGuardedContextData;
 class QDeclarativeContextData
 {
@@ -113,13 +114,17 @@ public:
     QDeclarativeContextData();
     QDeclarativeContextData(QDeclarativeContext *);
     void destroy();
+    void invalidate();
+
+    inline bool isValid() const {
+        return engine && (!isInternal || !contextObject || !QObjectPrivate::get(contextObject)->wasDeleted);
+    }
 
     // My parent context and engine
     QDeclarativeContextData *parent;
     QDeclarativeEngine *engine;
 
     void setParent(QDeclarativeContextData *);
-    void invalidateEngines();
     void refreshExpressions();
 
     void addObject(QObject *);
@@ -162,7 +167,7 @@ public:
     QDeclarativeAbstractExpression *expressions;
 
     // Doubly-linked list of objects that are owned by this context
-    QDeclarativeDeclarativeData *contextObjects;
+    QDeclarativeData *contextObjects;
 
     // Doubly-linked list of context guards (XXX merge with contextObjects)
     QDeclarativeGuardedContextData *contextGuards;
@@ -174,7 +179,7 @@ public:
         inline ContextGuard &operator=(QObject *obj)
         { QDeclarativeGuard<QObject>::operator=(obj); return *this; }
         virtual void objectDestroyed(QObject *) { 
-            if (!QObjectPrivate::get(context->contextObject)->wasDeleted) bindings.notify(); 
+            if (context->contextObject && !QObjectPrivate::get(context->contextObject)->wasDeleted) bindings.notify(); 
         }
         QDeclarativeContextData *context;
         QDeclarativeNotifier bindings;
@@ -189,6 +194,10 @@ public:
 
     // Linked contexts. this owns linkedContext.
     QDeclarativeContextData *linkedContext;
+
+    // Linked list of uses of the Component attached property in this
+    // context
+    QDeclarativeComponentAttached *componentAttached;
 
     QString findObjectId(const QObject *obj) const;
 

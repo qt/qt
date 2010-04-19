@@ -39,28 +39,28 @@ ASSERT_CLASS_FITS_IN_CELL(JSWebKitCSSMatrix);
 
 static const HashTableValue JSWebKitCSSMatrixTableValues[23] =
 {
-    { "a", DontDelete, (intptr_t)jsWebKitCSSMatrixA, (intptr_t)setJSWebKitCSSMatrixA },
-    { "b", DontDelete, (intptr_t)jsWebKitCSSMatrixB, (intptr_t)setJSWebKitCSSMatrixB },
-    { "c", DontDelete, (intptr_t)jsWebKitCSSMatrixC, (intptr_t)setJSWebKitCSSMatrixC },
-    { "d", DontDelete, (intptr_t)jsWebKitCSSMatrixD, (intptr_t)setJSWebKitCSSMatrixD },
-    { "e", DontDelete, (intptr_t)jsWebKitCSSMatrixE, (intptr_t)setJSWebKitCSSMatrixE },
-    { "f", DontDelete, (intptr_t)jsWebKitCSSMatrixF, (intptr_t)setJSWebKitCSSMatrixF },
-    { "m11", DontDelete, (intptr_t)jsWebKitCSSMatrixM11, (intptr_t)setJSWebKitCSSMatrixM11 },
-    { "m12", DontDelete, (intptr_t)jsWebKitCSSMatrixM12, (intptr_t)setJSWebKitCSSMatrixM12 },
-    { "m13", DontDelete, (intptr_t)jsWebKitCSSMatrixM13, (intptr_t)setJSWebKitCSSMatrixM13 },
-    { "m14", DontDelete, (intptr_t)jsWebKitCSSMatrixM14, (intptr_t)setJSWebKitCSSMatrixM14 },
-    { "m21", DontDelete, (intptr_t)jsWebKitCSSMatrixM21, (intptr_t)setJSWebKitCSSMatrixM21 },
-    { "m22", DontDelete, (intptr_t)jsWebKitCSSMatrixM22, (intptr_t)setJSWebKitCSSMatrixM22 },
-    { "m23", DontDelete, (intptr_t)jsWebKitCSSMatrixM23, (intptr_t)setJSWebKitCSSMatrixM23 },
-    { "m24", DontDelete, (intptr_t)jsWebKitCSSMatrixM24, (intptr_t)setJSWebKitCSSMatrixM24 },
-    { "m31", DontDelete, (intptr_t)jsWebKitCSSMatrixM31, (intptr_t)setJSWebKitCSSMatrixM31 },
-    { "m32", DontDelete, (intptr_t)jsWebKitCSSMatrixM32, (intptr_t)setJSWebKitCSSMatrixM32 },
-    { "m33", DontDelete, (intptr_t)jsWebKitCSSMatrixM33, (intptr_t)setJSWebKitCSSMatrixM33 },
-    { "m34", DontDelete, (intptr_t)jsWebKitCSSMatrixM34, (intptr_t)setJSWebKitCSSMatrixM34 },
-    { "m41", DontDelete, (intptr_t)jsWebKitCSSMatrixM41, (intptr_t)setJSWebKitCSSMatrixM41 },
-    { "m42", DontDelete, (intptr_t)jsWebKitCSSMatrixM42, (intptr_t)setJSWebKitCSSMatrixM42 },
-    { "m43", DontDelete, (intptr_t)jsWebKitCSSMatrixM43, (intptr_t)setJSWebKitCSSMatrixM43 },
-    { "m44", DontDelete, (intptr_t)jsWebKitCSSMatrixM44, (intptr_t)setJSWebKitCSSMatrixM44 },
+    { "a", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixA), (intptr_t)setJSWebKitCSSMatrixA },
+    { "b", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixB), (intptr_t)setJSWebKitCSSMatrixB },
+    { "c", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixC), (intptr_t)setJSWebKitCSSMatrixC },
+    { "d", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixD), (intptr_t)setJSWebKitCSSMatrixD },
+    { "e", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixE), (intptr_t)setJSWebKitCSSMatrixE },
+    { "f", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixF), (intptr_t)setJSWebKitCSSMatrixF },
+    { "m11", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM11), (intptr_t)setJSWebKitCSSMatrixM11 },
+    { "m12", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM12), (intptr_t)setJSWebKitCSSMatrixM12 },
+    { "m13", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM13), (intptr_t)setJSWebKitCSSMatrixM13 },
+    { "m14", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM14), (intptr_t)setJSWebKitCSSMatrixM14 },
+    { "m21", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM21), (intptr_t)setJSWebKitCSSMatrixM21 },
+    { "m22", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM22), (intptr_t)setJSWebKitCSSMatrixM22 },
+    { "m23", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM23), (intptr_t)setJSWebKitCSSMatrixM23 },
+    { "m24", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM24), (intptr_t)setJSWebKitCSSMatrixM24 },
+    { "m31", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM31), (intptr_t)setJSWebKitCSSMatrixM31 },
+    { "m32", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM32), (intptr_t)setJSWebKitCSSMatrixM32 },
+    { "m33", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM33), (intptr_t)setJSWebKitCSSMatrixM33 },
+    { "m34", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM34), (intptr_t)setJSWebKitCSSMatrixM34 },
+    { "m41", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM41), (intptr_t)setJSWebKitCSSMatrixM41 },
+    { "m42", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM42), (intptr_t)setJSWebKitCSSMatrixM42 },
+    { "m43", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM43), (intptr_t)setJSWebKitCSSMatrixM43 },
+    { "m44", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitCSSMatrixM44), (intptr_t)setJSWebKitCSSMatrixM44 },
     { 0, 0, 0, 0 }
 };
 
@@ -75,14 +75,14 @@ static JSC_CONST_HASHTABLE HashTable JSWebKitCSSMatrixTable =
 
 static const HashTableValue JSWebKitCSSMatrixPrototypeTableValues[9] =
 {
-    { "setMatrixValue", DontDelete|Function, (intptr_t)jsWebKitCSSMatrixPrototypeFunctionSetMatrixValue, (intptr_t)1 },
-    { "multiply", DontDelete|Function, (intptr_t)jsWebKitCSSMatrixPrototypeFunctionMultiply, (intptr_t)1 },
-    { "inverse", DontDelete|Function, (intptr_t)jsWebKitCSSMatrixPrototypeFunctionInverse, (intptr_t)0 },
-    { "translate", DontDelete|Function, (intptr_t)jsWebKitCSSMatrixPrototypeFunctionTranslate, (intptr_t)3 },
-    { "scale", DontDelete|Function, (intptr_t)jsWebKitCSSMatrixPrototypeFunctionScale, (intptr_t)3 },
-    { "rotate", DontDelete|Function, (intptr_t)jsWebKitCSSMatrixPrototypeFunctionRotate, (intptr_t)3 },
-    { "rotateAxisAngle", DontDelete|Function, (intptr_t)jsWebKitCSSMatrixPrototypeFunctionRotateAxisAngle, (intptr_t)4 },
-    { "toString", DontDelete|DontEnum|Function, (intptr_t)jsWebKitCSSMatrixPrototypeFunctionToString, (intptr_t)0 },
+    { "setMatrixValue", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsWebKitCSSMatrixPrototypeFunctionSetMatrixValue), (intptr_t)1 },
+    { "multiply", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsWebKitCSSMatrixPrototypeFunctionMultiply), (intptr_t)1 },
+    { "inverse", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsWebKitCSSMatrixPrototypeFunctionInverse), (intptr_t)0 },
+    { "translate", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsWebKitCSSMatrixPrototypeFunctionTranslate), (intptr_t)3 },
+    { "scale", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsWebKitCSSMatrixPrototypeFunctionScale), (intptr_t)3 },
+    { "rotate", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsWebKitCSSMatrixPrototypeFunctionRotate), (intptr_t)3 },
+    { "rotateAxisAngle", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsWebKitCSSMatrixPrototypeFunctionRotateAxisAngle), (intptr_t)4 },
+    { "toString", DontDelete|DontEnum|Function, (intptr_t)static_cast<NativeFunction>(jsWebKitCSSMatrixPrototypeFunctionToString), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -138,180 +138,202 @@ bool JSWebKitCSSMatrix::getOwnPropertyDescriptor(ExecState* exec, const Identifi
     return getStaticValueDescriptor<JSWebKitCSSMatrix, Base>(exec, &JSWebKitCSSMatrixTable, this, propertyName, descriptor);
 }
 
-JSValue jsWebKitCSSMatrixA(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixA(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->a());
+    JSValue result = jsNumber(exec, imp->a());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixB(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixB(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->b());
+    JSValue result = jsNumber(exec, imp->b());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixC(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixC(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->c());
+    JSValue result = jsNumber(exec, imp->c());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixD(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixD(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->d());
+    JSValue result = jsNumber(exec, imp->d());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixE(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixE(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->e());
+    JSValue result = jsNumber(exec, imp->e());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixF(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixF(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->f());
+    JSValue result = jsNumber(exec, imp->f());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM11(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM11(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m11());
+    JSValue result = jsNumber(exec, imp->m11());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM12(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM12(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m12());
+    JSValue result = jsNumber(exec, imp->m12());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM13(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM13(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m13());
+    JSValue result = jsNumber(exec, imp->m13());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM14(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM14(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m14());
+    JSValue result = jsNumber(exec, imp->m14());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM21(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM21(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m21());
+    JSValue result = jsNumber(exec, imp->m21());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM22(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM22(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m22());
+    JSValue result = jsNumber(exec, imp->m22());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM23(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM23(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m23());
+    JSValue result = jsNumber(exec, imp->m23());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM24(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM24(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m24());
+    JSValue result = jsNumber(exec, imp->m24());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM31(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM31(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m31());
+    JSValue result = jsNumber(exec, imp->m31());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM32(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM32(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m32());
+    JSValue result = jsNumber(exec, imp->m32());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM33(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM33(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m33());
+    JSValue result = jsNumber(exec, imp->m33());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM34(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM34(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m34());
+    JSValue result = jsNumber(exec, imp->m34());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM41(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM41(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m41());
+    JSValue result = jsNumber(exec, imp->m41());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM42(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM42(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m42());
+    JSValue result = jsNumber(exec, imp->m42());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM43(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM43(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m43());
+    JSValue result = jsNumber(exec, imp->m43());
+    return result;
 }
 
-JSValue jsWebKitCSSMatrixM44(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitCSSMatrixM44(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slot.slotBase()));
+    JSWebKitCSSMatrix* castedThis = static_cast<JSWebKitCSSMatrix*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThis->impl());
-    return jsNumber(exec, imp->m44());
+    JSValue result = jsNumber(exec, imp->m44());
+    return result;
 }
 
 void JSWebKitCSSMatrix::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -321,133 +343,155 @@ void JSWebKitCSSMatrix::put(ExecState* exec, const Identifier& propertyName, JSV
 
 void setJSWebKitCSSMatrixA(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setA(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixB(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setB(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixC(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setC(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixD(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setD(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixE(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setE(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixF(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setF(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM11(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM11(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM12(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM12(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM13(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM13(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM14(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM14(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM21(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM21(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM22(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM22(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM23(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM23(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM24(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM24(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM31(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM31(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM32(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM32(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM33(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM33(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM34(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM34(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM41(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM41(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM42(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM42(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM43(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM43(value.toNumber(exec));
 }
 
 void setJSWebKitCSSMatrixM44(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(static_cast<JSWebKitCSSMatrix*>(thisObject)->impl());
+    JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(thisObject);
+    WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
     imp->setM44(value.toNumber(exec));
 }
 

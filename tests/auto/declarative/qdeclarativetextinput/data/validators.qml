@@ -1,9 +1,9 @@
 import Qt 4.7
 
 Item {
-    property var intInput: intInput
-    property var dblInput: dblInput
-    property var strInput: strInput
+    property variant intInput: intInput
+    property variant dblInput: dblInput
+    property variant strInput: strInput
 
     width: 800; height: 600;
 

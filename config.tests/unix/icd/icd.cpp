@@ -42,14 +42,12 @@
 #include <libicd-network-wlan-dev.h>
 #include <maemo_icd.h>
 #include <iapconf.h>
-//#include <proxyconf.h>
+#include <proxyconf.h>
+#include <wlancond.h>
+#include <iapmonitor.h>
 #include <icd/dbus_api.h>
-
-#include <dbus/dbus.h>
-#include <dbus/dbus-glib-lowlevel.h>
 
 int main(int, char **)
 {
-    dbus_shutdown();
     return 0;
 }

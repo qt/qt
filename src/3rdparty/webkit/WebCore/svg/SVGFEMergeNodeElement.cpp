@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -31,7 +29,6 @@ namespace WebCore {
 
 SVGFEMergeNodeElement::SVGFEMergeNodeElement(const QualifiedName& tagName, Document* doc)
     : SVGElement(tagName, doc)
-    , m_in1(this, SVGNames::inAttr)
 {
 }
 
@@ -46,6 +43,14 @@ void SVGFEMergeNodeElement::parseMappedAttribute(MappedAttribute* attr)
         setIn1BaseValue(value);
     else
         SVGElement::parseMappedAttribute(attr);
+}
+
+void SVGFEMergeNodeElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName() || attrName == SVGNames::inAttr)
+        synchronizeIn1();
 }
 
 }

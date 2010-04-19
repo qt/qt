@@ -48,7 +48,7 @@
 #include <private/qdeclarativeloader_p.h>
 #include "testhttpserver.h"
 
-#define SERVER_PORT 14445
+#define SERVER_PORT 14450
 
 inline QUrl TEST_FILE(const QString &filename)
 {
@@ -104,7 +104,7 @@ tst_QDeclarativeLoader::tst_QDeclarativeLoader()
 void tst_QDeclarativeLoader::url()
 {
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"Rect120x60.qml\" }"), TEST_FILE(""));
+    component.setData(QByteArray("import Qt 4.7\nLoader { source: \"Rect120x60.qml\" }"), TEST_FILE(""));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item());
@@ -133,7 +133,7 @@ void tst_QDeclarativeLoader::component()
     QVERIFY(c);
     QCOMPARE(loader->sourceComponent(), c);
 
-    delete loader;
+    delete item;
 }
 
 void tst_QDeclarativeLoader::invalidUrl()
@@ -141,7 +141,7 @@ void tst_QDeclarativeLoader::invalidUrl()
     QTest::ignoreMessage(QtWarningMsg, QString("(:-1: File error for URL " + QUrl::fromLocalFile(SRCDIR "/data/IDontExist.qml").toString() + ") ").toUtf8().constData());
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"IDontExist.qml\" }"), TEST_FILE(""));
+    component.setData(QByteArray("import Qt 4.7\nLoader { source: \"IDontExist.qml\" }"), TEST_FILE(""));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item() == 0);
@@ -157,7 +157,7 @@ void tst_QDeclarativeLoader::clear()
     {
         QDeclarativeComponent component(&engine);
         component.setData(QByteArray(
-                    "import Qt 4.6\n"
+                    "import Qt 4.7\n"
                     " Loader { id: loader\n"
                     "  source: 'Rect120x60.qml'\n"
                     "  Timer { interval: 200; running: true; onTriggered: loader.source = '' }\n"
@@ -196,14 +196,14 @@ void tst_QDeclarativeLoader::clear()
         QCOMPARE(loader->status(), QDeclarativeLoader::Null);
         QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 0);
 
-        delete loader;
+        delete item;
     }
 }
 
 void tst_QDeclarativeLoader::urlToComponent()
 {
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\n"
+    component.setData(QByteArray("import Qt 4.7\n"
                 "Loader {\n"
                 " id: loader\n"
                 " Component { id: myComp; Rectangle { width: 10; height: 10 } }\n"
@@ -242,7 +242,7 @@ void tst_QDeclarativeLoader::componentToUrl()
     QCOMPARE(loader->width(), 120.0);
     QCOMPARE(loader->height(), 60.0);
 
-    delete loader;
+    delete item;
 }
 
 void tst_QDeclarativeLoader::sizeLoaderToItem()
@@ -275,6 +275,8 @@ void tst_QDeclarativeLoader::sizeLoaderToItem()
     QCOMPARE(spy.count(),1);
     loader->setResizeMode(QDeclarativeLoader::NoResize);
     QCOMPARE(spy.count(),1);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::sizeItemToLoader()
@@ -303,6 +305,8 @@ void tst_QDeclarativeLoader::sizeItemToLoader()
     rect->setHeight(45);
     QCOMPARE(loader->width(), 160.0);
     QCOMPARE(loader->height(), 45.0);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::noResize()
@@ -317,6 +321,8 @@ void tst_QDeclarativeLoader::noResize()
     QVERIFY(rect);
     QCOMPARE(rect->width(), 120.0);
     QCOMPARE(rect->height(), 60.0);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::sizeLoaderToGraphicsWidget()
@@ -344,6 +350,8 @@ void tst_QDeclarativeLoader::sizeLoaderToGraphicsWidget()
     loader->setHeight(30);
     QCOMPARE(widget->size().width(), 180.0);
     QCOMPARE(widget->size().height(), 30.0);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::sizeGraphicsWidgetToLoader()
@@ -374,6 +382,8 @@ void tst_QDeclarativeLoader::sizeGraphicsWidgetToLoader()
     widget->resize(QSizeF(160,45));
     QCOMPARE(loader->width(), 160.0);
     QCOMPARE(loader->height(), 45.0);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::noResizeGraphicsWidget()
@@ -391,6 +401,8 @@ void tst_QDeclarativeLoader::noResizeGraphicsWidget()
     QVERIFY(widget);
     QCOMPARE(widget->size().width(), 250.0);
     QCOMPARE(widget->size().height(), 250.0);
+
+    delete loader;
 }
 
 void tst_QDeclarativeLoader::networkRequestUrl()
@@ -400,7 +412,9 @@ void tst_QDeclarativeLoader::networkRequestUrl()
     server.serveDirectory(SRCDIR "/data");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/Rect120x60.qml\" }"), QUrl("http://127.0.0.1:14445/dummy.qml"));
+    component.setData(QByteArray("import Qt 4.7\nLoader { source: \"http://127.0.0.1:14450/Rect120x60.qml\" }"), QUrl::fromLocalFile(SRCDIR "/dummy.qml"));
+    if (component.isError())
+        qDebug() << component.errors();
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
 
@@ -422,8 +436,8 @@ void tst_QDeclarativeLoader::networkComponent()
 
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray(
-                "import Qt 4.6\n"
-                "import \"http://127.0.0.1:14445/\" as NW\n"
+                "import Qt 4.7\n"
+                "import \"http://127.0.0.1:14450/\" as NW\n"
                 "Item {\n"
                 " Component { id: comp; NW.SlowRect {} }\n"
                 " Loader { sourceComponent: comp } }")
@@ -451,10 +465,10 @@ void tst_QDeclarativeLoader::failNetworkRequest()
     QVERIFY(server.isValid());
     server.serveDirectory(SRCDIR "/data");
 
-    QTest::ignoreMessage(QtWarningMsg, "(:-1: Network error for URL http://127.0.0.1:14445/IDontExist.qml) ");
+    QTest::ignoreMessage(QtWarningMsg, "(:-1: Network error for URL http://127.0.0.1:14450/IDontExist.qml) ");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/IDontExist.qml\" }"), QUrl("http://127.0.0.1:14445/dummy.qml"));
+    component.setData(QByteArray("import Qt 4.7\nLoader { source: \"http://127.0.0.1:14450/IDontExist.qml\" }"), QUrl::fromLocalFile("http://127.0.0.1:14450/dummy.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
 
@@ -504,8 +518,9 @@ void tst_QDeclarativeLoader::nonItem()
 void tst_QDeclarativeLoader::vmeErrors()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("vmeErrors.qml"));
-    QString err = QString("(") + QUrl::fromLocalFile(SRCDIR).toString() + QString("/data/VmeError.qml:6: Cannot assign object type QObject with no default method\n        onSomethingHappened: QtObject {}) ");
-    QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
+    //ignore message for now
+    //QString err = QUrl::fromLocalFile(SRCDIR "/data/VmeError.qml:6: Cannot assign object type QObject with no default method\n        onSomethingHappened: QtObject {}) ");
+    //QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader);
     QVERIFY(loader->item() == 0);

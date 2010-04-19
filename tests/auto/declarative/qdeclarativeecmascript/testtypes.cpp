@@ -80,6 +80,7 @@ void registerTypes()
     qmlRegisterExtendedType<MyBaseExtendedObject, BaseExtensionObject>("Qt.test", 1,0, "MyBaseExtendedObject");
     qmlRegisterExtendedType<MyExtendedObject, ExtensionObject>("Qt.test", 1,0, "MyExtendedObject");
     qmlRegisterType<MyTypeObject>("Qt.test", 1,0, "MyTypeObject");
+    qmlRegisterType<NumberAssignment>("Qt.test", 1,0, "NumberAssignment");
 }
 
 #include "testtypes.moc"

@@ -172,8 +172,8 @@ void tst_qdeclarativecontext::parentContext()
     delete ctxt2; ctxt2 = 0;
 
     QCOMPARE(ctxt->parentContext(), engine->rootContext());
-    QCOMPARE(ctxt3->parentContext(), ctxt2);
-    QCOMPARE(ctxt4->parentContext(), ctxt2);
+    QCOMPARE(ctxt3->parentContext(), (QDeclarativeContext *)0);
+    QCOMPARE(ctxt4->parentContext(), (QDeclarativeContext *)0);
     QCOMPARE(ctxt5->parentContext(), ctxt);
     QCOMPARE(ctxt6->parentContext(), engine->rootContext());
     QCOMPARE(ctxt7->parentContext(), engine->rootContext());
@@ -181,9 +181,9 @@ void tst_qdeclarativecontext::parentContext()
     delete engine; engine = 0;
 
     QCOMPARE(ctxt->parentContext(), (QDeclarativeContext *)0);
-    QCOMPARE(ctxt3->parentContext(), ctxt2);
-    QCOMPARE(ctxt4->parentContext(), ctxt2);
-    QCOMPARE(ctxt5->parentContext(), ctxt);
+    QCOMPARE(ctxt3->parentContext(), (QDeclarativeContext *)0);
+    QCOMPARE(ctxt4->parentContext(), (QDeclarativeContext *)0);
+    QCOMPARE(ctxt5->parentContext(), (QDeclarativeContext *)0);
     QCOMPARE(ctxt6->parentContext(), (QDeclarativeContext *)0);
     QCOMPARE(ctxt7->parentContext(), (QDeclarativeContext *)0);
 
@@ -228,7 +228,7 @@ private:
 #define TEST_CONTEXT_PROPERTY(ctxt, name, value) \
 { \
     QDeclarativeComponent component(&engine); \
-    component.setData("import Qt 4.6; QtObject { property var test: " #name " }", QUrl()); \
+    component.setData("import Qt 4.7; QtObject { property variant test: " #name " }", QUrl()); \
 \
     QObject *obj = component.create(ctxt); \
 \
@@ -278,7 +278,7 @@ void tst_qdeclarativecontext::setContextProperty()
     // Changes in context properties
     {
         QDeclarativeComponent component(&engine); 
-        component.setData("import Qt 4.6; QtObject { property var test: a }", QUrl()); 
+        component.setData("import Qt 4.7; QtObject { property variant test: a }", QUrl());
 
         QObject *obj = component.create(&ctxt2); 
 
@@ -290,7 +290,7 @@ void tst_qdeclarativecontext::setContextProperty()
     }
     {
         QDeclarativeComponent component(&engine); 
-        component.setData("import Qt 4.6; QtObject { property var test: b }", QUrl()); 
+        component.setData("import Qt 4.7; QtObject { property variant test: b }", QUrl());
 
         QObject *obj = component.create(&ctxt2); 
 
@@ -304,7 +304,7 @@ void tst_qdeclarativecontext::setContextProperty()
     }
     {
         QDeclarativeComponent component(&engine); 
-        component.setData("import Qt 4.6; QtObject { property var test: e.a }", QUrl()); 
+        component.setData("import Qt 4.7; QtObject { property variant test: e.a }", QUrl());
 
         QObject *obj = component.create(&ctxt2); 
 
@@ -318,7 +318,7 @@ void tst_qdeclarativecontext::setContextProperty()
     // New context properties
     {
         QDeclarativeComponent component(&engine); 
-        component.setData("import Qt 4.6; QtObject { property var test: a }", QUrl()); 
+        component.setData("import Qt 4.7; QtObject { property variant test: a }", QUrl());
 
         QObject *obj = component.create(&ctxt2); 
 
@@ -332,7 +332,7 @@ void tst_qdeclarativecontext::setContextProperty()
     // Setting an object-variant context property
     {
         QDeclarativeComponent component(&engine);
-        component.setData("import Qt 4.6; QtObject { id: root; property int a: 10; property int test: ctxtProp.a; property var obj: root; }", QUrl());
+        component.setData("import Qt 4.7; QtObject { id: root; property int a: 10; property int test: ctxtProp.a; property variant obj: root; }", QUrl());
 
         QDeclarativeContext ctxt(engine.rootContext());
         ctxt.setContextProperty("ctxtProp", QVariant());
@@ -380,7 +380,7 @@ void tst_qdeclarativecontext::setContextObject()
     // Changes in context properties
     {
         QDeclarativeComponent component(&engine); 
-        component.setData("import Qt 4.6; QtObject { property var test: a }", QUrl()); 
+        component.setData("import Qt 4.7; QtObject { property variant test: a }", QUrl());
 
         QObject *obj = component.create(&ctxt); 
 
@@ -412,7 +412,7 @@ void tst_qdeclarativecontext::destruction()
 void tst_qdeclarativecontext::idAsContextProperty()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6; QtObject { property var a; a: QtObject { id: myObject } }", QUrl());
+    component.setData("import Qt 4.7; QtObject { property variant a; a: QtObject { id: myObject } }", QUrl());
 
     QObject *obj = component.create();
     QVERIFY(obj);
@@ -432,7 +432,7 @@ void tst_qdeclarativecontext::idAsContextProperty()
 void tst_qdeclarativecontext::readOnlyContexts()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6; QtObject { id: me }", QUrl());
+    component.setData("import Qt 4.7; QtObject { id: me }", QUrl());
 
     QObject *obj = component.create();
     QVERIFY(obj);

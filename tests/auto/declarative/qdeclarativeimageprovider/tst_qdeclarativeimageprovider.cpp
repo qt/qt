@@ -96,9 +96,10 @@ void tst_qdeclarativeimageprovider::imageSource_data()
     QTest::newRow("exists") << "image://test/exists.png" << "" << QSize(100,100) << "";
     QTest::newRow("scaled") << "image://test/exists.png" << "sourceSize: \"80x30\"" << QSize(80,30) << "";
     QTest::newRow("missing") << "image://test/no-such-file.png" << "" << QSize()
-        << "\"Failed to get image from provider: image://test/no-such-file.png\" ";
+        << "QML Image (file::2:1) Failed to get image from provider: image://test/no-such-file.png";
     QTest::newRow("unknown provider") << "image://bogus/exists.png" << "" << QSize()
-        << "\"Failed to get image from provider: image://bogus/exists.png\" ";
+        << "QML Image (file::2:1) Failed to get image from provider: image://bogus/exists.png";
+
 }
     
 void tst_qdeclarativeimageprovider::imageSource()
@@ -114,7 +115,7 @@ void tst_qdeclarativeimageprovider::imageSource()
     engine.addImageProvider("test", new TestProvider);
     QVERIFY(engine.imageProvider("test") != 0);
 
-    QString componentStr = "import Qt 4.6\nImage { source: \"" + source + "\"; " + properties + " }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"" + source + "\"; " + properties + " }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -145,7 +146,7 @@ void tst_qdeclarativeimageprovider::removeProvider()
     QVERIFY(engine.imageProvider("test2") != 0);
 
     // add provider, confirm it works
-    QString componentStr = "import Qt 4.6\nImage { source: \"image://test2/exists1.png\" }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"image://test2/exists1.png\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -157,7 +158,8 @@ void tst_qdeclarativeimageprovider::removeProvider()
     QCOMPARE(obj->width(), 100.0);
 
     // remove the provider and confirm
-    QString error("\"Failed to get image from provider: image://test2/exists2.png\" ");
+    QString error("QML Image (file::2:1) Failed to get image from provider: image://test2/exists2.png");
+
     QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
     engine.removeImageProvider("test2");

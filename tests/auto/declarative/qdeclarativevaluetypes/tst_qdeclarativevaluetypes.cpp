@@ -59,6 +59,7 @@ private slots:
     void pointf();
     void size();
     void sizef();
+    void sizereadonly();
     void rect();
     void rectf();
     void vector3d();
@@ -78,6 +79,7 @@ private slots:
     void cppClasses();
     void enums();
     void conflictingBindings();
+    void returnValues();
 
 private:
     QDeclarativeEngine engine;
@@ -188,6 +190,50 @@ void tst_qdeclarativevaluetypes::sizef()
         QVERIFY(object != 0);
 
         QCOMPARE(object->sizef(), QSizeF(44.3, 92.8));
+
+        delete object;
+    }
+}
+
+void tst_qdeclarativevaluetypes::sizereadonly()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_read.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("s_width").toInt(), 1912);
+        QCOMPARE(object->property("s_height").toInt(), 1913);
+        QCOMPARE(object->property("copy"), QVariant(QSize(1912, 1913)));
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror.qml"));
+        QVERIFY(component.isError());
+        QCOMPARE(component.errors().at(0).description(), QLatin1String("Invalid property assignment: \"sizereadonly\" is a read-only property"));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror2.qml"));
+        QVERIFY(component.isError());
+        QCOMPARE(component.errors().at(0).description(), QLatin1String("Invalid property assignment: \"sizereadonly\" is a read-only property"));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror3.qml"));
+        QVERIFY(component.isError());
+        QCOMPARE(component.errors().at(0).description(), QLatin1String("Invalid property assignment: \"sizereadonly\" is a read-only property"));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror4.qml"));
+
+        QObject *object = component.create();
+        QVERIFY(object);
+
+        QCOMPARE(object->property("sizereadonly").toSize(), QSize(1912, 1913));
 
         delete object;
     }
@@ -349,6 +395,30 @@ void tst_qdeclarativevaluetypes::font()
         QVERIFY(object != 0);
 
         QCOMPARE(object->font().pixelSize(), 10);
+
+        delete object;
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("font_write.4.qml"));
+        QTest::ignoreMessage(QtWarningMsg, "Both point size and pixel size set. Using pixel size. ");
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->font().pixelSize(), 10);
+
+        delete object;
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("font_write.5.qml"));
+        QObject *object = qobject_cast<QObject *>(component.create());
+        QVERIFY(object != 0);
+        MyTypeObject *object1 = object->findChild<MyTypeObject *>("object1");
+        QVERIFY(object1 != 0);
+        MyTypeObject *object2 = object->findChild<MyTypeObject *>("object2");
+        QVERIFY(object2 != 0);
+
+        QCOMPARE(object1->font().pixelSize(), 19);
+        QCOMPARE(object2->font().pointSize(), 14);
 
         delete object;
     }
@@ -692,6 +762,19 @@ void tst_qdeclarativevaluetypes::conflictingBindings()
 
     delete object;
     }
+}
+
+void tst_qdeclarativevaluetypes::returnValues()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("returnValues.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+    QCOMPARE(object->property("size").toSize(), QSize(13, 14));
+
+    delete object;
 }
 
 QTEST_MAIN(tst_qdeclarativevaluetypes)

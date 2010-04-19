@@ -21,7 +21,6 @@
 #ifndef JSClipboard_h
 #define JSClipboard_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -44,7 +43,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -78,7 +77,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSClipboardPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -93,13 +92,13 @@ JSC::JSValue JSC_HOST_CALL jsClipboardPrototypeFunctionSetData(JSC::ExecState*, 
 JSC::JSValue JSC_HOST_CALL jsClipboardPrototypeFunctionSetDragImage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsClipboardDropEffect(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsClipboardDropEffect(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSClipboardDropEffect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsClipboardEffectAllowed(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsClipboardEffectAllowed(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSClipboardEffectAllowed(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsClipboardTypes(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsClipboardFiles(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsClipboardConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsClipboardTypes(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsClipboardFiles(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsClipboardConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

@@ -70,7 +70,7 @@
     \code
     qml myQmlFile.qml
     \endcode
-    
+
     Deploying a QML application via the \c qml executable allows for QML only deployments, but can also
     include custom C++ modules just as easily. Below is an example of how you might structure
     a complex application deployed via the qml runtime, it is a listing of the files that would
@@ -101,7 +101,7 @@
     import "MyAppCore"
     import "OtherModule" 1.0 as Other
     \endcode
-    
+
     \section1 \c qml application functionality
     The \c qml application implements some additional functionality to help it serve the role of a launcher
     for myriad applications. If you implement your own launcher application, you may also wish to reimplement
@@ -134,28 +134,54 @@
     Any QML can be used in the dummy data files. You could even animate the
     fictional data!
 
-    \section2 Screen Orientation
+    \section2 Runtime Object
+
+    All applications using the qmlruntime will have access to the 'runtime'
+    property on the root context. This property contains several information
+    about the runtime environment of the application.
+
+    \section3 Screen Orientation
 
     A special piece of dummy data which is integrated into the runtime is
     a simple orientation property. The orientation can be set via the
     settings menu in the application, or by pressing Ctrl+T to toggle it.
 
-    To use this from within your QML file, import QDeclarativeViewer 1.0 and create a
-    Screen object. This object has a property, orientation, which can be either
-    Screen.Landscape or Screen.Portrait and which can be bound to in your
+    To use this from within your QML file, access runtime.orientation,
+    which can be either Orientation.Landscape or Orientation.Portrait and which can be bound to in your
     application. An example is below:
 
 \code
-    import QDeclarativeViewer 1.0 as QDeclarativeViewer
-    
     Item {
-        QDeclarativeViewer.Screen { id: screen }
-        state: (screen.orientation == QDeclarativeViewer.Screen.Landscape) ? 'landscape' : ''
+        state: (runtime.orientation == Orientation.Landscape) ? 'landscape' : ''
     }
 \endcode
 
     This allows your application to respond to the orientation of the screen changing. The runtime
     will automatically update this on some platforms (currently the N900 only) to match the physical
     screen's orientation. On other plaforms orientation changes will only happen when explictly asked for.
+
+    \section3 Window Active
+
+    The runtime.isActiveWindow property tells whether the main window of the qml runtime is currently active
+    or not. This is specially useful for embedded devices when you want to pause parts of your application,
+    including animations, when your application loses focus or goes to the background.
+
+    The example below, stops the animation when the application's window is deactivated and resumes on activation:
+
+\code
+    Item {
+        width: 300; height: 200
+        Rectangle {
+            width: 100; height: 100
+            color: "green"
+            SequentialAnimation on x {
+                running: runtime.isActiveWindow
+                loops: Animation.Infinite
+                NumberAnimation {to: 200}
+                NumberAnimation {to: 0}
+            }
+        }
+    }
+\endcode
 
 */

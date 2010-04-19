@@ -34,7 +34,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSCDATASection);
 
 static const HashTableValue JSCDATASectionTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCDATASectionConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCDATASectionConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -73,7 +73,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -135,9 +135,9 @@ bool JSCDATASection::getOwnPropertyDescriptor(ExecState* exec, const Identifier&
     return getStaticValueDescriptor<JSCDATASection, Base>(exec, &JSCDATASectionTable, this, propertyName, descriptor);
 }
 
-JSValue jsCDATASectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCDATASectionConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCDATASection* domObject = static_cast<JSCDATASection*>(asObject(slot.slotBase()));
+    JSCDATASection* domObject = static_cast<JSCDATASection*>(asObject(slotBase));
     return JSCDATASection::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSCDATASection::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

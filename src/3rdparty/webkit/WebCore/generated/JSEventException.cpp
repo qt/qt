@@ -38,10 +38,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSEventException);
 
 static const HashTableValue JSEventExceptionTableValues[5] =
 {
-    { "code", DontDelete|ReadOnly, (intptr_t)jsEventExceptionCode, (intptr_t)0 },
-    { "name", DontDelete|ReadOnly, (intptr_t)jsEventExceptionName, (intptr_t)0 },
-    { "message", DontDelete|ReadOnly, (intptr_t)jsEventExceptionMessage, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsEventExceptionConstructor, (intptr_t)0 },
+    { "code", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsEventExceptionCode), (intptr_t)0 },
+    { "name", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsEventExceptionName), (intptr_t)0 },
+    { "message", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsEventExceptionMessage), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsEventExceptionConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -56,7 +56,7 @@ static JSC_CONST_HASHTABLE HashTable JSEventExceptionTable =
 
 static const HashTableValue JSEventExceptionConstructorTableValues[2] =
 {
-    { "UNSPECIFIED_EVENT_TYPE_ERR", DontDelete|ReadOnly, (intptr_t)jsEventExceptionUNSPECIFIED_EVENT_TYPE_ERR, (intptr_t)0 },
+    { "UNSPECIFIED_EVENT_TYPE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsEventExceptionUNSPECIFIED_EVENT_TYPE_ERR), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -104,8 +104,8 @@ bool JSEventExceptionConstructor::getOwnPropertyDescriptor(ExecState* exec, cons
 
 static const HashTableValue JSEventExceptionPrototypeTableValues[3] =
 {
-    { "UNSPECIFIED_EVENT_TYPE_ERR", DontDelete|ReadOnly, (intptr_t)jsEventExceptionUNSPECIFIED_EVENT_TYPE_ERR, (intptr_t)0 },
-    { "toString", DontDelete|DontEnum|Function, (intptr_t)jsEventExceptionPrototypeFunctionToString, (intptr_t)0 },
+    { "UNSPECIFIED_EVENT_TYPE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsEventExceptionUNSPECIFIED_EVENT_TYPE_ERR), (intptr_t)0 },
+    { "toString", DontDelete|DontEnum|Function, (intptr_t)static_cast<NativeFunction>(jsEventExceptionPrototypeFunctionToString), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -169,33 +169,36 @@ bool JSEventException::getOwnPropertyDescriptor(ExecState* exec, const Identifie
     return getStaticValueDescriptor<JSEventException, Base>(exec, getJSEventExceptionTable(exec), this, propertyName, descriptor);
 }
 
-JSValue jsEventExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventExceptionCode(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSEventException* castedThis = static_cast<JSEventException*>(asObject(slot.slotBase()));
+    JSEventException* castedThis = static_cast<JSEventException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     EventException* imp = static_cast<EventException*>(castedThis->impl());
-    return jsNumber(exec, imp->code());
+    JSValue result = jsNumber(exec, imp->code());
+    return result;
 }
 
-JSValue jsEventExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventExceptionName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSEventException* castedThis = static_cast<JSEventException*>(asObject(slot.slotBase()));
+    JSEventException* castedThis = static_cast<JSEventException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     EventException* imp = static_cast<EventException*>(castedThis->impl());
-    return jsString(exec, imp->name());
+    JSValue result = jsString(exec, imp->name());
+    return result;
 }
 
-JSValue jsEventExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventExceptionMessage(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSEventException* castedThis = static_cast<JSEventException*>(asObject(slot.slotBase()));
+    JSEventException* castedThis = static_cast<JSEventException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     EventException* imp = static_cast<EventException*>(castedThis->impl());
-    return jsString(exec, imp->message());
+    JSValue result = jsString(exec, imp->message());
+    return result;
 }
 
-JSValue jsEventExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsEventExceptionConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSEventException* domObject = static_cast<JSEventException*>(asObject(slot.slotBase()));
+    JSEventException* domObject = static_cast<JSEventException*>(asObject(slotBase));
     return JSEventException::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSEventException::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -218,7 +221,7 @@ JSValue JSC_HOST_CALL jsEventExceptionPrototypeFunctionToString(ExecState* exec,
 
 // Constant getters
 
-JSValue jsEventExceptionUNSPECIFIED_EVENT_TYPE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsEventExceptionUNSPECIFIED_EVENT_TYPE_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }

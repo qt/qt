@@ -16,7 +16,7 @@
 # Library General Public License for more details.
 # 
 # You should have received a copy of the GNU Library General Public License
-# aint with this library; see the file COPYING.LIB.  If not, write to
+# along with this library; see the file COPYING.LIB.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 # 
@@ -56,7 +56,6 @@ my $idlFile = $ARGV[0];
 die('Must specify input file.') unless defined($idlFile);
 die('Must specify IDL search path.') unless @idlDirectories;
 die('Must specify generator') unless defined($generator);
-die('Must specify input file.') unless defined($idlFile);
 die('Must specify output directory.') unless defined($outputDirectory);
 die('Must specify defines') unless defined($defines);
 

@@ -65,13 +65,6 @@ static const int maxImageRequestCount = 8;
 
 QT_BEGIN_NAMESPACE
 
-#if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
-inline uint qHash(const QUrl &uri)
-{
-    return qHash(uri.toEncoded(QUrl::FormattingOption(0x100)));
-}
-#endif
-
 static QString toLocalFileOrQrc(const QUrl& url)
 {
     QString r = url.toLocalFile();
@@ -201,8 +194,8 @@ static bool readImage(const QUrl& url, QIODevice *dev, QImage *image, QString *e
         return true;
     } else {
         if (errorString)
-            *errorString = QLatin1String("Error decoding: ") + url.toString()
-                          + QLatin1String(" \"") + imgio.errorString() + QLatin1String("\"");
+            *errorString = QDeclarativePixmapCache::tr("Error decoding: %1: %2").arg(url.toString())
+                                .arg(imgio.errorString());
         return false;
     }
 }
@@ -271,7 +264,7 @@ bool QDeclarativeImageRequestHandler::event(QEvent *event)
                 QString errorStr;
                 if (image.isNull()) {
                     errorCode = QDeclarativeImageReaderEvent::Loading;
-                    errorStr = QLatin1String("Failed to get image from provider: ") + url.toString();
+                    errorStr = QDeclarativePixmapCache::tr("Failed to get image from provider: %1").arg(url.toString());
                 }
                 QCoreApplication::postEvent(runningJob, new QDeclarativeImageReaderEvent(errorCode, errorStr, image));
             } else {
@@ -290,7 +283,7 @@ bool QDeclarativeImageRequestHandler::event(QEvent *event)
                             errorCode = QDeclarativeImageReaderEvent::Loading;
                         }
                     } else {
-                        errorStr = QLatin1String("Cannot open: ") + url.toString();
+                        errorStr = QDeclarativePixmapCache::tr("Cannot open: %1").arg(url.toString());
                         errorCode = QDeclarativeImageReaderEvent::Loading;
                     }
                     QCoreApplication::postEvent(runningJob, new QDeclarativeImageReaderEvent(errorCode, errorStr, image));
@@ -467,6 +460,7 @@ public:
     bool loading;
     QDeclarativeImageReader *reader;
     int forced_width, forced_height;
+    QString errorString;
 };
 
 
@@ -518,7 +512,7 @@ bool QDeclarativePixmapReply::event(QEvent *event)
             if (d->status == Ready)
                 d->pixmap = QPixmap::fromImage(de->image);
             else
-                qWarning() << de->errorString;
+                d->errorString =  de->errorString;
             QByteArray key = d->url.toEncoded(QUrl::FormattingOption(0x100));
             QString strKey = QString::fromLatin1(key.constData(), key.count());
             QPixmapCache::insert(strKey, d->pixmap); // note: may fail (returns false)
@@ -528,6 +522,12 @@ bool QDeclarativePixmapReply::event(QEvent *event)
     }
 
     return QObject::event(event);
+}
+
+QString QDeclarativePixmapReply::errorString() const
+{
+    Q_D(const QDeclarativePixmapReply);
+    return d->errorString;
 }
 
 QDeclarativePixmapReply::Status QDeclarativePixmapReply::status() const
@@ -593,7 +593,7 @@ bool QDeclarativePixmapReply::release(bool defer)
     Note that images sourced from the network will always be loaded and
     decoded asynchonously.
 */
-QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QPixmap *pixmap, QSize *impsize, bool async, int req_width, int req_height)
+QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QPixmap *pixmap, QString *errorString, QSize *impsize, bool async, int req_width, int req_height)
 {
     QDeclarativePixmapReply::Status status = QDeclarativePixmapReply::Unrequested;
     QByteArray key = url.toEncoded(QUrl::FormattingOption(0x100));
@@ -616,17 +616,16 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
                 QFile f(lf);
                 QSize read_impsize;
                 if (f.open(QIODevice::ReadOnly)) {
-                    QString errorString;
                     QImage image;
-                    if (readImage(url, &f, &image, &errorString, &read_impsize, req_width, req_height)) {
+                    if (readImage(url, &f, &image, errorString, &read_impsize, req_width, req_height)) {
                         *pixmap = QPixmap::fromImage(image);
                     } else {
-                        qWarning() << errorString;
                         *pixmap = QPixmap();
                         status = QDeclarativePixmapReply::Error;
                     }
                 } else {
-                    qWarning() << "Cannot open" << url;
+                    if (errorString)
+                        *errorString = tr("Cannot open: %1").arg(url.toString());
                     *pixmap = QPixmap();
                     status = QDeclarativePixmapReply::Error;
                 }
@@ -657,9 +656,15 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
     } else if (QPixmapCache::find(strKey, pixmap)) {
         if (iter != qmlActivePixmapReplies()->end()) {
             status = (*iter)->status();
+            if (errorString)
+                *errorString = (*iter)->errorString();
             (*iter)->release();
+        } else if (pixmap->isNull()) {
+            status = QDeclarativePixmapReply::Error;
+            if (errorString)
+                *errorString = tr("Unknown Error loading %1").arg(url.toString());
         } else {
-            status = pixmap->isNull() ? QDeclarativePixmapReply::Error : QDeclarativePixmapReply::Ready;
+            status = QDeclarativePixmapReply::Ready;
         }
     } else if (iter != qmlActivePixmapReplies()->end()) {
         status = QDeclarativePixmapReply::Loading;

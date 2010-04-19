@@ -176,7 +176,6 @@ public:
     static bool currentExecIsNSAppRun;
     static bool nsAppRunCalledByQt;
     static bool cleanupModalSessionsNeeded;
-    static bool modalSessionsTemporarilyStopped;
     static NSModalSession currentModalSessionCached;
     static NSModalSession currentModalSession();
     static void updateChildrenWorksWhenModal();

@@ -22,11 +22,14 @@
 #include "Identifier.h"
 
 #include "CallFrame.h"
+#include "NumericStrings.h"
 #include <new> // for placement new
 #include <string.h> // for strlen
 #include <wtf/Assertions.h>
 #include <wtf/FastMalloc.h>
 #include <wtf/HashSet.h>
+
+using WTF::ThreadSpecific;
 
 namespace JSC {
 
@@ -38,13 +41,13 @@ public:
     {
         HashSet<UString::Rep*>::iterator end = m_table.end();
         for (HashSet<UString::Rep*>::iterator iter = m_table.begin(); iter != end; ++iter)
-            (*iter)->setIdentifierTable(0);
+            (*iter)->setIsIdentifier(false);
     }
-    
+
     std::pair<HashSet<UString::Rep*>::iterator, bool> add(UString::Rep* value)
     {
         std::pair<HashSet<UString::Rep*>::iterator, bool> result = m_table.add(value);
-        (*result.first)->setIdentifierTable(this);
+        (*result.first)->setIsIdentifier(true);
         return result;
     }
 
@@ -52,7 +55,7 @@ public:
     std::pair<HashSet<UString::Rep*>::iterator, bool> add(U value)
     {
         std::pair<HashSet<UString::Rep*>::iterator, bool> result = m_table.add<U, V>(value);
-        (*result.first)->setIdentifierTable(this);
+        (*result.first)->setIsIdentifier(true);
         return result;
     }
 
@@ -77,20 +80,20 @@ void deleteIdentifierTable(IdentifierTable* table)
 
 bool Identifier::equal(const UString::Rep* r, const char* s)
 {
-    int length = r->len;
-    const UChar* d = r->data();
+    int length = r->length();
+    const UChar* d = r->characters();
     for (int i = 0; i != length; ++i)
         if (d[i] != (unsigned char)s[i])
             return false;
     return s[length] == 0;
 }
 
-bool Identifier::equal(const UString::Rep* r, const UChar* s, int length)
+bool Identifier::equal(const UString::Rep* r, const UChar* s, unsigned length)
 {
-    if (r->len != length)
+    if (r->length() != length)
         return false;
-    const UChar* d = r->data();
-    for (int i = 0; i != length; ++i)
+    const UChar* d = r->characters();
+    for (unsigned i = 0; i != length; ++i)
         if (d[i] != s[i])
             return false;
     return true;
@@ -110,27 +113,21 @@ struct CStringTranslator {
     static void translate(UString::Rep*& location, const char* c, unsigned hash)
     {
         size_t length = strlen(c);
-        UChar* d = static_cast<UChar*>(fastMalloc(sizeof(UChar) * length));
+        UChar* d;
+        UString::Rep* r = UString::Rep::createUninitialized(length, d).releaseRef();
         for (size_t i = 0; i != length; i++)
             d[i] = static_cast<unsigned char>(c[i]); // use unsigned char to zero-extend instead of sign-extend
-        
-        UString::Rep* r = UString::Rep::create(d, static_cast<int>(length)).releaseRef();
-        r->_hash = hash;
-
+        r->setHash(hash);
         location = r;
     }
 };
 
 PassRefPtr<UString::Rep> Identifier::add(JSGlobalData* globalData, const char* c)
 {
-    if (!c) {
-        UString::Rep::null().hash();
-        return &UString::Rep::null();
-    }
-    if (!c[0]) {
-        UString::Rep::empty().hash();
-        return &UString::Rep::empty();
-    }
+    if (!c)
+        return UString::null().rep();
+    if (!c[0])
+        return UString::Rep::empty();
     if (!c[1])
         return add(globalData, globalData->smallStrings.singleCharacterStringRep(static_cast<unsigned char>(c[0])));
 
@@ -175,13 +172,11 @@ struct UCharBufferTranslator {
 
     static void translate(UString::Rep*& location, const UCharBuffer& buf, unsigned hash)
     {
-        UChar* d = static_cast<UChar*>(fastMalloc(sizeof(UChar) * buf.length));
+        UChar* d;
+        UString::Rep* r = UString::Rep::createUninitialized(buf.length, d).releaseRef();
         for (unsigned i = 0; i != buf.length; i++)
             d[i] = buf.s[i];
-        
-        UString::Rep* r = UString::Rep::create(d, buf.length).releaseRef();
-        r->_hash = hash;
-        
+        r->setHash(hash);
         location = r; 
     }
 };
@@ -193,10 +188,8 @@ PassRefPtr<UString::Rep> Identifier::add(JSGlobalData* globalData, const UChar* 
         if (c <= 0xFF)
             return add(globalData, globalData->smallStrings.singleCharacterStringRep(c));
     }
-    if (!length) {
-        UString::Rep::empty().hash();
-        return &UString::Rep::empty();
-    }
+    if (!length)
+        return UString::Rep::empty();
     UCharBuffer buf = {s, length}; 
     pair<HashSet<UString::Rep*>::iterator, bool> addResult = globalData->identifierTable->add<UCharBuffer, UCharBufferTranslator>(buf);
 
@@ -212,22 +205,19 @@ PassRefPtr<UString::Rep> Identifier::add(ExecState* exec, const UChar* s, int le
 
 PassRefPtr<UString::Rep> Identifier::addSlowCase(JSGlobalData* globalData, UString::Rep* r)
 {
-    ASSERT(!r->identifierTable());
-    if (r->len == 1) {
-        UChar c = r->data()[0];
+    ASSERT(!r->isIdentifier());
+    // The empty & null strings are static singletons, and static strings are handled
+    // in ::add() in the header, so we should never get here with a zero length string.
+    ASSERT(r->length());
+
+    if (r->length() == 1) {
+        UChar c = r->characters()[0];
         if (c <= 0xFF)
             r = globalData->smallStrings.singleCharacterStringRep(c);
-            if (r->identifierTable()) {
-#ifndef NDEBUG
-                checkSameIdentifierTable(globalData, r);
-#endif
+            if (r->isIdentifier())
                 return r;
-            }
     }
-    if (!r->len) {
-        UString::Rep::empty().hash();
-        return &UString::Rep::empty();
-    }
+
     return *globalData->identifierTable->add(r).first;
 }
 
@@ -238,29 +228,69 @@ PassRefPtr<UString::Rep> Identifier::addSlowCase(ExecState* exec, UString::Rep* 
 
 void Identifier::remove(UString::Rep* r)
 {
-    r->identifierTable()->remove(r);
+    currentIdentifierTable()->remove(r);
+}
+    
+Identifier Identifier::from(ExecState* exec, unsigned value)
+{
+    return Identifier(exec, exec->globalData().numericStrings.add(value));
+}
+
+Identifier Identifier::from(ExecState* exec, int value)
+{
+    return Identifier(exec, exec->globalData().numericStrings.add(value));
+}
+
+Identifier Identifier::from(ExecState* exec, double value)
+{
+    return Identifier(exec, exec->globalData().numericStrings.add(value));
 }
 
 #ifndef NDEBUG
 
-void Identifier::checkSameIdentifierTable(ExecState* exec, UString::Rep* rep)
+void Identifier::checkCurrentIdentifierTable(JSGlobalData* globalData)
 {
-    ASSERT(rep->identifierTable() == exec->globalData().identifierTable);
+    // Check the identifier table accessible through the threadspecific matches the
+    // globalData's identifier table.
+    ASSERT_UNUSED(globalData, globalData->identifierTable == currentIdentifierTable());
 }
 
-void Identifier::checkSameIdentifierTable(JSGlobalData* globalData, UString::Rep* rep)
+void Identifier::checkCurrentIdentifierTable(ExecState* exec)
 {
-    ASSERT(rep->identifierTable() == globalData->identifierTable);
+    checkCurrentIdentifierTable(&exec->globalData());
 }
 
 #else
 
-void Identifier::checkSameIdentifierTable(ExecState*, UString::Rep*)
+// These only exists so that our exports are the same for debug and release builds.
+// This would be an ASSERT_NOT_REACHED(), but we're in NDEBUG only code here!
+void Identifier::checkCurrentIdentifierTable(JSGlobalData*) { CRASH(); }
+void Identifier::checkCurrentIdentifierTable(ExecState*) { CRASH(); }
+
+#endif
+
+ThreadSpecific<ThreadIdentifierTableData>* g_identifierTableSpecific = 0;
+
+#if ENABLE(JSC_MULTIPLE_THREADS)
+
+pthread_once_t createIdentifierTableSpecificOnce = PTHREAD_ONCE_INIT;
+static void createIdentifierTableSpecificCallback()
 {
+    ASSERT(!g_identifierTableSpecific);
+    g_identifierTableSpecific = new ThreadSpecific<ThreadIdentifierTableData>();
+}
+void createIdentifierTableSpecific()
+{
+    pthread_once(&createIdentifierTableSpecificOnce, createIdentifierTableSpecificCallback);
+    ASSERT(g_identifierTableSpecific);
 }
 
-void Identifier::checkSameIdentifierTable(JSGlobalData*, UString::Rep*)
+#else 
+
+void createIdentifierTableSpecific()
 {
+    ASSERT(!g_identifierTableSpecific);
+    g_identifierTableSpecific = new ThreadSpecific<ThreadIdentifierTableData>();
 }
 
 #endif

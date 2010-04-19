@@ -1,12 +1,13 @@
 //![0]
-import Qt 4.6
+import Qt 4.7
 
 Item { 
-    id:block
+    id: block
     
-    Image { id: img
-        source: "../shared/pics/redStone.png";
+    Image {
+        id: img
         anchors.fill: parent
+        source: "../shared/pics/redStone.png";
     }
 }
 //![0]

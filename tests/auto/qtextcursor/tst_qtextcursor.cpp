@@ -150,6 +150,7 @@ private slots:
     void adjustCursorsOnInsert();
 
     void cursorPositionWithBlockUndoAndRedo();
+    void cursorPositionWithBlockUndoAndRedo2();
 
 private:
     int blockCount();
@@ -1776,6 +1777,39 @@ void tst_QTextCursor::cursorPositionWithBlockUndoAndRedo()
     doc->redo(&cursor);
     QVERIFY(doc->toPlainText() == "*AAAA*BBBB*CCCC*DDDD");
     QCOMPARE(cursor.position(), cursorPositionAfter);
+}
+
+void tst_QTextCursor::cursorPositionWithBlockUndoAndRedo2()
+{
+    cursor.insertText("AAAABBBB");
+    int cursorPositionBefore = cursor.position();
+    cursor.setPosition(0, QTextCursor::KeepAnchor);
+    cursor.beginEditBlock();
+    cursor.removeSelectedText();
+    cursor.insertText("AAAABBBBCCCCDDDD");
+    cursor.endEditBlock();
+    doc->undo(&cursor);
+    QVERIFY(doc->toPlainText() == "AAAABBBB");
+    QCOMPARE(cursor.position(), cursorPositionBefore);
+
+    cursor.insertText("CCCC");
+    QVERIFY(doc->toPlainText() == "AAAABBBBCCCC");
+
+    cursorPositionBefore = cursor.position();
+    cursor.setPosition(0, QTextCursor::KeepAnchor);
+    cursor.beginEditBlock();
+    cursor.removeSelectedText();
+    cursor.insertText("AAAABBBBCCCCDDDD");
+    cursor.endEditBlock();
+
+    /* this undo now implicitely reinserts two segments, first "CCCCC", then
+       "AAAABBBB". The test ensures that the two are combined in order to
+       reconstruct the correct cursor position */
+    doc->undo(&cursor);
+
+
+    QVERIFY(doc->toPlainText() == "AAAABBBBCCCC");
+    QCOMPARE(cursor.position(), cursorPositionBefore);
 }
 
 QTEST_MAIN(tst_QTextCursor)

@@ -816,6 +816,8 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             d->vData.velocity = qMin(event->delta() - d->vData.smoothVelocity.value(), qreal(-250.0));
         d->flicked = false;
         d->flickY(d->vData.velocity);
+        if (d->flicked)
+            movementStarting();
         event->accept();
     } else if (xflick()) {
         if (event->delta() > 0)
@@ -824,6 +826,8 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             d->hData.velocity = qMin(event->delta() - d->hData.smoothVelocity.value(), qreal(-250.0));
         d->flicked = false;
         d->flickX(d->hData.velocity);
+        if (d->flicked)
+            movementStarting();
         event->accept();
     } else {
         QDeclarativeItem::wheelEvent(event);

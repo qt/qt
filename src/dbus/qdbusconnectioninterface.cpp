@@ -51,6 +51,8 @@
 
 #include "qdbus_symbols_p.h"          // for the DBUS_* constants
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -413,3 +415,5 @@ void QDBusConnectionInterface::disconnectNotify(const char *signalName)
  */
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

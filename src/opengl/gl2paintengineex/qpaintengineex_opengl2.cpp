@@ -516,6 +516,8 @@ void QGL2PaintEngineEx::beginNativePainting()
     ensureActive();
     d->transferMode(BrushDrawingMode);
 
+    d->nativePaintingActive = true;
+
     QGLContext *ctx = d->ctx;
     glUseProgram(0);
 
@@ -571,9 +573,9 @@ void QGL2PaintEngineExPrivate::resetGLState()
     glStencilMask(0xff);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     glStencilFunc(GL_ALWAYS, 0, 0xff);
-    glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-    glDisableVertexAttribArray(QT_OPACITY_ATTR);
+    ctx->d_func()->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, false);
+    ctx->d_func()->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, false);
+    ctx->d_func()->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
 #ifndef QT_OPENGL_ES_2
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // color may have been changed by glVertexAttrib()
 #endif
@@ -583,6 +585,12 @@ void QGL2PaintEngineEx::endNativePainting()
 {
     Q_D(QGL2PaintEngineEx);
     d->needsSync = true;
+    d->nativePaintingActive = false;
+}
+
+bool QGL2PaintEngineEx::isNativePaintingActive() const {
+    Q_D(const QGL2PaintEngineEx);
+    return d->nativePaintingActive;
 }
 
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)

@@ -21,7 +21,6 @@
 #ifndef JSNodeIterator_h
 #define JSNodeIterator_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -43,7 +42,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -74,7 +73,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSNodeIteratorPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -88,13 +87,13 @@ JSC::JSValue JSC_HOST_CALL jsNodeIteratorPrototypeFunctionPreviousNode(JSC::Exec
 JSC::JSValue JSC_HOST_CALL jsNodeIteratorPrototypeFunctionDetach(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsNodeIteratorRoot(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeIteratorWhatToShow(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeIteratorFilter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeIteratorExpandEntityReferences(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeIteratorReferenceNode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeIteratorPointerBeforeReferenceNode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsNodeIteratorConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsNodeIteratorRoot(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeIteratorWhatToShow(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeIteratorFilter(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeIteratorExpandEntityReferences(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeIteratorReferenceNode(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeIteratorPointerBeforeReferenceNode(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsNodeIteratorConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

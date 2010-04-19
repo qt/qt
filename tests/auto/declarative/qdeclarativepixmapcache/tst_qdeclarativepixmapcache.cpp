@@ -43,6 +43,8 @@
 #include <private/qdeclarativepixmapcache_p.h>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QNetworkReply>
+#include "testhttpserver.h"
+#include "../../../shared/util.h"
 
 // These don't let normal people run tests!
 //#include "../network-settings.h"
@@ -52,8 +54,10 @@ class tst_qdeclarativepixmapcache : public QObject
     Q_OBJECT
 public:
     tst_qdeclarativepixmapcache() :
-        thisfile(QUrl::fromLocalFile(__FILE__))
+        thisfile(QUrl::fromLocalFile(__FILE__)),
+        server(14452)
     {
+        server.serveDirectory(SRCDIR "/data/http");
     }
 
 private slots:
@@ -65,6 +69,7 @@ private slots:
 private:
     QDeclarativeEngine engine;
     QUrl thisfile;
+    TestHTTPServer server;
 };
 
 
@@ -110,8 +115,8 @@ void tst_qdeclarativepixmapcache::single_data()
     // File URLs are optimized
     QTest::newRow("local") << thisfile.resolved(QUrl("data/exists.png")) << localfile_optimized << true << false;
     QTest::newRow("local") << thisfile.resolved(QUrl("data/notexists.png")) << localfile_optimized << false << false;
-    QTest::newRow("remote") << QUrl("http://qt.nokia.com/logo.png") << false << true << false;
-    QTest::newRow("remote") << QUrl("http://qt.nokia.com/thereisnologo.png") << false << false << true;
+    QTest::newRow("remote") << QUrl("http://127.0.0.1:14452/exists.png") << false << true << false;
+    QTest::newRow("remote") << QUrl("http://127.0.0.1:14452/notexists.png") << false << false << true;
 }
 
 void tst_qdeclarativepixmapcache::single()
@@ -121,19 +126,20 @@ void tst_qdeclarativepixmapcache::single()
     QFETCH(bool, exists);
     QFETCH(bool, neterror);
 
+    QString expectedError;
     if (neterror) {
-        QString expected = "\"Error downloading " + target.toString() + " - server replied: Not Found\" ";
-        QTest::ignoreMessage(QtWarningMsg, expected.toLatin1());
+        expectedError = "Error downloading " + target.toString() + " - server replied: Not found";
     } else if (!exists) {
-        QString expected = "Cannot open  QUrl( \"" + target.toString() + "\" )  ";
-        QTest::ignoreMessage(QtWarningMsg, expected.toLatin1());
+        expectedError = "Cannot open: " + target.toString();
     }
 
     QPixmap pixmap;
     QVERIFY(pixmap.width() <= 0); // Check Qt assumption
-    QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(target, &pixmap);
+    QString errorString;
+    QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(target, &pixmap, &errorString);
 
     if (incache) {
+        QCOMPARE(errorString, expectedError);
         if (exists) {
             QVERIFY(status == QDeclarativePixmapReply::Ready);
             QVERIFY(pixmap.width() > 0);
@@ -151,13 +157,15 @@ void tst_qdeclarativepixmapcache::single()
         QTestEventLoop::instance().enterLoop(10);
         QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(getter.gotslot);
+        QString errorString;
         if (exists) {
-            QVERIFY(QDeclarativePixmapCache::get(target, &pixmap) == QDeclarativePixmapReply::Ready);
+            QVERIFY(QDeclarativePixmapCache::get(target, &pixmap, &errorString) == QDeclarativePixmapReply::Ready);
             QVERIFY(pixmap.width() > 0);
         } else {
-            QVERIFY(QDeclarativePixmapCache::get(target, &pixmap) == QDeclarativePixmapReply::Error);
+            QVERIFY(QDeclarativePixmapCache::get(target, &pixmap, &errorString) == QDeclarativePixmapReply::Error);
             QVERIFY(pixmap.width() <= 0);
         }
+        QCOMPARE(errorString, expectedError);
     }
 
     QCOMPARE(QDeclarativePixmapCache::pendingRequests(), 0);
@@ -183,32 +191,32 @@ void tst_qdeclarativepixmapcache::parallel_data()
             ;
 
     QTest::newRow("remote")
-            << QUrl("http://qt.nokia.com/images/template/checkbox-on.png")
-            << QUrl("http://qt.nokia.com/images/products/qt-logo/image_tile")
+            << QUrl("http://127.0.0.1:14452/exists2.png")
+            << QUrl("http://127.0.0.1:14452/exists3.png")
             << 0
             << -1
             << 2
             ;
 
     QTest::newRow("remoteagain")
-            << QUrl("http://qt.nokia.com/images/template/checkbox-on.png")
-            << QUrl("http://qt.nokia.com/images/products/qt-logo/image_tile")
+            << QUrl("http://127.0.0.1:14452/exists2.png")
+            << QUrl("http://127.0.0.1:14452/exists3.png")
             << 2
             << -1
             << 0
             ;
 
     QTest::newRow("remotecopy")
-            << QUrl("http://qt.nokia.com/images/template/checkbox-off.png")
-            << QUrl("http://qt.nokia.com/images/template/checkbox-off.png")
+            << QUrl("http://127.0.0.1:14452/exists4.png")
+            << QUrl("http://127.0.0.1:14452/exists4.png")
             << 0
             << -1
             << 1
             ;
 
     QTest::newRow("remotecopycancel")
-            << QUrl("http://qt.nokia.com/rounded_block_bg.png")
-            << QUrl("http://qt.nokia.com/rounded_block_bg.png")
+            << QUrl("http://127.0.0.1:14452/exists5.png")
+            << QUrl("http://127.0.0.1:14452/exists5.png")
             << 0
             << 0
             << 1
@@ -231,8 +239,10 @@ void tst_qdeclarativepixmapcache::parallel()
     for (int i=0; i<targets.count(); ++i) {
         QUrl target = targets.at(i);
         QPixmap pixmap;
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(target, &pixmap);
+        QString errorString;
+        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(target, &pixmap, &errorString);
         QDeclarativePixmapReply *reply = 0;
+        QVERIFY(status != QDeclarativePixmapReply::Error);
         if (status != QDeclarativePixmapReply::Error && status != QDeclarativePixmapReply::Ready)
             reply = QDeclarativePixmapCache::request(&engine, target);
         replies.append(reply);
@@ -267,7 +277,8 @@ void tst_qdeclarativepixmapcache::parallel()
             } else {
                 QVERIFY(getters[i]->gotslot);
                 QPixmap pixmap;
-                QVERIFY(QDeclarativePixmapCache::get(targets[i], &pixmap) == QDeclarativePixmapReply::Ready);
+                QString errorString;
+                QVERIFY(QDeclarativePixmapCache::get(targets[i], &pixmap, &errorString) == QDeclarativePixmapReply::Ready);
                 QVERIFY(pixmap.width() > 0);
             }
             delete getters[i];

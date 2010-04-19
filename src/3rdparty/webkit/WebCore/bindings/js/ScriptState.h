@@ -36,6 +36,7 @@
 
 namespace WebCore {
     class DOMWrapperWorld;
+    class Frame;
     class Node;
     class Page;
 
@@ -45,8 +46,10 @@ namespace WebCore {
     // For now, the separation is purely by convention.
     typedef JSC::ExecState ScriptState;
 
-    ScriptState* scriptStateFromNode(Node*);
-    ScriptState* scriptStateFromPage(Page*);
+    ScriptState* mainWorldScriptState(Frame*);
+
+    ScriptState* scriptStateFromNode(DOMWrapperWorld*, Node*);
+    ScriptState* scriptStateFromPage(DOMWrapperWorld*, Page*);
 
 } // namespace WebCore
 

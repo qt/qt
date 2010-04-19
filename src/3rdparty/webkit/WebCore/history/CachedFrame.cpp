@@ -42,6 +42,12 @@
 #include "SVGDocumentExtensions.h"
 #endif
 
+#if ENABLE(TOUCH_EVENTS)
+#include "Chrome.h"
+#include "ChromeClient.h"
+#include "Page.h"
+#endif
+
 namespace WebCore {
 
 #ifndef NDEBUG
@@ -99,7 +105,11 @@ void CachedFrameBase::restore()
     for (unsigned i = 0; i < m_childFrames.size(); ++i)
         m_childFrames[i]->open();
 
-    m_document->dispatchWindowEvent(PageTransitionEvent::create(EventNames().pageshowEvent, true), m_document);
+    m_document->enqueuePageshowEvent(PageshowEventPersisted);
+#if ENABLE(TOUCH_EVENTS)
+    if (m_document->hasListenerType(Document::TOUCH_LISTENER))
+        m_document->page()->chrome()->client()->needTouchEvents(true);
+#endif
 }
 
 CachedFrame::CachedFrame(Frame* frame)
@@ -136,11 +146,19 @@ CachedFrame::CachedFrame(Frame* frame)
     for (unsigned i = 0; i < m_childFrames.size(); ++i)
         frame->tree()->removeChild(m_childFrames[i]->view()->frame());
 
+    if (!m_isMainFrame)
+        frame->page()->decrementFrameCount();
+
 #ifndef NDEBUG
     if (m_isMainFrame)
         LOG(PageCache, "Finished creating CachedFrame for main frame url '%s' and DocumentLoader %p\n", m_url.string().utf8().data(), m_documentLoader.get());
     else
         LOG(PageCache, "Finished creating CachedFrame for child frame with url '%s' and DocumentLoader %p\n", m_url.string().utf8().data(), m_documentLoader.get());
+#endif
+
+#if ENABLE(TOUCH_EVENTS)
+    if (m_document->hasListenerType(Document::TOUCH_LISTENER))
+        m_document->page()->chrome()->client()->needTouchEvents(false);
 #endif
 }
 
@@ -148,6 +166,9 @@ void CachedFrame::open()
 {
     ASSERT(m_view);
     m_view->frame()->loader()->open(*this);
+
+    if (!m_isMainFrame)
+        m_view->frame()->page()->incrementFrameCount();
 }
 
 void CachedFrame::clear()

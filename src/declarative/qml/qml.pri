@@ -94,7 +94,7 @@ HEADERS += \
     $$PWD/qdeclarativecompositetypemanager_p.h \
     $$PWD/qdeclarativelist.h \
     $$PWD/qdeclarativelist_p.h \
-    $$PWD/qdeclarativedeclarativedata_p.h \
+    $$PWD/qdeclarativedata_p.h \
     $$PWD/qdeclarativeerror.h \
     $$PWD/qdeclarativescriptparser_p.h \
     $$PWD/qdeclarativeenginedebug_p.h \
@@ -121,7 +121,6 @@ HEADERS += \
     $$PWD/qdeclarativetypenamescriptclass_p.h \
     $$PWD/qdeclarativelistscriptclass_p.h \
     $$PWD/qdeclarativeworkerscript_p.h \
-    $$PWD/qdeclarativescriptclass_p.h \
     $$PWD/qdeclarativeguard_p.h \
     $$PWD/qdeclarativeimageprovider.h \
     $$PWD/qdeclarativenetworkaccessmanagerfactory.h \

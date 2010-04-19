@@ -50,6 +50,10 @@ public:
     MaemoOrientation()
         : DeviceOrientation(),m_current(Portrait), m_lastSeen(Portrait), m_lastSeenCount(0)
     {
+        m_current = get();
+        if (m_current == UnknownOrientation) 
+            m_current = Portrait;
+
         startTimer(100);
     }
 
@@ -57,14 +61,7 @@ public:
         return m_current;
     }
 
-    void setOrientation(Orientation orient) {
-        //XXX maybe better to just ignore
-        if (orient != m_current) {
-            m_current = orient;
-            emit orientationChanged();
-        }
-    }
-
+    void setOrientation(Orientation) { }
 
 protected:
     virtual void timerEvent(QTimerEvent *)

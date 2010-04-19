@@ -1,6 +1,8 @@
-import Qt 4.6
+import Qt 4.7
 
 Text {
+    text: "?"
+
     function findGreetings() {
         var db = openDatabaseSync("QDeclarativeExampleDB", "1.0", "The Example QML SQL!", 1000000);
 
@@ -24,7 +26,6 @@ Text {
         )
     }
 
-    text: "?"
     Component.onCompleted: findGreetings()
 }
 

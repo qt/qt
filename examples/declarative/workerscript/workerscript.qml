@@ -1,7 +1,7 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
-    width: 480; height: 320;
+    width: 480; height: 320
 
     WorkerScript {
         id: myWorker
@@ -16,8 +16,7 @@ Rectangle {
 
     Rectangle {
         width: 200; height: 200
-        anchors.left: parent.left
-        anchors.leftMargin: 20
+        anchors.left: parent.left; anchors.leftMargin: 20
         color: "red"
 
         MouseArea { 
@@ -28,8 +27,7 @@ Rectangle {
 
     Rectangle {
         width: 200; height: 200
-        anchors.right: parent.right
-        anchors.rightMargin: 20
+        anchors.right: parent.right; anchors.rightMargin: 20
         color: "blue"
 
         MouseArea { 
@@ -40,8 +38,6 @@ Rectangle {
 
     Text {
         text: "Click a Rectangle!"
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 50
+        anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 50 }
     }
 }

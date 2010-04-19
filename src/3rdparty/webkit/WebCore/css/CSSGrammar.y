@@ -97,7 +97,7 @@ static int cssyylex(YYSTYPE* yylval, void* parser)
 
 %}
 
-%expect 51
+%expect 54
 
 %nonassoc LOWEST_PREC
 
@@ -184,18 +184,15 @@ static int cssyylex(YYSTYPE* yylval, void* parser)
 
 %type <rule> charset
 %type <rule> ruleset
-%type <rule> valid_rule_or_import
 %type <rule> media
 %type <rule> import
+%type <rule> namespace
 %type <rule> page
 %type <rule> font_face
 %type <rule> keyframes
 %type <rule> invalid_rule
 %type <rule> save_block
 %type <rule> invalid_at
-%type <rule> invalid_at_list
-%type <rule> invalid_import
-%type <rule> invalid_media
 %type <rule> rule
 %type <rule> valid_rule
 %type <ruleList> block_rule_list 
@@ -249,6 +246,7 @@ static int cssyylex(YYSTYPE* yylval, void* parser)
 
 %type <integer> match
 %type <integer> unary_operator
+%type <integer> maybe_unary_operator
 %type <character> operator
 
 %type <valueList> expr
@@ -268,7 +266,7 @@ static int cssyylex(YYSTYPE* yylval, void* parser)
 %%
 
 stylesheet:
-    maybe_space maybe_charset maybe_sgml import_list variables_list namespace_list rule_list
+    maybe_space maybe_charset maybe_sgml rule_list
   | webkit_rule maybe_space
   | webkit_decls maybe_space
   | webkit_value maybe_space
@@ -278,13 +276,8 @@ stylesheet:
   | webkit_keyframe_rule maybe_space
   ;
 
-valid_rule_or_import:
-    valid_rule
-  | import
-  ;
-
 webkit_rule:
-    WEBKIT_RULE_SYM '{' maybe_space valid_rule_or_import maybe_space '}' {
+    WEBKIT_RULE_SYM '{' maybe_space valid_rule maybe_space '}' {
         static_cast<CSSParser*>(parser)->m_rule = $4;
     }
 ;
@@ -373,31 +366,6 @@ charset:
   }
 ;
 
-import_list:
- /* empty */
- | import_list import maybe_sgml {
-     CSSParser* p = static_cast<CSSParser*>(parser);
-     if ($2 && p->m_styleSheet)
-         p->m_styleSheet->append($2);
- }
- | invalid_at_list {
- }
- ;
-
-variables_list:
-/* empty */
-| variables_list variables_rule maybe_sgml {
-    CSSParser* p = static_cast<CSSParser*>(parser);
-     if ($2 && p->m_styleSheet)
-         p->m_styleSheet->append($2);
-}
-;
-
-namespace_list:
-/* empty */
-| namespace_list namespace maybe_sgml
-;
-
 rule_list:
    /* empty */
  | rule_list rule maybe_sgml {
@@ -413,13 +381,17 @@ valid_rule:
   | page
   | font_face
   | keyframes
+  | namespace
+  | import
+  | variables_rule
   ;
 
 rule:
-    valid_rule
+    valid_rule {
+        static_cast<CSSParser*>(parser)->m_hadSyntacticallyValidCSSRule = true;
+    }
   | invalid_rule
   | invalid_at
-  | invalid_import
   ;
 
 block_rule_list: 
@@ -445,8 +417,10 @@ block_rule:
     block_valid_rule
   | invalid_rule
   | invalid_at
-  | invalid_import
-  | invalid_media
+  | namespace
+  | import
+  | variables_rule
+  | media
   ;
 
 
@@ -570,17 +544,23 @@ variable_name:
 
 namespace:
 NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space ';' {
-    CSSParser* p = static_cast<CSSParser*>(parser);
-    if (p->m_styleSheet)
-        p->m_styleSheet->addNamespace(p, $3, $4);
+    static_cast<CSSParser*>(parser)->addNamespace($3, $4);
+    $$ = 0;
 }
-| NAMESPACE_SYM error invalid_block
-| NAMESPACE_SYM error ';'
+| NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space invalid_block {
+    $$ = 0;
+}
+| NAMESPACE_SYM error invalid_block {
+    $$ = 0;
+}
+| NAMESPACE_SYM error ';' {
+    $$ = 0;
+}
 ;
 
 maybe_ns_prefix:
 /* empty */ { $$.characters = 0; }
-| IDENT WHITESPACE { $$ = $1; }
+| IDENT maybe_space { $$ = $1; }
 ;
 
 string_or_uri:
@@ -788,6 +768,11 @@ combinator:
   | '>' maybe_space { $$ = CSSSelector::Child; }
   ;
 
+maybe_unary_operator:
+    unary_operator { $$ = $1; }
+    | { $$ = 1; }
+    ;
+
 unary_operator:
     '-' { $$ = -1; }
   | '+' { $$ = 1; }
@@ -807,6 +792,7 @@ selector_list:
             deleteAllValues(*$$);
             $$->shrink(0);
             $$->append(p->sinkFloatingSelector($1));
+            p->updateLastSelectorLine();
         }
     }
     | selector_list ',' maybe_space selector %prec UNIMPORTANT_TOK {
@@ -814,6 +800,7 @@ selector_list:
             CSSParser* p = static_cast<CSSParser*>(parser);
             $$ = $1;
             $$->append(p->sinkFloatingSelector($4));
+            p->updateLastSelectorLine();
         } else
             $$ = 0;
     }
@@ -1130,11 +1117,11 @@ pseudo:
         }
     }
     // used by :nth-*(ax+b)
-    | ':' FUNCTION NTH ')' {
+    | ':' FUNCTION maybe_space NTH maybe_space ')' {
         CSSParser *p = static_cast<CSSParser*>(parser);
         $$ = p->createFloatingSelector();
         $$->m_match = CSSSelector::PseudoClass;
-        $$->setArgument($3);
+        $$->setArgument($4);
         $$->m_value = $2;
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown)
@@ -1148,11 +1135,11 @@ pseudo:
         }
     }
     // used by :nth-*
-    | ':' FUNCTION INTEGER ')' {
+    | ':' FUNCTION maybe_space maybe_unary_operator INTEGER maybe_space ')' {
         CSSParser *p = static_cast<CSSParser*>(parser);
         $$ = p->createFloatingSelector();
         $$->m_match = CSSSelector::PseudoClass;
-        $$->setArgument(String::number($3));
+        $$->setArgument(String::number($4 * $5));
         $$->m_value = $2;
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown)
@@ -1166,11 +1153,11 @@ pseudo:
         }
     }
     // used by :nth-*(odd/even) and :lang
-    | ':' FUNCTION IDENT ')' {
+    | ':' FUNCTION maybe_space IDENT maybe_space ')' {
         CSSParser *p = static_cast<CSSParser*>(parser);
         $$ = p->createFloatingSelector();
         $$->m_match = CSSSelector::PseudoClass;
-        $$->setArgument($3);
+        $$->setArgument($4);
         $2.lower();
         $$->m_value = $2;
         CSSSelector::PseudoType type = $$->pseudoType();
@@ -1186,7 +1173,7 @@ pseudo:
     }
     // used by :not
     | ':' NOTFUNCTION maybe_space simple_selector maybe_space ')' {
-        if (!$4 || $4->simpleSelector() || $4->tagHistory())
+        if (!$4 || $4->simpleSelector() || $4->tagHistory() || $4->matchesPseudoElement())
             $$ = 0;
         else {
             CSSParser* p = static_cast<CSSParser*>(parser);
@@ -1228,6 +1215,9 @@ declaration_list:
 decl_list:
     declaration ';' maybe_space {
         $$ = $1;
+    }
+    | declaration invalid_block_list maybe_space {
+        $$ = false;
     }
     | declaration invalid_block_list ';' maybe_space {
         $$ = false;
@@ -1345,6 +1335,12 @@ expr:
             }
             $$->addValue(p->sinkFloatingValue($3));
         }
+    }
+    | expr invalid_block_list {
+        $$ = 0;
+    }
+    | expr invalid_block_list error {
+        $$ = 0;
     }
     | expr error {
         $$ = 0;
@@ -1481,23 +1477,6 @@ invalid_at:
     }
     ;
 
-invalid_at_list:
-    invalid_at maybe_sgml
-  | invalid_at_list invalid_at maybe_sgml
-  ;
-
-invalid_import:
-    import {
-        $$ = 0;
-    }
-    ;
-
-invalid_media:
-    media {
-        $$ = 0;
-    }
-    ;
-
 invalid_rule:
     error invalid_block {
         $$ = 0;
@@ -1517,8 +1496,12 @@ invalid_rule:
     ;
 
 invalid_block:
-    '{' error invalid_block_list error closing_brace
-  | '{' error closing_brace
+    '{' error invalid_block_list error closing_brace {
+        static_cast<CSSParser*>(parser)->invalidBlockHit();
+    }
+  | '{' error closing_brace {
+        static_cast<CSSParser*>(parser)->invalidBlockHit();
+    }
     ;
 
 invalid_block_list:

@@ -69,6 +69,8 @@ public:
     void resetScale();
     qreal scale() const { return textSizeMultiplier(); }
 
+    bool handleForwardBackwardMouseButtons(QMouseEvent *e);
+
     void setSource(const QUrl &url);
     inline QUrl source() const { return url(); }
 

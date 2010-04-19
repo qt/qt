@@ -43,7 +43,7 @@
 // Default values for bison.
 #define YYDEBUG 0 // Set to 1 to debug a parse error.
 #define jscyydebug 0 // Set to 1 to debug a parse error.
-#if !PLATFORM(DARWIN)
+#if !OS(DARWIN)
 // Avoid triggering warnings in older bison by not setting this on the Darwin platform.
 // FIXME: Is this still needed?
 #define YYERROR_VERBOSE
@@ -1987,12 +1987,9 @@ static PropertyNode* makeGetterOrSetterPropertyNode(JSGlobalData* globalData, co
 static ExpressionNode* makeNegateNode(JSGlobalData* globalData, ExpressionNode* n)
 {
     if (n->isNumber()) {
-        NumberNode* number = static_cast<NumberNode*>(n);
-
-        if (number->value() > 0.0) {
-            number->setValue(-number->value());
-            return number;
-        }
+        NumberNode* numberNode = static_cast<NumberNode*>(n);
+        numberNode->setValue(-numberNode->value());
+        return numberNode;
     }
 
     return new (globalData) NegateNode(globalData, n);

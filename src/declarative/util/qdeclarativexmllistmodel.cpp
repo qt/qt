@@ -160,7 +160,7 @@ public:
 
         for (int i=0; i<roleObjects->count(); i++) {
             if (!roleObjects->at(i)->isValid()) {
-                job.roleQueries << "";
+                job.roleQueries << QString();
                 continue;
             }
             job.roleQueries << roleObjects->at(i)->query();

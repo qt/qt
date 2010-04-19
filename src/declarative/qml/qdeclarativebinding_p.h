@@ -92,7 +92,7 @@ protected:
 
 private:
 
-    friend class QDeclarativeDeclarativeData;
+    friend class QDeclarativeData;
     friend class QDeclarativeValueTypeProxyBinding;
     friend class QDeclarativePropertyPrivate;
     friend class QDeclarativeVME;

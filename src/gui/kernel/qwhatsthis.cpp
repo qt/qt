@@ -143,7 +143,7 @@ QT_BEGIN_NAMESPACE
     \sa QToolTip
 */
 
-extern void qDeleteInEventHandler(QObject *o);
+Q_DECL_IMPORT extern void qDeleteInEventHandler(QObject *o);
 
 class QWhatsThat : public QWidget
 {

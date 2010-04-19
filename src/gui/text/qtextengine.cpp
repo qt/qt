@@ -856,7 +856,7 @@ void QTextEngine::shapeLine(const QScriptLine &line)
     }
 }
 
-extern int qt_defaultDpiY(); // in qfont.cpp
+Q_GUI_EXPORT extern int qt_defaultDpiY(); // in qfont.cpp
 
 void QTextEngine::shapeText(int item) const
 {
@@ -2494,7 +2494,7 @@ void QTextEngine::splitItem(int item, int pos) const
 //     qDebug("split at position %d itempos=%d", pos, item);
 }
 
-extern int qt_defaultDpiY();
+Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
 {

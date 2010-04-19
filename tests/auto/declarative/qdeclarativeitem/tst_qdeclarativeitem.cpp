@@ -64,6 +64,9 @@ private slots:
     void transforms();
     void transforms_data();
 
+    void childrenProperty();
+    void resourcesProperty();
+
 private:
     template<typename T>
     T *findItem(QGraphicsObject *parent, const QString &objectName);
@@ -290,7 +293,7 @@ void tst_QDeclarativeItem::keyNavigation()
 void tst_QDeclarativeItem::smooth()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6; Item { smooth: false; }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7; Item { smooth: false; }", QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QSignalSpy spy(item, SIGNAL(smoothChanged(bool)));
 
@@ -319,7 +322,7 @@ void tst_QDeclarativeItem::smooth()
 void tst_QDeclarativeItem::clip()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6\nItem { clip: false\n }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7\nItem { clip: false\n }", QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QSignalSpy spy(item, SIGNAL(clipChanged(bool)));
 
@@ -423,10 +426,40 @@ void tst_QDeclarativeItem::transforms()
     QFETCH(QByteArray, qml);
     QFETCH(QMatrix, matrix);
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6\nItem { transform: "+qml+"}", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7\nItem { transform: "+qml+"}", QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(item->sceneMatrix(), matrix);
+}
+
+void tst_QDeclarativeItem::childrenProperty()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/childrenProperty.qml");
+    
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+    QCOMPARE(o->property("test4").toBool(), true);
+    QCOMPARE(o->property("test5").toBool(), true);
+    delete o;
+}
+
+void tst_QDeclarativeItem::resourcesProperty()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/resourcesProperty.qml");
+    
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+    QCOMPARE(o->property("test4").toBool(), true);
+    QCOMPARE(o->property("test5").toBool(), true);
+    delete o;
 }
 
 void tst_QDeclarativeItem::propertyChanges()

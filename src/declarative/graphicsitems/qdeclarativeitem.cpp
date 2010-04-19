@@ -2507,7 +2507,7 @@ QDeclarativeStateGroup *QDeclarativeItemPrivate::states()
     return _stateGroup;
 }
 
-QDeclarativeItemPrivate::AnchorLines::AnchorLines(QDeclarativeItem *q)
+QDeclarativeItemPrivate::AnchorLines::AnchorLines(QGraphicsObject *q)
 {
     left.item = q;
     left.anchorLine = QDeclarativeAnchorLine::Left;

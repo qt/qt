@@ -30,7 +30,7 @@
 #include "HTTPHeaderMap.h"
 #include "KURL.h"
 
-#include <memory>
+#include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
 
@@ -38,12 +38,12 @@ class ResourceResponse;
 struct CrossThreadResourceResponseData;
 
 // Do not use this class directly, use the class ResponseResponse instead
-class ResourceResponseBase {
+class ResourceResponseBase : public FastAllocBase {
 public:
-    static std::auto_ptr<ResourceResponse> adopt(std::auto_ptr<CrossThreadResourceResponseData>);
+    static PassOwnPtr<ResourceResponse> adopt(PassOwnPtr<CrossThreadResourceResponseData>);
 
     // Gets a copy of the data suitable for passing to another thread.
-    std::auto_ptr<CrossThreadResourceResponseData> copyData() const;
+    PassOwnPtr<CrossThreadResourceResponseData> copyData() const;
 
     bool isNull() const { return m_isNull; }
     bool isHTTP() const;
@@ -71,6 +71,7 @@ public:
     void setHTTPStatusText(const String&);
     
     String httpHeaderField(const AtomicString& name) const;
+    String httpHeaderField(const char* name) const;
     void setHTTPHeaderField(const AtomicString& name, const String& value);
     const HTTPHeaderMap& httpHeaderFields() const;
 
@@ -150,7 +151,7 @@ private:
 inline bool operator==(const ResourceResponse& a, const ResourceResponse& b) { return ResourceResponseBase::compare(a, b); }
 inline bool operator!=(const ResourceResponse& a, const ResourceResponse& b) { return !(a == b); }
 
-struct CrossThreadResourceResponseData {
+struct CrossThreadResourceResponseData : Noncopyable {
     KURL m_url;
     String m_mimeType;
     long long m_expectedContentLength;

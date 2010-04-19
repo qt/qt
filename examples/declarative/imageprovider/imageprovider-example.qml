@@ -1,11 +1,12 @@
-import Qt 4.6
+import Qt 4.7
 import "ImageProviderCore"
 //![0]
 ListView {
-    width: 100
-    height: 100
+    width: 100; height: 100
     anchors.fill: parent
+
     model: myModel
+
     delegate: Component {
         Item {
             width: 100

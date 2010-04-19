@@ -26,15 +26,16 @@
 #ifndef KJS_RUNTIME_OBJECT_H
 #define KJS_RUNTIME_OBJECT_H
 
-#include "runtime.h"
+#include "Bridge.h"
 #include <runtime/JSGlobalObject.h>
 
 namespace JSC {
+namespace Bindings {
 
-class RuntimeObjectImp : public JSObject {
+class RuntimeObject : public JSObject {
 public:
-    RuntimeObjectImp(ExecState*, PassRefPtr<Bindings::Instance>);
-    virtual ~RuntimeObjectImp();
+    RuntimeObject(ExecState*, PassRefPtr<Instance>);
+    virtual ~RuntimeObject();
 
     virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
     virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier& propertyName, PropertyDescriptor&);
@@ -44,12 +45,11 @@ public:
     virtual CallType getCallData(CallData&);
     virtual ConstructType getConstructData(ConstructData&);
 
-    virtual void getPropertyNames(ExecState*, PropertyNameArray&);
-    virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&);
+    virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
 
     void invalidate();
 
-    Bindings::Instance* getInternalInstance() const { return m_instance.get(); }
+    Instance* getInternalInstance() const { return m_instance.get(); }
 
     static JSObject* throwInvalidAccessError(ExecState*);
 
@@ -62,23 +62,24 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue prototype)
     {
-        return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
+        return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
 protected:
     static const unsigned StructureFlags = OverridesGetOwnPropertySlot | OverridesGetPropertyNames | JSObject::StructureFlags;
-    RuntimeObjectImp(ExecState*, NonNullPassRefPtr<Structure>, PassRefPtr<Bindings::Instance>);
+    RuntimeObject(ExecState*, NonNullPassRefPtr<Structure>, PassRefPtr<Instance>);
 
 private:
     virtual const ClassInfo* classInfo() const { return &s_info; }
     
-    static JSValue fallbackObjectGetter(ExecState*, const Identifier&, const PropertySlot&);
-    static JSValue fieldGetter(ExecState*, const Identifier&, const PropertySlot&);
-    static JSValue methodGetter(ExecState*, const Identifier&, const PropertySlot&);
+    static JSValue fallbackObjectGetter(ExecState*, JSValue, const Identifier&);
+    static JSValue fieldGetter(ExecState*, JSValue, const Identifier&);
+    static JSValue methodGetter(ExecState*, JSValue, const Identifier&);
 
-    RefPtr<Bindings::Instance> m_instance;
+    RefPtr<Instance> m_instance;
 };
     
-} // namespace
+}
+}
 
 #endif

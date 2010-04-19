@@ -35,9 +35,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSXMLHttpRequestProgressEvent);
 
 static const HashTableValue JSXMLHttpRequestProgressEventTableValues[4] =
 {
-    { "position", DontDelete|ReadOnly, (intptr_t)jsXMLHttpRequestProgressEventPosition, (intptr_t)0 },
-    { "totalSize", DontDelete|ReadOnly, (intptr_t)jsXMLHttpRequestProgressEventTotalSize, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsXMLHttpRequestProgressEventConstructor, (intptr_t)0 },
+    { "position", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXMLHttpRequestProgressEventPosition), (intptr_t)0 },
+    { "totalSize", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXMLHttpRequestProgressEventTotalSize), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXMLHttpRequestProgressEventConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -146,25 +146,27 @@ bool JSXMLHttpRequestProgressEvent::getOwnPropertyDescriptor(ExecState* exec, co
     return getStaticValueDescriptor<JSXMLHttpRequestProgressEvent, Base>(exec, getJSXMLHttpRequestProgressEventTable(exec), this, propertyName, descriptor);
 }
 
-JSValue jsXMLHttpRequestProgressEventPosition(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXMLHttpRequestProgressEventPosition(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXMLHttpRequestProgressEvent* castedThis = static_cast<JSXMLHttpRequestProgressEvent*>(asObject(slot.slotBase()));
+    JSXMLHttpRequestProgressEvent* castedThis = static_cast<JSXMLHttpRequestProgressEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     XMLHttpRequestProgressEvent* imp = static_cast<XMLHttpRequestProgressEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->position());
+    JSValue result = jsNumber(exec, imp->position());
+    return result;
 }
 
-JSValue jsXMLHttpRequestProgressEventTotalSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXMLHttpRequestProgressEventTotalSize(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXMLHttpRequestProgressEvent* castedThis = static_cast<JSXMLHttpRequestProgressEvent*>(asObject(slot.slotBase()));
+    JSXMLHttpRequestProgressEvent* castedThis = static_cast<JSXMLHttpRequestProgressEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     XMLHttpRequestProgressEvent* imp = static_cast<XMLHttpRequestProgressEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->totalSize());
+    JSValue result = jsNumber(exec, imp->totalSize());
+    return result;
 }
 
-JSValue jsXMLHttpRequestProgressEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXMLHttpRequestProgressEventConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXMLHttpRequestProgressEvent* domObject = static_cast<JSXMLHttpRequestProgressEvent*>(asObject(slot.slotBase()));
+    JSXMLHttpRequestProgressEvent* domObject = static_cast<JSXMLHttpRequestProgressEvent*>(asObject(slotBase));
     return JSXMLHttpRequestProgressEvent::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSXMLHttpRequestProgressEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

@@ -45,6 +45,7 @@
 #include <QtCore/QString>
 #include <QtGui/QPixmap>
 #include <QtCore/qurl.h>
+#include <QtCore/QCoreApplication>
 
 QT_BEGIN_HEADER
 
@@ -64,6 +65,7 @@ public:
 
     enum Status { Ready, Error, Unrequested, Loading };
     Status status() const;
+    QString errorString() const;
 
     const QUrl &url() const;
     int forcedWidth() const;
@@ -94,8 +96,9 @@ private:
 
 class Q_DECLARATIVE_EXPORT QDeclarativePixmapCache
 {
+    Q_DECLARE_TR_FUNCTIONS(QDeclarativePixmapCache)
 public:
-    static QDeclarativePixmapReply::Status get(const QUrl& url, QPixmap *pixmap, QSize *impsize=0, bool async=false, int req_width=0, int req_height=0);
+    static QDeclarativePixmapReply::Status get(const QUrl& url, QPixmap *pixmap, QString *errorString, QSize *impsize=0, bool async=false, int req_width=0, int req_height=0);
     static QDeclarativePixmapReply *request(QDeclarativeEngine *, const QUrl& url, int req_width=0, int req_height=0);
     static void cancel(const QUrl& url, QObject *obj);
     static int pendingRequests();

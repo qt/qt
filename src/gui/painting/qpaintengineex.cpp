@@ -380,7 +380,7 @@ QPainterState *QPaintEngineEx::createState(QPainterState *orig) const
     return new QPainterState(orig);
 }
 
-extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+Q_GUI_EXPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 
 void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
@@ -974,6 +974,9 @@ void QPaintEngineEx::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, con
 void QPaintEngineEx::drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount,
                                          const QPixmap &pixmap, QPainter::PixmapFragmentHints /*hints*/)
 {
+    if (pixmap.isNull())
+        return;
+
     qreal oldOpacity = state()->opacity;
     QTransform oldTransform = state()->matrix;
 

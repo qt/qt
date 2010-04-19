@@ -722,10 +722,11 @@ int QDesignerPropertySheet::addDynamicProperty(const QString &propName, const QV
     else if (value.type() == QVariant::Pixmap)
         v = qVariantFromValue(qdesigner_internal::PropertySheetPixmapValue());
     else if (value.type() == QVariant::String)
-        v = qVariantFromValue(qdesigner_internal::PropertySheetStringValue());
-    else if (value.type() == QVariant::KeySequence)
-        v = qVariantFromValue(qdesigner_internal::PropertySheetKeySequenceValue());
-
+        v = qVariantFromValue(qdesigner_internal::PropertySheetStringValue(value.toString()));
+    else if (value.type() == QVariant::KeySequence) {
+        const QKeySequence keySequence = qVariantValue<QKeySequence>(value);
+        v = qVariantFromValue(qdesigner_internal::PropertySheetKeySequenceValue(keySequence));
+    }
 
     if (d->m_addIndex.contains(propName)) {
         const int idx = d->m_addIndex.value(propName);
@@ -1130,7 +1131,7 @@ void QDesignerPropertySheet::setProperty(int index, const QVariant &value)
             }
         }
 
-        if (isDynamicProperty(index)) {
+        if (isDynamicProperty(index) || isDefaultDynamicProperty(index)) {
             if (d->isResourceProperty(index))
                 d->setResourceProperty(index, value);
             if (d->isStringProperty(index))
@@ -1200,10 +1201,17 @@ bool QDesignerPropertySheet::reset(int index)
     } else if (isDynamic(index)) {
         const QString propName = propertyName(index);
         const QVariant oldValue = d->m_addProperties.value(index);
-        const QVariant newValue = d->m_info.value(index).defaultValue;
+        const QVariant defaultValue = d->m_info.value(index).defaultValue;
+        QVariant newValue = defaultValue;
+        if (d->isStringProperty(index)) {
+            newValue = qVariantFromValue(qdesigner_internal::PropertySheetStringValue(newValue.toString()));
+        } else if (d->isKeySequenceProperty(index)) {
+            const QKeySequence keySequence = qVariantValue<QKeySequence>(newValue);
+            newValue = qVariantFromValue(qdesigner_internal::PropertySheetKeySequenceValue(keySequence));
+        }
         if (oldValue == newValue)
             return true;
-        d->m_object->setProperty(propName.toUtf8(), newValue);
+        d->m_object->setProperty(propName.toUtf8(), defaultValue);
         d->m_addProperties[index] = newValue;
         return true;
     } else if (!d->m_info.value(index).defaultValue.isNull()) {

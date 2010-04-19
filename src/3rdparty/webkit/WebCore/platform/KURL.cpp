@@ -30,14 +30,18 @@
 #include "KURL.h"
 
 #include "CString.h"
-#include "PlatformString.h"
+#include "StringHash.h"
 #include "TextEncoding.h"
+#include <wtf/HashMap.h>
 #include <wtf/StdLibExtras.h>
 
 #if USE(ICU_UNICODE)
 #include <unicode/uidna.h>
 #elif USE(QT4_UNICODE)
 #include <QUrl>
+#elif USE(GLIB_UNICODE)
+#include <glib.h>
+#include "GOwnPtr.h"
 #endif
 
 #include <stdio.h>
@@ -102,7 +106,7 @@ static const unsigned char characterClassTable[256] = {
     /* 42  * */ UserInfoChar,    /* 43  + */ SchemeChar | UserInfoChar,
     /* 44  , */ UserInfoChar,
     /* 45  - */ SchemeChar | UserInfoChar | HostnameChar,
-    /* 46  . */ SchemeChar | UserInfoChar | HostnameChar,
+    /* 46  . */ SchemeChar | UserInfoChar | HostnameChar | IPv6Char,
     /* 47  / */ PathSegmentEndChar,
     /* 48  0 */ SchemeChar | UserInfoChar | HostnameChar | IPv6Char, 
     /* 49  1 */ SchemeChar | UserInfoChar | HostnameChar | IPv6Char,    
@@ -214,6 +218,7 @@ static const unsigned char characterClassTable[256] = {
 static int copyPathRemovingDots(char* dst, const char* src, int srcStart, int srcEnd);
 static void encodeRelativeString(const String& rel, const TextEncoding&, CharBuffer& ouput);
 static String substituteBackslashes(const String&);
+static bool isValidProtocol(const String&);
 
 static inline bool isSchemeFirstChar(char c) { return characterClassTable[static_cast<unsigned char>(c)] & SchemeFirstChar; }
 static inline bool isSchemeFirstChar(UChar c) { return c <= 0xff && (characterClassTable[c] & SchemeFirstChar); }
@@ -417,9 +422,9 @@ void KURL::init(const KURL& base, const String& relative, const TextEncoding& en
 
         switch (str[0]) {
         case '\0':
-            // the reference must be empty - the RFC says this is a
-            // reference to the same document
+            // The reference is empty, so this is a reference to the same document with any fragment identifier removed.
             *this = base;
+            removeFragmentIdentifier();
             break;
         case '#': {
             // must be fragment-only reference
@@ -633,7 +638,7 @@ bool KURL::protocolIs(const char* protocol) const
 
     // JavaScript URLs are "valid" and should be executed even if KURL decides they are invalid.
     // The free function protocolIsJavaScript() should be used instead. 
-    ASSERT(strcmp(protocol, "javascript") != 0);
+    ASSERT(!equalIgnoringCase(protocol, String("javascript")));
 
     if (!m_isValid)
         return false;
@@ -659,17 +664,22 @@ String KURL::path() const
     return decodeURLEscapeSequences(m_string.substring(m_portEnd, m_pathEnd - m_portEnd)); 
 }
 
-void KURL::setProtocol(const String& s)
+bool KURL::setProtocol(const String& s)
 {
-    // FIXME: Non-ASCII characters must be encoded and escaped to match parse() expectations,
-    // and to avoid changing more than just the protocol.
+    // Firefox and IE remove everything after the first ':'.
+    int separatorPosition = s.find(':');
+    String newProtocol = s.substring(0, separatorPosition);
+
+    if (!isValidProtocol(newProtocol))
+        return false;
 
     if (!m_isValid) {
-        parse(s + ":" + m_string);
-        return;
+        parse(newProtocol + ":" + m_string);
+        return true;
     }
 
-    parse(s + m_string.substring(m_schemeEnd));
+    parse(newProtocol + m_string.substring(m_schemeEnd));
+    return true;
 }
 
 void KURL::setHost(const String& s)
@@ -685,18 +695,22 @@ void KURL::setHost(const String& s)
     parse(m_string.left(hostStart()) + (slashSlashNeeded ? "//" : "") + s + m_string.substring(m_hostEnd));
 }
 
+void KURL::removePort()
+{
+    if (m_hostEnd == m_portEnd)
+        return;
+    parse(m_string.left(m_hostEnd) + m_string.substring(m_portEnd));
+}
+
 void KURL::setPort(unsigned short i)
 {
     if (!m_isValid)
         return;
 
-    if (i) {
-        bool colonNeeded = m_portEnd == m_hostEnd;
-        int portStart = (colonNeeded ? m_hostEnd : m_hostEnd + 1);
+    bool colonNeeded = m_portEnd == m_hostEnd;
+    int portStart = (colonNeeded ? m_hostEnd : m_hostEnd + 1);
 
-        parse(m_string.left(portStart) + (colonNeeded ? ":" : "") + String::number(i) + m_string.substring(m_portEnd));
-    } else
-        parse(m_string.left(m_hostEnd) + m_string.substring(m_portEnd));
+    parse(m_string.left(portStart) + (colonNeeded ? ":" : "") + String::number(i) + m_string.substring(m_portEnd));
 }
 
 void KURL::setHostAndPort(const String& hostAndPort)
@@ -819,7 +833,7 @@ String KURL::prettyURL() const
             authority.append('@');
         }
         append(authority, host());
-        if (port() != 0) {
+        if (hasPort()) {
             authority.append(':');
             append(authority, String::number(port()));
         }
@@ -1400,6 +1414,19 @@ static void appendEncodedHostname(UCharBuffer& buffer, const UChar* str, unsigne
 #elif USE(QT4_UNICODE)
     QByteArray result = QUrl::toAce(String(str, strLen));
     buffer.append(result.constData(), result.length());
+#elif USE(GLIB_UNICODE)
+    GOwnPtr<gchar> utf8Hostname;
+    GOwnPtr<GError> utf8Err;
+    utf8Hostname.set(g_utf16_to_utf8(str, strLen, 0, 0, &utf8Err.outPtr()));
+    if (utf8Err)
+        return;
+
+    GOwnPtr<gchar> encodedHostname;
+    encodedHostname.set(g_hostname_to_ascii(utf8Hostname.get()));
+    if (!encodedHostname) 
+        return;
+
+    buffer.append(encodedHostname.get(), strlen(encodedHostname.get()));
 #endif
 }
 
@@ -1622,6 +1649,141 @@ bool protocolIs(const String& url, const char* protocol)
 bool protocolIsJavaScript(const String& url)
 {
     return protocolIs(url, "javascript");
+}
+
+bool isValidProtocol(const String& protocol)
+{
+    // RFC3986: ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+    if (protocol.isEmpty())
+        return false;
+    if (!isSchemeFirstChar(protocol[0]))
+        return false;
+    unsigned protocolLength = protocol.length();
+    for (unsigned i = 1; i < protocolLength; i++) {
+        if (!isSchemeChar(protocol[i]))
+            return false;
+    }
+    return true;
+}
+
+bool isDefaultPortForProtocol(unsigned short port, const String& protocol)
+{
+    if (protocol.isEmpty())
+        return false;
+
+    typedef HashMap<String, unsigned, CaseFoldingHash> DefaultPortsMap;
+    DEFINE_STATIC_LOCAL(DefaultPortsMap, defaultPorts, ());
+    if (defaultPorts.isEmpty()) {
+        defaultPorts.set("http", 80);
+        defaultPorts.set("https", 443);
+        defaultPorts.set("ftp", 21);
+        defaultPorts.set("ftps", 990);
+    }
+    return defaultPorts.get(protocol) == port;
+}
+
+bool portAllowed(const KURL& url)
+{
+    unsigned short port = url.port();
+
+    // Since most URLs don't have a port, return early for the "no port" case.
+    if (!port)
+        return true;
+
+    // This blocked port list matches the port blocking that Mozilla implements.
+    // See http://www.mozilla.org/projects/netlib/PortBanning.html for more information.
+    static const unsigned short blockedPortList[] = {
+        1,    // tcpmux
+        7,    // echo
+        9,    // discard
+        11,   // systat
+        13,   // daytime
+        15,   // netstat
+        17,   // qotd
+        19,   // chargen
+        20,   // FTP-data
+        21,   // FTP-control
+        22,   // SSH
+        23,   // telnet
+        25,   // SMTP
+        37,   // time
+        42,   // name
+        43,   // nicname
+        53,   // domain
+        77,   // priv-rjs
+        79,   // finger
+        87,   // ttylink
+        95,   // supdup
+        101,  // hostriame
+        102,  // iso-tsap
+        103,  // gppitnp
+        104,  // acr-nema
+        109,  // POP2
+        110,  // POP3
+        111,  // sunrpc
+        113,  // auth
+        115,  // SFTP
+        117,  // uucp-path
+        119,  // nntp
+        123,  // NTP
+        135,  // loc-srv / epmap
+        139,  // netbios
+        143,  // IMAP2
+        179,  // BGP
+        389,  // LDAP
+        465,  // SMTP+SSL
+        512,  // print / exec
+        513,  // login
+        514,  // shell
+        515,  // printer
+        526,  // tempo
+        530,  // courier
+        531,  // Chat
+        532,  // netnews
+        540,  // UUCP
+        556,  // remotefs
+        563,  // NNTP+SSL
+        587,  // ESMTP
+        601,  // syslog-conn
+        636,  // LDAP+SSL
+        993,  // IMAP+SSL
+        995,  // POP3+SSL
+        2049, // NFS
+        3659, // apple-sasl / PasswordServer [Apple addition]
+        4045, // lockd
+        6000, // X11
+        6665, // Alternate IRC [Apple addition]
+        6666, // Alternate IRC [Apple addition]
+        6667, // Standard IRC [Apple addition]
+        6668, // Alternate IRC [Apple addition]
+        6669, // Alternate IRC [Apple addition]
+
+    };
+    const unsigned short* const blockedPortListEnd = blockedPortList + sizeof(blockedPortList) / sizeof(blockedPortList[0]);
+
+#ifndef NDEBUG
+    // The port list must be sorted for binary_search to work.
+    static bool checkedPortList = false;
+    if (!checkedPortList) {
+        for (const unsigned short* p = blockedPortList; p != blockedPortListEnd - 1; ++p)
+            ASSERT(*p < *(p + 1));
+        checkedPortList = true;
+    }
+#endif
+
+    // If the port is not in the blocked port list, allow it.
+    if (!binary_search(blockedPortList, blockedPortListEnd, port))
+        return true;
+
+    // Allow ports 21 and 22 for FTP URLs, as Mozilla does.
+    if ((port == 21 || port == 22) && url.protocolIs("ftp"))
+        return true;
+
+    // Allow any port number in a file URL, since the port number is ignored.
+    if (url.protocolIs("file"))
+        return true;
+
+    return false;
 }
 
 String mimeTypeFromDataURL(const String& url)

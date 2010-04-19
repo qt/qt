@@ -66,7 +66,8 @@ QT_BEGIN_NAMESPACE
 // different contexts:
 
 Q_GLOBAL_STATIC(QEglContext, qt_x11gl_rgbContext);
-Q_GLOBAL_STATIC(QEglContext, qt_x11gl_argbContext)
+Q_GLOBAL_STATIC(QEglContext, qt_x11gl_argbContext);
+Q_GLOBAL_STATIC_WITH_ARGS(QGLContext, qt_x11gl_fake_shared_context, (QX11GLPixmapData::glFormat()));
 
 QEglContext* QX11GLPixmapData::rgbContext = 0;
 QEglContext* QX11GLPixmapData::argbContext = 0;
@@ -112,7 +113,13 @@ bool QX11GLPixmapData::hasX11GLPixmaps()
         if (!argbContext) {
             argbContext = qt_x11gl_argbContext();
             argbContext->setConfig(argbConfig);
-            argbContext->createContext();
+            bool success = argbContext->createContext(rgbContext);
+            if (!success) {
+                qWarning("QX11GLPixmapData - RGB & ARGB contexts aren't shared");
+                success = argbContext->createContext();
+                if (!success)
+                    argbContext = rgbContext; // Might work, worth a shot at least.
+            }
         }
 
         if (!argbContext->isValid())
@@ -258,6 +265,14 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
         ctx = new QGLContext(glFormat());
         Q_ASSERT(ctx->d_func()->eglContext == 0);
         ctx->d_func()->eglContext = hasAlphaChannel() ? argbContext : rgbContext;
+
+        // While we use a seperate QGLContext for each pixmap, the underlying QEglContext is
+        // the same. So we must use a "fake" QGLContext and fool the texture cache into thinking
+        // each pixmap's QGLContext is sharing with this central one. The only place this is
+        // going to fail is where we the underlying EGL RGB and ARGB contexts aren't sharing.
+        ctx->d_func()->sharing = true;
+        QGLContextGroup::addShare(ctx, qt_x11gl_fake_shared_context());
+
         // Update the glFormat for the QGLContext:
         qt_glformat_from_eglconfig(ctx->d_func()->glFormat, ctx->d_func()->eglContext->config());
     }

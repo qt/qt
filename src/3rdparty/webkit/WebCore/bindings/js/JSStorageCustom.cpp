@@ -41,9 +41,9 @@ bool JSStorage::canGetItemsForName(ExecState*, Storage* impl, const Identifier& 
     return impl->contains(propertyName);
 }
 
-JSValue JSStorage::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSStorage::nameGetter(ExecState* exec, JSValue slotBase, const Identifier& propertyName)
 {
-    JSStorage* thisObj = static_cast<JSStorage*>(asObject(slot.slotBase()));
+    JSStorage* thisObj = static_cast<JSStorage*>(asObject(slotBase));
     return jsStringOrNull(exec, thisObj->impl()->getItem(propertyName));
 }
 
@@ -64,13 +64,13 @@ bool JSStorage::deleteProperty(ExecState* exec, const Identifier& propertyName)
     return true;
 }
 
-void JSStorage::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSStorage::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     unsigned length = m_impl->length();
     for (unsigned i = 0; i < length; ++i)
         propertyNames.add(Identifier(exec, m_impl->key(i)));
         
-    Base::getOwnPropertyNames(exec, propertyNames);
+    Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 bool JSStorage::putDelegate(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot&)

@@ -1853,14 +1853,14 @@ void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
 {
     horizontalScrollBar()->setSingleStep(step.width() + spacing());
     horizontalScrollBar()->setPageStep(viewport()->width());
-    horizontalScrollBar()->setRange(0, contentsSize.width() - viewport()->width() - 2 * spacing());
+    horizontalScrollBar()->setRange(0, contentsSize.width() - viewport()->width());
 }
 
 void QCommonListViewBase::updateVerticalScrollBar(const QSize &step)
 {
     verticalScrollBar()->setSingleStep(step.height() + spacing());
     verticalScrollBar()->setPageStep(viewport()->height());
-    verticalScrollBar()->setRange(0, contentsSize.height() - viewport()->height() - 2 * spacing());
+    verticalScrollBar()->setRange(0, contentsSize.height() - viewport()->height());
 }
 
 void QCommonListViewBase::scrollContentsBy(int dx, int dy, bool /*scrollElasticBand*/)
@@ -2276,6 +2276,7 @@ void QListModeViewBase::doStaticLayout(const QListViewLayoutInfo &info)
     const QPoint topLeft = initStaticLayout(info);
     QStyleOptionViewItemV4 option = viewOptions();
     option.rect = info.bounds;
+    option.rect.adjust(info.spacing, info.spacing, -info.spacing, -info.spacing);
 
     // The static layout data structures are as follows:
     // One vector contains the coordinate in the direction of layout flow.
@@ -2905,8 +2906,13 @@ void QIconModeViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
     batchStartRow = info.last + 1;
     bool done = (info.last >= rowCount() - 1);
     // resize the content area
-    if (done || !info.bounds.contains(item->rect()))
-        contentsSize = QSize(rect.width(), rect.height());
+    if (done || !info.bounds.contains(item->rect())) {
+        contentsSize = rect.size();
+        if (info.flow == QListView::LeftToRight)
+            contentsSize.rheight() += info.spacing;
+        else
+            contentsSize.rwidth() += info.spacing;
+    }
     // resize tree
     int insertFrom = info.first;
     if (done || info.first == 0) {

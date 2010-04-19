@@ -102,10 +102,11 @@ public:
     QDeclarativeGridViewPrivate()
     : currentItem(0), flow(QDeclarativeGridView::LeftToRight)
     , visibleIndex(0) , currentIndex(-1)
-    , cellWidth(100), cellHeight(100), columns(1), requestedIndex(-1)
+    , cellWidth(100), cellHeight(100), columns(1), requestedIndex(-1), itemCount(0)
     , highlightRangeStart(0), highlightRangeEnd(0), highlightRange(QDeclarativeGridView::NoHighlightRange)
     , highlightComponent(0), highlight(0), trackedItem(0)
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
+    , highlightMoveDuration(150)
     , bufferMode(NoBuffer), snapMode(QDeclarativeGridView::NoSnap)
     , ownModel(false), wrap(false), autoHighlight(true)
     , fixCurrentVisibility(false), lazyRelease(false), layoutScheduled(false)
@@ -315,6 +316,7 @@ public:
     int cellHeight;
     int columns;
     int requestedIndex;
+    int itemCount;
     qreal highlightRangeStart;
     qreal highlightRangeEnd;
     QDeclarativeGridView::HighlightRangeMode highlightRange;
@@ -326,6 +328,7 @@ public:
     int buffer;
     QSmoothedAnimation *highlightXAnimator;
     QSmoothedAnimation *highlightYAnimator;
+    int highlightMoveDuration;
     enum BufferMode { NoBuffer = 0x00, BufferBefore = 0x01, BufferAfter = 0x02 };
     BufferMode bufferMode;
     QDeclarativeGridView::SnapMode snapMode;
@@ -358,6 +361,7 @@ void QDeclarativeGridViewPrivate::clear()
     currentItem = 0;
     createHighlight();
     trackedItem = 0;
+    itemCount = 0;
 }
 
 FxGridItem *QDeclarativeGridViewPrivate::createItem(int modelIndex)
@@ -403,6 +407,7 @@ void QDeclarativeGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     if (!isValid() || !q->isComponentComplete())
         return;
 
+    itemCount = model->count();
     qreal bufferFrom = from - buffer;
     qreal bufferTo = to + buffer;
     qreal fillFrom = from;
@@ -546,6 +551,10 @@ void QDeclarativeGridViewPrivate::layout()
 {
     Q_Q(QDeclarativeGridView);
     layoutScheduled = false;
+    if (!isValid()) {
+        clear();
+        return;
+    }
     if (visibleItems.count()) {
         qreal rowPos = visibleItems.first()->rowPos();
         qreal colPos = visibleItems.first()->colPos();
@@ -604,8 +613,6 @@ void QDeclarativeGridViewPrivate::updateTrackedItem()
     if (highlight)
         item = highlight;
 
-    FxGridItem *oldTracked = trackedItem;
-
     if (trackedItem && item != trackedItem) {
         QObject::disconnect(trackedItem->item, SIGNAL(yChanged()), q, SLOT(trackedPositionChanged()));
         QObject::disconnect(trackedItem->item, SIGNAL(xChanged()), q, SLOT(trackedPositionChanged()));
@@ -617,7 +624,7 @@ void QDeclarativeGridViewPrivate::updateTrackedItem()
         QObject::connect(trackedItem->item, SIGNAL(yChanged()), q, SLOT(trackedPositionChanged()));
         QObject::connect(trackedItem->item, SIGNAL(xChanged()), q, SLOT(trackedPositionChanged()));
     }
-    if (trackedItem && trackedItem != oldTracked)
+    if (trackedItem)
         q->trackedPositionChanged();
 }
 
@@ -662,10 +669,10 @@ void QDeclarativeGridViewPrivate::createHighlight()
             highlight = new FxGridItem(item, q);
             highlightXAnimator = new QSmoothedAnimation(q);
             highlightXAnimator->target = QDeclarativeProperty(highlight->item, QLatin1String("x"));
-            highlightXAnimator->userDuration = 150;
+            highlightXAnimator->userDuration = highlightMoveDuration;
             highlightYAnimator = new QSmoothedAnimation(q);
             highlightYAnimator->target = QDeclarativeProperty(highlight->item, QLatin1String("y"));
-            highlightYAnimator->userDuration = 150;
+            highlightYAnimator->userDuration = highlightMoveDuration;
             highlightXAnimator->restart();
             highlightYAnimator->restart();
             changed = true;
@@ -929,10 +936,10 @@ QDeclarativeGridView::~QDeclarativeGridView()
         id: myDelegate
         Item {
             id: wrapper
-            SequentialAnimation on GridView.onRemove {
-                PropertyAction { target: wrapper.GridView; property: "delayRemove"; value: true }
+            GridView.onRemove: SequentialAnimation {
+                PropertyAction { target: wrapper; property: "GridView.delayRemove"; value: true }
                 NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing.type: "InOutQuad" }
-                PropertyAction { target: wrapper.GridView; property: "delayRemove"; value: false }
+                PropertyAction { target: wrapper; property: "GridView.delayRemove"; value: false }
             }
         }
     }
@@ -1195,6 +1202,37 @@ void QDeclarativeGridView::setHighlightFollowsCurrentItem(bool autoHighlight)
         d->updateHighlight();
     }
 }
+
+/*!
+    \qmlproperty int GridView::highlightMoveDuration
+    This property holds the move animation duration of the highlight delegate.
+
+    highlightFollowsCurrentItem must be true for this property
+    to have effect.
+
+    The default value for the duration is 150ms.
+
+    \sa highlightFollowsCurrentItem
+*/
+int QDeclarativeGridView::highlightMoveDuration() const
+{
+    Q_D(const QDeclarativeGridView);
+    return d->highlightMoveDuration;
+}
+
+void QDeclarativeGridView::setHighlightMoveDuration(int duration)
+{
+    Q_D(QDeclarativeGridView);
+    if (d->highlightMoveDuration != duration) {
+        d->highlightMoveDuration = duration;
+        if (d->highlightYAnimator) {
+            d->highlightXAnimator->userDuration = d->highlightMoveDuration;
+            d->highlightYAnimator->userDuration = d->highlightMoveDuration;
+        }
+        emit highlightMoveDurationChanged();
+    }
+}
+
 
 /*!
     \qmlproperty real GridView::preferredHighlightBegin
@@ -1781,12 +1819,14 @@ void QDeclarativeGridView::componentComplete()
     Q_D(QDeclarativeGridView);
     QDeclarativeFlickable::componentComplete();
     d->updateGrid();
-    refill();
-    if (d->currentIndex < 0)
-        d->updateCurrent(0);
-    else
-        d->updateCurrent(d->currentIndex);
-    d->fixupPosition();
+    if (d->isValid()) {
+        refill();
+        if (d->currentIndex < 0)
+            d->updateCurrent(0);
+        else
+            d->updateCurrent(d->currentIndex);
+        d->fixupPosition();
+    }
 }
 
 void QDeclarativeGridView::trackedPositionChanged()
@@ -1859,6 +1899,7 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
         } else if (d->currentIndex < 0) {
             d->updateCurrent(0);
         }
+        d->itemCount += count;
         emit countChanged();
         return;
     }
@@ -1889,6 +1930,7 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
                 emit currentIndexChanged();
             }
             d->scheduleLayout();
+            d->itemCount += count;
             emit countChanged();
             return;
         }
@@ -1976,6 +2018,7 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
     for (int j = 0; j < added.count(); ++j)
         added.at(j)->attached->emitAdd();
 
+    d->itemCount += count;
     emit countChanged();
 }
 
@@ -1984,6 +2027,8 @@ void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
     Q_D(QDeclarativeGridView);
     if (!isComponentComplete())
         return;
+
+    d->itemCount -= count;
     bool currentRemoved = d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count;
     bool removedVisible = false;
 
@@ -2031,7 +2076,8 @@ void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
         d->releaseItem(d->currentItem);
         d->currentItem = 0;
         d->currentIndex = -1;
-        d->updateCurrent(qMin(modelIndex, d->model->count()-1));
+        if (d->itemCount)
+            d->updateCurrent(qMin(modelIndex, d->itemCount-1));
     }
 
     // update visibleIndex
@@ -2046,7 +2092,7 @@ void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
     if (removedVisible && d->visibleItems.isEmpty()) {
         d->timeline.clear();
         d->setPosition(0);
-        if (d->model->count() == 0)
+        if (d->itemCount == 0)
             update();
     }
 
@@ -2118,6 +2164,8 @@ void QDeclarativeGridView::itemsMoved(int from, int to, int count)
             if (!movedItem)
                 movedItem = d->createItem(item->index);
             it = d->visibleItems.insert(it, movedItem);
+            if (it == d->visibleItems.begin() && firstItem)
+                movedItem->setPosition(firstItem->colPos(), firstItem->rowPos());
             ++it;
             --remaining;
         } else {

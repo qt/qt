@@ -1,10 +1,10 @@
-import Qt 4.6
+import Qt 4.7
 
 //! [0]
 Rectangle {
     width: 200
     height: 240
-    color: "white"
+
     // MyPets model is defined in dummydata/MyPetsModel.qml
     // The viewer automatically loads files in dummydata/* to assist
     // development without a real data source.
@@ -13,15 +13,16 @@ Rectangle {
     // Define a delegate component that includes a separator for sections.
     Component {
         id: petDelegate
+
         Item {
             id: wrapper
             width: 200
-            // My height is the combined height of the description and the section separator
-            height: desc.height
+            height: desc.height // height is the combined height of the description and the section separator
+
             Item {
                 id: desc
-                x: 5
-                height: layout.height + 4
+                x: 5; height: layout.height + 4
+
                 Column {
                     id: layout
                     y: 2
@@ -32,22 +33,24 @@ Rectangle {
             }
         }
     }
+
     // Define a highlight component.  Just one of these will be instantiated
     // by each ListView and placed behind the current item.
     Component {
         id: petHighlight
-        Rectangle {
-            color: "#FFFF88"
-        }
+        Rectangle { color: "#FFFF88" }
     }
+
     // The list
     ListView {
         id: myList
-        width: 200
-        height: parent.height
+
+        width: 200; height: parent.height
         model: MyPetsModel
         delegate: petDelegate
         highlight: petHighlight
+        focus: true
+
         // The sectionExpression is simply the size of the pet.
         // We use this to determine which section we are in above.
         section.property: "size"
@@ -57,11 +60,12 @@ Rectangle {
             width: 200
             height: 20
             Text {
-                text: section; font.bold: true
-                x: 2; height: parent.height; verticalAlignment: 'AlignVCenter'
+                x: 2; height: parent.height
+                verticalAlignment: 'AlignVCenter'
+                text: section
+                font.bold: true
             }
         }
-        focus: true
     }
 }
 //! [0]

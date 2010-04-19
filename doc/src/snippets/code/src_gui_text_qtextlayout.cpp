@@ -42,7 +42,6 @@
 //! [0]
 int leading = fontMetrics.leading();
 qreal height = 0;
-qreal widthUsed = 0;
 textLayout.beginLayout();
 while (1) {
     QTextLine line = textLayout.createLine();
@@ -53,7 +52,6 @@ while (1) {
     height += leading;
     line.setPosition(QPointF(0, height));
     height += line.height();
-    widthUsed = qMax(widthUsed, line.naturalTextWidth());
 }
 textLayout.endLayout();
 //! [0]

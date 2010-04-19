@@ -27,6 +27,7 @@ QtObject {
 	}
 
         x.open("GET", url);
+        x.setRequestHeader("Accept-Language", "en-US");
 
 	try {
 	    var a = x.status;
@@ -54,6 +55,7 @@ QtObject {
                 }
 
                 x.open("GET", url);
+                x.setRequestHeader("Accept-Language", "en-US");
 
                 try {
                     var a = x.status;

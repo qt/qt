@@ -34,10 +34,7 @@ char SVGRadiusYAttrIdentifier[] = "SVGRadiusYAttr";
 
 SVGFEMorphologyElement::SVGFEMorphologyElement(const QualifiedName& tagName, Document* document)
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
-    , m_in1(this, SVGNames::inAttr)
-    , m__operator(this, SVGNames::operatorAttr, FEMORPHOLOGY_OPERATOR_ERODE)
-    , m_radiusX(this, SVGNames::radiusAttr)
-    , m_radiusY(this, SVGNames::radiusAttr)
+    , m__operator(FEMORPHOLOGY_OPERATOR_ERODE)
 {
 }
 
@@ -70,14 +67,41 @@ void SVGFEMorphologyElement::parseMappedAttribute(MappedAttribute* attr)
         SVGFilterPrimitiveStandardAttributes::parseMappedAttribute(attr);
 }
 
+void SVGFEMorphologyElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGFilterPrimitiveStandardAttributes::synchronizeProperty(attrName);
+
+    if (attrName == anyQName()) {
+        synchronize_operator();
+        synchronizeIn1();
+        synchronizeRadiusX();
+        synchronizeRadiusY();
+        return;
+    }
+
+    if (attrName == SVGNames::operatorAttr)
+        synchronize_operator();
+    else if (attrName == SVGNames::inAttr)
+        synchronizeIn1();
+    else if (attrName == SVGNames::radiusAttr) {
+        synchronizeRadiusX();
+        synchronizeRadiusY();
+    }
+}
+
 bool SVGFEMorphologyElement::build(SVGResourceFilter* filterResource)
 {
     FilterEffect* input1 = filterResource->builder()->getEffectById(in1());
+    SVGAnimatedPropertyTraits<float>::ReturnType radX = radiusX(),
+        radY = radiusY();
 
     if (!input1)
         return false;
 
-    RefPtr<FilterEffect> effect = FEMorphology::create(input1, static_cast<MorphologyOperatorType>(_operator()), radiusX(), radiusY());
+    if (radX < 0 || radY < 0)
+        return false;
+
+    RefPtr<FilterEffect> effect = FEMorphology::create(input1, static_cast<MorphologyOperatorType>(_operator()), radX, radY);
     filterResource->addFilterEffect(this, effect.release());
     
     return true;

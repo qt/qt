@@ -62,6 +62,10 @@ class QWebPagePrivate {
 public:
     QWebPagePrivate(QWebPage*);
     ~QWebPagePrivate();
+
+    static WebCore::Page* core(QWebPage*);
+    static QWebPagePrivate* priv(QWebPage*);
+
     void createMainFrame();
 #ifndef QT_NO_CONTEXTMENU
     QMenu* createContextMenu(const WebCore::ContextMenu* webcoreMenu, const QList<WebCore::ContextMenuItem>* items, QBitArray* visitedWebActions);
@@ -114,6 +118,10 @@ public:
     void handleSoftwareInputPanel(Qt::MouseButton);
     bool handleScrolling(QKeyEvent*, WebCore::Frame*);
 
+#if QT_VERSION >= QT_VERSION_CHECK(4, 6, 0)
+    void touchEvent(QTouchEvent*);
+#endif
+
     void setInspector(QWebInspector*);
     QWebInspector* getOrCreateInspector();
     WebCore::InspectorController* inspectorController();
@@ -151,18 +159,8 @@ public:
 
     bool clickCausedFocus;
 
-#if QT_VERSION < 0x040400
-    bool acceptNavigationRequest(QWebFrame *frame, const QWebNetworkRequest &request, QWebPage::NavigationType type);
-
-    QWebNetworkInterface *networkInterface;
-#ifndef QT_NO_NETWORKPROXY
-    QNetworkProxy networkProxy;
-#endif
-
-#else
     bool acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &request, QWebPage::NavigationType type);
     QNetworkAccessManager *networkManager;
-#endif
 
     bool forwardUnsupportedContent;
     QWebPage::LinkDelegationPolicy linkPolicy;
@@ -186,6 +184,9 @@ public:
     QWidget* inspectorFrontend;
     QWebInspector* inspector;
     bool inspectorIsInternalOnly; // True if created through the Inspect context menu action
+    Qt::DropAction m_lastDropAction;
+
+    QString viewMode;
 
     static bool drtRun;
 };

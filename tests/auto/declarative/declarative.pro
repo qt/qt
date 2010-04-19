@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += \
+           examples \
            graphicswidgets \        # Cover
            parserstress \           # Cover
            qmetaobjectbuilder \     # Cover
@@ -41,13 +42,14 @@ SUBDIRS += \
            qdeclarativelanguage \            # Cover
            qdeclarativelistreference \       # Cover
            qdeclarativelistmodel \           # Cover
-           qdeclarativeproperty \        # Cover
+           qdeclarativeproperty \            # Cover
            qdeclarativemetatype \            # Cover
            qdeclarativemoduleplugin \        # Cover
            qdeclarativepixmapcache \         # Cover
            qdeclarativepropertymap \         # Cover
            qdeclarativeqt \                  # Cover
            qdeclarativesmoothedanimation \   # Cover
+           qdeclarativesmoothedfollow\       # Cover
            qdeclarativespringfollow \        # Cover
            qdeclarativestates \              # Cover
            qdeclarativesystempalette \       # Cover
@@ -60,8 +62,8 @@ SUBDIRS += \
            qdeclarativexmlhttprequest \      # Cover
            qdeclarativeimageprovider \       # Cover
            qdeclarativestyledtext \          # Cover
-           sql \                      # Cover
-           qmlvisual
+           qdeclarativesqldatabase \         # Cover
+           qmlvisual                    # Cover
 
 contains(QT_CONFIG, webkit) {
     SUBDIRS += \

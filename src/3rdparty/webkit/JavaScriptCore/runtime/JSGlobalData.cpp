@@ -45,10 +45,10 @@
 #include "JSNotAnObject.h"
 #include "JSPropertyNameIterator.h"
 #include "JSStaticScopeObject.h"
-#include "Parser.h"
 #include "Lexer.h"
 #include "Lookup.h"
 #include "Nodes.h"
+#include "Parser.h"
 
 #if ENABLE(JSC_MULTIPLE_THREADS)
 #include <wtf/Threading.h>
@@ -71,40 +71,38 @@ extern JSC_CONST_HASHTABLE HashTable regExpTable;
 extern JSC_CONST_HASHTABLE HashTable regExpConstructorTable;
 extern JSC_CONST_HASHTABLE HashTable stringTable;
 
-struct VPtrSet {
-    VPtrSet();
+void* JSGlobalData::jsArrayVPtr;
+void* JSGlobalData::jsByteArrayVPtr;
+void* JSGlobalData::jsStringVPtr;
+void* JSGlobalData::jsFunctionVPtr;
 
-    void* jsArrayVPtr;
-    void* jsByteArrayVPtr;
-    void* jsStringVPtr;
-    void* jsFunctionVPtr;
-};
-
-VPtrSet::VPtrSet()
+void JSGlobalData::storeVPtrs()
 {
-    // Bizarrely, calling fastMalloc here is faster than allocating space on the stack.
-    void* storage = fastMalloc(sizeof(CollectorBlock));
+    CollectorCell cell;
+    void* storage = &cell;
 
+    COMPILE_ASSERT(sizeof(JSArray) <= sizeof(CollectorCell), sizeof_JSArray_must_be_less_than_CollectorCell);
     JSCell* jsArray = new (storage) JSArray(JSArray::createStructure(jsNull()));
-    jsArrayVPtr = jsArray->vptr();
+    JSGlobalData::jsArrayVPtr = jsArray->vptr();
     jsArray->~JSCell();
 
+    COMPILE_ASSERT(sizeof(JSByteArray) <= sizeof(CollectorCell), sizeof_JSByteArray_must_be_less_than_CollectorCell);
     JSCell* jsByteArray = new (storage) JSByteArray(JSByteArray::VPtrStealingHack);
-    jsByteArrayVPtr = jsByteArray->vptr();
+    JSGlobalData::jsByteArrayVPtr = jsByteArray->vptr();
     jsByteArray->~JSCell();
 
+    COMPILE_ASSERT(sizeof(JSString) <= sizeof(CollectorCell), sizeof_JSString_must_be_less_than_CollectorCell);
     JSCell* jsString = new (storage) JSString(JSString::VPtrStealingHack);
-    jsStringVPtr = jsString->vptr();
+    JSGlobalData::jsStringVPtr = jsString->vptr();
     jsString->~JSCell();
 
+    COMPILE_ASSERT(sizeof(JSFunction) <= sizeof(CollectorCell), sizeof_JSFunction_must_be_less_than_CollectorCell);
     JSCell* jsFunction = new (storage) JSFunction(JSFunction::createStructure(jsNull()));
-    jsFunctionVPtr = jsFunction->vptr();
+    JSGlobalData::jsFunctionVPtr = jsFunction->vptr();
     jsFunction->~JSCell();
-
-    fastFree(storage);
 }
 
-JSGlobalData::JSGlobalData(bool isShared, const VPtrSet& vptrSet)
+JSGlobalData::JSGlobalData(bool isShared)
     : isSharedInstance(isShared)
     , clientData(0)
     , arrayTable(fastNew<HashTable>(JSC::arrayTable))
@@ -124,13 +122,10 @@ JSGlobalData::JSGlobalData(bool isShared, const VPtrSet& vptrSet)
     , propertyNameIteratorStructure(JSPropertyNameIterator::createStructure(jsNull()))
     , getterSetterStructure(GetterSetter::createStructure(jsNull()))
     , apiWrapperStructure(JSAPIValueWrapper::createStructure(jsNull()))
+    , dummyMarkableCellStructure(JSCell::createDummyStructure())
 #if USE(JSVALUE32)
     , numberStructure(JSNumberCell::createStructure(jsNull()))
 #endif
-    , jsArrayVPtr(vptrSet.jsArrayVPtr)
-    , jsByteArrayVPtr(vptrSet.jsByteArrayVPtr)
-    , jsStringVPtr(vptrSet.jsStringVPtr)
-    , jsFunctionVPtr(vptrSet.jsFunctionVPtr)
     , identifierTable(createIdentifierTable())
     , propertyNames(new CommonIdentifiers(this))
     , emptyList(new MarkedArgumentBuffer)
@@ -146,7 +141,9 @@ JSGlobalData::JSGlobalData(bool isShared, const VPtrSet& vptrSet)
     , dynamicGlobalObject(0)
     , functionCodeBlockBeingReparsed(0)
     , firstStringifierToMark(0)
-    , markStack(vptrSet.jsArrayVPtr)
+    , markStack(jsArrayVPtr)
+    , cachedUTCOffset(NaN)
+    , weakRandom(static_cast<int>(currentTime()))
 #ifndef NDEBUG
     , mainThreadOnly(false)
 #endif
@@ -197,9 +194,17 @@ JSGlobalData::~JSGlobalData()
     delete clientData;
 }
 
-PassRefPtr<JSGlobalData> JSGlobalData::create(bool isShared)
+PassRefPtr<JSGlobalData> JSGlobalData::createNonDefault()
 {
-    return adoptRef(new JSGlobalData(isShared, VPtrSet()));
+    return adoptRef(new JSGlobalData(false));
+}
+
+PassRefPtr<JSGlobalData> JSGlobalData::create()
+{
+    JSGlobalData* globalData = new JSGlobalData(false);
+    setDefaultIdentifierTable(globalData->identifierTable);
+    setCurrentIdentifierTable(globalData->identifierTable);
+    return adoptRef(globalData);
 }
 
 PassRefPtr<JSGlobalData> JSGlobalData::createLeaked()
@@ -219,7 +224,7 @@ JSGlobalData& JSGlobalData::sharedInstance()
 {
     JSGlobalData*& instance = sharedInstanceInternal();
     if (!instance) {
-        instance = create(true).releaseRef();
+        instance = new JSGlobalData(true);
 #if ENABLE(JSC_MULTIPLE_THREADS)
         instance->makeUsableFromMultipleThreads();
 #endif
@@ -249,6 +254,14 @@ const Vector<Instruction>& JSGlobalData::numericCompareFunction(ExecState* exec)
 
 JSGlobalData::ClientData::~ClientData()
 {
+}
+
+void JSGlobalData::resetDateCache()
+{
+    cachedUTCOffset = NaN;
+    dstOffsetCache.reset();
+    cachedDateString = UString();
+    dateInstanceCache.reset();
 }
 
 void JSGlobalData::startSampling()

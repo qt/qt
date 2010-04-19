@@ -61,6 +61,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeAction
 public:
     QDeclarativeAction();
     QDeclarativeAction(QObject *, const QString &, const QVariant &);
+    QDeclarativeAction(QObject *, const QString &,
+                       QDeclarativeContext *, const QVariant &);
 
     bool restore:1;
     bool actionDone:1;

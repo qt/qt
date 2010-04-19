@@ -120,6 +120,7 @@ public:
       mWidth(0), mHeight(0), implicitWidth(0), implicitHeight(0)
     {
         QGraphicsItemPrivate::acceptedMouseButtons = 0;
+        isDeclarativeItem = 1;
         QGraphicsItemPrivate::flags = QGraphicsItem::GraphicsItemFlags(
                                       QGraphicsItem::ItemHasNoContents
                                       | QGraphicsItem::ItemIsFocusable
@@ -183,7 +184,7 @@ public:
     QDeclarativeNullableValue<qreal> _baselineOffset;
 
     struct AnchorLines {
-        AnchorLines(QDeclarativeItem *);
+        AnchorLines(QGraphicsObject *);
         QDeclarativeAnchorLine left;
         QDeclarativeAnchorLine right;
         QDeclarativeAnchorLine hCenter;

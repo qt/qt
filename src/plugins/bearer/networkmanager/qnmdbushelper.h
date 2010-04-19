@@ -46,6 +46,8 @@
 #include <QDBusContext>
 #include <QMap>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 class QNmDBusHelper: public QObject, protected QDBusContext
@@ -71,5 +73,7 @@ Q_SIGNALS:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS
 
 #endif// QNMDBUSHELPERPRIVATE_H

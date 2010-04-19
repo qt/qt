@@ -1,7 +1,8 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
-    width: 300; height: 400; color: "white"
+    width: 300; height: 400
+    color: "white"
 
     ListModel {
         id: appModel
@@ -16,10 +17,19 @@ Rectangle {
 
     Component {
         id: appDelegate
+
         Item {
             width: 100; height: 100
-            Image { id: myIcon; y: 20; anchors.horizontalCenter: parent.horizontalCenter; source: icon }
-            Text { anchors.top: myIcon.bottom; anchors.horizontalCenter: parent.horizontalCenter; text: name }
+
+            Image {
+                id: myIcon
+                y: 20; anchors.horizontalCenter: parent.horizontalCenter
+                source: icon
+            }
+            Text {
+                anchors { top: myIcon.bottom; horizontalCenter: parent.horizontalCenter }
+                text: name
+            }
         }
     }
 
@@ -31,8 +41,9 @@ Rectangle {
     GridView {
         anchors.fill: parent
         cellWidth: 100; cellHeight: 100
-        model: appModel; delegate: appDelegate
         highlight: appHighlight
         focus: true
+        model: appModel
+        delegate: appDelegate
     }
 }

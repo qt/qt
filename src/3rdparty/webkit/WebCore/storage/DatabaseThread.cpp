@@ -44,6 +44,7 @@ DatabaseThread::DatabaseThread()
     : m_threadID(0)
     , m_transactionClient(new SQLTransactionClient())
     , m_transactionCoordinator(new SQLTransactionCoordinator())
+    , m_cleanupSync(0)
 {
     m_selfRef = this;
 }
@@ -51,6 +52,7 @@ DatabaseThread::DatabaseThread()
 DatabaseThread::~DatabaseThread()
 {
     // FIXME: Any cleanup required here?  Since the thread deletes itself after running its detached course, I don't think so.  Lets be sure.
+    ASSERT(terminationRequested());
 }
 
 bool DatabaseThread::start()
@@ -65,8 +67,10 @@ bool DatabaseThread::start()
     return m_threadID;
 }
 
-void DatabaseThread::requestTermination()
+void DatabaseThread::requestTermination(DatabaseTaskSynchronizer *cleanupSync)
 {
+    ASSERT(!m_cleanupSync);
+    m_cleanupSync = cleanupSync;
     LOG(StorageAPI, "DatabaseThread %p was asked to terminate\n", this);
     m_queue.kill();
 }
@@ -91,13 +95,8 @@ void* DatabaseThread::databaseThread()
     }
 
     AutodrainedPool pool;
-    while (true) {
-        RefPtr<DatabaseTask> task;
-        if (!m_queue.waitForMessage(task))
-            break;
-
+    while (OwnPtr<DatabaseTask> task = m_queue.waitForMessage()) {
         task->performTask();
-
         pool.cycle();
     }
 
@@ -114,14 +113,19 @@ void* DatabaseThread::databaseThread()
         openSetCopy.swap(m_openDatabaseSet);
         DatabaseSet::iterator end = openSetCopy.end();
         for (DatabaseSet::iterator it = openSetCopy.begin(); it != end; ++it)
-           (*it)->close();
+           (*it)->close(Database::RemoveDatabaseFromContext);
     }
 
     // Detach the thread so its resources are no longer of any concern to anyone else
     detachThread(m_threadID);
 
+    DatabaseTaskSynchronizer* cleanupSync = m_cleanupSync;
+    
     // Clear the self refptr, possibly resulting in deletion
     m_selfRef = 0;
+
+    if (cleanupSync) // Someone wanted to know when we were done cleaning up.
+        cleanupSync->taskCompleted();
 
     return 0;
 }
@@ -142,12 +146,12 @@ void DatabaseThread::recordDatabaseClosed(Database* database)
     m_openDatabaseSet.remove(database);
 }
 
-void DatabaseThread::scheduleTask(PassRefPtr<DatabaseTask> task)
+void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
 {
     m_queue.append(task);
 }
 
-void DatabaseThread::scheduleImmediateTask(PassRefPtr<DatabaseTask> task)
+void DatabaseThread::scheduleImmediateTask(PassOwnPtr<DatabaseTask> task)
 {
     m_queue.prepend(task);
 }
@@ -155,7 +159,7 @@ void DatabaseThread::scheduleImmediateTask(PassRefPtr<DatabaseTask> task)
 class SameDatabasePredicate {
 public:
     SameDatabasePredicate(const Database* database) : m_database(database) { }
-    bool operator()(RefPtr<DatabaseTask>& task) const { return task->database() == m_database; }
+    bool operator()(DatabaseTask* task) const { return task->database() == m_database; }
 private:
     const Database* m_database;
 };
@@ -167,6 +171,5 @@ void DatabaseThread::unscheduleDatabaseTasks(Database* database)
     SameDatabasePredicate predicate(database);
     m_queue.removeIf(predicate);
 }
-
 } // namespace WebCore
 #endif

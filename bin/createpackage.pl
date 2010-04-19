@@ -101,6 +101,10 @@ Example with certfile:
 
 If no certificate and key files are provided, either a RnD certificate or
 a self-signed certificate from QtDir\\src\\s60installs directory is used.
+In the latter case the resulting package will also be automatically patched
+using patch_capabilities.pl script, which makes it unsuitable for distribution.
+Always specify certificates explicitly if you wish to distribute your package.
+
 ==============================================================================================
 
 ENDUSAGESTRING
@@ -237,10 +241,6 @@ if (!$preservePkgOutput) {
 }
 
 # Preprocess PKG
-if ($certtext eq "Self Signed" && !@certificates) {
-    print("Patching capabilities for self signed package $certificate\n");
-    system ("patch_capabilities $templatepkg $targetplatform");
-}
 
 local $/;
 # read template file
@@ -277,6 +277,11 @@ if($stub) {
     # Create stub SIS.
     system ("makesis -s $pkgoutput $stub_sis_name");
 } else {
+    if ($certtext eq "Self Signed" && !@certificates) {
+        print("Auto-patching capabilities for self signed package.\n");
+        system ("patch_capabilities $pkgoutput");
+    }
+
     # Create SIS.
     # The 'and' is because system uses 0 to indicate success.
     system ("makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");

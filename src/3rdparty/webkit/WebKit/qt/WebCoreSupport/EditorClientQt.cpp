@@ -384,18 +384,6 @@ void EditorClientQt::handleKeyboardEvent(KeyboardEvent* event)
         } else
 #endif // QT_NO_SHORTCUT
         switch (kevent->windowsVirtualKeyCode()) {
-#if QT_VERSION < 0x040500
-            case VK_RETURN:
-#ifdef QT_WS_MAC
-                if (kevent->shiftKey() || kevent->metaKey())
-#else
-                if (kevent->shiftKey())
-#endif
-                    frame->editor()->command("InsertLineBreak").execute();
-                else
-                    frame->editor()->command("InsertNewline").execute();
-                break;
-#endif
             case VK_BACK:
                 frame->editor()->deleteWithDirection(SelectionController::BACKWARD,
                         CharacterGranularity, false, true);
@@ -407,28 +395,38 @@ void EditorClientQt::handleKeyboardEvent(KeyboardEvent* event)
             case VK_LEFT:
                 if (kevent->shiftKey())
                     frame->editor()->command("MoveLeftAndModifySelection").execute();
-                else frame->editor()->command("MoveLeft").execute();
+                else
+                    frame->editor()->command("MoveLeft").execute();
                 break;
             case VK_RIGHT:
                 if (kevent->shiftKey())
                     frame->editor()->command("MoveRightAndModifySelection").execute();
-                else frame->editor()->command("MoveRight").execute();
+                else
+                    frame->editor()->command("MoveRight").execute();
                 break;
             case VK_UP:
                 if (kevent->shiftKey())
                     frame->editor()->command("MoveUpAndModifySelection").execute();
-                else frame->editor()->command("MoveUp").execute();
+                else
+                    frame->editor()->command("MoveUp").execute();
                 break;
             case VK_DOWN:
                 if (kevent->shiftKey())
                     frame->editor()->command("MoveDownAndModifySelection").execute();
-                else frame->editor()->command("MoveDown").execute();
+                else
+                    frame->editor()->command("MoveDown").execute();
                 break;
             case VK_PRIOR:  // PageUp
-                frame->editor()->command("MovePageUp").execute();
+                if (kevent->shiftKey())
+                    frame->editor()->command("MovePageUpAndModifySelection").execute();
+                else
+                    frame->editor()->command("MovePageUp").execute();
                 break;
             case VK_NEXT:  // PageDown
-                frame->editor()->command("MovePageDown").execute();
+                if (kevent->shiftKey())
+                    frame->editor()->command("MovePageDownAndModifySelection").execute();
+                else
+                    frame->editor()->command("MovePageDown").execute();
                 break;
             case VK_TAB:
                 return;

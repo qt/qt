@@ -72,6 +72,8 @@ private slots:
     void frameCount();
     void remote();
     void remote_data();
+    void sourceSize();
+    void sourceSizeReadOnly();
     void invalidSource();
 };
 
@@ -139,12 +141,12 @@ void tst_qdeclarativeanimatedimage::remote()
     QFETCH(QString, fileName);
     QFETCH(bool, paused);
 
-    TestHTTPServer server(14445);
+    TestHTTPServer server(14449);
     QVERIFY(server.isValid());
     server.serveDirectory(SRCDIR "/data");
 
     QDeclarativeEngine engine;
-    QDeclarativeComponent component(&engine, QUrl("http://127.0.0.1:14445/" + fileName));
+    QDeclarativeComponent component(&engine, QUrl("http://127.0.0.1:14449/" + fileName));
     TRY_WAIT(component.isReady());
 
     QDeclarativeAnimatedImage *anim = qobject_cast<QDeclarativeAnimatedImage *>(component.create());
@@ -155,8 +157,30 @@ void tst_qdeclarativeanimatedimage::remote()
         TRY_WAIT(anim->isPaused());
         QCOMPARE(anim->currentFrame(), 2);
     }
+    QVERIFY(anim->status() != QDeclarativeAnimatedImage::Error);
 
     delete anim;
+}
+
+void tst_qdeclarativeanimatedimage::sourceSize()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickmanscaled.qml"));
+    QDeclarativeAnimatedImage *anim = qobject_cast<QDeclarativeAnimatedImage *>(component.create());
+    QVERIFY(anim);
+    QCOMPARE(anim->width(),240.0);
+    QCOMPARE(anim->height(),180.0);
+    QCOMPARE(anim->sourceSize(),QSize(160,120));
+
+    delete anim;
+}
+
+void tst_qdeclarativeanimatedimage::sourceSizeReadOnly()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickmanerror1.qml"));
+    QVERIFY(component.isError());
+    QCOMPARE(component.errors().at(0).description(), QString("Invalid property assignment: \"sourceSize\" is a read-only property"));
 }
 
 void tst_qdeclarativeanimatedimage::remote_data()
@@ -172,7 +196,7 @@ void tst_qdeclarativeanimatedimage::invalidSource()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl::fromLocalFile(""));
     QVERIFY(component.isReady());
 
     QTest::ignoreMessage(QtWarningMsg, "Error Reading Animated Image File  QUrl( \"file:no-such-file.gif\" )  ");

@@ -36,8 +36,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLTableCaptionElement);
 
 static const HashTableValue JSHTMLTableCaptionElementTableValues[3] =
 {
-    { "align", DontDelete, (intptr_t)jsHTMLTableCaptionElementAlign, (intptr_t)setJSHTMLTableCaptionElementAlign },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLTableCaptionElementConstructor, (intptr_t)0 },
+    { "align", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLTableCaptionElementAlign), (intptr_t)setJSHTMLTableCaptionElementAlign },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLTableCaptionElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -138,17 +138,18 @@ bool JSHTMLTableCaptionElement::getOwnPropertyDescriptor(ExecState* exec, const 
     return getStaticValueDescriptor<JSHTMLTableCaptionElement, Base>(exec, &JSHTMLTableCaptionElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLTableCaptionElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableCaptionElementAlign(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLTableCaptionElement* castedThis = static_cast<JSHTMLTableCaptionElement*>(asObject(slot.slotBase()));
+    JSHTMLTableCaptionElement* castedThis = static_cast<JSHTMLTableCaptionElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLTableCaptionElement* imp = static_cast<HTMLTableCaptionElement*>(castedThis->impl());
-    return jsString(exec, imp->align());
+    JSValue result = jsString(exec, imp->align());
+    return result;
 }
 
-JSValue jsHTMLTableCaptionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLTableCaptionElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLTableCaptionElement* domObject = static_cast<JSHTMLTableCaptionElement*>(asObject(slot.slotBase()));
+    JSHTMLTableCaptionElement* domObject = static_cast<JSHTMLTableCaptionElement*>(asObject(slotBase));
     return JSHTMLTableCaptionElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLTableCaptionElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -158,7 +159,8 @@ void JSHTMLTableCaptionElement::put(ExecState* exec, const Identifier& propertyN
 
 void setJSHTMLTableCaptionElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLTableCaptionElement* imp = static_cast<HTMLTableCaptionElement*>(static_cast<JSHTMLTableCaptionElement*>(thisObject)->impl());
+    JSHTMLTableCaptionElement* castedThisObj = static_cast<JSHTMLTableCaptionElement*>(thisObject);
+    HTMLTableCaptionElement* imp = static_cast<HTMLTableCaptionElement*>(castedThisObj->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 

@@ -551,6 +551,16 @@ void QProcessPrivate::Channel::clear()
     interpreter itself (\c{cmd.exe} on some Windows systems), and ask
     the interpreter to execute the desired command.
 
+    \section1 Symbian Platform Security Requirements
+
+    On Symbian, processes which use the functions kill() or terminate()
+    must have the \c PowerMgmt platform security capability. If the client
+    process lacks this capability, these functions will fail.
+
+    Platform security capabilities are added via the
+    \l{qmake-variable-reference.html#target-capability}{TARGET.CAPABILITY}
+    qmake variable.
+
     \sa QBuffer, QFile, QTcpSocket
 */
 
@@ -2006,9 +2016,13 @@ void QProcess::start(const QString &program, OpenMode mode)
     event loop does not handle the WM_CLOSE message, can only be terminated by
     calling kill().
 
+    On Symbian, this function requires platform security capability
+    \c PowerMgmt. If absent, the process will panic with KERN-EXEC 46.
+
     \note Terminating running processes from other processes will typically
     cause a panic in Symbian due to platform security.
 
+    \sa \l {Symbian Platform Security Requirements}
     \sa kill()
 */
 void QProcess::terminate()
@@ -2023,6 +2037,10 @@ void QProcess::terminate()
     On Windows, kill() uses TerminateProcess, and on Unix and Mac OS X, the
     SIGKILL signal is sent to the process.
 
+    On Symbian, this function requires platform security capability
+    \c PowerMgmt. If absent, the process will panic with KERN-EXEC 46.
+
+    \sa \l {Symbian Platform Security Requirements}
     \sa terminate()
 */
 void QProcess::kill()

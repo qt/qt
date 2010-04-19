@@ -49,6 +49,7 @@
 #include <qdeclarativeitem_p.h>
 #include <qdeclarativeguard_p.h>
 #include <qdeclarativenullablevalue_p_p.h>
+#include "private/qdeclarativecontext_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtGui/qgraphicsitem.h>
@@ -571,7 +572,12 @@ void QDeclarativeStateChangeScript::execute()
     const QString &script = d->script.script();
     if (!script.isEmpty()) {
         QDeclarativeExpression expr(d->script.context(), script, d->script.scopeObject());
+        QDeclarativeData *ddata = QDeclarativeData::get(this);
+        if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
+            expr.setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
         expr.value();
+        if (expr.hasError())
+            qWarning() << expr.error();
     }
 }
 
@@ -1090,6 +1096,9 @@ bool QDeclarativeAnchorChanges::changesBindings()
 void QDeclarativeAnchorChanges::saveOriginals()
 {
     Q_D(QDeclarativeAnchorChanges);
+    if (!d->target)
+        return;
+
     d->origLeft = d->target->anchors()->left();
     d->origRight = d->target->anchors()->right();
     d->origHCenter = d->target->anchors()->horizontalCenter();
@@ -1146,6 +1155,9 @@ void QDeclarativeAnchorChanges::copyOriginals(QDeclarativeActionEvent *other)
 void QDeclarativeAnchorChanges::clearBindings()
 {
     Q_D(QDeclarativeAnchorChanges);
+    if (!d->target)
+        return;
+
     d->fromX = d->target->x();
     d->fromY = d->target->y();
     d->fromWidth = d->target->width();
@@ -1242,6 +1254,9 @@ void QDeclarativeAnchorChanges::rewind()
 void QDeclarativeAnchorChanges::saveCurrentValues()
 {
     Q_D(QDeclarativeAnchorChanges);
+    if (!d->target)
+        return;
+
     d->rewindLeft = d->target->anchors()->left();
     d->rewindRight = d->target->anchors()->right();
     d->rewindHCenter = d->target->anchors()->horizontalCenter();
@@ -1259,6 +1274,9 @@ void QDeclarativeAnchorChanges::saveCurrentValues()
 void QDeclarativeAnchorChanges::saveTargetValues()
 {
     Q_D(QDeclarativeAnchorChanges);
+    if (!d->target)
+        return;
+
     d->toX = d->target->x();
     d->toY = d->target->y();
     d->toWidth = d->target->width();

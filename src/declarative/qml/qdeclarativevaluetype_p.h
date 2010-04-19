@@ -86,14 +86,13 @@ public:
 
     static void registerValueTypes();
 
-    QDeclarativeValueType *operator[](int idx) const;
+    QDeclarativeValueType *operator[](int idx) const {
+        if (idx >= (int)QVariant::UserType) return 0;
+        else return valueTypes[idx];
+    }
 
 private:
     QDeclarativeValueType *valueTypes[QVariant::UserType - 1]; 
-#if (QT_VERSION < QT_VERSION_CHECK(4,7,0))
-    int easingType;
-    QDeclarativeValueType *easingValueType;
-#endif
 };
 
 class Q_AUTOTEST_EXPORT QDeclarativePointFValueType : public QDeclarativeValueType
@@ -399,7 +398,8 @@ public:
 
 private:
     QFont font;
-    bool hasPixelSize;
+    bool pixelSizeSet;
+    bool pointSizeSet;
 };
 
 QT_END_NAMESPACE

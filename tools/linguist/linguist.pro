@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS  = \
-    linguist \
     lrelease \
     lupdate \
     lconvert
+!no-png:!contains(QT_CONFIG, no-gui):SUBDIRS += linguist

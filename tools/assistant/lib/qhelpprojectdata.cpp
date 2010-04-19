@@ -47,6 +47,7 @@
 #include <QtCore/QStack>
 #include <QtCore/QMap>
 #include <QtCore/QRegExp>
+#include <QtCore/QUrl>
 #include <QtCore/QVariant>
 #include <QtXml/QXmlStreamReader>
 
@@ -77,6 +78,7 @@ private:
     void readFiles();
     void raiseUnknownTokenError();
     void addMatchingFiles(const QString &pattern);
+    bool hasValidSyntax(const QString &nameSpace, const QString &vFolder) const;
 
     QMap<QString, QStringList> dirEntriesCache;
 };
@@ -115,16 +117,14 @@ void QHelpProjectDataPrivate::readProject()
         if (isStartElement()) {
             if (name() == QLatin1String("virtualFolder")) {
                 virtualFolder = readElementText();
-                if (virtualFolder.contains(QLatin1String("/")))
+                if (!hasValidSyntax(QLatin1String("test"), virtualFolder))
                     raiseError(QCoreApplication::translate("QHelpProject",
-                                   "A virtual folder must not contain "
-                                   "a \'/\' character!"));
+                                   "Virtual folder has invalid syntax."));
             } else if (name() == QLatin1String("namespace")) {
                 namespaceName = readElementText();
-                if (namespaceName.contains(QLatin1String("/")))
+                if (!hasValidSyntax(namespaceName, QLatin1String("test")))
                     raiseError(QCoreApplication::translate("QHelpProject",
-                                   "A namespace must not contain a "
-                                   "\'/\' character!"));
+                                   "Namespace has invalid syntax."));
             } else if (name() == QLatin1String("customFilter")) {
                 readCustomFilter();
             } else if (name() == QLatin1String("filterSection")) {
@@ -316,6 +316,22 @@ void QHelpProjectDataPrivate::addMatchingFiles(const QString &pattern)
     }
     if (!matchFound)
         filterSectionList.last().addFile(pattern);
+}
+
+bool QHelpProjectDataPrivate::hasValidSyntax(const QString &nameSpace,
+                                             const QString &vFolder) const
+{
+    const QLatin1Char slash('/');
+    if (nameSpace.contains(slash) || vFolder.contains(slash))
+        return false;
+    QUrl url;
+    const QLatin1String scheme("qthelp");
+    url.setScheme(scheme);
+    url.setHost(nameSpace);
+    url.setPath(vFolder);
+
+    const QString expectedUrl(scheme + QLatin1String("://") + nameSpace + slash + vFolder);
+    return url.isValid() && url.toString() == expectedUrl;
 }
 
 /*!

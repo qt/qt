@@ -11943,7 +11943,7 @@ EXPORTS
 	_ZN20QGraphicsItemPrivate14setFocusHelperEN2Qt11FocusReasonEbb @ 11942 NONAME
 	_ZN20QGraphicsItemPrivate16clearFocusHelperEb @ 11943 NONAME
 	_ZN20QGraphicsItemPrivate24prependGraphicsTransformEP18QGraphicsTransform @ 11944 NONAME
-	_ZN20QGraphicsItemPrivate6appendEP24QDeclarativeListPropertyI15QGraphicsObjectEPS1_ @ 11945 NONAME
+	_ZN20QGraphicsItemPrivate6appendEP24QDeclarativeListPropertyI15QGraphicsObjectEPS1_ @ 11945 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate8setWidthEf @ 11946 NONAME
 	_ZN20QGraphicsItemPrivate9setHeightEf @ 11947 NONAME
 	_ZN7QWizard11pageRemovedEi @ 11948 NONAME
@@ -11970,4 +11970,28 @@ EXPORTS
 	_ZNK12QPaintBuffer15frameStartIndexEi @ 11969 NONAME
 	_ZNK12QPaintBuffer15processCommandsEP8QPainterii @ 11970 NONAME
 	_ZNK12QPaintBuffer18commandDescriptionEi @ 11971 NONAME
+	_ZN20QGraphicsItemPrivate11children_atEP24QDeclarativeListPropertyI15QGraphicsObjectEi @ 11972 NONAME
+	_ZN20QGraphicsItemPrivate14children_countEP24QDeclarativeListPropertyI15QGraphicsObjectE @ 11973 NONAME
+	_ZN20QGraphicsItemPrivate15children_appendEP24QDeclarativeListPropertyI15QGraphicsObjectEPS1_ @ 11974 NONAME
+	_ZN11QEglContext14destroyContextEv @ 11975 NONAME ABSENT
+	_ZN14QEglProperties13setDeviceTypeEi @ 11976 NONAME ABSENT
+	_ZN4QEgl10clearErrorEv @ 11977 NONAME ABSENT
+	_ZN4QEgl10extensionsEv @ 11978 NONAME ABSENT
+	_ZN4QEgl11errorStringEi @ 11979 NONAME ABSENT
+	_ZN4QEgl11errorStringEv @ 11980 NONAME ABSENT
+	_ZN4QEgl12chooseConfigEPK14QEglPropertiesNS_16PixelFormatMatchE @ 11981 NONAME ABSENT
+	_ZN4QEgl12hasExtensionEPKc @ 11982 NONAME ABSENT
+	_ZN4QEgl12nativePixmapEP7QPixmap @ 11983 NONAME ABSENT
+	_ZN4QEgl12nativeWindowEP7QWidget @ 11984 NONAME ABSENT
+	_ZN4QEgl13createSurfaceEP12QPaintDeviceiPK14QEglProperties @ 11985 NONAME ABSENT
+	_ZN4QEgl13defaultConfigEiNS_3APIE6QFlagsINS_12ConfigOptionEE @ 11986 NONAME ABSENT
+	_ZN4QEgl13nativeDisplayEv @ 11987 NONAME ABSENT
+	_ZN4QEgl14dumpAllConfigsEv @ 11988 NONAME ABSENT
+	_ZN4QEgl17eglCreateImageKHREiiiiPKi @ 11989 NONAME ABSENT
+	_ZN4QEgl18eglDestroyImageKHREii @ 11990 NONAME ABSENT
+	_ZN4QEgl5errorEv @ 11991 NONAME ABSENT
+	_ZN4QEgl7displayEv @ 11992 NONAME ABSENT
+	_ZNK11QEglContext12configAttribEi @ 11993 NONAME ABSENT
+	_ZNK11QEglContext16configPropertiesEv @ 11994 NONAME ABSENT
+	_ZNK19QItemSelectionRange7isEmptyEv @ 11995 NONAME
 

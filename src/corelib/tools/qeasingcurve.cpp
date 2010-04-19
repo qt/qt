@@ -304,6 +304,10 @@
 #include <QtCore/qstring.h>
 #endif
 
+#ifndef QT_NO_DATASTREAM
+#include <QtCore/qdatastream.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static bool isConfigFunction(QEasingCurve::Type type)

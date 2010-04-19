@@ -47,7 +47,7 @@
 #include <QProcess>
 #include <QFile>
 
-enum Mode { Record, RecordNoVisuals, Play, TestVisuals, RemoveVisuals, UpdateVisuals, UpdatePlatformVisuals, Test };
+enum Mode { Record, RecordNoVisuals, RecordSnapshot, Play, TestVisuals, RemoveVisuals, UpdateVisuals, UpdatePlatformVisuals, Test };
 
 static QString testdir;
 class tst_qmlvisual : public QObject
@@ -100,12 +100,35 @@ void tst_qmlvisual::visual_data()
     if (qgetenv("QMLVISUAL_ALL") != "")
         files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
     else {
+        //these are newly added tests we want to try out in CI (then move to the stable list)
+        files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/borders.qml";
+        files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/animated.qml";
+        files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/animated-smooth.qml";
+        files << QT_TEST_SOURCE_DIR "/qdeclarativeflipable/test-flipable.qml";
+        files << QT_TEST_SOURCE_DIR "/qdeclarativepositioners/usingRepeater.qml";
+
         //these are tests we think are stable and useful enough to be run by the CI system
-        files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/mousearea-visual.qml";
-        files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/drag.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation-visual.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/bindinganimation/bindinganimation.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/loop/loop.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/parallelAnimation/parallelAnimation-visual.qml";
         files << QT_TEST_SOURCE_DIR "/animation/parentAnimation/parentAnimation-visual.qml";
         files << QT_TEST_SOURCE_DIR "/animation/reanchor/reanchor.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/scriptAction/scriptAction-visual.qml";
+        files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/drag.qml";
+        files << QT_TEST_SOURCE_DIR "/fillmode/fillmode.qml";
+
+        //these reliably fail in CI, for unknown reasons
+        //files << QT_TEST_SOURCE_DIR "/animation/easing/easing.qml";
+        //files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation-visual.qml";
+
+        //these reliably fail on Linux because of color interpolation (different float rounding)
+#if !defined(Q_WS_X11) && !defined(Q_WS_QWS)
+        files << QT_TEST_SOURCE_DIR "/animation/colorAnimation/colorAnimation-visual.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/propertyAction/propertyAction-visual.qml";
+#endif
+
+        //this is unstable because the MouseArea press-and-hold timer is not synchronized to the animation framework.
+        //files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/mousearea-visual.qml";
     }
 
     foreach (const QString &file, files) {
@@ -125,7 +148,7 @@ void tst_qmlvisual::visual()
     QStringList arguments;
     arguments << "-script" << testdata
               << "-scriptopts" << "play,testimages,testerror,exitoncomplete,exitonfailure" 
-              << file << "-graphicssystem" << "raster";
+              << file;
 #ifdef Q_WS_QWS
     arguments << "-qws";
 #endif
@@ -238,6 +261,11 @@ void action(Mode mode, const QString &file)
                   << "-scriptopts" << "record,saveonexit"
                   << file;
             break;
+        case RecordSnapshot:
+            arguments << "-script" << testdata
+                  << "-scriptopts" << "record,testimages,snapshot,saveonexit"
+                  << file;
+            break;
         case Play:
             arguments << "-script" << testdata
                   << "-scriptopts" << "play,testimages,testerror,exitoncomplete"
@@ -275,6 +303,7 @@ void usage()
     fprintf(stderr, " -listtests                  : list all the tests seen by tst_qmlvisual, and then exit immediately\n");
     fprintf(stderr, " -record file                : record new test data for file\n");
     fprintf(stderr, " -recordnovisuals file       : record new test data for file, but ignore visuals\n");
+    fprintf(stderr, " -recordsnapshot file        : record new snapshot for file (like record but only records a single frame and then exits)\n");
     fprintf(stderr, " -play file                  : playback test data for file, printing errors\n");
     fprintf(stderr, " -testvisuals file           : playback test data for file, without errors\n");
     fprintf(stderr, " -updatevisuals file         : playback test data for file, accept new visuals for file\n");
@@ -331,6 +360,9 @@ int main(int argc, char **argv)
             file = argv[++ii];
         } else if (arg == "-recordnovisuals" && (ii + 1) < argc) {
             mode = RecordNoVisuals;
+            file = argv[++ii];
+        }  else if (arg == "-recordsnapshot" && (ii + 1) < argc) {
+            mode = RecordSnapshot;
             file = argv[++ii];
         } else if (arg == "-testvisuals" && (ii + 1) < argc) {
             mode = TestVisuals;

@@ -176,7 +176,7 @@ int QDeclarativeBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
         }
 
         if (m_params) m_params->setValues(a);
-        if (m_expression) {
+        if (m_expression && m_expression->engine()) {
             QDeclarativeExpressionPrivate::get(m_expression)->value(m_params);
             if (m_expression && m_expression->hasError())
                 qWarning().nospace() << qPrintable(m_expression->error().toString());

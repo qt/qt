@@ -81,7 +81,8 @@ public:
         TestErrorProperty = 0x00000008,
         SaveOnExit = 0x00000010,
         ExitOnComplete = 0x00000020,
-        ExitOnFailure = 0x00000040
+        ExitOnFailure = 0x00000040,
+        Snapshot = 0x00000080
     };
     Q_DECLARE_FLAGS(ScriptOptions, ScriptOption)
     void setScript(const QString &s) { m_script = s; }
@@ -96,6 +97,7 @@ public:
     void setDeviceKeys(bool);
     void setNetworkCacheSize(int size);
     void addLibraryPath(const QString& lib);
+    void addPluginPath(const QString& plugin);
     void setUseGL(bool use);
     void setUseNativeFileBrowser(bool);
 
@@ -103,11 +105,11 @@ public:
 
     QMenuBar *menuBar() const;
 
+    QDeclarativeView *view() const;
+
 public slots:
     void sceneResized(QSize size);
-    void open(const QString&);
-    void openWgt(const QString&);
-    void openQml(const QString&);
+    bool open(const QString&);
     void openFile();
     void reload();
     void takeSnapShot();
@@ -124,6 +126,7 @@ public slots:
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
+    virtual bool event(QEvent *);
 
     void createMenu(QMenuBar *menu, QMenu *flatmenu);
 
@@ -139,7 +142,6 @@ private slots:
     void toggleOrientation();
     void startNetwork();
     void toggleFullScreen();
-    void unpackWgt();
 
 private:
     QString getVideoFileName();

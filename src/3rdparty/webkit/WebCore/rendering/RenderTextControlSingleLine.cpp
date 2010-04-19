@@ -150,7 +150,7 @@ void RenderTextControlSingleLine::hidePopup()
 
 void RenderTextControlSingleLine::subtreeHasChanged()
 {
-    bool wasEdited = isEdited();
+    bool wasChanged = wasChangedSinceLastChangeEvent();
     RenderTextControl::subtreeHasChanged();
 
     InputElement* input = inputElement();
@@ -167,7 +167,7 @@ void RenderTextControlSingleLine::subtreeHasChanged()
     if (input->searchEventsShouldBeDispatched())
         startSearchEventTimer();
 
-    if (!wasEdited && node()->focused()) {
+    if (!wasChanged && node()->focused()) {
         if (Frame* frame = document()->frame())
             frame->textFieldDidBeginEditing(static_cast<Element*>(node()));
     }
@@ -374,7 +374,19 @@ int RenderTextControlSingleLine::textBlockWidth() const
 
     return width;
 }
+    
+float RenderTextControlSingleLine::getAvgCharWidth(AtomicString family)
+{
+    // Since Lucida Grande is the default font, we want this to match the width
+    // of MS Shell Dlg, the default font for textareas in Firefox, Safari Win and
+    // IE for some encodings (in IE, the default font is encoding specific).
+    // 901 is the avgCharWidth value in the OS/2 table for MS Shell Dlg.
+    if (family == AtomicString("Lucida Grande"))
+        return scaleEmToUnits(901);
 
+    return RenderTextControl::getAvgCharWidth(family);
+}
+    
 int RenderTextControlSingleLine::preferredContentWidth(float charWidth) const
 {
     int factor = inputElement()->size();
@@ -383,8 +395,20 @@ int RenderTextControlSingleLine::preferredContentWidth(float charWidth) const
 
     int result = static_cast<int>(ceilf(charWidth * factor));
 
+    float maxCharWidth = 0.f;
+    AtomicString family = style()->font().family().family();
+    // Since Lucida Grande is the default font, we want this to match the width
+    // of MS Shell Dlg, the default font for textareas in Firefox, Safari Win and
+    // IE for some encodings (in IE, the default font is encoding specific).
+    // 4027 is the (xMax - xMin) value in the "head" font table for MS Shell Dlg.
+    if (family == AtomicString("Lucida Grande"))
+        maxCharWidth = scaleEmToUnits(4027);
+    else if (hasValidAvgCharWidth(family))
+        maxCharWidth = roundf(style()->font().primaryFont()->maxCharWidth());
+
     // For text inputs, IE adds some extra width.
-    result += style()->font().primaryFont()->maxCharWidth() - charWidth;
+    if (maxCharWidth > 0.f)
+        result += maxCharWidth - charWidth;
 
     if (RenderBox* resultsRenderer = m_resultsButton ? m_resultsButton->renderBox() : 0)
         result += resultsRenderer->borderLeft() + resultsRenderer->borderRight() +
@@ -461,8 +485,12 @@ void RenderTextControlSingleLine::updateFromElement()
         ExceptionCode ec = 0;
         innerTextElement()->setInnerText(static_cast<Element*>(node())->getAttribute(placeholderAttr), ec);
         ASSERT(!ec);
-    } else
-        setInnerTextValue(inputElement()->value());
+    } else {
+        if (!inputElement()->suggestedValue().isNull())
+            setInnerTextValue(inputElement()->suggestedValue());
+        else
+            setInnerTextValue(inputElement()->value());
+    }
 
     if (m_searchPopupIsVisible)
         m_searchPopup->updateFromElement();

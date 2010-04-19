@@ -33,6 +33,68 @@ namespace WebCore {
 
 ASSERT_CLASS_FITS_IN_CELL(JSSVGHKernElement);
 
+/* Hash table */
+
+static const HashTableValue JSSVGHKernElementTableValues[2] =
+{
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGHKernElementConstructor), (intptr_t)0 },
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGHKernElementTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGHKernElementTableValues, 0 };
+#else
+    { 2, 1, JSSVGHKernElementTableValues, 0 };
+#endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGHKernElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGHKernElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGHKernElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGHKernElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGHKernElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGHKernElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGHKernElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGHKernElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGHKernElementConstructor::s_info = { "SVGHKernElementConstructor", 0, &JSSVGHKernElementConstructorTable, 0 };
+
+bool JSSVGHKernElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGHKernElementConstructor, DOMObject>(exec, &JSSVGHKernElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGHKernElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGHKernElementConstructor, DOMObject>(exec, &JSSVGHKernElementConstructorTable, this, propertyName, descriptor);
+}
+
 /* Hash table for prototype */
 
 static const HashTableValue JSSVGHKernElementPrototypeTableValues[1] =
@@ -54,7 +116,7 @@ JSObject* JSSVGHKernElementPrototype::self(ExecState* exec, JSGlobalObject* glob
     return getDOMPrototype<JSSVGHKernElement>(exec, globalObject);
 }
 
-const ClassInfo JSSVGHKernElement::s_info = { "SVGHKernElement", &JSSVGElement::s_info, 0, 0 };
+const ClassInfo JSSVGHKernElement::s_info = { "SVGHKernElement", &JSSVGElement::s_info, &JSSVGHKernElementTable, 0 };
 
 JSSVGHKernElement::JSSVGHKernElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGHKernElement> impl)
     : JSSVGElement(structure, globalObject, impl)
@@ -64,6 +126,26 @@ JSSVGHKernElement::JSSVGHKernElement(NonNullPassRefPtr<Structure> structure, JSD
 JSObject* JSSVGHKernElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
     return new (exec) JSSVGHKernElementPrototype(JSSVGHKernElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
+}
+
+bool JSSVGHKernElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGHKernElement, Base>(exec, &JSSVGHKernElementTable, this, propertyName, slot);
+}
+
+bool JSSVGHKernElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGHKernElement, Base>(exec, &JSSVGHKernElementTable, this, propertyName, descriptor);
+}
+
+JSValue jsSVGHKernElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGHKernElement* domObject = static_cast<JSSVGHKernElement*>(asObject(slotBase));
+    return JSSVGHKernElement::getConstructor(exec, domObject->globalObject());
+}
+JSValue JSSVGHKernElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGHKernElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

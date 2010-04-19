@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Component {
     id: albumDelegate
@@ -79,9 +79,9 @@ Component {
 
             GridView.onAdd: NumberAnimation { target: albumWrapper; properties: "scale"; from: 0.0; to: 1.0 }
             GridView.onRemove: SequentialAnimation {
-                PropertyAction { target: albumWrapper.GridView; property: "delayRemove"; value: true }
+                PropertyAction { target: albumWrapper; property: "GridView.delayRemove"; value: true }
                 NumberAnimation { target: albumWrapper; property: "scale"; from: 1.0; to: 0.0 }
-                PropertyAction { target: albumWrapper.GridView; property: "delayRemove"; value: false }
+                PropertyAction { target: albumWrapper; property: "GridView.delayRemove"; value: false }
             }
 
             transitions: [

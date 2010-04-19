@@ -85,7 +85,7 @@ void tst_QDeclarativeWorkerScript::source()
     QUrl source = QUrl::fromLocalFile(SRCDIR "/data/worker.qml");
 
     QDeclarativeComponent component(&m_engine);
-    component.setData("import Qt 4.6\nWorkerScript { source: '" + source.toString().toUtf8() + "'; }", QUrl());
+    component.setData("import Qt 4.7\nWorkerScript { source: '" + source.toString().toUtf8() + "'; }", QUrl());
 
     QDeclarativeWorkerScript *item = qobject_cast<QDeclarativeWorkerScript*>(component.create());
     QVERIFY(item != 0);

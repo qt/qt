@@ -52,26 +52,27 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGPatternElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGPatternElementTableValues[19] =
+static const HashTableValue JSSVGPatternElementTableValues[20] =
 {
-    { "patternUnits", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementPatternUnits, (intptr_t)0 },
-    { "patternContentUnits", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementPatternContentUnits, (intptr_t)0 },
-    { "patternTransform", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementPatternTransform, (intptr_t)0 },
-    { "x", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementX, (intptr_t)0 },
-    { "y", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementY, (intptr_t)0 },
-    { "width", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementWidth, (intptr_t)0 },
-    { "height", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementHeight, (intptr_t)0 },
-    { "href", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementHref, (intptr_t)0 },
-    { "requiredFeatures", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementRequiredFeatures, (intptr_t)0 },
-    { "requiredExtensions", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementRequiredExtensions, (intptr_t)0 },
-    { "systemLanguage", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementSystemLanguage, (intptr_t)0 },
-    { "xmllang", DontDelete, (intptr_t)jsSVGPatternElementXmllang, (intptr_t)setJSSVGPatternElementXmllang },
-    { "xmlspace", DontDelete, (intptr_t)jsSVGPatternElementXmlspace, (intptr_t)setJSSVGPatternElementXmlspace },
-    { "externalResourcesRequired", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementExternalResourcesRequired, (intptr_t)0 },
-    { "className", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementClassName, (intptr_t)0 },
-    { "style", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementStyle, (intptr_t)0 },
-    { "viewBox", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementViewBox, (intptr_t)0 },
-    { "preserveAspectRatio", DontDelete|ReadOnly, (intptr_t)jsSVGPatternElementPreserveAspectRatio, (intptr_t)0 },
+    { "patternUnits", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementPatternUnits), (intptr_t)0 },
+    { "patternContentUnits", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementPatternContentUnits), (intptr_t)0 },
+    { "patternTransform", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementPatternTransform), (intptr_t)0 },
+    { "x", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementX), (intptr_t)0 },
+    { "y", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementY), (intptr_t)0 },
+    { "width", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementWidth), (intptr_t)0 },
+    { "height", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementHeight), (intptr_t)0 },
+    { "href", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementHref), (intptr_t)0 },
+    { "requiredFeatures", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementRequiredFeatures), (intptr_t)0 },
+    { "requiredExtensions", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementRequiredExtensions), (intptr_t)0 },
+    { "systemLanguage", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementSystemLanguage), (intptr_t)0 },
+    { "xmllang", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementXmllang), (intptr_t)setJSSVGPatternElementXmllang },
+    { "xmlspace", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementXmlspace), (intptr_t)setJSSVGPatternElementXmlspace },
+    { "externalResourcesRequired", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementExternalResourcesRequired), (intptr_t)0 },
+    { "className", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementClassName), (intptr_t)0 },
+    { "style", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementStyle), (intptr_t)0 },
+    { "viewBox", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementViewBox), (intptr_t)0 },
+    { "preserveAspectRatio", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementPreserveAspectRatio), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPatternElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -82,12 +83,59 @@ static JSC_CONST_HASHTABLE HashTable JSSVGPatternElementTable =
     { 68, 63, JSSVGPatternElementTableValues, 0 };
 #endif
 
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGPatternElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGPatternElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGPatternElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGPatternElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGPatternElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGPatternElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGPatternElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGPatternElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGPatternElementConstructor::s_info = { "SVGPatternElementConstructor", 0, &JSSVGPatternElementConstructorTable, 0 };
+
+bool JSSVGPatternElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGPatternElementConstructor, DOMObject>(exec, &JSSVGPatternElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGPatternElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPatternElementConstructor, DOMObject>(exec, &JSSVGPatternElementConstructorTable, this, propertyName, descriptor);
+}
+
 /* Hash table for prototype */
 
 static const HashTableValue JSSVGPatternElementPrototypeTableValues[3] =
 {
-    { "hasExtension", DontDelete|Function, (intptr_t)jsSVGPatternElementPrototypeFunctionHasExtension, (intptr_t)1 },
-    { "getPresentationAttribute", DontDelete|Function, (intptr_t)jsSVGPatternElementPrototypeFunctionGetPresentationAttribute, (intptr_t)1 },
+    { "hasExtension", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPatternElementPrototypeFunctionHasExtension), (intptr_t)1 },
+    { "getPresentationAttribute", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPatternElementPrototypeFunctionGetPresentationAttribute), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -137,162 +185,185 @@ bool JSSVGPatternElement::getOwnPropertyDescriptor(ExecState* exec, const Identi
     return getStaticValueDescriptor<JSSVGPatternElement, Base>(exec, &JSSVGPatternElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGPatternElementPatternUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementPatternUnits(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->patternUnitsAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementPatternContentUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementPatternContentUnits(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->patternContentUnitsAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementPatternTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementPatternTransform(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedTransformList> obj = imp->patternTransformAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementWidth(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementHeight(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementHref(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementRequiredFeatures(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementRequiredExtensions(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementSystemLanguage(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementXmllang(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
-    return jsString(exec, imp->xmllang());
+    JSValue result = jsString(exec, imp->xmllang());
+    return result;
 }
 
-JSValue jsSVGPatternElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementXmlspace(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
-    return jsString(exec, imp->xmlspace());
+    JSValue result = jsString(exec, imp->xmlspace());
+    return result;
 }
 
-JSValue jsSVGPatternElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementExternalResourcesRequired(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementClassName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementStyle(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
 }
 
-JSValue jsSVGPatternElementViewBox(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementViewBox(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedRect> obj = imp->viewBoxAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGPatternElementPreserveAspectRatio(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPatternElementPreserveAspectRatio(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slot.slotBase()));
+    JSSVGPatternElement* castedThis = static_cast<JSSVGPatternElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThis->impl());
     RefPtr<SVGAnimatedPreserveAspectRatio> obj = imp->preserveAspectRatioAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
+JSValue jsSVGPatternElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGPatternElement* domObject = static_cast<JSSVGPatternElement*>(asObject(slotBase));
+    return JSSVGPatternElement::getConstructor(exec, domObject->globalObject());
+}
 void JSSVGPatternElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPatternElement, Base>(exec, propertyName, value, &JSSVGPatternElementTable, this, slot);
@@ -300,14 +371,21 @@ void JSSVGPatternElement::put(ExecState* exec, const Identifier& propertyName, J
 
 void setJSSVGPatternElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(thisObject)->impl());
+    JSSVGPatternElement* castedThisObj = static_cast<JSSVGPatternElement*>(thisObject);
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThisObj->impl());
     imp->setXmllang(value.toString(exec));
 }
 
 void setJSSVGPatternElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGPatternElement* imp = static_cast<SVGPatternElement*>(static_cast<JSSVGPatternElement*>(thisObject)->impl());
+    JSSVGPatternElement* castedThisObj = static_cast<JSSVGPatternElement*>(thisObject);
+    SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThisObj->impl());
     imp->setXmlspace(value.toString(exec));
+}
+
+JSValue JSSVGPatternElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGPatternElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGPatternElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

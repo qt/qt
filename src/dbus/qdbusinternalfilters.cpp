@@ -57,6 +57,8 @@
 #include "qdbusmessage_p.h"
 #include "qdbusutil_p.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 // defined in qdbusxmlgenerator.cpp
@@ -497,3 +499,5 @@ QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &n
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS
