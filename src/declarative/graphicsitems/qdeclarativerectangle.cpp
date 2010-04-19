@@ -357,7 +357,9 @@ void QDeclarativeRectangle::generateBorderedRect()
     Q_D(QDeclarativeRectangle);
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
-        d->rectImage = QPixmap(pw*2 + 3, pw*2 + 3);
+        // Adding 5 here makes qDrawBorderPixmap() paint correctly with smooth: true
+        // Ideally qDrawBorderPixmap() would be fixed - QTBUG-7999
+        d->rectImage = QPixmap(pw*2 + 5, pw*2 + 5);
         d->rectImage.fill(Qt::transparent);
         QPainter p(&(d->rectImage));
         p.setRenderHint(QPainter::Antialiasing);
