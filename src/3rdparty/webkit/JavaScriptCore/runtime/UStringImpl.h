@@ -58,7 +58,6 @@ protected:
     };
 
     using Noncopyable::operator new;
-    void* operator new(size_t, void* inPlace) { return inPlace; }
 
     // For SmallStringStorage, which allocates an array and uses an in-place new.
     UStringOrRopeImpl() { }
