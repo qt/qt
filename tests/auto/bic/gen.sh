@@ -59,8 +59,10 @@ for module in $modules; do
     g++ -c -I$QTDIR/include -DQT_NO_STL -DQT3_SUPPORT -fdump-class-hierarchy test.cpp
     mv test.cpp*.class $module.$2.txt
     # Remove template classes from the output
-    perl -pi -e '$skip = 0 if (/^\n/);
-        $skip = 1 if (/^(Class|Vtable).*</);
-        $_ = "" if ($skip);' $module.$2.txt
+    perl -pi -e '$skip = 1 if (/^(Class|Vtable).*</);
+        if ($skip) {
+            $skip = 0 if (/^$/);
+            $_ = "";
+        }' $module.$2.txt
 done
 
