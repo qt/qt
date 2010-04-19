@@ -51,6 +51,7 @@
 #include <private/qdeclarativeimagebase_p.h>
 #include <private/qdeclarativeloader_p.h>
 #include <QtDeclarative/qdeclarativecontext.h>
+#include <QtDeclarative/qdeclarativeexpression.h>
 
 #include "../shared/testhttpserver.h"
 
@@ -86,8 +87,12 @@ private slots:
     void pixmap();
     void svg();
     void big();
+    void tiling_QTBUG_6716();
 
 private:
+    template<typename T>
+    T *findItem(QGraphicsObject *parent, const QString &id, int index=-1);
+
     QDeclarativeEngine engine;
 };
 
@@ -161,7 +166,7 @@ void tst_qdeclarativeimage::imageSource()
 
     if (async)
         QVERIFY(obj->asynchronous() == true);
-    
+
     if (remote || async)
         TRY_WAIT(obj->status() == QDeclarativeImage::Loading);
 
@@ -339,6 +344,76 @@ void tst_qdeclarativeimage::big()
     delete obj;
 }
 
+void tst_qdeclarativeimage::tiling_QTBUG_6716()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/tiling.qml"));
+    canvas->show();
+    qApp->processEvents();
+
+    QDeclarativeImage *vTiling = findItem<QDeclarativeImage>(canvas->rootObject(), "vTiling");
+    QDeclarativeImage *hTiling = findItem<QDeclarativeImage>(canvas->rootObject(), "hTiling");
+
+    QVERIFY(vTiling != 0);
+    QVERIFY(hTiling != 0);
+
+    {
+        QPixmap pm(vTiling->width(), vTiling->height());
+        QPainter p(&pm);
+        vTiling->paint(&p, 0, 0);
+
+        QImage img = pm.toImage();
+        for (int x = 0; x < vTiling->width(); ++x) {
+            for (int y = 0; y < vTiling->height(); ++y) {
+                QVERIFY(img.pixel(x, y) == qRgb(0, 255, 0));
+            }
+        }
+    }
+
+    {
+        QPixmap pm(hTiling->width(), hTiling->height());
+        QPainter p(&pm);
+        hTiling->paint(&p, 0, 0);
+
+        QImage img = pm.toImage();
+        for (int x = 0; x < hTiling->width(); ++x) {
+            for (int y = 0; y < hTiling->height(); ++y) {
+                QVERIFY(img.pixel(x, y) == qRgb(0, 255, 0));
+            }
+        }
+    }
+}
+
+/*
+   Find an item with the specified objectName.  If index is supplied then the
+   item must also evaluate the {index} expression equal to index
+*/
+template<typename T>
+T *tst_qdeclarativeimage::findItem(QGraphicsObject *parent, const QString &objectName, int index)
+{
+    const QMetaObject &mo = T::staticMetaObject;
+    //qDebug() << parent->childItems().count() << "children";
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(parent->childItems().at(i));
+        if(!item)
+            continue;
+        //qDebug() << "try" << item;
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
+            if (index != -1) {
+                QDeclarativeExpression e(qmlContext(item), "index", item);
+                if (e.value().toInt() == index)
+                    return static_cast<T*>(item);
+            } else {
+                return static_cast<T*>(item);
+            }
+        }
+        item = findItem<T>(item, objectName, index);
+        if (item)
+            return static_cast<T*>(item);
+    }
+
+    return 0;
+}
 
 QTEST_MAIN(tst_qdeclarativeimage)
 

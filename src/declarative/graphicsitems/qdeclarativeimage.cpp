@@ -366,12 +366,27 @@ void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWi
 
     if (width() != d->pix.width() || height() != d->pix.height()) {
         if (d->fillMode >= Tile) {
-            if (d->fillMode == Tile)
+            if (d->fillMode == Tile) {
                 p->drawTiledPixmap(QRectF(0,0,width(),height()), d->pix);
-            else if (d->fillMode == TileVertically)
-                p->drawTiledPixmap(QRectF(0,0,d->pix.width(),height()), d->pix);
-            else
-                p->drawTiledPixmap(QRectF(0,0,width(),d->pix.height()), d->pix);
+            } else {
+                qreal widthScale = width() / qreal(d->pix.width());
+                qreal heightScale = height() / qreal(d->pix.height());
+
+                QTransform scale;
+                if (d->fillMode == TileVertically) {
+                    scale.scale(widthScale, 1.0);
+                    QTransform old = p->transform();
+                    p->setWorldTransform(scale * old);
+                    p->drawTiledPixmap(QRectF(0,0,d->pix.width(),height()), d->pix);
+                    p->setWorldTransform(old);
+                } else {
+                    scale.scale(1.0, heightScale);
+                    QTransform old = p->transform();
+                    p->setWorldTransform(scale * old);
+                    p->drawTiledPixmap(QRectF(0,0,width(),d->pix.height()), d->pix);
+                    p->setWorldTransform(old);
+                }
+            }
         } else {
             qreal widthScale = width() / qreal(d->pix.width());
             qreal heightScale = height() / qreal(d->pix.height());
