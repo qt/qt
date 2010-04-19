@@ -56,7 +56,7 @@
 #include <QtMediaServices/qvideowidget.h>
 #include <QtMediaServices/qgraphicsvideoitem.h>
 
-#define DEBUG_PLAYER_STATE
+//#define DEBUG_PLAYER_STATE
 
 QT_BEGIN_HEADER
 
