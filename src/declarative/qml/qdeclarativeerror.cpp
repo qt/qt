@@ -216,9 +216,15 @@ void QDeclarativeError::setColumn(int column)
 QString QDeclarativeError::toString() const
 {
     QString rv;
-    rv = url().toString() + QLatin1Char(':') + QString::number(line());
-    if(column() != -1) 
-        rv += QLatin1Char(':') + QString::number(column());
+    if (url().isEmpty()) {
+        rv = QLatin1String("<Unknown File>");
+    } else if (line() != -1) {
+        rv = url().toString() + QLatin1Char(':') + QString::number(line());
+        if(column() != -1) 
+            rv += QLatin1Char(':') + QString::number(column());
+    } else {
+        rv = url().toString();
+    }
 
     rv += QLatin1String(": ") + description();
 

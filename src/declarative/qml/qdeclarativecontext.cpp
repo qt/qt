@@ -660,7 +660,7 @@ void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object
             if (scriptEngine->hasUncaughtException()) {
                 QDeclarativeError error;
                 QDeclarativeExpressionPrivate::exceptionToError(scriptEngine, error);
-                qWarning().nospace() << qPrintable(error.toString());
+                enginePriv->warning(error);
             }
 
             scriptEngine->popContext();
@@ -686,7 +686,7 @@ void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object
         if (scriptEngine->hasUncaughtException()) {
             QDeclarativeError error;
             QDeclarativeExpressionPrivate::exceptionToError(scriptEngine, error);
-            qWarning().nospace() << qPrintable(error.toString());
+            enginePriv->warning(error);
         }
 
         scriptEngine->popContext();
@@ -720,7 +720,7 @@ void QDeclarativeContextData::addScript(const QDeclarativeParser::Object::Script
         if (scriptEngine->hasUncaughtException()) {
             QDeclarativeError error;
             QDeclarativeExpressionPrivate::exceptionToError(scriptEngine, error);
-            qWarning().nospace() << qPrintable(error.toString());
+            enginePriv->warning(error);
         }
     }
 

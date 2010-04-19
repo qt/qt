@@ -103,11 +103,11 @@ void tst_qdeclarativeflipable::setFrontAndBack()
     QVERIFY(obj->front() != 0);
     QVERIFY(obj->back() != 0);
 
-    QString message = "QML Flipable (" + c.url().toString() + ":3:1) front is a write-once property";
+    QString message = c.url().toString() + ":3:1: QML Flipable: front is a write-once property";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
     obj->setFront(new QDeclarativeRectangle());
 
-    message = "QML Flipable (" + c.url().toString() + ":3:1) back is a write-once property";
+    message = c.url().toString() + ":3:1: QML Flipable: back is a write-once property";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
     obj->setBack(new QDeclarativeRectangle());
     delete obj;

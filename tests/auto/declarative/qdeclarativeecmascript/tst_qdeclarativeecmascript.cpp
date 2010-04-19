@@ -320,7 +320,7 @@ void tst_qdeclarativeecmascript::methods()
 void tst_qdeclarativeecmascript::bindingLoop()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("bindingLoop.qml"));
-    QString warning = "QML MyQmlObject (" + component.url().toString() + ":9:9) Binding loop detected for property \"stringProperty\"";
+    QString warning = component.url().toString() + ":9:9: QML MyQmlObject: Binding loop detected for property \"stringProperty\"";
     QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
     QObject *object = component.create();
     QVERIFY(object != 0);

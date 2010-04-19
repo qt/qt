@@ -1011,7 +1011,7 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
         } else {
             delete data;
             delete ctxt;
-            qWarning() << d->m_delegate->errors();
+            qmlInfo(this, d->m_delegate->errors()) << "Error creating delgate";
         }
     }
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(nobj);

@@ -522,7 +522,7 @@ void tst_qdeclarativestates::parentChangeErrors()
         QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
         QVERIFY(innerRect != 0);
 
-        QTest::ignoreMessage(QtWarningMsg, QByteArray("QML ParentChange (" + fullDataPath("/data/parentChange4.qml") + ":25:9) Unable to preserve appearance under non-uniform scale").constData());
+        QTest::ignoreMessage(QtWarningMsg, fullDataPath("/data/parentChange4.qml") + ":25:9: QML ParentChange: Unable to preserve appearance under non-uniform scale");
         rect->setState("reparented");
         QCOMPARE(innerRect->rotation(), qreal(0));
         QCOMPARE(innerRect->scale(), qreal(1));
@@ -538,7 +538,7 @@ void tst_qdeclarativestates::parentChangeErrors()
         QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
         QVERIFY(innerRect != 0);
 
-        QTest::ignoreMessage(QtWarningMsg, QByteArray("QML ParentChange (" + fullDataPath("/data/parentChange5.qml") + ":25:9) Unable to preserve appearance under complex transform").constData());
+        QTest::ignoreMessage(QtWarningMsg, fullDataPath("/data/parentChange5.qml") + ":25:9: QML ParentChange: Unable to preserve appearance under complex transform");
         rect->setState("reparented");
         QCOMPARE(innerRect->rotation(), qreal(0));
         QCOMPARE(innerRect->scale(), qreal(1));
@@ -813,8 +813,8 @@ void tst_qdeclarativestates::propertyErrors()
 
     QCOMPARE(rect->color(),QColor("red"));
 
-    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/propertyErrors.qml") + ":8:9) Cannot assign to non-existent property \"colr\"").constData());
-    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/propertyErrors.qml") + ":8:9) Cannot assign to read-only property \"wantsFocus\"").constData());
+    QTest::ignoreMessage(QtWarningMsg, fullDataPath("/data/propertyErrors.qml") + ":8:9: QML PropertyChanges: Cannot assign to non-existent property \"colr\"");
+    QTest::ignoreMessage(QtWarningMsg, fullDataPath("/data/propertyErrors.qml") + ":8:9: QML PropertyChanges: Cannot assign to read-only property \"wantsFocus\"");
     rect->setState("blue");
 }
 
@@ -946,7 +946,7 @@ void tst_qdeclarativestates::illegalTempState()
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
     QVERIFY(rect != 0);
 
-    QTest::ignoreMessage(QtWarningMsg, "Can't apply a state change as part of a state definition. ");
+    QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML StateGroup: Can't apply a state change as part of a state definition.");
     rect->setState("placed");
     QCOMPARE(rect->state(), QLatin1String("placed"));
 }
@@ -959,7 +959,7 @@ void tst_qdeclarativestates::nonExistantProperty()
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
     QVERIFY(rect != 0);
 
-    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/nonExistantProp.qml") + ":9:9) Cannot assign to non-existent property \"colr\"").constData());
+    QTest::ignoreMessage(QtWarningMsg, fullDataPath("/data/nonExistantProp.qml") + ":9:9: QML PropertyChanges: Cannot assign to non-existent property \"colr\"");
     rect->setState("blue");
     QCOMPARE(rect->state(), QLatin1String("blue"));
 }
