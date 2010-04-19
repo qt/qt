@@ -236,9 +236,12 @@ qreal QDeclarativeImage::paintedHeight() const
     to react to the change in status you need to do it yourself, for example in one
     of the following ways:
     \list
-    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: image.status = Image.Ready;}
-    \o Do something inside the onStatusChanged signal handler, e.g. Image{id: image; onStatusChanged: if(image.status == Image.Ready) console.log('Loaded');}
-    \o Bind to the status variable somewhere, e.g. Text{text: if(image.status!=Image.Ready){'Not Loaded';}else{'Loaded';}}
+    \o Create a state, so that a state change occurs, e.g.
+    \qml State { name: 'loaded'; when: image.status = Image.Ready } \endqml
+    \o Do something inside the onStatusChanged signal handler, e.g.
+    \qml Image { id: image; onStatusChanged: if (image.status == Image.Ready) console.log('Loaded') } \endqml
+    \o Bind to the status variable somewhere, e.g.
+    \qml Text { text: if (image.status != Image.Ready) { 'Not Loaded' } else { 'Loaded' } } \endqml
     \endlist
 
     \sa progress
