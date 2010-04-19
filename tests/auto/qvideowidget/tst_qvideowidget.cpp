@@ -41,15 +41,15 @@
 
 #include <QtTest/QtTest>
 
-#include <QtMultimedia/qvideowidget.h>
+#include <QtMediaServices/qvideowidget.h>
 
-#include <QtMultimedia/qmediaobject.h>
-#include <QtMultimedia/qmediaservice.h>
-#include <QtMultimedia/private/qpaintervideosurface_p.h>
-#include <QtMultimedia/qvideooutputcontrol.h>
-#include <QtMultimedia/qvideowindowcontrol.h>
-#include <QtMultimedia/qvideowidgetcontrol.h>
-#include <QtMultimedia/qvideorenderercontrol.h>
+#include <QtMediaServices/qmediaobject.h>
+#include <QtMediaServices/qmediaservice.h>
+#include <QtMediaServices/private/qpaintervideosurface_p.h>
+#include <QtMediaServices/qvideooutputcontrol.h>
+#include <QtMediaServices/qvideowindowcontrol.h>
+#include <QtMediaServices/qvideowidgetcontrol.h>
+#include <QtMediaServices/qvideorenderercontrol.h>
 #include <QtMultimedia/qabstractvideosurface.h>
 #include <QtMultimedia/qvideosurfaceformat.h>
 
