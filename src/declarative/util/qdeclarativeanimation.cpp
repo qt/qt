@@ -1748,7 +1748,8 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
     \brief the easing curve used for the animation.
 
     To specify an easing curve you need to specify at least the type. For some curves you can also specify
-    amplitude, period and/or overshoot (more details provided after the table).
+    amplitude, period and/or overshoot (more details provided after the table). The default easing curve is
+    Linear.
 
     \qml
     PropertyAnimation { properties: "y"; easing.type: "InOutElastic"; easing.amplitude: 2.0; easing.period: 1.5 }
