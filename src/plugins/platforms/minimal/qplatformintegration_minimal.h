@@ -57,7 +57,6 @@ public:
     QRect geometry() const { return mGeometry; }
     int depth() const { return mDepth; }
     QImage::Format format() const { return mFormat; }
-    QSize physicalSize() const { return mPhysicalSize; }
 
 public:
     QRect mGeometry;

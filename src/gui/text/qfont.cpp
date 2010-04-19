@@ -75,6 +75,10 @@
 #ifdef Q_OS_SYMBIAN
 #include "qt_s60_p.h"
 #endif
+#ifdef Q_WS_LITE
+#include <QtGui/qplatformscreen_lite.h>
+#include <QtGui/private/qapplication_p.h>
+#endif
 
 #include <QMutexLocker>
 
@@ -173,7 +177,10 @@ Q_GUI_EXPORT int qt_defaultDpiX()
         screen = subScreens.at(0);
     dpi = qRound(screen->width() / (screen->physicalWidth() / qreal(25.4)));
 #elif defined(Q_WS_LITE)
-    dpi = 72;
+    QPlatformScreen *screen = QApplicationPrivate::platformIntegration()->screens().at(0);
+    const QSize screenSize = screen->geometry().size();
+    const QSize physicalSize = screen->physicalSize();
+    dpi = qRound(screenSize.width() / (physicalSize.width() / qreal(25.4)));
 #elif defined(Q_OS_SYMBIAN)
     dpi = S60->defaultDpiX;
 #endif // Q_WS_X11
@@ -203,7 +210,10 @@ Q_GUI_EXPORT int qt_defaultDpiY()
         screen = subScreens.at(0);
     dpi = qRound(screen->height() / (screen->physicalHeight() / qreal(25.4)));
 #elif defined(Q_WS_LITE)
-    dpi = 72;
+    QPlatformScreen *screen = QApplicationPrivate::platformIntegration()->screens().at(0);
+    const QSize screenSize = screen->geometry().size();
+    const QSize physicalSize = screen->physicalSize();
+    dpi = qRound(screenSize.height() / (physicalSize.height() / qreal(25.4)));
 #elif defined(Q_OS_SYMBIAN)
     dpi = S60->defaultDpiY;
 #endif // Q_WS_X11
