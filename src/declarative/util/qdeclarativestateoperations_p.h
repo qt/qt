@@ -232,7 +232,7 @@ public:
     qreal baselineOffset() const;
     void setBaselineOffset(qreal);*/
 
-    QDeclarativeAnchors::UsedAnchors usedAnchors() const;
+    QDeclarativeAnchors::Anchors usedAnchors() const;
 
 /*Q_SIGNALS:
     void leftMarginChanged();

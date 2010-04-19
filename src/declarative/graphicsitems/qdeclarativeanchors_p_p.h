@@ -139,7 +139,7 @@ public:
     void centerInChanged();
 
     QGraphicsObject *item;
-    QDeclarativeAnchors::UsedAnchors usedAnchors;
+    QDeclarativeAnchors::Anchors usedAnchors;
 
     QGraphicsObject *fill;
     QGraphicsObject *centerIn;
