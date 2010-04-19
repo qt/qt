@@ -56,7 +56,7 @@
 #include <QtMediaServices/qvideowidget.h>
 #include <QtMediaServices/qgraphicsvideoitem.h>
 
-//#define DEBUG_PLAYER_STATE
+#define DEBUG_PLAYER_STATE
 
 QT_BEGIN_HEADER
 
@@ -491,9 +491,9 @@ void QMediaPlayer::play()
     Q_D(QMediaPlayer);
 
     if (d->control == 0) {
-        QMetaObject::invokeMethod(this, "_q_error", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, "_q_error", Qt::QueuedConnection,
                                     Q_ARG(int, QMediaPlayer::ServiceMissingError),
-                                    Q_ARG(QString, tr("The QMediaPlayer object does not have a valid service"));
+                                    Q_ARG(QString, tr("The QMediaPlayer object does not have a valid service")));
         return;
     }
 
