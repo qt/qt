@@ -919,7 +919,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
                 result = fromFbsBitmap(frame, NULL, flags, targetSize);
         }
     } else {
-        TDisplayMode maskDepth = EGray2;
+        TDisplayMode maskDepth = EGray256;
         // Query the skin item for possible frame graphics mask details.
         if (skinInstance) {
             CAknsMaskedBitmapItemData* skinMaskedBmp = static_cast<CAknsMaskedBitmapItemData*>(
