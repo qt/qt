@@ -122,6 +122,8 @@ tst_Bic::tst_Bic()
     bic.addBlacklistedClass(QLatin1String("QBasicAtomic"));
     bic.addBlacklistedClass(QLatin1String("QRegion::QRegionData"));
     bic.addBlacklistedClass(QLatin1String("QtConcurrent::ThreadEngineSemaphore"));
+    bic.addBlacklistedClass(QLatin1String("QDrawPixmaps::Data"));
+    bic.addBlacklistedClass(QLatin1String("QS60Style"));
 
     /* Jambi-related classes in Designer */
     bic.addBlacklistedClass(QLatin1String("QDesignerLanguageExtension"));
