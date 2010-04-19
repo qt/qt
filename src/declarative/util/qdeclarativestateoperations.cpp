@@ -601,15 +601,22 @@ QString QDeclarativeStateChangeScript::typeName() const
 
     In the following example we change the top and bottom anchors of an item:
     \qml
-    AnchorChanges {
-        target: content; top: window.top; bottom: window.bottom
+    State {
+        name: "reanchored"
+        AnchorChanges {
+            target: content;
+            anchors.top: window.top;
+            anchors.bottom: window.bottom
+        }
     }
     \endqml
 
     AnchorChanges can be animated using AnchorAnimation.
     \qml
     //animate our anchor changes
-    AnchorAnimation {}
+    Transition {
+        AnchorAnimation {}
+    }
     \endqml
 
     For more information on anchors see \l {anchor-layout}{Anchor Layouts}.
