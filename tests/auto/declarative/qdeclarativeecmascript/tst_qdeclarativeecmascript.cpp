@@ -1764,7 +1764,6 @@ void tst_qdeclarativeecmascript::deletedObject()
     QCOMPARE(object->property("test1").toBool(), true);
     QCOMPARE(object->property("test2").toBool(), true);
     QCOMPARE(object->property("test3").toBool(), true);
-    QEXPECT_FAIL("", "QTBUG-8077", Continue);
     QCOMPARE(object->property("test4").toBool(), true);
 
     delete object;
