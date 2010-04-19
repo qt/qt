@@ -1589,7 +1589,9 @@ void tst_QVideoWidget::paintRendererControl()
     QCOMPARE(surface->isActive(), true);
     QCOMPARE(surface->isReady(), false);
 
-    QCoreApplication::processEvents(QEventLoop::AllEvents);
+    //wait up to 2 seconds for the frame to be presented
+    for (int i=0; i<200 && !surface->isReady(); i++)
+        QTest::qWait(10);
 
     QCOMPARE(surface->isActive(), true);
     QCOMPARE(surface->isReady(), true);
