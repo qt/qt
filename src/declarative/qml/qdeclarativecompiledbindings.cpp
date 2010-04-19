@@ -888,13 +888,6 @@ void QDeclarativeCompiledBindingsPrivate::findgeneric(Register *output,
             return;
         }
 
-        for (int ii = 0; ii < context->scripts.count(); ++ii) {
-            QScriptValue function = QScriptDeclarativeClass::function(context->scripts.at(ii), name);
-            if (function.isValid()) {
-                qFatal("Binding optimizer resolved name to QScript method");
-            }
-        }
-
         if (QObject *root = context->contextObject) {
 
             if (findproperty(root, output, enginePriv, subIdx, name, isTerminal))

@@ -733,10 +733,6 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
         return true;
     } 
 
-    // Build any script blocks for this type
-    for (int ii = 0; ii < obj->scriptBlockObjects.count(); ++ii)
-        COMPILE_CHECK(buildScript(obj, obj->scriptBlockObjects.at(ii)));
-
     // Object instantiations reset the binding context
     BindingContext objCtxt(obj);
 
@@ -961,17 +957,6 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
         output->bytecode << id;
     }
 
-    // Set any script blocks
-    for (int ii = 0; ii < obj->scripts.count(); ++ii) {
-        QDeclarativeInstruction script;
-        script.type = QDeclarativeInstruction::StoreScript;
-        script.line = 0; // ###
-        int idx = output->scripts.count();
-        output->scripts << obj->scripts.at(ii);
-        script.storeScript.value = idx;
-        output->bytecode << script;
-    }
-
     // Begin the class
     if (obj->parserStatusCast != -1) {
         QDeclarativeInstruction begin;
@@ -1177,9 +1162,6 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
        (obj->properties.count() == 1 && obj->properties.begin().key() != "id"))
         COMPILE_EXCEPTION(*obj->properties.begin(), tr("Component elements may not contain properties other than id"));
        
-    if (!obj->scriptBlockObjects.isEmpty())
-        COMPILE_EXCEPTION(obj->scriptBlockObjects.first(), tr("Component elements may not contain script blocks"));
-
     if (obj->properties.count())
         idProp = *obj->properties.begin();
 
@@ -1212,101 +1194,6 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
 
     // Build the component tree
     COMPILE_CHECK(buildComponentFromRoot(root, ctxt));
-
-    return true;
-}
-
-bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclarativeParser::Object *script)
-{
-    {
-        QDeclarativeError warning;
-        warning.setUrl(output->url);
-        warning.setLine(obj->location.start.line);
-        warning.setColumn(obj->location.start.column);
-        warning.setDescription(tr("Script blocks have been deprecated.  Support will be removed entirely shortly."));
-        qWarning() << warning.toString();
-    }
-
-    Object::ScriptBlock scriptBlock;
-
-    if (script->properties.count() == 1 && 
-        script->properties.begin().key() == QByteArray("source")) {
-
-        Property *source = *script->properties.begin();
-        if (script->defaultProperty)
-            COMPILE_EXCEPTION(source, tr("Invalid Script block.  Specify either the source property or inline script"));
-
-        if (source->value || source->values.count() != 1 ||
-            source->values.at(0)->object || !source->values.at(0)->value.isStringList())
-            COMPILE_EXCEPTION(source, tr("Invalid Script source value"));
-
-        QStringList sources = source->values.at(0)->value.asStringList();
-
-        for (int jj = 0; jj < sources.count(); ++jj) {
-            QString sourceUrl = output->url.resolved(QUrl(sources.at(jj))).toString();
-            QString scriptCode;
-            int lineNumber = 1;
-
-            for (int ii = 0; ii < unit->resources.count(); ++ii) {
-                if (unit->resources.at(ii)->url == sourceUrl) {
-                    scriptCode = QString::fromUtf8(unit->resources.at(ii)->data);
-                    break;
-                }
-            }
-
-            if (!scriptCode.isEmpty()) {
-                scriptBlock.codes.append(scriptCode);
-                scriptBlock.files.append(sourceUrl);
-                scriptBlock.lineNumbers.append(lineNumber);
-                scriptBlock.pragmas.append(Object::ScriptBlock::None);
-            }
-        }
-
-    } else if (!script->properties.isEmpty()) {
-        COMPILE_EXCEPTION(*script->properties.begin(), tr("Properties cannot be set on Script block"));
-    } else if (script->defaultProperty) {
-
-        QString scriptCode;
-        int lineNumber = 1;
-        QString sourceUrl = output->url.toString();
-
-        QDeclarativeParser::Location currentLocation;
-
-        for (int ii = 0; ii < script->defaultProperty->values.count(); ++ii) {
-            Value *v = script->defaultProperty->values.at(ii);
-            if (lineNumber == 1)
-                lineNumber = v->location.start.line;
-            if (v->object || !v->value.isString())
-                COMPILE_EXCEPTION(v, tr("Invalid Script block"));
-
-            if (ii == 0) {
-                currentLocation = v->location.start;
-                scriptCode.append(QString(currentLocation.column, QLatin1Char(' ')));
-            }
-
-            while (currentLocation.line < v->location.start.line) {
-                scriptCode.append(QLatin1Char('\n'));
-                currentLocation.line++;
-                currentLocation.column = 0;
-            }
-
-            scriptCode.append(QString(v->location.start.column - currentLocation.column, QLatin1Char(' ')));
-
-            scriptCode += v->value.asString();
-            currentLocation = v->location.end;
-            currentLocation.column++;
-        }
-
-        if (!scriptCode.isEmpty()) {
-            scriptBlock.codes.append(scriptCode);
-            scriptBlock.files.append(sourceUrl);
-            scriptBlock.lineNumbers.append(lineNumber);
-            scriptBlock.pragmas.append(Object::ScriptBlock::None);
-        }
-    }
-
-    if (!scriptBlock.codes.isEmpty())
-        obj->scripts << scriptBlock;
 
     return true;
 }

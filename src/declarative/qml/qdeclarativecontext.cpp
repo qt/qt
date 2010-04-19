@@ -696,39 +696,6 @@ void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object
     }
 }
 
-void QDeclarativeContextData::addScript(const QDeclarativeParser::Object::ScriptBlock &script, 
-                                        QObject *scopeObject)
-{
-    if (!engine) 
-        return;
-
-    QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
-    QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
-
-    QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
-
-    scriptContext->pushScope(enginePriv->contextClass->newContext(this, scopeObject));
-    scriptContext->pushScope(enginePriv->globalClass->globalObject());
-    
-    QScriptValue scope = scriptEngine->newObject();
-    scriptContext->setActivationObject(scope);
-    scriptContext->pushScope(scope);
-
-    for (int ii = 0; ii < script.codes.count(); ++ii) {
-        scriptEngine->evaluate(script.codes.at(ii), script.files.at(ii), script.lineNumbers.at(ii));
-
-        if (scriptEngine->hasUncaughtException()) {
-            QDeclarativeError error;
-            QDeclarativeExpressionPrivate::exceptionToError(scriptEngine, error);
-            enginePriv->warning(error);
-        }
-    }
-
-    scriptEngine->popContext();
-
-    scripts.append(scope);
-}
-
 void QDeclarativeContextData::setIdProperty(int idx, QObject *obj)
 {
     idValues[idx] = obj;

@@ -189,14 +189,6 @@ QDeclarativeContextScriptClass::queryProperty(QDeclarativeContextData *bindConte
         }
     }
 
-    for (int ii = 0; ii < bindContext->scripts.count(); ++ii) {
-        lastFunction = QScriptDeclarativeClass::function(bindContext->scripts.at(ii), name);
-        if (lastFunction.isValid()) {
-            lastContext = bindContext;
-            return QScriptClass::HandlesReadAccess;
-        }
-    }
-
     if (scopeObject) {
         QScriptClass::QueryFlags rv = 
             ep->objectClass->queryProperty(scopeObject, name, flags, bindContext, 

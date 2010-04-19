@@ -623,13 +623,6 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
             }
             break;
 
-        case QDeclarativeInstruction::StoreScript:
-            {
-                QObject *target = stack.top();
-                ctxt->addScript(scripts.at(instr.storeScript.value), target);
-            }
-            break;
-
         case QDeclarativeInstruction::StoreImportedScript:
             {
                 ctxt->addImportedScript(scripts.at(instr.storeScript.value));

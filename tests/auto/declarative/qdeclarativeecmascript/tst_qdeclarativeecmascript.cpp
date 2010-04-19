@@ -100,7 +100,6 @@ private slots:
     void scope();
     void signalParameterTypes();
     void objectsCompareAsEqual();
-    void scriptAccess();
     void dynamicCreation_data();
     void dynamicCreation();
     void dynamicDestruction();
@@ -117,14 +116,12 @@ private slots:
     void exceptionBindingProducesWarning();
     void transientErrors();
     void shutdownErrors();
-    void externalScript();
     void compositePropertyType();
     void jsObject();
     void undefinedResetsProperty();
     void listToVariant();
     void multiEngineObject();
     void deletedObject();
-    void scriptScope();
     void attachedPropertyScope();
     void scriptConnect();
     void scriptDisconnect();
@@ -837,24 +834,6 @@ void tst_qdeclarativeecmascript::aliasPropertyAndBinding()
     QCOMPARE(object->property("c3").toInt(), 19);
 }
 
-/*
-Tests that only methods of Script {} blocks are exposed.
-*/
-void tst_qdeclarativeecmascript::scriptAccess()
-{
-    QDeclarativeComponent component(&engine, TEST_FILE("scriptAccess.qml"));
-
-    QString warning = component.url().toString() + ":16: Unable to assign [undefined] to int";
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
-
-    QObject *object = component.create();
-    QVERIFY(object != 0);
-
-    QCOMPARE(object->property("test1").toInt(), 10);
-    QCOMPARE(object->property("test2").toInt(), 19);
-    QCOMPARE(object->property("test3").toInt(), 0);
-}
-
 void tst_qdeclarativeecmascript::dynamicCreation_data()
 {
     QTest::addColumn<QString>("method");
@@ -977,13 +956,13 @@ void tst_qdeclarativeecmascript::scriptErrors()
     QString url = component.url().toString();
 
     QString warning1 = url.left(url.length() - 3) + "js:2: Error: Invalid write to global property \"a\"";
-    QString warning2 = url + ":7: TypeError: Result of expression 'a' [undefined] is not an object.";
-    QString warning3 = url + ":5: Error: Invalid write to global property \"a\"";
-    QString warning4 = url + ":12: TypeError: Result of expression 'a' [undefined] is not an object.";
-    QString warning5 = url + ":10: TypeError: Result of expression 'a' [undefined] is not an object.";
-    QString warning6 = url + ":9: Unable to assign [undefined] to int";
-    QString warning7 = url + ":14: Error: Cannot assign to read-only property \"trueProperty\"";
-    QString warning8 = url + ":15: Error: Cannot assign to non-existent property \"fakeProperty\"";
+    QString warning2 = url + ":5: TypeError: Result of expression 'a' [undefined] is not an object.";
+    QString warning3 = url.left(url.length() - 3) + "js:4: Error: Invalid write to global property \"a\"";
+    QString warning4 = url + ":10: TypeError: Result of expression 'a' [undefined] is not an object.";
+    QString warning5 = url + ":8: TypeError: Result of expression 'a' [undefined] is not an object.";
+    QString warning6 = url + ":7: Unable to assign [undefined] to int";
+    QString warning7 = url + ":12: Error: Cannot assign to read-only property \"trueProperty\"";
+    QString warning8 = url + ":13: Error: Cannot assign to non-existent property \"fakeProperty\"";
 
     QTest::ignoreMessage(QtWarningMsg, warning1.toLatin1().constData());
     QTest::ignoreMessage(QtWarningMsg, warning2.toLatin1().constData());
@@ -1164,53 +1143,6 @@ void tst_qdeclarativeecmascript::shutdownErrors()
 
     qInstallMsgHandler(old);
     QCOMPARE(transientErrorsMsgCount, 0);
-}
-
-// Check that Script::source property works as expected
-void tst_qdeclarativeecmascript::externalScript()
-{
-    {
-        QDeclarativeComponent component(&engine, TEST_FILE("externalScript.1.qml"));
-        QObject *object = component.create();
-        QVERIFY(object != 0);
-
-        QCOMPARE(object->property("test").toInt(), 92);
-
-        delete object;
-    }
-
-    {
-        QDeclarativeComponent component(&engine, TEST_FILE("externalScript.2.qml"));
-        QObject *object = component.create();
-        QVERIFY(object != 0);
-
-        QCOMPARE(object->property("test").toInt(), 92);
-
-        delete object;
-    }
-
-    {
-        QDeclarativeComponent component(&engine, TEST_FILE("externalScript.3.qml"));
-        QObject *object = component.create();
-        QVERIFY(object != 0);
-
-        QCOMPARE(object->property("test").toInt(), 92);
-        QCOMPARE(object->property("test2").toInt(), 92);
-        QCOMPARE(object->property("test3").toBool(), false);
-
-        delete object;
-    }
-
-    {
-        QDeclarativeComponent component(&engine, TEST_FILE("externalScript.4.qml"));
-        QObject *object = component.create();
-        QVERIFY(object != 0);
-
-        QCOMPARE(object->property("test").toInt(), 92);
-        QCOMPARE(object->property("test2").toBool(), true);
-
-        delete object;
-    }
 }
 
 void tst_qdeclarativeecmascript::compositePropertyType()
@@ -1767,31 +1699,6 @@ void tst_qdeclarativeecmascript::deletedObject()
     QCOMPARE(object->property("test4").toBool(), true);
 
     delete object;
-}
-
-void tst_qdeclarativeecmascript::scriptScope()
-{
-    {
-        QDeclarativeComponent component(&engine, TEST_FILE("scriptScope.1.qml"));
-
-        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
-        QVERIFY(object != 0);
-        emit object->argumentSignal(19, "Hello world!", 10.3);
-        QCOMPARE(object->property("result").toString(), QString());
-
-        delete object;
-    }
-
-    {
-        QDeclarativeComponent component(&engine, TEST_FILE("scriptScope.2.qml"));
-
-        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
-        QVERIFY(object != 0);
-        emit object->basicSignal();
-        QCOMPARE(object->property("result").toString(), QLatin1String("world"));
-
-        delete object;
-    }
 }
 
 void tst_qdeclarativeecmascript::attachedPropertyScope()
