@@ -3833,6 +3833,7 @@ void tst_QScriptEngine::toObject()
         QVERIFY(tmp.isObject());
         QCOMPARE(tmp.toNumber(), falskt.toNumber());
     }
+    QVERIFY(falskt.isBool());
 
     QScriptValue sant(true);
     {
@@ -3840,6 +3841,7 @@ void tst_QScriptEngine::toObject()
         QVERIFY(tmp.isObject());
         QCOMPARE(tmp.toNumber(), sant.toNumber());
     }
+    QVERIFY(sant.isBool());
 
     QScriptValue number(123.0);
     {
@@ -3847,6 +3849,7 @@ void tst_QScriptEngine::toObject()
         QVERIFY(tmp.isObject());
         QCOMPARE(tmp.toNumber(), number.toNumber());
     }
+    QVERIFY(number.isNumber());
 
     QScriptValue str = QScriptValue(&eng, QString("ciao"));
     {
@@ -3854,6 +3857,7 @@ void tst_QScriptEngine::toObject()
         QVERIFY(tmp.isObject());
         QCOMPARE(tmp.toString(), str.toString());
     }
+    QVERIFY(str.isString());
 
     QScriptValue object = eng.newObject();
     {
@@ -3866,6 +3870,32 @@ void tst_QScriptEngine::toObject()
     QVERIFY(eng.toObject(qobject).strictlyEquals(qobject));
 
     QVERIFY(!eng.toObject(QScriptValue()).isValid());
+
+    // v1 constructors
+
+    QScriptValue boolValue(&eng, true);
+    {
+        QScriptValue ret = eng.toObject(boolValue);
+        QVERIFY(ret.isObject());
+        QCOMPARE(ret.toBool(), boolValue.toBool());
+    }
+    QVERIFY(boolValue.isBool());
+
+    QScriptValue numberValue(&eng, 123.0);
+    {
+        QScriptValue ret = eng.toObject(numberValue);
+        QVERIFY(ret.isObject());
+        QCOMPARE(ret.toNumber(), numberValue.toNumber());
+    }
+    QVERIFY(numberValue.isNumber());
+
+    QScriptValue stringValue(&eng, QString::fromLatin1("foo"));
+    {
+        QScriptValue ret = eng.toObject(stringValue);
+        QVERIFY(ret.isObject());
+        QCOMPARE(ret.toString(), stringValue.toString());
+    }
+    QVERIFY(stringValue.isString());
 }
 
 void tst_QScriptEngine::reservedWords_data()
