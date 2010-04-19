@@ -56,12 +56,17 @@ QT_BEGIN_NAMESPACE
     To implement a factory, subclass QDeclarativeNetworkAccessManagerFactory and implement
     the create() method.
 
+    To use a factory, assign it to the relevant QDeclarativeEngine using
+    QDeclarativeEngine::setNetworkAccessManagerFactory().
+
     If the created QNetworkAccessManager becomes invalid, due to a
     change in proxy settings, for example, call the invalidate() method.
     This will cause all QNetworkAccessManagers to be recreated.
 
     Note: the create() method may be called by multiple threads, so ensure the
     implementation of this method is reentrant.
+
+    \sa QDeclarativeEngine::setNetworkAccessManagerFactory()
 */
 
 /*!

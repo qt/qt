@@ -102,14 +102,10 @@ void tst_qdeclarativeqt::rgba()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("rgba.qml"));
 
-    QString warning1 = component.url().toString() + ":6: Unable to assign null to QColor";
-    QString warning2 = component.url().toString() + ":7: Unable to assign null to QColor";
-    QString warning3 = component.url().toString() + ":8: Unable to assign null to QColor";
-    QString warning4 = component.url().toString() + ":9: Unable to assign null to QColor";
+    QString warning1 = component.url().toString() + ":6: Error: expected 3 or 4 parameters";
+    QString warning2 = component.url().toString() + ":7: Error: expected 3 or 4 parameters";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning3));
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning4));
 
     QObject *object = component.create();
     QVERIFY(object != 0);
@@ -119,8 +115,8 @@ void tst_qdeclarativeqt::rgba()
     QCOMPARE(qvariant_cast<QColor>(object->property("test2")), QColor::fromRgbF(1, 0.5, 0.3, 1));
     QCOMPARE(qvariant_cast<QColor>(object->property("test3")), QColor());
     QCOMPARE(qvariant_cast<QColor>(object->property("test4")), QColor());
-    QCOMPARE(qvariant_cast<QColor>(object->property("test5")), QColor());
-    QCOMPARE(qvariant_cast<QColor>(object->property("test6")), QColor());
+    QCOMPARE(qvariant_cast<QColor>(object->property("test5")), QColor::fromRgbF(1, 1, 1, 1));
+    QCOMPARE(qvariant_cast<QColor>(object->property("test6")), QColor::fromRgbF(0, 0, 0, 0));
 
     delete object;
 }
@@ -129,14 +125,10 @@ void tst_qdeclarativeqt::hsla()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("hsla.qml"));
 
-    QString warning1 = component.url().toString() + ":6: Unable to assign null to QColor";
-    QString warning2 = component.url().toString() + ":7: Unable to assign null to QColor";
-    QString warning3 = component.url().toString() + ":8: Unable to assign null to QColor";
-    QString warning4 = component.url().toString() + ":9: Unable to assign null to QColor";
+    QString warning1 = component.url().toString() + ":6: Error: expected 3 or 4 parameters";
+    QString warning2 = component.url().toString() + ":7: Error: expected 3 or 4 parameters";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning3));
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning4));
 
     QObject *object = component.create();
     QVERIFY(object != 0);
@@ -145,8 +137,8 @@ void tst_qdeclarativeqt::hsla()
     QCOMPARE(qvariant_cast<QColor>(object->property("test2")), QColor::fromHslF(1, 0.5, 0.3, 1));
     QCOMPARE(qvariant_cast<QColor>(object->property("test3")), QColor());
     QCOMPARE(qvariant_cast<QColor>(object->property("test4")), QColor());
-    QCOMPARE(qvariant_cast<QColor>(object->property("test5")), QColor());
-    QCOMPARE(qvariant_cast<QColor>(object->property("test6")), QColor());
+    QCOMPARE(qvariant_cast<QColor>(object->property("test5")), QColor::fromHslF(1, 1, 1, 1));
+    QCOMPARE(qvariant_cast<QColor>(object->property("test6")), QColor::fromHslF(0, 0, 0, 0));
 
     delete object;
 }
@@ -154,6 +146,12 @@ void tst_qdeclarativeqt::hsla()
 void tst_qdeclarativeqt::rect()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("rect.qml"));
+
+    QString warning1 = component.url().toString() + ":6: Error: expected 4 parameters";
+    QString warning2 = component.url().toString() + ":7: Error: expected 4 parameters";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
+
     QObject *object = component.create();
     QVERIFY(object != 0);
 
@@ -169,6 +167,12 @@ void tst_qdeclarativeqt::rect()
 void tst_qdeclarativeqt::point()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("point.qml"));
+
+    QString warning1 = component.url().toString() + ":6: Error: expected 2 parameters";
+    QString warning2 = component.url().toString() + ":7: Error: expected 2 parameters";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
+
     QObject *object = component.create();
     QVERIFY(object != 0);
 
@@ -183,6 +187,12 @@ void tst_qdeclarativeqt::point()
 void tst_qdeclarativeqt::size()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("size.qml"));
+
+    QString warning1 = component.url().toString() + ":7: Error: expected 2 parameters";
+    QString warning2 = component.url().toString() + ":8: Error: expected 2 parameters";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
+
     QObject *object = component.create();
     QVERIFY(object != 0);
 
@@ -198,6 +208,12 @@ void tst_qdeclarativeqt::size()
 void tst_qdeclarativeqt::vector()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("vector.qml"));
+
+    QString warning1 = component.url().toString() + ":6: Error: expected 3 parameters";
+    QString warning2 = component.url().toString() + ":7: Error: expected 3 parameters";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
+
     QObject *object = component.create();
     QVERIFY(object != 0);
 
@@ -212,6 +228,12 @@ void tst_qdeclarativeqt::vector()
 void tst_qdeclarativeqt::lighter()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("lighter.qml"));
+
+    QString warning1 = component.url().toString() + ":5: Error: expected 1 parameter";
+    QString warning2 = component.url().toString() + ":6: Error: expected 1 parameter";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
+
     QObject *object = component.create();
     QVERIFY(object != 0);
 
@@ -228,6 +250,12 @@ void tst_qdeclarativeqt::lighter()
 void tst_qdeclarativeqt::darker()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("darker.qml"));
+
+    QString warning1 = component.url().toString() + ":5: Error: expected 1 parameter";
+    QString warning2 = component.url().toString() + ":6: Error: expected 1 parameter";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
+
     QObject *object = component.create();
     QVERIFY(object != 0);
 
@@ -245,8 +273,9 @@ void tst_qdeclarativeqt::tint()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("tint.qml"));
 
-    QString warning1 = component.url().toString() + ":7: Unable to assign null to QColor";
-    QString warning2 = component.url().toString() + ":8: Unable to assign null to QColor";
+    QString warning1 = component.url().toString() + ":7: Error: expected 2 parameters";
+    QString warning2 = component.url().toString() + ":8: Error: expected 2 parameters";
+
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
 
@@ -305,12 +334,14 @@ void tst_qdeclarativeqt::md5()
 void tst_qdeclarativeqt::createComponent()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("createComponent.qml"));
+
+    QString warning1 = component.url().toString() + ":9: Error: expected 1 parameter";
+    QString warning2 = component.url().toString() + ":10: Error: expected 1 parameter";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
+
     QObject *object = component.create();
     QVERIFY(object != 0);
-
-    QCOMPARE(object->property("incorrectArgCount1").toBool(), true);
-    QCOMPARE(object->property("incorrectArgCount2").toBool(), true);
-    QCOMPARE(object->property("emptyArg").toBool(), true);
 
     QCOMPARE(object->property("absoluteUrl").toString(), QString("http://www.example.com/test.qml"));
     QCOMPARE(object->property("relativeUrl").toString(), TEST_FILE("createComponentData.qml").toString());
@@ -322,30 +353,24 @@ void tst_qdeclarativeqt::createQmlObject()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("createQmlObject.qml"));
 
-    QString warning1 = "QDeclarativeEngine::createQmlObject():";
-    QString warning2 = "    " + TEST_FILE("main.qml").toString() + ":4:1: Duplicate property name";
-    QString warning3 = "QDeclarativeEngine::createQmlObject():";
-    QString warning4 = "    " + TEST_FILE("inline").toString() + ":2:10: Blah is not a type";
-    QString warning5 = "QDeclarativeEngine::createQmlObject():";
-    QString warning6 = "    " + TEST_FILE("inline").toString() + ":3: Cannot assign object type QObject with no default method";
+    QString warning1 = component.url().toString() + ":7: Error: expected 2 or 3 parameters";
+    QString warning2 = component.url().toString()+ ":10: Error: Qt.createQmlObject():     " + TEST_FILE("inline").toString() + ":2:10: Blah is not a type\n";
+    QString warning3 = component.url().toString()+ ":11: Error: Qt.createQmlObject():     " + TEST_FILE("main.qml").toString() + ":4:1: Duplicate property name\n";
+    QString warning4 = component.url().toString()+ ":9: Error: parent object not found";
+    QString warning5 = component.url().toString()+ ":8: Error: expected 2 or 3 parameters";
+    QString warning6 = "RunTimeError:  Qt.createQmlObject():     " + TEST_FILE("inline").toString() + ":3: Cannot assign object type QObject with no default method\n";
 
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning3));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning4));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning5));
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning6));
+    QTest::ignoreMessage(QtDebugMsg, qPrintable(warning6));
 
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    QCOMPARE(object->property("incorrectArgCount1").toBool(), true);
-    QCOMPARE(object->property("incorrectArgCount2").toBool(), true);
     QCOMPARE(object->property("emptyArg").toBool(), true);
-    QCOMPARE(object->property("errors").toBool(), true);
-    QCOMPARE(object->property("noParent").toBool(), true);
-    QCOMPARE(object->property("notAvailable").toBool(), true);
-    QCOMPARE(object->property("runtimeError").toBool(), true);
     QCOMPARE(object->property("success").toBool(), true);
 
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(object);

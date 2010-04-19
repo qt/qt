@@ -55,24 +55,35 @@ public:
 
 /*!
 \class QDeclarativeScriptString
-  \since 4.7
+\since 4.7
 \brief The QDeclarativeScriptString class encapsulates a script and its context.
 
-The QDeclarativeScriptString is used by properties that want to accept a script "assignment" from QML.
+QDeclarativeScriptString is used to create QObject properties that accept a script "assignment" from QML.
 
-Normally, the following code would result in a binding being established for the \c script
-property.  If the property had a type of QDeclarativeScriptString, the script - \e {console.log(1921)} - itself
-would be passed to the property and it could choose how to handle it.
+Normally, the following QML would result in a binding being established for the \c script
+property; i.e. \c script would be assigned the value obtained from running \c {myObj.value = Math.max(myValue, 100)}
+
+\qml
+MyType {
+    script: myObj.value = Math.max(myValue, 100)
+}
+\endqml
+
+If instead the property had a type of QDeclarativeScriptString,
+the script itself -- \e {myObj.value = Math.max(myValue, 100)} -- would be passed to the \c script property
+and the class could choose how to handle it. Typically, the class will evaluate
+the script at some later time using a QDeclarativeExpression.
 
 \code
-MyType {
-    script: console.log(1921)
-}
+QDeclarativeExpression expr(scriptString.context(), scriptString.script(), scriptStr.scopeObject());
+expr.value();
 \endcode
+
+\sa QDeclarativeExpression
 */
 
 /*!
-Construct an empty instance.
+Constructs an empty instance.
 */
 QDeclarativeScriptString::QDeclarativeScriptString()
 :  d(new QDeclarativeScriptStringPrivate)
@@ -80,7 +91,7 @@ QDeclarativeScriptString::QDeclarativeScriptString()
 }
 
 /*!
-Copy \a other.
+Copies \a other.
 */
 QDeclarativeScriptString::QDeclarativeScriptString(const QDeclarativeScriptString &other)
 : d(other.d)
@@ -95,7 +106,7 @@ QDeclarativeScriptString::~QDeclarativeScriptString()
 }
 
 /*!
-Assign \a other to this.
+Assigns \a other to this.
 */
 QDeclarativeScriptString &QDeclarativeScriptString::operator=(const QDeclarativeScriptString &other)
 {
@@ -104,7 +115,7 @@ QDeclarativeScriptString &QDeclarativeScriptString::operator=(const QDeclarative
 }
 
 /*!
-Return the context for the script.
+Returns the context for the script.
 */
 QDeclarativeContext *QDeclarativeScriptString::context() const
 {

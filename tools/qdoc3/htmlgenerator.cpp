@@ -4412,18 +4412,11 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                 out() << "<tr><td>";
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
                 if (!qpn->isWritable())
-                    out() << "<span class=\"qmlreadonly\">read-only</span>";
+                    out() << "<span class=\"qmlreadonly\">read-only&nbsp;</span>";
+                if (qpgn->isDefault())
+                    out() << "<span class=\"qmldefault\">default&nbsp;</span>";
                 generateQmlItem(qpn, relative, marker, false);
                 out() << "</td></tr>";
-                if (qpgn->isDefault()) {
-                    out() << "</table>"
-                          << "</div></div>"
-                          << "<div class=\"qmlitem\">"
-                          << "<div class=\"qmlproto\">"
-                          << "<table class=\"qmlname\">"
-                          << "<tr><td><font color=\"green\">"
-                          << "default</font></td></tr>";
-                }
             }
             ++p;
         }

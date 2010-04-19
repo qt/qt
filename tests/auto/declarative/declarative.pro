@@ -59,6 +59,7 @@ SUBDIRS += \
            qdeclarativerepeater \    # Cover
            qdeclarativeworkerscript \    # Cover
            qdeclarativevaluetypes \          # Cover
+           qdeclarativeview \          # Cover
            qdeclarativexmlhttprequest \      # Cover
            qdeclarativeimageprovider \       # Cover
            qdeclarativestyledtext \          # Cover

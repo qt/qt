@@ -1415,7 +1415,7 @@ QDeclarativeItem::~QDeclarativeItem()
 }
 
 /*!
-    \qmlproperty enum Item::transformOrigin
+    \qmlproperty enumeration Item::transformOrigin
     This property holds the origin point around which scale and rotation transform.
 
     Nine transform origins are available, as shown in the image below.
@@ -1794,9 +1794,13 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
 
     if (transformOrigin() != QDeclarativeItem::TopLeft
         && (newGeometry.width() != oldGeometry.width() || newGeometry.height() != oldGeometry.height())) {
-        QPointF origin = d->computeTransformOrigin();
-        if (transformOriginPoint() != origin)
-            setTransformOriginPoint(origin);
+        if (d->transformData) {
+            QPointF origin = d->computeTransformOrigin();
+            if (transformOriginPoint() != origin)
+                setTransformOriginPoint(origin);
+        } else {
+            d->transformOriginDirty = true;
+        }
     }
 
     if (newGeometry.x() != oldGeometry.x())
@@ -2656,8 +2660,20 @@ void QDeclarativeItem::setTransformOrigin(TransformOrigin origin)
     Q_D(QDeclarativeItem);
     if (origin != d->origin) {
         d->origin = origin;
-        QGraphicsItem::setTransformOriginPoint(d->computeTransformOrigin());
+        if (d->transformData)
+            QGraphicsItem::setTransformOriginPoint(d->computeTransformOrigin());
+        else
+            d->transformOriginDirty = true;
         emit transformOriginChanged(d->origin);
+    }
+}
+
+void QDeclarativeItemPrivate::transformChanged()
+{
+    Q_Q(QDeclarativeItem);
+    if (transformOriginDirty) {
+        q->QGraphicsItem::setTransformOriginPoint(computeTransformOrigin());
+        transformOriginDirty = false;
     }
 }
 

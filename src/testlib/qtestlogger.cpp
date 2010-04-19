@@ -318,6 +318,9 @@ void QTestLogger::addMessage(MessageTypes type, const char *message, const char 
         break;
     }
 
+    const char *tag = QTestResult::currentDataTag();
+    if (tag)
+        errorElement->addAttribute(QTest::AI_Tag, tag);
     errorElement->addAttribute(QTest::AI_Type, typeBuf);
     errorElement->addAttribute(QTest::AI_Description, message);
 

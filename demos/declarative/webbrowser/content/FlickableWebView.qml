@@ -45,7 +45,7 @@ Flickable {
         smoothCache: true // We do want smooth rendering
         fillColor: "white"
         focus: true
-        zoomFactor: 4
+        zoomFactor: 1
 
         onAlert: console.log(message)
 
@@ -73,7 +73,7 @@ Flickable {
         contentsScale: 1/zoomFactor
         onContentsSizeChanged: {
             // zoom out
-            contentsScale = Math.min(0.25,flickable.width / contentsSize.width)
+            contentsScale = Math.min(1,flickable.width / contentsSize.width)
         }
         onUrlChanged: {
             // got to topleft
