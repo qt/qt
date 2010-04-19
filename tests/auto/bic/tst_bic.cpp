@@ -59,6 +59,8 @@ public:
     tst_Bic();
     QBic::Info getCurrentInfo(const QString &libName);
 
+    QHash<QString, QBic::Info> cachedCurrentInfo;
+
 private slots:
     void initTestCase_data();
     void initTestCase();
@@ -154,7 +156,6 @@ void tst_Bic::initTestCase_data()
     QTest::newRow("QtWebKit") << "QtWebKit";
     QTest::newRow("QtXml") << "QtXml";
     QTest::newRow("QtXmlPatterns") << "QtXmlPatterns";
-
 }
 
 void tst_Bic::initTestCase()
@@ -210,6 +211,10 @@ void tst_Bic::sizesAndVTables_data()
 
 QBic::Info tst_Bic::getCurrentInfo(const QString &libName)
 {
+    QBic::Info &inf = cachedCurrentInfo[libName];
+    if (!inf.classSizes.isEmpty())
+        return inf;
+
     QTemporaryFile tmpQFile;
     tmpQFile.open();
     QString tmpFileName = tmpQFile.fileName();
@@ -269,7 +274,7 @@ QBic::Info tst_Bic::getCurrentInfo(const QString &libName)
     }
 
     QString resultFileName = files.first();
-    QBic::Info inf = bic.parseFile(resultFileName);
+    inf = bic.parseFile(resultFileName);
 
     QFile::remove(resultFileName);
     tmpQFile.close();
