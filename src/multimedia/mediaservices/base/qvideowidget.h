@@ -121,7 +121,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_hueChanged(int))
     Q_PRIVATE_SLOT(d_func(), void _q_saturationChanged(int))
     Q_PRIVATE_SLOT(d_func(), void _q_fullScreenChanged(bool))
-    Q_PRIVATE_SLOT(d_func(), void _q_dimensionsChanged());
+    Q_PRIVATE_SLOT(d_func(), void _q_dimensionsChanged())
 };
 
 QT_END_NAMESPACE
