@@ -1101,11 +1101,6 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         || (orient == QDeclarativeListView::Vertical && &data == &hData))
         return;
 
-    if ((&data == &vData && !q->yflick())
-        || (&data == &hData && !q->xflick())
-        || data.move.timeLine())
-        return;
-
     int oldDuration = fixupDuration;
     fixupDuration = moveReason == Mouse ? fixupDuration : 0;
 

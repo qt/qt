@@ -746,12 +746,6 @@ void QDeclarativeGridViewPrivate::fixupPosition()
 void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal maxExtent)
 {
     Q_Q(QDeclarativeGridView);
-
-    if ((&data == &vData && !q->yflick())
-        || (&data == &hData && !q->xflick())
-        || data.move.timeLine())
-        return;
-
     int oldDuration = fixupDuration;
     fixupDuration = moveReason == Mouse ? fixupDuration : 0;
 
