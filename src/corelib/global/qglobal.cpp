@@ -2126,8 +2126,7 @@ QString qt_error_string(int errorCode)
 #elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && _POSIX_VERSION >= 200112L && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_QNX)
 
         QByteArray buf(1024, '\0');
-        strerror_r(errorCode, buf.data(), buf.size());
-        ret = QString::fromLocal8Bit(buf.constData());
+        ret = QString::fromLocal8Bit(strerror_r(errorCode, buf.data(), buf.size()));
 #else
         ret = QString::fromLocal8Bit(strerror(errorCode));
 #endif
