@@ -50,6 +50,7 @@
 #include <qdeclarativeguard_p.h>
 
 #include <qlistmodelinterface_p.h>
+#include <qmath.h>
 #include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
@@ -1206,7 +1207,15 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                         data.flickTarget -= overshootDist;
                     }
                 }
-                dist = -data.flickTarget + data.move.value();
+                qreal adjDist = -data.flickTarget + data.move.value();
+                if (qAbs(adjDist) > qAbs(dist)) {
+                    // Prevent painfully slow flicking - adjust velocity to suit flickDeceleration
+                    v2 = accel * 2.0f * qAbs(dist);
+                    v = qSqrt(v2);
+                    if (dist > 0)
+                        v = -v;
+                }
+                dist = adjDist;
                 accel = v2 / (2.0f * qAbs(dist));
             } else if (overShoot) {
                 data.flickTarget = data.move.value() - dist;
