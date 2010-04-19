@@ -48,6 +48,8 @@
 #include <QtCore/qvariant.h>
 #include <QtNetwork/qnetworkconfiguration.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 #if defined(Q_OS_WIN) && defined(interface)
 #undef interface
 #endif
@@ -148,5 +150,7 @@ QTM_END_NAMESPACE
 #endif
 
 QT_END_HEADER
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKSESSION_H

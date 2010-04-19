@@ -45,6 +45,7 @@
 
 #include <QtCore/qdebug.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
@@ -91,3 +92,4 @@ Q_EXPORT_PLUGIN2(qnmbearer, QNetworkManagerEnginePlugin)
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
+#endif // QT_NO_BEARERMANAGEMENT

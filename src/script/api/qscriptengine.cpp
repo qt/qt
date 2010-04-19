@@ -792,6 +792,7 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
     if ((args.size() > 2) && !args.at(2).isNumber())
         return JSC::throwError(exec, JSC::GeneralError, "qsTr(): third argument (n) must be a number");
 #ifndef QT_NO_QOBJECT
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     JSC::UString context;
     // The first non-empty source URL in the call stack determines the translation context.
     {
@@ -799,7 +800,7 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
         while (frame) {
             if (frame->codeBlock() && frame->codeBlock()->source()
                 && !frame->codeBlock()->source()->url().isEmpty()) {
-                context = QFileInfo(frame->codeBlock()->source()->url()).baseName();
+                context = engine->translationContextFromUrl(frame->codeBlock()->source()->url());
                 break;
             }
             frame = frame->callerFrame()->removeHostCallFrameFlag();
@@ -921,6 +922,8 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     activeAgent = 0;
     agentLineNumber = -1;
     processEventsInterval = -1;
+    cachedTranslationUrl = JSC::UString();
+    cachedTranslationContext = JSC::UString();
     JSC::setCurrentIdentifierTable(oldTable);
 }
 
@@ -3305,6 +3308,15 @@ bool QScriptEnginePrivate::hasDemarshalFunction(int type) const
 {
     QScriptTypeInfo *info = m_typeInfos.value(type);
     return info && (info->demarshal != 0);
+}
+
+JSC::UString QScriptEnginePrivate::translationContextFromUrl(const JSC::UString &url)
+{
+    if (url != cachedTranslationUrl) {
+        cachedTranslationContext = QFileInfo(url).baseName();
+        cachedTranslationUrl = url;
+    }
+    return cachedTranslationContext;
 }
 
 /*!

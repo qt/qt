@@ -174,8 +174,8 @@ public:
 
     void run()
     {
+        Simple_Thread::run();
         if (object) {
-            Simple_Thread::run();
             object->thread = this;
             object->code = code;
             QTimer::singleShot(100, object, SLOT(slot()));
@@ -218,8 +218,8 @@ public:
 
     void run()
     {
+        Simple_Thread::run();
         if (object) {
-            Simple_Thread::run();
             object->thread = this;
             QTimer::singleShot(100, object, SLOT(slot()));
         }
@@ -443,22 +443,24 @@ void tst_QThread::exit()
     thread2.code = 53;
     thread2.result = 0;
     thread2.start();
-    thread2.exit(thread.code);
+    thread2.exit(thread2.code);
+    QMutexLocker locker2(&thread2.mutex);
+    thread2.cond.wait(locker2.mutex());
     QVERIFY(thread2.wait(five_minutes));
-    QCOMPARE(thread.result, thread.code);
+    QCOMPARE(thread2.result, thread2.code);
 }
 
 void tst_QThread::start()
 {
     QThread::Priority priorities[] = {
-	QThread::IdlePriority,
-	QThread::LowestPriority,
-	QThread::LowPriority,
-	QThread::NormalPriority,
-	QThread::HighPriority,
-	QThread::HighestPriority,
-	QThread::TimeCriticalPriority,
-	QThread::InheritPriority
+        QThread::IdlePriority,
+        QThread::LowestPriority,
+        QThread::LowPriority,
+        QThread::NormalPriority,
+        QThread::HighPriority,
+        QThread::HighestPriority,
+        QThread::TimeCriticalPriority,
+        QThread::InheritPriority
     };
     const int prio_count = sizeof(priorities) / sizeof(QThread::Priority);
 
@@ -514,8 +516,10 @@ void tst_QThread::quit()
     thread2.result = -1;
     thread2.start();
     thread2.quit();
+    QMutexLocker locker2(&thread2.mutex);
+    thread2.cond.wait(locker2.mutex());
     QVERIFY(thread2.wait(five_minutes));
-    QCOMPARE(thread.result, 0);
+    QCOMPARE(thread2.result, 0);
 }
 
 void tst_QThread::wait()
@@ -692,7 +696,7 @@ void NativeThreadWrapper::start(FunctionPointer functionPointer, void *data)
     const int state = pthread_create(&nativeThreadHandle, 0, NativeThreadWrapper::runUnix, this);
     Q_UNUSED(state);
 #elif defined(Q_OS_WINCE)
-	nativeThreadHandle = CreateThread(NULL, 0 , (LPTHREAD_START_ROUTINE)NativeThreadWrapper::runWin , this, 0, NULL);
+        nativeThreadHandle = CreateThread(NULL, 0 , (LPTHREAD_START_ROUTINE)NativeThreadWrapper::runWin , this, 0, NULL);
 #elif defined Q_OS_WIN
     unsigned thrdid = 0;
     nativeThreadHandle = (Qt::HANDLE) _beginthreadex(NULL, 0, NativeThreadWrapper::runWin, this, 0, &thrdid);

@@ -224,6 +224,15 @@ QPoint QCursor::pos()
 
 void QCursor::setPos(int x, int y)
 {
+#ifdef QT_MAC_USE_COCOA
+    CGPoint pos;
+    pos.x = x;
+    pos.y = y;
+
+    CGEventRef e = CGEventCreateMouseEvent(0, kCGEventMouseMoved, pos, 0);
+    CGEventPost(kCGHIDEventTap, e);
+    CFRelease(e);
+#else
     CGWarpMouseCursorPosition(CGPointMake(x, y));
 
     /* I'm not too keen on doing this, but this makes it a lot easier, so I just
@@ -240,6 +249,7 @@ void QCursor::setPos(int x, int y)
                        QApplication::mouseButtons(), QApplication::keyboardModifiers());
         qt_sendSpontaneousEvent(widget, &me);
     }
+#endif
 }
 
 void QCursorData::initCursorFromBitmap()

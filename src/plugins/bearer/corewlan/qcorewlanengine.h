@@ -48,6 +48,8 @@
 #include <QTimer>
 #include <SystemConfiguration/SystemConfiguration.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
@@ -107,5 +109,6 @@ protected:
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_NO_BEARERMANAGEMENT
 
+#endif

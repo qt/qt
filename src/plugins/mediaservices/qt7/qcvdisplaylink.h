@@ -45,7 +45,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qmutex.h>
 
-#include <CoreVideo/CVDisplayLink.h>
+#include <QuartzCore/CVDisplayLink.h>
 
 QT_BEGIN_HEADER
 

@@ -173,8 +173,8 @@ void QAdoptedThread::run()
 */
 
 QThreadPrivate::QThreadPrivate(QThreadData *d)
-    : QObjectPrivate(), running(false), finished(false), terminated(false),
-      stackSize(0), priority(QThread::InheritPriority), data(d), object(0)
+    : QObjectPrivate(), running(false), finished(false), terminated(false), exited(false), returnCode(-1),
+      stackSize(0), priority(QThread::InheritPriority), data(d)
 {
 #if defined (Q_OS_UNIX)
     thread_id = 0;
@@ -377,9 +377,6 @@ QThread::QThread(QObject *parent)
     Q_D(QThread);
     // fprintf(stderr, "QThreadData %p created for thread %p\n", d->data, this);
     d->data->thread = this;
-
-    d->object = new QThreadPrivateInternalObject;
-    d->object->moveToThread(this);
 }
 
 /*! \internal
@@ -390,8 +387,6 @@ QThread::QThread(QThreadPrivate &dd, QObject *parent)
     Q_D(QThread);
     // fprintf(stderr, "QThreadData %p taken from private data for thread %p\n", d->data, this);
     d->data->thread = this;
-
-    // do not create the internal object for adopted threads
 }
 
 /*!
@@ -413,9 +408,6 @@ QThread::~QThread()
 
         d->data->thread = 0;
     }
-
-    delete d->object;
-    d->object = 0;
 }
 
 /*!
@@ -490,9 +482,16 @@ int QThread::exec()
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
     d->data->quitNow = false;
-    QEventLoop eventLoop;
+    if (d->exited)
+        return d->returnCode;
     locker.unlock();
+
+    QEventLoop eventLoop;
     int returnCode = eventLoop.exec();
+
+    locker.relock();
+    d->exited = false;
+    d->returnCode = -1;
     return returnCode;
 }
 
@@ -518,22 +517,9 @@ int QThread::exec()
 void QThread::exit(int returnCode)
 {
     Q_D(QThread);
-    if (d->object) {
-        QMetaObject::invokeMethod(d->object, "exit", Q_ARG(int, returnCode));
-    } else {
-        QMutexLocker locker(&d->mutex);
-        d->data->quitNow = true;
-        for (int i = 0; i < d->data->eventLoops.size(); ++i) {
-            QEventLoop *eventLoop = d->data->eventLoops.at(i);
-            eventLoop->exit(returnCode);
-        }
-    }
-}
-
-void QThreadPrivateInternalObject::exit(int returnCode)
-{
-    QThreadPrivate *d = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread()));
     QMutexLocker locker(&d->mutex);
+    d->exited = true;
+    d->returnCode = returnCode;
     d->data->quitNow = true;
     for (int i = 0; i < d->data->eventLoops.size(); ++i) {
         QEventLoop *eventLoop = d->data->eventLoops.at(i);

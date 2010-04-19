@@ -41,6 +41,9 @@
 
 #include "qt7ciimagevideobuffer.h"
 
+#include <QuartzCore/CIFilter.h>
+#include <QuartzCore/CIVector.h>
+
 QT7CIImageVideoBuffer::QT7CIImageVideoBuffer(CIImage *image)
     : QAbstractVideoBuffer(CoreImageHandle)
     , m_image(image)

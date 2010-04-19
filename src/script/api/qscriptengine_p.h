@@ -63,6 +63,7 @@
 #include "RegExpObject.h"
 #include "SourceProvider.h"
 #include "Structure.h"
+#include "UString.h"
 #include "JSGlobalObject.h"
 #include "JSValue.h"
 
@@ -73,7 +74,6 @@ namespace JSC
     typedef ExecState CallFrame;
     class JSCell;
     class JSGlobalObject;
-    class UString;
 }
 
 
@@ -298,6 +298,8 @@ public:
     static inline QScriptDeclarativeClass *declarativeClass(JSC::JSValue);
     static inline QScriptDeclarativeClass::Object *declarativeObject(JSC::JSValue);
 
+    JSC::UString translationContextFromUrl(const JSC::UString &);
+
 #ifndef QT_NO_QOBJECT
     JSC::JSValue newQObject(QObject *object,
         QScriptEngine::ValueOwnership ownership = QScriptEngine::QtOwnership,
@@ -366,6 +368,9 @@ public:
     int processEventsInterval;
     QScriptValue abortResult;
     bool inEval;
+
+    JSC::UString cachedTranslationUrl;
+    JSC::UString cachedTranslationContext;
 
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;

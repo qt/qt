@@ -241,6 +241,9 @@ void QEglProperties::setRenderableType(QEgl::API api)
 // reductions in complexity are possible.
 bool QEglProperties::reduceConfiguration()
 {
+    if (value(EGL_SWAP_BEHAVIOR) != EGL_DONT_CARE)
+        removeValue(EGL_SWAP_BEHAVIOR);
+
 #ifdef EGL_VG_ALPHA_FORMAT_PRE_BIT
     // For OpenVG, we sometimes try to create a surface using a pre-multiplied format. If we can't
     // find a config which supports pre-multiplied formats, remove the flag on the surface type:
@@ -290,20 +293,6 @@ static void addTag(QString& str, const QString& tag)
     if ((str.length() - lastnl) >= 50)
         str += QLatin1String("\n   ");
     str += tag;
-}
-
-void QEglProperties::dumpAllConfigs()
-{
-    EGLint count = 0;
-    eglGetConfigs(QEgl::display(), 0, 0, &count);
-    if (count < 1)
-        return;
-
-    EGLConfig *configs = new EGLConfig [count];
-    eglGetConfigs(QEgl::display(), configs, count, &count);
-    for (EGLint index = 0; index < count; ++index)
-        qWarning() << QEglProperties(configs[index]).toString();
-    delete [] configs;
 }
 
 // Convert a property list to a string suitable for debug output.

@@ -1931,9 +1931,9 @@ void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
             d->macCreateMenuBar(parentWidget());
         }
         macUpdateMenuBar();
-        updateGeometry();
-        setVisible(false);
-        setVisible(true);
+	updateGeometry();
+	if (!d->nativeMenuBar && parentWidget())
+	    setVisible(true);
 #endif
     }
 }
