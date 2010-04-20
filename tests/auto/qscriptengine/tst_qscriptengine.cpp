@@ -800,6 +800,12 @@ static QScriptValue myConstructor(QScriptContext *ctx, QScriptEngine *eng)
     return obj;
 }
 
+static QScriptValue instanceofJS(const QScriptValue &inst, const QScriptValue &ctor)
+{
+    return inst.engine()->evaluate("(function(inst, ctor) { return inst instanceof ctor; })")
+        .call(QScriptValue(), QScriptValueList() << inst << ctor);
+}
+
 void tst_QScriptEngine::newQMetaObject()
 {
     QScriptEngine eng;
@@ -830,11 +836,15 @@ void tst_QScriptEngine::newQMetaObject()
     QCOMPARE(instance.isQObject(), true);
     QCOMPARE(instance.toQObject()->metaObject(), qclass.toQMetaObject());
     QVERIFY(instance.instanceOf(qclass));
+    QVERIFY(instanceofJS(instance, qclass).strictlyEquals(true));
 
     QScriptValue instance2 = qclass2.construct();
     QCOMPARE(instance2.isQObject(), true);
     QCOMPARE(instance2.toQObject()->metaObject(), qclass2.toQMetaObject());
     QVERIFY(instance2.instanceOf(qclass2));
+    QVERIFY(instanceofJS(instance2, qclass2).strictlyEquals(true));
+    QVERIFY(!instance2.instanceOf(qclass));
+    QVERIFY(instanceofJS(instance2, qclass).strictlyEquals(false));
 
     QScriptValueList args;
     args << instance;
@@ -842,6 +852,9 @@ void tst_QScriptEngine::newQMetaObject()
     QCOMPARE(instance3.isQObject(), true);
     QCOMPARE(instance3.toQObject()->parent(), instance.toQObject());
     QVERIFY(instance3.instanceOf(qclass));
+    QVERIFY(instanceofJS(instance3, qclass).strictlyEquals(true));
+    QVERIFY(!instance3.instanceOf(qclass2));
+    QVERIFY(instanceofJS(instance3, qclass2).strictlyEquals(false));
     args.clear();
 
     QPointer<QObject> qpointer1 = instance.toQObject();
@@ -877,6 +890,9 @@ void tst_QScriptEngine::newQMetaObject()
         QVERIFY(ret.property("isCalledAsConstructor").isBoolean());
         QVERIFY(!ret.property("isCalledAsConstructor").toBoolean());
         QVERIFY(ret.instanceOf(qclass3));
+        QVERIFY(instanceofJS(ret, qclass3).strictlyEquals(true));
+        QVERIFY(!ret.instanceOf(qclass));
+        QVERIFY(instanceofJS(ret, qclass).strictlyEquals(false));
     }
     {
         QScriptValue ret = qclass3.construct();
@@ -884,11 +900,15 @@ void tst_QScriptEngine::newQMetaObject()
         QVERIFY(ret.property("isCalledAsConstructor").isBoolean());
         QVERIFY(ret.property("isCalledAsConstructor").toBoolean());
         QVERIFY(ret.instanceOf(qclass3));
+        QVERIFY(instanceofJS(ret, qclass3).strictlyEquals(true));
+        QVERIFY(!ret.instanceOf(qclass2));
+        QVERIFY(instanceofJS(ret, qclass2).strictlyEquals(false));
     }
 
     // subclassing
     qclass2.setProperty("prototype", qclass.construct());
     QVERIFY(qclass2.construct().instanceOf(qclass));
+    QVERIFY(instanceofJS(qclass2.construct(), qclass).strictlyEquals(true));
 
     // with meta-constructor
     QScriptValue qclass4 = eng.newQMetaObject(&QObject::staticMetaObject);
@@ -898,6 +918,9 @@ void tst_QScriptEngine::newQMetaObject()
         QVERIFY(inst.toQObject() != 0);
         QCOMPARE(inst.toQObject()->parent(), (QObject*)0);
         QVERIFY(inst.instanceOf(qclass4));
+        QVERIFY(instanceofJS(inst, qclass4).strictlyEquals(true));
+        QVERIFY(!inst.instanceOf(qclass3));
+        QVERIFY(instanceofJS(inst, qclass3).strictlyEquals(false));
     }
     {
         QScriptValue inst = qclass4.construct(QScriptValueList() << eng.newQObject(this));
@@ -905,6 +928,9 @@ void tst_QScriptEngine::newQMetaObject()
         QVERIFY(inst.toQObject() != 0);
         QCOMPARE(inst.toQObject()->parent(), (QObject*)this);
         QVERIFY(inst.instanceOf(qclass4));
+        QVERIFY(instanceofJS(inst, qclass4).strictlyEquals(true));
+        QVERIFY(!inst.instanceOf(qclass2));
+        QVERIFY(instanceofJS(inst, qclass2).strictlyEquals(false));
     }
 }
 
