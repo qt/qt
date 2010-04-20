@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <qsharedmemory.h>
+#include <QtCore/QFile>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -746,7 +747,18 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
         QStringList arguments = QStringList() << LACKEYDIR  "/scripts/consumer.js";
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
+#ifdef Q_OS_WINCE
+        // We can't start the same executable twice on Windows CE.
+        // Create a copy instead.
+        QString lackeyCopy = QLatin1String(LACKEYDIR "/lackey");
+        lackeyCopy.append(QString::number(i));
+        lackeyCopy.append(QLatin1String(".exe"));
+        if (!QFile::exists(lackeyCopy))
+            QVERIFY(QFile::copy(LACKEYDIR "/lackey.exe", lackeyCopy));
+        p->start(lackeyCopy, arguments);
+#else
         p->start(LACKEYDIR "/lackey", arguments);
+#endif
 
         if (p->waitForStarted(2000))
             consumers.append(p);
