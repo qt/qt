@@ -310,7 +310,7 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrPopupSideB */            {KAknsIIDQsnFrPopupSideB,               ENoDraw,     ES60_All,    -1,-1},
     /* SP_QsnFrPopupSideL */            {KAknsIIDQsnFrPopupSideL,               ENoDraw,     ES60_All,    -1,-1},
     /* SP_QsnFrPopupSideR */            {KAknsIIDQsnFrPopupSideR,               ENoDraw,     ES60_All,    -1,-1},
-    /* SP_QsnFrPopupCenter */           {KAknsIIDQsnFrPopupCenter,              ENoDraw,     ES60_All,    -1,-1},
+    /* SP_QsnFrPopupCenter */           {KAknsIIDQsnFrPopupCenterSubmenu,       ENoDraw,     ES60_All,    -1,-1},
 
     // ToolTip graphics different in 3.1 vs. 3.2+.
     /* SP_QsnFrPopupPreviewCornerTl */  {KAknsIIDQsnFrPopupCornerTl,            ENoDraw,     ES60_3_1,    EAknsMajorSkin, 0x19c5}, /* KAknsIIDQsnFrPopupPreviewCornerTl */
@@ -982,6 +982,10 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
                 centerId.Set(KAknsIIDQsnFrPopupCenterSubmenu);
                 frameId.Set(KAknsIIDQsnFrPopupSub);
             }
+            break;
+        case QS60StylePrivate::SF_PopupBackground:
+            centerId.Set(KAknsIIDQsnFrPopupCenterSubmenu);
+            frameId.Set(KAknsIIDQsnFrPopupSub);
             break;
         case QS60StylePrivate::SF_PanelBackground:
             // remove center piece for panel graphics, so that only border is drawn
