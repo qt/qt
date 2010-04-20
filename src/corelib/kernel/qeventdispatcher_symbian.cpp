@@ -632,6 +632,7 @@ void QSocketActiveObject::deleteLater()
 
 QEventDispatcherSymbian::QEventDispatcherSymbian(QObject *parent)
     : QAbstractEventDispatcher(parent),
+      m_selectThread(0),
       m_activeScheduler(0),
       m_wakeUpAO(0),
       m_completeDeferredAOs(0),
@@ -659,11 +660,19 @@ void QEventDispatcherSymbian::startingUp()
     wakeUp();
 }
 
+QSelectThread& QEventDispatcherSymbian::selectThread() {
+    if (!m_selectThread)
+        m_selectThread = new QSelectThread;
+    return *m_selectThread;
+}
+
 void QEventDispatcherSymbian::closingDown()
 {
-    if (m_selectThread.isRunning()) {
-        m_selectThread.stop();
+    if (m_selectThread && m_selectThread->isRunning()) {
+        m_selectThread->stop();
     }
+    delete m_selectThread;
+    m_selectThread = 0;
 
     delete m_completeDeferredAOs;
     delete m_wakeUpAO;
@@ -935,12 +944,13 @@ void QEventDispatcherSymbian::registerSocketNotifier ( QSocketNotifier * notifie
 {
     QSocketActiveObject *socketAO = q_check_ptr(new QSocketActiveObject(this, notifier));
     m_notifiers.insert(notifier, socketAO);
-    m_selectThread.requestSocketEvents(notifier, &socketAO->iStatus);
+    selectThread().requestSocketEvents(notifier, &socketAO->iStatus);
 }
 
 void QEventDispatcherSymbian::unregisterSocketNotifier ( QSocketNotifier * notifier )
 {
-    m_selectThread.cancelSocketEvents(notifier);
+    if (m_selectThread)
+        m_selectThread->cancelSocketEvents(notifier);
     if (m_notifiers.contains(notifier)) {
         QSocketActiveObject *sockObj = *m_notifiers.find(notifier);
         m_deferredSocketEvents.removeAll(sockObj);
@@ -951,7 +961,7 @@ void QEventDispatcherSymbian::unregisterSocketNotifier ( QSocketNotifier * notif
 
 void QEventDispatcherSymbian::reactivateSocketNotifier(QSocketNotifier *notifier)
 {
-    m_selectThread.requestSocketEvents(notifier, &m_notifiers[notifier]->iStatus);
+    selectThread().requestSocketEvents(notifier, &m_notifiers[notifier]->iStatus);
 }
 
 void QEventDispatcherSymbian::registerTimer ( int timerId, int interval, QObject * object )
