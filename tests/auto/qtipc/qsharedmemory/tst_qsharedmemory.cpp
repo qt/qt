@@ -53,7 +53,7 @@
 #define SRCDIR "c:/data/qsharedmemorytemp/"
 #define LACKEYDIR SRCDIR "lackey"
 #elif defined(Q_OS_WINCE)
-#define LACKEYDIR SRCDIR "lackey"
+#define LACKEYDIR SRCDIR
 #else
 #define LACKEYDIR SRCDIR "../lackey"
 #endif
