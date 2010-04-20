@@ -156,6 +156,9 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
             QScriptValue scriptValue = d->scriptValue(0, &isUndefined);
             if (data->property.propertyTypeCategory() == QDeclarativeProperty::List) {
                 value = ep->scriptValueToVariant(scriptValue, qMetaTypeId<QList<QObject *> >());
+            } else if (scriptValue.isNull() && 
+                       data->property.propertyTypeCategory() == QDeclarativeProperty::Object) {
+                value = QVariant::fromValue((QObject *)0);
             } else {
                 value = ep->scriptValueToVariant(scriptValue, data->property.propertyType());
                 if (value.userType() == QMetaType::QObjectStar && !qvariant_cast<QObject*>(value)) {
@@ -167,6 +170,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                     value = QVariant(type, (void *)&o);
                 }
             }
+
 
             if (data->error.isValid()) {
 

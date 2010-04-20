@@ -159,7 +159,6 @@
     \endfloat
     The Qt Declarative module provides a declarative framework for building
     highly dynamic, custom user interfaces.
-    classes.
 
     \clearfloat
     \section1 \l{Painting Examples}{Painting}
