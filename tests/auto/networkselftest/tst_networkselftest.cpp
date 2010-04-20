@@ -80,6 +80,7 @@ private slots:
     void httpProxyNtlmAuth();
     void socks5Proxy();
     void socks5ProxyAuth();
+    void smbServer();
 
     // ssl supported test
     void supportsSsl();
@@ -728,6 +729,62 @@ void tst_NetworkSelfTest::supportsSsl()
     QFAIL("SSL not compiled in");
 #else
     QVERIFY2(QSslSocket::supportsSsl(), "Could not load SSL libraries");
+#endif
+}
+
+void tst_NetworkSelfTest::smbServer()
+{
+    static const char contents[] = "This is 34 bytes. Do not change...";
+#ifdef Q_OS_WIN
+    // use Windows's native UNC support to try and open a file on the server
+    QString filepath = QString("\\\\%1\\testshare\\test.pri").arg(QtNetworkSettings::winServerName());
+    FILE *f = fopen(filepath.toLatin1(), "rb");
+    QVERIFY2(f, qt_error_string().toLocal8Bit());
+
+    char buf[128];
+    ssize_t ret = fread(buf, sizeof buf, 1, f);
+    fclose(f);
+
+    QCOMPARE(ret, strlen(contents));
+    QVERIFY(memcmp(ret, contents, strlen(contents)) == 0);
+#else
+    // try to use Samba
+    QString progname = "smbclient";
+    QProcess smbclient;
+    smbclient.start(progname, QIODevice::ReadOnly);
+    if (!smbclient.waitForStarted(2000))
+        QSKIP("Could not find smbclient (from Samba), cannot continue testing", SkipAll);
+    if (!smbclient.waitForFinished(2000) || smbclient.exitStatus() != QProcess::NormalExit)
+        QSKIP("smbclient isn't working, cannot continue testing", SkipAll);
+    smbclient.close();
+
+    // try listing the server
+    smbclient.start(progname, QStringList() << "-g" << "-N" << "-L" << QtNetworkSettings::winServerName(), QIODevice::ReadOnly);
+    QVERIFY(smbclient.waitForFinished(5000));
+    if (smbclient.exitStatus() != QProcess::NormalExit)
+        QSKIP("smbclient crashed", SkipAll);
+    QVERIFY2(smbclient.exitCode() == 0, "Test server not found");
+
+    QByteArray output = smbclient.readAll();
+    QVERIFY(output.contains("Disk|testshare|"));
+    QVERIFY(output.contains("Disk|testsharewritable|"));
+    QVERIFY(output.contains("Disk|testsharelargefile|"));
+    qDebug() << "Test server found and shares are correct";
+
+    // try getting a file
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert("PAGER", "/bin/cat"); // just in case
+    smbclient.setProcessEnvironment(env);
+    smbclient.start(progname, QStringList() << "-N" << "-c" << "more test.pri"
+                    << QString("\\\\%1\\testshare").arg(QtNetworkSettings::winServerName()), QIODevice::ReadOnly);
+    QVERIFY(smbclient.waitForFinished(5000));
+    if (smbclient.exitStatus() != QProcess::NormalExit)
+        QSKIP("smbclient crashed", SkipAll);
+    QVERIFY2(smbclient.exitCode() == 0, "File //qt-test-server/testshare/test.pri not found");
+
+    output = smbclient.readAll();
+    QCOMPARE(output.constData(), contents);
+    qDebug() << "Test file is correct";
 #endif
 }
 
