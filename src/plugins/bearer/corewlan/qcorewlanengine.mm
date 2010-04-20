@@ -415,8 +415,6 @@ QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
     scanThread = new QScanThread(this);
     connect(scanThread, SIGNAL(networksChanged()),
             this, SLOT(networksChanged()));
-
-    QTimer::singleShot(0,this,SLOT(init()));
 }
 
 QCoreWlanEngine::~QCoreWlanEngine()
@@ -427,8 +425,10 @@ QCoreWlanEngine::~QCoreWlanEngine()
     [listener release];
 }
 
-void QCoreWlanEngine::init()
+void QCoreWlanEngine::initialize()
 {
+    QMutexLocker locker(&mutex);
+
     if([[CWInterface supportedInterfaces] count] > 0 && !listener) {
         listener = [[QNSListener alloc] init];
         listener.engine = this;

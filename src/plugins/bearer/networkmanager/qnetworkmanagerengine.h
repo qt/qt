@@ -73,8 +73,6 @@ public:
     QNetworkManagerEngine(QObject *parent = 0);
     ~QNetworkManagerEngine();
 
-    Q_INVOKABLE void init();
-
     bool networkManagerAvailable() const;
 
     QString getInterfaceFromId(const QString &id);
@@ -85,6 +83,7 @@ public:
     void connectToId(const QString &id);
     void disconnectFromId(const QString &id);
 
+    Q_INVOKABLE void initialize();
     Q_INVOKABLE void requestUpdate();
 
     QNetworkSession::State sessionStateForId(const QString &id);
