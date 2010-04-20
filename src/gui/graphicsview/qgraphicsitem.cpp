@@ -10086,6 +10086,9 @@ bool QGraphicsTextItem::sceneEvent(QEvent *event)
 #endif //QT_NO_IM
         }
         break;
+    case QEvent::ShortcutOverride:
+        dd->sendControlEvent(event);
+        return true;
     default:
         break;
     }
