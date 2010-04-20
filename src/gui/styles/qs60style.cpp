@@ -3156,6 +3156,12 @@ bool QS60Style::event(QEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
     case QEvent::FocusIn:
         if (QWidget *focusWidget = QApplication::focusWidget()) {
+
+            // Menus and combobox popups do not draw focus frame around them
+            if (qobject_cast<QComboBoxListView *>(focusWidget) ||
+                qobject_cast<QMenu *>(focusWidget))
+                    break;
+
             if (!d->m_focusFrame)
                 d->m_focusFrame = new QFocusFrame(focusWidget);
             d->m_focusFrame->setWidget(focusWidget);
