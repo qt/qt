@@ -408,6 +408,8 @@ void tst_NetworkSelfTest::remotePortsOpen_data()
     QTest::newRow("http-proxy-auth-ntlm") << 3130;
     QTest::newRow("socks5-proxy") << 1080;
     QTest::newRow("socks5-proxy-auth") << 1081;
+    QTest::newRow("ftp-proxy") << 2121;
+    QTest::newRow("smb") << 139;
 }
 
 void tst_NetworkSelfTest::remotePortsOpen()
@@ -725,7 +727,7 @@ void tst_NetworkSelfTest::supportsSsl()
 #ifdef QT_NO_OPENSSL
     QFAIL("SSL not compiled in");
 #else
-    QVERIFY(QSslSocket::supportsSsl());
+    QVERIFY2(QSslSocket::supportsSsl(), "Could not load SSL libraries");
 #endif
 }
 
