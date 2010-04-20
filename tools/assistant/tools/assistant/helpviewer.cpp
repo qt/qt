@@ -52,6 +52,10 @@
 
 QT_BEGIN_NAMESPACE
 
+QString AbstractHelpViewer::DocPath = QString::fromLatin1("qthelp://com."
+    "trolltech.qt.%1/").arg(QString(QLatin1String(QT_VERSION_STR))
+    .replace(QLatin1String("."), QLatin1String("")));
+
 QString AbstractHelpViewer::AboutBlank =
     QCoreApplication::translate("HelpViewer", "<title>about:blank</title>");
 

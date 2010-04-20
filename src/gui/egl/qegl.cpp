@@ -484,42 +484,6 @@ bool QEglContext::swapBuffers(EGLSurface surface)
     return ok;
 }
 
-// Wait for native rendering operations to complete before starting
-// to use OpenGL/OpenVG operations.
-void QEglContext::waitNative()
-{
-#ifdef EGL_CORE_NATIVE_ENGINE
-    eglWaitNative(EGL_CORE_NATIVE_ENGINE);
-#endif
-}
-
-// Wait for client OpenGL/OpenVG operations to complete before
-// using native rendering operations.
-void QEglContext::waitClient()
-{
-#ifdef EGL_OPENGL_ES_API
-    if (apiType == QEgl::OpenGL) {
-        eglBindAPI(EGL_OPENGL_ES_API);
-        eglWaitClient();
-    }
-#else
-    if (apiType == QEgl::OpenGL)
-        eglWaitGL();
-#endif
-#ifdef EGL_OPENVG_API
-    if (apiType == QEgl::OpenVG) {
-        eglBindAPI(EGL_OPENVG_API);
-        eglWaitClient();
-    }
-#endif
-}
-
-// Query the value of a configuration attribute.
-bool QEglContext::configAttrib(int name, EGLint *value) const
-{
-    return eglGetConfigAttrib(QEgl::display(), cfg, name, value);
-}
-
 int QEglContext::configAttrib(int name) const
 {
     EGLint value;
@@ -529,12 +493,6 @@ int QEglContext::configAttrib(int name) const
     else
         return EGL_DONT_CARE;
 }
-
-QEglProperties QEglContext::configProperties() const
-{
-    return QEglProperties(config());
-}
-
 
 typedef EGLImageKHR (EGLAPIENTRY *_eglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, const EGLint*);
 typedef EGLBoolean (EGLAPIENTRY *_eglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
@@ -672,22 +630,6 @@ QString QEgl::errorString(EGLint code)
         return QLatin1String("0x") + QString::number(int(code), 16);
     }
 }
-
-QString QEgl::errorString()
-{
-    return errorString(error());
-}
-
-void QEgl::clearError()
-{
-    eglGetError();
-}
-
-EGLint QEgl::error()
-{
-    return eglGetError();
-}
-
 
 // Dump all of the EGL configurations supported by the system.
 void QEgl::dumpAllConfigs()

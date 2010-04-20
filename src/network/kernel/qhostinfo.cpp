@@ -488,9 +488,23 @@ QHostInfoLookupManager::~QHostInfoLookupManager()
     wasDeleted = true;
 
     // don't qDeleteAll currentLookups, the QThreadPool has ownership
-    qDeleteAll(postponedLookups);
-    qDeleteAll(scheduledLookups);
-    qDeleteAll(finishedLookups);
+    clear();
+}
+
+void QHostInfoLookupManager::clear()
+{
+    {
+        QMutexLocker locker(&mutex);
+        qDeleteAll(postponedLookups);
+        qDeleteAll(scheduledLookups);
+        qDeleteAll(finishedLookups);
+        postponedLookups.clear();
+        scheduledLookups.clear();
+        finishedLookups.clear();
+    }
+
+    threadPool.waitForDone();
+    cache.clear();
 }
 
 void QHostInfoLookupManager::work()
@@ -636,7 +650,7 @@ void qt_qhostinfo_clear_cache()
 {
     QHostInfoLookupManager* manager = theHostInfoLookupManager();
     if (manager) {
-        manager->cache.clear();
+        manager->clear();
     }
 }
 

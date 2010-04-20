@@ -286,6 +286,8 @@ QList<QNetworkConfigurationPrivate *> QScanThread::getConfigurations()
 
 void QScanThread::getUserConfigurations()
 {
+    QMutexLocker locker(&mutex);
+
     QMacCocoaAutoReleasePool pool;
     userProfiles.clear();
 
@@ -354,6 +356,8 @@ void QScanThread::getUserConfigurations()
 
 QString QScanThread::getSsidFromNetworkName(const QString &name)
 {
+    QMutexLocker locker(&mutex);
+
     QMapIterator<QString, QMap<QString,QString> > i(userProfiles);
     while (i.hasNext()) {
         i.next();
@@ -372,6 +376,8 @@ QString QScanThread::getSsidFromNetworkName(const QString &name)
 
 QString QScanThread::getNetworkNameFromSsid(const QString &ssid)
 {
+    QMutexLocker locker(&mutex);
+
     QMapIterator<QString, QMap<QString,QString> > i(userProfiles);
     while (i.hasNext()) {
         i.next();
@@ -409,8 +415,6 @@ QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
     scanThread = new QScanThread(this);
     connect(scanThread, SIGNAL(networksChanged()),
             this, SLOT(networksChanged()));
-
-    QTimer::singleShot(0,this,SLOT(init()));
 }
 
 QCoreWlanEngine::~QCoreWlanEngine()
@@ -421,8 +425,10 @@ QCoreWlanEngine::~QCoreWlanEngine()
     [listener release];
 }
 
-void QCoreWlanEngine::init()
+void QCoreWlanEngine::initialize()
 {
+    QMutexLocker locker(&mutex);
+
     if([[CWInterface supportedInterfaces] count] > 0 && !listener) {
         listener = [[QNSListener alloc] init];
         listener.engine = this;
