@@ -42,6 +42,8 @@
 #include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
 
+#include <time.h>
+
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
 // Current path (C:\private\<UID>) contains only ascii chars
@@ -529,6 +531,14 @@ void tst_NetworkSelfTest::imapServer()
 
 void tst_NetworkSelfTest::httpServer()
 {
+    QString uniqueExtension;
+    qsrand(time(0));
+#ifndef Q_OS_WINCE
+    uniqueExtension = QString("%1%2%3").arg((qulonglong)this).arg(qrand()).arg((qulonglong)time(0));
+#else
+    uniqueExtension = QString("%1%2").arg((qulonglong)this).arg(qrand());
+#endif
+
     netChat(80, QList<Chat>()
             // HTTP/0.9 chat:
             << Chat::send("GET /\r\n")
@@ -556,6 +566,75 @@ void tst_NetworkSelfTest::httpServer()
             << Chat::expect("HTTP/1.")
             << Chat::discardUntil(" ")
             << Chat::expect("200 ")
+            << Chat::DiscardUntilDisconnect
+
+            // HTTP protected area
+            << Chat::Reconnect
+            << Chat::send("GET /qtest/protected/rfc3252.txt HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Connection: close\r\n"
+                          "\r\n")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("401 ")
+            << Chat::DiscardUntilDisconnect
+
+            << Chat::Reconnect
+            << Chat::send("HEAD /qtest/protected/rfc3252.txt HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Connection: close\r\n"
+                          "Authorization: Basic cXNvY2tzdGVzdDpwYXNzd29yZA==\r\n"
+                          "\r\n")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("200 ")
+            << Chat::DiscardUntilDisconnect
+
+            // DAV area
+            << Chat::Reconnect
+            << Chat::send("HEAD /dav/ HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Connection: close\r\n"
+                          "\r\n")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("200 ")
+            << Chat::DiscardUntilDisconnect
+
+            // HTTP/1.0 PUT
+            << Chat::Reconnect
+            << Chat::send("PUT /dav/networkselftest-" + uniqueExtension.toLatin1() + ".txt HTTP/1.0\r\n"
+                          "Content-Length: 5\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Connection: close\r\n"
+                          "\r\n"
+                          "Hello")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("201 ")
+            << Chat::DiscardUntilDisconnect
+
+            // check that the file did get uploaded
+            << Chat::Reconnect
+            << Chat::send("HEAD /dav/networkselftest-" + uniqueExtension.toLatin1() + ".txt HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Connection: close\r\n"
+                          "\r\n")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("200 ")
+            << Chat::discardUntil("\r\nContent-Length: 5\r\n")
+            << Chat::DiscardUntilDisconnect
+
+            // HTTP/1.0 DELETE
+            << Chat::Reconnect
+            << Chat::send("DELETE /dav/networkselftest-" + uniqueExtension.toLatin1() + ".txt HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Connection: close\r\n"
+                          "\r\n")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("204 ")
             << Chat::DiscardUntilDisconnect
             );
 }
