@@ -73,6 +73,7 @@
 # endif
 # include <private/qs60mainapplication_p.h>
 # include <centralrepository.h>
+# include "qs60mainappui.h"
 #endif
 
 #include "private/qstylesheetstyle_p.h"

@@ -488,6 +488,42 @@ void QWidgetPrivate::show_sys()
 
          QSymbianControl *id = static_cast<QSymbianControl *>(q->internalWinId());
 
+#ifdef Q_WS_S60
+        // Lazily initialize the S60 screen furniture when the first window is shown.
+        if (!QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
+                && !S60->buttonGroupContainer() && !S60->statusPane()) {
+
+            bool isFullscreen = q->windowState() & Qt::WindowFullScreen;
+            bool cbaRequested = q->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+
+            // If the window is fullscreen and has not explicitly requested that the CBA be visible
+            // we delay the creation even more.
+            if ((!isFullscreen || cbaRequested) && !q->testAttribute(Qt::WA_DontShowOnScreen)) {
+
+                // Create the status pane and CBA here
+                CEikAppUi *ui = static_cast<CEikAppUi *>(S60->appUi());
+                MEikAppUiFactory *factory = CEikonEnv::Static()->AppUiFactory();
+                TRAP_IGNORE(factory->ReadAppInfoResourceL(0, ui));
+                if (S60->buttonGroupContainer())
+                    S60->buttonGroupContainer()->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+
+                if (S60->statusPane()) {
+                    // Hide the status pane if fullscreen OR
+                    // Fill client area if maximized OR
+                    // Put window below status pane unless the window has an explicit position.
+                    if (isFullscreen) {
+                        S60->statusPane()->MakeVisible(false);
+                    } else if (q->windowState() & Qt::WindowMaximized) {
+                        TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+                        id->SetExtent(r.iTl, r.Size());
+                    } else if (!q->testAttribute(Qt::WA_Moved)) {
+                        id->SetPosition(static_cast<CEikAppUi*>(S60->appUi())->ClientRect().iTl);
+                    }
+                }
+            }
+        }
+#endif
+
         id->MakeVisible(true);
 
         if(q->isWindow())
