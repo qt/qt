@@ -551,13 +551,11 @@ void QHostInfoLookupManager::work()
                 }
             }
 
-            if (scheduled && threadPool.tryStart(scheduled)) {
+            if (scheduled && currentLookups.size() < threadPool.maxThreadCount()) {
                 // runnable now running in new thread, track this in currentLookups
+                threadPool.start(scheduled);
                 iterator.remove();
                 currentLookups.append(scheduled);
-            } else if (scheduled) {
-                // wanted to start, but could not because thread pool is busy
-                break;
             } else {
                 // was postponed, continue iterating
                 continue;
