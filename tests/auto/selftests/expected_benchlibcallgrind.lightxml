@@ -1,0 +1,15 @@
+<Environment>
+    <QtVersion>4.6.3</QtVersion>
+    <QTestVersion>4.6.3</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>
+<TestFunction name="twoHundredMillionInstructions">
+<Incident type="pass" file="" line="0">
+<BenchmarkResult metric="callgrind" tag="" value="200000160" iterations="1" />
+</Incident>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>
