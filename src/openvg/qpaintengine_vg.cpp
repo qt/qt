@@ -3347,8 +3347,13 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     // Draw the glyphs.  We need to fill with the brush associated with
     // the Qt pen, not the Qt brush.
     d->ensureBrush(state()->pen.brush());
-    vgDrawGlyphs(glyphCache->font, glyphs.size(), (VGuint*)glyphs.data(),
-                 NULL, NULL, VG_FILL_PATH, VG_TRUE);
+    if (ti.renderFlags() & QTextItem::RightToLeft) {
+        for (int index = glyphs.size() - 1; index >= 0; --index)
+            vgDrawGlyph(glyphCache->font, glyphs[index], VG_FILL_PATH, VG_TRUE);
+    } else {
+        vgDrawGlyphs(glyphCache->font, glyphs.size(), (VGuint*)glyphs.data(),
+                     NULL, NULL, VG_FILL_PATH, VG_TRUE);
+    }
 #else
     // OpenGL 1.0 does not have support for VGFont and glyphs,
     // so fall back to the default Qt path stroking algorithm.
