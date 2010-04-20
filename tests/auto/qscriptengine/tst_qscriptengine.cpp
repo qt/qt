@@ -157,6 +157,8 @@ private slots:
     void translateScript();
     void translateWithInvalidArgs_data();
     void translateWithInvalidArgs();
+    void translationContext_data();
+    void translationContext();
     void functionScopes();
     void nativeFunctionScopes();
     void evaluateProgram();
@@ -4466,6 +4468,54 @@ void tst_QScriptEngine::translateWithInvalidArgs()
     QScriptValue result = engine.evaluate(expression);
     QVERIFY(result.isError());
     QCOMPARE(result.toString(), expectedError);
+}
+
+void tst_QScriptEngine::translationContext_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QString>("expectedTranslation");
+
+    QTest::newRow("translatable.js")  << "translatable.js" << "One" << "En";
+    QTest::newRow("/translatable.js")  << "/translatable.js" << "One" << "En";
+    QTest::newRow("/foo/translatable.js")  << "/foo/translatable.js" << "One" << "En";
+    QTest::newRow("/foo/bar/translatable.js")  << "/foo/bar/translatable.js" << "One" << "En";
+    QTest::newRow("./translatable.js")  << "./translatable.js" << "One" << "En";
+    QTest::newRow("../translatable.js")  << "../translatable.js" << "One" << "En";
+    QTest::newRow("foo/translatable.js")  << "foo/translatable.js" << "One" << "En";
+    QTest::newRow("file:///home/qt/translatable.js")  << "file:///home/qt/translatable.js" << "One" << "En";
+    QTest::newRow(":/resources/translatable.js")  << ":/resources/translatable.js" << "One" << "En";
+    QTest::newRow("/translatable.js.foo")  << "/translatable.js.foo" << "One" << "En";
+    QTest::newRow("/translatable.txt")  << "/translatable.txt" << "One" << "En";
+    QTest::newRow("translatable")  << "translatable" << "One" << "En";
+    QTest::newRow("foo/translatable")  << "foo/translatable" << "One" << "En";
+
+    QTest::newRow("native separators")
+        << (QDir::toNativeSeparators(QDir::currentPath()) + QDir::separator() + "translatable.js")
+        << "One" << "En";
+
+    QTest::newRow("translatable.js/")  << "translatable.js/" << "One" << "One";
+    QTest::newRow("nosuchscript.js")  << "" << "One" << "One";
+    QTest::newRow("(empty)")  << "" << "One" << "One";
+}
+
+void tst_QScriptEngine::translationContext()
+{
+    QTranslator translator;
+    translator.load(":/translations/translatable_la");
+    QCoreApplication::instance()->installTranslator(&translator);
+
+    QScriptEngine engine;
+    engine.installTranslatorFunctions();
+
+    QFETCH(QString, path);
+    QFETCH(QString, text);
+    QFETCH(QString, expectedTranslation);
+    QScriptValue ret = engine.evaluate(QString::fromLatin1("qsTr('%0')").arg(text), path);
+    QVERIFY(ret.isString());
+    QCOMPARE(ret.toString(), expectedTranslation);
+
+    QCoreApplication::instance()->removeTranslator(&translator);
 }
 
 void tst_QScriptEngine::functionScopes()
