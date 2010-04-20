@@ -508,6 +508,11 @@ void QWidgetPrivate::show_sys()
                     S60->buttonGroupContainer()->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
 
                 if (S60->statusPane()) {
+                    // Use QDesktopWidget as the status pane observer to proxy for the AppUi.
+                    // Can't use AppUi directly because it privately inherits from MEikStatusPaneObserver.
+                    QSymbianControl *desktopControl = static_cast<QSymbianControl *>(QApplication::desktop()->winId());
+                    S60->statusPane()->SetObserver(desktopControl);
+
                     // Hide the status pane if fullscreen OR
                     // Fill client area if maximized OR
                     // Put window below status pane unless the window has an explicit position.
