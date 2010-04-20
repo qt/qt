@@ -79,6 +79,8 @@ private slots:
     void httpServer();
     void httpServerFiles_data();
     void httpServerFiles();
+    void httpServerCGI_data();
+    void httpServerCGI();
     void httpsServer();
     void httpProxy();
     void httpProxyBasicAuth();
@@ -675,6 +677,76 @@ void tst_NetworkSelfTest::httpServerFiles()
     if (size != -1)
         chat << Chat::discardUntil("\r\nContent-Length: " + QByteArray::number(size) + "\r\n");
     chat << Chat::DiscardUntilDisconnect;
+    netChat(80, chat);
+}
+
+void tst_NetworkSelfTest::httpServerCGI_data()
+{
+    QTest::addColumn<QByteArray>("request");
+    QTest::addColumn<QByteArray>("result");
+    QTest::addColumn<QByteArray>("additionalHeader");
+
+    QTest::newRow("echo.cgi")
+            << QByteArray("GET /qtest/cgi-bin/echo.cgi?Hello+World HTTP/1.0\r\n"
+                          "Connection: close\r\n"
+                          "\r\n")
+            << QByteArray("Hello+World")
+            << QByteArray();
+
+    QTest::newRow("echo.cgi(POST)")
+            << QByteArray("POST /qtest/cgi-bin/echo.cgi?Hello+World HTTP/1.0\r\n"
+                          "Connection: close\r\n"
+                          "Content-Length: 15\r\n"
+                          "\r\n"
+                          "Hello, World!\r\n")
+            << QByteArray("Hello, World!\r\n")
+            << QByteArray();
+
+    QTest::newRow("md5sum.cgi")
+            << QByteArray("POST /qtest/cgi-bin/md5sum.cgi HTTP/1.0\r\n"
+                          "Connection: close\r\n"
+                          "Content-Length: 15\r\n"
+                          "\r\n"
+                          "Hello, World!\r\n")
+            << QByteArray("29b933a8d9a0fcef0af75f1713f4940e\n")
+            << QByteArray();
+
+    QTest::newRow("protected/md5sum.cgi")
+            << QByteArray("POST /qtest/protected/cgi-bin/md5sum.cgi HTTP/1.0\r\n"
+                          "Connection: close\r\n"
+                          "Authorization: Basic cXNvY2tzdGVzdDpwYXNzd29yZA==\r\n"
+                          "Content-Length: 15\r\n"
+                          "\r\n"
+                          "Hello, World!\r\n")
+            << QByteArray("29b933a8d9a0fcef0af75f1713f4940e\n")
+            << QByteArray();
+
+    QTest::newRow("set-cookie.cgi")
+            << QByteArray("POST /qtest/cgi-bin/set-cookie.cgi HTTP/1.0\r\n"
+                          "Connection: close\r\n"
+                          "Content-Length: 8\r\n"
+                          "\r\n"
+                          "foo=bar\n")
+            << QByteArray("Success\n")
+            << QByteArray("\r\nSet-Cookie: foo=bar\r\n");
+}
+
+void tst_NetworkSelfTest::httpServerCGI()
+{
+    QFETCH(QByteArray, request);
+    QFETCH(QByteArray, result);
+    QFETCH(QByteArray, additionalHeader);
+    QList<Chat> chat;
+    chat << Chat::send(request)
+         << Chat::expect("HTTP/1.") << Chat::skipBytes(1)
+         << Chat::expect(" 200 ");
+
+    if (!additionalHeader.isEmpty())
+        chat << Chat::discardUntil(additionalHeader);
+
+    chat << Chat::discardUntil("\r\n\r\n")
+         << Chat::expect(result)
+         << Chat::RemoteDisconnect;
     netChat(80, chat);
 }
 
