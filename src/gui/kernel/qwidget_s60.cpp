@@ -1149,8 +1149,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             adjustSize();
 
         QTLWExtra *top = d->topData();
-        const QRect normalGeometry = (top->normalGeometry.width() < 0) ? geometry() : top->normalGeometry;
-
+        QRect normalGeometry = (top->normalGeometry.width() < 0) ? geometry() : top->normalGeometry;
 
         const bool cbaVisibilityHint = windowFlags() & Qt::WindowSoftkeysVisibleHint;
         if (newstate & Qt::WindowFullScreen && !cbaVisibilityHint) {
@@ -1159,6 +1158,16 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             TRect maxExtent = qt_QRect2TRect(qApp->desktop()->availableGeometry(this));
             window->SetExtent(maxExtent.iTl, maxExtent.Size());
         } else {
+#ifdef Q_WS_S60
+            // With delayed creation of S60 app panes, the normalGeometry calculated above is not
+            // accurate because it did not consider the status pane. This means that when returning
+            // normal mode after showing the status pane, the geometry would overlap so we should
+            // move it if it never had an explicit position.
+            if (!wasMoved && statusPane && visible) {
+                TPoint tl = static_cast<CEikAppUi*>(S60->appUi())->ClientRect().iTl;
+                normalGeometry.setTopLeft(QPoint(tl.iX, tl.iY));
+            }
+#endif
             setGeometry(normalGeometry);
         }
 
