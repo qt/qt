@@ -859,19 +859,14 @@ QObject::~QObject()
     if (d->declarativeData)
         QAbstractDeclarativeData::destroyed(d->declarativeData, this);
 
-    {
-        QMutex *signalSlotMutex = 0;
-        QT_TRY {
-            signalSlotMutex = signalSlotLock(this);
-        } QT_CATCH(const std::bad_alloc &) {
-            // out of memory - swallow to prevent a crash
-        }
-        QMutexLocker locker(signalSlotMutex);
+    // set ref to zero to indicate that this object has been deleted
+    if (d->currentSender != 0)
+        d->currentSender->ref = 0;
+    d->currentSender = 0;
 
-        // set ref to zero to indicate that this object has been deleted
-        if (d->currentSender != 0)
-            d->currentSender->ref = 0;
-        d->currentSender = 0;
+    if (d->connectionLists || d->senders) {
+        QMutex *signalSlotMutex = signalSlotLock(this);
+        QMutexLocker locker(signalSlotMutex);
 
         // disconnect all receivers
         if (d->connectionLists) {
@@ -889,7 +884,7 @@ QObject::~QObject()
                     }
 
                     QMutex *m = signalSlotLock(c->receiver);
-                    bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
+                    bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
 
                     if (c->receiver) {
                         *c->prev = c->next;
@@ -917,7 +912,7 @@ QObject::~QObject()
             QObject *sender = node->sender;
             QMutex *m = signalSlotLock(sender);
             node->prev = &node;
-            bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
+            bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
             //the node has maybe been removed while the mutex was unlocked in relock?
             if (!node || node->sender != sender) {
                 m->unlock();
@@ -951,7 +946,8 @@ QObject::~QObject()
 
     qt_removeObject(this);
 
-    QCoreApplication::removePostedEvents(this);
+    if (d->postedEvents)
+        QCoreApplication::removePostedEvents(this, 0);
 
     if (d->parent)        // remove it from parent object
         d->setParent_helper(0);
