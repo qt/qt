@@ -13,7 +13,6 @@ Item {
         Image { source: "mobile/images/stripes.png"; fillMode: Image.Tile; anchors.fill: parent; opacity: 0.3 }
 
         Common.RssModel { id: rssModel }
-        Common.Loading { anchors.centerIn: parent; visible: rssModel.status == 2 }
 
         Item {
             id: views
