@@ -239,7 +239,20 @@ void tst_QSystemSemaphore::processes()
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
         consumers.append(p);
+#ifdef Q_OS_WINCE
+        // We can't start the same executable twice on Windows CE.
+        // Create a copy instead.
+        QString lackeyCopy = QLatin1String(LACKEYLOC "/lackey");
+        if (i > 0) {
+            lackeyCopy.append(QString::number(i));
+            lackeyCopy.append(QLatin1String(".exe"));
+            if (!QFile::exists(lackeyCopy))
+                QVERIFY(QFile::copy(LACKEYLOC "/lackey.exe", lackeyCopy));
+        }
+        p->start(lackeyCopy, arguments);
+#else
         p->start(LACKEYLOC "/lackey", arguments);
+#endif
     }
 
     while (!consumers.isEmpty()) {
