@@ -387,16 +387,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
                 | EPointerFilterMove | EPointerFilterDrag, 0);
             drawableWindow->EnableVisibilityChangeEvents();
 
-            if (!isOpaque) {
-                RWindow *const window = static_cast<RWindow *>(drawableWindow);
-#ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
-                window->SetSurfaceTransparency(true);
-#else
-                const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
-                if (window->SetTransparencyAlphaChannel() == KErrNone)
-                    window->SetBackgroundColor(TRgb(255, 255, 255, 0));
-#endif
-            }
+            s60UpdateIsOpaque();
         }
 
         q->setAttribute(Qt::WA_WState_Created);
