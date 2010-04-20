@@ -132,12 +132,15 @@ void QDeclarativeLoaderPrivate::initResize()
     \endcode
 
     If the Loader source is changed, any previous items instantiated
-    will be destroyed.  Setting \c source to an empty string
+    will be destroyed.  Setting \c source to an empty string, or setting
+    sourceComponent to \e undefined
     will destroy the currently instantiated items, freeing resources
     and leaving the Loader empty.  For example:
 
     \code
     pageLoader.source = ""
+      or
+    pageLoader.sourceComponent = undefined
     \endcode
 
     unloads "Page1.qml" and frees resources consumed by it.
@@ -269,6 +272,11 @@ void QDeclarativeLoader::setSourceComponent(QDeclarativeComponent *comp)
         emit statusChanged();
         emit itemChanged();
     }
+}
+
+void QDeclarativeLoader::resetSourceComponent()
+{
+    setSourceComponent(0);
 }
 
 void QDeclarativeLoaderPrivate::_q_sourceLoaded()
