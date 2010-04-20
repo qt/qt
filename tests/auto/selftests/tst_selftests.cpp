@@ -49,18 +49,12 @@ class tst_Selftests: public QObject
 {
     Q_OBJECT
 private slots:
-    void initTestCase();
     void runSubTest_data();
     void runSubTest();
-    void checkXML() const;
-    void checkXML_data();
-    void checkXunitxml() const;
-    void checkXunitxml_data();
+    void cleanupTestCase();
 
 private:
-    QStringList m_checkXMLBlacklist;
-    QStringList m_checkXunitBlacklist;
-    void doRunSubTest(QString &subdir, QStringList &arguments );
+    void doRunSubTest(QString const& subdir, QString const& logger, QStringList const& arguments );
 };
 
 struct BenchmarkResult
@@ -121,89 +115,221 @@ QT_END_NAMESPACE
 static QList<QByteArray> splitLines(QByteArray ba)
 {
     ba.replace('\r', "");
-    return ba.split('\n');
+    QList<QByteArray> out = ba.split('\n');
+
+    // Replace any ` file="..."' in XML with a generic location.
+    static const char marker[] = " file=\"";
+    for (int i = 0; i < out.size(); ++i) {
+        QByteArray& line = out[i];
+        int index = line.indexOf(marker);
+        if (index == -1) {
+            continue;
+        }
+        int end = line.indexOf('"', index + sizeof(marker));
+        if (end == -1) {
+            continue;
+        }
+        line.replace(index, end-index, " file=\"__FILE__\"");
+    }
+
+    return out;
 }
 
-static QList<QByteArray> expectedResult(const QString &subdir)
+static QList<QByteArray> expectedResult(const QString &subdir, const QString &logger)
 {
-    QFile file(":/expected_" + subdir + ".txt");
+    QString suffix = logger;
+    if (suffix.isEmpty()) {
+        suffix = "txt";
+    }
+    QFile file(":/expected_" + subdir + "." + suffix);
     if (!file.open(QIODevice::ReadOnly))
         return QList<QByteArray>();
     return splitLines(file.readAll());
 }
 
+struct Logger
+{
+    Logger(QString const&, QString const&, QStringList const&);
+
+    QString name;
+    QString testdata_suffix;
+    QStringList arguments;
+};
+
+Logger::Logger(QString const& _name, QString const& _testdata_suffix, QStringList const& _arguments)
+    : name(_name)
+    , testdata_suffix(_testdata_suffix)
+    , arguments(_arguments)
+{
+}
+
+static QList<Logger> allLoggers()
+{
+    return QList<Logger>()
+        << Logger("plain",      "txt",      QStringList())
+        << Logger("xml",        "xml",      QStringList() << "-xml")
+        << Logger("xml flush",  "xml",      QStringList() << "-xml" << "-flush")
+        << Logger("xunitxml",   "xunitxml", QStringList() << "-xunitxml")
+        << Logger("lightxml",   "lightxml", QStringList() << "-lightxml")
+    ;
+}
+
 void tst_Selftests::runSubTest_data()
 {
     QTest::addColumn<QString>("subdir");
+    QTest::addColumn<QString>("logger");
     QTest::addColumn<QStringList>("arguments");
 
-    QTest::newRow("subtest") << "subtest" << QStringList();
-    QTest::newRow("warnings") << "warnings" << QStringList();
-    QTest::newRow("maxwarnings") << "maxwarnings" << QStringList();
-    QTest::newRow("cmptest") << "cmptest" << QStringList();
-//    QTest::newRow("alive") << "alive" << QStringList(); // timer dependent
-    QTest::newRow("globaldata") << "globaldata" << QStringList();
-    QTest::newRow("skipglobal") << "skipglobal" << QStringList();
-    QTest::newRow("skip") << "skip" << QStringList();
-    QTest::newRow("strcmp") << "strcmp" << QStringList();
-    QTest::newRow("expectfail") << "expectfail" << QStringList();
-    QTest::newRow("sleep") << "sleep" << QStringList();
-    QTest::newRow("fetchbogus") << "fetchbogus" << QStringList();
-    QTest::newRow("crashes") << "crashes" << QStringList();
-    QTest::newRow("multiexec") << "multiexec" << QStringList();
-    QTest::newRow("failinit") << "failinit" << QStringList();
-    QTest::newRow("failinitdata") << "failinitdata" << QStringList();
-    QTest::newRow("skipinit") << "skipinit" << QStringList();
-    QTest::newRow("skipinitdata") << "skipinitdata" << QStringList();
-    QTest::newRow("datetime") << "datetime" << QStringList();
-    QTest::newRow("singleskip") << "singleskip" << QStringList();
+    QStringList tests = QStringList()
+        << "subtest"
+        << "warnings"
+        << "maxwarnings"
+        << "cmptest"
+//        << "alive"    // timer dependent
+        << "globaldata"
+        << "skipglobal"
+        << "skip"
+        << "strcmp"
+        << "expectfail"
+        << "sleep"
+        << "fetchbogus"
+        << "crashes"
+        << "multiexec"
+        << "failinit"
+        << "failinitdata"
+        << "skipinit"
+        << "skipinitdata"
+        << "datetime"
+        << "singleskip"
 
-    //on windows assert does nothing in release mode and blocks execution with a popup window in debug mode
+        //on windows assert does nothing in release mode and blocks execution with a popup window in debug mode
 #if !defined(Q_OS_WIN)
-    QTest::newRow("assert") << "assert" << QStringList();
+        << "assert"
 #endif
 
-    QTest::newRow("waitwithoutgui") << "waitwithoutgui" << QStringList();
-    QTest::newRow("differentexec") << "differentexec" << QStringList();
+        << "waitwithoutgui"
+        << "differentexec"
 #ifndef QT_NO_EXCEPTIONS
-    // The machine that run the intel autotests will popup a dialog
-    // with a warning that an uncaught exception was thrown.
-    // This will time out and falsely fail, therefore we disable the test for that platform.
+        // The machine that run the intel autotests will popup a dialog
+        // with a warning that an uncaught exception was thrown.
+        // This will time out and falsely fail, therefore we disable the test for that platform.
 # if !defined(Q_CC_INTEL) || !defined(Q_OS_WIN)
-    QTest::newRow("exceptionthrow") << "exceptionthrow" << QStringList();
+        << "exceptionthrow"
 # endif
 #endif
-    QTest::newRow("qexecstringlist") << "qexecstringlist" << QStringList();
-    QTest::newRow("datatable") << "datatable" << QStringList();
-    QTest::newRow("commandlinedata") << "commandlinedata" << QString("fiveTablePasses fiveTablePasses:fiveTablePasses_data1 -v2").split(' ');
+        << "qexecstringlist"
+        << "datatable"
+        << "commandlinedata"
 
 #if defined(__GNUC__) && defined(__i386) && defined(Q_OS_LINUX)
-    QTest::newRow("benchlibcallgrind") << "benchlibcallgrind" << QStringList("-callgrind");
+        << "benchlibcallgrind"
 #endif
-    QTest::newRow("benchlibeventcounter") << "benchlibeventcounter" << QStringList("-eventcounter");
-    QTest::newRow("benchliboptions") << "benchliboptions" << QStringList("-eventcounter");
+        << "benchlibeventcounter"
+        << "benchliboptions"
 
-    //### These tests are affected by timing and whether the CPU tick counter is
-    //### monotonically increasing. They won't work on some machines so leave them off by default.
-    //### Feel free to uncomment for your own testing.
+        //### These tests are affected by timing and whether the CPU tick counter is
+        //### monotonically increasing. They won't work on some machines so leave them off by default.
+        //### Feel free to uncomment for your own testing.
 #if 0
-    QTest::newRow("benchlibwalltime") << "benchlibwalltime" << QStringList();
-    QTest::newRow("benchlibtickcounter") << "benchlibtickcounter" << QStringList("-tickcounter");
+        << "benchlibwalltime"
+        << "benchlibtickcounter"
 #endif
 
-    QTest::newRow("xunit") << "xunit" << QStringList("-xunitxml");
-    QTest::newRow("longstring") << "longstring" << QStringList();
+        << "xunit"
+        << "longstring"
+        << "badxml"
+    ;
 
+    foreach (Logger const& logger, allLoggers()) {
+        QString rowSuffix;
+        if (logger.name != "plain") {
+            rowSuffix = QString(" %1").arg(logger.name);
+        }
+
+        foreach (QString const& subtest, tests) {
+            QStringList arguments = logger.arguments;
+            if (subtest == "commandlinedata") {
+                arguments << QString("fiveTablePasses fiveTablePasses:fiveTablePasses_data1 -v2").split(' ');
+            }
+            else if (subtest == "benchlibcallgrind") {
+                arguments << "-callgrind";
+            }
+            else if (subtest == "benchlibeventcounter") {
+                arguments << "-eventcounter";
+            }
+            else if (subtest == "benchliboptions") {
+                arguments << "-eventcounter";
+            }
+            else if (subtest == "benchlibtickcounter") {
+                arguments << "-tickcounter";
+            }
+            else if (subtest == "badxml") {
+                arguments << "-eventcounter";
+            }
+
+            // These tests don't work right with loggers other than plain, usually because
+            // they internally supply arguments to themselves.
+            if (logger.name != "plain") {
+                if (subtest == "differentexec") {
+                    continue;
+                }
+                if (subtest == "qexecstringlist") {
+                    continue;
+                }
+                if (subtest == "benchliboptions") {
+                    continue;
+                }
+                if (subtest == "waitwithoutgui") {
+                    continue;
+                }
+                // `crashes' will not output valid XML on platforms without a crash handler
+                if (subtest == "crashes") {
+                    continue;
+                }
+                // this test prints out some floats in the testlog and the formatting is
+                // platform-specific and hard to predict.
+                if (subtest == "subtest") {
+                    continue;
+                }
+            }
+
+            QTest::newRow(qPrintable(QString("%1%2").arg(subtest).arg(rowSuffix)))
+                << subtest
+                << logger.testdata_suffix
+                << arguments
+            ;
+        }
+    }
 }
 
-void tst_Selftests::doRunSubTest(QString &subdir, QStringList &arguments )
+void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, QStringList const& arguments )
 {
+    // For the plain text logger, we'll read straight from standard output.
+    // For all other loggers (XML), we'll tell testlib to redirect to a file.
+    // The reason is that tests are allowed to print to standard output, and
+    // that means the test log is no longer guaranteed to be valid XML.
+    QStringList extraArguments;
+    QString logfile;
+    if (logger != "txt") {
+        logfile = "test_output";
+        extraArguments << "-o" << logfile;
+    }
+
     QProcess proc;
     proc.setEnvironment(QStringList(""));
-    proc.start(subdir + "/" + subdir, arguments);
+    proc.start(subdir + "/" + subdir, QStringList() << arguments << extraArguments);
     QVERIFY2(proc.waitForFinished(), qPrintable(proc.errorString()));
 
-    const QByteArray out(proc.readAllStandardOutput());
+    QByteArray out;
+    if (logfile.isEmpty()) {
+        out = proc.readAllStandardOutput();
+    }
+    else {
+        QFile file(logfile);
+        if (file.open(QIODevice::ReadOnly))
+            out = file.readAll();
+    }
+
     const QByteArray err(proc.readAllStandardError());
 
     /* Some platforms decides to output a message for uncaught exceptions. For instance,
@@ -215,13 +341,13 @@ void tst_Selftests::doRunSubTest(QString &subdir, QStringList &arguments )
         QVERIFY2(err.isEmpty(), err.constData());
 
     QList<QByteArray> res = splitLines(out);
-    QList<QByteArray> exp = expectedResult(subdir);
+    QList<QByteArray> exp = expectedResult(subdir, logger);
 
     if (exp.count() == 0) {
         QList<QList<QByteArray> > expArr;
         int i = 1;
         do {
-            exp = expectedResult(subdir + QString("_%1").arg(i++));
+            exp = expectedResult(subdir + QString("_%1").arg(i++), logger);
             if (exp.count())
             expArr += exp;
         } while(exp.count());
@@ -234,6 +360,28 @@ void tst_Selftests::doRunSubTest(QString &subdir, QStringList &arguments )
         }
     } else {
         QCOMPARE(res.count(), exp.count());
+    }
+
+    if (logger == "xunitxml" || logger == "xml" || logger == "lightxml") {
+        QByteArray xml(out);
+        // lightxml intentionally skips the root element, which technically makes it
+        // not valid XML.
+        // We'll add that ourselves for the purpose of validation.
+        if (logger == "lightxml") {
+            xml.prepend("<root>");
+            xml.append("</root>");
+        }
+
+        QXmlStreamReader reader(xml);
+
+        while(!reader.atEnd())
+            reader.readNext();
+
+        QVERIFY2(!reader.error(), qPrintable(QString("line %1, col %2: %3")
+            .arg(reader.lineNumber())
+            .arg(reader.columnNumber())
+            .arg(reader.errorString())
+        ));
     }
 
     bool benchmark = false;
@@ -250,8 +398,13 @@ void tst_Selftests::doRunSubTest(QString &subdir, QStringList &arguments )
         const QString output(QString::fromLatin1(line));
         const QString expected(QString::fromLatin1(exp.at(i)).replace("<INSERT_QT_VERSION_HERE>", QT_VERSION_STR));
 
-        if (line.contains("ASSERT") && output != expected)
-            QEXPECT_FAIL("assert", "QTestLib prints out the absolute path.", Continue);
+        if (line.contains("ASSERT") && output != expected) {
+            QEXPECT_FAIL("assert",          "QTestLib prints out the absolute path.", Continue);
+            QEXPECT_FAIL("assert xml",      "QTestLib prints out the absolute path.", Continue);
+            QEXPECT_FAIL("assert xml flush","QTestLib prints out the absolute path.", Continue);
+            QEXPECT_FAIL("assert lightxml", "QTestLib prints out the absolute path.", Continue);
+            QEXPECT_FAIL("assert xunitxml", "QTestLib prints out the absolute path.", Continue);
+        }
 
         /* On some platforms we compile without RTTI, and as a result we never throw an exception. */
         if(expected.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce")) && expected != output)
@@ -292,131 +445,10 @@ void tst_Selftests::doRunSubTest(QString &subdir, QStringList &arguments )
 void tst_Selftests::runSubTest()
 {
     QFETCH(QString, subdir);
+    QFETCH(QString, logger);
     QFETCH(QStringList, arguments);
 
-    doRunSubTest(subdir, arguments);
-}
-
-void tst_Selftests::initTestCase()
-{
-#if !defined(Q_OS_UNIX) || defined(Q_WS_MAC)
-    m_checkXMLBlacklist.append("crashes"); // This test crashes (XML valid on Unix only)
-#endif
-    m_checkXMLBlacklist.append("waitwithoutgui"); // This test is not a QTestLib test.
-
-    /* Output from several tests is broken with the XML output method,
-     * and it's quite heavy in the design. See task 155001. */
-    m_checkXMLBlacklist.append("multiexec");
-    m_checkXMLBlacklist.append("differentexec");
-    m_checkXMLBlacklist.append("qexecstringlist");
-    m_checkXMLBlacklist.append("benchliboptions");
-
-    /* These tests use printf and therefore corrupt the testlog */
-    m_checkXMLBlacklist.append("subtest");
-    m_checkXMLBlacklist.append("globaldata");
-    m_checkXMLBlacklist.append("warnings");
-
-    m_checkXunitBlacklist = m_checkXMLBlacklist;
-}
-
-void tst_Selftests::checkXML() const
-{
-    QFETCH(QString, subdir);
-    QFETCH(QStringList, arguments);
-
-    if(m_checkXMLBlacklist.contains(subdir))
-        return;
-
-    QStringList args;
-    /* Test both old (-flush) and new XML logger implementation */
-    for (int i = 0; i < 2; ++i) {
-        bool flush = i;
-        args = arguments;
-        args.prepend("-xml");
-        if (flush) args.prepend("-flush");
-
-        QProcess proc;
-        proc.setEnvironment(QStringList(""));
-        proc.start(subdir + "/" + subdir, args);
-        QVERIFY(proc.waitForFinished());
-
-        QByteArray out(proc.readAllStandardOutput());
-        QByteArray err(proc.readAllStandardError());
-
-        /* Some platforms decides to output a message for uncaught exceptions. For instance,
-         * this is what windows platforms says:
-         * "This application has requested the Runtime to terminate it in an unusual way.
-         * Please contact the application's support team for more information." */
-        if(subdir != QLatin1String("exceptionthrow") && subdir != QLatin1String("fetchbogus"))
-            QVERIFY2(err.isEmpty(), err.constData());
-
-        QXmlStreamReader reader(out);
-
-        while(!reader.atEnd())
-            reader.readNext();
-
-        QVERIFY2(!reader.error(), qPrintable(QString("(flush %0) line %1, col %2: %3")
-            .arg(flush)
-            .arg(reader.lineNumber())
-            .arg(reader.columnNumber())
-            .arg(reader.errorString())
-        ));
-    }
-}
-
-void tst_Selftests::checkXunitxml() const
-{
-    QFETCH(QString, subdir);
-    QFETCH(QStringList, arguments);
-
-    if(m_checkXunitBlacklist.contains(subdir))
-        return;
-
-    arguments.prepend("-xunitxml");
-    arguments.prepend("-flush");
-
-    QProcess proc;
-    proc.setEnvironment(QStringList(""));
-    proc.start(subdir + "/" + subdir, arguments);
-    QVERIFY(proc.waitForFinished());
-
-    QByteArray out(proc.readAllStandardOutput());
-    QByteArray err(proc.readAllStandardError());
-
-//    qDebug()<<out;
-
-    /* Some platforms decides to output a message for uncaught exceptions. For instance,
-     * this is what windows platforms says:
-     * "This application has requested the Runtime to terminate it in an unusual way.
-     * Please contact the application's support team for more information." */
-    if(subdir != QLatin1String("exceptionthrow") && subdir != QLatin1String("fetchbogus"))
-        QVERIFY2(err.isEmpty(), err.constData());
-
-    QXmlStreamReader reader(out);
-
-    while(!reader.atEnd())
-        reader.readNext();
-
-    QVERIFY2(!reader.error(), qPrintable(QString("line %1, col %2: %3")
-        .arg(reader.lineNumber())
-        .arg(reader.columnNumber())
-        .arg(reader.errorString())
-    ));
-}
-
-void tst_Selftests::checkXunitxml_data()
-{
-    checkXML_data();
-}
-
-void tst_Selftests::checkXML_data()
-{
-    runSubTest_data();
-    QTest::newRow("badxml 1") << "badxml" << QStringList();
-    QTest::newRow("badxml 2") << "badxml" << (QStringList() << "-badstring" << "0");
-    QTest::newRow("badxml 3") << "badxml" << (QStringList() << "-badstring" << "1");
-    QTest::newRow("badxml 4") << "badxml" << (QStringList() << "-badstring" << "2");
-    QTest::newRow("badxml 5") << "badxml" << (QStringList() << "-badstring" << "3");
+    doRunSubTest(subdir, logger, arguments);
 }
 
 /* Parse line into the BenchmarkResult it represents. */
@@ -514,6 +546,11 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
     out.unit = unit;
     out.iterations = iters;
     return out;
+}
+
+void tst_Selftests::cleanupTestCase()
+{
+    QFile::remove("test_output");
 }
 
 QTEST_MAIN(tst_Selftests)
