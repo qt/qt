@@ -67,7 +67,8 @@ class QDeclarativeMouseAreaPrivate : public QDeclarativeItemPrivate
 
 public:
     QDeclarativeMouseAreaPrivate()
-      : absorb(true), hovered(false), pressed(false), longPress(false), drag(0)
+      : absorb(true), hovered(false), pressed(false), longPress(false),
+      moved(false), drag(0)
     {
     }
 
@@ -100,7 +101,6 @@ public:
     bool moved : 1;
     bool dragX : 1;
     bool dragY : 1;
-    bool dragged : 1;
     QDeclarativeDrag *drag;
     QPointF startScene;
     qreal startX;
