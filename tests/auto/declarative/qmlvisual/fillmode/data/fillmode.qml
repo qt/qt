@@ -7,5 +7,5 @@ VisualTest {
     Frame {
         msec: 16
         image: "fillmode.0.png"
-    }    
+    }
 }
