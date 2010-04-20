@@ -251,7 +251,8 @@ void QDeclarativeTester::updateCurrentTime(int msec)
         m_view->render(&p);
     }
 
-    bool snapshot = msec == 16 && options & QDeclarativeViewer::Snapshot;
+    bool snapshot = msec == 16 && (options & QDeclarativeViewer::Snapshot
+                                   || (testscript && testscript->count() == 2));
 
     FrameEvent fe;
     fe.msec = msec;
