@@ -80,7 +80,7 @@ public:
     virtual void virtual_hook(int id, void *data);
 
 public:
-    enum IconEngineHook { AvailableSizesHook = 1 };
+    enum IconEngineHook { AvailableSizesHook = 1, IconNameHook };
 
     struct AvailableSizesArgument
     {
@@ -92,6 +92,9 @@ public:
     // ### Qt 5: make this function const and virtual.
     QList<QSize> availableSizes(QIcon::Mode mode = QIcon::Normal,
                                 QIcon::State state = QIcon::Off);
+
+    // ### Qt 5: make this function const and virtual.
+    QString iconName();
 };
 
 QT_END_NAMESPACE
