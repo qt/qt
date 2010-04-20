@@ -75,6 +75,7 @@ private slots:
     void inheritOpacity();
     void dropShadowClipping();
     void childrenVisibilityShouldInvalidateCache();
+    void prepareGeometryChangeInvalidateCache();
 };
 
 void tst_QGraphicsEffect::initTestCase()
@@ -645,6 +646,33 @@ void tst_QGraphicsEffect::childrenVisibilityShouldInvalidateCache()
     QApplication::processEvents();
     //a new child appears we need to redraw the effect.
     QCOMPARE(parent.nbPaint, 3);
+}
+
+void tst_QGraphicsEffect::prepareGeometryChangeInvalidateCache()
+{
+    MyGraphicsItem *item = new MyGraphicsItem;
+    item->resize(200, 200);
+
+    QGraphicsScene scene;
+    scene.addItem(item);
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(item->nbPaint, 1);
+
+    item->nbPaint = 0;
+    item->setGraphicsEffect(new QGraphicsDropShadowEffect);
+    QTRY_COMPARE(item->nbPaint, 1);
+
+    item->nbPaint = 0;
+    item->resize(300, 300);
+    QTRY_COMPARE(item->nbPaint, 1);
+
+    item->nbPaint = 0;
+    item->setPos(item->pos() + QPointF(10, 10));
+    QTest::qWait(50);
+    QCOMPARE(item->nbPaint, 0);
 }
 
 QTEST_MAIN(tst_QGraphicsEffect)
