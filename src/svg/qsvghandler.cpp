@@ -3525,7 +3525,11 @@ void QSvgHandler::parse()
             // namespaceUri is empty. The only possible strategy at
             // this point is to do what everyone else seems to do and
             // ignore the reported namespaceUri completely.
-            startElement(xml->name().toString(), xml->attributes());
+            if (!startElement(xml->name().toString(), xml->attributes())) {
+                delete m_doc;
+                m_doc = 0;
+                return;
+            }
             break;
         case QXmlStreamReader::EndElement:
             endElement(xml->name());
@@ -3569,6 +3573,9 @@ bool QSvgHandler::startElement(const QString &localName,
                                           "Valid values are \"preserve\" and \"default\".").arg(xmlSpace.toString());
         m_whitespaceMode.push(QSvgText::Default);
     }
+
+    if (!m_doc && localName != QLatin1String("svg"))
+        return false;
 
     if (FactoryMethod method = findGroupFactory(localName)) {
         //group
