@@ -383,9 +383,7 @@ unsigned initializeMaximumHTTPConnectionCountPerHost()
 {
     // This is used by the loader to control the number of issued parallel load requests. 
     // Four seems to be a common default in HTTP frameworks.
-    //return 4;
-    //return 6*(1+3);
-    return 6+2;
+    return 4;
 }
 #endif
 
