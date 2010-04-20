@@ -68,6 +68,8 @@
 #include "private/qdeclarativetransitionmanager_p_p.h"
 #include "private/qdeclarativetransition_p.h"
 #include "qdeclarativeview.h"
+#include "qdeclarativeinfo.h"
+#include "private/qdeclarativetypenotavailable_p.h"
 #ifndef QT_NO_XMLPATTERNS
 #include "private/qdeclarativexmllistmodel_p.h"
 #endif
@@ -103,7 +105,12 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterType<QDeclarativeTimer>("Qt",4,6,"Timer");
     qmlRegisterType<QDeclarativeTransition>("Qt",4,6,"Transition");
     qmlRegisterType<QDeclarativeVector3dAnimation>("Qt",4,6,"Vector3dAnimation");
-#ifndef QT_NO_XMLPATTERNS
+#ifdef QT_NO_XMLPATTERNS
+    qmlRegisterTypeNotAvailable("Qt",4,6,"XmlListModel",
+        qApp->translate("QDeclarativeXmlListModel","Qt was built without support for xmlpatterns"));
+    qmlRegisterTypeNotAvailable("Qt",4,6,"XmlRole",
+        qApp->translate("QDeclarativeXmlListModel","Qt was built without support for xmlpatterns"));
+#else
     qmlRegisterType<QDeclarativeXmlListModel>("Qt",4,6,"XmlListModel");
     qmlRegisterType<QDeclarativeXmlListModelRole>("Qt",4,6,"XmlRole");
 #endif
@@ -112,12 +119,11 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterType<QDeclarativeStateOperation>();
     qmlRegisterType<QDeclarativeAnchorSet>();
 
-    qmlRegisterUncreatableType<QDeclarativeAbstractAnimation>("Qt",4,6,"Animation");
+    qmlRegisterUncreatableType<QDeclarativeAbstractAnimation>("Qt",4,6,"Animation",QDeclarativeAbstractAnimation::tr("Animation is an abstract class"));
 
-    qmlRegisterCustomType<QDeclarativeListModel>("Qt", 4,6, "ListModel", "QDeclarativeListModel",
-                                                 new QDeclarativeListModelParser);
-    qmlRegisterCustomType<QDeclarativePropertyChanges>("Qt", 4, 6, "PropertyChanges", "QDeclarativePropertyChanges",
-                                                       new QDeclarativePropertyChangesParser);
-    qmlRegisterCustomType<QDeclarativeConnections>("Qt", 4, 6, "Connections", "QDeclarativeConnections",
-                                                   new QDeclarativeConnectionsParser);
+    qmlRegisterCustomType<QDeclarativeListModel>("Qt", 4,6, "ListModel", new QDeclarativeListModelParser);
+    qmlRegisterCustomType<QDeclarativePropertyChanges>("Qt", 4, 6, "PropertyChanges", new QDeclarativePropertyChangesParser);
+    qmlRegisterCustomType<QDeclarativeConnections>("Qt", 4, 6, "Connections", new QDeclarativeConnectionsParser);
 }
+
+#include "qdeclarativeutilmodule.moc"

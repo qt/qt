@@ -330,6 +330,7 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("missingValueTypeProperty") << "missingValueTypeProperty.qml" << "missingValueTypeProperty.errors.txt" << false;
     QTest::newRow("objectValueTypeProperty") << "objectValueTypeProperty.qml" << "objectValueTypeProperty.errors.txt" << false;
     QTest::newRow("enumTypes") << "enumTypes.qml" << "enumTypes.errors.txt" << false;
+    QTest::newRow("noCreation") << "noCreation.qml" << "noCreation.errors.txt" << false;
     QTest::newRow("destroyedSignal") << "destroyedSignal.qml" << "destroyedSignal.errors.txt" << false;
 }
 

@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,27 +38,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "testtypes.h"
 
-void registerTypes()
+#include "qdeclarativetypenotavailable_p.h"
+
+int qmlRegisterTypeNotAvailable(const char *uri, int versionMajor, int versionMinor, const char *qmlName, const QString& message)
 {
-    qmlRegisterInterface<MyInterface>("MyInterface");
-    qmlRegisterType<MyQmlObject>("Test",1,0,"MyQmlObject");
-    qmlRegisterType<MyTypeObject>("Test",1,0,"MyTypeObject");
-    qmlRegisterType<MyContainer>("Test",1,0,"MyContainer");
-    qmlRegisterType<MyPropertyValueSource>("Test",1,0,"MyPropertyValueSource");
-    qmlRegisterType<MyDotPropertyObject>("Test",1,0,"MyDotPropertyObject");
-    qmlRegisterType<MyNamespace::MyNamespacedType>("Test",1,0,"MyNamespacedType");
-    qmlRegisterType<MyNamespace::MySecondNamespacedType>("Test",1,0,"MySecondNamespacedType");
-    qmlRegisterType<MyGroupedObject>();
-
-    qmlRegisterCustomType<MyCustomParserType>("Test", 1, 0, "MyCustomParserType", new MyCustomParserTypeParser);
+    return qmlRegisterUncreatableType<QDeclarativeTypeNotAvailable>(uri,versionMajor,versionMinor,qmlName,message);
 }
 
-QVariant myCustomVariantTypeConverter(const QString &data)
-{
-    MyCustomVariantType rv;
-    rv.a = data.toInt();
-    return QVariant::fromValue(rv);
-}
-
+QDeclarativeTypeNotAvailable::QDeclarativeTypeNotAvailable() { }

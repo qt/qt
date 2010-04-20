@@ -134,6 +134,7 @@ public:
 
     int m_allocationSize;
     void (*m_newFunc)(void *);
+    QString m_noCreationReason;
 
     const QMetaObject *m_baseMetaObject;
     QDeclarativeAttachedPropertiesFunc m_attachedPropertiesFunc;
@@ -186,6 +187,7 @@ QDeclarativeType::QDeclarativeType(int index, const QDeclarativePrivate::Registe
     d->m_listId = type.listId;
     d->m_allocationSize = type.objectSize;
     d->m_newFunc = type.create;
+    d->m_noCreationReason = type.noCreationReason;
     d->m_baseMetaObject = type.metaObject;
     d->m_attachedPropertiesFunc = type.attachedPropertiesFunction;
     d->m_attachedPropertiesType = type.attachedPropertiesMetaObject;
@@ -387,6 +389,11 @@ QDeclarativeCustomParser *QDeclarativeType::customParser() const
 QDeclarativeType::CreateFunc QDeclarativeType::createFunction() const
 {
     return d->m_newFunc;
+}
+
+QString QDeclarativeType::noCreationReason() const
+{
+    return d->m_noCreationReason;
 }
 
 int QDeclarativeType::createSize() const

@@ -59,6 +59,8 @@ int qmlRegisterValueTypeEnums(const char *qmlName)
 
         qRegisterMetaType<T *>(pointerName.constData()), 0, 0, 0,
 
+        QString(),
+
         "Qt", 4, 6, qmlName, &T::staticMetaObject,
 
         0, 0,
