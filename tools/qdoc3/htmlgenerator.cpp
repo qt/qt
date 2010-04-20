@@ -414,9 +414,7 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     generateIndex(fileBase, projectUrl, projectDescription);
     generatePageIndex(outputDir() + "/" + fileBase + ".pageindex", marker);
 
-    //qDebug() << "start helpProjectWriter->generate(myTree)";
     helpProjectWriter->generate(myTree);
-    //qDebug() << "end helpProjectWriter->generate(myTree)";
 }
 
 void HtmlGenerator::startText(const Node * /* relative */,
@@ -1986,10 +1984,12 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
         }
         int numAtoms;
         Text headingText = Text::sectionHeading(atom);
+        QString s = headingText.toString();
         out() << "<li>";
         out() << "<a href=\""
               << "#"
-              << Doc::canonicalTitle(headingText.toString())
+            //<< registerRef(s)
+              << Doc::canonicalTitle(s)
               << "\">";
         generateAtomList(headingText.firstAtom(), node, marker, true, numAtoms);
         out() << "</a></li>\n";
