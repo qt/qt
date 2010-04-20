@@ -1063,6 +1063,9 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         return;
 
     if (isWindow()) {
+        createWinId();
+        Q_ASSERT(testAttribute(Qt::WA_WState_Created));
+
         const bool wasResized = testAttribute(Qt::WA_Resized);
         const bool wasMoved = testAttribute(Qt::WA_Moved);
 
@@ -1100,8 +1103,6 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         }
 #endif // Q_WS_S60
 
-        createWinId();
-        Q_ASSERT(testAttribute(Qt::WA_WState_Created));
         // Ensure the initial size is valid, since we store it as normalGeometry below.
         if (!wasResized && !isVisible())
             adjustSize();
