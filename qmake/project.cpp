@@ -220,6 +220,11 @@ static QString varMap(const QString &x)
         ret = "QMAKE_FRAMEWORKPATH";
     else if(ret == "QMAKE_FRAMEWORKDIR_FLAGS")
         ret = "QMAKE_FRAMEWORKPATH_FLAGS";
+    else
+        return ret;
+    warn_msg(WarnDeprecated, "%s:%d: Variable %s is deprecated; use %s instead.",
+             parser.file.toLatin1().constData(), parser.line_no,
+             x.toLatin1().constData(), ret.toLatin1().constData());
     return ret;
 }
 
