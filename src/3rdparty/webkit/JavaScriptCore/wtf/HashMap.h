@@ -88,9 +88,9 @@ namespace WTF {
         // must have the following function members:
         //   static unsigned hash(const T&);
         //   static bool equal(const ValueType&, const T&);
-        template<typename T, typename HashTranslator> iterator find(const T&);
-        template<typename T, typename HashTranslator> const_iterator find(const T&) const;
-        template<typename T, typename HashTranslator> bool contains(const T&) const;
+        template<typename TYPE, typename HashTranslator> iterator find(const TYPE&);
+        template<typename TYPE, typename HashTranslator> const_iterator find(const TYPE&) const;
+        template<typename TYPE, typename HashTranslator> bool contains(const TYPE&) const;
 
         // An alternate version of add() that finds the object by hashing and comparing
         // with some other type, to avoid the cost of type conversion if the object is already
@@ -98,7 +98,7 @@ namespace WTF {
         //   static unsigned hash(const T&);
         //   static bool equal(const ValueType&, const T&);
         //   static translate(ValueType&, const T&, unsigned hashCode);
-        template<typename T, typename HashTranslator> pair<iterator, bool> add(const T&, const MappedType&);
+        template<typename TYPE, typename HashTranslator> pair<iterator, bool> add(const TYPE&, const MappedType&);
 
         void checkConsistency() const;
 
