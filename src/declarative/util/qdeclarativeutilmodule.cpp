@@ -125,5 +125,3 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterCustomType<QDeclarativePropertyChanges>("Qt", 4, 6, "PropertyChanges", new QDeclarativePropertyChangesParser);
     qmlRegisterCustomType<QDeclarativeConnections>("Qt", 4, 6, "Connections", new QDeclarativeConnectionsParser);
 }
-
-#include "qdeclarativeutilmodule.moc"
