@@ -39,10 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-#include <QWidget>
-#include <QDialog>
-#include <QPushButton>
+#include <QtGui>
 #include <QtTest/QtTest>
 
 #include "qnativeevents.h"
@@ -65,8 +62,10 @@ private slots:
     void testMouseDragOutside();
     void testMouseDragToNonClientArea();
     void testDragWindow();
-    void testMouseEnter();
     void testChildDialogInFrontOfModalParent();
+    void testMouseEnter();
+    void testMenuBarWorksWithoutWindows();
+    void testMenuBarWorksForModalDialog();
 };
 
 void tst_MacNativeEvents::testMouseMoveLocation()
@@ -305,6 +304,64 @@ void tst_MacNativeEvents::testChildDialogInFrontOfModalParent()
     native.play();
     QTest::qWait(100);
     QVERIFY(!child.isVisible());
+}
+
+void tst_MacNativeEvents::testMenuBarWorksWithoutWindows()
+{
+    // Test that a global menu bar is enabled even
+    // when there is no window on screen (QTBUG-9209)
+    QEventLoop loop;
+	QMenuBar mb;
+	QMenu *fileMenu = mb.addMenu("Dummy");
+	fileMenu->addAction("Dummy", &loop, SLOT(quit()));
+    QPoint inside1(250, 10);
+    QPoint inside2 = inside1 + QPoint(0, 30);
+
+    // Post a click to press the menu item:
+    NativeEventList native;
+    native.append(new QNativeMouseButtonEvent(inside1, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(inside1, Qt::LeftButton, 0, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(inside2, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(inside2, Qt::LeftButton, 0, Qt::NoModifier));
+
+    // Add a backup timer to end the test if we fail:
+    QTimer dontHang;
+    dontHang.setSingleShot(true);
+    connect(&dontHang, SIGNAL(timeout()), &loop, SLOT(quit()));
+    dontHang.start(2000);
+
+    native.play(NativeEventList::ReturnImmediately);
+    loop.exec();
+    QVERIFY2(dontHang.isActive(), "The item was not triggered!");
+}
+
+void tst_MacNativeEvents::testMenuBarWorksForModalDialog()
+{
+    // Test that a global menu bar is enabled even
+    // when there is no window on screen (QTBUG-9209)
+    QDialog dialog;
+	QMenuBar mb;
+	QMenu *fileMenu = mb.addMenu("Dummy");
+	fileMenu->addAction("Dummy", &dialog, SLOT(hide()));
+    QPoint inside1(250, 10);
+    QPoint inside2 = inside1 + QPoint(0, 30);
+
+    // Post a click to press the menu item:
+    NativeEventList native;
+    native.append(new QNativeMouseButtonEvent(inside1, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(inside1, Qt::LeftButton, 0, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(inside2, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(inside2, Qt::LeftButton, 0, Qt::NoModifier));
+
+    // Add a backup timer to end the test if we fail:
+    QTimer dontHang;
+    dontHang.setSingleShot(true);
+    connect(&dontHang, SIGNAL(timeout()), &dialog, SLOT(hide()));
+    dontHang.start(2000);
+
+    native.play(NativeEventList::ReturnImmediately);
+    dialog.exec();
+    QVERIFY2(dontHang.isActive(), "The item was not triggered!");
 }
 
 #include "tst_macnativeevents.moc"
