@@ -72,7 +72,7 @@ A non-exhaustive list of the ways you could shoot yourself in the foot is:
 \list
     \i Using \c import to import QML or JavaScript you do not control. BAD
     \i Using \l Loader to import QML you do not control. BAD
-    \i Using \l{XMLHttpRequest()}{XMLHttpRequest} to load data you do not control and executing it. BAD
+    \i Using \l{XMLHttpRequest}{XMLHttpRequest} to load data you do not control and executing it. BAD
 \endlist
 
 However, the above does not mean that you have no use for the network transparency of QML.
@@ -81,7 +81,7 @@ There are many good and useful things you \e can do:
 \list
     \i Create \l Image elements with source URLs of any online images. GOOD
     \i Use XmlListModel to present online content. GOOD
-    \i Use \l{XMLHttpRequest()}{XMLHttpRequest} to interact with online services. GOOD
+    \i Use \l{XMLHttpRequest}{XMLHttpRequest} to interact with online services. GOOD
 \endlist
 
 The only reason this page is necessary at all is that JavaScript, when run in a \e{web browser},

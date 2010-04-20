@@ -208,6 +208,12 @@ QDeclarativeContext::~QDeclarativeContext()
         d->data->destroy();
 }
 
+/*!
+    Returns whether the context is valid.
+
+    To be valid, a context must have a engine, and it's contextObject(), if any, 
+    must not have been deleted.
+*/
 bool QDeclarativeContext::isValid() const
 {
     Q_D(const QDeclarativeContext);

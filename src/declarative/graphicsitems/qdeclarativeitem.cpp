@@ -275,17 +275,6 @@ QDeclarativeContents::QDeclarativeContents() : m_x(0), m_y(0), m_width(0), m_hei
 {
 }
 
-/*!
-    \qmlproperty real Item::childrenRect.x
-    \qmlproperty real Item::childrenRect.y
-    \qmlproperty real Item::childrenRect.width
-    \qmlproperty real Item::childrenRect.height
-
-    The childrenRect properties allow an item access to the geometry of its
-    children. This property is useful if you have an item that needs to be
-    sized to fit its children.
-*/
-
 QRectF QDeclarativeContents::rectF() const
 {
     return QRectF(m_x, m_y, m_width, m_height);
@@ -1455,6 +1444,18 @@ QDeclarativeItem *QDeclarativeItem::parentItem() const
 {
     return qobject_cast<QDeclarativeItem *>(QGraphicsObject::parentItem());
 }
+
+/*!
+    \qmlproperty real Item::childrenRect.x
+    \qmlproperty real Item::childrenRect.y
+    \qmlproperty real Item::childrenRect.width
+    \qmlproperty real Item::childrenRect.height
+
+    The childrenRect properties allow an item access to the geometry of its
+    children. This property is useful if you have an item that needs to be
+    sized to fit its children.
+*/
+
 
 /*!
     \qmlproperty list<Item> Item::children
