@@ -45,6 +45,7 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qlabel.h>
+#include <QtGui/qboxlayout.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -120,6 +121,7 @@ class tst_QTabWidget:public QObject {
     void clear();
     void keyboardNavigation();
     void paintEventCount();
+    void minimumSizeHint();
 
   private:
     int addPage();
@@ -621,6 +623,28 @@ void tst_QTabWidget::paintEventCount()
     QCOMPARE(tab2->count, 1);
 }
 
+void tst_QTabWidget::minimumSizeHint()
+{
+    QTabWidget tw;
+    QWidget *page = new QWidget;
+    QVBoxLayout *lay = new QVBoxLayout;
+
+    QLabel *label = new QLabel(QLatin1String("XXgypq lorem ipsum must be long, must be long. lorem ipsumMMMW"));
+    lay->addWidget(label);
+
+    page->setLayout(lay);
+
+    tw.addTab(page, QLatin1String("page1"));
+
+    tw.show();
+    QTest::qWaitForWindowShown(&tw);
+    tw.resize(tw.minimumSizeHint());
+
+    QSize minSize = label->minimumSizeHint();
+    QSize actSize = label->geometry().size();
+    QVERIFY(minSize.width() <= actSize.width());
+    QVERIFY(minSize.height() <= actSize.height());
+}
 
 QTEST_MAIN(tst_QTabWidget)
 #include "tst_qtabwidget.moc"
