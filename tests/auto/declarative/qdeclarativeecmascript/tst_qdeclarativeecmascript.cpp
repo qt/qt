@@ -90,6 +90,7 @@ private slots:
     void objectPropertiesTriggerReeval();
     void deferredProperties();
     void extensionObjects();
+    void overrideExtensionProperties();
     void attachedProperties();
     void enums();
     void valueTypeFunctions();
@@ -563,6 +564,16 @@ void tst_qdeclarativeecmascript::extensionObjects()
     QCOMPARE(nested->coreProperty(), 11);
     QCOMPARE(nested->baseProperty(), 92);
 
+}
+
+void tst_qdeclarativeecmascript::overrideExtensionProperties()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("extensionObjectsPropertyOverride.qml"));
+    OverrideDefaultPropertyObject *object =
+        qobject_cast<OverrideDefaultPropertyObject *>(component.create());
+    QVERIFY(object != 0);
+    QVERIFY(object->secondProperty() != 0);
+    QVERIFY(object->firstProperty() == 0);
 }
 
 void tst_qdeclarativeecmascript::attachedProperties()
