@@ -94,7 +94,7 @@
 */
 
 /*!
-  \fn int qmlRegisterTypeUncreatable(const char *uri, int versionMajor, int versionMinor, const char *qmlName, const QString& message)
+  \fn int qmlRegisterUncreatableType(const char *uri, int versionMajor, int versionMinor, const char *qmlName, const QString& message)
   \relates QDeclarativeEngine
 
   This template function registers the C++ type in the QML system with
@@ -143,7 +143,7 @@ fun.qml: Get back to work, slacker!
 
   Without this, a generic "Game is not a type" message would be given.
 
-  \sa qmlRegisterTypeUncreatable
+  \sa qmlRegisterUncreatableType
 */
 
 /*!
