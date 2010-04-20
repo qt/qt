@@ -769,6 +769,13 @@ inline bool QGraphicsItemPrivate::insertionOrder(QGraphicsItem *a, QGraphicsItem
 inline void QGraphicsItemPrivate::markParentDirty(bool updateBoundingRect)
 {
     QGraphicsItemPrivate *parentp = this;
+#ifndef QT_NO_GRAPHICSEFFECT
+    if (updateBoundingRect && parentp->graphicsEffect && !parentp->inSetPosHelper) {
+        parentp->notifyInvalidated = 1;
+        static_cast<QGraphicsItemEffectSourcePrivate *>(parentp->graphicsEffect->d_func()
+                                                        ->source->d_func())->invalidateCache();
+    }
+#endif
     while (parentp->parent) {
         parentp = parentp->parent->d_ptr.data();
         parentp->dirtyChildren = 1;
