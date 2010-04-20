@@ -132,11 +132,12 @@ bool AbstractHelpViewer::canOpenPage(const QString &url)
     return !mimeFromUrl(url).isEmpty();
 }
 
-QString AbstractHelpViewer::mimeFromUrl(const QString &url)
+QString AbstractHelpViewer::mimeFromUrl(const QUrl &url)
 {
     TRACE_OBJ
-    const int index = url.lastIndexOf(QLatin1Char('.'));
-    const QByteArray &ext = url.mid(index).toUtf8().toLower();
+    const QString &path = url.path();
+    const int index = path.lastIndexOf(QLatin1Char('.'));
+    const QByteArray &ext = path.mid(index).toUtf8().toLower();
 
     const ExtensionMap *e = extensionMap;
     while (e->extension) {
