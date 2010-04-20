@@ -90,9 +90,11 @@ public:
     virtual ~QDeclarativeActionEvent();
     virtual QString typeName() const;
 
-    virtual void execute();
+    enum Reason { ActualChange, FastForward };
+
+    virtual void execute(Reason reason = ActualChange);
     virtual bool isReversable();
-    virtual void reverse();
+    virtual void reverse(Reason reason = ActualChange);
     virtual void saveOriginals() {}
     virtual void copyOriginals(QDeclarativeActionEvent *) {}
 
