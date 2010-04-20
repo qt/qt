@@ -72,6 +72,7 @@ private slots:
 
     // specific protocol tests
     void ftpServer();
+    void ftpProxyServer();
     void imapServer();
     void httpServer();
     void httpsServer();
@@ -458,11 +459,11 @@ void tst_NetworkSelfTest::fileLineEndingTest()
     QVERIFY2(!lineEndingType.compare("LF"), QString("Reference file %1 has %2 as line ending - Git checkout issue !?!").arg(referenceName, lineEndingType).toLocal8Bit());
 }
 
-static QList<Chat> ftpChat()
+static QList<Chat> ftpChat(const QByteArray &userSuffix = QByteArray())
 {
     return QList<Chat>() << Chat::expect("220")
             << Chat::discardUntil("\r\n")
-            << Chat::send("USER anonymous\r\n")
+            << Chat::send("USER anonymous" + userSuffix + "\r\n")
             << Chat::expect("331")
             << Chat::discardUntil("\r\n")
             << Chat::send("PASS user@hostname\r\n")
@@ -477,6 +478,11 @@ static QList<Chat> ftpChat()
 void tst_NetworkSelfTest::ftpServer()
 {
     netChat(21, ftpChat());
+}
+
+void tst_NetworkSelfTest::ftpProxyServer()
+{
+    netChat(2121, ftpChat("@" + QtNetworkSettings::serverName().toLatin1()));
 }
 
 void tst_NetworkSelfTest::imapServer()
