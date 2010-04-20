@@ -52,7 +52,7 @@
 #ifdef Q_OS_SYMBIAN
 #define SRCDIR "c:/data/qsharedmemorytemp/"
 #define LACKEYDIR SRCDIR "lackey"
-#elif Q_OS_WINCE
+#elif defined(Q_OS_WINCE)
 #define LACKEYDIR SRCDIR "lackey"
 #else
 #define LACKEYDIR SRCDIR "../lackey"
