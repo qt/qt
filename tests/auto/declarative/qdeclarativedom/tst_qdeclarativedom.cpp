@@ -1303,7 +1303,8 @@ void tst_qdeclarativedom::position()
     QCOMPARE(child2Value.length(), 6);
 
     // All QDeclarativeDomList
-    qWarning("QDeclarativeListValue position test required");
+    QCOMPARE(childrenList.position(), 189);
+    QCOMPARE(childrenList.length(), 18);
 }
 
 QTEST_MAIN(tst_qdeclarativedom)
