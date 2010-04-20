@@ -2,7 +2,7 @@ import People 1.0
 
 // ![0]
 BirthdayParty {
-    speaker: HappyBirthday { name: "Bob Jones" }
+    HappyBirthday on speaker { name: "Bob Jones" }
 // ![0]
 
     onPartyStarted: console.log("This party started rockin' at " + time);

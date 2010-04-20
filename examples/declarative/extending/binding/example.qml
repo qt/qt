@@ -4,7 +4,7 @@ import People 1.0
 BirthdayParty {
     id: theParty
 
-    speaker: HappyBirthday { name: theParty.celebrant.name }
+    HappyBirthday on speaker { name: theParty.celebrant.name }
 
     celebrant: Boy {
         name: "Bob Jones"
