@@ -77,6 +77,8 @@ private slots:
     void ftpProxyServer();
     void imapServer();
     void httpServer();
+    void httpServerFiles_data();
+    void httpServerFiles();
     void httpsServer();
     void httpProxy();
     void httpProxyBasicAuth();
@@ -162,7 +164,7 @@ static QString prettyByteArray(const QByteArray &array)
 
 static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout = 4000)
 {
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     forever {
         if (socket->bytesAvailable() >= minBytesAvailable)
@@ -637,6 +639,43 @@ void tst_NetworkSelfTest::httpServer()
             << Chat::expect("204 ")
             << Chat::DiscardUntilDisconnect
             );
+}
+
+void tst_NetworkSelfTest::httpServerFiles_data()
+{
+    QTest::addColumn<QString>("uri");
+    QTest::addColumn<int>("size");
+
+    QTest::newRow("fluke.gif") << "/qtest/fluke.gif" << -1;
+    QTest::newRow("bigfile") << "/qtest/bigfile" << 519240;
+    QTest::newRow("rfc3252.txt") << "/qtest/rfc3252.txt" << 25962;
+    QTest::newRow("protected/rfc3252.txt") << "/qtest/protected/rfc3252.txt" << 25962;
+    QTest::newRow("completelyEmptyQuery.xq") << "/qtest/qxmlquery/completelyEmptyQuery.xq" << -1;
+    QTest::newRow("notWellformedViaHttps.xml") << "/qtest/qxmlquery/notWellformedViaHttps.xml" << -1;
+    QTest::newRow("notWellformed.xml") << "/qtest/qxmlquery/notWellformed.xml" << -1;
+    QTest::newRow("viaHttp.xq") << "/qtest/qxmlquery/viaHttp.xq" << -1;
+    QTest::newRow("wellFormedViaHttps.xml") << "/qtest/qxmlquery/wellFormedViaHttps.xml" << -1;
+    QTest::newRow("wellFormed.xml") << "/qtest/qxmlquery/wellFormed.xml" << -1;
+}
+
+void tst_NetworkSelfTest::httpServerFiles()
+{
+    QFETCH(QString, uri);
+    QFETCH(int, size);
+
+    QList<Chat> chat;
+    chat << Chat::send("HEAD " + QUrl::toPercentEncoding(uri, "/") + " HTTP/1.0\r\n"
+                       "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                       "Connection: close\r\n"
+                       "Authorization: Basic cXNvY2tzdGVzdDpwYXNzd29yZA==\r\n"
+                       "\r\n")
+         << Chat::expect("HTTP/1.")
+         << Chat::skipBytes(1) // HTTP/1.0 or 1.1 reply
+         << Chat::expect(" 200 ");
+    if (size != -1)
+        chat << Chat::discardUntil("\r\nContent-Length: " + QByteArray::number(size) + "\r\n");
+    chat << Chat::DiscardUntilDisconnect;
+    netChat(80, chat);
 }
 
 void tst_NetworkSelfTest::httpsServer()
