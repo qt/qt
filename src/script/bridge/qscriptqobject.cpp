@@ -35,6 +35,7 @@
 
 #include "Error.h"
 #include "PrototypeFunction.h"
+#include "NativeFunctionWrapper.h"
 #include "PropertyNameArray.h"
 #include "JSFunction.h"
 #include "JSString.h"
@@ -1753,9 +1754,9 @@ QObjectPrototype::QObjectPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::St
                                     | QScriptEngine::ExcludeSuperClassProperties
                                     | QScriptEngine::ExcludeChildObjects));
 
-    putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/0, exec->propertyNames().toString, qobjectProtoFuncToString), JSC::DontEnum);
-    putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/1, JSC::Identifier(exec, "findChild"), qobjectProtoFuncFindChild), JSC::DontEnum);
-    putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/1, JSC::Identifier(exec, "findChildren"), qobjectProtoFuncFindChildren), JSC::DontEnum);
+    putDirectFunction(exec, new (exec) JSC::NativeFunctionWrapper(exec, prototypeFunctionStructure, /*length=*/0, exec->propertyNames().toString, qobjectProtoFuncToString), JSC::DontEnum);
+    putDirectFunction(exec, new (exec) JSC::NativeFunctionWrapper(exec, prototypeFunctionStructure, /*length=*/1, JSC::Identifier(exec, "findChild"), qobjectProtoFuncFindChild), JSC::DontEnum);
+    putDirectFunction(exec, new (exec) JSC::NativeFunctionWrapper(exec, prototypeFunctionStructure, /*length=*/1, JSC::Identifier(exec, "findChildren"), qobjectProtoFuncFindChildren), JSC::DontEnum);
     this->structure()->setHasGetterSetterProperties(true);
 }
 
@@ -2015,7 +2016,7 @@ QMetaObjectPrototype::QMetaObjectPrototype(
     JSC::Structure* prototypeFunctionStructure)
     : QMetaObjectWrapperObject(exec, StaticQtMetaObject::get(), /*ctor=*/JSC::JSValue(), structure)
 {
-    putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/0, JSC::Identifier(exec, "className"), qmetaobjectProtoFuncClassName), JSC::DontEnum);
+    putDirectFunction(exec, new (exec) JSC::NativeFunctionWrapper(exec, prototypeFunctionStructure, /*length=*/0, JSC::Identifier(exec, "className"), qmetaobjectProtoFuncClassName), JSC::DontEnum);
 }
 
 static const uint qt_meta_data_QObjectConnectionManager[] = {

@@ -285,10 +285,14 @@ int main(int argc, char **argv)
     }
     // Check wether the project is still in debug/release mode after reading
     // If .pro specifies to be one mode only, we need to accept this
-    if (project.isActiveConfig("debug"))
+    if (project.isActiveConfig("debug") && !project.isActiveConfig("release")) {
         TestConfiguration::testDebug = true;
-    else
+        debugOutput("ActiveConfig: debug only in .pro.", 1);
+    }
+    if (!project.isActiveConfig("debug") && project.isActiveConfig("release")) {
         TestConfiguration::testDebug = false;
+        debugOutput("ActiveConfig: release only in .pro.", 1);
+    }
 
     // determine what is the real mkspec to use if the default mkspec is being used
     if (Option::mkfile::qmakespec.endsWith("/default"))
