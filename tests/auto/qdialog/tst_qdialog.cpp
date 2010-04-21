@@ -447,7 +447,7 @@ void tst_QDialog::deleteInExec()
 }
 
 #ifndef QT_NO_EXCEPTIONS
-class QDialogTestException { };
+class QDialogTestException : public std::exception { };
 
 class ExceptionDialog : public QDialog
 {
@@ -471,11 +471,17 @@ void tst_QDialog::throwInExec()
     try {
         ExceptionDialog dialog;
         QMetaObject::invokeMethod(&dialog, "throwException", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(&dialog, "reject", Qt::QueuedConnection);
         (void) dialog.exec();
     } catch(...) {
         ++caughtExceptions;
     }
+#ifdef Q_OS_SYMBIAN
+    //on symbian, the event loop absorbs exceptions
+    QCOMPARE(caughtExceptions, 0);
+#else
     QCOMPARE(caughtExceptions, 1);
+#endif
 }
 #else
 void tst_QDialog::throwInExec()
