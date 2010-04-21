@@ -489,7 +489,11 @@ void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
 
     int i = indexOf(socket);
 
-    if (! (defaultPipelineLength - channels[i].alreadyPipelinedRequests.length() >= 2)) {
+    // return fast if there was no reply right now processed
+    if (channels[i].reply == 0)
+        return;
+
+    if (! (defaultPipelineLength - channels[i].alreadyPipelinedRequests.length() >= defaultRePipelineLength)) {
         return;
     }
 

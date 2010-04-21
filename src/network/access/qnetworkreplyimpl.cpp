@@ -580,8 +580,13 @@ QNetworkReplyImpl::QNetworkReplyImpl(QObject *parent)
 QNetworkReplyImpl::~QNetworkReplyImpl()
 {
     Q_D(QNetworkReplyImpl);
+
+    // This code removes the data from the cache if it was prematurely aborted.
+    // See QNetworkReplyImplPrivate::completeCacheSave(), we disable caching there after the cache
+    // save had been properly finished. So if it is still enabled it means we got deleted/aborted.
     if (d->isCachingEnabled())
         d->networkCache()->remove(url());
+
     if (d->outgoingDataBuffer)
         delete d->outgoingDataBuffer;
 }
