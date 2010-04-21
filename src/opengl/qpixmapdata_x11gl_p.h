@@ -79,7 +79,6 @@ public:
     // Re-implemented from QGLPaintDevice
     QPaintEngine* paintEngine() const; // Also re-implements QX11PixmapData::paintEngine
     void beginPaint();
-    void endPaint();
     QGLContext* context() const;
     QSize size() const;
 

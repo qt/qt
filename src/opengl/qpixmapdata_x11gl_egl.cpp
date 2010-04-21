@@ -336,12 +336,6 @@ void QX11GLPixmapData::beginPaint()
     QGLPaintDevice::beginPaint();
 }
 
-void QX11GLPixmapData::endPaint()
-{
-    glFinish();
-    QGLPaintDevice::endPaint();
-}
-
 QGLContext* QX11GLPixmapData::context() const
 {
     return ctx;
