@@ -239,6 +239,7 @@ private slots:
     void QTBUG_4151_clipAndIgnore_data();
     void QTBUG_4151_clipAndIgnore();
     void QTBUG_5859_exposedRect();
+    void QTBUG_7438_cursor();
 };
 
 void tst_QGraphicsView::initTestCase()
@@ -4083,6 +4084,33 @@ void tst_QGraphicsView::QTBUG_5859_exposedRect()
     QApplication::processEvents();
 
     QCOMPARE(item.lastExposedRect, scene.lastBackgroundExposedRect);
+}
+
+void tst_QGraphicsView::QTBUG_7438_cursor()
+{
+#ifndef QT_NO_CURSOR
+#if defined(Q_OS_WINCE)
+    QSKIP("Qt/CE does not have regular cursor support", SkipAll);
+#endif
+    QGraphicsScene scene;
+    QGraphicsItem *item = scene.addRect(QRectF(-10, -10, 20, 20));
+    item->setFlag(QGraphicsItem::ItemIsMovable);
+
+    QGraphicsView view(&scene);
+    view.setFixedSize(400, 400);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QCOMPARE(view.viewport()->cursor().shape(), QCursor().shape());
+    view.viewport()->setCursor(Qt::PointingHandCursor);
+    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    sendMouseMove(view.viewport(), view.mapFromScene(0, 0));
+    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    sendMousePress(view.viewport(), view.mapFromScene(0, 0));
+    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    sendMouseRelease(view.viewport(), view.mapFromScene(0, 0));
+    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+#endif
 }
 
 QTEST_MAIN(tst_QGraphicsView)
