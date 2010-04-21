@@ -20,7 +20,7 @@ Rectangle {
 
             color: "transparent"
             border.width: 5
-            //border.color: myScope.wantsFocus?"blue":"black"
+            border.color: myScope.wantsFocus?"blue":"black"
 
             Rectangle {
                 x: 10; y: 10

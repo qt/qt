@@ -26,10 +26,7 @@ Component {
 
             onClicked: {
                 ListView.view.currentIndex = index
-                container.focus = true
-                ListView.view.focus = true
-                listViews.focus = true
-                mainView.focus = true
+                container.forceFocus()
             }
         }
 
