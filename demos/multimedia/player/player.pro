@@ -1,8 +1,5 @@
-TEMPLATE = app
-TARGET = player
 
-QT += gui multimedia
-
+QT += multimedia
 
 HEADERS = \
     player.h \
@@ -18,5 +15,13 @@ SOURCES = \
     videowidget.cpp
 
 target.path = $$[QT_INSTALL_DEMOS]/multimedia/player
-INSTALLS += target
+
+sources.files = $$SOURCES $$HEADERS
+sources.path = $$[QT_INSTALL_DEMOS]/multimedia/player player.pro
+
+INSTALLS += target sources
+
+symbian {
+    TARGET.UID3 = 0xA000E3FA
+}
 
