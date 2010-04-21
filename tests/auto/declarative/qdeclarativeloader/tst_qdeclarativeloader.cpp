@@ -538,9 +538,8 @@ void tst_QDeclarativeLoader::nonItem()
 void tst_QDeclarativeLoader::vmeErrors()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("vmeErrors.qml"));
-    //ignore message for now
-    //QString err = QUrl::fromLocalFile(SRCDIR "/data/VmeError.qml:6: Cannot assign object type QObject with no default method\n        onSomethingHappened: QtObject {}) ");
-    //QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
+    QString err = QUrl::fromLocalFile(SRCDIR).toString() + "/data/VmeError.qml:6: Cannot assign object type QObject with no default method";
+    QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader);
     QVERIFY(loader->item() == 0);

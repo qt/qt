@@ -50,7 +50,8 @@ class LoggerWidget : public QPlainTextEdit {
 Q_OBJECT
 public:
     LoggerWidget(QWidget *parent=0);
-    void append(QtMsgType type, const char *msg);
+public slots:
+    void append(const QString &msg);
 protected:
     void closeEvent(QCloseEvent *event);
 private:

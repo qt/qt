@@ -361,8 +361,10 @@ void QDeclarativeAbstractBinding::removeFromObject()
 
 void QDeclarativeAbstractBinding::clear()
 {
-    if (m_mePtr)
+    if (m_mePtr) {
         *m_mePtr = 0;
+        m_mePtr = 0;
+    }
 }
 
 QString QDeclarativeAbstractBinding::expression() const
