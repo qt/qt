@@ -3,7 +3,12 @@ import Qt 4.7
 XmlListModel {
     property string tags : ""
 
-    source: "http://api.flickr.com/services/feeds/photos_public.gne?"+(tags ? "tags="+tags+"&" : "")+"format=rss2"
+    function commasep(x)
+    {
+        return x.replace(' ',',');
+    }
+
+    source: "http://api.flickr.com/services/feeds/photos_public.gne?"+(tags ? "tags="+commasep(tags)+"&" : "")+"format=rss2"
     query: "/rss/channel/item"
     namespaceDeclarations: "declare namespace media=\"http://search.yahoo.com/mrss/\";"
 

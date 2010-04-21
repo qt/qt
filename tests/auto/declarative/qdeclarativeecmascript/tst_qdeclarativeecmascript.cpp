@@ -90,6 +90,7 @@ private slots:
     void objectPropertiesTriggerReeval();
     void deferredProperties();
     void extensionObjects();
+    void overrideExtensionProperties();
     void attachedProperties();
     void enums();
     void valueTypeFunctions();
@@ -140,6 +141,7 @@ private slots:
     void variantsAssignedUndefined();
     void qtbug_9792();
     void noSpuriousWarningsAtShutdown();
+    void canAssignNullToQObject();
 
     void callQtInvokables();
 private:
@@ -563,6 +565,16 @@ void tst_qdeclarativeecmascript::extensionObjects()
     QCOMPARE(nested->coreProperty(), 11);
     QCOMPARE(nested->baseProperty(), 92);
 
+}
+
+void tst_qdeclarativeecmascript::overrideExtensionProperties()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("extensionObjectsPropertyOverride.qml"));
+    OverrideDefaultPropertyObject *object =
+        qobject_cast<OverrideDefaultPropertyObject *>(component.create());
+    QVERIFY(object != 0);
+    QVERIFY(object->secondProperty() != 0);
+    QVERIFY(object->firstProperty() == 0);
 }
 
 void tst_qdeclarativeecmascript::attachedProperties()
@@ -2176,6 +2188,35 @@ void tst_qdeclarativeecmascript::noSpuriousWarningsAtShutdown()
     qInstallMsgHandler(old);
 
     QCOMPARE(transientErrorsMsgCount, 0);
+    }
+}
+
+void tst_qdeclarativeecmascript::canAssignNullToQObject()
+{
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("canAssignNullToQObject.1.qml"));
+
+    MyQmlObject *o = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(o != 0);
+
+    QVERIFY(o->objectProperty() != 0);
+
+    o->setProperty("runTest", true);
+
+    QVERIFY(o->objectProperty() == 0);
+
+    delete o;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("canAssignNullToQObject.2.qml"));
+
+    MyQmlObject *o = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(o != 0);
+
+    QVERIFY(o->objectProperty() == 0);
+
+    delete o;
     }
 }
 

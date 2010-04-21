@@ -52,6 +52,7 @@ class tst_QDeclarativeMouseArea: public QObject
 private slots:
     void dragProperties();
     void resetDrag();
+    void dragging();
     void updateMouseAreaPosOnClick();
     void updateMouseAreaPosOnResize();
     void noOnClickedWithPressAndHold();
@@ -162,6 +163,61 @@ void tst_QDeclarativeMouseArea::resetDrag()
     delete canvas;
 }
 
+
+void tst_QDeclarativeMouseArea::dragging()
+{
+    QDeclarativeView *canvas = createView();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/dragging.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeMouseArea *mouseRegion = canvas->rootObject()->findChild<QDeclarativeMouseArea*>("mouseregion");
+    QDeclarativeDrag *drag = mouseRegion->drag();
+    QVERIFY(mouseRegion != 0);
+    QVERIFY(drag != 0);
+
+    // target
+    QDeclarativeItem *blackRect = canvas->rootObject()->findChild<QDeclarativeItem*>("blackrect");
+    QVERIFY(blackRect != 0);
+    QVERIFY(blackRect == drag->target());
+
+    QVERIFY(!drag->active());
+
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
+    pressEvent.setScenePos(QPointF(100, 100));
+    pressEvent.setButton(Qt::LeftButton);
+    pressEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &pressEvent);
+
+    QVERIFY(!drag->active());
+    QCOMPARE(blackRect->x(), 50.0);
+    QCOMPARE(blackRect->y(), 50.0);
+
+    QGraphicsSceneMouseEvent moveEvent(QEvent::GraphicsSceneMouseMove);
+    moveEvent.setScenePos(QPointF(110, 110));
+    moveEvent.setButton(Qt::LeftButton);
+    moveEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &moveEvent);
+
+    QVERIFY(drag->active());
+    QCOMPARE(blackRect->x(), 60.0);
+    QCOMPARE(blackRect->y(), 60.0);
+
+    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
+    releaseEvent.setScenePos(QPointF(110, 110));
+    releaseEvent.setButton(Qt::LeftButton);
+    releaseEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &releaseEvent);
+
+    QVERIFY(!drag->active());
+    QCOMPARE(blackRect->x(), 60.0);
+    QCOMPARE(blackRect->y(), 60.0);
+
+    delete canvas;
+}
 
 QDeclarativeView *tst_QDeclarativeMouseArea::createView()
 {

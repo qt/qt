@@ -200,6 +200,7 @@ class MyTypeObject : public QObject
     Q_PROPERTY(QDeclarativeComponent *componentProperty READ componentProperty WRITE setComponentProperty)
     Q_PROPERTY(MyFlags flagProperty READ flagProperty WRITE setFlagProperty)
     Q_PROPERTY(MyEnum enumProperty READ enumProperty WRITE setEnumProperty)
+    Q_PROPERTY(MyEnum readOnlyEnumProperty READ readOnlyEnumProperty)
     Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty)
     Q_PROPERTY(uint uintProperty READ uintProperty WRITE setUintProperty)
     Q_PROPERTY(int intProperty READ intProperty WRITE setIntProperty)
@@ -271,6 +272,10 @@ public:
     }
     void setEnumProperty(MyEnum v) {
         enumPropertyValue = v;
+    }
+
+    MyEnum readOnlyEnumProperty() const {
+        return EnumVal1;
     }
 
     QString stringPropertyValue;
@@ -467,16 +472,19 @@ class MyContainer : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QDeclarativeListProperty<QObject> children READ children)
+    Q_PROPERTY(QDeclarativeListProperty<MyContainer> containerChildren READ containerChildren)
     Q_PROPERTY(QDeclarativeListProperty<MyInterface> qlistInterfaces READ qlistInterfaces)
     Q_CLASSINFO("DefaultProperty", "children")
 public:
     MyContainer() {}
 
     QDeclarativeListProperty<QObject> children() { return QDeclarativeListProperty<QObject>(this, m_children); }
+    QDeclarativeListProperty<MyContainer> containerChildren() { return QDeclarativeListProperty<MyContainer>(this, m_containerChildren); }
     QList<QObject *> *getChildren() { return &m_children; }
     QDeclarativeListProperty<MyInterface> qlistInterfaces() { return QDeclarativeListProperty<MyInterface>(this, m_interfaces); }
     QList<MyInterface *> *getQListInterfaces() { return &m_interfaces; }
 
+    QList<MyContainer*> m_containerChildren;
     QList<QObject*> m_children;
     QList<MyInterface *> m_interfaces;
 };

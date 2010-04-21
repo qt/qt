@@ -85,10 +85,6 @@ public:
     bool lazyDoneCurrent();
     bool swapBuffers(EGLSurface surface);
 
-    void waitNative();
-    void waitClient();
-
-    bool configAttrib(int name, EGLint *value) const;
     int  configAttrib(int name) const;
 
     EGLContext context() const { return ctx; }
@@ -98,8 +94,6 @@ public:
 
     EGLConfig config() const { return cfg; }
     void setConfig(EGLConfig config) { cfg = config; }
-
-    QEglProperties configProperties() const;
 
 private:
     QEgl::API apiType;

@@ -43,9 +43,7 @@ FocusScope {
 
                     onClicked: {
                         GridView.view.currentIndex = index
-                        container.focus = true
-                        gridMenu.focus = true
-                        mainView.focus = true
+                        container.forceFocus()
                     }
                 }
 

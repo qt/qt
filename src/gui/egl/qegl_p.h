@@ -182,10 +182,7 @@ namespace QEgl {
 
     Q_GUI_EXPORT void dumpAllConfigs();
 
-    Q_GUI_EXPORT void clearError();
-    Q_GUI_EXPORT EGLint error();
-    Q_GUI_EXPORT QString errorString(EGLint code);
-    Q_GUI_EXPORT QString errorString();
+    Q_GUI_EXPORT QString errorString(EGLint code = eglGetError());
 
     Q_GUI_EXPORT QString extensions();
     Q_GUI_EXPORT bool hasExtension(const char* extensionName);

@@ -199,6 +199,10 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         configProps.setRenderableType(QEgl::OpenGL);
         qt_eglproperties_set_glformat(configProps, d->glFormat);
 
+        // Set buffer preserved for regular QWidgets, QGLWidgets are ok with either preserved or destroyed:
+        if ((devType == QInternal::Widget) && qobject_cast<QGLWidget*>(static_cast<QWidget*>(device())) == 0)
+            configProps.setValue(EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+
         if (!d->eglContext->chooseConfig(configProps, QEgl::BestPixelFormat)) {
             delete d->eglContext;
             d->eglContext = 0;

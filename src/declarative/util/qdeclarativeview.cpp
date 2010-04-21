@@ -599,6 +599,7 @@ void QDeclarativeView::timerEvent(QTimerEvent* e)
     }
 }
 
+/*! \reimp */
 bool QDeclarativeView::eventFilter(QObject *watched, QEvent *e)
 {
     if (watched == d->root && d->resizeMode == SizeViewToRootObject) {

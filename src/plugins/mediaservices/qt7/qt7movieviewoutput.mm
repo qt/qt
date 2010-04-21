@@ -48,6 +48,9 @@
 #include "qt7playersession.h"
 #include <QtCore/qdebug.h>
 
+#include <QuartzCore/CIFilter.h>
+#include <QuartzCore/CIVector.h>
+
 
 #define VIDEO_TRANSPARENT(m) -(void)m:(NSEvent *)e{[[self superview] m:e];}
 

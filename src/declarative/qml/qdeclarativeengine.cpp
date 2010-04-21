@@ -2053,7 +2053,8 @@ QStringList QDeclarativeEngine::pluginPathList() const
 
 /*!
   Sets the list of directories where the engine searches for
-  native plugins for imported modules (referenced in the \c qmldir file).
+  native plugins for imported modules (referenced in the \c qmldir file)
+  to \a paths.
 
   By default, the list contains only \c .,  i.e. the engine searches
   in the directory of the \c qmldir file itself.
@@ -2070,6 +2071,8 @@ void QDeclarativeEngine::setPluginPathList(const QStringList &paths)
 /*!
   Imports the plugin named \a filePath with the \a uri provided.
   Returns true if the plugin was successfully imported; otherwise returns false.
+
+  On failure and if non-null, *\a errorString will be set to a message describing the failure.
 
   The plugin has to be a Qt plugin which implements the QDeclarativeExtensionPlugin interface.
 */

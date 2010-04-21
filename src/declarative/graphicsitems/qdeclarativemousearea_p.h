@@ -61,6 +61,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeDrag : public QObject
     Q_PROPERTY(qreal maximumX READ xmax WRITE setXmax NOTIFY maximumXChanged)
     Q_PROPERTY(qreal minimumY READ ymin WRITE setYmin NOTIFY minimumYChanged)
     Q_PROPERTY(qreal maximumY READ ymax WRITE setYmax NOTIFY maximumYChanged)
+    Q_PROPERTY(bool active READ active NOTIFY activeChanged)
     //### consider drag and drop
 
 public:
@@ -84,6 +85,9 @@ public:
     qreal ymax() const;
     void setYmax(qreal);
 
+    bool active() const;
+    void setActive(bool);
+
 Q_SIGNALS:
     void targetChanged();
     void axisChanged();
@@ -91,6 +95,7 @@ Q_SIGNALS:
     void maximumXChanged();
     void minimumYChanged();
     void maximumYChanged();
+    void activeChanged();
 
 private:
     QGraphicsObject *_target;
@@ -99,6 +104,7 @@ private:
     qreal _xmax;
     qreal _ymin;
     qreal _ymax;
+    bool _active;
     Q_DISABLE_COPY(QDeclarativeDrag)
 };
 

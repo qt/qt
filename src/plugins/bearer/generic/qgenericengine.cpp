@@ -64,6 +64,8 @@
 #include <unistd.h>
 #endif
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_NETWORKINTERFACE
@@ -349,3 +351,4 @@ bool QGenericEngine::requiresPolling() const
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_BEARERMANAGEMENT

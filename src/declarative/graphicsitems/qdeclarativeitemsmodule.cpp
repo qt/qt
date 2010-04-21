@@ -82,7 +82,10 @@
 
 void QDeclarativeItemModule::defineModule()
 {
-#ifndef QT_NO_MOVIE
+#ifdef QT_NO_MOVIE
+    qmlRegisterTypeNotAvailable("Qt",4,6,"AnimatedImage",
+        qApp->translate("QDeclarativeAnimatedImage","Qt was built without support for QMovie"));
+#else
     qmlRegisterType<QDeclarativeAnimatedImage>("Qt",4,6,"AnimatedImage");
 #endif
     qmlRegisterType<QDeclarativeBorderImage>("Qt",4,6,"BorderImage");
@@ -141,17 +144,20 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QAction>();
     qmlRegisterType<QDeclarativePen>();
     qmlRegisterType<QDeclarativeFlickableVisibleArea>();
-#ifndef QT_NO_GRAPHICSEFFECT
+#ifdef QT_NO_GRAPHICSEFFECT
+    QString no_graphicseffect = qApp->translate("QGraphicsBlurEffect","Qt was built without support for graphicseffects");
+    qmlRegisterTypeNotAvailable("Qt",4,6,"Blur",no_graphicseffect);
+    qmlRegisterTypeNotAvailable("Qt",4,6,"Colorize",no_graphicseffect);
+    qmlRegisterTypeNotAvailable("Qt",4,6,"DropShadow",no_graphicseffect);
+    qmlRegisterTypeNotAvailable("Qt",4,6,"Opacity",no_graphicseffect);
+#else
     qmlRegisterType<QGraphicsEffect>();
     qmlRegisterType<QGraphicsBlurEffect>("Qt",4,6,"Blur");
     qmlRegisterType<QGraphicsColorizeEffect>("Qt",4,6,"Colorize");
     qmlRegisterType<QGraphicsDropShadowEffect>("Qt",4,6,"DropShadow");
     qmlRegisterType<QGraphicsOpacityEffect>("Qt",4,6,"Opacity");
 #endif
-#ifdef QT_WEBKIT_LIB
-    qmlRegisterType<QDeclarativeWebSettings>();
-#endif
 
-    qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("Qt",4,6,"KeyNavigation");
-    qmlRegisterUncreatableType<QDeclarativeKeysAttached>("Qt",4,6,"Keys");
+    qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("Qt",4,6,"KeyNavigation",QDeclarativeKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
+    qmlRegisterUncreatableType<QDeclarativeKeysAttached>("Qt",4,6,"Keys",QDeclarativeKeysAttached::tr("Keys is only available via attached properties"));
 }

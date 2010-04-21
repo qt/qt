@@ -56,9 +56,7 @@ class QDeclarativeInfoPrivate;
 class Q_DECLARATIVE_EXPORT QDeclarativeInfo : public QDebug
 {
 public:
-    QDeclarativeInfo(const QObject *);
-    QDeclarativeInfo(const QObject *, const QDeclarativeError &);
-    QDeclarativeInfo(const QObject *, const QList<QDeclarativeError> &);
+    QDeclarativeInfo(const QDeclarativeInfo &);
     ~QDeclarativeInfo();
 
     inline QDeclarativeInfo &operator<<(QChar t) { QDebug::operator<<(t); return *this; }
@@ -86,23 +84,17 @@ public:
     inline QDeclarativeInfo &operator<<(const QUrl &t) { static_cast<QDebug &>(*this) << t; return *this; }
 
 private:
+    friend QDeclarativeInfo qmlInfo(const QObject *me);
+    friend QDeclarativeInfo qmlInfo(const QObject *me, const QDeclarativeError &error);
+    friend QDeclarativeInfo qmlInfo(const QObject *me, const QList<QDeclarativeError> &errors);
+
+    QDeclarativeInfo(QDeclarativeInfoPrivate *);
     QDeclarativeInfoPrivate *d;
 };
 
-Q_DECLARATIVE_EXPORT inline QDeclarativeInfo qmlInfo(const QObject *me)
-{
-    return QDeclarativeInfo(me);
-}
-
-Q_DECLARATIVE_EXPORT inline QDeclarativeInfo qmlInfo(const QObject *me, const QDeclarativeError &error)
-{
-    return QDeclarativeInfo(me, error);
-}
-
-Q_DECLARATIVE_EXPORT inline QDeclarativeInfo qmlInfo(const QObject *me, const QList<QDeclarativeError> &errors)
-{
-    return QDeclarativeInfo(me, errors);
-}
+Q_DECLARATIVE_EXPORT QDeclarativeInfo qmlInfo(const QObject *me);
+Q_DECLARATIVE_EXPORT QDeclarativeInfo qmlInfo(const QObject *me, const QDeclarativeError &error);
+Q_DECLARATIVE_EXPORT QDeclarativeInfo qmlInfo(const QObject *me, const QList<QDeclarativeError> &errors);
 
 QT_END_NAMESPACE
 

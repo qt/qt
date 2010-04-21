@@ -134,6 +134,7 @@ public:
 
     int m_allocationSize;
     void (*m_newFunc)(void *);
+    QString m_noCreationReason;
 
     const QMetaObject *m_baseMetaObject;
     QDeclarativeAttachedPropertiesFunc m_attachedPropertiesFunc;
@@ -186,6 +187,7 @@ QDeclarativeType::QDeclarativeType(int index, const QDeclarativePrivate::Registe
     d->m_listId = type.listId;
     d->m_allocationSize = type.objectSize;
     d->m_newFunc = type.create;
+    d->m_noCreationReason = type.noCreationReason;
     d->m_baseMetaObject = type.metaObject;
     d->m_attachedPropertiesFunc = type.attachedPropertiesFunction;
     d->m_attachedPropertiesType = type.attachedPropertiesMetaObject;
@@ -221,6 +223,76 @@ bool QDeclarativeType::availableInVersion(int vmajor, int vminor) const
     return vmajor > d->m_version_maj || (vmajor == d->m_version_maj && vminor >= d->m_version_min);
 }
 
+static void clone(QMetaObjectBuilder &builder, const QMetaObject *mo, 
+                  const QMetaObject *ignoreStart, const QMetaObject *ignoreEnd)
+{
+    // Clone Q_CLASSINFO
+    for (int ii = mo->classInfoOffset(); ii < mo->classInfoCount(); ++ii) {
+        QMetaClassInfo info = mo->classInfo(ii);
+
+        int otherIndex = ignoreEnd->indexOfClassInfo(info.name());
+        if (otherIndex >= ignoreStart->classInfoOffset() + ignoreStart->classInfoCount()) {
+            // Skip 
+        } else {
+            builder.addClassInfo(info.name(), info.value());
+        }
+    }
+
+    // Clone Q_PROPERTY
+    for (int ii = mo->propertyOffset(); ii < mo->propertyCount(); ++ii) {
+        QMetaProperty property = mo->property(ii);
+
+        int otherIndex = ignoreEnd->indexOfProperty(property.name());
+        if (otherIndex >= ignoreStart->classInfoOffset() + ignoreStart->classInfoCount()) {
+            builder.addProperty(QByteArray("__qml_ignore__") + property.name(), QByteArray("void"));
+            // Skip 
+        } else {
+            builder.addProperty(property);
+        }
+    }
+
+    // Clone Q_METHODS
+    for (int ii = mo->methodOffset(); ii < mo->methodCount(); ++ii) {
+        QMetaMethod method = mo->method(ii);
+
+        // More complex - need to search name
+        QByteArray name = method.signature();
+        int parenIdx = name.indexOf('(');
+        if (parenIdx != -1) name = name.left(parenIdx);
+
+
+        bool found = false;
+
+        for (int ii = ignoreStart->methodOffset() + ignoreStart->methodCount(); 
+             !found && ii < ignoreEnd->methodOffset() + ignoreEnd->methodCount();
+             ++ii) {
+
+            QMetaMethod other = ignoreEnd->method(ii);
+            QByteArray othername = other.signature();
+            int parenIdx = othername.indexOf('(');
+            if (parenIdx != -1) othername = othername.left(parenIdx);
+
+            found = name == othername;
+        }
+
+        QMetaMethodBuilder m = builder.addMethod(method);
+        if (found) // SKIP
+            m.setAccess(QMetaMethod::Private);
+    }
+
+    // Clone Q_ENUMS
+    for (int ii = mo->enumeratorOffset(); ii < mo->enumeratorCount(); ++ii) {
+        QMetaEnum enumerator = mo->enumerator(ii);
+
+        int otherIndex = ignoreEnd->indexOfEnumerator(enumerator.name());
+        if (otherIndex >= ignoreStart->enumeratorOffset() + ignoreStart->enumeratorCount()) {
+            // Skip 
+        } else {
+            builder.addEnumerator(enumerator);
+        }
+    }
+}
+
 void QDeclarativeTypePrivate::init() const
 {
     if (m_isSetup) return;
@@ -245,8 +317,9 @@ void QDeclarativeTypePrivate::init() const
         QDeclarativeType *t = metaTypeData()->metaObjectToType.value(mo);
         if (t) {
             if (t->d->m_extFunc) {
-                QMetaObject *mmo = new QMetaObject;
-                *mmo = *t->d->m_extMetaObject;
+                QMetaObjectBuilder builder;
+                clone(builder, t->d->m_extMetaObject, t->d->m_baseMetaObject, m_baseMetaObject);
+                QMetaObject *mmo = builder.toMetaObject();
                 mmo->d.superdata = m_baseMetaObject;
                 if (!m_metaObjects.isEmpty())
                     m_metaObjects.last().metaObject->d.superdata = mmo;
@@ -316,6 +389,11 @@ QDeclarativeCustomParser *QDeclarativeType::customParser() const
 QDeclarativeType::CreateFunc QDeclarativeType::createFunction() const
 {
     return d->m_newFunc;
+}
+
+QString QDeclarativeType::noCreationReason() const
+{
+    return d->m_noCreationReason;
 }
 
 int QDeclarativeType::createSize() const

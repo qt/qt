@@ -60,6 +60,8 @@
 
 #include <QtCore/qdatetime.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QBearerEngineImpl;
@@ -116,18 +118,20 @@ private Q_SLOTS:
     void decrementTimeout();
 
 private:
-    bool opened;
-
     QBearerEngineImpl *engine;
-
-    QNetworkSession::SessionError lastError;
 
     quint64 startTime;
 
+    QNetworkSession::SessionError lastError;
+
     int sessionTimeout;
+
+    bool opened;
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKSESSION_IMPL_H
 

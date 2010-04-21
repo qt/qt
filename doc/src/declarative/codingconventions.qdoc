@@ -72,6 +72,7 @@ For example, a hypothetical \e photo QML object would look like this:
 \snippet doc/src/snippets/declarative/codingconventions/photo.qml 0
 
 
+\target Grouped properties
 \section1 Grouped properties
 
 If using multiple properties from a group of properties,
