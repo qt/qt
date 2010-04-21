@@ -41,11 +41,11 @@
 
 #include <QtTest/QtTest>
 #include <QDebug>
-#include <QtMultimedia/qmediaservice.h>
-#include <QtMultimedia/qmediaplaylist.h>
-#include <QtMultimedia/qmediaplaylistcontrol.h>
-#include <QtMultimedia/qmediaplaylistnavigator.h>
-#include <QtMultimedia/private/qmediapluginloader_p.h>
+#include <QtMediaServices/qmediaservice.h>
+#include <QtMediaServices/qmediaplaylist.h>
+#include <QtMediaServices/qmediaplaylistcontrol.h>
+#include <QtMediaServices/qmediaplaylistnavigator.h>
+#include <QtMediaServices/private/qmediapluginloader_p.h>
 
 
 class MockReadOnlyPlaylistProvider : public QMediaPlaylistProvider

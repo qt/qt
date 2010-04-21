@@ -49,7 +49,7 @@
 #include "qt7videooutputcontrol.h"
 
 #include <QtNetwork/qnetworkcookie.h>
-#include <QtMultimedia/qmediaplaylistnavigator.h>
+#include <QtMediaServices/qmediaplaylistnavigator.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <Foundation/Foundation.h>
@@ -153,10 +153,9 @@
 
 QT_BEGIN_NAMESPACE
 
-static CFStringRef qString2CFStringRef(const QString &string)
+static inline NSString *qString2CFStringRef(const QString &string)
 {
-    return CFStringCreateWithCharacters(0, reinterpret_cast<const UniChar *>(string.unicode()),
-                                        string.length());
+    return [NSString stringWithCharacters:reinterpret_cast<const UniChar *>(string.unicode()) length:string.length()];
 }
 
 QT7PlayerSession::QT7PlayerSession(QObject *parent)
@@ -391,10 +390,10 @@ void QT7PlayerSession::setMedia(const QMediaContent &content, QIODevice *stream)
 
         foreach (const QNetworkCookie &requestCookie, cookieList) {
             NSMutableDictionary *p = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                               (NSString*)qString2CFStringRef(requestCookie.name()), NSHTTPCookieName,
-                               (NSString*)qString2CFStringRef(requestCookie.value()), NSHTTPCookieValue,
-                               (NSString*)qString2CFStringRef(requestCookie.domain()), NSHTTPCookieDomain,
-                               (NSString*)qString2CFStringRef(requestCookie.path()), NSHTTPCookiePath,
+                               qString2CFStringRef(requestCookie.name()), NSHTTPCookieName,
+                               qString2CFStringRef(requestCookie.value()), NSHTTPCookieValue,
+                               qString2CFStringRef(requestCookie.domain()), NSHTTPCookieDomain,
+                               qString2CFStringRef(requestCookie.path()), NSHTTPCookiePath,
                                nil
                                ];
             if (requestCookie.isSessionCookie())
@@ -407,7 +406,7 @@ void QT7PlayerSession::setMedia(const QMediaContent &content, QIODevice *stream)
     }
 
     NSError *err = 0;
-    NSString *urlString = (NSString *)qString2CFStringRef(request.url().toString());
+    NSString *urlString = qString2CFStringRef(request.url().toString());
 
     NSDictionary *attr = [NSDictionary dictionaryWithObjectsAndKeys:
                             [NSURL URLWithString:urlString], QTMovieURLAttribute,

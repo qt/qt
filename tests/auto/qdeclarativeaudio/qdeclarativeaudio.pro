@@ -11,4 +11,4 @@ SOURCES += \
         $$PWD/../../../src/imports/multimedia/qdeclarativemediabase.cpp \
         $$PWD/../../../src/imports/multimedia/qmetadatacontrolmetaobject.cpp
 
-QT += multimedia declarative
+QT += mediaservices declarative

@@ -145,7 +145,7 @@ addJavaScriptCoreLib(../JavaScriptCore)
         DEFINES -= ENABLE_VIDEO=0
         DEFINES += ENABLE_VIDEO=1
     }
-    !lessThan(QT_MINOR_VERSION, 7):contains(QT_CONFIG, multimedia) {
+    !lessThan(QT_MINOR_VERSION, 7):contains(QT_CONFIG, mediaservices) {
         DEFINES -= ENABLE_VIDEO=0
         DEFINES += ENABLE_VIDEO=1
     }
@@ -2373,7 +2373,7 @@ contains(DEFINES, ENABLE_VIDEO=1) {
             HEADERS += platform/graphics/qt/MediaPlayerPrivateQt.h
             SOURCES += platform/graphics/qt/MediaPlayerPrivateQt.cpp
 
-            tobe|!tobe: QT += multimedia
+            tobe|!tobe: QT += mediaservices
         } else {
             HEADERS += \
                 platform/graphics/qt/MediaPlayerPrivatePhonon.h

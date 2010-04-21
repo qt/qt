@@ -44,9 +44,9 @@
 #include "../../../src/imports/multimedia/qdeclarativeaudio_p.h"
 
 #include <QtGui/qapplication.h>
-#include <QtMultimedia/qmediaplayercontrol.h>
-#include <QtMultimedia/qmediaservice.h>
-#include <QtMultimedia/qmetadatacontrol.h>
+#include <QtMediaServices/qmediaplayercontrol.h>
+#include <QtMediaServices/qmediaservice.h>
+#include <QtMediaServices/qmetadatacontrol.h>
 
 
 class tst_QDeclarativeAudio : public QObject
@@ -77,7 +77,7 @@ private slots:
     void error();
 };
 
-Q_DECLARE_METATYPE(QtMultimedia::MetaData);
+Q_DECLARE_METATYPE(QtMediaServices::MetaData);
 Q_DECLARE_METATYPE(QDeclarativeAudio::Error);
 
 class QtTestMediaPlayerControl : public QMediaPlayerControl
@@ -193,20 +193,20 @@ public:
     bool isWritable() const { return true; }
     bool isMetaDataAvailable() const { return true; }
 
-    QVariant metaData(QtMultimedia::MetaData key) const { return m_metaData.value(key); }
-    void setMetaData(QtMultimedia::MetaData key, const QVariant &value) {
+    QVariant metaData(QtMediaServices::MetaData key) const { return m_metaData.value(key); }
+    void setMetaData(QtMediaServices::MetaData key, const QVariant &value) {
         m_metaData.insert(key, value); emit metaDataChanged(); }
-    void setMetaData(const QMap<QtMultimedia::MetaData, QVariant> &metaData) {
+    void setMetaData(const QMap<QtMediaServices::MetaData, QVariant> &metaData) {
         m_metaData = metaData; emit metaDataChanged(); }
 
-    QList<QtMultimedia::MetaData> availableMetaData() const { return m_metaData.keys(); }
+    QList<QtMediaServices::MetaData> availableMetaData() const { return m_metaData.keys(); }
 
     QVariant extendedMetaData(const QString &) const { return QVariant(); }
     void setExtendedMetaData(const QString &, const QVariant &) {}
     QStringList availableExtendedMetaData() const { return QStringList(); }
 
 private:
-    QMap<QtMultimedia::MetaData, QVariant> m_metaData;
+    QMap<QtMediaServices::MetaData, QVariant> m_metaData;
 };
 
 class QtTestMediaService : public QMediaService
@@ -1156,25 +1156,25 @@ void tst_QDeclarativeAudio::status()
 void tst_QDeclarativeAudio::metaData_data()
 {
     QTest::addColumn<QByteArray>("propertyName");
-    QTest::addColumn<QtMultimedia::MetaData>("propertyKey");
+    QTest::addColumn<QtMediaServices::MetaData>("propertyKey");
     QTest::addColumn<QVariant>("value1");
     QTest::addColumn<QVariant>("value2");
 
     QTest::newRow("title")
             << QByteArray("title")
-            << QtMultimedia::Title
+            << QtMediaServices::Title
             << QVariant(QString::fromLatin1("This is a title"))
             << QVariant(QString::fromLatin1("This is another title"));
 
     QTest::newRow("genre")
             << QByteArray("genre")
-            << QtMultimedia::Genre
+            << QtMediaServices::Genre
             << QVariant(QString::fromLatin1("rock"))
             << QVariant(QString::fromLatin1("pop"));
 
     QTest::newRow("trackNumber")
             << QByteArray("trackNumber")
-            << QtMultimedia::TrackNumber
+            << QtMediaServices::TrackNumber
             << QVariant(8)
             << QVariant(12);
 }
@@ -1182,7 +1182,7 @@ void tst_QDeclarativeAudio::metaData_data()
 void tst_QDeclarativeAudio::metaData()
 {
     QFETCH(QByteArray, propertyName);
-    QFETCH(QtMultimedia::MetaData, propertyKey);
+    QFETCH(QtMediaServices::MetaData, propertyKey);
     QFETCH(QVariant, value1);
     QFETCH(QVariant, value2);
 

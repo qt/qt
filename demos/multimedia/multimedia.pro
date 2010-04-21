@@ -1,4 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS = player
-
+contains(QT_CONFIG, mediaservices): SUBDIRS = player
 
