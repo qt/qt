@@ -7694,6 +7694,8 @@ QPen QAbstractGraphicsShapeItem::pen() const
 void QAbstractGraphicsShapeItem::setPen(const QPen &pen)
 {
     Q_D(QAbstractGraphicsShapeItem);
+    if (d->pen == pen)
+        return;
     prepareGeometryChange();
     d->pen = pen;
     d->boundingRect = QRectF();
@@ -7724,6 +7726,8 @@ QBrush QAbstractGraphicsShapeItem::brush() const
 void QAbstractGraphicsShapeItem::setBrush(const QBrush &brush)
 {
     Q_D(QAbstractGraphicsShapeItem);
+    if (d->brush == brush)
+        return;
     d->brush = brush;
     update();
 }
@@ -8854,6 +8858,8 @@ QPen QGraphicsLineItem::pen() const
 void QGraphicsLineItem::setPen(const QPen &pen)
 {
     Q_D(QGraphicsLineItem);
+    if (d->pen == pen)
+        return;
     prepareGeometryChange();
     d->pen = pen;
     update();
