@@ -252,9 +252,7 @@ bool QConfFile::isWritable() const
     } else {
         // Create the directories to the file.
         QDir dir(fileInfo.absolutePath());
-        if (dir.exists() && dir.isReadable()) {
-            return true;
-        } else {
+        if (!dir.exists()) {
             if (!dir.mkpath(dir.absolutePath()))
                 return false;
         }
