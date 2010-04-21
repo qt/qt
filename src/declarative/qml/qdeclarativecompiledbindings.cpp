@@ -888,13 +888,6 @@ void QDeclarativeCompiledBindingsPrivate::findgeneric(Register *output,
             return;
         }
 
-        for (int ii = 0; ii < context->scripts.count(); ++ii) {
-            QScriptValue function = QScriptDeclarativeClass::function(context->scripts.at(ii), name);
-            if (function.isValid()) {
-                qFatal("Binding optimizer resolved name to QScript method");
-            }
-        }
-
         if (QObject *root = context->contextObject) {
 
             if (findproperty(root, output, enginePriv, subIdx, name, isTerminal))
@@ -938,7 +931,7 @@ static void throwException(int id, QDeclarativeDelayedError *error,
         error->error.setColumn(-1);
     }
     if (!context->engine || !error->addError(QDeclarativeEnginePrivate::get(context->engine)))
-        qWarning() << error->error;
+        QDeclarativeEnginePrivate::warning(context->engine, error->error);
 }
 
 static void dumpInstruction(const Instr *instr)

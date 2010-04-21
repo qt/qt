@@ -86,7 +86,6 @@ public:
     inline void setValue(const QDate &);
     inline void setValue(const QDateTime &);
     inline void setValue(const QScriptValue &);
-
 private:
     int type;
     void *data[4]; // Large enough to hold all types
@@ -111,6 +110,9 @@ void QDeclarativeVMEVariant::cleanup()
                type == QMetaType::Int ||
                type == QMetaType::Bool ||
                type == QMetaType::Double) {
+        type = QVariant::Invalid;
+    } else if (type == QMetaType::QObjectStar) {
+        ((QDeclarativeGuard<QObject>*)dataPtr())->~QDeclarativeGuard<QObject>();
         type = QVariant::Invalid;
     } else if (type == QMetaType::QString) {
         ((QString *)dataPtr())->~QString();
@@ -160,7 +162,7 @@ QObject *QDeclarativeVMEVariant::asQObject()
     if (type != QMetaType::QObjectStar) 
         setValue((QObject *)0);
 
-    return *(QObject **)(dataPtr());
+    return *(QDeclarativeGuard<QObject> *)(dataPtr());
 }
 
 const QVariant &QDeclarativeVMEVariant::asQVariant() 
@@ -256,8 +258,9 @@ void QDeclarativeVMEVariant::setValue(QObject *v)
     if (type != QMetaType::QObjectStar) {
         cleanup();
         type = QMetaType::QObjectStar;
+        new (dataPtr()) QDeclarativeGuard<QObject>();
     }
-    *(QObject **)(dataPtr()) = v;
+    *(QDeclarativeGuard<QObject>*)(dataPtr()) = v;
 }
 
 void QDeclarativeVMEVariant::setValue(const QVariant &v)
@@ -465,8 +468,7 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                     if (c == QMetaObject::ReadProperty) {
                         *reinterpret_cast<QVariant *>(a[0]) = readVarPropertyAsVariant(id);
                     } else if (c == QMetaObject::WriteProperty) {
-                        needActivate = (data[id].asQVariant() != *reinterpret_cast<QVariant *>(a[0]));
-                        data[id].setValue(*reinterpret_cast<QVariant *>(a[0]));
+                        writeVarProperty(id, *reinterpret_cast<QVariant *>(a[0]));
                     }
 
                 } else {
@@ -682,6 +684,8 @@ QScriptValue QDeclarativeVMEMetaObject::readVarProperty(int id)
 {
     if (data[id].dataType() == qMetaTypeId<QScriptValue>())
         return data[id].asQScriptValue();
+    else if (data[id].dataType() == QMetaType::QObjectStar) 
+        return QDeclarativeEnginePrivate::get(ctxt->engine)->objectClass->newQObject(data[id].asQObject());
     else
         return QDeclarativeEnginePrivate::get(ctxt->engine)->scriptValueFromVariant(data[id].asQVariant());
 }
@@ -690,13 +694,24 @@ QVariant QDeclarativeVMEMetaObject::readVarPropertyAsVariant(int id)
 {
     if (data[id].dataType() == qMetaTypeId<QScriptValue>())
         return QDeclarativeEnginePrivate::get(ctxt->engine)->scriptValueToVariant(data[id].asQScriptValue());
-    else
+    else if (data[id].dataType() == QMetaType::QObjectStar) 
+        return QVariant::fromValue(data[id].asQObject());
+    else 
         return data[id].asQVariant();
 }
 
 void QDeclarativeVMEMetaObject::writeVarProperty(int id, const QScriptValue &value)
 {
     data[id].setValue(value);
+    activate(object, methodOffset + id, 0);
+}
+
+void QDeclarativeVMEMetaObject::writeVarProperty(int id, const QVariant &value)
+{
+    if (value.userType() == QMetaType::QObjectStar) 
+        data[id].setValue(qvariant_cast<QObject *>(value));
+    else
+        data[id].setValue(value);
     activate(object, methodOffset + id, 0);
 }
 

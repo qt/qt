@@ -5,13 +5,13 @@ BirthdayParty {
     onPartyStarted: console.log("This party started rockin' at " + time);
 // ![0]
 
-    celebrant: Boy {
+    host: Boy {
         name: "Bob Jones"
         shoe { size: 12; color: "white"; brand: "Nike"; price: 90.0 }
     }
 
     Boy { 
-        name: "Joan Hodges" 
+        name: "Leo Hodges" 
         BirthdayParty.rsvp: "2009-07-06"
         shoe { size: 10; color: "black"; brand: "Reebok"; price: 59.95 }
     }

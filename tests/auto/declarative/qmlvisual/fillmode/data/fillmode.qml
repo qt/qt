@@ -1,4 +1,4 @@
-import Qt.VisualTest 4.6
+import Qt.VisualTest 4.7
 
 VisualTest {
     Frame {
@@ -7,5 +7,5 @@ VisualTest {
     Frame {
         msec: 16
         image: "fillmode.0.png"
-    }    
+    }
 }

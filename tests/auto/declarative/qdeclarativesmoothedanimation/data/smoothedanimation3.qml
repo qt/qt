@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 SmoothedAnimation {
     to: 10; velocity: 250; reversingMode: SmoothedAnimation.Sync

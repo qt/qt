@@ -108,9 +108,9 @@ public:
 
     virtual void saveOriginals();
     virtual void copyOriginals(QDeclarativeActionEvent*);
-    virtual void execute();
+    virtual void execute(Reason reason = ActualChange);
     virtual bool isReversable();
-    virtual void reverse();
+    virtual void reverse(Reason reason = ActualChange);
     virtual QString typeName() const;
     virtual bool override(QDeclarativeActionEvent*other);
     virtual void rewind();
@@ -140,7 +140,7 @@ public:
     QString name() const;
     void setName(const QString &);
 
-    virtual void execute();
+    virtual void execute(Reason reason = ActualChange);
 };
 
 class QDeclarativeAnchorChanges;
@@ -149,13 +149,13 @@ class Q_AUTOTEST_EXPORT QDeclarativeAnchorSet : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QDeclarativeAnchorLine left READ left WRITE setLeft RESET resetLeft)
-    Q_PROPERTY(QDeclarativeAnchorLine right READ right WRITE setRight RESET resetRight)
-    Q_PROPERTY(QDeclarativeAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter RESET resetHorizontalCenter)
-    Q_PROPERTY(QDeclarativeAnchorLine top READ top WRITE setTop RESET resetTop)
-    Q_PROPERTY(QDeclarativeAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom)
-    Q_PROPERTY(QDeclarativeAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter)
-    Q_PROPERTY(QDeclarativeAnchorLine baseline READ baseline WRITE setBaseline RESET resetBaseline)
+    Q_PROPERTY(QDeclarativeScriptString left READ left WRITE setLeft RESET resetLeft)
+    Q_PROPERTY(QDeclarativeScriptString right READ right WRITE setRight RESET resetRight)
+    Q_PROPERTY(QDeclarativeScriptString horizontalCenter READ horizontalCenter WRITE setHorizontalCenter RESET resetHorizontalCenter)
+    Q_PROPERTY(QDeclarativeScriptString top READ top WRITE setTop RESET resetTop)
+    Q_PROPERTY(QDeclarativeScriptString bottom READ bottom WRITE setBottom RESET resetBottom)
+    Q_PROPERTY(QDeclarativeScriptString verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter)
+    Q_PROPERTY(QDeclarativeScriptString baseline READ baseline WRITE setBaseline RESET resetBaseline)
     //Q_PROPERTY(QDeclarativeItem *fill READ fill WRITE setFill RESET resetFill)
     //Q_PROPERTY(QDeclarativeItem *centerIn READ centerIn WRITE setCenterIn RESET resetCenterIn)
 
@@ -172,32 +172,32 @@ public:
     QDeclarativeAnchorSet(QObject *parent=0);
     virtual ~QDeclarativeAnchorSet();
 
-    QDeclarativeAnchorLine left() const;
-    void setLeft(const QDeclarativeAnchorLine &edge);
+    QDeclarativeScriptString left() const;
+    void setLeft(const QDeclarativeScriptString &edge);
     void resetLeft();
 
-    QDeclarativeAnchorLine right() const;
-    void setRight(const QDeclarativeAnchorLine &edge);
+    QDeclarativeScriptString right() const;
+    void setRight(const QDeclarativeScriptString &edge);
     void resetRight();
 
-    QDeclarativeAnchorLine horizontalCenter() const;
-    void setHorizontalCenter(const QDeclarativeAnchorLine &edge);
+    QDeclarativeScriptString horizontalCenter() const;
+    void setHorizontalCenter(const QDeclarativeScriptString &edge);
     void resetHorizontalCenter();
 
-    QDeclarativeAnchorLine top() const;
-    void setTop(const QDeclarativeAnchorLine &edge);
+    QDeclarativeScriptString top() const;
+    void setTop(const QDeclarativeScriptString &edge);
     void resetTop();
 
-    QDeclarativeAnchorLine bottom() const;
-    void setBottom(const QDeclarativeAnchorLine &edge);
+    QDeclarativeScriptString bottom() const;
+    void setBottom(const QDeclarativeScriptString &edge);
     void resetBottom();
 
-    QDeclarativeAnchorLine verticalCenter() const;
-    void setVerticalCenter(const QDeclarativeAnchorLine &edge);
+    QDeclarativeScriptString verticalCenter() const;
+    void setVerticalCenter(const QDeclarativeScriptString &edge);
     void resetVerticalCenter();
 
-    QDeclarativeAnchorLine baseline() const;
-    void setBaseline(const QDeclarativeAnchorLine &edge);
+    QDeclarativeScriptString baseline() const;
+    void setBaseline(const QDeclarativeScriptString &edge);
     void resetBaseline();
 
     QDeclarativeItem *fill() const;
@@ -232,7 +232,7 @@ public:
     qreal baselineOffset() const;
     void setBaselineOffset(qreal);*/
 
-    QDeclarativeAnchors::UsedAnchors usedAnchors() const;
+    QDeclarativeAnchors::Anchors usedAnchors() const;
 
 /*Q_SIGNALS:
     void leftMarginChanged();
@@ -270,9 +270,9 @@ public:
     QDeclarativeItem *object() const;
     void setObject(QDeclarativeItem *);
 
-    virtual void execute();
+    virtual void execute(Reason reason = ActualChange);
     virtual bool isReversable();
-    virtual void reverse();
+    virtual void reverse(Reason reason = ActualChange);
     virtual QString typeName() const;
     virtual bool override(QDeclarativeActionEvent*other);
     virtual bool changesBindings();

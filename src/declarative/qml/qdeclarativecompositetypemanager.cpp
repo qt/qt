@@ -341,7 +341,6 @@ static QString toLocalFileOrQrc(const QUrl& url)
     if (url.scheme() == QLatin1String("qrc")) {
         if (url.authority().isEmpty())
             return QLatin1Char(':') + url.path();
-        qWarning() << "Invalid url:" << url.toString() << "authority" << url.authority() << "not known.";
         return QString();
     }
     return url.toLocalFile();

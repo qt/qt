@@ -52,7 +52,9 @@ class tst_QDeclarativeMouseArea: public QObject
 private slots:
     void dragProperties();
     void resetDrag();
+    void dragging();
     void updateMouseAreaPosOnClick();
+    void updateMouseAreaPosOnResize();
     void noOnClickedWithPressAndHold();
 private:
     QDeclarativeView *createView();
@@ -162,6 +164,61 @@ void tst_QDeclarativeMouseArea::resetDrag()
 }
 
 
+void tst_QDeclarativeMouseArea::dragging()
+{
+    QDeclarativeView *canvas = createView();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/dragging.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeMouseArea *mouseRegion = canvas->rootObject()->findChild<QDeclarativeMouseArea*>("mouseregion");
+    QDeclarativeDrag *drag = mouseRegion->drag();
+    QVERIFY(mouseRegion != 0);
+    QVERIFY(drag != 0);
+
+    // target
+    QDeclarativeItem *blackRect = canvas->rootObject()->findChild<QDeclarativeItem*>("blackrect");
+    QVERIFY(blackRect != 0);
+    QVERIFY(blackRect == drag->target());
+
+    QVERIFY(!drag->active());
+
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
+    pressEvent.setScenePos(QPointF(100, 100));
+    pressEvent.setButton(Qt::LeftButton);
+    pressEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &pressEvent);
+
+    QVERIFY(!drag->active());
+    QCOMPARE(blackRect->x(), 50.0);
+    QCOMPARE(blackRect->y(), 50.0);
+
+    QGraphicsSceneMouseEvent moveEvent(QEvent::GraphicsSceneMouseMove);
+    moveEvent.setScenePos(QPointF(110, 110));
+    moveEvent.setButton(Qt::LeftButton);
+    moveEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &moveEvent);
+
+    QVERIFY(drag->active());
+    QCOMPARE(blackRect->x(), 60.0);
+    QCOMPARE(blackRect->y(), 60.0);
+
+    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
+    releaseEvent.setScenePos(QPointF(110, 110));
+    releaseEvent.setButton(Qt::LeftButton);
+    releaseEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &releaseEvent);
+
+    QVERIFY(!drag->active());
+    QCOMPARE(blackRect->x(), 60.0);
+    QCOMPARE(blackRect->y(), 60.0);
+
+    delete canvas;
+}
+
 QDeclarativeView *tst_QDeclarativeMouseArea::createView()
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
@@ -196,6 +253,46 @@ void tst_QDeclarativeMouseArea::updateMouseAreaPosOnClick()
 
     QCOMPARE(mouseRegion->mouseX(), 100.0);
     QCOMPARE(mouseRegion->mouseY(), 100.0);
+
+    QCOMPARE(mouseRegion->mouseX(), rect->x());
+    QCOMPARE(mouseRegion->mouseY(), rect->y());
+
+    delete canvas;
+}
+
+void tst_QDeclarativeMouseArea::updateMouseAreaPosOnResize()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/updateMousePosOnResize.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeMouseArea *mouseRegion = canvas->rootObject()->findChild<QDeclarativeMouseArea*>("mouseregion");
+    QVERIFY(mouseRegion != 0);
+
+    QDeclarativeRectangle *rect = canvas->rootObject()->findChild<QDeclarativeRectangle*>("brother");
+    QVERIFY(rect != 0);
+
+    QCOMPARE(mouseRegion->mouseX(), 0.0);
+    QCOMPARE(mouseRegion->mouseY(), 0.0);
+
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+    event.setScenePos(rect->pos());
+    event.setButton(Qt::LeftButton);
+    event.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &event);
+
+    QVERIFY(!mouseRegion->property("emitPositionChanged").toBool());
+    QVERIFY(mouseRegion->property("mouseMatchesPos").toBool());
+
+    QCOMPARE(mouseRegion->property("x1").toInt(), 0);
+    QCOMPARE(mouseRegion->property("y1").toInt(), 0);
+
+    // XXX: is it on purpose that mouseX is real and mouse.x is int?
+    QCOMPARE(mouseRegion->property("x2").toInt(), (int) rect->x());
+    QCOMPARE(mouseRegion->property("y2").toInt(), (int) rect->y());
 
     QCOMPARE(mouseRegion->mouseX(), rect->x());
     QCOMPARE(mouseRegion->mouseY(), rect->y());

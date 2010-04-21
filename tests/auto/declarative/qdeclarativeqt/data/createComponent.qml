@@ -1,23 +1,20 @@
-import Qt 4.6
+import Qt 4.7
 
 QtObject {
-    property bool incorrectArgCount1: false
-    property bool incorrectArgCount2: false
     property bool emptyArg: false
 
     property string relativeUrl
     property string absoluteUrl
 
-    Component.onCompleted: {
-        // Test that using incorrect argument count returns a null object
-        incorrectArgCount1 = (createComponent() == null);
-        incorrectArgCount2 = (createComponent("main.qml", 10) == null);
-        emptyArg = (createComponent("") == null);
+    property QtObject incorectArgCount1: Qt.createComponent()
+    property QtObject incorectArgCount2: Qt.createComponent("main.qml", 10)
 
-        var r = createComponent("createComponentData.qml");
+    Component.onCompleted: {
+        emptyArg = (Qt.createComponent("") == null);
+        var r = Qt.createComponent("createComponentData.qml");
         relativeUrl = r.url;
 
-        var a = createComponent("http://www.example.com/test.qml");
+        var a = Qt.createComponent("http://www.example.com/test.qml");
         absoluteUrl = a.url;
     }
 }

@@ -45,6 +45,7 @@
 #include "qdeclarativecontext.h"
 #include "private/qdeclarativecontext_p.h"
 #include "private/qdeclarativemetatype_p.h"
+#include "private/qdeclarativeengine_p.h"
 
 #include <QCoreApplication>
 
@@ -77,51 +78,98 @@ QT_BEGIN_NAMESPACE
     \endcode
 */
 
-QDeclarativeInfo::QDeclarativeInfo(const QObject *object)
-: QDebug(QtWarningMsg)
+struct QDeclarativeInfoPrivate
 {
-    QString pos = QLatin1String("QML");
-    if (object) {
-        pos += QLatin1Char(' ');
+    QDeclarativeInfoPrivate() : ref (1), object(0) {}
 
-        QString typeName;
-        QDeclarativeType *type = QDeclarativeMetaType::qmlType(object->metaObject());
-        if (type) {
-            typeName = QLatin1String(type->qmlTypeName());
-            int lastSlash = typeName.lastIndexOf(QLatin1Char('/'));
-            if (lastSlash != -1)
-                typeName = typeName.mid(lastSlash+1);
-        } else {
-            typeName = QString::fromUtf8(object->metaObject()->className());
-            int marker = typeName.indexOf(QLatin1String("_QMLTYPE_"));
-            if (marker != -1)
-                typeName = typeName.left(marker);
-        }
+    int ref;
+    const QObject *object;
+    QString buffer;
+    QList<QDeclarativeError> errors;
+};
 
-        pos += typeName;
-    }
-    QDeclarativeData *ddata = object?QDeclarativeData::get(object):0;
-    pos += QLatin1String(" (");
-    if (ddata) {
-        if (ddata->outerContext && !ddata->outerContext->url.isEmpty()) {
-            pos += ddata->outerContext->url.toString();
-            pos += QLatin1Char(':');
-            pos += QString::number(ddata->lineNumber);
-            pos += QLatin1Char(':');
-            pos += QString::number(ddata->columnNumber);
-        } else {
-            pos += QCoreApplication::translate("QDeclarativeInfo","unknown location");
-        }
-    } else {
-        pos += QCoreApplication::translate("QDeclarativeInfo","unknown location");
-    }
-    pos += QLatin1Char(')');
-    *this << pos;
+QDeclarativeInfo::QDeclarativeInfo(QDeclarativeInfoPrivate *p)
+: QDebug(&p->buffer), d(p)
+{
     nospace();
+}
+
+QDeclarativeInfo::QDeclarativeInfo(const QDeclarativeInfo &other)
+: QDebug(other), d(other.d)
+{
+    d->ref++;
 }
 
 QDeclarativeInfo::~QDeclarativeInfo()
 {
+    if (0 == --d->ref) {
+        QList<QDeclarativeError> errors = d->errors;
+
+        QDeclarativeEngine *engine = 0;
+
+        if (!d->buffer.isEmpty()) {
+            QDeclarativeError error;
+
+            QObject *object = const_cast<QObject *>(d->object);
+
+            if (object) {
+                engine = qmlEngine(d->object);
+                QString typeName;
+                QDeclarativeType *type = QDeclarativeMetaType::qmlType(object->metaObject());
+                if (type) {
+                    typeName = QLatin1String(type->qmlTypeName());
+                    int lastSlash = typeName.lastIndexOf(QLatin1Char('/'));
+                    if (lastSlash != -1)
+                        typeName = typeName.mid(lastSlash+1);
+                } else {
+                    typeName = QString::fromUtf8(object->metaObject()->className());
+                    int marker = typeName.indexOf(QLatin1String("_QMLTYPE_"));
+                    if (marker != -1)
+                        typeName = typeName.left(marker);
+                }
+
+                d->buffer.prepend(QLatin1String("QML ") + typeName + QLatin1String(": "));
+
+                QDeclarativeData *ddata = QDeclarativeData::get(object, false);
+                if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty()) {
+                    error.setUrl(ddata->outerContext->url);
+                    error.setLine(ddata->lineNumber);
+                    error.setColumn(ddata->columnNumber);
+                }
+            }
+
+            error.setDescription(d->buffer);
+
+            errors.prepend(error);
+        }
+
+        QDeclarativeEnginePrivate::warning(engine, errors);
+
+        delete d;
+    }
+}
+
+QDeclarativeInfo qmlInfo(const QObject *me)
+{
+    QDeclarativeInfoPrivate *d = new QDeclarativeInfoPrivate;
+    d->object = me;
+    return QDeclarativeInfo(d);
+}
+
+QDeclarativeInfo qmlInfo(const QObject *me, const QDeclarativeError &error)
+{
+    QDeclarativeInfoPrivate *d = new QDeclarativeInfoPrivate;
+    d->object = me;
+    d->errors << error;
+    return QDeclarativeInfo(d);
+}
+
+QDeclarativeInfo qmlInfo(const QObject *me, const QList<QDeclarativeError> &errors)
+{
+    QDeclarativeInfoPrivate *d = new QDeclarativeInfoPrivate;
+    d->object = me;
+    d->errors = errors;
+    return QDeclarativeInfo(d);
 }
 
 

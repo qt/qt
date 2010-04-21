@@ -50,6 +50,7 @@
 #include <QtCore/qdebug.h>
 
 #include <private/qobject_p.h>
+#include <qdeclarativeinfo.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -381,7 +382,7 @@ void QDeclarativeStateGroupPrivate::setCurrentStateInternal(const QString &state
     }
 
     if (applyingState) {
-        qWarning() << "Can't apply a state change as part of a state definition.";
+        qmlInfo(q) << "Can't apply a state change as part of a state definition.";
         return;
     }
 
