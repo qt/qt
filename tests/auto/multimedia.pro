@@ -7,6 +7,5 @@ SUBDIRS=\
     qaudioinput \
     qaudiooutput \
     qvideoframe \
-    qvideosurfaceformat \
-    qvideowidget
+    qvideosurfaceformat
 
