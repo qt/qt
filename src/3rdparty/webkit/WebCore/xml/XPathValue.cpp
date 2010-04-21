@@ -68,7 +68,12 @@ NodeSet& Value::modifiableNodeSet()
     return m_data->m_nodeSet;
 }
 
+#if COMPILER(WINSCW)
+// FIXME --nl-- Symbian WINSCW compiler complains with 'ambiguous access to overloaded function' (double, unsigned long, unsigned int)
+unsigned int Value::toBoolean() const
+#else
 bool Value::toBoolean() const
+#endif
 {
     switch (m_type) {
         case NodeSetValue:

@@ -101,6 +101,17 @@ QT_END_NAMESPACE
     return !(isPopup || isToolTip || isTool);
 }
 
+- (void)becomeMainWindow
+{
+    [super becomeMainWindow];
+    // Cocoa sometimes tell a hidden window to become the
+    // main window (and as such, show it). This can e.g
+    // happend when the application gets activated. If
+    // this is the case, we tell it to hide again:
+    if (![self isVisible])
+        [self orderOut:self];
+}
+
 - (void)toggleToolbarShown:(id)sender
 {
     macSendToolbarChangeEvent([self QT_MANGLE_NAMESPACE(qt_qwidget)]);
