@@ -130,17 +130,24 @@ void tst_parserstress::ecmascript()
 
     QDeclarativeComponent component(&engine);
     component.setData(qmlData, QUrl::fromLocalFile(SRCDIR + QString("/dummy.qml")));
-    QSet<QString> failingTests;
-    failingTests << "regress-352044-02-n.js"
-                 << "regress-334158.js";
+
     QFileInfo info(file);
-    foreach (const QString &failing, failingTests) {
-        if (info.fileName().endsWith(failing)) {
-            QEXPECT_FAIL("", "QTBUG-8108", Continue);
-            break;
-        }
+
+    if (info.fileName() == QLatin1String("regress-352044-02-n.js")) {
+        QVERIFY(component.isError());
+
+        QCOMPARE(component.errors().length(), 2);
+
+        QCOMPARE(component.errors().at(0).description(), QString("Expected token `;'"));
+        QCOMPARE(component.errors().at(0).line(), 66);
+
+        QCOMPARE(component.errors().at(1).description(), QString("Expected token `;'"));
+        QCOMPARE(component.errors().at(1).line(), 142);
+
+    } else {
+
+        QVERIFY(!component.isError());
     }
-    QVERIFY(!component.isError());
 }
 
 
