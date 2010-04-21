@@ -258,6 +258,11 @@ of their use.
         }
     \endcode
 
+    The methods and properties of the Component element are defined in its own
+    page, but when using it dynamically only two methods are usually used.
+    Component.createObject() returns the created object or null if there is an error.
+    If there is an error, Component.errorsString() describes what the error was.
+
     If you want to just create an arbitrary string of QML, instead of
     loading a QML file, consider the createQmlObject() function.
 
@@ -277,7 +282,9 @@ of their use.
     similarly to eval, but for creating QML elements.
 
     Returns the created object, or null if there is an error. In the case of an
-    error, details of the error are output using qWarning().
+    error, a QtScript Error object is thrown. This object has the additional property,
+    qmlErrors, which is an array of all the errors encountered when trying to execute the
+    QML. Each object in the array has the members: lineNumber, columnNumber, fileName and message.
 
     Note that this function returns immediately, and therefore may not work if
     the QML loads new components. If you are trying to load a new component,

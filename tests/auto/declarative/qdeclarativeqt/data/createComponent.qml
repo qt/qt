@@ -6,15 +6,15 @@ QtObject {
     property string relativeUrl
     property string absoluteUrl
 
-    property QtObject incorectArgCount1: createComponent()
-    property QtObject incorectArgCount2: createComponent("main.qml", 10)
+    property QtObject incorectArgCount1: Qt.createComponent()
+    property QtObject incorectArgCount2: Qt.createComponent("main.qml", 10)
 
     Component.onCompleted: {
-        emptyArg = (createComponent("") == null);
-        var r = createComponent("createComponentData.qml");
+        emptyArg = (Qt.createComponent("") == null);
+        var r = Qt.createComponent("createComponentData.qml");
         relativeUrl = r.url;
 
-        var a = createComponent("http://www.example.com/test.qml");
+        var a = Qt.createComponent("http://www.example.com/test.qml");
         absoluteUrl = a.url;
     }
 }
