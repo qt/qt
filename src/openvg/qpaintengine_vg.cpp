@@ -3361,9 +3361,13 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     // Draw the glyphs.  We need to fill with the brush associated with
     // the Qt pen, not the Qt brush.
     d->ensureBrush(state()->pen.brush());
-    vgDrawGlyphs(glyphCache->font, numGlyphs, (VGuint*)glyphs,
-                 NULL, NULL, VG_FILL_PATH, VG_TRUE);
-
+    if (ti.renderFlags() & QTextItem::RightToLeft) {
+        for (int index = numGlyphs - 1; index >= 0; --index)
+            vgDrawGlyph(glyphCache->font, glyphs[index], VG_FILL_PATH, VG_TRUE);
+    } else {
+        vgDrawGlyphs(glyphCache->font, numGlyphs, (VGuint*)glyphs.data(),
+                     NULL, NULL, VG_FILL_PATH, VG_TRUE);
+    }
     return true;
 #else
     Q_UNUSED(numGlyphs);

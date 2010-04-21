@@ -211,10 +211,7 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
         QTest::qt_snprintf(buf, sizeof(buf), "%i", line);
         failureElement->addAttribute(QTest::AI_Line, buf);
         failureElement->addAttribute(QTest::AI_Description, description);
-        const char* tag = QTestResult::currentDataTag();
-        if (tag) {
-            failureElement->addAttribute(QTest::AI_Tag, tag);
-        }
+        addTag(failureElement);
         currentLogElement->addLogElement(failureElement);
     }
 
@@ -279,6 +276,27 @@ void QTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
     currentLogElement->addLogElement(benchmarkElement);
 }
 
+void QTestLogger::addTag(QTestElement* element)
+{
+    const char *tag = QTestResult::currentDataTag();
+    const char *gtag = QTestResult::currentGlobalDataTag();
+    const char *filler = (tag && gtag) ? ":" : "";
+    if ((!tag || !tag[0]) && (!gtag || !gtag[0])) {
+        return;
+    }
+
+    if (!tag) {
+        tag = "";
+    }
+    if (!gtag) {
+        gtag = "";
+    }
+
+    QTestCharBuffer buf;
+    QTest::qt_asprintf(&buf, "%s%s%s", gtag, filler, tag);
+    element->addAttribute(QTest::AI_Tag, buf.constData());
+}
+
 void QTestLogger::addMessage(MessageTypes type, const char *message, const char *file, int line)
 {
     QTestElement *errorElement = new QTestElement(QTest::LET_Error);
@@ -299,7 +317,7 @@ void QTestLogger::addMessage(MessageTypes type, const char *message, const char 
         break;
     case QAbstractTestLogger::QWarning:
         ++qwarnCounter;
-        typeBuf = "qwarning";
+        typeBuf = "qwarn";
         break;
     case QAbstractTestLogger::QFatal:
         ++qfatalCounter;
@@ -320,6 +338,7 @@ void QTestLogger::addMessage(MessageTypes type, const char *message, const char 
 
     errorElement->addAttribute(QTest::AI_Type, typeBuf);
     errorElement->addAttribute(QTest::AI_Description, message);
+    addTag(errorElement);
 
     if(file)
         errorElement->addAttribute(QTest::AI_File, file);
