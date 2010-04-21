@@ -43,7 +43,7 @@
     </message>
     <message>
         <location line="+11"/>
-        <location line="+49"/>
+        <location line="+52"/>
         <source>Cannot open collection file: %1</source>
         <translation>Katalogdatei kann nicht geöffnet werden: %1</translation>
     </message>
@@ -58,7 +58,7 @@
         <translation>Die Katalogdatei &apos;%1&apos; existiert bereits.</translation>
     </message>
     <message>
-        <location line="+148"/>
+        <location line="+151"/>
         <source>Unknown filter &apos;%1&apos;!</source>
         <translation>Unbekannter Filter &apos;%1&apos;.</translation>
     </message>
@@ -78,12 +78,12 @@
         <translation>Die Datenbank &apos;%1&apos; kann nicht zur Optimierung geöffnet werden.</translation>
     </message>
     <message>
-        <location line="-436"/>
+        <location line="-439"/>
         <source>Cannot create directory: %1</source>
         <translation>Das Verzeichnis kann nicht angelegt werden: %1</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+26"/>
         <source>Cannot copy collection file: %1</source>
         <translation>Die Katalogdatei kann nicht kopiert werden: %1</translation>
     </message>
@@ -158,7 +158,7 @@
         <translation>Die Datenbank-Datei %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+14"/>
         <source>Cannot register namespace %1!</source>
         <translation>Der Namensraum %1 kann nicht registriert werden.</translation>
     </message>
@@ -266,7 +266,7 @@
 <context>
     <name>QHelpProject</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+86"/>
+        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+88"/>
         <source>Unknown token.</source>
         <translation>Unbekanntes Token.</translation>
     </message>
@@ -282,16 +282,16 @@
     </message>
     <message>
         <location line="+14"/>
-        <source>A virtual folder must not contain a &apos;/&apos; character!</source>
-        <translation>Ein virtuelles Verzeichnis darf kein &apos;/&apos;-Zeichen enthalten.</translation>
+        <source>Virtual folder has invalid syntax.</source>
+        <translation>Ungültige Syntax bei Angabe des virtuellen Verzeichnisses.</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>A namespace must not contain a &apos;/&apos; character!</source>
-        <translation>Ein Namensraum darf kein &apos;/&apos;-Zeichen enthalten.</translation>
+        <location line="+5"/>
+        <source>Namespace has invalid syntax.</source>
+        <translation>Ungültige Syntax der Namensraum-Angabe.</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+19"/>
         <source>Missing namespace in QtHelpProject.</source>
         <translation>Fehlender Namensraum in QtHelpProject.</translation>
     </message>
@@ -306,7 +306,7 @@
         <translation>Fehlendes Attribut in Schlagwort in Zeile %1.</translation>
     </message>
     <message>
-        <location line="+125"/>
+        <location line="+141"/>
         <source>The input file %1 could not be opened!</source>
         <translation>Die Eingabe-Datei %1 kann nicht geöffnet werden.</translation>
     </message>

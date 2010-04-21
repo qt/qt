@@ -46,7 +46,7 @@ protected:
     /**
      * This function must be implemented by the subclasses.
      * It should write a maximum of @p space characters at the buffer
-     * position pointed to by @p start. If no more data is avaiable due to
+     * position pointed to by @p start. If no more data is available due to
      * end of file, -1 should be returned. If an error occurs, the status
      * should be set to Error, an error message should be set and the function
      * must return -1.

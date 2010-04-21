@@ -1144,16 +1144,17 @@ QDataStream &QDataStream::operator<<(double f)
 
     CHECK_STREAM_PRECOND(*this)
 #ifndef Q_DOUBLE_FORMAT
-    if (!noswap) {
+    if (noswap) {
+        dev->write((char *)&f, sizeof(double));
+    } else {
         union {
             double val1;
             quint64 val2;
         } x;
         x.val1 = f;
         x.val2 = qbswap(x.val2);
-        f = x.val1;
+        dev->write((char *)&x.val2, sizeof(double));
     }
-    dev->write((char *)&f, sizeof(double));
 #else
     union {
         double val1;
