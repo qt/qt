@@ -243,8 +243,8 @@ void QFontEngineS60::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
     Q_UNUSED(flags);
     for (int i = 0; i < glyphs->numGlyphs; i++) {
         const glyph_metrics_t bbox = boundingBox_const(glyphs->glyphs[i]);
-        glyphs->advances_x[i] = glyphs->offsets[i].x = bbox.xoff;
-        glyphs->advances_y[i] = glyphs->offsets[i].y = bbox.yoff;
+        glyphs->advances_x[i] = bbox.xoff;
+        glyphs->advances_y[i] = bbox.yoff;
     }
 }
 
