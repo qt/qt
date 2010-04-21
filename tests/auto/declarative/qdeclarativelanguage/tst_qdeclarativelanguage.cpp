@@ -296,6 +296,9 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("Component.4") << "component.4.qml" << "component.4.errors.txt" << false;
     QTest::newRow("Component.5") << "component.5.qml" << "component.5.errors.txt" << false;
     QTest::newRow("Component.6") << "component.6.qml" << "component.6.errors.txt" << false;
+    QTest::newRow("Component.7") << "component.7.qml" << "component.7.errors.txt" << false;
+    QTest::newRow("Component.8") << "component.8.qml" << "component.8.errors.txt" << false;
+    QTest::newRow("Component.9") << "component.9.qml" << "component.9.errors.txt" << false;
 
     QTest::newRow("MultiSet.1") << "multiSet.1.qml" << "multiSet.1.errors.txt" << false;
     QTest::newRow("MultiSet.2") << "multiSet.2.qml" << "multiSet.2.errors.txt" << false;

@@ -1191,6 +1191,13 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
         (obj->defaultProperty->values.count() == 1 && !obj->defaultProperty->values.first()->object)))
         COMPILE_EXCEPTION(obj, tr("Invalid component body specification"));
 
+    if (!obj->dynamicProperties.isEmpty())
+        COMPILE_EXCEPTION(obj, tr("Component objects cannot declare new properties."));
+    if (!obj->dynamicSignals.isEmpty())
+        COMPILE_EXCEPTION(obj, tr("Component objects cannot declare new signals."));
+    if (!obj->dynamicSlots.isEmpty())
+        COMPILE_EXCEPTION(obj, tr("Component objects cannot declare new functions."));
+
     Object *root = 0;
     if (obj->defaultProperty && obj->defaultProperty->values.count())
         root = obj->defaultProperty->values.first()->object;
