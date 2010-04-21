@@ -53,9 +53,9 @@ LoggerWidget::LoggerWidget(QWidget *parent) :
     setWindowTitle(tr("Qt Declarative UI Viewer - Logger"));
 }
 
-void LoggerWidget::append(QtMsgType /*type*/, const char *msg)
+void LoggerWidget::append(const QString &msg)
 {
-    appendPlainText(QString::fromAscii(msg));
+    appendPlainText(msg);
 
     if (!m_keepClosed && !isVisible())
         setVisible(true);

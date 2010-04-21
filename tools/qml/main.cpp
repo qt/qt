@@ -93,7 +93,8 @@ void showWarnings()
 void myMessageOutput(QtMsgType type, const char *msg)
 {
     if (!logger.isNull()) {
-        logger.data()->append(type, msg);
+        QString strMsg = QString::fromAscii(msg);
+        QMetaObject::invokeMethod(logger.data(), "append", Q_ARG(QString, strMsg));
     } else {
         warnings += msg;
         warnings += QLatin1Char('\n');

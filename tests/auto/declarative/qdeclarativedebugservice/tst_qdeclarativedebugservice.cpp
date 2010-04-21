@@ -76,12 +76,12 @@ private slots:
 
 void tst_QDeclarativeDebugService::initTestCase()
 {
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 3768...");
-    qputenv("QML_DEBUG_SERVER_PORT", "3768");
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 3769...");
+    qputenv("QML_DEBUG_SERVER_PORT", "3769");
     new QDeclarativeEngine(this);
 
     m_conn = new QDeclarativeDebugConnection(this);
-    m_conn->connectToHost("127.0.0.1", 3768);
+    m_conn->connectToHost("127.0.0.1", 3769);
 
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Connection established");
     bool ok = m_conn->waitForConnected();
@@ -154,7 +154,7 @@ void tst_QDeclarativeDebugService::idForObject()
     int idB = QDeclarativeDebugService::idForObject(objB);
     QVERIFY(idB != idA);
     QCOMPARE(QDeclarativeDebugService::objectForId(idB), objB);
- 
+
     delete objA;
     delete objB;
 }
