@@ -43,7 +43,7 @@
 #ifndef QGSTREAMERSERVICEPLUGIN_H
 #define QGSTREAMERSERVICEPLUGIN_H
 
-#include <QtMultimedia/qmediaserviceproviderplugin.h>
+#include <QtMediaServices/qmediaserviceproviderplugin.h>
 
 
 QT_BEGIN_HEADER

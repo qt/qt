@@ -41,7 +41,7 @@
 
 #include <QtDeclarative/qdeclarativeextensionplugin.h>
 #include <QtDeclarative/qdeclarative.h>
-#include <QtMultimedia/private/qsoundeffect_p.h>
+#include <QtMediaServices/private/qsoundeffect_p.h>
 
 #include "qdeclarativevideo_p.h"
 #include "qdeclarativeaudio_p.h"
