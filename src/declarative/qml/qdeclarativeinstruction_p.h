@@ -121,7 +121,6 @@ public:
         StoreInterface,           /* storeObject */
 
         StoreSignal,              /* storeSignal */
-        StoreScript,              /* storeScript */
         StoreImportedScript,      /* storeScript */
         StoreScriptString,        /* storeScriptString */
 

@@ -272,7 +272,8 @@ void tst_qdeclarativebehaviors::reassignedAnimation()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml"));
-    QTest::ignoreMessage(QtWarningMsg, QString("QML Behavior (" + QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml").toString() + ":9:9) Cannot change the animation assigned to a Behavior.").toUtf8().constData());
+    QString warning = QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml").toString() + ":9:9: QML Behavior: Cannot change the animation assigned to a Behavior.";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
     QTRY_VERIFY(rect);
     QTRY_COMPARE(qobject_cast<QDeclarativeNumberAnimation*>(
@@ -303,7 +304,8 @@ void tst_qdeclarativebehaviors::dontStart()
 
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/dontStart.qml"));
 
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
+    QString warning = c.url().toString() + ":13:13: QML NumberAnimation: setRunning() cannot be used on non-root animation nodes.";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
     QTRY_VERIFY(rect);
 

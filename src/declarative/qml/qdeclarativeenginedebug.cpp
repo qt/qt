@@ -308,8 +308,6 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
     QByteArray type;
     ds >> type;
 
-    //qDebug() << "QDeclarativeEngineDebugServer::messageReceived()" << type;
-
     if (type == "LIST_ENGINES") {
         int queryId;
         ds >> queryId;

@@ -64,6 +64,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
 \class QDeclarativeProperty
+\since 4.7
 \brief The QDeclarativeProperty class abstracts accessing properties on objects created from  QML.
 
 As QML uses Qt's meta-type system all of the existing QMetaObject classes can be used to introspect

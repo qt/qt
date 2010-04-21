@@ -132,12 +132,15 @@ void QDeclarativeLoaderPrivate::initResize()
     \endcode
 
     If the Loader source is changed, any previous items instantiated
-    will be destroyed.  Setting \c source to an empty string
+    will be destroyed.  Setting \c source to an empty string, or setting
+    sourceComponent to \e undefined
     will destroy the currently instantiated items, freeing resources
     and leaving the Loader empty.  For example:
 
     \code
     pageLoader.source = ""
+      or
+    pageLoader.sourceComponent = undefined
     \endcode
 
     unloads "Page1.qml" and frees resources consumed by it.
@@ -271,13 +274,18 @@ void QDeclarativeLoader::setSourceComponent(QDeclarativeComponent *comp)
     }
 }
 
+void QDeclarativeLoader::resetSourceComponent()
+{
+    setSourceComponent(0);
+}
+
 void QDeclarativeLoaderPrivate::_q_sourceLoaded()
 {
     Q_Q(QDeclarativeLoader);
 
     if (component) {
         if (!component->errors().isEmpty()) {
-            qWarning() << component->errors();
+            QDeclarativeEnginePrivate::warning(qmlEngine(q), component->errors());
             emit q->sourceChanged();
             emit q->statusChanged();
             emit q->progressChanged();
@@ -312,7 +320,7 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
             }
         } else {
             if (!component->errors().isEmpty())
-                qWarning() << component->errors();
+                QDeclarativeEnginePrivate::warning(qmlEngine(q), component->errors());
             delete obj;
             delete ctxt;
             source = QUrl();
@@ -325,7 +333,7 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
 }
 
 /*!
-    \qmlproperty enum Loader::status
+    \qmlproperty enumeration Loader::status
 
     This property holds the status of QML loading.  It can be one of:
     \list
@@ -383,7 +391,7 @@ qreal QDeclarativeLoader::progress() const
 }
 
 /*!
-    \qmlproperty enum Loader::resizeMode
+    \qmlproperty enumeration Loader::resizeMode
 
     This property determines how the Loader or item are resized:
     \list

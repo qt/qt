@@ -8,7 +8,7 @@ var blockSrc = "SamegameCore/BoomBlock.qml";
 var scoresURL = "http://qtfx-nokia.trolltech.com.au/samegame/scores.php";
 var scoresURL = "";
 var gameDuration;
-var component = createComponent(blockSrc);
+var component = Qt.createComponent(blockSrc);
 
 //Index function used instead of a 2D array
 function index(column,row) {

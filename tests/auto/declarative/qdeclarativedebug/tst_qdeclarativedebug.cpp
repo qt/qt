@@ -60,6 +60,7 @@
 #include <private/qdeclarativemetatype_p.h>
 #include <private/qdeclarativeproperty_p.h>
 
+#include "../../../shared/util.h"
 #include "../shared/debugutil_p.h"
 
 Q_DECLARE_METATYPE(QDeclarativeDebugWatch::State)
@@ -68,14 +69,6 @@ Q_DECLARE_METATYPE(QDeclarativeDebugWatch::State)
 class tst_QDeclarativeDebug : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QDeclarativeDebug(QDeclarativeDebugTestData *data)
-    {
-        m_conn = data->conn;
-        m_engine = data->engine;
-        m_rootItem = data->items[0];
-    }
 
 private:
     QDeclarativeDebugObjectReference findRootObject();
@@ -93,8 +86,11 @@ private:
     QDeclarativeEngine *m_engine;
     QDeclarativeItem *m_rootItem;
 
+    QObjectList m_components;
+
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
     void watch_property();
     void watch_object();
@@ -278,9 +274,52 @@ void tst_QDeclarativeDebug::compareProperties(const QDeclarativeDebugPropertyRef
 
 void tst_QDeclarativeDebug::initTestCase()
 {
-    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
-
     qRegisterMetaType<QDeclarativeDebugWatch::State>();
+
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 3768...");
+    qputenv("QML_DEBUG_SERVER_PORT", "3768");
+    m_engine = new QDeclarativeEngine(this);
+
+    QList<QByteArray> qml;
+    qml << "import Qt 4.7\n"
+            "Item {"
+                "width: 10; height: 20; scale: blueRect.scale;"
+                "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
+                "Text { color: blueRect.color; }"
+                "MouseArea {"
+                    "onEntered: { console.log('hello') }"
+                "}"
+            "}";
+    // add second component to test multiple root contexts
+    qml << "import Qt 4.7\n"
+            "Item {}";
+
+    for (int i=0; i<qml.count(); i++) {
+        QDeclarativeComponent component(m_engine);
+        component.setData(qml[i], QUrl::fromLocalFile(""));
+        Q_ASSERT(component.isReady());  // fails if bad syntax
+        m_components << qobject_cast<QDeclarativeItem*>(component.create());
+    }
+    m_rootItem = qobject_cast<QDeclarativeItem*>(m_components.first());
+
+    // add an extra context to test for multiple contexts
+    QDeclarativeContext *context = new QDeclarativeContext(m_engine->rootContext(), this);
+    context->setObjectName("tst_QDeclarativeDebug_childContext");
+
+    m_conn = new QDeclarativeDebugConnection(this);
+    m_conn->connectToHost("127.0.0.1", 3768);
+
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Connection established");
+    bool ok = m_conn->waitForConnected();
+    Q_ASSERT(ok);
+    QTRY_VERIFY(QDeclarativeDebugService::hasDebuggingClient());
+
+    m_dbg = new QDeclarativeEngineDebug(m_conn, this);
+}
+
+void tst_QDeclarativeDebug::cleanupTestCase()
+{
+    qDeleteAll(m_components);
 }
 
 void tst_QDeclarativeDebug::watch_property()
@@ -804,40 +843,6 @@ void tst_QDeclarativeDebug::tst_QDeclarativeDebugPropertyReference()
         compareProperties(r, ref);
 }
 
-
-class tst_QDeclarativeDebug_Factory : public QDeclarativeTestFactory
-{
-public:
-    QObject *createTest(QDeclarativeDebugTestData *data)
-    {
-        tst_QDeclarativeDebug *test = new tst_QDeclarativeDebug(data);
-        QDeclarativeContext *c = new QDeclarativeContext(data->engine->rootContext(), test);
-        c->setObjectName("tst_QDeclarativeDebug_childContext");
-        return test;
-    }
-};
-
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
-
-    QList<QByteArray> qml;
-    qml << "import Qt 4.7\n"
-            "Item {"
-                "width: 10; height: 20; scale: blueRect.scale;"
-                "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
-                "Text { color: blueRect.color; }"
-                "MouseArea {"
-                    "onEntered: { console.log('hello') }"
-                "}"
-            "}";
-    // add second component to test multiple root contexts
-    qml << "import Qt 4.7\n"
-            "Item {}";
-    tst_QDeclarativeDebug_Factory factory;
-    return QDeclarativeDebugTest::runTests(&factory, qml);
-}
-
-//QTEST_MAIN(tst_QDeclarativeDebug)
+QTEST_MAIN(tst_QDeclarativeDebug)
 
 #include "tst_qdeclarativedebug.moc"

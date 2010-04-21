@@ -87,9 +87,10 @@ void QDeclarativeListReferencePrivate::release()
 
 /*!
 \class QDeclarativeListReference
+\since 4.7
 \brief The QDeclarativeListReference class allows the manipulation of QDeclarativeListProperty properties.
 
-QDeclarativeListReference allows programs to read from, and assign values to a QML list property in a 
+QDeclarativeListReference allows C++ programs to read from, and assign values to a QML list property in a
 simple and type safe way.  A QDeclarativeListReference can be created by passing an object and property
 name or through a QDeclarativeProperty instance.  These two are equivalant:
 
@@ -304,6 +305,7 @@ int QDeclarativeListReference::count() const
 
 /*!
 \class QDeclarativeListProperty
+\since 4.7
 \brief The QDeclarativeListProperty class allows applications to explose list-like 
 properties to QML.
 
@@ -313,10 +315,10 @@ The use of a list property from QML looks like this:
 \code
 FruitBasket {
     fruit: [ 
-             Apple {},
-             Orange{},
-             Banana {}
-           ]
+        Apple {},
+        Orange{},
+        Banana{}
+    ]
 }
 \endcode
 
@@ -336,6 +338,9 @@ Q_PROPERTY(QDeclarativeListProperty<Fruit> fruit READ fruit);
 
 QML list properties are typesafe - in this case \c {Fruit} is a QObject type that 
 \c {Apple}, \c {Orange} and \c {Banana} all derive from.
+
+\note QDeclarativeListProperty can only be used for lists of QObject-derived object pointers.
+
 */
 
 /*!

@@ -55,7 +55,7 @@
     That is, you specify \e what the UI should look like and how it should behave
     rather than specifying step-by-step \e how to build it. Specifying a UI declaratively
     does not just include the layout of the interface items, but also the way each
-    individual item looks and behaves and the overall flow of the application.    
+    individual item looks and behaves and the overall flow of the application.
 
     The QML elements provide a sophisticated set of graphical and behavioral building
     blocks.  These different elements are combined together in \l {QML Documents}{QML documents} to build components
@@ -67,7 +67,7 @@
     \o \l {Introduction to the QML language}
     \o \l {QML Tutorial}{Tutorial: 'Hello World'}
     \o \l {QML Advanced Tutorial}{Advanced Tutorial: 'Same Game'}
-    \o \l {QML Examples and Walkthroughs}
+    \o \l {QML Examples and Demos}
     \endlist
 
     \section1 Core QML Features:

@@ -81,12 +81,18 @@ public:
     qreal radius;
     qreal paintmargin;
     QPixmap rectImage;
+    static int doUpdateSlotIdx;
 
     QDeclarativePen *getPen() {
         if (!pen) {
             Q_Q(QDeclarativeRectangle);
             pen = new QDeclarativePen;
-            QObject::connect(pen, SIGNAL(penChanged()), q, SLOT(doUpdate()));
+            static int penChangedSignalIdx = -1;
+            if (penChangedSignalIdx < 0)
+                penChangedSignalIdx = QDeclarativePen::staticMetaObject.indexOfSignal("penChanged()");
+            if (doUpdateSlotIdx < 0)
+                doUpdateSlotIdx = QDeclarativeRectangle::staticMetaObject.indexOfSlot("doUpdate()");
+            QMetaObject::connect(pen, penChangedSignalIdx, q, doUpdateSlotIdx);
         }
         return pen;
     }

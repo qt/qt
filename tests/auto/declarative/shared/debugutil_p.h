@@ -51,50 +51,10 @@
 #include <private/qdeclarativedebugservice_p.h>
 #include <private/qdeclarativeitem_p.h>
 
-class QDeclarativeTestFactory;
-
 class QDeclarativeDebugTest
 {
 public:
     static bool waitForSignal(QObject *receiver, const char *member, int timeout = 5000);
-
-    static int runTests(QDeclarativeTestFactory *factory, const QList<QByteArray> &qml = QList<QByteArray>());
-};
-
-class QDeclarativeDebugTestData : public QObject
-{
-    Q_OBJECT
-public:
-    QDeclarativeDebugTestData(QEventLoop *el);
-
-    ~QDeclarativeDebugTestData();
-
-    QDeclarativeDebugConnection *conn;
-    QDeclarativeEngine *engine;
-
-    int exitCode;
-    QEventLoop *loop;
-
-    QList<QDeclarativeItem *> items;
-
-signals:
-    void engineCreated();
-
-public slots:
-    void testsFinished(int code);
-
-private:
-    friend class QDeclarativeDebugTest;
-};
-
-
-class QDeclarativeTestFactory
-{
-public:
-    QDeclarativeTestFactory() {}
-    virtual ~QDeclarativeTestFactory() {}
-
-    virtual QObject *createTest(QDeclarativeDebugTestData *data) = 0;
 };
 
 class QDeclarativeDebugTestService : public QDeclarativeDebugService
@@ -129,22 +89,6 @@ protected:
 
 private:
     QByteArray lastMsg;
-};
-
-class tst_QDeclarativeDebug_Thread : public QThread
-{
-    Q_OBJECT
-public:
-    tst_QDeclarativeDebug_Thread(QDeclarativeDebugTestData *data, QDeclarativeTestFactory *factory);
-
-    void run();
-
-signals:
-    void testsFinished(int);
-
-private:
-    QDeclarativeDebugTestData *m_data;
-    QDeclarativeTestFactory *m_factory;
 };
 
 

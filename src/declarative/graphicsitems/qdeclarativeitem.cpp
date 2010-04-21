@@ -275,17 +275,6 @@ QDeclarativeContents::QDeclarativeContents() : m_x(0), m_y(0), m_width(0), m_hei
 {
 }
 
-/*!
-    \qmlproperty real Item::childrenRect.x
-    \qmlproperty real Item::childrenRect.y
-    \qmlproperty real Item::childrenRect.width
-    \qmlproperty real Item::childrenRect.height
-
-    The childrenRect properties allow an item access to the geometry of its
-    children. This property is useful if you have an item that needs to be
-    sized to fit its children.
-*/
-
 QRectF QDeclarativeContents::rectF() const
 {
     return QRectF(m_x, m_y, m_width, m_height);
@@ -1415,7 +1404,7 @@ QDeclarativeItem::~QDeclarativeItem()
 }
 
 /*!
-    \qmlproperty enum Item::transformOrigin
+    \qmlproperty enumeration Item::transformOrigin
     This property holds the origin point around which scale and rotation transform.
 
     Nine transform origins are available, as shown in the image below.
@@ -1455,6 +1444,18 @@ QDeclarativeItem *QDeclarativeItem::parentItem() const
 {
     return qobject_cast<QDeclarativeItem *>(QGraphicsObject::parentItem());
 }
+
+/*!
+    \qmlproperty real Item::childrenRect.x
+    \qmlproperty real Item::childrenRect.y
+    \qmlproperty real Item::childrenRect.width
+    \qmlproperty real Item::childrenRect.height
+
+    The childrenRect properties allow an item access to the geometry of its
+    children. This property is useful if you have an item that needs to be
+    sized to fit its children.
+*/
+
 
 /*!
     \qmlproperty list<Item> Item::children
@@ -1594,10 +1595,10 @@ void QDeclarativeItemPrivate::transform_clear(QDeclarativeListProperty<QGraphics
     }
 }
 
-void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeNotifierEndpoint *e) 
+void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeNotifierEndpoint *e)
 {
     QDeclarativeItem *item = static_cast<QDeclarativeItem*>(o);
-    if (e) 
+    if (e)
         e->connect(&item->d_func()->parentNotifier);
     *((QDeclarativeItem **)rv) = item->parentItem();
 }
@@ -1794,9 +1795,13 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
 
     if (transformOrigin() != QDeclarativeItem::TopLeft
         && (newGeometry.width() != oldGeometry.width() || newGeometry.height() != oldGeometry.height())) {
-        QPointF origin = d->computeTransformOrigin();
-        if (transformOriginPoint() != origin)
-            setTransformOriginPoint(origin);
+        if (d->transformData) {
+            QPointF origin = d->computeTransformOrigin();
+            if (transformOriginPoint() != origin)
+                setTransformOriginPoint(origin);
+        } else {
+            d->transformOriginDirty = true;
+        }
     }
 
     if (newGeometry.x() != oldGeometry.x())
@@ -2238,7 +2243,7 @@ QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, qreal x, qr
     QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
     QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
     if (!itemObj && !item.isNull()) {
-        qWarning().nospace() << "mapFromItem() given argument " << item.toString() << " which is neither null nor an Item";
+        qmlInfo(this) << "mapFromItem() given argument \"" << item.toString() << "\" which is neither null nor an Item";
         return 0;
     }
 
@@ -2264,7 +2269,7 @@ QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qrea
     QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
     QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
     if (!itemObj && !item.isNull()) {
-        qWarning().nospace() << "mapToItem() given argument " << item.toString() << " which is neither null nor an Item";
+        qmlInfo(this) << "mapToItem() given argument \"" << item.toString() << "\" which is neither null nor an Item";
         return 0;
     }
 
@@ -2273,6 +2278,23 @@ QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qrea
     sv.setProperty(QLatin1String("x"), p.x());
     sv.setProperty(QLatin1String("y"), p.y());
     return sv;
+}
+
+/*!
+    \qmlmethod Item::forceFocus()
+
+    Force the focus on the item.
+    This method sets the focus on the item and makes sure that all the focus scopes higher in the object hierarchy are given focus.
+*/
+void QDeclarativeItem::forceFocus()
+{
+    setFocus(true);
+    QGraphicsItem *parent = parentItem();
+    while (parent) {
+        if (parent->flags() & QGraphicsItem::ItemIsFocusScope)
+            parent->setFocus(Qt::OtherFocusReason);
+        parent = parent->parentItem();
+    }
 }
 
 void QDeclarativeItemPrivate::focusChanged(bool flag)
@@ -2656,8 +2678,20 @@ void QDeclarativeItem::setTransformOrigin(TransformOrigin origin)
     Q_D(QDeclarativeItem);
     if (origin != d->origin) {
         d->origin = origin;
-        QGraphicsItem::setTransformOriginPoint(d->computeTransformOrigin());
+        if (d->transformData)
+            QGraphicsItem::setTransformOriginPoint(d->computeTransformOrigin());
+        else
+            d->transformOriginDirty = true;
         emit transformOriginChanged(d->origin);
+    }
+}
+
+void QDeclarativeItemPrivate::transformChanged()
+{
+    Q_Q(QDeclarativeItem);
+    if (transformOriginDirty) {
+        q->QGraphicsItem::setTransformOriginPoint(computeTransformOrigin());
+        transformOriginDirty = false;
     }
 }
 

@@ -185,7 +185,7 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
         return;
 
     if (d->group || d->disableUserControl) {
-        qWarning("QDeclarativeAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
+        qmlInfo(this) << "setRunning() cannot be used on non-root animation nodes.";
         return;
     }
 
@@ -245,7 +245,7 @@ void QDeclarativeAbstractAnimation::setPaused(bool p)
         return;
 
     if (d->group || d->disableUserControl) {
-        qWarning("QDeclarativeAbstractAnimation: setPaused() cannot be used on non-root animation nodes");
+        qmlInfo(this) << "setPaused() cannot be used on non-root animation nodes.";
         return;
     }
 
@@ -781,8 +781,8 @@ void QDeclarativeScriptActionPrivate::execute()
         if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
             expr.setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
         expr.value();
-        if (expr.hasError())
-            qWarning() << expr.error();
+        if (expr.hasError()) 
+            qmlInfo(q) << expr.error();
     }
 }
 
@@ -1316,7 +1316,7 @@ void QDeclarativeRotationAnimation::setTo(qreal t)
 }
 
 /*!
-    \qmlproperty enum RotationAnimation::direction
+    \qmlproperty enumeration RotationAnimation::direction
     The direction in which to rotate.
     Possible values are Numerical, Clockwise, Counterclockwise,
     or Shortest.
@@ -1741,14 +1741,15 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
 }
 
 /*!
-    \qmlproperty enum PropertyAnimation::easing.type
+    \qmlproperty enumeration PropertyAnimation::easing.type
     \qmlproperty real PropertyAnimation::easing.amplitude
     \qmlproperty real PropertyAnimation::easing.overshoot
     \qmlproperty real PropertyAnimation::easing.period
     \brief the easing curve used for the animation.
 
     To specify an easing curve you need to specify at least the type. For some curves you can also specify
-    amplitude, period and/or overshoot (more details provided after the table).
+    amplitude, period and/or overshoot (more details provided after the table). The default easing curve is
+    Linear.
 
     \qml
     PropertyAnimation { properties: "y"; easing.type: "InOutElastic"; easing.amplitude: 2.0; easing.period: 1.5 }

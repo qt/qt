@@ -42,31 +42,30 @@
 #define BIRTHDAYPARTY_H
 
 #include <QObject>
-#include <qdeclarative.h>
+#include <QDeclarativeListProperty>
 #include "person.h"
 
 // ![0]
 class BirthdayParty : public QObject
 {
-Q_OBJECT
-Q_PROPERTY(Person *celebrant READ celebrant WRITE setCelebrant)
-Q_PROPERTY(QDeclarativeListProperty<Person> guests READ guests)
-Q_CLASSINFO("DefaultProperty", "guests")
+    Q_OBJECT
+    Q_PROPERTY(Person *host READ host WRITE setHost)
+    Q_PROPERTY(QDeclarativeListProperty<Person> guests READ guests)
+    Q_CLASSINFO("DefaultProperty", "guests")
 public:
     BirthdayParty(QObject *parent = 0);
 
-    Person *celebrant() const;
-    void setCelebrant(Person *);
+    Person *host() const;
+    void setHost(Person *);
 
     QDeclarativeListProperty<Person> guests();
     int guestCount() const;
     Person *guest(int) const;
 
 private:
-    Person *m_celebrant;
+    Person *m_host;
     QList<Person *> m_guests;
 };
 // ![0]
-QML_DECLARE_TYPE(BirthdayParty);
 
 #endif // BIRTHDAYPARTY_H

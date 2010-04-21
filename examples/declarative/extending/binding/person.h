@@ -43,14 +43,14 @@
 
 #include <QObject>
 #include <QColor>
-#include <qdeclarative.h>
 
-class ShoeDescription : public QObject {
-Q_OBJECT
-Q_PROPERTY(int size READ size WRITE setSize NOTIFY shoeChanged)
-Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY shoeChanged)
-Q_PROPERTY(QString brand READ brand WRITE setBrand NOTIFY shoeChanged)
-Q_PROPERTY(qreal price READ price WRITE setPrice NOTIFY shoeChanged)
+class ShoeDescription : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int size READ size WRITE setSize NOTIFY shoeChanged)
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY shoeChanged)
+    Q_PROPERTY(QString brand READ brand WRITE setBrand NOTIFY shoeChanged)
+    Q_PROPERTY(qreal price READ price WRITE setPrice NOTIFY shoeChanged)
 public:
     ShoeDescription(QObject *parent = 0);
 
@@ -74,13 +74,13 @@ private:
     QString m_brand;
     qreal m_price;
 };
-QML_DECLARE_TYPE(ShoeDescription);
 
-class Person : public QObject {
-Q_OBJECT
-Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+class Person : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 // ![0]
-Q_PROPERTY(ShoeDescription *shoe READ shoe CONSTANT)
+    Q_PROPERTY(ShoeDescription *shoe READ shoe CONSTANT)
 // ![0]
 public:
     Person(QObject *parent = 0);
@@ -96,20 +96,19 @@ private:
     QString m_name;
     ShoeDescription m_shoe;
 };
-QML_DECLARE_TYPE(Person);
 
-class Boy : public Person {
-Q_OBJECT
+class Boy : public Person
+{
+    Q_OBJECT
 public:
     Boy(QObject * parent = 0);
 };
-QML_DECLARE_TYPE(Boy);
 
-class Girl : public Person {
-Q_OBJECT
+class Girl : public Person
+{
+    Q_OBJECT
 public:
     Girl(QObject * parent = 0);
 };
-QML_DECLARE_TYPE(Girl);
 
 #endif // PERSON_H

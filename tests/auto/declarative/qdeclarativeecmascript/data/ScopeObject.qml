@@ -5,10 +5,8 @@ Item {
     property int binding: myFunction();
     property int binding2: myCompFunction();
 
-    Script {
-        function myCompFunction() {
-            return a;
-        }
+    function myCompFunction() {
+        return a;
     }
 }
 

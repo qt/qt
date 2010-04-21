@@ -779,9 +779,8 @@ void QDeclarativeTextInputPrivate::startCreatingCursor()
     }else if(cursorComponent->isLoading()){
         q->connect(cursorComponent, SIGNAL(statusChanged(int)),
                 q, SLOT(createCursor()));
-    }else{//isError
-        qmlInfo(q) << QDeclarativeTextInput::tr("Could not load cursor delegate");
-        qWarning() << cursorComponent->errors();
+    }else {//isError
+        qmlInfo(q, cursorComponent->errors()) << QDeclarativeTextInput::tr("Could not load cursor delegate");
     }
 }
 
@@ -789,8 +788,7 @@ void QDeclarativeTextInput::createCursor()
 {
     Q_D(QDeclarativeTextInput);
     if(d->cursorComponent->isError()){
-        qmlInfo(this) << tr("Could not load cursor delegate");
-        qWarning() << d->cursorComponent->errors();
+        qmlInfo(this, d->cursorComponent->errors()) << tr("Could not load cursor delegate");
         return;
     }
 
@@ -801,8 +799,7 @@ void QDeclarativeTextInput::createCursor()
         delete d->cursorItem;
     d->cursorItem = qobject_cast<QDeclarativeItem*>(d->cursorComponent->create());
     if(!d->cursorItem){
-        qmlInfo(this) << tr("Could not instantiate cursor delegate");
-        //The failed instantiation should print its own error messages
+        qmlInfo(this, d->cursorComponent->errors()) << tr("Could not instantiate cursor delegate");
         return;
     }
 

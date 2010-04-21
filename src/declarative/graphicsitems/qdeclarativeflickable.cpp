@@ -248,18 +248,12 @@ void QDeclarativeFlickablePrivate::fixupX_callback(void *data)
 void QDeclarativeFlickablePrivate::fixupX()
 {
     Q_Q(QDeclarativeFlickable);
-    if (!q->xflick() || hData.move.timeLine())
-        return;
-
     fixup(hData, q->minXExtent(), q->maxXExtent());
 }
 
 void QDeclarativeFlickablePrivate::fixupY()
 {
     Q_Q(QDeclarativeFlickable);
-    if (!q->yflick() || vData.move.timeLine())
-        return;
-
     fixup(vData, q->minYExtent(), q->maxYExtent());
 }
 
@@ -272,7 +266,7 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
             if (fixupDuration) {
                 qreal dist = minExtent - data.move;
                 timeline.move(data.move, minExtent - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
-                timeline.move(data.move, minExtent, QEasingCurve(QEasingCurve::OutQuint), 3*fixupDuration/4);
+                timeline.move(data.move, minExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
             } else {
                 data.move.setValue(minExtent);
                 q->viewportMoved();
@@ -284,7 +278,7 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
         if (fixupDuration) {
             qreal dist = maxExtent - data.move;
             timeline.move(data.move, maxExtent - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
-            timeline.move(data.move, maxExtent, QEasingCurve(QEasingCurve::OutQuint), 3*fixupDuration/4);
+            timeline.move(data.move, maxExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
         } else {
             data.move.setValue(maxExtent);
             q->viewportMoved();
@@ -661,7 +655,7 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
                     rejectY = true;
             }
             if (!rejectY && stealMouse) {
-                vData.move.setValue(newY);
+                vData.move.setValue(qRound(newY));
                 moved = true;
             }
             if (qAbs(dy) > QApplication::startDragDistance())
@@ -688,7 +682,7 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
                     rejectX = true;
             }
             if (!rejectX && stealMouse) {
-                hData.move.setValue(newX);
+                hData.move.setValue(qRound(newX));
                 moved = true;
             }
 
@@ -1059,8 +1053,12 @@ void QDeclarativeFlickable::setContentWidth(qreal w)
     else
         d->viewport->setWidth(w);
     // Make sure that we're entirely in view.
-    if (!d->pressed)
+    if (!d->pressed) {
+        int oldDuration = d->fixupDuration;
+        d->fixupDuration = 0;
         d->fixupX();
+        d->fixupDuration = oldDuration;
+    }
     emit contentWidthChanged();
     d->updateBeginningEnd();
 }
@@ -1082,8 +1080,12 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
     else
         d->viewport->setHeight(h);
     // Make sure that we're entirely in view.
-    if (!d->pressed)
+    if (!d->pressed) {
+        int oldDuration = d->fixupDuration;
+        d->fixupDuration = 0;
         d->fixupY();
+        d->fixupDuration = oldDuration;
+    }
     emit contentHeightChanged();
     d->updateBeginningEnd();
 }
