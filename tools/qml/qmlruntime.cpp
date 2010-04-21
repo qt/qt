@@ -1000,7 +1000,6 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
     t.start();
 
     canvas->setSource(url);
-    qWarning() << "Wall startup time:" << t.elapsed();
 
     return true;
 }
@@ -1431,7 +1430,7 @@ void QDeclarativeViewer::registerTypes()
 
     if (!registered) {
         // registering only for exposing the DeviceOrientation::Orientation enum
-        qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,6,"Orientation");
+        qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,6,"Orientation","");
         registered = true;
     }
 }

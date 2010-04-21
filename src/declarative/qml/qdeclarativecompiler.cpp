@@ -571,8 +571,12 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
         QDeclarativeScriptParser::TypeReference *parserRef = unit->data.referencedTypes().at(ii);
         if (tref.type) {
             ref.type = tref.type;
-            if (!ref.type->isCreatable()) 
-                COMPILE_EXCEPTION(parserRef->refObjects.first(), tr( "Element is not creatable."));
+            if (!ref.type->isCreatable()) {
+                QString err = ref.type->noCreationReason();
+                if (err.isEmpty())
+                    err = tr( "Element is not creatable.");
+                COMPILE_EXCEPTION(parserRef->refObjects.first(), err);
+            }
         } else if (tref.unit) {
             ref.component = tref.unit->toComponent(engine);
 
@@ -864,12 +868,14 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
         defaultProperty->release();
 
     // Compile custom parser parts
-    if (isCustomParser && !customProps.isEmpty()) {
+    if (isCustomParser/* && !customProps.isEmpty()*/) {
         QDeclarativeCustomParser *cp = output->types.at(obj->type).type->customParser();
         cp->clearErrors();
         cp->compiler = this;
+        cp->object = obj;
         obj->custom = cp->compile(customProps);
         cp->compiler = 0;
+        cp->object = 0;
         foreach (QDeclarativeError err, cp->errors()) {
             err.setUrl(output->url);
             exceptions << err;
@@ -1184,6 +1190,13 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
        (obj->defaultProperty->value || obj->defaultProperty->values.count() > 1 ||
         (obj->defaultProperty->values.count() == 1 && !obj->defaultProperty->values.first()->object)))
         COMPILE_EXCEPTION(obj, tr("Invalid component body specification"));
+
+    if (!obj->dynamicProperties.isEmpty())
+        COMPILE_EXCEPTION(obj, tr("Component objects cannot declare new properties."));
+    if (!obj->dynamicSignals.isEmpty())
+        COMPILE_EXCEPTION(obj, tr("Component objects cannot declare new signals."));
+    if (!obj->dynamicSlots.isEmpty())
+        COMPILE_EXCEPTION(obj, tr("Component objects cannot declare new functions."));
 
     Object *root = 0;
     if (obj->defaultProperty && obj->defaultProperty->values.count())

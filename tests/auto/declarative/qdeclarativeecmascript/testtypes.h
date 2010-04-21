@@ -659,6 +659,31 @@ public:
     void setTest12(unsigned int v) { _test12 = v; }
 };
 
+class DefaultPropertyExtendedObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QObject *firstProperty READ firstProperty WRITE setFirstProperty)
+    Q_PROPERTY(QObject *secondProperty READ secondProperty WRITE setSecondProperty)
+public:
+    DefaultPropertyExtendedObject(QObject *parent = 0) : QObject(parent), m_firstProperty(0), m_secondProperty(0) {}
+
+    QObject *firstProperty() const { return m_firstProperty; }
+    QObject *secondProperty() const { return m_secondProperty; }
+    void setFirstProperty(QObject *property) { m_firstProperty = property; }
+    void setSecondProperty(QObject *property) { m_secondProperty = property; }
+private:
+    QObject* m_firstProperty;
+    QObject* m_secondProperty;
+};
+
+class OverrideDefaultPropertyObject : public DefaultPropertyExtendedObject
+{
+    Q_OBJECT
+    Q_CLASSINFO("DefaultProperty", "secondProperty")
+public:
+    OverrideDefaultPropertyObject() {}
+};
+
 void registerTypes();
 
 #endif // TESTTYPES_H

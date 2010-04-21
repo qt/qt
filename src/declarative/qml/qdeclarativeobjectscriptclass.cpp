@@ -353,7 +353,13 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
     if (delBinding)
         delBinding->destroy();
 
-    if (value.isUndefined() && lastData->flags & QDeclarativePropertyCache::Data::IsResettable) {
+    if (value.isNull() && lastData->flags & QDeclarativePropertyCache::Data::IsQObjectDerived) {
+        QObject *o = 0;
+        int status = -1;
+        int flags = 0;
+        void *argv[] = { &o, 0, &status, &flags };
+        QMetaObject::metacall(obj, QMetaObject::WriteProperty, lastData->coreIndex, argv);
+    } else if (value.isUndefined() && lastData->flags & QDeclarativePropertyCache::Data::IsResettable) {
         void *a[] = { 0 };
         QMetaObject::metacall(obj, QMetaObject::ResetProperty, lastData->coreIndex, a);
     } else if (value.isUndefined() && lastData->propType == qMetaTypeId<QVariant>()) {

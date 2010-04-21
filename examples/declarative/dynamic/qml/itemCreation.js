@@ -31,7 +31,7 @@ function loadComponent() {
     if (itemComponent != null) //Already loaded the component
         createItem();
 
-    itemComponent = createComponent(itemButton.file);
+    itemComponent = Qt.createComponent(itemButton.file);
     //print(itemButton.file)
     if(itemComponent.isLoading){
         component.statusChanged.connect(finishCreation);

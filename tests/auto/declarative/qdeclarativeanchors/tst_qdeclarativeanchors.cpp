@@ -49,7 +49,7 @@
 #include <private/qdeclarativetext_p.h>
 #include <QtDeclarative/private/qdeclarativeanchors_p_p.h>
 
-Q_DECLARE_METATYPE(QDeclarativeAnchors::UsedAnchor)
+Q_DECLARE_METATYPE(QDeclarativeAnchors::Anchor)
 Q_DECLARE_METATYPE(QDeclarativeAnchorLine::AnchorLine)
 
 
@@ -367,7 +367,7 @@ void tst_qdeclarativeanchors::reset()
 {
     QFETCH(QString, side);
     QFETCH(QDeclarativeAnchorLine::AnchorLine, anchorLine);
-    QFETCH(QDeclarativeAnchors::UsedAnchor, usedAnchor);
+    QFETCH(QDeclarativeAnchors::Anchor, usedAnchor);
 
     QDeclarativeItem *baseItem = new QDeclarativeItem;
 
@@ -394,16 +394,16 @@ void tst_qdeclarativeanchors::reset_data()
 {
     QTest::addColumn<QString>("side");
     QTest::addColumn<QDeclarativeAnchorLine::AnchorLine>("anchorLine");
-    QTest::addColumn<QDeclarativeAnchors::UsedAnchor>("usedAnchor");
+    QTest::addColumn<QDeclarativeAnchors::Anchor>("usedAnchor");
 
-    QTest::newRow("left") << "left" << QDeclarativeAnchorLine::Left << QDeclarativeAnchors::HasLeftAnchor;
-    QTest::newRow("top") << "top" << QDeclarativeAnchorLine::Top << QDeclarativeAnchors::HasTopAnchor;
-    QTest::newRow("right") << "right" << QDeclarativeAnchorLine::Right << QDeclarativeAnchors::HasRightAnchor;
-    QTest::newRow("bottom") << "bottom" << QDeclarativeAnchorLine::Bottom << QDeclarativeAnchors::HasBottomAnchor;
+    QTest::newRow("left") << "left" << QDeclarativeAnchorLine::Left << QDeclarativeAnchors::LeftAnchor;
+    QTest::newRow("top") << "top" << QDeclarativeAnchorLine::Top << QDeclarativeAnchors::TopAnchor;
+    QTest::newRow("right") << "right" << QDeclarativeAnchorLine::Right << QDeclarativeAnchors::RightAnchor;
+    QTest::newRow("bottom") << "bottom" << QDeclarativeAnchorLine::Bottom << QDeclarativeAnchors::BottomAnchor;
 
-    QTest::newRow("hcenter") << "horizontalCenter" << QDeclarativeAnchorLine::HCenter << QDeclarativeAnchors::HasHCenterAnchor;
-    QTest::newRow("vcenter") << "verticalCenter" << QDeclarativeAnchorLine::VCenter << QDeclarativeAnchors::HasVCenterAnchor;
-    QTest::newRow("baseline") << "baseline" << QDeclarativeAnchorLine::Baseline << QDeclarativeAnchors::HasBaselineAnchor;
+    QTest::newRow("hcenter") << "horizontalCenter" << QDeclarativeAnchorLine::HCenter << QDeclarativeAnchors::HCenterAnchor;
+    QTest::newRow("vcenter") << "verticalCenter" << QDeclarativeAnchorLine::VCenter << QDeclarativeAnchors::VCenterAnchor;
+    QTest::newRow("baseline") << "baseline" << QDeclarativeAnchorLine::Baseline << QDeclarativeAnchors::BaselineAnchor;
 }
 
 void tst_qdeclarativeanchors::resetConvenience()

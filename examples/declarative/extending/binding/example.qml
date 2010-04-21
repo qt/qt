@@ -4,9 +4,9 @@ import People 1.0
 BirthdayParty {
     id: theParty
 
-    speaker: HappyBirthday { name: theParty.celebrant.name }
+    HappyBirthdaySong on announcement { name: theParty.host.name }
 
-    celebrant: Boy {
+    host: Boy {
         name: "Bob Jones"
         shoe { size: 12; color: "white"; brand: "Nike"; price: 90.0 }
     }
@@ -15,7 +15,7 @@ BirthdayParty {
 
 
     Boy {
-        name: "Joan Hodges"
+        name: "Leo Hodges"
         BirthdayParty.rsvp: "2009-07-06"
         shoe { size: 10; color: "black"; brand: "Reebok"; price: 59.95 }
     }

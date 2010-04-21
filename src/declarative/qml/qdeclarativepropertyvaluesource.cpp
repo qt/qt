@@ -47,8 +47,10 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QDeclarativePropertyValueSource
-    \brief The QDeclarativePropertyValueSource class is inherited by property value sources such as animations and bindings.
-    \internal
+    \brief The QDeclarativePropertyValueSource class is an interface for property value sources such as animations and bindings.
+
+    See \l{Property Value Sources} for information on writing custom property
+    value sources.
  */
 
 /*!

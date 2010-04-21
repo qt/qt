@@ -43,14 +43,14 @@
 
 #include <QObject>
 #include <QColor>
-#include <qdeclarative.h>
 
-class ShoeDescription : public QObject {
-Q_OBJECT
-Q_PROPERTY(int size READ size WRITE setSize)
-Q_PROPERTY(QColor color READ color WRITE setColor)
-Q_PROPERTY(QString brand READ brand WRITE setBrand)
-Q_PROPERTY(qreal price READ price WRITE setPrice)
+class ShoeDescription : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int size READ size WRITE setSize)
+    Q_PROPERTY(QColor color READ color WRITE setColor)
+    Q_PROPERTY(QString brand READ brand WRITE setBrand)
+    Q_PROPERTY(qreal price READ price WRITE setPrice)
 public:
     ShoeDescription(QObject *parent = 0);
 
@@ -72,10 +72,11 @@ private:
     qreal m_price;
 };
 
-class Person : public QObject {
-Q_OBJECT
-Q_PROPERTY(QString name READ name WRITE setName)
-Q_PROPERTY(ShoeDescription *shoe READ shoe)
+class Person : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(ShoeDescription *shoe READ shoe)
 public:
     Person(QObject *parent = 0);
 
@@ -88,14 +89,16 @@ private:
     ShoeDescription m_shoe;
 };
 
-class Boy : public Person {
-Q_OBJECT
+class Boy : public Person
+{
+    Q_OBJECT
 public:
     Boy(QObject * parent = 0);
 };
 
-class Girl : public Person {
-Q_OBJECT
+class Girl : public Person
+{
+    Q_OBJECT
 public:
     Girl(QObject * parent = 0);
 };
