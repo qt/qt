@@ -59,37 +59,10 @@ Class QBool
    base size=1 base align=1
 QBool (0x2aaaac200930) 0
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Class QFlag
    size=4 align=4
    base size=4 base align=4
 QFlag (0x2aaaac255000) 0
-
-
-
-
-
-
-
-
-
-
-
-
 
 Class QInternal
    size=1 align=1
@@ -107,7 +80,6 @@ Class QGenericReturnArgument
 QGenericReturnArgument (0x2aaaac3b8700) 0
   QGenericArgument (0x2aaaac3b8770) 0
 
-
 Class QMetaObject
    size=32 align=8
    base size=32 base align=8
@@ -122,7 +94,6 @@ Class QChar
    size=2 align=2
    base size=2 base align=2
 QChar (0x2aaaac3f3c40) 0
-
 
 Class QBasicAtomic
    size=4 align=4
@@ -155,7 +126,6 @@ Class QByteRef
    base size=12 base align=8
 QByteRef (0x2aaaac55e310) 0
 
-
 Class QString::Null
    size=1 align=1
    base size=0 base align=1
@@ -170,7 +140,6 @@ Class QString
    size=8 align=8
    base size=8 base align=8
 QString (0x2aaaac5f2690) 0
-
 
 Class QLatin1String
    size=8 align=8
@@ -188,7 +157,6 @@ Class QConstString
 QConstString (0x2aaaac8b21c0) 0
   QString (0x2aaaac8b2230) 0
 
-
 Class QListData::Data
    size=32 align=8
    base size=32 base align=8
@@ -198,8 +166,6 @@ Class QListData
    size=8 align=8
    base size=8 base align=8
 QListData (0x2aaaac8f3690) 0
-
-
 
 Vtable for QObjectData
 QObjectData::_ZTV11QObjectData: 4u entries
@@ -291,7 +257,6 @@ QIODevice (0x2aaaaca84a10) 0
   QObject (0x2aaaaca84a80) 0
       primary-for QIODevice (0x2aaaaca84a10)
 
-
 Vtable for QDataStream
 QDataStream::_ZTV11QDataStream: 4u entries
 0     (int (*)(...))0
@@ -314,7 +279,6 @@ Class QMapData
    size=128 align=8
    base size=128 base align=8
 QMapData (0x2aaaacb421c0) 0
-
 
 Class QTextCodec::ConverterState
    size=32 align=8
@@ -339,8 +303,6 @@ Class QTextCodec
 QTextCodec (0x2aaaacc37e00) 0 nearly-empty
     vptr=((& QTextCodec::_ZTV10QTextCodec) + 16u)
 
-
-
 Class QTextEncoder
    size=40 align=8
    base size=40 base align=8
@@ -350,11 +312,6 @@ Class QTextDecoder
    size=40 align=8
    base size=40 base align=8
 QTextDecoder (0x2aaaaccb9700) 0
-
-
-
-
-
 
 Class __gconv_trans_data
    size=40 align=8
@@ -376,8 +333,6 @@ Class __gconv_info
    base size=16 base align=8
 __gconv_info (0x2aaaaccd4230) 0
 
-
-
 Class _IO_marker
    size=24 align=8
    base size=24 base align=8
@@ -387,7 +342,6 @@ Class _IO_FILE
    size=216 align=8
    base size=216 base align=8
 _IO_FILE (0x2aaaaccd44d0) 0
-
 
 Vtable for QTextStream
 QTextStream::_ZTV11QTextStream: 4u entries
@@ -401,7 +355,6 @@ Class QTextStream
    base size=16 base align=8
 QTextStream (0x2aaaaccd4620) 0
     vptr=((& QTextStream::_ZTV11QTextStream) + 16u)
-
 
 Class QTextStreamManipulator
    size=40 align=8
@@ -492,7 +445,6 @@ QFile (0x2aaaace21380) 0
     QObject (0x2aaaace21460) 0
         primary-for QIODevice (0x2aaaace213f0)
 
-
 Vtable for QTemporaryFile
 QTemporaryFile::_ZTV14QTemporaryFile: 31u entries
 0     (int (*)(...))0
@@ -544,21 +496,16 @@ Class QRegExp
    base size=8 base align=8
 QRegExp (0x2aaaace84000) 0
 
-
 Class QStringMatcher
    size=1048 align=8
    base size=1044 base align=8
 QStringMatcher (0x2aaaacea90e0) 0
-
-
 
 Class QStringList
    size=8 align=8
    base size=8 base align=8
 QStringList (0x2aaaacea97e0) 0
   QList<QString> (0x2aaaacea9850) 0
-
-
 
 Vtable for QProcess
 QProcess::_ZTV8QProcess: 31u entries
@@ -652,45 +599,20 @@ Class QFileInfo
    base size=8 base align=8
 QFileInfo (0x2aaaacf85380) 0
 
-
-
-
-
 Class QDir
    size=8 align=8
    base size=8 base align=8
 QDir (0x2aaaacfc2b60) 0
-
-
 
 Class QUrl
    size=8 align=8
    base size=8 base align=8
 QUrl (0x2aaaad060d20) 0
 
-
-
 Class QMetaType
    size=1 align=1
    base size=0 base align=1
 QMetaType (0x2aaaad0e18c0) 0 empty
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Class QVariant::PrivateShared
    size=16 align=8
@@ -717,15 +639,10 @@ Class QVariant
    base size=16 base align=8
 QVariant (0x2aaaad112d90) 0
 
-
-
-
-
 Class QVariantComparisonHelper
    size=8 align=8
    base size=8 base align=8
 QVariantComparisonHelper (0x2aaaad210c40) 0
-
 
 Vtable for QSettings
 QSettings::_ZTV9QSettings: 14u entries
@@ -796,7 +713,6 @@ Class QFileEngine
 QFileEngine (0x2aaaad294b60) 0
     vptr=((& QFileEngine::_ZTV11QFileEngine) + 16u)
 
-
 Vtable for QFileEngineHandler
 QFileEngineHandler::_ZTV18QFileEngineHandler: 5u entries
 0     (int (*)(...))0
@@ -826,54 +742,45 @@ Class QHashDummyValue
    base size=0 base align=1
 QHashDummyValue (0x2aaaad2dc7e0) 0 empty
 
-
 Class QPoint
    size=8 align=4
    base size=8 base align=4
 QPoint (0x2aaaad407cb0) 0
-
 
 Class QPointF
    size=16 align=8
    base size=16 base align=8
 QPointF (0x2aaaad453070) 0
 
-
 Class QLine
    size=16 align=4
    base size=16 base align=4
 QLine (0x2aaaad484850) 0
-
 
 Class QLineF
    size=32 align=8
    base size=32 base align=8
 QLineF (0x2aaaad4b8310) 0
 
-
 Class QSize
    size=8 align=4
    base size=8 base align=4
 QSize (0x2aaaad4f09a0) 0
-
 
 Class QSizeF
    size=16 align=8
    base size=16 base align=8
 QSizeF (0x2aaaad541310) 0
 
-
 Class QRect
    size=16 align=4
    base size=16 base align=4
 QRect (0x2aaaad5901c0) 0
 
-
 Class QRectF
    size=32 align=8
    base size=32 base align=8
 QRectF (0x2aaaad63caf0) 0
-
 
 Class QLinkedListData
    size=32 align=8
@@ -889,7 +796,6 @@ Class QBitRef
    size=16 align=8
    base size=12 base align=8
 QBitRef (0x2aaaad7dec40) 0
-
 
 Class QVectorData
    size=16 align=4
@@ -911,24 +817,20 @@ Class QLocale
    base size=8 base align=8
 QLocale (0x2aaaad917930) 0
 
-
 Class QDate
    size=4 align=4
    base size=4 base align=4
 QDate (0x2aaaad9bda80) 0
-
 
 Class QTime
    size=4 align=4
    base size=4 base align=4
 QTime (0x2aaaad9e3e70) 0
 
-
 Class QDateTime
    size=8 align=8
    base size=8 base align=8
 QDateTime (0x2aaaada0bbd0) 0
-
 
 Vtable for QFactoryInterface
 QFactoryInterface::_ZTV17QFactoryInterface: 5u entries
@@ -1088,7 +990,6 @@ QEventLoop (0x2aaaadab1310) 0
   QObject (0x2aaaadab1380) 0
       primary-for QEventLoop (0x2aaaadab1310)
 
-
 Vtable for QEvent
 QEvent::_ZTV6QEvent: 4u entries
 0     (int (*)(...))0
@@ -1179,12 +1080,10 @@ Class QModelIndex
    base size=24 base align=8
 QModelIndex (0x2aaaadb2a850) 0
 
-
 Class QPersistentModelIndex
    size=8 align=8
    base size=8 base align=8
 QPersistentModelIndex (0x2aaaadb58000) 0
-
 
 Vtable for QAbstractItemModel
 QAbstractItemModel::_ZTV18QAbstractItemModel: 42u entries
@@ -1404,7 +1303,6 @@ Class QBasicTimer
    base size=4 base align=4
 QBasicTimer (0x2aaaadbe98c0) 0
 
-
 Vtable for QSocketNotifier
 QSocketNotifier::_ZTV15QSocketNotifier: 14u entries
 0     (int (*)(...))0
@@ -1498,12 +1396,10 @@ Class QMetaMethod
    base size=12 base align=8
 QMetaMethod (0x2aaaadc4df50) 0
 
-
 Class QMetaEnum
    size=16 align=8
    base size=12 base align=8
 QMetaEnum (0x2aaaadc73540) 0
-
 
 Class QMetaProperty
    size=32 align=8
@@ -1514,7 +1410,6 @@ Class QMetaClassInfo
    size=16 align=8
    base size=12 base align=8
 QMetaClassInfo (0x2aaaadc73d90) 0
-
 
 Vtable for QPluginLoader
 QPluginLoader::_ZTV13QPluginLoader: 14u entries
@@ -1642,14 +1537,11 @@ Class QSqlRecord
    base size=8 base align=8
 QSqlRecord (0x2aaaadd3c460) 0
 
-
-
 Class QSqlIndex
    size=32 align=8
    base size=32 base align=8
 QSqlIndex (0x2aaaadd3c7e0) 0
   QSqlRecord (0x2aaaadd3c850) 0
-
 
 Vtable for QSqlResult
 QSqlResult::_ZTV10QSqlResult: 29u entries
@@ -2031,7 +1923,4 @@ QSqlRelationalTableModel (0x2aaaade85d20) 0
             primary-for QAbstractTableModel (0x2aaaade85e70)
           QObject (0x2aaaade85f50) 0
               primary-for QAbstractItemModel (0x2aaaade85ee0)
-
-
-
 
