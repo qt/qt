@@ -84,9 +84,9 @@ public:
     inline QDeclarativeInfo &operator<<(const QUrl &t) { static_cast<QDebug &>(*this) << t; return *this; }
 
 private:
-    friend QDeclarativeInfo qmlInfo(const QObject *me);
-    friend QDeclarativeInfo qmlInfo(const QObject *me, const QDeclarativeError &error);
-    friend QDeclarativeInfo qmlInfo(const QObject *me, const QList<QDeclarativeError> &errors);
+    friend Q_DECLARATIVE_EXPORT QDeclarativeInfo qmlInfo(const QObject *me);
+    friend Q_DECLARATIVE_EXPORT QDeclarativeInfo qmlInfo(const QObject *me, const QDeclarativeError &error);
+    friend Q_DECLARATIVE_EXPORT QDeclarativeInfo qmlInfo(const QObject *me, const QList<QDeclarativeError> &errors);
 
     QDeclarativeInfo(QDeclarativeInfoPrivate *);
     QDeclarativeInfoPrivate *d;
