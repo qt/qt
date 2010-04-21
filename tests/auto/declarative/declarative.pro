@@ -64,6 +64,7 @@ SUBDIRS += \
            qdeclarativeimageprovider \       # Cover
            qdeclarativestyledtext \          # Cover
            qdeclarativesqldatabase \         # Cover
+           qdeclarativevisualdatamodel \     # Cover
            qmlvisual                    # Cover
 
 contains(QT_CONFIG, webkit) {
