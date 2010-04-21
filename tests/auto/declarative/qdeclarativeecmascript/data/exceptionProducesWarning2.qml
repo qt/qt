@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 import Qt.test 1.0
 
 MyQmlObject {

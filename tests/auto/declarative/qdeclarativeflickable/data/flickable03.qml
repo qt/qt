@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Flickable {
     width: 100; height: 100

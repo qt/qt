@@ -1258,7 +1258,7 @@ bool QDeclarativeCompiler::buildSubObject(Object *obj, const BindingContext &ctx
 
 int QDeclarativeCompiler::componentTypeRef()
 {
-    QDeclarativeType *t = QDeclarativeMetaType::qmlType("Qt/Component",4,6);
+    QDeclarativeType *t = QDeclarativeMetaType::qmlType("Qt/Component",4,7);
     for (int ii = output->types.count() - 1; ii >= 0; --ii) {
         if (output->types.at(ii).type == t)
             return ii;

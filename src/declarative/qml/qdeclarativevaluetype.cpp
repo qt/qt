@@ -61,7 +61,7 @@ int qmlRegisterValueTypeEnums(const char *qmlName)
 
         QString(),
 
-        "Qt", 4, 6, qmlName, &T::staticMetaObject,
+        "Qt", 4, 7, qmlName, &T::staticMetaObject,
 
         0, 0,
 

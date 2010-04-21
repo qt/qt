@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 QtObject {
     property int index_size_err: DOMException.INDEX_SIZE_ERR

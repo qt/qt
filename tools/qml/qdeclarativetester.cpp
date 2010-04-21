@@ -181,7 +181,7 @@ void QDeclarativeTester::save()
     file.open(QIODevice::WriteOnly);
     QTextStream ts(&file);
 
-    ts << "import Qt.VisualTest 4.6\n\n";
+    ts << "import Qt.VisualTest 4.7\n\n";
     ts << "VisualTest {\n";
 
     int imgCount = 0;
@@ -398,10 +398,10 @@ void QDeclarativeTester::updateCurrentTime(int msec)
 
 void QDeclarativeTester::registerTypes()
 {
-    qmlRegisterType<QDeclarativeVisualTest>("Qt.VisualTest", 4,6, "VisualTest");
-    qmlRegisterType<QDeclarativeVisualTestFrame>("Qt.VisualTest", 4,6, "Frame");
-    qmlRegisterType<QDeclarativeVisualTestMouse>("Qt.VisualTest", 4,6, "Mouse");
-    qmlRegisterType<QDeclarativeVisualTestKey>("Qt.VisualTest", 4,6, "Key");
+    qmlRegisterType<QDeclarativeVisualTest>("Qt.VisualTest", 4,7, "VisualTest");
+    qmlRegisterType<QDeclarativeVisualTestFrame>("Qt.VisualTest", 4,7, "Frame");
+    qmlRegisterType<QDeclarativeVisualTestMouse>("Qt.VisualTest", 4,7, "Mouse");
+    qmlRegisterType<QDeclarativeVisualTestKey>("Qt.VisualTest", 4,7, "Key");
 }
 
 QT_END_NAMESPACE
