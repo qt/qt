@@ -1836,7 +1836,11 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
     for(int i = 0; i < args_list.size(); ++i)
         args += args_list[i].join(QString(Option::field_sep));
 
-    ExpandFunc func_t = qmake_expandFunctions().value(func.toLower());
+    QString lfunc = func.toLower();
+    if (!lfunc.isSharedWith(func))
+        warn_msg(WarnDeprecated, "%s:%d: Using uppercased builtin functions is deprecated.",
+                 parser.file.toLatin1().constData(), parser.line_no);
+    ExpandFunc func_t = qmake_expandFunctions().value(lfunc);
     debug_msg(1, "Running project expand: %s(%s) [%d]",
               func.toLatin1().constData(), args.join("::").toLatin1().constData(), func_t);
 
