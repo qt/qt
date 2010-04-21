@@ -76,8 +76,6 @@ private slots:
     void undo();
     void initialValue();
 
-    void exists();
-
 private:
     QSystemSemaphore *existingLock;
 
@@ -299,29 +297,6 @@ void tst_QSystemSemaphore::initialValue()
     release.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 }
-
-void tst_QSystemSemaphore::exists()
-{
-    QSystemSemaphore sem("store", 1, QSystemSemaphore::Create);
-    QVERIFY(sem.error() == QSystemSemaphore::NoError);
-    QVERIFY(sem.acquire());
-    QVERIFY(sem.error() == QSystemSemaphore::NoError);
-
-    {
-        QSystemSemaphore dupSem("store", 1, QSystemSemaphore::Create);
-        QVERIFY(dupSem.error() == QSystemSemaphore::AlreadyExists);
-    }
-#ifndef Q_OS_UNIX
-    // The rest of the test does not make sense on Unix because open will 
-    // actually succeed anyway (see QSystemSemaphore docs)
-    QSystemSemaphore anotherSem("store", 1, QSystemSemaphore::Open);
-    QVERIFY(anotherSem.error() == QSystemSemaphore::AlreadyExists);
-    QVERIFY(sem.release());
-    QVERIFY(anotherSem.acquire());
-    QVERIFY(anotherSem.release());
-#endif
-}
-
 QTEST_MAIN(tst_QSystemSemaphore)
 #include "tst_qsystemsemaphore.moc"
 

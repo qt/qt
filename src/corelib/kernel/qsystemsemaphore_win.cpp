@@ -69,10 +69,6 @@ void QSystemSemaphorePrivate::setErrorString(const QString &function)
         error = QSystemSemaphore::PermissionDenied;
         errorString = QCoreApplication::translate("QSystemSemaphore", "%1: permission denied").arg(function);
         break;
-    case ERROR_ALREADY_EXISTS:
-        error = QSystemSemaphore::AlreadyExists;
-        errorString = QCoreApplication::translate("QSystemSemaphore", "%1: already exists").arg(function);
-        break;
     default:
         errorString = QCoreApplication::translate("QSystemSemaphore", "%1: unknown error %2").arg(function).arg(windowsError);
         error = QSystemSemaphore::UnknownError;
@@ -92,8 +88,8 @@ HANDLE QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode)
     if (semaphore == 0) {
         QString safeName = makeKeyFileName();
         semaphore = CreateSemaphore(0, initialValue, MAXLONG, (wchar_t*)safeName.utf16());
-        // If the semaphore exists then the handle is still valid but there is still an error
-        setErrorString(QLatin1String("QSystemSemaphore::handle"));
+        if (semaphore == NULL)
+            setErrorString(QLatin1String("QSystemSemaphore::handle"));
     }
 
     return semaphore;
