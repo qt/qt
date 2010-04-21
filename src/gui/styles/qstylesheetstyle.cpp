@@ -1533,7 +1533,9 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
     QHash<const void *, StyleSheet>::const_iterator defaultCacheIt = styleSheetCache->constFind(baseStyle());
     if (defaultCacheIt == styleSheetCache->constEnd()) {
         defaultSs = getDefaultStyleSheet();
-        styleSheetCache->insert(baseStyle(), defaultSs);
+        QStyle *bs = baseStyle();
+        styleSheetCache->insert(bs, defaultSs);
+        QObject::connect(bs, SIGNAL(destroyed(QObject*)), this, SLOT(styleDestroyed(QObject*)), Qt::UniqueConnection);
     } else {
         defaultSs = defaultCacheIt.value();
     }
@@ -2658,6 +2660,11 @@ void QStyleSheetStyle::widgetDestroyed(QObject *o)
     customPaletteWidgets->remove((const QWidget *)o);
     styleSheetCache->remove((const QWidget *)o);
     autoFillDisabledWidgets->remove((const QWidget *)o);
+}
+
+void QStyleSheetStyle::styleDestroyed(QObject *o)
+{
+    styleSheetCache->remove(o);
 }
 
 /*!
