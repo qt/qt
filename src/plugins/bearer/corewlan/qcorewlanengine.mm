@@ -316,7 +316,7 @@ void QScanThread::getUserConfigurations()
 
         // 802.1X user profiles
         QString userProfilePath = QDir::homePath() + "/Library/Preferences/com.apple.eap.profiles.plist";
-        NSDictionary* eapDict = [[NSMutableDictionary alloc] initWithContentsOfFile:qt_mac_QStringToNSString(userProfilePath)];
+        NSDictionary* eapDict = [[[NSDictionary alloc] initWithContentsOfFile:qt_mac_QStringToNSString(userProfilePath)] autorelease];
         NSString *profileStr= @"Profiles";
         NSString *nameStr = @"UserDefinedName";
         NSString *networkSsidStr = @"Wireless Network";
@@ -347,10 +347,8 @@ void QScanThread::getUserConfigurations()
                         }
                     }
                 }
-                [itemDict release];
             }
         }
-        [eapDict release];
     }
 }
 
