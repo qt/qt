@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui/QPlatformIntegrationPlugin>
-#include "qplatformintegration_testlite.h"
+#include "qtestliteintegration.h"
 
 QT_BEGIN_NAMESPACE
 

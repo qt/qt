@@ -39,70 +39,47 @@
 **
 ****************************************************************************/
 
-
-#include "qwindowsurface_qvfb.h"
-#include "qvfbintegration.h"
+#include "qminimalwindowsurface.h"
 #include <QtCore/qdebug.h>
-#include <QtGui/qpainter.h>
-#include <private/qapplication_p.h>
+#include <QtGui/private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QVFbWindowSurface::QVFbWindowSurface(//QVFbIntegration *graphicsSystem,
-                                     QVFbScreen *screen, QWidget *window)
-    : QWindowSurface(window),
-      mScreen(screen)
+QMinimalWindowSurface::QMinimalWindowSurface(QWidget *window)
+    : QWindowSurface(window)
+{
+    //qDebug() << "QMinimalWindowSurface::QMinimalWindowSurface:" << (long)this;
+}
+
+QMinimalWindowSurface::~QMinimalWindowSurface()
 {
 }
 
-QVFbWindowSurface::~QVFbWindowSurface()
+QPaintDevice *QMinimalWindowSurface::paintDevice()
 {
+    //qDebug() << "QMinimalWindowSurface::paintDevice";
+    return &mImage;
 }
 
-QPaintDevice *QVFbWindowSurface::paintDevice()
-{
-    return mScreen->screenImage();
-}
-
-void QVFbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+void QMinimalWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(widget);
+    Q_UNUSED(region);
     Q_UNUSED(offset);
 
-//    QRect rect = geometry();
-//    QPoint topLeft = rect.topLeft();
-
-    mScreen->setDirty(region.boundingRect());
+    static int c = 0;
+    QString filename = QString("output%1.png").arg(c++, 4, 10, QLatin1Char('0'));
+    qDebug() << "QMinimalWindowSurface::flush() saving contents to" << filename.toLocal8Bit().constData();
+    mImage.save(filename);
 }
 
-void QVFbWindowSurface::resize(const QSize&)
+void QMinimalWindowSurface::resize(const QSize &size)
 {
-
-// any size you like as long as it's full-screen...
-
-    QRect rect(mScreen->availableGeometry());
-    QWindowSurface::resize(rect.size());
+    //qDebug() << "QMinimalWindowSurface::setGeometry:" << (long)this << rect;
+    QWindowSurface::resize(size);
+    QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
+    if (mImage.size() != size)
+        mImage = QImage(size, format);
 }
-
-
-QVFbWindow::QVFbWindow(QVFbScreen *screen, QWidget *window)
-    : QPlatformWindow(window),
-      mScreen(screen)
-{
-}
-
-
-void QVFbWindow::setGeometry(const QRect &)
-{
-
-// any size you like as long as it's full-screen...
-
-    QRect rect(mScreen->availableGeometry());
-    QWindowSystemInterface::handleGeometryChange(this->widget(), rect);
-
-    QPlatformWindow::setGeometry(rect);
-}
-
-
 
 QT_END_NAMESPACE

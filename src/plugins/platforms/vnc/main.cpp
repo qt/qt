@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_vnc.h"
+#include "qvncintegration.h"
 #include <qstringlist.h>
 #include <QtGui/QPlatformIntegrationPlugin>
 

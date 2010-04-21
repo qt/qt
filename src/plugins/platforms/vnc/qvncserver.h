@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qgraphicssystem_vnc.h"
+#include "qvncintegration.h"
 #include "qvnccursor.h"
 #define QT_NO_QWS_CURSOR
 

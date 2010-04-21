@@ -41,8 +41,8 @@
 
 
 
-#include "qplatformintegration_testlite.h"
-#include "qwindowsurface_testlite.h"
+#include "qtestliteintegration.h"
+#include "qtestlitewindowsurface.h"
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/qdebug.h>
 

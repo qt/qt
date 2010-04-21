@@ -3,8 +3,8 @@ include(../../qpluginbase.pri)
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
-SOURCES = main.cpp qgraphicssystem_vnc.cpp
-HEADERS = qgraphicssystem_vnc.h
+SOURCES = main.cpp qvncintegration.cpp
+HEADERS = qvncintegration.h
 
 HEADERS += qvncserver.h
 SOURCES += qvncserver.cpp

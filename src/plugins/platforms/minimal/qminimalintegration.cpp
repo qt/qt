@@ -1,5 +1,5 @@
-#include "qplatformintegration_minimal.h"
-#include "qwindowsurface_minimal.h"
+#include "qminimalintegration.h"
+#include "qminimalwindowsurface.h"
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>

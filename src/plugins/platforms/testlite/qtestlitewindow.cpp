@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qwindowsurface_testlite.h"
-#include "qplatformintegration_testlite.h"
+#include "qtestlitewindowsurface.h"
+#include "qtestliteintegration.h"
 #include <QWindowSystemInterface>
 
 #include "qtestlitewindow.h"

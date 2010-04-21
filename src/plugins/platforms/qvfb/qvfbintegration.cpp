@@ -53,7 +53,7 @@
 #include <qsocketnotifier.h>
 
 #include "qvfbintegration.h"
-#include "qwindowsurface_qvfb.h"
+#include "qvfbwindowsurface.h"
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/qdebug.h>
 #include <QMouseEvent>

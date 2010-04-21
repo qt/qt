@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_linuxfb.h"
+#include "qlinuxfbintegration.h"
 #include "../fb_base/fb_base.h"
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <private/qcore_unix_p.h> // overrides QT_OPEN

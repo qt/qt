@@ -3,8 +3,8 @@ include(../../qpluginbase.pri)
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
-SOURCES = main.cpp qgraphicssystem_linuxfb.cpp
-HEADERS = qgraphicssystem_linuxfb.h
+SOURCES = main.cpp qlinuxfbintegration.cpp
+HEADERS = qlinuxfbintegration.h
 
 include(../fb_base/fb_base.pri)
 

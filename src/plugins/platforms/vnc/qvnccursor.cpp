@@ -49,7 +49,7 @@
 
 #include "qvnccursor.h"
 #include "qvncserver.h"
-#include "qgraphicssystem_vnc.h"
+#include "qvncintegration.h"
 
 QT_BEGIN_NAMESPACE
 

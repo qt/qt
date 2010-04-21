@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_vnc.h"
+#include "qvncintegration.h"
 #include "../fb_base/fb_base.h"
 #include <private/qapplication_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
