@@ -572,6 +572,21 @@ void QTcpServer::incomingConnection(int socketDescriptor)
 
     QTcpSocket *socket = new QTcpSocket(this);
     socket->setSocketDescriptor(socketDescriptor);
+    addPendingConnection(socket);
+}
+
+/*!
+    This function is called by QTcpServer::incomingConnection()
+    to add a socket to the list of pending incoming connections.
+
+    \note Don't forget to call this member from reimplemented
+    incomingConnection() if you do not want to break the
+    Pending Connections mechanism.
+
+    \sa incomingConnection()
+*/
+void QTcpServer::addPendingConnection(QTcpSocket* socket)
+{
     d_func()->pendingConnections.append(socket);
 }
 
