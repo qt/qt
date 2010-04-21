@@ -83,10 +83,6 @@ directory.
 \previouspage QML Advanced Tutorial
 \nextpage QML Advanced Tutorial 2 - Populating the Game Canvas
 
-In this chapter:
-
-\tableofcontents
-
 The files referenced on this page can be found in \c $QTDIR\examples\tutorials\samegame\samegame1.
 
 \section2 Creating the application screen
@@ -151,10 +147,6 @@ elements to get started. Next, we will populate the game canvas with some blocks
 \contentspage QML Advanced Tutorial
 \previouspage QML Advanced Tutorial 1 - Creating the Game Canvas and Blocks
 \nextpage QML Advanced Tutorial 3 - Implementing the Game Logic
-
-In this chapter:
-
-\tableofcontents
 
 The files referenced on this page can be found in \c $QTDIR\examples\tutorials\samegame\samegame2.
 
@@ -223,10 +215,6 @@ Now, we have a screen of blocks, and we can begin to add the game mechanics.
 \contentspage QML Advanced Tutorial
 \previouspage QML Advanced Tutorial 2 - Populating the Game Canvas
 \nextpage QML Advanced Tutorial 4 - Finishing Touches
-
-In this chapter:
-
-\tableofcontents
 
 The files referenced on this page can be found in \c $QTDIR\examples\tutorials\samegame\samegame3.
 
@@ -312,10 +300,6 @@ until the next chapter - where your application becomes alive!
 \title QML Advanced Tutorial 4 - Finishing Touches
 \contentspage QML Advanced Tutorial
 \previouspage QML Advanced Tutorial 3 - Implementing the Game Logic
-
-In this chapter:
-
-\tableofcontents
 
 The files referenced on this page can be found in \c $QTDIR\examples\tutorials\samegame\samegame4.
 
