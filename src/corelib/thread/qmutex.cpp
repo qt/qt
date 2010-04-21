@@ -130,7 +130,7 @@ QMutex::QMutex(RecursionMode mode)
     \warning Destroying a locked mutex may result in undefined behavior.
 */
 QMutex::~QMutex()
-{ delete d; }
+{ delete static_cast<QMutexPrivate *>(d); }
 
 /*!
     Locks the mutex. If another thread has locked the mutex then this
@@ -146,6 +146,7 @@ QMutex::~QMutex()
 */
 void QMutex::lock()
 {
+    QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
     Qt::HANDLE self;
 
     if (d->recursive) {
@@ -184,43 +185,7 @@ void QMutex::lock()
 
     bool isLocked = d->contenders == 0 && d->contenders.testAndSetAcquire(0, 1);
     if (!isLocked) {
-        int spinCount = 0;
-        int lastSpinCount = d->lastSpinCount;
-
-        enum { AdditionalSpins = 20, SpinCountPenalizationDivisor = 4 };
-        const int maximumSpinCount = lastSpinCount + AdditionalSpins;
-
-        do {
-            if (spinCount++ > maximumSpinCount) {
-                // puts("spinning useless, sleeping");
-                isLocked = d->contenders.fetchAndAddAcquire(1) == 0;
-                if (!isLocked) {
-#ifndef QT_NO_DEBUG
-                    if (d->owner == self)
-                        qWarning() << "QMutex::lock: Deadlock detected in thread" << d->owner;
-#endif
-
-                    // didn't get the lock, wait for it
-                    isLocked = d->wait();
-                    Q_ASSERT_X(isLocked, "QMutex::lock",
-                               "Internal error, infinite wait has timed out.");
-
-                    // don't need to wait for the lock anymore
-                    d->contenders.deref();
-                }
-                // decrease the lastSpinCount since we didn't actually get the lock by spinning
-                spinCount = -d->lastSpinCount / SpinCountPenalizationDivisor;
-                break;
-            }
-
-            isLocked = d->contenders == 0 && d->contenders.testAndSetAcquire(0, 1);
-        } while (!isLocked);
-
-        // adjust the last spin lock count
-        lastSpinCount = d->lastSpinCount;
-        d->lastSpinCount = spinCount >= 0
-                           ? qMax(lastSpinCount, spinCount)
-                           : lastSpinCount + spinCount;
+        lockInternal();
     }
 
 #ifndef QT_NO_DEBUG
@@ -247,6 +212,7 @@ void QMutex::lock()
 */
 bool QMutex::tryLock()
 {
+    QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
     Qt::HANDLE self;
 
     if (d->recursive) {
@@ -310,6 +276,7 @@ bool QMutex::tryLock()
 */
 bool QMutex::tryLock(int timeout)
 {
+    QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
     Qt::HANDLE self;
 
     if (d->recursive) {
@@ -366,8 +333,13 @@ bool QMutex::tryLock(int timeout)
 */
 void QMutex::unlock()
 {
-    Q_ASSERT_X(d->owner == QThread::currentThreadId(), "QMutex::unlock()",
-               "A mutex must be unlocked in the same thread that locked it.");
+    QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
+#ifndef QT_NO_DEBUG
+    //note: if the mutex has been locked with (try)lockInline, d->owner could have not been set, and this would be a false warning
+    if ((d->owner || d->recursive) && d->owner != QThread::currentThreadId())
+        qWarning("QMutex::unlock(): A mutex must be unlocked in the same thread that locked it.");
+#endif
+
 
     if (d->recursive) {
         if (!--d->count) {
@@ -505,6 +477,87 @@ void QMutex::unlock()
 
     Use the constructor that takes a RecursionMode parameter instead.
 */
+
+/*!
+    \internal helper for lockInline()
+ */
+void QMutex::lockInternal()
+{
+    QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
+    int spinCount = 0;
+    int lastSpinCount = d->lastSpinCount;
+
+    enum { AdditionalSpins = 20, SpinCountPenalizationDivisor = 4 };
+    const int maximumSpinCount = lastSpinCount + AdditionalSpins;
+
+#ifndef QT_NO_DEBUG
+    Qt::HANDLE self = QThread::currentThreadId();
+#endif
+
+    do {
+        if (spinCount++ > maximumSpinCount) {
+            // puts("spinning useless, sleeping");
+            bool isLocked = d->contenders.fetchAndAddAcquire(1) == 0;
+            if (!isLocked) {
+#ifndef QT_NO_DEBUG
+                if (d->owner == self)
+                    qWarning() << "QMutex::lock: Deadlock detected in thread" << d->owner;
+#endif
+
+                // didn't get the lock, wait for it
+                isLocked = d->wait();
+                Q_ASSERT_X(isLocked, "QMutex::lock",
+                            "Internal error, infinite wait has timed out.");
+
+                // don't need to wait for the lock anymore
+                d->contenders.deref();
+            }
+            // decrease the lastSpinCount since we didn't actually get the lock by spinning
+            spinCount = -d->lastSpinCount / SpinCountPenalizationDivisor;
+            break;
+        }
+    } while (d->contenders != 0 || !d->contenders.testAndSetAcquire(0, 1));
+
+    // adjust the last spin lock count
+    lastSpinCount = d->lastSpinCount;
+    d->lastSpinCount = spinCount >= 0
+                        ? qMax(lastSpinCount, spinCount)
+                        : lastSpinCount + spinCount;
+
+#ifndef QT_NO_DEBUG
+    d->owner = self;
+#endif
+}
+
+/*!
+    \internal
+*/
+void QMutex::unlockInternal()
+{
+#ifndef QT_NO_DEBUG
+    static_cast<QMutexPrivate *>(d)->owner = 0;
+#endif
+    static_cast<QMutexPrivate *>(d)->wakeUp();
+}
+
+/*!
+   \fn QMutex::lockInline()
+   \internal
+   inline version of QMutex::lock()
+*/
+
+/*!
+   \fn QMutex::unlockInline()
+   \internal
+   inline version of QMutex::unlock()
+*/
+
+/*!
+   \fn QMutex::tryLockInline()
+   \internal
+   inline version of QMutex::tryLock()
+*/
+
 
 QT_END_NAMESPACE
 

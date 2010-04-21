@@ -893,7 +893,7 @@ QObject::~QObject()
                         if (c->next) c->next->prev = c->prev;
                     }
                     if (needToUnlock)
-                        m->unlock();
+                        m->unlockInline();
 
                     connectionList.first = c->nextConnectionList;
                     delete c;
@@ -917,7 +917,7 @@ QObject::~QObject()
             bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
             //the node has maybe been removed while the mutex was unlocked in relock?
             if (!node || node->sender != sender) {
-                m->unlock();
+                m->unlockInline();
                 continue;
             }
             node->receiver = 0;
@@ -927,7 +927,7 @@ QObject::~QObject()
 
             node = node->next;
             if (needToUnlock)
-                m->unlock();
+                m->unlockInline();
         }
     }
 
@@ -2983,7 +2983,7 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
             }
 
             if (needToUnlock)
-                receiverMutex->unlock();
+                receiverMutex->unlockInline();
 
             c->receiver = 0;
 

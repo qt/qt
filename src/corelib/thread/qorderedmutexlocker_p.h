@@ -55,7 +55,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QMutex;
+#include <QtCore/qmutex.h>
 
 /*
   Locks 2 mutexes in a defined order, avoiding a recursive lock if
@@ -79,8 +79,8 @@ public:
     void relock()
     {
         if (!locked) {
-            if (mtx1) mtx1->lock();
-            if (mtx2) mtx2->lock();
+            if (mtx1) mtx1->lockInline();
+            if (mtx2) mtx2->lockInline();
             locked = true;
         }
     }
@@ -88,8 +88,8 @@ public:
     void unlock()
     {
         if (locked) {
-            if (mtx1) mtx1->unlock();
-            if (mtx2) mtx2->unlock();
+            if (mtx1) mtx1->unlockInline();
+            if (mtx2) mtx2->unlockInline();
             locked = false;
         }
     }
@@ -100,10 +100,10 @@ public:
         if (mtx1 == mtx2)
             return false;
         if (mtx1 < mtx2) {
-            mtx2->lock();
+            mtx2->lockInline();
             return true;
         }
-        if (!mtx2->tryLock()) {
+        if (!mtx2->tryLockInline()) {
             mtx1->unlock();
             mtx2->lock();
             mtx1->lock();
